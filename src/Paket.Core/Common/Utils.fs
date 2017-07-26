@@ -860,6 +860,7 @@ module String =
     
     /// Check if 'text' ends with the 'suffix' string case insensitive
     let inline endsWithIgnoreCase (suffix:string) (text:string) =
+        suffix.Length <= text.Length &&
         text.LastIndexOf(suffix, StringComparison.OrdinalIgnoreCase) >= text.Length - suffix.Length
     
     /// Match if 'text' ends with the 'suffix' string case insensitive
