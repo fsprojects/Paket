@@ -21,10 +21,16 @@ let expectedReferenceNodes = """<?xml version="1.0" encoding="utf-16"?>
 </Choose>"""
 
 let expectedPropertyDefinitionNodes = """<?xml version="1.0" encoding="utf-16"?>
-<Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+<Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.0.3' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3' Or $(TargetFrameworkVersion) == 'v4.7')">
+    <PropertyGroup>
+      <__paket__LibGit2Sharp_props>net40\LibGit2Sharp</__paket__LibGit2Sharp_props>
+    </PropertyGroup>
+  </When>
+</Choose>"""
 
 let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
-<Import Project="..\..\..\LibGit2Sharp\build\net40\LibGit2Sharp.props" Condition="Exists('..\..\..\LibGit2Sharp\build\net40\LibGit2Sharp.props')" Label="Paket" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+<Import Project="..\..\..\LibGit2Sharp\build\$(__paket__LibGit2Sharp_props).props" Condition="Exists('..\..\..\LibGit2Sharp\build\$(__paket__LibGit2Sharp_props).props')" Label="Paket" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 [<Test>]
 let ``should generate Xml for LibGit2Sharp 2.0.0``() =
@@ -50,11 +56,11 @@ let ``should generate Xml for LibGit2Sharp 2.0.0``() =
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedPropertyDefinitionNodes)
 
-    ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 0
+    ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 1
     ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 0
-    ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 1
+    ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 0
     ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 0
 
-    (ctx.GlobalPropsNodes |> Seq.head).OuterXml
+    (ctx.FrameworkSpecificPropsNodes |> Seq.head).OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedPropertyNodes)

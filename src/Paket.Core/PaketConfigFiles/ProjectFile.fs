@@ -811,7 +811,7 @@ module ProjectFile =
             assert (applicableFolders = sortedFolders) // I think there is already a filtering done before - let's see if CI aggrees
             if referenceCondition <> None then [], applicableFolders else
             match applicableFolders with
-            | [ dir ] when (dir.Targets |> Set.isSuperset allTargetProfiles) -> [ dir ] , []
+            | [ dir ] when (Set.isSuperset dir.Targets allTargetProfiles) -> [ dir ] , []
             | _ -> [], applicableFolders
 
 

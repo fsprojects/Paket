@@ -287,3 +287,33 @@ let ``startsWithIgnoreCase handles shorter strings correct``() =
 let ``containsIgnoreCase handles shorter strings correct``() =
     let actual = Paket.Utils.String.containsIgnoreCase "long_long" "short"
     Assert.False(actual)
+    
+let net40 = SinglePlatform (DotNetFramework FrameworkVersion.V4)
+    
+[<Test>]
+let ``superset behaves like I expect it to 1``() =
+    // see \src\Paket.Core\PaketConfigFiles\ProjectFile.fs:807
+    set [ net40 ]
+    |> Set.isSuperset KnownTargetProfiles.AllProfiles
+    |> Assert.True
+
+[<Test>]
+let ``superset behaves like I expect it to 2``() =
+    // see \src\Paket.Core\PaketConfigFiles\ProjectFile.fs:807
+    KnownTargetProfiles.AllProfiles
+    |> Set.isSuperset (set [ net40 ])
+    |> Assert.False
+    
+[<Test>]
+let ``superset behaves like I expect it to 3``() =
+    // see \src\Paket.Core\PaketConfigFiles\ProjectFile.fs:807
+    set [ net40 ]
+    |> Set.isSuperset (set [ net40 ])
+    |> Assert.True
+    
+[<Test>]
+let ``superset behaves like I expect it to 4``() =
+    // see \src\Paket.Core\PaketConfigFiles\ProjectFile.fs:807
+    KnownTargetProfiles.AllProfiles
+    |> Set.isSuperset KnownTargetProfiles.AllProfiles
+    |> Assert.True

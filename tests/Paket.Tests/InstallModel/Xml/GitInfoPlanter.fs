@@ -38,9 +38,9 @@ let ``should generate Xml for GitInfoPlanter2.0.0``() =
 
     ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 0
     ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 0
-    ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 0
-    ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 1
+    ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 1
+    ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 0
 
-    (ctx.GlobalTargetsNodes |> Seq.head).OuterXml
+    (ctx.FrameworkSpecificTargetsNodes |> Seq.head).OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedPropertyNodes)
