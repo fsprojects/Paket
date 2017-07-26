@@ -317,6 +317,7 @@
     <Compile Include="InstallModel\Xml\RefactoringEssentials.fs" />
     <Compile Include="InstallModel\Xml\Microsoft.CodeAnalysis.Analyzers.fs" />
     <Compile Include="InstallModel\Xml\System.Security.Cryptography.Algorithms.fs" />
+    <Compile Include="InstallModel\Xml\FrameworkSpecificFiles.fs" />
     <Compile Include="InstallModel\Penalty\PenaltySpecs.fs" />
     <Compile Include="InstallModel\Penalty\FrameworkConditionsSpecs.fs" />
     <Compile Include="InstallModel\AnalyzerSpecs.fs" />
