@@ -80,11 +80,11 @@ module DependencySetFilter =
             dependencies
             |> Set.filter (isIncluded restrictions)
 
-    let isPackageCompatible allowTrasisitivePrereleases (dependencies:DependencySet) (package:ResolvedPackage) : bool =
+    let isPackageCompatible allowTransisitivePrereleases (dependencies:DependencySet) (package:ResolvedPackage) : bool =
         dependencies
         // exists any non-matching stuff
         |> Seq.exists (fun (name, requirement, restriction) ->
-            if name = package.Name && not (requirement.IsInRange (package.Version, allowTrasisitivePrereleases)) then
+            if name = package.Name && not (requirement.IsInRange (package.Version, allowTransisitivePrereleases)) then
                 tracefn "   Incompatible dependency: %O %O conflicts with resolved version %O" name requirement package.Version
                 true
             else false
