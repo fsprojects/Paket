@@ -800,27 +800,23 @@ module ProjectFile =
                                  condition,createItemGroup libFolder.Targets rest libraries,false]
                         )
 
-        // global targets are targets, that are either directly in the /build folder,
-        // or, if there is a framework-restriction, specific to the framework(s).
+        // similar to assemblies, the best-matching directory should be taken.
+        // If there is only one directory, and it is applicable to all relevant frameworks, *and* there are no custom conditions, then the import can be simplified.
+        // Note that this simplification is required for some packages to work correctly, for example: https://github.com/fsprojects/Paket/issues/2227
         // (ref https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#including-msbuild-props-and-targets-in-a-package). 
-        let (globalTargets, frameworkSpecificTargets), (globalProps, frameworkSpecificProps) =
-            if not importTargets then ([],[]), ([],[]) else
-            let files = model.TargetsFileFolders |> List.collect (fun dir -> dir.FolderContents |> Seq.map (fun f -> dir, f) |> Seq.toList)
-            let props = files |> List.filter (fun (_,f) -> String.endsWithIgnoreCase ".props" f.Path)
-            let targets = files |> List.filter (fun (_,f) -> String.endsWithIgnoreCase ".targets" f.Path)
-
-            let partitionByGlobalAndFwSpecificAndGroup (files: ( _*MsBuildFile ) list) =
-                match files with
-                | [ (dir,file) ] when (set dir.Targets) |> Set.isSuperset allTargetProfiles ->                        
-                    [ { dir with FolderContents = set [ file ] } ], []
-                | _ ->
-                    let groupedFiles = files |> List.groupBy fst |> List.map (fun (dir,fs) -> { dir with FolderContents = fs |> Seq.map snd |> set } )
-                    [], groupedFiles
-            (partitionByGlobalAndFwSpecificAndGroup targets), (partitionByGlobalAndFwSpecificAndGroup props)
+        let globalTargets, frameworkSpecificTargets =
+            if not importTargets then [],[] else
+            let sortedFolders = model.TargetsFileFolders |> List.sortBy (fun dir -> dir.Path)
+            let applicableFolders = sortedFolders |> List.filter (fun dir -> dir.Targets |> Set.intersect allTargetProfiles |> Set.isEmpty |> not)
+            assert (applicableFolders = sortedFolders) // I think there is already a filtering done before - let's see if CI aggrees
+            if referenceCondition <> None then [], applicableFolders else
+            match applicableFolders with
+            | [ dir ] when (dir.Targets |> Set.isSuperset allTargetProfiles) -> [ dir ] , []
+            | _ -> [], applicableFolders
 
 
-        let frameworkSpecificImportFileConditions =
-            frameworkSpecificTargets @ frameworkSpecificProps
+        let frameworkSpecificTargetsFileConditions =
+            frameworkSpecificTargets
             |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition allTargets lib.Targets,createPropertyGroup (lib.FolderContents |> List.ofSeq))
 
         let chooseNodes =
@@ -865,8 +861,8 @@ module ProjectFile =
                 | false,true -> [chooseNode2]
                 | false,false -> [createNode "Choose" project]
 
-        let frameworkSpecificImportNames,frameworkSpecificImportChooseNode =
-            match frameworkSpecificImportFileConditions with
+        let frameworkSpecificPropertyNames,frameworkSpecificPropertyChooseNode =
+            match frameworkSpecificTargetsFileConditions with
             |  ["$(TargetFrameworkIdentifier) == 'true'",(propertyNames,propertyGroup)] ->
                 [propertyNames], createNode "Choose" project
             |  ["true",(propertyNames,propertyGroup)] ->
@@ -875,7 +871,7 @@ module ProjectFile =
                 let propertyChooseNode = createNode "Choose" project
 
                 let containsProperties = ref false
-                frameworkSpecificImportFileConditions
+                frameworkSpecificTargetsFileConditions
                 |> List.map (fun (condition,(propertyNames,propertyGroup)) ->
                     let finalCondition = if condition = "" || condition.Length > 3000 || condition = "$(TargetFrameworkIdentifier) == 'true'" then "1 == 1" else condition
                     let whenNode = 
@@ -887,19 +883,19 @@ module ProjectFile =
                     whenNode)
                 |> List.iter(fun node -> propertyChooseNode.AppendChild node |> ignore)
                 
-                (frameworkSpecificImportFileConditions |> List.map (fun (_,(propertyNames,_)) -> propertyNames)),
+                (frameworkSpecificTargetsFileConditions |> List.map (fun (_,(propertyNames,_)) -> propertyNames)),
                 (if !containsProperties then propertyChooseNode else createNode "Choose" project)
                 
 
         let frameworkSpecificPropsNodes = 
-            frameworkSpecificImportNames
+            frameworkSpecificPropertyNames
             |> Seq.concat
             |> Seq.distinctBy (fun (x,_,_) -> x)
             |> Seq.filter (fun (propertyName,path,buildPath) -> String.endsWithIgnoreCase "props" propertyName)
             |> Seq.map (fun (propertyName,path,buildPath) -> 
                 let fileName = 
                     match propertyName with
-                    | _ when frameworkSpecificImportChooseNode.ChildNodes.Count = 0 -> path
+                    | _ when frameworkSpecificPropertyChooseNode.ChildNodes.Count = 0 -> path
                     | name when String.endsWithIgnoreCase "props" name  -> sprintf "%s$(%s).props" buildPath propertyName 
                     | _ -> failwithf "Unknown .props filename %s" propertyName
 
@@ -910,14 +906,14 @@ module ProjectFile =
             |> Seq.toList
 
         let frameworkSpecificTargetsNodes = 
-            frameworkSpecificImportNames
+            frameworkSpecificPropertyNames
             |> Seq.concat
             |> Seq.distinctBy (fun (x,_,_) -> x)
             |> Seq.filter (fun (propertyName,path,buildPath) -> String.endsWithIgnoreCase "props" propertyName  |> not)
             |> Seq.map (fun (propertyName,path,buildPath) -> 
                 let fileName = 
                     match propertyName with
-                    | _ when frameworkSpecificImportChooseNode.ChildNodes.Count = 0 -> path
+                    | _ when frameworkSpecificPropertyChooseNode.ChildNodes.Count = 0 -> path
                     | name when String.endsWithIgnoreCase  "targets" name ->
                         sprintf "%s$(%s).targets" buildPath propertyName
                     | _ -> failwithf "Unknown .targets filename %s" propertyName
@@ -929,7 +925,7 @@ module ProjectFile =
             |> Seq.toList
         
         let globalPropsNodes =
-            globalProps
+            globalTargets
             |> Seq.collect (fun t -> t.FolderContents)
             |> Seq.map (fun t -> t.Path)
             |> Seq.distinct
@@ -963,7 +959,7 @@ module ProjectFile =
             FrameworkSpecificPropsNodes = frameworkSpecificPropsNodes
             FrameworkSpecificTargetsNodes = frameworkSpecificTargetsNodes
             ChooseNodes = chooseNodes
-            FrameworkSpecificPropertyChooseNode = frameworkSpecificImportChooseNode
+            FrameworkSpecificPropertyChooseNode = frameworkSpecificPropertyChooseNode
             AnalyzersNode = analyzersNode
         } : XmlContext
 
