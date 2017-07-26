@@ -9,6 +9,7 @@ System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
 open Fake.Core
 open Fake.Tools
 open Fake.DotNet
+open Fake.DotNet.Testing
 open Fake.DotNet.AssemblyInfoFile
 open Fake.Core.Globbing.Operators
 open Fake.IO.FileSystem.Operators
@@ -16,6 +17,7 @@ open Fake.IO.FileSystem
 open System
 open System.IO
 open System.Security.Cryptography
+open Fake.DotNet.Testing
 
 // --------------------------------------------------------------------------------------
 // START TODO: Provide project-specific details below
@@ -128,8 +130,19 @@ Target.Create "AssemblyInfo" (fun _ ->
     csProjs |> Seq.iter genCSAssemblyInfo
 )
 
+
+let Tooling_SDK_1_0_4 options =
+    { options with
+        Cli.InstallerOptions = (fun io ->
+            { io with
+                Branch = "release/2.0.0"
+            })
+        Cli.Channel = None
+        Cli.Version = Cli.Version "1.0.4"
+    }
+
 Target.Create "InstallDotNetCore" (fun _ ->
-    dotnetExePath <- DotNetCli.InstallDotNetSDK dotnetcliVersion
+    Cli.DotnetCliInstall Tooling_SDK_1_0_4
 )
 
 // --------------------------------------------------------------------------------------
@@ -142,27 +155,27 @@ Target.Create "Clean" (fun _ ->
     ++ "tests/**/bin"
     ++ buildDir 
     ++ tempDir
-    |> CleanDirs 
+    |> Shell.CleanDirs 
 )
 
 Target.Create "CleanDocs" (fun _ ->
-    CleanDirs ["docs/output"]
+    Shell.CleanDirs ["docs/output"]
 )
 
 // --------------------------------------------------------------------------------------
 // Build library & test project
 
 Target.Create "Build" (fun _ ->
-    if isMono then
+    if Environment.isMono then
         !! solutionFile
-        |> MSBuildReleaseExt "" [
+        |> MsBuild.MSBuildReleaseExt "" [
                 "VisualStudioVersion", "14.0"
                 "ToolsVersion"       , "14.0"
         ] "Rebuild"
         |> ignore
     else
         !! solutionFile
-        |> MSBuildReleaseExt "" [
+        |> MsBuild.MSBuildReleaseExt "" [
                 "VisualStudioVersion", "14.0"
                 "ToolsVersion"       , "14.0"
                 "SourceLinkCreate"   , "true"
@@ -176,52 +189,53 @@ let assertExitCodeZero x =
 
 let runCmdIn workDir exe = 
     Printf.ksprintf (fun args -> 
-        tracefn "%s %s" exe args
-        Shell.Exec(exe, args, workDir) |> assertExitCodeZero)
+        Trace.tracefn "%s %s" exe args
+        Process.Shell.Exec(exe, args, workDir) |> assertExitCodeZero)
 
 /// Execute a dotnet cli command
 let dotnet workDir = runCmdIn workDir "dotnet"
 
 Target.Create "DotnetRestoreTools" (fun _ ->
-    DotNetCli.Restore (fun c ->
-        { c with
-            Project = currentDirectory </> "tools" </> "tools.fsproj"
-            ToolPath = dotnetExePath 
-        })
+    Cli.DotnetRestore id (Shell.pwd() </> "tools" </> "tools.fsproj")
 )
 
 Target.Create "DotnetRestore" (fun _ ->
     netcoreFiles
     |> Seq.iter (fun proj ->
-        DotNetCli.Restore (fun c ->
-            { c with
-                Project = proj
-                ToolPath = dotnetExePath
-            })
+        Cli.DotnetRestore id proj
     )
 )
 
 Target.Create "DotnetBuild" (fun _ ->
-    netcoreFiles
-    |> Seq.iter (fun proj ->
-        DotNetCli.Build (fun c ->
-            { c with
-                Project = proj
-                ToolPath = dotnetExePath
-                AdditionalArgs = [ "/p:SourceLinkCreate=true" ]
-            })
-    )
+    ()
+    //netcoreFiles
+    //|> Seq.iter (fun proj ->
+    //    Cli.DotNet
+    //    DotNetCli.Build (fun c ->
+    //        { c with
+    //            Project = proj
+    //            ToolPath = dotnetExePath
+    //            AdditionalArgs = [ "/p:SourceLinkCreate=true" ]
+    //        })
+    //)
 )
 
 Target.Create "DotnetPackage" (fun _ ->
     netcoreFiles
     |> Seq.iter (fun proj ->
-        DotNetCli.Pack (fun c ->
-            { c with
-                Project = proj
-                ToolPath = dotnetExePath
-                AdditionalArgs = [(sprintf "-o %s" currentDirectory </> tempDir </> "dotnetcore"); (sprintf "/p:Version=%s" release.NugetVersion)]
-            })
+        Cli.DotnetPack (fun p ->
+            { p with
+                OutputPath = Some (Shell.pwd() </> tempDir </> "dotnetcore")
+                Common =
+                    { p.Common with
+                        CustomParams = Some (sprintf "/p:Version=%s /p:SourceLinkCreate=true" release.NugetVersion) }
+            }) proj
+        //DotNetCli.Pack (fun c ->
+        //    { c with
+        //        Project = proj
+        //        ToolPath = dotnetExePath
+        //        AdditionalArgs = [(sprintf "-o %s" currentDirectory </> tempDir </> "dotnetcore"); (sprintf "/p:Version=%s" release.NugetVersion)]
+        //    })
     )
 
     // Publish portable as well (see https://docs.microsoft.com/en-us/dotnet/articles/core/app-types)
@@ -241,7 +255,7 @@ Target.Create "DotnetPackage" (fun _ ->
 
 Target.Create "RunTests" (fun _ ->
     !! testAssemblies
-    |> NUnit3 (fun p ->
+    |> NUnit3.NUnit3 (fun p ->
         { p with
             ShadowCopy = false
             WorkingDir = "tests/Paket.Tests"
@@ -252,28 +266,27 @@ Target.Create "QuickTest" (fun _ ->
 
     [   "src/Paket.Core/Paket.Core.fsproj"
         "tests/Paket.Tests/Paket.Tests.fsproj"
-    ]   |> MSBuildRelease "" "Rebuild"
+    ]   |> MsBuild.MSBuildRelease "" "Rebuild"
         |> ignore
 
     !! testAssemblies
-    |> NUnit3 (fun p ->
+    |> NUnit3.NUnit3 (fun p ->
         { p with
             ShadowCopy = false
             WorkingDir = "tests/Paket.Tests"
             TimeOut = TimeSpan.FromMinutes 20. })
 )
-"Clean" ==> "QuickTest"
 
 Target.Create "QuickIntegrationTests" (fun _ ->
     [   "src/Paket.Core/Paket.Core.fsproj"
         "src/Paket/Paket.fsproj"
         "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
-    ]   |> MSBuildDebug "" "Rebuild"
+    ]   |> MsBuild.MSBuildDebug "" "Rebuild"
         |> ignore
     
     
     !! integrationTestAssemblies    
-    |> NUnit3 (fun p ->
+    |> NUnit3.NUnit3 (fun p ->
         { p with
             ShadowCopy = false
             Where = "cat==scriptgen"
@@ -288,18 +301,18 @@ Target.Create "QuickIntegrationTests" (fun _ ->
 let mergeLibs = ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "Argu.dll"; "Chessie.dll"; "Mono.Cecil.dll"]
 
 let mergePaketTool () =
-    CreateDir buildMergedDir
+    Directory.CreateDir buildMergedDir
 
     let paketFile = buildMergedDir @@ "paket.exe"
 
     let toPack =
         mergeLibs
         |> List.map (fun l -> buildDir @@ l)
-        |> separated " "
+        |> String.separated " "
 
     let result =
-        ExecProcess (fun info ->
-            info.FileName <- currentDirectory </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
+        Process.ExecProcess (fun info ->
+            info.FileName <- Shell.pwd() </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
             info.Arguments <- sprintf "/lib:%s /ver:%s /out:%s %s" buildDir release.AssemblyVersion paketFile toPack
             ) (TimeSpan.FromMinutes 5.)
 
@@ -320,7 +333,7 @@ Target.Create "RunIntegrationTests" (fun _ ->
     // improves the speed of the test-suite by disabling the runtime resolution.
     System.Environment.SetEnvironmentVariable("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
     !! integrationTestAssemblies    
-    |> NUnit3 (fun p ->
+    |> NUnit3.NUnit3 (fun p ->
         { p with
             ShadowCopy = false
             WorkingDir = "tests/Paket.Tests"
@@ -329,8 +342,8 @@ Target.Create "RunIntegrationTests" (fun _ ->
 
 Target.Create "SignAssemblies" (fun _ ->
     let pfx = "code-sign.pfx"
-    if not <| fileExists pfx then
-        traceImportant (sprintf "%s not found, skipped signing assemblies" pfx)
+    if not <| File.Exists pfx then
+        Trace.traceImportant (sprintf "%s not found, skipped signing assemblies" pfx)
     else
 
     let filesToSign = 
@@ -339,17 +352,17 @@ Target.Create "SignAssemblies" (fun _ ->
 
     filesToSign
         |> Seq.iter (fun executable ->
-            let signtool = currentDirectory @@ "tools" @@ "SignTool" @@ "signtool.exe"
+            let signtool = Shell.pwd() @@ "tools" @@ "SignTool" @@ "signtool.exe"
             let args = sprintf "sign /f %s /t http://timestamp.comodoca.com/authenticode %s" pfx executable
             let result =
-                ExecProcess (fun info ->
+                Process.ExecProcess (fun info ->
                     info.FileName <- signtool
                     info.Arguments <- args) System.TimeSpan.MaxValue
             if result <> 0 then failwithf "Error during signing %s with %s" executable pfx)
 )
 
 Target.Create "NuGet" (fun _ ->    
-    !! "integrationtests/**/paket.template" |> Seq.iter DeleteFile
+    !! "integrationtests/**/paket.template" |> Seq.iter File.DeleteFile
     
     let files = !! "src/**/*.preview*" |> Seq.toList
     for file in files do
@@ -359,7 +372,7 @@ Target.Create "NuGet" (fun _ ->
         { p with 
             ToolPath = "bin/merged/paket.exe" 
             Version = release.NugetVersion
-            ReleaseNotes = toLines release.Notes })
+            ReleaseNotes = String.toLines release.Notes })
 
     for file in files do
         File.Move(file + ".temp",file)
@@ -376,7 +389,7 @@ Target.Create "MergeDotnetCoreIntoNuget" (fun _ ->
 )
 
 Target.Create "PublishNuGet" (fun _ ->
-    if hasBuildParam "PublishBootstrapper" |> not then
+    if Environment.hasEnvironVar "PublishBootstrapper" |> not then
         !! (tempDir </> "*bootstrapper*")
         |> Seq.iter File.Delete
 
@@ -404,15 +417,15 @@ let fakeStartInfo fsiargs script workingDirectory args environmentVars =
             info.EnvironmentVariables.[k] <- v
         for (k, v) in environmentVars do
             setVar k v
-        setVar "MSBuild" msBuildExe
+        setVar "MSBuild" MsBuild.msBuildExe
         setVar "GIT" Git.CommandHelper.gitPath
-        setVar "FSI" fsiPath)
+        setVar "FSI" Fake.FSIHelper.fsiPath)
 
 
 /// Run the given startinfo by printing the output (live)
 let executeWithOutput configStartInfo =
     let exitCode =
-        ExecProcessWithLambdas
+        Process.ExecProcessWithLambdas
             configStartInfo
             TimeSpan.MaxValue false ignore ignore
     System.Threading.Thread.Sleep 1000
@@ -421,7 +434,7 @@ let executeWithOutput configStartInfo =
 /// Run the given startinfo by redirecting the output (live)
 let executeWithRedirect errorF messageF configStartInfo =
     let exitCode =
-        ExecProcessWithLambdas
+        Process.ExecProcessWithLambdas
             configStartInfo
             TimeSpan.MaxValue true errorF messageF
     System.Threading.Thread.Sleep 1000
@@ -429,15 +442,15 @@ let executeWithRedirect errorF messageF configStartInfo =
 
 /// Helper to fail when the exitcode is <> 0
 let executeHelper executer fail traceMsg failMessage configStartInfo =
-    trace traceMsg
+    Trace.trace traceMsg
     let exit = executer configStartInfo
     if exit <> 0 then
         if fail then
             failwith failMessage
         else
-            traceImportant failMessage
+            Trace.traceImportant failMessage
     else
-        traceImportant "Succeeded"
+        Trace.traceImportant "Succeeded"
     ()
 
 let execute = executeHelper executeWithOutput
@@ -459,7 +472,7 @@ let generateHelp' commands fail debug =
     // remove FSharp.Compiler.Service.MSBuild.v12.dll
     // otherwise FCS thinks  it should use msbuild, which leads to insanity
     !! "packages/**/FSharp.Compiler.Service.MSBuild.*.dll"
-    |> DeleteFiles
+    |> File.DeleteFiles
 
     let args =
         [ if not debug then yield "--define:RELEASE"
@@ -472,34 +485,34 @@ let generateHelp' commands fail debug =
       "generating documentation failed"
       (fakeStartInfo argLine "generate.fsx" "docs/tools" "" [])
 
-    CleanDir "docs/output/commands"
+    Shell.CleanDir "docs/output/commands"
 
 let generateHelp commands fail =
     generateHelp' commands fail false
 
 Target.Create "GenerateHelp" (fun _ ->
-    DeleteFile "docs/content/release-notes.md"
-    CopyFile "docs/content/" "RELEASE_NOTES.md"
-    Rename "docs/content/release-notes.md" "docs/content/RELEASE_NOTES.md"
+    File.DeleteFile "docs/content/release-notes.md"
+    Shell.CopyFile "docs/content/" "RELEASE_NOTES.md"
+    Shell.Rename "docs/content/release-notes.md" "docs/content/RELEASE_NOTES.md"
 
-    DeleteFile "docs/content/license.md"
-    CopyFile "docs/content/" "LICENSE.txt"
-    Rename "docs/content/license.md" "docs/content/LICENSE.txt"
+    File.DeleteFile "docs/content/license.md"
+    Shell.CopyFile "docs/content/" "LICENSE.txt"
+    Shell.Rename "docs/content/license.md" "docs/content/LICENSE.txt"
 
-    CopyFile buildDir "packages/FSharp.Core/lib/net40/FSharp.Core.sigdata"
-    CopyFile buildDir "packages/FSharp.Core/lib/net40/FSharp.Core.optdata"
+    Shell.CopyFile buildDir "packages/FSharp.Core/lib/net40/FSharp.Core.sigdata"
+    Shell.CopyFile buildDir "packages/FSharp.Core/lib/net40/FSharp.Core.optdata"
 
     generateHelp true true
 )
 
 Target.Create "GenerateHelpDebug" (fun _ ->
-    DeleteFile "docs/content/release-notes.md"
-    CopyFile "docs/content/" "RELEASE_NOTES.md"
-    Rename "docs/content/release-notes.md" "docs/content/RELEASE_NOTES.md"
+    File.DeleteFile "docs/content/release-notes.md"
+    Shell.CopyFile "docs/content/" "RELEASE_NOTES.md"
+    Shell.Rename "docs/content/release-notes.md" "docs/content/RELEASE_NOTES.md"
 
-    DeleteFile "docs/content/license.md"
-    CopyFile "docs/content/" "LICENSE.txt"
-    Rename "docs/content/license.md" "docs/content/LICENSE.txt"
+    File.DeleteFile "docs/content/license.md"
+    Shell.CopyFile "docs/content/" "LICENSE.txt"
+    Shell.Rename "docs/content/license.md" "docs/content/LICENSE.txt"
 
     generateHelp' true true true
 )
@@ -584,6 +597,7 @@ Target.Create "All" ignore
 
 open Fake.Core.TargetOperators
 
+"Clean" ==> "QuickTest"
 "Clean" ==> "QuickIntegrationTests" 
 "Clean" ==> "Build" ==> "RunIntegrationTests" 
 
