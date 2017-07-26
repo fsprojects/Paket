@@ -59,3 +59,39 @@ let ``https://github.com/fsprojects/Paket/issues/2392``() =
     (ctx.FrameworkSpecificPropsNodes |> Seq.head).OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedPropertyNodes)
+
+
+[<Test>]
+let ``https://github.com/fsprojects/Paket/issues/2347``() =
+    
+    let files = [ @"..\FrameworkSpecificFiles\build\FrameworkSpecificFiles.props" ]
+
+    let expectedPropertyDefinitionNodes = """<?xml version="1.0" encoding="utf-16"?>
+<Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <When Condition="'$(DEBUG)' == 'True'">
+    <PropertyGroup>
+      <__paket__FrameworkSpecificFiles_props>FrameworkSpecificFiles</__paket__FrameworkSpecificFiles_props>
+    </PropertyGroup>
+  </When>
+</Choose>"""
+
+    let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
+<Import Project="..\..\..\FrameworkSpecificFiles\build\$(__paket__FrameworkSpecificFiles_props).props" Condition="Exists('..\..\..\FrameworkSpecificFiles\build\$(__paket__FrameworkSpecificFiles_props).props')" Label="Paket" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+
+    ensureDir()
+    let model = modelFromFiles files
+
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,None,true,KnownTargetProfiles.AllProfiles,Some "DEBUG")
+
+    ctx.FrameworkSpecificPropertyChooseNode.OuterXml
+    |> normalizeXml
+    |> shouldEqual (normalizeXml expectedPropertyDefinitionNodes)
+
+    ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 1
+    ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 0
+    ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 0
+    ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 0
+
+    (ctx.FrameworkSpecificPropsNodes |> Seq.head).OuterXml
+    |> normalizeXml
+    |> shouldEqual (normalizeXml expectedPropertyNodes)
