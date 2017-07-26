@@ -224,6 +224,7 @@ let createPackageRequirement sources (packageName, versionRange, restrictions) d
        Parent = PackageRequirementSource.DependenciesFile dependenciesFileName
        Sources = sources
        IsCliTool = false
+       TransitivePrereleases = false
        Graph = Set.empty }
 
 let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =

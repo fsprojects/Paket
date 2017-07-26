@@ -235,6 +235,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                           Graph = Set.empty
                           Sources = group.Sources
                           IsCliTool = false
+                          TransitivePrereleases = v.PreReleases <> PreReleaseStatus.No
                           Settings = group.Options.Settings })
                 |> Seq.toList
 
@@ -283,6 +284,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                               Graph = Set.empty
                               Sources = group.Sources
                               IsCliTool = false
+                              TransitivePrereleases = versionReq.PreReleases <> PreReleaseStatus.No
                               Settings = group.Options.Settings })
                         |> Seq.toList
 
@@ -310,6 +312,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                               Graph = Set.empty
                               Sources = group.Sources
                               IsCliTool = false
+                              TransitivePrereleases = true
                               Settings =
                                 match oldDepsInfo with
                                 | Some d -> d.Settings

@@ -97,6 +97,7 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
                  Graph = Set.empty
                  Sources = sources
                  IsCliTool = false
+                 TransitivePrereleases = false
                  Settings = InstallSettings.Default
                  ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max 
                  ResolverStrategyForTransitives = Some ResolverStrategy.Max })

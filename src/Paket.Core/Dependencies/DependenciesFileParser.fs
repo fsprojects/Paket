@@ -416,6 +416,7 @@ module DependenciesFileParser =
           Graph = Set.empty
           Sources = sources
           Settings = InstallSettings.Parse(optionsText).AdjustWithSpecialCases packageName
+          TransitivePrereleases = versionRequirement.PreReleases <> PreReleaseStatus.No
           VersionRequirement = versionRequirement 
           IsCliTool = isCliTool } 
 
