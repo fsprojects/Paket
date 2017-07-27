@@ -56,6 +56,13 @@ type ResolvedPackage = {
 
 type PackageResolution = Map<PackageName, ResolvedPackage>
 
+type ResolverStep = {
+    Relax: bool
+    FilteredVersions : Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>
+    CurrentResolution : Map<PackageName,ResolvedPackage>;
+    ClosedRequirements : Set<PackageRequirement>
+    OpenRequirements : Set<PackageRequirement> }
+
 module DependencySetFilter =
     let isIncluded (restriction:FrameworkRestriction) (dependency:PackageName * VersionRequirement * FrameworkRestrictions) =
         let _,_,dependencyRestrictions = dependency
@@ -80,15 +87,19 @@ module DependencySetFilter =
             dependencies
             |> Set.filter (isIncluded restrictions)
 
-    let isPackageCompatible allowTransisitivePrereleases (dependencies:DependencySet) (package:ResolvedPackage) : bool =
+    let isPackageCompatible (currentStep:ResolverStep) (dependencies:DependencySet) (package:ResolvedPackage) : bool =
         dependencies
         // exists any non-matching stuff
+        |> Seq.filter (fun (name, _, _) -> name = package.Name)
         |> Seq.exists (fun (name, requirement, restriction) ->
-            if name = package.Name && not (requirement.IsInRange (package.Version, allowTransisitivePrereleases)) then
+            let allowTransitivePreleases = 
+                (currentStep.ClosedRequirements |> Set.exists (fun r -> r.TransitivePrereleases && r.Name = name)) ||
+                (currentStep.OpenRequirements |> Set.exists (fun r -> r.TransitivePrereleases && r.Name = name))
+
+            if not (requirement.IsInRange (package.Version, allowTransitivePreleases)) then
                 tracefn "   Incompatible dependency: %O %O conflicts with resolved version %O" name requirement package.Version
                 true
-            else false
-            )
+            else false)
         |> not // then we are not compatible
 
 
@@ -101,12 +112,7 @@ let cleanupNames (model : PackageResolution) : PackageResolution =
                 |> Set.map (fun (name, v, d) -> model.[name].Name, v, d) })
 
 
-type ResolverStep = {
-    Relax: bool
-    FilteredVersions : Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>
-    CurrentResolution : Map<PackageName,ResolvedPackage>;
-    ClosedRequirements : Set<PackageRequirement>
-    OpenRequirements : Set<PackageRequirement> }
+
 
 type ConflictInfo =
   { ResolveStep    : ResolverStep
@@ -1170,7 +1176,6 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                             tracefn "     %O %O was unlisted" exploredPackage.Name exploredPackage.Version
                         step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags 
                     else
-                        
                         // It might be that this version is already not possible because of our current set.
                         // Example: We took A with version 1.0.0 (in our current resolution), but this version depends on A > 1.0.0
                         let canTakePackage =
@@ -1179,7 +1184,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                             |> Seq.map snd
                             // Ignore packages which have "OverrideAll", otherwise == will not work anymore.
                             |> Seq.filter (fun resolved -> lockedPackages.Contains resolved.Name |> not)
-                            |> Seq.forall (DependencySetFilter.isPackageCompatible currentRequirement.TransitivePrereleases exploredPackage.Dependencies)
+                            |> Seq.forall (DependencySetFilter.isPackageCompatible currentStep exploredPackage.Dependencies)
 
                         if canTakePackage then
                             let nextStep =
