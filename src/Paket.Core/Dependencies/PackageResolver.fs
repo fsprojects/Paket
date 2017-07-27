@@ -525,13 +525,21 @@ let private getCompatibleVersions
         let compatibleVersions, globalOverride =
             if currentRequirement.VersionRequirement.Range.IsGlobalOverride then
                 compatibleVersions, true
-            elif Seq.isEmpty compatibleVersions && currentRequirement.TransitivePrereleases then
+            elif Seq.isEmpty compatibleVersions && currentRequirement.TransitivePrereleases && not (currentRequirement.Parent.IsRootRequirement()) then
                 Seq.filter (isInRange (fun r -> r.IncludingPrereleases(PreReleaseStatus.All))) availableVersions |> Seq.cache, globalOverride
             elif Seq.isEmpty compatibleVersions then
+
+                let prereleaseStatus (r:PackageRequirement) =
+                    if r.Parent.IsRootRequirement() && r.VersionRequirement <> VersionRequirement.AllReleases then
+                        r.VersionRequirement.PreReleases
+                    else
+                        PreReleaseStatus.All
+
                 let available = availableVersions |> Seq.toList
                 let allPrereleases = available |> List.filter (fun (v,_) -> v.PreRelease <> None) = available
+                let prereleases = List.filter (isInRange (fun r -> r.IncludingPrereleases(prereleaseStatus r))) available
                 if allPrereleases then
-                    Seq.ofList available, globalOverride
+                    Seq.ofList prereleases, globalOverride
                 else
                     compatibleVersions, globalOverride
             else
