@@ -143,7 +143,7 @@ nuget PackageC
 let ``should prefer stable when possible``() =
     let graph =
       OfSimpleGraph [
-        "packageA","1.1-alpha",["packageB", VersionRequirement(VersionRange.AtLeast("1.1-alpha1"),PreReleaseStatus.All)]
+        "packageA","1.1-alpha",["packageB", VersionRequirement(VersionRange.AtLeast("1.1-alpha"),PreReleaseStatus.All)]
         "packageB","1.0",[]
         "packageB","1.1-alpha",[]
         "packageB","1.1",[]
@@ -164,3 +164,78 @@ nuget PackageC
     // Stable is prefered
     getVersion resolved.[PackageName "packageB"] |> shouldEqual "1.1"
     getVersion resolved.[PackageName "packageC"] |> shouldEqual "1.0"
+
+[<Test>]
+let ``should prefer stable when possible (2)``() =
+    let graph =
+      OfSimpleGraph [
+        "packageA","1.1-alpha",
+            ["packageB", VersionRequirement(VersionRange.AtLeast("1.1-alpha"),PreReleaseStatus.All)
+             "packageC", VersionRequirement(VersionRange.Between("1.0", "2.0"),PreReleaseStatus.No)]
+        "packageB","1.0",[]
+        "packageB","1.1-alpha",[]
+        "packageB","1.1",[]
+        "packageB","1.2-alpha",[]
+        "packageC","1.0",["packageB", VersionRequirement(VersionRange.Between("1.0", "2.0"),PreReleaseStatus.No)]
+        "packageC","1.1-alpha",["packageB", VersionRequirement(VersionRange.Between("1.0", "2.0"),PreReleaseStatus.No)]
+      ]
+
+    let config = """
+source "https://www.nuget.org/api/v2"
+
+nuget PackageA prerelease
+"""
+    let cfg = DependenciesFile.FromSource(config)
+    let resolved = ResolveWithGraph(cfg,noSha1, VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    getVersion resolved.[PackageName "packageA"] |> shouldEqual "1.1-alpha"
+    // Stable is prefered
+    getVersion resolved.[PackageName "packageB"] |> shouldEqual "1.1"
+    getVersion resolved.[PackageName "packageC"] |> shouldEqual "1.0"
+
+
+[<Test>]
+let ``should take alpha if stable is not a valid resolution``() =
+    let graph =
+      OfSimpleGraph [
+        "packageA","1.1-alpha",["packageB", VersionRequirement(VersionRange.AtLeast("1.1-alpha"),PreReleaseStatus.All)]
+        "packageB","1.0",[]
+        "packageB","1.1-alpha",["packageC", VersionRequirement(VersionRange.Between("1.0", "2.0"),PreReleaseStatus.All)]
+        "packageB","1.1",["packageC", VersionRequirement(VersionRange.Between("1.1", "2.0"),PreReleaseStatus.No)]
+        "packageC","1.0",[]
+      ]
+
+    let config = """
+source "https://www.nuget.org/api/v2"
+
+nuget PackageA prerelease
+"""
+    let cfg = DependenciesFile.FromSource(config)
+    let resolved = ResolveWithGraph(cfg,noSha1, VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    getVersion resolved.[PackageName "packageA"] |> shouldEqual "1.1-alpha"
+    // we need to take the alpha
+    getVersion resolved.[PackageName "packageB"] |> shouldEqual "1.1-alpha"
+    getVersion resolved.[PackageName "packageC"] |> shouldEqual "1.0"
+
+[<Test>]
+let ``should fail resolution when only prerelease is available in transitives``() =
+    let graph =
+      OfSimpleGraph [
+        "packageA","1.1-alpha",["packageB", VersionRequirement(VersionRange.AtLeast("1.1-alpha"),PreReleaseStatus.All)]
+        "packageB","1.0",[]
+        "packageB","1.1",["packageC", VersionRequirement(VersionRange.Between("1.1", "2.0"),PreReleaseStatus.No)]
+        "packageC","1.1-alpha",[]
+      ]
+
+    let config = """
+source "https://www.nuget.org/api/v2"
+
+nuget PackageA prerelease
+"""
+    let cfg = DependenciesFile.FromSource(config)
+    try
+        ResolveWithGraph(cfg,noSha1, VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+        |> ignore
+        Assert.Fail ("Expected resolution to fail")
+    with
+    | :? NUnit.Framework.AssertionException -> reraise()
+    | :? System.AggregateException as agg -> ()
