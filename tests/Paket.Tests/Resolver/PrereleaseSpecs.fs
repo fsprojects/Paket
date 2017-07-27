@@ -223,6 +223,7 @@ let ``should fail resolution when only prerelease is available in transitives``(
         "packageA","1.1-alpha",["packageB", VersionRequirement(VersionRange.AtLeast("1.1-alpha"),PreReleaseStatus.All)]
         "packageB","1.0",[]
         "packageB","1.1",["packageC", VersionRequirement(VersionRange.Between("1.1", "2.0"),PreReleaseStatus.No)]
+        "packageC","1.0",[]
         "packageC","1.1-alpha",[]
       ]
 
@@ -233,9 +234,8 @@ nuget PackageA prerelease
 """
     let cfg = DependenciesFile.FromSource(config)
     try
-        ResolveWithGraph(cfg,noSha1, VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
-        |> ignore
-        Assert.Fail ("Expected resolution to fail")
+        let resolved = ResolveWithGraph(cfg,noSha1, VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()        
+        Assert.Fail (sprintf "Expected resolution to fail but got %A" resolved)
     with
     | :? NUnit.Framework.AssertionException -> reraise()
     | :? System.AggregateException as agg -> ()
