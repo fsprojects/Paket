@@ -310,7 +310,7 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
             VersionRequirement = v
             Parent = Package(dependency.Name, versionToExplore, exploredPackage.Source)
             Graph = Set.add dependency dependency.Graph
-            TransitivePrereleases = dependency.TransitivePrereleases && v.PreReleases <> PreReleaseStatus.No
+            TransitivePrereleases = dependency.TransitivePrereleases && exploredPackage.Version.PreReleases <> PreReleaseStatus.No
             Settings = { dependency.Settings with FrameworkRestrictions = newRestrictions } })
     |> Set.filter (fun d ->
         resolverStep.ClosedRequirements
