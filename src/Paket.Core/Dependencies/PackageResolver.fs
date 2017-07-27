@@ -532,10 +532,10 @@ let private getCompatibleVersions
                 Seq.filter (isInRange (fun r -> r.IncludingPrereleases(PreReleaseStatus.All))) availableVersions |> Seq.cache, globalOverride
             elif Seq.isEmpty compatibleVersions then
                 let prereleaseStatus (r:PackageRequirement) =
-                    match r.Parent with
-                    | DependenciesFile _  when r.VersionRequirement <> VersionRequirement.AllReleases ->
+                    if r.Parent.IsRootRequirement() && r.VersionRequirement <> VersionRequirement.AllReleases then
                         r.VersionRequirement.PreReleases
-                    | _ -> PreReleaseStatus.All
+                    else
+                        PreReleaseStatus.All
 
                 let available = availableVersions |> Seq.toList
                 let prereleases = List.filter (isInRange (fun r -> r.IncludingPrereleases(prereleaseStatus r))) available
