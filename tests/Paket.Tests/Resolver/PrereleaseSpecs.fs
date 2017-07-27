@@ -263,22 +263,23 @@ nuget PackageA prerelease
     getVersion resolved.[PackageName "packageB"] |> shouldEqual "1.0"
 
 [<Test>]
-let ``should not change other packages resolution``() =
+let ``should not depend on resolution order``() =
     let graph =
       OfSimpleGraph [
-        "packageA","1.0",["packageB", VersionRequirement(VersionRange.AtLeast("1.0"),PreReleaseStatus.No)]
-        "packageA","1.1-alpha",["packageB", VersionRequirement(VersionRange.AtLeast("1.1-alpha"),PreReleaseStatus.All)]
+        "packageD","1.0",["packageB", VersionRequirement(VersionRange.AtLeast("1.0"),PreReleaseStatus.No)]
+        "packageD","1.1-alpha",["packageB", VersionRequirement(VersionRange.AtLeast("1.1-alpha"),PreReleaseStatus.All)]
         "packageB","1.0",[]
         "packageB","1.1",["packageC", VersionRequirement(VersionRange.Between("1.1", "2.0"),PreReleaseStatus.No)]
         "packageC","1.1-alpha",[]
-        "packageD","1.0",["packageB", VersionRequirement(VersionRange.AtLeast("1.0"),PreReleaseStatus.No)]
+        "packageA","1.0",["packageB", VersionRequirement(VersionRange.AtLeast("1.0"),PreReleaseStatus.No)]
       ]
 
     let config = """
 source "https://www.nuget.org/api/v2"
 
-nuget PackageA prerelease
-nuget PackageD
+nuget PackageA
+nuget PackageB
+nuget PackageD prerelease
 """
     let cfg = DependenciesFile.FromSource(config)
     let resolved = ResolveWithGraph(cfg,noSha1, VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
