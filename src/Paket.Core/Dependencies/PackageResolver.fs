@@ -515,33 +515,23 @@ let private getCompatibleVersions
         let availableVersions =
             match currentRequirement.VersionRequirement.Range with
             | OverrideAll v -> getSingleVersion v
-            | Specific v -> getSingleVersion v
+            | Specific v -> getSingleVersion v 
             | _ ->
                 let resolverStrategy = getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives allRequirementsOfCurrentPackage currentRequirement
                 getVersionsF currentRequirement.Sources resolverStrategy groupName currentRequirement.Name
                 
         let compatibleVersions = Seq.filter (isInRange id) availableVersions |> Seq.cache
-        let transitivePreleasesAllowed() = 
-            (currentStep.ClosedRequirements |> Set.exists (fun r2 -> r2.TransitivePrereleases && r2.Name = currentRequirement.Name)) ||
-            (currentStep.OpenRequirements |> Set.exists (fun r2 -> r2.TransitivePrereleases && r2.Name = currentRequirement.Name))
 
         let compatibleVersions, globalOverride =
             if currentRequirement.VersionRequirement.Range.IsGlobalOverride then
                 compatibleVersions, true
-            elif Seq.isEmpty compatibleVersions && transitivePreleasesAllowed() then
+            elif Seq.isEmpty compatibleVersions && currentRequirement.TransitivePrereleases then
                 Seq.filter (isInRange (fun r -> r.IncludingPrereleases(PreReleaseStatus.All))) availableVersions |> Seq.cache, globalOverride
             elif Seq.isEmpty compatibleVersions then
-                let prereleaseStatus (r:PackageRequirement) =
-                    if r.Parent.IsRootRequirement() && r.VersionRequirement <> VersionRequirement.AllReleases then
-                        r.VersionRequirement.PreReleases
-                    else
-                        PreReleaseStatus.All
-
                 let available = availableVersions |> Seq.toList
-                let prereleases = List.filter (isInRange (fun r -> r.IncludingPrereleases(prereleaseStatus r))) available
-                let allPrereleases = prereleases |> List.filter (fun (v,_) -> v.PreRelease <> None) = prereleases
+                let allPrereleases = available |> List.filter (fun (v,_) -> v.PreRelease <> None) = available
                 if allPrereleases then
-                    Seq.ofList prereleases, globalOverride
+                    Seq.ofList available, globalOverride
                 else
                     compatibleVersions, globalOverride
             else
@@ -641,7 +631,7 @@ let private boostConflicts
                     (stackpack:StackPack)
                     (conflictState:ConflictState) =
     let conflictStatus = conflictState.Status
-    let isNewConflict  =
+    let isNewConflict =
         match stackpack.ConflictHistory.TryGetValue currentRequirement.Name with
         | true,count ->
             stackpack.ConflictHistory.[currentRequirement.Name] <- count + 1

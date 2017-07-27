@@ -249,6 +249,7 @@ let ``should not take prerelease when they have no resolution``() =
         "packageB","1.0",[]
         "packageB","1.1",["packageC", VersionRequirement(VersionRange.Between("1.1", "2.0"),PreReleaseStatus.No)]
         "packageC","1.1-alpha",[]
+        "packageC","1.0",[]
       ]
 
     let config = """
