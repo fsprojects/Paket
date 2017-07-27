@@ -310,7 +310,7 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
             VersionRequirement = v
             Parent = Package(dependency.Name, versionToExplore, exploredPackage.Source)
             Graph = Set.add dependency dependency.Graph
-            TransitivePrereleases = dependency.TransitivePrereleases && v.PreReleases <> PreReleaseStatus.No
+            TransitivePrereleases = dependency.TransitivePrereleases && exploredPackage.Version.PreRelease.IsSome
             Settings = { dependency.Settings with FrameworkRestrictions = newRestrictions } })
     |> Set.filter (fun d ->
         resolverStep.ClosedRequirements
@@ -526,10 +526,21 @@ let private getCompatibleVersions
                 compatibleVersions, true
             elif Seq.isEmpty compatibleVersions then
                 let prereleaseStatus (r:PackageRequirement) =
-                    if r.Parent.IsRootRequirement() && r.VersionRequirement <> VersionRequirement.AllReleases then
+                    match r.Parent with
+                    | DependenciesFile _  when r.VersionRequirement <> VersionRequirement.AllReleases ->
                         r.VersionRequirement.PreReleases
-                    else
-                        PreReleaseStatus.All
+                    | Package (_,v,_) ->
+                        match v.PreRelease with
+                        | Some _ -> PreReleaseStatus.All
+                        | _ -> 
+                            let allowTransitivePreleases = 
+                                (currentStep.ClosedRequirements |> Set.exists (fun r2 -> r2.TransitivePrereleases && r2.Name = r.Name)) ||
+                                (currentStep.OpenRequirements |> Set.exists (fun r2 -> r2.TransitivePrereleases && r2.Name = r.Name))
+                            if allowTransitivePreleases then
+                                PreReleaseStatus.All
+                            else
+                                r.VersionRequirement.PreReleases
+                    | _ -> PreReleaseStatus.All
 
                 let available = availableVersions |> Seq.toList
                 let prereleases = List.filter (isInRange (fun r -> r.IncludingPrereleases(prereleaseStatus r))) available
