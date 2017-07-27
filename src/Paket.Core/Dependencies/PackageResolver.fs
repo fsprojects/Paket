@@ -519,27 +519,22 @@ let private getCompatibleVersions
             | _ ->
                 let resolverStrategy = getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives allRequirementsOfCurrentPackage currentRequirement
                 getVersionsF currentRequirement.Sources resolverStrategy groupName currentRequirement.Name
+                
+        let compatibleVersions = Seq.filter (isInRange id) availableVersions |> Seq.cache
+        let transitivePreleasesAllowed() = 
+            (currentStep.ClosedRequirements |> Set.exists (fun r2 -> r2.TransitivePrereleases && r2.Name = currentRequirement.Name)) ||
+            (currentStep.OpenRequirements |> Set.exists (fun r2 -> r2.TransitivePrereleases && r2.Name = currentRequirement.Name))
 
-        let compatibleVersions = Seq.filter (isInRange id) (availableVersions) |> Seq.cache
         let compatibleVersions, globalOverride =
             if currentRequirement.VersionRequirement.Range.IsGlobalOverride then
                 compatibleVersions, true
+            elif Seq.isEmpty compatibleVersions && transitivePreleasesAllowed() then
+                Seq.filter (isInRange (fun r -> r.IncludingPrereleases(PreReleaseStatus.All))) availableVersions |> Seq.cache, globalOverride
             elif Seq.isEmpty compatibleVersions then
                 let prereleaseStatus (r:PackageRequirement) =
                     match r.Parent with
                     | DependenciesFile _  when r.VersionRequirement <> VersionRequirement.AllReleases ->
                         r.VersionRequirement.PreReleases
-                    | Package (_,v,_) ->
-                        match v.PreRelease with
-                        | Some _ -> PreReleaseStatus.All
-                        | _ -> 
-                            let allowTransitivePreleases = 
-                                (currentStep.ClosedRequirements |> Set.exists (fun r2 -> r2.TransitivePrereleases && r2.Name = r.Name)) ||
-                                (currentStep.OpenRequirements |> Set.exists (fun r2 -> r2.TransitivePrereleases && r2.Name = r.Name))
-                            if allowTransitivePreleases then
-                                PreReleaseStatus.All
-                            else
-                                r.VersionRequirement.PreReleases
                     | _ -> PreReleaseStatus.All
 
                 let available = availableVersions |> Seq.toList
