@@ -118,7 +118,7 @@ nuget PackageA prerelease
 let ``should resolve prerelease when required``() =
     let graph =
       OfSimpleGraph [
-        "packageA","1.1-alpha",["packageB", VersionRequirement(VersionRange.AtLeast("1.1-alpha1"),PreReleaseStatus.All)]
+        "packageA","1.1-alpha",["packageB", VersionRequirement(VersionRange.AtLeast("1.1-alpha"),PreReleaseStatus.All)]
         "packageB","1.0",[]
         "packageB","1.1-alpha",[]
         "packageC","1.0",["packageB", VersionRequirement(VersionRange.Between("1.0", "2.0"),PreReleaseStatus.No)]
