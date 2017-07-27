@@ -161,12 +161,8 @@ nuget My.Company.PackageC.Server rc"""
 [<Test>]
 let ``should resolve simple config with servers with RC requirement``() = 
     let cfg = DependenciesFile.FromSource(configWithServersWithRCRequirement)
-    try
-        ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServers, PackageDetailsFromGraph graphWithServers).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
-        |> ignore
-        failwith "expected exception"
-    with
-    | exn when exn.Message.Contains " package My.Company.PackageA.Server" -> ()
+    ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServers, PackageDetailsFromGraph graphWithServers).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    |> ignore
 
 let configWithServersWithVersionRequirement = """
 source https://www.nuget.org/api/v2
@@ -180,13 +176,9 @@ nuget My.Company.PackageC.Server > 0.1"""
 [<Test>]
 let ``should resolve simple config with servers with version requirement``() = 
     let cfg = DependenciesFile.FromSource(configWithServersWithVersionRequirement)
-    try
-        ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServers, PackageDetailsFromGraph graphWithServers).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
-        |> ignore
-        failwith "expected exception"
-    with
-    | exn when exn.Message.Contains " package My.Company.PackageA.Server" -> ()
-
+    ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServers, PackageDetailsFromGraph graphWithServers).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    |> ignore
+    
 
 let configWithServersWithoutVersionRequirement = """
 source https://www.nuget.org/api/v2
