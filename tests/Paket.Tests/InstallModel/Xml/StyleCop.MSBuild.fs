@@ -33,10 +33,10 @@ let ``should generate Xml for StyleCop.MSBuild``() =
         
 
     ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 0
-    ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 1
+    ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 0
     ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 0
-    ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 0
+    ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 1
 
-    (ctx.FrameworkSpecificTargetsNodes |> Seq.head).OuterXml
+    (ctx.GlobalTargetsNodes |> Seq.head).OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedPropertyNodes)

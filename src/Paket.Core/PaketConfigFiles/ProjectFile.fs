@@ -122,6 +122,7 @@ module LanguageEvaluation =
         | ".csproj" -> Some CSharp
         | ".vbproj" -> Some VisualBasic
         | ".fsproj" -> Some FSharp
+        | ".fsprojtest" -> Some FSharp // used during unit-testing
         | ".vcxproj" -> Some CPP
         | ".wixproj" -> Some WiX
         | ".nproj"  -> Some Nemerle
@@ -676,6 +677,17 @@ module ProjectFile =
     }
 
     let generateXml (model:InstallModel) (usedFrameworkLibs:HashSet<TargetProfile*string>) (aliases:Map<string,string>) (copyLocal:bool option) (specificVersion:bool option) (importTargets:bool) (referenceCondition:string option) (allTargetProfiles:Set<TargetProfile>) (project:ProjectFile) : XmlContext =
+
+        // HACK! This should be done somewhere else!
+        let allTargetProfiles =
+            match project.Language with
+            | CSharp | FSharp | VisualBasic | Nemerle ->
+                // we are a strong managed language and don't care about no natives!
+                allTargetProfiles |> Set.filter (function
+                    | SinglePlatform (Native _) -> false
+                    | _ -> true)
+            | WiX | CPP | Unknown -> allTargetProfiles
+
         let references = 
             getCustomReferenceAndFrameworkNodes project
             |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
@@ -811,7 +823,13 @@ module ProjectFile =
             assert (applicableFolders = sortedFolders) // I think there is already a filtering done before - let's see if CI aggrees
             if referenceCondition <> None then [], applicableFolders else
             match applicableFolders with
-            | [ dir ] when (Set.isSuperset dir.Targets allTargetProfiles) -> [ dir ] , []
+            | [ dir ] ->
+                let missing = allTargetProfiles - dir.Targets
+                if missing |> Set.isEmpty then
+                    [ dir ] , []
+                else
+                    System.Diagnostics.Debug.WriteLine <| sprintf "%A" missing
+                    [], applicableFolders
             | _ -> [], applicableFolders
 
 

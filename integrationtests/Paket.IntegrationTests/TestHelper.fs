@@ -22,9 +22,9 @@ let cleanup scenario =
     CleanDir scenarioPath
 
 let cleanupAllScenarios() =
-    for scenario in scenarios do
+    for scenario in scenarios.ToArray() do
+        scenarios.Remove(scenario) |> ignore
         cleanup scenario
-    scenarios.Clear()
 
 let prepare scenario =
     if isLiveUnitTesting then Assert.Inconclusive("Integration tests are disabled when in a Live-Unit-Session")
