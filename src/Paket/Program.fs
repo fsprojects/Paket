@@ -304,7 +304,7 @@ let outdated (results : ParseResults<_>) =
         (results.TryGetResult<@ OutdatedArgs.Group @>,
          results.TryGetResult<@ OutdatedArgs.Group_Legacy @>)
         |> legacyOption results "--group" "group"
-    Dependencies.Locate().ShowOutdated(strict, includePrereleases, group)
+    Dependencies.Locate().ShowOutdated(strict, false, includePrereleases, group)
 
 let remove (results : ParseResults<_>) =
     let packageName =
@@ -594,7 +594,7 @@ let findPackageVersions (results : ParseResults<_>) =
                    results.TryGetResult <@ FindPackageVersionsArgs.Source_Legacy @>)
                   |> legacyOption results "--source" "source"
         discoverPackageSources arg dependencies
-        
+
     let root =
         match dependencies with
         | Some d ->
