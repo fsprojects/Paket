@@ -1,3 +1,6 @@
+#### 5.81.3 - 28.07.2017
+* BUGFIX: Fixed edge case with endsWithIgnoreCase - https://github.com/fsprojects/Paket/pull/2562
+
 #### 5.81.2 - 26.07.2017
 * BUGFIX: Fixed push for large packages - https://github.com/fsprojects/Paket/pull/2555
 
