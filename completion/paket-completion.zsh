@@ -707,6 +707,7 @@ _paket-outdated() {
   args=(
     $global_options
     "${(f)$(_paket_group_option 'specify dependency group (default: all groups)')}"
+    '(-f --force)'{-f,--force}'[force download and reinstallation of all dependencies]'
     '(--ignore-constraints)'--ignore-constraints'[ignore version constraints in the paket.dependencies file]'
     '(--pre --include-prereleases)'{--pre,--include-prereleases}'[consider prerelease versions as updates]'
   )

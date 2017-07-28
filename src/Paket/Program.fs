@@ -298,13 +298,14 @@ let install (results : ParseResults<_>) =
         alternativeProjectRoot)
 
 let outdated (results : ParseResults<_>) =
+    let force = results.Contains <@ OutdatedArgs.Force @>
     let strict = results.Contains <@ OutdatedArgs.Ignore_Constraints @> |> not
     let includePrereleases = results.Contains <@ OutdatedArgs.Include_Prereleases @>
     let group =
         (results.TryGetResult<@ OutdatedArgs.Group @>,
          results.TryGetResult<@ OutdatedArgs.Group_Legacy @>)
         |> legacyOption results "--group" "group"
-    Dependencies.Locate().ShowOutdated(strict, false, includePrereleases, group)
+    Dependencies.Locate().ShowOutdated(strict, force, includePrereleases, group)
 
 let remove (results : ParseResults<_>) =
     let packageName =
