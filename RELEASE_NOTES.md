@@ -1,3 +1,6 @@
+#### 5.83.0-rc1 - 28.07.2017
+* Paket allows to resolve prereleases in a transitive way - https://github.com/fsprojects/Paket/pull/2559
+
 #### 5.82.0 - 28.07.2017
 * The outdated command now allows to pass the -f flag
 * BUGFIX: Fixed exception when paket outdated runs on a repo with a http zip dependency - https://github.com/fsprojects/Paket/pull/2565
