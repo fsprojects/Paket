@@ -72,11 +72,13 @@
 <span class="l">11: </span>
 <span class="l">12: </span>
 <span class="l">13: </span>
+<span class="l">14: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket outdated [--help] [--ignore-constraints] [--group &lt;name&gt;] [--include-prereleases]
+<td class="snippet"><pre class="fssnip"><code lang="sh">paket outdated [--help] [--force] [--ignore-constraints] [--group &lt;name&gt;] [--include-prereleases]
 
 OPTIONS:
 
+    --force, -f           force download and reinstallation of all dependencies
     --ignore-constraints  ignore version constraints in the paket.dependencies file
     --group, -g &lt;name&gt;    specify dependency group (default: all groups)
     --include-prereleases, --pre
