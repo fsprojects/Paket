@@ -1159,7 +1159,7 @@ GROUP Build
 CONTENT: NONE
 NUGET
   remote: https://www.nuget.org/api/v2
-    FAKE (4.62.5)
+    FAKE (5.0.0-alpha013)
     FSharp.Compiler.Service (12.0.8)
       FSharp.Core (>= 4.1.17) - restriction: >= netstandard1.6
       Microsoft.DiaSymReader (>= 1.1) - restriction: >= netstandard1.6
@@ -1869,7 +1869,7 @@ NUGET
       FSharp.Compiler.Service (>= 12.0.5 < 13.0)
 GITHUB
   remote: fsharp/FAKE
-    modules/Octokit/Octokit.fsx (9b496581e49c116cff9911570df871eb0258ac83)
+    modules/Octokit/Octokit.fsx (cff217f46cede961087c33de02e7b77227553749)
       Octokit (>= 0.20)
 GROUP Test
 CONTENT: NONE

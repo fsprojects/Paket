@@ -90,4 +90,3 @@ let ``should resolve prerelease config2 but no prerelease for transitive deps``(
     getVersion resolved.[PackageName "packageA"] |> shouldEqual "1.0.11250"
     getVersion resolved.[PackageName "packageB"] |> shouldEqual "1.0.11204-custom"
     getVersion resolved.[PackageName "packageC"] |> shouldEqual "1.0.1"
-    
