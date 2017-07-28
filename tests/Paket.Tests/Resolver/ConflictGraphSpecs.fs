@@ -33,6 +33,7 @@ let defaultPackage =
       VersionRequirement = VersionRequirement(VersionRange.Exactly "1.0", PreReleaseStatus.No)
       Settings = InstallSettings.Default
       IsCliTool = false
+      TransitivePrereleases = false
       ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max 
       ResolverStrategyForTransitives = Some ResolverStrategy.Max }
 

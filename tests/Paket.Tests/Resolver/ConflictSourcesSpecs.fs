@@ -25,6 +25,7 @@ let ``should resolve source files with correct sha``() =
         ResolverStrategyForTransitives = Some ResolverStrategy.Max
         Graph = Set.empty
         Sources = []
+        TransitivePrereleases = false
         Parent = Requirements.PackageRequirementSource.DependenciesFile ""
         Settings = InstallSettings.Default
         IsCliTool = false
