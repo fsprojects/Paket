@@ -1,10 +1,8 @@
-#### 5.81.3 - 28.07.2017
+#### 5.82.0 - 28.07.2017
+* The outdated command now allows to pass the -f flag
+* BUGFIX: Fixed exception when paket outdated runs on a repo with a http zip dependency - https://github.com/fsprojects/Paket/pull/2565
 * BUGFIX: Fixed edge case with endsWithIgnoreCase - https://github.com/fsprojects/Paket/pull/2562
-
-#### 5.81.2 - 26.07.2017
 * BUGFIX: Fixed push for large packages - https://github.com/fsprojects/Paket/pull/2555
-
-#### 5.81.1 - 21.07.2017
 * BUGFIX: Fixed generate-load-scripts case sensitivity - https://github.com/fsprojects/Paket/issues/2547
 
 #### 5.81.0 - 21.07.2017
