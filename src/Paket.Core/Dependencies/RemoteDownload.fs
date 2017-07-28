@@ -268,6 +268,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         let authentication = auth remoteFile.AuthKey url
         match Path.GetExtension(destination).ToLowerInvariant() with
         | ".zip" ->
+            CleanDir targetFolder.FullName
             do! downloadFromUrl(authentication, url) destination
             ZipFile.ExtractToDirectory(destination, targetFolder.FullName)
         | _ -> do! downloadFromUrl(authentication, url) destination

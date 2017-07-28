@@ -25,9 +25,8 @@ let private adjustVersionRequirements strict includingPrereleases (dependenciesF
     DependenciesFile(dependenciesFile.FileName, groups, dependenciesFile.Lines)
 
 /// Finds all outdated packages.
-let FindOutdated strict includingPrereleases groupNameFilter environment = trial {
+let FindOutdated strict force includingPrereleases groupNameFilter environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
-    let force = true
 
     let dependenciesFile =
         environment.DependenciesFile
@@ -83,7 +82,7 @@ let private printOutdated changed =
                 tracefn "    * %O %O -> %O" packageName oldVersion newVersion
 
 /// Prints all outdated packages.
-let ShowOutdated strict includingPrereleases groupName environment = trial {
-    let! allOutdated = FindOutdated strict includingPrereleases groupName environment
+let ShowOutdated strict force includingPrereleases groupName environment = trial {
+    let! allOutdated = FindOutdated strict force includingPrereleases groupName environment
     printOutdated allOutdated
 }

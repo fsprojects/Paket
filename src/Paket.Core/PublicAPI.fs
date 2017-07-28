@@ -338,16 +338,24 @@ type Dependencies(dependenciesFileName: string) =
                 |> Array.choose (fun (p:ProjectFile) -> p.FindReferencesFile())
             if Array.isEmpty referencesFiles then
                 traceWarnfn "No paket.references files found for which packages could be installed."
-            else 
+            else
                 this.Restore(force, group, Array.toList referencesFiles, touchAffectedRefs, ignoreChecks,  failOnFailedChecks, targetFramework)
 
     /// Lists outdated packages.
-    member this.ShowOutdated(strict: bool,includePrereleases: bool, groupName: string Option): unit =
-        FindOutdated.ShowOutdated strict includePrereleases groupName |> this.Process
+    [<Obsolete("Use ShowOutdated with the force parameter set to true to get the old behavior")>]
+    member this.ShowOutdated(strict: bool, includePrereleases: bool, groupName: string Option): unit =
+        this.ShowOutdated(strict, true, includePrereleases, groupName)
+
+    member this.ShowOutdated(strict: bool, force: bool, includePrereleases: bool, groupName: string Option): unit =
+        FindOutdated.ShowOutdated strict force includePrereleases groupName |> this.Process
 
     /// Finds all outdated packages.
-    member this.FindOutdated(strict: bool,includePrereleases: bool, groupName: string Option): (string * string * SemVerInfo) list =
-        FindOutdated.FindOutdated strict includePrereleases groupName
+    [<Obsolete("Use FindOutdated with the force parameter set to true to get the old behavior")>]
+    member this.FindOutdated(strict: bool, includePrereleases: bool, groupName: string Option): (string * string * SemVerInfo) list =
+        this.FindOutdated(strict, true, includePrereleases, groupName)
+
+    member this.FindOutdated(strict: bool, force: bool, includePrereleases: bool, groupName: string Option): (string * string * SemVerInfo) list =
+        FindOutdated.FindOutdated strict force includePrereleases groupName
         |> this.Process
         |> List.map (fun (g, p,_,newVersion) -> g.ToString(),p.ToString(),newVersion)
 
