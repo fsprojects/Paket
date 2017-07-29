@@ -123,7 +123,7 @@ module AsyncExtensions =
     static member StartAsTaskProperCancel (computation : Async<_>, ?taskCreationOptions, ?cancellationToken:CancellationToken) : Task<_> =
         let token = defaultArg cancellationToken Async.DefaultCancellationToken
         let taskCreationOptions = defaultArg taskCreationOptions TaskCreationOptions.None
-        let tcs = new TaskCompletionSource<_>(taskCreationOptions)
+        let tcs = new TaskCompletionSource<_>("StartAsTaskProperCancel", taskCreationOptions)
 
         let a =
             async {

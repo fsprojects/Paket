@@ -748,7 +748,7 @@ module ResolverRequestQueue =
 
     let Create() = { DynamicQueue = new ResizeArray<RequestWork>(); Lock = new obj(); WaitingWorker = new ResizeArray<_>() }
     let addWork prio (f: CancellationToken -> Task<'a>) (q:ResolverRequestQueue) =
-        let tcs = new TaskCompletionSource<_>()
+        let tcs = new TaskCompletionSource<_>("WorkTask")
         let work =
             { StartWork = (fun tok ->
                 // When someone is actually starting the work we need to ensure we finish it...
@@ -787,7 +787,7 @@ module ResolverRequestQueue =
         let linked = new CancellationTokenSource()
         async {
             use _reg = ct.Register(fun () ->
-                linked.CancelAfter(1000))
+                linked.CancelAfter(500))
             while not ct.IsCancellationRequested do
                 let! work = q.GetWork(ct) |> Async.AwaitTask
                 match work with
@@ -889,12 +889,12 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                 let (waitedAlready, isFinished) = mem.Wait(taskTimeout)
                 // When debugger is attached we just wait forever when calling .Result later ...
                 // apparently the task didn't return, let's throw here
-                if not isFinished && not Debugger.IsAttached then
+                if not isFinished (*&& not Debugger.IsAttached*) then
                     if waitedAlready then
-                        raise <| new TimeoutException(sprintf "Tried (again) to access an unfinished task, not waiting %d seconds this time..." (taskTimeout / 1000))
+                        raise <| TimeoutException(sprintf "Tried (again) to access an unfinished task, not waiting %d seconds this time..." (taskTimeout / 1000))
                     else
                         raise <|
-                            new TimeoutException(
+                            TimeoutException(
                                 (sprintf "Waited %d seconds for a request to finish.\n" (taskTimeout / 1000)) +
                                 "      Check the following sources, they might be rate limiting and stopped responding:\n" +
                                 "       - " + System.String.Join("\n       - ", sources |> Seq.map (fun s -> s.Url))
