@@ -1,5 +1,7 @@
-#### 5.83.0-rc1 - 28.07.2017
+#### 5.83.0 - 28.07.2017
 * Paket allows to resolve prereleases in a transitive way - https://github.com/fsprojects/Paket/pull/2559
+* BUGFIX: Fixed download of multiple HTTP resources - https://github.com/fsprojects/Paket/issues/2566
+* Update to FSharp.COre 4.2.2
 
 #### 5.82.0 - 28.07.2017
 * The outdated command now allows to pass the -f flag
