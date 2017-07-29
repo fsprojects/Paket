@@ -363,7 +363,10 @@ let ``cancellation WorkerQueue``() =
 
     let mutable exceptionThrown = true
     try
-        getAndReport mem
+        try
+            getAndReport mem
+            Assert.Fail "Expected Timeout Exception"
+        with :? TimeoutException -> ()
         exceptionThrown <- false
     finally
         cts.Cancel()
