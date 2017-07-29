@@ -1,4 +1,4 @@
-#### 5.83.0 - 28.07.2017
+#### 5.83.1 - 29.07.2017
 * Paket allows to resolve prereleases in a transitive way - https://github.com/fsprojects/Paket/pull/2559
 * BUGFIX: Fixed download of multiple HTTP resources - https://github.com/fsprojects/Paket/issues/2566
 * Update to FSharp.COre 4.2.2
