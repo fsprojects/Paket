@@ -87,21 +87,17 @@ module DependencySetFilter =
             dependencies
             |> Set.filter (isIncluded restrictions)
 
-    let isPackageCompatible (currentStep:ResolverStep) (dependencies:DependencySet) (package:ResolvedPackage) : bool =
+    let findFirstIncompatibility (currentStep:ResolverStep) (dependencies:DependencySet) (package:ResolvedPackage) =
         dependencies
         // exists any non-matching stuff
         |> Seq.filter (fun (name, _, _) -> name = package.Name)
-        |> Seq.exists (fun (name, requirement, restriction) ->
+        |> Seq.filter (fun (name, requirement, restriction) ->
             let allowTransitivePreleases = 
                 (currentStep.ClosedRequirements |> Set.exists (fun r -> r.TransitivePrereleases && r.Name = name)) ||
                 (currentStep.OpenRequirements |> Set.exists (fun r -> r.TransitivePrereleases && r.Name = name))
 
-            if not (requirement.IsInRange (package.Version, allowTransitivePreleases)) then
-                tracefn "   Incompatible dependency: %O %O conflicts with resolved version %O" name requirement package.Version
-                true
-            else false)
-        |> not // then we are not compatible
-
+            not (requirement.IsInRange (package.Version, allowTransitivePreleases)))
+        |> Seq.tryHead
 
 let cleanupNames (model : PackageResolution) : PackageResolution =
     model
@@ -110,8 +106,6 @@ let cleanupNames (model : PackageResolution) : PackageResolution =
             Dependencies =
                 package.Dependencies
                 |> Set.map (fun (name, v, d) -> model.[name].Name, v, d) })
-
-
 
 
 type ConflictInfo =
@@ -148,7 +142,7 @@ module ResolutionRaw =
             |> Set.add lastPackageRequirement
             |> Set.filter (fun x -> x.Name = lastPackageRequirement.Name)
 
-    let buildConflictReport (errorReport:StringBuilder)  (conflicts:PackageRequirement Set) =
+    let buildConflictReport (errorReport:StringBuilder) (conflicts:PackageRequirement Set) =
         let formatVR (vr:VersionRequirement) =
             vr.ToString ()
             |> fun s -> if String.IsNullOrWhiteSpace s then ">= 0" else s
@@ -1157,7 +1151,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
 
                 match getExploredPackage packageConfig getPackageDetailsBlock stackpack with
                 | stackpack, Result.Error err ->
-                    step (Inner((currentConflict.AddError err.SourceException,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions  flags
+                    step (Inner((currentConflict.AddError err.SourceException,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags
 
                 | stackpack, Result.Ok(alreadyExplored,exploredPackage) ->
                     let hasUnlisted = exploredPackage.Unlisted || flags.HasUnlisted
@@ -1183,13 +1177,17 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                     else
                         // It might be that this version is already not possible because of our current set.
                         // Example: We took A with version 1.0.0 (in our current resolution), but this version depends on A > 1.0.0
-                        let canTakePackage =
+                        let conflictingResolvedPackages =
                             currentStep.CurrentResolution
                             |> Map.toSeq
                             |> Seq.map snd
                             // Ignore packages which have "OverrideAll", otherwise == will not work anymore.
                             |> Seq.filter (fun resolved -> lockedPackages.Contains resolved.Name |> not)
-                            |> Seq.forall (DependencySetFilter.isPackageCompatible currentStep exploredPackage.Dependencies)
+                            |> Seq.choose (fun r -> 
+                                DependencySetFilter.findFirstIncompatibility currentStep exploredPackage.Dependencies r
+                                |> Option.map (fun incompat -> r,incompat))
+
+                        let canTakePackage = conflictingResolvedPackages |> Seq.isEmpty
 
                         if canTakePackage then
                             let nextStep =
@@ -1205,6 +1203,21 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                                                 Environment.NewLine currentRequirement Environment.NewLine nextStep.OpenRequirements
                             step (Step((currentConflict,nextStep,currentRequirement), (currentConflict,currentStep,currentRequirement,compatibleVersions,flags)::priorConflictSteps)) stackpack currentConflict.VersionsToExplore flags
                         else
+                            let getVersionsF =
+                                getVersionsBlock currentRequirement.Sources ResolverStrategy.Max groupName
+                            let conflictingPackage,(_,vr,_) = conflictingResolvedPackages |> Seq.head
+                            let currentConflict =    
+                                { currentConflict with
+                                    Status = ResolutionRaw.ConflictRaw {
+                                        ResolveStep = currentStep
+                                        RequirementSet = Set.empty
+                                        Requirement = 
+                                            { currentRequirement with 
+                                                  Name = conflictingPackage.Name
+                                                  VersionRequirement = vr
+                                                  Parent = Package(currentRequirement.Name,exploredPackage.Version,exploredPackage.Source)  }
+                                        GetPackageVersions = getVersionsF }}
+
                             step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags
 
     let startingStep = {
