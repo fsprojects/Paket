@@ -1,4 +1,5 @@
-#### 5.83.2 - 30.07.2017
+#### 5.84.0 - 30.07.2017
+* Better error reporting for conflicts that appear late in resolution
 * Protecting Paket.Restore.targets against changes in dotnet template - https://github.com/fsprojects/Paket/pull/2569
 
 #### 5.83.1 - 29.07.2017
