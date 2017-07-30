@@ -1,4 +1,6 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Prevent dotnet template engine to parse this file -->
+  <!--/-:cnd:noEmit-->
   <PropertyGroup>
     <!-- Mark that this target file has been loaded.  -->
     <IsPaketRestoreTargetsFileLoaded>true</IsPaketRestoreTargetsFileLoaded>
@@ -174,5 +176,5 @@
               NuspecBasePath="$(NuspecBasePath)"
               NuspecProperties="$(NuspecProperties)"/>
   </Target>
-
+  <!--/+:cnd:noEmit-->
 </Project>
