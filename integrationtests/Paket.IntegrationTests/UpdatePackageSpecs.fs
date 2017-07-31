@@ -154,9 +154,7 @@ let ``#2572 should tell about late resolver issue``() =
         update "i002572-pinned-error" |> ignore
         failwith "error expected"
     with
-    | exn when exn.Message.Contains("Unable to retrieve package versions for 'Argu'") -> 
-        exn.Message.Contains "Request to 'https://www.myget.org/F/paket-test/api/v3/index.json' failed with: 'Unauthorized'"
-            |> shouldEqual true
+    | exn when exn.Message.Contains("xunit.core 2.3.0-beta3-build3705 requested package xunit.extensibility.core: 2.3.0-beta3-build3705") ->
         ()
 
 
