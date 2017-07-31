@@ -149,9 +149,9 @@ let ``#1635 should tell about auth issue``() =
 
 
 [<Test>]
-let ``#2571 should tell about late resolver issue``() =
+let ``#2572 should tell about late resolver issue``() =
     try
-        update "i002571-pinned-error" |> ignore
+        update "i002572-pinned-error" |> ignore
         failwith "error expected"
     with
     | exn when exn.Message.Contains("Unable to retrieve package versions for 'Argu'") -> 

@@ -32,7 +32,7 @@
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
     <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\temp\test</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i002571-pinned-error\before</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
