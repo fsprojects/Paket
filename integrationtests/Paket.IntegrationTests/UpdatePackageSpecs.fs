@@ -148,6 +148,18 @@ let ``#1635 should tell about auth issue``() =
         ()
 
 
+[<Test>]
+let ``#2571 should tell about late resolver issue``() =
+    try
+        update "i002571-pinned-error" |> ignore
+        failwith "error expected"
+    with
+    | exn when exn.Message.Contains("Unable to retrieve package versions for 'Argu'") -> 
+        exn.Message.Contains "Request to 'https://www.myget.org/F/paket-test/api/v3/index.json' failed with: 'Unauthorized'"
+            |> shouldEqual true
+        ()
+
+
 #if INTERACTIVE
 ;;
 let scenario = "i001579-unlisted"
