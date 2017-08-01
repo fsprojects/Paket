@@ -253,6 +253,21 @@ let CreateScriptsForGroups dependenciesFile lockFile (groups:Map<GroupName,LockF
         LoadingScripts.ScriptGeneration.constructScriptsFromData depsCache groupsToGenerate [] []
         |> Seq.iter (fun sd -> sd.Save dir)
 
+let FindOrCreateReferencesFile projectFileName =
+    let projectFile = ProjectFile.LoadFromFile projectFileName
+    match projectFile.FindReferencesFile() with
+    | Some fileName -> 
+        try
+            ReferencesFile.FromFile fileName
+        with e ->
+            failwith ((ReferencesFileParseError (FileInfo fileName,e)).ToString())
+    | None ->
+        let fileName = 
+            let fi = FileInfo(projectFile.FileName)
+            Path.Combine(fi.Directory.FullName,Constants.ReferencesFile)
+
+        ReferencesFile.New fileName
+        
 let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
@@ -299,25 +314,11 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
     let referencesFileNames =
         match projectFile with
-        | Some projectFile ->
-            let projectFile = ProjectFile.LoadFromFile projectFile
-            let referencesFile =
-                match projectFile.FindReferencesFile() with
-                | Some fileName -> 
-                    try
-                        ReferencesFile.FromFile fileName
-                    with e ->
-                        failwith ((ReferencesFileParseError (FileInfo fileName,e)).ToString())
-                | None ->
-                    let fileName = 
-                        let fi = FileInfo(projectFile.FileName)
-                        Path.Combine(fi.Directory.FullName,Constants.ReferencesFile)
-
-                    ReferencesFile.New fileName
-
+        | Some projectFileName ->
+            let referencesFile = FindOrCreateReferencesFile projectFileName
             let list = System.Collections.Generic.List<_>()
             let cliTools = System.Collections.Generic.List<_>()
-            let fi = FileInfo projectFile.FileName
+            let fi = FileInfo referencesFile.FileName
             let newFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".references"))            
             let alternativeConfigFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".NuGet.Config"))
 
@@ -365,7 +366,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                             kv.Key.ToString()
                         
                         list.Add line
-                
+
             let output = String.Join(Environment.NewLine,list)
             if output = "" then
                 if File.Exists(newFileName.FullName) then
