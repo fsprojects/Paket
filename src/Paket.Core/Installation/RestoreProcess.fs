@@ -11,7 +11,7 @@ open System
 open Chessie.ErrorHandling
 open System.Reflection
 
-// Find packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
+/// Finds packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
 let FindPackagesNotExtractedYet(dependenciesFileName) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let lockFile = LockFile.LoadFrom(lockFileName.FullName)
@@ -429,6 +429,3 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
         LoadingScripts.ScriptGeneration.constructScriptsFromData depsCache groupsToGenerate [] []
         |> Seq.iter (fun sd -> sd.Save dir)
-    
-    if targetFrameworks <> None then
-        GarbageCollection.CleanUp(root, dependenciesFile, lockFile)
