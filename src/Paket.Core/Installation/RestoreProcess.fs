@@ -238,6 +238,21 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
             if verbose then
                 tracefn " - %s already up-to-date" fileInfo.FullName
 
+let CreateScriptsForGroups dependenciesFile lockFile (groups:Map<GroupName,LockFileGroup>) =
+    let groupsToGenerate =
+        groups
+        |> Seq.map (fun kvp -> kvp.Value)
+        |> Seq.filter (fun g -> g.Options.Settings.GenerateLoadScripts = Some true)
+        |> Seq.map (fun g -> g.Name)
+        |> Seq.toList
+
+    if not (List.isEmpty groupsToGenerate) then
+        let depsCache = DependencyCache(dependenciesFile,lockFile)
+        let dir = DirectoryInfo dependenciesFile.Directory
+
+        LoadingScripts.ScriptGeneration.constructScriptsFromData depsCache groupsToGenerate [] []
+        |> Seq.iter (fun sd -> sd.Save dir)
+
 let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
@@ -415,17 +430,4 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             |> Async.RunSynchronously
             |> ignore
 
-
-    let groupsToGenerate =
-        groups
-        |> Seq.map (fun kvp -> kvp.Value)
-        |> Seq.filter (fun g -> g.Options.Settings.GenerateLoadScripts = Some true)
-        |> Seq.map (fun g -> g.Name)
-        |> Seq.toList
-
-    if not (List.isEmpty groupsToGenerate) then
-        let depsCache = DependencyCache(dependenciesFile,lockFile)
-        let dir = DirectoryInfo dependenciesFile.Directory
-
-        LoadingScripts.ScriptGeneration.constructScriptsFromData depsCache groupsToGenerate [] []
-        |> Seq.iter (fun sd -> sd.Save dir)
+    CreateScriptsForGroups dependenciesFile lockFile groups
