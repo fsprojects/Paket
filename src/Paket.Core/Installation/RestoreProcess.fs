@@ -179,6 +179,9 @@ let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches,
 
 let createAlternativeNuGetConfig (projectFile:FileInfo) =
     let alternativeConfigFileInfo = FileInfo(Path.Combine(projectFile.Directory.FullName,"obj",projectFile.Name + ".NuGet.Config"))
+    if not alternativeConfigFileInfo.Directory.Exists then
+        alternativeConfigFileInfo.Directory.Create()
+    
     let config = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <packageSources>
@@ -238,6 +241,72 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
         else
             if verbose then
                 tracefn " - %s already up-to-date" fileInfo.FullName
+
+let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:LockFile) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,ResolvedPackage>>) targetFilter (groups:Map<GroupName,LockFileGroup>) =
+    let list = System.Collections.Generic.List<_>()
+    let cliTools = System.Collections.Generic.List<_>()
+    let fi = FileInfo referencesFile.FileName
+    for kv in groups do
+        let hull,cliToolsInGroup = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
+        cliTools.AddRange cliToolsInGroup
+
+        let depsGroup =
+            match dependenciesFile.Groups |> Map.tryFind kv.Key with
+            | Some group -> group
+            | None -> failwithf "Dependencies file '%s' does not contain group '%O' but it is used in '%s'" dependenciesFile.FileName kv.Key lockFile.FileName
+
+        let allDirectPackages =
+            match referencesFile.Groups |> Map.tryFind kv.Key with
+            | Some g -> g.NugetPackages |> List.map (fun p -> p.Name) |> Set.ofList
+            | None -> Set.empty
+        
+
+        for (key,_,_) in hull do
+            let restore =
+                match targetFilter with
+                | None -> true
+                | Some targets ->
+                    let resolvedPackage = resolved.Force().[key]
+
+                    match resolvedPackage.Settings.FrameworkRestrictions with
+                    | Requirements.ExplicitRestriction restrictions ->
+                        targets
+                        |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target))
+                    | _ -> true
+                    
+            if restore then
+                let _,packageName = key
+                let direct = allDirectPackages.Contains packageName
+                let package = resolved.Force().[key]
+                let line =
+                    packageName.ToString() + "," + 
+                    package.Version.ToString() + "," + 
+                    (if direct then "Direct" else "Transitive") + "," +
+                    kv.Key.ToString()
+                
+                list.Add line
+
+    let output = String.Join(Environment.NewLine,list)
+    let newFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".references"))
+    if not newFileName.Directory.Exists then
+        newFileName.Directory.Create()
+    if output = "" then
+        if File.Exists(newFileName.FullName) then
+            File.Delete(newFileName.FullName)
+
+    elif not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
+        File.WriteAllText(newFileName.FullName,output)                
+        tracefn " - %s created" newFileName.FullName
+    else
+        if verbose then
+            tracefn " - %s already up-to-date" newFileName.FullName
+
+
+    let paketCLIToolsFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".paket.clitools"))
+    createPaketCLIToolsFile cliTools paketCLIToolsFileName
+    
+    let paketPropsFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".paket.props"))
+    createPaketPropsFile cliTools paketPropsFileName
 
 let CreateScriptsForGroups dependenciesFile lockFile (groups:Map<GroupName,LockFileGroup>) =
     let groupsToGenerate =
@@ -317,73 +386,10 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         match projectFile with
         | Some projectFileName ->
             let referencesFile = FindOrCreateReferencesFile projectFileName
-            let list = System.Collections.Generic.List<_>()
-            let cliTools = System.Collections.Generic.List<_>()
             let fi = FileInfo referencesFile.FileName
-            let newFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".references"))            
 
-            if not newFileName.Directory.Exists then
-                newFileName.Directory.Create()
-            
             createAlternativeNuGetConfig fi
-            
-            for kv in groups do
-                let hull,cliToolsInGroup = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
-                cliTools.AddRange cliToolsInGroup
-
-                let depsGroup =
-                    match dependenciesFile.Groups |> Map.tryFind kv.Key with
-                    | Some group -> group
-                    | None -> failwithf "Dependencies file '%s' does not contain group '%O' but it is used in '%s'" dependenciesFile.FileName kv.Key lockFile.FileName
-
-                let allDirectPackages =
-                    match referencesFile.Groups |> Map.tryFind kv.Key with
-                    | Some g -> g.NugetPackages |> List.map (fun p -> p.Name) |> Set.ofList
-                    | None -> Set.empty
-                
-
-                for (key,_,_) in hull do
-                    let restore =
-                        match targetFilter with
-                        | None -> true
-                        | Some targets ->
-                            let resolvedPackage = resolved.Force().[key]
-
-                            match resolvedPackage.Settings.FrameworkRestrictions with
-                            | Requirements.ExplicitRestriction restrictions ->
-                                targets
-                                |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target))
-                            | _ -> true
-                            
-                    if restore then
-                        let _,packageName = key
-                        let direct = allDirectPackages.Contains packageName
-                        let package = resolved.Force().[key]
-                        let line =
-                            packageName.ToString() + "," + 
-                            package.Version.ToString() + "," + 
-                            (if direct then "Direct" else "Transitive") + "," +
-                            kv.Key.ToString()
-                        
-                        list.Add line
-
-            let output = String.Join(Environment.NewLine,list)
-            if output = "" then
-                if File.Exists(newFileName.FullName) then
-                    File.Delete(newFileName.FullName)
-
-            elif not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
-                File.WriteAllText(newFileName.FullName,output)                
-                tracefn " - %s created" newFileName.FullName
-            else
-                if verbose then
-                    tracefn " - %s already up-to-date" newFileName.FullName
-
-            let paketCLIToolsFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".paket.clitools"))
-            createPaketCLIToolsFile cliTools paketCLIToolsFileName
-            
-            let paketPropsFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".paket.props"))
-            createPaketPropsFile cliTools paketPropsFileName
+            createProjectReferencesFiles dependenciesFile lockFile referencesFile resolved targetFilter groups
 
             [referencesFile.FileName]
         | None -> referencesFileNames
