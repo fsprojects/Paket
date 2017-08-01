@@ -177,7 +177,8 @@ let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches,
         return (groupName,package.Name), (package,model)
     }
 
-let createAlternativeNuGetConfig (alternativeConfigFileInfo:FileInfo) =
+let createAlternativeNuGetConfig (projectFile:FileInfo) =
+    let alternativeConfigFileInfo = FileInfo(Path.Combine(projectFile.Directory.FullName,"obj",projectFile.Name + ".NuGet.Config"))
     let config = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <packageSources>
@@ -320,12 +321,11 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             let cliTools = System.Collections.Generic.List<_>()
             let fi = FileInfo referencesFile.FileName
             let newFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".references"))            
-            let alternativeConfigFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".NuGet.Config"))
 
             if not newFileName.Directory.Exists then
                 newFileName.Directory.Create()
             
-            createAlternativeNuGetConfig alternativeConfigFileName
+            createAlternativeNuGetConfig fi
             
             for kv in groups do
                 let hull,cliToolsInGroup = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
