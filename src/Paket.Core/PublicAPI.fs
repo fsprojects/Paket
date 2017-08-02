@@ -17,8 +17,6 @@ type Dependencies(dependenciesFileName: string) =
                 let groupName,packageName = kv.Key
                 groupName.ToString(),packageName.ToString(),kv.Value.Version.ToString())
         |> Seq.toList
-        
-
 
     /// Clears the NuGet cache
     static member ClearCache() =

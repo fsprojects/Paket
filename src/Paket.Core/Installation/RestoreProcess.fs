@@ -11,7 +11,7 @@ open System
 open Chessie.ErrorHandling
 open System.Reflection
 
-// Find packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
+/// Finds packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
 let FindPackagesNotExtractedYet(dependenciesFileName) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let lockFile = LockFile.LoadFrom(lockFileName.FullName)
@@ -177,7 +177,11 @@ let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches,
         return (groupName,package.Name), (package,model)
     }
 
-let createAlternativeNuGetConfig (alternativeConfigFileInfo:FileInfo) =
+let createAlternativeNuGetConfig (projectFile:FileInfo) =
+    let alternativeConfigFileInfo = FileInfo(Path.Combine(projectFile.Directory.FullName,"obj",projectFile.Name + ".NuGet.Config"))
+    if not alternativeConfigFileInfo.Directory.Exists then
+        alternativeConfigFileInfo.Directory.Create()
+    
     let config = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <packageSources>
@@ -238,6 +242,102 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
             if verbose then
                 tracefn " - %s already up-to-date" fileInfo.FullName
 
+let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:LockFile) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,ResolvedPackage>>) targetFilter (groups:Map<GroupName,LockFileGroup>) =
+    let list = System.Collections.Generic.List<_>()
+    let cliTools = System.Collections.Generic.List<_>()
+    let fi = FileInfo referencesFile.FileName
+    for kv in groups do
+        let hull,cliToolsInGroup = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
+        cliTools.AddRange cliToolsInGroup
+
+        let depsGroup =
+            match dependenciesFile.Groups |> Map.tryFind kv.Key with
+            | Some group -> group
+            | None -> failwithf "Dependencies file '%s' does not contain group '%O' but it is used in '%s'" dependenciesFile.FileName kv.Key lockFile.FileName
+
+        let allDirectPackages =
+            match referencesFile.Groups |> Map.tryFind kv.Key with
+            | Some g -> g.NugetPackages |> List.map (fun p -> p.Name) |> Set.ofList
+            | None -> Set.empty
+        
+
+        for (key,_,_) in hull do
+            let restore =
+                match targetFilter with
+                | None -> true
+                | Some targets ->
+                    let resolvedPackage = resolved.Force().[key]
+
+                    match resolvedPackage.Settings.FrameworkRestrictions with
+                    | Requirements.ExplicitRestriction restrictions ->
+                        targets
+                        |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target))
+                    | _ -> true
+                    
+            if restore then
+                let _,packageName = key
+                let direct = allDirectPackages.Contains packageName
+                let package = resolved.Force().[key]
+                let line =
+                    packageName.ToString() + "," + 
+                    package.Version.ToString() + "," + 
+                    (if direct then "Direct" else "Transitive") + "," +
+                    kv.Key.ToString()
+                
+                list.Add line
+
+    let output = String.Join(Environment.NewLine,list)
+    let newFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".references"))
+    if not newFileName.Directory.Exists then
+        newFileName.Directory.Create()
+    if output = "" then
+        if File.Exists(newFileName.FullName) then
+            File.Delete(newFileName.FullName)
+
+    elif not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
+        File.WriteAllText(newFileName.FullName,output)                
+        tracefn " - %s created" newFileName.FullName
+    else
+        if verbose then
+            tracefn " - %s already up-to-date" newFileName.FullName
+
+
+    let paketCLIToolsFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".paket.clitools"))
+    createPaketCLIToolsFile cliTools paketCLIToolsFileName
+    
+    let paketPropsFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".paket.props"))
+    createPaketPropsFile cliTools paketPropsFileName
+
+let CreateScriptsForGroups dependenciesFile lockFile (groups:Map<GroupName,LockFileGroup>) =
+    let groupsToGenerate =
+        groups
+        |> Seq.map (fun kvp -> kvp.Value)
+        |> Seq.filter (fun g -> g.Options.Settings.GenerateLoadScripts = Some true)
+        |> Seq.map (fun g -> g.Name)
+        |> Seq.toList
+
+    if not (List.isEmpty groupsToGenerate) then
+        let depsCache = DependencyCache(dependenciesFile,lockFile)
+        let dir = DirectoryInfo dependenciesFile.Directory
+
+        LoadingScripts.ScriptGeneration.constructScriptsFromData depsCache groupsToGenerate [] []
+        |> Seq.iter (fun sd -> sd.Save dir)
+
+let FindOrCreateReferencesFile projectFileName =
+    let projectFile = ProjectFile.LoadFromFile projectFileName
+    match projectFile.FindReferencesFile() with
+    | Some fileName -> 
+        try
+            ReferencesFile.FromFile fileName
+        with e ->
+            failwith ((ReferencesFileParseError (FileInfo fileName,e)).ToString())
+    | None ->
+        let fileName = 
+            let fi = FileInfo(projectFile.FileName)
+            Path.Combine(fi.Directory.FullName,Constants.ReferencesFile)
+
+        ReferencesFile.New fileName
+        
 let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
@@ -284,90 +384,12 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
     let referencesFileNames =
         match projectFile with
-        | Some projectFile ->
-            let projectFile = ProjectFile.LoadFromFile projectFile
-            let referencesFile =
-                match projectFile.FindReferencesFile() with
-                | Some fileName -> 
-                    try
-                        ReferencesFile.FromFile fileName
-                    with e ->
-                        failwith ((ReferencesFileParseError (FileInfo fileName,e)).ToString())
-                | None ->
-                    let fileName = 
-                        let fi = FileInfo(projectFile.FileName)
-                        Path.Combine(fi.Directory.FullName,Constants.ReferencesFile)
+        | Some projectFileName ->
+            let referencesFile = FindOrCreateReferencesFile projectFileName
+            let fi = FileInfo referencesFile.FileName
 
-                    ReferencesFile.New fileName
-
-            let list = System.Collections.Generic.List<_>()
-            let cliTools = System.Collections.Generic.List<_>()
-            let fi = FileInfo projectFile.FileName
-            let newFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".references"))            
-            let alternativeConfigFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".NuGet.Config"))
-
-            if not newFileName.Directory.Exists then
-                newFileName.Directory.Create()
-            
-            createAlternativeNuGetConfig alternativeConfigFileName
-            
-            for kv in groups do
-                let hull,cliToolsInGroup = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
-                cliTools.AddRange cliToolsInGroup
-
-                let depsGroup =
-                    match dependenciesFile.Groups |> Map.tryFind kv.Key with
-                    | Some group -> group
-                    | None -> failwithf "Dependencies file '%s' does not contain group '%O' but it is used in '%s'" dependenciesFile.FileName kv.Key lockFile.FileName
-
-                let allDirectPackages =
-                    match referencesFile.Groups |> Map.tryFind kv.Key with
-                    | Some g -> g.NugetPackages |> List.map (fun p -> p.Name) |> Set.ofList
-                    | None -> Set.empty
-                
-
-                for (key,_,_) in hull do
-                    let restore =
-                        match targetFilter with
-                        | None -> true
-                        | Some targets ->
-                            let resolvedPackage = resolved.Force().[key]
-
-                            match resolvedPackage.Settings.FrameworkRestrictions with
-                            | Requirements.ExplicitRestriction restrictions ->
-                                targets
-                                |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target))
-                            | _ -> true
-                            
-                    if restore then
-                        let _,packageName = key
-                        let direct = allDirectPackages.Contains packageName
-                        let package = resolved.Force().[key]
-                        let line =
-                            packageName.ToString() + "," + 
-                            package.Version.ToString() + "," + 
-                            (if direct then "Direct" else "Transitive") + "," +
-                            kv.Key.ToString()
-                        
-                        list.Add line
-                
-            let output = String.Join(Environment.NewLine,list)
-            if output = "" then
-                if File.Exists(newFileName.FullName) then
-                    File.Delete(newFileName.FullName)
-
-            elif not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
-                File.WriteAllText(newFileName.FullName,output)                
-                tracefn " - %s created" newFileName.FullName
-            else
-                if verbose then
-                    tracefn " - %s already up-to-date" newFileName.FullName
-
-            let paketCLIToolsFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".paket.clitools"))
-            createPaketCLIToolsFile cliTools paketCLIToolsFileName
-            
-            let paketPropsFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".paket.props"))
-            createPaketPropsFile cliTools paketPropsFileName
+            createAlternativeNuGetConfig fi
+            createProjectReferencesFiles dependenciesFile lockFile referencesFile resolved targetFilter groups
 
             [referencesFile.FileName]
         | None -> referencesFileNames
@@ -415,20 +437,4 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             |> Async.RunSynchronously
             |> ignore
 
-
-    let groupsToGenerate =
-        groups
-        |> Seq.map (fun kvp -> kvp.Value)
-        |> Seq.filter (fun g -> g.Options.Settings.GenerateLoadScripts = Some true)
-        |> Seq.map (fun g -> g.Name)
-        |> Seq.toList
-
-    if not (List.isEmpty groupsToGenerate) then
-        let depsCache = DependencyCache(dependenciesFile,lockFile)
-        let dir = DirectoryInfo dependenciesFile.Directory
-
-        LoadingScripts.ScriptGeneration.constructScriptsFromData depsCache groupsToGenerate [] []
-        |> Seq.iter (fun sd -> sd.Save dir)
-    
-    if targetFrameworks <> None then
-        GarbageCollection.CleanUp(root, dependenciesFile, lockFile)
+    CreateScriptsForGroups dependenciesFile lockFile groups
