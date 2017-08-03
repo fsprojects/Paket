@@ -61,9 +61,10 @@ let ``should remove NuGetPackageImportStamp but not PropertyGroup with items``()
 let testDataRootPath = Path.Combine(__SOURCE_DIRECTORY__, "TestData")
 let TestData: obj[][] = [|
     for f in Directory.GetFiles testDataRootPath do
-        let allText = File.ReadAllText f
-        if not (allText.Contains "NuGetPackageImportStamp") then
-            yield [| Path.GetFileName f |]
+        if not (Path.GetFileName(f) = "paket.dependencies") then
+            let allText = File.ReadAllText f
+            if not (allText.Contains "NuGetPackageImportStamp") then
+                yield [| Path.GetFileName f |]
 |]
 
 
