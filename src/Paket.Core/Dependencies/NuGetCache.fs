@@ -408,3 +408,94 @@ let CopyToCache(cache:Cache, fileName, force) =
     | _ ->
         Cache.setInaccessible cache
         reraise()
+
+type SendDataModification =
+    { LoweredPackageId : bool; NormalizedVersion : bool }
+
+type GetVersionFilter =
+    { ToLower : bool; NormalizedVersion : bool }
+
+type UrlId =
+    | GetVersion_ById of SendDataModification
+    | GetVersion_Filter of SendDataModification * GetVersionFilter
+
+type UrlToTry =
+    { UrlId : UrlId; InstanceUrl : string }
+
+    static member From id (p:Printf.StringFormat<_,_>) =
+        Printf.ksprintf (fun s -> {UrlId = id; InstanceUrl = s}) p
+
+type BlockedCacheEntry =
+    { BlockedFormats : string list }
+
+let private tryUrlOrBlacklistI =
+    let tryUrlOrBlacklistInner (f : unit -> Async<obj>, isOk : obj -> bool) (cacheKey) =
+        async {
+            //try
+            let! res = f ()
+            return isOk res, res
+        }
+    let memoizedBlackList = memoizeAsyncEx tryUrlOrBlacklistInner
+    fun f isOk cacheKey ->
+            memoizedBlackList (f, isOk) (cacheKey)
+
+let private tryUrlOrBlacklist (f: _ -> Async<'a>) (isOk : 'a -> bool) (source:NugetSource, id:UrlId) =
+    let res =
+        tryUrlOrBlacklistI
+            (fun s -> async { let! r = f s in return box r })
+            (fun s -> isOk (s :?> 'a))
+            (source,id)
+    match res with
+    | Choice1Of2 r -> Choice1Of2 r
+    | Choice2Of2 a ->
+        Choice2Of2 (async {
+            let! (l, r) = a
+            return l, (r :?> 'a)
+        })
+
+let tryAndBlacklistUrl doWarn (source:NugetSource) (tryAgain : 'a -> bool) (f : string -> Async<'a>) (urls: UrlToTry list) : Async<'a>=
+    async {
+        let! tasks, resultIndex =
+            urls
+            |> Seq.map (fun url -> async {
+                let cached = tryUrlOrBlacklist (fun () -> async { return! f url.InstanceUrl }) (tryAgain >> not) (source, url.UrlId)
+                match cached with
+                | Choice1Of2 false -> return Choice3Of3 () // Url Blacklisted
+                | Choice1Of2 true ->
+                    let! result = f url.InstanceUrl
+                    return Choice1Of3 result
+                | Choice2Of2 a ->
+                    let! (isOk, res) = a
+                    if not isOk then
+                        if doWarn then
+                            eprintfn "Possible Performance degration, blacklist '%A'" url.UrlId
+                        return Choice2Of3 res
+                    else
+                        return Choice1Of3 res
+                })
+            |> Async.tryFindSequential (function | Choice1Of3 _ -> true | _ -> false)
+
+        match resultIndex with
+        | Some i ->
+            return
+                match tasks.[i].Result with
+                | Choice1Of3 res -> res
+                | _ -> failwithf "Unexpected value"
+        | None ->
+            let lastResult =
+                tasks
+                |> Seq.filter (fun t -> t.IsCompleted)
+                |> Seq.map (fun t -> t.Result)
+                |> Seq.choose (function
+                    | Choice3Of3 _ -> None
+                    | Choice2Of3 res -> Some res
+                    | Choice1Of3 res -> Some res)
+                |> Seq.tryLast
+
+            return
+                match lastResult with
+                | Some res -> res
+                | None ->
+                    let urls = urls |> Seq.map (fun u -> u.InstanceUrl) |> fun s -> String.Join("\r\t - ", s)
+                    failwithf "All possible sources are already blacklisted. \r\t - %s" urls
+    }

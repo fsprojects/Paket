@@ -59,10 +59,34 @@ let internal memoize (f: 'a -> 'b) : 'a -> 'b =
     fun (x: 'a) ->
         cache.GetOrAdd(x, f)
 
+let internal memoizeAsyncEx (f: 'iext -> 'i -> Async<'o * 'oext>) =
+    let cache = System.Collections.Concurrent.ConcurrentDictionary<'i, System.Threading.Tasks.Task<'o>>()
+    let handle (ex:'iext) (x:'i) : Choice<'o, Async<'o * 'oext>> =
+    //fun (ex:'iext) (x: 'i) -> // task.Result serialization to sync after done.
+        let mutable result = None
+        let task = cache.GetOrAdd(x, fun x ->
+                async {
+                    let! o, oext = f ex x
+                    result <- Some oext
+                    return o
+                } |> Async.StartAsTask) // |> Async.AwaitTask
+        if task.IsCompleted then
+            Choice1Of2 task.Result
+        else
+            async {
+                let! res = task |> Async.AwaitTask
+                return res, result.Value
+            }
+            |> Choice2Of2
+    handle
+
+
 let internal memoizeAsync f =
     let cache = System.Collections.Concurrent.ConcurrentDictionary<'a, System.Threading.Tasks.Task<'b>>()
     fun (x: 'a) -> // task.Result serialization to sync after done.
         cache.GetOrAdd(x, fun x -> f(x) |> Async.StartAsTask) |> Async.AwaitTask
+
+
 
 type Auth = 
     | Credentials of Username : string * Password : string
