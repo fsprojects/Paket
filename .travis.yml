@@ -14,7 +14,7 @@ sudo: false  # use the new container-based Travis infrastructure
 dist: trusty # Ubuntu 14.04
 
 mono:
-  - latest
+  - nightly
 
 branches:
   except:
