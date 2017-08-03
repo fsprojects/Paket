@@ -123,16 +123,19 @@ let printErrorExt printFirstStack printAggregatedStacks printInnerStacks (exn:ex
                     ""
                 else sprintf "%s: " t.Name
             traceErrorfn "%s%s %s%s" indentString s typeString (String.Join(sprintf "%s%s   " Environment.NewLine indentString , splitMsg))
+
             let printStack =
                 match String.IsNullOrWhiteSpace exn.StackTrace, exnType with
                 | false, ExnType.First when printFirstStack -> true
                 | false, ExnType.Aggregated when printAggregatedStacks -> true
                 | false, ExnType.Inner when printInnerStacks -> true
                 | _ -> false
+
             if printStack then
                 traceErrorfn "%s   StackTrace:" indentString
                 let split = exn.StackTrace.Split([|"\r\n"; "\n"|], StringSplitOptions.None)
                 traceErrorfn "%s     %s" indentString (String.Join(sprintf "%s%s     " Environment.NewLine indentString, split))
+
         match exn with
         | :? AggregateException as aggr ->
             if aggr.InnerExceptions.Count = 1 then

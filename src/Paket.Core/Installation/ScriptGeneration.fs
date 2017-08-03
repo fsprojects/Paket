@@ -61,6 +61,19 @@ module ScriptGeneration =
             else true
         )
 
+    let filterForFSI (scriptType:ScriptType) refls =
+        // For F# we never want to reference mscorlib directly (some nuget package state it as a dependency)
+        // reason is that having it referenced more than once fails in FSI
+        refls |> List.filter ( fun ref ->
+            if scriptType = ScriptType.FSharp then
+                match ref with
+                | Framework info -> info <> "mscorlib"
+                | _ -> true
+            else true
+        )
+
+    let filterReferences scriptType = filterFSharpRefTypes scriptType >> filterForFSI scriptType
+
     /// default implementation of F# include script generator
     let generateScript (scriptType:ScriptType) (input: ScriptGenInput) =
         let packageName = input.PackageName.CompareString
@@ -71,22 +84,14 @@ module ScriptGeneration =
             let scriptRefs =
                 input.DependentScripts |> List.map LoadScript
 
-            let filterForFSI assemblies =
-                // For F# we never want to reference mscorlib directly (some nuget package state it as a dependency)
-                // reason is that having it referenced more than once fails in FSI
-                assemblies |> Seq.filter (function "mscorlib" -> false | _ -> true)
-
             let frameworkRefLines =
-                match scriptType with 
-                | CSharp -> input.FrameworkReferences :> seq<_>
-                | FSharp -> input.FrameworkReferences |> filterForFSI
-                |> Seq.map Framework
-                |> Seq.toList
+                input.FrameworkReferences
+                |> List.map Framework
         
             let dllLines = input.OrderedDllReferences |> List.map Assembly
         
             List.concat [scriptRefs; frameworkRefLines; dllLines]
-            |> filterFSharpRefTypes scriptType
+            |> filterReferences scriptType
         
         match lines with
         | [] -> DoNotGenerate
@@ -145,7 +150,7 @@ module ScriptGeneration =
     /// if a package is ordered before its dependencies this function will throw.
     let generateScriptContent (context:PaketContext as ctx) =
         
-        let scriptType, groups, (isDefaultFramework, framework) =  ctx.ScriptType, ctx.Groups, ctx.DefaultFramework
+        let scriptType, groups, (isDefaultFramework, framework) = ctx.ScriptType, ctx.Groups, ctx.DefaultFramework
 
         // -- LOAD SCRIPT FORMATTING POINT --
         let loadScriptsRootFolder = Constants.PaketFolderName </> "load"
@@ -170,11 +175,17 @@ module ScriptGeneration =
         let scriptFile (scriptFolder:string) =
             sprintf "%s.%s"  scriptFolder scriptType.Extension
                     
+        let cachedGroups =
+            if List.isEmpty groups then
+                ctx.Cache.OrderedGroups() 
+                |> Seq.map (fun kvp -> kvp.Key,kvp.Value)
+            else
+                groups
+                |> Seq.map (fun g -> g,ctx.Cache.OrderedGroups g)
 
         let scriptContent =
-            ctx.Cache.OrderedGroups() |> Seq.choose (fun kvp ->
-                let groupName,packages = kvp.Key,kvp.Value
-                if groups = [] || List.exists ((=) groupName) groups then
+            cachedGroups
+            |> Seq.map (fun (groupName,packages) ->
                     // fold over a map constructing load scripts to ensure shared packages don't have their scripts duplicated
                     ((Map.empty,[]),packages)
                     ||> Seq.fold (fun ((knownIncludeScripts,scriptFiles): Map<_,string>*_) (package: PackageResolver.ResolvedPackage) ->
@@ -214,20 +225,24 @@ module ScriptGeneration =
                                     Lang = scriptType
                                     Input = pieces 
                                 } 
-                            (knownScripts, rendered::scriptFiles)
-                    ) |> fun (_,sfs) -> Some (groupName, sfs )
-                else None
+                            (knownScripts, rendered::scriptFiles)) 
+                    |> fun (_,sfs) -> groupName, sfs
             ) |> List.ofSeq
+
         // generate scripts to load all packages within a group
         let groupScriptContent =
-            ctx.Groups |> List.map (fun group ->
-                let scriptFile = getGroupFile  group
-                let pieces = ctx.Cache.GetOrderedReferences group framework |> filterFSharpRefTypes ctx.ScriptType
-                let scriptContent =
-                    {   PartialPath = scriptFile
-                        Lang = ctx.ScriptType 
-                        Input = pieces 
-                    } : ScriptContent
+            ctx.Groups 
+            |> List.map (fun group ->
+                let scriptFile = getGroupFile group
+                let pieces =
+                    ctx.Cache.GetOrderedReferences group framework
+                    |> filterReferences ctx.ScriptType
+
+                let scriptContent : ScriptContent =
+                    { PartialPath = scriptFile
+                      Lang = ctx.ScriptType 
+                      Input = pieces } 
+
                 group,[scriptContent]
             ) 
         List.append scriptContent groupScriptContent
@@ -240,13 +255,15 @@ module ScriptGeneration =
         let lockFile = depCache.LockFile
 
         let groups = 
-            if groups = [] then dependenciesFile.Groups |> Seq.map (fun kvp -> kvp.Key) |> Seq.toList 
-            else groups
+            if List.isEmpty groups then 
+                dependenciesFile.Groups |> Seq.map (fun kvp -> kvp.Key) |> Seq.toList 
+            else 
+                groups
         
         if verbose then
-            verbosefn "Generating Load Scripts" 
-            verbosefn "Using Paket dependency file\n - %s" dependenciesFile.FileName
-            verbosefn "Using LockFile \n - %s" lockFile.FileName
+            verbosefn "Generating load scripts for the following groups: %A" (groups |> List.map (fun g -> g.Name.ToString()))
+            verbosefn " - using Paket dependency file: %s" dependenciesFile.FileName
+            verbosefn " - using Packe fock file: %s" lockFile.FileName
 
         let tupleMap f v = (v, f v)
         let failOnMismatch toParse parsed fn message =
@@ -264,7 +281,8 @@ module ScriptGeneration =
         let frameworksToGenerate =
             // specified frameworks are never considered default
             let targetFrameworkList = 
-                providedFrameworks |> List.choose FrameworkDetection.Extract 
+                providedFrameworks 
+                |> List.choose FrameworkDetection.Extract 
                 |> List.map (fun f -> f, false)
 
             failOnMismatch providedFrameworks targetFrameworkList FrameworkDetection.Extract "Unrecognized Framework(s)"
@@ -274,7 +292,8 @@ module ScriptGeneration =
             elif not (Seq.isEmpty frameworksForDependencyGroups.Value) then 
                 // if paket.dependencies evaluate to single framework, consider it as default
                 let isDefaultFramework = Seq.length frameworksForDependencyGroups.Value = 1
-                frameworksForDependencyGroups.Value |> Seq.map (fun f -> f, isDefaultFramework)
+                frameworksForDependencyGroups.Value 
+                |> Seq.map (fun f -> f, isDefaultFramework)
             else // environment framework is default
                 Seq.singleton (environmentFramework.Value, true)
             |> Seq.distinct
@@ -283,7 +302,7 @@ module ScriptGeneration =
         let scriptTypesToGenerate =
             let parsedScriptTypes = providedScriptTypes |> List.choose ScriptType.TryCreate
 
-            failOnMismatch providedScriptTypes parsedScriptTypes ScriptType.TryCreate "Unrecognized Script Type(s)"
+            failOnMismatch providedScriptTypes parsedScriptTypes ScriptType.TryCreate "Unrecognized script type(s)"
 
             match parsedScriptTypes with
             | [] -> [CSharp; FSharp]
@@ -309,7 +328,7 @@ module ScriptGeneration =
             ls |> List.forall (snd >> List.forall (snd>> List.isEmpty))
             
         // Report that no script generation was possible for the provided frameworks and groups
-        if scriptData = [] || allGroupsEmpty scriptData then 
+        if List.isEmpty scriptData || allGroupsEmpty scriptData then 
             let frameworkMsg =  
                 sprintf "for %s %s" 
                     (if frameworks.Length = 1 then "framework" else "frameworks") 
@@ -317,24 +336,25 @@ module ScriptGeneration =
             let groupMsg = 
                 sprintf "in %s %A" 
                     (groups.Length |> function 0|1 -> "group" | _ -> "groups") 
-                    (if groups = [] then 
+                    (if List.isEmpty groups then 
                         Constants.MainDependencyGroup.Name 
                      else 
                         String.concat " " (groups|>List.map string))
             tracefn "Could not generate any scripts %s %s" frameworkMsg groupMsg
         else // report the scripts that were generated for each framework by each group
-            for framework, grouped in scriptData do
-                tracefn "Generating load scripts for framework - %O" framework
-                for group,scriptContent in grouped do 
-                    if scriptContent = [] then 
-                        tracefn "Could not generate any scripts for group '%O'" group
-                    else
-                        tracefn "[ Group - %O ]" group  
-                        scriptContent |> Seq.iter (fun sc -> tracefn " - %O" sc.PartialPath)
+            if verbose then
+                for framework, grouped in scriptData do
+                    tracefn "Generating load scripts for framework - %O" framework
+                    for group,scriptContent in grouped do 
+                        if List.isEmpty scriptContent then 
+                            tracefn "Could not generate any scripts for group '%O'" group
+                        else
+                            tracefn "[ Group - %O ]" group  
+                            scriptContent |> Seq.iter (fun sc -> tracefn " - %O" sc.PartialPath)
         let generated =
-            scriptData |> Seq.collect (fun (_fw,groupedContent) -> 
-                groupedContent |> Seq.collect snd
-            )
+            scriptData 
+            |> Seq.collect (fun (_fw,groupedContent) -> 
+                groupedContent |> Seq.collect snd)
         generated
     
 

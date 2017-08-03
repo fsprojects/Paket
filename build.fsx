@@ -384,24 +384,84 @@ Target "PublishNuGet" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Generate the documentation
 
+
+let fakePath = "packages" @@ "build" @@ "FAKE" @@ "tools" @@ "FAKE.exe"
+let fakeStartInfo fsiargs script workingDirectory args environmentVars =
+    (fun (info: System.Diagnostics.ProcessStartInfo) ->
+        info.FileName <- fakePath
+        info.Arguments <- sprintf "%s --fsiargs %s -d:FAKE \"%s\"" args fsiargs script
+        info.WorkingDirectory <- workingDirectory
+        let setVar k v =
+            info.EnvironmentVariables.[k] <- v
+        for (k, v) in environmentVars do
+            setVar k v
+        setVar "MSBuild" msBuildExe
+        setVar "GIT" Git.CommandHelper.gitPath
+        setVar "FSI" fsiPath)
+
+
+/// Run the given startinfo by printing the output (live)
+let executeWithOutput configStartInfo =
+    let exitCode =
+        ExecProcessWithLambdas
+            configStartInfo
+            TimeSpan.MaxValue false ignore ignore
+    System.Threading.Thread.Sleep 1000
+    exitCode
+
+/// Run the given startinfo by redirecting the output (live)
+let executeWithRedirect errorF messageF configStartInfo =
+    let exitCode =
+        ExecProcessWithLambdas
+            configStartInfo
+            TimeSpan.MaxValue true errorF messageF
+    System.Threading.Thread.Sleep 1000
+    exitCode
+
+/// Helper to fail when the exitcode is <> 0
+let executeHelper executer fail traceMsg failMessage configStartInfo =
+    trace traceMsg
+    let exit = executer configStartInfo
+    if exit <> 0 then
+        if fail then
+            failwith failMessage
+        else
+            traceImportant failMessage
+    else
+        traceImportant "Succeeded"
+    ()
+
+let execute = executeHelper executeWithOutput
+
 Target "GenerateReferenceDocs" (fun _ ->
-    if not <| executeFSIWithArgs "docs/tools" "generate.fsx" ["--define:RELEASE"; "--define:REFERENCE"] [] then
-      failwith "generating reference documentation failed"
+    let args = ["--define:RELEASE"; "--define:REFERENCE"]
+    let argLine = System.String.Join(" ", args)
+    execute
+      true
+      (sprintf "Building reference documentation, this could take some time, please wait...")
+      "generating reference documentation failed"
+      (fakeStartInfo argLine "generate.fsx" "docs/tools" "" [])
 )
 
+
+
+
 let generateHelp' commands fail debug =
+    // remove FSharp.Compiler.Service.MSBuild.v12.dll
+    // otherwise FCS thinks  it should use msbuild, which leads to insanity
+    !! "packages/**/FSharp.Compiler.Service.MSBuild.*.dll"
+    |> DeleteFiles
+
     let args =
         [ if not debug then yield "--define:RELEASE"
           if commands then yield "--define:COMMANDS"
           yield "--define:HELP"]
-
-    if executeFSIWithArgs "docs/tools" "generate.fsx" args [] then
-        traceImportant "Help generated"
-    else
-        if fail then
-            failwith "generating help documentation failed"
-        else
-            traceImportant "generating help documentation failed"
+    let argLine = System.String.Join(" ", args)
+    execute
+      fail
+      (sprintf "Building documentation (%A), this could take some time, please wait..." commands)
+      "generating documentation failed"
+      (fakeStartInfo argLine "generate.fsx" "docs/tools" "" [])
 
     CleanDir "docs/output/commands"
 
@@ -416,9 +476,6 @@ Target "GenerateHelp" (fun _ ->
     DeleteFile "docs/content/license.md"
     CopyFile "docs/content/" "LICENSE.txt"
     Rename "docs/content/license.md" "docs/content/LICENSE.txt"
-
-    CopyFile buildDir "packages/FSharp.Core/lib/net40/FSharp.Core.sigdata"
-    CopyFile buildDir "packages/FSharp.Core/lib/net40/FSharp.Core.optdata"
 
     generateHelp true true
 )
@@ -458,8 +515,8 @@ Target "ReleaseDocs" (fun _ ->
     Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
 
     Git.CommandHelper.runSimpleGitCommand tempDocsDir "rm . -f -r" |> ignore
-    CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"    
-    
+    CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"
+
     File.WriteAllText("temp/gh-pages/latest",sprintf "https://github.com/fsprojects/Paket/releases/download/%s/paket.exe" release.NugetVersion)
     File.WriteAllText("temp/gh-pages/stable",sprintf "https://github.com/fsprojects/Paket/releases/download/%s/paket.exe" stable.NugetVersion)
 

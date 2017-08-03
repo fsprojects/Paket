@@ -82,5 +82,11 @@ namespace Paket.Bootstrapper.Tests
         {
             Verify(@"""a\\\\\b c"" d e", @"a\\\b c", "d", "e");
         }
+
+        [Test]
+        public void Pass_empty_arguments()
+        {
+            Verify(@"a """" b", "a", "", "b");
+        }
     }
 }

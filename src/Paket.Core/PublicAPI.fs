@@ -17,8 +17,6 @@ type Dependencies(dependenciesFileName: string) =
                 let groupName,packageName = kv.Key
                 groupName.ToString(),packageName.ToString(),kv.Value.Version.ToString())
         |> Seq.toList
-        
-
 
     /// Clears the NuGet cache
     static member ClearCache() =
@@ -220,10 +218,12 @@ type Dependencies(dependenciesFileName: string) =
             let rootDir = this.RootDirectory
             Directory.CreateDirectory <| Path.Combine (Constants.PaketFolderName,"load") |> ignore
             let scriptPath = Path.Combine (rootDir.FullName , sd.PartialPath)
-            tracefn "scriptpath - %s" scriptPath
+            if verbose then
+                verbosefn "scriptpath - %s" scriptPath
             let scriptDir = Path.GetDirectoryName scriptPath |> Path.GetFullPath |> DirectoryInfo
             scriptDir.Create()
-            tracefn "created - '%s'" <| Path.Combine (rootDir.FullName , sd.PartialPath)
+            if verbose then
+                verbosefn "created - '%s'" <| Path.Combine (rootDir.FullName , sd.PartialPath)
             sd.Save rootDir
         )
 
@@ -336,16 +336,24 @@ type Dependencies(dependenciesFileName: string) =
                 |> Array.choose (fun (p:ProjectFile) -> p.FindReferencesFile())
             if Array.isEmpty referencesFiles then
                 traceWarnfn "No paket.references files found for which packages could be installed."
-            else 
+            else
                 this.Restore(force, group, Array.toList referencesFiles, touchAffectedRefs, ignoreChecks,  failOnFailedChecks, targetFramework)
 
     /// Lists outdated packages.
-    member this.ShowOutdated(strict: bool,includePrereleases: bool, groupName: string Option): unit =
-        FindOutdated.ShowOutdated strict includePrereleases groupName |> this.Process
+    [<Obsolete("Use ShowOutdated with the force parameter set to true to get the old behavior")>]
+    member this.ShowOutdated(strict: bool, includePrereleases: bool, groupName: string Option): unit =
+        this.ShowOutdated(strict, true, includePrereleases, groupName)
+
+    member this.ShowOutdated(strict: bool, force: bool, includePrereleases: bool, groupName: string Option): unit =
+        FindOutdated.ShowOutdated strict force includePrereleases groupName |> this.Process
 
     /// Finds all outdated packages.
-    member this.FindOutdated(strict: bool,includePrereleases: bool, groupName: string Option): (string * string * SemVerInfo) list =
-        FindOutdated.FindOutdated strict includePrereleases groupName
+    [<Obsolete("Use FindOutdated with the force parameter set to true to get the old behavior")>]
+    member this.FindOutdated(strict: bool, includePrereleases: bool, groupName: string Option): (string * string * SemVerInfo) list =
+        this.FindOutdated(strict, true, includePrereleases, groupName)
+
+    member this.FindOutdated(strict: bool, force: bool, includePrereleases: bool, groupName: string Option): (string * string * SemVerInfo) list =
+        FindOutdated.FindOutdated strict force includePrereleases groupName
         |> this.Process
         |> List.map (fun (g, p,_,newVersion) -> g.ToString(),p.ToString(),newVersion)
 
@@ -449,12 +457,12 @@ type Dependencies(dependenciesFileName: string) =
             | None -> failwithf "Package %O is not installed in group %O." packageName groupName
             | Some resolvedPackage ->
                 let packageName = resolvedPackage.Name
-                let groupFolder = if groupName = Constants.MainDependencyGroup then "" else "/" + groupName.CompareString
-                let folder = DirectoryInfo(sprintf "%s/packages%s/%O" this.RootPath groupFolder packageName)
-                let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" this.RootPath groupFolder packageName packageName)
-                let nuspec = Nuspec.Load nuspec.FullName
-                let files = NuGet.GetLibFiles(folder.FullName)
-                InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, files, [], [], nuspec)
+                let folder = 
+                        getTargetFolder this.RootPath groupName packageName resolvedPackage.Version (defaultArg resolvedPackage.Settings.IncludeVersionInPath false)
+                        |> Path.GetFullPath
+
+                let content = NuGet.GetContent folder
+                InstallModel.CreateFromContent(packageName, resolvedPackage.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, content)
 
     /// Returns all libraries for the given package and framework.
     member this.GetLibraries(groupName,packageName,frameworkIdentifier:TargetProfile) =
@@ -667,8 +675,11 @@ type Dependencies(dependenciesFileName: string) =
                     Some(key)
                 | None -> None
 
-        let configKey = url |> Option.bind ConfigFile.GetAuthentication |> Option.bind (fun a -> match a with Token t -> Some t | _ -> None )
-        let firstPresentKey = 
+        let configKey =
+            let url = defaultArg url "https://nuget.org"
+            ConfigFile.GetAuthentication url |> Option.bind (fun a -> match a with Token t -> Some t | _ -> None )
+
+        let firstPresentKey =
             [apiKey; envKey; configKey]
             |> List.choose id
             |> List.where (String.IsNullOrEmpty >> not)

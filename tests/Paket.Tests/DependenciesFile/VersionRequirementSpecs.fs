@@ -17,6 +17,7 @@ let require packageName strategyForTransitives text : PackageRequirement =
       Graph = Set.empty
       Sources = []
       IsCliTool = false
+      TransitivePrereleases = false
       Settings = InstallSettings.Default }
 
 [<Test>]

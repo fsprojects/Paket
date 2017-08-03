@@ -102,11 +102,13 @@ type NugetV3ResourceType =
         | Registration -> "RegistrationsBaseUrl"
         | AllVersionsAPI -> "PackageBaseAddress/3.0.0"
 
-let private nugetV3Resources = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
-        
+// Cache for nuget indices of sources
+type ResourceIndex = Map<NugetV3ResourceType,string>
+let private nugetV3Resources = System.Collections.Concurrent.ConcurrentDictionary<NugetV3Source,Task<ResourceIndex>>()
+
 let getNuGetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceType) : Async<string> =
-    let key = (source, resourceType) 
-    let getResourceRaw () = 
+    let key = source
+    let getResourcesRaw () =
         async {
             let basicAuth = source.Authentication |> Option.map toBasicAuth
             let! rawData = safeGetFromUrl(basicAuth, source.Url, acceptJson)
@@ -119,32 +121,35 @@ let getNuGetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceT
                 | SuccessResponse x -> x
 
             let json = JsonConvert.DeserializeObject<NugetV3SourceRootJSON>(rawData)
-            let resources = 
-                json.Resources 
+            let resources =
+                json.Resources
                 |> Seq.distinctBy(fun x -> x.Type.ToLower())
                 |> Seq.map(fun x -> x.Type.ToLower(), x.ID)
-            for (res, value) in resources do
-                let resType =
-                    match res.ToLower() with
-                    | "searchautocompleteservice" -> Some AutoComplete
-                    | "registrationsbaseurl" -> Some Registration
-                    | "packagebaseaddress/3.0.0" -> Some AllVersionsAPI
-                    | _ -> None
-                match resType with
-                | None -> ()
-                | Some _ ->
-                    nugetV3Resources.AddOrUpdate(key, (fun _ -> Task.FromResult value), (fun _ _ -> Task.FromResult value))
-                        |> ignore
-        
-            match nugetV3Resources.TryGetValue key with
-            | true, v when v.IsCompleted -> return v.Result
-            | _ -> return failwithf "could not find an %s endpoint for %s" (resourceType.ToString()) source.Url
+            let map =
+                resources
+                |> Seq.choose (fun (res, value) ->
+                    let resType =
+                        match res.ToLower() with
+                        | "searchautocompleteservice" -> Some AutoComplete
+                        | "registrationsbaseurl" -> Some Registration
+                        | "packagebaseaddress/3.0.0" -> Some AllVersionsAPI
+                        | _ -> None
+                    match resType with
+                    | None -> None
+                    | Some k ->
+                        Some (k, value))
+                |> Seq.distinctBy fst
+                |> Map.ofSeq
+            return map
         } |> Async.StartAsTask
 
     async {
-        let t = nugetV3Resources.GetOrAdd(key, (fun _ -> getResourceRaw()))
+        let t = nugetV3Resources.GetOrAdd(key, (fun _ -> getResourcesRaw()))
         let! res = t |> Async.AwaitTask
-        return res
+        return
+            match res.TryFind resourceType with
+            | Some s -> s
+            | None -> failwithf "could not find an %s endpoint for %s" (resourceType.ToString()) source.Url
     }
 let userNameRegex = Regex("username[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 let passwordRegex = Regex("password[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)

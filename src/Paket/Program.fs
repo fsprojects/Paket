@@ -27,6 +27,7 @@ let processWithValidation silent validateF commandF (result : ParseResults<'T>) 
         traceError "Command was:"
         traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
         result.Parser.PrintUsage() |> traceError
+
 #if NETCOREAPP1_0
         // Environment.ExitCode not supported in netcoreapp1.0
 #else
@@ -297,13 +298,14 @@ let install (results : ParseResults<_>) =
         alternativeProjectRoot)
 
 let outdated (results : ParseResults<_>) =
+    let force = results.Contains <@ OutdatedArgs.Force @>
     let strict = results.Contains <@ OutdatedArgs.Ignore_Constraints @> |> not
     let includePrereleases = results.Contains <@ OutdatedArgs.Include_Prereleases @>
     let group =
         (results.TryGetResult<@ OutdatedArgs.Group @>,
          results.TryGetResult<@ OutdatedArgs.Group_Legacy @>)
         |> legacyOption results "--group" "group"
-    Dependencies.Locate().ShowOutdated(strict, includePrereleases, group)
+    Dependencies.Locate().ShowOutdated(strict, force, includePrereleases, group)
 
 let remove (results : ParseResults<_>) =
     let packageName =
@@ -593,7 +595,7 @@ let findPackageVersions (results : ParseResults<_>) =
                    results.TryGetResult <@ FindPackageVersionsArgs.Source_Legacy @>)
                   |> legacyOption results "--source" "source"
         discoverPackageSources arg dependencies
-        
+
     let root =
         match dependencies with
         | Some d ->
@@ -755,7 +757,7 @@ let main() =
 #else
         Environment.ExitCode <- 1
 #endif
-        traceErrorfn "Paket failed with:"
+        traceErrorfn "Paket failed with"
         if Environment.GetEnvironmentVariable "PAKET_DETAILED_ERRORS" = "true" then
             printErrorExt true true false exn
         else printError exn

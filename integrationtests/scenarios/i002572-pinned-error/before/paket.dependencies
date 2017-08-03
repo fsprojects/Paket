@@ -1,0 +1,12 @@
+source https://www.myget.org/F/30de4ee06dd54956a82013fa17a3accb/
+source https://www.nuget.org/api/v2/
+
+clitool dotnet-xunit 2.3.0-beta3-build3705
+nuget xunit 2.3.0-beta3-build3705
+nuget xunit.abstractions 2.0.0 restriction: >= net45
+nuget xunit.assert restriction: >= net45 
+nuget xunit.core prerelease restriction: >= net45
+nuget xunit.extensibility.core 2.1.0 restriction: >= net45
+nuget xunit.extensibility.execution 2.1.0 restriction: >= net45
+nuget xunit.MSBuild 2.0.0.0 restriction: >= net45
+nuget xunit.runner.visualstudio 2.3.0-beta3-build3705

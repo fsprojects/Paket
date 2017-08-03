@@ -373,6 +373,8 @@ type FrameworkIdentifier =
     | MonoTouch
     | MonoMac
     | Native of BuildMode * Platform
+    | XamarinTV
+    | XamarinWatch
     | XamariniOS
     | XamarinMac
     | Windows of WindowsVersion
@@ -393,6 +395,8 @@ type FrameworkIdentifier =
         | MonoTouch -> "monotouch"
         | MonoMac -> "monomac"
         | Native(_) -> "native"
+        | XamarinTV -> "xamarintvos"
+        | XamarinWatch -> "xamarinwatchos"
         | XamariniOS -> "xamarinios"
         | UAP v -> "uap" + v.ShortString()
         | XamarinMac -> "xamarinmac"
@@ -445,6 +449,8 @@ type FrameworkIdentifier =
         | Native(_) -> [ ]
         | XamariniOS -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | XamarinMac -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | XamarinTV -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | XamarinWatch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | UAP UAPVersion.V10 -> [ Windows WindowsVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1; DotNetStandard DotNetStandardVersion.V1_4  ]
         | DotNetFramework FrameworkVersion.V1 -> [ ]
         | DotNetFramework FrameworkVersion.V1_1 -> [ DotNetFramework FrameworkVersion.V1 ]
@@ -570,6 +576,8 @@ module FrameworkDetection =
                 | "monoandroid71" | "monoandroid7.1"-> Some (MonoAndroid MonoAndroidVersion.V71)
                 | "monomac" | "monomac10" | "monomac1" -> Some MonoMac
                 | "xamarinios" | "xamarinios10" | "xamarinios1" | "xamarin.ios10" -> Some XamariniOS
+                | "xamarinwatchos" | "xamarinwatchos10" | "xamarinwatchos1" | "xamarin.watchos10" -> Some XamarinWatch
+                | "xamarintvos" | "xamarintvos10" | "xamarintvos1" | "xamarin.tvos10" -> Some XamarinTV
                 | "xamarinmac" | "xamarinmac20" | "xamarin.mac20" -> Some XamarinMac
                 | "native/x86/debug" -> Some(Native(Debug,Win32))
                 | "native/x64/debug" -> Some(Native(Debug,X64))
@@ -1002,6 +1010,8 @@ module KnownTargetProfiles =
        [SinglePlatform(MonoTouch)
         SinglePlatform(XamariniOS)
         SinglePlatform(XamarinMac)
+        SinglePlatform(XamarinTV)
+        SinglePlatform(XamarinWatch)
         SinglePlatform(WindowsPhoneApp WindowsPhoneAppVersion.V8_1)] @
        (AllPortableProfiles |> List.map PortableProfile)
 
@@ -1201,6 +1211,8 @@ module SupportCalculation =
                 | MonoTouch
                 | MonoAndroid _
                 | XamariniOS
+                | XamarinTV
+                | XamarinWatch
                 | XamarinMac ->
                     // http://danrigby.com/2014/05/14/supported-pcl-profiles-xamarin-for-visual-studio-2/
                     [ Profile5

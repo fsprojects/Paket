@@ -171,6 +171,7 @@ with
             | Load_Script_Type_Legacy(_) -> "[obsolete]"
 
 type OutdatedArgs =
+    | [<Unique;AltCommandLine("-f")>] Force
     | [<Unique>] Ignore_Constraints
 
     | [<Unique;AltCommandLine("-g")>] Group of name:string
@@ -181,6 +182,7 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
+            | Force -> "force download and reinstallation of all dependencies"
             | Ignore_Constraints -> "ignore version constraints in the paket.dependencies file"
 
             | Group(_) -> "specify dependency group (default: all groups)"

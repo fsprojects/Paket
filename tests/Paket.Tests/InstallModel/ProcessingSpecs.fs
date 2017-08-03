@@ -716,7 +716,7 @@ let ``should not install tools``() =
 [<Test>]
 let ``should handle props files``() = 
     let model =
-        emptymodel.AddTargetsFiles(
+        InstallModel.EmptyModel(PackageName "xunit.runner.visualstudio",SemVer.Parse "0.1").AddTargetsFiles(
             [ @"..\xunit.runner.visualstudio\build\net20\xunit.runner.visualstudio.props"
               @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props" ] |> fromLegacyList @"..\xunit.runner.visualstudio\")
             .FilterBlackList()
@@ -727,7 +727,7 @@ let ``should handle props files``() =
 [<Test>]
 let ``should handle Targets files``() = 
     let model =
-        emptymodel.AddTargetsFiles(
+        InstallModel.EmptyModel(PackageName "StyleCop.MSBuild",SemVer.Parse "0.1").AddTargetsFiles(
             [ @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" ] |> fromLegacyList @"..\StyleCop.MSBuild\")
             .FilterBlackList()
 

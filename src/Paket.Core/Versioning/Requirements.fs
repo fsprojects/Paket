@@ -893,6 +893,7 @@ type PackageRequirement =
       Parent: PackageRequirementSource
       Graph: PackageRequirement Set
       Sources: PackageSource list
+      TransitivePrereleases: bool 
       IsCliTool : bool
       Settings: InstallSettings }
 
@@ -904,6 +905,8 @@ type PackageRequirement =
             this.ResolverStrategyForTransitives = that.ResolverStrategyForTransitives && 
             this.ResolverStrategyForDirectDependencies = that.ResolverStrategyForDirectDependencies && 
             this.Settings.FrameworkRestrictions = that.Settings.FrameworkRestrictions &&
+            this.TransitivePrereleases = that.TransitivePrereleases &&
+            this.IsCliTool = that.IsCliTool &&
             this.Parent = that.Parent
         | _ -> false
 
@@ -942,6 +945,8 @@ type PackageRequirement =
         let c = compare x.Parent y.Parent
         if c <> 0 then c else
         let c = compare x.Name y.Name
+        if c <> 0 then c else
+        let c = compare x.TransitivePrereleases y.TransitivePrereleases
         if c <> 0 then c else
         let c = compare x.Settings.FrameworkRestrictions y.Settings.FrameworkRestrictions
         if c <> 0 then c else 0

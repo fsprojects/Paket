@@ -148,6 +148,16 @@ let ``#1635 should tell about auth issue``() =
         ()
 
 
+[<Test>]
+let ``#2572 should tell about late resolver issue``() =
+    try
+        update "i002572-pinned-error" |> ignore
+        failwith "error expected"
+    with
+    | exn when exn.Message.Contains("xunit.core 2.3.0-beta3-build3705 requested package xunit.extensibility.core: 2.3.0-beta3-build3705") ->
+        ()
+
+
 #if INTERACTIVE
 ;;
 let scenario = "i001579-unlisted"

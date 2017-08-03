@@ -11,15 +11,20 @@ open Paket.Requirements
 open Paket.TestHelpers
 open Domain
 open Paket.NuGetCache
+open System.Xml
 
 let fakeUrl = "http://doesntmatter"
 
 let parseList fileName =
     System.Environment.CurrentDirectory <- Path.GetDirectoryName __SOURCE_DIRECTORY__
-    parseODataListDetails("tenp",fakeUrl,PackageName "package",SemVer.Parse "0",File.ReadAllText fileName)
+    let doc = XmlDocument()
+    doc.Load (fileName:string)
+    parseODataListDetails("tenp",fakeUrl,PackageName "package",SemVer.Parse "0",doc)
 let parseEntry fileName =
     System.Environment.CurrentDirectory <- Path.GetDirectoryName __SOURCE_DIRECTORY__
-    parseODataEntryDetails("tenp",fakeUrl,PackageName "package",SemVer.Parse "0",File.ReadAllText fileName)
+    let doc = XmlDocument()
+    doc.Load (fileName:string)
+    parseODataEntryDetails("tenp",fakeUrl,PackageName "package",SemVer.Parse "0",doc)
 
 [<Test>]
 let ``can detect explicit dependencies for Fantomas``() = 

@@ -567,8 +567,15 @@ let createHttpClient (url,auth:Auth option) =
     client
 
 #if USE_WEB_CLIENT_FOR_UPLOAD
+type CustomTimeoutWebClient(timeout) =
+    inherit WebClient()
+    override x.GetWebRequest (uri:Uri) =
+        let w = base.GetWebRequest(uri)
+        w.Timeout <- timeout
+        w
+
 let createWebClient (url,auth:Auth option) =
-    let client = new WebClient()
+    let client = new CustomTimeoutWebClient(20 * 60 * 1000)
     client.Headers.Add("User-Agent", "Paket")
     client.Proxy <- getDefaultProxyFor url
 
@@ -853,6 +860,7 @@ module String =
     
     /// Check if 'text' ends with the 'suffix' string case insensitive
     let inline endsWithIgnoreCase (suffix:string) (text:string) =
+        suffix.Length <= text.Length &&
         text.LastIndexOf(suffix, StringComparison.OrdinalIgnoreCase) >= text.Length - suffix.Length
     
     /// Match if 'text' ends with the 'suffix' string case insensitive

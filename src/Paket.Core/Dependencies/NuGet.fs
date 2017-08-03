@@ -16,6 +16,108 @@ open System.Text
 open FSharp.Polyfill
 open Paket.NuGetCache
 
+type NuGetContent =
+    | NuGetDirectory of name:string * contents:NuGetContent list
+    | NuGetFile of name:string
+    member x.Contents =
+        match x with
+        | NuGetDirectory (_, c) -> c
+        | NuGetFile _ -> []
+    member x.Name =
+        match x with
+        | NuGetDirectory(n, _)
+        | NuGetFile n -> n
+
+type NuGetPackageContent =
+    { Content : NuGetContent list
+      Path : string
+      Spec : Nuspec }
+
+let rec ofDirectory targetFolder =
+    let dir = DirectoryInfo(targetFolder)
+    let subDirs =
+        if dir.Exists then
+            dir.GetDirectories()
+            |> Array.map (fun di -> ofDirectory di.FullName)
+            |> Array.toList
+        else []
+
+    let files =
+        if dir.Exists then
+            dir.GetFiles()
+            |> Array.map (fun fi -> NuGetFile(fi.Name))
+            |> Array.toList
+        else []
+
+    NuGetDirectory(dir.Name, subDirs @ files)
+
+let rec createEntry (content:string) =
+    let dirName, rest =
+        match content.IndexOf "/" with
+        | -1 -> None, content
+        | i -> Some (content.Substring(0, i)), content.Substring(i+1)
+    match dirName with
+    | Some name -> NuGetDirectory(name, [ createEntry rest ])
+    | None -> NuGetFile(rest)
+
+let rec addContent (content:string) contents =
+    let dirName, rest =
+        match content.IndexOf "/" with
+        | -1 -> None, content
+        | i -> Some (content.Substring(0, i)), content.Substring(i+1)
+    let wasAdded, contents =
+        contents
+        |> List.fold (fun (wasAdded, contents) (c: NuGetContent) ->
+            match wasAdded, dirName, c with
+            | true, _, _ -> true, c :: contents
+            | false, Some dir, NuGetDirectory(name, oldContents) when dir = name ->
+                true, NuGetDirectory(name, addContent rest oldContents) :: contents
+            | false, None, NuGetFile(name) when name = rest ->
+                failwithf "File '%s' is already in the tree" name
+            | _ -> false, c :: contents) (false, [])
+    if wasAdded then
+        contents
+    else
+        createEntry content :: contents
+
+let ofFiles filesList =
+    filesList
+    |> Seq.fold (fun state file -> addContent file state) []
+
+let GetContent dir =
+    let di = DirectoryInfo(dir)
+    if not di.Exists then
+        failwithf "%s doesn't exist. nuspec file can't be loaded." di.FullName
+
+    let spec =
+        di.EnumerateFiles("*.nuspec", SearchOption.TopDirectoryOnly)
+        |> Seq.exactlyOne
+        |> fun f -> Nuspec.Load(f.FullName)
+    { Content = (ofDirectory dir).Contents
+      Path = dir
+      Spec = spec }
+
+let tryFindFolder folder (content:NuGetPackageContent) =
+    let rec collectItems prefixFull (prefixInner:string) (content:NuGetContent) =
+        let fullPath = Path.Combine(prefixFull, content.Name)
+        let relPath = sprintf "%s/%s" prefixInner content.Name
+        match content with
+        | NuGetDirectory (_, contents) ->
+            contents
+            |> List.collect (collectItems fullPath relPath)
+        | NuGetFile _ ->
+            [ {UnparsedPackageFile.FullPath = fullPath
+               UnparsedPackageFile.PathWithinPackage = relPath } ]
+
+    content.Content
+    |> List.tryPick (fun c ->
+        match c with
+        | NuGetDirectory(name,contents) when String.equalsIgnoreCase name folder ->
+            Some(name,contents)
+        | _ -> None)
+    |> Option.map (fun (name,item) ->
+        item
+        |> List.collect (collectItems (Path.Combine(content.Path, name)) name))
 
 let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
     async {
@@ -79,8 +181,9 @@ let private getFilesMatching targetFolder searchPattern subFolderName filesDescr
             |> Array.filter (fun fi -> String.equalsIgnoreCase fi.FullName path)
             |> Array.collect (fun dir -> dir.GetFiles(searchPattern, SearchOption.AllDirectories))
             |> Array.map (fun file ->
-                let fullPath = Path.GetFullPath file.FullName;
-                { UnparsedPackageFile.FullPath = fullPath; UnparsedPackageFile.PathWithinPackage = fullPath.Substring(dirFullPath.Length + 1).Replace("\\", "/") })
+                let fullPath = Path.GetFullPath file.FullName
+                { UnparsedPackageFile.FullPath = fullPath
+                  UnparsedPackageFile.PathWithinPackage = fullPath.Substring(dirFullPath.Length + 1).Replace("\\", "/") })
         else
             [||]
 
@@ -97,6 +200,7 @@ let private getFiles targetFolder subFolderName filesDescriptionForVerbose =
     getFilesMatching targetFolder "*.*" subFolderName filesDescriptionForVerbose
 
 /// Finds all libraries in a nuget package.
+[<Obsolete "Use GetContent instead">]
 let GetLibFiles(targetFolder) =
     let libs = getFiles targetFolder "lib" "libraries"
     let refs = getFiles targetFolder "ref" "libraries"
@@ -104,8 +208,13 @@ let GetLibFiles(targetFolder) =
     refs
     |> Array.append libs
     |> Array.append runtimeLibs
+    |> Array.filter (fun p ->
+        let ext = System.IO.Path.GetExtension p.FullPath
+
+        ".dll".Equals(ext, StringComparison.OrdinalIgnoreCase))
 
 /// Finds all targets files in a nuget package.
+[<Obsolete "Use GetContent instead">]
 let GetTargetsFiles(targetFolder, (pkg : PackageName)) =
     let packageId = pkg.CompareString
     getFiles targetFolder "build" ".targets files"
@@ -114,8 +223,8 @@ let GetTargetsFiles(targetFolder, (pkg : PackageName)) =
         name.Equals(packageId + ".targets", StringComparison.OrdinalIgnoreCase) || name.Equals(packageId + ".props", StringComparison.OrdinalIgnoreCase))
 
 /// Finds all analyzer files in a nuget package.
+[<Obsolete "Use GetContent instead">]
 let GetAnalyzerFiles(targetFolder) = getFilesMatching targetFolder "*.dll" "analyzers" "analyzer dlls"
-
 
 let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
     NuGetV3.findVersionsForPackage(nugetV3Url, auth, package)
@@ -154,18 +263,31 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
 
         let getPackageDetails force =
             // helper to work through the list sequentially
-            let rec trySelectFirst workLeft =
+            let rec trySelectFirst (errors:exn list) workLeft  =
                 async {
                     match workLeft with
                     | (source, work) :: rest ->
-                        let! r = work
-                        match r with
-                        | ODataSearchResult.Match result -> return Some (source, result)
-                        | ODataSearchResult.EmptyResult -> return! trySelectFirst rest
-                    | [] -> return None
+                        try
+                            let! r = work
+                            match r with
+                            | ODataSearchResult.Match result -> return Some (source, result), errors
+                            | ODataSearchResult.EmptyResult -> return! trySelectFirst errors rest
+                        with
+                        | :? System.IO.IOException as exn ->
+                            // Handling IO exception here for less noise in output: https://github.com/fsprojects/Paket/issues/2480
+                            if verbose then
+                                traceWarnfn "I/O error for source '%O': %O" source exn
+                            else
+                                traceWarnfn "I/O error for source '%O': %s" source exn.Message
+                            return! trySelectFirst (exn :> exn :: errors) rest
+                        | e ->
+                            traceWarnfn "Source '%O' exception: %O" source e
+                            //let capture = ExceptionDispatchInfo.Capture e
+                            return! trySelectFirst (e :: errors) rest
+                    | [] -> return None, errors
                 }
             match inCache with
-            | Some (source, ODataSearchResult.Match result) -> async { return Some (source, result) }
+            | Some (source, ODataSearchResult.Match result) -> async { return Some (source, result), [] }
             | _ ->
                 sources
                 |> List.sortBy (fun source ->
@@ -176,11 +298,23 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                     | s when s.NuGetType = KnownNuGetSources.OfficialNuGetGallery -> 1
                     | _ -> 3)
                 |> List.map (fun source -> source, async {
-                    try
-                        match source with
-                        | NuGetV2 nugetSource ->
+                    match source with
+                    | NuGetV2 nugetSource ->
+                        return! tryV2 nugetSource force
+                    | NuGetV3 nugetSource when urlSimilarToTfsOrVsts nugetSource.Url  ->
+                        match NuGetV3.calculateNuGet2Path nugetSource.Url with
+                        | Some url ->
+                            let nugetSource : NugetSource =
+                                { Url = url
+                                  Authentication = nugetSource.Authentication }
                             return! tryV2 nugetSource force
-                        | NuGetV3 nugetSource when urlSimilarToTfsOrVsts nugetSource.Url  ->
+                        | _ ->
+                            return! tryV3 nugetSource force
+                    | NuGetV3 nugetSource ->
+                        try
+                            return! tryV3 nugetSource force
+                        with
+                        | exn ->
                             match NuGetV3.calculateNuGet2Path nugetSource.Url with
                             | Some url ->
                                 let nugetSource : NugetSource =
@@ -188,49 +322,30 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                                       Authentication = nugetSource.Authentication }
                                 return! tryV2 nugetSource force
                             | _ ->
+                                raise exn
                                 return! tryV3 nugetSource force
-                        | NuGetV3 nugetSource ->
-                            try
-                                return! tryV3 nugetSource force
-                            with
-                            | exn ->
-                                match NuGetV3.calculateNuGet2Path nugetSource.Url with
-                                | Some url ->
-                                    let nugetSource : NugetSource =
-                                        { Url = url
-                                          Authentication = nugetSource.Authentication }
-                                    return! tryV2 nugetSource force
-                                | _ ->
-                                    raise exn
-                                    return! tryV3 nugetSource force
 
-                        | LocalNuGet(path,hasCache) ->
-                            return! NuGetLocal.getDetailsFromLocalNuGetPackage hasCache.IsSome alternativeProjectRoot root path packageName version
-                    with
-                    | :? System.IO.IOException as exn ->
-                        // Handling IO exception here for less noise in output: https://github.com/fsprojects/Paket/issues/2480
-                        if verbose then
-                            traceWarnfn "I/O error for source '%O': %O" source exn
-                        else
-                            traceWarnfn "I/O error for source '%O': %s" source exn.Message
-                        return EmptyResult
-                    | e ->
-                        traceWarnfn "Source '%O' exception: %O" source e
-                        //let capture = ExceptionDispatchInfo.Capture e
-                        return EmptyResult })
-                |> trySelectFirst
+                    | LocalNuGet(path,hasCache) ->
+                        return! NuGetLocal.getDetailsFromLocalNuGetPackage hasCache.IsSome alternativeProjectRoot root path packageName version
+                })
+                |> trySelectFirst []
 
-        let! maybePackageDetails = getPackageDetails force
+        let! maybePackageDetails, errors = getPackageDetails force
         let! source,nugetObject =
             async {
                 let fallback () =
+                    let inner =
+                        match errors with
+                        | [e] -> e
+                        | [] -> null
+                        | l -> AggregateException(l) :> exn
                     match sources |> List.map (fun (s:PackageSource) -> s.ToString()) with
                     | [source] ->
-                        failwithf "Couldn't get package details for package %O %O on %O." packageName version source
+                        rethrowf exn inner "Couldn't get package details for package %O %O on %O." packageName version source
                     | [] ->
-                        failwithf "Couldn't get package details for package %O %O, because no sources were specified." packageName version
+                        rethrowf exn inner "Couldn't get package details for package %O %O, because no sources were specified." packageName version
                     | sources ->
-                        failwithf "Couldn't get package details for package %O %O on any of %A." packageName version sources
+                        rethrowf exn inner "Couldn't get package details for package %O %O on any of %A." packageName version sources
 
                 match maybePackageDetails with
                 | None -> return fallback()
@@ -247,7 +362,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
         let newName = PackageName nugetObject.PackageName
         if packageName <> newName then
             failwithf "Package details for %O are not matching requested package %O." newName packageName
-        
+
         return
             { Name = PackageName nugetObject.PackageName
               Source = source
@@ -590,7 +705,7 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
 
                     if authenticated && verbose then
                         tracefn "Downloading from %O to %s" !downloadUrl targetFileName
-                    
+
                     use trackDownload = Profile.startCategory Profile.Category.NuGetDownload
                     let! license = Async.StartChild(DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
 
@@ -637,7 +752,7 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                         let! bytes = httpResponseStream.AsyncRead(buffer, 0, bufferSize)
                         bytesRead := bytes
                         do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
-                    
+
                     match (httpResponse :?> HttpWebResponse).StatusCode with
                     | HttpStatusCode.OK -> ()
                     | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode

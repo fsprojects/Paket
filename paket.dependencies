@@ -3,7 +3,7 @@ content: none
 
 nuget Newtonsoft.Json redirects: force
 nuget Argu prerelease
-nuget FSharp.Core redirects: force, 
+nuget FSharp.Core redirects: force
 nuget Chessie >= 0.6
 nuget Mono.Cecil prerelease
 
@@ -25,9 +25,12 @@ github fsprojects/FSharp.TypeProviders.StarterPack src/AssemblyReader.fs
 group Build
   content: none
   source https://nuget.org/api/v2
+  source https://ci.appveyor.com/nuget/fsharp-formatting
   
-  nuget FAKE prerelease
-  nuget FSharp.Formatting
+  nuget FAKE
+  nuget FSharp.Formatting prerelease
+  nuget System.ValueTuple
+  nuget Microsoft.AspNet.Razor
   nuget ILRepack
   
   github fsharp/FAKE modules/Octokit/Octokit.fsx
@@ -42,6 +45,6 @@ group Test
   nuget NUnit redirects: force
   nuget NUnit.Console
   nuget NUnit3TestAdapter version_in_path: true               
-  nuget FSharp.Core redirects: force, content: none
+  nuget FSharp.Core redirects: force
 
   github forki/FsUnit FsUnit.fs

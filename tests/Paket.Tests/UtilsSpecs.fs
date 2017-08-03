@@ -271,3 +271,19 @@ let ``saving new XML file should produce valid XML``() =
     finally
         if File.Exists(tempFile) then
             File.Delete(tempFile)
+
+
+[<Test>]
+let ``endsWithIgnoreCase handles shorter strings correct``() =
+    let actual = Paket.Utils.String.endsWithIgnoreCase "long_long" "short"
+    Assert.False(actual)
+    
+[<Test>]
+let ``startsWithIgnoreCase handles shorter strings correct``() =
+    let actual = Paket.Utils.String.startsWithIgnoreCase "long_long" "short"
+    Assert.False(actual)
+
+[<Test>]
+let ``containsIgnoreCase handles shorter strings correct``() =
+    let actual = Paket.Utils.String.containsIgnoreCase "long_long" "short"
+    Assert.False(actual)

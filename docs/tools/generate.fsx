@@ -58,6 +58,7 @@ open System.IO
 open Fake.FileHelper
 open FSharp.Literate
 open FSharp.MetadataFormat
+open FSharp.Formatting.Razor
 
 // Paths with template/source/output locations
 let bin        = __SOURCE_DIRECTORY__ @@ "../../bin"
@@ -95,7 +96,7 @@ let buildReference () =
   let binaries =
     referenceBinaries
     |> List.map (fun lib-> bin @@ lib)
-  MetadataFormat.Generate
+  RazorMetadataFormat.Generate
     ( binaries, output @@ "reference", layoutRootsAll.["en"],
       parameters = ("root", "../")::info,
       sourceRepo = githubLink @@ "tree/master",
@@ -124,7 +125,7 @@ let buildDocumentation () =
         match key with
         | Some lang -> layoutRootsAll.[lang]
         | None -> layoutRootsAll.["en"] // "en" is the default language
-    Literate.ProcessDirectory
+    RazorLiterate.ProcessDirectory
       ( dir, docTemplate, output @@ sub, replacements = ("root", ".")::info,
         layoutRoots = layoutRoots,
         generateAnchors = true )

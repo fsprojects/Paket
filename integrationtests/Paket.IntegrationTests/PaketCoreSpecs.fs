@@ -50,7 +50,8 @@ let ``#1251 install FSharp.Collections.ParallelSeq``() =
     |> shouldBeGreaterThan (SemVer.Parse "1.0.1")
 
 [<Test>]
-let ``#1259 install via script``() = 
+let ``#1259 install via script``() =
+    Environment.SetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
     prepare "i001259-install-script"
 
     Paket.Dependencies

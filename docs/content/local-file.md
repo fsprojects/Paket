@@ -3,9 +3,11 @@
 The `paket.local` file is used for testing changes before releasing new version
 of a dependent project.
 
-**Note:** You *should not commit* `paket.local`. This file should always be
-added to `.gitignore`, because it specifies file paths that are only accessible
-on your machine.
+> Notes: 
+>
+> * You **should not commit** `paket.local`. This file should always be added to `.gitignore`, because it specifies file paths that are only accessible on your machine.
+> * `paket.local` affects only the paket **restore** command, not the install or update command.
+> * By default `paket.local` will only substitute packages with an **identical** version to the `paket.lock` file.  See [Nupkg version](#Nupkg-version) for alternatives.
 
 ## Example use case
 
@@ -131,6 +133,24 @@ should be used for this override. One use case might be when the package version
 is determined by your build server, and `.nupkg`s created locally have zero
 version. This is currently supported only for [source
 override](#Source-override).
+
+Another use case is testing an upgraded pre-release package with an incremented 
+version, against a consuming project.  In this case you want paket in the consuming 
+project to fetch a higher version than the paket.local file indicates.
+
+Example `paket.local` file with version override
+
+```paket
+    // Argu is searched in specific version, grab a specific version
+    nuget Argu -> source C:\github\Argu\bin version 1.0.0
+```
+
+>Notes
+>
+>* `version` is currently supported only for [Source override](#Source-override).
+>* The syntax allows only a specific version, **not** [version constraints](nuget-dependencies.html#Version-constraints) like >= .
+
+
 
 ### Groups
 
