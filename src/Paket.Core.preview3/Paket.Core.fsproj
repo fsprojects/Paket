@@ -95,5 +95,8 @@
       <PackagePath>lib/netstandard1.6</PackagePath>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PRI.LongPath.preview3\PRI.LongPath.fsproj" />
+  </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
