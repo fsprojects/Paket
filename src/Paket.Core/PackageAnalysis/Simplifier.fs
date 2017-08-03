@@ -2,6 +2,7 @@ module Paket.Simplifier
 
 open System
 open System.IO
+open Pri.LongPath
 
 open Paket.Domain
 open Paket.Logging

@@ -1,6 +1,7 @@
 ﻿module Paket.VSIntegration
 
 open System.IO
+open Pri.LongPath
 open Logging
 open System
 open Chessie.ErrorHandling

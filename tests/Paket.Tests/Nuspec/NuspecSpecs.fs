@@ -6,6 +6,7 @@ open FsUnit
 open Paket.Requirements
 open Domain
 open System.IO
+open Pri.LongPath
 open TestHelpers
 
 

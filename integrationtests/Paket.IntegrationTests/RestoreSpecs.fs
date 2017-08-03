@@ -2,6 +2,7 @@
 
 open System
 open System.IO
+open Pri.LongPath
 open Fake
 open NUnit.Framework
 open FsUnit

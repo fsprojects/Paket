@@ -46,6 +46,7 @@ open System
 open Requirements
 open ModuleResolver
 open System.IO
+open Pri.LongPath
 open Logging
 open PackageResolver
 

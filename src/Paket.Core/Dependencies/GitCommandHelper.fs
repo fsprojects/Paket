@@ -4,6 +4,7 @@ module Paket.Git.CommandHelper
 open System
 open System.Diagnostics
 open System.IO
+open Pri.LongPath
 open System.Threading
 open System.Text
 open System.Collections.Generic

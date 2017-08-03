@@ -5,6 +5,7 @@ open NUnit.Framework
 open FsUnit
 open System.Xml
 open System.IO
+open Pri.LongPath
 
 let convertAndCompare file source expectedResult =
     let projectFile = ProjectFile.LoadFromString(file, source)

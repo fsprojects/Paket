@@ -3,6 +3,7 @@
 open System
 open System.Globalization
 open System.IO
+open Pri.LongPath
 open System.Net
 open System.Text
 open Paket

@@ -1,6 +1,7 @@
 ﻿module Paket.IntegrationTests.LocalOverrideSpecs
 
 open System.IO
+open Pri.LongPath
 open System.Xml
 
 open Paket

@@ -6,6 +6,7 @@ type NuGetPackageCache = Paket.NuGetCache.NuGetPackageCache
 
 open System
 open System.IO
+open Pri.LongPath
 open Paket.Logging
 open Paket.Utils
 open Paket.Domain
@@ -209,7 +210,7 @@ let GetLibFiles(targetFolder) =
     |> Array.append libs
     |> Array.append runtimeLibs
     |> Array.filter (fun p ->
-        let ext = System.IO.Path.GetExtension p.FullPath
+        let ext = Path.GetExtension p.FullPath
 
         ".dll".Equals(ext, StringComparison.OrdinalIgnoreCase))
 
@@ -219,7 +220,7 @@ let GetTargetsFiles(targetFolder, (pkg : PackageName)) =
     let packageId = pkg.CompareString
     getFiles targetFolder "build" ".targets files"
     |> Array.filter (fun p ->
-        let name = System.IO.Path.GetFileName p.FullPath
+        let name = Path.GetFileName p.FullPath
         name.Equals(packageId + ".targets", StringComparison.OrdinalIgnoreCase) || name.Equals(packageId + ".props", StringComparison.OrdinalIgnoreCase))
 
 /// Finds all analyzer files in a nuget package.

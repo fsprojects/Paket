@@ -2,6 +2,7 @@
 open Paket.Utils
 open System
 open System.IO
+open Pri.LongPath
 open Paket.Logging
 open Paket
 
@@ -119,7 +120,7 @@ let extractUrlParts (gitConfig:string) =
 
 let getHash repoFolder commitish = 
     try
-        if System.IO.Directory.Exists repoFolder |> not then None else
+        if Directory.Exists repoFolder |> not then None else
         Some (CommandHelper.runSimpleGitCommand repoFolder ("rev-parse --verify " + commitish))
     with
     | _ -> None

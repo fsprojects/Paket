@@ -3,6 +3,7 @@
 module Paket.LoadingScriptTests
 
 open System.IO
+open Pri.LongPath
 open Paket.LoadingScripts
 open Paket.LoadingScripts.ScriptGeneration
 open NUnit.Framework

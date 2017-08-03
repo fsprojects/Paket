@@ -5,6 +5,7 @@ open System.Xml
 open System.Security.Cryptography
 open System.Text
 open System.IO
+open Pri.LongPath
 
 open Chessie.ErrorHandling
 open Paket.Domain

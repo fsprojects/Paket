@@ -3,6 +3,7 @@ module Paket.NuGetV3
 
 open Newtonsoft.Json
 open System.IO
+open Pri.LongPath
 open System.Collections.Generic
 
 open Paket.Domain

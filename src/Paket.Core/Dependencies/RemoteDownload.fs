@@ -7,6 +7,7 @@ open System.IO
 open Paket.Logging
 open Paket.ModuleResolver
 open System.IO.Compression
+open Pri.LongPath
 open Paket.Domain
 open Paket.Git.CommandHelper
 open Paket.Git.Handling

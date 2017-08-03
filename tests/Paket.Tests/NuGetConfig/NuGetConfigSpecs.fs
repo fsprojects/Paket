@@ -1,6 +1,7 @@
 ﻿module Paket.NuGetConfigSpecs
 
 open System.IO
+open Pri.LongPath
 open Paket
 open NUnit.Framework
 open FsUnit

@@ -79,6 +79,11 @@
       <Project>{7bab0ae2-089f-4761-b138-a717aa2f86c5}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\PRI.LongPath\PRI.LongPath.csproj">
+      <Name>PRI.LongPath</Name>
+      <Project>{a7a2e3c6-eaef-42ac-8e37-23d20160dd3e}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

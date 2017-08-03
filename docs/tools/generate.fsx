@@ -1,7 +1,9 @@
 /// Getting help docs from Paket.exe
 #r "../../bin/Argu.dll"
 #r "../../bin/Paket.exe"
+#r "../../packages/build/PRI.LongPath/lib/net45/PRI.LongPath.dll"
 open System.IO
+open Pri.LongPath
 
 
 #if COMMANDS
@@ -55,6 +57,7 @@ let info =
 #r "FakeLib.dll"
 open Fake
 open System.IO
+open Pri.LongPath
 open Fake.FileHelper
 open FSharp.Literate
 open FSharp.MetadataFormat

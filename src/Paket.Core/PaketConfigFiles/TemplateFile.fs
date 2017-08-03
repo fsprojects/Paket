@@ -3,6 +3,7 @@
 open Paket
 open System
 open System.IO
+open Pri.LongPath
 open System.Text.RegularExpressions
 open Chessie.ErrorHandling
 open Paket.Domain

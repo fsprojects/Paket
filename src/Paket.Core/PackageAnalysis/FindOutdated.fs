@@ -5,6 +5,7 @@ open Paket.Domain
 open Paket.Logging
 open Chessie.ErrorHandling
 open System.IO
+open Pri.LongPath
 
 let private adjustVersionRequirements strict includingPrereleases (dependenciesFile: DependenciesFile) =
     let adjust (packageRequirement:Requirements.PackageRequirement) =

@@ -8,6 +8,7 @@ open NUnit.Framework
 open FsUnit
 open System
 open System.IO
+open Pri.LongPath
 
 let scenarios = System.Collections.Generic.List<_>()
 let isLiveUnitTesting = AppDomain.CurrentDomain.GetAssemblies() |> Seq.exists (fun a -> a.GetName().Name = "Microsoft.CodeAnalysis.LiveUnitTesting.Runtime")

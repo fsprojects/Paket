@@ -3,6 +3,7 @@
 open System
 open System.IO
 open System.IO.Compression
+open Pri.LongPath
 open System.Text.RegularExpressions
 open Paket.Domain
 open Paket.NuGetCache

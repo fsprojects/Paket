@@ -1,6 +1,7 @@
 ﻿module Paket.FrameworkCompatibilitySpecs
 
 open System.IO
+open Pri.LongPath
 open Paket
 open Paket.Domain
 open Chessie.ErrorHandling

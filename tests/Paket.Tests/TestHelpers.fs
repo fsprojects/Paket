@@ -7,6 +7,7 @@ open Paket.PackageSources
 open PackageResolver
 open System.Xml
 open System.IO
+open Pri.LongPath
 open Paket.Domain
 
 let makeOrList (l:_ list) =
@@ -139,7 +140,7 @@ let normalizeXml(text:string) =
     xmlTextWriter.Flush()
     stringWriter.GetStringBuilder().ToString()
 
-let toPath elems = System.IO.Path.Combine(elems |> Seq.toArray)
+let toPath elems = Path.Combine(elems |> Seq.toArray)
 
 let ensureDir () = System.Environment.CurrentDirectory <-  NUnit.Framework.TestContext.CurrentContext.TestDirectory
 

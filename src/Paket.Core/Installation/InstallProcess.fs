@@ -9,6 +9,7 @@ open Paket.BindingRedirects
 open Paket.ModuleResolver
 open Paket.PackageResolver
 open System.IO
+open Pri.LongPath
 open Paket.PackageSources
 open Paket.PackagesConfigFile
 open Paket.Requirements

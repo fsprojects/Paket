@@ -4,6 +4,7 @@ module Paket.Program
 open System
 open System.Diagnostics
 open System.IO
+open Pri.LongPath
 
 open Paket.Logging
 open Paket.Commands
@@ -479,7 +480,7 @@ let pack (results : ParseResults<_>) =
                       ?releaseNotes = releaseNotes,
                       ?templateFile = templateFile,
                       excludedTemplates = excludedTemplates,
-                      workingDir = System.IO.Directory.GetCurrentDirectory(),
+                      workingDir = Directory.GetCurrentDirectory(),
                       lockDependencies = lockDependencies,
                       minimumFromLockFile = minimumFromLockFile,
                       pinProjectReferences = pinProjectReferences,

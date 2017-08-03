@@ -4,6 +4,7 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open System.IO
+open Pri.LongPath
 
 open Paket.NuGetV3
 

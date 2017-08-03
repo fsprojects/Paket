@@ -3,6 +3,7 @@
 open System
 open System.Xml
 open System.IO
+open Pri.LongPath
 open Xml
 open Paket.Requirements
 open Paket.Domain

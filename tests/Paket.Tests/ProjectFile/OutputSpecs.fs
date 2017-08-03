@@ -6,7 +6,8 @@ open FsUnit
 open System.Xml
 open System.Xml.Linq
 open TestHelpers
-
+open System.IO
+open Pri.LongPath
 
 [<Test>]
 let ``should detect lib output type for Project1 proj file``() =
@@ -44,7 +45,7 @@ let ``should detect output path for proj file``
         ([<Values("Debug", "Release", "dEbUg", "rElEaSe")>] configuration) =
     ensureDir ()
     let outPath = ProjectFile.TryLoad(sprintf "./ProjectFile/TestData/%s.fsprojtest" project).Value.GetOutputDirectory configuration ""
-    let expected = (System.IO.Path.Combine(@"bin", configuration) |> normalizePath)
+    let expected = (Path.Combine(@"bin", configuration) |> normalizePath)
     outPath.ToLowerInvariant() |> shouldEqual (expected.ToLowerInvariant())
 
 [<Test>]
@@ -55,7 +56,7 @@ let ``should detect output path for netsdk csproj file``
     let projectFile = ProjectFile.TryLoad(sprintf "./ProjectFile/TestData/%s" project).Value 
     let target = projectFile.GetTargetProfile().ToString()
     let outPath = projectFile.GetOutputDirectory configuration ""
-    let expected = (System.IO.Path.Combine(@"bin", configuration, target) |> normalizePath)
+    let expected = (Path.Combine(@"bin", configuration, target) |> normalizePath)
     outPath.ToLowerInvariant() |> shouldEqual (expected.ToLowerInvariant())
 
 [<Test>]
@@ -66,7 +67,7 @@ let ``should detect output path for netsdk with outputPath csproj file``
     let projectFile = ProjectFile.TryLoad(sprintf "./ProjectFile/TestData/%s" project).Value 
     let target = projectFile.GetTargetProfile().ToString()
     let outPath = projectFile.GetOutputDirectory configuration ""
-    let expected = (System.IO.Path.Combine(@"bin", configuration,"netstandard1.4_bin", target) |> normalizePath)
+    let expected = (Path.Combine(@"bin", configuration,"netstandard1.4_bin", target) |> normalizePath)
     outPath.ToLowerInvariant() |> shouldEqual (expected.ToLowerInvariant())
 
 

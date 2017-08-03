@@ -4,6 +4,7 @@ module Paket.Utils
 
 open System
 open System.IO
+open Pri.LongPath
 open System.Net
 open System.Xml
 open System.Text

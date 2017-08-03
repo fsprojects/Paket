@@ -4,6 +4,7 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open System.IO
+open Pri.LongPath
 
 [<Test>]
 let ``Can convert directory name to language``() = 

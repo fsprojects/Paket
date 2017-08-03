@@ -5,6 +5,7 @@ open Paket
 open Paket.Domain
 open Paket.Logging
 open System.IO
+open Pri.LongPath
 
 type ExtractedPackage = {
     GroupName: GroupName

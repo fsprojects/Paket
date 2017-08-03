@@ -4,6 +4,7 @@ module Paket.NuGetConvert
 open Paket
 open System
 open System.IO
+open Pri.LongPath
 open System.Xml
 open Paket.Domain
 open Paket.Logging

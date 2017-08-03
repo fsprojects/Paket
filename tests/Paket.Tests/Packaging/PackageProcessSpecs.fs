@@ -1,6 +1,7 @@
 ﻿module Paket.PackagingProcess.Test
 
 open System.IO
+open Pri.LongPath
 open System.Reflection
 open Paket
 open FsUnit

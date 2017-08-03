@@ -1,6 +1,7 @@
 ﻿module Paket.NuspecWriterSpecs
 
 open System.IO
+open Pri.LongPath
 open Paket
 open Chessie.ErrorHandling
 open FsUnit

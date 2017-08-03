@@ -4,6 +4,7 @@ module Paket.AddProcess
 open Paket
 open System
 open System.IO
+open Pri.LongPath
 open Paket.Domain
 open Paket.Logging
 open InstallProcess

@@ -6,6 +6,8 @@ open NUnit.Framework
 open System.Xml.Linq
 open FsUnit
 open System.Xml
+open System.IO
+open Pri.LongPath
 
 let defaultRedirect = 
     { AssemblyName = "Assembly"
@@ -240,7 +242,7 @@ let ``redirects got properly indented for readability in real world sample docs`
     |> normalizeLineEndings 
     |> shouldEqual (normalizeLineEndings expected)
 
-let toSafePath = System.IO.Path.GetFullPath
+let toSafePath = Path.GetFullPath
 let buildMockGetFiles outcomes =
     let outcomes =
         outcomes

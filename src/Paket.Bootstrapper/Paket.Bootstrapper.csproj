@@ -19,10 +19,10 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\..\bin\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;NET_4_5</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>5</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -30,10 +30,10 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\..\bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;NET_4_5</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <Win32Resource>
@@ -51,6 +51,42 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\PRI.LongPath\PRI.LongPath\Common.cs">
+      <Link>PRI.LongPath\Common.cs</Link>
+    </Compile>
+    <Compile Include="..\PRI.LongPath\PRI.LongPath\Directory.cs">
+      <Link>PRI.LongPath\Directory.cs</Link>
+    </Compile>
+    <Compile Include="..\PRI.LongPath\PRI.LongPath\DirectoryInfo.cs">
+      <Link>PRI.LongPath\DirectoryInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\PRI.LongPath\PRI.LongPath\File.cs">
+      <Link>PRI.LongPath\File.cs</Link>
+    </Compile>
+    <Compile Include="..\PRI.LongPath\PRI.LongPath\FileInfo.cs">
+      <Link>PRI.LongPath\FileInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\PRI.LongPath\PRI.LongPath\FileSystemInfo.cs">
+      <Link>PRI.LongPath\FileSystemInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\PRI.LongPath\PRI.LongPath\JunctionPoint.cs">
+      <Link>PRI.LongPath\JunctionPoint.cs</Link>
+    </Compile>
+    <Compile Include="..\PRI.LongPath\PRI.LongPath\NativeMethods.cs">
+      <Link>PRI.LongPath\NativeMethods.cs</Link>
+    </Compile>
+    <Compile Include="..\PRI.LongPath\PRI.LongPath\Path.cs">
+      <Link>PRI.LongPath\Path.cs</Link>
+    </Compile>
+    <Compile Include="..\PRI.LongPath\PRI.LongPath\Priviledge.cs">
+      <Link>PRI.LongPath\Priviledge.cs</Link>
+    </Compile>
+    <Compile Include="..\PRI.LongPath\PRI.LongPath\SafeFindHandle.cs">
+      <Link>PRI.LongPath\SafeFindHandle.cs</Link>
+    </Compile>
+    <Compile Include="..\PRI.LongPath\PRI.LongPath\SafeTokenHandle.cs">
+      <Link>PRI.LongPath\SafeTokenHandle.cs</Link>
+    </Compile>
     <Compile Include="ArgumentParser.cs" />
     <Compile Include="BootstrapperHelper.cs" />
     <Compile Include="BootstrapperOptions.cs" />
@@ -79,6 +115,9 @@
     <Compile Include="HelperProxies\DateTimeProxy.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\PRI.LongPath\PRI.LongPath\LICENSE">
+      <Link>PRI.LongPath\LICENSE</Link>
+    </None>
     <None Include="paket.template" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

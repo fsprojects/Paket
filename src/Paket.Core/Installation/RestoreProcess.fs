@@ -3,6 +3,7 @@ module Paket.RestoreProcess
 
 open Paket
 open System.IO
+open Pri.LongPath
 open Paket.Domain
 open Paket.Logging
 open Paket.PackageResolver

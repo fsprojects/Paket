@@ -1,6 +1,7 @@
 ﻿module Paket.UtilsSpecs
 
 open System.IO
+open Pri.LongPath
 open Paket
 open NUnit.Framework
 open FsUnit
@@ -249,12 +250,12 @@ let ``should simplify path``() =
     let p1 = "/Users/dna/Downloads/test/aa/src/bb/../cc/D3D.csproj"
     let p2 = "/Users/dna/Downloads/test/aa/src/cc/D3D.csproj"
     let p3 = @"..\cc\D3D.csproj"
-    System.IO.Path.IsPathRooted p0 |> shouldEqual true
-    System.IO.Path.IsPathRooted p1 |> shouldEqual true
-    System.IO.Path.IsPathRooted p2 |> shouldEqual true
-    System.IO.Path.IsPathRooted p3 |> shouldEqual false
-    System.IO.Path.GetFullPath p1 |> shouldEqual (System.IO.Path.GetFullPath p2)
-    System.IO.Path.Combine(normalizePath p0,normalizePath p3) |> Path.GetFullPath |> shouldEqual (System.IO.Path.GetFullPath p2)
+    Path.IsPathRooted p0 |> shouldEqual true
+    Path.IsPathRooted p1 |> shouldEqual true
+    Path.IsPathRooted p2 |> shouldEqual true
+    Path.IsPathRooted p3 |> shouldEqual false
+    Path.GetFullPath p1 |> shouldEqual (Path.GetFullPath p2)
+    Path.Combine(normalizePath p0,normalizePath p3) |> Path.GetFullPath |> shouldEqual (Path.GetFullPath p2)
 
 [<Test>]
 let ``saving new XML file should produce valid XML``() =

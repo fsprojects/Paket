@@ -7,6 +7,7 @@ open Paket.PackageSources
 open System
 open System.Xml
 open System.IO
+open Pri.LongPath
 open Chessie.ErrorHandling
 
 /// Paket API which is optimized for F# Interactive use.

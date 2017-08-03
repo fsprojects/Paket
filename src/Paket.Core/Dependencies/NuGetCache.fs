@@ -3,9 +3,11 @@ module Paket.NuGetCache
 
 open System
 open System.IO
+open Pri.LongPath
 open System.Net
 open Newtonsoft.Json
 open System.IO.Compression
+open Pri.LongPath
 open System.Xml
 open System.Text.RegularExpressions
 open Paket.Logging
@@ -25,6 +27,7 @@ open Paket.Requirements
 open Paket.Logging
 
 open System.IO
+open Pri.LongPath
 open Chessie.ErrorHandling
 
 open Newtonsoft.Json

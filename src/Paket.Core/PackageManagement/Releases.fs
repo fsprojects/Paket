@@ -1,6 +1,7 @@
 ﻿module Paket.Releases
 
 open System.IO
+open Pri.LongPath
 open System.Diagnostics
 open Logging
 open System

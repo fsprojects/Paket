@@ -6,6 +6,7 @@ open Paket.Logging
 open System
 open System.Collections.Generic
 open System.IO
+open Pri.LongPath
 open System.Text
 open System.Text.RegularExpressions
 open System.Xml

@@ -1,6 +1,7 @@
 ﻿module Paket.IntegrationTests.LoadingScriptGenerationTests
 open System
 open System.IO
+open Pri.LongPath
 open NUnit.Framework
 open Paket.IntegrationTests.TestHelpers
 open Paket

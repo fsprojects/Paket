@@ -5,6 +5,7 @@ open System.Text
 open System.Xml
 open System.Xml.Linq
 open System.IO
+open Pri.LongPath
 open System.Reflection
 open Paket.Xml.Linq
 open System.Xml.XPath

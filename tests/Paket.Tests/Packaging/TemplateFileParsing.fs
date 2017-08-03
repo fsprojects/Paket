@@ -1,6 +1,7 @@
 ﻿module Paket.TemplateFile.Test
 
 open System.IO
+open Pri.LongPath
 open Paket
 open Chessie.ErrorHandling
 open FsUnit

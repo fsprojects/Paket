@@ -3,6 +3,7 @@ module Paket.UpdateProcess
 
 open Paket
 open System.IO
+open Pri.LongPath
 open Paket.Domain
 open Paket.PackageResolver
 open System.Collections.Generic

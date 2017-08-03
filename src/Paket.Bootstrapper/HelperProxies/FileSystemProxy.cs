@@ -1,5 +1,9 @@
 using System.IO;
 using System.IO.Compression;
+using Path = Pri.LongPath.Path;
+using Directory = Pri.LongPath.Directory;
+using DirectoryInfo = Pri.LongPath.DirectoryInfo;
+using File = Pri.LongPath.File;
 using System;
 using System.Collections.Generic;
 using System.Reflection;

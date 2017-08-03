@@ -1,6 +1,7 @@
 ﻿namespace Paket
 open System
 open System.IO
+open Pri.LongPath
 open System.Xml.Linq
 open System.IO.Compression
 open Paket
@@ -207,7 +208,7 @@ module internal NupkgWriter =
         r "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" ("/" + corePropsPath) corePropsId
         XDocument(declaration, box root)
 
-    let xDocWriter (xDoc : XDocument) (stream : System.IO.Stream) =
+    let xDocWriter (xDoc : XDocument) (stream : Stream) =
         let settings = new XmlWriterSettings(Indent = true, Encoding = Encoding.UTF8)
         use xmlWriter = XmlWriter.Create(stream, settings)
         xDoc.WriteTo xmlWriter

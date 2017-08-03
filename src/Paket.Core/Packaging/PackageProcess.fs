@@ -3,6 +3,7 @@
 open Paket
 open System
 open System.IO
+open Pri.LongPath
 open System.Reflection
 open Paket.Domain
 open Paket.Logging

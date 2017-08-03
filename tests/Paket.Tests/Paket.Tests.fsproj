@@ -345,6 +345,11 @@
     <Content Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\PRI.LongPath\PRI.LongPath.csproj">
+      <Name>PRI.LongPath</Name>
+      <Project>{a7a2e3c6-eaef-42ac-8e37-23d20160dd3e}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Net.Http" />

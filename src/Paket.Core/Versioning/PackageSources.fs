@@ -2,6 +2,7 @@
 
 open System
 open System.IO
+open Pri.LongPath
 open System.Text.RegularExpressions
 
 open Paket.Logging

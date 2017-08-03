@@ -3,6 +3,7 @@
 module DependenciesFileParser =
     open System
     open System.IO
+    open Pri.LongPath
     open Requirements
     open ModuleResolver
     open Domain

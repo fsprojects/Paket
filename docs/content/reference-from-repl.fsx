@@ -14,6 +14,10 @@ you have on your system.
 open System
 open System.IO
 
+#r "../../packages/build/PRI.LongPath/lib/net45/PRI.LongPath.dll"
+
+open Pri.LongPath
+
 Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
 
 if not (File.Exists "paket.exe") then
@@ -90,7 +94,7 @@ dependencies.GetDirectDependenciesForPackage("Main", "FSharp.Compiler.Service")
 // [fsi:  ...]
 
 // List all usages of a package in Paket.
-let paketDependencies = Dependencies.Locate(System.IO.Path.Combine(__SOURCE_DIRECTORY__,".."))
+let paketDependencies = Dependencies.Locate(Path.Combine(__SOURCE_DIRECTORY__,".."))
 // [fsi:found: D:\code\Paket\paket.dependencies]
 paketDependencies.FindReferencesFor "UnionArgParser"
 // [fsi:val it : string list = ["D:\code\Paket\src\Paket\Paket.fsproj"]]

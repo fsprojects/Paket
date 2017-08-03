@@ -196,6 +196,7 @@ module RuntimeGraph =
         |> Option.defaultValue []
 
     open System.IO
+    open Pri.LongPath
     /// Downloads the given package into the nuget cache and read its runtime.json.
     let getRuntimeGraphFromNugetCache root groupName (package:ResolvedPackage) =
         // 1. downloading packages into cache

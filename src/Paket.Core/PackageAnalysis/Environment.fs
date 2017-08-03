@@ -1,6 +1,7 @@
 ﻿namespace Paket
 
 open System.IO
+open Pri.LongPath
 
 open Chessie.ErrorHandling
 open Paket.Domain

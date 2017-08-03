@@ -7,6 +7,7 @@ open Paket.TestHelpers
 open Paket.Domain
 open Paket.Requirements
 open System.IO
+open Pri.LongPath
 
 let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">

@@ -6,6 +6,10 @@ using Paket.Bootstrapper.DownloadStrategies;
 using Paket.Bootstrapper.HelperProxies;
 using System.Security.Cryptography;
 using System.IO;
+using Path = Pri.LongPath.Path;
+using Directory = Pri.LongPath.Directory;
+using DirectoryInfo = Pri.LongPath.DirectoryInfo;
+using File = Pri.LongPath.File;
 
 namespace Paket.Bootstrapper.Tests.DownloadStrategies
 {

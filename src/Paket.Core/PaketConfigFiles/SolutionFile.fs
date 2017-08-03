@@ -1,6 +1,7 @@
 ﻿namespace Paket
 
 open System.IO
+open Pri.LongPath
 open Logging
 open System
 

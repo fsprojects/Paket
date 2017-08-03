@@ -8,6 +8,7 @@ module internal ProviderImplementation.AssemblyReader
 
 open System
 open System.IO
+open Pri.LongPath
 open System.Collections.Generic
 open System.Collections.Concurrent
 open System.Reflection

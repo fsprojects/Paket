@@ -3,6 +3,7 @@ namespace Paket
 open System
 open System.Collections.Generic
 open System.IO
+open Pri.LongPath
 open Paket.Domain
 open Paket.Git.Handling
 open Paket.Logging

@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+VisualStudioVersion = 15.0.26621.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}"
 EndProject
@@ -108,10 +108,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{62D18A
 		.paket\paket.targets = .paket\paket.targets
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PRI.LongPath", "src\PRI.LongPath\PRI.LongPath.csproj", "{A7A2E3C6-EAEF-42AC-8E37-23D20160DD3E}"
+EndProject
 Global
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -141,6 +140,10 @@ Global
 		{7234B9B4-8CF5-4E68-AA29-050C087B9246}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7234B9B4-8CF5-4E68-AA29-050C087B9246}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7234B9B4-8CF5-4E68-AA29-050C087B9246}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7A2E3C6-EAEF-42AC-8E37-23D20160DD3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7A2E3C6-EAEF-42AC-8E37-23D20160DD3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7A2E3C6-EAEF-42AC-8E37-23D20160DD3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7A2E3C6-EAEF-42AC-8E37-23D20160DD3E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -152,6 +155,12 @@ Global
 		{4425A246-BD18-4622-86B5-0154F19165E4} = {8E6D5255-776D-4B61-85F9-73C37AA1FB9A}
 		{7C622582-E281-4EAB-AADA-B5893BB89B45} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 		{7234B9B4-8CF5-4E68-AA29-050C087B9246} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5CA1A756-A69D-44CF-9622-C3D3E0405AAC}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true

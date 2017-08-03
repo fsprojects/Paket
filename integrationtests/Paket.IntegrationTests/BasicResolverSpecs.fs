@@ -1,5 +1,5 @@
 ﻿#if INTERACTIVE
-System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
+PRI.LongPath.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
 #r "../../packages/test/NUnit/lib/net45/nunit.framework.dll"
 #r "../../packages/build/FAKE/tools/Fakelib.dll"
 #r "../../packages/Chessie/lib/net40/Chessie.dll"
@@ -18,6 +18,7 @@ open NUnit.Framework
 open FsUnit
 open System
 open System.IO
+open Pri.LongPath
 open Paket.Domain
 
 [<Test>]

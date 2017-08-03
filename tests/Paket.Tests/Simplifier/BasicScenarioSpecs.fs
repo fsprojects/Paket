@@ -3,13 +3,15 @@ module Paket.Simplifier.BasicScenarioSpecs
 open Paket
 
 open System
+open System.IO
+open Pri.LongPath
 open NUnit.Framework
 open FsUnit
 open Paket.Domain
 open Paket.TestHelpers
 open Paket.InstallProcess
 
-let dummyDir = System.IO.DirectoryInfo("C:/")
+let dummyDir = DirectoryInfo("C:/")
 let dummyProjectFile = 
     { FileName = ""
       OriginalText = ""

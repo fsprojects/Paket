@@ -9,6 +9,7 @@ open Paket.Domain
 open Paket.TestHelpers
 open System.Text
 open System.IO
+open Pri.LongPath
 
 let model =
     InstallModel.CreateFromLibs(PackageName "Microsoft.CodeAnalysis.Analyzers", SemVer.Parse "1.0.0", FrameworkRestriction.NoRestriction,

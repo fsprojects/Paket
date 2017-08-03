@@ -32,6 +32,8 @@ group Build
   nuget System.ValueTuple
   nuget Microsoft.AspNet.Razor
   nuget ILRepack
+  #Note: paket itself includes LongPath by source, but we also need it for bootstrapping and build support
+  nuget PRI.LongPath
   
   github fsharp/FAKE modules/Octokit/Octokit.fsx
 

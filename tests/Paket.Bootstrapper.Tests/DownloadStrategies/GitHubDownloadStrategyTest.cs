@@ -1,5 +1,9 @@
 ﻿using System;
 using System.IO;
+using Path = Pri.LongPath.Path;
+using Directory = Pri.LongPath.Directory;
+using DirectoryInfo = Pri.LongPath.DirectoryInfo;
+using File = Pri.LongPath.File;
 using System.Reflection;
 using System.Security.Cryptography;
 using Moq;

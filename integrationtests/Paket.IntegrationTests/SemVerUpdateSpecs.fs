@@ -7,6 +7,7 @@ open NUnit.Framework
 open FsUnit
 open System
 open System.IO
+open Pri.LongPath
 open Paket.Domain
 
 [<Test>]

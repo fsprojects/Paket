@@ -6,6 +6,7 @@ open FsUnit
 open Paket.Domain
 open Paket.Requirements
 open System.IO
+open Pri.LongPath
 
 let emptymodel = InstallModel.EmptyModel(PackageName "Unknown",SemVer.Parse "0.1")
 

@@ -6,6 +6,7 @@ open System.IO
 open System.Net
 open Newtonsoft.Json
 open System.IO.Compression
+open Pri.LongPath
 open System.Xml
 open System.Text.RegularExpressions
 open Paket.Logging

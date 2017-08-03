@@ -6,6 +6,7 @@ open NUnit.Framework
 open FsUnit
 open Domain
 open System.IO
+open Pri.LongPath
 
 [<Test>]
 let ``can write xunit.visualstudio.packages.config``() = 
