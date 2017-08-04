@@ -232,36 +232,48 @@ namespace Pri.LongPath
 			return Common.IsPathUnc(path) ? path : Path.RemoveLongPathPrefix(Path.NormalizeLongPath(path));
 		}
 
-		public static string GetDirectoryName(string path)
-		{
-		    if (Common.IsRunningOnMono()) return System.IO.Path.GetDirectoryName(path);
+        public static String GetDirectoryName(String path)
+        {
+            if (path != null)
+            {
+                bool removedPrefix;
+                String tempPath = TryRemoveLongPathPrefix(path, out removedPrefix);
 
-			if (path == null) throw new ArgumentNullException("path");
-			Path.CheckInvalidPathChars(path);
-		    string basePath = null;
-            if (!IsPathRooted(path))
-                basePath = System.IO.Directory.GetCurrentDirectory();
+                Path.CheckInvalidPathChars(tempPath);
+                int root = GetRootLength(tempPath);
+                int i = tempPath.Length;
+                if (i > root)
+                {
+                    i = tempPath.Length;
+                    if (i == root) return null;
+                    while (i > root && tempPath[--i] != Path.DirectorySeparatorChar && tempPath[i] != Path.AltDirectorySeparatorChar) ;
+                    String result = tempPath.Substring(0, i);
+                    if (removedPrefix)
+                    {
+                        result = Path.AddLongPathPrefix(result);
+                    }
 
-		    path = Path.RemoveLongPathPrefix(Path.NormalizeLongPath(path));
-		    int rootLength = GetRootLength(path);
-		    
-            if (path.Length <= rootLength) return null;
-		    int length = path.Length;
-			do
-			{
-			} while (length > rootLength && path[--length] != System.IO.Path.DirectorySeparatorChar &&
-					 path[length] != System.IO.Path.AltDirectorySeparatorChar);
-		    if (basePath != null)
-		    {
-		        path = path.Substring(basePath.Length + 1);
-		        length = length - basePath.Length - 1;
-                if (length < 0)
-                    length = 0;
-		    }
-		    return path.Substring(0, length);
-		}
+                    return result;
+                }
+            }
+            return null;
+        }
 
-	    private static int GetUncRootLength(string path)
+        private static String TryRemoveLongPathPrefix(String path, out bool removed)
+        {
+            if (path == null) throw new ArgumentNullException(nameof(path));
+            removed = Path.HasLongPathPrefix(path);
+            if (!removed)
+                return path;
+            return Path.RemoveLongPathPrefix(path);
+        }
+
+        internal static bool HasLongPathPrefix(string path)
+        {
+            return path.StartsWith(LongPathPrefix, StringComparison.Ordinal);
+        }
+
+        private static int GetUncRootLength(string path)
         {
             var components = path.Split(new[] { DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
             var root = string.Format(@"\\{0}\{1}\", components[0], components[1]);
