@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-
-# https://github.com/dotnet/cli/issues/6317#issuecomment-294193469
-export DOTNET_SKIP_FIRST_TIME_EXPERIENCE="1"
-
 if test "$OS" = "Windows_NT"
 then
   # use .Net
