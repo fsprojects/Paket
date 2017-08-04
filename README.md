@@ -51,6 +51,9 @@ Note, that short description and syntax for each command is generated automatica
 
 The [MIT license][6]
 
+Long path support provided by [PRI.LongPath](https://github.com/peteraritchie/longPath) ([LGPL](src/PRI.LongPath/PRI.LongPath/LICENSE))
+
+
 ## Maintainer(s)
 
 - [@forki](https://github.com/forki)
