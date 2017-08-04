@@ -7,7 +7,7 @@ open System.IO
 
 open Paket.NuGetV3
 
-[<Test>]
+[<Test>] 
 let ``can extract all versions from Rx-Platformservice.json``() = 
     File.ReadAllText "JSON-LD/Rx-PlatformServices.json" 
     |> extractAutoCompleteVersions
