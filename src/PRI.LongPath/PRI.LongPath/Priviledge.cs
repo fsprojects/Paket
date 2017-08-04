@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.ConstrainedExecution;
 using System.Threading;
 
+#if netfx
 namespace Pri.LongPath
 {
     using Luid=NativeMethods.LUID;
@@ -159,7 +160,7 @@ namespace Pri.LongPath
             private static SafeTokenHandle processHandle = new SafeTokenHandle( IntPtr.Zero );
             private static readonly object syncRoot = new object();
 
-            #region Constructor and finalizer
+#region Constructor and finalizer
             public TlsContents()
             {
                 int error = 0;
@@ -285,9 +286,9 @@ namespace Pri.LongPath
                     Dispose( false );
                 }
             }
-            #endregion
+#endregion
 
-            #region IDisposable implementation
+#region IDisposable implementation
             public void Dispose()
             {
                 Dispose( true );
@@ -311,9 +312,9 @@ namespace Pri.LongPath
 
                 this.disposed = true;
             }
-            #endregion
+#endregion
 
-            #region Reference-counting
+#region Reference-counting
             public void IncrementReferenceCount()
             {
                 this.referenceCount++;
@@ -335,9 +336,9 @@ namespace Pri.LongPath
             {
                 get { return this.referenceCount; }
             }
-            #endregion
+#endregion
 
-            #region Properties
+#region Properties
             public SafeTokenHandle ThreadHandle
             {
                 get { return this.threadHandle; }
@@ -347,7 +348,7 @@ namespace Pri.LongPath
             {
                 get { return this.isImpersonating; }
             }
-            #endregion
+#endregion
         }
 
         public Privilege( string privilegeName )
@@ -679,3 +680,4 @@ namespace Pri.LongPath
         }
     }
 }
+#endif

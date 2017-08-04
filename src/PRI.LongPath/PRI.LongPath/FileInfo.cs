@@ -214,12 +214,13 @@ namespace Pri.LongPath
 			return new FileInfo(destinationFilename);
 		}
 
-		public FileSecurity GetAccessControl()
+#if netfx
+        public FileSecurity GetAccessControl()
 		{
 			return File.GetAccessControl(FullPath);
 		}
 
-		public FileSecurity GetAccessControl(AccessControlSections includeSections)
+        public FileSecurity GetAccessControl(AccessControlSections includeSections)
 		{
 			return File.GetAccessControl(FullPath, includeSections);
 		}
@@ -227,6 +228,8 @@ namespace Pri.LongPath
 		public void SetAccessControl(FileSecurity security)
 		{
 			File.SetAccessControl(FullPath, security);
-		}
-	}
+        }
+#endif
+
+    }
 }

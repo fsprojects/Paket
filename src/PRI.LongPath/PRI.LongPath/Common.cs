@@ -268,8 +268,13 @@ namespace Pri.LongPath
 				{
 					case NativeMethods.ERROR_NOT_ALL_ASSIGNED:
 					case NativeMethods.ERROR_PRIVILEGE_NOT_HELD:
+
+#if netfx
 						throw new PrivilegeNotHeldException("SeSecurityPrivilege");
-					case NativeMethods.ERROR_ACCESS_DENIED:
+#else
+                        throw new Exception();
+#endif
+                    case NativeMethods.ERROR_ACCESS_DENIED:
 					case NativeMethods.ERROR_CANT_OPEN_ANONYMOUS:
 					case NativeMethods.ERROR_LOGON_FAILURE:
 						throw new UnauthorizedAccessException();
@@ -283,6 +288,7 @@ namespace Pri.LongPath
 			}
 		}
 
+#if netfx
 		internal static SecurityInfos ToSecurityInfos(AccessControlSections accessControlSections)
 		{
 			SecurityInfos securityInfos = 0;
@@ -580,8 +586,9 @@ namespace Pri.LongPath
 
 			return errorCode;
 		}
+#endif
 
-		public static bool IsPathUnc(string path)
+        public static bool IsPathUnc(string path)
 		{
 			Uri uri;
 			return (!string.IsNullOrEmpty(path) && path.StartsWith(Path.UNCLongPathPrefix, StringComparison.InvariantCultureIgnoreCase)) || (Uri.TryCreate(path, UriKind.Absolute, out uri) && uri.IsUnc);
@@ -591,5 +598,5 @@ namespace Pri.LongPath
 		{
 			return path == "." || path == "..";
 		}
-	}
+    }
 }

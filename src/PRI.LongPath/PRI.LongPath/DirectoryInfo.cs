@@ -210,8 +210,8 @@ namespace Pri.LongPath
 
 			File.Move(fullSourcePath, fullDestDirName);
 		}
-
-		public void Create(DirectorySecurity directorySecurity)
+#if netfx
+        public void Create(DirectorySecurity directorySecurity)
 		{
 			Directory.CreateDirectory(FullPath, directorySecurity);
 		}
@@ -226,7 +226,8 @@ namespace Pri.LongPath
 			}
 			Directory.CreateDirectory(newDir, directorySecurity);
 			return new DirectoryInfo(newDir);
-		}
+        }
+#endif
 
 #if NET_4_0 || NET_4_5
         public IEnumerable<DirectoryInfo> EnumerateDirectories()
@@ -239,8 +240,8 @@ namespace Pri.LongPath
             return Directory.EnumerateFileSystemEntries(FullPath, "*", true, false, System.IO.SearchOption.TopDirectoryOnly).Select(directory => new DirectoryInfo(directory));
 		}
 #endif
-
-		public DirectorySecurity GetAccessControl()
+#if netfx
+        public DirectorySecurity GetAccessControl()
 		{
 			return Directory.GetAccessControl(FullPath);
 		}
@@ -249,6 +250,7 @@ namespace Pri.LongPath
 		{
 			return Directory.GetAccessControl(FullPath, includeSections);
 		}
+#endif
 
 		public DirectoryInfo[] GetDirectories()
 		{
@@ -315,7 +317,7 @@ namespace Pri.LongPath
             {
 #if NET_4_0 || NET_4_5
                 return SysDirectoryInfo.GetFileSystemInfos(searchPattern, searchOption).Select(s => s.FullName).Select(e => Directory.Exists(e) ? (FileSystemInfo)new DirectoryInfo(e) : (FileSystemInfo)new FileInfo(e)).ToArray();
-#else 
+#else
                 //throw new NotImplementedException("This function is not supported in ");
                 var fileInfos = SysDirectoryInfo.GetFiles(searchPattern);
                 var directories = SysDirectoryInfo.GetDirectories(searchPattern);
@@ -363,10 +365,12 @@ namespace Pri.LongPath
 					.Select(e => Directory.Exists(e) ? (FileSystemInfo)new DirectoryInfo(e) : (FileSystemInfo)new FileInfo(e)).ToArray();
 		}
 
+#if netfx
 		public void SetAccessControl(DirectorySecurity directorySecurity)
 		{
 			Directory.SetAccessControl(FullPath, directorySecurity);
 		}
+#endif
 
 		public override string ToString()
 		{

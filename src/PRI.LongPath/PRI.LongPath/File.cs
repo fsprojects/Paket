@@ -162,63 +162,65 @@ namespace Pri.LongPath
             return Open(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None, bufferSize, options);
 		}
 
-		public static FileStream Create(string path, int bufferSize, FileOptions options, FileSecurity fileSecurity)
+#if netfx
+        public static FileStream Create(string path, int bufferSize, FileOptions options, FileSecurity fileSecurity)
 		{
 			var fileStream = Create(path, bufferSize, options);
 			fileStream.SetAccessControl(fileSecurity);
 			return fileStream;
 		}
+#endif
 
-		/// <summary>
-		///     Deletes the specified file.
-		/// </summary>
-		/// <param name="path">
-		///      A <see cref="String"/> containing the path of the file to delete.
-		/// </param>
-		/// <exception cref="ArgumentNullException">
-		///     <paramref name="path"/> is <see langword="null"/>.
-		/// </exception>
-		/// <exception cref="ArgumentException">
-		///     <paramref name="path"/> is an empty string (""), contains only white
-		///     space, or contains one or more invalid characters as defined in
-		///     <see cref="Path.GetInvalidPathChars()"/>.
-		///     <para>
-		///         -or-
-		///     </para>
-		///     <paramref name="path"/> contains one or more components that exceed
-		///     the drive-defined maximum length. For example, on Windows-based
-		///     platforms, components must not exceed 255 characters.
-		/// </exception>
-		/// <exception cref="PathTooLongException">
-		///     <paramref name="path"/> exceeds the system-defined maximum length.
-		///     For example, on Windows-based platforms, paths must not exceed
-		///     32,000 characters.
-		/// </exception>
-		/// <exception cref="FileNotFoundException">
-		///     <paramref name="path"/> could not be found.
-		/// </exception>
-		/// <exception cref="DirectoryNotFoundException">
-		///     One or more directories in <paramref name="path"/> could not be found.
-		/// </exception>
-		/// <exception cref="UnauthorizedAccessException">
-		///     The caller does not have the required access permissions.
-		///     <para>
-		///         -or-
-		///     </para>
-		///     <paramref name="path"/> refers to a file that is read-only.
-		///     <para>
-		///         -or-
-		///     </para>
-		///     <paramref name="path"/> is a directory.
-		/// </exception>
-		/// <exception cref="IOException">
-		///     <paramref name="path"/> refers to a file that is in use.
-		///     <para>
-		///         -or-
-		///     </para>
-		///     <paramref name="path"/> specifies a device that is not ready.
-		/// </exception>
-		public static void Delete(string path)
+        /// <summary>
+        ///     Deletes the specified file.
+        /// </summary>
+        /// <param name="path">
+        ///      A <see cref="String"/> containing the path of the file to delete.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        ///     <paramref name="path"/> is <see langword="null"/>.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        ///     <paramref name="path"/> is an empty string (""), contains only white
+        ///     space, or contains one or more invalid characters as defined in
+        ///     <see cref="Path.GetInvalidPathChars()"/>.
+        ///     <para>
+        ///         -or-
+        ///     </para>
+        ///     <paramref name="path"/> contains one or more components that exceed
+        ///     the drive-defined maximum length. For example, on Windows-based
+        ///     platforms, components must not exceed 255 characters.
+        /// </exception>
+        /// <exception cref="PathTooLongException">
+        ///     <paramref name="path"/> exceeds the system-defined maximum length.
+        ///     For example, on Windows-based platforms, paths must not exceed
+        ///     32,000 characters.
+        /// </exception>
+        /// <exception cref="FileNotFoundException">
+        ///     <paramref name="path"/> could not be found.
+        /// </exception>
+        /// <exception cref="DirectoryNotFoundException">
+        ///     One or more directories in <paramref name="path"/> could not be found.
+        /// </exception>
+        /// <exception cref="UnauthorizedAccessException">
+        ///     The caller does not have the required access permissions.
+        ///     <para>
+        ///         -or-
+        ///     </para>
+        ///     <paramref name="path"/> refers to a file that is read-only.
+        ///     <para>
+        ///         -or-
+        ///     </para>
+        ///     <paramref name="path"/> is a directory.
+        /// </exception>
+        /// <exception cref="IOException">
+        ///     <paramref name="path"/> refers to a file that is in use.
+        ///     <para>
+        ///         -or-
+        ///     </para>
+        ///     <paramref name="path"/> specifies a device that is not ready.
+        /// </exception>
+        public static void Delete(string path)
 		{
 		    if (Common.IsRunningOnMono())
 		    {
@@ -937,7 +939,9 @@ namespace Pri.LongPath
 				Common.ThrowIOError(Marshal.GetLastWin32Error(), String.Empty);
 		}
 
-		public static void SetAccessControl(string path, FileSecurity fileSecurity)
+#if netfx
+
+        public static void SetAccessControl(string path, FileSecurity fileSecurity)
 		{
 		    if (Common.IsRunningOnMono())
 		    {
@@ -991,8 +995,9 @@ namespace Pri.LongPath
 			fs.SetSecurityDescriptorBinaryForm(BinaryForm);
 			return fs;
 		}
+#endif
 
-		[SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "handle is stored by caller")]
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "handle is stored by caller")]
 		internal static SafeFileHandle GetFileHandle(string normalizedPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
         { 
             bool append = mode == FileMode.Append;

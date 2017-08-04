@@ -1,16 +1,18 @@
-FSharp.NET.Sdk
-Newtonsoft.Json
-Mono.Cecil
-Chessie
 
-System.Diagnostics.TraceSource
-System.Xml.XPath.XmlDocument
-System.Diagnostics.Process
-System.Xml.XDocument
-System.Xml.XPath.XDocument
-System.Security.Cryptography.ProtectedData
-System.Security.Cryptography.Algorithms
-System.Diagnostics.FileVersionInfo
 
 File:Globbing.fs .
 File:AssemblyReader.fs .
+
+group netcore
+	Newtonsoft.Json
+	Mono.Cecil
+	Chessie
+
+	System.Diagnostics.TraceSource
+	System.Xml.XPath.XmlDocument
+	System.Diagnostics.Process
+	System.Xml.XDocument
+	System.Xml.XPath.XDocument
+	System.Security.Cryptography.ProtectedData
+	System.Security.Cryptography.Algorithms
+	System.Diagnostics.FileVersionInfo

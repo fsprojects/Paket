@@ -414,8 +414,8 @@ namespace Pri.LongPath
 		[ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 		internal static extern
 			IntPtr GetCurrentThread();
-
-		[DllImport(
+#if netfx
+        [DllImport(
 			 "advapi32.dll",
 			 CharSet = CharSet.Unicode,
 			 SetLastError = true)]
@@ -452,7 +452,9 @@ namespace Pri.LongPath
 			[In]    TokenType TokenType,
 			[In, Out] ref SafeTokenHandle NewToken);
 
-		[DllImport
+#endif
+
+        [DllImport
 			 ("advapi32.dll",
 			 CharSet = CharSet.Unicode,
 			 SetLastError = true)]
@@ -461,6 +463,6 @@ namespace Pri.LongPath
 		bool SetThreadToken(
 			[In]    IntPtr Thread,
 			[In]    SafeTokenHandle Token);
-		#endregion
+#endregion
 	}
 }

@@ -1,4 +1,5 @@
-Argu
-Chessie
-FSharp.NET.Sdk
-Microsoft.NETCore.App
+
+group netcore
+	Argu
+	Chessie
+	Microsoft.NETCore.App

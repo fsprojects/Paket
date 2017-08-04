@@ -50,3 +50,25 @@ group Test
   nuget FSharp.Core redirects: force
 
   github forki/FsUnit FsUnit.fs
+
+  
+group netcore
+	source https://nuget.org/api/v2
+	content: none
+
+	nuget Newtonsoft.Json redirects: force
+	nuget Argu prerelease
+	nuget FSharp.Core redirects: force
+	nuget Chessie >= 0.6
+	nuget Mono.Cecil prerelease
+	nuget NETStandard.Library >= 2.0 prerelease
+	nuget Microsoft.NETCore.App >= 2.0 prerelease
+	
+	nuget System.Diagnostics.TraceSource
+	nuget System.Xml.XPath.XmlDocument
+	nuget System.Diagnostics.Process
+	nuget System.Xml.XDocument
+	nuget System.Xml.XPath.XDocument
+	nuget System.Security.Cryptography.ProtectedData
+	nuget System.Security.Cryptography.Algorithms
+	nuget System.Diagnostics.FileVersionInfo

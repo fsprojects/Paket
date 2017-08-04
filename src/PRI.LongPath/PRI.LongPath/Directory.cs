@@ -937,7 +937,8 @@ namespace Pri.LongPath
 			return directoryName == null ? null : new DirectoryInfo(directoryName);
 		}
 
-		public static DirectoryInfo CreateDirectory(string path, DirectorySecurity directorySecurity)
+#if netfx
+        public static DirectoryInfo CreateDirectory(string path, DirectorySecurity directorySecurity)
 		{
 			CreateDirectory(path);
 			SetAccessControl(path, directorySecurity);
@@ -980,8 +981,9 @@ namespace Pri.LongPath
 			ds.SetSecurityDescriptorBinaryForm(binaryForm);
 			return ds;
 		}
+#endif
 
-		public static DateTime GetCreationTime(string path)
+        public static DateTime GetCreationTime(string path)
 		{
 			return GetCreationTimeUtc(path).ToLocalTime();
 		}
@@ -1071,7 +1073,8 @@ namespace Pri.LongPath
 			return System.IO.Directory.GetLogicalDrives();
 		}
 
-		public static void SetAccessControl(string path, DirectorySecurity directorySecurity)
+#if netfx
+        public static void SetAccessControl(string path, DirectorySecurity directorySecurity)
 		{
 		    if (Common.IsRunningOnMono())
 		    {
@@ -1085,8 +1088,9 @@ namespace Pri.LongPath
 
 			Common.SetAccessControlExtracted(directorySecurity, name);
 		}
+#endif
 
-		public static void SetCreationTime(string path, DateTime creationTime)
+        public static void SetCreationTime(string path, DateTime creationTime)
 		{
 			SetCreationTimeUtc(path, creationTime.ToUniversalTime());
 		}

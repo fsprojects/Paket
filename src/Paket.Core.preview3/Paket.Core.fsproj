@@ -1,6 +1,6 @@
-<Project Sdk="FSharp.NET.Sdk;Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard1.6</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <PaketCoreSourcesDir>..\Paket.Core</PaketCoreSourcesDir>
   </PropertyGroup>
   <ItemGroup>
@@ -96,7 +96,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PRI.LongPath.preview3\PRI.LongPath.fsproj" />
+    <ProjectReference Include="..\PRI.LongPath.preview3\PRI.Longpath.csproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
