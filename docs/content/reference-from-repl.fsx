@@ -14,7 +14,7 @@ you have on your system.
 open System
 open System.IO
 
-#r "../../packages/build/PRI.LongPath/lib/net45/PRI.LongPath.dll"
+#r "../../packages/build/Pri.LongPath/lib/net45/Pri.LongPath.dll"
 
 open Pri.LongPath
 

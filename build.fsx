@@ -4,7 +4,7 @@ System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
 // --------------------------------------------------------------------------------------
 
 #r @"packages/build/FAKE/tools/FakeLib.dll"
-#r "packages/build/PRI.LongPath/lib/net45/PRI.LongPath.dll"
+#r "packages/build/Pri.LongPath/lib/net45/Pri.LongPath.dll"
 #r "System.IO.Compression.FileSystem"
 
 open Fake

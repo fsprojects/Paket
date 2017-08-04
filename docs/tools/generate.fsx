@@ -1,7 +1,7 @@
 /// Getting help docs from Paket.exe
 #r "../../bin/Argu.dll"
 #r "../../bin/Paket.exe"
-#r "../../packages/build/PRI.LongPath/lib/net45/PRI.LongPath.dll"
+#r "../../packages/build/Pri.LongPath/lib/net45/Pri.LongPath.dll"
 open System.IO
 open Pri.LongPath
 
