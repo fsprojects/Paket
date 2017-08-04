@@ -532,8 +532,10 @@ namespace Pri.LongPath
 		/// </exception>
 		internal static FileStream Open(string path, FileMode mode, FileAccess access,
 			FileShare share, int bufferSize, FileOptions options)
-		{
-			const int defaultBufferSize = 1024;
+        {
+            if (Common.IsRunningOnMono()) return System.IO.File.Open(path, mode, access, share);
+
+                const int defaultBufferSize = 1024;
 
 			if (bufferSize == 0)
 				bufferSize = defaultBufferSize;
