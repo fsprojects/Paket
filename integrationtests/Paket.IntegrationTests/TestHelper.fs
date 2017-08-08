@@ -73,6 +73,7 @@ let directPaketInPath command scenarioPath =
             ExecProcessWithLambdas (fun info ->
               info.FileName <- paketToolPath
               info.WorkingDirectory <- scenarioPath
+              info.CreateNoWindow <- true
               info.Arguments <- command)
               (System.TimeSpan.FromMinutes 7.)
               true
