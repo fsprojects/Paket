@@ -105,7 +105,10 @@ let directPaketInPath command scenarioPath =
 
     if result <> 0 then 
         let errors = String.Join(Environment.NewLine,msgs |> Seq.filter fst |> Seq.map snd)
-        failwith errors      
+        if String.IsNullOrWhiteSpace errors then
+            failwithf "The process exited with code %i" result
+        else
+            failwith errors
 
 
     String.Join(Environment.NewLine,msgs |> Seq.map snd)
