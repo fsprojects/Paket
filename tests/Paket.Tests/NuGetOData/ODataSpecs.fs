@@ -84,7 +84,7 @@ let ``can detect explicit dependencies for Fleece``() =
           Unlisted = false
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           LicenseUrl = "https://raw.github.com/mausch/Fleece/master/LICENSE"
-          NormalizedVersion = "0.4.0"
+          Version = SemVer.Parse "0.4.0"
           SerializedDependencies = 
             [PackageName "FSharpPlus",DependenciesFileParser.parseVersionRequirement(">= 0.0.4"),"true"
              PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"),"true"
