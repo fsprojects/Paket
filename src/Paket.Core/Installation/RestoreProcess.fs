@@ -242,10 +242,9 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
             if verbose then
                 tracefn " - %s already up-to-date" fileInfo.FullName
 
-let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:LockFile) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,ResolvedPackage>>) targetFilter (groups:Map<GroupName,LockFileGroup>) =
+let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:LockFile) (projectFile:FileInfo) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,ResolvedPackage>>) targetFilter (groups:Map<GroupName,LockFileGroup>) =
     let list = System.Collections.Generic.List<_>()
     let cliTools = System.Collections.Generic.List<_>()
-    let fi = FileInfo referencesFile.FileName
     for kv in groups do
         let hull,cliToolsInGroup = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
         cliTools.AddRange cliToolsInGroup
@@ -287,7 +286,7 @@ let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:L
                 list.Add line
 
     let output = String.Join(Environment.NewLine,list)
-    let newFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".references"))
+    let newFileName = FileInfo(Path.Combine(projectFile.Directory.FullName,"obj",projectFile.Name + ".references"))
     if not newFileName.Directory.Exists then
         newFileName.Directory.Create()
     if output = "" then
@@ -302,10 +301,10 @@ let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:L
             tracefn " - %s already up-to-date" newFileName.FullName
 
 
-    let paketCLIToolsFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".paket.clitools"))
+    let paketCLIToolsFileName = FileInfo(Path.Combine(projectFile.Directory.FullName,"obj",projectFile.Name + ".paket.clitools"))
     createPaketCLIToolsFile cliTools paketCLIToolsFileName
     
-    let paketPropsFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".paket.props"))
+    let paketPropsFileName = FileInfo(Path.Combine(projectFile.Directory.FullName,"obj",projectFile.Name + ".paket.props"))
     createPaketPropsFile cliTools paketPropsFileName
 
 let CreateScriptsForGroups dependenciesFile lockFile (groups:Map<GroupName,LockFileGroup>) =
@@ -386,10 +385,10 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         match projectFile with
         | Some projectFileName ->
             let referencesFile = FindOrCreateReferencesFile projectFileName
-            let fi = FileInfo referencesFile.FileName
+            let fi = FileInfo projectFileName
 
             createAlternativeNuGetConfig fi
-            createProjectReferencesFiles dependenciesFile lockFile referencesFile resolved targetFilter groups
+            createProjectReferencesFiles dependenciesFile lockFile fi referencesFile resolved targetFilter groups
 
             [referencesFile.FileName]
         | None -> referencesFileNames
