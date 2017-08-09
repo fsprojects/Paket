@@ -312,7 +312,7 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                     return! fallback2()
             }
 
-        let firstUrl = sprintf "%s/Packages?$filter=(Id eq '%s') and (NormalizedVersion eq '%s')" nugetURL (packageName.CompareString) normalizedVersion
+        let firstUrl = sprintf "%s/Packages?$filter=(Id eq '%s') and (NormalizedVersion eq '%s')" nugetURL (packageName.ToString()) normalizedVersion
         try
             let! raw = getFromUrl(auth,firstUrl,acceptXml)
             if verbose then
