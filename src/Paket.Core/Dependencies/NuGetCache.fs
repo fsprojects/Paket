@@ -178,7 +178,8 @@ let tryGetDetailsFromCache force nugetURL (packageName:PackageName) (version:Sem
                 if (PackageName cachedObject.PackageName <> packageName) ||
                     (cachedObject.Version.Normalize() <> version.Normalize())
                 then
-                    traceVerbose (sprintf "Invalidating Cache '%s:%s' <> '%s:%s'" cachedObject.PackageName (cachedObject.Version.Normalize()) packageName.Name (version.Normalize()))
+                    if verbose then
+                        traceVerbose (sprintf "Invalidating Cache '%s:%s' <> '%s:%s'" cachedObject.PackageName (cachedObject.Version.Normalize()) packageName.Name (version.Normalize()))
                     cacheFile.Delete()
                     None
                 else
