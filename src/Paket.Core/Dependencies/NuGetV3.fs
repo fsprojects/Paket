@@ -271,7 +271,7 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
               Unlisted = unlisted
               DownloadUrl = registrationData.PackageContent
               LicenseUrl = catalogData.LicenseUrl
-              Version = version.Normalize()
+              Version = version
               CacheVersion = NuGetPackageCache.CurrentCacheVersion }
             |> NuGetPackageCache.withDependencies optimized
             |> ODataSearchResult.Match
