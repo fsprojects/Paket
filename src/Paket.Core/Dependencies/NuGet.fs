@@ -235,7 +235,8 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
         let inCache =
             sources
             |> Seq.choose(fun source ->
-                NuGetCache.tryGetDetailsFromCache force source.Url packageName version |> Option.map (fun details -> source, details))
+                NuGetCache.tryGetDetailsFromCache force source.Url packageName version 
+                |> Option.map (fun details -> source, details))
             |> Seq.tryHead
 
         let tryV2 (nugetSource:NugetSource) force =

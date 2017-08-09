@@ -1,3 +1,6 @@
+#### 5.84.1 - 09.08.2017
+* Faster look up in ProGet
+
 #### 5.84.0 - 30.07.2017
 * Better error reporting for conflicts that appear late in resolution
 * Protecting Paket.Restore.targets against changes in dotnet template - https://github.com/fsprojects/Paket/pull/2569
