@@ -243,6 +243,34 @@ let parseODataEntryDetails (url,nugetURL,packageName:PackageName,version:SemVerI
 let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (version:SemVerInfo) =
     async {
         let normalizedVersion = version.Normalize()
+        let fallback6 () =
+            async {
+                let url = sprintf "%s/Packages(Id='%s',Version='%O')" nugetURL (packageName.CompareString) normalizedVersion
+                let! raw = getFromUrl(auth,url,acceptXml)
+                if verbose then
+                    tracefn "Response from %s:" url
+                    tracefn ""
+                    tracefn "%s" raw
+                let doc = getXmlDoc url raw
+                return parseODataEntryDetails(url,nugetURL,packageName,version,doc) |> ODataSearchResult.Match
+            }
+
+        let fallback5 () =
+            async {
+                let url = sprintf "%s/Packages(Id='%s',Version='%O')" nugetURL (packageName.CompareString) version
+                let! raw = getFromUrl(auth,url,acceptXml)
+                if verbose then
+                    tracefn "Response from %s:" url
+                    tracefn ""
+                    tracefn "%s" raw
+                let doc = getXmlDoc url raw
+                match parseODataEntryDetails(url,nugetURL,packageName,version,doc) |> ODataSearchResult.Match with
+                | EmptyResult ->
+                    if verbose then tracefn "No results, trying again with direct detail access and normalizedVersion."
+                    return! fallback6()
+                | res -> return res
+            }
+
         let fallback4 () =
             async {
                 let url = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (Version eq '%O')" nugetURL (packageName.CompareString) normalizedVersion
@@ -252,7 +280,11 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                     tracefn ""
                     tracefn "%s" raw
                 let doc = getXmlDoc url raw
-                return parseODataListDetails(url,nugetURL,packageName,version,doc)
+                match parseODataListDetails(url,nugetURL,packageName,version,doc) with
+                | EmptyResult ->
+                    if verbose then tracefn "No results, trying again with direct detail access."
+                    return! fallback5()
+                | res -> return res
             }
 
         let fallback3 () =
