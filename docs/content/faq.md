@@ -35,8 +35,9 @@ the path. This makes it much easier to reference files in the package and you
 don't have to edit these references when you update a package.
 
 If you really need to have the version in the path for certain packages (like
-`xunit.runners.visualstudio`) you
+`xunit.runners.visualstudio` or `MSTest.TestAdapter`) you
 [can still do that](nuget-dependencies.html#Putting-the-version-number-in-the-path).
+Without the `version_in_path` flag, your unit tests will disappear from the Visual Studio Test Explorer.
 
 ## NuGet allows to use multiple versions of the same package. Can I do that with Paket?
 
