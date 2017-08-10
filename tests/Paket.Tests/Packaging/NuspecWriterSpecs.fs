@@ -27,7 +27,7 @@ let ``should serialize core info``() =
           Description = "A description"
           Symbols = false }
     
-    let doc = NupkgWriter.nuspecDoc (core, OptionalPackagingInfo.Epmty)
+    let doc = NupkgWriter.nuspecDoc (core, OptionalPackagingInfo.Empty)
     doc.ToString()
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings result)
@@ -56,7 +56,7 @@ let ``should serialize dependencies``() =
           Symbols = false }
     
     let optional = 
-        { OptionalPackagingInfo.Epmty with 
+        { OptionalPackagingInfo.Empty with 
             Tags = [ "f#"; "rules" ]
             DependencyGroups =
                 [
@@ -98,7 +98,7 @@ let ``#913 should serialize dependencies by group``() =
           Symbols = false }
     
     let optional = 
-        { OptionalPackagingInfo.Epmty with 
+        { OptionalPackagingInfo.Empty with 
             Tags = [ "f#"; "rules" ]
             DependencyGroups =
               [
@@ -143,7 +143,7 @@ let ``#913 should serialize dependencies by group with 2 group``() =
           Symbols = false }
     
     let optional = 
-        { OptionalPackagingInfo.Epmty with 
+        { OptionalPackagingInfo.Empty with 
             Tags = [ "f#"; "rules" ]
             DependencyGroups =
               [
@@ -189,7 +189,7 @@ let ``should serialize dependencies by group with empty group``() =
           Symbols = false }
     
     let optional = 
-        { OptionalPackagingInfo.Epmty with 
+        { OptionalPackagingInfo.Empty with 
             Tags = [ "f#"; "rules" ]
             DependencyGroups =
               [
@@ -236,7 +236,7 @@ let ``should serialize dependencies with global group``() =
           Symbols = false }
     
     let optional = 
-        { OptionalPackagingInfo.Epmty with 
+        { OptionalPackagingInfo.Empty with 
             Tags = [ "f#"; "rules" ]
             DependencyGroups =
               [
@@ -281,7 +281,7 @@ let ``should serialize frameworkAssemblues``() =
           Symbols = false }
     
     let optional = 
-        { OptionalPackagingInfo.Epmty with 
+        { OptionalPackagingInfo.Empty with 
             Tags = [ "f#"; "rules" ]
             FrameworkAssemblyReferences = 
                 [ "System.Xml"; "System.Xml.Linq" ] }
@@ -311,7 +311,7 @@ let ``should not serialize files``() =
           Symbols = false }
     
     let optional = 
-        { OptionalPackagingInfo.Epmty with 
+        { OptionalPackagingInfo.Empty with 
             Owners = [ "Michael"; "Steffen" ]
             Files = 
                 [ "Paket.Core.del", "lib"
@@ -358,7 +358,7 @@ second line</releaseNotes>
           Symbols = false }
     
     let optional = 
-        { OptionalPackagingInfo.Epmty with 
+        { OptionalPackagingInfo.Empty with 
               Title = Some "A title"
               Owners = ["Steffen"; "Alex"]
               ReleaseNotes = Some"A release notes\r\nsecond line"
