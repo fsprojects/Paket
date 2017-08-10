@@ -348,7 +348,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
     let targetFilter = 
         targetFrameworks
-        |> Option.map (fun s -> s.Split(';') |> Array.map (FrameworkDetection.Extract) |> Array.choose id)
+        |> Option.map (fun s -> s.Split(';') |> Array.map FrameworkDetection.Extract |> Array.choose id)
 
     let lockFile,localFile,hasLocalFile =
         let lockFile = LockFile.LoadFrom(lockFileName.FullName)
@@ -385,55 +385,58 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         match projectFile with
         | Some projectFileName ->
             let referencesFile = FindOrCreateReferencesFile projectFileName
-            let fi = FileInfo projectFileName
+            let projectFileInfo = FileInfo projectFileName
 
-            createAlternativeNuGetConfig fi
-            createProjectReferencesFiles dependenciesFile lockFile fi referencesFile resolved targetFilter groups
+            createAlternativeNuGetConfig projectFileInfo
+            createProjectReferencesFiles dependenciesFile lockFile projectFileInfo referencesFile resolved targetFilter groups
 
             [referencesFile.FileName]
         | None -> referencesFileNames
+ 
+    RunInLockedAccessMode(
+        root,
+        (fun () -> 
+            for kv in groups do
+                let allPackages = 
+                    if List.isEmpty referencesFileNames then 
+                        kv.Value.Resolution
+                        |> Seq.map (fun kv -> kv.Key) 
+                    else
+                        referencesFileNames
+                        |> List.toSeq
+                        |> computePackageHull kv.Key lockFile
 
-    for kv in groups do
-        let allPackages = 
-            if List.isEmpty referencesFileNames then 
-                kv.Value.Resolution
-                |> Seq.map (fun kv -> kv.Key) 
-            else
-                referencesFileNames
-                |> List.toSeq
-                |> computePackageHull kv.Key lockFile
+                let packages =
+                    allPackages
+                    |> Seq.filter (fun p ->
+                        match targetFilter with
+                        | None -> true
+                        | Some targets ->
+                            let key = kv.Key,p
+                            let resolvedPackage = resolved.Force().[key]
 
-        let packages =
-            allPackages
-            |> Seq.filter (fun p ->
-                match targetFilter with
-                | None -> true
-                | Some targets ->
-                    let key = kv.Key,p
-                    let resolvedPackage = resolved.Force().[key]
-
-                    match resolvedPackage.Settings.FrameworkRestrictions with
-                    | Requirements.ExplicitRestriction restrictions ->
-                        targets
-                        |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target))
-                    | _ -> true)
+                            match resolvedPackage.Settings.FrameworkRestrictions with
+                            | Requirements.ExplicitRestriction restrictions ->
+                                targets
+                                |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target))
+                            | _ -> true)
  
 
-        match dependenciesFile.Groups |> Map.tryFind kv.Value.Name with
-        | None ->
-            failwithf 
-                "The group %O was found in the %s file but not in the %s file. Please run \"paket install\" again." 
-                kv.Value
-                Constants.LockFileName
-                Constants.DependenciesFileName
-        | Some depFileGroup ->
-            let packages = Set.ofSeq packages
-            let overriden = 
-                packages
-                |> Set.filter (fun p -> LocalFile.overrides localFile (p,depFileGroup.Name))
+                match dependenciesFile.Groups |> Map.tryFind kv.Value.Name with
+                | None ->
+                    failwithf 
+                        "The group %O was found in the %s file but not in the %s file. Please run \"paket install\" again." 
+                        kv.Value
+                        Constants.LockFileName
+                        Constants.DependenciesFileName
+                | Some depFileGroup ->
+                    let packages = Set.ofSeq packages
+                    let overriden = 
+                        packages
+                        |> Set.filter (fun p -> LocalFile.overrides localFile (p,depFileGroup.Name))
 
-            restore(alternativeProjectRoot, root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages, overriden)
-            |> Async.RunSynchronously
-            |> ignore
+                    restore(alternativeProjectRoot, root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages, overriden)
+                    |> Async.RunSynchronously
+                    |> ignore
 
-    CreateScriptsForGroups dependenciesFile lockFile groups
+            CreateScriptsForGroups dependenciesFile lockFile groups))
