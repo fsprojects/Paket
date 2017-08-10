@@ -1,3 +1,6 @@
+#### 5.85.0-alpha001 - 10.08.2017
+* Do not scan packages folders for restore
+
 #### 5.84.3 - 09.08.2017
 * Faster look up in ProGet
 
@@ -8,7 +11,7 @@
 #### 5.83.1 - 29.07.2017
 * Paket allows to resolve prereleases in a transitive way - https://github.com/fsprojects/Paket/pull/2559
 * BUGFIX: Fixed download of multiple HTTP resources - https://github.com/fsprojects/Paket/issues/2566
-* Update to FSharp.COre 4.2.2
+* Update to FSharp.Core 4.2.2
 
 #### 5.82.0 - 28.07.2017
 * The outdated command now allows to pass the -f flag
