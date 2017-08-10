@@ -1,8 +1,6 @@
-#### 5.85.0-alpha001 - 10.08.2017
-* Do not scan packages folders for restore
-
-#### 5.84.3 - 09.08.2017
-* Faster look up in ProGet
+#### 5.85.0 - 10.08.2017
+* PERFORMANCE: Do not scan packages folders for restore
+* PERFORMANCE: Faster lookup in ProGet
 
 #### 5.84.0 - 30.07.2017
 * Better error reporting for conflicts that appear late in resolution
