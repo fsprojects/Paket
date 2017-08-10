@@ -157,16 +157,13 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLi
     |> List.filter (fun e -> isFirstGroup && (cleanBindingRedirects || isMarked e) && libIsContained e)
     |> List.iter (fun e -> e.Remove())
 
-    try
-        let config = Seq.fold setRedirect config bindingRedirects
-        indentAssemblyBindings config
-        use newContents = new StringReader(config.ToString())
-        let newText = XDocument.Load(newContents, LoadOptions.None).ToString()
-        if newText <> original then
-            use f = File.Open(configFilePath, FileMode.Create)
-            config.Save(f, SaveOptions.DisableFormatting)
-    with
-    | exn -> failwithf "Binding Redirects in %s failed.%s%s" configFilePath Environment.NewLine exn.Message
+    let config = Seq.fold setRedirect config bindingRedirects
+    indentAssemblyBindings config
+    use newContents = new StringReader(config.ToString())
+    let newText = XDocument.Load(newContents, LoadOptions.None).ToString()
+    if newText <> original then
+        use f = File.Open(configFilePath, FileMode.Create)
+        config.Save(f, SaveOptions.DisableFormatting)
 
 /// Applies a set of binding redirects to all .config files in a specific folder.
 let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects rootPath allKnownLibNames bindingRedirects =
