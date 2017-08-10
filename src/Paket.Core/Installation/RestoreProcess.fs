@@ -10,6 +10,7 @@ open Paket.PackageSources
 open System
 open Chessie.ErrorHandling
 open System.Reflection
+open System.Threading.Tasks
 
 /// Finds packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
 let FindPackagesNotExtractedYet(dependenciesFileName) =
@@ -392,51 +393,57 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
             [referencesFile.FileName]
         | None -> referencesFileNames
+
+    let tasks =
+        groups
+        |> Seq.map (fun kv ->
+            let allPackages = 
+                if List.isEmpty referencesFileNames then 
+                    kv.Value.Resolution
+                    |> Seq.map (fun kv -> kv.Key) 
+                else
+                    referencesFileNames
+                    |> List.toSeq
+                    |> computePackageHull kv.Key lockFile
+
+            let packages =
+                allPackages
+                |> Seq.filter (fun p ->
+                    match targetFilter with
+                    | None -> true
+                    | Some targets ->
+                        let key = kv.Key,p
+                        let resolvedPackage = resolved.Force().[key]
+
+                        match resolvedPackage.Settings.FrameworkRestrictions with
+                        | Requirements.ExplicitRestriction restrictions ->
+                            targets
+                            |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target))
+                        | _ -> true)
+ 
+
+            match dependenciesFile.Groups |> Map.tryFind kv.Value.Name with
+            | None ->
+                failwithf 
+                    "The group %O was found in the %s file but not in the %s file. Please run \"paket install\" again." 
+                    kv.Value
+                    Constants.LockFileName
+                    Constants.DependenciesFileName
+            | Some depFileGroup ->
+                let packages = Set.ofSeq packages
+                let overriden = 
+                    packages
+                    |> Set.filter (fun p -> LocalFile.overrides localFile (p,depFileGroup.Name))
+
+                restore(alternativeProjectRoot, root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages, overriden))
+        |> Seq.toArray
  
     RunInLockedAccessMode(
         root,
-        (fun () -> 
-            for kv in groups do
-                let allPackages = 
-                    if List.isEmpty referencesFileNames then 
-                        kv.Value.Resolution
-                        |> Seq.map (fun kv -> kv.Key) 
-                    else
-                        referencesFileNames
-                        |> List.toSeq
-                        |> computePackageHull kv.Key lockFile
-
-                let packages =
-                    allPackages
-                    |> Seq.filter (fun p ->
-                        match targetFilter with
-                        | None -> true
-                        | Some targets ->
-                            let key = kv.Key,p
-                            let resolvedPackage = resolved.Force().[key]
-
-                            match resolvedPackage.Settings.FrameworkRestrictions with
-                            | Requirements.ExplicitRestriction restrictions ->
-                                targets
-                                |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target))
-                            | _ -> true)
- 
-
-                match dependenciesFile.Groups |> Map.tryFind kv.Value.Name with
-                | None ->
-                    failwithf 
-                        "The group %O was found in the %s file but not in the %s file. Please run \"paket install\" again." 
-                        kv.Value
-                        Constants.LockFileName
-                        Constants.DependenciesFileName
-                | Some depFileGroup ->
-                    let packages = Set.ofSeq packages
-                    let overriden = 
-                        packages
-                        |> Set.filter (fun p -> LocalFile.overrides localFile (p,depFileGroup.Name))
-
-                    restore(alternativeProjectRoot, root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages, overriden)
-                    |> Async.RunSynchronously
-                    |> ignore
+        (fun () ->
+            for task in tasks do
+                task
+                |> Async.RunSynchronously
+                |> ignore
 
             CreateScriptsForGroups dependenciesFile lockFile groups))
