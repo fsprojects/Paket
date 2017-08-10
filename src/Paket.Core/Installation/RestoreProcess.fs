@@ -121,7 +121,7 @@ let internal restore (alternativeProjectRoot, root, groupName, sources, caches, 
         RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles)
         let! _ = 
             lockFile.Groups.[groupName].Resolution
-            |> Map.filter (fun name r -> packages.Contains name)
+            |> Map.filter (fun name _ -> packages.Contains name)
             |> Seq.map (fun kv -> ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, kv.Value, Set.contains kv.Key overriden))
             |> Async.Parallel
         return ()
@@ -174,7 +174,11 @@ let extractBuildTask root =
 let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package) =
     async {
         let! (package, content) = ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package, false)
-        let model = InstallModel.CreateFromContent(package.Name, package.Version, package.Settings.FrameworkRestrictions |> Requirements.getExplicitRestriction, content)
+        let model = 
+                InstallModel.CreateFromContent(
+                    package.Name, package.Version, 
+                    package.Settings.FrameworkRestrictions |> Requirements.getExplicitRestriction, 
+                    content.Force())
         return (groupName,package.Name), (package,model)
     }
 

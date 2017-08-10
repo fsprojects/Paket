@@ -936,8 +936,12 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                 let folder = 
                     getTargetFolder this.RootPath groupName packageName resolvedPackage.Version (defaultArg resolvedPackage.Settings.IncludeVersionInPath false)
                     |> Path.GetFullPath
-                let content = NuGet.GetContent(folder)
-                InstallModel.CreateFromContent(packageName, resolvedPackage.Version, FrameworkRestriction.NoRestriction, content)
+
+                InstallModel.CreateFromContent(
+                    packageName, 
+                    resolvedPackage.Version, 
+                    FrameworkRestriction.NoRestriction, 
+                    NuGet.GetContent(folder).Force())
     
 
     /// Returns a list of packages inside the lockfile with their group and version number

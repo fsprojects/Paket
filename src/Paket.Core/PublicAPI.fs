@@ -455,8 +455,11 @@ type Dependencies(dependenciesFileName: string) =
                         getTargetFolder this.RootPath groupName packageName resolvedPackage.Version (defaultArg resolvedPackage.Settings.IncludeVersionInPath false)
                         |> Path.GetFullPath
 
-                let content = NuGet.GetContent folder
-                InstallModel.CreateFromContent(packageName, resolvedPackage.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, content)
+                InstallModel.CreateFromContent(
+                    packageName, 
+                    resolvedPackage.Version, 
+                    Paket.Requirements.FrameworkRestriction.NoRestriction, 
+                    NuGet.GetContent(folder).Force())
 
     /// Returns all libraries for the given package and framework.
     member this.GetLibraries(groupName,packageName,frameworkIdentifier:TargetProfile) =
