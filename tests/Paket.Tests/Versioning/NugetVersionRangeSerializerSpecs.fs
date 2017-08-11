@@ -25,19 +25,19 @@ let ``can format minimum version``() =
 
 [<Test>]
 let ``can format greater than version``() = 
-    VersionRange.GreaterThan(SemVer.Parse "2.2") |> format |> shouldEqual "(2.2.0,)"
-    VersionRange.GreaterThan(SemVer.Parse "1.2") |> format |> shouldEqual "(1.2.0,)"
+    VersionRange.GreaterThan(SemVer.Parse "2.2") |> format |> shouldEqual "(2.2,)"
+    VersionRange.GreaterThan(SemVer.Parse "1.2") |> format |> shouldEqual "(1.2,)"
 
 [<Test>]
 let ``can format maximum version``() = 
-    VersionRange.Maximum(SemVer.Parse "2.2") |> format |> shouldEqual "(,2.2.0]"
+    VersionRange.Maximum(SemVer.Parse "2.2") |> format |> shouldEqual "(,2.2]"
     VersionRange.Maximum(SemVer.Parse "0") |> format |> shouldEqual "(,0.0.0]"
-    VersionRange.Maximum(SemVer.Parse "1.2") |> format |> shouldEqual "(,1.2.0]"
+    VersionRange.Maximum(SemVer.Parse "1.2") |> format |> shouldEqual "(,1.2]"
 
 [<Test>]
 let ``can format less than version``() = 
-    VersionRange.LessThan(SemVer.Parse "2.2") |> format |> shouldEqual "(,2.2.0)"
-    VersionRange.LessThan(SemVer.Parse "1.2") |> format |> shouldEqual "(,1.2.0)"
+    VersionRange.LessThan(SemVer.Parse "2.2") |> format |> shouldEqual "(,2.2)"
+    VersionRange.LessThan(SemVer.Parse "1.2") |> format |> shouldEqual "(,1.2)"
 
 [<Test>]
 let ``can format prereleases``() = 
@@ -47,7 +47,7 @@ let ``can format prereleases``() =
 
 [<Test>]
 let ``can format range version``() = 
-    VersionRange.Range(VersionRangeBound.Excluding, SemVer.Parse "2.2", SemVer.Parse "3", VersionRangeBound.Excluding) |> format |> shouldEqual "(2.2.0,3.0.0)" 
-    VersionRange.Range(VersionRangeBound.Excluding, SemVer.Parse "2.2", SemVer.Parse "3", VersionRangeBound.Including) |> format |> shouldEqual "(2.2.0,3.0.0]" 
-    VersionRange.Range(VersionRangeBound.Including, SemVer.Parse "2.2", SemVer.Parse "3", VersionRangeBound.Excluding) |> format |> shouldEqual "[2.2.0,3.0.0)" 
-    VersionRange.Range(VersionRangeBound.Including, SemVer.Parse "2.2", SemVer.Parse "3", VersionRangeBound.Including) |> format |> shouldEqual "[2.2.0,3.0.0]" 
+    VersionRange.Range(VersionRangeBound.Excluding, SemVer.Parse "2.2", SemVer.Parse "3", VersionRangeBound.Excluding) |> format |> shouldEqual "(2.2,3.0)" 
+    VersionRange.Range(VersionRangeBound.Excluding, SemVer.Parse "2.2", SemVer.Parse "3", VersionRangeBound.Including) |> format |> shouldEqual "(2.2,3.0]" 
+    VersionRange.Range(VersionRangeBound.Including, SemVer.Parse "2.2", SemVer.Parse "3", VersionRangeBound.Excluding) |> format |> shouldEqual "[2.2,3.0)" 
+    VersionRange.Range(VersionRangeBound.Including, SemVer.Parse "2.2", SemVer.Parse "3", VersionRangeBound.Including) |> format |> shouldEqual "[2.2,3.0]" 

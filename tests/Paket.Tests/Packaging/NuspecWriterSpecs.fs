@@ -83,8 +83,8 @@ let ``#913 should serialize dependencies by group``() =
     <tags>f# rules</tags>
     <dependencies>
       <group targetFramework="net35">
-        <dependency id="Paket.Core" version="[3.1.0]" />
-        <dependency id="xUnit" version="2.0.0" />
+        <dependency id="Paket.Core" version="[3.1]" />
+        <dependency id="xUnit" version="2.0" />
       </group>
     </dependencies>
   </metadata>
@@ -124,12 +124,12 @@ let ``#913 should serialize dependencies by group with 2 group``() =
     <tags>f# rules</tags>
     <dependencies>
       <group targetFramework="net35">
-        <dependency id="Paket.Core" version="[3.1.0]" />
-        <dependency id="xUnit" version="2.0.0" />
+        <dependency id="Paket.Core" version="[3.1]" />
+        <dependency id="xUnit" version="2.0" />
       </group>
       <group targetFramework="netstandard1.3">
-        <dependency id="Paket.Core" version="[3.1.0]" />
-        <dependency id="xUnit" version="2.0.0" />
+        <dependency id="Paket.Core" version="[3.1]" />
+        <dependency id="xUnit" version="2.0" />
       </group>
     </dependencies>
   </metadata>
@@ -174,8 +174,8 @@ let ``should serialize dependencies by group with empty group``() =
     <dependencies>
       <group targetFramework="net461" />
       <group targetFramework="netstandard1.3">
-        <dependency id="Paket.Core" version="[3.1.0]" />
-        <dependency id="xUnit" version="2.0.0" />
+        <dependency id="Paket.Core" version="[3.1]" />
+        <dependency id="xUnit" version="2.0" />
       </group>
     </dependencies>
   </metadata>
@@ -217,12 +217,12 @@ let ``should serialize dependencies with global group``() =
     <tags>f# rules</tags>
     <dependencies>
       <group>
-        <dependency id="FSharp.Core" version="1.0.0" />
+        <dependency id="FSharp.Core" version="1.0" />
       </group>
       <group targetFramework="net461" />
       <group targetFramework="netstandard1.3">
-        <dependency id="Paket.Core" version="[3.1.0]" />
-        <dependency id="xUnit" version="2.0.0" />
+        <dependency id="Paket.Core" version="[3.1]" />
+        <dependency id="xUnit" version="2.0" />
       </group>
     </dependencies>
   </metadata>

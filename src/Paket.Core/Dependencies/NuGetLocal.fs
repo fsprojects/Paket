@@ -96,7 +96,7 @@ let getDetailsFromLocalNuGetPackage isCache alternativeProjectRoot root localNuG
               SourceUrl = di.FullName
               CacheVersion = NuGetPackageCache.CurrentCacheVersion
               LicenseUrl = nuspec.LicenseUrl
-              Version = version.Normalize()
+              Version = version
               Unlisted = isCache }
             |> NuGetPackageCache.withDependencies nuspec.Dependencies
             |> ODataSearchResult.Match

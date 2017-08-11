@@ -115,10 +115,10 @@ type NuGetPackageCache =
       Unlisted : bool
       DownloadUrl : string
       LicenseUrl : string
-      Version: string
+      Version: SemVerInfo
       CacheVersion: string }
 
-    static member CurrentCacheVersion = "5.1"
+    static member CurrentCacheVersion = "5.84"
 
 // TODO: is there a better way? for now we use static member because that works with type abbreviations...
 //module NuGetPackageCache =
@@ -176,9 +176,10 @@ let tryGetDetailsFromCache force nugetURL (packageName:PackageName) (version:Sem
             try
                 let cachedObject = JsonConvert.DeserializeObject<NuGetPackageCache> json
                 if (PackageName cachedObject.PackageName <> packageName) ||
-                    (cachedObject.Version <> version.Normalize())
+                    (cachedObject.Version.Normalize() <> version.Normalize())
                 then
-                    traceVerbose (sprintf "Invalidating Cache '%s:%s' <> '%s:%s'" cachedObject.PackageName cachedObject.Version packageName.Name (version.Normalize()))
+                    if verbose then
+                        traceVerbose (sprintf "Invalidating Cache '%s:%s' <> '%s:%s'" cachedObject.PackageName (cachedObject.Version.Normalize()) packageName.Name (version.Normalize()))
                     cacheFile.Delete()
                     None
                 else

@@ -36,7 +36,7 @@ let ``can detect explicit dependencies for Fantomas``() =
           Unlisted = false
           LicenseUrl = "http://github.com/dungpa/fantomas/blob/master/LICENSE.md"
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
-          Version = "1.6.0"
+          Version = SemVer.Parse "1.6.0"
           SourceUrl = fakeUrl }
 
 [<Test>]
@@ -55,7 +55,7 @@ let ``can detect explicit dependencies for Rx-PlaformServices``() =
                  PackageName "Rx-Core",DependenciesFileParser.parseVersionRequirement(">= 2.2"), "true"]
           Unlisted = true
           LicenseUrl = "http://go.microsoft.com/fwlink/?LinkID=261272"
-          Version = "2.3.0"
+          Version = SemVer.Parse "2.3.0"
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           SourceUrl = fakeUrl }
         |> ODataSearchResult.Match)
@@ -71,7 +71,7 @@ let ``can detect explicit dependencies for EasyNetQ``() =
           Unlisted = false
           LicenseUrl = "https://github.com/mikehadlow/EasyNetQ/blob/master/licence.txt"
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
-          Version = "0.40.3.352"
+          Version = SemVer.Parse "0.40.3.352"
           SourceUrl = fakeUrl }
         |> ODataSearchResult.Match)
 
@@ -84,7 +84,7 @@ let ``can detect explicit dependencies for Fleece``() =
           Unlisted = false
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           LicenseUrl = "https://raw.github.com/mausch/Fleece/master/LICENSE"
-          Version = "0.4.0"
+          Version = SemVer.Parse "0.4.0"
           SerializedDependencies = 
             [PackageName "FSharpPlus",DependenciesFileParser.parseVersionRequirement(">= 0.0.4"),"true"
              PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"),"true"
@@ -102,7 +102,7 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
           Unlisted = false
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           LicenseUrl = "https://github.com/mausch/ReadOnlyCollections/blob/master/license.txt"
-          Version = "1.2.0"
+          Version = SemVer.Parse "1.2.0"
           SerializedDependencies = 
             [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), "&& (>= net20) (< net35)"
              PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), ">= net20"]
@@ -115,7 +115,7 @@ let ``can detect explicit dependencies for Math.Numerics``() =
        ({ PackageName = "MathNet.Numerics"
           DownloadUrl = "http://www.nuget.org/api/v2/package/MathNet.Numerics/3.3.0"
           Unlisted = false
-          Version = "3.3.0"
+          Version = SemVer.Parse "3.3.0"
           LicenseUrl = "http://numerics.mathdotnet.com/docs/License.html"
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           SerializedDependencies = 
@@ -187,5 +187,5 @@ let ``can ignore unknown frameworks``() =
           Unlisted = false
           LicenseUrl = "https://github.com/dotnet/BenchmarkDotNet/blob/master/LICENSE.md"
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
-          Version = "0.10.1"
+          Version = SemVer.Parse "0.10.1"
           SourceUrl = fakeUrl }
