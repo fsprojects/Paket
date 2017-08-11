@@ -84,8 +84,9 @@ only one version of a package and therefore the version number is not needed in
 the path. This makes it much easier to reference files in the package and you
 don't have to edit these references when you update a package.</p>
 <p>If you really need to have the version in the path for certain packages (like
-<code>xunit.runners.visualstudio</code>) you
-<a href="nuget-dependencies.html#Putting-the-version-number-in-the-path">can still do that</a>.</p>
+<code>xunit.runners.visualstudio</code> or <code>MSTest.TestAdapter</code>) you
+<a href="nuget-dependencies.html#Putting-the-version-number-in-the-path">can still do that</a>.
+Without the <code>version_in_path</code> flag, your unit tests will disappear from the Visual Studio Test Explorer.</p>
 <h2><a name="NuGet-allows-to-use-multiple-versions-of-the-same-package-Can-I-do-that-with-Paket" class="anchor" href="#NuGet-allows-to-use-multiple-versions-of-the-same-package-Can-I-do-that-with-Paket">NuGet allows to use multiple versions of the same package. Can I do that with Paket?</a></h2>
 <p>Usually you don't want that to happen. Most solutions that have multiple
 versions of the same package installed did this by accident. Since NuGet has no

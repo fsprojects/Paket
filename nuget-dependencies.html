@@ -301,6 +301,13 @@ in the package path below <code>packages</code> you can do the following:</p>
 
 <span class="k">nuget</span> xunit.runner.visualstudio <span class="o">&gt;=</span> <span class="n">2.0</span> <span class="k">version_in_path</span>: true
 </code></pre></td></tr></table>
+<p>You need this if you are using custom test runners in Visual Studio,
+like <code>xunit.runners.visualstudio</code> or <code>MSTest.TestAdapter</code>.
+The <a href="https://stackoverflow.com/questions/35103781/why-is-the-visual-studio-2015-2017-test-runner-not-discovering-my-xunit-v2-tests">Visual Studio Test Runner caches the
+packages</a>
+in <code>%TEMP%\VisualStudioTestExplorerExtensions</code>,
+and depends on the directory names being unique per version, and the presence of a packages.config in the test project.
+Adding the <code>version_in_path</code> flag makes your unit tests appear in the Visual Studio Test Explorer again.</p>
 <h3><a name="Controlling-whether-content-files-should-be-copied-to-the-project" class="anchor" href="#Controlling-whether-content-files-should-be-copied-to-the-project">Controlling whether content files should be copied to the project</a></h3>
 <p>The <code>content</code> modifier controls the installation of any content files:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
