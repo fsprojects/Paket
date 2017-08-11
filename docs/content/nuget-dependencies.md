@@ -288,7 +288,7 @@ source https://nuget.org/api/v2
 
 nuget jQuery copy_content_to_output_dir: always
 nuget Fody copy_content_to_output_dir: never
-nuget ServiceStack.Swagger copy_content_to_output_dir: preserve-newest
+nuget ServiceStack.Swagger copy_content_to_output_dir: preserve_newest
 ```
 
 ### Controlling whether assemblies should be copied to the output directory during build
