@@ -254,6 +254,15 @@ source https://nuget.org/api/v2
 nuget xunit.runner.visualstudio >= 2.0 version_in_path: true
 ```
 
+You need this if you are using custom test runners in Visual Studio, 
+like `xunit.runners.visualstudio` or `MSTest.TestAdapter`.
+The [Visual Studio Test Runner caches the 
+packages](https://stackoverflow.com/questions/35103781/why-is-the-visual-studio-2015-2017-test-runner-not-discovering-my-xunit-v2-tests)
+in `%TEMP%\VisualStudioTestExplorerExtensions`, 
+and depends on the directory names being unique per version, and the presence of a packages.config in the test project.
+Adding the `version_in_path` flag makes your unit tests appear in the Visual Studio Test Explorer again.
+
+
 ### Controlling whether content files should be copied to the project
 
 The `content` modifier controls the installation of any content files:
