@@ -243,9 +243,9 @@ let parseODataEntryDetails (url,nugetURL,packageName:PackageName,version:SemVerI
 let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (version:SemVerInfo) =
     async {
         let normalizedVersion = version.Normalize()
-        let fallback6 () =
+        let fallback7 () =
             async {
-                let url = sprintf "%s/Packages(Id='%s',Version='%O')" nugetURL (packageName.CompareString) normalizedVersion
+                let url = sprintf "%s/Packages(Id='%O',Version='%O')" nugetURL packageName normalizedVersion
                 let! raw = getFromUrl(auth,url,acceptXml)
                 if verbose then
                     tracefn "Response from %s:" url
@@ -255,9 +255,10 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                 return parseODataEntryDetails(url,nugetURL,packageName,version,doc) |> ODataSearchResult.Match
             }
 
-        let fallback5 () =
+
+        let fallback6 () =
             async {
-                let url = sprintf "%s/Packages(Id='%s',Version='%O')" nugetURL (packageName.CompareString) version
+                let url = sprintf "%s/odata/Packages(Id='%O',Version='%O')" nugetURL packageName version
                 let! raw = getFromUrl(auth,url,acceptXml)
                 if verbose then
                     tracefn "Response from %s:" url
@@ -267,6 +268,23 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                 match parseODataEntryDetails(url,nugetURL,packageName,version,doc) |> ODataSearchResult.Match with
                 | EmptyResult ->
                     if verbose then tracefn "No results, trying again with direct detail access and normalizedVersion."
+                    return! fallback7()
+                | res -> return res
+            }
+
+        let fallback5 () =
+            // See https://github.com/fsprojects/Paket/issues/2213
+            async {
+                let url = sprintf "%s/Packages(Id='%O',Version='%O')" nugetURL packageName version
+                let! raw = getFromUrl(auth,url,acceptXml)
+                if verbose then
+                    tracefn "Response from %s:" url
+                    tracefn ""
+                    tracefn "%s" raw
+                let doc = getXmlDoc url raw
+                match parseODataEntryDetails(url,nugetURL,packageName,version,doc) |> ODataSearchResult.Match with
+                | EmptyResult ->
+                    if verbose then tracefn "No results, trying again with direct detail access in odata."
                     return! fallback6()
                 | res -> return res
             }
@@ -363,73 +381,13 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
             return! fallback()
     }
 
-
-/// Gets package details from NuGet via OData
-let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version:SemVerInfo) =
-    let queryPackagesProtocol (packageName:PackageName) =
-        async {
-            let url = sprintf "%s/Packages(Id='%O',Version='%O')" nugetURL packageName version
-            let! response = safeGetFromUrl(auth,url,acceptXml)
-
-            let! raw =
-                match response with
-                | SafeWebResult.SuccessResponse r -> async { return Some r }
-                | SafeWebResult.NotFound -> async { return None }
-                | SafeWebResult.UnknownError err when
-                        urlIsMyGet nugetURL ||
-                        urlIsNugetGallery nugetURL ||
-                        urlSimilarToTfsOrVsts nugetURL ->
-                    raise <|
-                        System.Exception(
-                            sprintf "Could not get package details for %O from %s" packageName nugetURL,
-                            err.SourceException)
-                | SafeWebResult.UnknownError err ->
-                    traceWarnfn "Failed to find defails '%s' from '%s'. trying again with /odata/Packages. Please report this." err.SourceException.Message url
-                    if verbose then
-                        tracefn "Details of last error (%s): %O" url err.SourceException
-                    async {
-                        try
-                            let url = sprintf "%s/odata/Packages(Id='%O',Version='%O')" nugetURL packageName version
-                            let! raw = getXmlFromUrl(auth,url)
-                            return Some raw
-                        with e ->
-                            return raise <| System.AggregateException(err.SourceException, e)
-                    }
-
-            if verbose then
-                tracefn "Response from %s:" url
-                tracefn ""
-                tracefn "%s" (match raw with Some s -> s | _ -> "NOTFOUND 404")
-            match raw with
-            | Some raw ->
-                let doc = getXmlDoc url raw
-                return parseODataEntryDetails(url,nugetURL,packageName,version,doc) |> ODataSearchResult.Match
-            | None -> return ODataSearchResult.EmptyResult }
-
-    async {
-        try
-            let! result =
-                // See https://github.com/fsprojects/Paket/issues/2213
-                // TODO: There is a bug in VSTS, so we can't trust this protocol. Remove when VSTS is fixed
-                // TODO: TFS has the same bug
-                if urlSimilarToTfsOrVsts nugetURL then queryPackagesProtocol packageName
-                else getDetailsFromNuGetViaODataFast auth nugetURL packageName version
-            return result
-        with e when not (urlSimilarToTfsOrVsts nugetURL) ->
-            traceWarnfn "Failed to get package details '%s'. This feeds implementation might be broken." e.Message
-            if verbose then tracefn "Details: %O" e
-            return! queryPackagesProtocol packageName
-    }
-
 let getDetailsFromNuGet force auth nugetURL packageName version =
     getDetailsFromCacheOr
         force
         nugetURL
         packageName
         version
-        (fun () -> getDetailsFromNuGetViaOData auth nugetURL packageName version)
-
-
+        (fun () -> getDetailsFromNuGetViaODataFast auth nugetURL packageName version)
 
 
 /// Uses the NuGet v2 API to retrieve all packages with the given prefix.
