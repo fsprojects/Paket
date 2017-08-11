@@ -1,3 +1,6 @@
+#### 5.85.1 - 11.08.2017
+* Support for DevExpress feed
+
 #### 5.85.0 - 10.08.2017
 * PERFORMANCE: Do not scan packages folders for restore
 * PERFORMANCE: Faster lookup in ProGet
