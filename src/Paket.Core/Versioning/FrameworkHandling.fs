@@ -1153,7 +1153,11 @@ module SupportCalculation =
                     | MonoTouch
                     | DNXCore _
                     | UAP _
-                    | MonoAndroid _ -> false
+                    | MonoAndroid _ 
+                    | XamariniOS
+                    | XamarinTV
+                    | XamarinWatch
+                    | XamarinMac -> false
                     | DotNetCore _
                     | DotNetStandard _
                     | Tizen _ -> failwithf "Unexpected framework while trying to resolve PCL Profile"
