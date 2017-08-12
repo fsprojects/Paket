@@ -1156,7 +1156,7 @@ module SupportCalculation =
                     | MonoAndroid _ -> false
                     | DotNetCore _
                     | DotNetStandard _
-                    | Tizen _ -> failwithf "Unexpected famework while trying to resolve PCL Profile"
+                    | Tizen _ -> failwithf "Unexpected framework while trying to resolve PCL Profile"
                     | _ -> true)
             if minimal.Length > 0 then
                 let matches = 
