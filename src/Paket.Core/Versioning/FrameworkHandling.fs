@@ -817,13 +817,12 @@ type PortableProfileType =
         | Profile328 -> [ DotNetFramework FrameworkVersion.V4; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
         | Profile336 -> [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
         | Profile344 -> [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
-        |> fun l -> System.Collections.Generic.HashSet(l)
     member x.FolderName =
         "portable-" +
         String.Join ("+",
             x.Frameworks
-            |> Seq.map (fun fw -> fw.ToString()))
-
+            |> List.sort
+            |> List.map (fun fw -> fw.ToString()))
 type TargetProfile =
     | SinglePlatform of FrameworkIdentifier
     | PortableProfile of PortableProfileType
@@ -1000,10 +999,6 @@ module KnownTargetProfiles =
         PortableProfileType.Profile336
         PortableProfileType.Profile344 ] 
 
-    let AllPortableProfilesLookUp =
-        AllPortableProfiles
-        |> List.map (fun p-> p,p.Frameworks)
-        
     let AllDotNetProfiles =
        DotNetFrameworkProfiles @ 
        DotNetUnityProfiles @ 
@@ -1065,7 +1060,6 @@ module SupportCalculation =
         let otherName, otherfws = other.ProfileName, other.Frameworks
         let weSupport =
             tfs
-            |> Seq.toList
             |> List.collect (fun tf -> tf.RawSupportedPlatformsTransitive)
 
         let relevantFrameworks =
@@ -1073,7 +1067,7 @@ module SupportCalculation =
             |> Seq.filter (fun fw ->
                 weSupport |> List.exists ((=) fw))
             |> Seq.length
-        relevantFrameworks >= tfs.Count && portable <> other
+        relevantFrameworks >= tfs.Length && portable <> other
         
     let getSupported (portable:PortableProfileType) =
         let name, tfs = portable.ProfileName, portable.Frameworks
@@ -1170,14 +1164,14 @@ module SupportCalculation =
                     | _ -> true)
             if minimal.Length > 0 then
                 let firstMatch =
-                    KnownTargetProfiles.AllPortableProfilesLookUp
-                    |> List.filter (fun (_,otherFws) ->
-                        minimal |> List.forall (fun mfw -> otherFws.Contains mfw))
-                    |> List.sortBy (fun (_,otherFws) -> otherFws.Count)
+                    KnownTargetProfiles.AllPortableProfiles
+                    |> List.filter (fun p ->
+                        let otherFws = p.Frameworks
+                        minimal |> List.forall(fun mfw -> otherFws |> Seq.contains mfw))
+                    |> List.sortBy (fun p -> p.Frameworks.Length)
                     |> List.tryHead
-
                 match firstMatch with
-                | Some (p,_) -> PortableProfile p
+                | Some p -> PortableProfile p
                 | None ->
                     traceWarnfn "The profile '%O' is not a known profile. Please tell the package author." fallback
                     fallback
@@ -1245,10 +1239,11 @@ module SupportCalculation =
                 | _ ->
                     // Regular supported logic is to enumerate all profiles and select compatible ones
                     let profiles =
-                        KnownTargetProfiles.AllPortableProfilesLookUp
-                        |> List.choose (fun (p,frameworks) ->
+                        KnownTargetProfiles.AllPortableProfiles
+                        |> List.filter (fun (p) ->
                             // Portable profile is compatible as soon as if contains us
-                            if frameworks.Contains tf then Some p else None)
+                            p.Frameworks
+                            |> List.exists (fun fw -> fw = tf))
                     profiles
                 |> List.map PortableProfile
             rawSupported @ profilesSupported
@@ -1305,7 +1300,7 @@ type TargetProfile with
     member p.Frameworks =
         match p with
         | SinglePlatform fw -> [fw]
-        | PortableProfile p -> p.Frameworks |> Seq.toList
+        | PortableProfile p -> p.Frameworks
     static member FindPortable (fws: _ list) = SupportCalculation.findPortable fws
     
     member inline x.PlatformsSupporting = SupportCalculation.getPlatformsSupporting x
