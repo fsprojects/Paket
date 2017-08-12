@@ -1156,16 +1156,9 @@ module SupportCalculation =
                     | MonoAndroid _ -> false
                     | DotNetCore _
                     | DotNetStandard _
-                    | Tizen _ -> failwithf "Unexpected famework while trying to resolve PCL Profile"
+                    | Tizen _ -> failwithf "Unexpected framework while trying to resolve PCL Profile"
                     | _ -> true)
             if minimal.Length > 0 then
-                let matches = 
-                    KnownTargetProfiles.AllPortableProfiles
-                    |> List.filter (fun p ->
-                        let otherFws = p.Frameworks
-                        minimal |> List.forall(fun mfw -> otherFws |> Seq.contains mfw))
-                    |> List.sortBy (fun p -> p.Frameworks.Length)
-                    |> Seq.toArray // Debug
                 let firstMatch =
                     KnownTargetProfiles.AllPortableProfiles
                     |> List.filter (fun p ->
