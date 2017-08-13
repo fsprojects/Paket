@@ -160,7 +160,7 @@ type OptionalPackagingInfo =
       IncludePdbs : bool 
       IncludeReferencedProjects : bool
       }
-    static member Epmty : OptionalPackagingInfo =
+    static member Empty : OptionalPackagingInfo =
         { Title = None
           Owners = []
           ReleaseNotes = None

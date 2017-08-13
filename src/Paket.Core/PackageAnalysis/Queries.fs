@@ -30,8 +30,12 @@ let getInstalledPackageModel (lockFile: LockFile) (QualifiedPackageName(groupNam
             let folder = 
                 getTargetFolder lockFile.RootPath groupName packageName resolvedPackage.Version (defaultArg resolvedPackage.Settings.IncludeVersionInPath false)
                 |> Path.GetFullPath
-            let content = NuGet.GetContent folder
-            InstallModel.CreateFromContent(packageName, resolvedPackage.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, content)
+
+            InstallModel.CreateFromContent(
+                packageName,
+                resolvedPackage.Version,
+                Paket.Requirements.FrameworkRestriction.NoRestriction, 
+                NuGet.GetContent(folder).Force())
 
 let getRuntimeGraph (lockFile: LockFile) (groupName:GroupName) =
     lockFile.Groups

@@ -306,23 +306,17 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Restores the given paket.references files.
     member this.Restore(force: bool, group: string option, files: string list, touchAffectedRefs: bool, ignoreChecks, failOnChecks, targetFramework) : unit =
-        RunInLockedAccessMode(
-            this.RootPath,
-            fun () ->
-                if touchAffectedRefs then
-                    let packagesToTouch = RestoreProcess.FindPackagesNotExtractedYet(dependenciesFileName)
-                    this.Process (FindReferences.TouchReferencesOfPackages packagesToTouch)
-                RestoreProcess.Restore(dependenciesFileName,None,force,Option.map GroupName group,files,ignoreChecks, failOnChecks, targetFramework))
+        if touchAffectedRefs then
+            let packagesToTouch = RestoreProcess.FindPackagesNotExtractedYet(dependenciesFileName)
+            this.Process (FindReferences.TouchReferencesOfPackages packagesToTouch)
+        RestoreProcess.Restore(dependenciesFileName,None,force,Option.map GroupName group,files,ignoreChecks, failOnChecks, targetFramework)
 
     /// Restores the given paket.references files.
     member this.Restore(force: bool, group: string option, project: string, touchAffectedRefs: bool, ignoreChecks, failOnChecks, targetFramework) : unit =
-        RunInLockedAccessMode(
-            this.RootPath,
-            fun () ->
-                if touchAffectedRefs then
-                    let packagesToTouch = RestoreProcess.FindPackagesNotExtractedYet(dependenciesFileName)
-                    this.Process (FindReferences.TouchReferencesOfPackages packagesToTouch)
-                RestoreProcess.Restore(dependenciesFileName,Some project,force,Option.map GroupName group,[],ignoreChecks, failOnChecks, targetFramework))
+        if touchAffectedRefs then
+            let packagesToTouch = RestoreProcess.FindPackagesNotExtractedYet(dependenciesFileName)
+            this.Process (FindReferences.TouchReferencesOfPackages packagesToTouch)
+        RestoreProcess.Restore(dependenciesFileName,Some project,force,Option.map GroupName group,[],ignoreChecks, failOnChecks, targetFramework)
 
     /// Restores packages for all available paket.references files
     /// (or all packages if onlyReferenced is false)
@@ -461,8 +455,11 @@ type Dependencies(dependenciesFileName: string) =
                         getTargetFolder this.RootPath groupName packageName resolvedPackage.Version (defaultArg resolvedPackage.Settings.IncludeVersionInPath false)
                         |> Path.GetFullPath
 
-                let content = NuGet.GetContent folder
-                InstallModel.CreateFromContent(packageName, resolvedPackage.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, content)
+                InstallModel.CreateFromContent(
+                    packageName, 
+                    resolvedPackage.Version, 
+                    Paket.Requirements.FrameworkRestriction.NoRestriction, 
+                    NuGet.GetContent(folder).Force())
 
     /// Returns all libraries for the given package and framework.
     member this.GetLibraries(groupName,packageName,frameworkIdentifier:TargetProfile) =

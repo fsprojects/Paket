@@ -55,10 +55,9 @@ type Cache = {
 
 module Cache =
     let private lockObj = System.Object()
-    let mutable private inaccessibleCaches = Set.empty<Cache>
+    let private inaccessibleCaches = System.Collections.Generic.HashSet<Cache>()
     let setInaccessible cache =
-        lock lockObj (fun () ->
-            inaccessibleCaches <- inaccessibleCaches |> Set.add cache)
+        lock lockObj (fun () -> inaccessibleCaches.Add cache |> ignore)
+
     let isInaccessible cache =
-        lock lockObj (fun () ->
-            inaccessibleCaches |> Set.contains cache)
+        lock lockObj (fun () -> inaccessibleCaches.Contains cache)
