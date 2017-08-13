@@ -84,7 +84,7 @@ let ofFiles filesList =
     filesList
     |> Seq.fold (fun state file -> addContent file state) []
 
-let GetContent dir =
+let GetContent dir = lazy (
     let di = DirectoryInfo(dir)
     if not di.Exists then
         failwithf "%s doesn't exist. nuspec file can't be loaded." di.FullName
@@ -93,9 +93,10 @@ let GetContent dir =
         di.EnumerateFiles("*.nuspec", SearchOption.TopDirectoryOnly)
         |> Seq.exactlyOne
         |> fun f -> Nuspec.Load(f.FullName)
+
     { Content = (ofDirectory dir).Contents
       Path = dir
-      Spec = spec }
+      Spec = spec })
 
 let tryFindFolder folder (content:NuGetPackageContent) =
     let rec collectItems prefixFull (prefixInner:string) (content:NuGetContent) =
@@ -235,7 +236,8 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
         let inCache =
             sources
             |> Seq.choose(fun source ->
-                NuGetCache.tryGetDetailsFromCache force source.Url packageName version |> Option.map (fun details -> source, details))
+                NuGetCache.tryGetDetailsFromCache force source.Url packageName version 
+                |> Option.map (fun details -> source, details))
             |> Seq.tryHead
 
         let tryV2 (nugetSource:NugetSource) force =

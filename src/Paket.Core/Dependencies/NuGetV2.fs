@@ -243,7 +243,35 @@ let parseODataEntryDetails (url,nugetURL,packageName:PackageName,version:SemVerI
 let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (version:SemVerInfo) =
     async {
         let normalizedVersion = version.Normalize()
-        let fallback2 () =
+        let fallback6 () =
+            async {
+                let url = sprintf "%s/Packages(Id='%s',Version='%O')" nugetURL (packageName.CompareString) normalizedVersion
+                let! raw = getFromUrl(auth,url,acceptXml)
+                if verbose then
+                    tracefn "Response from %s:" url
+                    tracefn ""
+                    tracefn "%s" raw
+                let doc = getXmlDoc url raw
+                return parseODataEntryDetails(url,nugetURL,packageName,version,doc) |> ODataSearchResult.Match
+            }
+
+        let fallback5 () =
+            async {
+                let url = sprintf "%s/Packages(Id='%s',Version='%O')" nugetURL (packageName.CompareString) version
+                let! raw = getFromUrl(auth,url,acceptXml)
+                if verbose then
+                    tracefn "Response from %s:" url
+                    tracefn ""
+                    tracefn "%s" raw
+                let doc = getXmlDoc url raw
+                match parseODataEntryDetails(url,nugetURL,packageName,version,doc) |> ODataSearchResult.Match with
+                | EmptyResult ->
+                    if verbose then tracefn "No results, trying again with direct detail access and normalizedVersion."
+                    return! fallback6()
+                | res -> return res
+            }
+
+        let fallback4 () =
             async {
                 let url = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (Version eq '%O')" nugetURL (packageName.CompareString) normalizedVersion
                 let! raw = getFromUrl(auth,url,acceptXml)
@@ -252,10 +280,14 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                     tracefn ""
                     tracefn "%s" raw
                 let doc = getXmlDoc url raw
-                return parseODataListDetails(url,nugetURL,packageName,version,doc)
+                match parseODataListDetails(url,nugetURL,packageName,version,doc) with
+                | EmptyResult ->
+                    if verbose then tracefn "No results, trying again with direct detail access."
+                    return! fallback5()
+                | res -> return res
             }
 
-        let fallback () =
+        let fallback3 () =
             async {
                 try
                     let url = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (Version eq '%O')" nugetURL (packageName.CompareString) version
@@ -267,14 +299,52 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                     let doc = getXmlDoc url raw
                     match parseODataListDetails(url,nugetURL,packageName,version,doc) with
                     | EmptyResult ->
-                        if verbose then tracefn "No results, trying again with NormalizedVersion as Version instead of Version."
+                        if verbose then tracefn "No results, trying again with NormalizedVersion as Version."
+                        return! fallback4()
+                    | res -> return res
+                with ex ->
+                    return! fallback4()
+            }
+
+        let fallback2 () =
+            async {
+                try
+                    let url = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (NormalizedVersion eq '%O')" nugetURL (packageName.CompareString) version
+                    let! raw = getFromUrl(auth,url,acceptXml)
+                    if verbose then
+                        tracefn "Response from %s:" url
+                        tracefn ""
+                        tracefn "%s" raw
+                    let doc = getXmlDoc url raw
+                    match parseODataListDetails(url,nugetURL,packageName,version,doc) with
+                    | EmptyResult ->
+                        if verbose then tracefn "No results, trying again with Version instead of NormalizedVersion."
+                        return! fallback3()
+                    | res -> return res
+                with ex ->
+                    return! fallback3()
+            }
+       
+        let fallback () =
+            async {
+                try
+                    let url = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (NormalizedVersion eq '%O')" nugetURL (packageName.CompareString) normalizedVersion
+                    let! raw = getFromUrl(auth,url,acceptXml)
+                    if verbose then
+                        tracefn "Response from %s:" url
+                        tracefn ""
+                        tracefn "%s" raw
+                    let doc = getXmlDoc url raw
+                    match parseODataListDetails(url,nugetURL,packageName,version,doc) with
+                    | EmptyResult ->
+                        if verbose then tracefn "No results, trying again with Version as NormalizedVersion."
                         return! fallback2()
                     | res -> return res
                 with ex ->
                     return! fallback2()
             }
 
-        let firstUrl = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (NormalizedVersion eq '%s')" nugetURL (packageName.CompareString) normalizedVersion
+        let firstUrl = sprintf "%s/Packages?$filter=(Id eq '%s') and (NormalizedVersion eq '%s')" nugetURL (packageName.ToString()) normalizedVersion
         try
             let! raw = getFromUrl(auth,firstUrl,acceptXml)
             if verbose then
@@ -284,7 +354,7 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
             let doc = getXmlDoc firstUrl raw
             match parseODataListDetails(firstUrl,nugetURL,packageName,version,doc) with
             | EmptyResult ->
-                if verbose then tracefn "No results, trying again with Version instead of NormalizedVersion."
+                if verbose then tracefn "No results, trying again with case-insensitive version."
                 return! fallback()
             | res -> return res
         with ex ->

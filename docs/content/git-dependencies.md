@@ -38,7 +38,7 @@ Paket allows you to specify version ranges for Git tags similar to
 
 ```paket
 git https://github.com/fsprojects/Paket.git >= 1.0 // At least 1.0
-git http://github.com/forki/AskMe.git < 3.0        // :ower than version 3.0
+git http://github.com/forki/AskMe.git < 3.0        // Lower than version 3.0
 git http://github.com/forki/AskMe.git ~> 2.0       // 2.0 <= x < 3.0
 git https://github.com/forki/FsUnit.git 1.0        // Exactly 1.0
 git file:///C:\Users\Steffen\AskMe >= 1 alpha      // At least 1.0 including alpha versions
