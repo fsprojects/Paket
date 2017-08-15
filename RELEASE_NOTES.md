@@ -1,3 +1,6 @@
+#### 5.85.2 - 15.08.2017
+* BUGFIX: Don't fail on myget
+
 #### 5.85.1 - 11.08.2017
 * Support for DevExpress feed
 
