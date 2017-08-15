@@ -1,5 +1,6 @@
 #### 5.85.2 - 15.08.2017
 * BUGFIX: Don't fail on myget
+* USABILITY: Friendlier warnings about obsolete syntax - https://github.com/fsprojects/Paket/pull/2610
 
 #### 5.85.1 - 11.08.2017
 * Support for DevExpress feed
