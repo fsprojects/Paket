@@ -350,6 +350,10 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                         tracefn "%s" raw
                     let doc = getXmlDoc url raw
                     match parseODataListDetails(url,nugetURL,packageName,version,doc) with
+                    | EmptyResult when
+                        urlIsMyGet nugetURL ||
+                        urlIsNugetGallery nugetURL ->
+                        return EmptyResult
                     | EmptyResult ->
                         foundEmpty := true
                         if verbose then tracefn "No results, trying again with Version as NormalizedVersion."
