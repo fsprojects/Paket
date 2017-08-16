@@ -1,4 +1,4 @@
-#### 5.85.2 - 15.08.2017
+#### 5.85.3 - 16.08.2017
 * BUGFIX: Don't fail on myget
 * USABILITY: Friendlier warnings about obsolete syntax - https://github.com/fsprojects/Paket/pull/2610
 
