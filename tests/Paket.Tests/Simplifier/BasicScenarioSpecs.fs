@@ -251,17 +251,17 @@ nuget C 1.0"""
         depFile.ToString()
         |> shouldEqual (normalizeLineEndings expected)
 
-        let refFirstFileExpected = """group Foo
+        let firstRefFileExpected = """group Foo
 A
 C"""
         refFiles.Head.ToString()
-        |> shouldEqual (normalizeLineEndings refFirstFileExpected)
+        |> shouldEqual (normalizeLineEndings firstRefFileExpected)
 
-        let refSecondFileExpected = """group Foo
+        let secondRefFileExpected = """group Foo
 C
 D"""
         refFiles.Tail.Head.ToString()
-        |> shouldEqual (normalizeLineEndings refSecondFileExpected)
+        |> shouldEqual (normalizeLineEndings secondRefFileExpected)
 
 [<Test>]
 [<Ignore "Simplifier is currently not working with the new restriction system, please fix and activate me">]
