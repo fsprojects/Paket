@@ -254,6 +254,7 @@ let getDetailsFromNuGetViaODataFast nugetSource (packageName:PackageName) (versi
         let normalizedVersion = version.Normalize()
         let urls =
             [ // Nuget feeds should support this.
+              // By ID needs to be first because TFS/VSTS https://github.com/fsprojects/Paket/issues/2213
               UrlToTry.From
                 (UrlId.GetVersion_ById { LoweredPackageId = true; NormalizedVersion = false })
                 "1_%s/Packages(Id='%s',Version='%O')"
@@ -371,60 +372,7 @@ let getDetailsFromNuGetViaODataFast nugetSource (packageName:PackageName) (versi
 
 /// Gets package details from NuGet via OData
 let getDetailsFromNuGetViaOData nugetSource (packageName:PackageName) (version:SemVerInfo) =
-    let queryPackagesProtocol (packageName:PackageName) =
-        async {
-            let url = sprintf "%s/Packages(Id='%O',Version='%O')" nugetSource.Url packageName version
-            let! response = safeGetFromUrl(nugetSource.BasicAuth,url,acceptXml)
-
-            let! raw =
-                match response with
-                | SafeWebResult.SuccessResponse r -> async { return Some r }
-                | SafeWebResult.NotFound -> async { return None }
-                | SafeWebResult.UnknownError err when
-                        urlIsMyGet nugetSource.Url ||
-                        urlIsNugetGallery nugetSource.Url ||
-                        urlSimilarToTfsOrVsts nugetSource.Url ->
-                    raise <|
-                        System.Exception(
-                            sprintf "Could not get package details for %O from %s" packageName nugetSource.Url,
-                            err.SourceException)
-                | SafeWebResult.UnknownError err ->
-                    traceWarnfn "Failed to find defails '%s' from '%s'. trying again with /odata/Packages. Please report this." err.SourceException.Message url
-                    if verbose then
-                        tracefn "Details of last error (%s): %O" url err.SourceException
-                    async {
-                        try
-                            let url = sprintf "%s/odata/Packages(Id='%O',Version='%O')" nugetSource.Url packageName version
-                            let! raw = getXmlFromUrl(nugetSource.BasicAuth,url)
-                            return Some raw
-                        with e ->
-                            return raise <| System.AggregateException(err.SourceException, e)
-                    }
-
-            if verbose then
-                tracefn "Response from %s:" url
-                tracefn ""
-                tracefn "%s" (match raw with Some s -> s | _ -> "NOTFOUND 404")
-            match raw with
-            | Some raw ->
-                let doc = getXmlDoc url raw
-                return parseODataEntryDetails(url,nugetSource.Url,packageName,version,doc) |> ODataSearchResult.Match
-            | None -> return ODataSearchResult.EmptyResult }
-
-    async {
-        try
-            let! result =
-                // See https://github.com/fsprojects/Paket/issues/2213
-                // TODO: There is a bug in VSTS, so we can't trust this protocol. Remove when VSTS is fixed
-                // TODO: TFS has the same bug
-                if urlSimilarToTfsOrVsts nugetSource.Url then queryPackagesProtocol packageName
-                else getDetailsFromNuGetViaODataFast nugetSource packageName version
-            return result
-        with e when not (urlSimilarToTfsOrVsts nugetSource.Url) ->
-            traceWarnfn "Failed to get package details '%s'. This feeds implementation might be broken." e.Message
-            if verbose then tracefn "Details: %O" e
-            return! queryPackagesProtocol packageName
-    }
+    getDetailsFromNuGetViaODataFast nugetSource packageName version
 
 let getDetailsFromNuGet force nugetSource packageName version =
     getDetailsFromCacheOr
@@ -433,9 +381,6 @@ let getDetailsFromNuGet force nugetSource packageName version =
         packageName
         version
         (fun () -> getDetailsFromNuGetViaOData nugetSource packageName version)
-
-
-
 
 /// Uses the NuGet v2 API to retrieve all packages with the given prefix.
 let FindPackages(auth, nugetURL, packageNamePrefix, maxResults) =
