@@ -242,6 +242,8 @@ let parseODataEntryDetails (url,nugetURL,packageName:PackageName,version:SemVerI
 
 let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (version:SemVerInfo) =
     let foundEmpty = ref false
+    let isBlessed = urlIsNugetGallery nugetURL || urlIsMyGet nugetURL
+                        
     async {
         let normalizedVersion = version.Normalize()
         let fallback6 () =
@@ -270,6 +272,8 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                         tracefn "%s" raw
                     let doc = getXmlDoc url raw
                     match parseODataEntryDetails(url,nugetURL,packageName,version,doc) |> ODataSearchResult.Match with
+                    | EmptyResult when isBlessed ->
+                        return EmptyResult
                     | EmptyResult ->
                         foundEmpty := true
                         if verbose then tracefn "No results, trying again with direct detail access and normalizedVersion."
@@ -290,6 +294,8 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                         tracefn "%s" raw
                     let doc = getXmlDoc url raw
                     match parseODataListDetails(url,nugetURL,packageName,version,doc) with
+                    | EmptyResult when isBlessed ->
+                        return EmptyResult
                     | EmptyResult ->
                         foundEmpty := true
                         if verbose then tracefn "No results, trying again with direct detail access."
@@ -310,6 +316,8 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                         tracefn "%s" raw
                     let doc = getXmlDoc url raw
                     match parseODataListDetails(url,nugetURL,packageName,version,doc) with
+                    | EmptyResult when isBlessed ->
+                        return EmptyResult
                     | EmptyResult ->
                         foundEmpty := true
                         if verbose then tracefn "No results, trying again with NormalizedVersion as Version."
@@ -330,6 +338,8 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                         tracefn "%s" raw
                     let doc = getXmlDoc url raw
                     match parseODataListDetails(url,nugetURL,packageName,version,doc) with
+                    | EmptyResult when isBlessed ->
+                        return EmptyResult
                     | EmptyResult ->
                         foundEmpty := true
                         if verbose then tracefn "No results, trying again with Version instead of NormalizedVersion."
@@ -350,9 +360,7 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                         tracefn "%s" raw
                     let doc = getXmlDoc url raw
                     match parseODataListDetails(url,nugetURL,packageName,version,doc) with
-                    | EmptyResult when
-                        urlIsMyGet nugetURL ||
-                        urlIsNugetGallery nugetURL ->
+                    | EmptyResult when isBlessed ->
                         return EmptyResult
                     | EmptyResult ->
                         foundEmpty := true
