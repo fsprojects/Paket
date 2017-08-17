@@ -1,3 +1,6 @@
+#### 5.85.8 - 18.08.2017
+* BUGFIX: No file links were created when using File: references in .NET Core projects - https://github.com/fsprojects/Paket/issues/2622
+
 #### 5.85.7 - 17.08.2017
 * BUGFIX: Small fixes in PCL detection - https://github.com/fsprojects/Paket/pull/2609
 
