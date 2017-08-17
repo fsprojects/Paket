@@ -1,3 +1,6 @@
+#### 5.85.5 - 17.08.2017
+* BUGFIX: Simplify references in groups - https://github.com/fsprojects/Paket/pull/2619
+
 #### 5.85.4 - 17.08.2017
 * BUGFIX: Don't change BOM for existing project files - https://github.com/fsprojects/Paket/pull/2575
 * BUGFIX: Don't call paket if not necessary on dotnet pack - https://github.com/fsprojects/Paket/pull/2624
