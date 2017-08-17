@@ -514,14 +514,22 @@ module ProjectFile =
 
     let updateFileItems (fileItems:FileItem list) (project:ProjectFile) = 
         let newItemGroups = 
-            let firstItemGroup = project.ProjectNode |> getNodes "ItemGroup" |> List.filter (fun n -> List.isEmpty (getNodes "Reference" n)) |> List.tryHead
+            let firstItemGroup = 
+                project.ProjectNode 
+                |> getNodes "ItemGroup" 
+                |> List.filter (fun n -> List.isEmpty (getNodes "Reference" n)) 
+                |> List.tryHead
+
             match firstItemGroup with
             | None -> 
-                [   BuildAction.Content, createNode "ItemGroup" project
-                    BuildAction.Compile, createNode "ItemGroup" project
-                    BuildAction.Reference, createNode "ItemGroup" project
-                    BuildAction.Resource, createNode "ItemGroup" project
-                    BuildAction.Page, createNode "ItemGroup" project 
+                let node = createNode "ItemGroup" project
+                if List.isEmpty fileItems |> not then
+                    project.ProjectNode.AppendChild node |> ignore
+                [   BuildAction.Content, node
+                    BuildAction.Compile, node
+                    BuildAction.Reference, node
+                    BuildAction.Resource, node
+                    BuildAction.Page, node
                 ]
             | Some node ->
                 [   BuildAction.Content, node :?> XmlElement
@@ -997,7 +1005,6 @@ module ProjectFile =
     let getTargetFramework (project:ProjectFile) = getProperty "TargetFramework" project
     let getTargetFrameworks (project:ProjectFile) = getProperty "TargetFrameworks" project
 
-
     let getTargetProfile (project:ProjectFile) =
         let fallback () =
             let prefix =
@@ -1037,11 +1044,10 @@ module ProjectFile =
             rootPath
             (completeModel: Map<GroupName*PackageName,_*InstallModel>) 
             (directPackages : Map<GroupName*PackageName,_*InstallSettings>) 
-            (usedPackages : Map<GroupName*PackageName,_*InstallSettings>) 
+            (usedPackages : Map<GroupName*PackageName,_*InstallSettings>)  
             (project:ProjectFile) =
         removePaketNodes project
-
-
+        
         let findInsertSpot() =
             // nuget inserts properties directly at the top, and targets directly at the end.
             // our inserts depend on $(TargetFrameworkVersion), which may be set either from another import, or directly in the project file.
@@ -1095,7 +1101,9 @@ module ProjectFile =
         |> Seq.map (fun kv -> 
             deleteCustomModelNodes (snd kv.Value) project
             let installSettings = snd usedPackages.[kv.Key]
-            let restrictionList = installSettings.FrameworkRestrictions |> getExplicitRestriction
+            let restrictionList = 
+                installSettings.FrameworkRestrictions 
+                |> getExplicitRestriction
 
             let projectModel =
                 (snd kv.Value)
