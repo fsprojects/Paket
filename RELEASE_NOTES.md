@@ -1,3 +1,7 @@
+#### 5.85.4 - 17.08.2017
+* BUGFIX: Don't change BOM for existing project files - https://github.com/fsprojects/Paket/pull/2575
+* BUGFIX: Don't call paket if not necessary on dotnet pack - https://github.com/fsprojects/Paket/pull/2624
+
 #### 5.85.3 - 16.08.2017
 * BUGFIX: Don't fail on myget
 * USABILITY: Friendlier warnings about obsolete syntax - https://github.com/fsprojects/Paket/pull/2610
