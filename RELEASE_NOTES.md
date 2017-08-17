@@ -1,3 +1,6 @@
+#### 5.85.6 - 17.08.2017
+* BUGFIX: Small fixes in PCL detection - https://github.com/fsprojects/Paket/pull/2609
+
 #### 5.85.5 - 17.08.2017
 * BUGFIX: Simplify references in groups - https://github.com/fsprojects/Paket/pull/2619
 
