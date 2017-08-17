@@ -12,6 +12,27 @@ open System.IO
 let scenarios = System.Collections.Generic.List<_>()
 let isLiveUnitTesting = AppDomain.CurrentDomain.GetAssemblies() |> Seq.exists (fun a -> a.GetName().Name = "Microsoft.CodeAnalysis.LiveUnitTesting.Runtime")
 
+let partitionForTravis scenario =
+
+    // travis executes tests in three stages:
+    // * -1: build only
+    // * 0: first half of the scenario tests
+    // * 1: second half of the scenario tests
+    //
+    // use the hash of the scenario name to key between stage 0 and 1.
+    let currentTravisStage =
+        match Environment.GetEnvironmentVariable "TRAVIS_STAGE" with
+        | null | "" -> None
+        | sInt ->
+            match Int32.TryParse sInt with
+            | true, iState -> Some iState
+            | _ -> None
+    
+    if currentTravisStage <> None &&
+       currentTravisStage <> Some (scenario.GetHashCode() % 2)
+    then Assert.Ignore("ignored in this part of the travis build")
+    
+
 let paketToolPath = FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.exe")
 let integrationTestPath = FullName(__SOURCE_DIRECTORY__ + "../../../integrationtests/scenarios")
 let scenarioTempPath scenario = Path.Combine(integrationTestPath,scenario,"temp")
@@ -26,7 +47,10 @@ let cleanupAllScenarios() =
         cleanup scenario
     scenarios.Clear()
 
+
 let prepare scenario =
+    partitionForTravis scenario
+
     if isLiveUnitTesting then Assert.Inconclusive("Integration tests are disabled when in a Live-Unit-Session")
     if scenarios.Count > 10 then
         cleanupAllScenarios()
@@ -73,6 +97,7 @@ let directPaketInPath command scenarioPath =
             ExecProcessWithLambdas (fun info ->
               info.FileName <- paketToolPath
               info.WorkingDirectory <- scenarioPath
+              info.CreateNoWindow <- true
               info.Arguments <- command)
               (System.TimeSpan.FromMinutes 7.)
               true
@@ -104,13 +129,17 @@ let directPaketInPath command scenarioPath =
 
     if result <> 0 then 
         let errors = String.Join(Environment.NewLine,msgs |> Seq.filter fst |> Seq.map snd)
-        failwith errors      
+        if String.IsNullOrWhiteSpace errors then
+            failwithf "The process exited with code %i" result
+        else
+            failwith errors
 
 
     String.Join(Environment.NewLine,msgs |> Seq.map snd)
     #endif
 
 let directPaket command scenario =
+    partitionForTravis scenario
     directPaketInPath command (scenarioTempPath scenario)
 
 let paket command scenario =

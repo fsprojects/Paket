@@ -22,9 +22,13 @@ let ``#2496 Paket fails on projects that target multiple frameworks``() =
     FileHelper.CopyFile tmpPaketFolder paketExe
     
     let wd = (scenarioTempPath scenario) @@ project
-    let restore = 
+    let restore =
+        let dotnetExePath =
+            match Environment.GetEnvironmentVariable "DOTNET_EXE_PATH" with
+            | null | "" -> "dotnet"
+            | s -> s
         ProcessHelper.ExecProcessAndReturnMessages (fun info ->
-            info.FileName <- "dotnet"
+            info.FileName <- dotnetExePath
             info.WorkingDirectory <- wd
             info.Arguments <- (sprintf "restore %s.csproj" project)
         )

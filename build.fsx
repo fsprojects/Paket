@@ -62,7 +62,7 @@ let gitName = "Paket"
 // The url for the raw files hosted
 let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
-let dotnetcliVersion = "1.0.4"
+let dotnetcliVersion = "2.1.0-preview1-007002"
 
 let dotnetSDKPath = System.Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) </> "dotnetcore" |> FullName
 
@@ -129,6 +129,7 @@ Target "AssemblyInfo" (fun _ ->
 
 Target "InstallDotNetCore" (fun _ ->
     dotnetExePath <- DotNetCli.InstallDotNetSDK dotnetcliVersion
+    Environment.SetEnvironmentVariable("DOTNET_EXE_PATH", dotnetExePath)
 )
 
 // --------------------------------------------------------------------------------------

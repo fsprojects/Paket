@@ -3,8 +3,7 @@ Chessie
 Newtonsoft.Json
 FSharp.Compiler.Tools
 
-group Test
-  NUnit
-  NUnit3TestAdapter
-  FsCheck
-  File:FsUnit.fs .
+NUnit
+NUnit3TestAdapter
+FsCheck
+File:FsUnit.fs .
