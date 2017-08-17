@@ -243,8 +243,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
         let tryV2 (nugetSource:NugetSource) force =
             NuGetV2.getDetailsFromNuGet
                 force
-                (nugetSource.Authentication |> Option.map toBasicAuth)
-                nugetSource.Url
+                nugetSource
                 packageName
                 version
 
@@ -254,8 +253,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                 | Some url ->
                     NuGetV2.getDetailsFromNuGet
                         force
-                        (nugetSource.Authentication |> Option.map toBasicAuth)
-                        url
+                        { nugetSource with Url = url } //= .Authentication |> Option.map toBasicAuth)
                         packageName
                         version
                 | _ ->
