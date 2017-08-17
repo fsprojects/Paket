@@ -1180,11 +1180,24 @@ module ProjectFile =
 
 
     let save forceTouch project =
+        let determineEncoding fileName =
+            if File.Exists fileName then
+                let utf8WithBom = UTF8Encoding true
+                let bom = utf8WithBom.GetPreamble()
+                let bomBuffer = Array.zeroCreate bom.Length
+
+                use fs = new FileStream(fileName, FileMode.Open, FileAccess.Read)
+                fs.Read(bomBuffer, 0, bom.Length) |> ignore
+                if bomBuffer = bom then utf8WithBom else UTF8Encoding false
+            else UTF8Encoding false
+
         if Utils.normalizeXml project.Document <> project.OriginalText || not (File.Exists(project.FileName)) then
             if verbose then
                 verbosefn "Project %s changed" project.FileName
+            let encoding = determineEncoding project.FileName
             use f = File.Open(project.FileName, FileMode.Create)
-            project.Document.Save(f)
+            use sw = new StreamWriter(f, encoding)
+            project.Document.Save(sw)
         elif forceTouch then
             File.SetLastWriteTimeUtc(project.FileName, DateTime.UtcNow)
 
