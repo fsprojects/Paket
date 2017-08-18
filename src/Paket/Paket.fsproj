@@ -32,7 +32,7 @@
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
     <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>C:\temp\Library2</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\temp\fixed</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

@@ -785,8 +785,16 @@ module ProjectFile =
                             | "$(TargetFrameworkIdentifier) == 'true'" -> "true"
                             | _ -> condition
 
-                        let frameworkReferences = libFolder.FolderContents.FrameworkReferences |> Seq.sortBy (fun (r) -> r.Name) |> Seq.toList
-                        let libraries = libFolder.FolderContents.Libraries |> Seq.sortBy (fun (r) -> r.Path) |> Seq.toList
+                        let frameworkReferences = 
+                            libFolder.FolderContents.FrameworkReferences 
+                            |> Seq.sortBy (fun r -> r.Name) 
+                            |> Seq.toList
+
+                        let libraries =
+                            libFolder.FolderContents.Libraries 
+                            |> Seq.sortBy (fun r -> r.Path) 
+                            |> Seq.toList
+
                         let assemblyTargets = ref libFolder.Targets
                         let duplicates = HashSet<_>()
                         for frameworkAssembly in frameworkReferences do
@@ -799,7 +807,8 @@ module ProjectFile =
                             [condition,createItemGroup libFolder.Targets frameworkReferences libraries,false]
                         else
                             let specialFrameworkAssemblies, rest =
-                                frameworkReferences |> List.partition (fun fr -> duplicates.Contains fr.Name)
+                                frameworkReferences 
+                                |> List.partition (fun fr -> duplicates.Contains fr.Name)
 
                             match PlatformMatching.getCondition referenceCondition allTargets !assemblyTargets with
                             | "" -> [condition,createItemGroup libFolder.Targets rest libraries,false]
@@ -1095,10 +1104,21 @@ module ProjectFile =
 
         let usedFrameworkLibs = HashSet<TargetProfile*string>()
 
-        completeModel
-        |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
-        |> Seq.sortBy (fun kv -> let group, packName = kv.Key in group.CompareString, packName.CompareString)
-        |> Seq.map (fun kv -> 
+        let httpPackage = PackageName "System.Net.Http"
+        let filteredModel =
+            completeModel
+            |> Map.filter (fun kv _ -> usedPackages.ContainsKey kv)
+
+        
+        filteredModel
+        |> Seq.sortBy (fun kv -> 
+                let group, packName = kv.Key
+                if packName = httpPackage then
+                    for t in KnownTargetProfiles.AllProfiles do
+                        usedFrameworkLibs.Add(t,"System.Net.Http") |> ignore
+
+                group.CompareString, packName.CompareString)
+        |> Seq.map (fun kv ->
             deleteCustomModelNodes (snd kv.Value) project
             let installSettings = snd usedPackages.[kv.Key]
             let restrictionList = 

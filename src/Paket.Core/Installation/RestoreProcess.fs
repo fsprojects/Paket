@@ -176,8 +176,9 @@ let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches,
         let! (package, content) = ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package, false)
         let model = 
                 InstallModel.CreateFromContent(
-                    package.Name, package.Version, 
-                    package.Settings.FrameworkRestrictions |> Requirements.getExplicitRestriction, 
+                    package.Name, 
+                    package.Version, 
+                    Requirements.getExplicitRestriction package.Settings.FrameworkRestrictions, 
                     content.Force())
         return (groupName,package.Name), (package,model)
     }
