@@ -1111,26 +1111,30 @@ module ProjectFile =
 
         
         filteredModel
-        |> Seq.sortBy (fun kv -> 
+        |> Seq.map (fun kv -> 
+                deleteCustomModelNodes (snd kv.Value) project
+                let installSettings = snd usedPackages.[kv.Key]
+                let restrictionList = 
+                    installSettings.FrameworkRestrictions 
+                    |> getExplicitRestriction
+
+                let projectModel =
+                    (snd kv.Value)
+                        .ApplyFrameworkRestrictions(restrictionList)
+                        .FilterExcludes(installSettings.Excludes)
+                        .RemoveIfCompletelyEmpty()
+
                 let group, packName = kv.Key
                 if packName = httpPackage then
                     for t in KnownTargetProfiles.AllProfiles do
-                        usedFrameworkLibs.Add(t,"System.Net.Http") |> ignore
+                        if (projectModel.GetLibReferenceFiles t) |> Seq.exists (fun t -> t.Name = "System.Net.Http.dll") then
+                            usedFrameworkLibs.Add(t,"System.Net.Http") |> ignore
 
+                kv,installSettings,restrictionList,projectModel)
+        |> Seq.sortBy (fun (kv,_,_,_) -> 
+                let group, packName = kv.Key
                 group.CompareString, packName.CompareString)
-        |> Seq.map (fun kv ->
-            deleteCustomModelNodes (snd kv.Value) project
-            let installSettings = snd usedPackages.[kv.Key]
-            let restrictionList = 
-                installSettings.FrameworkRestrictions 
-                |> getExplicitRestriction
-
-            let projectModel =
-                (snd kv.Value)
-                    .ApplyFrameworkRestrictions(restrictionList)
-                    .FilterExcludes(installSettings.Excludes)
-                    .RemoveIfCompletelyEmpty()
-
+        |> Seq.map (fun (kv,installSettings,restrictionList,projectModel) ->
             if directPackages.ContainsKey kv.Key then
                 let targetProfile = getTargetProfile project 
                 if isTargetMatchingRestrictions(restrictionList,targetProfile) then
