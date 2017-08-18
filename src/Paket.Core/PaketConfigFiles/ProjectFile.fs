@@ -1104,11 +1104,13 @@ module ProjectFile =
 
         let usedFrameworkLibs = HashSet<TargetProfile*string>()
 
-        let httpPackage = PackageName "System.Net.Http"
+        let specialPackagesWithFrameworkConflictLibs = 
+            [PackageName "System.Net.Http"] // see https://github.com/fsprojects/Paket/issues/2352
+            |> Set.ofList
+
         let filteredModel =
             completeModel
             |> Map.filter (fun kv _ -> usedPackages.ContainsKey kv)
-
         
         filteredModel
         |> Seq.map (fun kv -> 
@@ -1124,11 +1126,13 @@ module ProjectFile =
                         .FilterExcludes(installSettings.Excludes)
                         .RemoveIfCompletelyEmpty()
 
-                let group, packName = kv.Key
-                if packName = httpPackage then
+                let _, packageName = kv.Key
+                if specialPackagesWithFrameworkConflictLibs.Contains packageName then
                     for t in KnownTargetProfiles.AllProfiles do
-                        if (projectModel.GetLibReferenceFiles t) |> Seq.exists (fun t -> t.Name = "System.Net.Http.dll") then
-                            usedFrameworkLibs.Add(t,"System.Net.Http") |> ignore
+                        if (projectModel.GetLibReferenceFiles t) 
+                           |> Seq.exists (fun t -> t.Name = packageName.ToString() + ".dll") 
+                        then
+                            usedFrameworkLibs.Add(t,packageName.ToString()) |> ignore
 
                 kv,installSettings,restrictionList,projectModel)
         |> Seq.sortBy (fun (kv,_,_,_) -> 
