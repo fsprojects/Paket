@@ -471,7 +471,7 @@ let tryAndBlacklistUrl doWarn (source:NugetSource) (tryAgain : 'a -> bool) (f : 
                     let! (isOk, res) = a
                     if not isOk then
                         if doWarn then
-                            eprintfn "Possible Performance degration, blacklist '%A'" url.UrlId
+                            eprintfn "Possible Performance degration, blacklist '%s'" url.InstanceUrl
                         return Choice2Of3 res
                     else
                         return Choice1Of3 res

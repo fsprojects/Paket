@@ -268,7 +268,7 @@ let getDetailsFromNuGetViaODataFast nugetSource (packageName:PackageName) (versi
                 nugetSource.Url
                 (packageName.CompareString)
                 normalizedVersion
-              // Use original casing.            
+              // Use original casing.
               UrlToTry.From
                 (UrlId.GetVersion_ById { LoweredPackageId = false; NormalizedVersion = true })
                 "1_%s/Packages(Id='%s',Version='%O')"
