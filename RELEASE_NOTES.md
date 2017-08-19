@@ -1,4 +1,4 @@
-#### 5.86.0-alpha003 - 19.08.2017
+#### 5.86.0-alpha004 - 19.08.2017
 * BUGFIX: Fixed feed Warnings and added blacklisting - https://github.com/fsprojects/Paket/pull/2582
 
 #### 5.85.8 - 18.08.2017
