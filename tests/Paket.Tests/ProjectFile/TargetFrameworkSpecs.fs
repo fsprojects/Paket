@@ -5,7 +5,7 @@ open NUnit.Framework
 open FsUnit
 open Paket.TestHelpers
 
-let portable = TargetProfile.FindPortable [ DotNetFramework FrameworkVersion.V4_5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
+let portable = TargetProfile.FindPortable true [ DotNetFramework FrameworkVersion.V4_5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
     
 let TestData: obj[][] =
     [|

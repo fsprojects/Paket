@@ -721,6 +721,11 @@ type PortableProfileType =
     | Profile336
     /// portable-net45+sl5+win8+wp8+wpa81
     | Profile344
+    member x.IsUnsupprted =
+        match x with
+        | UnsupportedProfile _ -> true
+        | _ -> false
+
     member x.ProfileName =
         match x with
         | UnsupportedProfile fws -> x.FolderName
@@ -830,6 +835,10 @@ type TargetProfile =
         match this with
         | SinglePlatform x -> x.ToString()
         | PortableProfile p -> p.FolderName
+    member x.IsUnsupportedPortable =
+        match x with
+        | PortableProfile p -> p.IsUnsupprted
+        | _ -> false
 
 module KnownTargetProfiles =
     let DotNetFrameworkVersions = [
@@ -1143,7 +1152,7 @@ module SupportCalculation =
                     result
             | _ -> failwithf "Expected that default profiles are already created."
     
-    let findPortable =
+    let private findPortablePriv =
         memoize (fun (fws: _ list) ->
             if fws.Length = 0 then failwithf "can not find portable for an empty list (Details: Empty lists need to be handled earlier with a warning)!"
             let fallback = PortableProfile (UnsupportedProfile (fws |> List.sort))
@@ -1173,11 +1182,15 @@ module SupportCalculation =
                 match firstMatch with
                 | Some p -> PortableProfile p
                 | None ->
-                    traceWarnfn "The profile '%O' is not a known profile. Please tell the package author." fallback
                     fallback
             else
-                traceWarnfn "The profile '%O' is not a known profile. Please tell the package author." fallback
                 fallback)
+
+    let findPortable warn fws =
+        let result = findPortablePriv fws
+        if warn && result.IsUnsupportedPortable then
+            traceWarnfn "The profile '%O' is not a known profile. Please tell the package author." result
+        result
 
     let getSupportedPlatforms x =
         match x with
@@ -1301,8 +1314,8 @@ type TargetProfile with
         match p with
         | SinglePlatform fw -> [fw]
         | PortableProfile p -> p.Frameworks
-    static member FindPortable (fws: _ list) = SupportCalculation.findPortable fws
-    
+    static member FindPortable warnWhenUnsupported (fws: _ list) = SupportCalculation.findPortable warnWhenUnsupported fws
+
     member inline x.PlatformsSupporting = SupportCalculation.getPlatformsSupporting x
 
     /// true when x is supported by y, for example netstandard15 is supported by netcore10

@@ -139,7 +139,7 @@ type NuGetPackageCache =
             let restrictions =
                 if restrictionString = "AUTO" then
                     FrameworkRestrictions.AutoDetectFramework
-                else FrameworkRestrictions.ExplicitRestriction(Requirements.parseRestrictions true restrictionString)
+                else FrameworkRestrictions.ExplicitRestriction(Requirements.parseRestrictions restrictionString |> fst)
             n, v, restrictions)
 
 let inline normalizeUrl(url:string) = url.Replace("https://","http://").Replace("www.","")

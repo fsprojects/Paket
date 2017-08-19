@@ -13,12 +13,12 @@ type ParsedPlatformPath =
     static member Empty = { Name = ""; Platforms = [] }
     static member FromTargetProfile (p:TargetProfile) =
         { Name = p.ToString(); Platforms = p.Frameworks }
-    member x.ToTargetProfile =
+    member x.ToTargetProfile warnIfUnsupported =
         match x.Platforms with
         | _ when System.String.IsNullOrEmpty x.Name -> None
         | [] -> None // Not detected earlier.
         | [p] -> Some (SinglePlatform p)
-        | plats -> Some (TargetProfile.FindPortable plats)
+        | plats -> Some (TargetProfile.FindPortable warnIfUnsupported plats)
     member pp.IsEmpty = String.IsNullOrEmpty pp.Name || pp.Platforms.IsEmpty
 
 let inline split (path : string) =
@@ -105,11 +105,11 @@ let getFrameworkPenalty (fr1, fr2) =
 
 
 let getPathPenalty =
-    memoize 
+    memoize
       (fun (path:ParsedPlatformPath,platform:TargetProfile) ->
         let handleEmpty () =
             match platform with
-            | SinglePlatform(Native(_)) -> MaxPenalty // an empty path is considered incompatible with native targets            
+            | SinglePlatform(Native(_)) -> MaxPenalty // an empty path is considered incompatible with native targets
             | _ -> Penalty_Fallback // an empty path is considered compatible with every .NET target, but with a high penalty so explicit paths are preferred
         match path.Platforms with
         | _ when String.IsNullOrWhiteSpace path.Name -> handleEmpty()
@@ -118,14 +118,16 @@ let getPathPenalty =
             let additionalPen = if path.Name.EndsWith "-client" then Penalty_Client else 0
             additionalPen + getPlatformPenalty(platform,SinglePlatform h)
         | _ ->
-            getPlatformPenalty(platform, TargetProfile.FindPortable path.Platforms))
+            // No warnig -> should be reported later
+            getPlatformPenalty(platform, TargetProfile.FindPortable false path.Platforms))
 
 [<Obsolete("Used in test code, use getPathPenalty instead.")>]
 let getFrameworkPathPenalty fr path =
     match fr with
     | [ h ] -> getPathPenalty (path, SinglePlatform h)
     | _ ->
-        getPathPenalty (path, TargetProfile.FindPortable fr)
+        // No warnig -> should be reported later
+        getPathPenalty (path, TargetProfile.FindPortable false fr)
 
 type PathPenalty = (ParsedPlatformPath * int)
 

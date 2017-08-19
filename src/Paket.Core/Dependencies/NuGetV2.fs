@@ -208,8 +208,10 @@ let private handleODataEntry nugetURL packageName version entry =
         rawPackages
         |> Seq.filter (fun (n,_,_) -> System.String.IsNullOrEmpty (n.ToString()) |> not)
         |> Seq.toList
-    let dependencies =
+    let dependencies, warnings =
         addFrameworkRestrictionsToDependencies cleanedPackages frameworks
+    for warning in warnings do
+        Logging.traceWarnfn "%s" (warning.Format officialName version)
 
     { PackageName = officialName
       DownloadUrl = downloadLink
