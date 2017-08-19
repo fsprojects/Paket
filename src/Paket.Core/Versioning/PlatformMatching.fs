@@ -23,7 +23,7 @@ type ParsedPlatformPath =
 
 let inline split (path : string) =
     path.Split('+')
-    |> Array.map (fun s -> System.Text.RegularExpressions.Regex.Replace(s, @"portable[\d\.]*-",""))
+    |> Array.map (fun s -> System.Text.RegularExpressions.Regex.Replace(KnownAliases.normalizeFramework s, @"portable[\d\.]*-",""))
 
 // TODO: This function does now quite a lot, there probably should be several functions.
 let private extractPlatformsPriv = memoize (fun path ->
@@ -32,7 +32,7 @@ let private extractPlatformsPriv = memoize (fun path ->
         let splits = split path
         let platforms = splits |> Array.choose FrameworkDetection.Extract |> Array.toList
         if platforms.Length = 0 then
-            if splits.Length = 1 && splits.[0].ToLowerInvariant().StartsWith "profile" then
+            if splits.Length = 1 && splits.[0].StartsWith "profile" then
                 // might be something like portable4.6-profile151
                 let found =
                     KnownTargetProfiles.FindPortableProfile splits.[0]
@@ -211,7 +211,7 @@ let getTargetCondition (target:TargetProfile) =
         | DNX(version) ->"$(TargetFrameworkIdentifier) == 'DNX'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DNXCore(version) ->"$(TargetFrameworkIdentifier) == 'DNXCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DotNetStandard(version) ->"$(TargetFrameworkIdentifier) == '.NETStandard'", sprintf "$(TargetFrameworkVersion) == '%O'" version
-        | DotNetCore(version) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", sprintf "$(TargetFrameworkVersion) == '%O'" version
+        | DotNetCoreApp(version) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DotNetUnity(DotNetUnityVersion.V3_5_Full as version) ->
             "$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "($(TargetFrameworkVersion) == '%O' And $(TargetFrameworkProfile) == 'Unity Full v3.5')" version
         | DotNetUnity(DotNetUnityVersion.V3_5_Subset as version) ->

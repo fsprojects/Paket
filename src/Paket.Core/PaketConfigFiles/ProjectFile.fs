@@ -766,7 +766,7 @@ module ProjectFile =
         // I don't think there is anyone actually using this part, but it's there for backwards compat.
         let netCoreRestricted =
             model.ApplyFrameworkRestrictions
-                ((List.map DotNetCore KnownTargetProfiles.DotNetCoreVersions @ List.map DotNetStandard KnownTargetProfiles.DotNetStandardVersions)
+                ((List.map DotNetCoreApp KnownTargetProfiles.DotNetCoreAppVersions @ List.map DotNetStandard KnownTargetProfiles.DotNetStandardVersions)
                  |> List.map FrameworkRestriction.Exactly
                  |> List.fold FrameworkRestriction.combineRestrictionsWithOr FrameworkRestriction.EmptySet)
 
