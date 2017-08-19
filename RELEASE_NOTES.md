@@ -1,4 +1,4 @@
-#### 5.86.0-alpha005 - 19.08.2017
+#### 5.86.0 - 19.08.2017
 * BUGFIX: Fixed feed Warnings and added blacklisting - https://github.com/fsprojects/Paket/pull/2582
 * BUGFIX: Special case System.Net.Http - https://github.com/fsprojects/Paket/pull/2628
 
