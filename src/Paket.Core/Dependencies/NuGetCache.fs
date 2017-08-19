@@ -460,10 +460,13 @@ let tryAndBlacklistUrl doWarn (source:NugetSource) (tryAgain : 'a -> bool) (f : 
             |> Seq.map (fun url -> async {
                 let cached = tryUrlOrBlacklist (fun () -> async { return! f url.InstanceUrl }) (tryAgain >> not) (source, url.UrlId)
                 match cached with
-                | Choice1Of2 false -> return Choice3Of3 () // Url Blacklisted
-                | Choice1Of2 true ->
-                    let! result = f url.InstanceUrl
-                    return Choice1Of3 result
+                | Choice1Of2 task ->
+                    let! result = task |> Async.AwaitTask
+                    if result then
+                        let! result = f url.InstanceUrl
+                        return Choice1Of3 result
+                    else
+                        return Choice3Of3 () // Url Blacklisted
                 | Choice2Of2 a ->
                     let! (isOk, res) = a
                     if not isOk then
