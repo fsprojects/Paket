@@ -24,6 +24,24 @@ let ``Can detect MonoTouch0.0``() =
     p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.MonoTouch)))
 
 [<Test>]
+let ``Can detect netcore1.0``() =
+    // Currently required for backwards compat (2017-08-20), as we wrote these incorrectly in previous versions.
+    let p = PlatformMatching.forceExtractPlatforms "netcore1.0"
+    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.DotNetCoreApp DotNetCoreAppVersion.V1_0)))
+
+[<Test>]
+let ``Can detect uap101``() =
+    // Currently required for backwards compat (2017-08-20), as we wrote these incorrectly in previous versions.
+    let p = PlatformMatching.forceExtractPlatforms "uap101"
+    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (UAP UAPVersion.V10_1)))
+
+[<Test>]
+let ``Can detect .NETPlatform5.4``() =
+    let p = PlatformMatching.forceExtractPlatforms ".NETPlatform5.4"
+    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (DNXCore FrameworkVersion.V5_0)))
+
+
+[<Test>]
 let ``Can detect MonoTouch0.00``() =
     let p = PlatformMatching.forceExtractPlatforms "MonoTouch0.00"
     p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.MonoTouch)))

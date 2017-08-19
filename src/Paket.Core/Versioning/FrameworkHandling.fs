@@ -144,8 +144,8 @@ type UAPVersion =
 
     member this.ShortString() =
         match this with
-        | UAPVersion.V10 -> "100"
-        | UAPVersion.V10_1 -> "101"
+        | UAPVersion.V10 -> "10.0"
+        | UAPVersion.V10_1 -> "10.1"
 
     member this.NetCoreVersion =
         // WTF: https://github.com/onovotny/MSBuildSdkExtras/blob/8d2d4ad63b552481da06e646dbb6504abc415260/src/build/platforms/Windows.targets
@@ -228,6 +228,8 @@ module KnownAliases =
          "netframework", "net"
          ".netframework", "net"
          ".netcore", "netcore"
+         ".netplatform", "dotnet"
+         "netplatform", "dotnet"
          "winrt", "netcore"
          "silverlight", "sl"
          "windowsPhoneApp", "wpa"
@@ -697,6 +699,8 @@ module FrameworkDetection =
                 | "net35-Unity Subset v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Subset)
                 | "net35-Unity Full v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Full)
                 | ModifyMatchTfm skipFullAndClient "net" FrameworkVersion.TryParse fm -> Some (DotNetFramework fm)
+                // Backwards compat quirk (2017-08-20).
+                | "uap101" -> Some (UAP UAPVersion.V10_1)
                 | MatchTfm "uap" UAPVersion.TryParse fm -> Some (UAP fm)
                 | MatchTfm "monotouch" (allowVersions ["";"1"]) () -> Some MonoTouch
                 | MatchTfm "monoandroid" MonoAndroidVersion.TryParse fm -> Some (MonoAndroid fm)
@@ -726,7 +730,8 @@ module FrameworkDetection =
                     () -> Some(DNXCore FrameworkVersion.V5_0)
                 | v when v.StartsWith "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
                 | MatchTfm "netstandard" DotNetStandardVersion.TryParse fm -> Some (DotNetStandard fm)
-                | MatchTfm "netcoreapp" DotNetCoreAppVersion.TryParse fm -> Some (DotNetCoreApp fm)
+                // "netcore" is for backwards compat (2017-08-20), we wrote this incorrectly into the lockfile.
+                | MatchTfms ["netcoreapp";"netcore"] (Bind DotNetCoreAppVersion.TryParse) fm -> Some (DotNetCoreApp fm)
                 | MatchTfm "tizen" TizenVersion.TryParse fm -> Some (Tizen fm)
                 // Default is full framework, for example "35"
                 | MatchTfm "" FrameworkVersion.TryParse fm -> Some (DotNetFramework fm)
@@ -993,7 +998,6 @@ module KnownTargetProfiles =
         DotNetStandardVersion.V1_6
         DotNetStandardVersion.V2_0
     ]
-        
 
     let DotNetStandardProfiles =
        DotNetStandardVersions
