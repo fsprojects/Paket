@@ -1,5 +1,7 @@
-#### 5.86.0-alpha002 - 17.08.2017
+#### 5.86.0-alpha003 - 19.08.2017
 * BUGFIX: Fixed feed Warnings and added blacklisting - https://github.com/fsprojects/Paket/pull/2582
+
+#### 5.85.8 - 18.08.2017
 * BUGFIX: No file links were created when using File: references in .NET Core projects - https://github.com/fsprojects/Paket/issues/2622
 
 #### 5.85.7 - 17.08.2017
