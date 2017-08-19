@@ -303,7 +303,7 @@ module DependenciesFileParser =
             if text = "auto-detect" then 
                 Some (ParserOptions (ParserOption.AutodetectFrameworkRestrictions))
             else 
-                let restrictions = Requirements.parseRestrictionsLegacy true text
+                let restrictions, _ = Requirements.parseRestrictionsLegacy true text
                 if String.IsNullOrWhiteSpace text |> not && restrictions = FrameworkRestriction.NoRestriction then 
                     failwithf "Could not parse framework restriction \"%s\"" text
 

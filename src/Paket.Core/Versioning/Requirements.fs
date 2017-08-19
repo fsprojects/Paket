@@ -508,18 +508,25 @@ type FrameworkRestrictions =
 let getExplicitRestriction (frameworkRestrictions:FrameworkRestrictions) =
     frameworkRestrictions.GetExplicitRestriction()
 
-
+type RestrictionParseProblem =
+    | ParseFramework of string
+    | ParseSecondOperator of string
+    member x.AsMessage =
+        match x with
+        | ParseFramework framework ->  sprintf "Could not parse framework '%s'. Try to update or install again or report a paket bug." framework
+        | ParseSecondOperator item -> sprintf "Could not parse second framework of between operator '%s'. Try to update or install again or report a paket bug." item
+    member x.Framework =
+        match x with
+        | RestrictionParseProblem.ParseSecondOperator fm
+        | RestrictionParseProblem.ParseFramework fm -> fm
 let parseRestrictionsLegacy failImmediatly (text:string) =
     // older lockfiles to the new "restriction" semantics
-    let handleError =
+    let problems = ResizeArray<_>()
+    let handleError (p:RestrictionParseProblem) =
         if failImmediatly then
-            failwith
+            failwith p.AsMessage
         else
-            if verbose then
-                (fun s ->
-                    traceError s
-                    traceVerbose Environment.StackTrace)
-            else traceError
+            problems.Add p
     let text =
         // workaround missing spaces
         text.Replace("<=","<= ").Replace(">=",">= ").Replace("=","= ")
@@ -538,11 +545,11 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
 
         match FrameworkDetection.Extract(framework) with
         | None ->
-            match PlatformMatching.extractPlatforms framework |> Option.bind (fun pp -> pp.ToTargetProfile) with
+            match PlatformMatching.extractPlatforms false framework |> Option.bind (fun pp -> pp.ToTargetProfile) with
             | Some profile ->
                 yield FrameworkRestriction.AtLeastPlatform profile
             | None ->
-                handleError <| sprintf "Could not parse framework '%s'. Try to update or install again or report a paket bug." framework
+                handleError <| (RestrictionParseProblem.ParseFramework framework)
         | Some x -> 
             if operatorSplit.[0] = ">=" then
                 if operatorSplit.Length < 4 then
@@ -551,11 +558,12 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
                     let item = operatorSplit.[3]
                     match FrameworkDetection.Extract(item) with
                     | None ->
-                        handleError <| sprintf "Could not parse second framework of between operator '%s'. Try to update or install again or report a paket bug." item
+                        handleError <| (RestrictionParseProblem.ParseSecondOperator item)
                     | Some y -> yield FrameworkRestriction.Between(x, y)
             else
                 yield FrameworkRestriction.Exactly x]
-    |> List.fold (fun state item -> FrameworkRestriction.combineRestrictionsWithOr state item) FrameworkRestriction.EmptySet
+    |> List.fold (fun state item -> FrameworkRestriction.combineRestrictionsWithOr state item) FrameworkRestriction.EmptySet,
+    problems.ToArray()
 
 let parseRestrictions failImmediatly (text:string) =
     let handleError =
@@ -572,7 +580,7 @@ let parseRestrictions failImmediatly (text:string) =
         match text.Trim() with
         | t when String.IsNullOrEmpty t -> failwithf "trying to parse an otherator but got no content"
         | h when h.StartsWith ">=" || h.StartsWith "==" || h.StartsWith "<" ->
-            // parse >= 
+            // parse >=
             let smallerThan = h.StartsWith "<"
             let isEquals = h.StartsWith "=="
             let rest = h.Substring 2
@@ -580,11 +588,11 @@ let parseRestrictions failImmediatly (text:string) =
             if splitted.Length < 1 then failwithf "No parameter after >= or < in '%s'" text
             let rawOperator = splitted.[0]
             let operator = rawOperator.TrimEnd([|')'|])
-            match PlatformMatching.extractPlatforms operator |> Option.bind (fun pp -> pp.ToTargetProfile) with
+            match PlatformMatching.extractPlatforms false operator |> Option.bind (fun pp -> pp.ToTargetProfile) with
             | None -> failwithf "invalid parameter '%s' after >= or < in '%s'" operator text
             | Some plat ->
-                let f = 
-                    if smallerThan then FrameworkRestriction.NotAtLeastPlatform 
+                let f =
+                    if smallerThan then FrameworkRestriction.NotAtLeastPlatform
                     elif isEquals then FrameworkRestriction.ExactlyPlatform
                     else FrameworkRestriction.AtLeastPlatform
                 let operatorIndex = text.IndexOf operator
@@ -601,23 +609,23 @@ let parseRestrictions failImmediatly (text:string) =
                     parseOperand (operand::cur) (remaining.Substring 1)
                 else
                     cur, next
-            
+
             let operands, next = parseOperand [] next
             if operands.Length = 0 then failwithf "Operand '%s' without argument is invalid in '%s'" (h.Substring (0, 2)) text
             let f, def = if isAnd then FrameworkRestriction.And, FrameworkRestriction.NoRestriction else FrameworkRestriction.Or, FrameworkRestriction.EmptySet
             operands |> f, next
         | h when h.StartsWith "NOT" ->
             let next = h.Substring 2
-            
+
             if next.TrimStart().StartsWith "(" then
                 let operand, remaining = parseOperator (next.Substring 1)
                 let remaining = remaining.TrimStart()
                 if remaining.StartsWith ")" |> not then failwithf "expected ')' after operand, '%s'" text
                 let next = remaining.Substring 1
-                
+
                 let negated =
                     match operand with
-                    | { OrFormulas = [ {Literals = [ lit] } ] } -> 
+                    | { OrFormulas = [ {Literals = [ lit] } ] } ->
                         [ {Literals = [ { lit with IsNegated = not lit.IsNegated } ] } ]
                         |> FrameworkRestriction.FromOrList
                     |  _ -> failwithf "a general NOT is not implemted jet (and shouldn't be emitted for now)"
@@ -632,7 +640,7 @@ let parseRestrictions failImmediatly (text:string) =
             FrameworkRestriction.EmptySet, rest
         | _ ->
             failwithf "Expected operator, but got '%s'" text
-            
+
     let result, next = parseOperator text
     if String.IsNullOrEmpty next |> not then
         failwithf "Successfully parsed '%O' but got additional text '%s'" result next
@@ -777,7 +785,9 @@ type InstallSettings =
                 | Some s -> ExplicitRestriction(parseRestrictions true s)
                 | _ ->
                     match getPair "framework" with
-                    | Some s -> ExplicitRestriction(parseRestrictionsLegacy true s)
+                    | Some s ->
+                        let parsed, _ = parseRestrictionsLegacy true s
+                        ExplicitRestriction(parsed)
                     | _ -> ExplicitRestriction FrameworkRestriction.NoRestriction
               OmitContent =
                 match getPair "content" with

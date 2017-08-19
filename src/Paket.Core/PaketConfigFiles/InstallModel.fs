@@ -359,7 +359,7 @@ module InstallModel =
         [ { FolderScanner.AdvancedScanner.Name = "noSeperator";
             FolderScanner.AdvancedScanner.Parser = FolderScanner.check "seperator not allowed" (fun s -> not (s.Contains "/" || s.Contains "\\")) >> FolderScanner.ParseResult.box }
           { FolderScanner.AdvancedScanner.Name = "tfm";
-            FolderScanner.AdvancedScanner.Parser = FolderScanner.choose "invalid tfm" PlatformMatching.extractPlatforms >> FolderScanner.ParseResult.box }
+            FolderScanner.AdvancedScanner.Parser = FolderScanner.choose "invalid tfm" (PlatformMatching.extractPlatforms true) >> FolderScanner.ParseResult.box }
           { FolderScanner.AdvancedScanner.Name = "rid";
             FolderScanner.AdvancedScanner.Parser = (fun rid -> { Rid = rid }) >> FolderScanner.ParseResult.ParseSucceeded >> FolderScanner.ParseResult.box }]
     let trySscanf pf s =

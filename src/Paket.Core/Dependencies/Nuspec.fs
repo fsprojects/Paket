@@ -33,8 +33,11 @@ module internal NuSpecParserHelper =
         match parent.Name, parent |> getAttribute "targetFramework" with
         | n , Some framework when String.equalsIgnoreCase n "group" -> 
             let framework = framework.Replace(".NETPortable0.0","portable")
-            PlatformMatching.extractPlatforms framework
-            |> Option.map (fun pp -> name, version, pp)
+            match PlatformMatching.extractPlatforms false framework with
+            | Some pp -> Some (name, version, pp)
+            | None ->
+                Logging.traceWarnfn "Could not detect any platforms from '%s' in '%s'" framework fileName
+                None
         | _ -> Some(name,version, PlatformMatching.ParsedPlatformPath.Empty)
 
     let getAssemblyRefs node =
@@ -78,7 +81,11 @@ type Nuspec =
                 match node |> getAttribute "targetFramework" with
                 | Some framework ->
                     let framework = framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable")
-                    PlatformMatching.extractPlatforms framework
+                    match PlatformMatching.extractPlatforms false framework with
+                    | Some p -> Some p
+                    | None ->
+                        Logging.traceWarnfn "Could not detect any platforms from '%s' in '%s'" framework fileName
+                        None
                 | _ -> Some PlatformMatching.ParsedPlatformPath.Empty)
 
         let rawDependencies =

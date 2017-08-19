@@ -26,7 +26,7 @@ let inline split (path : string) =
     |> Array.map (fun s -> System.Text.RegularExpressions.Regex.Replace(s, @"portable[\d\.]*-",""))
 
 // TODO: This function does now quite a lot, there probably should be several functions.
-let extractPlatforms = memoize (fun path ->
+let private extractPlatformsPriv = memoize (fun path ->
     if System.String.IsNullOrEmpty path then Some ParsedPlatformPath.Empty
     else
         let splits = split path
@@ -39,12 +39,19 @@ let extractPlatforms = memoize (fun path ->
                     |> ParsedPlatformPath.FromTargetProfile
                 Some { found with Name = path }
             else
-                traceWarnfn "Could not detect any platforms from '%s'" path
                 None
         else Some { Name = path; Platforms = platforms })
 
+let extractPlatforms warn path =
+    match extractPlatformsPriv path with
+    | None ->
+        if warn then
+            traceWarnfn "Could not detect any platforms from '%s'" path
+        None
+    | Some s -> Some s
+
 let forceExtractPlatforms path =
-    match extractPlatforms path with
+    match extractPlatforms false path with
     | Some s -> s
     | None -> failwithf "Extracting platforms from path '%s' failed" path
 

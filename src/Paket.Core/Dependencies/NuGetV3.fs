@@ -253,7 +253,11 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
                     let targetFramework =
                         match targetFramework with
                         | null -> FrameworkRestriction.NoRestriction
-                        | x -> Requirements.parseRestrictionsLegacy false x
+                        | x ->
+                            let restrictions, problems = Requirements.parseRestrictionsLegacy false x
+                            for problem in problems do
+                                Logging.traceErrorfn "Could not detect any platforms from '%s' in %O %O" problem.Framework packageName version
+                            restrictions
                     (PackageName dep.Id), (VersionRequirement.Parse dep.Range), targetFramework)
                 |> Seq.toList
         let unlisted =
