@@ -62,7 +62,7 @@ let gitName = "Paket"
 // The url for the raw files hosted
 let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
-let dotnetcliVersion = "1.0.4"
+let dotnetcliVersion = "2.1.0-preview1-007002"
 
 let dotnetSDKPath = System.Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) </> "dotnetcore" |> FullName
 
@@ -129,6 +129,7 @@ Target "AssemblyInfo" (fun _ ->
 
 Target "InstallDotNetCore" (fun _ ->
     dotnetExePath <- DotNetCli.InstallDotNetSDK dotnetcliVersion
+    Environment.SetEnvironmentVariable("DOTNET_EXE_PATH", dotnetExePath)
 )
 
 // --------------------------------------------------------------------------------------
@@ -546,6 +547,9 @@ Target "ReleaseGitHub" (fun _ ->
     StageAll ""
     Git.Commit.Commit "" (sprintf "Bump version to %s" release.NugetVersion)
     Branches.pushBranch "" remote (Information.getBranchName "")
+
+    Branches.tag "" release.NugetVersion
+    Branches.pushTag "" remote release.NugetVersion
     
     // release on github
     createClient user pw
@@ -557,9 +561,6 @@ Target "ReleaseGitHub" (fun _ ->
     |> uploadFile ".paket/Paket.Restore.targets"
     |> releaseDraft
     |> Async.RunSynchronously
-
-    Branches.tag "" release.NugetVersion
-    Branches.pushTag "" remote release.NugetVersion
 )
 
 Target "Release" DoNothing

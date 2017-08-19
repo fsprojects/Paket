@@ -7,7 +7,6 @@ nuget FSharp.Core redirects: force
 nuget Chessie >= 0.6
 nuget Mono.Cecil prerelease
 
-nuget FSharp.NET.Sdk  content: none  
 nuget System.Diagnostics.TraceSource 
 nuget System.Diagnostics.FileVersionInfo 
 nuget System.Xml.XDocument 
@@ -15,12 +14,23 @@ nuget System.Xml.XPath.XmlDocument
 nuget System.Diagnostics.Process 
 nuget System.Xml.XPath.XDocument 
 nuget System.Security.Cryptography.ProtectedData 
-nuget System.Security.Cryptography.Algorithms 
-nuget Microsoft.NETCore.App 1.1.0
+nuget System.Security.Cryptography.Algorithms
 nuget FSharp.Compiler.Tools
+
+nuget NETStandard.Library >= 2.0 prerelease
+nuget Microsoft.NETCore.App >= 2.0 prerelease
+
+nuget Moq
+nuget FSCheck
+
+nuget NUnit redirects: force
+nuget NUnit.Console
+nuget NUnit3TestAdapter version_in_path: true
 
 github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
 github fsprojects/FSharp.TypeProviders.StarterPack src/AssemblyReader.fs
+github forki/FsUnit FsUnit.fs
+
 
 group Build
   content: none
@@ -34,17 +44,3 @@ group Build
   nuget ILRepack
   
   github fsharp/FAKE modules/Octokit/Octokit.fsx
-
-group Test
-  content: none
-  source https://nuget.org/api/v2
-
-  nuget Moq
-  nuget FSCheck
-  
-  nuget NUnit redirects: force
-  nuget NUnit.Console
-  nuget NUnit3TestAdapter version_in_path: true               
-  nuget FSharp.Core redirects: force
-
-  github forki/FsUnit FsUnit.fs

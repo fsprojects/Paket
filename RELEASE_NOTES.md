@@ -1,3 +1,24 @@
+#### 5.86.0 - 19.08.2017
+* BUGFIX: Fixed feed Warnings and added blacklisting - https://github.com/fsprojects/Paket/pull/2582
+* BUGFIX: Special case System.Net.Http - https://github.com/fsprojects/Paket/pull/2628
+
+#### 5.85.8 - 18.08.2017
+* BUGFIX: No file links were created when using File: references in .NET Core projects - https://github.com/fsprojects/Paket/issues/2622
+
+#### 5.85.7 - 17.08.2017
+* BUGFIX: Small fixes in PCL detection - https://github.com/fsprojects/Paket/pull/2609
+
+#### 5.85.5 - 17.08.2017
+* BUGFIX: Simplify references in groups - https://github.com/fsprojects/Paket/pull/2619
+
+#### 5.85.4 - 17.08.2017
+* BUGFIX: Don't change BOM for existing project files - https://github.com/fsprojects/Paket/pull/2575
+* BUGFIX: Don't call paket if not necessary on dotnet pack - https://github.com/fsprojects/Paket/pull/2624
+
+#### 5.85.3 - 16.08.2017
+* BUGFIX: Don't fail on myget
+* USABILITY: Friendlier warnings about obsolete syntax - https://github.com/fsprojects/Paket/pull/2610
+
 #### 5.85.1 - 11.08.2017
 * Support for DevExpress feed
 

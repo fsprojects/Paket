@@ -68,20 +68,23 @@ let simplify interactive environment = trial {
     let flatLookup = lockFile.GetDependencyLookupTable()
     let dependenciesFileRef = ref (environment.DependenciesFile.SimplifyFrameworkRestrictions())
     let projectsRef = ref None
+    let projectFiles, referencesFiles = List.unzip environment.Projects
+    let referencesFilesRef = ref referencesFiles    
 
     for kv in lockFile.Groups do
         let groupName = kv.Key
         let! dependenciesFile = simplifyDependenciesFile(!dependenciesFileRef, groupName, flatLookup, interactive)
         dependenciesFileRef := dependenciesFile
-        let projectFiles, referencesFiles = List.unzip environment.Projects
-
+        
         let! referencesFiles' =
-            referencesFiles
+            !referencesFilesRef
             |> List.map (fun refFile -> simplifyReferencesFile(refFile, groupName, flatLookup, interactive))
             |> collect
 
-        let projects = List.zip projectFiles referencesFiles'
-        projectsRef := Some projects
+        referencesFilesRef := referencesFiles'
+    
+    let projects = List.zip projectFiles (!referencesFilesRef)
+    projectsRef := Some projects
 
     return beforeAndAfter environment (!dependenciesFileRef) (!projectsRef).Value
 }

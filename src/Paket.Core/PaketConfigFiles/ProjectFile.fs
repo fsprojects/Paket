@@ -514,14 +514,22 @@ module ProjectFile =
 
     let updateFileItems (fileItems:FileItem list) (project:ProjectFile) = 
         let newItemGroups = 
-            let firstItemGroup = project.ProjectNode |> getNodes "ItemGroup" |> List.filter (fun n -> List.isEmpty (getNodes "Reference" n)) |> List.tryHead
+            let firstItemGroup = 
+                project.ProjectNode 
+                |> getNodes "ItemGroup" 
+                |> List.filter (fun n -> List.isEmpty (getNodes "Reference" n)) 
+                |> List.tryHead
+
             match firstItemGroup with
             | None -> 
-                [   BuildAction.Content, createNode "ItemGroup" project
-                    BuildAction.Compile, createNode "ItemGroup" project
-                    BuildAction.Reference, createNode "ItemGroup" project
-                    BuildAction.Resource, createNode "ItemGroup" project
-                    BuildAction.Page, createNode "ItemGroup" project 
+                let node = createNode "ItemGroup" project
+                if List.isEmpty fileItems |> not then
+                    project.ProjectNode.AppendChild node |> ignore
+                [   BuildAction.Content, node
+                    BuildAction.Compile, node
+                    BuildAction.Reference, node
+                    BuildAction.Resource, node
+                    BuildAction.Page, node
                 ]
             | Some node ->
                 [   BuildAction.Content, node :?> XmlElement
@@ -777,8 +785,16 @@ module ProjectFile =
                             | "$(TargetFrameworkIdentifier) == 'true'" -> "true"
                             | _ -> condition
 
-                        let frameworkReferences = libFolder.FolderContents.FrameworkReferences |> Seq.sortBy (fun (r) -> r.Name) |> Seq.toList
-                        let libraries = libFolder.FolderContents.Libraries |> Seq.sortBy (fun (r) -> r.Path) |> Seq.toList
+                        let frameworkReferences = 
+                            libFolder.FolderContents.FrameworkReferences 
+                            |> Seq.sortBy (fun r -> r.Name) 
+                            |> Seq.toList
+
+                        let libraries =
+                            libFolder.FolderContents.Libraries 
+                            |> Seq.sortBy (fun r -> r.Path) 
+                            |> Seq.toList
+
                         let assemblyTargets = ref libFolder.Targets
                         let duplicates = HashSet<_>()
                         for frameworkAssembly in frameworkReferences do
@@ -791,7 +807,8 @@ module ProjectFile =
                             [condition,createItemGroup libFolder.Targets frameworkReferences libraries,false]
                         else
                             let specialFrameworkAssemblies, rest =
-                                frameworkReferences |> List.partition (fun fr -> duplicates.Contains fr.Name)
+                                frameworkReferences 
+                                |> List.partition (fun fr -> duplicates.Contains fr.Name)
 
                             match PlatformMatching.getCondition referenceCondition allTargets !assemblyTargets with
                             | "" -> [condition,createItemGroup libFolder.Targets rest libraries,false]
@@ -997,7 +1014,6 @@ module ProjectFile =
     let getTargetFramework (project:ProjectFile) = getProperty "TargetFramework" project
     let getTargetFrameworks (project:ProjectFile) = getProperty "TargetFrameworks" project
 
-
     let getTargetProfile (project:ProjectFile) =
         let fallback () =
             let prefix =
@@ -1037,11 +1053,10 @@ module ProjectFile =
             rootPath
             (completeModel: Map<GroupName*PackageName,_*InstallModel>) 
             (directPackages : Map<GroupName*PackageName,_*InstallSettings>) 
-            (usedPackages : Map<GroupName*PackageName,_*InstallSettings>) 
+            (usedPackages : Map<GroupName*PackageName,_*InstallSettings>)  
             (project:ProjectFile) =
         removePaketNodes project
-
-
+        
         let findInsertSpot() =
             // nuget inserts properties directly at the top, and targets directly at the end.
             // our inserts depend on $(TargetFrameworkVersion), which may be set either from another import, or directly in the project file.
@@ -1089,20 +1104,41 @@ module ProjectFile =
 
         let usedFrameworkLibs = HashSet<TargetProfile*string>()
 
-        completeModel
-        |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
-        |> Seq.sortBy (fun kv -> let group, packName = kv.Key in group.CompareString, packName.CompareString)
+        let specialPackagesWithFrameworkConflictLibs = 
+            [PackageName "System.Net.Http"] // see https://github.com/fsprojects/Paket/issues/2352
+            |> Set.ofList
+
+        let filteredModel =
+            completeModel
+            |> Map.filter (fun kv _ -> usedPackages.ContainsKey kv)
+        
+        filteredModel
         |> Seq.map (fun kv -> 
-            deleteCustomModelNodes (snd kv.Value) project
-            let installSettings = snd usedPackages.[kv.Key]
-            let restrictionList = installSettings.FrameworkRestrictions |> getExplicitRestriction
+                deleteCustomModelNodes (snd kv.Value) project
+                let installSettings = snd usedPackages.[kv.Key]
+                let restrictionList = 
+                    installSettings.FrameworkRestrictions 
+                    |> getExplicitRestriction
 
-            let projectModel =
-                (snd kv.Value)
-                    .ApplyFrameworkRestrictions(restrictionList)
-                    .FilterExcludes(installSettings.Excludes)
-                    .RemoveIfCompletelyEmpty()
+                let projectModel =
+                    (snd kv.Value)
+                        .ApplyFrameworkRestrictions(restrictionList)
+                        .FilterExcludes(installSettings.Excludes)
+                        .RemoveIfCompletelyEmpty()
 
+                let _, packageName = kv.Key
+                if specialPackagesWithFrameworkConflictLibs.Contains packageName then
+                    for t in KnownTargetProfiles.AllProfiles do
+                        if (projectModel.GetLibReferenceFiles t) 
+                           |> Seq.exists (fun t -> t.Name = packageName.ToString() + ".dll") 
+                        then
+                            usedFrameworkLibs.Add(t,packageName.ToString()) |> ignore
+
+                kv,installSettings,restrictionList,projectModel)
+        |> Seq.sortBy (fun (kv,_,_,_) -> 
+                let group, packName = kv.Key
+                group.CompareString, packName.CompareString)
+        |> Seq.map (fun (kv,installSettings,restrictionList,projectModel) ->
             if directPackages.ContainsKey kv.Key then
                 let targetProfile = getTargetProfile project 
                 if isTargetMatchingRestrictions(restrictionList,targetProfile) then
@@ -1180,11 +1216,24 @@ module ProjectFile =
 
 
     let save forceTouch project =
+        let determineEncoding fileName =
+            if File.Exists fileName then
+                let utf8WithBom = UTF8Encoding true
+                let bom = utf8WithBom.GetPreamble()
+                let bomBuffer = Array.zeroCreate bom.Length
+
+                use fs = new FileStream(fileName, FileMode.Open, FileAccess.Read)
+                fs.Read(bomBuffer, 0, bom.Length) |> ignore
+                if bomBuffer = bom then utf8WithBom else UTF8Encoding false
+            else UTF8Encoding false
+
         if Utils.normalizeXml project.Document <> project.OriginalText || not (File.Exists(project.FileName)) then
             if verbose then
                 verbosefn "Project %s changed" project.FileName
+            let encoding = determineEncoding project.FileName
             use f = File.Open(project.FileName, FileMode.Create)
-            project.Document.Save(f)
+            use sw = new StreamWriter(f, encoding)
+            project.Document.Save(sw)
         elif forceTouch then
             File.SetLastWriteTimeUtc(project.FileName, DateTime.UtcNow)
 

@@ -190,6 +190,79 @@ nuget C 1.0"""
         depFile.ToString()
         |> shouldEqual (normalizeLineEndings expected)
 
+
+let lockFile4 = """
+
+GROUP Foo
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    A (1.0)
+      B (1.0)
+    B (1.0)
+      D (1.0)
+    C (1.0)
+      E (1.0)
+    D (1.0)
+      E (1.0)
+    E (1.0)
+      F (1.0)
+    F (1.0)""" |> (fun x -> LockFile.Parse("", toLines x)) |> Some
+
+let depFile4 = """
+source http://www.nuget.org/api/v2
+
+group Foo
+source http://www.nuget.org/api/v2
+
+nuget A 1.0
+nuget B 1.0
+nuget C 1.0
+nuget D 1.0
+nuget E 1.0
+nuget F 1.0""" |> DependenciesFile.FromSource
+
+let projects4 = [
+    ReferencesFile.FromLines [|"group Foo";"A";"B";"C";"D";"F"|]
+    ReferencesFile.FromLines [|"group Foo";"C";"D";"E"|] ] |> List.zip [dummyProjectFile; dummyProjectFile]
+
+[<Test>]
+let ``should remove all transitive dependencies from dep file and ref file with empty main group and non empty group foo``() =
+    let before = PaketEnv.create dummyDir depFile4 lockFile4 projects4
+    let fooGroupName = (GroupName "Foo")
+
+    match Simplifier.simplify false before with
+    | Chessie.ErrorHandling.Bad(msgs) -> 
+        failwith (String.concat Environment.NewLine (msgs |> List.map string))
+    | Chessie.ErrorHandling.Ok((_,after),_) ->
+        let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
+        depFile.Groups.[fooGroupName].Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"C"]
+        refFiles.Head.Groups.[fooGroupName].NugetPackages |>  shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("C")]
+        refFiles.Tail.Head.Groups.[fooGroupName].NugetPackages |>  shouldEqual [PackageInstallSettings.Default("C"); PackageInstallSettings.Default("D")]
+
+        let expected = """source http://www.nuget.org/api/v2
+
+group Foo
+source http://www.nuget.org/api/v2
+
+nuget A 1.0
+nuget C 1.0"""
+
+        depFile.ToString()
+        |> shouldEqual (normalizeLineEndings expected)
+
+        let firstRefFileExpected = """group Foo
+A
+C"""
+        refFiles.Head.ToString()
+        |> shouldEqual (normalizeLineEndings firstRefFileExpected)
+
+        let secondRefFileExpected = """group Foo
+C
+D"""
+        refFiles.Tail.Head.ToString()
+        |> shouldEqual (normalizeLineEndings secondRefFileExpected)
+
 [<Test>]
 [<Ignore "Simplifier is currently not working with the new restriction system, please fix and activate me">]
 let ``should simplify framework restrictions in main group``() =
@@ -376,3 +449,34 @@ nuget Autofac.WebApi2.Owin 3.2.0"""
     originalLockFile.SimplifyFrameworkRestrictions().ToString() 
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings expected)
+
+
+[<Test>]
+let ``#2382 paket simplify does not operate on groups in paket.references``() =
+    let before = """source https://api.nuget.org/v3/index.json
+
+group Foo
+source https://api.nuget.org/v3/index.json
+nuget Castle.Core 4.0.0 restriction: >= net452
+nuget Castle.Windsor 4.0.0 restriction: >= net452
+nuget System.ValueTuple 4.3.0 restriction: >= net452"""
+    let beforeRefFile = """group Foo
+Castle.Core
+Castle.Windsor
+System.ValueTuple"""
+
+    let after = """source https://api.nuget.org/v3/index.json
+
+group Foo
+source https://api.nuget.org/v3/index.json
+nuget Castle.Windsor 4.0.0 restriction: >= net452
+nuget System.ValueTuple 4.3.0 restriction: >= net452"""
+
+    let afterRefFile = """group Foo
+Castle.Windsor
+System.ValueTuple"""
+
+    let originalLockFile = DependenciesFile.FromSource(before)
+    originalLockFile.SimplifyFrameworkRestrictions().ToString()
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings before)

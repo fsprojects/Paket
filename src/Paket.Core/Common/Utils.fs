@@ -59,6 +59,32 @@ let internal memoize (f: 'a -> 'b) : 'a -> 'b =
     fun (x: 'a) ->
         cache.GetOrAdd(x, f)
 
+let internal memoizeAsyncEx (f: 'iext -> 'i -> Async<'o * 'oext>) =
+    let cache = System.Collections.Concurrent.ConcurrentDictionary<'i, System.Threading.Tasks.Task<'o>>()
+    let handle (ex:'iext) (x:'i) : Choice<System.Threading.Tasks.Task<'o>, Async<'o * 'oext>> =
+    //fun (ex:'iext) (x: 'i) -> // task.Result serialization to sync after done.
+        let mutable result = None
+        let mutable wasAdded = false
+        let task = cache.GetOrAdd(x, fun x ->
+                wasAdded <- true
+                async {
+                    let! o, oext = f ex x
+                    result <- Some oext
+                    return o
+                } |> Async.StartAsTask) // |> Async.AwaitTask
+        if not wasAdded then
+            Choice1Of2 task
+        else
+            async {
+                let! res = task |> Async.AwaitTask
+                match result with
+                | Some ext -> return res, ext
+                | None -> return failwithf "Expected an result at this place."
+            }
+            |> Choice2Of2
+    handle
+
+
 let internal memoizeAsync f =
     let cache = System.Collections.Concurrent.ConcurrentDictionary<'a, System.Threading.Tasks.Task<'b>>()
     fun (x: 'a) -> // task.Result serialization to sync after done.

@@ -90,10 +90,15 @@ let ``#1117 can understand portable``() =
     | ExplicitRestriction l -> l.ToString() |> shouldEqual ("&& (< net45) (>= portable-net45+win8+wp8+wpa81)")
     | _ -> failwith "wrong"
 
-    let restrictions = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Microsoft.Bcl.Async"].Settings.FrameworkRestrictions
-    match restrictions with
-    | ExplicitRestriction l -> l.ToString() |> shouldEqual ("&& (< portable-net45+monoandroid+monotouch+xamarinios+xamarinmac+win8+wp8+wpa81) (>= portable-net45+win8+wp8+wpa81)")
-    | _ -> failwith "wrong"
+    // Our restriction system can follow that this never actually needs to be installed!
+    // if you look at
+    // https://www.nuget.org/packages/AWSSDK.Core/3.1.5.3
+    //   PCLStorage is only required for the portable profile
+    // https://www.nuget.org/packages/PCLStorage/1.0.2
+    //   Microsoft.Bcl.Async is required for all frameworks, but not from the portable from above
+    // -> Microsoft.Bcl.Async is never in any solution.
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.ContainsKey (PackageName "Microsoft.Bcl.Async")
+    |> shouldEqual false
 
 [<Test>]
 let ``#1413 doesn't take symbols``() =

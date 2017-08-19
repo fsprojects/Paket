@@ -1,7 +1,8 @@
 language: csharp
 
 env:
- - HOME=/home/travis APPDATA=/home/travis LocalAppData=/home/travis # DISABLE_NETCORE=true
+ - HOME=/home/travis APPDATA=/home/travis LocalAppData=/home/travis TRAVIS_STAGE=0 # DISABLE_NETCORE=true
+ - HOME=/home/travis APPDATA=/home/travis LocalAppData=/home/travis TRAVIS_STAGE=1 # DISABLE_NETCORE=true
 
 # dependencies (netcore)
 addons:
@@ -14,7 +15,9 @@ sudo: false  # use the new container-based Travis infrastructure
 dist: trusty # Ubuntu 14.04
 
 mono:
+  - nightly
   - latest
+  - 5.2.0
 
 branches:
   except:

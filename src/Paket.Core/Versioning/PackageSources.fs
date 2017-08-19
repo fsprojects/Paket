@@ -76,6 +76,8 @@ type KnownNuGetSources =
 type NugetSource = 
     { Url : string
       Authentication : NugetSourceAuthentication option }
+    member x.BasicAuth =
+        x.Authentication |> Option.map toBasicAuth
 
 type NugetV3SourceResourceJSON = 
     { [<JsonProperty("@type")>]
@@ -87,9 +89,10 @@ type NugetV3SourceRootJSON =
     { [<JsonProperty("resources")>]
       Resources : NugetV3SourceResourceJSON [] }
 
-type NugetV3Source = 
-    { Url : string
-      Authentication : NugetSourceAuthentication option }
+type NugetV3Source = NugetSource
+//type NugetV3Source = 
+//    { Url : string
+//      Authentication : NugetSourceAuthentication option }
 
 type NugetV3ResourceType = 
     | AutoComplete

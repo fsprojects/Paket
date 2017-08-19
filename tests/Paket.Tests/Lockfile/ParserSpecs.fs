@@ -781,12 +781,13 @@ let lockFileWithManyFrameworksLegacy = """NUGET
     MvvmLightLibs (5.2)
       CommonServiceLocator (>= 1.0) - framework: net35, sl40
       CommonServiceLocator (>= 1.3) - framework: >= net40, monoandroid, portable-net45+wp80+wpa81+win+monoandroid10+xamarinios10, xamarinios, winv4.5, winv4.5.1, wpv8.0, wpv8.1, sl50"""
+
 let lockFileWithManyFrameworks = """NUGET
   remote: https://www.nuget.org/api/v2
-    CommonServiceLocator (1.3) - restriction: || (== sl5) (>= net40) (>= portable-net45+monoandroid+xamarinios+win8+wp8+wpa81)
+    CommonServiceLocator (1.3) - restriction: || (== sl5) (>= net40) (>= portable-net45+win8+wp8+wpa81)
     MvvmLightLibs (5.2)
       CommonServiceLocator (>= 1.0) - restriction: || (== net35) (== sl4)
-      CommonServiceLocator (>= 1.3) - restriction: || (== sl5) (>= net40) (>= portable-net45+monoandroid+xamarinios+win8+wp8+wpa81)"""
+      CommonServiceLocator (>= 1.3) - restriction: || (== sl5) (>= net40) (>= portable-net45+win8+wp8+wpa81)"""
 
 [<Test>]
 let ``should parse lock file many frameworks``() = 
@@ -967,17 +968,17 @@ let lockFileWithNewComplexRestrictions = """NUGET
     AWSSDK.Core (3.1.5.3)
       Microsoft.Net.Http (>= 2.2.29) - restriction: && (< net45) (>= portable-net45+win8+wp8+wpa81)
       PCLStorage (>= 1.0.2) - restriction: && (< net45) (>= portable-net45+win8+wp8+wpa81)
-    Microsoft.Bcl (1.1.10) - restriction: || (&& (< net45) (>= portable-net45+win8+wp8+wpa81)) (&& (< portable-net45+monoandroid+monotouch+xamarinios+xamarinmac+win8+wp8+wpa81) (>= portable-net45+win8+wp8+wpa81))
+    Microsoft.Bcl (1.1.10) - restriction: && (< net45) (>= portable-net45+win8+wp8+wpa81)
       Microsoft.Bcl.Build (>= 1.0.14)
-    Microsoft.Bcl.Async (1.0.168) - restriction: && (< portable-net45+monoandroid+monotouch+xamarinios+xamarinmac+win8+wp8+wpa81) (>= portable-net45+win8+wp8+wpa81)
+    Microsoft.Bcl.Async (1.0.168) - restriction: false
       Microsoft.Bcl (>= 1.1.8)
     Microsoft.Bcl.Build (1.0.21) - import_targets: false, restriction: && (< net45) (>= portable-net45+win8+wp8+wpa81)
     Microsoft.Net.Http (2.2.29) - restriction: && (< net45) (>= portable-net45+win8+wp8+wpa81)
       Microsoft.Bcl (>= 1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
     PCLStorage (1.0.2) - restriction: && (< net45) (>= portable-net45+win8+wp8+wpa81)
-      Microsoft.Bcl (>= 1.1.6) - restriction: < portable-net45+monoandroid+monotouch+xamarinios+xamarinmac+win8+wp8+wpa81
-      Microsoft.Bcl.Async (>= 1.0.165) - restriction: < portable-net45+monoandroid+monotouch+xamarinios+xamarinmac+win8+wp8+wpa81"""
+      Microsoft.Bcl (>= 1.1.6) - restriction: < portable-net45+win8+wp8+wpa81
+      Microsoft.Bcl.Async (>= 1.0.165) - restriction: < portable-net45+win8+wp8+wpa81"""
 
 [<Test>]
 let ``should parse new restrictions || (&& (< net45) (>= portable-net45+win8+wp8+wpa81)) (&& (< portable-net45+monoandroid+monotouch+xamarinios+xamarinmac+win8+wp8+wpa81) (>= portable-net45+win8+wp8+wpa81))``() =
