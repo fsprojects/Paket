@@ -108,15 +108,15 @@ let testPaketDependenciesFileInSolution scenario expectedFiles =
 
 [<Test>]
 let ``#2161 should put paket.dependencies inside the .paket folder when it's already present in the sln file``() =
-    testPaketDependenciesFileInSolution "i002161-convert-existing-paket-folder" ["paket.dependencies"]
+    testPaketDependenciesFileInSolution "i002161" ["paket.dependencies"]
 
 [<Test>]
 let ``#2512 should put paket.dependencies inside the .paket folder when it's absent in the sln file``() =
-    testPaketDependenciesFileInSolution "i002512-convert-absent-paket-folder" ["paket.dependencies"]
+    testPaketDependenciesFileInSolution "i002512-1" ["paket.dependencies"]
 
 [<Test>]
 let ``#2512 should put paket.dependencies inside the .paket folder that already has files in it``() =
-    testPaketDependenciesFileInSolution "i002512-convert-paket-folder-with-files" ["paket.dependencies"; "SomeFile"]
+    testPaketDependenciesFileInSolution "i002512-2" ["paket.dependencies"; "SomeFile"]
 
 [<Test>]
 let ``#2528 sdk-2: convert-from-nuget should add explicit FSharp.Core``() =
@@ -146,7 +146,6 @@ let ``#2528 sdk-2: install should not warn without FSharp.Core for csharp``() =
     let messages = paket "install" scenario
     messages
     |> shouldNotContainText "does not reference FSharp.Core"
-
 
 [<Test>]
 let ``#2528 sdk-2: install should not warn with FSharp.Core``() =
