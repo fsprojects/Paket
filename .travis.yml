@@ -17,7 +17,7 @@ dist: trusty # Ubuntu 14.04
 mono:
   - nightly
   - latest
-  - 5.2.0
+#  - 5.2.0 Note: 5.2 is really unstable, no sense in wasting build resources
 
 branches:
   except:
