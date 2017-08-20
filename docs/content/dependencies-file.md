@@ -142,6 +142,21 @@ nuget Example >= 2.0
 If you change the target framework of the projects then you need to run
 [`paket install`](paket-install.html) again.
 
+### Disable packages folder
+
+You can opt-out of generating the `packages` folder by using the `storage` option:
+
+
+```paket
+// Do not extract into the "packages" folder but use a globally shared directory
+storage: none
+source https://nuget.org/api/v2
+
+nuget jQuery
+```
+
+The storage option may be overriden by packages.
+
 ### Controlling whether content files should be copied to the project
 
 The `content` option controls the installation of any content files:
