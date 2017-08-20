@@ -96,6 +96,7 @@
     <Compile Include="Dependencies\PackageResolver.fs" />
     <Compile Include="Dependencies\Nuspec.fs" />
     <Compile Include="Dependencies\NuGetCache.fs" />
+    <Compile Include="Dependencies\CacheExtensions.fs" />
     <Compile Include="Dependencies\NuGetV3.fs" />
     <Compile Include="Dependencies\NuGetV2.fs" />
     <Compile Include="Dependencies\NuGetLocal.fs" />

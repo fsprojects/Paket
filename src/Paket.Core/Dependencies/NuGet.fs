@@ -604,12 +604,13 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
             SemVer.Parse v,sorted |> List.map (fun (_,_,x) -> x)) }
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, force, detailed) =
+let DownloadPackage(alternativeProjectRoot, root, config:PackagesFolderGroupConfig, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, force, detailed) =
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
     let normalizedNupkgName = packageName.ToString() + "." + version.Normalize() + ".nupkg"
-    let targetFileName = Path.Combine(Constants.NuGetCacheFolder, normalizedNupkgName)
+    let targetFileName = NuGetCache.GetTargetUserNupkg packageName version // Path.Combine(Constants.NuGetCacheFolder, normalizedNupkgName)
     let targetFile = FileInfo targetFileName
-    let licenseFileName = Path.Combine(Constants.NuGetCacheFolder, packageName.ToString() + "." + version.Normalize() + ".license.html")
+    let licenseFileName = Path.Combine(NuGetCache.GetTargetUserFolder packageName version, packageName.ToString() + "." + version.Normalize() + ".license.html")
+    //let licenseFileName = Path.Combine(Constants.NuGetCacheFolder, packageName.ToString() + "." + version.Normalize() + ".license.html")
 
     let rec getFromCache (caches:Cache list) =
         match caches with
@@ -753,6 +754,12 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
 
     async {
         do! download true 0
-        let! files = NuGetCache.CopyFromCache(root, groupName, targetFile.FullName, licenseFileName, packageName, version, isCliTool, includeVersionInPath, force, detailed)
-        return targetFileName,files
+        let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, isCliTool, detailed)
+        let configResolved = config.Resolve root groupName packageName version includeVersionInPath
+        let! files = NuGetCache.CopyFromCache(configResolved, targetFile.FullName, licenseFileName, packageName, version, force, detailed)
+        let finalFolder =
+            match files with
+            | Some f -> f
+            | None -> extractedUserFolder
+        return targetFileName,finalFolder
     }

@@ -20,7 +20,12 @@ let FindPackagesNotExtractedYet(dependenciesFileName) =
 
     lockFile.GetGroupedResolution()
     |> Map.toList
-    |> List.filter (fun ((group,package),resolved) -> NuGetCache.IsPackageVersionExtracted(root, group, package, resolved.Version, defaultArg resolved.Settings.IncludeVersionInPath false) |> not)
+    |> List.filter (fun ((group,package),resolved) ->
+        let groupSetting = defaultArg lockFile.Groups.[group].Options.Settings.StorageConfig PackagesFolderGroupConfig.Default
+        let packSetting = defaultArg resolved.Settings.StorageConfig groupSetting
+        let includeVersionInPath = defaultArg resolved.Settings.IncludeVersionInPath false
+        let resolvedPath = packSetting.Resolve root group package resolved.Version includeVersionInPath
+        NuGetCache.IsPackageVersionExtracted(resolvedPath, package, resolved.Version) |> not)
     |> List.map fst
 
 
@@ -37,9 +42,11 @@ let CopyToCaches force caches fileName =
 /// returns - package, libs files, props files, targets files, analyzers files
 let private extractPackage caches package alternativeProjectRoot root source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
+        let cfg = defaultArg package.Settings.StorageConfig PackagesFolderGroupConfig.Default
+
         let! fileName,folder = 
             NuGet.DownloadPackage(
-                alternativeProjectRoot, root, source, caches, groupName, 
+                alternativeProjectRoot, root, cfg, source, caches, groupName, 
                 package.Name, version, package.IsCliTool, includeVersionInPath, force, detailed)
 
         CopyToCaches force caches fileName
@@ -64,11 +71,23 @@ let private extractPackage caches package alternativeProjectRoot root source gro
 /// returns - package, libs files, props files, targets files, analyzers files
 let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package : ResolvedPackage, localOverride) = 
     async { 
+        let storage = defaultArg package.Settings.StorageConfig PackagesFolderGroupConfig.Default
         let v = package.Version
         let includeVersionInPath = defaultArg package.Settings.IncludeVersionInPath false
-        let targetDir = getTargetFolder root groupName package.Name package.Version includeVersionInPath
-        let overridenFile = FileInfo(Path.Combine(targetDir, "paket.overriden"))
-        let force = if (localOverride || overridenFile.Exists) then true else force
+        let resolvedStorage = storage.Resolve root groupName package.Name package.Version includeVersionInPath
+
+        let targetDir, overridenFile, force =
+            match resolvedStorage.Path with
+            | Some targetDir ->
+                let overridenFile = FileInfo(Path.Combine(targetDir, "paket.overriden"))
+                targetDir, overridenFile, (if (localOverride || overridenFile.Exists) then true else force)
+            | None ->
+                if localOverride then
+                    failwithf "Local package override without local storage (global nuget folder) is not supported at the moment. A PR is welcome."
+                let targetDir = NuGetCache.GetTargetUserFolder package.Name package.Version
+                let overridenFile = FileInfo(Path.Combine(targetDir, "paket.overriden"))
+                targetDir, overridenFile, force
+
         let! result = async {
             // TODO: Cleanup - Download gets a source and should be able to handle LocalNuGet as well, so this is duplicated
             match package.Source with
@@ -101,8 +120,13 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
 
                 CopyToCaches force caches nupkg.FullName
 
-                let! folder = NuGetCache.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, package.IsCliTool, includeVersionInPath, force, false)
-                return package, NuGet.GetContent folder
+                let! cacheFolder = NuGetCache.ExtractPackageToUserFolder(nupkg.FullName, package.Name, package.Version, package.IsCliTool, false)
+                let! folder = NuGetCache.CopyFromCache(resolvedStorage, nupkg.FullName, "", package.Name, v, force, false)
+                let extractedFolder =
+                    match folder with
+                    | Some f -> f
+                    | None -> cacheFolder
+                return package, NuGet.GetContent extractedFolder
         }
 
         // manipulate overridenFile after package extraction

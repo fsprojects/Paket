@@ -37,35 +37,38 @@ let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*Instal
 
 let findPackageFolder root (groupName,packageName) (version,settings) =
     let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
-    let targetFolder = getTargetFolder root groupName packageName version includeVersionInPath
-    let direct = DirectoryInfo targetFolder
-    if direct.Exists then
-        direct
-    else
-        let lowerName = packageName.ToString() + if includeVersionInPath then "." + version.ToString() else ""
-        let di =
-            if groupName = Constants.MainDependencyGroup then
-                DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
-            else
-                let groupName = groupName.CompareString
-                let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, groupName))
-                if di.Exists then di else
-
-                match di.GetDirectories() |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase groupName subDir.FullName) with
-                | Some x -> x
-                | None ->
-                    traceWarnfn "The following directories exists:"
-                    di.GetDirectories() |> Seq.iter (fun d -> traceWarnfn "  %s" d.FullName)
-
-                    failwithf "Group directory for group %s was not found." groupName
-
-        match di.GetDirectories() |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase lowerName subDir.FullName) with
-        | Some x -> x
-        | None ->
-            traceWarnfn "The following directories exists:"
-            di.GetDirectories() |> Seq.iter (fun d -> traceWarnfn "  %s" d.FullName)
-
-            failwithf "Package directory for package %O was not found." packageName
+    let storageOption = defaultArg settings.StorageConfig PackagesFolderGroupConfig.Default
+    match storageOption.Resolve root groupName packageName version includeVersionInPath with
+    | ResolvedPackagesFolder.ResolvedFolder targetFolder (*when Directory.Exists targetFolder*) ->
+        DirectoryInfo targetFolder
+    | ResolvedPackagesFolder.NoPackagesFolder ->
+        let d = DirectoryInfo(NuGetCache.GetTargetUserFolder packageName version)
+        if not d.Exists then failwithf "Package directory for package %O was not found." packageName
+        d
+        //let lowerName = packageName.ToString() + if includeVersionInPath then "." + version.ToString() else ""
+        //let di =
+        //    if groupName = Constants.MainDependencyGroup then
+        //        DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
+        //    else
+        //        let groupName = groupName.CompareString
+        //        let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, groupName))
+        //        if di.Exists then di else
+        //
+        //        match di.GetDirectories() |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase groupName subDir.FullName) with
+        //        | Some x -> x
+        //        | None ->
+        //            traceWarnfn "The following directories exists:"
+        //            di.GetDirectories() |> Seq.iter (fun d -> traceWarnfn "  %s" d.FullName)
+        //
+        //            failwithf "Group directory for group %s was not found." groupName
+        //
+        //match di.GetDirectories() |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase lowerName subDir.FullName) with
+        //| Some x -> x
+        //| None ->
+        //    traceWarnfn "The following directories exists:"
+        //    di.GetDirectories() |> Seq.iter (fun d -> traceWarnfn "  %s" d.FullName)
+        //
+        //    failwithf "Package directory for package %O was not found." packageName
 
 
 let contentFileBlackList : list<(FileInfo -> bool)> = [
@@ -88,7 +91,7 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
                 let contentCopyToOutputSettings = (snd kv.Value).CopyContentToOutputDirectory
                 kv.Key,kv.Value,contentCopySettings,contentCopyToOutputSettings)
             |> Seq.filter (fun (_,_,contentCopySettings,_) -> contentCopySettings <> ContentCopySettings.Omit)
-            |> Seq.map (fun (key,v,s,s') -> s,s',findPackageFolder root key v)
+            |> Seq.map (fun ((group, packName),v,s,s') -> s,s',findPackageFolder root (group, packName) v)
             |> Seq.choose (fun (contentCopySettings,contentCopyToOutputSettings,packageDir) ->
                 packageDir.GetDirectories "Content"
                 |> Array.append (packageDir.GetDirectories "content")
@@ -327,6 +330,8 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
     
     let prefix = dependenciesFile.Directory.Length + 1
     let norm (s:string) = (s.Substring prefix).Replace('\\', '/')
+    
+    let groupSettings = lockFile.Groups |> Map.map (fun k v -> v.Options.Settings)
     for project, referenceFile in projectsAndReferences do
         tracefn " - %s -> %s" (norm referenceFile.FileName) (norm project.FileName)
         let toolsVersion = project.GetToolsVersion()

@@ -20,7 +20,7 @@ let ``should report blocked download``() =
     File.Copy(__SOURCE_DIRECTORY__ + @"/../Nuspec/FSharp.Data.nuspec",fileName)
     
     try
-        NuGetCache.ExtractPackage(fileName,di,PackageName "FSharp.Data",SemVer.Parse("0.1.1"),false,true)
+        NuGetCache.ExtractPackage(fileName,di,PackageName "FSharp.Data",SemVer.Parse("0.1.1"),true)
         |> Async.RunSynchronously
     with 
     | exn -> exn.Message

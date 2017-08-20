@@ -27,14 +27,18 @@ let getInstalledPackageModel (lockFile: LockFile) (QualifiedPackageName(groupNam
         | None -> failwithf "Package %O is not installed in group %O." packageName groupName
         | Some resolvedPackage ->
             let packageName = resolvedPackage.Name
-            let folder = 
-                getTargetFolder lockFile.RootPath groupName packageName resolvedPackage.Version (defaultArg resolvedPackage.Settings.IncludeVersionInPath false)
-                |> Path.GetFullPath
+            let storage = defaultArg resolvedPackage.Settings.StorageConfig PackagesFolderGroupConfig.Default
+            let includeVersion = defaultArg resolvedPackage.Settings.IncludeVersionInPath false
+            let resolvedConfig = storage.Resolve lockFile.RootPath groupName packageName resolvedPackage.Version includeVersion
+            let folder =
+                match resolvedConfig.Path with
+                | Some f -> f
+                | None -> NuGetCache.GetTargetUserFolder packageName resolvedPackage.Version
 
             InstallModel.CreateFromContent(
                 packageName,
                 resolvedPackage.Version,
-                Paket.Requirements.FrameworkRestriction.NoRestriction, 
+                Paket.Requirements.FrameworkRestriction.NoRestriction,
                 NuGet.GetContent(folder).Force())
 
 let getRuntimeGraph (lockFile: LockFile) (groupName:GroupName) =

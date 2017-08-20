@@ -933,9 +933,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
             | None -> failwithf "Package %O is not installed in group %O." packageName groupName
             | Some resolvedPackage ->
                 let packageName = resolvedPackage.Name
-                let folder = 
-                    getTargetFolder this.RootPath groupName packageName resolvedPackage.Version (defaultArg resolvedPackage.Settings.IncludeVersionInPath false)
-                    |> Path.GetFullPath
+                let folder = resolvedPackage.Folder this.RootPath groupName
 
                 InstallModel.CreateFromContent(
                     packageName, 

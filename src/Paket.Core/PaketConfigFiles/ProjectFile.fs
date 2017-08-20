@@ -1764,7 +1764,7 @@ type ProjectFile with
                     |> Array.filter (fun di ->
                         try 
                             let path = normalizePath di.FullName
-                            if di.Name = Constants.PackagesFolderName then false else
+                            if di.Name = Constants.DefaultPackagesFolderName then false else
                             if di.Name = "node_modules" then false else
                             if path = paketPath then false else
                             Path.Combine(path, Constants.DependenciesFileName) 

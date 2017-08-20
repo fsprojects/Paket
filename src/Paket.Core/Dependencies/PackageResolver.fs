@@ -54,6 +54,7 @@ type ResolvedPackage = {
                 "%A\nDependencies -\n%s\nSource - %A\nInstall Settings\n%A"
                     self.Name deps self.Source self.Settings
 
+
 type PackageResolution = Map<PackageName, ResolvedPackage>
 
 type ResolverStep = {

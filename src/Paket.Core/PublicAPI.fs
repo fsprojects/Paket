@@ -24,7 +24,7 @@ type Dependencies(dependenciesFileName: string) =
             if verbose then
                verbosefn "Emptying '%s'" path
             emptyDir (DirectoryInfo path)
-        
+
         emptyDir (Constants.UserNuGetPackagesFolder)
         emptyDir (Constants.NuGetCacheFolder)
         emptyDir (Constants.GitRepoCacheFolder)
@@ -451,9 +451,7 @@ type Dependencies(dependenciesFileName: string) =
             | None -> failwithf "Package %O is not installed in group %O." packageName groupName
             | Some resolvedPackage ->
                 let packageName = resolvedPackage.Name
-                let folder = 
-                        getTargetFolder this.RootPath groupName packageName resolvedPackage.Version (defaultArg resolvedPackage.Settings.IncludeVersionInPath false)
-                        |> Path.GetFullPath
+                let folder = resolvedPackage.Folder this.RootPath groupName
 
                 InstallModel.CreateFromContent(
                     packageName, 
