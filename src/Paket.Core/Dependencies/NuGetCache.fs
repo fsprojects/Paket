@@ -316,7 +316,8 @@ let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, ver
             Directory.CreateDirectory(targetFolder.FullName) |> ignore
             let fi = FileInfo fileName
             let targetPackageFileName = Path.Combine(targetFolder.FullName,fi.Name)
-            File.Copy(fileName,targetPackageFileName)
+            if normalizePath fileName <> normalizePath targetPackageFileName then
+                File.Copy(fileName,targetPackageFileName,true)
 
             ZipFile.ExtractToDirectory(fileName, targetFolder.FullName)
 
