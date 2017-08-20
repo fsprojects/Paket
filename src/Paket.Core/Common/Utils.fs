@@ -716,6 +716,8 @@ let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : s
             yield exn.InnerException.GetType().Name
             yield! innerExceptions exn.InnerException
     ]
+
+    let shouldRetry exn = isMonoRuntime && iTry < nTries && (innerExceptions exn |> List.contains "MonoBtlsException")
     
     async {
         try
@@ -732,13 +734,13 @@ let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : s
             let! raw = client.DownloadStringTaskAsync(uri, tok) |> Async.AwaitTaskWithoutAggregate
             return SuccessResponse raw
         with
+
+        | exn when shouldRetry exn ->
+            // there are issues with mono, try again :\
+            Logging.traceWarnfn "Request failed, this is likely due to a mono issue. Trying again, this was try %i/%i" iTry nTries
+            return! _safeGetFromUrl(auth, url, contentType, iTry + 1, nTries)
+
         | :? RequestFailedException as w ->
-            match innerExceptions w with
-            | [ "HttpRequestException" ; "WebException" ; "MonoBtlsException" ] when isMonoRuntime && iTry < nTries ->
-                // there are issues with mono, try again :\
-                Logging.traceWarnfn "Request failed, this is likely due to a mono issue. Trying again, this was try %i/%i" iTry nTries
-                return! _safeGetFromUrl(auth, url, contentType, iTry + 1, nTries)
-            | _ ->
                 match w.Info with
                 | Some { StatusCode = HttpStatusCode.NotFound } -> return NotFound
                 | _ ->
