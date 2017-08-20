@@ -741,12 +741,12 @@ let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : s
             return! _safeGetFromUrl(auth, url, contentType, iTry + 1, nTries)
 
         | :? RequestFailedException as w ->
-                match w.Info with
-                | Some { StatusCode = HttpStatusCode.NotFound } -> return NotFound
-                | _ ->
-                    if verbose then
-                        Logging.verbosefn "Error while retrieving '%s': %O" url w
-                    return UnknownError (ExceptionDispatchInfo.Capture w)
+            match w.Info with
+            | Some { StatusCode = HttpStatusCode.NotFound } -> return NotFound
+            | _ ->
+                if verbose then
+                    Logging.verbosefn "Error while retrieving '%s': %O" url w
+                return UnknownError (ExceptionDispatchInfo.Capture w)
     }
     
 /// [omit]
