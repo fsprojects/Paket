@@ -227,13 +227,13 @@ let createPackageRequirement sources (packageName, versionRange, restrictions) d
        TransitivePrereleases = false
        Graph = Set.empty }
 
-let private isFSharpproject (projectFileName:string) =
+let private isFSharpProject (projectFileName:string) =
     projectFileName.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase)
 
 let private addFSharpCoreToDependenciesIfRequired nugetEnv packages =
     let hasFSharpProject =
         nugetEnv.NuGetProjectFiles
-        |> Seq.exists (fun (prj,_) -> isFSharpproject prj.FileName)
+        |> Seq.exists (fun (prj,_) -> isFSharpProject prj.FileName)
     let hasFSharpCorePackage =
         packages
         |> Seq.exists (fun (n,_,_,_) -> "fsharp.core".Equals(n, StringComparison.OrdinalIgnoreCase))
@@ -365,7 +365,7 @@ let addFSharpCoreToReferencesIfRequired projectFileName references =
             allPackageReferences |> Seq.exists (fun n -> n.Name.CompareString = "fsharp.core")
         hasFSharpCore
 
-    if isFSharpproject projectFileName && not (containsFSharpCore references) then
+    if isFSharpProject projectFileName && not (containsFSharpCore references) then
         references.AddNuGetReference (GroupName MainGroup, PackageName "FSharp.Core")
     else
         references
