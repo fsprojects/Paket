@@ -25,8 +25,10 @@ let discoverDirectExtractedPackages groupName groupPackagesDirectory : Extracted
         | _ -> None
 
     let findGroupPackages groupName (groupDir:DirectoryInfo) =
-        groupDir.GetDirectories()
-        |> Array.choose (packageInDir groupName)
+        if groupDir.Exists then
+            groupDir.GetDirectories()
+            |> Array.choose (packageInDir groupName)
+        else [||]
 
     let packagesFolder = groupPackagesDirectory
     findGroupPackages groupName packagesFolder
