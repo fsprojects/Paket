@@ -4,6 +4,48 @@ open Paket
 open NUnit.Framework
 open FsUnit
 
+
+[<Test>]
+let ``Check that lists are updated``() =
+    // If this test fails it most likely means you need to
+    //  - Update the lists in KnownTargetProfiles
+    //  - Update base-lines (ie run Integration-Test-Suite) with update-base-lines set to true
+    //  - Review the diff + find a reviewer (on the PR) if you are unsure
+    //  - (In Extreme cases) Update this test.
+
+    let checkListEx (tagReader:obj -> int) (cases:Reflection.UnionCaseInfo[]) (l:'t list) =
+        let tags = l |> List.map tagReader
+        cases
+        |> Seq.forall (fun case ->
+            let foundCase = tags |> Seq.contains (case.Tag)
+            if not foundCase then
+                Assert.Fail (sprintf "Case '%s' was not found in KnownTargetProfiles.<type>Versions for '%s'" case.Name typeof<'t>.Name)
+            foundCase)
+        |> shouldEqual true
+        if l.Length <> cases.Length then
+            Assert.Fail (sprintf "KnownTargetProfiles.<list> doesnt't match number of cases for '%s'." typeof<'t>.Name)
+    let checkList (l:'t list) =
+        let tagReader = FSharp.Reflection.FSharpValue.PreComputeUnionTagReader(typeof<'t>)
+        let cases = FSharp.Reflection.FSharpType.GetUnionCases(typeof<'t>)
+        checkListEx tagReader cases l
+    checkList KnownTargetProfiles.DotNetFrameworkVersions
+    checkList KnownTargetProfiles.DotNetCoreAppVersions
+    checkList KnownTargetProfiles.DotNetStandardVersions
+    checkList KnownTargetProfiles.DotNetUnityVersions
+    checkList KnownTargetProfiles.MonoAndroidVersions
+    checkList KnownTargetProfiles.SilverlightVersions
+    checkList KnownTargetProfiles.UAPVersons
+    checkList KnownTargetProfiles.WindowsPhoneAppVersions
+    checkList KnownTargetProfiles.WindowsPhoneVersions
+    checkList KnownTargetProfiles.WindowsVersions
+
+    let reader = FSharp.Reflection.FSharpValue.PreComputeUnionTagReader(typeof<PortableProfileType>)
+    let unsupportedTag = reader(PortableProfileType.UnsupportedProfile [])
+    let cases =
+        FSharp.Reflection.FSharpType.GetUnionCases(typeof<PortableProfileType>)
+        |> Array.filter(fun case -> case.Tag <> unsupportedTag)
+    checkListEx reader cases KnownTargetProfiles.AllPortableProfiles
+
 [<Test>]
 let ``Can detect uap10``() =
     let p = PlatformMatching.forceExtractPlatforms "uap10"
@@ -30,6 +72,26 @@ let ``Can detect netcore1.0``() =
     p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.DotNetCoreApp DotNetCoreAppVersion.V1_0)))
 
 [<Test>]
+let ``Can detect wpa``() =
+    let p = PlatformMatching.forceExtractPlatforms "wpa"
+    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.WindowsPhoneApp WindowsPhoneAppVersion.V8_1)))
+
+[<Test>]
+let ``Can detect wpav8.1``() =
+    let p = PlatformMatching.forceExtractPlatforms "wpav8.1"
+    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.WindowsPhoneApp WindowsPhoneAppVersion.V8_1)))
+
+[<Test>]
+let ``Can detect wpv8.0``() =
+    let p = PlatformMatching.forceExtractPlatforms "wpv8.0"
+    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.WindowsPhone WindowsPhoneVersion.V8)))
+
+[<Test>]
+let ``Can detect winv4.5``() =
+    let p = PlatformMatching.forceExtractPlatforms "winv4.5"
+    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.Windows WindowsVersion.V8)))
+
+[<Test>]
 let ``Can detect uap101``() =
     // Currently required for backwards compat (2017-08-20), as we wrote these incorrectly in previous versions.
     let p = PlatformMatching.forceExtractPlatforms "uap101"
@@ -45,6 +107,26 @@ let ``Can detect .NETPlatform5.4``() =
 let ``Can detect MonoTouch0.00``() =
     let p = PlatformMatching.forceExtractPlatforms "MonoTouch0.00"
     p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.MonoTouch)))
+
+[<Test>]
+let ``Can detect WindowsPhoneApp0.0``() =
+    let p = PlatformMatching.forceExtractPlatforms "WindowsPhoneApp0.0"
+    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.WindowsPhoneApp WindowsPhoneAppVersion.V8_1)))
+
+[<Test>]
+let ``Can detect WindowsPhone8.0``() =
+    let p = PlatformMatching.forceExtractPlatforms "WindowsPhone8.0"
+    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.WindowsPhone WindowsPhoneVersion.V8)))
+
+[<Test>]
+let ``Can detect Windows8.0``() =
+    let p = PlatformMatching.forceExtractPlatforms "Windows8.0"
+    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.Windows WindowsVersion.V8)))
+
+[<Test>]
+let ``Can detect .NETFramework4.0-Client``() =
+    let p = PlatformMatching.forceExtractPlatforms ".NETFramework4.0-Client"
+    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4)))
 
 [<Test>]
 let ``Can detect MonoAndroid0.0``() =

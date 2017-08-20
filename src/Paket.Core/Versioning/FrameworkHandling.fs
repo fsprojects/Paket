@@ -152,7 +152,9 @@ type UAPVersion =
         match this with
         // Assumed from C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETCore
         | UAPVersion.V10 -> "v5.0"
-        | UAPVersion.V10_1 -> "v5.1"
+        // No idea, for now use 5.0 to keep project files constant
+        // If someone starts complaining fix this and update the baselines.
+        | UAPVersion.V10_1 -> "v5.0"
 
     static member TryParse s =
         match s with
@@ -224,20 +226,20 @@ type DotNetUnityVersion =
 
 module KnownAliases =
     let Data =
-        [".net", "net"
-         "netframework", "net"
-         ".netframework", "net"
+        [".netframework", "net"
          ".netcore", "netcore"
          ".netplatform", "dotnet"
+         ".netportable", "portable"
+         "netframework", "net"
          "netplatform", "dotnet"
          "winrt", "netcore"
          "silverlight", "sl"
-         "windowsPhoneApp", "wpa"
+         "windowsphoneapp", "wpa"
          "windowsphone", "wp"
          "windows", "win"
-         ".netportable", "portable"
          "xamarin.", "xamarin"
          "netportable", "portable"
+         ".net", "net"
          " ", "" ]
         |> List.map (fun (p,r) -> p.ToLower(),r.ToLower())
     let normalizeFramework (path:string) =
@@ -305,20 +307,16 @@ type WindowsPhoneVersion =
         | _ -> None
 [<RequireQualifiedAccess>]
 type WindowsPhoneAppVersion =
-    | V8
     | V8_1
     member this.ShortString() =
         match this with
-        | WindowsPhoneAppVersion.V8 -> "8"
         | WindowsPhoneAppVersion.V8_1 -> "81"
     override this.ToString() =
         match this with
-        | WindowsPhoneAppVersion.V8 -> "v8.0"
         | WindowsPhoneAppVersion.V8_1 -> "v8.1"
     static member TryParse s =
         match s with
-        | "" | "0" | "8" -> Some WindowsPhoneAppVersion.V8
-        | "8.1" -> Some WindowsPhoneAppVersion.V8_1
+        | "" | "8.1" -> Some WindowsPhoneAppVersion.V8_1
         | _ -> None
 [<RequireQualifiedAccess>]
 type SilverlightVersion =
@@ -581,7 +579,6 @@ type FrameworkIdentifier =
         | Windows WindowsVersion.V8 -> [ ]
         | Windows WindowsVersion.V8_1 -> [ Windows WindowsVersion.V8 ]
         | Windows WindowsVersion.V10 -> [ Windows WindowsVersion.V8_1 ]
-        | WindowsPhoneApp WindowsPhoneAppVersion.V8 -> [ ]
         | WindowsPhoneApp WindowsPhoneAppVersion.V8_1 -> [ DotNetStandard DotNetStandardVersion.V1_2 ]
         | WindowsPhone WindowsPhoneVersion.V7 -> [ ]
         | WindowsPhone WindowsPhoneVersion.V7_1 -> [ WindowsPhone WindowsPhoneVersion.V7 ]
@@ -961,6 +958,12 @@ type TargetProfile =
         | _ -> false
 
 module KnownTargetProfiles =
+    // These lists are used primarilty when calculating stuff which requires iterating over ALL profiles
+    //  - Restriction System: "NOT" function
+    //  - Generation of Project-File Conditions
+    //  - Penalty system (to calculate best matching framework)
+    // For this reason there is a test to ensure those lists are up2date.
+
     let DotNetFrameworkVersions = [
         FrameworkVersion.V1
         FrameworkVersion.V1_1
@@ -978,6 +981,7 @@ module KnownTargetProfiles =
         FrameworkVersion.V4_6_2
         FrameworkVersion.V4_6_3
         FrameworkVersion.V4_7
+        FrameworkVersion.V5_0
     ]
 
     let DotNetFrameworkIdentifiers =
@@ -1002,7 +1006,7 @@ module KnownTargetProfiles =
     let DotNetStandardProfiles =
        DotNetStandardVersions
        |> List.map (DotNetStandard >> SinglePlatform)
-       
+
     let DotNetCoreAppVersions = [
         DotNetCoreAppVersion.V1_0
         DotNetCoreAppVersion.V1_1
@@ -1015,7 +1019,7 @@ module KnownTargetProfiles =
         DotNetUnityVersion.V3_5_Micro
         DotNetUnityVersion.V3_5_Web
     ]
-       
+
     let DotNetCoreProfiles =
        DotNetCoreAppVersions
        |> List.map (DotNetCoreApp >> SinglePlatform)
@@ -1030,10 +1034,10 @@ module KnownTargetProfiles =
        WindowsVersions
        |> List.map (Windows >> SinglePlatform)
 
-    let DotNetUnityProfiles = 
+    let DotNetUnityProfiles =
        DotNetUnityVersions
        |> List.map (DotNetUnity >> SinglePlatform)
-       
+
     let SilverlightVersions = [
         SilverlightVersion.V3
         SilverlightVersion.V4
@@ -1065,8 +1069,14 @@ module KnownTargetProfiles =
        MonoAndroidVersions
        |> List.map (MonoAndroid >> SinglePlatform)
 
+    let UAPVersons = [
+        UAPVersion.V10
+        UAPVersion.V10_1
+    ]
+
     let UAPProfiles =
-       [SinglePlatform(UAP UAPVersion.V10)]
+       UAPVersons
+       |> List.map (UAP >> SinglePlatform)
 
     let WindowsPhoneVersions = [
         WindowsPhoneVersion.V7
@@ -1080,35 +1090,43 @@ module KnownTargetProfiles =
        WindowsPhoneVersions
        |> List.map (WindowsPhone >> SinglePlatform)
 
+    let WindowsPhoneAppVersions = [
+        WindowsPhoneAppVersion.V8_1
+    ]
+
+    let WindowsPhoneAppProfiles =
+       WindowsPhoneAppVersions
+       |> List.map (WindowsPhoneApp >> SinglePlatform)
+
     // http://nugettoolsdev.azurewebsites.net/4.0.0/parse-framework?framework=.NETPortable%2CVersion%3Dv0.0%2CProfile%3DProfile3
     let AllPortableProfiles =
-       [PortableProfileType.Profile2  
-        PortableProfileType.Profile3  
-        PortableProfileType.Profile4  
-        PortableProfileType.Profile5  
-        PortableProfileType.Profile6  
-        PortableProfileType.Profile7  
-        PortableProfileType.Profile14 
-        PortableProfileType.Profile18 
-        PortableProfileType.Profile19 
-        PortableProfileType.Profile23 
-        PortableProfileType.Profile24 
-        PortableProfileType.Profile31 
-        PortableProfileType.Profile32 
-        PortableProfileType.Profile36 
-        PortableProfileType.Profile37 
-        PortableProfileType.Profile41 
-        PortableProfileType.Profile42 
-        PortableProfileType.Profile44 
-        PortableProfileType.Profile46 
-        PortableProfileType.Profile47 
-        PortableProfileType.Profile49 
-        PortableProfileType.Profile78 
-        PortableProfileType.Profile84 
-        PortableProfileType.Profile88 
-        PortableProfileType.Profile92 
-        PortableProfileType.Profile95 
-        PortableProfileType.Profile96 
+       [PortableProfileType.Profile2
+        PortableProfileType.Profile3
+        PortableProfileType.Profile4
+        PortableProfileType.Profile5
+        PortableProfileType.Profile6
+        PortableProfileType.Profile7
+        PortableProfileType.Profile14
+        PortableProfileType.Profile18
+        PortableProfileType.Profile19
+        PortableProfileType.Profile23
+        PortableProfileType.Profile24
+        PortableProfileType.Profile31
+        PortableProfileType.Profile32
+        PortableProfileType.Profile36
+        PortableProfileType.Profile37
+        PortableProfileType.Profile41
+        PortableProfileType.Profile42
+        PortableProfileType.Profile44
+        PortableProfileType.Profile46
+        PortableProfileType.Profile47
+        PortableProfileType.Profile49
+        PortableProfileType.Profile78
+        PortableProfileType.Profile84
+        PortableProfileType.Profile88
+        PortableProfileType.Profile92
+        PortableProfileType.Profile95
+        PortableProfileType.Profile96
         PortableProfileType.Profile102
         PortableProfileType.Profile104
         PortableProfileType.Profile111
@@ -1130,7 +1148,8 @@ module KnownTargetProfiles =
     let AllDotNetProfiles =
        DotNetFrameworkProfiles @ 
        DotNetUnityProfiles @ 
-       WindowsProfiles @ 
+       WindowsProfiles @
+       WindowsPhoneAppProfiles @
        UAPProfiles @
        SilverlightProfiles @
        WindowsPhoneSilverlightProfiles @
@@ -1139,8 +1158,7 @@ module KnownTargetProfiles =
         SinglePlatform(XamariniOS)
         SinglePlatform(XamarinMac)
         SinglePlatform(XamarinTV)
-        SinglePlatform(XamarinWatch)
-        SinglePlatform(WindowsPhoneApp WindowsPhoneAppVersion.V8_1)] @
+        SinglePlatform(XamarinWatch)] @
        (AllPortableProfiles |> List.map PortableProfile)
 
     let AllDotNetStandardAndCoreProfiles =
