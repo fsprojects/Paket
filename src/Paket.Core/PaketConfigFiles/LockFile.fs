@@ -31,6 +31,11 @@ module LockFileSerializer =
         | Some true -> yield "REDIRECTS: ON"
         | Some false -> yield "REDIRECTS: OFF"
         | None -> ()
+        match options.Settings.StorageConfig with
+        | Some (PackagesFolderGroupConfig.NoPackagesFolder) -> yield "STORAGE: NONE"
+        | Some (PackagesFolderGroupConfig.DefaultPackagesFolder) -> yield "STORAGE: PACKAGES"
+        | Some (PackagesFolderGroupConfig.GivenPackagesFolder f) -> failwithf "Not jet implemented"
+        | None -> ()
         match options.ResolverStrategyForTransitives with
         | Some ResolverStrategy.Min -> yield "STRATEGY: MIN"
         | Some ResolverStrategy.Max -> yield "STRATEGY: MAX"
@@ -248,6 +253,7 @@ module LockFileParser =
     | SpecificVersion of bool
     | CopyContentToOutputDir of CopyToOutputDirectorySettings
     | Redirects of bool option
+    | StorageConfig of PackagesFolderGroupConfig option
     | ReferenceCondition of string
     | DirectDependenciesResolverStrategy of ResolverStrategy option
     | TransitiveDependenciesResolverStrategy of ResolverStrategy option
@@ -274,6 +280,14 @@ module LockFileParser =
                 | _ -> None
 
             InstallOption (Redirects setting)
+        | _, String.RemovePrefix "STORAGE:" trimmed -> 
+            let setting =
+                match trimmed.Trim() with
+                | String.EqualsIC "NONE" -> Some PackagesFolderGroupConfig.NoPackagesFolder
+                | String.EqualsIC "PACKAGES" -> Some PackagesFolderGroupConfig.DefaultPackagesFolder
+                | _ -> None
+
+            InstallOption (StorageConfig setting)
         | _, String.RemovePrefix "IMPORT-TARGETS:" trimmed -> InstallOption(ImportTargets(trimmed.Trim() = "TRUE"))
         | _, String.RemovePrefix "COPY-LOCAL:" trimmed -> InstallOption(CopyLocal(trimmed.Trim() = "TRUE"))
         | _, String.RemovePrefix "SPECIFIC-VERSION:" trimmed -> InstallOption(SpecificVersion(trimmed.Trim() = "TRUE"))
@@ -363,6 +377,7 @@ module LockFileParser =
         match option with
         | ReferencesMode mode -> { currentGroup.Options with Strict = mode }
         | Redirects mode -> { currentGroup.Options with Redirects = mode }
+        | StorageConfig mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with StorageConfig = mode }}
         | ImportTargets mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ImportTargets = Some mode } } 
         | CopyLocal mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyLocal = Some mode }}
         | SpecificVersion mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with SpecificVersion = Some mode }}
