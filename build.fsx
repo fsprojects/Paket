@@ -76,11 +76,12 @@ let netcoreFiles = !! "src/**.preview?/*.fsproj" |> Seq.toList
 // END TODO: The rest of the file includes standard build steps
 // --------------------------------------------------------------------------------------
 
+let root = __SOURCE_DIRECTORY__
 let buildDir = "bin"
 let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
+let testResultDir = root @@ "testResults"
 
-let root = __SOURCE_DIRECTORY__
 Environment.CurrentDirectory <- root
 // Read additional information from the release notes document
 let releaseNotesData = 
@@ -144,6 +145,7 @@ Target "Clean" (fun _ ->
     ++ "tests/**/bin"
     ++ buildDir 
     ++ tempDir
+    ++ testResultDir
     |> CleanDirs 
 )
 
@@ -231,19 +233,17 @@ Target "DotnetPackage" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Run the unit tests using test runner
 
-let testResultDir = root @@ "testResults"
-
-let uploadTestResults path =
-  try
-    if buildServer = BuildServer.AppVeyor then
-        // see https://www.appveyor.com/docs/running-tests/#uploading-xml-test-results
+//let uploadTestResults path =
+//  try
+//    if buildServer = BuildServer.AppVeyor then
+//        // see https://www.appveyor.com/docs/running-tests/#uploading-xml-test-results
         
-        use wc = new System.Net.WebClient()
-        let uri = sprintf "https://ci.appveyor.com/api/testresults/nunit3/%s" (environVarOrFail "APPVEYOR_JOB_ID")
-        wc.UploadFile(uri, path) |> ignore
-  with
-    exn ->
-      warnf "An Error occuring uploading the test results to the CI server: %O" exn
+//        use wc = new System.Net.WebClient()
+//        let uri = sprintf "https://ci.appveyor.com/api/testresults/nunit3/%s" (environVarOrFail "APPVEYOR_JOB_ID")
+//        wc.UploadFile(uri, path) |> ignore
+//  with
+//    exn ->
+//      warnf "An Error occuring uploading the test results to the CI server: %O" exn
 
 Target "RunTests" (fun _ ->
     
@@ -256,9 +256,9 @@ Target "RunTests" (fun _ ->
             ShadowCopy = false
             WorkingDir = "tests/Paket.Tests"
             TimeOut = TimeSpan.FromMinutes 20.
-            ResultSpecs = [ xmlResult ] })
+            ResultSpecs = [ xmlResult ; "format=AppVeyor" ] })
 
-    uploadTestResults xmlResult
+    //uploadTestResults xmlResult
 )
 
 Target "QuickTest" (fun _ ->
@@ -277,9 +277,9 @@ Target "QuickTest" (fun _ ->
             ShadowCopy = false
             WorkingDir = "tests/Paket.Tests"
             TimeOut = TimeSpan.FromMinutes 20.
-            ResultSpecs = [ xmlResult ]  })
+            ResultSpecs = [ xmlResult ; "format=AppVeyor" ]  })
 
-    uploadTestResults xmlResult
+    //uploadTestResults xmlResult
 )
 "Clean" ==> "QuickTest"
 
@@ -300,9 +300,9 @@ Target "QuickIntegrationTests" (fun _ ->
             Where = "cat==scriptgen"
             WorkingDir = "tests/Paket.Tests"
             TimeOut = TimeSpan.FromMinutes 40.
-            ResultSpecs = [ xmlResult ]  })
+            ResultSpecs = [ xmlResult ; "format=AppVeyor" ]  })
 
-    uploadTestResults xmlResult
+    //uploadTestResults xmlResult
 )
 "Clean" ==> "QuickIntegrationTests" 
 
@@ -354,9 +354,9 @@ Target "RunIntegrationTests" (fun _ ->
             ShadowCopy = false
             WorkingDir = "tests/Paket.Tests"
             TimeOut = TimeSpan.FromMinutes 40.
-            ResultSpecs = [ xmlResult ]  })
+            ResultSpecs = [ xmlResult ; "format=AppVeyor" ]  })
 
-    uploadTestResults xmlResult
+    //uploadTestResults xmlResult
 )
 "Clean" ==> "Build" ==> "RunIntegrationTests" 
 
