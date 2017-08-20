@@ -30,6 +30,14 @@ open Chessie.ErrorHandling
 open Newtonsoft.Json
 open System
 
+
+// show the path that was too long
+let FileInfo(str) =
+    try
+        FileInfo(str)
+    with
+      :? PathTooLongException as exn -> raise (PathTooLongException("Path too long: " + str, exn))
+
 type NuGetResponseGetVersionsSuccess = string []
 type NuGetResponseGetVersionsFailure =
     { Url : string; Error : ExceptionDispatchInfo }
