@@ -23,12 +23,12 @@
     <OutputPath>..\..\bin</OutputPath>
     <DefineConstants>TRACE;DEBUG;USE_WEB_CLIENT_FOR_UPLOAD</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <StartArguments>pack out out</StartArguments>
+    <StartArguments>update</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>
     </StartWorkingDirectory>
-    <StartWorkingDirectory>C:\temp\PaketPackRepro3</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\proj\testing\testpaketfailure\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

@@ -48,7 +48,7 @@ let deleteUnusedPackages (lockFile:LockFile) =
             let defaultStorage = defaultArg g.Value.Options.Settings.StorageConfig PackagesFolderGroupConfig.Default
             g.Value.Resolution
             |> Seq.map (fun r -> defaultArg r.Value.Settings.StorageConfig defaultStorage)
-            |> Seq.append [defaultStorage]
+            |> Seq.append [defaultStorage; PackagesFolderGroupConfig.DefaultPackagesFolder]
             |> Seq.map (fun storageOption -> groupName, storageOption))
         // always consider default packages folder for GC
         |> Seq.append [Constants.MainDependencyGroup, PackagesFolderGroupConfig.DefaultPackagesFolder]
@@ -77,7 +77,9 @@ let deleteUnusedPackages (lockFile:LockFile) =
             else
                 // might be in the resultion, but the storage path changed
                 let group = lockFile.Groups.[package.GroupName]
-                let packageStorage = defaultArg group.Resolution.[package.PackageName].Settings.StorageConfig PackagesFolderGroupConfig.Default
+                let packageInfo = group.GetPackage package.PackageName
+                let storageConfig = packageInfo.Settings.StorageConfig
+                let packageStorage = defaultArg storageConfig PackagesFolderGroupConfig.Default
                 let resolvePack = packageStorage.ResolveGroupDir lockFile.RootPath package.GroupName
                 if groupDir <> resolvePack then
                     tracefn "Garbage collecting %O" package.Path

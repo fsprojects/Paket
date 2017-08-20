@@ -10,10 +10,11 @@ module CacheExtensions =
             let nuspec = Path.Combine(folder,sprintf "%O.nuspec" name)
             Nuspec.Load nuspec
 
-    type PackageResolver.ResolvedPackage with
+    type PackageResolver.PackageInfo with
         member x.Folder root groupName =
-            let includeVersion = defaultArg x.Settings.IncludeVersionInPath false
-            let storageConf = defaultArg x.Settings.StorageConfig PackagesFolderGroupConfig.Default
+            let settings = x.Settings
+            let includeVersion = defaultArg settings.IncludeVersionInPath false
+            let storageConf = defaultArg settings.StorageConfig PackagesFolderGroupConfig.Default
             match (storageConf.Resolve root groupName x.Name x.Version includeVersion).Path with
             | Some f -> f
             | None ->

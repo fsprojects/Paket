@@ -21,8 +21,7 @@ let FindPackagesNotExtractedYet(dependenciesFileName) =
     lockFile.GetGroupedResolution()
     |> Map.toList
     |> List.filter (fun ((group,package),resolved) ->
-        let groupSetting = defaultArg lockFile.Groups.[group].Options.Settings.StorageConfig PackagesFolderGroupConfig.Default
-        let packSetting = defaultArg resolved.Settings.StorageConfig groupSetting
+        let packSetting = defaultArg resolved.Settings.StorageConfig PackagesFolderGroupConfig.Default
         let includeVersionInPath = defaultArg resolved.Settings.IncludeVersionInPath false
         let resolvedPath = packSetting.Resolve root group package resolved.Version includeVersionInPath
         NuGetCache.IsPackageVersionExtracted(resolvedPath, package, resolved.Version) |> not)
@@ -40,7 +39,7 @@ let CopyToCaches force caches fileName =
                 traceWarnfn "Could not copy %s to cache %s%s%s" fileName cache.Location Environment.NewLine exn.Message)
 
 /// returns - package, libs files, props files, targets files, analyzers files
-let private extractPackage caches package alternativeProjectRoot root source groupName version includeVersionInPath force =
+let private extractPackage caches (package:PackageInfo) alternativeProjectRoot root source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
         let cfg = defaultArg package.Settings.StorageConfig PackagesFolderGroupConfig.Default
 
@@ -69,7 +68,7 @@ let private extractPackage caches package alternativeProjectRoot root source gro
 
 /// Downloads and extracts a package.
 /// returns - package, libs files, props files, targets files, analyzers files
-let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package : ResolvedPackage, localOverride) = 
+let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package : PackageInfo, localOverride) = 
     async { 
         let storage = defaultArg package.Settings.StorageConfig PackagesFolderGroupConfig.Default
         let v = package.Version
@@ -143,10 +142,11 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
 let internal restore (alternativeProjectRoot, root, groupName, sources, caches, force, lockFile : LockFile, packages : Set<PackageName>, overriden : Set<PackageName>) = 
     async { 
         RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles)
+        let group = lockFile.Groups.[groupName]
         let! _ = 
             lockFile.Groups.[groupName].Resolution
             |> Map.filter (fun name _ -> packages.Contains name)
-            |> Seq.map (fun kv -> ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, kv.Value, Set.contains kv.Key overriden))
+            |> Seq.map (fun kv -> ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, group.GetPackage kv.Key, Set.contains kv.Key overriden))
             |> Async.Parallel
         return ()
     }
@@ -271,7 +271,7 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
             if verbose then
                 tracefn " - %s already up-to-date" fileInfo.FullName
 
-let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:LockFile) (projectFile:FileInfo) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,ResolvedPackage>>) targetFilter (groups:Map<GroupName,LockFileGroup>) =
+let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:LockFile) (projectFile:FileInfo) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) targetFilter (groups:Map<GroupName,LockFileGroup>) =
     let list = System.Collections.Generic.List<_>()
     let cliTools = System.Collections.Generic.List<_>()
     for kv in groups do

@@ -176,7 +176,7 @@ let CreateModel(alternativeProjectRoot, root, force, dependenciesFile:Dependenci
         let caches = dependenciesFile.Groups.[kv'.Key].Caches
         kv'.Value.Resolution
         |> Map.filter (fun name _ -> packages.Contains(kv'.Key,name))
-        |> Seq.map (fun kv -> RestoreProcess.CreateInstallModel(alternativeProjectRoot, root,kv'.Key,sources,caches,force,kv.Value))
+        |> Seq.map (fun kv -> RestoreProcess.CreateInstallModel(alternativeProjectRoot, root,kv'.Key,sources,caches,force,kv'.Value.GetPackage kv.Key))
         |> Seq.toArray
         |> Async.Parallel
         |> Async.RunSynchronously)

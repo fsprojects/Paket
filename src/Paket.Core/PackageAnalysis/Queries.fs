@@ -9,7 +9,7 @@ let getLockFileFromDependenciesFile dependenciesFileName =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     LockFile.LoadFrom lockFileName.FullName
 
-let listPackages (packages: System.Collections.Generic.KeyValuePair<GroupName*PackageName, PackageResolver.ResolvedPackage> seq) =
+let listPackages (packages: System.Collections.Generic.KeyValuePair<GroupName*PackageName, PackageResolver.PackageInfo> seq) =
     packages
     |> Seq.map (fun kv ->
             let groupName,packageName = kv.Key
@@ -23,7 +23,7 @@ let getInstalledPackageModel (lockFile: LockFile) (QualifiedPackageName(groupNam
     match lockFile.Groups |> Map.tryFind groupName with
     | None -> failwithf "Group %O can't be found in paket.lock." groupName
     | Some group ->
-        match group.Resolution.TryFind(packageName) with
+        match group.TryFind(packageName) with
         | None -> failwithf "Package %O is not installed in group %O." packageName groupName
         | Some resolvedPackage ->
             let packageName = resolvedPackage.Name

@@ -247,6 +247,16 @@ module Resolution =
         | ResolutionRaw.ConflictRaw conf -> Conflict conf
     let Ok resolution =
         Resolution.ofRaw [] (ResolutionRaw.OkRaw resolution)
+
+    let fixPackageSettings groupSettings (r:Resolution) =
+        { r with
+            Raw =
+                match r.Raw with
+                | ResolutionRaw.OkRaw model ->
+                    model
+                    |> Map.map (fun k v -> { v with Settings = v.Settings + groupSettings } )
+                    |> ResolutionRaw.OkRaw
+                | conf -> conf }
 type Resolution with
 
     member self.GetConflicts () = Resolution.getConflicts self
@@ -1316,6 +1326,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
 
         exceptionThrown <- false
         resolution
+        //|> fixPackageSettings
     finally
         // some cleanup
         cts.Cancel()
@@ -1340,3 +1351,20 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                     else reraise()
             | e when exceptionThrown ->
                 traceErrorfn "Error while waiting for worker to finish: %O" e
+
+
+type PackageInfo =
+  { Resolved : ResolvedPackage
+    GroupSettings : InstallSettings
+    Settings : InstallSettings }
+    member x.Name = x.Resolved.Name
+    member x.Version = x.Resolved.Version
+    member x.Dependencies = x.Resolved.Dependencies
+    member x.Unlisted = x.Resolved.Unlisted
+    member x.IsRuntimeDependency = x.Resolved.IsRuntimeDependency
+    member x.IsCliTool = x.Resolved.IsCliTool
+    member x.Source = x.Resolved.Source
+    static member from v s =
+      { Resolved = v
+        GroupSettings = s
+        Settings = v.Settings + s }

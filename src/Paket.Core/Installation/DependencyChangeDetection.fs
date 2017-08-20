@@ -19,10 +19,10 @@ type DependencyChangeType =
 
 let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile,strict) =
     let allTransitives groupName = lockFile.GetTransitiveDependencies groupName
-    let getChanges groupName transitives (newRequirement:PackageRequirement) (originalPackage:ResolvedPackage) =
+    let getChanges groupName transitives (newRequirement:PackageRequirement) (originalPackage:PackageInfo) =
         let settingsChanged() =
             if newRequirement.Settings <> originalPackage.Settings then
-                if newRequirement.Settings = { originalPackage.Settings with FrameworkRestrictions = AutoDetectFramework } then
+                if newRequirement.Settings = { originalPackage.Resolved.Settings with FrameworkRestrictions = AutoDetectFramework } then
                     []
                 elif newRequirement.Settings.FrameworkRestrictions <> originalPackage.Settings.FrameworkRestrictions then
                     let isTransitive = transitives |> Seq.contains originalPackage.Name
@@ -57,11 +57,11 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
                 match lockFileGroup with
                 | None -> [GroupNotFoundInLockFile]
                 | Some group ->
-                    match group.Resolution.TryFind name with
+                    match group.TryFind name with
                     | Some lockFilePackage ->
                         getChanges groupName transitives 
                             { dependenciesFilePackage with Settings = depsGroup.Options.Settings + dependenciesFilePackage.Settings }
-                            { lockFilePackage with Settings = group.Options.Settings + lockFilePackage.Settings }
+                            lockFilePackage
                     | _ -> [PackageNotFoundInLockFile])
             |> Seq.filter (fun (_,_, changes) -> changes.Length > 0)
             |> Seq.map (fun (p,_, changes) -> groupName, p, changes)
@@ -76,12 +76,12 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
                 |> Seq.map (fun d -> d.Name,{ d with Settings = group.Options.Settings + d.Settings })
                 |> Map.ofSeq
 
-        [for t in lockFile.GetTopLevelDependencies(groupName) do            
+        [for t in lockFile.GetTopLevelDependencies(groupName) do
             let name = t.Key
             match directMap.TryFind name with
             | Some pr ->
                 let t = t.Value
-                let t = { t with Settings = lockFile.GetGroup(groupName).Options.Settings + t.Settings }
+                //let t = { t with Settings = lockFile.GetGroup(groupName).Options.Settings + t.Settings }
                 yield groupName, name, getChanges groupName transitives pr t // Modified
             | _ -> yield groupName, name, [PackageNotFoundInDependenciesFile] // Removed
         ]

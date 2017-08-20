@@ -27,7 +27,7 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
     let loadedGroups = HashSet<GroupName>()
     let mutable nuspecCache = ConcurrentDictionary<PackageName*SemVerInfo, Nuspec>()
     let mutable installModelCache = ConcurrentDictionary<GroupName * PackageName,InstallModel>()
-    let mutable orderedGroupCache = ConcurrentDictionary<GroupName,ResolvedPackage list>()
+    let mutable orderedGroupCache = ConcurrentDictionary<GroupName,PackageInfo list>()
     let mutable orderedGroupReferences = ConcurrentDictionary<(GroupName * FrameworkIdentifier),ReferenceType list>()
 
 
@@ -64,7 +64,7 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
 
     let getPackageOrderResolvedPackage =
         getPackageOrderGeneric 
-            (fun (p:PackageResolver.ResolvedPackage) -> p.Name) 
+            (fun (p:PackageResolver.PackageInfo) -> p.Name) 
             (fun p -> p.Dependencies |> Seq.map (fun (n,_,_) -> n))
 
 
