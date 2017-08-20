@@ -709,8 +709,14 @@ module SafeWebResult =
         | UnknownError err -> FSharp.Core.Result.Error err
         | SuccessResponse s -> FSharp.Core.Result.Ok s
 
-/// [omit]
-let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
+let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : string, iTry, nTries) =
+    
+    let rec innerExceptions (exn:Exception) = [
+        if exn.InnerException <> null then
+            yield exn.InnerException.GetType().Name
+            yield! innerExceptions exn.InnerException
+    ]
+    
     async {
         try
             let uri = Uri url
@@ -727,14 +733,22 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
             return SuccessResponse raw
         with
         | :? RequestFailedException as w ->
-            match w.Info with
-            | Some { StatusCode = HttpStatusCode.NotFound } -> return NotFound
+            match innerExceptions w with
+            | [ "HttpRequestException" ; "WebException" ; "MonoBtlsException" ] when isMonoRuntime && iTry < nTries ->
+                // there are issues with mono, try again :\
+                return! _safeGetFromUrl(auth, url, contentType, iTry + 1, nTries)
             | _ ->
-                if verbose then
-                    Logging.verbosefn "Error while retrieving '%s': %O" url w
-                return UnknownError (ExceptionDispatchInfo.Capture w)
+                match w.Info with
+                | Some { StatusCode = HttpStatusCode.NotFound } -> return NotFound
+                | _ ->
+                    if verbose then
+                        Logging.verbosefn "Error while retrieving '%s': %O" url w
+                    return UnknownError (ExceptionDispatchInfo.Capture w)
     }
-
+    
+/// [omit]
+let safeGetFromUrl (auth:Auth option, url : string, contentType : string) = _safeGetFromUrl(auth, url, contentType, 1, 10)
+    
 let mutable autoAnswer = None
 let readAnswer() =
     match autoAnswer with
