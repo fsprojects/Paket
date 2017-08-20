@@ -679,6 +679,8 @@ let DownloadPackage(alternativeProjectRoot, root, config:PackagesFolderGroupConf
 
                     if authenticated && verbose then
                         tracefn "Downloading from %O to %s" !downloadUrl targetFileName
+                    let dir = Path.GetDirectoryName targetFileName
+                    if Directory.Exists dir |> not then Directory.CreateDirectory dir |> ignore
 
                     use trackDownload = Profile.startCategory Profile.Category.NuGetDownload
                     let! license = Async.StartChild(DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
