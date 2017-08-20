@@ -248,7 +248,7 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
             if verbose then
                 tracefn " - %s already up-to-date" fileInfo.FullName
 
-let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:LockFile) (projectFile:FileInfo) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,ResolvedPackage>>) targetFilter (groups:Map<GroupName,LockFileGroup>) =
+let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:LockFile) (projectFile:FileInfo) (referencesFile:ReferencesFile) (dotnetCliOutFilePath:string) (resolved:Lazy<Map<GroupName*PackageName,ResolvedPackage>>) targetFilter (groups:Map<GroupName,LockFileGroup>) =
     let list = System.Collections.Generic.List<_>()
     let cliTools = System.Collections.Generic.List<_>()
     for kv in groups do
@@ -343,7 +343,7 @@ let FindOrCreateReferencesFile projectFileName =
 
         ReferencesFile.New fileName
         
-let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option) = 
+let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option, additionalReferences: ReferencesFile option) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
     let root = lockFileName.Directory.FullName
