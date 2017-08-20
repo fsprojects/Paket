@@ -241,8 +241,9 @@ type RestoreArgs =
 
     | References_File of path:string
     | [<Hidden;CustomCommandLine("--references-files")>] References_File_Legacy of path:string list
-
+    
     | [<Unique>] Target_Framework of framework:string
+    | [<Unique>] New_Sdk_References_File of path:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -262,8 +263,9 @@ with
 
             | References_File(_) -> "restore packages from a paket.references file; may be repeated"
             | References_File_Legacy(_) -> "[obsolete]"
-
+            
             | Target_Framework(_) -> "restore only for the specified target framework"
+            | New_Sdk_References_File(_) -> "when used in combination with the new dotnet cli based sdk, paket will write all referenced packages to this file"
 
 type SimplifyArgs =
     | [<Unique;AltCommandLine("-i")>] Interactive

@@ -248,7 +248,7 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
             if verbose then
                 tracefn " - %s already up-to-date" fileInfo.FullName
 
-let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:LockFile) (projectFile:FileInfo) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,ResolvedPackage>>) targetFilter (groups:Map<GroupName,LockFileGroup>) =
+let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:LockFile) (projectFile:FileInfo) (referencesFile:ReferencesFile) (newSdkReferencesFilePath:string option) (resolved:Lazy<Map<GroupName*PackageName,ResolvedPackage>>) targetFilter (groups:Map<GroupName,LockFileGroup>) =
     let list = System.Collections.Generic.List<_>()
     let cliTools = System.Collections.Generic.List<_>()
     for kv in groups do
@@ -292,7 +292,7 @@ let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:L
                 list.Add line
 
     let output = String.Join(Environment.NewLine,list)
-    let newFileName = FileInfo(Path.Combine(projectFile.Directory.FullName,"obj",projectFile.Name + ".references"))
+    let newFileName = newSdkReferencesFilePath |> Option.defaultValue (Path.Combine(projectFile.Directory.FullName,"obj",projectFile.Name + ".references")) |> FileInfo
     if not newFileName.Directory.Exists then
         newFileName.Directory.Create()
     if output = "" then
@@ -343,7 +343,7 @@ let FindOrCreateReferencesFile projectFileName =
 
         ReferencesFile.New fileName
         
-let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option) = 
+let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option,newSdkReferencesFilePath) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
     let root = lockFileName.Directory.FullName
@@ -394,7 +394,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             let projectFileInfo = FileInfo projectFileName
 
             createAlternativeNuGetConfig projectFileInfo
-            createProjectReferencesFiles dependenciesFile lockFile projectFileInfo referencesFile resolved targetFilter groups
+            createProjectReferencesFiles dependenciesFile lockFile projectFileInfo referencesFile newSdkReferencesFilePath resolved targetFilter groups
 
             [referencesFile.FileName]
         | None -> referencesFileNames
