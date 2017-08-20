@@ -717,7 +717,7 @@ let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : s
             yield! innerExceptions exn.InnerException
     ]
 
-    let shouldRetry exn = isMonoRuntime && iTry < nTries && (innerExceptions exn |> List.contains "MonoBtlsException")
+    let shouldRetry exn = isMonoRuntime && iTry < nTries && (innerExceptions exn |> List.contains "MonoBtlsException") && raise (Exception("Hello from _safeGetFromUrl.shouldRetry", exn))
     
     async {
         try
