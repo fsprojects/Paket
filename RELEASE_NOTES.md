@@ -1,3 +1,6 @@
+#### 5.89.0 - 21.08.2017
+* BUGFIX: dotnet sdk: disable implicitly adding system.valuetuple and fsharp.core - https://github.com/fsprojects/Paket/pull/2528
+
 #### 5.87.0 - 21.08.2017
 * BUGFIX: NuGet v3 protocol fixes - https://github.com/fsprojects/Paket/pull/2632
 * BUGFIX: Restore Failure on Mono: System.Exception: Expected an result at this place - https://github.com/fsprojects/Paket/issues/2639
