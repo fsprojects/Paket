@@ -1,3 +1,6 @@
+#### 5.89.1 - 21.08.2017
+* BUGFIX: fix crash when a package contains an invalid file - https://github.com/fsprojects/Paket/pull/2644
+
 #### 5.89.0 - 21.08.2017
 * BUGFIX: dotnet sdk: disable implicitly adding system.valuetuple and fsharp.core - https://github.com/fsprojects/Paket/pull/2528
 

@@ -26,6 +26,10 @@ val traceErrorfn : Printf.StringFormat<'a,unit> -> 'a
 
 val traceWarnfn : Printf.StringFormat<'a,unit> -> 'a
 
+val traceWarnIfNotBefore : 'a ->  Printf.StringFormat<'b,unit> -> 'b
+val traceErrorIfNotBefore : 'a ->  Printf.StringFormat<'b,unit> -> 'b
+
+val getOmittedWarningCount : unit -> int
 
 type Trace = {
     Level: TraceLevel

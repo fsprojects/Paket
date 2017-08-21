@@ -52,6 +52,11 @@ let ``Can detect uap10``() =
     p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.UAP UAPVersion.V10)))
 
 [<Test>]
+let ``Doesn't fail on profiles``() =
+    let p = PlatformMatching.extractPlatforms false "profiles"
+    p |> shouldEqual None
+
+[<Test>]
 let ``Can detect uap10.1``() =
     let p = PlatformMatching.forceExtractPlatforms "UAP10.1"
     p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.UAP UAPVersion.V10_1)))
