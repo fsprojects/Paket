@@ -22,9 +22,14 @@
 
   <Target Name="PaketRestore" BeforeTargets="_GenerateDotnetCliToolReferenceSpecs;_GenerateProjectRestoreGraphPerFramework;_GenerateRestoreGraphWalkPerFramework;CollectPackageReferences" >
 
+    <PropertyGroup>
+      <!-- The backslash at the end messes with quoting -->
+      <_IntermediateOutputPath_NoTrailingSlash>$(IntermediateOutputPath.TrimEnd('\'))</_IntermediateOutputPath_NoTrailingSlash>
+    </PropertyGroup>
+    
     <Exec Command='$(PaketBootStrapperCommand) ' Condition="Exists('$(PaketBootStrapperExePath)') AND !(Exists('$(PaketExePath)'))" ContinueOnError="false" />
-    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --target-framework $(TargetFramework) --new-sdk-references-file "$(PaketReferencesFilePath)" --intermediate-dir "$(IntermediateOutputPath)"' Condition="$(TargetFramework) != ''" ContinueOnError="false" />
-    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --target-framework "$(TargetFrameworks)" --new-sdk-references-file "$(PaketReferencesFilePath)" --intermediate-dir "$(IntermediateOutputPath)"' Condition="$(TargetFramework) == ''" ContinueOnError="false" />
+    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --target-framework $(TargetFramework) --new-sdk-references-file "$(PaketReferencesFilePath)" --intermediate-dir "$(_IntermediateOutputPath_NoTrailingSlash)"' Condition="$(TargetFramework) != ''" ContinueOnError="false" />
+    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --target-framework "$(TargetFrameworks)" --new-sdk-references-file "$(PaketReferencesFilePath)" --intermediate-dir "$(_IntermediateOutputPath_NoTrailingSlash)"' Condition="$(TargetFramework) == ''" ContinueOnError="false" />
 
     <ReadLinesFromFile File="$(PaketReferencesFilePath)" >
       <Output TaskParameter="Lines" ItemName="PaketReferencesFileLines"/>
