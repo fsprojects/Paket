@@ -248,15 +248,6 @@ module Resolution =
     let Ok resolution =
         Resolution.ofRaw [] (ResolutionRaw.OkRaw resolution)
 
-    let fixPackageSettings groupSettings (r:Resolution) =
-        { r with
-            Raw =
-                match r.Raw with
-                | ResolutionRaw.OkRaw model ->
-                    model
-                    |> Map.map (fun k v -> { v with Settings = v.Settings + groupSettings } )
-                    |> ResolutionRaw.OkRaw
-                | conf -> conf }
 type Resolution with
 
     member self.GetConflicts () = Resolution.getConflicts self
@@ -1326,7 +1317,6 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
 
         exceptionThrown <- false
         resolution
-        //|> fixPackageSettings
     finally
         // some cleanup
         cts.Cancel()

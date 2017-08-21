@@ -32,11 +32,6 @@ let discoverDirectExtractedPackages groupName groupPackagesDirectory : Extracted
 
     let packagesFolder = groupPackagesDirectory
     findGroupPackages groupName packagesFolder
-    //[
-    //    findGroupPackages Constants.MainDependencyGroup packagesFolder
-    //    packagesFolder.GetDirectories() 
-    //    |> Array.collect (fun dir -> findGroupPackages (GroupName dir.Name) dir)
-    //] |> Array.concat
     |> List.ofArray
 
 /// Remove all packages from the packages folder which are not part of the lock file.
@@ -62,9 +57,7 @@ let deleteUnusedPackages (lockFile:LockFile) =
                 |> List.map (fun p -> p, Some path)
             | None -> [])
 
-    //for groupName, storage in storageOptions do
-
-    for package, groupDir in extractedPackages (* discoverExtractedPackages root*) do
+    for package, groupDir in extractedPackages do
         try
             let containsKey = resolution |> Map.containsKey (package.GroupName, package.PackageName)
             let findNormalized =

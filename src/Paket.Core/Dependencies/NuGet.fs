@@ -607,10 +607,9 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
 let DownloadPackage(alternativeProjectRoot, root, config:PackagesFolderGroupConfig, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, force, detailed) =
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
     let normalizedNupkgName = packageName.ToString() + "." + version.Normalize() + ".nupkg"
-    let targetFileName = NuGetCache.GetTargetUserNupkg packageName version // Path.Combine(Constants.NuGetCacheFolder, normalizedNupkgName)
+    let targetFileName = NuGetCache.GetTargetUserNupkg packageName version
     let targetFile = FileInfo targetFileName
     let licenseFileName = Path.Combine(NuGetCache.GetTargetUserFolder packageName version, packageName.ToString() + "." + version.Normalize() + ".license.html")
-    //let licenseFileName = Path.Combine(Constants.NuGetCacheFolder, packageName.ToString() + "." + version.Normalize() + ".license.html")
 
     let rec getFromCache (caches:Cache list) =
         match caches with

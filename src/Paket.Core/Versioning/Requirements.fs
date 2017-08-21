@@ -728,7 +728,7 @@ type InstallSettings =
               | None -> ()
               match this.StorageConfig with
               | Some (PackagesFolderGroupConfig.NoPackagesFolder) -> yield "storage: none"
-              | Some (PackagesFolderGroupConfig.GivenPackagesFolder s) -> failwithf "Not implemented jet"
+              | Some (PackagesFolderGroupConfig.GivenPackagesFolder s) -> failwithf "Not implemented yet."
               | Some (PackagesFolderGroupConfig.DefaultPackagesFolder) -> failwithf "storage: packages"
               | None -> ()
               match this.CopyContentToOutputDirectory with

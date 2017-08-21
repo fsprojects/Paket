@@ -81,7 +81,6 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
             match directMap.TryFind name with
             | Some pr ->
                 let t = t.Value
-                //let t = { t with Settings = lockFile.GetGroup(groupName).Options.Settings + t.Settings }
                 yield groupName, name, getChanges groupName transitives pr t // Modified
             | _ -> yield groupName, name, [PackageNotFoundInDependenciesFile] // Removed
         ]

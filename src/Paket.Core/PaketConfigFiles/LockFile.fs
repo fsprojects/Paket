@@ -39,7 +39,7 @@ module LockFileSerializer =
         match options.Settings.StorageConfig with
         | Some (PackagesFolderGroupConfig.NoPackagesFolder) -> yield "STORAGE: NONE"
         | Some (PackagesFolderGroupConfig.DefaultPackagesFolder) -> yield "STORAGE: PACKAGES"
-        | Some (PackagesFolderGroupConfig.GivenPackagesFolder f) -> failwithf "Not jet implemented"
+        | Some (PackagesFolderGroupConfig.GivenPackagesFolder f) -> failwithf "Not implemented yet."
         | None -> ()
         match options.ResolverStrategyForTransitives with
         | Some ResolverStrategy.Min -> yield "STRATEGY: MIN"

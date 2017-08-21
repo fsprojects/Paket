@@ -45,31 +45,6 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
         let d = DirectoryInfo(NuGetCache.GetTargetUserFolder packageName version)
         if not d.Exists then failwithf "Package directory for package %O was not found." packageName
         d
-        //let lowerName = packageName.ToString() + if includeVersionInPath then "." + version.ToString() else ""
-        //let di =
-        //    if groupName = Constants.MainDependencyGroup then
-        //        DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
-        //    else
-        //        let groupName = groupName.CompareString
-        //        let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, groupName))
-        //        if di.Exists then di else
-        //
-        //        match di.GetDirectories() |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase groupName subDir.FullName) with
-        //        | Some x -> x
-        //        | None ->
-        //            traceWarnfn "The following directories exists:"
-        //            di.GetDirectories() |> Seq.iter (fun d -> traceWarnfn "  %s" d.FullName)
-        //
-        //            failwithf "Group directory for group %s was not found." groupName
-        //
-        //match di.GetDirectories() |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase lowerName subDir.FullName) with
-        //| Some x -> x
-        //| None ->
-        //    traceWarnfn "The following directories exists:"
-        //    di.GetDirectories() |> Seq.iter (fun d -> traceWarnfn "  %s" d.FullName)
-        //
-        //    failwithf "Package directory for package %O was not found." packageName
-
 
 let contentFileBlackList : list<(FileInfo -> bool)> = [
     fun f -> f.Name = "_._"
