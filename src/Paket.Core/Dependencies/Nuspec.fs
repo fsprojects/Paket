@@ -33,8 +33,11 @@ module internal NuSpecParserHelper =
         match parent.Name, parent |> getAttribute "targetFramework" with
         | n , Some framework when String.equalsIgnoreCase n "group" -> 
             let framework = framework.Replace(".NETPortable0.0","portable")
-            PlatformMatching.extractPlatforms framework
-            |> Option.map (fun pp -> name, version, pp)
+            match PlatformMatching.extractPlatforms false framework with
+            | Some pp -> Some (name, version, pp)
+            | None ->
+                Logging.traceWarnfn "Could not detect any platforms from '%s' in '%s'" framework fileName
+                None
         | _ -> Some(name,version, PlatformMatching.ParsedPlatformPath.Empty)
 
     let getAssemblyRefs node =
@@ -78,7 +81,11 @@ type Nuspec =
                 match node |> getAttribute "targetFramework" with
                 | Some framework ->
                     let framework = framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable")
-                    PlatformMatching.extractPlatforms framework
+                    match PlatformMatching.extractPlatforms false framework with
+                    | Some p -> Some p
+                    | None ->
+                        Logging.traceWarnfn "Could not detect any platforms from '%s' in '%s'" framework fileName
+                        None
                 | _ -> Some PlatformMatching.ParsedPlatformPath.Empty)
 
         let rawDependencies =
@@ -86,8 +93,20 @@ type Nuspec =
             |> getDescendants "dependency"
             |> List.choose (NuSpecParserHelper.getDependency fileName)
 
-        let dependencies = addFrameworkRestrictionsToDependencies rawDependencies frameworks
-            
+        let dependencies, warnings = addFrameworkRestrictionsToDependencies rawDependencies frameworks
+
+        let name =
+            match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "id" with
+            | Some node -> node.InnerText
+            | None -> failwithf "unable to find package id in %s" fileName
+        let version =
+            match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "version" with
+            | Some node -> node.InnerText
+            | None -> failwithf "unable to find package version in %s" fileName
+
+        for warning in warnings do
+            Logging.traceWarnfn "%s" (warning.Format name version)
+
         let references = 
             doc
             |> getDescendants "reference"
@@ -95,14 +114,8 @@ type Nuspec =
            
         { References = if references = [] then NuspecReferences.All else NuspecReferences.Explicit references
           Dependencies = dependencies
-          OfficialName = 
-            match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "id" with
-            | Some node -> node.InnerText
-            | None -> failwithf "unable to find package id in %s" fileName
-          Version = 
-            match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "version" with
-            | Some node -> node.InnerText
-            | None -> failwithf "unable to find package version in %s" fileName
+          OfficialName = name
+          Version = version
           LicenseUrl = 
             match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "licenseUrl" with
             | Some link -> link.InnerText

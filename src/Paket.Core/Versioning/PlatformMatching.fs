@@ -13,38 +13,45 @@ type ParsedPlatformPath =
     static member Empty = { Name = ""; Platforms = [] }
     static member FromTargetProfile (p:TargetProfile) =
         { Name = p.ToString(); Platforms = p.Frameworks }
-    member x.ToTargetProfile =
+    member x.ToTargetProfile warnIfUnsupported =
         match x.Platforms with
         | _ when System.String.IsNullOrEmpty x.Name -> None
         | [] -> None // Not detected earlier.
         | [p] -> Some (SinglePlatform p)
-        | plats -> Some (TargetProfile.FindPortable plats)
+        | plats -> Some (TargetProfile.FindPortable warnIfUnsupported plats)
     member pp.IsEmpty = String.IsNullOrEmpty pp.Name || pp.Platforms.IsEmpty
 
 let inline split (path : string) =
     path.Split('+')
-    |> Array.map (fun s -> System.Text.RegularExpressions.Regex.Replace(s, @"portable[\d\.]*-",""))
+    |> Array.map (fun s -> System.Text.RegularExpressions.Regex.Replace(KnownAliases.normalizeFramework s, @"portable[\d\.]*-",""))
 
 // TODO: This function does now quite a lot, there probably should be several functions.
-let extractPlatforms = memoize (fun path ->
+let private extractPlatformsPriv = memoize (fun path ->
     if System.String.IsNullOrEmpty path then Some ParsedPlatformPath.Empty
     else
         let splits = split path
         let platforms = splits |> Array.choose FrameworkDetection.Extract |> Array.toList
         if platforms.Length = 0 then
-            if splits.Length = 1 && splits.[0].ToLowerInvariant().StartsWith "profile" then
+            if splits.Length = 1 && splits.[0].StartsWith "profile" then
                 // might be something like portable4.6-profile151
                 let found =
                     KnownTargetProfiles.FindPortableProfile splits.[0]
                     |> ParsedPlatformPath.FromTargetProfile
                 Some { found with Name = path }
             else
-                traceWarnfn "Could not detect any platforms from '%s'" path
                 None
         else Some { Name = path; Platforms = platforms })
 
+let extractPlatforms warn path =
+    match extractPlatformsPriv path with
+    | None ->
+        if warn then
+            traceWarnfn "Could not detect any platforms from '%s'" path
+        None
+    | Some s -> Some s
+
 let forceExtractPlatforms path =
-    match extractPlatforms path with
+    match extractPlatforms false path with
     | Some s -> s
     | None -> failwithf "Extracting platforms from path '%s' failed" path
 
@@ -98,11 +105,11 @@ let getFrameworkPenalty (fr1, fr2) =
 
 
 let getPathPenalty =
-    memoize 
+    memoize
       (fun (path:ParsedPlatformPath,platform:TargetProfile) ->
         let handleEmpty () =
             match platform with
-            | SinglePlatform(Native(_)) -> MaxPenalty // an empty path is considered incompatible with native targets            
+            | SinglePlatform(Native(_)) -> MaxPenalty // an empty path is considered incompatible with native targets
             | _ -> Penalty_Fallback // an empty path is considered compatible with every .NET target, but with a high penalty so explicit paths are preferred
         match path.Platforms with
         | _ when String.IsNullOrWhiteSpace path.Name -> handleEmpty()
@@ -111,14 +118,16 @@ let getPathPenalty =
             let additionalPen = if path.Name.EndsWith "-client" then Penalty_Client else 0
             additionalPen + getPlatformPenalty(platform,SinglePlatform h)
         | _ ->
-            getPlatformPenalty(platform, TargetProfile.FindPortable path.Platforms))
+            // No warnig -> should be reported later
+            getPlatformPenalty(platform, TargetProfile.FindPortable false path.Platforms))
 
 [<Obsolete("Used in test code, use getPathPenalty instead.")>]
 let getFrameworkPathPenalty fr path =
     match fr with
     | [ h ] -> getPathPenalty (path, SinglePlatform h)
     | _ ->
-        getPathPenalty (path, TargetProfile.FindPortable fr)
+        // No warnig -> should be reported later
+        getPathPenalty (path, TargetProfile.FindPortable false fr)
 
 type PathPenalty = (ParsedPlatformPath * int)
 
@@ -202,7 +211,7 @@ let getTargetCondition (target:TargetProfile) =
         | DNX(version) ->"$(TargetFrameworkIdentifier) == 'DNX'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DNXCore(version) ->"$(TargetFrameworkIdentifier) == 'DNXCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DotNetStandard(version) ->"$(TargetFrameworkIdentifier) == '.NETStandard'", sprintf "$(TargetFrameworkVersion) == '%O'" version
-        | DotNetCore(version) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", sprintf "$(TargetFrameworkVersion) == '%O'" version
+        | DotNetCoreApp(version) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DotNetUnity(DotNetUnityVersion.V3_5_Full as version) ->
             "$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "($(TargetFrameworkVersion) == '%O' And $(TargetFrameworkProfile) == 'Unity Full v3.5')" version
         | DotNetUnity(DotNetUnityVersion.V3_5_Subset as version) ->

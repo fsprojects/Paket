@@ -119,7 +119,7 @@ type NuGetPackageCache =
       Version: string
       CacheVersion: string }
 
-    static member CurrentCacheVersion = "5.1"
+    static member CurrentCacheVersion = "5.2"
 
 // TODO: is there a better way? for now we use static member because that works with type abbreviations...
 //module NuGetPackageCache =
@@ -140,7 +140,7 @@ type NuGetPackageCache =
             let restrictions =
                 if restrictionString = "AUTO" then
                     FrameworkRestrictions.AutoDetectFramework
-                else FrameworkRestrictions.ExplicitRestriction(Requirements.parseRestrictions true restrictionString)
+                else FrameworkRestrictions.ExplicitRestriction(Requirements.parseRestrictions restrictionString |> fst)
             n, v, restrictions)
 
 let inline normalizeUrl(url:string) = url.Replace("https://","http://").Replace("www.","")
@@ -469,7 +469,7 @@ let tryAndBlacklistUrl doWarn (source:NugetSource) (tryAgain : 'a -> bool) (f : 
                     let! (isOk, res) = task |> Async.AwaitTask
                     if not isOk then
                         if doWarn then
-                            eprintfn "Possible Performance degration, blacklist '%A'" url.UrlId
+                            eprintfn "Possible Performance degration, blacklist '%s'" url.InstanceUrl
                         return Choice2Of3 res
                     else
                         return Choice1Of3 res

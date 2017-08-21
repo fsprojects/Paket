@@ -267,7 +267,11 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                 | [ version, targetFramework, clitool ] -> 
                     targetFramework 
                     |> Option.toList 
-                    |> List.map (Requirements.parseRestrictionsLegacy false)
+                    |> List.map (fun fw ->
+                        let restrictions, problems = Requirements.parseRestrictionsLegacy false fw
+                        for problem in problems do
+                            Logging.traceErrorfn "Could not detect any platforms from '%s' in %O %O" problem.Framework name version
+                        restrictions)
                 | _ -> []
             let restrictions =
                 if restrictions = [] then FrameworkRestriction.NoRestriction

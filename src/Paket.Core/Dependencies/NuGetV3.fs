@@ -253,7 +253,11 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
                     let targetFramework =
                         match targetFramework with
                         | null -> FrameworkRestriction.NoRestriction
-                        | x -> Requirements.parseRestrictionsLegacy false x
+                        | x ->
+                            let restrictions, problems = Requirements.parseRestrictionsLegacy false x
+                            for problem in problems do
+                                Logging.traceErrorfn "Could not detect any platforms from '%s' in %O %O" problem.Framework packageName version
+                            restrictions
                     (PackageName dep.Id), (VersionRequirement.Parse dep.Range), targetFramework)
                 |> Seq.toList
         let unlisted =
@@ -284,7 +288,7 @@ let loadFromCacheOrGetDetails (force:bool)
                               (version:SemVerInfo) =
     async {
         if not force && File.Exists cacheFileName then
-            try 
+            try
                 let json = File.ReadAllText(cacheFileName)
                 let cachedObject = JsonConvert.DeserializeObject<NuGetPackageCache> json
                 if cachedObject.CacheVersion <> NuGetPackageCache.CurrentCacheVersion then
@@ -292,14 +296,17 @@ let loadFromCacheOrGetDetails (force:bool)
                     return true,details
                 else
                     return false,ODataSearchResult.Match cachedObject
-            with _ -> 
+            with exn ->
+                eprintfn "Possible Performance degration, could not retrieve '%O' from cache: %s" packageName exn.Message
+                if verbose then
+                    printfn "Error while retrieving data from cache: %O" exn
                 let! details = getPackageDetails source packageName version
                 return true,details
         else
             let! details = getPackageDetails source packageName version
             return true,details
     }
-    
+
 /// Uses the NuGet v3 registration endpoint to retrieve package details .
 let GetPackageDetails (force:bool) (source:NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<ODataSearchResult> =
     getDetailsFromCacheOr
