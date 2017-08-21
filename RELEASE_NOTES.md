@@ -1,3 +1,6 @@
+#### 5.86.1 - 21.08.2017
+* BUGFIX: Restore Failure on Mono: System.Exception: Expected an result at this place - https://github.com/fsprojects/Paket/issues/2639
+
 #### 5.86.0 - 19.08.2017
 * BUGFIX: Fixed feed Warnings and added blacklisting - https://github.com/fsprojects/Paket/pull/2582
 * BUGFIX: Special case System.Net.Http - https://github.com/fsprojects/Paket/pull/2628
