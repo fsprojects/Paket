@@ -325,9 +325,8 @@ type Dependencies(dependenciesFileName: string) =
             this.Restore(force,group,[],touchAffectedRefs,ignoreChecks,failOnFailedChecks,targetFramework) 
         else
             let referencesFiles =
-                this.RootPath
-                |> ProjectFile.FindAllProjects
-                |> Array.choose (fun (p:ProjectFile) -> p.FindReferencesFile())
+                ProjectFile.FindAllProjects this.RootPath
+                |> Array.choose (fun p -> p.FindReferencesFile())
             if Array.isEmpty referencesFiles then
                 traceWarnfn "No paket.references files found for which packages could be installed."
             else
@@ -409,7 +408,7 @@ type Dependencies(dependenciesFileName: string) =
         |> listPackages
 
     /// Returns all sources from the dependencies file.
-    member this.GetSources() =
+    member __.GetSources() =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         dependenciesFile.Groups
         |> Map.map (fun _ g -> g.Sources)
@@ -421,8 +420,7 @@ type Dependencies(dependenciesFileName: string) =
             | Result.Ok(config,_) -> config.PackageSources |> Map.toList |> List.map (snd >> fst)
             | _ -> []
         Constants.DefaultNuGetStream :: configured
-        |> Set.ofSeq
-        |> Set.toList
+        |> List.distinct
 
     /// Returns the installed versions of all installed packages which are referenced in the references file.
     member this.GetInstalledPackages(referencesFile:ReferencesFile): (string * string * string) list =
@@ -431,13 +429,14 @@ type Dependencies(dependenciesFileName: string) =
         referencesFile
         |> lockFile.GetPackageHull
         |> Seq.map (fun kv ->
-                        let groupName,packageName = kv.Key
-                        groupName.ToString(),packageName.ToString(),resolved.[kv.Key].Version.ToString())
+            let groupName,packageName = kv.Key
+            groupName.ToString(),
+            packageName.ToString(),
+            resolved.[kv.Key].Version.ToString())
         |> Seq.toList
 
     /// Returns an InstallModel for the given package.
     member this.GetInstalledPackageModel(groupName,packageName) =
-    
         let packageName = PackageName packageName
         let groupName = 
             match groupName with
@@ -454,7 +453,7 @@ type Dependencies(dependenciesFileName: string) =
                 let folder = resolvedPackage.Folder this.RootPath groupName
 
                 InstallModel.CreateFromContent(
-                    packageName, 
+                    resolvedPackage.Name, 
                     resolvedPackage.Version, 
                     Paket.Requirements.FrameworkRestriction.NoRestriction, 
                     NuGet.GetContent(folder).Force())
@@ -488,15 +487,18 @@ type Dependencies(dependenciesFileName: string) =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         let normalizedDependencies =
             dependenciesFile.Groups
-            |> Seq.map (fun kv -> dependenciesFile.GetDependenciesInGroup(kv.Value.Name) |> Seq.map (fun kv' -> kv.Key, kv'.Key)  |> Seq.toList)
-            |> List.concat
+            |> Seq.collect (fun kv -> 
+                    dependenciesFile.GetDependenciesInGroup(kv.Value.Name) 
+                    |> Seq.map (fun kv' -> kv.Key, kv'.Key)
+                    |> Seq.toList)
+            |> Set.ofSeq
 
         this.GetLockFile().GetGroupedResolution()
-        |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
+        |> Seq.filter (fun kv -> normalizedDependencies.Contains kv.Key)
         |> listPackages
 
     /// Returns all groups.
-    member this.GetGroups(): string list =
+    member __.GetGroups(): string list =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         dependenciesFile.Groups
         |> Seq.map (fun kv -> kv.Key.ToString())
@@ -506,10 +508,13 @@ type Dependencies(dependenciesFileName: string) =
     member this.GetDirectDependenciesForPackage(groupName,packageName:string): (string * string * string) list =
         let resolvedPackages = this.GetLockFile().GetGroupedResolution()
         let package = resolvedPackages.[groupName, (PackageName packageName)]
-        let normalizedDependencies = package.Dependencies |> Seq.map (fun (name,_,_) -> groupName, name) |> Seq.toList
+        let normalizedDependencies = 
+            package.Dependencies 
+            |> Seq.map (fun (name,_,_) -> groupName, name) 
+            |> Set.ofSeq
 
         resolvedPackages
-        |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
+        |> Seq.filter (fun kv -> normalizedDependencies.Contains kv.Key)
         |> listPackages
 
     /// Removes the given package from the main dependency group of the dependencies file.
