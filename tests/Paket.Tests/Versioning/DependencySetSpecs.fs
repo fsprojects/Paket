@@ -150,7 +150,7 @@ let ``should optimize ZendeskApi_v2 ``() =
              FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V3_5))]
          PackageName("AsyncCTP"), (),ExplicitRestriction (FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4), DotNetFramework(FrameworkVersion.V4_5)))
          PackageName("Microsoft.Bcl.Async"), (),ExplicitRestriction (getPortableRestriction "portable-net45+sl40+wp71+win80")]
-    let result =
+    let result,_ =
         addFrameworkRestrictionsToDependencies original [
             PlatformMatching.forceExtractPlatforms "net35"
             PlatformMatching.forceExtractPlatforms "net40"
@@ -173,7 +173,7 @@ let ``should optimize real world restrictions``() =
           makeOrList
            [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V2))]]
 
-    let result =
+    let result,_ =
         addFrameworkRestrictionsToDependencies original
             [  PlatformMatching.forceExtractPlatforms "net2"
                PlatformMatching.forceExtractPlatforms "net35"
@@ -196,7 +196,7 @@ let ``should optimize real world restrictions 2``() =
           makeOrList
            [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V2))]]
 
-    let result =
+    let result,_ =
         addFrameworkRestrictionsToDependencies original 
             [  PlatformMatching.forceExtractPlatforms "net2"
                PlatformMatching.forceExtractPlatforms "net4"

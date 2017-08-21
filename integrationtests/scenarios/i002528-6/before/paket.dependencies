@@ -1,0 +1,5 @@
+source https://api.nuget.org/v3/index.json
+
+framework: netstandard20
+
+nuget FSharp.Core

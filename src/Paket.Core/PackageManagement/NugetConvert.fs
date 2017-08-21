@@ -227,6 +227,22 @@ let createPackageRequirement sources (packageName, versionRange, restrictions) d
        TransitivePrereleases = false
        Graph = Set.empty }
 
+let private isFSharpProject (projectFileName:string) =
+    projectFileName.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase)
+
+let private addFSharpCoreToDependenciesIfRequired nugetEnv packages =
+    let hasFSharpProject =
+        nugetEnv.NuGetProjectFiles
+        |> Seq.exists (fun (prj,_) -> isFSharpProject prj.FileName)
+    let hasFSharpCorePackage =
+        packages
+        |> Seq.exists (fun (n,_,_,_) -> "fsharp.core".Equals(n, StringComparison.OrdinalIgnoreCase))
+    if hasFSharpProject && not hasFSharpCorePackage then
+        let fsCore = ("FSharp.Core", VersionRange.AtLeast "0",FrameworkRestriction.NoRestriction, false)
+        fsCore :: packages
+    else
+        packages
+
 let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     
     let dependenciesFileName = Path.Combine(rootDirectory.FullName, Constants.DependenciesFileName)
@@ -267,7 +283,11 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                 | [ version, targetFramework, clitool ] -> 
                     targetFramework 
                     |> Option.toList 
-                    |> List.map (Requirements.parseRestrictionsLegacy false)
+                    |> List.map (fun fw ->
+                        let restrictions, problems = Requirements.parseRestrictionsLegacy false fw
+                        for problem in problems do
+                            Logging.traceErrorfn "Could not detect any platforms from '%s' in %O %O" problem.Framework name version
+                        restrictions)
                 | _ -> []
             let restrictions =
                 if restrictions = [] then FrameworkRestriction.NoRestriction
@@ -278,6 +298,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
         match nugetEnv.NuGetExe with 
         | Some _ -> ("NuGet.CommandLine",VersionRange.AtLeast "0",FrameworkRestriction.NoRestriction, false) :: latestVersions
         | _ -> latestVersions
+        |> addFSharpCoreToDependenciesIfRequired nugetEnv
 
     let read() =
         let addPackages dependenciesFile =
@@ -339,6 +360,20 @@ let convertDependenciesConfigToReferencesFile projectFileName dependencies =
     |> List.fold (fun (r : ReferencesFile) (packageName,_) -> r.AddNuGetReference(Constants.MainDependencyGroup,packageName)) 
                  referencesFile
 
+let addFSharpCoreToReferencesIfRequired projectFileName references =
+
+    let containsFSharpCore references =
+        let allPackageReferences =
+            references.Groups |> Seq.collect (fun g -> g.Value.NugetPackages)
+        let hasFSharpCore =
+            allPackageReferences |> Seq.exists (fun n -> n.Name.CompareString = "fsharp.core")
+        hasFSharpCore
+
+    if isFSharpProject projectFileName && not (containsFSharpCore references) then
+        references.AddNuGetReference (GroupName MainGroup, PackageName "FSharp.Core")
+    else
+        references
+
 let convertProjects nugetEnv =
     [for project,packagesConfig in nugetEnv.NuGetProjectFiles do
         let packagesAndIds = 
@@ -377,6 +412,7 @@ let convertProjects nugetEnv =
             |> List.fold 
                 (fun (rf: ReferencesFile) pr -> rf.AddNuGetReference(Constants.MainDependencyGroup, PackageName pr))
                 referencesFile
+            |> addFSharpCoreToReferencesIfRequired project.FileName
 
         project.RemovePackageReferenceEntries()
         project.RemoveCliToolReferenceEntries()

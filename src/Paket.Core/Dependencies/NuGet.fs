@@ -236,7 +236,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
         let inCache =
             sources
             |> Seq.choose(fun source ->
-                NuGetCache.tryGetDetailsFromCache force source.Url packageName version 
+                NuGetCache.tryGetDetailsFromCache force source.Url packageName version
                 |> Option.map (fun details -> source, details))
             |> Seq.tryHead
 
@@ -248,18 +248,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                 version
 
         let tryV3 (nugetSource:NugetV3Source) force =
-            if nugetSource.Url.Contains("myget.org") || nugetSource.Url.Contains("nuget.org") || nugetSource.Url.Contains("visualstudio.com") || nugetSource.Url.Contains("/nuget/v3/") then
-                match NuGetV3.calculateNuGet2Path nugetSource.Url with
-                | Some url ->
-                    NuGetV2.getDetailsFromNuGet
-                        force
-                        { nugetSource with Url = url } //= .Authentication |> Option.map toBasicAuth)
-                        packageName
-                        version
-                | _ ->
-                    NuGetV3.GetPackageDetails force nugetSource packageName version
-            else
-                NuGetV3.GetPackageDetails force nugetSource packageName version
+            NuGetV3.GetPackageDetails force nugetSource packageName version
 
         let getPackageDetails force =
             // helper to work through the list sequentially
@@ -301,20 +290,15 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                     match source with
                     | NuGetV2 nugetSource ->
                         return! tryV2 nugetSource force
-                    | NuGetV3 nugetSource when urlSimilarToTfsOrVsts nugetSource.Url  ->
-                        match NuGetV3.calculateNuGet2Path nugetSource.Url with
-                        | Some url ->
-                            let nugetSource : NugetSource =
-                                { Url = url
-                                  Authentication = nugetSource.Authentication }
-                            return! tryV2 nugetSource force
-                        | _ ->
-                            return! tryV3 nugetSource force
                     | NuGetV3 nugetSource ->
                         try
                             return! tryV3 nugetSource force
                         with
                         | exn ->
+                            eprintfn "Possible Performance degration, V3 was not working: %s" exn.Message
+                            if verbose then
+                                printfn "Error while using V3 API: %O" exn
+
                             match NuGetV3.calculateNuGet2Path nugetSource.Url with
                             | Some url ->
                                 let nugetSource : NugetSource =
@@ -388,15 +372,7 @@ let protocolCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
 
 type GetVersionError = NuGetCache.NuGetResponseGetVersionsFailure
-    //{ Url : string; Error : ExceptionDispatchInfo }
-    //static member ofTuple (url,err) =
-    //    { Url = url; Error = err }
-    //static member ofFailure (f:NuGetCache.NuGetResponseGetVersionsFailure) =
-    //    { Url = f.; Error = err }
 type GetVersionRequest = NuGetCache.NuGetResponseGetVersions
-    //| SuccessVersionResponse of string []
-    //| ProtocolNotCached
-    //| FailedVersionRequest of GetVersionError
 
 type SourceResponseType =
     | SourceNoResult
@@ -470,10 +446,7 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
                                     [ yield getVersionsCached "OData" NuGetV2.tryGetAllVersionsFromNugetODataFindById (nugetSource, auth, source.Url, packageName)
                                       yield getVersionsCached "ODataWithFilter" NuGetV2.tryGetAllVersionsFromNugetODataWithFilter (nugetSource, auth, source.Url, packageName) ]
 
-                                let! apiV3 = NuGetV3.getAllVersionsAPI(source.Authentication,source.Url) |> Async.AwaitTask
-                                match apiV3 with
-                                | None -> return v2Feeds
-                                | Some v3Url -> return (getVersionsCached "V3" tryNuGetV3 (nugetSource, auth, v3Url, packageName)) :: v2Feeds
+                                return v2Feeds
                        | NuGetV3 source ->
                             let! versionsAPI = PackageSources.getNuGetV3Resource source AllVersionsAPI
                             let auth = source.Authentication |> Option.map toBasicAuth
