@@ -437,7 +437,6 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Returns an InstallModel for the given package.
     member this.GetInstalledPackageModel(groupName,packageName) =
-    
         let packageName = PackageName packageName
         let groupName = 
             match groupName with
@@ -447,16 +446,15 @@ type Dependencies(dependenciesFileName: string) =
         match this.GetLockFile().Groups |> Map.tryFind groupName with
         | None -> failwithf "Group %O can't be found in paket.lock." groupName
         | Some group ->
-            match group.Resolution.TryFind(packageName) with
+            match group.Resolution.TryFind packageName with
             | None -> failwithf "Package %O is not installed in group %O." packageName groupName
             | Some resolvedPackage ->
-                let packageName = resolvedPackage.Name
                 let folder = 
-                        getTargetFolder this.RootPath groupName packageName resolvedPackage.Version (defaultArg resolvedPackage.Settings.IncludeVersionInPath false)
-                        |> Path.GetFullPath
+                    getTargetFolder this.RootPath groupName resolvedPackage.Name resolvedPackage.Version (defaultArg resolvedPackage.Settings.IncludeVersionInPath false)
+                    |> Path.GetFullPath
 
                 InstallModel.CreateFromContent(
-                    packageName, 
+                    resolvedPackage.Name, 
                     resolvedPackage.Version, 
                     Paket.Requirements.FrameworkRestriction.NoRestriction, 
                     NuGet.GetContent(folder).Force())
@@ -490,15 +488,18 @@ type Dependencies(dependenciesFileName: string) =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         let normalizedDependencies =
             dependenciesFile.Groups
-            |> Seq.map (fun kv -> dependenciesFile.GetDependenciesInGroup(kv.Value.Name) |> Seq.map (fun kv' -> kv.Key, kv'.Key)  |> Seq.toList)
-            |> List.concat
+            |> Seq.collect (fun kv -> 
+                    dependenciesFile.GetDependenciesInGroup(kv.Value.Name) 
+                    |> Seq.map (fun kv' -> kv.Key, kv'.Key)
+                    |> Seq.toList)
+            |> Set.ofSeq
 
         this.GetLockFile().GetGroupedResolution()
-        |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
+        |> Seq.filter (fun kv -> normalizedDependencies.Contains kv.Key)
         |> listPackages
 
     /// Returns all groups.
-    member this.GetGroups(): string list =
+    member __.GetGroups(): string list =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         dependenciesFile.Groups
         |> Seq.map (fun kv -> kv.Key.ToString())
@@ -508,10 +509,13 @@ type Dependencies(dependenciesFileName: string) =
     member this.GetDirectDependenciesForPackage(groupName,packageName:string): (string * string * string) list =
         let resolvedPackages = this.GetLockFile().GetGroupedResolution()
         let package = resolvedPackages.[groupName, (PackageName packageName)]
-        let normalizedDependencies = package.Dependencies |> Seq.map (fun (name,_,_) -> groupName, name) |> Seq.toList
+        let normalizedDependencies = 
+            package.Dependencies 
+            |> Seq.map (fun (name,_,_) -> groupName, name) 
+            |> Set.ofSeq
 
         resolvedPackages
-        |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
+        |> Seq.filter (fun kv -> normalizedDependencies.Contains kv.Key)
         |> listPackages
 
     /// Removes the given package from the main dependency group of the dependencies file.
