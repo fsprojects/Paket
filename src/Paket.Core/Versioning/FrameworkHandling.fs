@@ -38,7 +38,17 @@ type DotNetStandardVersion =
         | DotNetStandardVersion.V1_5 -> "1.5"
         | DotNetStandardVersion.V1_6 -> "1.6"
         | DotNetStandardVersion.V2_0 -> "2.0"
-
+    static member TryParse s =
+        match s with
+        | "" | "1" -> Some(DotNetStandardVersion.V1_0)
+        | "1.1" -> Some(DotNetStandardVersion.V1_1)
+        | "1.2" -> Some(DotNetStandardVersion.V1_2)
+        | "1.3" -> Some(DotNetStandardVersion.V1_3)
+        | "1.4" -> Some(DotNetStandardVersion.V1_4)
+        | "1.5" -> Some(DotNetStandardVersion.V1_5)
+        | "1.6" -> Some(DotNetStandardVersion.V1_6)
+        | "2" -> Some(DotNetStandardVersion.V2_0)
+        | _ -> None
 [<RequireQualifiedAccess>]
 /// The Framework version.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
@@ -59,7 +69,7 @@ type FrameworkVersion =
     | V4_6_2
     | V4_6_3
     | V4_7
-    | V5_0          
+    | V5_0
     override this.ToString() =
         match this with
         | V1        -> "v1.0"
@@ -100,30 +110,62 @@ type FrameworkVersion =
         | FrameworkVersion.V4_7 -> "47"
         | FrameworkVersion.V5_0 -> "50"
 
+    static member TryParse s =
+        match s with
+        | "" | "1" -> Some FrameworkVersion.V1
+        | "1.1" -> Some FrameworkVersion.V1_1
+        | "2" -> Some FrameworkVersion.V2
+        | "3" -> Some FrameworkVersion.V3
+        | "3.5" -> Some FrameworkVersion.V3_5
+        | "4" -> Some FrameworkVersion.V4
+        | "4.0.3" -> Some FrameworkVersion.V4_0_3
+        | "4.5" -> Some FrameworkVersion.V4_5
+        | "4.5.1" -> Some FrameworkVersion.V4_5_1
+        | "4.5.2" -> Some FrameworkVersion.V4_5_2
+        | "4.5.3" -> Some FrameworkVersion.V4_5_3
+        | "4.6" -> Some FrameworkVersion.V4_6
+        | "4.6.1" -> Some FrameworkVersion.V4_6_1
+        | "4.6.2" -> Some FrameworkVersion.V4_6_2
+        | "4.6.3" -> Some FrameworkVersion.V4_6_3
+        | "4.7" -> Some FrameworkVersion.V4_7
+        | "5" -> Some FrameworkVersion.V5_0
+        | _ -> None
+
 [<RequireQualifiedAccess>]
 /// The UAP version.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
-type UAPVersion = 
+type UAPVersion =
     | V10
+    | V10_1
     override this.ToString() =
         match this with
         | V10 -> "10.0"
+        | V10_1 -> "10.1"
 
     member this.ShortString() =
         match this with
-        | UAPVersion.V10 -> "100"
+        | UAPVersion.V10 -> "10.0"
+        | UAPVersion.V10_1 -> "10.1"
 
     member this.NetCoreVersion =
         // WTF: https://github.com/onovotny/MSBuildSdkExtras/blob/8d2d4ad63b552481da06e646dbb6504abc415260/src/build/platforms/Windows.targets
         match this with
         // Assumed from C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETCore
         | UAPVersion.V10 -> "v5.0"
+        // No idea, for now use 5.0 to keep project files constant
+        // If someone starts complaining fix this and update the baselines.
+        | UAPVersion.V10_1 -> "v5.0"
 
+    static member TryParse s =
+        match s with
+        | "" | "1" | "10" -> Some UAPVersion.V10
+        | "10.1" -> Some UAPVersion.V10_1
+        | _ -> None
 
 [<RequireQualifiedAccess>]
 /// The .NET Standard version.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
-type DotNetCoreVersion = 
+type DotNetCoreAppVersion =
     | V1_0
     | V1_1
     | V2_0
@@ -138,11 +180,11 @@ type DotNetCoreVersion =
         | 1 -> V1_1
         | 2 -> V2_0
         | _   -> failwithf "'%i' has no corresponding framework version" num
-    static member (<->) (lower:DotNetCoreVersion,upper:DotNetCoreVersion) =
+    static member (<->) (lower:DotNetCoreAppVersion,upper:DotNetCoreAppVersion) =
         if lower.NumKey < upper.NumKey then
-            [ lower.NumKey .. upper.NumKey ] |> List.map DotNetCoreVersion.FromNum
+            [ lower.NumKey .. upper.NumKey ] |> List.map DotNetCoreAppVersion.FromNum
         else
-            [ lower.NumKey .. -1 .. upper.NumKey ] |> List.map DotNetCoreVersion.FromNum
+            [ lower.NumKey .. -1 .. upper.NumKey ] |> List.map DotNetCoreAppVersion.FromNum
     override this.ToString() =
         match this with
         | V1_0 -> "v1.0"
@@ -150,14 +192,20 @@ type DotNetCoreVersion =
         | V2_0 -> "v2.0"
     member this.ShortString() =
         match this with
-        | DotNetCoreVersion.V1_0 -> "1.0"
-        | DotNetCoreVersion.V1_1 -> "1.1"
-        | DotNetCoreVersion.V2_0 -> "2.0"
+        | DotNetCoreAppVersion.V1_0 -> "1.0"
+        | DotNetCoreAppVersion.V1_1 -> "1.1"
+        | DotNetCoreAppVersion.V2_0 -> "2.0"
+    static member TryParse s =
+        match s with
+        | "" | "1" -> Some (DotNetCoreAppVersion.V1_0)
+        | "1.1" -> Some (DotNetCoreAppVersion.V1_1)
+        | "2" -> Some (DotNetCoreAppVersion.V2_0)
+        | _ -> None
 
 [<RequireQualifiedAccess>]
 /// The Framework version.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
-type DotNetUnityVersion = 
+type DotNetUnityVersion =
     | V3_5_Web
     | V3_5_Micro
     | V3_5_Subset
@@ -178,23 +226,27 @@ type DotNetUnityVersion =
 
 module KnownAliases =
     let Data =
-        [".net", "net"
-         "netframework", "net"
-         ".netframework", "net"
+        [".netframework", "net"
          ".netcore", "netcore"
+         ".netplatform", "dotnet"
+         ".netportable", "portable"
+         "netframework", "net"
+         "netplatform", "dotnet"
          "winrt", "netcore"
-         "netcoreapp", "netcore"
          "silverlight", "sl"
-         "windowsPhoneApp", "wpa"
+         "windowsphoneapp", "wpa"
          "windowsphone", "wp"
          "windows", "win"
-         ".netportable", "portable"
+         "xamarin.", "xamarin"
          "netportable", "portable"
-         "10.0", "100"
-         "0.0", ""
-         ".", ""
+         ".net", "net"
          " ", "" ]
         |> List.map (fun (p,r) -> p.ToLower(),r.ToLower())
+    let normalizeFramework (path:string) =
+        let sb = new Text.StringBuilder(path.ToLower())
+        for pattern,replacement in Data do
+            sb.Replace(pattern,replacement) |> ignore
+        sb.ToString()
 
 type BuildMode =
     | Debug
@@ -245,20 +297,27 @@ type WindowsPhoneVersion =
         | WindowsPhoneVersion.V7_5 -> "v7.5"
         | WindowsPhoneVersion.V8 -> "v8.0"
         | WindowsPhoneVersion.V8_1 -> "v8.1"
-    
+    static member TryParse s =
+        match s with
+        | "" | "7" -> Some (WindowsPhoneVersion.V7)
+        | "7.1" -> Some (WindowsPhoneVersion.V7_1)
+        | "7.5" -> Some (WindowsPhoneVersion.V7_5)
+        | "8" -> Some (WindowsPhoneVersion.V8)
+        | "8.1" -> Some (WindowsPhoneVersion.V8_1)
+        | _ -> None
 [<RequireQualifiedAccess>]
 type WindowsPhoneAppVersion =
-    | V8
     | V8_1
     member this.ShortString() =
         match this with
-        | WindowsPhoneAppVersion.V8 -> "8"
         | WindowsPhoneAppVersion.V8_1 -> "81"
     override this.ToString() =
         match this with
-        | WindowsPhoneAppVersion.V8 -> "v8.0"
         | WindowsPhoneAppVersion.V8_1 -> "v8.1"
-
+    static member TryParse s =
+        match s with
+        | "" | "8.1" -> Some WindowsPhoneAppVersion.V8_1
+        | _ -> None
 [<RequireQualifiedAccess>]
 type SilverlightVersion =
     | V3
@@ -274,55 +333,78 @@ type SilverlightVersion =
         | SilverlightVersion.V3 -> "v3.0"
         | SilverlightVersion.V4 -> "v4.0"
         | SilverlightVersion.V5 -> "v5.0"
-
+    static member TryParse s =
+        match s with
+        | ""  | "3" -> Some (SilverlightVersion.V3)
+        | "4" -> Some (SilverlightVersion.V4)
+        | "5"  -> Some (SilverlightVersion.V5)
+        | _ -> None
 [<RequireQualifiedAccess>]
 type MonoAndroidVersion =
     | V1
-    | V22
-    | V23
-    | V403
-    | V41
-    | V42
-    | V43
-    | V44
-    | V44W
+    | V2_2
+    | V2_3
+    | V4_0_3
+    | V4_1
+    | V4_2
+    | V4_3
+    | V4_4
+    //| V44W
     | V5
-    | V51
+    | V5_1
     | V6
     | V7
-    | V71
+    | V7_1
     member this.ShortString() =
         match this with
         | MonoAndroidVersion.V1    -> ""
-        | MonoAndroidVersion.V22   -> "2.2"
-        | MonoAndroidVersion.V23   -> "2.3"
-        | MonoAndroidVersion.V403  -> "4.0.3"
-        | MonoAndroidVersion.V41   -> "4.1"
-        | MonoAndroidVersion.V42   -> "4.2"
-        | MonoAndroidVersion.V43   -> "4.3"
-        | MonoAndroidVersion.V44   -> "4.4"
-        | MonoAndroidVersion.V44W  -> "4.4W"
+        | MonoAndroidVersion.V2_2   -> "2.2"
+        | MonoAndroidVersion.V2_3   -> "2.3"
+        | MonoAndroidVersion.V4_0_3  -> "4.0.3"
+        | MonoAndroidVersion.V4_1   -> "4.1"
+        | MonoAndroidVersion.V4_2   -> "4.2"
+        | MonoAndroidVersion.V4_3   -> "4.3"
+        | MonoAndroidVersion.V4_4   -> "4.4"
+        //| MonoAndroidVersion.V44W  -> "4.4W"
         | MonoAndroidVersion.V5    -> "5.0"
-        | MonoAndroidVersion.V51   -> "5.1"
+        | MonoAndroidVersion.V5_1   -> "5.1"
         | MonoAndroidVersion.V6    -> "6.0"
         | MonoAndroidVersion.V7    -> "7.0"
-        | MonoAndroidVersion.V71   -> "7.1"
+        | MonoAndroidVersion.V7_1   -> "7.1"
     override this.ToString() =
         match this with
         | MonoAndroidVersion.V1    -> "v1.0"
-        | MonoAndroidVersion.V22   -> "v2.2"
-        | MonoAndroidVersion.V23   -> "v2.3"
-        | MonoAndroidVersion.V403  -> "v4.0.3"
-        | MonoAndroidVersion.V41   -> "v4.1"
-        | MonoAndroidVersion.V42   -> "v4.2"
-        | MonoAndroidVersion.V43   -> "v4.3"
-        | MonoAndroidVersion.V44   -> "v4.4"
-        | MonoAndroidVersion.V44W  -> "v4.4W"
+        | MonoAndroidVersion.V2_2   -> "v2.2"
+        | MonoAndroidVersion.V2_3   -> "v2.3"
+        | MonoAndroidVersion.V4_0_3  -> "v4.0.3"
+        | MonoAndroidVersion.V4_1   -> "v4.1"
+        | MonoAndroidVersion.V4_2   -> "v4.2"
+        | MonoAndroidVersion.V4_3   -> "v4.3"
+        | MonoAndroidVersion.V4_4   -> "v4.4"
+        //| MonoAndroidVersion.V44W  -> "v4.4W"
         | MonoAndroidVersion.V5    -> "v5.0"
-        | MonoAndroidVersion.V51    -> "v5.1"
+        | MonoAndroidVersion.V5_1    -> "v5.1"
         | MonoAndroidVersion.V6    -> "v6.0"
         | MonoAndroidVersion.V7    -> "v7.0"
-        | MonoAndroidVersion.V71   -> "v7.1"
+        | MonoAndroidVersion.V7_1   -> "v7.1"
+
+    static member TryParse s =
+        match s with
+        | "" | "1" -> Some (MonoAndroidVersion.V1)
+        | "2.2" -> Some (MonoAndroidVersion.V2_2)
+        | "2.3" -> Some (MonoAndroidVersion.V2_3)
+        | "4.0.3" -> Some (MonoAndroidVersion.V4_0_3)
+        | "4.1" -> Some (MonoAndroidVersion.V4_1)
+        | "4.2" -> Some (MonoAndroidVersion.V4_2)
+        | "4.3" -> Some (MonoAndroidVersion.V4_3)
+        | "4.4" -> Some (MonoAndroidVersion.V4_4)
+        //| "4.4w" -> Some (MonoAndroidVersion.V44W)
+        | "5" -> Some (MonoAndroidVersion.V5)
+        | "5.1" -> Some (MonoAndroidVersion.V5_1)
+        | "6" -> Some (MonoAndroidVersion.V6)
+        | "7" -> Some (MonoAndroidVersion.V7)
+        | "7.1" -> Some (MonoAndroidVersion.V7_1)
+        | _ -> None
 
 [<RequireQualifiedAccess>]
 type WindowsVersion =
@@ -358,7 +440,11 @@ type TizenVersion =
         match this with
         | V3 -> "v3.0"
         | V4 -> "v4.0"
-
+    static member TryParse s =
+        match s with
+        | "" | "3" -> Some (TizenVersion.V3)
+        | "4" -> Some (TizenVersion.V4)
+        | _ -> None
 /// Framework Identifier type.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 type FrameworkIdentifier = 
@@ -367,7 +453,7 @@ type FrameworkIdentifier =
     | DNX of FrameworkVersion
     | DNXCore of FrameworkVersion
     | DotNetStandard of DotNetStandardVersion
-    | DotNetCore of DotNetCoreVersion
+    | DotNetCoreApp of DotNetCoreAppVersion
     | DotNetUnity of DotNetUnityVersion
     | MonoAndroid of MonoAndroidVersion
     | MonoTouch
@@ -389,7 +475,7 @@ type FrameworkIdentifier =
         | DNX v -> "dnx" + v.ShortString()
         | DNXCore v -> "dnxcore" + v.ShortString()
         | DotNetStandard v -> "netstandard" + v.ShortString()
-        | DotNetCore v -> "netcore" + v.ShortString()
+        | DotNetCoreApp v -> "netcoreapp" + v.ShortString()
         | DotNetUnity v -> "net" + v.ShortString()
         | MonoAndroid v -> "monoandroid" + v.ShortString()
         | MonoTouch -> "monotouch"
@@ -430,20 +516,20 @@ type FrameworkIdentifier =
     member internal x.RawSupportedPlatforms =
         match x with
         | MonoAndroid MonoAndroidVersion.V1 -> []
-        | MonoAndroid MonoAndroidVersion.V22 -> [ MonoAndroid MonoAndroidVersion.V1 ]
-        | MonoAndroid MonoAndroidVersion.V23 -> [ MonoAndroid MonoAndroidVersion.V22 ]
-        | MonoAndroid MonoAndroidVersion.V403 -> [ MonoAndroid MonoAndroidVersion.V23 ]
-        | MonoAndroid MonoAndroidVersion.V41 -> [ MonoAndroid MonoAndroidVersion.V403 ]
-        | MonoAndroid MonoAndroidVersion.V42 -> [ MonoAndroid MonoAndroidVersion.V41 ]
-        | MonoAndroid MonoAndroidVersion.V43 -> [ MonoAndroid MonoAndroidVersion.V42 ]
-        | MonoAndroid MonoAndroidVersion.V44 -> [ MonoAndroid MonoAndroidVersion.V43 ]
+        | MonoAndroid MonoAndroidVersion.V2_2 -> [ MonoAndroid MonoAndroidVersion.V1 ]
+        | MonoAndroid MonoAndroidVersion.V2_3 -> [ MonoAndroid MonoAndroidVersion.V2_2 ]
+        | MonoAndroid MonoAndroidVersion.V4_0_3 -> [ MonoAndroid MonoAndroidVersion.V2_3 ]
+        | MonoAndroid MonoAndroidVersion.V4_1 -> [ MonoAndroid MonoAndroidVersion.V4_0_3 ]
+        | MonoAndroid MonoAndroidVersion.V4_2 -> [ MonoAndroid MonoAndroidVersion.V4_1 ]
+        | MonoAndroid MonoAndroidVersion.V4_3 -> [ MonoAndroid MonoAndroidVersion.V4_2 ]
+        | MonoAndroid MonoAndroidVersion.V4_4 -> [ MonoAndroid MonoAndroidVersion.V4_3 ]
         //https://stackoverflow.com/questions/28170345/what-exactly-is-android-4-4w-vs-4-4-and-what-about-5-0-1
-        | MonoAndroid MonoAndroidVersion.V44W -> [ MonoAndroid MonoAndroidVersion.V44 ]
-        | MonoAndroid MonoAndroidVersion.V5 -> [ MonoAndroid MonoAndroidVersion.V44W]
-        | MonoAndroid MonoAndroidVersion.V51 -> [ MonoAndroid MonoAndroidVersion.V5 ]
-        | MonoAndroid MonoAndroidVersion.V6 -> [ MonoAndroid MonoAndroidVersion.V51 ]
+        //| MonoAndroid MonoAndroidVersion.V44W -> [ MonoAndroid MonoAndroidVersion.V44 ]
+        | MonoAndroid MonoAndroidVersion.V5 -> [ MonoAndroid MonoAndroidVersion.V4_4]
+        | MonoAndroid MonoAndroidVersion.V5_1 -> [ MonoAndroid MonoAndroidVersion.V5 ]
+        | MonoAndroid MonoAndroidVersion.V6 -> [ MonoAndroid MonoAndroidVersion.V5_1 ]
         | MonoAndroid MonoAndroidVersion.V7 -> [ MonoAndroid MonoAndroidVersion.V6; DotNetStandard DotNetStandardVersion.V1_6 ]
-        | MonoAndroid MonoAndroidVersion.V71 -> [ MonoAndroid MonoAndroidVersion.V7 ]
+        | MonoAndroid MonoAndroidVersion.V7_1 -> [ MonoAndroid MonoAndroidVersion.V7 ]
         | MonoTouch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | MonoMac -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Native(_) -> [ ]
@@ -452,6 +538,7 @@ type FrameworkIdentifier =
         | XamarinTV -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | XamarinWatch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | UAP UAPVersion.V10 -> [ Windows WindowsVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1; DotNetStandard DotNetStandardVersion.V1_4  ]
+        | UAP UAPVersion.V10_1 -> [ UAP UAPVersion.V10 ]
         | DotNetFramework FrameworkVersion.V1 -> [ ]
         | DotNetFramework FrameworkVersion.V1_1 -> [ DotNetFramework FrameworkVersion.V1 ]
         | DotNetFramework FrameworkVersion.V2 -> [ DotNetFramework FrameworkVersion.V1_1 ]
@@ -479,9 +566,9 @@ type FrameworkIdentifier =
         | DotNetStandard DotNetStandardVersion.V1_5 -> [ DotNetStandard DotNetStandardVersion.V1_4 ]
         | DotNetStandard DotNetStandardVersion.V1_6 -> [ DotNetStandard DotNetStandardVersion.V1_5 ]
         | DotNetStandard DotNetStandardVersion.V2_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
-        | DotNetCore DotNetCoreVersion.V1_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
-        | DotNetCore DotNetCoreVersion.V1_1 -> [ DotNetCore DotNetCoreVersion.V1_0 ]
-        | DotNetCore DotNetCoreVersion.V2_0 -> [ DotNetCore DotNetCoreVersion.V1_1;  DotNetStandard DotNetStandardVersion.V2_0 ]
+        | DotNetCoreApp DotNetCoreAppVersion.V1_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | DotNetCoreApp DotNetCoreAppVersion.V1_1 -> [ DotNetCoreApp DotNetCoreAppVersion.V1_0 ]
+        | DotNetCoreApp DotNetCoreAppVersion.V2_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V1_1;  DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetUnity DotNetUnityVersion.V3_5_Full -> [ ]
         | DotNetUnity DotNetUnityVersion.V3_5_Subset -> [ ]
         | DotNetUnity DotNetUnityVersion.V3_5_Micro -> [ ]
@@ -492,7 +579,6 @@ type FrameworkIdentifier =
         | Windows WindowsVersion.V8 -> [ ]
         | Windows WindowsVersion.V8_1 -> [ Windows WindowsVersion.V8 ]
         | Windows WindowsVersion.V10 -> [ Windows WindowsVersion.V8_1 ]
-        | WindowsPhoneApp WindowsPhoneAppVersion.V8 -> [ ]
         | WindowsPhoneApp WindowsPhoneAppVersion.V8_1 -> [ DotNetStandard DotNetStandardVersion.V1_2 ]
         | WindowsPhone WindowsPhoneVersion.V7 -> [ ]
         | WindowsPhone WindowsPhoneVersion.V7_1 -> [ WindowsPhone WindowsPhoneVersion.V7 ]
@@ -526,59 +612,100 @@ module FrameworkDetection =
     /// parse a string to construct a Netframework, NetCore, NetStandard, or other dotnet identifier
     [<Obsolete "Use PlatformMatching.extractPlatforms instead">]
     let Extract =
-        memoize 
+        memoize
           (fun (path:string) ->
-            let path = 
-                let sb = new Text.StringBuilder(path.ToLower())
-                for pattern,replacement in KnownAliases.Data do
-                     sb.Replace(pattern,replacement) |> ignore
-                sb.ToString()
+            let path = KnownAliases.normalizeFramework path
+            let rec removeTrailingZeros (s:string) =
+                if s.EndsWith ".0" then removeTrailingZeros (s.Substring(0, s.Length - 2))
+                else s
+            let tryNormalizeVersion (s:string) =
+                // XYZ -> X.Y.Z
+                // XX.Y.Z -> XX.Y.Z
+                // XX.Y.0 -> XX.Y
+                // 0X.Y.Z -> X.Y.Z
+                // 0X.0Y.Z -> X.Y.Z
+                let isValid = s |> Seq.forall(fun d -> (d >= '0' && d <= '9') || d = '.')
+                let simplify s =
+                    s
+                    |> removeTrailingZeros
+                    |> fun s -> if s = "0" then "" else s
+                if isValid then
+                    let versionString =
+                        if s.Contains "." then
+                            s
+                        else
+                            if s.Length = 1 || s.Length = 0 then s
+                            else
+                                s
+                                |> Seq.map(fun d -> d.ToString() + ".")
+                                |> Seq.collect id
+                                |> Seq.take (s.Length * 2 - 1)
+                                |> Seq.toArray
+                                |> fun cs -> new String(cs)
+                    if simplify versionString = "" then Some ""
+                    else
+                        let v = new Version(if versionString.Contains "." then versionString else sprintf "%s.0" versionString)
+                        Some (v.ToString() |> simplify)
+                else None
 
+            let (|MatchTfm|_|) tfmStart tryParseVersion (s:string) =
+                if s.StartsWith tfmStart then
+                    let versionPart = s.Substring (tfmStart.Length)
+                    tryNormalizeVersion versionPart
+                    |> Option.bind tryParseVersion
+                else
+                    None
+            let (|MatchTfms|_|) tfmStarts tryParseVersion (s:string) =
+                tfmStarts
+                |> Seq.tryPick (fun tfmStart ->
+                    match s with
+                    | MatchTfm tfmStart (tryParseVersion tfmStart) fw -> Some fw
+                    | _ -> None)
+            let (|ModifyMatchTfm|_|) f tfmStart tryParseVersion (s:string) =
+                match f s with
+                | MatchTfm tfmStart tryParseVersion fw -> Some fw
+                | _ -> None
+            let Bind f = (fun _ -> f)
+            let skipFullAndClient (s:string) =
+                if s.EndsWith "-full" then s.Substring(0, s.Length - 5)
+                elif s.EndsWith "-client" then s.Substring(0, s.Length - 7)
+                else s
+            let parseWindows tfmStart v =
+                match tfmStart with
+                | "win" | "windows" ->
+                    match v with
+                    | ""| "8" -> Some WindowsVersion.V8
+                    | "8.1" -> Some WindowsVersion.V8_1
+                    | _ -> None
+                | "winv" | "netcore" ->
+                    match v with
+                    | "" | "4.5" -> Some WindowsVersion.V8
+                    | "4.5.1" | "4.6" -> Some WindowsVersion.V8_1
+                    | _ -> None
+                | _ -> failwithf "unknown tfm '%s'" tfmStart
+            let allowVersions l v =
+                if l |> Seq.contains v then
+                    Some ()
+                else None
             // Each time the parsing is changed, NuGetPackageCache.CurrentCacheVersion should be bumped.
             // http://nugettoolsdev.azurewebsites.net/4.0.0/parse-framework?framework=.NETPortable%2CVersion%3Dv0.0%2CProfile%3DProfile2
-            let result = 
+            let result =
                 match path with
                 | "net35-Unity Web v3.5" ->  Some (DotNetUnity DotNetUnityVersion.V3_5_Web)
                 | "net35-Unity Micro v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Micro)
                 | "net35-Unity Subset v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Subset)
                 | "net35-Unity Full v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Full)
-                | "net10" | "net1" | "10" -> Some (DotNetFramework FrameworkVersion.V1)
-                | "net11" | "11" -> Some (DotNetFramework FrameworkVersion.V1_1)
-                | "net20" | "net2" | "net" | "net20-full" | "net20-client" | "20" -> Some (DotNetFramework FrameworkVersion.V2)
-                | "net30" | "net3" | "30" ->  Some (DotNetFramework FrameworkVersion.V3)
-                | "net35" | "net35-client" | "net35-full" | "35" -> Some (DotNetFramework FrameworkVersion.V3_5)
-                | "net40-full" | "net40" | "net4" | "40" | "net40-client" | "net4-client" -> Some (DotNetFramework FrameworkVersion.V4)
-                | "net403"| "net403-full"| "net403-client" -> Some (DotNetFramework FrameworkVersion.V4_0_3)
-                | "net45" | "net45-full" | "45" -> Some (DotNetFramework FrameworkVersion.V4_5)
-                | "net451" -> Some (DotNetFramework FrameworkVersion.V4_5_1)
-                | "net452" -> Some (DotNetFramework FrameworkVersion.V4_5_2)
-                | "net453" -> Some (DotNetFramework FrameworkVersion.V4_5_3)
-                | "net46" -> Some (DotNetFramework FrameworkVersion.V4_6)
-                | "net461" -> Some (DotNetFramework FrameworkVersion.V4_6_1)
-                | "net462" -> Some (DotNetFramework FrameworkVersion.V4_6_2)
-                | "net463" -> Some (DotNetFramework FrameworkVersion.V4_6_3)
-                | "net47" -> Some (DotNetFramework FrameworkVersion.V4_7)
-                | "uap100" -> Some (UAP UAPVersion.V10)
-                | "monotouch" | "monotouch10" | "monotouch1" -> Some MonoTouch
-                | "monoandroid" | "monoandroid10" | "monoandroid1.0" | "monoandroid1" -> Some (MonoAndroid MonoAndroidVersion.V1)
-                | "monoandroid22" -> Some (MonoAndroid MonoAndroidVersion.V22)
-                | "monoandroid23" -> Some (MonoAndroid MonoAndroidVersion.V23)
-                | "monoandroid403" -> Some (MonoAndroid MonoAndroidVersion.V403)
-                | "monoandroid41" -> Some (MonoAndroid MonoAndroidVersion.V41)
-                | "monoandroid42" -> Some (MonoAndroid MonoAndroidVersion.V42)
-                | "monoandroid43" -> Some (MonoAndroid MonoAndroidVersion.V43)
-                | "monoandroid44" -> Some (MonoAndroid MonoAndroidVersion.V44)
-                | "monoandroid44w" -> Some (MonoAndroid MonoAndroidVersion.V44W)
-                | "monoandroid50" -> Some (MonoAndroid MonoAndroidVersion.V5)
-                | "monoandroid51" -> Some (MonoAndroid MonoAndroidVersion.V51)
-                | "monoandroid60" -> Some (MonoAndroid MonoAndroidVersion.V6)
-                | "monoandroid70" | "monoandroid7.0"-> Some (MonoAndroid MonoAndroidVersion.V7)
-                | "monoandroid71" | "monoandroid7.1"-> Some (MonoAndroid MonoAndroidVersion.V71)
-                | "monomac" | "monomac10" | "monomac1" -> Some MonoMac
-                | "xamarinios" | "xamarinios10" | "xamarinios1" | "xamarin.ios10" -> Some XamariniOS
-                | "xamarinwatchos" | "xamarinwatchos10" | "xamarinwatchos1" | "xamarin.watchos10" -> Some XamarinWatch
-                | "xamarintvos" | "xamarintvos10" | "xamarintvos1" | "xamarin.tvos10" -> Some XamarinTV
-                | "xamarinmac" | "xamarinmac20" | "xamarin.mac20" -> Some XamarinMac
+                | ModifyMatchTfm skipFullAndClient "net" FrameworkVersion.TryParse fm -> Some (DotNetFramework fm)
+                // Backwards compat quirk (2017-08-20).
+                | "uap101" -> Some (UAP UAPVersion.V10_1)
+                | MatchTfm "uap" UAPVersion.TryParse fm -> Some (UAP fm)
+                | MatchTfm "monotouch" (allowVersions ["";"1"]) () -> Some MonoTouch
+                | MatchTfm "monoandroid" MonoAndroidVersion.TryParse fm -> Some (MonoAndroid fm)
+                | MatchTfm "monomac" (allowVersions ["";"1"]) () -> Some MonoMac
+                | MatchTfm "xamarinios" (allowVersions ["";"1"]) () -> Some XamariniOS
+                | MatchTfm "xamarinwatchos" (allowVersions ["";"1"]) () -> Some XamarinWatch
+                | MatchTfm "xamarintvos" (allowVersions ["";"1"]) () -> Some XamarinTV
+                | MatchTfm "xamarinmac" (allowVersions ["";"1";"2"]) () -> Some XamarinMac
                 | "native/x86/debug" -> Some(Native(Debug,Win32))
                 | "native/x64/debug" -> Some(Native(Debug,X64))
                 | "native/arm/debug" -> Some(Native(Debug,Arm))
@@ -588,33 +715,23 @@ module FrameworkDetection =
                 | "native/address-model-32" -> Some(Native(NoBuildMode,Win32))
                 | "native/address-model-64" -> Some(Native(NoBuildMode,X64))
                 | "native" -> Some(Native(NoBuildMode,NoPlatform))
-                | "sl"  | "sl3" | "sl30" -> Some (Silverlight SilverlightVersion.V3)
-                | "sl4" | "sl40" -> Some (Silverlight SilverlightVersion.V4)
-                | "sl5" | "sl50" -> Some (Silverlight SilverlightVersion.V5)
-                | "win8" | "windows8" | "win80" | "netcore45" | "win" | "winv45" -> Some (Windows WindowsVersion.V8)
-                | "win81" | "windows81"  | "netcore46" | "netcore451" | "winv451" -> Some (Windows WindowsVersion.V8_1)
-                | "wp7" | "wp70" | "wpv7" | "wpv70" | "sl4-wp7"| "sl4-wp70" -> Some (WindowsPhone WindowsPhoneVersion.V7)
-                | "wp71" | "wpv71" | "sl4-wp71" | "sl4-wp"  -> Some (WindowsPhone WindowsPhoneVersion.V7_1)
-                | "wp75" | "wpv75" | "sl4-wp75" -> Some (WindowsPhone WindowsPhoneVersion.V7_5)
-                | "wp8" | "wp80"  | "wpv80" -> Some (WindowsPhone WindowsPhoneVersion.V8)
-                | "wpa00" | "wpa" | "wpa81" | "wpav81" | "wpapp81" | "wpapp" -> Some (WindowsPhoneApp WindowsPhoneAppVersion.V8_1)
-                | "wp81"  | "wpv81" -> Some (WindowsPhone WindowsPhoneVersion.V8_1)
-                | "dnx451" -> Some(DNX FrameworkVersion.V4_5_1)
-                | "dnxcore50" | "netplatform50" | "netcore50" | "aspnetcore50" | "aspnet50" | "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
+                | MatchTfm "sl" SilverlightVersion.TryParse fm -> Some (Silverlight fm)
+                | MatchTfms ["win"; "windows"; "netcore"; "winv"] parseWindows fm -> Some (Windows fm)
+                | "sl4-wp7" | "sl4-wp70" | "sl4-wp7.0" -> Some (WindowsPhone WindowsPhoneVersion.V7)
+                | "sl4-wp71" | "sl4-wp7.1" | "sl4-wp"-> Some (WindowsPhone WindowsPhoneVersion.V7_1)
+                | "sl4-wp75" | "sl4-wp7.5" -> Some (WindowsPhone WindowsPhoneVersion.V7_5)
+                | MatchTfms ["wp";"wpv"] (Bind WindowsPhoneVersion.TryParse) fm -> Some (WindowsPhone fm)
+                | MatchTfms ["wpa";"wpav";"wpapp"] (Bind WindowsPhoneAppVersion.TryParse) fm -> Some (WindowsPhoneApp fm)
+                | MatchTfm "dnx" (allowVersions ["";"4.5.1"]) () -> Some(DNX FrameworkVersion.V4_5_1)
+                | MatchTfms ["dnxcore";"netplatform";"netcore";"aspnetcore";"aspnet";"dotnet"] (Bind (allowVersions ["";"5"]))
+                    () -> Some(DNXCore FrameworkVersion.V5_0)
                 | v when v.StartsWith "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
-                | "netstandard" | "netstandard10" -> Some(DotNetStandard DotNetStandardVersion.V1_0)
-                | "netstandard11" -> Some(DotNetStandard DotNetStandardVersion.V1_1)
-                | "netstandard12" -> Some(DotNetStandard DotNetStandardVersion.V1_2)
-                | "netstandard13" -> Some(DotNetStandard DotNetStandardVersion.V1_3)
-                | "netstandard14" -> Some(DotNetStandard DotNetStandardVersion.V1_4)
-                | "netstandard15" -> Some(DotNetStandard DotNetStandardVersion.V1_5)
-                | "netstandard16" -> Some(DotNetStandard DotNetStandardVersion.V1_6)
-                | "netstandard20" -> Some(DotNetStandard DotNetStandardVersion.V2_0)
-                | "netcore10" -> Some (DotNetCore DotNetCoreVersion.V1_0)
-                | "netcore11" -> Some (DotNetCore DotNetCoreVersion.V1_1)
-                | "netcore20" -> Some (DotNetCore DotNetCoreVersion.V2_0)
-                | "tizen3" -> Some (Tizen TizenVersion.V3)
-                | "tizen4" -> Some (Tizen TizenVersion.V4)
+                | MatchTfm "netstandard" DotNetStandardVersion.TryParse fm -> Some (DotNetStandard fm)
+                // "netcore" is for backwards compat (2017-08-20), we wrote this incorrectly into the lockfile.
+                | MatchTfms ["netcoreapp";"netcore"] (Bind DotNetCoreAppVersion.TryParse) fm -> Some (DotNetCoreApp fm)
+                | MatchTfm "tizen" TizenVersion.TryParse fm -> Some (Tizen fm)
+                // Default is full framework, for example "35"
+                | MatchTfm "" FrameworkVersion.TryParse fm -> Some (DotNetFramework fm)
                 | _ -> None
             result)
 
@@ -721,6 +838,11 @@ type PortableProfileType =
     | Profile336
     /// portable-net45+sl5+win8+wp8+wpa81
     | Profile344
+    member x.IsUnsupprted =
+        match x with
+        | UnsupportedProfile _ -> true
+        | _ -> false
+
     member x.ProfileName =
         match x with
         | UnsupportedProfile fws -> x.FolderName
@@ -830,8 +952,18 @@ type TargetProfile =
         match this with
         | SinglePlatform x -> x.ToString()
         | PortableProfile p -> p.FolderName
+    member x.IsUnsupportedPortable =
+        match x with
+        | PortableProfile p -> p.IsUnsupprted
+        | _ -> false
 
 module KnownTargetProfiles =
+    // These lists are used primarilty when calculating stuff which requires iterating over ALL profiles
+    //  - Restriction System: "NOT" function
+    //  - Generation of Project-File Conditions
+    //  - Penalty system (to calculate best matching framework)
+    // For this reason there is a test to ensure those lists are up2date.
+
     let DotNetFrameworkVersions = [
         FrameworkVersion.V1
         FrameworkVersion.V1_1
@@ -849,6 +981,7 @@ module KnownTargetProfiles =
         FrameworkVersion.V4_6_2
         FrameworkVersion.V4_6_3
         FrameworkVersion.V4_7
+        FrameworkVersion.V5_0
     ]
 
     let DotNetFrameworkIdentifiers =
@@ -869,16 +1002,15 @@ module KnownTargetProfiles =
         DotNetStandardVersion.V1_6
         DotNetStandardVersion.V2_0
     ]
-        
 
     let DotNetStandardProfiles =
        DotNetStandardVersions
        |> List.map (DotNetStandard >> SinglePlatform)
-       
-    let DotNetCoreVersions = [
-        DotNetCoreVersion.V1_0
-        DotNetCoreVersion.V1_1
-        DotNetCoreVersion.V2_0
+
+    let DotNetCoreAppVersions = [
+        DotNetCoreAppVersion.V1_0
+        DotNetCoreAppVersion.V1_1
+        DotNetCoreAppVersion.V2_0
     ]
 
     let DotNetUnityVersions = [
@@ -887,10 +1019,10 @@ module KnownTargetProfiles =
         DotNetUnityVersion.V3_5_Micro
         DotNetUnityVersion.V3_5_Web
     ]
-       
+
     let DotNetCoreProfiles =
-       DotNetCoreVersions
-       |> List.map (DotNetCore >> SinglePlatform)
+       DotNetCoreAppVersions
+       |> List.map (DotNetCoreApp >> SinglePlatform)
 
     let WindowsVersions = [
         WindowsVersion.V8
@@ -902,10 +1034,10 @@ module KnownTargetProfiles =
        WindowsVersions
        |> List.map (Windows >> SinglePlatform)
 
-    let DotNetUnityProfiles = 
+    let DotNetUnityProfiles =
        DotNetUnityVersions
        |> List.map (DotNetUnity >> SinglePlatform)
-       
+
     let SilverlightVersions = [
         SilverlightVersion.V3
         SilverlightVersion.V4
@@ -918,27 +1050,33 @@ module KnownTargetProfiles =
 
     let MonoAndroidVersions = [
         MonoAndroidVersion.V1
-        MonoAndroidVersion.V22
-        MonoAndroidVersion.V23
-        MonoAndroidVersion.V403
-        MonoAndroidVersion.V41
-        MonoAndroidVersion.V42
-        MonoAndroidVersion.V43
-        MonoAndroidVersion.V44
-        MonoAndroidVersion.V44W
+        MonoAndroidVersion.V2_2
+        MonoAndroidVersion.V2_3
+        MonoAndroidVersion.V4_0_3
+        MonoAndroidVersion.V4_1
+        MonoAndroidVersion.V4_2
+        MonoAndroidVersion.V4_3
+        MonoAndroidVersion.V4_4
+        //MonoAndroidVersion.V44W
         MonoAndroidVersion.V5
-        MonoAndroidVersion.V51
+        MonoAndroidVersion.V5_1
         MonoAndroidVersion.V6
         MonoAndroidVersion.V7
-        MonoAndroidVersion.V71
+        MonoAndroidVersion.V7_1
     ]
 
     let MonoAndroidProfiles =
        MonoAndroidVersions
        |> List.map (MonoAndroid >> SinglePlatform)
 
+    let UAPVersons = [
+        UAPVersion.V10
+        UAPVersion.V10_1
+    ]
+
     let UAPProfiles =
-       [SinglePlatform(UAP UAPVersion.V10)]
+       UAPVersons
+       |> List.map (UAP >> SinglePlatform)
 
     let WindowsPhoneVersions = [
         WindowsPhoneVersion.V7
@@ -952,35 +1090,43 @@ module KnownTargetProfiles =
        WindowsPhoneVersions
        |> List.map (WindowsPhone >> SinglePlatform)
 
+    let WindowsPhoneAppVersions = [
+        WindowsPhoneAppVersion.V8_1
+    ]
+
+    let WindowsPhoneAppProfiles =
+       WindowsPhoneAppVersions
+       |> List.map (WindowsPhoneApp >> SinglePlatform)
+
     // http://nugettoolsdev.azurewebsites.net/4.0.0/parse-framework?framework=.NETPortable%2CVersion%3Dv0.0%2CProfile%3DProfile3
     let AllPortableProfiles =
-       [PortableProfileType.Profile2  
-        PortableProfileType.Profile3  
-        PortableProfileType.Profile4  
-        PortableProfileType.Profile5  
-        PortableProfileType.Profile6  
-        PortableProfileType.Profile7  
-        PortableProfileType.Profile14 
-        PortableProfileType.Profile18 
-        PortableProfileType.Profile19 
-        PortableProfileType.Profile23 
-        PortableProfileType.Profile24 
-        PortableProfileType.Profile31 
-        PortableProfileType.Profile32 
-        PortableProfileType.Profile36 
-        PortableProfileType.Profile37 
-        PortableProfileType.Profile41 
-        PortableProfileType.Profile42 
-        PortableProfileType.Profile44 
-        PortableProfileType.Profile46 
-        PortableProfileType.Profile47 
-        PortableProfileType.Profile49 
-        PortableProfileType.Profile78 
-        PortableProfileType.Profile84 
-        PortableProfileType.Profile88 
-        PortableProfileType.Profile92 
-        PortableProfileType.Profile95 
-        PortableProfileType.Profile96 
+       [PortableProfileType.Profile2
+        PortableProfileType.Profile3
+        PortableProfileType.Profile4
+        PortableProfileType.Profile5
+        PortableProfileType.Profile6
+        PortableProfileType.Profile7
+        PortableProfileType.Profile14
+        PortableProfileType.Profile18
+        PortableProfileType.Profile19
+        PortableProfileType.Profile23
+        PortableProfileType.Profile24
+        PortableProfileType.Profile31
+        PortableProfileType.Profile32
+        PortableProfileType.Profile36
+        PortableProfileType.Profile37
+        PortableProfileType.Profile41
+        PortableProfileType.Profile42
+        PortableProfileType.Profile44
+        PortableProfileType.Profile46
+        PortableProfileType.Profile47
+        PortableProfileType.Profile49
+        PortableProfileType.Profile78
+        PortableProfileType.Profile84
+        PortableProfileType.Profile88
+        PortableProfileType.Profile92
+        PortableProfileType.Profile95
+        PortableProfileType.Profile96
         PortableProfileType.Profile102
         PortableProfileType.Profile104
         PortableProfileType.Profile111
@@ -1002,7 +1148,8 @@ module KnownTargetProfiles =
     let AllDotNetProfiles =
        DotNetFrameworkProfiles @ 
        DotNetUnityProfiles @ 
-       WindowsProfiles @ 
+       WindowsProfiles @
+       WindowsPhoneAppProfiles @
        UAPProfiles @
        SilverlightProfiles @
        WindowsPhoneSilverlightProfiles @
@@ -1011,8 +1158,7 @@ module KnownTargetProfiles =
         SinglePlatform(XamariniOS)
         SinglePlatform(XamarinMac)
         SinglePlatform(XamarinTV)
-        SinglePlatform(XamarinWatch)
-        SinglePlatform(WindowsPhoneApp WindowsPhoneAppVersion.V8_1)] @
+        SinglePlatform(XamarinWatch)] @
        (AllPortableProfiles |> List.map PortableProfile)
 
     let AllDotNetStandardAndCoreProfiles =
@@ -1143,7 +1289,7 @@ module SupportCalculation =
                     result
             | _ -> failwithf "Expected that default profiles are already created."
     
-    let findPortable =
+    let private findPortablePriv =
         memoize (fun (fws: _ list) ->
             if fws.Length = 0 then failwithf "can not find portable for an empty list (Details: Empty lists need to be handled earlier with a warning)!"
             let fallback = PortableProfile (UnsupportedProfile (fws |> List.sort))
@@ -1158,7 +1304,7 @@ module SupportCalculation =
                     | XamarinTV
                     | XamarinWatch
                     | XamarinMac -> false
-                    | DotNetCore _
+                    | DotNetCoreApp _
                     | DotNetStandard _
                     | Tizen _ -> failwithf "Unexpected framework while trying to resolve PCL Profile"
                     | _ -> true)
@@ -1173,11 +1319,15 @@ module SupportCalculation =
                 match firstMatch with
                 | Some p -> PortableProfile p
                 | None ->
-                    traceWarnfn "The profile '%O' is not a known profile. Please tell the package author." fallback
                     fallback
             else
-                traceWarnfn "The profile '%O' is not a known profile. Please tell the package author." fallback
                 fallback)
+
+    let findPortable warn fws =
+        let result = findPortablePriv fws
+        if warn && result.IsUnsupportedPortable then
+            traceWarnfn "The profile '%O' is not a known profile. Please tell the package author." result
+        result
 
     let getSupportedPlatforms x =
         match x with
@@ -1301,8 +1451,8 @@ type TargetProfile with
         match p with
         | SinglePlatform fw -> [fw]
         | PortableProfile p -> p.Frameworks
-    static member FindPortable (fws: _ list) = SupportCalculation.findPortable fws
-    
+    static member FindPortable warnWhenUnsupported (fws: _ list) = SupportCalculation.findPortable warnWhenUnsupported fws
+
     member inline x.PlatformsSupporting = SupportCalculation.getPlatformsSupporting x
 
     /// true when x is supported by y, for example netstandard15 is supported by netcore10

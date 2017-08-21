@@ -104,6 +104,19 @@ nuget UnionArgParser ~> 0.7
 Note that the resolution phase is not affected by this option, it will still
 resolve, lock and download all transitive references.
 
+### Prerelease versions
+
+If you want to depend on prereleases then Paket can assist you.
+
+```paket
+source https://nuget.org/api/v2
+
+nuget xunit prerelease
+nuget xunit.runner.visualstudio prerelease
+```
+
+More details and information about prerelease channels can be found [here](nuget-dependencies.html#Prereleases).
+
 ### Framework restrictions
 
 Sometimes you do not want to generate dependencies for other .NET Framework
