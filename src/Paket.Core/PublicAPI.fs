@@ -325,9 +325,8 @@ type Dependencies(dependenciesFileName: string) =
             this.Restore(force,group,[],touchAffectedRefs,ignoreChecks,failOnFailedChecks,targetFramework) 
         else
             let referencesFiles =
-                this.RootPath
-                |> ProjectFile.FindAllProjects
-                |> Array.choose (fun (p:ProjectFile) -> p.FindReferencesFile())
+                ProjectFile.FindAllProjects this.RootPath
+                |> Array.choose (fun p -> p.FindReferencesFile())
             if Array.isEmpty referencesFiles then
                 traceWarnfn "No paket.references files found for which packages could be installed."
             else
@@ -409,7 +408,7 @@ type Dependencies(dependenciesFileName: string) =
         |> listPackages
 
     /// Returns all sources from the dependencies file.
-    member this.GetSources() =
+    member __.GetSources() =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         dependenciesFile.Groups
         |> Map.map (fun _ g -> g.Sources)
@@ -421,8 +420,7 @@ type Dependencies(dependenciesFileName: string) =
             | Result.Ok(config,_) -> config.PackageSources |> Map.toList |> List.map (snd >> fst)
             | _ -> []
         Constants.DefaultNuGetStream :: configured
-        |> Set.ofSeq
-        |> Set.toList
+        |> List.distinct
 
     /// Returns the installed versions of all installed packages which are referenced in the references file.
     member this.GetInstalledPackages(referencesFile:ReferencesFile): (string * string * string) list =
@@ -431,8 +429,10 @@ type Dependencies(dependenciesFileName: string) =
         referencesFile
         |> lockFile.GetPackageHull
         |> Seq.map (fun kv ->
-                        let groupName,packageName = kv.Key
-                        groupName.ToString(),packageName.ToString(),resolved.[kv.Key].Version.ToString())
+            let groupName,packageName = kv.Key
+            groupName.ToString(),
+            packageName.ToString(),
+            resolved.[kv.Key].Version.ToString())
         |> Seq.toList
 
     /// Returns an InstallModel for the given package.
