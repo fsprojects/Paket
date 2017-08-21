@@ -17,7 +17,7 @@ let ``Simplify && (true) (< net45)`` () =
 [<Test>] 
 let ``IsSubset works for unknown Portables`` () =
     let p = PlatformMatching.forceExtractPlatforms "portable-net45+win8+wp8+wp81+wpa81"
-    let t = p.ToTargetProfile.Value
+    let t = (p.ToTargetProfile true).Value
     let r = FrameworkRestriction.AtLeastPlatform t
     r.IsSubsetOf r
     |> shouldEqual true
@@ -25,7 +25,7 @@ let ``IsSubset works for unknown Portables`` () =
 [<Test>]
 let ``Simplify || (>= net45) (>= portable-net45+win8+wp8+wp81+wpa81)`` () =
     // because that is a custom portable profile!
-    let portable = (PlatformMatching.forceExtractPlatforms "portable-net45+win8+wp8+wp81+wpa81").ToTargetProfile.Value
+    let portable = ((PlatformMatching.forceExtractPlatforms "portable-net45+win8+wp8+wp81+wpa81").ToTargetProfile true).Value
     let atLeastPortable = FrameworkRestriction.AtLeastPlatform portable
 
     // this was the underlying bug
@@ -40,7 +40,7 @@ let ``Simplify || (>= net45) (>= portable-net45+win8+wp8+wp81+wpa81)`` () =
 [<Test>]
 let ``CustomProfile is Supported by its Platforms``() =
     let unknownProfile =
-        (PlatformMatching.forceExtractPlatforms "portable-net45+monoandroid10+monotouch10+xamarinios10").ToTargetProfile.Value
+        ((PlatformMatching.forceExtractPlatforms "portable-net45+monoandroid10+monotouch10+xamarinios10").ToTargetProfile true).Value
 
     unknownProfile.IsSupportedBy (SinglePlatform (DotNetFramework FrameworkVersion.V4_5))
     |> shouldEqual true
@@ -117,7 +117,7 @@ let ``Generate Support Table``() =
 [<Test>]
 let ``Unknown Portables are detected correctly``() = 
     PlatformMatching.forceExtractPlatforms "portable-monotouch+monoandroid"
-    |> function { Platforms = o } -> TargetProfile.FindPortable o
+    |> function { Platforms = o } -> TargetProfile.FindPortable true o
     |> shouldEqual (PortableProfile (PortableProfileType.UnsupportedProfile [MonoAndroid MonoAndroidVersion.V1; MonoTouch]))
 [<Test>]
 let ``Portables are detected correctly``() = 
@@ -131,7 +131,7 @@ let ``Portables are detected correctly``() =
           "sl5"; "win8"
           "wp8" ]
         |> List.map PlatformMatching.forceExtractPlatforms
-        |> List.map (function { Platforms = [ h] } -> SinglePlatform h | {Platforms = o} -> TargetProfile.FindPortable o)
+        |> List.map (function { Platforms = [ h] } -> SinglePlatform h | {Platforms = o} -> TargetProfile.FindPortable true o)
     let expected =
         [ SinglePlatform (DotNetFramework FrameworkVersion.V4);
           PortableProfile (PortableProfileType.UnsupportedProfile [MonoAndroid MonoAndroidVersion.V1; MonoTouch])

@@ -162,7 +162,7 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
                 // NOTE: apparently for .netcore / .netstandard we should skip framework dependencies
                 // https://github.com/fsprojects/Paket/issues/2156
                 function
-                | FrameworkIdentifier.DotNetCore _ 
+                | FrameworkIdentifier.DotNetCoreApp _
                 | FrameworkIdentifier.DotNetStandard _ -> true
                 | _ -> false
 

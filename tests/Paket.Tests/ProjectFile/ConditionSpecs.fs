@@ -65,7 +65,7 @@ let ``should detect net45-full``() =
 
 [<Test>]
 let ``should detect net``() =
-    FrameworkDetection.DetectFromPath(@"..\packages\RhinoMocks\lib\net\Rhino.Mocks.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V2))
+    FrameworkDetection.DetectFromPath(@"..\packages\RhinoMocks\lib\net\Rhino.Mocks.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V1))
 
 [<Test>]
 let ``should detect with spaces``() =
