@@ -244,6 +244,7 @@ type RestoreArgs =
     
     | [<Unique>] Target_Framework of framework:string
     | [<Unique>] New_Sdk_References_File of path:string
+    | [<Unique>] Intermediate_Dir of path:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -266,6 +267,7 @@ with
             
             | Target_Framework(_) -> "restore only for the specified target framework"
             | New_Sdk_References_File(_) -> "when used in combination with the new dotnet cli based sdk, paket will write all referenced packages to this file"
+            | Intermediate_Dir(_) -> "IntermediateDirectory of MSBuild, when used in combination with the new dotnet cli based sdk, paket will write the nuget.config there"
 
 type SimplifyArgs =
     | [<Unique;AltCommandLine("-i")>] Interactive

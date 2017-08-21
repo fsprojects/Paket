@@ -83,7 +83,10 @@ let ``#xxx dotnet restore writes paket references file to correct obj dir``() =
         printfn "all good!"
         // do the actual asserts:
         let originalPath = wd @@ "obj"
-        Directory.Exists originalPath |> shouldEqual false
+        if Directory.Exists originalPath then
+            let files = Directory.GetFiles originalPath
+            if files.Length > 0 then
+                failwithf "Expected no files in obj, but got %A" files
         let modifiedPath = wd @@ "MyCustomFancyObjDir"
         Directory.Exists modifiedPath |> shouldEqual true
         let expectedFiles =

@@ -31,8 +31,8 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>C:\temp\fixed</StartWorkingDirectory>
+    <StartArguments>restore --project "C:\source\Paket\integrationtests\scenarios\i00xxxx-obj-dir\temp\ObjDir\ObjDir.csproj" --target-framework net461 --new-sdk-references-file "C:\source\Paket\integrationtests\scenarios\i00xxxx-obj-dir\temp\ObjDir\MyCustomFancy\xxx.paket.ref" --intermediate-dir "C:\source\Paket\integrationtests\scenarios\i00xxxx-obj-dir\temp\ObjDir\MyCustomFancy"</StartArguments>
+    <StartWorkingDirectory>C:\source\Paket\integrationtests\scenarios\i00xxxx-obj-dir\temp\ObjDir</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

@@ -183,8 +183,9 @@ let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches,
         return (groupName,package.Name), (package,model)
     }
 
-let createAlternativeNuGetConfig (projectFile:FileInfo) =
-    let alternativeConfigFileInfo = FileInfo(Path.Combine(projectFile.Directory.FullName,"obj",projectFile.Name + ".NuGet.Config"))
+let createAlternativeNuGetConfig (projectFile:FileInfo) (intermediateDir:string option) =
+    let intermediateDir = intermediateDir |> Option.defaultValue (Path.Combine(projectFile.Directory.FullName,"obj"))
+    let alternativeConfigFileInfo = FileInfo(Path.Combine(intermediateDir,projectFile.Name + ".NuGet.Config"))
     if not alternativeConfigFileInfo.Directory.Exists then
         alternativeConfigFileInfo.Directory.Create()
     
@@ -343,7 +344,7 @@ let FindOrCreateReferencesFile projectFileName =
 
         ReferencesFile.New fileName
         
-let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option,newSdkReferencesFilePath) = 
+let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option,newSdkReferencesFilePath,intermediateDir) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
     let root = lockFileName.Directory.FullName
@@ -393,7 +394,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             let referencesFile = FindOrCreateReferencesFile projectFileName
             let projectFileInfo = FileInfo projectFileName
 
-            createAlternativeNuGetConfig projectFileInfo
+            createAlternativeNuGetConfig projectFileInfo intermediateDir
             createProjectReferencesFiles dependenciesFile lockFile projectFileInfo referencesFile newSdkReferencesFilePath resolved targetFilter groups
 
             [referencesFile.FileName]

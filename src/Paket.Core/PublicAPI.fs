@@ -309,16 +309,16 @@ type Dependencies(dependenciesFileName: string) =
         if touchAffectedRefs then
             let packagesToTouch = RestoreProcess.FindPackagesNotExtractedYet(dependenciesFileName)
             this.Process (FindReferences.TouchReferencesOfPackages packagesToTouch)
-        RestoreProcess.Restore(dependenciesFileName,None,force,Option.map GroupName group,files,ignoreChecks, failOnChecks, targetFramework, None)
+        RestoreProcess.Restore(dependenciesFileName,None,force,Option.map GroupName group,files,ignoreChecks, failOnChecks, targetFramework, None, None)
 
     /// Restores the given paket.references files.
-    member this.Restore(force: bool, group: string option, project: string, touchAffectedRefs: bool, ignoreChecks, failOnChecks, targetFramework, newSdkReferencesFilePath) : unit =
+    member this.Restore(force: bool, group: string option, project: string, touchAffectedRefs: bool, ignoreChecks, failOnChecks, targetFramework, newSdkReferencesFilePath, intermediateDir) : unit =
         if touchAffectedRefs then
             let packagesToTouch = RestoreProcess.FindPackagesNotExtractedYet(dependenciesFileName)
             this.Process (FindReferences.TouchReferencesOfPackages packagesToTouch)
-        RestoreProcess.Restore(dependenciesFileName,Some project,force,Option.map GroupName group,[],ignoreChecks, failOnChecks, targetFramework, newSdkReferencesFilePath)
+        RestoreProcess.Restore(dependenciesFileName,Some project,force,Option.map GroupName group,[],ignoreChecks, failOnChecks, targetFramework, newSdkReferencesFilePath, intermediateDir)
 
-    /// Restores packages for all available paket.references files
+    /// Restores packages for all available paket.references files 
     /// (or all packages if onlyReferenced is false)
     member this.Restore(force: bool, group: string option, onlyReferenced: bool, touchAffectedRefs: bool, ignoreChecks, failOnFailedChecks, targetFramework): unit =
         if not onlyReferenced then 

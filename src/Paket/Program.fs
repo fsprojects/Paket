@@ -363,10 +363,11 @@ let restore (results : ParseResults<_>) =
     let failOnChecks = results.Contains <@ RestoreArgs.Fail_On_Checks @>
     let targetFramework = results.TryGetResult <@ RestoreArgs.Target_Framework @>
     let newSdkReferencesFilePath = results.TryGetResult <@ RestoreArgs.New_Sdk_References_File @>
+    let intermediateDir = results.TryGetResult <@ RestoreArgs.Intermediate_Dir @>
 
     match project with
     | Some project ->
-        Dependencies.Locate().Restore(force, group, project, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework, newSdkReferencesFilePath)
+        Dependencies.Locate().Restore(force, group, project, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework, newSdkReferencesFilePath, intermediateDir)
     | None ->
         if List.isEmpty files then
             Dependencies.Locate().Restore(force, group, installOnlyReferenced, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)

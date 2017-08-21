@@ -23,8 +23,8 @@
   <Target Name="PaketRestore" BeforeTargets="_GenerateDotnetCliToolReferenceSpecs;_GenerateProjectRestoreGraphPerFramework;_GenerateRestoreGraphWalkPerFramework;CollectPackageReferences" >
 
     <Exec Command='$(PaketBootStrapperCommand) ' Condition="Exists('$(PaketBootStrapperExePath)') AND !(Exists('$(PaketExePath)'))" ContinueOnError="false" />
-    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --target-framework $(TargetFramework) --newsdk-references-file "$(PaketReferencesFilePath)"' Condition="$(TargetFramework) != ''" ContinueOnError="false" />
-    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --target-framework "$(TargetFrameworks)" --newsdk-references-file "$(PaketReferencesFilePath)"' Condition="$(TargetFramework) == ''" ContinueOnError="false" />
+    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --target-framework $(TargetFramework) --new-sdk-references-file "$(PaketReferencesFilePath)" --intermediate-dir "$(IntermediateOutputPath)"' Condition="$(TargetFramework) != ''" ContinueOnError="false" />
+    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --target-framework "$(TargetFrameworks)" --new-sdk-references-file "$(PaketReferencesFilePath)" --intermediate-dir "$(IntermediateOutputPath)"' Condition="$(TargetFramework) == ''" ContinueOnError="false" />
 
     <ReadLinesFromFile File="$(PaketReferencesFilePath)" >
       <Output TaskParameter="Lines" ItemName="PaketReferencesFileLines"/>
