@@ -33,6 +33,7 @@
     <StartAction>Project</StartAction>
     <StartArguments>update</StartArguments>
     <StartWorkingDirectory>C:\proj\testing\testpaketfailure\</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\temp\fixed</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

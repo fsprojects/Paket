@@ -1,3 +1,14 @@
+#### 5.89.0 - 21.08.2017
+* BUGFIX: dotnet sdk: disable implicitly adding system.valuetuple and fsharp.core - https://github.com/fsprojects/Paket/pull/2528
+
+#### 5.87.0 - 21.08.2017
+* BUGFIX: NuGet v3 protocol fixes - https://github.com/fsprojects/Paket/pull/2632
+* BUGFIX: Restore Failure on Mono: System.Exception: Expected an result at this place - https://github.com/fsprojects/Paket/issues/2639
+
+#### 5.86.0 - 19.08.2017
+* BUGFIX: Fixed feed Warnings and added blacklisting - https://github.com/fsprojects/Paket/pull/2582
+* BUGFIX: Special case System.Net.Http - https://github.com/fsprojects/Paket/pull/2628
+
 #### 5.85.8 - 18.08.2017
 * BUGFIX: No file links were created when using File: references in .NET Core projects - https://github.com/fsprojects/Paket/issues/2622
 

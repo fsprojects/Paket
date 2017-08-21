@@ -15,6 +15,7 @@ open Paket.Requirements
 open System.Collections.Generic
 open Paket.ProjectFile
 open System.Diagnostics
+open System
 
 let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*InstallSettings>) packagesConfigFileName =
     let packagesInConfigFile = PackagesConfigFile.Read packagesConfigFileName
@@ -419,7 +420,17 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                             Some <| sprintf "%s references file %s in group %O, but it was not found in the paket.lock file." referenceFile.FileName remoteFile.Name kv.Key
                         )
                 (Seq.append pathAcc refpaths),(Seq.append errorAcc errors)
-            )|> fun (refpaths,errors) -> refpaths, Seq.append errorMessages errors
+            )|> fun (refpaths,errors) -> Seq.toArray refpaths, Seq.concat [| errorMessages ; errors |] |> Seq.toArray
+        
+        if toolsVersion >= 15.0 then
+            // HACK: just validate that the list of packages contains one named FSharp.Core, if it is a *.fsproj
+            if project.Name.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase) then
+                let hasFSharpCore =
+                    usedPackages |> Seq.exists (fun kv ->
+                        let (_, x) = kv.Key
+                        x.CompareString = "fsharp.core")
+                if not hasFSharpCore then
+                    traceWarnfn "F# project %s does not reference FSharp.Core." project.FileName
 
         // if any errors have been found during the installation process thus far, fail and print all errors collected
         if not (Seq.isEmpty errorMessages) then

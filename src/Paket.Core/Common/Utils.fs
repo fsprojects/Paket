@@ -17,6 +17,8 @@ open FSharp.Polyfill
 open System.Net.Http
 open System.Threading
 open Microsoft.FSharp.Core.Printf
+open System.Threading.Tasks
+open System.Collections.Concurrent
 
 #if !NETSTANDARD1_6
 // TODO: Activate this in .NETCore 2.0
@@ -59,29 +61,35 @@ let internal memoize (f: 'a -> 'b) : 'a -> 'b =
     fun (x: 'a) ->
         cache.GetOrAdd(x, f)
 
+type MemoizeAsyncExResult<'TResult, 'TCached> =
+    | FirstCall of ( 'TCached * 'TResult ) Task
+    | SubsequentCall of 'TCached Task
+
 let internal memoizeAsyncEx (f: 'iext -> 'i -> Async<'o * 'oext>) =
-    let cache = System.Collections.Concurrent.ConcurrentDictionary<'i, System.Threading.Tasks.Task<'o>>()
-    let handle (ex:'iext) (x:'i) : Choice<System.Threading.Tasks.Task<'o>, Async<'o * 'oext>> =
-    //fun (ex:'iext) (x: 'i) -> // task.Result serialization to sync after done.
-        let mutable result = None
-        let mutable wasAdded = false
-        let task = cache.GetOrAdd(x, fun x ->
-                wasAdded <- true
-                async {
+    let cache = ConcurrentDictionary<'i, Task<'o>>()
+    let handle (ex:'iext) (x:'i) : MemoizeAsyncExResult<'oext, 'o> =
+        let mutable tcs_result = null
+        let task_cached = cache.GetOrAdd(x, fun x ->
+            tcs_result <- TaskCompletionSource()
+            let tcs = TaskCompletionSource()
+            
+            Async.Start (async {
+                try
                     let! o, oext = f ex x
-                    result <- Some oext
-                    return o
-                } |> Async.StartAsTask) // |> Async.AwaitTask
-        if not wasAdded then
-            Choice1Of2 task
+                    tcs.SetResult o
+                    tcs_result.SetResult (o, oext)
+                with
+                  exn ->
+                    tcs.SetException exn
+                    tcs_result.SetException exn
+            })
+
+            tcs.Task)
+        // if this was the first call for the key, then tcs_result was set inside 'cache.GetOrAdd'
+        if tcs_result <> null then
+            FirstCall tcs_result.Task
         else
-            async {
-                let! res = task |> Async.AwaitTask
-                match result with
-                | Some ext -> return res, ext
-                | None -> return failwithf "Expected an result at this place."
-            }
-            |> Choice2Of2
+            SubsequentCall task_cached
     handle
 
 
@@ -1187,3 +1195,9 @@ module List =
             let v = values.[i]
             Some v, (values.[0 .. i - 1 ] @ values.[i + 1 .. ])
         | None -> None, values
+        
+[<RequireQualifiedAccess>]
+module Task =
+
+    let Map<'TIn,'TOut> (mapper : 'TIn -> 'TOut) (t:Task<'TIn>) : Task<'TOut> =
+        t.ContinueWith((fun (t:Task<'TIn>) -> mapper(t.Result)))

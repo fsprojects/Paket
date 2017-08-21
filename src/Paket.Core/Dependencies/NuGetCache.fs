@@ -30,6 +30,7 @@ open Chessie.ErrorHandling
 open Newtonsoft.Json
 open System
 open Paket.ModuleResolver
+open System.Threading.Tasks
 
 type NuGetResponseGetVersionsSuccess = string []
 type NuGetResponseGetVersionsFailure =
@@ -471,12 +472,9 @@ let private tryUrlOrBlacklist (f: _ -> Async<'a>) (isOk : 'a -> bool) (source:Nu
             (fun s -> isOk (s :?> 'a))
             (source,id)
     match res with
-    | Choice1Of2 r -> Choice1Of2 r
-    | Choice2Of2 a ->
-        Choice2Of2 (async {
-            let! (l, r) = a
-            return l, (r :?> 'a)
-        })
+    | SubsequentCall r -> SubsequentCall r
+    | FirstCall t ->
+        FirstCall (t |> Task.Map (fun (l, r) -> l, (r :?> 'a)))
 
 let tryAndBlacklistUrl doWarn (source:NugetSource) (tryAgain : 'a -> bool) (f : string -> Async<'a>) (urls: UrlToTry list) : Async<'a>=
     async {
@@ -485,15 +483,15 @@ let tryAndBlacklistUrl doWarn (source:NugetSource) (tryAgain : 'a -> bool) (f : 
             |> Seq.map (fun url -> async {
                 let cached = tryUrlOrBlacklist (fun () -> async { return! f url.InstanceUrl }) (tryAgain >> not) (source, url.UrlId)
                 match cached with
-                | Choice1Of2 task ->
+                | SubsequentCall task ->
                     let! result = task |> Async.AwaitTask
                     if result then
                         let! result = f url.InstanceUrl
                         return Choice1Of3 result
                     else
                         return Choice3Of3 () // Url Blacklisted
-                | Choice2Of2 a ->
-                    let! (isOk, res) = a
+                | FirstCall task ->
+                    let! (isOk, res) = task |> Async.AwaitTask
                     if not isOk then
                         if doWarn then
                             eprintfn "Possible Performance degration, blacklist '%s'" url.InstanceUrl
