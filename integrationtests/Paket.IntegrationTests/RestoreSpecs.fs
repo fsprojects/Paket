@@ -12,7 +12,9 @@ let ``#2496 Paket fails on projects that target multiple frameworks``() =
     let scenario = "i002496-empty-target-framework"
     let tmpPaketFolder = (scenarioTempPath scenario) @@ "../.paket"
     let targetsFile = FullName(__SOURCE_DIRECTORY__ + "../../../src/Paket/embedded/Paket.Restore.targets")
-    let paketExe = FullName(__SOURCE_DIRECTORY__ + "../../../.paket/paket.exe")
+    // Note: this depends on the merged version of paket.exe.
+    // The build script normally takes care of that by merging it before running the integration tests
+    let paketExe = FullName(__SOURCE_DIRECTORY__ + "../../../bin/merged/paket.exe")
     
     prepare scenario
     if (not (Directory.Exists tmpPaketFolder)) then
@@ -47,10 +49,12 @@ let ``#2496 Paket fails on projects that target multiple frameworks``() =
 [<Test>]
 let ``#xxx dotnet restore writes paket references file to correct obj dir``() = 
     let project = "ObjDir"
-    let scenario = "i00xxxx-obj-dir"
+    let scenario = "i002642-obj-dir"
     let tmpPaketFolder = (scenarioTempPath scenario) @@ "../.paket"
     let targetsFile = FullName(__SOURCE_DIRECTORY__ + "../../../src/Paket/embedded/Paket.Restore.targets")
-    let paketExe = FullName(__SOURCE_DIRECTORY__ + "../../../.paket/paket.exe")
+    // Note: this depends on the merged version of paket.exe.
+    // The build script normally takes care of that by merging it before running the integration tests
+    let paketExe = FullName(__SOURCE_DIRECTORY__ + "../../../bin/merged/paket.exe")
     
     prepare scenario
     if (not (Directory.Exists tmpPaketFolder)) then

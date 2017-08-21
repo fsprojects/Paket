@@ -203,3 +203,5 @@ dotnetcore
 # For check-doc-links.sh.
 node_modules
 package-lock.json
+/integrationtests/scenarios/i002642-obj-dir/.paket/Paket.Restore.targets
+/integrationtests/scenarios/i002642-obj-dir/.paket/paket.exe
