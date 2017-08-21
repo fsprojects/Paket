@@ -1,4 +1,5 @@
-#### 5.86.1 - 21.08.2017
+#### 5.87.0 - 21.08.2017
+* BUGFIX: NuGet v3 protocol fixes - https://github.com/fsprojects/Paket/pull/2632
 * BUGFIX: Restore Failure on Mono: System.Exception: Expected an result at this place - https://github.com/fsprojects/Paket/issues/2639
 
 #### 5.86.0 - 19.08.2017
