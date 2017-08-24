@@ -47,7 +47,7 @@ let ``#2496 Paket fails on projects that target multiple frameworks``() =
     | _ -> failwithf "dotnet restore exitCode %d > 0? or hasErrorOut %b" exitCode hasErrorOut
     
 [<Test>]
-let ``#xxx dotnet restore writes paket references file to correct obj dir``() = 
+let ``#2642 dotnet restore writes paket references file to correct obj dir``() = 
     let project = "ObjDir"
     let scenario = "i002642-obj-dir"
     let tmpPaketFolder = (scenarioTempPath scenario) @@ "../.paket"

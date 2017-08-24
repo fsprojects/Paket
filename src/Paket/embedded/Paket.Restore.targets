@@ -16,20 +16,20 @@
     <PaketBootStrapperExePath Condition=" '$(PaketBootStrapperExePath)' == '' ">$(PaketToolsPath)paket.bootstrapper.exe</PaketBootStrapperExePath>
     <PaketBootStrapperCommand Condition=" '$(OS)' == 'Windows_NT'">"$(PaketBootStrapperExePath)"</PaketBootStrapperCommand>
     <PaketBootStrapperCommand Condition=" '$(OS)' != 'Windows_NT' ">$(MonoPath) --runtime=v4.0.30319 "$(PaketBootStrapperExePath)"</PaketBootStrapperCommand>
-
-    <PaketReferencesFilePath Condition=" '$(PaketReferencesFilePath)' == '' ">$(IntermediateOutputPath)/$(MSBuildProjectFile).paket.references</PaketReferencesFilePath>
   </PropertyGroup>
 
   <Target Name="PaketRestore" BeforeTargets="_GenerateDotnetCliToolReferenceSpecs;_GenerateProjectRestoreGraphPerFramework;_GenerateRestoreGraphWalkPerFramework;CollectPackageReferences" >
 
     <PropertyGroup>
       <!-- The backslash at the end messes with quoting -->
-      <_IntermediateOutputPath_NoTrailingSlash>$(IntermediateOutputPath.TrimEnd('\'))</_IntermediateOutputPath_NoTrailingSlash>
+      <_BaseIntermediateOutputPath_NoTrailingSlash>$(IntermediateOutputPath.TrimEnd('\'))</_BaseIntermediateOutputPath_NoTrailingSlash>
+
+      <PaketReferencesFilePath Condition=" '$(PaketReferencesFilePath)' == '' ">$(_BaseIntermediateOutputPath_NoTrailingSlash)\$(MSBuildProjectFile).paket.references</PaketReferencesFilePath>
     </PropertyGroup>
     
     <Exec Command='$(PaketBootStrapperCommand) ' Condition="Exists('$(PaketBootStrapperExePath)') AND !(Exists('$(PaketExePath)'))" ContinueOnError="false" />
-    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --target-framework $(TargetFramework) --new-sdk-references-file "$(PaketReferencesFilePath)" --intermediate-dir "$(_IntermediateOutputPath_NoTrailingSlash)"' Condition="$(TargetFramework) != ''" ContinueOnError="false" />
-    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --target-framework "$(TargetFrameworks)" --new-sdk-references-file "$(PaketReferencesFilePath)" --intermediate-dir "$(_IntermediateOutputPath_NoTrailingSlash)"' Condition="$(TargetFramework) == ''" ContinueOnError="false" />
+    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --target-framework $(TargetFramework) --new-sdk-references-file "$(PaketReferencesFilePath)" --intermediate-dir "$(_BaseIntermediateOutputPath_NoTrailingSlash)"' Condition="$(TargetFramework) != ''" ContinueOnError="false" />
+    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --target-framework "$(TargetFrameworks)" --new-sdk-references-file "$(PaketReferencesFilePath)" --intermediate-dir "$(_BaseIntermediateOutputPath_NoTrailingSlash)"' Condition="$(TargetFramework) == ''" ContinueOnError="false" />
 
     <ReadLinesFromFile File="$(PaketReferencesFilePath)" >
       <Output TaskParameter="Lines" ItemName="PaketReferencesFileLines"/>
