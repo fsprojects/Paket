@@ -1,3 +1,6 @@
+#### 5.89.3 - 24.08.2017
+* BUGFIX: Pin versions for resolution in netcore - https://github.com/fsprojects/Paket/pull/2654
+
 #### 5.89.2 - 24.08.2017
 * BUGFIX: temp fix for https://github.com/fsprojects/Paket/issues/2652
 
