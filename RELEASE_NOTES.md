@@ -1,3 +1,6 @@
+#### 5.89.2 - 24.08.2017
+* BUGFIX: temp fix for https://github.com/fsprojects/Paket/issues/2652
+
 #### 5.89.1 - 21.08.2017
 * BUGFIX: fix crash when a package contains an invalid file - https://github.com/fsprojects/Paket/pull/2644
 
