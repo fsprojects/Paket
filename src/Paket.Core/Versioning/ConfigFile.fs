@@ -94,7 +94,7 @@ let private readPassword (message : string) : string =
                     Console.Write "\b \b"
                     password.Substring(0, (password.Length - 1))
                 else ""
-        else Console.Write "\r"
+        else Console.WriteLine()
     password
 
 let getAuthFromNode (node : XmlNode) = 
@@ -102,8 +102,13 @@ let getAuthFromNode (node : XmlNode) =
     | "credential" ->
         let username = node.Attributes.["username"].Value
         let password = node.Attributes.["password"].Value
+        let authType =                         
+            match node.Attributes.["authType"] with
+            | null -> AuthType.Basic
+            | n -> n.Value |> Utils.parseAuthTypeString
+
         let salt = node.Attributes.["salt"].Value
-        Credentials (username, Decrypt salt password)
+        Credentials (username, Decrypt salt password, authType)
     | "token" -> Token node.Attributes.["value"].Value
     | _ -> failwith "unknown node"
 
@@ -113,10 +118,11 @@ let private createSourceNode (credentialsNode : XmlNode) source nodeName =
     credentialsNode.AppendChild node |> ignore
     node
 
-let private setCredentials (username : string) (password : string) (node : XmlElement) =
+let private setCredentials (username : string) (password : string) (authType : string) (node : XmlElement) =
     let salt, encrypedPassword = Encrypt password
     node.SetAttribute ("username", username)
     node.SetAttribute ("password", encrypedPassword)
+    node.SetAttribute ("authType", authType)
     node.SetAttribute ("salt", salt)
     node
 
@@ -167,7 +173,7 @@ let GetAuthenticationForUrl =
 let GetAuthentication (source : string) =
     GetAuthenticationForUrl(source,source)
 
-let AddCredentials (source, username, password) = 
+let AddCredentials (source, username, password, authType) = 
     trial { 
         let! credentialsNode = getConfigNode "credentials"
         let newCredentials = 
@@ -175,11 +181,11 @@ let AddCredentials (source, username, password) =
             | None -> createSourceNode credentialsNode source "credential" |> Some
             | Some existingNode -> 
                 match getAuthFromNode existingNode with
-                | Credentials (_, existingPassword) ->
+                | Credentials (_, existingPassword, _) ->
                     if existingPassword <> password then existingNode |> Some
                     else None
                 | _ -> None
-            |> Option.map (setCredentials username password)
+            |> Option.map (setCredentials username password authType)
         match newCredentials with
         | Some credentials -> do! saveConfigNode credentials
         | None -> ()
@@ -203,7 +209,7 @@ let AddToken (source, token) =
         | None -> () 
     }
 
-let askAndAddAuth (source : string) (username : string) (password : string) = 
+let askAndAddAuth (source : string) (username : string) (password : string) (authType : string) = 
     let username =
         if username = "" then
             Console.Write "Username: "
@@ -216,4 +222,11 @@ let askAndAddAuth (source : string) (username : string) (password : string) =
             readPassword "Password: "
         else
             password
-    AddCredentials (source.TrimEnd [|'/'|], username, password)
+    let authType =
+        if authType = "" then
+            Console.Write "Authentication type (basic|ntlm, default = basic): "
+            let input = Console.ReadLine().Trim()
+            if input = "" then "basic" else input
+        else
+            authType
+    AddCredentials (source.TrimEnd [|'/'|], username, password, authType)

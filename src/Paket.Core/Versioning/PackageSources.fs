@@ -30,22 +30,24 @@ type EnvironmentVariable =
 
 [<StructuredFormatDisplay("{AsString}")>]
 type NugetSourceAuthentication = 
-    | PlainTextAuthentication of username : string * password : string
-    | EnvVarAuthentication of usernameVar : EnvironmentVariable * passwordVar : EnvironmentVariable
-    | ConfigAuthentication of username : string * password : string 
+    | PlainTextAuthentication of username : string * password : string * authType : Utils.AuthType
+    | EnvVarAuthentication of usernameVar : EnvironmentVariable * passwordVar : EnvironmentVariable * authType : Utils.AuthType
+    | ConfigAuthentication of username : string * password : string * authType : Utils.AuthType
         with
             override x.ToString() =
                 match x with
-                    | PlainTextAuthentication(u,_) -> sprintf "PlainTextAuthentication (username = %s, password = ***)" u
-                    | EnvVarAuthentication(u,_) ->  sprintf "EnvVarAuthentication (usernameVar = %s, passwordVar = ***)" u.Variable
-                    | ConfigAuthentication(u,_) -> sprintf "ConfigAuthentication (username = %s, password = ***)" u
+                    | PlainTextAuthentication(u,_,t) -> sprintf "PlainTextAuthentication (username = %s, password = ***, authType = %A)" u t
+                    | EnvVarAuthentication(u,_,t) ->  sprintf "EnvVarAuthentication (usernameVar = %s, passwordVar = ***, authType = %A)" u.Variable t
+                    | ConfigAuthentication(u,_,t) -> sprintf "ConfigAuthentication (username = %s, password = ***, authType = %A)" u t
             member x.AsString = x.ToString()
 
-let toBasicAuth = function
-    | PlainTextAuthentication(username,password) | ConfigAuthentication(username, password) ->
-        Credentials(username, password)
-    | EnvVarAuthentication(usernameVar, passwordVar) -> 
-        Credentials(usernameVar.Value, passwordVar.Value)
+let toCredentials = function
+    | PlainTextAuthentication(username,password,authType) ->
+        Credentials(username, password, authType)
+    | ConfigAuthentication(username, password,authType) ->
+        Credentials(username, password, authType)
+    | EnvVarAuthentication(usernameVar, passwordVar, authType) -> 
+        Credentials(usernameVar.Value, passwordVar.Value, authType)
 
 let tryParseWindowsStyleNetworkPath (path : string) =
     let trimmed = path.TrimStart()
@@ -77,7 +79,7 @@ type NugetSource =
     { Url : string
       Authentication : NugetSourceAuthentication option }
     member x.BasicAuth =
-        x.Authentication |> Option.map toBasicAuth
+        x.Authentication |> Option.map toCredentials
 
 type NugetV3SourceResourceJSON = 
     { [<JsonProperty("@type")>]
@@ -113,7 +115,7 @@ let getNuGetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceT
     let key = source
     let getResourcesRaw () =
         async {
-            let basicAuth = source.Authentication |> Option.map toBasicAuth
+            let basicAuth = source.Authentication |> Option.map toCredentials
             let! rawData = safeGetFromUrl(basicAuth, source.Url, acceptJson)
             let rawData =
                 match rawData with
@@ -156,9 +158,10 @@ let getNuGetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceT
     }
 let userNameRegex = Regex("username[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 let passwordRegex = Regex("password[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
+let authTypeRegex = Regex("authtype[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 
 let internal parseAuth(text:string, source) =
-    let getAuth() = ConfigFile.GetAuthentication source |> Option.map (function Credentials(username, password) -> ConfigAuthentication(username, password) | _ -> ConfigAuthentication("",""))
+    let getAuth() = ConfigFile.GetAuthentication source |> Option.map (function Credentials(username, password, authType) -> ConfigAuthentication(username, password, authType) | _ -> ConfigAuthentication("","",AuthType.Basic))
     if text.Contains("username:") || text.Contains("password:") then
         if not (userNameRegex.IsMatch(text) && passwordRegex.IsMatch(text)) then 
             failwithf "Could not parse auth in \"%s\"" text
@@ -166,16 +169,21 @@ let internal parseAuth(text:string, source) =
         let username = userNameRegex.Match(text).Groups.[1].Value
         let password = passwordRegex.Match(text).Groups.[1].Value
 
+        let authType = 
+            if (authTypeRegex.IsMatch(text))
+            then authTypeRegex.Match(text).Groups.[1].Value |> Utils.parseAuthTypeString
+            else Utils.AuthType.Basic
+
         let auth = 
             match EnvironmentVariable.Create(username),
                   EnvironmentVariable.Create(password) with
             | Some userNameVar, Some passwordVar ->
-                EnvVarAuthentication(userNameVar, passwordVar) 
+                EnvVarAuthentication(userNameVar, passwordVar, authType) 
             | _, _ -> 
-                PlainTextAuthentication(username, password)
+                PlainTextAuthentication(username, password, authType)
 
-        match toBasicAuth auth with
-        | Credentials(username, password) when username = "" && password = "" -> getAuth()
+        match toCredentials auth with
+        | Credentials(username, password, _) when username = "" && password = "" -> getAuth()
         | _ -> Some auth
     else
         getAuth()
@@ -253,7 +261,7 @@ type PackageSource =
 
     static member WarnIfNoConnection (source,_) = 
         let n url auth =
-            use client = Utils.createHttpClient(url, auth |> Option.map toBasicAuth)
+            use client = Utils.createHttpClient(url, auth |> Option.map toCredentials)
             try client.DownloadData url |> ignore 
             with _ ->
                 traceWarnfn "Unable to ping remote NuGet feed: %s." url

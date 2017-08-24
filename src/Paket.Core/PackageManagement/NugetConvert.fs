@@ -28,19 +28,19 @@ type CredsMigrationMode =
 
     static member ToAuthentication mode sourceName auth =
         match mode, auth with
-        | Encrypt, Credentials(username,password) -> 
-            ConfigAuthentication(username, password)
-        | Plaintext, Credentials(username,password) -> 
-            PlainTextAuthentication(username, password)
-        | Selective, Credentials(username,password) -> 
+        | Encrypt, Credentials(username, password, authType) -> 
+            ConfigAuthentication(username, password, authType)
+        | Plaintext, Credentials(username, password, authType) -> 
+            PlainTextAuthentication(username, password, authType)
+        | Selective, Credentials(username, password, authType) -> 
             let question =
                 sprintf "Credentials for source '%s': " sourceName  + 
                     "[encrypt and save in config (Yes) " + 
                     sprintf "| save as plaintext in %s (No)]" Constants.DependenciesFileName
                     
             match Utils.askYesNo question with
-            | true -> ConfigAuthentication(username, password)
-            | false -> PlainTextAuthentication(username, password)
+            | true -> ConfigAuthentication(username, password, authType)
+            | false -> PlainTextAuthentication(username, password, authType)
         | _ -> failwith "invalid auth"
 
 /// Represents type of NuGet packages.config file
@@ -96,8 +96,8 @@ type NugetConfig =
                 let encryptedPass = authNode |> tryGetValue "Password"
 
                 match userName, encryptedPass, clearTextPass with 
-                | Some userName, Some encryptedPass, _ -> Some(Credentials(userName, ConfigFile.DecryptNuget encryptedPass))
-                | Some userName, _, Some clearTextPass -> Some(Credentials(userName,clearTextPass))
+                | Some userName, Some encryptedPass, _ -> Some(Credentials(userName, ConfigFile.DecryptNuget encryptedPass, AuthType.Basic))
+                | Some userName, _, Some clearTextPass -> Some(Credentials(userName,clearTextPass, AuthType.Basic))
                 | _ -> None
 
             configNode 

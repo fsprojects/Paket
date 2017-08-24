@@ -680,23 +680,38 @@ let ``should read config without versions``() =
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FAKE"].Range |> shouldEqual (VersionRange.AtLeast "0")
 
 
-let configWithPassword = """
-source http://www.nuget.org/api/v2 username: "tatü tata" password: "you got hacked!"
+let configWithPasswordNoAuthType = """
+source http://www.nuget.org/api/v2 username: "tatÃ¼ tata" password: "you got hacked!"
 nuget Rx-Main
 """
 
 [<Test>]
-let ``should read config with encapsulated password source``() = 
-    let cfg = DependenciesFile.FromSource( configWithPassword)
+let ``should read config with encapsulated password source with no auth type specified``() = 
+    let cfg = DependenciesFile.FromSource(configWithPasswordNoAuthType)
     
     cfg.Groups.[Constants.MainDependencyGroup].Sources 
     |> shouldEqual [ 
         PackageSource.NuGetV2 { 
             Url = "http://www.nuget.org/api/v2"
-            Authentication = Some (PlainTextAuthentication("tatü tata", "you got hacked!")) } ]
+            Authentication = Some (PlainTextAuthentication("tatÃ¼ tata", "you got hacked!", Utils.AuthType.Basic)) } ]
+
+let configWithPasswordWithAuthType = """
+source http://www.nuget.org/api/v2 username: "tatÃ¼ tata" password: "you got hacked!" authtype: "ntlm"
+nuget Rx-Main
+"""
+
+[<Test>]
+let ``should read config with encapsulated password source and auth type specified``() = 
+    let cfg = DependenciesFile.FromSource(configWithPasswordWithAuthType)
+    
+    cfg.Groups.[Constants.MainDependencyGroup].Sources 
+    |> shouldEqual [ 
+        PackageSource.NuGetV2 { 
+            Url = "http://www.nuget.org/api/v2"
+            Authentication = Some (PlainTextAuthentication("tatÃ¼ tata", "you got hacked!", Utils.AuthType.NTLM)) } ]
 
 let configWithPasswordInSingleQuotes = """
-source http://www.nuget.org/api/v2 username: 'tatü tata' password: 'you got hacked!'
+source http://www.nuget.org/api/v2 username: 'tatÃ¼ tata' password: 'you got hacked!'
 nuget Rx-Main
 """
 
@@ -725,7 +740,28 @@ let ``should read config with password in env variable``() =
             Url = "http://www.nuget.org/api/v2"
             Authentication = Some (EnvVarAuthentication
                                     ({Variable = "%FEED_USERNAME%"; Value = "user XYZ"},
-                                     {Variable = "%FEED_PASSWORD%"; Value = "pw Love"}))} ]
+                                     {Variable = "%FEED_PASSWORD%"; Value = "pw Love"},
+                                     Utils.AuthType.Basic))} ]
+
+let configWithPasswordInEnvVariableAndAuthType = """
+source http://www.nuget.org/api/v2 username: "%FEED_USERNAME%" password: "%FEED_PASSWORD%" authtype: "nTlM"
+nuget Rx-Main
+"""
+
+[<Test>]
+let ``should read config with password in env variable and auth type specified``() = 
+    Environment.SetEnvironmentVariable("FEED_USERNAME", "user XYZ", EnvironmentVariableTarget.Process)
+    Environment.SetEnvironmentVariable("FEED_PASSWORD", "pw Love", EnvironmentVariableTarget.Process)
+    let cfg = DependenciesFile.FromSource( configWithPasswordInEnvVariableAndAuthType)
+    
+    cfg.Groups.[Constants.MainDependencyGroup].Sources 
+    |> shouldEqual [ 
+        PackageSource.NuGetV2 { 
+            Url = "http://www.nuget.org/api/v2"
+            Authentication = Some (EnvVarAuthentication
+                                    ({Variable = "%FEED_USERNAME%"; Value = "user XYZ"},
+                                     {Variable = "%FEED_PASSWORD%"; Value = "pw Love"},
+                                     Utils.AuthType.NTLM))} ]
 
 let configWithExplicitVersions = """
 source "http://www.nuget.org/api/v2"

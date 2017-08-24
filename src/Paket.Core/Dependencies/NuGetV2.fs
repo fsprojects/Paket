@@ -393,7 +393,7 @@ let FindPackages(auth, nugetURL, packageNamePrefix, maxResults) =
     let url = sprintf "%s/Packages()?$filter=IsLatestVersion and IsAbsoluteLatestVersion and substringof('%s',tolower(Id))" nugetURL ((packageNamePrefix:string).ToLowerInvariant())
     async {
         try
-            let! raw = getFromUrl(auth |> Option.map toBasicAuth,url,acceptXml)
+            let! raw = getFromUrl(auth |> Option.map toCredentials,url,acceptXml)
             let doc = XmlDocument()
             doc.LoadXml raw
             return
