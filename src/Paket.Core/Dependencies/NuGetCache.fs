@@ -87,6 +87,8 @@ type NuGetRequestGetVersions =
 type UnparsedPackageFile =
     { FullPath : string
       PathWithinPackage : string }
+    member x.BasePath =
+        x.FullPath.Substring(0, x.FullPath.Length - (x.PathWithinPackage.Length + 1))
 
 module NuGetConfig =
     open System.Text

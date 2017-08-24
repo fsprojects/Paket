@@ -190,7 +190,7 @@ let private handleODataEntry nugetURL packageName version entry =
                 match PlatformMatching.extractPlatforms false restriction with
                 | Some p -> Some p
                 | None ->
-                    Logging.traceWarnfn "Could not detect any platforms from '%s' in package %O %O" restriction packageName version
+                    Logging.traceWarnIfNotBefore ("Package", restriction, packageName, version) "Could not detect any platforms from '%s' in package %O %O, please tell the package authors" restriction packageName version
                     None
              else Some PlatformMatching.ParsedPlatformPath.Empty)
             |> Option.map (fun pp -> name, version, pp)

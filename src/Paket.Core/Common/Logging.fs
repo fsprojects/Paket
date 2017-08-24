@@ -3,6 +3,8 @@
 open System
 open System.IO
 open System.Diagnostics
+open System.Collections.Concurrent
+open System.Threading
 
 /// [omit]
 let mutable verbose = false
@@ -49,6 +51,25 @@ let traceErrorfn fmt = Printf.ksprintf traceError fmt
 /// [omit]
 let traceWarnfn fmt = Printf.ksprintf traceWarn fmt
 
+let private omittedWarnings = ref 0
+let private warnings = ConcurrentDictionary<obj,Guid>()
+let traceIfNotBefore tracer key fmt =
+    let printer =
+        if verbose then tracer
+        else
+            let g = Guid.NewGuid()
+            if g = warnings.GetOrAdd(key, fun _ -> g) then
+                tracer
+            else
+                Interlocked.Increment(omittedWarnings) |> ignore
+                ignore
+
+    Printf.ksprintf printer fmt
+
+let getOmittedWarningCount () = omittedWarnings.Value
+
+let traceWarnIfNotBefore key fmt = traceIfNotBefore traceWarn key fmt
+let traceErrorIfNotBefore key fmt = traceIfNotBefore traceError key fmt
 
 // Console Trace
 
