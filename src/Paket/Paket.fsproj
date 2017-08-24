@@ -35,6 +35,8 @@
     <StartWorkingDirectory>C:\source\Paket\integrationtests\scenarios\i00xxxx-obj-dir\temp\ObjDir</StartWorkingDirectory>
     <StartArguments>restore</StartArguments>
     <StartWorkingDirectory>C:\temp\perf\</StartWorkingDirectory>
+    <StartArguments>update</StartArguments>
+    <StartWorkingDirectory>C:\proj\testing\testpaketfailure\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

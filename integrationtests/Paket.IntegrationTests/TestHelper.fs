@@ -8,6 +8,7 @@ open NUnit.Framework
 open FsUnit
 open System
 open System.IO
+open Paket.Logging
 
 let scenarios = System.Collections.Generic.List<_>()
 let isLiveUnitTesting = AppDomain.CurrentDomain.GetAssemblies() |> Seq.exists (fun a -> a.GetName().Name = "Microsoft.CodeAnalysis.LiveUnitTesting.Runtime")
@@ -40,7 +41,11 @@ let originalScenarioPath scenario = Path.Combine(integrationTestPath,scenario,"b
 
 let cleanup scenario =
     let scenarioPath = scenarioTempPath scenario
-    CleanDir scenarioPath
+    try
+        CleanDir scenarioPath
+    with e ->
+        traceWarnfn "Failed to clean dir '%s', trying again: %O" scenarioPath e
+        CleanDir scenarioPath
 
 let cleanupAllScenarios() =
     for scenario in scenarios do

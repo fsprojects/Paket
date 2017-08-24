@@ -256,7 +256,7 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
                         | x ->
                             let restrictions, problems = Requirements.parseRestrictionsLegacy false x
                             for problem in problems do
-                                Logging.traceErrorfn "Could not detect any platforms from '%s' in %O %O" problem.Framework packageName version
+                                Logging.traceErrorIfNotBefore ("Package", problem.Framework, packageName, version) "Could not detect any platforms from '%s' in %O %O, please tell the package authors" problem.Framework packageName version
                             restrictions
                     (PackageName dep.Id), (VersionRequirement.Parse dep.Range), targetFramework)
                 |> Seq.toList
