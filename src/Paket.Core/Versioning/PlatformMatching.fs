@@ -27,26 +27,26 @@ let inline split (path : string) =
 
 // TODO: This function does now quite a lot, there probably should be several functions.
 let private extractPlatformsPriv = memoize (fun path ->
-    if System.String.IsNullOrEmpty path then Some ParsedPlatformPath.Empty
-    else
-        let splits = split path
-        let platforms = splits |> Array.choose FrameworkDetection.Extract |> Array.toList
-        if platforms.Length = 0 then
-            if splits.Length = 1 && splits.[0].StartsWith "profile" then
-                // might be something like portable4.6-profile151
-                KnownTargetProfiles.TryFindPortableProfile splits.[0]
-                |> Option.map (ParsedPlatformPath.FromTargetProfile >> fun p -> { p with Name = path })
-            else
-                None
-        else Some { Name = path; Platforms = platforms })
+    let splits = split path
+    let platforms = splits |> Array.choose FrameworkDetection.Extract |> Array.toList
+    if platforms.Length = 0 then
+        if splits.Length = 1 && splits.[0].StartsWith "profile" then
+            // might be something like portable4.6-profile151
+            KnownTargetProfiles.TryFindPortableProfile splits.[0]
+            |> Option.map (ParsedPlatformPath.FromTargetProfile >> fun p -> { p with Name = path })
+        else
+            None
+    else Some { Name = path; Platforms = platforms })
 
 let extractPlatforms warn path =
-    match extractPlatformsPriv path with
-    | None ->
-        if warn then
-            Logging.traceWarnIfNotBefore ("extractPlatforms", path) "Could not detect any platforms from '%s', please tell the package authors" path
-        None
-    | Some s -> Some s
+    if System.String.IsNullOrEmpty path then Some ParsedPlatformPath.Empty
+    else
+        match extractPlatformsPriv path with
+        | None ->
+            if warn then
+                Logging.traceWarnIfNotBefore ("extractPlatforms", path) "Could not detect any platforms from '%s', please tell the package authors" path
+            None
+        | Some s -> Some s
 
 let forceExtractPlatforms path =
     match extractPlatforms false path with

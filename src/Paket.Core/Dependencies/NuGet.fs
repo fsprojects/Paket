@@ -248,18 +248,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                 version
 
         let tryV3 (nugetSource:NugetV3Source) force =
-            if nugetSource.Url.Contains("myget.org") || nugetSource.Url.Contains("nuget.org") || nugetSource.Url.Contains("visualstudio.com") || nugetSource.Url.Contains("/nuget/v3/") then
-                match NuGetV3.calculateNuGet2Path nugetSource.Url with
-                | Some url ->
-                    NuGetV2.getDetailsFromNuGet
-                        force
-                        { nugetSource with Url = url } //= .Authentication |> Option.map toBasicAuth)
-                        packageName
-                        version
-                | _ ->
-                    NuGetV3.GetPackageDetails force nugetSource packageName version
-            else
-                NuGetV3.GetPackageDetails force nugetSource packageName version
+            NuGetV3.GetPackageDetails force nugetSource packageName version
 
         let getPackageDetails force =
             // helper to work through the list sequentially

@@ -12,6 +12,7 @@ open Paket.Xml
 open Paket.PackageSources
 open Paket.Requirements
 open Paket.Logging
+open Paket.PlatformMatching
 
 /// [omit]
 type JSONResource = 
@@ -237,10 +238,18 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
         | Some registrationData ->
         let! catalogData = getCatalog registrationData.CatalogEntry (source.Authentication |> Option.map toBasicAuth)
 
-        let dependencies = 
+        let dependencyGroups, dependencies = 
             if catalogData.DependencyGroups = null then
-                []
+                [], []
             else
+                let detect x =
+                    match extractPlatforms false x with
+                    | Some p -> p
+                    | None ->
+                        Logging.traceErrorIfNotBefore ("Package", x, packageName, version) "Could not detect any platforms from '%s' in %O %O, please tell the package authors" x packageName version
+                        ParsedPlatformPath.Empty
+                catalogData.DependencyGroups |> Seq.map (fun group -> detect group.TargetFramework) |> Seq.toList,
+
                 catalogData.DependencyGroups
                 |> Seq.map(fun group -> 
                     if group.Dependencies = null then
@@ -252,22 +261,21 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
                 |> Seq.map(fun (dep, targetFramework) ->
                     let targetFramework =
                         match targetFramework with
-                        | null -> FrameworkRestriction.NoRestriction
-                        | x ->
-                            let restrictions, problems = Requirements.parseRestrictionsLegacy false x
-                            for problem in problems do
-                                Logging.traceErrorIfNotBefore ("Package", problem.Framework, packageName, version) "Could not detect any platforms from '%s' in %O %O, please tell the package authors" problem.Framework packageName version
-                            restrictions
+                        | null -> ParsedPlatformPath.Empty
+                        | x -> detect x
                     (PackageName dep.Id), (VersionRequirement.Parse dep.Range), targetFramework)
                 |> Seq.toList
         let unlisted =
             if catalogData.Listed.HasValue then
-               not catalogData.Listed.Value 
+               not catalogData.Listed.Value
             else
                 false
-        // TODO: We probably need our new restriction logic here because I guess what nuget gives us is not enough...
-        let optimized = 
-            dependencies |> List.map (fun (m,v,r) -> m,v, ExplicitRestriction r)
+
+        let optimized, warnings =
+            addFrameworkRestrictionsToDependencies dependencies dependencyGroups
+        for warning in warnings do
+            Logging.traceWarnfn "%s" (warning.Format packageName version)
+
         return 
             { SerializedDependencies = []
               PackageName = packageName.ToString()
