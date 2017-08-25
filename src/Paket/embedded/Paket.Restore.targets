@@ -38,7 +38,7 @@
         <PackageVersion>$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[1])</PackageVersion>
       </PaketReferencesFileLinesInfo>
       <PackageReference Include="%(PaketReferencesFileLinesInfo.PackageName)">
-        <Version>[%(PaketReferencesFileLinesInfo.PackageVersion)]</Version>
+        <Version>%(PaketReferencesFileLinesInfo.PackageVersion)</Version>
       </PackageReference>
     </ItemGroup>
 
@@ -56,7 +56,7 @@
         <PackageVersion>$([System.String]::Copy('%(PaketCliToolFileLines.Identity)').Split(',')[1])</PackageVersion>
       </PaketCliToolFileLinesInfo>
       <DotNetCliToolReference Include="%(PaketCliToolFileLinesInfo.PackageName)">
-        <Version>[%(PaketCliToolFileLinesInfo.PackageVersion)]</Version>
+        <Version>%(PaketCliToolFileLinesInfo.PackageVersion)</Version>
       </DotNetCliToolReference>
     </ItemGroup>
 
