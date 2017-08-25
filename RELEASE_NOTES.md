@@ -1,13 +1,7 @@
-#### 5.89.4 - 25.08.2017
+#### 5.90.0 - 25.08.2017
 * BUGFIX: fix-nuspecs should break at ; - https://github.com/fsprojects/Paket/issues/2661
-
-#### 5.89.3 - 24.08.2017
 * BUGFIX: Pin versions for resolution in netcore - https://github.com/fsprojects/Paket/pull/2654
-
-#### 5.89.2 - 24.08.2017
-* BUGFIX: temp fix for https://github.com/fsprojects/Paket/issues/2652
-
-#### 5.89.1 - 21.08.2017
+* BUGFIX: V3 normalization fix for https://github.com/fsprojects/Paket/issues/2652
 * BUGFIX: fix crash when a package contains an invalid file - https://github.com/fsprojects/Paket/pull/2644
 
 #### 5.89.0 - 21.08.2017
