@@ -5,6 +5,7 @@ open Paket
 open Paket.Domain
 open Paket.PackageSources
 open Paket.Logging
+open Paket.PlatformMatching
 
 [<RequireQualifiedAccess>]
 // To make reasoning and writing tests easier.
@@ -999,13 +1000,13 @@ type AddFrameworkRestrictionWarnings =
         | UnknownPortableProfile p ->
             sprintf "Profile %O is not a supported portable profile, please tell the package authors of %O %O" p name version
 
-let addFrameworkRestrictionsToDependencies rawDependencies (frameworkGroups:PlatformMatching.ParsedPlatformPath list) =
+let addFrameworkRestrictionsToDependencies rawDependencies (frameworkGroups:ParsedPlatformPath list) =
     let problems = ResizeArray<_>()
     let handleProblem (p:AddFrameworkRestrictionWarnings) =
         problems.Add p
     let referenced =
         rawDependencies
-        |> List.groupBy (fun (n:PackageName,req,pp:PlatformMatching.ParsedPlatformPath) -> n,req)
+        |> List.groupBy (fun (n:PackageName,req,pp:ParsedPlatformPath) -> n,req)
         |> List.map (fun ((name, req), group) ->
             // We need to append all the other platforms we support.
             let packageGroups = group |> List.map (fun (_,_,packageGroup) -> packageGroup)

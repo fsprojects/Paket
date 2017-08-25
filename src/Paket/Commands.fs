@@ -63,6 +63,7 @@ type ConfigArgs =
     | [<Unique;CustomCommandLine("add-token")>] AddToken of key_or_URL:string * token:string
     | [<Unique>] Username of username:string
     | [<Unique>] Password of password:string
+    | [<Unique>] AuthType of authType:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -71,6 +72,7 @@ with
             | AddToken(_) -> "add token for URL or credential key"
             | Username(_) -> "provide username"
             | Password(_) -> "provide password"
+            | AuthType (_) -> "specify authentication type: basic|ntlm (default: basic)"
 
 type ConvertFromNugetArgs =
     | [<Unique;AltCommandLine("-f")>] Force

@@ -98,9 +98,16 @@ let internal memoizeAsync f =
     fun (x: 'a) -> // task.Result serialization to sync after done.
         cache.GetOrAdd(x, fun x -> f(x) |> Async.StartAsTask) |> Async.AwaitTask
 
+type AuthType = | Basic | NTLM
+
 type Auth = 
-    | Credentials of Username : string * Password : string
+    | Credentials of Username : string * Password : string * Type : AuthType
     | Token of string
+
+let internal parseAuthTypeString (str:string) =
+    match str.Trim().ToLowerInvariant() with
+        | "ntlm" -> AuthType.NTLM
+        | _ -> AuthType.Basic
 
 let TimeSpanToReadableString(span:TimeSpan) =
     let pluralize x = if x = 1 then String.Empty else "s"
@@ -582,7 +589,7 @@ let createHttpClient (url,auth:Auth option) =
     let client = new HttpClient(handler)
     match auth with
     | None -> handler.UseDefaultCredentials <- true
-    | Some(Credentials(username, password)) -> 
+    | Some(Credentials(username, password, AuthType.Basic)) -> 
         // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
         //this works ONLY if the server returns 401 first
         //client DOES NOT send credentials on first request
@@ -593,6 +600,9 @@ let createHttpClient (url,auth:Auth option) =
         let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
         client.DefaultRequestHeaders.Authorization <- 
             new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials)
+    | Some(Credentials(username, password, AuthType.NTLM)) ->
+        let cred = System.Net.NetworkCredential(username,password)        
+        handler.Credentials <- cred.GetCredential(new Uri(url), "NTLM")
     | Some(Token token) ->
         client.DefaultRequestHeaders.Authorization <-
             new System.Net.Http.Headers.AuthenticationHeaderValue("token", token)
@@ -616,7 +626,7 @@ let createWebClient (url,auth:Auth option) =
     let githubToken = Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN"
 
     match auth with
-    | Some (Credentials(username, password)) ->
+    | Some (Credentials(username, password, AuthType.Basic)) ->
         // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
         //this works ONLY if the server returns 401 first
         //client DOES NOT send credentials on first request
@@ -627,6 +637,9 @@ let createWebClient (url,auth:Auth option) =
         let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
         client.Headers.[HttpRequestHeader.Authorization] <- sprintf "Basic %s" credentials
         client.Credentials <- new NetworkCredential(username,password)
+    | Some (Credentials(username, password, AuthType.NTLM)) ->
+        let cred = NetworkCredential(username,password)        
+        client.Credentials <- cred.GetCredential(new Uri(url), "NTLM")
     | Some (Token token) ->
         client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" token
     | None when not (isNull githubToken) ->

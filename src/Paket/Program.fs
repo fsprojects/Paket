@@ -223,8 +223,9 @@ let config (results : ParseResults<_>) =
       let args = results.GetResults <@ ConfigArgs.AddCredentials @>
       let source = args.Item 0
       let username, password = results.GetResult (<@ ConfigArgs.Username @>, ""), results.GetResult (<@ ConfigArgs.Password @>, "")
+      let authType = results.GetResult (<@ ConfigArgs.AuthType @>, "")
 
-      Dependencies(".").AddCredentials(source, username, password)
+      Dependencies(".").AddCredentials(source, username, password, authType)
     | _, true ->
       let args = results.GetResults <@ ConfigArgs.AddToken @>
       let source, token = args.Item 0
@@ -553,7 +554,10 @@ let findPackages silent (results : ParseResults<_>) =
 
 let fixNuspecs silent (results : ParseResults<_>) =
     let referenceFile = results.GetResult <@ FixNuspecsArgs.ReferencesFile @>
-    let nuspecFiles = results.GetResult <@ FixNuspecsArgs.Files @>
+    let nuspecFiles = 
+        results.GetResult <@ FixNuspecsArgs.Files @>
+        |> List.collect (fun s -> s.Split([|';'|], StringSplitOptions.RemoveEmptyEntries) |> Array.toList)
+
     Dependencies.FixNuspecs (referenceFile, nuspecFiles)
 
 // For Backwards compatibility
