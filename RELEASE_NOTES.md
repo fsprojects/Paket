@@ -1,3 +1,6 @@
+#### 5.89.4 - 25.08.2017
+* BUGFIX: fix-nuspecs should break at ; - https://github.com/fsprojects/Paket/issues/2661
+
 #### 5.89.3 - 24.08.2017
 * BUGFIX: Pin versions for resolution in netcore - https://github.com/fsprojects/Paket/pull/2654
 

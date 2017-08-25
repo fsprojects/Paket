@@ -553,7 +553,10 @@ let findPackages silent (results : ParseResults<_>) =
 
 let fixNuspecs silent (results : ParseResults<_>) =
     let referenceFile = results.GetResult <@ FixNuspecsArgs.ReferencesFile @>
-    let nuspecFiles = results.GetResult <@ FixNuspecsArgs.Files @>
+    let nuspecFiles = 
+        results.GetResult <@ FixNuspecsArgs.Files @>
+        |> List.collect (fun s -> s.Split([|';'|], StringSplitOptions.RemoveEmptyEntries) |> Array.toList)
+
     Dependencies.FixNuspecs (referenceFile, nuspecFiles)
 
 // For Backwards compatibility
