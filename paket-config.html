@@ -75,9 +75,10 @@
 <span class="l">14: </span>
 <span class="l">15: </span>
 <span class="l">16: </span>
+<span class="l">17: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="sh">paket config [--help] [add-credentials &lt;key or URL&gt;] [add-token &lt;key or URL&gt; &lt;token&gt;]
-             [--username &lt;username&gt;] [--password &lt;password&gt;]
+             [--username &lt;username&gt;] [--password &lt;password&gt;] [--authtype &lt;authType&gt;]
 
 OPTIONS:
 
@@ -87,6 +88,7 @@ OPTIONS:
                           add token for URL or credential key
     --username &lt;username&gt; provide username
     --password &lt;password&gt; provide password
+    --authtype &lt;authType&gt; specify authentication type: basic|ntlm (default: basic)
     --silent, -s          suppress console output
     --verbose, -v         print detailed information to the console
     --log-file &lt;path&gt;     print output to a file
@@ -101,8 +103,8 @@ OPTIONS:
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="sh">paket config add-credentials &lt;source URL&gt;
 </code></pre></td></tr></table>
-<p>Paket will then ask you for the username and password that will be used for the
-specified <code>&lt;source URL&gt;</code>.</p>
+<p>Paket will then ask you for the username, password, and authentication type that
+will be used for the specified <code>&lt;source URL&gt;</code>.</p>
 <p>The credentials you enter here will then be used for <code>source</code>s in the
 <a href="nuget-dependencies.html"><code>paket.dependencies</code> file</a> that match <code>&lt;source URL&gt;</code>
 unless they carry a username and password.</p>
