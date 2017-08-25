@@ -438,7 +438,7 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
                        if (not force) && errorFileExists then return [] else
                        match nugetSource with
                        | NuGetV2 source ->
-                            let auth = source.Authentication |> Option.map toBasicAuth
+                            let auth = source.Authentication |> Option.map toCredentials
                             if String.containsIgnoreCase "artifactory" source.Url then
                                 return [getVersionsCached "ODataNewestFirst" NuGetV2.tryGetAllVersionsFromNugetODataFindByIdNewestFirst (nugetSource, auth, source.Url, packageName) ]
                             else
@@ -449,7 +449,7 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
                                 return v2Feeds
                        | NuGetV3 source ->
                             let! versionsAPI = PackageSources.getNuGetV3Resource source AllVersionsAPI
-                            let auth = source.Authentication |> Option.map toBasicAuth
+                            let auth = source.Authentication |> Option.map toCredentials
                             return [ getVersionsCached "V3" tryNuGetV3 (nugetSource, auth, versionsAPI, packageName) ]
                        | LocalNuGet(path,Some _) ->
                             return [ NuGetLocal.getAllVersionsFromLocalPath (true, path, packageName, alternativeProjectRoot, root) ]
@@ -695,9 +695,9 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
 #endif
 
                     if authenticated then
-                        match source.Auth |> Option.map toBasicAuth with
+                        match source.Auth |> Option.map toCredentials with
                         | None | Some(Token _) -> request.UseDefaultCredentials <- true
-                        | Some(Credentials(username, password)) ->
+                        | Some(Credentials(username, password, AuthType.Basic)) ->
                             // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
                             //this works ONLY if the server returns 401 first
                             //client DOES NOT send credentials on first request
@@ -707,6 +707,9 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                             //so use THIS instead to send credentials RIGHT AWAY
                             let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
                             request.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
+                        | Some(Credentials(username, password, AuthType.NTLM)) ->
+                            let cred = NetworkCredential(username,password)        
+                            request.Credentials <- cred.GetCredential(downloadUri, "NTLM")
                     else
                         request.UseDefaultCredentials <- true
 
@@ -743,7 +746,7 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                 | :? System.Net.WebException as exn when
                     attempt < 5 &&
                     exn.Status = WebExceptionStatus.ProtocolError &&
-                     (match source.Auth |> Option.map toBasicAuth with
+                     (match source.Auth |> Option.map toCredentials with
                       | Some(Credentials(_)) -> true
                       | _ -> false)
                         -> do! download false (attempt + 1)

@@ -223,8 +223,9 @@ let config (results : ParseResults<_>) =
       let args = results.GetResults <@ ConfigArgs.AddCredentials @>
       let source = args.Item 0
       let username, password = results.GetResult (<@ ConfigArgs.Username @>, ""), results.GetResult (<@ ConfigArgs.Password @>, "")
+      let authType = results.GetResult (<@ ConfigArgs.AuthType @>, "")
 
-      Dependencies(".").AddCredentials(source, username, password)
+      Dependencies(".").AddCredentials(source, username, password, authType)
     | _, true ->
       let args = results.GetResults <@ ConfigArgs.AddToken @>
       let source, token = args.Item 0

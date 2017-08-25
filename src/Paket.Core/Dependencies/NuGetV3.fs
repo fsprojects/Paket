@@ -161,7 +161,7 @@ let private getPackages(auth, nugetURL, packageNamePrefix, maxResults) = async {
     match apiRes with
     | Some url -> 
         let query = sprintf "%s?q=%s&take=%d" url packageNamePrefix maxResults
-        let! response = safeGetFromUrl(auth |> Option.map toBasicAuth,query,acceptJson)
+        let! response = safeGetFromUrl(auth |> Option.map toCredentials,query,acceptJson)
         match SafeWebResult.asResult response with
         | Result.Ok text -> return  Result.Ok (extractPackages text)
         | Result.Error err -> return Result.Error err
@@ -209,7 +209,7 @@ let getRegistration (source : NugetV3Source) (packageName:PackageName) (version:
     async {
         let! registrationUrl = PackageSources.getNuGetV3Resource source Registration
         let url = sprintf "%s%s/%s.json" registrationUrl (packageName.ToString().ToLower()) (version.Normalize())
-        let! rawData = safeGetFromUrl (source.Authentication |> Option.map toBasicAuth, url, acceptJson)
+        let! rawData = safeGetFromUrl (source.Authentication |> Option.map toCredentials, url, acceptJson)
         return
             match rawData with
             | NotFound -> None //raise <| System.Exception(sprintf "could not get registration data (404) from '%s'" url)
@@ -236,7 +236,7 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
         match registrationData with
         | None -> return EmptyResult
         | Some registrationData ->
-        let! catalogData = getCatalog registrationData.CatalogEntry (source.Authentication |> Option.map toBasicAuth)
+        let! catalogData = getCatalog registrationData.CatalogEntry (source.Authentication |> Option.map toCredentials)
 
         let dependencyGroups, dependencies = 
             if catalogData.DependencyGroups = null then
