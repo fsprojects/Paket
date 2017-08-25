@@ -1,4 +1,5 @@
 #### 5.90.0 - 25.08.2017
+* Support for NTLM auth - https://github.com/fsprojects/Paket/pull/2658
 * BUGFIX: fix-nuspecs should break at ; - https://github.com/fsprojects/Paket/issues/2661
 * BUGFIX: Pin versions for resolution in netcore - https://github.com/fsprojects/Paket/pull/2654
 * BUGFIX: V3 normalization fix for https://github.com/fsprojects/Paket/issues/2652
