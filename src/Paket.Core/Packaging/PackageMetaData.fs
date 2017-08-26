@@ -366,7 +366,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                         match info with
                         | None -> true
                         | Some rp ->
-                            let nuspec = Nuspec.Load(dependenciesFile.RootPath,groupName,rp.Version,defaultArg rp.Settings.IncludeVersionInPath false,np.Name)
+                            let nuspec = Nuspec.LoadFromCache(np.Name,rp.Version)
                             not nuspec.IsDevelopmentDependency
                     with
                     | _ -> true)
