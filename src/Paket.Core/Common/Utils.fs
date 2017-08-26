@@ -751,7 +751,7 @@ let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : s
     let rec getExceptionNames (exn:Exception) = [
         if exn <> null then
             yield exn.GetType().Name
-            if exn.InnerExceptions <> null then
+            if exn.InnerException <> null then
                 yield! getExceptionNames exn.InnerException
     ]
 
