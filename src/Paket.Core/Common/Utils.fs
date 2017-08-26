@@ -155,7 +155,23 @@ let getDirectoryInfoForLocalNuGetFeed pathInfo alternativeProjectRoot root =
         match alternativeProjectRoot with
         | Some root -> DirectoryInfo(Path.Combine(root, s))
         | None -> DirectoryInfo(Path.Combine(root, s))
-        
+
+
+// show the path that was too long
+let FileInfo(str) =
+    try
+        FileInfo(str)
+    with
+      :? PathTooLongException as exn -> raise (PathTooLongException("Path too long: " + str, exn))
+
+
+// show the path that was too long
+let DirectoryInfo(str) =
+    try
+        DirectoryInfo(str)
+    with
+      :? PathTooLongException as exn -> raise (PathTooLongException("Path too long: " + str, exn))
+
 /// Creates a directory if it does not exist.
 let createDir path = 
     try

@@ -3,33 +3,19 @@ module Paket.NuGetCache
 
 open System
 open System.IO
-open System.Net
 open Newtonsoft.Json
 open System.IO.Compression
-open System.Xml
-open System.Text.RegularExpressions
 open Paket.Logging
 open System.Text
 
+open Paket
 open Paket.Domain
 open Paket.Utils
-open Paket.Xml
 open Paket.PackageSources
 open Paket.Requirements
 open FSharp.Polyfill
 open System.Runtime.ExceptionServices
 
-open Paket.Utils
-open Paket.Domain
-open Paket.Requirements
-open Paket.Logging
-
-open System.IO
-open Chessie.ErrorHandling
-
-open Newtonsoft.Json
-open System
-open Paket.ModuleResolver
 open System.Threading.Tasks
 
 type NuGetResponseGetVersionsSuccess = string []
