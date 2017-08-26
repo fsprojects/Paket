@@ -15,7 +15,7 @@ type SemVerUpdateMode =
 type InstallerOptions =
     { Force : bool
       SemVerUpdateMode : SemVerUpdateMode
-      Redirects : bool
+      Redirects : Requirements.BindingRedirectsSettings
       AlternativeProjectRoot : string option
       CleanBindingRedirects : bool
       CreateNewBindingFiles : bool
@@ -27,7 +27,7 @@ type InstallerOptions =
 
     static member Default =
         { Force = false
-          Redirects = false
+          Redirects = Requirements.BindingRedirectsSettings.Off
           SemVerUpdateMode = SemVerUpdateMode.NoRestriction
           CreateNewBindingFiles = false
           AlternativeProjectRoot = None

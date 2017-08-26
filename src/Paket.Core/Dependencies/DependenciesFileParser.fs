@@ -198,7 +198,7 @@ module DependenciesFileParser =
     | CopyContentToOutputDir of CopyToOutputDirectorySettings
     | GenerateLoadScripts of bool option
     | ReferenceCondition of string
-    | Redirects of bool option
+    | Redirects of BindingRedirectsSettings option
     | ResolverStrategyForTransitives of ResolverStrategy option
     | ResolverStrategyForDirectDependencies of ResolverStrategy option
 
@@ -276,8 +276,9 @@ module DependenciesFileParser =
         | String.RemovePrefix "redirects" trimmed ->
             let setting =
                 match trimmed.Replace(":","").Trim() with
-                | String.EqualsIC "on" -> Some true
-                | String.EqualsIC "off" -> Some false
+                | String.EqualsIC "on" -> Some BindingRedirectsSettings.On
+                | String.EqualsIC "force" -> Some BindingRedirectsSettings.Force
+                | String.EqualsIC "off" -> Some BindingRedirectsSettings.Off
                 | _ -> None
 
             Some (ParserOptions (ParserOption.Redirects setting))

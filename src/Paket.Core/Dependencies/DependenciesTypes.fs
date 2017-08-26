@@ -6,10 +6,11 @@ open Paket.Requirements
 open Paket.ModuleResolver
 open Paket.PackageSources
 
+
 /// [omit]
 type InstallOptions = 
     { Strict : bool 
-      Redirects : bool option
+      Redirects : BindingRedirectsSettings option
       ResolverStrategyForDirectDependencies : ResolverStrategy option
       ResolverStrategyForTransitives : ResolverStrategy option
       Settings : InstallSettings }

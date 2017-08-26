@@ -28,8 +28,9 @@ module LockFileSerializer =
         | Some false -> yield "GENERATE-LOAD-SCRIPTS: OFF"
         | None -> ()
         match options.Redirects with
-        | Some true -> yield "REDIRECTS: ON"
-        | Some false -> yield "REDIRECTS: OFF"
+        | Some BindingRedirectsSettings.On -> yield "REDIRECTS: ON"
+        | Some BindingRedirectsSettings.Force -> yield "REDIRECTS: FORCE"
+        | Some BindingRedirectsSettings.Off -> yield "REDIRECTS: OFF"
         | None -> ()
         match options.ResolverStrategyForTransitives with
         | Some ResolverStrategy.Min -> yield "STRATEGY: MIN"
@@ -247,7 +248,7 @@ module LockFileParser =
     | CopyLocal of bool
     | SpecificVersion of bool
     | CopyContentToOutputDir of CopyToOutputDirectorySettings
-    | Redirects of bool option
+    | Redirects of BindingRedirectsSettings option
     | ReferenceCondition of string
     | DirectDependenciesResolverStrategy of ResolverStrategy option
     | TransitiveDependenciesResolverStrategy of ResolverStrategy option
@@ -269,8 +270,9 @@ module LockFileParser =
         | _, String.RemovePrefix "REDIRECTS:" trimmed -> 
             let setting =
                 match trimmed.Trim() with
-                | String.EqualsIC "on" -> Some true
-                | String.EqualsIC "off" -> Some false
+                | String.EqualsIC "on" -> Some BindingRedirectsSettings.On
+                | String.EqualsIC "force" -> Some BindingRedirectsSettings.Force
+                | String.EqualsIC "off" -> Some BindingRedirectsSettings.Off
                 | _ -> None
 
             InstallOption (Redirects setting)

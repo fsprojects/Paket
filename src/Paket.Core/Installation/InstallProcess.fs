@@ -506,11 +506,6 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
             let first = ref true
 
-            let redirects =
-                match options.Redirects with
-                | true -> Some true
-                | false -> None
-
             let allKnownLibNames =
                 model
                 |> Seq.map (fun kv -> (snd kv.Value).GetAllLegacyReferenceAndFrameworkReferenceNames())
@@ -518,6 +513,17 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
             for g in lockFile.Groups do
                 let group = g.Value
+                let redirects =
+                    let r =
+                        if options.Redirects = BindingRedirectsSettings.Off then None
+                        else Some options.Redirects
+                    match g.Value.Options.Redirects ++ r with
+                    | Some BindingRedirectsSettings.On
+                    | Some BindingRedirectsSettings.Force -> Some true
+                    | Some BindingRedirectsSettings.Off -> Some false
+                    | _ -> None
+                    
+
                 model
                 |> Seq.filter (fun kv -> (fst kv.Key) = g.Key)
                 |> Seq.map (fun kv ->
@@ -530,7 +536,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 |> applyBindingRedirects
                     !first
                     options.CreateNewBindingFiles
-                    (g.Value.Options.Redirects ++ redirects)
+                    redirects
                     options.CleanBindingRedirects
                     (FileInfo project.FileName).Directory.FullName
                     g.Key
