@@ -742,6 +742,7 @@ let handleCommand silent command =
     | From_Bootstrapper
     | Version
     | Log_File _ -> failwithf "internal error: this code should never be reached."
+
 let main() =
     let resolution = Environment.GetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION")
     if System.String.IsNullOrEmpty resolution then
@@ -751,12 +752,11 @@ let main() =
 
     try
     let args = Environment.GetCommandLineArgs()
-    if args.Length = 1 && args.[0] = "restore" || args.Length = 2 && args.[0] = "--from-bootstrapper" && args.[1] = "restore" then
-        // fast restore route
-        // printUsage silent validateF commandF result
-        processWithValidationEx ignore false (fun _ -> true) (fun _ ->
-            Dependencies.Locate().Restore(false, None, false, false, false, false, None)) ()
-    else
+    match args with
+    | [| "restore" |] | [| "--from-bootstrapper"; "restore" |] ->
+        // fast restore route, see https://github.com/fsprojects/Argu/issues/90
+        processWithValidationEx ignore false (fun _ -> true) (fun _ -> Dependencies.Locate().Restore()) ()
+    | _ ->
         let parser = ArgumentParser.Create<Command>(programName = "paket",
                                                     helpTextMessage = sprintf "Paket version %s%sHelp was requested:" paketVersion Environment.NewLine,
                                                     errorHandler = new PaketExiter())
