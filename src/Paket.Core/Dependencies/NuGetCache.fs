@@ -357,9 +357,9 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
                 ZipFile.ExtractToDirectory(fileName, targetFolder)
             with
             | exn ->
-
                 let text = if detailed then sprintf "%s In rare cases a firewall might have blocked the download. Please look into the file and see if it contains text with further information." Environment.NewLine else ""
-                failwithf "Error during extraction of %s.%sMessage: %s%s" (Path.GetFullPath fileName) Environment.NewLine exn.Message text
+                let path = try Path.GetFullPath fileName with :? PathTooLongException -> sprintf "%s (!too long!)" fileName
+                raise <| Exception(sprintf "Error during extraction of %s.%s%s" path Environment.NewLine text, exn)
 
 
             cleanup directory
