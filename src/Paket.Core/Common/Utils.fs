@@ -719,13 +719,14 @@ module SafeWebResult =
 
 let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : string, iTry, nTries) =
     
-    let rec innerExceptions (exn:Exception) = [
-        if exn.InnerException <> null then
-            yield exn.InnerException.GetType().Name
-            yield! innerExceptions exn.InnerException
+    let rec getExceptionNames (exn:Exception) = [
+        if exn <> null then
+            yield exn.GetType().Name
+            if exn.InnerExceptions <> null then
+                yield! getExceptionNames exn.InnerException
     ]
 
-    let shouldRetry exn = isMonoRuntime && iTry < nTries && (innerExceptions exn |> List.contains "MonoBtlsException") && raise (Exception("Hello from _safeGetFromUrl.shouldRetry", exn))
+    let shouldRetry exn = isMonoRuntime && iTry < nTries && (getExceptionNames exn |> List.contains "MonoBtlsException")
     
     async {
         try
@@ -744,6 +745,7 @@ let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : s
         with
 
         | exn when shouldRetry exn ->
+            raise (Exception("Hello from _safeGetFromUrl.shouldRetry", exn))
             // there are issues with mono, try again :\
             Logging.traceWarnfn "Request failed, this is likely due to a mono issue. Trying again, this was try %i/%i" iTry nTries
             return! _safeGetFromUrl(auth, url, contentType, iTry + 1, nTries)
