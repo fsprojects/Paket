@@ -364,7 +364,7 @@ Target "MergeDotnetCoreIntoNuget" (fun _ ->
 
     let runTool = runCmdIn "tools" dotnetExePath
 
-    runTool """mergenupkg --source "%s" --other "%s" --framework netstandard1.6 """ nupkg netcoreNupkg
+    runTool """0x53A-mergenupkg --source "%s" --other "%s" --framework netstandard1.6 """ nupkg netcoreNupkg
 )
 
 Target "PublishNuGet" (fun _ ->
