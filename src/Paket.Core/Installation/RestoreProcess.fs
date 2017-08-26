@@ -362,105 +362,120 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
     let alternativeProjectRoot = None
     if not lockFileName.Exists then 
         failwithf "%s doesn't exist." lockFileName.FullName
-    let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
-    let targetFilter = 
-        targetFrameworks
-        |> Option.map (fun s -> s.Split(';') |> Array.map FrameworkDetection.Extract |> Array.choose id)
+    // Shortcut if we already restored before
+    let newHash = getSha512File lockFileName.FullName
+    let restoreHashFile = Path.Combine(root, Constants.PaketFilesFolderName, Constants.RestoreHashFile)
+    let inline isEarlyExit () =
+        if File.Exists restoreHashFile then
+            let oldHash = File.ReadAllText(restoreHashFile)
+            oldHash = newHash
+        else false
 
-    let lockFile,localFile,hasLocalFile =
-        let lockFile = LockFile.LoadFrom(lockFileName.FullName)
-        if not localFileName.Exists then
-            lockFile,LocalFile.empty,false
-        else
-            let localFile =
-                LocalFile.readFile localFileName.FullName
-                |> returnOrFail
-            LocalFile.overrideLockFile localFile lockFile,localFile,true
+    if isEarlyExit () then
+        tracefn "Last restore is still up 2 date."
+    else
+        let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
-    if not hasLocalFile && not ignoreChecks then
-        let hasAnyChanges,nugetChanges,remoteFilechanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
+        let targetFilter = 
+            targetFrameworks
+            |> Option.map (fun s -> s.Split(';') |> Array.map FrameworkDetection.Extract |> Array.choose id)
 
-        let checkResponse = if failOnChecks then failwithf else traceWarnfn
-        if hasAnyChanges then 
-            checkResponse "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
-            for (group, package, changes) in nugetChanges do
-                traceWarnfn "Changes were detected for %s/%s" (group.ToString()) (package.ToString())
-                for change in changes do
-                     traceWarnfn "    - %A" change
+        let lockFile,localFile,hasLocalFile =
+            let lockFile = LockFile.LoadFrom(lockFileName.FullName)
+            if not localFileName.Exists then
+                lockFile,LocalFile.empty,false
+            else
+                let localFile =
+                    LocalFile.readFile localFileName.FullName
+                    |> returnOrFail
+                LocalFile.overrideLockFile localFile lockFile,localFile,true
 
-    let groups =
-        match group with
-        | None -> lockFile.Groups 
-        | Some groupName -> 
-            match lockFile.Groups |> Map.tryFind groupName with
-            | None -> failwithf "The group %O was not found in the paket.lock file." groupName
-            | Some group -> [groupName,group] |> Map.ofList
+        if not hasLocalFile && not ignoreChecks then
+            let hasAnyChanges,nugetChanges,remoteFilechanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
 
-    let resolved = lazy (lockFile.GetGroupedResolution())
+            let checkResponse = if failOnChecks then failwithf else traceWarnfn
+            if hasAnyChanges then 
+                checkResponse "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
+                for (group, package, changes) in nugetChanges do
+                    traceWarnfn "Changes were detected for %s/%s" (group.ToString()) (package.ToString())
+                    for change in changes do
+                         traceWarnfn "    - %A" change
 
-    let referencesFileNames =
-        match projectFile with
-        | Some projectFileName ->
-            let referencesFile = FindOrCreateReferencesFile projectFileName
-            let projectFileInfo = FileInfo projectFileName
+        let groups =
+            match group with
+            | None -> lockFile.Groups 
+            | Some groupName -> 
+                match lockFile.Groups |> Map.tryFind groupName with
+                | None -> failwithf "The group %O was not found in the paket.lock file." groupName
+                | Some group -> [groupName,group] |> Map.ofList
 
-            createAlternativeNuGetConfig projectFileInfo
-            createProjectReferencesFiles dependenciesFile lockFile projectFileInfo referencesFile resolved targetFilter groups
+        let resolved = lazy (lockFile.GetGroupedResolution())
 
-            [referencesFile.FileName]
-        | None -> referencesFileNames
+        let referencesFileNames =
+            match projectFile with
+            | Some projectFileName ->
+                let referencesFile = FindOrCreateReferencesFile projectFileName
+                let projectFileInfo = FileInfo projectFileName
 
-    let tasks =
-        groups
-        |> Seq.map (fun kv ->
-            let allPackages = 
-                if List.isEmpty referencesFileNames then 
-                    kv.Value.Resolution
-                    |> Seq.map (fun kv -> kv.Key) 
-                else
-                    referencesFileNames
-                    |> List.toSeq
-                    |> computePackageHull kv.Key lockFile
+                createAlternativeNuGetConfig projectFileInfo
+                createProjectReferencesFiles dependenciesFile lockFile projectFileInfo referencesFile resolved targetFilter groups
 
-            let packages =
-                allPackages
-                |> Seq.filter (fun p ->
-                    match targetFilter with
-                    | None -> true
-                    | Some targets ->
-                        let key = kv.Key,p
-                        let resolvedPackage = resolved.Force().[key]
+                [referencesFile.FileName]
+            | None -> referencesFileNames
 
-                        match resolvedPackage.Settings.FrameworkRestrictions with
-                        | Requirements.ExplicitRestriction restrictions ->
-                            targets
-                            |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target))
-                        | _ -> true)
+        let tasks =
+            groups
+            |> Seq.map (fun kv ->
+                let allPackages = 
+                    if List.isEmpty referencesFileNames then 
+                        kv.Value.Resolution
+                        |> Seq.map (fun kv -> kv.Key) 
+                    else
+                        referencesFileNames
+                        |> List.toSeq
+                        |> computePackageHull kv.Key lockFile
+
+                let packages =
+                    allPackages
+                    |> Seq.filter (fun p ->
+                        match targetFilter with
+                        | None -> true
+                        | Some targets ->
+                            let key = kv.Key,p
+                            let resolvedPackage = resolved.Force().[key]
+
+                            match resolvedPackage.Settings.FrameworkRestrictions with
+                            | Requirements.ExplicitRestriction restrictions ->
+                                targets
+                                |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target))
+                            | _ -> true)
  
 
-            match dependenciesFile.Groups |> Map.tryFind kv.Value.Name with
-            | None ->
-                failwithf 
-                    "The group %O was found in the %s file but not in the %s file. Please run \"paket install\" again." 
-                    kv.Value
-                    Constants.LockFileName
-                    Constants.DependenciesFileName
-            | Some depFileGroup ->
-                let packages = Set.ofSeq packages
-                let overriden = 
-                    packages
-                    |> Set.filter (fun p -> LocalFile.overrides localFile (p,depFileGroup.Name))
+                match dependenciesFile.Groups |> Map.tryFind kv.Value.Name with
+                | None ->
+                    failwithf 
+                        "The group %O was found in the %s file but not in the %s file. Please run \"paket install\" again." 
+                        kv.Value
+                        Constants.LockFileName
+                        Constants.DependenciesFileName
+                | Some depFileGroup ->
+                    let packages = Set.ofSeq packages
+                    let overriden = 
+                        packages
+                        |> Set.filter (fun p -> LocalFile.overrides localFile (p,depFileGroup.Name))
 
-                restore(alternativeProjectRoot, root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages, overriden))
-        |> Seq.toArray
+                    restore(alternativeProjectRoot, root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages, overriden))
+            |> Seq.toArray
  
-    RunInLockedAccessMode(
-        root,
-        (fun () ->
-            for task in tasks do
-                task
-                |> Async.RunSynchronously
-                |> ignore
+        RunInLockedAccessMode(
+            root,
+            (fun () ->
+                for task in tasks do
+                    task
+                    |> Async.RunSynchronously
+                    |> ignore
 
-            CreateScriptsForGroups dependenciesFile lockFile groups))
+                CreateScriptsForGroups dependenciesFile lockFile groups
+                if targetFrameworks = None && projectFile = None && referencesFileNames = [] then
+                    File.WriteAllText(restoreHashFile, newHash)))
