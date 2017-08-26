@@ -61,7 +61,10 @@ module RuntimeGraphParser =
                 [ for s in t.Value :?> JObject :> IEnumerable<KeyValuePair<string, JToken>> do
                     match FrameworkDetection.Extract s.Key with
                     | Some fid ->
-                        yield fid, [ for rid in (s.Value :?> JArray) -> { Rid = string rid } ]
+                        yield fid,
+                            match s.Value with
+                            | :? JArray as j -> [ for rid in j -> { Rid = string rid } ]
+                            | t -> [ { Rid = string t } ]
                     | None -> failwithf "could not detect framework-identifier '%s'" s.Key ]
                 |> Map.ofSeq } ]
     (*{
@@ -205,7 +208,10 @@ module RuntimeGraph =
 
         let extractedDir = NuGetCache.ExtractPackageToUserFolder (targetFileName, package.Name, package.Version, package.IsCliTool, null) |> Async.RunSynchronously
         // 2. Get runtime graph
-        let runtime = Path.Combine(extractedDir, "runtime.json")
-        if File.Exists runtime then Some (runtime) else None
-        |> Option.map File.ReadAllText
-        |> Option.map RuntimeGraphParser.readRuntimeGraph
+        try
+            let runtime = Path.Combine(extractedDir, "runtime.json")
+            if File.Exists runtime then Some (runtime) else None
+            |> Option.map File.ReadAllText
+            |> Option.map RuntimeGraphParser.readRuntimeGraph
+        with e ->
+            raise <| exn(sprintf "Unable to parse runtime graph of '%O' '%O'" package.Name package.Version, e)
