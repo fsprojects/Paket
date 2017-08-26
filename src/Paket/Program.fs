@@ -22,11 +22,11 @@ type PaketExiter() =
                 tracen msg ; exit 0
             else traceError msg ; exit 1
 
-let processWithValidation silent validateF commandF (result : ParseResults<'T>) =
+let processWithValidationEx printUsage silent validateF commandF result =
     if not <| validateF result then
         traceError "Command was:"
         traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
-        result.Parser.PrintUsage() |> traceError
+        printUsage result
 
 #if NETCOREAPP1_0
         // Environment.ExitCode not supported in netcoreapp1.0
@@ -103,6 +103,10 @@ let processWithValidation silent validateF commandF (result : ParseResults<'T>) 
                 let omitted = Logging.getOmittedWarningCount()
                 if not verbose && omitted > 0 then
                     traceWarnfn "Paket omitted '%d' warnings similar to the ones above. You can see them in verbose mode" omitted
+
+
+let processWithValidation silent validateF commandF (result : ParseResults<'T>) =
+    processWithValidationEx (fun (r:ParseResults<'T>) -> r.Parser.PrintUsage() |> traceError) silent validateF commandF result
 
 let processCommand silent commandF result =
     processWithValidation silent (fun _ -> true) commandF result
@@ -745,9 +749,14 @@ let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
     let paketVersion = AssemblyVersionInformation.AssemblyInformationalVersion
 
-
-
     try
+    let args = Environment.GetCommandLineArgs()
+    if args.Length = 1 && args.[0] = "restore" || args.Length = 2 && args.[0] = "--from-bootstrapper" && args.[1] = "restore" then
+        // fast restore route
+        // printUsage silent validateF commandF result
+        processWithValidationEx ignore false (fun _ -> true) (fun _ ->
+            Dependencies.Locate().Restore(false, None, false, false, false, false, None)) ()
+    else
         let parser = ArgumentParser.Create<Command>(programName = "paket",
                                                     helpTextMessage = sprintf "Paket version %s%sHelp was requested:" paketVersion Environment.NewLine,
                                                     errorHandler = new PaketExiter())
