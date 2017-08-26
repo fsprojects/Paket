@@ -106,7 +106,7 @@ let removeOlderVersionsFromCache(cache:Cache, packageName:PackageName, versions:
             | Some CacheType.CurrentVersion ->
                 let fileNames =
                     versions
-                    |> Seq.map (fun v -> packageName.ToString() + "." + v.Normalize() + ".nupkg" |> normalizePath)
+                    |> Seq.map (fun v -> NuGetCache.GetPackageFileName packageName v |> normalizePath)
                     |> Set.ofSeq
 
                 targetFolder.EnumerateFiles(packageName.ToString() + ".*.nupkg")

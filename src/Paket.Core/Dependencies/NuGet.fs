@@ -603,13 +603,16 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
             let _,v,_ = List.head sorted
             SemVer.Parse v,sorted |> List.map (fun (_,_,x) -> x)) }
 
+let private getLicenseFile (packageName:PackageName) version =
+    Path.Combine(NuGetCache.GetTargetUserFolder packageName version, NuGetCache.GetLicenseFileName packageName version)
+
 /// Downloads the given package to the NuGet Cache folder
 let DownloadPackage(alternativeProjectRoot, root, config:PackagesFolderGroupConfig, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, force, detailed) =
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
-    let normalizedNupkgName = packageName.ToString() + "." + version.Normalize() + ".nupkg"
+    let normalizedNupkgName = NuGetCache.GetPackageFileName packageName version
     let targetFileName = NuGetCache.GetTargetUserNupkg packageName version
     let targetFile = FileInfo targetFileName
-    let licenseFileName = Path.Combine(NuGetCache.GetTargetUserFolder packageName version, packageName.ToString() + "." + version.Normalize() + ".license.html")
+    let licenseFileName = getLicenseFile packageName version
 
     let rec getFromCache (caches:Cache list) =
         match caches with

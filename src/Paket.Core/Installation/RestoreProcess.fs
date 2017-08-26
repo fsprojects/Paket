@@ -112,20 +112,8 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
 
                 return! extractPackage caches package alternativeProjectRoot root source groupName v includeVersionInPath force
 
-            | LocalNuGet(path,_) ->
-                let path = Utils.normalizeLocalPath path
-                let di = Utils.getDirectoryInfoForLocalNuGetFeed path alternativeProjectRoot root
-                let nupkg = NuGetLocal.findLocalPackage di.FullName package.Name v
-
-                CopyToCaches force caches nupkg.FullName
-
-                let! cacheFolder = NuGetCache.ExtractPackageToUserFolder(nupkg.FullName, package.Name, package.Version, package.IsCliTool, false)
-                let! folder = NuGetCache.CopyFromCache(resolvedStorage, nupkg.FullName, "", package.Name, v, force, false)
-                let extractedFolder =
-                    match folder with
-                    | Some f -> f
-                    | None -> cacheFolder
-                return package, NuGet.GetContent extractedFolder
+            | LocalNuGet(path,_) as source ->
+                return! extractPackage caches package alternativeProjectRoot root source groupName v includeVersionInPath force
         }
 
         // manipulate overridenFile after package extraction

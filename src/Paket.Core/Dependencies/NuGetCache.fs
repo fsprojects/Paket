@@ -242,20 +242,24 @@ let fixArchive fileName =
     if isMonoRuntime then
         fixDatesInArchive fileName
 
+let GetLicenseFileName (packageName:PackageName) (version:SemVerInfo) = packageName.ToString() + "." + version.Normalize() + ".license.html"
+let GetPackageFileName (packageName:PackageName) (version:SemVerInfo) = packageName.ToString() + "." + version.Normalize() + ".nupkg"
 
-let inline isExtracted (directory:DirectoryInfo) fileName =
-    let fi = FileInfo(fileName)
+let inline isExtracted (directory:DirectoryInfo) (packageName:PackageName) (version:SemVerInfo) =
+    let inDir f =  Path.GetFullPath(Path.Combine(directory.FullName, f))
+    let packFile = GetPackageFileName packageName version |> inDir
+    let licenseFile = GetLicenseFileName packageName version |> inDir
+    let fi = FileInfo(packFile)
     if not fi.Exists then false else
     if not directory.Exists then false else
     directory.EnumerateFileSystemInfos()
-    |> Seq.exists (fun f -> f.FullName <> fi.FullName)
+    |> Seq.exists (fun f -> f.FullName <> fi.FullName && f.FullName <> licenseFile)
 
 let IsPackageVersionExtracted(config:ResolvedPackagesFolder, packageName:PackageName, version:SemVerInfo) =
     match config.Path with
     | Some target ->
         let targetFolder = DirectoryInfo(target)
-        let targetFileName = packageName.ToString() + "." + version.Normalize() + ".nupkg"
-        isExtracted targetFolder targetFileName
+        isExtracted targetFolder packageName version
     | None ->
         // Need to extract in .nuget dir?
         true
@@ -295,7 +299,7 @@ let rec private cleanup (dir : DirectoryInfo) =
 let GetTargetUserFolder packageName (version:SemVerInfo) =
     DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,packageName.ToString(),version.Normalize())).FullName
 let GetTargetUserNupkg packageName (version:SemVerInfo) =
-    let normalizedNupkgName = packageName.ToString() + "." + version.Normalize() + ".nupkg"
+    let normalizedNupkgName = GetPackageFileName packageName version
     let path = GetTargetUserFolder packageName version
     Path.Combine(path, normalizedNupkgName)
 
@@ -315,7 +319,7 @@ let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, ver
             DirectoryInfo(dir)
 
         use _ = Profile.startCategory Profile.Category.FileIO
-        if isExtracted targetFolder fileName |> not then
+        if isExtracted targetFolder packageName version |> not then
             Directory.CreateDirectory(targetFolder.FullName) |> ignore
             let fi = FileInfo fileName
             let targetPackageFileName = Path.Combine(targetFolder.FullName,fi.Name)
@@ -342,7 +346,7 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
     async {
         use _ = Profile.startCategory Profile.Category.FileIO
         let directory = DirectoryInfo(targetFolder)
-        if isExtracted directory fileName then
+        if isExtracted directory packageName version then
              if verbose then
                  verbosefn "%O %O already extracted" packageName version
         else
