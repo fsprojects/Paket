@@ -364,12 +364,12 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         failwithf "%s doesn't exist." lockFileName.FullName
 
     // Shortcut if we already restored before
-    let newHash = getSha512File lockFileName.FullName
-    let restoreHashFile = Path.Combine(root, Constants.PaketFilesFolderName, Constants.RestoreHashFile)
+    let newContents = File.ReadAllText(lockFileName.FullName)
+    let restoreCacheFile = Path.Combine(root, Constants.PaketFilesFolderName, Constants.RestoreHashFile)
     let inline isEarlyExit () =
-        if File.Exists restoreHashFile then
-            let oldHash = File.ReadAllText(restoreHashFile)
-            oldHash = newHash
+        if File.Exists restoreCacheFile then
+            let oldContents = File.ReadAllText(restoreCacheFile)
+            oldContents = newContents
         else false
 
     if isEarlyExit () then
@@ -478,4 +478,4 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
                 CreateScriptsForGroups dependenciesFile lockFile groups
                 if targetFrameworks = None && projectFile = None && referencesFileNames = [] then
-                    File.WriteAllText(restoreHashFile, newHash)))
+                    File.WriteAllText(restoreCacheFile, newContents)))

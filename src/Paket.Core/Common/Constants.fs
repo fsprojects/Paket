@@ -15,7 +15,7 @@ let [<Literal>] LockFileName              = "paket.lock"
 /// 'paket.local'
 let [<Literal>] LocalFileName             = "paket.local"
 /// 'paket.restore.sha512'
-let [<Literal>] RestoreHashFile           = "paket.restore.sha512"
+let [<Literal>] RestoreHashFile           = "paket.restore.cached"
 /// 'paket.dependencies'
 let [<Literal>] DependenciesFileName      = "paket.dependencies"
 /// '.paket'

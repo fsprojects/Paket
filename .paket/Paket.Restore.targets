@@ -6,6 +6,7 @@
     <IsPaketRestoreTargetsFileLoaded>true</IsPaketRestoreTargetsFileLoaded>
     <PaketToolsPath>$(MSBuildThisFileDirectory)</PaketToolsPath>
     <PaketRootPath>$(MSBuildThisFileDirectory)..\</PaketRootPath>
+    <PaketRestoreCacheFile>$(PaketRootPath)paket-files\paket.restore.cached</PaketRestoreCacheFile>
     <PaketLockFilePath>$(PaketRootPath)paket.lock</PaketLockFilePath>
     <MonoPath Condition="'$(MonoPath)' == '' And Exists('/Library/Frameworks/Mono.framework/Commands/mono')">/Library/Frameworks/Mono.framework/Commands/mono</MonoPath>
     <MonoPath Condition="'$(MonoPath)' == ''">mono</MonoPath>
@@ -31,9 +32,10 @@
     <PropertyGroup>
       <PaketRestoreRequired>true</PaketRestoreRequired>
     </PropertyGroup>
-    <PropertyGroup Condition="Exists('$(PaketRootPath)paket-files\paket.restore.sha512') ">
-      <PaketRestoreCachedHash>[System.IO.File]::ReadAllText('$(PaketRootPath)paket-files\paket.restore.sha512')</PaketRestoreCachedHash>
-      <PaketRestoreLockFileHash>[System.Convert]::ToBase64String([System.Security.Cryptography.SHA512]::Create().ComputeHash([System.IO.File]::OpenRead('$(PaketLockFilePath)')))</PaketRestoreLockFileHash>
+    <PropertyGroup Condition="Exists('$(PaketRestoreCacheFile)') ">
+      <PaketRestoreCachedHash>$([System.IO.File]::ReadAllText('$(PaketRestoreCacheFile)'))</PaketRestoreCachedHash>
+      <!--<PaketRestoreLockFileHash>$([System.Convert]::ToBase64String($([System.Security.Cryptography.SHA512]::Create().ComputeHash($([System.IO.File]::OpenRead('$(PaketLockFilePath)'))))))</PaketRestoreLockFileHash>-->
+      <PaketRestoreLockFileHash>$([System.IO.File]::ReadAllText('$(PaketLockFilePath)'))</PaketRestoreLockFileHash>
       <PaketRestoreRequired>true</PaketRestoreRequired>
       <PaketRestoreRequired Condition=" '$(PaketRestoreLockFileHash)' == '$(PaketRestoreCachedHash)' ">false</PaketRestoreRequired>
       <PaketRestoreRequired Condition=" '$(PaketRestoreLockFileHash)' == '' ">true</PaketRestoreRequired>
