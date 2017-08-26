@@ -531,13 +531,21 @@ open Octokit
 
 Target "ReleaseGitHub" (fun _ ->
     let user =
-        match getBuildParam "github_user", getBuildParam "github-user" with
-        | s, _ | _, s when not (String.IsNullOrWhiteSpace s) -> s
-        | _ -> getUserInput "Username: "
+        match getBuildParam "github_user" with
+        | s when not (String.IsNullOrWhiteSpace s) -> s
+        | _ ->
+            eprintfn "Please update your release script to set 'github_user'!"
+            match getBuildParam "github-user" with
+            | s when not (String.IsNullOrWhiteSpace s) -> s
+            | _ -> getUserInput "Username: "
     let pw =
-        match getBuildParam "github_pw", getBuildParam "github-pw" with
-        | s, _ | _, s when not (String.IsNullOrWhiteSpace s) -> s
-        | _ -> getUserPassword "Password: "
+        match getBuildParam "github_password" with
+        | s when not (String.IsNullOrWhiteSpace s) -> s
+        | _ ->
+            eprintfn "Please update your release script to set 'github_password'!"
+            match getBuildParam "github_pw", getBuildParam "github-pw" with
+            | s, _ | _, s when not (String.IsNullOrWhiteSpace s) -> s
+            | _ -> getUserPassword "Password: "
     let remote =
         Git.CommandHelper.getGitResult "" "remote -v"
         |> Seq.filter (fun (s: string) -> s.EndsWith("(push)"))
