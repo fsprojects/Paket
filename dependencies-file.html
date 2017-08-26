@@ -242,6 +242,34 @@ the installation to these. You can control this in the
 </code></pre></td></tr></table>
 <p>If you change the target framework of the projects then you need to run
 <a href="paket-install.html"><code>paket install</code></a> again.</p>
+<h3><a name="Disable-packages-folder" class="anchor" href="#Disable-packages-folder">Disable packages folder</a></h3>
+<p>With the net netcore release and the switch to provide more and more netstandard-only packages
+the Paket team noticed an dramatic increase of the well known "packages" folder.
+Historically one way was to tell Paket that you only want to compile for <code>framework: net45</code>.
+However, this doesn't prevent netstandard dependencies in all situations.
+On the other side more features are provided by Paket and the packages folder has become more and more redundant:
+- Load scripts can reference the files in the global cache
+- csproj/fsproj files can references files in the global cache
+- netcore project files don't require any explicit dll-references
+Therefore, the paket team decided to make the "packages" folder opt-out.</p>
+<blockquote>
+<p>This feature is currently considered beta</p>
+</blockquote>
+<p>You can opt-out of generating the <code>packages</code> folder by using the <code>storage</code> option:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="c">// Do not extract into the "packages" folder but use a globally shared directory</span>
+storage: none
+<span class="k">source</span> https://nuget.org/api/v2
+
+<span class="k">nuget</span> jQuery
+</code></pre></td></tr></table>
+<p>The storage option may be overriden by packages.
+However, the behavior is undefined and may change (please open an issue if you depend on the current behavior or we break you).</p>
 <h3><a name="Controlling-whether-content-files-should-be-copied-to-the-project" class="anchor" href="#Controlling-whether-content-files-should-be-copied-to-the-project">Controlling whether content files should be copied to the project</a></h3>
 <p>The <code>content</code> option controls the installation of any content files:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>

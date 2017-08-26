@@ -96,53 +96,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '112', 112)" onmouseover="showTip(event, '112', 112)">
-            CleanUp (...)
-          </code>
-          <div class="tip" id="112">
-            <strong>Signature:</strong> (root:string * dependenciesFile:DependenciesFile * lockFile:LockFile) -&gt; unit<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/GarbageCollection.fs#L103-103" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Remove all packages from the packages folder which are not part of the lock file.</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '113', 113)" onmouseover="showTip(event, '113', 113)">
-            cleanupCaches dependenciesFile lockFile
-          </code>
-          <div class="tip" id="113">
-            <strong>Signature:</strong> dependenciesFile:DependenciesFile -&gt; lockFile:LockFile -&gt; unit<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/GarbageCollection.fs#L87-87" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
           <code onmouseout="hideTip(event, '114', 114)" onmouseover="showTip(event, '114', 114)">
-            deleteUnusedPackages root lockFile
+            CleanUp (dependenciesFile, lockFile)
           </code>
           <div class="tip" id="114">
-            <strong>Signature:</strong> root:string -&gt; lockFile:LockFile -&gt; unit<br />
+            <strong>Signature:</strong> (dependenciesFile:DependenciesFile * lockFile:LockFile) -&gt; unit<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/GarbageCollection.fs#L39-39" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/GarbageCollection.fs#L134-134" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -155,10 +117,48 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '115', 115)" onmouseover="showTip(event, '115', 115)">
-            discoverExtractedPackages root
+            cleanupCaches dependenciesFile lockFile
           </code>
           <div class="tip" id="115">
-            <strong>Signature:</strong> root:string -&gt; ExtractedPackage list<br />
+            <strong>Signature:</strong> dependenciesFile:DependenciesFile -&gt; lockFile:LockFile -&gt; unit<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/GarbageCollection.fs#L118-118" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '116', 116)" onmouseover="showTip(event, '116', 116)">
+            deleteUnusedPackages lockFile
+          </code>
+          <div class="tip" id="116">
+            <strong>Signature:</strong> lockFile:LockFile -&gt; unit<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/GarbageCollection.fs#L38-38" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Remove all packages from the packages folder which are not part of the lock file.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '117', 117)" onmouseover="showTip(event, '117', 117)">
+            discoverDirectExtractedPackages (...)
+          </code>
+          <div class="tip" id="117">
+            <strong>Signature:</strong> groupName:GroupName -&gt; groupPackagesDirectory:DirectoryInfo -&gt; ExtractedPackage list<br />
                       </div>
         </td>
         <td class="xmldoc">
@@ -174,15 +174,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '116', 116)" onmouseover="showTip(event, '116', 116)">
+          <code onmouseout="hideTip(event, '118', 118)" onmouseover="showTip(event, '118', 118)">
             removeOlderVersionsFromCache (...)
           </code>
-          <div class="tip" id="116">
+          <div class="tip" id="118">
             <strong>Signature:</strong> (cache:Cache * packageName:PackageName * versions:seq&lt;SemVerInfo&gt;) -&gt; unit<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/GarbageCollection.fs#L56-56" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/GarbageCollection.fs#L87-87" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
