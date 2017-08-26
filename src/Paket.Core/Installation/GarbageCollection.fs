@@ -13,7 +13,7 @@ type ExtractedPackage = {
 }
 
 /// Discover all packages currently available in the packages folder
-let discoverExtractedPackages root : ExtractedPackage list =
+let discoverDirectExtractedPackages groupName groupPackagesDirectory : ExtractedPackage list =
     let packageInDir groupName (dir:DirectoryInfo) =
         match dir.GetFiles("*.nuspec") with
         | [| nuspec |] ->
@@ -25,30 +25,61 @@ let discoverExtractedPackages root : ExtractedPackage list =
         | _ -> None
 
     let findGroupPackages groupName (groupDir:DirectoryInfo) =
-        groupDir.GetDirectories()
-        |> Array.choose (packageInDir groupName)
+        if groupDir.Exists then
+            groupDir.GetDirectories()
+            |> Array.choose (packageInDir groupName)
+        else [||]
 
-    let packagesFolder = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
-    [
-        findGroupPackages Constants.MainDependencyGroup packagesFolder
-        packagesFolder.GetDirectories() 
-        |> Array.collect (fun dir -> findGroupPackages (GroupName dir.Name) dir)
-    ] |> Array.concat |> List.ofArray
+    let packagesFolder = groupPackagesDirectory
+    findGroupPackages groupName packagesFolder
+    |> List.ofArray
 
 /// Remove all packages from the packages folder which are not part of the lock file.
-let deleteUnusedPackages root (lockFile:LockFile) =
+let deleteUnusedPackages (lockFile:LockFile) =
     let resolution = lockFile.GetGroupedResolution()
 
-    for package in discoverExtractedPackages root do
+    let extractedPackages =
+        lockFile.Groups
+        |> Seq.collect (fun g ->
+            let groupName = g.Key
+            let defaultStorage = defaultArg g.Value.Options.Settings.StorageConfig PackagesFolderGroupConfig.Default
+            g.Value.Resolution
+            |> Seq.map (fun r -> defaultArg r.Value.Settings.StorageConfig defaultStorage)
+            |> Seq.append [defaultStorage; PackagesFolderGroupConfig.DefaultPackagesFolder]
+            |> Seq.map (fun storageOption -> groupName, storageOption))
+        // always consider default packages folder for GC
+        |> Seq.append [Constants.MainDependencyGroup, PackagesFolderGroupConfig.DefaultPackagesFolder]
+        |> Seq.distinct
+        |> Seq.collect (fun (groupName, storage) ->
+            match storage.ResolveGroupDir lockFile.RootPath groupName with
+            | Some path ->
+                discoverDirectExtractedPackages groupName (DirectoryInfo path)
+                |> List.map (fun p -> p, Some path)
+            | None -> [])
+
+    for package, groupDir in extractedPackages do
         try
-            if resolution |> Map.containsKey (package.GroupName, package.PackageName) |> not then
-                if resolution |> Seq.exists (fun kv -> 
-                                                    fst kv.Key = package.GroupName && 
-                                                     (kv.Value.Name.ToString() + "." + kv.Value.Version.ToString() = package.PackageName.ToString() ||
-                                                      kv.Value.Name.ToString() + "." + kv.Value.Version.Normalize() = package.PackageName.ToString())) |> not
-                then
+            let containsKey = resolution |> Map.containsKey (package.GroupName, package.PackageName)
+            let findNormalized =
+                lazy
+                    resolution |> Seq.exists (fun kv ->
+                        fst kv.Key = package.GroupName &&
+                            (kv.Value.Name.ToString() + "." + kv.Value.Version.ToString() = package.PackageName.ToString() ||
+                             kv.Value.Name.ToString() + "." + kv.Value.Version.Normalize() = package.PackageName.ToString()))
+            if not containsKey && not findNormalized.Value then
+                tracefn "Garbage collecting %O" package.Path
+                Utils.deleteDir package.Path
+            else
+                // might be in the resultion, but the storage path changed
+                let group = lockFile.Groups.[package.GroupName]
+                let packageInfo = group.GetPackage package.PackageName
+                let storageConfig = packageInfo.Settings.StorageConfig
+                let packageStorage = defaultArg storageConfig PackagesFolderGroupConfig.Default
+                let resolvePack = packageStorage.ResolveGroupDir lockFile.RootPath package.GroupName
+                if groupDir <> resolvePack then
                     tracefn "Garbage collecting %O" package.Path
                     Utils.deleteDir package.Path
+
         with
         | exn -> traceWarnfn "Garbage collection on '%s' failed. %s." package.Path.FullName exn.Message
 
@@ -75,7 +106,7 @@ let removeOlderVersionsFromCache(cache:Cache, packageName:PackageName, versions:
             | Some CacheType.CurrentVersion ->
                 let fileNames =
                     versions
-                    |> Seq.map (fun v -> packageName.ToString() + "." + v.Normalize() + ".nupkg" |> normalizePath)
+                    |> Seq.map (fun v -> NuGetCache.GetPackageFileName packageName v |> normalizePath)
                     |> Set.ofSeq
 
                 targetFolder.EnumerateFiles(packageName.ToString() + ".*.nupkg")
@@ -100,7 +131,7 @@ let cleanupCaches (dependenciesFile:DependenciesFile) (lockFile:LockFile) =
 
 
 /// Remove all packages from the packages folder which are not part of the lock file.
-let CleanUp(root, dependenciesFile:DependenciesFile, lockFile) =
-    deleteUnusedPackages root lockFile
+let CleanUp(dependenciesFile:DependenciesFile, lockFile) =
+    deleteUnusedPackages lockFile
 
     cleanupCaches dependenciesFile lockFile

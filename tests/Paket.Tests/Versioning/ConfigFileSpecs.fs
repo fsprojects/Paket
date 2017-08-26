@@ -17,7 +17,23 @@ let sampleDoc() =
     doc
 
 [<Test>]
-let ``get username and password from node``() = 
+let ``get username, password, and auth type from node``() = 
+    let doc = sampleDoc()
+    let node = doc.CreateElement("credential")
+    node.SetAttribute("username", "demo-user")
+    let salt, password = Encrypt "demopassword"
+    node.SetAttribute("password", password)
+    node.SetAttribute("salt", salt)
+    node.SetAttribute("authType", "ntlm")
+    // Act
+    let (Credentials(username, password, Utils.AuthType.NTLM)) = getAuthFromNode node
+
+    // Assert
+    username |> shouldEqual  "demo-user"
+    password |> shouldEqual  "demopassword"
+
+[<Test>]
+let ``get username and password from node without auth type``() = 
     let doc = sampleDoc()
     let node = doc.CreateElement("credential")
     node.SetAttribute("username", "demo-user")
@@ -25,7 +41,7 @@ let ``get username and password from node``() =
     node.SetAttribute("password", password)
     node.SetAttribute("salt", salt)
     // Act
-    let (Credentials(username, password)) = getAuthFromNode node
+    let (Credentials(username, password, Utils.AuthType.Basic)) = getAuthFromNode node
 
     // Assert
     username |> shouldEqual  "demo-user"

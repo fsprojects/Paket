@@ -1,4 +1,12 @@
-#### 5.89.1 - 21.08.2017
+#### 5.91.0 - 26.08.2017
+* BUGFIX: fix a bug in the runtime parser - https://github.com/fsprojects/Paket/pull/2665
+* BUGFIX: Add props to correct Paket.Restore.targets - https://github.com/fsprojects/Paket/pull/2665
+* Make packages folder optional - https://github.com/fsprojects/Paket/pull/2638
+
+#### 5.90.1 - 25.08.2017
+* Support for NTLM auth - https://github.com/fsprojects/Paket/pull/2658
+* BUGFIX: fix-nuspecs should break at ; - https://github.com/fsprojects/Paket/issues/2661
+* BUGFIX: V3 normalization fix for https://github.com/fsprojects/Paket/issues/2652
 * BUGFIX: fix crash when a package contains an invalid file - https://github.com/fsprojects/Paket/pull/2644
 
 #### 5.89.0 - 21.08.2017

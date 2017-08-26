@@ -36,7 +36,7 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
         if installAfter then
             let forceTouch = hasChanged && options.TouchAffectedRefs
             InstallProcess.Install(options, forceTouch, dependenciesFile, lockFile, updatedGroups)
-            GarbageCollection.CleanUp(Path.GetDirectoryName dependenciesFileName, dependenciesFile, lockFile)
+            GarbageCollection.CleanUp(dependenciesFile, lockFile)
 
 // Add a package with the option to add it to a specified project.
 let AddToProject(dependenciesFileName, groupName, package, version, options : InstallerOptions, projectName, installAfter) =

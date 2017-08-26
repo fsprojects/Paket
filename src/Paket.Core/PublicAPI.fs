@@ -11,7 +11,7 @@ open Chessie.ErrorHandling
 
 /// Paket API which is optimized for F# Interactive use.
 type Dependencies(dependenciesFileName: string) =
-    let listPackages (packages: System.Collections.Generic.KeyValuePair<GroupName*PackageName, PackageResolver.ResolvedPackage> seq) =
+    let listPackages (packages: System.Collections.Generic.KeyValuePair<GroupName*PackageName, PackageResolver.PackageInfo> seq) =
         packages
         |> Seq.map (fun kv ->
                 let groupName,packageName = kv.Key
@@ -24,7 +24,7 @@ type Dependencies(dependenciesFileName: string) =
             if verbose then
                verbosefn "Emptying '%s'" path
             emptyDir (DirectoryInfo path)
-        
+
         emptyDir (Constants.UserNuGetPackagesFolder)
         emptyDir (Constants.NuGetCacheFolder)
         emptyDir (Constants.GitRepoCacheFolder)
@@ -161,10 +161,10 @@ type Dependencies(dependenciesFileName: string) =
                                               projectName, installAfter))
 
     /// Adds credentials for a Nuget feed
-    member this.AddCredentials(source: string, username: string, password : string) : unit =
+    member this.AddCredentials(source: string, username: string, password : string, authType : string) : unit =
         RunInLockedAccessMode(
             this.RootPath,
-            fun () -> ConfigFile.askAndAddAuth source username password |> returnOrFail )
+            fun () -> ConfigFile.askAndAddAuth source username password authType |> returnOrFail )
   
     /// Adds a token for a source
     member this.AddToken(source : string, token : string) : unit =
@@ -446,12 +446,11 @@ type Dependencies(dependenciesFileName: string) =
         match this.GetLockFile().Groups |> Map.tryFind groupName with
         | None -> failwithf "Group %O can't be found in paket.lock." groupName
         | Some group ->
-            match group.Resolution.TryFind packageName with
+            match group.TryFind(packageName) with
             | None -> failwithf "Package %O is not installed in group %O." packageName groupName
             | Some resolvedPackage ->
-                let folder = 
-                    getTargetFolder this.RootPath groupName resolvedPackage.Name resolvedPackage.Version (defaultArg resolvedPackage.Settings.IncludeVersionInPath false)
-                    |> Path.GetFullPath
+                let packageName = resolvedPackage.Name
+                let folder = resolvedPackage.Folder this.RootPath groupName
 
                 InstallModel.CreateFromContent(
                     resolvedPackage.Name, 

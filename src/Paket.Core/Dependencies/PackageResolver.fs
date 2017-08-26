@@ -54,6 +54,7 @@ type ResolvedPackage = {
                 "%A\nDependencies -\n%s\nSource - %A\nInstall Settings\n%A"
                     self.Name deps self.Source self.Settings
 
+
 type PackageResolution = Map<PackageName, ResolvedPackage>
 
 type ResolverStep = {
@@ -246,6 +247,7 @@ module Resolution =
         | ResolutionRaw.ConflictRaw conf -> Conflict conf
     let Ok resolution =
         Resolution.ofRaw [] (ResolutionRaw.OkRaw resolution)
+
 type Resolution with
 
     member self.GetConflicts () = Resolution.getConflicts self
@@ -1339,3 +1341,20 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                     else reraise()
             | e when exceptionThrown ->
                 traceErrorfn "Error while waiting for worker to finish: %O" e
+
+
+type PackageInfo =
+  { Resolved : ResolvedPackage
+    GroupSettings : InstallSettings
+    Settings : InstallSettings }
+    member x.Name = x.Resolved.Name
+    member x.Version = x.Resolved.Version
+    member x.Dependencies = x.Resolved.Dependencies
+    member x.Unlisted = x.Resolved.Unlisted
+    member x.IsRuntimeDependency = x.Resolved.IsRuntimeDependency
+    member x.IsCliTool = x.Resolved.IsCliTool
+    member x.Source = x.Resolved.Source
+    static member from v s =
+      { Resolved = v
+        GroupSettings = s
+        Settings = v.Settings + s }
