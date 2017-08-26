@@ -232,7 +232,7 @@ let GetLicenseFileName (packageName:PackageName) (version:SemVerInfo) = packageN
 let GetPackageFileName (packageName:PackageName) (version:SemVerInfo) = packageName.ToString() + "." + version.Normalize() + ".nupkg"
 
 let inline isExtracted (directory:DirectoryInfo) (packageName:PackageName) (version:SemVerInfo) =
-    let inDir f =  Path.GetFullPath(Path.Combine(directory.FullName, f))
+    let inDir f = Path.Combine(directory.FullName, f)
     let packFile = GetPackageFileName packageName version |> inDir
     let licenseFile = GetLicenseFileName packageName version |> inDir
     let fi = FileInfo(packFile)
