@@ -28,7 +28,8 @@ let ``#49 windsor should resolve correctly``() =
 
 [<Test>]
 let ``#51 should resolve with pessimistic strategy correctly``() =
-    let lockFile = update "i000051-resolve-pessimistic"
+    // TODO: change back to i000051-resolve-pessimistic
+    let lockFile = update "i000051"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Windsor-log4net"].Version
     |> shouldEqual (SemVer.Parse "3.2.0.1")
 

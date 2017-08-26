@@ -51,6 +51,10 @@ allows you to use specialized NuGet packages that provide `dotnet` CLI tools.
 
 CLI tools are only available for .NET SDK-based projects.
 
+> Consider setting `storage: none` in your dependencies file for the relevant groups to mirror NuGet behavior and
+> not copy all dependencies to the packages folder. This will keep your repository folder small and clean.
+> Please read the relevant section of the [`paket.dependencies` file](dependencies-file.html) documentation.
+
 ### Installing dependencies
 
 Install all required packages with:

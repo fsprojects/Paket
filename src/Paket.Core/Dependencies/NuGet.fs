@@ -603,13 +603,16 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
             let _,v,_ = List.head sorted
             SemVer.Parse v,sorted |> List.map (fun (_,_,x) -> x)) }
 
+let private getLicenseFile (packageName:PackageName) version =
+    Path.Combine(NuGetCache.GetTargetUserFolder packageName version, NuGetCache.GetLicenseFileName packageName version)
+
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, force, detailed) =
+let DownloadPackage(alternativeProjectRoot, root, config:PackagesFolderGroupConfig, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, force, detailed) =
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
-    let normalizedNupkgName = packageName.ToString() + "." + version.Normalize() + ".nupkg"
-    let targetFileName = Path.Combine(Constants.NuGetCacheFolder, normalizedNupkgName)
+    let normalizedNupkgName = NuGetCache.GetPackageFileName packageName version
+    let targetFileName = NuGetCache.GetTargetUserNupkg packageName version
     let targetFile = FileInfo targetFileName
-    let licenseFileName = Path.Combine(Constants.NuGetCacheFolder, packageName.ToString() + "." + version.Normalize() + ".license.html")
+    let licenseFileName = getLicenseFile packageName version
 
     let rec getFromCache (caches:Cache list) =
         match caches with
@@ -648,6 +651,8 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                     let nupkg = NuGetLocal.findLocalPackage di.FullName packageName version
 
                     use _ = Profile.startCategory Profile.Category.FileIO
+                    let parent = Path.GetDirectoryName targetFileName
+                    if not (Directory.Exists parent) then Directory.CreateDirectory parent |> ignore
                     File.Copy(nupkg.FullName,targetFileName)
                 | _ ->
                 // discover the link on the fly
@@ -678,6 +683,8 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
 
                     if authenticated && verbose then
                         tracefn "Downloading from %O to %s" !downloadUrl targetFileName
+                    let dir = Path.GetDirectoryName targetFileName
+                    if Directory.Exists dir |> not then Directory.CreateDirectory dir |> ignore
 
                     use trackDownload = Profile.startCategory Profile.Category.NuGetDownload
                     let! license = Async.StartChild(DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
@@ -756,6 +763,12 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
 
     async {
         do! download true 0
-        let! files = NuGetCache.CopyFromCache(root, groupName, targetFile.FullName, licenseFileName, packageName, version, isCliTool, includeVersionInPath, force, detailed)
-        return targetFileName,files
+        let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, isCliTool, detailed)
+        let configResolved = config.Resolve root groupName packageName version includeVersionInPath
+        let! files = NuGetCache.CopyFromCache(configResolved, targetFile.FullName, licenseFileName, packageName, version, force, detailed)
+        let finalFolder =
+            match files with
+            | Some f -> f
+            | None -> extractedUserFolder
+        return targetFileName,finalFolder
     }

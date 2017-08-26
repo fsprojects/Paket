@@ -698,6 +698,7 @@ type InstallSettings =
       CreateBindingRedirects : BindingRedirectsSettings option
       CopyLocal : bool option
       SpecificVersion : bool option
+      StorageConfig : PackagesFolderGroupConfig option
       Excludes : string list
       Aliases : Map<string,string>
       CopyContentToOutputDirectory : CopyToOutputDirectorySettings option 
@@ -706,6 +707,7 @@ type InstallSettings =
     static member Default =
         { CopyLocal = None
           SpecificVersion = None
+          StorageConfig = None
           ImportTargets = None
           FrameworkRestrictions = ExplicitRestriction FrameworkRestriction.NoRestriction
           IncludeVersionInPath = None
@@ -724,6 +726,11 @@ type InstallSettings =
               | None -> ()
               match this.SpecificVersion with
               | Some x -> yield "specific_version: " + x.ToString().ToLower()
+              | None -> ()
+              match this.StorageConfig with
+              | Some (PackagesFolderGroupConfig.NoPackagesFolder) -> yield "storage: none"
+              | Some (PackagesFolderGroupConfig.GivenPackagesFolder s) -> failwithf "Not implemented yet."
+              | Some (PackagesFolderGroupConfig.DefaultPackagesFolder) -> failwithf "storage: packages"
               | None -> ()
               match this.CopyContentToOutputDirectory with
               | Some CopyToOutputDirectorySettings.Never -> yield "copy_content_to_output_dir: never"
@@ -767,6 +774,7 @@ type InstallSettings =
         {
             self with 
                 ImportTargets = self.ImportTargets ++ other.ImportTargets
+                StorageConfig = self.StorageConfig ++ other.StorageConfig
                 FrameworkRestrictions = filterRestrictions self.FrameworkRestrictions other.FrameworkRestrictions
                 OmitContent = self.OmitContent ++ other.OmitContent
                 CopyLocal = self.CopyLocal ++ other.CopyLocal
@@ -791,6 +799,11 @@ type InstallSettings =
                 match getPair "import_targets" with
                 | Some "false" -> Some false 
                 | Some "true" -> Some true
+                | _ -> None
+              StorageConfig =
+                match getPair "storage" with
+                | Some "packages" -> Some (PackagesFolderGroupConfig.DefaultPackagesFolder)
+                | Some "none" -> Some (PackagesFolderGroupConfig.NoPackagesFolder)
                 | _ -> None
               FrameworkRestrictions =
                 match getPair "restriction" with
