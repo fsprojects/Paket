@@ -651,6 +651,8 @@ let DownloadPackage(alternativeProjectRoot, root, config:PackagesFolderGroupConf
                     let nupkg = NuGetLocal.findLocalPackage di.FullName packageName version
 
                     use _ = Profile.startCategory Profile.Category.FileIO
+                    let parent = Path.GetDirectoryName targetFileName
+                    if not (Directory.Exists parent) then Directory.CreateDirectory parent |> ignore
                     File.Copy(nupkg.FullName,targetFileName)
                 | _ ->
                 // discover the link on the fly
