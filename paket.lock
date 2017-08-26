@@ -1136,6 +1136,7 @@ GROUP Build
 CONTENT: NONE
 NUGET
   remote: https://www.nuget.org/api/v2
+    0x53A.ReferenceAssemblies.Paket (0.2)
     FAKE (4.63)
     FSharp.Compiler.Service (13.0)
       FSharp.Core (>= 4.1.17) - restriction: >= netstandard1.6
@@ -1818,6 +1819,8 @@ NUGET
       FSharp.Compiler.Service (>= 13.0 < 14.0)
       Microsoft.AspNet.Razor (>= 3.2.3 < 4.0)
       System.ValueTuple (>= 4.3.1 < 5.0)
+  remote: https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json
+    RoslynTools.MSBuild (0.4.0-alpha)
 GITHUB
   remote: fsharp/FAKE
     modules/Octokit/Octokit.fsx (291f58cc70aba6dd871cf18e66d2d88357e4f208)
