@@ -235,12 +235,12 @@ let config (results : ParseResults<_>) =
 let validateAutoRestore (results : ParseResults<_>) =
     results.GetAllResults().Length = 1
 
-let autoRestore (fromBootstrapper:bool) (results : ParseResults<_>) =
+let autoRestore (results : ParseResults<_>) =
     match results.GetResult <@ Flags @> with
-    | On -> Dependencies.Locate().TurnOnAutoRestore(fromBootstrapper)
+    | On -> Dependencies.Locate().TurnOnAutoRestore()
     | Off -> Dependencies.Locate().TurnOffAutoRestore()
 
-let convert (fromBootstrapper:bool) (results : ParseResults<_>) =
+let convert (results : ParseResults<_>) =
     let force = results.Contains <@ ConvertFromNugetArgs.Force @>
     let noInstall = results.Contains <@ ConvertFromNugetArgs.No_Install @>
     let noAutoRestore = results.Contains <@ ConvertFromNugetArgs.No_Auto_Restore @>
@@ -249,7 +249,7 @@ let convert (fromBootstrapper:bool) (results : ParseResults<_>) =
          results.TryGetResult <@ ConvertFromNugetArgs.Migrate_Credentials @>)
         |> legacyOption results (ReplaceArgument("--migrate-credentials", "--creds-migration"))
 
-    Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode, fromBootstrapper=fromBootstrapper)
+    Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
 
 let findRefs (results : ParseResults<_>) =
     let packages =
@@ -266,8 +266,8 @@ let findRefs (results : ParseResults<_>) =
     packages |> List.map (fun p -> group,p)
     |> Dependencies.Locate().ShowReferencesFor
 
-let init (fromBootstrapper:bool) (results : ParseResults<InitArgs>) =
-    Dependencies.Init(Directory.GetCurrentDirectory(),fromBootstrapper)
+let init (results : ParseResults<InitArgs>) =
+    Dependencies.Init(Directory.GetCurrentDirectory())
 
 let clearCache (results : ParseResults<ClearCacheArgs>) =
     Dependencies.ClearCache()
@@ -700,12 +700,52 @@ let why (results: ParseResults<WhyArgs>) =
 
     Why.ohWhy(packageName, directDeps, lockFile, groupName, results.Parser.PrintUsage(), options)
 
+let handleCommand silent command =
+    match command with
+    | Add r -> processCommand silent add r
+    | ClearCache r -> processCommand silent clearCache r
+    | Config r -> processWithValidation silent validateConfig config r
+    | ConvertFromNuget r -> processCommand silent convert r
+    | FindRefs r -> processCommand silent findRefs r
+    | Init r -> processCommand silent (init) r
+    | AutoRestore r -> processWithValidation silent validateAutoRestore autoRestore r
+    | Install r -> processCommand silent install r
+    | Outdated r -> processCommand silent outdated r
+    | Remove r -> processCommand silent remove r
+    | Restore r -> processCommand silent restore r
+    | Simplify r -> processCommand silent simplify r
+    | Update r -> processCommand silent update r
+    | FindPackages r -> processCommand silent (findPackages silent) r
+    | FindPackageVersions r -> processCommand silent findPackageVersions r
+    | FixNuspec r ->
+        warnObsolete (ReplaceArgument("fix-nuspec", "fix-nuspecs"))
+        processCommand silent (fixNuspec silent) r
+    | FixNuspecs r -> processCommand silent (fixNuspecs silent) r
+    | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
+    | ShowGroups r -> processCommand silent showGroups r
+    | Pack r -> processCommand silent pack r
+    | Push r -> processCommand silent (push AssemblyVersionInformation.AssemblyInformationalVersion) r
+    | GenerateIncludeScripts r ->
+        warnObsolete (ReplaceArgument("generate-include-scripts", "generate-load-scripts"))
+        processCommand silent generateLoadScripts r
+    | GenerateLoadScripts r -> processCommand silent generateLoadScripts r
+    | GenerateNuspec r -> processCommand silent generateNuspec r
+    | Why r -> processCommand silent why r
+    // global options; list here in order to maintain compiler warnings
+    // in case of new subcommands added
+    | Verbose
+    | Silent
+    | From_Bootstrapper
+    | Version
+    | Log_File _ -> failwithf "internal error: this code should never be reached."
 let main() =
     let resolution = Environment.GetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION")
     if System.String.IsNullOrEmpty resolution then
         Environment.SetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
     let paketVersion = AssemblyVersionInformation.AssemblyInformationalVersion
+
+
 
     try
         let parser = ArgumentParser.Create<Command>(programName = "paket",
@@ -720,8 +760,6 @@ let main() =
         if results.Contains <@ Verbose @> then
             Logging.verbose <- true
 
-        let fromBootstrapper = results.Contains <@ From_Bootstrapper @>
-
         let version = results.Contains <@ Version @>
         if not version then
 
@@ -730,44 +768,7 @@ let main() =
                 | Some lf -> setLogFile lf
                 | None -> null
 
-            match results.GetSubCommand() with
-            | Add r -> processCommand silent add r
-            | ClearCache r -> processCommand silent clearCache r
-            | Config r -> processWithValidation silent validateConfig config r
-            | ConvertFromNuget r -> processCommand silent (convert fromBootstrapper) r
-            | FindRefs r -> processCommand silent findRefs r
-            | Init r -> processCommand silent (init fromBootstrapper) r
-            | AutoRestore r -> processWithValidation silent validateAutoRestore (autoRestore fromBootstrapper) r
-            | Install r -> processCommand silent install r
-            | Outdated r -> processCommand silent outdated r
-            | Remove r -> processCommand silent remove r
-            | Restore r -> processCommand silent restore r
-            | Simplify r -> processCommand silent simplify r
-            | Update r -> processCommand silent update r
-            | FindPackages r -> processCommand silent (findPackages silent) r
-            | FindPackageVersions r -> processCommand silent findPackageVersions r
-            | FixNuspec r ->
-                warnObsolete (ReplaceArgument("fix-nuspec", "fix-nuspecs"))
-                processCommand silent (fixNuspec silent) r
-            | FixNuspecs r -> processCommand silent (fixNuspecs silent) r
-            | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
-            | ShowGroups r -> processCommand silent showGroups r
-            | Pack r -> processCommand silent pack r
-            | Push r -> processCommand silent (push paketVersion) r
-            | GenerateIncludeScripts r ->
-                warnObsolete (ReplaceArgument("generate-include-scripts", "generate-load-scripts"))
-                processCommand silent generateLoadScripts r
-            | GenerateLoadScripts r -> processCommand silent generateLoadScripts r
-            | GenerateNuspec r -> processCommand silent generateNuspec r
-            | Why r -> processCommand silent why r
-            // global options; list here in order to maintain compiler warnings
-            // in case of new subcommands added
-            | Verbose
-            | Silent
-            | From_Bootstrapper
-            | Version
-            | Log_File _ -> failwithf "internal error: this code should never be reached."
-
+            handleCommand silent (results.GetSubCommand())
     with
     | exn when not (exn :? System.NullReferenceException) ->
 #if NETCOREAPP1_0

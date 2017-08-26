@@ -70,10 +70,7 @@ type Dependencies(dependenciesFileName: string) =
     static member Init() = Dependencies.Init(Directory.GetCurrentDirectory())
 
     /// Initialize paket.dependencies file in the given directory
-    static member Init(directory) =  Dependencies.Init(directory,false)
-
-    /// Initialize paket.dependencies file in the given directory
-    static member Init(directory,fromBootstrapper) =
+    static member Init(directory) =
         let directory = DirectoryInfo(directory)
 
         RunInLockedAccessMode(
@@ -84,16 +81,10 @@ type Dependencies(dependenciesFileName: string) =
         )
 
         let deps = Dependencies.Locate()
-        deps.DownloadLatestBootstrapper(fromBootstrapper)
+        deps.DownloadLatestBootstrapper()
 
     /// Converts the solution from NuGet to Paket.
     static member ConvertFromNuget(force: bool,installAfter: bool, initAutoRestore: bool,credsMigrationMode: string option, ?directory: DirectoryInfo) : unit =
-        match directory with
-        | Some d -> Dependencies.ConvertFromNuget(force, installAfter, initAutoRestore, credsMigrationMode, false, d)
-        | None -> Dependencies.ConvertFromNuget(force, installAfter, initAutoRestore, credsMigrationMode, false)
-
-    /// Converts the solution from NuGet to Paket.
-    static member ConvertFromNuget(force: bool,installAfter: bool, initAutoRestore: bool,credsMigrationMode: string option, fromBootstrapper, ?directory: DirectoryInfo) : unit =
         let dir = defaultArg directory (DirectoryInfo(Directory.GetCurrentDirectory()))
         let rootDirectory = dir
 
@@ -102,7 +93,7 @@ type Dependencies(dependenciesFileName: string) =
             fun () ->
                 NuGetConvert.convertR rootDirectory force credsMigrationMode
                 |> returnOrFail
-                |> NuGetConvert.replaceNuGetWithPaket initAutoRestore installAfter fromBootstrapper
+                |> NuGetConvert.replaceNuGetWithPaket initAutoRestore installAfter
         )
 
     /// Converts the current package dependency graph to the simplest dependency graph.
@@ -350,12 +341,8 @@ type Dependencies(dependenciesFileName: string) =
         |> this.Process
         |> List.map (fun (g, p,_,newVersion) -> g.ToString(),p.ToString(),newVersion)
 
-    /// Downloads the latest paket.bootstrapper into the .paket folder.
-    member this.DownloadLatestBootstrapper() : unit =
-        this.DownloadLatestBootstrapper(false)
-
     /// Downloads the latest paket.bootstrapper into the .paket folder and try to rename it to paket.exe in order to activate magic mode.
-    member this.DownloadLatestBootstrapper(fromBootstrapper) : unit =
+    member this.DownloadLatestBootstrapper() : unit =
         RunInLockedAccessMode(
             this.RootPath,
             fun () -> 
@@ -370,14 +357,10 @@ type Dependencies(dependenciesFileName: string) =
                 | _ ->())
 
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
-    member this.TurnOnAutoRestore(fromBootstrapper: bool): unit =
+    member this.TurnOnAutoRestore(): unit =
         RunInLockedAccessMode(
             this.RootPath,
-            fun () -> VSIntegration.TurnOnAutoRestore fromBootstrapper |> this.Process)
-
-    /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
-    member this.TurnOnAutoRestore(): unit =
-        this.TurnOnAutoRestore(false)
+            fun () -> VSIntegration.TurnOnAutoRestore |> this.Process)
 
     /// Removes paket.targets file and Import section from project files.
     member this.TurnOffAutoRestore(): unit =
