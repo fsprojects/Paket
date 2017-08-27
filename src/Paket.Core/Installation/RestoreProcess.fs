@@ -275,6 +275,11 @@ let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:L
         |> List.append (ProjectFile.getTargetFrameworks projectFile |> Option.toList |> List.collect (fun item -> String.split [|';'|] item |> List.ofArray))
         |> List.map (fun s -> s, (PlatformMatching.forceExtractPlatforms s |> fun p -> p.ToTargetProfile true))
         |> List.choose (fun (s, c) -> c |> Option.map (fun d -> s, d))
+
+    // fable 1.0 compat
+    let oldReferencesFile = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".references"))
+    if oldReferencesFile.Exists then oldReferencesFile.Delete()
+
     for originalTargetProfileString, targetProfile in targets do
         for kv in groups do
             let hull,_ = hulls.[kv.Key]
@@ -305,18 +310,17 @@ let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:L
                     list.Add line
 
         let output = String.Join(Environment.NewLine,list)
-        let fableCompatFile = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".references"))
         let newFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + "." + originalTargetProfileString + ".references"))
         if not newFileName.Directory.Exists then
             newFileName.Directory.Create()
         if output = "" then
             if File.Exists(newFileName.FullName) then
                 File.Delete(newFileName.FullName)
-            if File.Exists(fableCompatFile.FullName) then
-                File.Delete(fableCompatFile.FullName)
 
         elif not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
-            File.WriteAllText(fableCompatFile.FullName,output)
+            if targetProfile = SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6) then
+                // fable compat
+                File.WriteAllText(oldReferencesFile.FullName,output)
             File.WriteAllText(newFileName.FullName,output)
             tracefn " - %s created" newFileName.FullName
         else
