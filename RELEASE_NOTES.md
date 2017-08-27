@@ -1,3 +1,6 @@
+#### 5.92.0 - 26.08.2017
+* PERFORMANCE: Make restore faster - https://github.com/fsprojects/Paket/pull/2675
+
 #### 5.91.0 - 26.08.2017
 * BUGFIX: fix a bug in the runtime parser - https://github.com/fsprojects/Paket/pull/2665
 * BUGFIX: Add props to correct Paket.Restore.targets - https://github.com/fsprojects/Paket/pull/2665
