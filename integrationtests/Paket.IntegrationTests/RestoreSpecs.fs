@@ -88,13 +88,16 @@ let ``#2642 dotnet restore writes paket references file to correct obj dir``() =
         // do the actual asserts:
         let originalPath = wd @@ "obj"
         if Directory.Exists originalPath then
-            let files = Directory.GetFiles originalPath
+            let files = Directory.GetFiles (originalPath, "*", SearchOption.AllDirectories)
             if files.Length > 0 then
                 failwithf "Expected no files in obj, but got %A" files
         let modifiedPath = wd @@ "MyCustomFancyObjDir"
         Directory.Exists modifiedPath |> shouldEqual true
         let expectedFiles =
-            [ modifiedPath @@ "ObjDir.csproj.NuGet.Config" ; modifiedPath @@ "ObjDir.csproj.references" ]
-        for f in expectedFiles do
-            File.Exists f |> shouldEqual true
+            [ modifiedPath @@ "ObjDir.csproj.NuGet.Config"
+              modifiedPath @@ "ObjDir.csproj.references" ]
+            |> set
+        let actualFiles = Directory.GetFiles (modifiedPath, "*", SearchOption.AllDirectories) |> set
+        let missingFiles = expectedFiles - actualFiles
+        Assert.AreEqual(Set.empty, missingFiles)
     | _ -> failwithf "dotnet restore exitCode %d > 0? or hasErrorOut %b" exitCode hasErrorOut
