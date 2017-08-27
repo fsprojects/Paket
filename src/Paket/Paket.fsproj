@@ -31,8 +31,8 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>C:\proj\testing\testpaketfailure\</StartWorkingDirectory>
+    <StartArguments>fix-nuspecs files src/Paket.Core.preview3/obj/Paket.Core.1.0.0.nuspec project-file src/Paket.Core.preview3/Paket.Core.fsproj</StartArguments>
+    <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -42,8 +42,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>install -v</StartArguments>
-    <StartWorkingDirectory>D:\temp\test</StartWorkingDirectory>
+    <StartArguments>fix-nuspecs files src/Paket.Core.preview3/obj/Paket.Core.1.0.0.nuspec project-file src/Paket.Core.preview3/Paket.Core.fsproj</StartArguments>
+    <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">14.0</VisualStudioVersion>

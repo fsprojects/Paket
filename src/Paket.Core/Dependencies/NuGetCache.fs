@@ -316,10 +316,7 @@ let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, ver
 
             let cachedHashFile = Path.Combine(Constants.NuGetCacheFolder,fi.Name + ".sha512")
             if not <| File.Exists cachedHashFile then
-                use stream = File.OpenRead(fileName)
-                let packageSize = stream.Length
-                use hasher = System.Security.Cryptography.SHA512.Create() :> System.Security.Cryptography.HashAlgorithm
-                let packageHash = Convert.ToBase64String(hasher.ComputeHash(stream))
+                let packageHash = getSha512File fileName
                 File.WriteAllText(cachedHashFile,packageHash)
 
             File.Copy(cachedHashFile,targetPackageFileName + ".sha512")
