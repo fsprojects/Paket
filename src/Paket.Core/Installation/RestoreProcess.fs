@@ -276,6 +276,11 @@ let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:L
         |> List.map (fun s -> s, (PlatformMatching.forceExtractPlatforms s |> fun p -> p.ToTargetProfile true))
         |> List.choose (fun (s, c) -> c |> Option.map (fun d -> s, d))
 
+    // delete stale entries (otherwise we might not recognize stale data on a change later)
+    let objDir = DirectoryInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj"))
+    objDir.GetFiles(sprintf "%s*.references" projectFileInfo.Name)
+        |> Seq.iter (fun f -> f.Delete())
+
     // fable 1.0 compat
     let oldReferencesFile = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".references"))
     if oldReferencesFile.Exists then oldReferencesFile.Delete()
