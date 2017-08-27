@@ -313,9 +313,6 @@ let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:L
         let newFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + "." + originalTargetProfileString + ".references"))
         if not newFileName.Directory.Exists then
             newFileName.Directory.Create()
-        if output = "" then
-            if File.Exists(newFileName.FullName) then
-                File.Delete(newFileName.FullName)
 
         elif not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
             if targetProfile = SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6) then
