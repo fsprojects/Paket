@@ -766,7 +766,7 @@ module ProjectFile =
         // I don't think there is anyone actually using this part, but it's there for backwards compat.
         let netCoreRestricted =
             model.ApplyFrameworkRestrictions
-                ((List.map DotNetCore KnownTargetProfiles.DotNetCoreVersions @ List.map DotNetStandard KnownTargetProfiles.DotNetStandardVersions)
+                ((List.map DotNetCoreApp KnownTargetProfiles.DotNetCoreAppVersions @ List.map DotNetStandard KnownTargetProfiles.DotNetStandardVersions)
                  |> List.map FrameworkRestriction.Exactly
                  |> List.fold FrameworkRestriction.combineRestrictionsWithOr FrameworkRestriction.EmptySet)
 
@@ -1752,18 +1752,17 @@ type ProjectFile with
             with
             | _ -> v
 
-        try
-            let v = this.ProjectNode.Attributes.["ToolsVersion"].Value
-            match Double.TryParse(v, NumberStyles.Any, CultureInfo.InvariantCulture) with
-            | true , 15.0 -> 
+        match this.ProjectNode.Attributes.["ToolsVersion"] with
+        | null -> adjustIfWeHaveSDK 4.0
+        | v ->
+            match Double.TryParse(v.Value, NumberStyles.Any, CultureInfo.InvariantCulture) with
+            | true , 15.0 ->
                     let sdkAttr = this.ProjectNode.Attributes.["Sdk"]
                     if  isNull sdkAttr || String.IsNullOrWhiteSpace sdkAttr.Value
                     then 14.0   // adjustment so paket still installs to old style msbuild projects that are using MSBuild15 but not the new format
                     else 15.0
             | true,  version -> adjustIfWeHaveSDK version
             | _         -> adjustIfWeHaveSDK 4.0
-        with
-        | _ -> adjustIfWeHaveSDK 4.0
 
 
     static member FindOrCreateReferencesFile projectFile =
@@ -1793,7 +1792,7 @@ type ProjectFile with
                     |> Array.filter (fun di ->
                         try 
                             let path = normalizePath di.FullName
-                            if di.Name = Constants.PackagesFolderName then false else
+                            if di.Name = Constants.DefaultPackagesFolderName then false else
                             if di.Name = "node_modules" then false else
                             if path = paketPath then false else
                             Path.Combine(path, Constants.DependenciesFileName) 

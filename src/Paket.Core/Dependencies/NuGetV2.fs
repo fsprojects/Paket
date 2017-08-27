@@ -187,7 +187,11 @@ let private handleODataEntry nugetURL packageName version entry =
             let version = VersionRequirement.Parse(if a.Length > 1 then a.[1] else "0")
             (if a.Length > 2 && a.[2] <> "" then
                 let restriction = a.[2]
-                PlatformMatching.extractPlatforms restriction
+                match PlatformMatching.extractPlatforms false restriction with
+                | Some p -> Some p
+                | None ->
+                    Logging.traceWarnIfNotBefore ("Package", restriction, packageName, version) "Could not detect any platforms from '%s' in package %O %O, please tell the package authors" restriction packageName version
+                    None
              else Some PlatformMatching.ParsedPlatformPath.Empty)
             |> Option.map (fun pp -> name, version, pp)
 
@@ -204,8 +208,10 @@ let private handleODataEntry nugetURL packageName version entry =
         rawPackages
         |> Seq.filter (fun (n,_,_) -> System.String.IsNullOrEmpty (n.ToString()) |> not)
         |> Seq.toList
-    let dependencies =
+    let dependencies, warnings =
         addFrameworkRestrictionsToDependencies cleanedPackages frameworks
+    for warning in warnings do
+        Logging.traceWarnfn "%s" (warning.Format officialName version)
 
     { PackageName = officialName
       DownloadUrl = downloadLink
@@ -268,7 +274,7 @@ let getDetailsFromNuGetViaODataFast nugetSource (packageName:PackageName) (versi
                 nugetSource.Url
                 (packageName.CompareString)
                 normalizedVersion
-              // Use original casing.            
+              // Use original casing.
               UrlToTry.From
                 (UrlId.GetVersion_ById { LoweredPackageId = false; NormalizedVersion = true })
                 "1_%s/Packages(Id='%s',Version='%O')"
@@ -387,7 +393,7 @@ let FindPackages(auth, nugetURL, packageNamePrefix, maxResults) =
     let url = sprintf "%s/Packages()?$filter=IsLatestVersion and IsAbsoluteLatestVersion and substringof('%s',tolower(Id))" nugetURL ((packageNamePrefix:string).ToLowerInvariant())
     async {
         try
-            let! raw = getFromUrl(auth |> Option.map toBasicAuth,url,acceptXml)
+            let! raw = getFromUrl(auth |> Option.map toCredentials,url,acceptXml)
             let doc = XmlDocument()
             doc.LoadXml raw
             return

@@ -22,11 +22,11 @@ type PaketExiter() =
                 tracen msg ; exit 0
             else traceError msg ; exit 1
 
-let processWithValidation silent validateF commandF (result : ParseResults<'T>) =
+let processWithValidationEx printUsage silent validateF commandF result =
     if not <| validateF result then
         traceError "Command was:"
         traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
-        result.Parser.PrintUsage() |> traceError
+        printUsage result
 
 #if NETCOREAPP1_0
         // Environment.ExitCode not supported in netcoreapp1.0
@@ -100,6 +100,13 @@ let processWithValidation silent validateF commandF (result : ParseResults<'T>) 
                     )
 
                 tracefn " - Runtime: %s" (Utils.TimeSpanToReadableString realTime)
+                let omitted = Logging.getOmittedWarningCount()
+                if not verbose && omitted > 0 then
+                    traceWarnfn "Paket omitted '%d' warnings similar to the ones above. You can see them in verbose mode" omitted
+
+
+let processWithValidation silent validateF commandF (result : ParseResults<'T>) =
+    processWithValidationEx (fun (r:ParseResults<'T>) -> r.Parser.PrintUsage() |> traceError) silent validateF commandF result
 
 let processCommand silent commandF result =
     processWithValidation silent (fun _ -> true) commandF result
@@ -220,8 +227,9 @@ let config (results : ParseResults<_>) =
       let args = results.GetResults <@ ConfigArgs.AddCredentials @>
       let source = args.Item 0
       let username, password = results.GetResult (<@ ConfigArgs.Username @>, ""), results.GetResult (<@ ConfigArgs.Password @>, "")
+      let authType = results.GetResult (<@ ConfigArgs.AuthType @>, "")
 
-      Dependencies(".").AddCredentials(source, username, password)
+      Dependencies(".").AddCredentials(source, username, password, authType)
     | _, true ->
       let args = results.GetResults <@ ConfigArgs.AddToken @>
       let source, token = args.Item 0
@@ -231,12 +239,12 @@ let config (results : ParseResults<_>) =
 let validateAutoRestore (results : ParseResults<_>) =
     results.GetAllResults().Length = 1
 
-let autoRestore (fromBootstrapper:bool) (results : ParseResults<_>) =
+let autoRestore (results : ParseResults<_>) =
     match results.GetResult <@ Flags @> with
-    | On -> Dependencies.Locate().TurnOnAutoRestore(fromBootstrapper)
+    | On -> Dependencies.Locate().TurnOnAutoRestore()
     | Off -> Dependencies.Locate().TurnOffAutoRestore()
 
-let convert (fromBootstrapper:bool) (results : ParseResults<_>) =
+let convert (results : ParseResults<_>) =
     let force = results.Contains <@ ConvertFromNugetArgs.Force @>
     let noInstall = results.Contains <@ ConvertFromNugetArgs.No_Install @>
     let noAutoRestore = results.Contains <@ ConvertFromNugetArgs.No_Auto_Restore @>
@@ -245,7 +253,7 @@ let convert (fromBootstrapper:bool) (results : ParseResults<_>) =
          results.TryGetResult <@ ConvertFromNugetArgs.Migrate_Credentials @>)
         |> legacyOption results (ReplaceArgument("--migrate-credentials", "--creds-migration"))
 
-    Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode, fromBootstrapper=fromBootstrapper)
+    Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
 
 let findRefs (results : ParseResults<_>) =
     let packages =
@@ -262,8 +270,8 @@ let findRefs (results : ParseResults<_>) =
     packages |> List.map (fun p -> group,p)
     |> Dependencies.Locate().ShowReferencesFor
 
-let init (fromBootstrapper:bool) (results : ParseResults<InitArgs>) =
-    Dependencies.Init(Directory.GetCurrentDirectory(),fromBootstrapper)
+let init (results : ParseResults<InitArgs>) =
+    Dependencies.Init(Directory.GetCurrentDirectory())
 
 let clearCache (results : ParseResults<ClearCacheArgs>) =
     Dependencies.ClearCache()
@@ -549,10 +557,27 @@ let findPackages silent (results : ParseResults<_>) =
 
     | Some searchText -> searchAndPrint searchText
 
+#nowarn "44" // because FixNuspecs is deprecated and we have warnaserror
+
 let fixNuspecs silent (results : ParseResults<_>) =
-    let referenceFile = results.GetResult <@ FixNuspecsArgs.ReferencesFile @>
-    let nuspecFiles = results.GetResult <@ FixNuspecsArgs.Files @>
-    Dependencies.FixNuspecs (referenceFile, nuspecFiles)
+    let nuspecFiles =
+        results.GetResult <@ FixNuspecsArgs.Files @>
+        |> List.collect (fun s -> s.Split([|';'|], StringSplitOptions.RemoveEmptyEntries) |> Array.toList)
+
+    match results.TryGetResult <@ FixNuspecsArgs.ProjectFile @> with
+    | Some projectFile ->
+        let projectFile = Paket.ProjectFile.LoadFromFile(projectFile)
+        let refFile = RestoreProcess.FindOrCreateReferencesFile projectFile
+        Dependencies.FixNuspecs (refFile, nuspecFiles)
+    | None ->
+        match results.TryGetResult <@ FixNuspecsArgs.ReferencesFile @> with
+        | Some referenceFile ->
+            traceWarnfn "using the references-file argument is obsolete, please use project-file instead"
+
+            Dependencies.FixNuspecs (referenceFile, nuspecFiles)
+        | None -> failwithf "%s" (results.Parser.PrintUsage())
+
+
 
 // For Backwards compatibility
 let fixNuspec silent (results : ParseResults<_>) =
@@ -694,6 +719,45 @@ let why (results: ParseResults<WhyArgs>) =
 
     Why.ohWhy(packageName, directDeps, lockFile, groupName, results.Parser.PrintUsage(), options)
 
+let handleCommand silent command =
+    match command with
+    | Add r -> processCommand silent add r
+    | ClearCache r -> processCommand silent clearCache r
+    | Config r -> processWithValidation silent validateConfig config r
+    | ConvertFromNuget r -> processCommand silent convert r
+    | FindRefs r -> processCommand silent findRefs r
+    | Init r -> processCommand silent (init) r
+    | AutoRestore r -> processWithValidation silent validateAutoRestore autoRestore r
+    | Install r -> processCommand silent install r
+    | Outdated r -> processCommand silent outdated r
+    | Remove r -> processCommand silent remove r
+    | Restore r -> processCommand silent restore r
+    | Simplify r -> processCommand silent simplify r
+    | Update r -> processCommand silent update r
+    | FindPackages r -> processCommand silent (findPackages silent) r
+    | FindPackageVersions r -> processCommand silent findPackageVersions r
+    | FixNuspec r ->
+        warnObsolete (ReplaceArgument("fix-nuspec", "fix-nuspecs"))
+        processCommand silent (fixNuspec silent) r
+    | FixNuspecs r -> processCommand silent (fixNuspecs silent) r
+    | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
+    | ShowGroups r -> processCommand silent showGroups r
+    | Pack r -> processCommand silent pack r
+    | Push r -> processCommand silent (push AssemblyVersionInformation.AssemblyInformationalVersion) r
+    | GenerateIncludeScripts r ->
+        warnObsolete (ReplaceArgument("generate-include-scripts", "generate-load-scripts"))
+        processCommand silent generateLoadScripts r
+    | GenerateLoadScripts r -> processCommand silent generateLoadScripts r
+    | GenerateNuspec r -> processCommand silent generateNuspec r
+    | Why r -> processCommand silent why r
+    // global options; list here in order to maintain compiler warnings
+    // in case of new subcommands added
+    | Verbose
+    | Silent
+    | From_Bootstrapper
+    | Version
+    | Log_File _ -> failwithf "internal error: this code should never be reached."
+
 let main() =
     let resolution = Environment.GetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION")
     if System.String.IsNullOrEmpty resolution then
@@ -702,6 +766,12 @@ let main() =
     let paketVersion = AssemblyVersionInformation.AssemblyInformationalVersion
 
     try
+    let args = Environment.GetCommandLineArgs()
+    match args with
+    | [| "restore" |] | [| "--from-bootstrapper"; "restore" |] ->
+        // fast restore route, see https://github.com/fsprojects/Argu/issues/90
+        processWithValidationEx ignore false (fun _ -> true) (fun _ -> Dependencies.Locate().Restore()) ()
+    | _ ->
         let parser = ArgumentParser.Create<Command>(programName = "paket",
                                                     helpTextMessage = sprintf "Paket version %s%sHelp was requested:" paketVersion Environment.NewLine,
                                                     errorHandler = new PaketExiter())
@@ -714,8 +784,6 @@ let main() =
         if results.Contains <@ Verbose @> then
             Logging.verbose <- true
 
-        let fromBootstrapper = results.Contains <@ From_Bootstrapper @>
-
         let version = results.Contains <@ Version @>
         if not version then
 
@@ -724,44 +792,7 @@ let main() =
                 | Some lf -> setLogFile lf
                 | None -> null
 
-            match results.GetSubCommand() with
-            | Add r -> processCommand silent add r
-            | ClearCache r -> processCommand silent clearCache r
-            | Config r -> processWithValidation silent validateConfig config r
-            | ConvertFromNuget r -> processCommand silent (convert fromBootstrapper) r
-            | FindRefs r -> processCommand silent findRefs r
-            | Init r -> processCommand silent (init fromBootstrapper) r
-            | AutoRestore r -> processWithValidation silent validateAutoRestore (autoRestore fromBootstrapper) r
-            | Install r -> processCommand silent install r
-            | Outdated r -> processCommand silent outdated r
-            | Remove r -> processCommand silent remove r
-            | Restore r -> processCommand silent restore r
-            | Simplify r -> processCommand silent simplify r
-            | Update r -> processCommand silent update r
-            | FindPackages r -> processCommand silent (findPackages silent) r
-            | FindPackageVersions r -> processCommand silent findPackageVersions r
-            | FixNuspec r ->
-                warnObsolete (ReplaceArgument("fix-nuspec", "fix-nuspecs"))
-                processCommand silent (fixNuspec silent) r
-            | FixNuspecs r -> processCommand silent (fixNuspecs silent) r
-            | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
-            | ShowGroups r -> processCommand silent showGroups r
-            | Pack r -> processCommand silent pack r
-            | Push r -> processCommand silent (push paketVersion) r
-            | GenerateIncludeScripts r ->
-                warnObsolete (ReplaceArgument("generate-include-scripts", "generate-load-scripts"))
-                processCommand silent generateLoadScripts r
-            | GenerateLoadScripts r -> processCommand silent generateLoadScripts r
-            | GenerateNuspec r -> processCommand silent generateNuspec r
-            | Why r -> processCommand silent why r
-            // global options; list here in order to maintain compiler warnings
-            // in case of new subcommands added
-            | Verbose
-            | Silent
-            | From_Bootstrapper
-            | Version
-            | Log_File _ -> failwithf "internal error: this code should never be reached."
-
+            handleCommand silent (results.GetSubCommand())
     with
     | exn when not (exn :? System.NullReferenceException) ->
 #if NETCOREAPP1_0

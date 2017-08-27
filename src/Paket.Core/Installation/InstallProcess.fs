@@ -15,6 +15,7 @@ open Paket.Requirements
 open System.Collections.Generic
 open Paket.ProjectFile
 open System.Diagnostics
+open System
 
 let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*InstallSettings>) packagesConfigFileName =
     let packagesInConfigFile = PackagesConfigFile.Read packagesConfigFileName
@@ -37,36 +38,14 @@ let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*Instal
 
 let findPackageFolder root (groupName,packageName) (version,settings) =
     let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
-    let targetFolder = getTargetFolder root groupName packageName version includeVersionInPath
-    let direct = DirectoryInfo targetFolder
-    if direct.Exists then
-        direct
-    else
-        let lowerName = packageName.ToString() + if includeVersionInPath then "." + version.ToString() else ""
-        let di =
-            if groupName = Constants.MainDependencyGroup then
-                DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
-            else
-                let groupName = groupName.CompareString
-                let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, groupName))
-                if di.Exists then di else
-
-                match di.GetDirectories() |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase groupName subDir.FullName) with
-                | Some x -> x
-                | None ->
-                    traceWarnfn "The following directories exists:"
-                    di.GetDirectories() |> Seq.iter (fun d -> traceWarnfn "  %s" d.FullName)
-
-                    failwithf "Group directory for group %s was not found." groupName
-
-        match di.GetDirectories() |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase lowerName subDir.FullName) with
-        | Some x -> x
-        | None ->
-            traceWarnfn "The following directories exists:"
-            di.GetDirectories() |> Seq.iter (fun d -> traceWarnfn "  %s" d.FullName)
-
-            failwithf "Package directory for package %O was not found." packageName
-
+    let storageOption = defaultArg settings.StorageConfig PackagesFolderGroupConfig.Default
+    match storageOption.Resolve root groupName packageName version includeVersionInPath with
+    | ResolvedPackagesFolder.ResolvedFolder targetFolder (*when Directory.Exists targetFolder*) ->
+        DirectoryInfo targetFolder
+    | ResolvedPackagesFolder.NoPackagesFolder ->
+        let d = DirectoryInfo(NuGetCache.GetTargetUserFolder packageName version)
+        if not d.Exists then failwithf "Package directory for package %O was not found." packageName
+        d
 
 let contentFileBlackList : list<(FileInfo -> bool)> = [
     fun f -> f.Name = "_._"
@@ -88,7 +67,7 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
                 let contentCopyToOutputSettings = (snd kv.Value).CopyContentToOutputDirectory
                 kv.Key,kv.Value,contentCopySettings,contentCopyToOutputSettings)
             |> Seq.filter (fun (_,_,contentCopySettings,_) -> contentCopySettings <> ContentCopySettings.Omit)
-            |> Seq.map (fun (key,v,s,s') -> s,s',findPackageFolder root key v)
+            |> Seq.map (fun ((group, packName),v,s,s') -> s,s',findPackageFolder root (group, packName) v)
             |> Seq.choose (fun (contentCopySettings,contentCopyToOutputSettings,packageDir) ->
                 packageDir.GetDirectories "Content"
                 |> Array.append (packageDir.GetDirectories "content")
@@ -173,7 +152,7 @@ let CreateModel(alternativeProjectRoot, root, force, dependenciesFile:Dependenci
         let caches = dependenciesFile.Groups.[kv'.Key].Caches
         kv'.Value.Resolution
         |> Map.filter (fun name _ -> packages.Contains(kv'.Key,name))
-        |> Seq.map (fun kv -> RestoreProcess.CreateInstallModel(alternativeProjectRoot, root,kv'.Key,sources,caches,force,kv.Value))
+        |> Seq.map (fun kv -> RestoreProcess.CreateInstallModel(alternativeProjectRoot, root,kv'.Key,sources,caches,force,kv'.Value.GetPackage kv.Key))
         |> Seq.toArray
         |> Async.Parallel
         |> Async.RunSynchronously)
@@ -327,6 +306,8 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
     
     let prefix = dependenciesFile.Directory.Length + 1
     let norm (s:string) = (s.Substring prefix).Replace('\\', '/')
+    
+    let groupSettings = lockFile.Groups |> Map.map (fun k v -> v.Options.Settings)
     for project, referenceFile in projectsAndReferences do
         tracefn " - %s -> %s" (norm referenceFile.FileName) (norm project.FileName)
         let toolsVersion = project.GetToolsVersion()
@@ -439,7 +420,17 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                             Some <| sprintf "%s references file %s in group %O, but it was not found in the paket.lock file." referenceFile.FileName remoteFile.Name kv.Key
                         )
                 (Seq.append pathAcc refpaths),(Seq.append errorAcc errors)
-            )|> fun (refpaths,errors) -> refpaths, Seq.append errorMessages errors
+            )|> fun (refpaths,errors) -> Seq.toArray refpaths, Seq.concat [| errorMessages ; errors |] |> Seq.toArray
+        
+        if toolsVersion >= 15.0 then
+            // HACK: just validate that the list of packages contains one named FSharp.Core, if it is a *.fsproj
+            if project.Name.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase) then
+                let hasFSharpCore =
+                    usedPackages |> Seq.exists (fun kv ->
+                        let (_, x) = kv.Key
+                        x.CompareString = "fsharp.core")
+                if not hasFSharpCore then
+                    traceWarnfn "F# project %s does not reference FSharp.Core." project.FileName
 
         // if any errors have been found during the installation process thus far, fail and print all errors collected
         if not (Seq.isEmpty errorMessages) then

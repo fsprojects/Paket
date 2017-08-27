@@ -1,3 +1,24 @@
+#### 5.92.0-alpha001 - 26.08.2017
+* PERFORMANCE: Make restore faster - https://github.com/fsprojects/Paket/pull/2675
+
+#### 5.91.0 - 26.08.2017
+* BUGFIX: fix a bug in the runtime parser - https://github.com/fsprojects/Paket/pull/2665
+* BUGFIX: Add props to correct Paket.Restore.targets - https://github.com/fsprojects/Paket/pull/2665
+* Make packages folder optional - https://github.com/fsprojects/Paket/pull/2638
+
+#### 5.90.1 - 25.08.2017
+* Support for NTLM auth - https://github.com/fsprojects/Paket/pull/2658
+* BUGFIX: fix-nuspecs should break at ; - https://github.com/fsprojects/Paket/issues/2661
+* BUGFIX: V3 normalization fix for https://github.com/fsprojects/Paket/issues/2652
+* BUGFIX: fix crash when a package contains an invalid file - https://github.com/fsprojects/Paket/pull/2644
+
+#### 5.89.0 - 21.08.2017
+* BUGFIX: dotnet sdk: disable implicitly adding system.valuetuple and fsharp.core - https://github.com/fsprojects/Paket/pull/2528
+
+#### 5.87.0 - 21.08.2017
+* BUGFIX: NuGet v3 protocol fixes - https://github.com/fsprojects/Paket/pull/2632
+* BUGFIX: Restore Failure on Mono: System.Exception: Expected an result at this place - https://github.com/fsprojects/Paket/issues/2639
+
 #### 5.86.0 - 19.08.2017
 * BUGFIX: Fixed feed Warnings and added blacklisting - https://github.com/fsprojects/Paket/pull/2582
 * BUGFIX: Special case System.Net.Http - https://github.com/fsprojects/Paket/pull/2628

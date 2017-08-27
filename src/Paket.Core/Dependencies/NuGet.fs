@@ -236,7 +236,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
         let inCache =
             sources
             |> Seq.choose(fun source ->
-                NuGetCache.tryGetDetailsFromCache force source.Url packageName version 
+                NuGetCache.tryGetDetailsFromCache force source.Url packageName version
                 |> Option.map (fun details -> source, details))
             |> Seq.tryHead
 
@@ -248,18 +248,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                 version
 
         let tryV3 (nugetSource:NugetV3Source) force =
-            if nugetSource.Url.Contains("myget.org") || nugetSource.Url.Contains("nuget.org") || nugetSource.Url.Contains("visualstudio.com") || nugetSource.Url.Contains("/nuget/v3/") then
-                match NuGetV3.calculateNuGet2Path nugetSource.Url with
-                | Some url ->
-                    NuGetV2.getDetailsFromNuGet
-                        force
-                        { nugetSource with Url = url } //= .Authentication |> Option.map toBasicAuth)
-                        packageName
-                        version
-                | _ ->
-                    NuGetV3.GetPackageDetails force nugetSource packageName version
-            else
-                NuGetV3.GetPackageDetails force nugetSource packageName version
+            NuGetV3.GetPackageDetails force nugetSource packageName version
 
         let getPackageDetails force =
             // helper to work through the list sequentially
@@ -301,20 +290,15 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                     match source with
                     | NuGetV2 nugetSource ->
                         return! tryV2 nugetSource force
-                    | NuGetV3 nugetSource when urlSimilarToTfsOrVsts nugetSource.Url  ->
-                        match NuGetV3.calculateNuGet2Path nugetSource.Url with
-                        | Some url ->
-                            let nugetSource : NugetSource =
-                                { Url = url
-                                  Authentication = nugetSource.Authentication }
-                            return! tryV2 nugetSource force
-                        | _ ->
-                            return! tryV3 nugetSource force
                     | NuGetV3 nugetSource ->
                         try
                             return! tryV3 nugetSource force
                         with
                         | exn ->
+                            eprintfn "Possible Performance degration, V3 was not working: %s" exn.Message
+                            if verbose then
+                                printfn "Error while using V3 API: %O" exn
+
                             match NuGetV3.calculateNuGet2Path nugetSource.Url with
                             | Some url ->
                                 let nugetSource : NugetSource =
@@ -388,15 +372,7 @@ let protocolCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
 
 type GetVersionError = NuGetCache.NuGetResponseGetVersionsFailure
-    //{ Url : string; Error : ExceptionDispatchInfo }
-    //static member ofTuple (url,err) =
-    //    { Url = url; Error = err }
-    //static member ofFailure (f:NuGetCache.NuGetResponseGetVersionsFailure) =
-    //    { Url = f.; Error = err }
 type GetVersionRequest = NuGetCache.NuGetResponseGetVersions
-    //| SuccessVersionResponse of string []
-    //| ProtocolNotCached
-    //| FailedVersionRequest of GetVersionError
 
 type SourceResponseType =
     | SourceNoResult
@@ -462,7 +438,7 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
                        if (not force) && errorFileExists then return [] else
                        match nugetSource with
                        | NuGetV2 source ->
-                            let auth = source.Authentication |> Option.map toBasicAuth
+                            let auth = source.Authentication |> Option.map toCredentials
                             if String.containsIgnoreCase "artifactory" source.Url then
                                 return [getVersionsCached "ODataNewestFirst" NuGetV2.tryGetAllVersionsFromNugetODataFindByIdNewestFirst (nugetSource, auth, source.Url, packageName) ]
                             else
@@ -470,13 +446,10 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
                                     [ yield getVersionsCached "OData" NuGetV2.tryGetAllVersionsFromNugetODataFindById (nugetSource, auth, source.Url, packageName)
                                       yield getVersionsCached "ODataWithFilter" NuGetV2.tryGetAllVersionsFromNugetODataWithFilter (nugetSource, auth, source.Url, packageName) ]
 
-                                let! apiV3 = NuGetV3.getAllVersionsAPI(source.Authentication,source.Url) |> Async.AwaitTask
-                                match apiV3 with
-                                | None -> return v2Feeds
-                                | Some v3Url -> return (getVersionsCached "V3" tryNuGetV3 (nugetSource, auth, v3Url, packageName)) :: v2Feeds
+                                return v2Feeds
                        | NuGetV3 source ->
                             let! versionsAPI = PackageSources.getNuGetV3Resource source AllVersionsAPI
-                            let auth = source.Authentication |> Option.map toBasicAuth
+                            let auth = source.Authentication |> Option.map toCredentials
                             return [ getVersionsCached "V3" tryNuGetV3 (nugetSource, auth, versionsAPI, packageName) ]
                        | LocalNuGet(path,Some _) ->
                             return [ NuGetLocal.getAllVersionsFromLocalPath (true, path, packageName, alternativeProjectRoot, root) ]
@@ -630,13 +603,16 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
             let _,v,_ = List.head sorted
             SemVer.Parse v,sorted |> List.map (fun (_,_,x) -> x)) }
 
+let private getLicenseFile (packageName:PackageName) version =
+    Path.Combine(NuGetCache.GetTargetUserFolder packageName version, NuGetCache.GetLicenseFileName packageName version)
+
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, force, detailed) =
+let DownloadPackage(alternativeProjectRoot, root, config:PackagesFolderGroupConfig, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, force, detailed) =
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
-    let normalizedNupkgName = packageName.ToString() + "." + version.Normalize() + ".nupkg"
-    let targetFileName = Path.Combine(Constants.NuGetCacheFolder, normalizedNupkgName)
+    let normalizedNupkgName = NuGetCache.GetPackageFileName packageName version
+    let targetFileName = NuGetCache.GetTargetUserNupkg packageName version
     let targetFile = FileInfo targetFileName
-    let licenseFileName = Path.Combine(Constants.NuGetCacheFolder, packageName.ToString() + "." + version.Normalize() + ".license.html")
+    let licenseFileName = getLicenseFile packageName version
 
     let rec getFromCache (caches:Cache list) =
         match caches with
@@ -675,6 +651,8 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                     let nupkg = NuGetLocal.findLocalPackage di.FullName packageName version
 
                     use _ = Profile.startCategory Profile.Category.FileIO
+                    let parent = Path.GetDirectoryName targetFileName
+                    if not (Directory.Exists parent) then Directory.CreateDirectory parent |> ignore
                     File.Copy(nupkg.FullName,targetFileName)
                 | _ ->
                 // discover the link on the fly
@@ -705,6 +683,8 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
 
                     if authenticated && verbose then
                         tracefn "Downloading from %O to %s" !downloadUrl targetFileName
+                    let dir = Path.GetDirectoryName targetFileName
+                    if Directory.Exists dir |> not then Directory.CreateDirectory dir |> ignore
 
                     use trackDownload = Profile.startCategory Profile.Category.NuGetDownload
                     let! license = Async.StartChild(DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
@@ -722,9 +702,9 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
 #endif
 
                     if authenticated then
-                        match source.Auth |> Option.map toBasicAuth with
+                        match source.Auth |> Option.map toCredentials with
                         | None | Some(Token _) -> request.UseDefaultCredentials <- true
-                        | Some(Credentials(username, password)) ->
+                        | Some(Credentials(username, password, AuthType.Basic)) ->
                             // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
                             //this works ONLY if the server returns 401 first
                             //client DOES NOT send credentials on first request
@@ -734,6 +714,9 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                             //so use THIS instead to send credentials RIGHT AWAY
                             let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
                             request.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
+                        | Some(Credentials(username, password, AuthType.NTLM)) ->
+                            let cred = NetworkCredential(username,password)        
+                            request.Credentials <- cred.GetCredential(downloadUri, "NTLM")
                     else
                         request.UseDefaultCredentials <- true
 
@@ -770,7 +753,7 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                 | :? System.Net.WebException as exn when
                     attempt < 5 &&
                     exn.Status = WebExceptionStatus.ProtocolError &&
-                     (match source.Auth |> Option.map toBasicAuth with
+                     (match source.Auth |> Option.map toCredentials with
                       | Some(Credentials(_)) -> true
                       | _ -> false)
                         -> do! download false (attempt + 1)
@@ -780,6 +763,12 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
 
     async {
         do! download true 0
-        let! files = NuGetCache.CopyFromCache(root, groupName, targetFile.FullName, licenseFileName, packageName, version, isCliTool, includeVersionInPath, force, detailed)
-        return targetFileName,files
+        let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, isCliTool, detailed)
+        let configResolved = config.Resolve root groupName packageName version includeVersionInPath
+        let! files = NuGetCache.CopyFromCache(configResolved, targetFile.FullName, licenseFileName, packageName, version, force, detailed)
+        let finalFolder =
+            match files with
+            | Some f -> f
+            | None -> extractedUserFolder
+        return targetFileName,finalFolder
     }

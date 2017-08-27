@@ -14,6 +14,8 @@ let [<Literal>] GithubReleaseDownloadUrl  = "https://github.com/fsprojects/Paket
 let [<Literal>] LockFileName              = "paket.lock"
 /// 'paket.local'
 let [<Literal>] LocalFileName             = "paket.local"
+/// 'paket.restore.sha512'
+let [<Literal>] RestoreHashFile           = "paket.restore.cached"
 /// 'paket.dependencies'
 let [<Literal>] DependenciesFileName      = "paket.dependencies"
 /// '.paket'
@@ -24,7 +26,7 @@ let [<Literal>] TargetsFileName           = "paket.targets"
 let [<Literal>] ReferencesFile            = "paket.references"
 let [<Literal>] AccessLockFileName        = "paket.locked"
 let [<Literal>] PaketFilesFolderName      = "paket-files"
-let [<Literal>] PackagesFolderName        = "packages"
+let [<Literal>] DefaultPackagesFolderName = "packages"
 let [<Literal>] SolutionFolderProjectGuid = "2150E333-8FDC-42A3-9474-1A3956D46DE8"
 let [<Literal>] PaketVersionFileName      = "paket.version"
 let [<Literal>] TemplateFile              = "paket.template"

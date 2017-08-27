@@ -3,32 +3,20 @@ module Paket.NuGetCache
 
 open System
 open System.IO
-open System.Net
 open Newtonsoft.Json
 open System.IO.Compression
-open System.Xml
-open System.Text.RegularExpressions
 open Paket.Logging
 open System.Text
 
+open Paket
 open Paket.Domain
 open Paket.Utils
-open Paket.Xml
 open Paket.PackageSources
 open Paket.Requirements
 open FSharp.Polyfill
 open System.Runtime.ExceptionServices
 
-open Paket.Utils
-open Paket.Domain
-open Paket.Requirements
-open Paket.Logging
-
-open System.IO
-open Chessie.ErrorHandling
-
-open Newtonsoft.Json
-open System
+open System.Threading.Tasks
 
 type NuGetResponseGetVersionsSuccess = string []
 type NuGetResponseGetVersionsFailure =
@@ -78,6 +66,8 @@ type NuGetRequestGetVersions =
 type UnparsedPackageFile =
     { FullPath : string
       PathWithinPackage : string }
+    member x.BasePath =
+        x.FullPath.Substring(0, x.FullPath.Length - (x.PathWithinPackage.Length + 1))
 
 module NuGetConfig =
     open System.Text
@@ -118,7 +108,7 @@ type NuGetPackageCache =
       Version: string
       CacheVersion: string }
 
-    static member CurrentCacheVersion = "5.1"
+    static member CurrentCacheVersion = "5.2"
 
 // TODO: is there a better way? for now we use static member because that works with type abbreviations...
 //module NuGetPackageCache =
@@ -139,7 +129,7 @@ type NuGetPackageCache =
             let restrictions =
                 if restrictionString = "AUTO" then
                     FrameworkRestrictions.AutoDetectFramework
-                else FrameworkRestrictions.ExplicitRestriction(Requirements.parseRestrictions true restrictionString)
+                else FrameworkRestrictions.ExplicitRestriction(Requirements.parseRestrictions restrictionString |> fst)
             n, v, restrictions)
 
 let inline normalizeUrl(url:string) = url.Replace("https://","http://").Replace("www.","")
@@ -238,18 +228,27 @@ let fixArchive fileName =
     if isMonoRuntime then
         fixDatesInArchive fileName
 
+let GetLicenseFileName (packageName:PackageName) (version:SemVerInfo) = packageName.ToString() + "." + version.Normalize() + ".license.html"
+let GetPackageFileName (packageName:PackageName) (version:SemVerInfo) = packageName.ToString() + "." + version.Normalize() + ".nupkg"
 
-let inline isExtracted (directory:DirectoryInfo) fileName =
-    let fi = FileInfo(fileName)
+let inline isExtracted (directory:DirectoryInfo) (packageName:PackageName) (version:SemVerInfo) =
+    let inDir f = Path.Combine(directory.FullName, f)
+    let packFile = GetPackageFileName packageName version |> inDir
+    let licenseFile = GetLicenseFileName packageName version |> inDir
+    let fi = FileInfo(packFile)
     if not fi.Exists then false else
     if not directory.Exists then false else
     directory.EnumerateFileSystemInfos()
-    |> Seq.exists (fun f -> f.FullName <> fi.FullName)
+    |> Seq.exists (fun f -> f.FullName <> fi.FullName && f.FullName <> licenseFile)
 
-let IsPackageVersionExtracted(root, groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath) =
-    let targetFolder = DirectoryInfo(getTargetFolder root groupName packageName version includeVersionInPath)
-    let targetFileName = packageName.ToString() + "." + version.Normalize() + ".nupkg"
-    isExtracted targetFolder targetFileName
+let IsPackageVersionExtracted(config:ResolvedPackagesFolder, packageName:PackageName, version:SemVerInfo) =
+    match config.Path with
+    | Some target ->
+        let targetFolder = DirectoryInfo(target)
+        isExtracted targetFolder packageName version
+    | None ->
+        // Need to extract in .nuget dir?
+        true
 
 // cleanup folder structure
 let rec private cleanup (dir : DirectoryInfo) =
@@ -283,30 +282,41 @@ let rec private cleanup (dir : DirectoryInfo) =
             File.Move(file.FullName, newFullName)
 
 
+let GetTargetUserFolder packageName (version:SemVerInfo) =
+    DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,packageName.ToString(),version.Normalize())).FullName
+let GetTargetUserNupkg packageName (version:SemVerInfo) =
+    let normalizedNupkgName = GetPackageFileName packageName version
+    let path = GetTargetUserFolder packageName version
+    Path.Combine(path, normalizedNupkgName)
+
+let GetTargetUserToolsFolder packageName (version:SemVerInfo) =
+    DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,".tools",packageName.ToString(),version.Normalize())).FullName
+
 /// Extracts the given package to the user folder
-let ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, isCliTool, detailed) =
+let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, isCliTool, detailed) =
     async {
         let targetFolder =
-            if isCliTool then
-                DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,".tools",packageName.ToString(),version.Normalize()))
-            else
-                DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,packageName.ToString(),version.Normalize()))
-        
+            let dir =
+                if isCliTool then
+                    ExtractPackageToUserFolder(fileName, packageName, version, false, detailed) |> ignore
+                    GetTargetUserToolsFolder packageName version
+                else
+                    GetTargetUserFolder packageName version
+            DirectoryInfo(dir)
+
         use _ = Profile.startCategory Profile.Category.FileIO
-        if isExtracted targetFolder fileName |> not then
+        if isExtracted targetFolder packageName version |> not then
             Directory.CreateDirectory(targetFolder.FullName) |> ignore
             let fi = FileInfo fileName
             let targetPackageFileName = Path.Combine(targetFolder.FullName,fi.Name)
-            File.Copy(fileName,targetPackageFileName)
+            if normalizePath fileName <> normalizePath targetPackageFileName then
+                File.Copy(fileName,targetPackageFileName,true)
 
             ZipFile.ExtractToDirectory(fileName, targetFolder.FullName)
 
             let cachedHashFile = Path.Combine(Constants.NuGetCacheFolder,fi.Name + ".sha512")
             if not <| File.Exists cachedHashFile then
-                use stream = File.OpenRead(fileName)
-                let packageSize = stream.Length
-                use hasher = System.Security.Cryptography.SHA512.Create() :> System.Security.Cryptography.HashAlgorithm
-                let packageHash = Convert.ToBase64String(hasher.ComputeHash(stream))
+                let packageHash = getSha512File fileName
                 File.WriteAllText(cachedHashFile,packageHash)
 
             File.Copy(cachedHashFile,targetPackageFileName + ".sha512")
@@ -315,11 +325,11 @@ let ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version
     }
 
 /// Extracts the given package to the ./packages folder
-let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, version:SemVerInfo, isCliTool, detailed) =
+let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, version:SemVerInfo, detailed) =
     async {
         use _ = Profile.startCategory Profile.Category.FileIO
         let directory = DirectoryInfo(targetFolder)
-        if isExtracted directory fileName then
+        if isExtracted directory packageName version then
              if verbose then
                  verbosefn "%O %O already extracted" packageName version
         else
@@ -330,58 +340,63 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
                 ZipFile.ExtractToDirectory(fileName, targetFolder)
             with
             | exn ->
-
                 let text = if detailed then sprintf "%s In rare cases a firewall might have blocked the download. Please look into the file and see if it contains text with further information." Environment.NewLine else ""
-                failwithf "Error during extraction of %s.%sMessage: %s%s" (Path.GetFullPath fileName) Environment.NewLine exn.Message text
+                let path = try Path.GetFullPath fileName with :? PathTooLongException -> sprintf "%s (!too long!)" fileName
+                raise <| Exception(sprintf "Error during extraction of %s.%s%s" path Environment.NewLine text, exn)
 
 
             cleanup directory
             if verbose then
                 verbosefn "%O %O unzipped to %s" packageName version targetFolder
-        let! _ = ExtractPackageToUserFolder(fileName, packageName, version, isCliTool, detailed)
         return targetFolder
     }
 
-let CopyLicenseFromCache(root, groupName, cacheFileName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force) =
+let CopyLicenseFromCache(config:ResolvedPackagesFolder, cacheFileName, packageName:PackageName, version:SemVerInfo, force) =
     async {
         try
             if String.IsNullOrWhiteSpace cacheFileName then return () else
-            let cacheFile = FileInfo cacheFileName
-            if cacheFile.Exists then
-                let targetFile = FileInfo(Path.Combine(getTargetFolder root groupName packageName version includeVersionInPath, "license.html"))
-                if not force && targetFile.Exists then
-                    if verbose then
-                       verbosefn "License %O %O already copied" packageName version
-                else
-                    use _ = Profile.startCategory Profile.Category.FileIO
-                    File.Copy(cacheFile.FullName, targetFile.FullName, true)
+            match config.Path with
+            | Some packagePath ->
+                let cacheFile = FileInfo cacheFileName
+                if cacheFile.Exists then
+                    let targetFile = FileInfo(Path.Combine(packagePath, "license.html"))
+                    if not force && targetFile.Exists then
+                        if verbose then
+                           verbosefn "License %O %O already copied" packageName version
+                    else
+                        use _ = Profile.startCategory Profile.Category.FileIO
+                        File.Copy(cacheFile.FullName, targetFile.FullName, true)
+            | None -> ()
         with
         | exn -> traceWarnfn "Could not copy license for %O %O from %s.%s    %s" packageName version cacheFileName Environment.NewLine exn.Message
     }
 
 /// Extracts the given package to the ./packages folder
-let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, force, detailed) =
+let CopyFromCache(config:ResolvedPackagesFolder, cacheFileName, licenseCacheFile, packageName:PackageName, version:SemVerInfo, force, detailed) =
     async {
-        let targetFolder = DirectoryInfo(getTargetFolder root groupName packageName version includeVersionInPath).FullName
-        let fi = FileInfo(cacheFileName)
-        let targetFile = FileInfo(Path.Combine(targetFolder, fi.Name))
-        if not force && targetFile.Exists then
-            if verbose then
-                verbosefn "%O %O already copied" packageName version
-        else
-            use _ = Profile.startCategory Profile.Category.FileIO
-            CleanDir targetFolder
-            File.Copy(cacheFileName, targetFile.FullName)
-        try
-            let! extracted = ExtractPackage(targetFile.FullName,targetFolder,packageName,version,isCliTool,detailed)
-            do! CopyLicenseFromCache(root, groupName, licenseCacheFile, packageName, version, includeVersionInPath, force)
-            return extracted
-        with
-        | exn ->
-            use _ = Profile.startCategory Profile.Category.FileIO
-            File.Delete targetFile.FullName
-            Directory.Delete(targetFolder,true)
-            return! raise exn
+        match config.Path with
+        | Some target ->
+            let targetFolder = DirectoryInfo(target).FullName
+            let fi = FileInfo(cacheFileName)
+            let targetFile = FileInfo(Path.Combine(targetFolder, fi.Name))
+            if not force && targetFile.Exists then
+                if verbose then
+                    verbosefn "%O %O already copied" packageName version
+            else
+                use _ = Profile.startCategory Profile.Category.FileIO
+                CleanDir targetFolder
+                File.Copy(cacheFileName, targetFile.FullName)
+            try
+                let! extracted = ExtractPackage(targetFile.FullName,targetFolder,packageName,version,detailed)
+                do! CopyLicenseFromCache(config, licenseCacheFile, packageName, version, force)
+                return Some extracted
+            with
+            | exn ->
+                use _ = Profile.startCategory Profile.Category.FileIO
+                File.Delete targetFile.FullName
+                Directory.Delete(targetFolder,true)
+                return! raise exn
+        | None -> return None
     }
 
 /// Puts the package into the cache
@@ -446,12 +461,9 @@ let private tryUrlOrBlacklist (f: _ -> Async<'a>) (isOk : 'a -> bool) (source:Nu
             (fun s -> isOk (s :?> 'a))
             (source,id)
     match res with
-    | Choice1Of2 r -> Choice1Of2 r
-    | Choice2Of2 a ->
-        Choice2Of2 (async {
-            let! (l, r) = a
-            return l, (r :?> 'a)
-        })
+    | SubsequentCall r -> SubsequentCall r
+    | FirstCall t ->
+        FirstCall (t |> Task.Map (fun (l, r) -> l, (r :?> 'a)))
 
 let tryAndBlacklistUrl doWarn (source:NugetSource) (tryAgain : 'a -> bool) (f : string -> Async<'a>) (urls: UrlToTry list) : Async<'a>=
     async {
@@ -460,18 +472,18 @@ let tryAndBlacklistUrl doWarn (source:NugetSource) (tryAgain : 'a -> bool) (f : 
             |> Seq.map (fun url -> async {
                 let cached = tryUrlOrBlacklist (fun () -> async { return! f url.InstanceUrl }) (tryAgain >> not) (source, url.UrlId)
                 match cached with
-                | Choice1Of2 task ->
+                | SubsequentCall task ->
                     let! result = task |> Async.AwaitTask
                     if result then
                         let! result = f url.InstanceUrl
                         return Choice1Of3 result
                     else
                         return Choice3Of3 () // Url Blacklisted
-                | Choice2Of2 a ->
-                    let! (isOk, res) = a
+                | FirstCall task ->
+                    let! (isOk, res) = task |> Async.AwaitTask
                     if not isOk then
                         if doWarn then
-                            eprintfn "Possible Performance degration, blacklist '%A'" url.UrlId
+                            eprintfn "Possible Performance degration, blacklist '%s'" url.InstanceUrl
                         return Choice2Of3 res
                     else
                         return Choice1Of3 res

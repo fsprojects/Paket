@@ -20,7 +20,11 @@ let FindPackagesNotExtractedYet(dependenciesFileName) =
 
     lockFile.GetGroupedResolution()
     |> Map.toList
-    |> List.filter (fun ((group,package),resolved) -> NuGetCache.IsPackageVersionExtracted(root, group, package, resolved.Version, defaultArg resolved.Settings.IncludeVersionInPath false) |> not)
+    |> List.filter (fun ((group,package),resolved) ->
+        let packSetting = defaultArg resolved.Settings.StorageConfig PackagesFolderGroupConfig.Default
+        let includeVersionInPath = defaultArg resolved.Settings.IncludeVersionInPath false
+        let resolvedPath = packSetting.Resolve root group package resolved.Version includeVersionInPath
+        NuGetCache.IsPackageVersionExtracted(resolvedPath, package, resolved.Version) |> not)
     |> List.map fst
 
 
@@ -35,11 +39,13 @@ let CopyToCaches force caches fileName =
                 traceWarnfn "Could not copy %s to cache %s%s%s" fileName cache.Location Environment.NewLine exn.Message)
 
 /// returns - package, libs files, props files, targets files, analyzers files
-let private extractPackage caches package alternativeProjectRoot root source groupName version includeVersionInPath force =
+let private extractPackage caches (package:PackageInfo) alternativeProjectRoot root source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
+        let cfg = defaultArg package.Settings.StorageConfig PackagesFolderGroupConfig.Default
+
         let! fileName,folder = 
             NuGet.DownloadPackage(
-                alternativeProjectRoot, root, source, caches, groupName, 
+                alternativeProjectRoot, root, cfg, source, caches, groupName, 
                 package.Name, version, package.IsCliTool, includeVersionInPath, force, detailed)
 
         CopyToCaches force caches fileName
@@ -62,13 +68,25 @@ let private extractPackage caches package alternativeProjectRoot root source gro
 
 /// Downloads and extracts a package.
 /// returns - package, libs files, props files, targets files, analyzers files
-let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package : ResolvedPackage, localOverride) = 
+let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package : PackageInfo, localOverride) = 
     async { 
+        let storage = defaultArg package.Settings.StorageConfig PackagesFolderGroupConfig.Default
         let v = package.Version
         let includeVersionInPath = defaultArg package.Settings.IncludeVersionInPath false
-        let targetDir = getTargetFolder root groupName package.Name package.Version includeVersionInPath
-        let overridenFile = FileInfo(Path.Combine(targetDir, "paket.overriden"))
-        let force = if (localOverride || overridenFile.Exists) then true else force
+        let resolvedStorage = storage.Resolve root groupName package.Name package.Version includeVersionInPath
+
+        let targetDir, overridenFile, force =
+            match resolvedStorage.Path with
+            | Some targetDir ->
+                let overridenFile = FileInfo(Path.Combine(targetDir, "paket.overriden"))
+                targetDir, overridenFile, (if (localOverride || overridenFile.Exists) then true else force)
+            | None ->
+                if localOverride then
+                    failwithf "Local package override without local storage (global nuget folder) is not supported at the moment. A PR is welcome."
+                let targetDir = NuGetCache.GetTargetUserFolder package.Name package.Version
+                let overridenFile = FileInfo(Path.Combine(targetDir, "paket.overriden"))
+                targetDir, overridenFile, force
+
         let! result = async {
             // TODO: Cleanup - Download gets a source and should be able to handle LocalNuGet as well, so this is duplicated
             match package.Source with
@@ -94,15 +112,8 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
 
                 return! extractPackage caches package alternativeProjectRoot root source groupName v includeVersionInPath force
 
-            | LocalNuGet(path,_) ->
-                let path = Utils.normalizeLocalPath path
-                let di = Utils.getDirectoryInfoForLocalNuGetFeed path alternativeProjectRoot root
-                let nupkg = NuGetLocal.findLocalPackage di.FullName package.Name v
-
-                CopyToCaches force caches nupkg.FullName
-
-                let! folder = NuGetCache.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, package.IsCliTool, includeVersionInPath, force, false)
-                return package, NuGet.GetContent folder
+            | LocalNuGet(path,_) as source ->
+                return! extractPackage caches package alternativeProjectRoot root source groupName v includeVersionInPath force
         }
 
         // manipulate overridenFile after package extraction
@@ -119,10 +130,11 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
 let internal restore (alternativeProjectRoot, root, groupName, sources, caches, force, lockFile : LockFile, packages : Set<PackageName>, overriden : Set<PackageName>) = 
     async { 
         RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles)
+        let group = lockFile.Groups.[groupName]
         let! _ = 
             lockFile.Groups.[groupName].Resolution
             |> Map.filter (fun name _ -> packages.Contains name)
-            |> Seq.map (fun kv -> ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, kv.Value, Set.contains kv.Key overriden))
+            |> Seq.map (fun kv -> ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, group.GetPackage kv.Key, Set.contains kv.Key overriden))
             |> Async.Parallel
         return ()
     }
@@ -248,70 +260,91 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
             if verbose then
                 tracefn " - %s already up-to-date" fileInfo.FullName
 
-let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:LockFile) (projectFile:FileInfo) (referencesFile:ReferencesFile) (dotnetCliOutFilePath:string) (resolved:Lazy<Map<GroupName*PackageName,ResolvedPackage>>) targetFilter (groups:Map<GroupName,LockFileGroup>) =
+let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:LockFile) (projectFile:ProjectFile) (referencesFile:ReferencesFile) (dotnetCliOutFilePath:string) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) (groups:Map<GroupName,LockFileGroup>) =
+    let projectFileInfo = FileInfo projectFile.FileName
     let list = System.Collections.Generic.List<_>()
-    let cliTools = System.Collections.Generic.List<_>()
-    for kv in groups do
-        let hull,cliToolsInGroup = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
-        cliTools.AddRange cliToolsInGroup
+    let hulls =
+        groups
+        |> Seq.map (fun kv ->
+            let hull,cliToolsInGroup = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
+            kv.Key, (hull, cliToolsInGroup))
+        |> dict
+    let targets =
+        ProjectFile.getTargetFramework projectFile
+        |> Option.toList
+        |> List.append (ProjectFile.getTargetFrameworks projectFile |> Option.toList |> List.collect (fun item -> String.split [|';'|] item |> List.ofArray))
+        |> List.map (fun s -> s, (PlatformMatching.forceExtractPlatforms s |> fun p -> p.ToTargetProfile true))
+        |> List.choose (fun (s, c) -> c |> Option.map (fun d -> s, d))
 
-        let depsGroup =
-            match dependenciesFile.Groups |> Map.tryFind kv.Key with
-            | Some group -> group
-            | None -> failwithf "Dependencies file '%s' does not contain group '%O' but it is used in '%s'" dependenciesFile.FileName kv.Key lockFile.FileName
+    // delete stale entries (otherwise we might not recognize stale data on a change later)
+    // scenario: remove a target framework -> change references -> add back target framework
+    // -> We reached an invalid state
+    let objDir = DirectoryInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj"))
+    objDir.GetFiles(sprintf "%s*.references" projectFileInfo.Name)
+        |> Seq.iter (fun f -> f.Delete())
 
-        let allDirectPackages =
-            match referencesFile.Groups |> Map.tryFind kv.Key with
-            | Some g -> g.NugetPackages |> List.map (fun p -> p.Name) |> Set.ofList
-            | None -> Set.empty
-        
+    // fable 1.0 compat
+    let oldReferencesFile = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".references"))
+    if oldReferencesFile.Exists then oldReferencesFile.Delete()
 
-        for (key,_,_) in hull do
-            let restore =
-                match targetFilter with
-                | None -> true
-                | Some targets ->
+    for originalTargetProfileString, targetProfile in targets do
+        for kv in groups do
+            let hull,_ = hulls.[kv.Key]
+            let allDirectPackages =
+                match referencesFile.Groups |> Map.tryFind kv.Key with
+                | Some g -> g.NugetPackages |> List.map (fun p -> p.Name) |> Set.ofList
+                | None -> Set.empty
+
+            for (key,_,_) in hull do
+                let restore =
                     let resolvedPackage = resolved.Force().[key]
 
                     match resolvedPackage.Settings.FrameworkRestrictions with
                     | Requirements.ExplicitRestriction restrictions ->
-                        targets
-                        |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target))
+                        Requirements.isTargetMatchingRestrictions(restrictions, targetProfile)
                     | _ -> true
-                    
-            if restore then
-                let _,packageName = key
-                let direct = allDirectPackages.Contains packageName
-                let package = resolved.Force().[key]
-                let line =
-                    packageName.ToString() + "," + 
-                    package.Version.ToString() + "," + 
-                    (if direct then "Direct" else "Transitive") + "," +
-                    kv.Key.ToString()
-                
-                list.Add line
 
-    let output = String.Join(Environment.NewLine,list)
-    let newFileName = FileInfo(Path.Combine(projectFile.Directory.FullName,"obj",projectFile.Name + ".references"))
-    if not newFileName.Directory.Exists then
-        newFileName.Directory.Create()
-    if output = "" then
-        if File.Exists(newFileName.FullName) then
-            File.Delete(newFileName.FullName)
+                if restore then
+                    let _,packageName = key
+                    let direct = allDirectPackages.Contains packageName
+                    let package = resolved.Force().[key]
+                    let line =
+                        packageName.ToString() + "," +
+                        package.Version.ToString() + "," +
+                        (if direct then "Direct" else "Transitive") + "," +
+                        kv.Key.ToString()
 
-    elif not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
-        File.WriteAllText(newFileName.FullName,output)                
-        tracefn " - %s created" newFileName.FullName
-    else
-        if verbose then
-            tracefn " - %s already up-to-date" newFileName.FullName
+                    list.Add line
 
+        let output = String.Join(Environment.NewLine,list)
+        let newFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + "." + originalTargetProfileString + ".references"))
+        if not newFileName.Directory.Exists then
+            newFileName.Directory.Create()
 
-    let paketCLIToolsFileName = FileInfo(Path.Combine(projectFile.Directory.FullName,"obj",projectFile.Name + ".paket.clitools"))
+        elif not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
+            if targetProfile = SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6) then
+                // fable compat
+                File.WriteAllText(oldReferencesFile.FullName,output)
+            File.WriteAllText(newFileName.FullName,output)
+            tracefn " - %s created" newFileName.FullName
+        else
+            if verbose then
+                tracefn " - %s already up-to-date" newFileName.FullName
+
+    let cliTools = System.Collections.Generic.List<_>()
+    for kv in groups do
+        let _,cliToolsInGroup = hulls.[kv.Key] // lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
+        cliTools.AddRange cliToolsInGroup
+
+    let paketCLIToolsFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.clitools"))
     createPaketCLIToolsFile cliTools paketCLIToolsFileName
-    
-    let paketPropsFileName = FileInfo(Path.Combine(projectFile.Directory.FullName,"obj",projectFile.Name + ".paket.props"))
+
+    let paketPropsFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.props"))
     createPaketPropsFile cliTools paketPropsFileName
+
+    // Write "cached" file, this way msbuild can check if the references file has changed.
+    let paketCachedReferencesFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.references.cached"))
+    File.Copy(referencesFile.FileName, paketCachedReferencesFileName.FullName, true)
 
 let CreateScriptsForGroups dependenciesFile lockFile (groups:Map<GroupName,LockFileGroup>) =
     let groupsToGenerate =
@@ -328,8 +361,8 @@ let CreateScriptsForGroups dependenciesFile lockFile (groups:Map<GroupName,LockF
         LoadingScripts.ScriptGeneration.constructScriptsFromData depsCache groupsToGenerate [] []
         |> Seq.iter (fun sd -> sd.Save dir)
 
-let FindOrCreateReferencesFile projectFileName =
-    let projectFile = ProjectFile.LoadFromFile projectFileName
+let FindOrCreateReferencesFile (projectFile:ProjectFile) =
+    
     match projectFile.FindReferencesFile() with
     | Some fileName -> 
         try
@@ -342,7 +375,15 @@ let FindOrCreateReferencesFile projectFileName =
             Path.Combine(fi.Directory.FullName,Constants.ReferencesFile)
 
         ReferencesFile.New fileName
-        
+
+let RestoreNewSdkProject dependenciesFile lockFile resolved groups (projectFile:ProjectFile) =
+    let referencesFile = FindOrCreateReferencesFile projectFile
+    let projectFileInfo = FileInfo projectFile.FileName
+
+    createAlternativeNuGetConfig projectFileInfo
+    createProjectReferencesFiles dependenciesFile lockFile projectFile referencesFile resolved groups
+    referencesFile
+
 let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option, additionalReferences: ReferencesFile option) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
@@ -350,105 +391,130 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
     let alternativeProjectRoot = None
     if not lockFileName.Exists then 
         failwithf "%s doesn't exist." lockFileName.FullName
-    let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
-    let targetFilter = 
-        targetFrameworks
-        |> Option.map (fun s -> s.Split(';') |> Array.map FrameworkDetection.Extract |> Array.choose id)
+    // Shortcut if we already restored before
+    let newContents = File.ReadAllText(lockFileName.FullName)
+    let restoreCacheFile = Path.Combine(root, Constants.PaketFilesFolderName, Constants.RestoreHashFile)
+    let inline isEarlyExit () =
+        // We ignore our check when we do a partial restore, this way we can
+        // fixup project specific changes (like an additional target framework or a changed references file)
+        // We could still skip the actual "restore" work, but that is left as an exercise for the interesting reader.
+        if targetFrameworks = None && projectFile = None && referencesFileNames = [] && File.Exists restoreCacheFile then
+            let oldContents = File.ReadAllText(restoreCacheFile)
+            oldContents = newContents
+        else false
 
-    let lockFile,localFile,hasLocalFile =
-        let lockFile = LockFile.LoadFrom(lockFileName.FullName)
-        if not localFileName.Exists then
-            lockFile,LocalFile.empty,false
-        else
-            let localFile =
-                LocalFile.readFile localFileName.FullName
-                |> returnOrFail
-            LocalFile.overrideLockFile localFile lockFile,localFile,true
+    if isEarlyExit () then
+        tracefn "Last restore is still up 2 date."
+    else
+        let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
-    if not hasLocalFile && not ignoreChecks then
-        let hasAnyChanges,nugetChanges,remoteFilechanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
+        let targetFilter = 
+            targetFrameworks
+            |> Option.map (fun s -> s.Split(';') |> Array.map FrameworkDetection.Extract |> Array.choose id)
 
-        let checkResponse = if failOnChecks then failwithf else traceWarnfn
-        if hasAnyChanges then 
-            checkResponse "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
-            for (group, package, changes) in nugetChanges do
-                traceWarnfn "Changes were detected for %s/%s" (group.ToString()) (package.ToString())
-                for change in changes do
-                     traceWarnfn "    - %A" change
+        let lockFile,localFile,hasLocalFile =
+            let lockFile = LockFile.LoadFrom(lockFileName.FullName)
+            if not localFileName.Exists then
+                lockFile,LocalFile.empty,false
+            else
+                let localFile =
+                    LocalFile.readFile localFileName.FullName
+                    |> returnOrFail
+                LocalFile.overrideLockFile localFile lockFile,localFile,true
 
-    let groups =
-        match group with
-        | None -> lockFile.Groups 
-        | Some groupName -> 
-            match lockFile.Groups |> Map.tryFind groupName with
-            | None -> failwithf "The group %O was not found in the paket.lock file." groupName
-            | Some group -> [groupName,group] |> Map.ofList
+        if not hasLocalFile && not ignoreChecks then
+            let hasAnyChanges,nugetChanges,remoteFilechanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
 
-    let resolved = lazy (lockFile.GetGroupedResolution())
+            let checkResponse = if failOnChecks then failwithf else traceWarnfn
+            if hasAnyChanges then 
+                checkResponse "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
+                for (group, package, changes) in nugetChanges do
+                    traceWarnfn "Changes were detected for %s/%s" (group.ToString()) (package.ToString())
+                    for change in changes do
+                         traceWarnfn "    - %A" change
 
-    let referencesFileNames =
-        match projectFile with
-        | Some projectFileName ->
-            let referencesFile = FindOrCreateReferencesFile projectFileName
-            let projectFileInfo = FileInfo projectFileName
+        let groups =
+            match group with
+            | None -> lockFile.Groups 
+            | Some groupName -> 
+                match lockFile.Groups |> Map.tryFind groupName with
+                | None -> failwithf "The group %O was not found in the paket.lock file." groupName
+                | Some group -> [groupName,group] |> Map.ofList
 
-            createAlternativeNuGetConfig projectFileInfo
-            createProjectReferencesFiles dependenciesFile lockFile projectFileInfo referencesFile resolved targetFilter groups
+        let resolved = lazy (lockFile.GetGroupedResolution())
 
-            [referencesFile.FileName]
-        | None -> referencesFileNames
+        let referencesFileNames =
+            match projectFile with
+            | Some projectFileName ->
+                let projectFile = ProjectFile.LoadFromFile projectFileName
 
-    let tasks =
-        groups
-        |> Seq.map (fun kv ->
-            let allPackages = 
-                if List.isEmpty referencesFileNames then 
-                    kv.Value.Resolution
-                    |> Seq.map (fun kv -> kv.Key) 
-                else
-                    referencesFileNames
-                    |> List.toSeq
-                    |> computePackageHull kv.Key lockFile
+                let referencesFile = RestoreNewSdkProject dependenciesFile lockFile resolved groups projectFile
 
-            let packages =
-                allPackages
-                |> Seq.filter (fun p ->
-                    match targetFilter with
-                    | None -> true
-                    | Some targets ->
-                        let key = kv.Key,p
-                        let resolvedPackage = resolved.Force().[key]
-
-                        match resolvedPackage.Settings.FrameworkRestrictions with
-                        | Requirements.ExplicitRestriction restrictions ->
-                            targets
-                            |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target))
-                        | _ -> true)
- 
-
-            match dependenciesFile.Groups |> Map.tryFind kv.Value.Name with
+                [referencesFile.FileName]
             | None ->
-                failwithf 
-                    "The group %O was found in the %s file but not in the %s file. Please run \"paket install\" again." 
-                    kv.Value
-                    Constants.LockFileName
-                    Constants.DependenciesFileName
-            | Some depFileGroup ->
-                let packages = Set.ofSeq packages
-                let overriden = 
-                    packages
-                    |> Set.filter (fun p -> LocalFile.overrides localFile (p,depFileGroup.Name))
+                if referencesFileNames = [] then
+                    // Restore all projects
+                    ProjectFile.FindAllProjects root
+                    |> Seq.filter (fun proj -> proj.GetToolsVersion() >= 15.0)
+                    |> Seq.iter (fun proj ->
+                        RestoreNewSdkProject dependenciesFile lockFile resolved groups proj
+                        |> ignore)
 
-                restore(alternativeProjectRoot, root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages, overriden))
-        |> Seq.toArray
+                referencesFileNames
+
+        let tasks =
+            groups
+            |> Seq.map (fun kv ->
+                let allPackages = 
+                    if List.isEmpty referencesFileNames then 
+                        kv.Value.Resolution
+                        |> Seq.map (fun kv -> kv.Key) 
+                    else
+                        referencesFileNames
+                        |> List.toSeq
+                        |> computePackageHull kv.Key lockFile
+
+                let packages =
+                    allPackages
+                    |> Seq.filter (fun p ->
+                        match targetFilter with
+                        | None -> true
+                        | Some targets ->
+                            let key = kv.Key,p
+                            let resolvedPackage = resolved.Force().[key]
+
+                            match resolvedPackage.Settings.FrameworkRestrictions with
+                            | Requirements.ExplicitRestriction restrictions ->
+                                targets
+                                |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target))
+                            | _ -> true)
  
-    RunInLockedAccessMode(
-        root,
-        (fun () ->
-            for task in tasks do
-                task
-                |> Async.RunSynchronously
-                |> ignore
 
-            CreateScriptsForGroups dependenciesFile lockFile groups))
+                match dependenciesFile.Groups |> Map.tryFind kv.Value.Name with
+                | None ->
+                    failwithf 
+                        "The group %O was found in the %s file but not in the %s file. Please run \"paket install\" again." 
+                        kv.Value
+                        Constants.LockFileName
+                        Constants.DependenciesFileName
+                | Some depFileGroup ->
+                    let packages = Set.ofSeq packages
+                    let overriden = 
+                        packages
+                        |> Set.filter (fun p -> LocalFile.overrides localFile (p,depFileGroup.Name))
+
+                    restore(alternativeProjectRoot, root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages, overriden))
+            |> Seq.toArray
+ 
+        RunInLockedAccessMode(
+            root,
+            (fun () ->
+                for task in tasks do
+                    task
+                    |> Async.RunSynchronously
+                    |> ignore
+
+                CreateScriptsForGroups dependenciesFile lockFile groups
+                if targetFrameworks = None && projectFile = None && referencesFileNames = [] then
+                    File.WriteAllText(restoreCacheFile, newContents)))

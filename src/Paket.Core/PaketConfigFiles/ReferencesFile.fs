@@ -137,6 +137,7 @@ type ReferencesFile =
                   { CopyLocal = if not copyLocal then Some copyLocal else None
                     SpecificVersion = if not specificVersion then Some specificVersion else None
                     CopyContentToOutputDirectory = None
+                    StorageConfig = None
                     ImportTargets = if not importTargets then Some importTargets else None
                     FrameworkRestrictions = frameworkRestrictions
                     IncludeVersionInPath = if includeVersionInPath then Some includeVersionInPath else None

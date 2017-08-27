@@ -185,9 +185,9 @@ module FolderScanner =
                      'A', (fun s -> ParseSucceeded s) >> ParseResult.box
                     ]
 
-    type AdvancedScanner = {
+    type AdvancedScanner<'Context> = {
         Name : string
-        Parser : string -> ParseResult<obj>
+        Parser : 'Context -> string -> ParseResult<obj>
     }
 
     // array of all possible formatters, i.e. [|"%b"; "%d"; ...|]
@@ -264,7 +264,7 @@ module FolderScanner =
     let private findSpecifiers = Regex(@"%(?<formatSpec>.)({(?<inside>.*?)})?")
 
     // Extends the syntax of the format string with %A{scanner}, and uses the corresponding named scanner from the advancedScanners parameter.
-    let private sscanfExtHelper (advancedScanners:AdvancedScanner seq) opts (pf:PrintfFormat<_,_,_,_,'t>) s : ScanResult =
+    let private sscanfExtHelper context (advancedScanners:AdvancedScanner<'Context> seq) opts (pf:PrintfFormat<_,_,_,_,'t>) s : ScanResult =
         let scannerMap =
             advancedScanners
             |> Seq.map (fun s -> s.Name, s)
@@ -303,7 +303,7 @@ module FolderScanner =
         | ScanSuccess objResults ->
             let results =
                 (objResults, advancedFormatters)
-                ||> Seq.map2 (fun r a -> match a with Some p -> p.Parser (string r) | None -> ParseSucceeded r)
+                ||> Seq.map2 (fun r a -> match a with Some p -> p.Parser context (string r) | None -> ParseSucceeded r)
                 |> Seq.toArray
             match results |> Seq.choose (fun r -> match r with ParseError error -> Some error | _ -> None) |> Seq.tryHead with
             | Some error ->
@@ -312,15 +312,17 @@ module FolderScanner =
                 ScanSuccess (results |> Array.map (function ParseSucceeded res -> res | ParseError _ -> failwithf "Should not happen here"))
         | _ as s -> s
 
-    let trySscanfExt advancedScanners opts (pf:PrintfFormat<_,_,_,_,'t>) s : 't option =
+    let trySscanfExt context advancedScanners opts (pf:PrintfFormat<_,_,_,_,'t>) s : 't option =
         //raise <| FormatException(sprintf "Unable to scan string '%s' with regex '%s'" s regexString)
-        match sscanfExtHelper advancedScanners opts pf s with
+        match sscanfExtHelper context advancedScanners opts pf s with
         | ScanSuccess matches -> toGenericTuple matches |> Some
         | _ -> None
 
-    let sscanfExt advancedScanners opts (pf:PrintfFormat<_,_,_,_,'t>) s : 't =
-        sscanfExtHelper advancedScanners opts pf s
+    let sscanfExt context advancedScanners opts (pf:PrintfFormat<_,_,_,_,'t>) s : 't =
+        sscanfExtHelper context advancedScanners opts pf s
         |> handleErrors s
+
+open FolderScanner
 
     // some basic testing
     //let (a,b) = sscanf "(%%%s,%M)" "(%hello, 4.53)"
@@ -355,33 +357,41 @@ module InstallModel =
 
     type Tfm = PlatformMatching.ParsedPlatformPath
     type Rid = Paket.Rid
-    let scanners =
+    let scanners : list<AdvancedScanner<UnparsedPackageFile>> =
         [ { FolderScanner.AdvancedScanner.Name = "noSeperator";
-            FolderScanner.AdvancedScanner.Parser = FolderScanner.check "seperator not allowed" (fun s -> not (s.Contains "/" || s.Contains "\\")) >> FolderScanner.ParseResult.box }
+            FolderScanner.AdvancedScanner.Parser =
+                fun upf -> FolderScanner.check "seperator not allowed" (fun s -> not (s.Contains "/" || s.Contains "\\")) >> FolderScanner.ParseResult.box }
           { FolderScanner.AdvancedScanner.Name = "tfm";
-            FolderScanner.AdvancedScanner.Parser = FolderScanner.choose "invalid tfm" PlatformMatching.extractPlatforms >> FolderScanner.ParseResult.box }
+            FolderScanner.AdvancedScanner.Parser =
+                (fun upf ->
+                    (FolderScanner.choose "invalid tfm" (fun plats ->
+                    let parsed = PlatformMatching.extractPlatforms false plats
+                    if parsed.IsNone then
+                        traceWarnIfNotBefore ("File", plats, upf.BasePath) "Could not detect any platforms from '%s' in '%s', please tell the package authors" plats upf.FullPath
+                    parsed)) >> FolderScanner.ParseResult.box) }
           { FolderScanner.AdvancedScanner.Name = "rid";
-            FolderScanner.AdvancedScanner.Parser = (fun rid -> { Rid = rid }) >> FolderScanner.ParseResult.ParseSucceeded >> FolderScanner.ParseResult.box }]
-    let trySscanf pf s =
-        FolderScanner.trySscanfExt scanners { FolderScanner.ScanOptions.Default with IgnoreCase = true } pf s
+            FolderScanner.AdvancedScanner.Parser =
+                fun upl -> (fun rid -> { Rid = rid }) >> FolderScanner.ParseResult.ParseSucceeded >> FolderScanner.ParseResult.box }]
+    let trySscanf pf ctx =
+        FolderScanner.trySscanfExt ctx scanners { FolderScanner.ScanOptions.Default with IgnoreCase = true } pf ctx.PathWithinPackage
 
     let getCompileRefAssembly (p:UnparsedPackageFile) =
-        (trySscanf "ref/%A{tfm}/%A{noSeperator}" p.PathWithinPackage : (Tfm * string) option)
+        (trySscanf "ref/%A{tfm}/%A{noSeperator}" p : (Tfm * string) option)
         |> Option.map (fun (l,_) -> { Path = l; File = p; Runtime = None })
 
     let getRuntimeAssembly (p:UnparsedPackageFile) =
-        (trySscanf "lib/%A{tfm}/%A{noSeperator}" p.PathWithinPackage : (Tfm * string) option)
+        (trySscanf "lib/%A{tfm}/%A{noSeperator}" p : (Tfm * string) option)
         |> Option.map (fun (l,_) -> { Path = l; File = p; Runtime = None })
         |> Option.orElseWith (fun _ ->
-            (trySscanf "runtimes/%A{rid}/lib/%A{tfm}/%A{noSeperator}" p.PathWithinPackage : (Rid * Tfm * string) option)
+            (trySscanf "runtimes/%A{rid}/lib/%A{tfm}/%A{noSeperator}" p : (Rid * Tfm * string) option)
             |> Option.map (fun (rid, l, _) -> { Path = l; File = p; Runtime = Some rid }))
         |> Option.orElseWith (fun _ ->
-            (trySscanf "lib/%A{noSeperator}" p.PathWithinPackage : string option)
+            (trySscanf "lib/%A{noSeperator}" p : string option)
             |> Option.map (fun (_) -> { Path = Tfm.Empty; File = p; Runtime = None }))
 
     let getCompileLibAssembly (p:UnparsedPackageFile) =
         // %s because 'native' uses subfolders...
-        (trySscanf "lib/%A{tfm}/%s" p.PathWithinPackage : (Tfm * string) option)
+        (trySscanf "lib/%A{tfm}/%s" p : (Tfm * string) option)
         |> Option.map (fun (l,path) ->
             if l.Name = "native" && l.Platforms = [ FrameworkIdentifier.Native(NoBuildMode,NoPlatform) ] then
                 // We need some special logic to detect the platform
@@ -401,21 +411,21 @@ module InstallModel =
             else
             { Path = l; File = p; Runtime = None })
         |> Option.orElseWith (fun _ ->
-            (trySscanf "lib/%A{noSeperator}" p.PathWithinPackage : string option)
+            (trySscanf "lib/%A{noSeperator}" p : string option)
             |> Option.map (fun (_) -> { Path = Tfm.Empty; File = p; Runtime = None }))
 
     let getRuntimeLibrary (p:UnparsedPackageFile) =
-        (trySscanf "runtimes/%A{rid}/nativeassets/%A{tfm}/%A{noSeperator}" p.PathWithinPackage : (Rid * Tfm * string) option)
+        (trySscanf "runtimes/%A{rid}/nativeassets/%A{tfm}/%A{noSeperator}" p : (Rid * Tfm * string) option)
         |> Option.map (fun (rid, l,_) -> { Path = l; File = p; Runtime = Some rid })
         |> Option.orElseWith (fun _ ->
-            (trySscanf "runtimes/%A{rid}/native/%A{noSeperator}" p.PathWithinPackage : (Rid * string) option)
+            (trySscanf "runtimes/%A{rid}/native/%A{noSeperator}" p : (Rid * string) option)
             |> Option.map (fun (rid, _) -> { Path = Tfm.Empty; File = p; Runtime = Some rid }))
 
     let getMsbuildFile (p:UnparsedPackageFile) =
-        (trySscanf "build/%A{tfm}/%A{noSeperator}" p.PathWithinPackage : (Tfm * string) option)
+        (trySscanf "build/%A{tfm}/%A{noSeperator}" p : (Tfm * string) option)
         |> Option.map (fun (l,_) -> { Path = l; File = p; Runtime = None })
         |> Option.orElseWith (fun _ ->
-            (trySscanf "build/%A{noSeperator}" p.PathWithinPackage : string option)
+            (trySscanf "build/%A{noSeperator}" p : string option)
             |> Option.map (fun (_) -> { Path = Tfm.Empty; File = p; Runtime = None }))
 
     // Build up InstallModel
