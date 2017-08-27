@@ -170,7 +170,7 @@ Target "Build" (fun _ ->
         |> ignore
 
     // DogFood newly build paket.exe for the dotnet build
-    setEnvironVar "PaketExePath" (buildDir @@ "paket.exe")
+    setEnvironVar "PaketExePath" (Path.GetFullPath (buildDir @@ "paket.exe"))
 )
 
 let assertExitCodeZero x = 
