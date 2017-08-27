@@ -63,6 +63,7 @@ type ConfigArgs =
     | [<Unique;CustomCommandLine("add-token")>] AddToken of key_or_URL:string * token:string
     | [<Unique>] Username of username:string
     | [<Unique>] Password of password:string
+    | [<Unique>] AuthType of authType:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -71,6 +72,7 @@ with
             | AddToken(_) -> "add token for URL or credential key"
             | Username(_) -> "provide username"
             | Password(_) -> "provide password"
+            | AuthType (_) -> "specify authentication type: basic|ntlm (default: basic)"
 
 type ConvertFromNugetArgs =
     | [<Unique;AltCommandLine("-f")>] Force
@@ -359,13 +361,15 @@ with
 
 type FixNuspecsArgs =
     | [<ExactlyOnce;CustomCommandLine("files")>] Files of nuspecPaths:string list
-    | [<ExactlyOnce;CustomCommandLine("references-file")>] ReferencesFile of referencePath:string
+    | [<CustomCommandLine("references-file")>] ReferencesFile of referencePath:string
+    | [<CustomCommandLine("project-file")>] ProjectFile of referencePath:string
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | Files _ -> ".nuspec files to fix transitive dependencies within"
             | ReferencesFile _ -> "paket.references to use"
+            | ProjectFile _ -> "the proejct file to use"
 
 type GenerateNuspecArgs =
     | [<ExactlyOnce;CustomCommandLine "project">] Project of project:string

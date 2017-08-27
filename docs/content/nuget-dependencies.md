@@ -36,14 +36,14 @@ source http://myserver/nuget/api/v2 // Custom feed.
 It's also possible to provide login information for private NuGet feeds:
 
 ```paket
-source http://example.com/nuget/api/v2 username: "user name" password: "the password"
+source http://example.com/nuget/api/v2 username: "user name" password: "the password" authtype: "basic"
 ```
 
 If you don't want to check your username and password into source control, you
 can use environment variables instead:
 
 ```paket
-source http://myserver/nuget/api/v2 username: "%PRIVATE_FEED_USER%" password: "%PRIVATE_FEED_PASS%"
+source http://myserver/nuget/api/v2 username: "%PRIVATE_FEED_USER%" password: "%PRIVATE_FEED_PASS%" authtype: "ntlm"
 ```
 
 `%PRIVATE_FEED_USER%` and `%PRIVATE_FEED_PASS%` will be expanded with the
@@ -51,6 +51,10 @@ contents of your `PRIVATE_FEED_USER` and `PRIVATE_FEED_PASS` environment
 variables.
 
 The [`paket.lock` file](lock-file.html) will also reflect these settings.
+
+`authtype` is an optional parameter to specify the authentication scheme. Allowed
+values are `basic` and `ntlm`. If no authentication type is specified, basic
+authentication will be used.
 
 **Note:** If [`paket.dependencies` file](dependencies-file.html) exists while
 running the [`convert-from-nuget` command](paket-convert-from-nuget.html), the

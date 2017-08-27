@@ -43,7 +43,7 @@ let Push maxTrials url apiKey clientVersion packageFileName =
         try
             let authOpt = ConfigFile.GetAuthentication(url)
             match authOpt with
-            | Some (Auth.Credentials (u,_)) -> 
+            | Some (Auth.Credentials (u,_,_)) -> 
                 tracefnVerbose "Authorizing using credentials for user %s" u
             | Some (Auth.Token _) -> 
                 tracefnVerbose "Authorizing using token"

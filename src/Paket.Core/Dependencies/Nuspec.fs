@@ -66,12 +66,7 @@ type Nuspec =
       FrameworkAssemblyReferences : FrameworkAssemblyReference list }
     static member All = { Version = ""; References = NuspecReferences.All; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false }
     static member Explicit references = { Version = ""; References = NuspecReferences.Explicit references; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false }
-    
-    static member Load(root,groupName,version,includeVersionInPath,name:PackageName) =
-        let folder = DirectoryInfo(getTargetFolder root groupName name version includeVersionInPath).FullName
-        let nuspec = Path.Combine(folder,sprintf "%O.nuspec" name)
-        Nuspec.Load nuspec
-    
+
     /// load the file from an XmlDocument. The fileName is only used for error reporting.
     static member private Load(fileName:string, doc:XmlDocument) =
         let frameworks =
