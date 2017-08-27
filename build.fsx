@@ -168,6 +168,9 @@ Target "Build" (fun _ ->
                 "SourceLinkCreate"   , "true"
         ] "Rebuild"
         |> ignore
+
+    // DogFood newly build paket.exe for the dotnet build
+    setEnvironVar "PaketExePath" (buildDir @@ "paket.exe")
 )
 
 let assertExitCodeZero x = 
@@ -186,7 +189,7 @@ Target "DotnetRestoreTools" (fun _ ->
     DotNetCli.Restore (fun c ->
         { c with
             Project = currentDirectory </> "tools" </> "tools.fsproj"
-            ToolPath = dotnetExePath 
+            ToolPath = dotnetExePath
         })
 )
 
@@ -230,6 +233,8 @@ Target "DotnetPackage" (fun _ ->
 // Run the unit tests using test runner
 
 Target "RunTests" (fun _ ->
+    // Stop bootstrapping in from here (tests should use whatever they want to test).
+    setEnvironVar "PaketExePath" null
     !! testAssemblies
     |> NUnit3 (fun p ->
         { p with
