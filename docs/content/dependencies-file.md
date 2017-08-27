@@ -158,7 +158,7 @@ If you change the target framework of the projects then you need to run
 ### Disable packages folder
 
 With the net netcore release and the switch to provide more and more netstandard-only packages
-the Paket team noticed an dramatic increase of the well known "packages" folder.
+the Paket team noticed a dramatic increase of the well known "packages" folder.
 Historically one way was to tell Paket that you only want to compile for `framework: net45`.
 However, this doesn't prevent netstandard dependencies in all situations.
 On the other side more features are provided by Paket and the packages folder has become more and more redundant:

@@ -1271,7 +1271,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
     // Flag to ensure that we don't hide underlying exceptions in the finally block.
     let mutable exceptionThrown = false
     try
-#if DEBUG
+#if DEBUG && !DOTNETCORE
         let mutable results = None
         let mutable error = None
         // Increase stack size, because we have no tail-call-elimination
