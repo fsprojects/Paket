@@ -1071,6 +1071,14 @@ let removeComment (text:string) =
         | p1, p2 -> stripComment (min p1 p2) 
     remove 0
 
+let getSha512Stream (stream:Stream) =
+    use hasher = System.Security.Cryptography.SHA512.Create() :> System.Security.Cryptography.HashAlgorithm
+    Convert.ToBase64String(hasher.ComputeHash(stream))
+
+let getSha512File (filePath:string) =
+    use stream = File.OpenRead(filePath)
+    getSha512Stream stream
+
 // adapted from MiniRx
 // http://minirx.codeplex.com/
 [<AutoOpen>]

@@ -27,7 +27,7 @@ let TurnOffAutoRestore environment =
     }
 
 /// Activates the Visual Studio NuGet autorestore feature in all projects
-let TurnOnAutoRestore fromBootstrapper environment =
+let TurnOnAutoRestore environment =
     let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
 
     trial {
