@@ -4,7 +4,6 @@
   </PropertyGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="dotnet-0x53A-mergenupkg" Version="1.0.*" />
-    <DotNetCliToolReference Include="dotnet-matthid-proj-info" Version="1.0.1" />
   </ItemGroup>
   <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>
