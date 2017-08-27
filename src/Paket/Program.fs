@@ -556,13 +556,27 @@ let findPackages silent (results : ParseResults<_>) =
 
     | Some searchText -> searchAndPrint searchText
 
+#nowarn "44" // because FixNuspecs is deprecated and we have warnaserror
+
 let fixNuspecs silent (results : ParseResults<_>) =
-    let referenceFile = results.GetResult <@ FixNuspecsArgs.ReferencesFile @>
-    let nuspecFiles = 
+    let nuspecFiles =
         results.GetResult <@ FixNuspecsArgs.Files @>
         |> List.collect (fun s -> s.Split([|';'|], StringSplitOptions.RemoveEmptyEntries) |> Array.toList)
 
-    Dependencies.FixNuspecs (referenceFile, nuspecFiles)
+    match results.TryGetResult <@ FixNuspecsArgs.ProjectFile @> with
+    | Some projectFile ->
+        let projectFile = Paket.ProjectFile.LoadFromFile(projectFile)
+        let refFile = RestoreProcess.FindOrCreateReferencesFile projectFile
+        Dependencies.FixNuspecs (refFile, nuspecFiles)
+    | None ->
+        match results.TryGetResult <@ FixNuspecsArgs.ReferencesFile @> with
+        | Some referenceFile ->
+            traceWarnfn "using the references-file argument is obsolete, please use project-file instead"
+
+            Dependencies.FixNuspecs (referenceFile, nuspecFiles)
+        | None -> failwithf "%s" (results.Parser.PrintUsage())
+
+
 
 // For Backwards compatibility
 let fixNuspec silent (results : ParseResults<_>) =

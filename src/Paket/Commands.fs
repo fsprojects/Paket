@@ -357,13 +357,15 @@ with
 
 type FixNuspecsArgs =
     | [<ExactlyOnce;CustomCommandLine("files")>] Files of nuspecPaths:string list
-    | [<ExactlyOnce;CustomCommandLine("references-file")>] ReferencesFile of referencePath:string
+    | [<CustomCommandLine("references-file")>] ReferencesFile of referencePath:string
+    | [<CustomCommandLine("project-file")>] ProjectFile of referencePath:string
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | Files _ -> ".nuspec files to fix transitive dependencies within"
             | ReferencesFile _ -> "paket.references to use"
+            | ProjectFile _ -> "the proejct file to use"
 
 type GenerateNuspecArgs =
     | [<ExactlyOnce;CustomCommandLine "project">] Project of project:string

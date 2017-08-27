@@ -694,6 +694,7 @@ type Dependencies(dependenciesFileName: string) =
 
 
     /// Fix the transitive references in a list of generated .nuspec files
+    [<Obsolete "Use a real references file instead. Note that this overload doesn't take a 'real' references file.">]
     static member FixNuspecs (referencesFile:string, nuspecFileList:string list) =
 
         for nuspecFile in nuspecFileList do
@@ -735,6 +736,42 @@ type Dependencies(dependenciesFileName: string) =
             use fileStream = File.Open (nuspecFile, FileMode.Create)
             doc.Save fileStream
 
+    static member FixNuspecs (referencesFile:ReferencesFile, nuspecFileList:string list) =
+
+        for nuspecFile in nuspecFileList do
+            if not (File.Exists nuspecFile) then
+                failwithf "Specified file '%s' does not exist." nuspecFile
+
+        let directDeps =
+            referencesFile.Groups
+            |> Seq.collect (fun kv -> kv.Value.NugetPackages)
+            |> Seq.map (fun i -> i.Name)
+            |> Set.ofSeq
+        for nuspecFile in nuspecFileList do
+            let nuspecText = File.ReadAllText nuspecFile
+
+            let doc =
+                try let doc = Xml.XmlDocument() in doc.LoadXml nuspecText
+                    doc
+                with exn -> raise <| Exception(sprintf "Could not parse nuspec file '%s'." nuspecFile, exn)
+
+            let rec traverse (parent:XmlNode) =
+                let nodesToRemove = ResizeArray()
+                for node in parent.ChildNodes do
+                    if node.Name = "dependency" then
+                        let packageName = 
+                            match node.Attributes.["id"] with null -> "" | x -> x.InnerText
+
+                        if not (directDeps.Contains (PackageName packageName)) then
+                            nodesToRemove.Add node |> ignore
+
+                if nodesToRemove.Count = 0 then
+                    for node in parent.ChildNodes do traverse node
+                else
+                    for node in nodesToRemove do parent.RemoveChild node |> ignore
+            traverse doc
+            use fileStream = File.Open (nuspecFile, FileMode.Create)
+            doc.Save fileStream
 
 module PublicAPI =
     /// Takes a version string formatted for Semantic Versioning and parses it

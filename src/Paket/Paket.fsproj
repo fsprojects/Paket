@@ -31,7 +31,7 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>restore</StartArguments>
+    <StartArguments>fix-nuspecs files src/Paket.Core.preview3/obj/Paket.Core.1.0.0.nuspec project-file src/Paket.Core.preview3/Paket.Core.fsproj</StartArguments>
     <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -42,7 +42,7 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>restore</StartArguments>
+    <StartArguments>fix-nuspecs files src/Paket.Core.preview3/obj/Paket.Core.1.0.0.nuspec project-file src/Paket.Core.preview3/Paket.Core.fsproj</StartArguments>
     <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>

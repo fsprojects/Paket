@@ -1,9 +1,10 @@
-<Project Sdk="FSharp.NET.Sdk;Microsoft.NET.Sdk" ToolsVersion="15.0">
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <TargetFramework>netstandard1.6</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="dotnet-0x53A-mergenupkg" Version="1.0.*" />
+    <DotNetCliToolReference Include="dotnet-matthid-proj-info" Version="1.0.1" />
   </ItemGroup>
   <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>
