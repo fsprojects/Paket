@@ -166,7 +166,7 @@ module ScriptGeneration =
             loadScriptsRootFolder </> folder </> fileName
               
        // -- LOAD SCRIPT FORMATTING POINT --
-        let scriptFolder groupName (package: PackageResolver.ResolvedPackage) =
+        let scriptFolder groupName (package: PackageResolver.PackageInfo) =
             let group = if groupName = Constants.MainDependencyGroup then String.Empty else (string groupName)
             let framework = if isDefaultFramework then String.Empty else string framework
             loadScriptsRootFolder </> framework </> group </> package.Name
@@ -188,7 +188,7 @@ module ScriptGeneration =
             |> Seq.map (fun (groupName,packages) ->
                     // fold over a map constructing load scripts to ensure shared packages don't have their scripts duplicated
                     ((Map.empty,[]),packages)
-                    ||> Seq.fold (fun ((knownIncludeScripts,scriptFiles): Map<_,string>*_) (package: PackageResolver.ResolvedPackage) ->
+                    ||> Seq.fold (fun ((knownIncludeScripts,scriptFiles): Map<_,string>*_) (package: PackageResolver.PackageInfo) ->
                         
                         let scriptFolder = scriptFolder groupName  package
 

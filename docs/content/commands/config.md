@@ -6,8 +6,8 @@
 paket config add-credentials <source URL>
 ```
 
-Paket will then ask you for the username and password that will be used for the
-specified `<source URL>`.
+Paket will then ask you for the username, password, and authentication type that 
+will be used for the specified `<source URL>`.
 
 The credentials you enter here will then be used for `source`s in the
 [`paket.dependencies` file](nuget-dependencies.html) that match `<source URL>`

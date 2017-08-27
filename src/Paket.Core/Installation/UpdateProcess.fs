@@ -210,7 +210,7 @@ let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
         tracefn "Installing into projects:"
         let forceTouch = hasChanged && options.Common.TouchAffectedRefs
         InstallProcess.InstallIntoProjects(options.Common, forceTouch, dependenciesFile, lockFile, projectsAndReferences, updatedGroups)
-        GarbageCollection.CleanUp(root, dependenciesFile, lockFile)
+        GarbageCollection.CleanUp(dependenciesFile, lockFile)
 
     let shouldGenerateScripts =
         options.Common.GenerateLoadScripts ||

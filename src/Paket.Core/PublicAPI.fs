@@ -11,7 +11,7 @@ open Chessie.ErrorHandling
 
 /// Paket API which is optimized for F# Interactive use.
 type Dependencies(dependenciesFileName: string) =
-    let listPackages (packages: System.Collections.Generic.KeyValuePair<GroupName*PackageName, PackageResolver.ResolvedPackage> seq) =
+    let listPackages (packages: System.Collections.Generic.KeyValuePair<GroupName*PackageName, PackageResolver.PackageInfo> seq) =
         packages
         |> Seq.map (fun kv ->
                 let groupName,packageName = kv.Key
@@ -24,7 +24,7 @@ type Dependencies(dependenciesFileName: string) =
             if verbose then
                verbosefn "Emptying '%s'" path
             emptyDir (DirectoryInfo path)
-        
+
         emptyDir (Constants.UserNuGetPackagesFolder)
         emptyDir (Constants.NuGetCacheFolder)
         emptyDir (Constants.GitRepoCacheFolder)
@@ -70,10 +70,7 @@ type Dependencies(dependenciesFileName: string) =
     static member Init() = Dependencies.Init(Directory.GetCurrentDirectory())
 
     /// Initialize paket.dependencies file in the given directory
-    static member Init(directory) =  Dependencies.Init(directory,false)
-
-    /// Initialize paket.dependencies file in the given directory
-    static member Init(directory,fromBootstrapper) =
+    static member Init(directory) =
         let directory = DirectoryInfo(directory)
 
         RunInLockedAccessMode(
@@ -84,16 +81,10 @@ type Dependencies(dependenciesFileName: string) =
         )
 
         let deps = Dependencies.Locate()
-        deps.DownloadLatestBootstrapper(fromBootstrapper)
+        deps.DownloadLatestBootstrapper()
 
     /// Converts the solution from NuGet to Paket.
     static member ConvertFromNuget(force: bool,installAfter: bool, initAutoRestore: bool,credsMigrationMode: string option, ?directory: DirectoryInfo) : unit =
-        match directory with
-        | Some d -> Dependencies.ConvertFromNuget(force, installAfter, initAutoRestore, credsMigrationMode, false, d)
-        | None -> Dependencies.ConvertFromNuget(force, installAfter, initAutoRestore, credsMigrationMode, false)
-
-    /// Converts the solution from NuGet to Paket.
-    static member ConvertFromNuget(force: bool,installAfter: bool, initAutoRestore: bool,credsMigrationMode: string option, fromBootstrapper, ?directory: DirectoryInfo) : unit =
         let dir = defaultArg directory (DirectoryInfo(Directory.GetCurrentDirectory()))
         let rootDirectory = dir
 
@@ -102,7 +93,7 @@ type Dependencies(dependenciesFileName: string) =
             fun () ->
                 NuGetConvert.convertR rootDirectory force credsMigrationMode
                 |> returnOrFail
-                |> NuGetConvert.replaceNuGetWithPaket initAutoRestore installAfter fromBootstrapper
+                |> NuGetConvert.replaceNuGetWithPaket initAutoRestore installAfter
         )
 
     /// Converts the current package dependency graph to the simplest dependency graph.
@@ -161,10 +152,10 @@ type Dependencies(dependenciesFileName: string) =
                                               projectName, installAfter))
 
     /// Adds credentials for a Nuget feed
-    member this.AddCredentials(source: string, username: string, password : string) : unit =
+    member this.AddCredentials(source: string, username: string, password : string, authType : string) : unit =
         RunInLockedAccessMode(
             this.RootPath,
-            fun () -> ConfigFile.askAndAddAuth source username password |> returnOrFail )
+            fun () -> ConfigFile.askAndAddAuth source username password authType |> returnOrFail )
   
     /// Adds a token for a source
     member this.AddToken(source : string, token : string) : unit =
@@ -350,12 +341,8 @@ type Dependencies(dependenciesFileName: string) =
         |> this.Process
         |> List.map (fun (g, p,_,newVersion) -> g.ToString(),p.ToString(),newVersion)
 
-    /// Downloads the latest paket.bootstrapper into the .paket folder.
-    member this.DownloadLatestBootstrapper() : unit =
-        this.DownloadLatestBootstrapper(false)
-
     /// Downloads the latest paket.bootstrapper into the .paket folder and try to rename it to paket.exe in order to activate magic mode.
-    member this.DownloadLatestBootstrapper(fromBootstrapper) : unit =
+    member this.DownloadLatestBootstrapper() : unit =
         RunInLockedAccessMode(
             this.RootPath,
             fun () -> 
@@ -370,14 +357,10 @@ type Dependencies(dependenciesFileName: string) =
                 | _ ->())
 
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
-    member this.TurnOnAutoRestore(fromBootstrapper: bool): unit =
+    member this.TurnOnAutoRestore(): unit =
         RunInLockedAccessMode(
             this.RootPath,
-            fun () -> VSIntegration.TurnOnAutoRestore fromBootstrapper |> this.Process)
-
-    /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
-    member this.TurnOnAutoRestore(): unit =
-        this.TurnOnAutoRestore(false)
+            fun () -> VSIntegration.TurnOnAutoRestore |> this.Process)
 
     /// Removes paket.targets file and Import section from project files.
     member this.TurnOffAutoRestore(): unit =
@@ -446,12 +429,11 @@ type Dependencies(dependenciesFileName: string) =
         match this.GetLockFile().Groups |> Map.tryFind groupName with
         | None -> failwithf "Group %O can't be found in paket.lock." groupName
         | Some group ->
-            match group.Resolution.TryFind packageName with
+            match group.TryFind(packageName) with
             | None -> failwithf "Package %O is not installed in group %O." packageName groupName
             | Some resolvedPackage ->
-                let folder = 
-                    getTargetFolder this.RootPath groupName resolvedPackage.Name resolvedPackage.Version (defaultArg resolvedPackage.Settings.IncludeVersionInPath false)
-                    |> Path.GetFullPath
+                let packageName = resolvedPackage.Name
+                let folder = resolvedPackage.Folder this.RootPath groupName
 
                 InstallModel.CreateFromContent(
                     resolvedPackage.Name, 
@@ -712,6 +694,7 @@ type Dependencies(dependenciesFileName: string) =
 
 
     /// Fix the transitive references in a list of generated .nuspec files
+    [<Obsolete "Use a real references file instead. Note that this overload doesn't take a 'real' references file.">]
     static member FixNuspecs (referencesFile:string, nuspecFileList:string list) =
 
         for nuspecFile in nuspecFileList do
@@ -753,6 +736,42 @@ type Dependencies(dependenciesFileName: string) =
             use fileStream = File.Open (nuspecFile, FileMode.Create)
             doc.Save fileStream
 
+    static member FixNuspecs (referencesFile:ReferencesFile, nuspecFileList:string list) =
+
+        for nuspecFile in nuspecFileList do
+            if not (File.Exists nuspecFile) then
+                failwithf "Specified file '%s' does not exist." nuspecFile
+
+        let directDeps =
+            referencesFile.Groups
+            |> Seq.collect (fun kv -> kv.Value.NugetPackages)
+            |> Seq.map (fun i -> i.Name)
+            |> Set.ofSeq
+        for nuspecFile in nuspecFileList do
+            let nuspecText = File.ReadAllText nuspecFile
+
+            let doc =
+                try let doc = Xml.XmlDocument() in doc.LoadXml nuspecText
+                    doc
+                with exn -> raise <| Exception(sprintf "Could not parse nuspec file '%s'." nuspecFile, exn)
+
+            let rec traverse (parent:XmlNode) =
+                let nodesToRemove = ResizeArray()
+                for node in parent.ChildNodes do
+                    if node.Name = "dependency" then
+                        let packageName = 
+                            match node.Attributes.["id"] with null -> "" | x -> x.InnerText
+
+                        if not (directDeps.Contains (PackageName packageName)) then
+                            nodesToRemove.Add node |> ignore
+
+                if nodesToRemove.Count = 0 then
+                    for node in parent.ChildNodes do traverse node
+                else
+                    for node in nodesToRemove do parent.RemoveChild node |> ignore
+            traverse doc
+            use fileStream = File.Open (nuspecFile, FileMode.Create)
+            doc.Save fileStream
 
 module PublicAPI =
     /// Takes a version string formatted for Semantic Versioning and parses it
