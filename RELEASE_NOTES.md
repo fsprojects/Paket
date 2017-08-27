@@ -1,4 +1,4 @@
-#### 5.92.0 - 26.08.2017
+#### 5.92.0-alpha001 - 26.08.2017
 * PERFORMANCE: Make restore faster - https://github.com/fsprojects/Paket/pull/2675
 
 #### 5.91.0 - 26.08.2017

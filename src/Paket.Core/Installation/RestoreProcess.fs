@@ -277,6 +277,8 @@ let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:L
         |> List.choose (fun (s, c) -> c |> Option.map (fun d -> s, d))
 
     // delete stale entries (otherwise we might not recognize stale data on a change later)
+    // scenario: remove a target framework -> change references -> add back target framework
+    // -> We reached an invalid state
     let objDir = DirectoryInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj"))
     objDir.GetFiles(sprintf "%s*.references" projectFileInfo.Name)
         |> Seq.iter (fun f -> f.Delete())
