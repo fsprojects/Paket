@@ -9,7 +9,7 @@ open FsUnit
 [<Test>]
 let ``#2496 Paket fails on projects that target multiple frameworks``() = 
     let project = "EmptyTarget"
-    let scenario = "i002496-empty-target-framework"
+    let scenario = "i002496"
     let tmpPaketFolder = (scenarioTempPath scenario) @@ ".paket"
     let targetsFile = FullName(__SOURCE_DIRECTORY__ + "../../../src/Paket/embedded/Paket.Restore.targets")
     let paketExe = FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.exe")
