@@ -76,7 +76,7 @@
     <!-- Step 2 b detect relevant changes in project file (new targetframework) -->
     <PropertyGroup Condition=" !Exists('$(PaketResolvedFilePath)') AND '$(TargetFramework)' != '' ">
       <PaketRestoreRequired>true</PaketRestoreRequired>
-      <PaketRestoreRequiredReason>target-framework</PaketRestoreRequiredReason>
+      <PaketRestoreRequiredReason>target-framework '$(TargetFramework)'</PaketRestoreRequiredReason>
     </PropertyGroup>
 
     <!-- Step 3 Restore project specific stuff if required -->
