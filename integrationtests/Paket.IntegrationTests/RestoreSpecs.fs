@@ -10,16 +10,16 @@ open FsUnit
 let ``#2496 Paket fails on projects that target multiple frameworks``() = 
     let project = "EmptyTarget"
     let scenario = "i002496-empty-target-framework"
-    let tmpPaketFolder = (scenarioTempPath scenario) @@ "../.paket"
+    let tmpPaketFolder = (scenarioTempPath scenario) @@ ".paket"
     let targetsFile = FullName(__SOURCE_DIRECTORY__ + "../../../src/Paket/embedded/Paket.Restore.targets")
-    let paketExe = FullName(__SOURCE_DIRECTORY__ + "../../../.paket/paket.exe")
-    
+    let paketExe = FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.exe")
+
+    setEnvironVar "PaketExePath" paketExe
     prepare scenario
     if (not (Directory.Exists tmpPaketFolder)) then
         Directory.CreateDirectory tmpPaketFolder |> ignore
 
     FileHelper.CopyFile tmpPaketFolder targetsFile
-    FileHelper.CopyFile tmpPaketFolder paketExe
     
     let wd = (scenarioTempPath scenario) @@ project
     let restore =
