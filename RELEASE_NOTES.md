@@ -1,3 +1,6 @@
+#### 5.92.0-beta001 - 26.08.2017
+* BUGFIX: Fix new restore cache - https://github.com/fsprojects/Paket/pull/2684
+
 #### 5.92.0-alpha001 - 26.08.2017
 * PERFORMANCE: Make restore faster - https://github.com/fsprojects/Paket/pull/2675
 
