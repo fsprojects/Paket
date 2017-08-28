@@ -280,7 +280,7 @@ let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:L
     // scenario: remove a target framework -> change references -> add back target framework
     // -> We reached an invalid state
     let objDir = DirectoryInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj"))
-    objDir.GetFiles(sprintf "%s*.references" projectFileInfo.Name)
+    objDir.GetFiles(sprintf "%s*.paket.resolved" projectFileInfo.Name)
         |> Seq.iter (fun f -> f.Delete())
 
     // fable 1.0 compat
@@ -317,13 +317,13 @@ let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:L
                     list.Add line
 
         let output = String.Join(Environment.NewLine,list)
-        let newFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + "." + originalTargetProfileString + ".references"))
+        let newFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + "." + originalTargetProfileString + ".paket.resolved"))
         if not newFileName.Directory.Exists then
             newFileName.Directory.Create()
 
         elif not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
-            if targetProfile = SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6) then
-                // fable compat
+            if not (File.Exists(oldReferencesFile.FullName)) || targetProfile = SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6) then
+                // compat with old targets and fable - always write but prefer netstandard16.
                 File.WriteAllText(oldReferencesFile.FullName,output)
             File.WriteAllText(newFileName.FullName,output)
             tracefn " - %s created" newFileName.FullName
