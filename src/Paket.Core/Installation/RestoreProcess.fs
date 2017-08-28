@@ -344,7 +344,11 @@ let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:L
 
     // Write "cached" file, this way msbuild can check if the references file has changed.
     let paketCachedReferencesFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.references.cached"))
-    File.Copy(referencesFile.FileName, paketCachedReferencesFileName.FullName, true)
+    if File.Exists (referencesFile.FileName) then
+        File.Copy(referencesFile.FileName, paketCachedReferencesFileName.FullName, true)
+    else
+        // it can happen that the references file doesn't exist if paket doesn't find one in that case we update the cache by deleting it.
+        if paketCachedReferencesFileName.Exists then paketCachedReferencesFileName.Delete()
 
 let CreateScriptsForGroups dependenciesFile lockFile (groups:Map<GroupName,LockFileGroup>) =
     let groupsToGenerate =

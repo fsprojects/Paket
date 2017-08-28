@@ -68,6 +68,11 @@
       <PaketRestoreRequired Condition=" '$(PaketRestoreReferencesFileHash)' == '$(PaketRestoreCachedHash)' ">false</PaketRestoreRequired>
     </PropertyGroup>
 
+    <PropertyGroup Condition="!Exists('$(PaketOriginalReferencesFilePath)') AND !Exists('$(PaketReferencesCachedFilePath)') ">
+      <!-- If both don't exist there is nothing to do. -->
+      <PaketRestoreRequired>false</PaketRestoreRequired>
+    </PropertyGroup>
+
     <!-- Step 2 b detect relevant changes in project file (new targetframework) -->
     <PropertyGroup Condition=" !Exists('$(PaketResolvedFilePath)') AND '$(TargetFramework)' != '' ">
       <PaketRestoreRequired>true</PaketRestoreRequired>
