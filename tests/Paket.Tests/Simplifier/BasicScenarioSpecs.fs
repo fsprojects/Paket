@@ -10,12 +10,14 @@ open Paket.TestHelpers
 open Paket.InstallProcess
 
 let dummyDir = System.IO.DirectoryInfo("C:/")
-let dummyProjectFile = 
+let dummyProjectFile () = 
     { FileName = ""
       OriginalText = ""
       Document = null
       ProjectNode = null
-      Language = ProjectLanguage.Unknown }
+      Language = ProjectLanguage.Unknown
+      DefaultProperties = None
+      CalculatedProperties = new System.Collections.Concurrent.ConcurrentDictionary<_,_>() }
 
 let lockFile1 = """
 NUGET
@@ -40,7 +42,7 @@ nuget D 2.1""" |> DependenciesFile.FromSource
 
 let projects1 = [
     ReferencesFile.FromLines [|"A";"B";"C";"D"|]
-    ReferencesFile.FromLines [|"B";"C"|] ] |> List.zip [dummyProjectFile; dummyProjectFile]
+    ReferencesFile.FromLines [|"B";"C"|] ] |> List.zip [dummyProjectFile(); dummyProjectFile()]
 
 [<Test>]
 let ``should remove one level deep transitive dependencies from dep and ref files``() = 
@@ -83,7 +85,7 @@ nuget F 1.0""" |> DependenciesFile.FromSource
 
 let projects2 = [
     ReferencesFile.FromLines [|"A";"B";"C";"D";"F"|]
-    ReferencesFile.FromLines [|"C";"D";"E"|] ] |> List.zip [dummyProjectFile; dummyProjectFile]
+    ReferencesFile.FromLines [|"C";"D";"E"|] ] |> List.zip [dummyProjectFile(); dummyProjectFile()]
 
 [<Test>]
 let ``should remove all transitive dependencies from dep file recursively``() =
@@ -161,7 +163,7 @@ nuget F 1.0""" |> DependenciesFile.FromSource
 
 let projects3 = [
     ReferencesFile.FromLines [|"A";"B";"C";"D";"F"|]
-    ReferencesFile.FromLines [|"C";"D";"E"|] ] |> List.zip [dummyProjectFile; dummyProjectFile]
+    ReferencesFile.FromLines [|"C";"D";"E"|] ] |> List.zip [dummyProjectFile(); dummyProjectFile()]
 
 [<Test>]
 let ``should remove all transitive dependencies from dep file with multiple groups``() =
@@ -224,7 +226,7 @@ nuget F 1.0""" |> DependenciesFile.FromSource
 
 let projects4 = [
     ReferencesFile.FromLines [|"group Foo";"A";"B";"C";"D";"F"|]
-    ReferencesFile.FromLines [|"group Foo";"C";"D";"E"|] ] |> List.zip [dummyProjectFile; dummyProjectFile]
+    ReferencesFile.FromLines [|"group Foo";"C";"D";"E"|] ] |> List.zip [dummyProjectFile(); dummyProjectFile()]
 
 [<Test>]
 let ``should remove all transitive dependencies from dep file and ref file with empty main group and non empty group foo``() =
