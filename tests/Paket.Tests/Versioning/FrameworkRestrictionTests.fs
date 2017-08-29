@@ -5,6 +5,33 @@ open FsUnit
 open NUnit.Framework
 open Paket.Requirements
 
+[<Test>]
+let ``Simplify && (false) (< net45)`` () =
+    let toSimplify =
+        (FrameworkRestriction.And[
+            FrameworkRestriction.EmptySet
+            FrameworkRestriction.NotAtLeast (DotNetFramework FrameworkVersion.V4_5)])
+    toSimplify
+    |> shouldEqual (FrameworkRestriction.EmptySet)
+
+[<Test>]
+let ``Simplify && (< net45) (false)`` () =
+    let toSimplify =
+        (FrameworkRestriction.And[
+            FrameworkRestriction.NotAtLeast (DotNetFramework FrameworkVersion.V4_5)
+            FrameworkRestriction.EmptySet])
+    toSimplify
+    |> shouldEqual (FrameworkRestriction.EmptySet)
+
+[<Test>]
+let ``Simplify && (< net45) (true)`` () =
+    let toSimplify =
+        (FrameworkRestriction.And[
+            FrameworkRestriction.NotAtLeast (DotNetFramework FrameworkVersion.V4_5)
+            FrameworkRestriction.NoRestriction])
+    toSimplify
+    |> shouldEqual (FrameworkRestriction.NotAtLeast (DotNetFramework FrameworkVersion.V4_5))
+
 [<Test>] 
 let ``Simplify && (true) (< net45)`` () =
     let toSimplify = 
