@@ -51,7 +51,7 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
             let lockFileGroup = lockFile.Groups |> Map.tryFind groupName 
             depsGroup.Packages
             |> Seq.map (fun d ->
-                d.Name, { d with Settings = depsGroup.Options.Settings + d.Settings })
+                d.Name, { d with Settings = d.Settings + depsGroup.Options.Settings })
             |> Seq.map (fun (name,dependenciesFilePackage) ->
                 name, dependenciesFilePackage,
                 match lockFileGroup with
@@ -60,7 +60,7 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
                     match group.TryFind name with
                     | Some lockFilePackage ->
                         getChanges groupName transitives 
-                            { dependenciesFilePackage with Settings = depsGroup.Options.Settings + dependenciesFilePackage.Settings }
+                            { dependenciesFilePackage with Settings = dependenciesFilePackage.Settings + depsGroup.Options.Settings }
                             lockFilePackage
                     | _ -> [PackageNotFoundInLockFile])
             |> Seq.filter (fun (_,_, changes) -> changes.Length > 0)
@@ -73,7 +73,7 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
             | None -> Map.empty
             | Some group ->
                 group.Packages
-                |> Seq.map (fun d -> d.Name,{ d with Settings = group.Options.Settings + d.Settings })
+                |> Seq.map (fun d -> d.Name,{ d with Settings = d.Settings + group.Options.Settings })
                 |> Map.ofSeq
 
         [for t in lockFile.GetTopLevelDependencies(groupName) do
