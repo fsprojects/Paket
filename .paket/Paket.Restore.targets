@@ -55,7 +55,7 @@
       <PaketOriginalReferencesFilePath Condition=" !Exists('$(PaketOriginalReferencesFilePath)')">$(MSBuildProjectDirectory)\$(MSBuildProjectName).paket.references</PaketOriginalReferencesFilePath>
       <!-- paket.references -->
       <PaketOriginalReferencesFilePath Condition=" !Exists('$(PaketOriginalReferencesFilePath)')">$(MSBuildProjectDirectory)\paket.references</PaketOriginalReferencesFilePath>
-      <PaketReferencesFilePath>$(MSBuildProjectDirectory)\obj\$(MSBuildProjectFile).$(TargetFramework).references</PaketReferencesFilePath>
+      <PaketResolvedFilePath>$(MSBuildProjectDirectory)\obj\$(MSBuildProjectFile).$(TargetFramework).paket.resolved</PaketResolvedFilePath>
       <PaketRestoreRequired>true</PaketRestoreRequired>
       <PaketRestoreRequiredReason>references-file-or-cache-not-found</PaketRestoreRequiredReason>
     </PropertyGroup>
@@ -68,10 +68,15 @@
       <PaketRestoreRequired Condition=" '$(PaketRestoreReferencesFileHash)' == '$(PaketRestoreCachedHash)' ">false</PaketRestoreRequired>
     </PropertyGroup>
 
+    <PropertyGroup Condition="!Exists('$(PaketOriginalReferencesFilePath)') AND !Exists('$(PaketReferencesCachedFilePath)') ">
+      <!-- If both don't exist there is nothing to do. -->
+      <PaketRestoreRequired>false</PaketRestoreRequired>
+    </PropertyGroup>
+
     <!-- Step 2 b detect relevant changes in project file (new targetframework) -->
-    <PropertyGroup Condition=" !Exists('$(PaketReferencesFilePath)') AND '$(TargetFramework)' != '' ">
+    <PropertyGroup Condition=" !Exists('$(PaketResolvedFilePath)') AND '$(TargetFramework)' != '' ">
       <PaketRestoreRequired>true</PaketRestoreRequired>
-      <PaketRestoreRequiredReason>target-framework</PaketRestoreRequiredReason>
+      <PaketRestoreRequiredReason>target-framework '$(TargetFramework)'</PaketRestoreRequiredReason>
     </PropertyGroup>
 
     <!-- Step 3 Restore project specific stuff if required -->
@@ -79,14 +84,14 @@
     <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)"' Condition=" '$(PaketRestoreRequired)' == 'true' " ContinueOnError="false" />
 
     <!-- This shouldn't actually happen, but just to be sure. -->
-    <Error Condition=" !Exists('$(PaketReferencesFilePath)') AND '$(TargetFramework)' != '' " Text="A paket file for the framework '$(TargetFramework)' is missing. Please delete 'paket-files/paket.restore.cached' and call 'paket restore'." />
+    <Error Condition=" !Exists('$(PaketResolvedFilePath)') AND '$(TargetFramework)' != '' " Text="A paket file for the framework '$(TargetFramework)' is missing. Please delete 'paket-files/paket.restore.cached' and call 'paket restore'." />
 
     <!-- Step 4 forward all msbuild properties (PackageReference, DotNetCliToolReference) to msbuild -->
-    <ReadLinesFromFile Condition="Exists('$(PaketReferencesFilePath)')" File="$(PaketReferencesFilePath)" >
+    <ReadLinesFromFile Condition="Exists('$(PaketResolvedFilePath)')" File="$(PaketResolvedFilePath)" >
       <Output TaskParameter="Lines" ItemName="PaketReferencesFileLines"/>
     </ReadLinesFromFile>
 
-    <ItemGroup Condition=" Exists('$(PaketReferencesFilePath)') AND '@(PaketReferencesFileLines)' != '' " >
+    <ItemGroup Condition=" Exists('$(PaketResolvedFilePath)') AND '@(PaketReferencesFileLines)' != '' " >
       <PaketReferencesFileLinesInfo Include="@(PaketReferencesFileLines)" >
         <PackageName>$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[0])</PackageName>
         <PackageVersion>$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[1])</PackageVersion>
