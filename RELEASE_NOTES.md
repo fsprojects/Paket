@@ -1,3 +1,14 @@
+#### 5.92.0-beta001 - 26.08.2017
+* BUGFIX: Fix new restore cache - https://github.com/fsprojects/Paket/pull/2684
+
+#### 5.92.0-alpha001 - 26.08.2017
+* PERFORMANCE: Make restore faster - https://github.com/fsprojects/Paket/pull/2675
+
+#### 5.91.0 - 26.08.2017
+* BUGFIX: fix a bug in the runtime parser - https://github.com/fsprojects/Paket/pull/2665
+* BUGFIX: Add props to correct Paket.Restore.targets - https://github.com/fsprojects/Paket/pull/2665
+* Make packages folder optional - https://github.com/fsprojects/Paket/pull/2638
+
 #### 5.90.1 - 25.08.2017
 * Support for NTLM auth - https://github.com/fsprojects/Paket/pull/2658
 * BUGFIX: fix-nuspecs should break at ; - https://github.com/fsprojects/Paket/issues/2661

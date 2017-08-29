@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+VisualStudioVersion = 15.0.26730.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}"
 EndProject
@@ -54,6 +54,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D
 		docs\content\local-file.md = docs\content\local-file.md
 		docs\content\lock-file.md = docs\content\lock-file.md
 		docs\content\nuget-dependencies.md = docs\content\nuget-dependencies.md
+		docs\content\paket-and-dotnet-cli.md = docs\content\paket-and-dotnet-cli.md
 		docs\content\paket-folder.md = docs\content\paket-folder.md
 		docs\content\paket.dependencies = docs\content\paket.dependencies
 		docs\content\paket.lock = docs\content\paket.lock
@@ -152,6 +153,12 @@ Global
 		{4425A246-BD18-4622-86B5-0154F19165E4} = {8E6D5255-776D-4B61-85F9-73C37AA1FB9A}
 		{7C622582-E281-4EAB-AADA-B5893BB89B45} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 		{7234B9B4-8CF5-4E68-AA29-050C087B9246} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {61E9964A-34E0-4B78-8854-B092E6764056}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true

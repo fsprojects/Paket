@@ -155,6 +155,33 @@ nuget Example >= 2.0
 If you change the target framework of the projects then you need to run
 [`paket install`](paket-install.html) again.
 
+### Disable packages folder
+
+With the net netcore release and the switch to provide more and more netstandard-only packages
+the Paket team noticed a dramatic increase of the well known "packages" folder.
+Historically one way was to tell Paket that you only want to compile for `framework: net45`.
+However, this doesn't prevent netstandard dependencies in all situations.
+On the other side more features are provided by Paket and the packages folder has become more and more redundant:
+ - Load scripts can reference the files in the global cache
+ - csproj/fsproj files can references files in the global cache
+ - netcore project files don't require any explicit dll-references
+Therefore, the paket team decided to make the "packages" folder opt-out.
+
+> This feature is currently considered beta
+
+You can opt-out of generating the `packages` folder by using the `storage` option:
+
+```paket
+// Do not extract into the "packages" folder but use a globally shared directory
+storage: none
+source https://nuget.org/api/v2
+
+nuget jQuery
+```
+
+The storage option may be overriden by packages. 
+However, the behavior is undefined and may change (please open an issue if you depend on the current behavior or we break you).
+
 ### Controlling whether content files should be copied to the project
 
 The `content` option controls the installation of any content files:

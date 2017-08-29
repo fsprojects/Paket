@@ -194,6 +194,7 @@ module DependenciesFileParser =
     | AutodetectFrameworkRestrictions
     | ImportTargets of bool
     | CopyLocal of bool
+    | StorageConfig of PackagesFolderGroupConfig option
     | SpecificVersion of bool
     | CopyContentToOutputDir of CopyToOutputDirectorySettings
     | GenerateLoadScripts of bool option
@@ -282,6 +283,14 @@ module DependenciesFileParser =
                 | _ -> None
 
             Some (ParserOptions (ParserOption.Redirects setting))
+        | String.RemovePrefix "storage" trimmed ->
+            let setting =
+                match trimmed.Replace(":","").Trim() with
+                | String.EqualsIC "none" -> Some PackagesFolderGroupConfig.NoPackagesFolder
+                | String.EqualsIC "packages" -> Some PackagesFolderGroupConfig.DefaultPackagesFolder
+                | _ -> None
+
+            Some (ParserOptions (ParserOption.StorageConfig setting))
         | String.RemovePrefix "strategy" trimmed -> 
             let setting =
                 match trimmed.Replace(":","").Trim() with
@@ -433,6 +442,7 @@ module DependenciesFileParser =
         | Redirects mode                                 -> { current.Options with Redirects = mode }
         | ResolverStrategyForTransitives strategy        -> { current.Options with ResolverStrategyForTransitives = strategy }
         | ResolverStrategyForDirectDependencies strategy -> { current.Options with ResolverStrategyForDirectDependencies = strategy }
+        | StorageConfig mode                             -> { current.Options with Settings = { current.Options.Settings with StorageConfig = mode } }
         | CopyLocal mode                                 -> { current.Options with Settings = { current.Options.Settings with CopyLocal = Some mode } }
         | SpecificVersion mode                           -> { current.Options with Settings = { current.Options.Settings with SpecificVersion = Some mode } }
         | CopyContentToOutputDir mode                    -> { current.Options with Settings = { current.Options.Settings with CopyContentToOutputDirectory = Some mode } }

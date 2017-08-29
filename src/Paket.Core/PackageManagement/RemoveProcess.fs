@@ -47,7 +47,7 @@ let private remove removeFromProjects dependenciesFileName alternativeProjectRoo
     if installAfter then
         let updatedGroups = Map.add groupName 0 Map.empty
         InstallProcess.Install(InstallerOptions.CreateLegacyOptions(force, Requirements.BindingRedirectsSettings.Off, false, false, SemVerUpdateMode.NoRestriction, false, false, [], [], None), false, dependenciesFile, lockFile, updatedGroups)
-        GarbageCollection.CleanUp(root, dependenciesFile, lockFile)
+        GarbageCollection.CleanUp(dependenciesFile, lockFile)
 
 /// Removes a package with the option to remove it from a specified project.
 let RemoveFromProject(dependenciesFileName, groupName, packageName:PackageName, force, projectName, installAfter) =

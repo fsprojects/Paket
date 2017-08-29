@@ -12,13 +12,18 @@ open Paket.PackageSources
 open Paket.Requirements
 open Chessie.ErrorHandling
 
-type LockFileGroup = {
-    Name: GroupName
+type LockFileGroup =
+  { Name: GroupName
     Options:InstallOptions
     Resolution:PackageResolution
-    RemoteFiles:ResolvedSourceFile list
-}
-
+    RemoteFiles:ResolvedSourceFile list }
+    member x.GetPackage name =
+        PackageInfo.from x.Resolution.[name] x.Options.Settings
+    member x.TryFind name =
+        match x.Resolution.TryFind name with
+        | Some r ->
+            Some (PackageInfo.from r x.Options.Settings)
+        | None -> None
 module LockFileSerializer =
     /// [omit]
     let serializeOptionsAsLines options = [
@@ -31,6 +36,11 @@ module LockFileSerializer =
         | Some BindingRedirectsSettings.On -> yield "REDIRECTS: ON"
         | Some BindingRedirectsSettings.Force -> yield "REDIRECTS: FORCE"
         | Some BindingRedirectsSettings.Off -> yield "REDIRECTS: OFF"
+        | None -> ()
+        match options.Settings.StorageConfig with
+        | Some (PackagesFolderGroupConfig.NoPackagesFolder) -> yield "STORAGE: NONE"
+        | Some (PackagesFolderGroupConfig.DefaultPackagesFolder) -> yield "STORAGE: PACKAGES"
+        | Some (PackagesFolderGroupConfig.GivenPackagesFolder f) -> failwithf "Not implemented yet."
         | None -> ()
         match options.ResolverStrategyForTransitives with
         | Some ResolverStrategy.Min -> yield "STRATEGY: MIN"
@@ -249,6 +259,7 @@ module LockFileParser =
     | SpecificVersion of bool
     | CopyContentToOutputDir of CopyToOutputDirectorySettings
     | Redirects of BindingRedirectsSettings option
+    | StorageConfig of PackagesFolderGroupConfig option
     | ReferenceCondition of string
     | DirectDependenciesResolverStrategy of ResolverStrategy option
     | TransitiveDependenciesResolverStrategy of ResolverStrategy option
@@ -276,6 +287,14 @@ module LockFileParser =
                 | _ -> None
 
             InstallOption (Redirects setting)
+        | _, String.RemovePrefix "STORAGE:" trimmed -> 
+            let setting =
+                match trimmed.Trim() with
+                | String.EqualsIC "NONE" -> Some PackagesFolderGroupConfig.NoPackagesFolder
+                | String.EqualsIC "PACKAGES" -> Some PackagesFolderGroupConfig.DefaultPackagesFolder
+                | _ -> None
+
+            InstallOption (StorageConfig setting)
         | _, String.RemovePrefix "IMPORT-TARGETS:" trimmed -> InstallOption(ImportTargets(trimmed.Trim() = "TRUE"))
         | _, String.RemovePrefix "COPY-LOCAL:" trimmed -> InstallOption(CopyLocal(trimmed.Trim() = "TRUE"))
         | _, String.RemovePrefix "SPECIFIC-VERSION:" trimmed -> InstallOption(SpecificVersion(trimmed.Trim() = "TRUE"))
@@ -365,6 +384,7 @@ module LockFileParser =
         match option with
         | ReferencesMode mode -> { currentGroup.Options with Strict = mode }
         | Redirects mode -> { currentGroup.Options with Redirects = mode }
+        | StorageConfig mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with StorageConfig = mode }}
         | ImportTargets mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ImportTargets = Some mode } } 
         | CopyLocal mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyLocal = Some mode }}
         | SpecificVersion mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with SpecificVersion = Some mode }}
@@ -715,17 +735,18 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
 
             group.Resolution
             |> Map.filter (fun name _ -> transitive.Contains name |> not)
+            |> Map.map (fun name v -> PackageInfo.from v group.Options.Settings)
 
     member this.GetGroupedResolution () =
         this.Groups
-        |> Seq.map (fun kv -> kv.Value.Resolution |> Seq.map (fun kv' -> (kv.Key,kv'.Key),kv'.Value))
+        |> Seq.map (fun kv -> kv.Value.Resolution |> Seq.map (fun kv' -> (kv.Key,kv'.Key),PackageInfo.from kv'.Value kv.Value.Options.Settings))
         |> Seq.concat
         |> Map.ofSeq
 
 
     member this.GetResolvedPackages () =
         groups |> Map.map (fun groupName lockGroup ->
-           lockGroup.Resolution |> Seq.map (fun x -> x.Value) |> List.ofSeq
+           lockGroup.Resolution |> Seq.map (fun x -> PackageInfo.from x.Value lockGroup.Options.Settings) |> List.ofSeq
         )
 
 
@@ -931,13 +952,11 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
         match this.Groups |> Map.tryFind groupName with
         | None -> failwithf "Group %O can't be found in paket.lock." groupName
         | Some group ->
-            match group.Resolution.TryFind(packageName) with
+            match group.TryFind(packageName) with
             | None -> failwithf "Package %O is not installed in group %O." packageName groupName
             | Some resolvedPackage ->
                 let packageName = resolvedPackage.Name
-                let folder = 
-                    getTargetFolder this.RootPath groupName packageName resolvedPackage.Version (defaultArg resolvedPackage.Settings.IncludeVersionInPath false)
-                    |> Path.GetFullPath
+                let folder = resolvedPackage.Folder this.RootPath groupName
 
                 InstallModel.CreateFromContent(
                     packageName, 
