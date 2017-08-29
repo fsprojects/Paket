@@ -684,6 +684,7 @@ type CopyToOutputDirectorySettings =
 | Always
 | PreserveNewest
 
+[<RequireQualifiedAccess>]
 type BindingRedirectsSettings =
 | On
 | Off
@@ -809,9 +810,9 @@ type InstallSettings =
                 | _ ->  None
               CreateBindingRedirects =
                 match getPair "redirects" with
-                | Some "on" -> Some On 
-                | Some "off" -> Some Off
-                | Some "force" -> Some Force
+                | Some "on" -> Some BindingRedirectsSettings.On 
+                | Some "off" -> Some BindingRedirectsSettings.Off
+                | Some "force" -> Some BindingRedirectsSettings.Force
                 | _ ->  None
               IncludeVersionInPath =
                 match getPair "version_in_path" with

@@ -997,7 +997,7 @@ let ``should read config with reference condition``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.ReferenceCondition |> shouldEqual (Some "MAIN-GROUP")
 
     cfg.Groups.[GroupName "Build"].Packages.Head.Settings.ReferenceCondition |> shouldEqual None
-    cfg.Groups.[GroupName "Build"].Packages.Head.Settings.CreateBindingRedirects |> shouldEqual (Some On)
+    cfg.Groups.[GroupName "Build"].Packages.Head.Settings.CreateBindingRedirects |> shouldEqual (Some BindingRedirectsSettings.On)
     cfg.Groups.[GroupName "Build"].Packages.Tail.Head.Settings.ReferenceCondition |> shouldEqual (Some "LEGACY")
     cfg.Groups.[GroupName "Build"].Packages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual None
 
@@ -1197,15 +1197,15 @@ redirects off
 
     cfg.Groups.[Constants.MainDependencyGroup].Options.Redirects |> shouldEqual (Some BindingRedirectsSettings.On)
 
-    cfg.Groups.[Constants.MainDependencyGroup].Packages.Head.Settings.CreateBindingRedirects |> shouldEqual (Some On)
-    cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Off)
-    cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Force)
+    cfg.Groups.[Constants.MainDependencyGroup].Packages.Head.Settings.CreateBindingRedirects |> shouldEqual (Some BindingRedirectsSettings.On)
+    cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some BindingRedirectsSettings.Off)
+    cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some BindingRedirectsSettings.Force)
     cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual None
 
     cfg.Groups.[GroupName "Build"].Options.Redirects |> shouldEqual (Some BindingRedirectsSettings.Off)
-    cfg.Groups.[GroupName "Build"].Packages.Head.Settings.CreateBindingRedirects |> shouldEqual (Some On)
-    cfg.Groups.[GroupName "Build"].Packages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Force)
-    cfg.Groups.[GroupName "Build"].Packages.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Off)
+    cfg.Groups.[GroupName "Build"].Packages.Head.Settings.CreateBindingRedirects |> shouldEqual (Some BindingRedirectsSettings.On)
+    cfg.Groups.[GroupName "Build"].Packages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some BindingRedirectsSettings.Force)
+    cfg.Groups.[GroupName "Build"].Packages.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some BindingRedirectsSettings.Off)
     cfg.Groups.[GroupName "Build"].Packages.Tail.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual None
 
 let paketGitConfig = """
