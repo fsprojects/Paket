@@ -193,7 +193,7 @@ let inline private getOrAdd (key: 'key) (getValue: 'key -> 'value) (d: Dictionar
 let brokenDeps = HashSet<_>()
 
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
-let private applyBindingRedirects isFirstGroup createNewBindingFiles groupRedirects cleanBindingRedirects
+let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindingRedirects
                                   root groupName findDependencies allKnownLibNames
                                   (projectCache: Dictionary<string, ProjectFile option>)
                                   extractedPackages =
@@ -283,8 +283,7 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles groupRedire
         assemblies
         |> Seq.choose (fun (assembly,token,refs,redirects,profile) -> 
                 token |> Option.map (fun token -> (assembly,token,refs,redirects,profile)))
-        |> Seq.filter (fun (_,_,_,packageRedirects,_) -> 
-            let redirects = groupRedirects ++ packageRedirects
+        |> Seq.filter (fun (_,_,_,redirects,_) -> 
             match redirects with
             | Some BindingRedirectsSettings.On
             | Some BindingRedirectsSettings.Force -> true
@@ -518,14 +517,15 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 |> Seq.map (fun kv -> (snd kv.Value).GetAllLegacyReferenceAndFrameworkReferenceNames())
                 |> Set.unionMany
 
+            let commandRedirects =
+                if options.Redirects = BindingRedirectsSettings.Off then None
+                else Some options.Redirects
+
             for g in lockFile.Groups do
                 let group = g.Value
                 
-                let commandRedirects =
-                    let r =
-                        if options.Redirects = BindingRedirectsSettings.Off then None
-                        else Some options.Redirects
-                    g.Value.Options.Redirects ++ r
+                let groupRedirects =
+                    g.Value.Options.Redirects ++ commandRedirects
                 
                 model
                 |> Seq.filter (fun kv -> (fst kv.Key) = g.Key)
@@ -533,13 +533,12 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     let packageRedirects =
                         group.Resolution
                         |> Map.tryFind (snd kv.Key)
-                        |> Option.bind (fun p -> commandRedirects ++ p.Settings.CreateBindingRedirects)
+                        |> Option.bind (fun p -> groupRedirects ++ p.Settings.CreateBindingRedirects)
 
                     (snd kv.Value,packageRedirects))
                 |> applyBindingRedirects
                     !first
                     options.CreateNewBindingFiles
-                    commandRedirects
                     options.CleanBindingRedirects
                     (FileInfo project.FileName).Directory.FullName
                     g.Key
