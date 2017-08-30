@@ -1,3 +1,9 @@
+#### 5.92.0 - 30.08.2017
+* BUGFIX: Fix new restore cache - https://github.com/fsprojects/Paket/pull/2684
+* PERFORMANCE: Make restore faster - https://github.com/fsprojects/Paket/pull/2675
+* BUGFIX: Incorrect warnings on restore - https://github.com/fsprojects/Paket/pull/2687
+* PERFORMANCE: Make install faster - https://github.com/fsprojects/Paket/pull/2688
+
 #### 5.92.0-beta003 - 30.08.2017
 * Paket comes as signed lib for better antivir support
 * BUGFIX: Fix new restore cache - https://github.com/fsprojects/Paket/pull/2684
