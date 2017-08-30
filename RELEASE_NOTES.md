@@ -1,4 +1,4 @@
-#### 5.92.0-beta002 - 30.08.2017
+#### 5.92.0-beta003 - 30.08.2017
 * Paket comes as signed lib for better antivir support
 * BUGFIX: Fix new restore cache - https://github.com/fsprojects/Paket/pull/2684
 
