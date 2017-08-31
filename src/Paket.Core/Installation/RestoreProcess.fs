@@ -281,7 +281,7 @@ let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:L
     // scenario: remove a target framework -> change references -> add back target framework
     // -> We reached an invalid state
     let objDir = DirectoryInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj"))
-    objDir.GetFiles(sprintf "%s*.references" projectFileInfo.Name)
+    objDir.GetFiles(sprintf "%s*.paket.resolved" projectFileInfo.Name)
         |> Seq.iter (fun f -> f.Delete())
 
     // fable 1.0 compat
@@ -318,13 +318,13 @@ let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:L
                     list.Add line
 
         let output = String.Join(Environment.NewLine,list)
-        let newFileName = newSdkReferencesFilePath |> Option.defaultValue (Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + "." + originalTargetProfileString + ".references")) |> FileInfo
+        let newFileName = newSdkReferencesFilePath |> Option.defaultValue (Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + "." + originalTargetProfileString + ".paket.resolved")) |> FileInfo
         if not newFileName.Directory.Exists then
             newFileName.Directory.Create()
 
         elif not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
-            if targetProfile = SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6) then
-                // fable compat
+            if not (File.Exists(oldReferencesFile.FullName)) || targetProfile = SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6) then
+                // compat with old targets and fable - always write but prefer netstandard16.
                 File.WriteAllText(oldReferencesFile.FullName,output)
             File.WriteAllText(newFileName.FullName,output)
             tracefn " - %s created" newFileName.FullName
@@ -345,7 +345,11 @@ let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:L
 
     // Write "cached" file, this way msbuild can check if the references file has changed.
     let paketCachedReferencesFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.references.cached"))
-    File.Copy(referencesFile.FileName, paketCachedReferencesFileName.FullName, true)
+    if File.Exists (referencesFile.FileName) then
+        File.Copy(referencesFile.FileName, paketCachedReferencesFileName.FullName, true)
+    else
+        // it can happen that the references file doesn't exist if paket doesn't find one in that case we update the cache by deleting it.
+        if paketCachedReferencesFileName.Exists then paketCachedReferencesFileName.Delete()
 
 let CreateScriptsForGroups dependenciesFile lockFile (groups:Map<GroupName,LockFileGroup>) =
     let groupsToGenerate =
@@ -406,7 +410,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         else false
 
     if isEarlyExit () then
-        tracefn "Last restore is still up 2 date."
+        tracefn "Last restore is still up to date."
     else
         let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 

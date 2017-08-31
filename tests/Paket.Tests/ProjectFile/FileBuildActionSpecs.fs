@@ -10,7 +10,9 @@ let createProject name =
       OriginalText = ""
       Document = XmlDocument()
       ProjectNode = null
-      Language = ProjectLanguage.Unknown }
+      Language = ProjectLanguage.Unknown
+      DefaultProperties = None
+      CalculatedProperties = new System.Collections.Concurrent.ConcurrentDictionary<_,_>() }
 
 [<Test>]
 let ``should recognize compilable files``() =

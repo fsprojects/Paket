@@ -450,46 +450,73 @@ module FrameworkRestriction =
             
 
     let rec private And2 (left : FrameworkRestriction) (right : FrameworkRestriction) =
-        match left.OrFormulas with
-        | [] -> right
-        | [h] ->
-            right.OrFormulas
+        match left.OrFormulas, right.OrFormulas with
+        // false -> stay false
+        | [], _ -> true, left
+        | _, [] -> true, right
+        // true -> use the other
+        | _, [ { Literals = [] }] -> true, left
+        | [{ Literals = [] }], _ -> true, right
+        | otherFormulas, [h]
+        | [h], otherFormulas ->
+            false,
+            otherFormulas
             |> List.map (fun andFormula -> { Literals = andFormula.Literals @ h.Literals } )
             |> FrameworkRestriction.FromOrList
-        | h :: t ->
-            (And2 (FrameworkRestriction.FromOrList [h]) right).OrFormulas @ (And2 (FrameworkRestriction.FromOrList t) right).OrFormulas
+        | h :: t, _ ->
+            false,
+            ((And2 (FrameworkRestriction.FromOrList [h]) right) |> snd).OrFormulas @ ((And2 (FrameworkRestriction.FromOrList t) right) |> snd).OrFormulas
             |> FrameworkRestriction.FromOrList
-    
+
     let And (rst:FrameworkRestriction list) =
-        List.fold And2 NoRestriction rst
-        |> simplify
-    
+        let isSimple, result =
+            List.fold
+                (fun (isSimplified, current) next -> let wasSimple, result = And2 current next in wasSimple && isSimplified, result)
+                (true, NoRestriction)
+                rst
+        if isSimple then result
+        else simplify result
+
     let private Or2 (left : FrameworkRestriction) (right : FrameworkRestriction) =
-        left.OrFormulas @ right.OrFormulas
-        |> FrameworkRestriction.FromOrList
-    
+        match left.OrFormulas, right.OrFormulas with
+        // false -> use the other
+        | [], _ -> true, right
+        | _, [] -> true, left
+        // true -> become true
+        | _, [ { Literals = [] }] -> true, right
+        | [{ Literals = [] }], _ -> true, left
+        | leftFormumas, rightFormulas ->
+            false,
+            leftFormumas @ rightFormulas
+            |> FrameworkRestriction.FromOrList
+
     let Or (rst:FrameworkRestriction list) =
-        List.fold Or2 EmptySet rst
-        |> simplify
-    
+        let isSimple, result =
+            List.fold
+                (fun (isSimplified, current) next -> let wasSimple, result = Or2 current next in wasSimple && isSimplified, result)
+                (true, EmptySet)
+                rst
+        if isSimple then result
+        else simplify result
+
     //[<Obsolete ("Method is provided for completeness sake. But I don't think its needed")>]
     //let Not (rst:FrameworkRestriction) =
     //    Unchecked.defaultof<_>
 
     let Between (x, y) =
-        And2 (AtLeast x) (NotAtLeast y)
-        |> simplify
-    
+        let isSimple, result = And2 (AtLeast x) (NotAtLeast y)
+        if isSimple then result else simplify result
+
     let combineRestrictionsWithOr (x : FrameworkRestriction) y =
-        Or2 x y
-        |> simplify
+        let isSimple, result = Or2 x y
+        if isSimple then result else simplify result
 
     let (|HasNoRestriction|_|) x =
         if x = NoRestriction then Some () else None
 
-    let combineRestrictionsWithAnd (x : FrameworkRestriction) y = 
-        And2 x y
-        |> simplify
+    let combineRestrictionsWithAnd (x : FrameworkRestriction) y =
+        let isSimple, result = And2 x y
+        if isSimple then result else simplify result
 
 type FrameworkRestrictions =
 | ExplicitRestriction of FrameworkRestriction

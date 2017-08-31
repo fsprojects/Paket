@@ -154,7 +154,11 @@ type ProjectFile =
       OriginalText : string
       Document : XmlDocument
       ProjectNode : XmlNode
-      Language : ProjectLanguage }
+      Language : ProjectLanguage
+      // Caches for optimizations
+      mutable DefaultProperties : Map<string,string> option
+      // CalculatedMaps for optimizations
+      mutable CalculatedProperties : System.Collections.Concurrent.ConcurrentDictionary<Map<string,string>, Map<string,string>> }
 
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
@@ -185,7 +189,8 @@ module ProjectFile =
             ProjectNode = projectNode
             OriginalText = Utils.normalizeXml doc
             Language = LanguageEvaluation.getProjectLanguage doc (Path.GetFileName fullName)
-
+            DefaultProperties = None
+            CalculatedProperties = new System.Collections.Concurrent.ConcurrentDictionary<Map<string,string>, Map<string,string>>()
         }
 
     let loadFromFile(fileName:string) =
@@ -218,39 +223,45 @@ module ProjectFile =
         with
         | _ -> 
             project.Document.CreateElement (name, Constants.ProjectDefaultNameSpace)
-            
+
     let createNodeSet name text (project:ProjectFile) = 
         let node = createNode name project
         node.InnerText <- text
         node
 
-    let getReservedProperties (projectFile:ProjectFile) =
-        let projectFileInfo = FileInfo projectFile.FileName
-        let directoryNoRoot = Regex.Replace(projectFileInfo.FullName, "^.:\\\\?", "")
-        [
-            // Project file properties
-            "MSBuildProjectDirectory", projectFileInfo.DirectoryName
-            "MSBuildProjectDirectoryNoRoot", directoryNoRoot
-            "MSBuildProjectExtension", projectFileInfo.Extension
-            "MSBuildProjectFile", projectFileInfo.Name
-            "MSBuildProjectFullPath", projectFileInfo.FullName
-            "MSBuildProjectName", Path.GetFileNameWithoutExtension(projectFileInfo.FullName)
-            
-            // This file properties (Potentially an Imported file)
-            "MSBuildThisFileDirectory", projectFileInfo.DirectoryName + (string Path.DirectorySeparatorChar)
-            "MSBuildThisFileDirectoryNoRoot", directoryNoRoot + (string Path.DirectorySeparatorChar)
-            "MSBuildThisFileExtension", projectFileInfo.Extension
-            "MSBuildThisFile", projectFileInfo.Name
-            "MSBuildThisFileFullPath", projectFileInfo.FullName
-            "MSBuildThisFileName", Path.GetFileNameWithoutExtension(projectFileInfo.FullName)
-            
-        ] |> Map.ofList
+    let private getReservedProperties (projectFile:ProjectFile) =
+        let calculateNew () =
+            let projectFileInfo = FileInfo projectFile.FileName
+            let directoryNoRoot = Regex.Replace(projectFileInfo.FullName, "^.:\\\\?", "")
+            [
+                // Project file properties
+                "MSBuildProjectDirectory", projectFileInfo.DirectoryName
+                "MSBuildProjectDirectoryNoRoot", directoryNoRoot
+                "MSBuildProjectExtension", projectFileInfo.Extension
+                "MSBuildProjectFile", projectFileInfo.Name
+                "MSBuildProjectFullPath", projectFileInfo.FullName
+                "MSBuildProjectName", Path.GetFileNameWithoutExtension(projectFileInfo.FullName)
+
+                // This file properties (Potentially an Imported file)
+                "MSBuildThisFileDirectory", projectFileInfo.DirectoryName + (string Path.DirectorySeparatorChar)
+                "MSBuildThisFileDirectoryNoRoot", directoryNoRoot + (string Path.DirectorySeparatorChar)
+                "MSBuildThisFileExtension", projectFileInfo.Extension
+                "MSBuildThisFile", projectFileInfo.Name
+                "MSBuildThisFileFullPath", projectFileInfo.FullName
+                "MSBuildThisFileName", Path.GetFileNameWithoutExtension(projectFileInfo.FullName)
+            ] |> Map.ofList
+        match projectFile.DefaultProperties with
+        | Some p -> p
+        | None ->
+            let res = calculateNew()
+            projectFile.DefaultProperties <- Some res
+            res
 
     /// Append two maps with the properties of the second replacing properties of the first
     let private appendMap first second =
         Map.fold (fun state key value -> Map.add key value state) first second
 
-    let getPropertyWithDefaults propertyName defaultProperties (projectFile:ProjectFile) =
+    let private calculatePropertyMap (projectFile:ProjectFile) defaultProperties =
         let defaultProperties = appendMap defaultProperties (getReservedProperties projectFile)
 
         let processPlaceholders (data : Map<string, string>) text =
@@ -463,7 +474,10 @@ module ProjectFile =
             projectFile.Document
             |> getDescendants "PropertyGroup"
             |> Seq.fold handleElement defaultProperties
-        
+        map
+
+    let getPropertyWithDefaults propertyName defaultProperties (projectFile:ProjectFile) =
+        let map = projectFile.CalculatedProperties.GetOrAdd(defaultProperties, calculatePropertyMap projectFile)
         Map.tryFind propertyName map
 
     let getProperty propertyName (projectFile:ProjectFile) =
