@@ -203,14 +203,15 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
                     None)
 
             |> Seq.choose id
-            |> Seq.collect (fun p -> dependencyGraph |> getOrAdd p dependencies)
-            |> Seq.append (
+            |> Seq.map (fun p -> dependencyGraph |> getOrAdd p dependencies)
+            |> Set.unionMany
+            |> Set.union (
                 referenceFile.Groups
                 |> Seq.filter (fun g -> g.Key = groupName)
                 |> Seq.collect (fun g -> g.Value.NugetPackages |> List.map (fun p -> (groupName,p.Name)))
                 |> Seq.collect(fun (g,p) -> findDependencies(g,p,projectFile.FileName))
-                |> Seq.map (fun x -> x, projectFile.GetTargetProfile()))
-            |> Set.ofSeq
+                |> Seq.map (fun x -> x, projectFile.GetTargetProfile())
+                |> Set.ofSeq)
         | None -> Set.empty
 
     let bindingRedirects (projectFile : ProjectFile) =
@@ -330,11 +331,8 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                         | None -> Choice2Of2 <| sprintf " - %s uses NuGet package %O, but it was not found in the paket.lock file in group %O.%s" referenceFile.FileName ps.Name kv.Key (lockFile.CheckIfPackageExistsInAnyGroup ps.Name)
 
                     match group, package with
-                    | Choice1Of2 group, Choice1Of2 package ->
-                        let resolvedSettings =
-                            [package.Settings; group.Options.Settings]
-                            |> List.fold (+) ps.Settings
-                        ((kv.Key,ps.Name), (package.Version,resolvedSettings))
+                    | Choice1Of2 _, Choice1Of2 package ->
+                        ((kv.Key,ps.Name), (package.Version, ps.Settings + package.Settings))
                         |> Choice1Of2
                     | Choice2Of2 error1, Choice2Of2 error2 -> Choice2Of2 (error1 + "\n" + error2)
                     | Choice2Of2 error, _ | _, Choice2Of2 error -> Choice2Of2 error
@@ -361,13 +359,10 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                         lockFile.Groups |> Map.containsKey groupName)
                     (fun (groupName,(_,parentSettings), dep) ->
                         let group = lockFile.Groups.[groupName]
-                        match group.Resolution |> Map.tryFind dep with
+                        match group.TryFind dep with
                         | None -> None
                         | Some p ->
-                            let resolvedSettings =
-                                [p.Settings; group.Options.Settings]
-                                |> List.fold (+) parentSettings
-                            Some ((groupName,p.Name), (p.Version,resolvedSettings)) )
+                            Some ((groupName,p.Name), (p.Version,parentSettings + p.Settings)) )
                     (fun (groupName,(_,parentSettings), dep) ->
                         Some <| sprintf " - %s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName groupName
                     )
