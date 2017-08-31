@@ -409,7 +409,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         else false
 
     if isEarlyExit () then
-        tracefn "Last restore is still up 2 date."
+        tracefn "Last restore is still up to date."
     else
         let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
