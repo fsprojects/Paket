@@ -352,15 +352,15 @@ let getRelevantPage (source:NugetV3Source) (index:PackageIndex) (version:SemVerI
             |> Seq.toList
 
         let tryFindOnPage (page:PackageIndexPage) = async {
-            let! resolvedPage = async {
+            let! page = async {
                 if page.Count > 0 && (isNull page.Packages || page.Packages.Length = 0) then
                     return! getPackageIndexPage source page
                 else return page }
             if page.Count > 0 && (isNull page.Packages || page.Packages.Length = 0) then
-                failwithf "Page should contain packages!"
+                failwithf "Page '%s' should contain packages!" page.Id
 
             let packages =
-                resolvedPage.Packages
+                page.Packages
                     // TODO: This might need to be part of SemVer itself?
                     // This is our favorite package: nlog/5.0.0-beta03-tryoutMutex
                     |> Seq.filter (fun p -> SemVer.Parse (p.PackageDetails.Version.ToLowerInvariant()) = normalizedVersion)
