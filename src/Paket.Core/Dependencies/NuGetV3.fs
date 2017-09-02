@@ -17,17 +17,17 @@ open Paket.Logging
 open Paket.PlatformMatching
 
 
-type NugetV3SourceResourceJSON = 
+type NugetV3SourceResourceJSON =
     { [<JsonProperty("@type")>]
       Type : string
       [<JsonProperty("@id")>]
       ID : string }
 
-type NugetV3SourceRootJSON = 
+type NugetV3SourceRootJSON =
     { [<JsonProperty("resources")>]
       Resources : NugetV3SourceResourceJSON [] }
 
-//type NugetV3Source = 
+//type NugetV3Source =
 //    { Url : string
 //      Authentication : NugetSourceAuthentication option }
 
@@ -96,17 +96,17 @@ let getNuGetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceT
     }
 
 /// [omit]
-type JSONResource = 
+type JSONResource =
     { Type : string;
       ID: string }
 
 /// [omit]
-type JSONVersionData = 
-    { Data : string [] 
+type JSONVersionData =
+    { Data : string []
       Versions : string [] }
 
 /// [omit]
-type JSONRootData = 
+type JSONRootData =
     { Resources : JSONResource [] }
 
 /// [omit]
@@ -116,7 +116,7 @@ let private searchDict = new System.Collections.Concurrent.ConcurrentDictionary<
 let private allVersionsDict = new System.Collections.Concurrent.ConcurrentDictionary<_,System.Threading.Tasks.Task<_>>()
 
 /// Calculates the NuGet v3 URL from a NuGet v2 URL.
-let calculateNuGet3Path(nugetUrl:string) = 
+let calculateNuGet3Path(nugetUrl:string) =
     match nugetUrl.TrimEnd([|'/'|]) with
     | "http://nuget.org/api/v2" -> Some "http://api.nuget.org/v3/index.json"
     | "https://nuget.org/api/v2" -> Some "https://api.nuget.org/v3/index.json"
@@ -130,7 +130,7 @@ let calculateNuGet3Path(nugetUrl:string) =
     | _ -> None
 
 /// Calculates the NuGet v3 URL from a NuGet v2 URL.
-let calculateNuGet2Path(nugetUrl:string) = 
+let calculateNuGet2Path(nugetUrl:string) =
     match nugetUrl.TrimEnd([|'/'|]) with
     | "http://api.nuget.org/v3/index.json" -> Some "http://nuget.org/api/v2"
     | "https://api.nuget.org/v3/index.json" -> Some "https://nuget.org/api/v2"
@@ -144,24 +144,24 @@ let calculateNuGet2Path(nugetUrl:string) =
 
 
 /// [omit]
-let getSearchAPI(auth,nugetUrl) = 
+let getSearchAPI(auth,nugetUrl) =
     searchDict.GetOrAdd(nugetUrl, fun nugetUrl ->
         async {
             match calculateNuGet3Path nugetUrl with
             | None -> return None
-            | Some v3Path -> 
+            | Some v3Path ->
                 let source = { Url = v3Path; Authentication = auth }
                 let! v3res = getNuGetV3Resource source AutoComplete |> Async.Catch
-                return 
+                return
                     match v3res with
                     | Choice1Of2 s -> Some s
-                    | Choice2Of2 ex -> 
+                    | Choice2Of2 ex ->
                         if verbose then traceWarnfn "getSearchAPI: %s" (ex.ToString())
                         None
         } |> Async.StartAsTask)
 
 /// [omit]
-let getAllVersionsAPI(auth,nugetUrl) = 
+let getAllVersionsAPI(auth,nugetUrl) =
     allVersionsDict.GetOrAdd(nugetUrl, fun nugetUrl ->
         async {
             match calculateNuGet3Path nugetUrl with
@@ -172,7 +172,7 @@ let getAllVersionsAPI(auth,nugetUrl) =
                 return
                     match v3res with
                     | Choice1Of2 s -> Some s
-                    | Choice2Of2 ex -> 
+                    | Choice2Of2 ex ->
                         if verbose then traceWarnfn "getAllVersionsAPI: %s" (ex.ToString())
                         None
         } |> Async.StartAsTask)
@@ -240,13 +240,13 @@ let extractPackages(response:string) =
 let private getPackages(auth, nugetURL, packageNamePrefix, maxResults) = async {
     let! apiRes = getSearchAPI(auth,nugetURL) |> Async.AwaitTask
     match apiRes with
-    | Some url -> 
+    | Some url ->
         let query = sprintf "%s?q=%s&take=%d" url packageNamePrefix maxResults
         let! response = safeGetFromUrl(auth |> Option.map toCredentials,query,acceptJson)
         match SafeWebResult.asResult response with
         | Result.Ok text -> return  Result.Ok (extractPackages text)
         | Result.Error err -> return Result.Error err
-    | None -> 
+    | None ->
         if verbose then tracefn "Could not calculate search api from %s" nugetURL
         return Result.Ok [||]
 }
@@ -258,28 +258,23 @@ let FindPackages(auth, nugetURL, packageNamePrefix, maxResults) =
     }
 
 
-type CatalogDependency = 
+type CatalogDependency =
     { [<JsonProperty("id")>]
-      Id : string 
-      
+      Id : string
       [<JsonProperty("range")>]
       Range : string }
-type CatalogDependencyGroup = 
+type CatalogDependencyGroup =
     { [<JsonProperty("targetFramework")>]
       TargetFramework : string
-    
       [<JsonProperty("dependencies")>]
       Dependencies : CatalogDependency [] }
-type Catalog = 
+type Catalog =
     { [<JsonProperty("licenseUrl")>]
       LicenseUrl : string
-      
       [<JsonProperty("listed")>]
       Listed : System.Nullable<bool>
-
       [<JsonProperty("version")>]
       Version : string
-      
       [<JsonProperty("dependencyGroups")>]
       DependencyGroups : CatalogDependencyGroup [] }
 
@@ -290,8 +285,7 @@ type PackageIndexPackage =
       [<JsonProperty("packageContent")>]
       DownloadLink: string
       [<JsonProperty("catalogEntry")>]
-      PackageDetails: Catalog
-      }
+      PackageDetails: Catalog }
 
 type PackageIndexPage =
     { [<JsonProperty("@id")>]
@@ -307,7 +301,7 @@ type PackageIndexPage =
       [<JsonProperty("upper")>]
       Upper: string }
 
-type PackageIndex = 
+type PackageIndex =
     { [<JsonProperty("@id")>]
       Id: string
       [<JsonProperty("items")>]
@@ -376,15 +370,6 @@ let getRelevantPage (source:NugetV3Source) (index:PackageIndex) (version:SemVerI
             return None
         | _ :: _ ->
             return failwithf "Mulitple pages of V3 index '%s' match with version '%O'" index.Id version
-
-        //let! rawData = safeGetFromUrl (auth, url, acceptJson)
-        //return
-        //    match rawData with
-        //    | NotFound ->
-        //        raise <| System.Exception(sprintf "could not get catalog data (404) from '%s'" url)
-        //    | UnknownError err ->
-        //        raise <| System.Exception(sprintf "could not get catalog data from %s" url, err.SourceException)
-        //    | SuccessResponse x -> JsonConvert.DeserializeObject<Catalog>(x)
     }
 
 let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<ODataSearchResult> =
