@@ -15,6 +15,7 @@ open System
 open System.IO
 open Fake.Testing.NUnit3
 open System.Security.Cryptography
+open Yaaf.FSharp.Scripting.Log
 
 // --------------------------------------------------------------------------------------
 // START TODO: Provide project-specific details below
@@ -75,11 +76,13 @@ let netcoreFiles = !! "src/**.preview?/*.fsproj" |> Seq.toList
 // END TODO: The rest of the file includes standard build steps
 // --------------------------------------------------------------------------------------
 
+let root = __SOURCE_DIRECTORY__
 let buildDir = "bin"
 let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
+let testResultDir = root @@ "testResults"
 
-Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
+Environment.CurrentDirectory <- root
 // Read additional information from the release notes document
 let releaseNotesData = 
     File.ReadAllLines "RELEASE_NOTES.md"
@@ -142,6 +145,7 @@ Target "Clean" (fun _ ->
     ++ "tests/**/bin"
     ++ buildDir 
     ++ tempDir
+    ++ testResultDir
     |> CleanDirs 
 )
 
@@ -229,13 +233,32 @@ Target "DotnetPackage" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Run the unit tests using test runner
 
+//let uploadTestResults path =
+//  try
+//    if buildServer = BuildServer.AppVeyor then
+//        // see https://www.appveyor.com/docs/running-tests/#uploading-xml-test-results
+        
+//        use wc = new System.Net.WebClient()
+//        let uri = sprintf "https://ci.appveyor.com/api/testresults/nunit3/%s" (environVarOrFail "APPVEYOR_JOB_ID")
+//        wc.UploadFile(uri, path) |> ignore
+//  with
+//    exn ->
+//      warnf "An Error occuring uploading the test results to the CI server: %O" exn
+
 Target "RunTests" (fun _ ->
+    
+    ensureDirectory testResultDir
+    let xmlResult = testResultDir @@ "tests.xml"
+
     !! testAssemblies
     |> NUnit3 (fun p ->
         { p with
             ShadowCopy = false
             WorkingDir = "tests/Paket.Tests"
-            TimeOut = TimeSpan.FromMinutes 20. })
+            TimeOut = TimeSpan.FromMinutes 20.
+            ResultSpecs = [ xmlResult ; "format=AppVeyor" ] })
+
+    //uploadTestResults xmlResult
 )
 
 Target "QuickTest" (fun _ ->
@@ -244,13 +267,19 @@ Target "QuickTest" (fun _ ->
         "tests/Paket.Tests/Paket.Tests.fsproj"
     ]   |> MSBuildRelease "" "Rebuild"
         |> ignore
+    
+    ensureDirectory testResultDir
+    let xmlResult = testResultDir @@ "quickTests.xml"
 
     !! testAssemblies
     |> NUnit3 (fun p ->
         { p with
             ShadowCopy = false
             WorkingDir = "tests/Paket.Tests"
-            TimeOut = TimeSpan.FromMinutes 20. })
+            TimeOut = TimeSpan.FromMinutes 20.
+            ResultSpecs = [ xmlResult ; "format=AppVeyor" ]  })
+
+    //uploadTestResults xmlResult
 )
 "Clean" ==> "QuickTest"
 
@@ -261,6 +290,8 @@ Target "QuickIntegrationTests" (fun _ ->
     ]   |> MSBuildDebug "" "Rebuild"
         |> ignore
     
+    ensureDirectory testResultDir
+    let xmlResult = testResultDir @@ "quickIntegrationTests.xml"
     
     !! integrationTestAssemblies    
     |> NUnit3 (fun p ->
@@ -268,7 +299,10 @@ Target "QuickIntegrationTests" (fun _ ->
             ShadowCopy = false
             Where = "cat==scriptgen"
             WorkingDir = "tests/Paket.Tests"
-            TimeOut = TimeSpan.FromMinutes 40. })
+            TimeOut = TimeSpan.FromMinutes 40.
+            ResultSpecs = [ xmlResult ; "format=AppVeyor" ]  })
+
+    //uploadTestResults xmlResult
 )
 "Clean" ==> "QuickIntegrationTests" 
 
@@ -310,12 +344,19 @@ Target "RunIntegrationTests" (fun _ ->
     mergePaketTool ()
     // improves the speed of the test-suite by disabling the runtime resolution.
     System.Environment.SetEnvironmentVariable("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
+    
+    ensureDirectory testResultDir
+    let xmlResult = testResultDir @@ "integrationTests.xml"
+
     !! integrationTestAssemblies    
     |> NUnit3 (fun p ->
         { p with
             ShadowCopy = false
             WorkingDir = "tests/Paket.Tests"
-            TimeOut = TimeSpan.FromMinutes 40. })
+            TimeOut = TimeSpan.FromMinutes 40.
+            ResultSpecs = [ xmlResult ; "format=AppVeyor" ]  })
+
+    //uploadTestResults xmlResult
 )
 "Clean" ==> "Build" ==> "RunIntegrationTests" 
 
