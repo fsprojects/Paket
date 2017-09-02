@@ -206,3 +206,39 @@ let updateShouldFindPackageConflict packageName scenario =
         printfn "Ninject conflict test passed"
         #endif
         ()
+
+let clearPackage name =
+    // ~/.nuget/packages
+    let userPackageFolder = Paket.Constants.UserNuGetPackagesFolder
+
+    // %APPDATA%/NuGet/Cache
+    let nugetCache = Paket.Constants.NuGetCacheFolder
+
+    for cacheDir in [ nugetCache; userPackageFolder ] do
+        if Directory.Exists cacheDir then
+            Directory.EnumerateDirectories(cacheDir)
+            |> Seq.filter (fun n -> Path.GetFileName n |> String.startsWithIgnoreCase name)
+            |> Seq.iter (fun n -> Directory.Delete(n, true))
+            Directory.EnumerateFiles(cacheDir)
+            |> Seq.filter (fun n -> Path.GetFileName n |> String.startsWithIgnoreCase name)
+            |> Seq.iter (fun n -> File.Delete(n))
+
+let isPackageCached name =
+    // ~/.nuget/packages
+    let userPackageFolder = Paket.Constants.UserNuGetPackagesFolder
+
+    // %APPDATA%/NuGet/Cache
+    let nugetCache = Paket.Constants.NuGetCacheFolder
+
+    [ nugetCache; userPackageFolder ]
+    |> List.collect (fun cacheDir ->
+        if Directory.Exists cacheDir then
+            let dirs =
+                Directory.EnumerateDirectories(cacheDir)
+                |> Seq.filter (fun n -> Path.GetFileName n |> String.startsWithIgnoreCase name)
+            let files =
+                Directory.EnumerateFiles(cacheDir)
+                |> Seq.filter (fun n -> Path.GetFileName n |> String.startsWithIgnoreCase name)
+            Seq.append dirs files
+            |> Seq.toList
+        else [])
