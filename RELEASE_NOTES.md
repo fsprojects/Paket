@@ -1,3 +1,10 @@
+#### 5.92.1 - 02.09.2017
+* BOOTSTRAPPER: Add support for IgnoreCache to app.config - https://github.com/fsprojects/Paket/pull/2696
+* DOCS: Fix GitHub project dependency description - https://github.com/fsprojects/Paket/pull/2707
+* BUGFIX: Fix V3 implementation - https://github.com/fsprojects/Paket/pull/2708
+* BUGFIX: Don't use the global cache when paket.local is given - https://github.com/fsprojects/Paket/pull/2709
+* BUGFIX: Ignore unknown packages in fix-nuspec - https://github.com/fsprojects/Paket/pull/2710
+
 #### 5.92.0 - 30.08.2017
 * BUGFIX: Fix new restore cache - https://github.com/fsprojects/Paket/pull/2684
 * PERFORMANCE: Make restore faster - https://github.com/fsprojects/Paket/pull/2675
