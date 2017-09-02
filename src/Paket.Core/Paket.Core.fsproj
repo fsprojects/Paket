@@ -23,12 +23,12 @@
     <OutputPath>..\..\bin</OutputPath>
     <DefineConstants>TRACE;DEBUG;USE_WEB_CLIENT_FOR_UPLOAD</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <StartArguments>update</StartArguments>
+    <StartArguments>fix-nuspecs files src/Paket.Core.preview3/obj/Paket.Core.1.0.0.nuspec project-file "C:/proj/Paket/src/Paket.Core.preview3/Paket.Core.fsproj"</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>
     </StartWorkingDirectory>
-    <StartWorkingDirectory>C:\proj\testing\testpaketfailure\</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\proj\Paket\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -311,11 +311,6 @@
         </Reference>
         <Reference Include="Mono.Cecil.Pdb">
           <HintPath>..\..\packages\Mono.Cecil\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-        <Reference Include="Mono.Cecil.Rocks">
-          <HintPath>..\..\packages\Mono.Cecil\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
