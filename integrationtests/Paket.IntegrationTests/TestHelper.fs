@@ -35,6 +35,10 @@ let partitionForTravis scenario =
     
 
 let paketToolPath = FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.exe")
+let dotnetToolPath =
+    match Environment.GetEnvironmentVariable "DOTNET_EXE_PATH" with
+    | null | "" -> "dotnet"
+    | s -> s
 let integrationTestPath = FullName(__SOURCE_DIRECTORY__ + "../../../integrationtests/scenarios")
 let scenarioTempPath scenario = Path.Combine(integrationTestPath,scenario,"temp")
 let originalScenarioPath scenario = Path.Combine(integrationTestPath,scenario,"before")
@@ -70,17 +74,30 @@ let prepare scenario =
         for file in Directory.GetFiles(scenarioPath, (sprintf "*.%stemplate" ext), SearchOption.AllDirectories) do
             File.Move(file, Path.ChangeExtension(file, ext))
 
+let prepareSdk scenario =
+    let tmpPaketFolder = (scenarioTempPath scenario) @@ ".paket"
+    let targetsFile = FullName(__SOURCE_DIRECTORY__ + "../../../src/Paket/embedded/Paket.Restore.targets")
+    let paketExe = FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.exe")
+
+    setEnvironVar "PaketExePath" paketExe
+    prepare scenario
+    if (not (Directory.Exists tmpPaketFolder)) then
+        Directory.CreateDirectory tmpPaketFolder |> ignore
+
+    FileHelper.CopyFile tmpPaketFolder targetsFile
+
+
 type PaketMsg =
   { IsError : bool; Message : string }
     static member isError ({ IsError = e}:PaketMsg) = e
     static member getMessage ({ Message = msg }:PaketMsg) = msg
 
-let directPaketInPathEx command scenarioPath =
+let directToolEx isPaket toolPath command workingDir =
     #if INTERACTIVE
     let result =
         ExecProcessWithLambdas (fun info ->
-          info.FileName <- paketToolPath
-          info.WorkingDirectory <- scenarioPath
+          info.FileName <- toolPath
+          info.WorkingDirectory <- workingDir
           info.Arguments <- command) 
           (System.TimeSpan.FromMinutes 7.)
           false
@@ -91,24 +108,24 @@ let directPaketInPathEx command scenarioPath =
     res
     #else
     Environment.SetEnvironmentVariable("PAKET_DETAILED_ERRORS", "true")
-    printfn "%s> paket %s" scenarioPath command
+    printfn "%s> %s %s" workingDir (if isPaket then "paket" else toolPath) command
     let perfMessages = ResizeArray()
     let msgs = ResizeArray<PaketMsg>()
     let mutable perfMessagesStarted = false
     let addAndPrint isError msg =
         if not isError then
-            if msg = "Performance:" then
+            if isPaket && msg = "Performance:" then
                 perfMessagesStarted <- true
-            elif perfMessagesStarted then
+            elif isPaket && perfMessagesStarted then
                 perfMessages.Add(msg)
-                
+
         msgs.Add({ IsError = isError; Message = msg})
         
     let result =
         try
             ExecProcessWithLambdas (fun info ->
-              info.FileName <- paketToolPath
-              info.WorkingDirectory <- scenarioPath
+              info.FileName <- toolPath
+              info.WorkingDirectory <- workingDir
               info.CreateNoWindow <- true
               info.Arguments <- command)
               (System.TimeSpan.FromMinutes 7.)
@@ -124,15 +141,16 @@ let directPaketInPathEx command scenarioPath =
             for { IsError = isError; Message = msg } in msgs do
                 printfn "%s%s" (if isError then "ERR: " else "") msg
             reraise()
-    // Only throw after the result <> 0 check because the current test might check the argument parsing
-    // this is the only case where no performance is printed
-    let isUsageError = result <> 0 && msgs |> Seq.filter PaketMsg.isError |> Seq.map PaketMsg.getMessage |> Seq.exists (fun msg -> msg.Contains "USAGE:")
-    if not isUsageError then
-        if perfMessages.Count = 0 then
-            failwith "No Performance messages recieved in test!"
-        printfn "Performance:"
-        for msg in perfMessages do
-            printfn "%s" msg
+    if isPaket then
+        // Only throw after the result <> 0 check because the current test might check the argument parsing
+        // this is the only case where no performance is printed
+        let isUsageError = result <> 0 && msgs |> Seq.filter PaketMsg.isError |> Seq.map PaketMsg.getMessage |> Seq.exists (fun msg -> msg.Contains "USAGE:")
+        if not isUsageError then
+            if perfMessages.Count = 0 then
+                failwith "No Performance messages recieved in test!"
+            printfn "Performance:"
+            for msg in perfMessages do
+                printfn "%s" msg
 
     // always print stderr
     for msg in msgs do
@@ -148,6 +166,21 @@ let directPaketInPathEx command scenarioPath =
 
     msgs
     #endif
+
+let directPaketInPathEx command scenarioPath =
+    directToolEx true paketToolPath command scenarioPath
+
+let checkResults msgs =
+    msgs
+    |> Seq.filter PaketMsg.isError
+    |> Seq.toList
+    |> shouldEqual []
+
+let directDotnet checkZeroWarn command workingDir =
+    let msgs = directToolEx false dotnetToolPath command workingDir
+    if checkZeroWarn then checkResults msgs
+    msgs
+
 let private fromMessages msgs =
     String.Join(Environment.NewLine,msgs |> Seq.map PaketMsg.getMessage)
 
@@ -163,11 +196,7 @@ let paketEx checkZeroWarn command scenario =
     prepare scenario
 
     let msgs = directPaketEx command scenario
-    if checkZeroWarn then
-        msgs
-        |> Seq.filter PaketMsg.isError
-        |> Seq.toList
-        |> shouldEqual []
+    if checkZeroWarn then checkResults msgs
     msgs
 
 let paket command scenario =
