@@ -1,0 +1,3 @@
+source https://www.myget.org/F/dotnet-core-svc
+
+nuget Microsoft.CSharp prerelease

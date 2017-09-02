@@ -70,7 +70,12 @@ let prepare scenario =
         for file in Directory.GetFiles(scenarioPath, (sprintf "*.%stemplate" ext), SearchOption.AllDirectories) do
             File.Move(file, Path.ChangeExtension(file, ext))
 
-let directPaketInPath command scenarioPath =
+type PaketMsg =
+  { IsError : bool; Message : string }
+    static member isError ({ IsError = e}:PaketMsg) = e
+    static member getMessage ({ Message = msg }:PaketMsg) = msg
+
+let directPaketInPathEx command scenarioPath =
     #if INTERACTIVE
     let result =
         ExecProcessWithLambdas (fun info ->
@@ -81,12 +86,14 @@ let directPaketInPath command scenarioPath =
           false
           (printfn "%s")
           (printfn "%s")
-    string result
+    let res = new ResizeArray()
+    res.Add (string result)
+    res
     #else
     Environment.SetEnvironmentVariable("PAKET_DETAILED_ERRORS", "true")
     printfn "%s> paket %s" scenarioPath command
     let perfMessages = ResizeArray()
-    let msgs = ResizeArray()
+    let msgs = ResizeArray<PaketMsg>()
     let mutable perfMessagesStarted = false
     let addAndPrint isError msg =
         if not isError then
@@ -95,7 +102,7 @@ let directPaketInPath command scenarioPath =
             elif perfMessagesStarted then
                 perfMessages.Add(msg)
                 
-        msgs.Add((isError, msg))
+        msgs.Add({ IsError = isError; Message = msg})
         
     let result =
         try
@@ -114,12 +121,12 @@ let directPaketInPath command scenarioPath =
             else
                 printfn "ExecProcessWithLambdas failed. Output was: "
 
-            for isError, msg in msgs do
+            for { IsError = isError; Message = msg } in msgs do
                 printfn "%s%s" (if isError then "ERR: " else "") msg
             reraise()
     // Only throw after the result <> 0 check because the current test might check the argument parsing
     // this is the only case where no performance is printed
-    let isUsageError = result <> 0 && msgs |> Seq.filter fst |> Seq.map snd |> Seq.exists (fun msg -> msg.Contains "USAGE:")
+    let isUsageError = result <> 0 && msgs |> Seq.filter PaketMsg.isError |> Seq.map PaketMsg.getMessage |> Seq.exists (fun msg -> msg.Contains "USAGE:")
     if not isUsageError then
         if perfMessages.Count = 0 then
             failwith "No Performance messages recieved in test!"
@@ -128,47 +135,66 @@ let directPaketInPath command scenarioPath =
             printfn "%s" msg
 
     // always print stderr
-    for isError, msg in msgs do
-        if isError then
-            printfn "ERR: %s" msg
+    for msg in msgs do
+        if msg.IsError then
+            printfn "ERR: %s" msg.Message
 
     if result <> 0 then 
-        let errors = String.Join(Environment.NewLine,msgs |> Seq.filter fst |> Seq.map snd)
+        let errors = String.Join(Environment.NewLine,msgs |> Seq.filter PaketMsg.isError |> Seq.map PaketMsg.getMessage)
         if String.IsNullOrWhiteSpace errors then
             failwithf "The process exited with code %i" result
         else
             failwith errors
 
-
-    String.Join(Environment.NewLine,msgs |> Seq.map snd)
+    msgs
     #endif
+let private fromMessages msgs =
+    String.Join(Environment.NewLine,msgs |> Seq.map PaketMsg.getMessage)
 
-let directPaket command scenario =
+let directPaketInPath command scenarioPath = directPaketInPathEx command scenarioPath |> fromMessages
+
+let directPaketEx command scenario =
     partitionForTravis scenario
-    directPaketInPath command (scenarioTempPath scenario)
+    directPaketInPathEx command (scenarioTempPath scenario)
 
-let paket command scenario =
+let directPaket command scenario = directPaketEx command scenario |> fromMessages
+
+let paketEx checkZeroWarn command scenario =
     prepare scenario
 
-    directPaket command scenario
+    let msgs = directPaketEx command scenario
+    if checkZeroWarn then
+        msgs
+        |> Seq.filter PaketMsg.isError
+        |> Seq.toList
+        |> shouldEqual []
+    msgs
 
-let update scenario =
+let paket command scenario =
+    paketEx false command scenario |> fromMessages
+
+let updateEx checkZeroWarn scenario =
     #if INTERACTIVE
     paket "update --verbose" scenario |> printfn "%s"
     #else
-    paket "update" scenario |> ignore
+    paketEx checkZeroWarn "update" scenario |> ignore
     #endif
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
-let install scenario =
+let update scenario =
+    updateEx false scenario
+
+let installEx checkZeroWarn scenario =
     #if INTERACTIVE
     paket "install --verbose" scenario |> printfn "%s"
     #else
-    paket "install" scenario |> ignore
+    paketEx checkZeroWarn  "install" scenario |> ignore
     #endif
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
-let restore scenario = paket "restore" scenario |> ignore
+let install scenario = installEx false scenario
+
+let restore scenario = paketEx false "restore" scenario |> ignore
 
 let updateShouldFindPackageConflict packageName scenario =
     try

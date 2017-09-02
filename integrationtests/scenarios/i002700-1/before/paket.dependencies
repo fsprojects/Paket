@@ -1,0 +1,3 @@
+source https://www.myget.org/F/dotnet-core-svc/api/v3/index.json
+
+nuget Microsoft.CSharp prerelease
