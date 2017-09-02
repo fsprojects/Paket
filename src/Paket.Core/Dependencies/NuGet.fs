@@ -448,7 +448,7 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
 
                                 return v2Feeds
                        | NuGetV3 source ->
-                            let! versionsAPI = PackageSources.getNuGetV3Resource source AllVersionsAPI
+                            let! versionsAPI = NuGetV3.getNuGetV3Resource source NuGetV3.AllVersionsAPI
                             let auth = source.Authentication |> Option.map toCredentials
                             return [ getVersionsCached "V3" tryNuGetV3 (nugetSource, auth, versionsAPI, packageName) ]
                        | LocalNuGet(path,Some _) ->
