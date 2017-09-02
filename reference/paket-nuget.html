@@ -185,29 +185,11 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '256', 256)" onmouseover="showTip(event, '256', 256)">
-            DownloadLicense (...)
+            DownloadAndExtractPackage (...)
           </code>
           <div class="tip" id="256">
-            <strong>Signature:</strong> (root:&#39;?9910 * force:bool * packageName:PackageName * version:SemVerInfo * licenseUrl:string * targetFileName:string) -&gt; Async&lt;unit&gt;<br />
-                          <strong>Type parameters:</strong> '?9910          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L123-123" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '257', 257)" onmouseover="showTip(event, '257', 257)">
-            DownloadPackage (...)
-          </code>
-          <div class="tip" id="257">
-            <strong>Signature:</strong> (alternativeProjectRoot:string option * root:string * config:PackagesFolderGroupConfig * source:PackageSource * caches:Cache list * groupName:GroupName * packageName:PackageName * version:SemVerInfo * isCliTool:bool * includeVersionInPath:bool * force:bool * detailed:bool) -&gt; Async&lt;string * string&gt;<br />
-                      </div>
+            <strong>Signature:</strong> (alternativeProjectRoot:string option * root:string * isLocalOverride:bool * config:PackagesFolderGroupConfig * source:PackageSource * caches:Cache list * groupName:GroupName * packageName:PackageName * version:SemVerInfo * isCliTool:bool * includeVersionInPath:&#39;a * force:bool * detailed:bool) -&gt; Async&lt;string * string&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L610-610" class="github-link">
@@ -217,6 +199,24 @@
           <p>Downloads the given package to the NuGet Cache folder</p>
 
 
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '257', 257)" onmouseover="showTip(event, '257', 257)">
+            DownloadLicense (...)
+          </code>
+          <div class="tip" id="257">
+            <strong>Signature:</strong> (root:&#39;?9911 * force:bool * packageName:PackageName * version:SemVerInfo * licenseUrl:string * targetFileName:string) -&gt; Async&lt;unit&gt;<br />
+                          <strong>Type parameters:</strong> '?9911          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L123-123" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
         </td>
       </tr>
       <tr>
@@ -342,8 +342,8 @@
             getVersionsCached (...)
           </code>
           <div class="tip" id="264">
-            <strong>Signature:</strong> key:string -&gt; f:(&#39;?9934 * &#39;?9935 * &#39;?9936 -&gt; NuGetRequestGetVersions) -&gt; (source:PackageSource * auth:&#39;?9934 * nugetURL:&#39;?9935 * package:&#39;?9936) -&gt; NuGetRequestGetVersions<br />
-                          <strong>Type parameters:</strong> '?9934, '?9935, '?9936          </div>
+            <strong>Signature:</strong> key:string -&gt; f:(&#39;?9935 * &#39;?9936 * &#39;?9937 -&gt; NuGetRequestGetVersions) -&gt; (source:PackageSource * auth:&#39;?9935 * nugetURL:&#39;?9936 * package:&#39;?9937) -&gt; NuGetRequestGetVersions<br />
+                          <strong>Type parameters:</strong> '?9935, '?9936, '?9937          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L394-394" class="github-link">
