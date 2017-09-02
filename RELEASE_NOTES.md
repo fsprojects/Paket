@@ -1,4 +1,4 @@
-#### 5.92.1 - 02.09.2017
+#### 5.92.1-rc1 - 02.09.2017
 * BOOTSTRAPPER: Add support for IgnoreCache to app.config - https://github.com/fsprojects/Paket/pull/2696
 * DOCS: Fix GitHub project dependency description - https://github.com/fsprojects/Paket/pull/2707
 * BUGFIX: Fix V3 implementation - https://github.com/fsprojects/Paket/pull/2708
