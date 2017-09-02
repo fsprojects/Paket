@@ -39,13 +39,13 @@ let CopyToCaches force caches fileName =
                 traceWarnfn "Could not copy %s to cache %s%s%s" fileName cache.Location Environment.NewLine exn.Message)
 
 /// returns - package, libs files, props files, targets files, analyzers files
-let private extractPackage caches (package:PackageInfo) alternativeProjectRoot root source groupName version includeVersionInPath force =
+let private extractPackage caches (package:PackageInfo) alternativeProjectRoot root isLocalOverride source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
         let cfg = defaultArg package.Settings.StorageConfig PackagesFolderGroupConfig.Default
 
         let! fileName,folder = 
-            NuGet.DownloadPackage(
-                alternativeProjectRoot, root, cfg, source, caches, groupName, 
+            NuGet.DownloadAndExtractPackage(
+                alternativeProjectRoot, root, isLocalOverride, cfg, source, caches, groupName, 
                 package.Name, version, package.IsCliTool, includeVersionInPath, force, detailed)
 
         CopyToCaches force caches fileName
@@ -110,10 +110,10 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
                     | None -> failwithf "The NuGet source %s for package %O was not found in the paket.dependencies file with sources %A" package.Source.Url package.Name sources
                     | Some s -> s 
 
-                return! extractPackage caches package alternativeProjectRoot root source groupName v includeVersionInPath force
+                return! extractPackage caches package alternativeProjectRoot root localOverride source groupName v includeVersionInPath force
 
             | LocalNuGet(path,_) as source ->
-                return! extractPackage caches package alternativeProjectRoot root source groupName v includeVersionInPath force
+                return! extractPackage caches package alternativeProjectRoot root localOverride source groupName v includeVersionInPath force
         }
 
         // manipulate overridenFile after package extraction
