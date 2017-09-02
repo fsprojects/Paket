@@ -74,7 +74,7 @@ let getNuGetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceT
                         match res.ToLower() with
                         | "searchautocompleteservice" -> Some AutoComplete
                         //| "registrationsbaseurl" -> Some Registration
-                        | "packagedisplaymetadatauritemplate" -> Some PackageIndex
+                        | s when s.StartsWith "packagedisplaymetadatauritemplate" -> Some PackageIndex
                         | "packagebaseaddress/3.0.0" -> Some AllVersionsAPI
                         | _ -> None
                     match resType with
