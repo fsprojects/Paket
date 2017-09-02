@@ -91,12 +91,14 @@ let GetContent dir = lazy (
 
     let spec =
         di.EnumerateFiles("*.nuspec", SearchOption.TopDirectoryOnly)
-        |> Seq.exactlyOne
-        |> fun f -> Nuspec.Load(f.FullName)
-
-    { Content = (ofDirectory dir).Contents
-      Path = dir
-      Spec = spec })
+        |> Seq.tryExactlyOne
+        |> Option.map (fun f -> Nuspec.Load(f.FullName))
+    match spec with
+    | Some spec ->
+        { Content = (ofDirectory dir).Contents
+          Path = dir
+          Spec = spec }
+    | None -> failwithf "Could not find nuspec in '%s', try deleting the directory and restoring again." dir)
 
 let tryFindFolder folder (content:NuGetPackageContent) =
     let rec collectItems prefixFull (prefixInner:string) (content:NuGetContent) =
@@ -610,7 +612,7 @@ let private getLicenseFile (packageName:PackageName) version =
 let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool, config:PackagesFolderGroupConfig, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, force, detailed) =
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
     let normalizedNupkgName = NuGetCache.GetPackageFileName packageName version
-    let configResolved = config.Resolve root groupName packageName version isCliTool
+    let configResolved = config.Resolve root groupName packageName version includeVersionInPath
     let targetFileName =
         if not isLocalOverride then NuGetCache.GetTargetUserNupkg packageName version
         else

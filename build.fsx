@@ -136,13 +136,14 @@ Target "InstallDotNetCore" (fun _ ->
 // Clean build results
 
 Target "Clean" (fun _ ->
-    !! "src/**/obj"
-    ++ "src/**/bin"
-    ++ "tests/**/obj"
+    !! "src/**/bin"
     ++ "tests/**/bin"
     ++ buildDir 
     ++ tempDir
-    |> CleanDirs 
+    |> CleanDirs
+
+    !! "**/obj/*.nuspec"
+    |> DeleteFiles
 )
 
 Target "CleanDocs" (fun _ ->

@@ -60,28 +60,40 @@ let deleteUnusedPackages (lockFile:LockFile) =
     for package, groupDir in extractedPackages do
         try
             let containsKey = resolution |> Map.containsKey (package.GroupName, package.PackageName)
+            // Version in PATH
             let findNormalized =
                 lazy
-                    resolution |> Seq.exists (fun kv ->
+                    resolution |> Seq.tryFind (fun kv ->
                         fst kv.Key = package.GroupName &&
                             (kv.Value.Name.ToString() + "." + kv.Value.Version.ToString() = package.PackageName.ToString() ||
                              kv.Value.Name.ToString() + "." + kv.Value.Version.Normalize() = package.PackageName.ToString()))
-            if not containsKey && not findNormalized.Value then
+                        |> Option.map (fun kv -> kv.Value)
+            if not containsKey && findNormalized.Value |> Option.isNone then
                 tracefn "Garbage collecting %O" package.Path
                 Utils.deleteDir package.Path
             else
                 // might be in the resultion, but the storage path changed
                 let group = lockFile.Groups.[package.GroupName]
-                let packageInfo = group.GetPackage package.PackageName
+                let packageInfo =
+                    match findNormalized.Value with
+                    | Some value -> value
+                    | None -> group.GetPackage package.PackageName
                 let storageConfig = packageInfo.Settings.StorageConfig
                 let packageStorage = defaultArg storageConfig PackagesFolderGroupConfig.Default
                 let resolvePack = packageStorage.ResolveGroupDir lockFile.RootPath package.GroupName
-                if groupDir <> resolvePack then
+                let wrongDir = groupDir <> resolvePack
+                let versionInPathSetting = packageInfo.Settings.IncludeVersionInPath.IsSome && packageInfo.Settings.IncludeVersionInPath.Value
+                let noVersionInPath = containsKey && versionInPathSetting
+                let versionInPath = findNormalized.Value.IsSome && not versionInPathSetting
+                if wrongDir || noVersionInPath || versionInPath then
                     tracefn "Garbage collecting %O" package.Path
                     Utils.deleteDir package.Path
 
         with
-        | exn -> traceWarnfn "Garbage collection on '%s' failed. %s." package.Path.FullName exn.Message
+        | exn ->
+            traceWarnfn "Garbage collection on '%s' failed. %s." package.Path.FullName exn.Message
+            if verbose then
+                traceWarnfn "Exception: %O" exn
 
 /// Removes older packages from the cache
 let removeOlderVersionsFromCache(cache:Cache, packageName:PackageName, versions:SemVerInfo seq) =
@@ -96,8 +108,10 @@ let removeOlderVersionsFromCache(cache:Cache, packageName:PackageName, versions:
                     targetFolder.Create()
                 true
             with
-            | exn -> 
+            | exn ->
                 traceWarnfn "Could not garbage collect cache: %s" exn.Message
+                if verbose then
+                    traceWarnfn "Exception: %O" exn
                 Cache.setInaccessible cache
                 false
     
