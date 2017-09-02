@@ -115,7 +115,7 @@ let ``#1189 should allow # in path``() =
 
 [<Test>]
 let ``#1247 shouldn't load lockfile in full update``() =
-    update "i001247-lockfile-error" |> ignore
+    updateEx true "i001247-lockfile-error" |> ignore
 
 [<Test>]
 let ``#1247 should report lockfile in parse errror``() =

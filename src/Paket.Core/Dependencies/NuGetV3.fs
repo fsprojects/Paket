@@ -345,13 +345,13 @@ let getPackageIndexPage source (page:PackageIndexPage) = getPackageIndexPageMemo
 
 let getRelevantPage (source:NugetV3Source) (index:PackageIndex) (version:SemVerInfo) =
     async {
+        let normalizedVersion = SemVer.Parse (version.ToString().ToLowerInvariant())
         let pages =
             index.Pages
-            |> Seq.filter (fun p -> SemVer.Parse p.Lower <= version && version <= SemVer.Parse p.Upper)
+            |> Seq.filter (fun p -> SemVer.Parse (p.Lower.ToLowerInvariant()) <= normalizedVersion && normalizedVersion <= SemVer.Parse (p.Upper.ToLowerInvariant()))
             |> Seq.toList
 
-        match pages with
-        | [ page ] ->
+        let tryFindOnPage (page:PackageIndexPage) = async {
             let! resolvedPage = async {
                 if page.Count > 0 && (isNull page.Packages || page.Packages.Length = 0) then
                     return! getPackageIndexPage source page
@@ -361,15 +361,41 @@ let getRelevantPage (source:NugetV3Source) (index:PackageIndex) (version:SemVerI
 
             let packages =
                 resolvedPage.Packages
-                    |> Seq.filter (fun p -> SemVer.Parse p.PackageDetails.Version = version)
+                    // TODO: This might need to be part of SemVer itself?
+                    // This is our favorite package: nlog/5.0.0-beta03-tryoutMutex
+                    |> Seq.filter (fun p -> SemVer.Parse (p.PackageDetails.Version.ToLowerInvariant()) = normalizedVersion)
                     |> Seq.toList
             match packages with
             | [ package ] -> return Some package
+            | [] -> return None 
+            | h :: _ ->
+                // Can happen in theory when multiple versions differ only in casing...
+                traceWarnfn "Multiple package versions matched with '%O' on page '%s'" version page.Id
+                return Some h }
+        match pages with
+        | [ page ] ->
+            let! package = tryFindOnPage page
+            match package with
+            | Some package -> return Some package
             | _ -> return failwithf "Version '%O' should be part of part of page '%s' but wasn't." version page.Id
         | [] ->
             return None
-        | _ :: _ ->
-            return failwithf "Mulitple pages of V3 index '%s' match with version '%O'" index.Id version
+        | multiple ->
+            // This can happen theoretically because of ToLower, if someone is really crasy enough to upload a package
+            // with differently cased build strings and if nuget makes a page split exactly at that point.
+            let mutable result = None
+            for page in multiple do
+                if result.IsNone then
+                    let! package = tryFindOnPage page
+                    match package with
+                    | Some package -> result <- Some package
+                    | None -> ()
+            match result with
+            | Some result ->
+                traceWarnfn "Mulitple pages of V3 index '%s' match with version '%O'" index.Id version
+                return Some result
+            | None ->
+                return failwithf "Mulitple pages of V3 index '%s' match with version '%O'" index.Id version
     }
 
 let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<ODataSearchResult> =
