@@ -388,7 +388,7 @@ let RestoreNewSdkProject dependenciesFile lockFile resolved groups (projectFile:
     createProjectReferencesFiles dependenciesFile lockFile projectFile referencesFile objDir resolved groups
     referencesFile
 
-let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option,intermediateDir) = 
+let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option,objDir) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
     let root = lockFileName.Directory.FullName
@@ -452,7 +452,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             match projectFile with
             | Some projectFileName ->
                 let projectFile = ProjectFile.LoadFromFile projectFileName
-                let objDir = intermediateDir |> Option.defaultValue (Path.Combine(Path.GetDirectoryName(projectFileName),"obj"))
+                let objDir = objDir |> Option.defaultValue (Path.Combine(Path.GetDirectoryName(projectFileName),"obj"))
 
                 let referencesFile = RestoreNewSdkProject dependenciesFile lockFile resolved groups projectFile objDir
 
@@ -463,7 +463,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     ProjectFile.FindAllProjects root
                     |> Seq.filter (fun proj -> proj.GetToolsVersion() >= 15.0)
                     |> Seq.iter (fun proj ->
-                        let objDir = intermediateDir |> Option.defaultValue (Path.Combine(Path.GetDirectoryName(proj.FileName),"obj"))
+                        let objDir = objDir |> Option.defaultValue (Path.Combine(Path.GetDirectoryName(proj.FileName),"obj"))
                         RestoreNewSdkProject dependenciesFile lockFile resolved groups proj objDir
                         |> ignore)
 
