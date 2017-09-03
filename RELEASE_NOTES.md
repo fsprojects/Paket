@@ -1,3 +1,6 @@
+#### 5.92.3 - 03.09.2017
+* BUGFIX: Fix a crash when using `storage: package` in-line - https://github.com/fsprojects/Paket/pull/2713
+
 #### 5.92.2 - 03.09.2017
 * BOOTSTRAPPER: Add support for IgnoreCache to app.config - https://github.com/fsprojects/Paket/pull/2696
 * DOCS: Fix GitHub project dependency description - https://github.com/fsprojects/Paket/pull/2707
