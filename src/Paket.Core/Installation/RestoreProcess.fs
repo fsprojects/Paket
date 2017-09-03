@@ -195,9 +195,8 @@ let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches,
         return (groupName,package.Name), (package,model)
     }
 
-let createAlternativeNuGetConfig (projectFile:FileInfo) (intermediateDir:string option) =
-    let intermediateDir = intermediateDir |> Option.defaultValue (Path.Combine(projectFile.Directory.FullName,"obj"))
-    let alternativeConfigFileInfo = FileInfo(Path.Combine(intermediateDir,projectFile.Name + ".NuGet.Config"))
+let createAlternativeNuGetConfig (projectFile:FileInfo) (objDir:string) =
+    let alternativeConfigFileInfo = FileInfo(Path.Combine(objDir, projectFile.Name + ".NuGet.Config"))
     if not alternativeConfigFileInfo.Directory.Exists then
         alternativeConfigFileInfo.Directory.Create()
     
@@ -261,7 +260,7 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
             if verbose then
                 tracefn " - %s already up-to-date" fileInfo.FullName
 
-let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:LockFile) (projectFile:ProjectFile) (referencesFile:ReferencesFile) (newSdkReferencesFilePath:string option) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) (groups:Map<GroupName,LockFileGroup>) =
+let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:LockFile) (projectFile:ProjectFile) (referencesFile:ReferencesFile) (objDir:string) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) (groups:Map<GroupName,LockFileGroup>) =
     let projectFileInfo = FileInfo projectFile.FileName
     let list = System.Collections.Generic.List<_>()
     let hulls =
@@ -280,12 +279,12 @@ let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:L
     // delete stale entries (otherwise we might not recognize stale data on a change later)
     // scenario: remove a target framework -> change references -> add back target framework
     // -> We reached an invalid state
-    let objDir = DirectoryInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj"))
+    let objDir = DirectoryInfo objDir
     objDir.GetFiles(sprintf "%s*.paket.resolved" projectFileInfo.Name)
         |> Seq.iter (fun f -> f.Delete())
 
     // fable 1.0 compat
-    let oldReferencesFile = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".references"))
+    let oldReferencesFile = FileInfo(Path.Combine(objDir.FullName,projectFileInfo.Name + ".references"))
     if oldReferencesFile.Exists then oldReferencesFile.Delete()
 
     for originalTargetProfileString, targetProfile in targets do
@@ -318,7 +317,7 @@ let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:L
                     list.Add line
 
         let output = String.Join(Environment.NewLine,list)
-        let newFileName = newSdkReferencesFilePath |> Option.defaultValue (Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + "." + originalTargetProfileString + ".paket.resolved")) |> FileInfo
+        let newFileName = FileInfo (Path.Combine(objDir.FullName, projectFileInfo.Name + "." + originalTargetProfileString + ".paket.resolved"))
         if not newFileName.Directory.Exists then
             newFileName.Directory.Create()
 
@@ -337,14 +336,14 @@ let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:L
         let _,cliToolsInGroup = hulls.[kv.Key] // lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
         cliTools.AddRange cliToolsInGroup
 
-    let paketCLIToolsFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.clitools"))
+    let paketCLIToolsFileName = FileInfo(Path.Combine(objDir.FullName, projectFileInfo.Name + ".paket.clitools"))
     createPaketCLIToolsFile cliTools paketCLIToolsFileName
 
-    let paketPropsFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.props"))
+    let paketPropsFileName = FileInfo(Path.Combine(objDir.FullName, projectFileInfo.Name + ".paket.props"))
     createPaketPropsFile cliTools paketPropsFileName
 
     // Write "cached" file, this way msbuild can check if the references file has changed.
-    let paketCachedReferencesFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.references.cached"))
+    let paketCachedReferencesFileName = FileInfo(Path.Combine(objDir.FullName, projectFileInfo.Name + ".paket.references.cached"))
     if File.Exists (referencesFile.FileName) then
         File.Copy(referencesFile.FileName, paketCachedReferencesFileName.FullName, true)
     else
@@ -381,15 +380,15 @@ let FindOrCreateReferencesFile (projectFile:ProjectFile) =
 
         ReferencesFile.New fileName
 
-let RestoreNewSdkProject dependenciesFile lockFile resolved groups (projectFile:ProjectFile) newSdkReferencesFilePath intermediateDir =
+let RestoreNewSdkProject dependenciesFile lockFile resolved groups (projectFile:ProjectFile) objDir =
     let referencesFile = FindOrCreateReferencesFile projectFile
     let projectFileInfo = FileInfo projectFile.FileName
 
-    createAlternativeNuGetConfig projectFileInfo intermediateDir
-    createProjectReferencesFiles dependenciesFile lockFile projectFile referencesFile newSdkReferencesFilePath resolved groups
+    createAlternativeNuGetConfig projectFileInfo objDir
+    createProjectReferencesFiles dependenciesFile lockFile projectFile referencesFile objDir resolved groups
     referencesFile
 
-let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option,newSdkReferencesFilePath,intermediateDir) = 
+let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option,intermediateDir) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
     let root = lockFileName.Directory.FullName
@@ -448,13 +447,14 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                 | Some group -> [groupName,group] |> Map.ofList
 
         let resolved = lazy (lockFile.GetGroupedResolution())
-
+        
         let referencesFileNames =
             match projectFile with
             | Some projectFileName ->
                 let projectFile = ProjectFile.LoadFromFile projectFileName
+                let objDir = intermediateDir |> Option.defaultValue (Path.Combine(Path.GetDirectoryName(projectFileName),"obj"))
 
-                let referencesFile = RestoreNewSdkProject dependenciesFile lockFile resolved groups projectFile  newSdkReferencesFilePath intermediateDir
+                let referencesFile = RestoreNewSdkProject dependenciesFile lockFile resolved groups projectFile objDir
 
                 [referencesFile.FileName]
             | None ->
@@ -463,7 +463,8 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     ProjectFile.FindAllProjects root
                     |> Seq.filter (fun proj -> proj.GetToolsVersion() >= 15.0)
                     |> Seq.iter (fun proj ->
-                        RestoreNewSdkProject dependenciesFile lockFile resolved groups proj newSdkReferencesFilePath intermediateDir
+                        let objDir = intermediateDir |> Option.defaultValue (Path.Combine(Path.GetDirectoryName(proj.FileName),"obj"))
+                        RestoreNewSdkProject dependenciesFile lockFile resolved groups proj objDir
                         |> ignore)
 
                 referencesFileNames
