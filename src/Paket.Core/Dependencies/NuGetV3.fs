@@ -5,6 +5,8 @@ open Newtonsoft.Json
 open System.IO
 open System.Collections.Generic
 
+open System
+open System.Threading.Tasks
 open Paket.Domain
 open Paket.NuGetCache
 open Paket.Utils
@@ -14,18 +16,97 @@ open Paket.Requirements
 open Paket.Logging
 open Paket.PlatformMatching
 
+
+type NugetV3SourceResourceJSON =
+    { [<JsonProperty("@type")>]
+      Type : string
+      [<JsonProperty("@id")>]
+      ID : string }
+
+type NugetV3SourceRootJSON =
+    { [<JsonProperty("resources")>]
+      Resources : NugetV3SourceResourceJSON [] }
+
+//type NugetV3Source =
+//    { Url : string
+//      Authentication : NugetSourceAuthentication option }
+
+type NugetV3ResourceType =
+    | AutoComplete
+    | AllVersionsAPI
+    //| Registration
+    | PackageIndex
+
+    member this.AsString =
+        match this with
+        | AutoComplete -> "SearchAutoCompleteService"
+        //| Registration -> "RegistrationsBaseUrl"
+        | AllVersionsAPI -> "PackageBaseAddress/3.0.0"
+        | PackageIndex -> "PackageDisplayMetadataUriTemplate"
+
+// Cache for nuget indices of sources
+type ResourceIndex = Map<NugetV3ResourceType,string>
+let private nugetV3Resources = System.Collections.Concurrent.ConcurrentDictionary<NugetV3Source,Task<ResourceIndex>>()
+
+let getNuGetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceType) : Async<string> =
+    let key = source
+    let getResourcesRaw () =
+        async {
+            let basicAuth = source.Authentication |> Option.map toCredentials
+            let! rawData = safeGetFromUrl(basicAuth, source.Url, acceptJson)
+            let rawData =
+                match rawData with
+                | NotFound ->
+                    raise <| new Exception(sprintf "Could not load resources (404) from '%s'" source.Url)
+                | UnknownError e ->
+                    raise <| new Exception(sprintf "Could not load resources from '%s'" source.Url, e.SourceException)
+                | SuccessResponse x -> x
+
+            let json = JsonConvert.DeserializeObject<NugetV3SourceRootJSON>(rawData)
+            let resources =
+                json.Resources
+                |> Seq.distinctBy(fun x -> x.Type.ToLower())
+                |> Seq.map(fun x -> x.Type.ToLower(), x.ID)
+            let map =
+                resources
+                |> Seq.choose (fun (res, value) ->
+                    let resType =
+                        match res.ToLower() with
+                        | "searchautocompleteservice" -> Some AutoComplete
+                        //| "registrationsbaseurl" -> Some Registration
+                        | s when s.StartsWith "packagedisplaymetadatauritemplate" -> Some PackageIndex
+                        | "packagebaseaddress/3.0.0" -> Some AllVersionsAPI
+                        | _ -> None
+                    match resType with
+                    | None -> None
+                    | Some k ->
+                        Some (k, value))
+                |> Seq.distinctBy fst
+                |> Map.ofSeq
+            return map
+        } |> Async.StartAsTask
+
+    async {
+        let t = nugetV3Resources.GetOrAdd(key, (fun _ -> getResourcesRaw()))
+        let! res = t |> Async.AwaitTask
+        return
+            match res.TryFind resourceType with
+            | Some s -> s
+            | None -> failwithf "could not find an %s endpoint for %s" (resourceType.ToString()) source.Url
+    }
+
 /// [omit]
-type JSONResource = 
+type JSONResource =
     { Type : string;
       ID: string }
 
 /// [omit]
-type JSONVersionData = 
-    { Data : string [] 
+type JSONVersionData =
+    { Data : string []
       Versions : string [] }
 
 /// [omit]
-type JSONRootData = 
+type JSONRootData =
     { Resources : JSONResource [] }
 
 /// [omit]
@@ -35,7 +116,7 @@ let private searchDict = new System.Collections.Concurrent.ConcurrentDictionary<
 let private allVersionsDict = new System.Collections.Concurrent.ConcurrentDictionary<_,System.Threading.Tasks.Task<_>>()
 
 /// Calculates the NuGet v3 URL from a NuGet v2 URL.
-let calculateNuGet3Path(nugetUrl:string) = 
+let calculateNuGet3Path(nugetUrl:string) =
     match nugetUrl.TrimEnd([|'/'|]) with
     | "http://nuget.org/api/v2" -> Some "http://api.nuget.org/v3/index.json"
     | "https://nuget.org/api/v2" -> Some "https://api.nuget.org/v3/index.json"
@@ -49,7 +130,7 @@ let calculateNuGet3Path(nugetUrl:string) =
     | _ -> None
 
 /// Calculates the NuGet v3 URL from a NuGet v2 URL.
-let calculateNuGet2Path(nugetUrl:string) = 
+let calculateNuGet2Path(nugetUrl:string) =
     match nugetUrl.TrimEnd([|'/'|]) with
     | "http://api.nuget.org/v3/index.json" -> Some "http://nuget.org/api/v2"
     | "https://api.nuget.org/v3/index.json" -> Some "https://nuget.org/api/v2"
@@ -63,35 +144,35 @@ let calculateNuGet2Path(nugetUrl:string) =
 
 
 /// [omit]
-let getSearchAPI(auth,nugetUrl) = 
+let getSearchAPI(auth,nugetUrl) =
     searchDict.GetOrAdd(nugetUrl, fun nugetUrl ->
         async {
             match calculateNuGet3Path nugetUrl with
             | None -> return None
-            | Some v3Path -> 
+            | Some v3Path ->
                 let source = { Url = v3Path; Authentication = auth }
-                let! v3res = PackageSources.getNuGetV3Resource source AutoComplete |> Async.Catch
-                return 
+                let! v3res = getNuGetV3Resource source AutoComplete |> Async.Catch
+                return
                     match v3res with
                     | Choice1Of2 s -> Some s
-                    | Choice2Of2 ex -> 
+                    | Choice2Of2 ex ->
                         if verbose then traceWarnfn "getSearchAPI: %s" (ex.ToString())
                         None
         } |> Async.StartAsTask)
 
 /// [omit]
-let getAllVersionsAPI(auth,nugetUrl) = 
+let getAllVersionsAPI(auth,nugetUrl) =
     allVersionsDict.GetOrAdd(nugetUrl, fun nugetUrl ->
         async {
             match calculateNuGet3Path nugetUrl with
             | None -> return None
             | Some v3Path ->
                 let source = { Url = v3Path; Authentication = auth }
-                let! v3res = PackageSources.getNuGetV3Resource source AllVersionsAPI |> Async.Catch
+                let! v3res = getNuGetV3Resource source AllVersionsAPI |> Async.Catch
                 return
                     match v3res with
                     | Choice1Of2 s -> Some s
-                    | Choice2Of2 ex -> 
+                    | Choice2Of2 ex ->
                         if verbose then traceWarnfn "getAllVersionsAPI: %s" (ex.ToString())
                         None
         } |> Async.StartAsTask)
@@ -159,13 +240,13 @@ let extractPackages(response:string) =
 let private getPackages(auth, nugetURL, packageNamePrefix, maxResults) = async {
     let! apiRes = getSearchAPI(auth,nugetURL) |> Async.AwaitTask
     match apiRes with
-    | Some url -> 
+    | Some url ->
         let query = sprintf "%s?q=%s&take=%d" url packageNamePrefix maxResults
         let! response = safeGetFromUrl(auth |> Option.map toCredentials,query,acceptJson)
         match SafeWebResult.asResult response with
         | Result.Ok text -> return  Result.Ok (extractPackages text)
         | Result.Error err -> return Result.Error err
-    | None -> 
+    | None ->
         if verbose then tracefn "Could not calculate search api from %s" nugetURL
         return Result.Ok [||]
 }
@@ -176,68 +257,158 @@ let FindPackages(auth, nugetURL, packageNamePrefix, maxResults) =
         return! getPackages(auth, nugetURL, packageNamePrefix, maxResults)
     }
 
-type Registration = 
-    { [<JsonProperty("catalogEntry")>]
-      CatalogEntry : string
-      
-      [<JsonProperty("packageContent")>]
-      PackageContent : string }
 
-type CatalogDependency = 
+type CatalogDependency =
     { [<JsonProperty("id")>]
-      Id : string 
-      
+      Id : string
       [<JsonProperty("range")>]
       Range : string }
-type CatalogDependencyGroup = 
+type CatalogDependencyGroup =
     { [<JsonProperty("targetFramework")>]
       TargetFramework : string
-    
       [<JsonProperty("dependencies")>]
       Dependencies : CatalogDependency [] }
-type Catalog = 
+type Catalog =
     { [<JsonProperty("licenseUrl")>]
       LicenseUrl : string
-      
       [<JsonProperty("listed")>]
       Listed : System.Nullable<bool>
-      
+      [<JsonProperty("version")>]
+      Version : string
       [<JsonProperty("dependencyGroups")>]
       DependencyGroups : CatalogDependencyGroup [] }
 
-let getRegistration (source : NugetV3Source) (packageName:PackageName) (version:SemVerInfo) =
+
+type PackageIndexPackage =
+    { [<JsonProperty("@type")>]
+      Type: string
+      [<JsonProperty("packageContent")>]
+      DownloadLink: string
+      [<JsonProperty("catalogEntry")>]
+      PackageDetails: Catalog }
+
+type PackageIndexPage =
+    { [<JsonProperty("@id")>]
+      Id: string
+      [<JsonProperty("@type")>]
+      Type: string
+      [<JsonProperty("items")>]
+      Packages: PackageIndexPackage []
+      [<JsonProperty("count")>]
+      Count: int
+      [<JsonProperty("lower")>]
+      Lower: string
+      [<JsonProperty("upper")>]
+      Upper: string }
+
+type PackageIndex =
+    { [<JsonProperty("@id")>]
+      Id: string
+      [<JsonProperty("items")>]
+      Pages: PackageIndexPage []
+      [<JsonProperty("count")>]
+      Count : int }
+
+let private getPackageIndexRaw (source : NugetV3Source) (packageName:PackageName) =
     async {
-        let! registrationUrl = PackageSources.getNuGetV3Resource source Registration
-        let url = sprintf "%s%s/%s.json" registrationUrl (packageName.ToString().ToLower()) (version.Normalize())
+        let! registrationUrl = getNuGetV3Resource source PackageIndex
+        let url = registrationUrl.Replace("{id-lower}", packageName.ToString().ToLower()) // sprintf "%s%s/%s.json" registrationUrl (packageName.ToString().ToLower()) (version.Normalize())
         let! rawData = safeGetFromUrl (source.Authentication |> Option.map toCredentials, url, acceptJson)
         return
             match rawData with
             | NotFound -> None //raise <| System.Exception(sprintf "could not get registration data (404) from '%s'" url)
             | UnknownError err ->
                 raise <| System.Exception(sprintf "could not get registration data from %s" url, err.SourceException)
-            | SuccessResponse x -> Some (JsonConvert.DeserializeObject<Registration>(x))
+            | SuccessResponse x -> Some (JsonConvert.DeserializeObject<PackageIndex>(x))
     }
 
-let getCatalog url auth =
+let private getPackageIndexMemoized =
+    memoizeAsync (fun (source, packageName) -> getPackageIndexRaw source packageName)
+let getPackageIndex source packageName = getPackageIndexMemoized (source, packageName)
+
+
+let private getPackageIndexPageRaw (source:NugetV3Source) (url:string) =
     async {
-        let! rawData = safeGetFromUrl (auth, url, acceptJson)
+        let! rawData = safeGetFromUrl (source.Authentication |> Option.map toCredentials, url, acceptJson)
         return
             match rawData with
-            | NotFound ->
-                raise <| System.Exception(sprintf "could not get catalog data (404) from '%s'" url)
+            | NotFound -> raise <| System.Exception(sprintf "could not get registration data (404) from '%s'" url)
             | UnknownError err ->
-                raise <| System.Exception(sprintf "could not get catalog data from %s" url, err.SourceException)
-            | SuccessResponse x -> JsonConvert.DeserializeObject<Catalog>(x)
+                raise <| System.Exception(sprintf "could not get registration data from %s" url, err.SourceException)
+            | SuccessResponse x -> JsonConvert.DeserializeObject<PackageIndexPage>(x)
+    }
+
+let private getPackageIndexPageMemoized =
+    memoizeAsync (fun (source, url) -> getPackageIndexPageRaw source url)
+let getPackageIndexPage source (page:PackageIndexPage) = getPackageIndexPageMemoized (source, page.Id)
+
+
+let getRelevantPage (source:NugetV3Source) (index:PackageIndex) (version:SemVerInfo) =
+    async {
+        let normalizedVersion = SemVer.Parse (version.ToString().ToLowerInvariant())
+        let pages =
+            index.Pages
+            |> Seq.filter (fun p -> SemVer.Parse (p.Lower.ToLowerInvariant()) <= normalizedVersion && normalizedVersion <= SemVer.Parse (p.Upper.ToLowerInvariant()))
+            |> Seq.toList
+
+        let tryFindOnPage (page:PackageIndexPage) = async {
+            let! page = async {
+                if page.Count > 0 && (isNull page.Packages || page.Packages.Length = 0) then
+                    return! getPackageIndexPage source page
+                else return page }
+            if page.Count > 0 && (isNull page.Packages || page.Packages.Length = 0) then
+                failwithf "Page '%s' should contain packages!" page.Id
+
+            let packages =
+                page.Packages
+                    // TODO: This might need to be part of SemVer itself?
+                    // This is our favorite package: nlog/5.0.0-beta03-tryoutMutex
+                    |> Seq.filter (fun p -> SemVer.Parse (p.PackageDetails.Version.ToLowerInvariant()) = normalizedVersion)
+                    |> Seq.toList
+            match packages with
+            | [ package ] -> return Some package
+            | [] -> return None 
+            | h :: _ ->
+                // Can happen in theory when multiple versions differ only in casing...
+                traceWarnfn "Multiple package versions matched with '%O' on page '%s'" version page.Id
+                return Some h }
+        match pages with
+        | [ page ] ->
+            let! package = tryFindOnPage page
+            match package with
+            | Some package -> return Some package
+            | _ -> return failwithf "Version '%O' should be part of part of page '%s' but wasn't." version page.Id
+        | [] ->
+            return None
+        | multiple ->
+            // This can happen theoretically because of ToLower, if someone is really crasy enough to upload a package
+            // with differently cased build strings and if nuget makes a page split exactly at that point.
+            let mutable result = None
+            for page in multiple do
+                if result.IsNone then
+                    let! package = tryFindOnPage page
+                    match package with
+                    | Some package -> result <- Some package
+                    | None -> ()
+            match result with
+            | Some result ->
+                traceWarnfn "Mulitple pages of V3 index '%s' match with version '%O'" index.Id version
+                return Some result
+            | None ->
+                return failwithf "Mulitple pages of V3 index '%s' match with version '%O'" index.Id version
     }
 
 let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<ODataSearchResult> =
     async {
-        let! registrationData = getRegistration source packageName version
-        match registrationData with
+        let! pageIndex = getPackageIndex source packageName// version
+        match pageIndex with
         | None -> return EmptyResult
-        | Some registrationData ->
-        let! catalogData = getCatalog registrationData.CatalogEntry (source.Authentication |> Option.map toCredentials)
-
+        | Some pageIndex ->
+        let! relevantPage = getRelevantPage source pageIndex version
+        match relevantPage with
+        | None -> return EmptyResult
+        | Some relevantPage ->
+        let catalogData = relevantPage.PackageDetails
         let dependencyGroups, dependencies = 
             if catalogData.DependencyGroups = null then
                 [], []
@@ -281,7 +452,7 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
               PackageName = packageName.ToString()
               SourceUrl = source.Url
               Unlisted = unlisted
-              DownloadUrl = registrationData.PackageContent
+              DownloadUrl = relevantPage.DownloadLink
               LicenseUrl = catalogData.LicenseUrl
               Version = version.Normalize()
               CacheVersion = NuGetPackageCache.CurrentCacheVersion }

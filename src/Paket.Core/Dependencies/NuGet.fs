@@ -91,12 +91,14 @@ let GetContent dir = lazy (
 
     let spec =
         di.EnumerateFiles("*.nuspec", SearchOption.TopDirectoryOnly)
-        |> Seq.exactlyOne
-        |> fun f -> Nuspec.Load(f.FullName)
-
-    { Content = (ofDirectory dir).Contents
-      Path = dir
-      Spec = spec })
+        |> Seq.tryExactlyOne
+        |> Option.map (fun f -> Nuspec.Load(f.FullName))
+    match spec with
+    | Some spec ->
+        { Content = (ofDirectory dir).Contents
+          Path = dir
+          Spec = spec }
+    | None -> failwithf "Could not find nuspec in '%s', try deleting the directory and restoring again." dir)
 
 let tryFindFolder folder (content:NuGetPackageContent) =
     let rec collectItems prefixFull (prefixInner:string) (content:NuGetContent) =
@@ -448,7 +450,7 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
 
                                 return v2Feeds
                        | NuGetV3 source ->
-                            let! versionsAPI = PackageSources.getNuGetV3Resource source AllVersionsAPI
+                            let! versionsAPI = NuGetV3.getNuGetV3Resource source NuGetV3.AllVersionsAPI
                             let auth = source.Authentication |> Option.map toCredentials
                             return [ getVersionsCached "V3" tryNuGetV3 (nugetSource, auth, versionsAPI, packageName) ]
                        | LocalNuGet(path,Some _) ->
@@ -607,10 +609,17 @@ let private getLicenseFile (packageName:PackageName) version =
     Path.Combine(NuGetCache.GetTargetUserFolder packageName version, NuGetCache.GetLicenseFileName packageName version)
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(alternativeProjectRoot, root, config:PackagesFolderGroupConfig, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, force, detailed) =
+let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool, config:PackagesFolderGroupConfig, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, force, detailed) =
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
     let normalizedNupkgName = NuGetCache.GetPackageFileName packageName version
-    let targetFileName = NuGetCache.GetTargetUserNupkg packageName version
+    let configResolved = config.Resolve root groupName packageName version includeVersionInPath
+    let targetFileName =
+        if not isLocalOverride then NuGetCache.GetTargetUserNupkg packageName version
+        else
+            match configResolved.Path with
+            | Some p -> Path.Combine(p, nupkgName)
+            | None -> failwithf "paket.local in combination with storage:none is not supported"
+    if isLocalOverride && not force then failwithf "internal error: when isLocalOverride is specified then force needs to be specified as well"
     let targetFile = FileInfo targetFileName
     let licenseFileName = getLicenseFile packageName version
 
@@ -763,12 +772,18 @@ let DownloadPackage(alternativeProjectRoot, root, config:PackagesFolderGroupConf
 
     async {
         do! download true 0
-        let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, isCliTool, detailed)
-        let configResolved = config.Resolve root groupName packageName version includeVersionInPath
-        let! files = NuGetCache.CopyFromCache(configResolved, targetFile.FullName, licenseFileName, packageName, version, force, detailed)
-        let finalFolder =
-            match files with
-            | Some f -> f
-            | None -> extractedUserFolder
-        return targetFileName,finalFolder
+        if not isLocalOverride then
+            let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, isCliTool, detailed)
+            let! files = NuGetCache.CopyFromCache(configResolved, targetFile.FullName, licenseFileName, packageName, version, force, detailed)
+            let finalFolder =
+                match files with
+                | Some f -> f
+                | None -> extractedUserFolder
+            return targetFileName,finalFolder
+        else
+            match configResolved.Path with
+            | None -> return failwithf "paket.local in combination with storage:none is not supported"
+            | Some directory ->
+                let! folder = ExtractPackage(targetFile.FullName, directory, packageName, version, detailed)
+                return targetFileName,folder
     }

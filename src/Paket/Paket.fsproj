@@ -41,6 +41,8 @@
     <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\proj\testing\VS2017PerfIssue\</StartWorkingDirectory>
+    <StartArguments>fix-nuspecs files src/Paket.Core.preview3/obj/Paket.Core.1.0.0.nuspec project-file "C:/proj/Paket/src/Paket.Core.preview3/Paket.Core.fsproj"</StartArguments>
+    <StartWorkingDirectory>C:\proj\Paket\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -50,8 +52,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>C:\proj\testing\VS2017PerfIssue\</StartWorkingDirectory>
+    <StartArguments>update</StartArguments>
+    <StartWorkingDirectory>C:\proj\testing\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">14.0</VisualStudioVersion>

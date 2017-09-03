@@ -33,6 +33,7 @@ namespace Paket.Bootstrapper
             public const string NugetSource = "NugetSource";
             public const string PaketVersion = "PaketVersion";
             public const string Prerelease = "Prerelease";
+            public const string IgnoreCache = "IgnoreCache";
         }
         public static class EnvArgs
         {
@@ -137,6 +138,11 @@ namespace Paket.Bootstrapper
             {
                 options.DownloadArguments.NugetSource = nugetSource;
             }
+            if (appSettings.IsTrue(AppSettingKeys.IgnoreCache)) 
+            {
+                options.DownloadArguments.IgnoreCache = true;
+            }
+
         }
 
         private static void FillOptionsFromEnvVariables(BootstrapperOptions options, IDictionary envVariables)

@@ -156,6 +156,7 @@ type SemVerInfo =
 
             | _ -> invalidArg "yobj" "cannot compare values of different types"
 
+
 ///  Parser which allows to deal with [Semantic Versioning](http://semver.org/) (SemVer).
 module SemVer = 
     /// Parses the given version string into a SemVerInfo which can be printed using ToString() or compared

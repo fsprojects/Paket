@@ -19,6 +19,7 @@ module LocalFile =
     open System
 
     open Chessie.ErrorHandling
+    open Logging
 
     let private (|Regex|_|) pattern input =
         let m = System.Text.RegularExpressions.Regex(pattern).Match(input)
@@ -40,7 +41,15 @@ module LocalFile =
         | Regex 
             "^nuget[ ]+(.*?)([ ]+group[ ]+(.*))?[ ]+->[ ]+(source[ ]+.*?)([ ]+version[ ]+(.*))?$" 
             [package; _; group; source; _; version] ->
-            let v = try SemVer.Parse version |> Some with _ -> None
+            let v =
+                if String.IsNullOrWhiteSpace version then None
+                else
+                    try SemVer.Parse version |> Some
+                    with exn ->
+                        traceWarnfn "Could not parse version '%s': %s" version exn.Message
+                        if verbose then
+                            traceWarnfn "Exception: %O" exn
+                        None
             source
             |> Trial.Catch PackageSource.Parse
             |> Trial.mapFailure (fun _ -> [sprintf "Cannot parse source '%s'" source])
