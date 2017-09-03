@@ -757,7 +757,7 @@ type InstallSettings =
               match this.StorageConfig with
               | Some (PackagesFolderGroupConfig.NoPackagesFolder) -> yield "storage: none"
               | Some (PackagesFolderGroupConfig.GivenPackagesFolder s) -> failwithf "Not implemented yet."
-              | Some (PackagesFolderGroupConfig.DefaultPackagesFolder) -> failwithf "storage: packages"
+              | Some (PackagesFolderGroupConfig.DefaultPackagesFolder) -> yield "storage: packages"
               | None -> ()
               match this.CopyContentToOutputDirectory with
               | Some CopyToOutputDirectorySettings.Never -> yield "copy_content_to_output_dir: never"
