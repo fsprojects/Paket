@@ -7,7 +7,7 @@ then
   if [ $exit_code -ne 0 ]; then
   	exit $exit_code
   fi
-
+  export MSBuild=packages/build/RoslynTools.MSBuild/tools/msbuild/MSBuild.exe
   packages/build/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx 
 else
   mono .paket/paket.exe restore
@@ -27,6 +27,8 @@ else
     fi
     exit $exit_code
   fi
+  # Note: the bundled MSBuild crashes hard on linux, so we still rely on the system-installed version
+  #export MSBuild=packages/build/RoslynTools.MSBuild/tools/msbuild/MSBuild.exe
   mono packages/build/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx 
 fi
 
