@@ -499,22 +499,25 @@ let private getCompatibleVersions
             allRequirementsOfCurrentPackage
             |> Set.forall (fun r -> (mapF r).VersionRequirement.IsInRange ver)
 
-        let getSingleVersion v =
-            match currentRequirement.Parent with
-            | PackageRequirementSource.Package(_,_,parentSource) ->
-                let sources = parentSource :: currentRequirement.Sources |> List.distinct
-                Seq.singleton (v,sources)
-            | _ ->
-                let sources : PackageSource list = currentRequirement.Sources |> List.sortBy (fun x -> not x.IsLocalFeed, String.containsIgnoreCase "nuget.org" x.Url |> not)
-                Seq.singleton (v,sources)
+        //let getSingleVersion v =
+        //    match currentRequirement.Parent with
+        //    | PackageRequirementSource.Package(_,_,parentSource) ->
+        //        let sources = parentSource :: currentRequirement.Sources |> List.distinct
+        //        Seq.singleton (v,sources)
+        //    | _ ->
+        //        let sources : PackageSource list = currentRequirement.Sources |> List.sortBy (fun x -> not x.IsLocalFeed, String.containsIgnoreCase "nuget.org" x.Url |> not)
+        //        Seq.singleton (v,sources)
 
         let availableVersions =
+            let resolverStrategy = getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives allRequirementsOfCurrentPackage currentRequirement
+            let allVersions = getVersionsF currentRequirement.Sources resolverStrategy groupName currentRequirement.Name
             match currentRequirement.VersionRequirement.Range with
-            | OverrideAll v -> getSingleVersion v
-            | Specific v -> getSingleVersion v 
-            | _ ->
-                let resolverStrategy = getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives allRequirementsOfCurrentPackage currentRequirement
-                getVersionsF currentRequirement.Sources resolverStrategy groupName currentRequirement.Name
+            | Specific v
+            | OverrideAll v -> 
+                allVersions
+                |> Seq.filter (fun (v1, _) -> v1 = v)
+                //getSingleVersion v
+            | _ -> allVersions
                 
         let compatibleVersions = Seq.filter (isInRange id) availableVersions |> Seq.cache
 
