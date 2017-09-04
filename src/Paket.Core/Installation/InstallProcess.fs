@@ -174,7 +174,7 @@ let brokenDeps = HashSet<_>()
 let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects cleanBindingRedirects
                                   root groupName findDependencies allKnownLibNames
                                   (projectCache: Dictionary<string, ProjectFile option>)
-                                  extractedPackages =
+                                  (extractedPackages:seq<InstallModel * _>) =
 
     let dependencyGraph = Dictionary<_,Set<_>>()
     let referenceFiles = Dictionary<_,ReferencesFile option>()
