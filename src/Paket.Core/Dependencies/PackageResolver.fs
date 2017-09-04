@@ -83,10 +83,15 @@ type ResolvedPackage = {
 
 
 type PackageResolution = Map<PackageName, ResolvedPackage>
+/// Caches information retrieved by GetVersions until it is required by GetDetails
+type VersionCache =
+  { Version : SemVerInfo; Sources : PackageSource list; AssumedVersion : bool }
+    static member ofParams version sources isAssumed =
+        { Version = version; Sources = sources; AssumedVersion = isAssumed }
 
 type ResolverStep = {
     Relax: bool
-    FilteredVersions : Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>
+    FilteredVersions : Map<PackageName, (VersionCache list * bool)>
     CurrentResolution : Map<PackageName,ResolvedPackage>;
     ClosedRequirements : Set<PackageRequirement>
     OpenRequirements : Set<PackageRequirement> }
@@ -286,7 +291,7 @@ type Resolution with
     member self.IsConflict = not self.IsDone
 
 
-let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestrictions,(versionToExplore,_),dependency,resolverStep:ResolverStep) =
+let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestrictions,(verCache:VersionCache),dependency,resolverStep:ResolverStep) =
     let dependenciesByName =
         // there are packages which define multiple dependencies to the same package
         // we compress these here - see #567
@@ -331,7 +336,7 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
         { dependency with
             Name = n
             VersionRequirement = v
-            Parent = Package(dependency.Name, versionToExplore, exploredPackage.Source)
+            Parent = Package(dependency.Name, verCache.Version, exploredPackage.Source)
             Graph = Set.add dependency dependency.Graph
             TransitivePrereleases = dependency.TransitivePrereleases && exploredPackage.Version.PreRelease.IsSome
             Settings = { dependency.Settings with FrameworkRestrictions = newRestrictions } })
@@ -477,7 +482,7 @@ let private explorePackageConfig (getPackageDetailsBlock:PackageDetailsSyncFunc)
 
 type StackPack = {
     ExploredPackages     : Dictionary<PackageName*SemVerInfo,ResolvedPackage>
-    KnownConflicts       : HashSet<HashSet<PackageRequirement> * ((SemVerInfo * PackageSource list) list * bool) option>
+    KnownConflicts       : HashSet<HashSet<PackageRequirement> * (VersionCache list * bool) option>
     ConflictHistory      : Dictionary<PackageName, int>
 }
 
@@ -522,28 +527,34 @@ let private getCompatibleVersions
             |> Set.filter (fun r -> currentRequirement.Name = r.Name)
 
         // we didn't select a version yet so all versions are possible
-        let isInRange mapF (ver,_) =
+        let isInRange mapF (cache:VersionCache) =
             allRequirementsOfCurrentPackage
-            |> Set.forall (fun r -> (mapF r).VersionRequirement.IsInRange ver)
+            |> Set.forall (fun r -> (mapF r).VersionRequirement.IsInRange cache.Version)
 
-        //let getSingleVersion v =
-        //    match currentRequirement.Parent with
-        //    | PackageRequirementSource.Package(_,_,parentSource) ->
-        //        let sources = parentSource :: currentRequirement.Sources |> List.distinct
-        //        Seq.singleton (v,sources)
-        //    | _ ->
-        //        let sources : PackageSource list = currentRequirement.Sources |> List.sortBy (fun x -> not x.IsLocalFeed, String.containsIgnoreCase "nuget.org" x.Url |> not)
-        //        Seq.singleton (v,sources)
+        let getSingleVersion v =
+            let sources = 
+                match currentRequirement.Parent with
+                | PackageRequirementSource.Package(_,_,parentSource) ->
+                    parentSource :: currentRequirement.Sources |> List.distinct
+                | _ ->
+                    currentRequirement.Sources |> List.sortBy (fun x -> not x.IsLocalFeed, String.containsIgnoreCase "nuget.org" x.Url |> not)
+            Seq.singleton (VersionCache.ofParams v sources true)
 
         let availableVersions =
             let resolverStrategy = getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives allRequirementsOfCurrentPackage currentRequirement
-            let allVersions = getVersionsF resolverStrategy (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName currentRequirement.Name)
+            let allVersions =
+                getVersionsF resolverStrategy (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName currentRequirement.Name)
+                |> Seq.map (fun (v, sources) -> VersionCache.ofParams v sources false)
             match currentRequirement.VersionRequirement.Range with
             | Specific v
-            | OverrideAll v -> 
-                allVersions
-                |> Seq.filter (fun (v1, _) -> v1 = v)
-                //getSingleVersion v
+            | OverrideAll v ->
+                let results =
+                    allVersions
+                    |> Seq.filter (fun cache -> cache.Version = v)
+                    |> Seq.toList
+                match results with
+                | [] -> getSingleVersion v 
+                | _ -> List.toSeq results
             | _ -> allVersions
                 
         let compatibleVersions = Seq.filter (isInRange id) availableVersions |> Seq.cache
@@ -562,7 +573,7 @@ let private getCompatibleVersions
                         PreReleaseStatus.All
 
                 let available = availableVersions |> Seq.toList
-                let allPrereleases = available |> List.filter (fun (v,_) -> v.PreRelease <> None) = available
+                let allPrereleases = available |> List.filter (fun (cache:VersionCache) -> cache.Version.PreRelease <> None) = available
                 let prereleases = List.filter (isInRange (fun r -> r.IncludingPrereleases(prereleaseStatus r))) available
                 if allPrereleases then
                     Seq.ofList prereleases, globalOverride
@@ -578,10 +589,13 @@ let private getCompatibleVersions
         let compatibleVersions, tryRelaxed =
             if globalOverride then List.toSeq versions, false else
             let compat =
-                Seq.filter (fun (v,_) -> currentRequirement.VersionRequirement.IsInRange(v,currentRequirement.Parent.IsRootRequirement() |> not)) versions
+                versions
+                |> Seq.filter (fun (cache) -> currentRequirement.VersionRequirement.IsInRange(cache.Version,currentRequirement.Parent.IsRootRequirement() |> not)) 
 
             if Seq.isEmpty compat then
-                let withPrereleases = Seq.filter (fun (v,_) -> currentRequirement.IncludingPrereleases().VersionRequirement.IsInRange(v,currentRequirement.Parent.IsRootRequirement() |> not)) versions
+                let withPrereleases = 
+                    versions
+                    |> Seq.filter (fun (cache) -> currentRequirement.IncludingPrereleases().VersionRequirement.IsInRange(cache.Version,currentRequirement.Parent.IsRootRequirement() |> not))
                 if currentStep.Relax || Seq.isEmpty withPrereleases then
                     withPrereleases, false
                 else
@@ -591,7 +605,7 @@ let private getCompatibleVersions
         compatibleVersions, false, tryRelaxed
 
 
-let private getConflicts (currentStep:ResolverStep) (currentRequirement:PackageRequirement) (knownConflicts:HashSet<HashSet<PackageRequirement> * ((SemVerInfo * PackageSource list) list * bool) option>) =
+let private getConflicts (currentStep:ResolverStep) (currentRequirement:PackageRequirement) (knownConflicts:HashSet<HashSet<PackageRequirement> * (VersionCache list * bool) option>) =
     
     let allRequirements =
         currentStep.OpenRequirements
@@ -638,7 +652,7 @@ type ConflictState = {
     LastConflictReported : DateTime
     TryRelaxed           : bool
     Conflicts            : Set<PackageRequirement>
-    VersionsToExplore    : seq<SemVerInfo * PackageSource list>
+    VersionsToExplore    : seq<VersionCache>
     GlobalOverride       : bool
 } with
     member x.AddError exn =
@@ -660,7 +674,7 @@ type ConflictState = {
         
         
 let private boostConflicts
-                    (filteredVersions:Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>)
+                    (filteredVersions:Map<PackageName, (VersionCache list * bool)>)
                     (currentRequirement:PackageRequirement)
                     (stackpack:StackPack)
                     (conflictState:ConflictState) =
@@ -722,9 +736,9 @@ type private StepFlags = {
             self.Ready self.UseUnlisted self.HasUnlisted self.ForceBreak self.FirstTrial self.UnlistedSearch
 
 type private Stage =
-    | Step  of currentConflict : (ConflictState * ResolverStep * PackageRequirement) * priorConflictSteps : (ConflictState * ResolverStep * PackageRequirement *  seq<SemVerInfo * PackageSource list> * StepFlags) list
-    | Outer of currentConflict : (ConflictState * ResolverStep * PackageRequirement) * priorConflictSteps : (ConflictState * ResolverStep * PackageRequirement *  seq<SemVerInfo * PackageSource list> * StepFlags) list
-    | Inner of currentConflict : (ConflictState * ResolverStep * PackageRequirement) * priorConflictSteps : (ConflictState * ResolverStep * PackageRequirement *  seq<SemVerInfo * PackageSource list> * StepFlags) list
+    | Step  of currentConflict : (ConflictState * ResolverStep * PackageRequirement) * priorConflictSteps : (ConflictState * ResolverStep * PackageRequirement *  seq<VersionCache> * StepFlags) list
+    | Outer of currentConflict : (ConflictState * ResolverStep * PackageRequirement) * priorConflictSteps : (ConflictState * ResolverStep * PackageRequirement *  seq<VersionCache> * StepFlags) list
+    | Inner of currentConflict : (ConflictState * ResolverStep * PackageRequirement) * priorConflictSteps : (ConflictState * ResolverStep * PackageRequirement *  seq<VersionCache> * StepFlags) list
 
 type WorkPriority =
     | BackgroundWork = 10
@@ -1166,7 +1180,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                 step (Outer((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions  flags 
             else
                 let flags = { flags with FirstTrial = false }
-                let (version,sources) & versionToExplore = Seq.head currentConflict.VersionsToExplore
+                let ({ Version = version; Sources = sources }: VersionCache) & versionToExplore = Seq.head currentConflict.VersionsToExplore
 
                 let currentConflict = 
                     { currentConflict with VersionsToExplore = Seq.tail currentConflict.VersionsToExplore }
@@ -1279,12 +1293,12 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
         TryRelaxed           = false
         GlobalOverride       = false
         Conflicts            = (Set.empty : Set<PackageRequirement>)
-        VersionsToExplore    = (Seq.empty : seq<SemVerInfo * PackageSource list>)
+        VersionsToExplore    = (Seq.empty : seq<VersionCache>)
     }
 
     let stackpack = {
         ExploredPackages     = Dictionary<PackageName*SemVerInfo,ResolvedPackage>()
-        KnownConflicts       = (HashSet() : HashSet<HashSet<PackageRequirement> * ((SemVerInfo * PackageSource list) list * bool) option>)
+        KnownConflicts       = (HashSet() : HashSet<HashSet<PackageRequirement> * (VersionCache list * bool) option>)
         ConflictHistory      = (Dictionary() : Dictionary<PackageName, int>)
     }
 
