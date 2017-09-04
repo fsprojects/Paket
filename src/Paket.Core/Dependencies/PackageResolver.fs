@@ -37,10 +37,13 @@ type SourcePackageInfo =
 
 type GetPackageDetailsParameters =
   { Package : SourcePackageInfo
+    VersionIsAssumed : bool
     Version : SemVerInfo }
-    static member ofParams sources groupName packageName version =
+    static member ofParamsEx isAssumed sources groupName packageName version =
         SourcePackageInfo.ofParams sources groupName packageName
-        |> fun p -> { Package = p; Version = version }
+        |> fun p -> { Package = p; Version = version; VersionIsAssumed = isAssumed }
+    static member ofParams sources groupName packageName version =
+        GetPackageDetailsParameters.ofParamsEx false sources groupName packageName version
 
 type GetPackageVersionsParameters =
   { Package : SourcePackageInfo }
@@ -389,8 +392,7 @@ type private PackageConfig = {
     GlobalRestrictions : FrameworkRestrictions
     RootSettings       : IDictionary<PackageName,InstallSettings>
     CliTools           : Set<PackageName>
-    Version            : SemVerInfo
-    Sources            : PackageSource list
+    VersionCache       : VersionCache
     UpdateMode         : UpdateMode
 } with
     member self.HasGlobalRestrictions =
@@ -437,8 +439,9 @@ let private updateRestrictions (pkgConfig:PackageConfig) (package:ResolvedPackag
 
 
 let private explorePackageConfig (getPackageDetailsBlock:PackageDetailsSyncFunc) (pkgConfig:PackageConfig) =
-    let dependency, version = pkgConfig.Dependency, pkgConfig.Version
-    let packageSources      = pkgConfig.Sources
+    let dependency, version = pkgConfig.Dependency, pkgConfig.VersionCache.Version
+    let packageSources      = pkgConfig.VersionCache.Sources
+    let isAssumedVersion = pkgConfig.VersionCache.AssumedVersion
 
     match pkgConfig.UpdateMode with
     | Install -> tracefn  " - %O %A" dependency.Name version
@@ -453,7 +456,7 @@ let private explorePackageConfig (getPackageDetailsBlock:PackageDetailsSyncFunc)
         filterRestrictions dependency.Settings.FrameworkRestrictions pkgConfig.GlobalRestrictions
     try
         let packageDetails : PackageDetails =
-            getPackageDetailsBlock (GetPackageDetailsParameters.ofParams packageSources pkgConfig.GroupName dependency.Name version)
+            getPackageDetailsBlock (GetPackageDetailsParameters.ofParamsEx isAssumedVersion packageSources pkgConfig.GroupName dependency.Name version)
         let filteredDependencies =
             DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies
         let settings =
@@ -488,7 +491,7 @@ type StackPack = {
 
 
 let private getExploredPackage (pkgConfig:PackageConfig) (getPackageDetailsBlock:PackageDetailsSyncFunc) (stackpack:StackPack) =
-    let key = (pkgConfig.Dependency.Name, pkgConfig.Version)
+    let key = (pkgConfig.Dependency.Name, pkgConfig.VersionCache.Version)
 
     match stackpack.ExploredPackages.TryGetValue key with
     | true, package ->
@@ -1190,8 +1193,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                     Dependency         = currentRequirement
                     GlobalRestrictions = globalFrameworkRestrictions
                     RootSettings       = rootSettings
-                    Version            = version
-                    Sources            = sources
+                    VersionCache       = versionToExplore
                     UpdateMode         = updateMode
                     CliTools           = cliToolSettings
                 }

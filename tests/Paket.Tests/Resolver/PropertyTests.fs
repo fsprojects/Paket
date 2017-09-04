@@ -31,7 +31,7 @@ let isValid ((g,deps):ResolverPuzzle) resolution =
         match s with
         | Open deps ->
             match resolution |> Map.tryFind d with
-            | Some r -> if not <| vr.IsInRange(r.Version) then Error else s
+            | Some (r:ResolvedPackage) -> if not <| vr.IsInRange(r.Version) then Error else s
             | None -> Open ((d,vr)::deps)
         | _ -> s) (Open [])
     |> fun s -> 
