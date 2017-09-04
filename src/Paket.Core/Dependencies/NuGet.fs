@@ -249,9 +249,11 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
         let tryV2 (nugetSource:NugetSource) force =
             NuGetV2.getDetailsFromNuGet
                 force
+                parameters.VersionIsAssumed
                 nugetSource
                 packageName
                 version
+
 
         let tryV3 (nugetSource:NugetV3Source) force =
             NuGetV3.GetPackageDetails force nugetSource packageName version

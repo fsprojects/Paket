@@ -255,7 +255,8 @@ let parseODataEntryDetails (url,nugetURL,packageName:PackageName,version:SemVerI
         | ODataSearchResult.Match entry -> entry
 
 
-let getDetailsFromNuGetViaODataFast nugetSource (packageName:PackageName) (version:SemVerInfo) =
+let getDetailsFromNuGetViaODataFast isVersionAssumed nugetSource (packageName:PackageName) (version:SemVerInfo) =
+    let doBlacklist = not isVersionAssumed
     async {
         let normalizedVersion = version.Normalize()
         let urls =
@@ -369,7 +370,7 @@ let getDetailsFromNuGetViaODataFast nugetSource (packageName:PackageName) (versi
             | Choice1Of2 _ -> false
             | _ -> true
 
-        let! result = NuGetCache.tryAndBlacklistUrl true nugetSource tryAgain handleUrl urls
+        let! result = NuGetCache.tryAndBlacklistUrl doBlacklist true nugetSource tryAgain handleUrl urls
         match result with
         | Choice1Of2 res -> return res
         | Choice2Of2 ex -> return raise (exn("error", ex))
@@ -377,16 +378,16 @@ let getDetailsFromNuGetViaODataFast nugetSource (packageName:PackageName) (versi
 
 
 /// Gets package details from NuGet via OData
-let getDetailsFromNuGetViaOData nugetSource (packageName:PackageName) (version:SemVerInfo) =
-    getDetailsFromNuGetViaODataFast nugetSource packageName version
+let getDetailsFromNuGetViaOData isVersionAssumed nugetSource (packageName:PackageName) (version:SemVerInfo) =
+    getDetailsFromNuGetViaODataFast isVersionAssumed nugetSource packageName version
 
-let getDetailsFromNuGet force nugetSource packageName version =
+let getDetailsFromNuGet force isVersionAssumed nugetSource packageName version =
     getDetailsFromCacheOr
         force
         nugetSource.Url
         packageName
         version
-        (fun () -> getDetailsFromNuGetViaOData nugetSource packageName version)
+        (fun () -> getDetailsFromNuGetViaOData isVersionAssumed nugetSource packageName version)
 
 /// Uses the NuGet v2 API to retrieve all packages with the given prefix.
 let FindPackages(auth, nugetURL, packageNamePrefix, maxResults) =
