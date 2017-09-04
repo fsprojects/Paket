@@ -80,7 +80,7 @@ let ``should resolve overwritten config4``() =
     let cfg = DependenciesFile.FromSource(config4)
     let resolved = ResolveWithGraph(cfg,noSha1, VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "packageA"] |> shouldEqual "1.0.11250"
-    getVersion resolved.[PackageName "packageB"] |> shouldEqual "2.0"
+    getVersion resolved.[PackageName "packageB"] |> shouldEqual "2.0.0"
 
     
 [<Test>]
