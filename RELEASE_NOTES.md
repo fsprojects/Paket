@@ -1,3 +1,7 @@
+#### 5.92.4 - 05.09.2017
+* BUGFIX: always allow partial restore - https://github.com/fsprojects/Paket/pull/2724
+* BUGFIX: always call GetVersions before GetDetails - https://github.com/fsprojects/Paket/pull/2721
+
 #### 5.92.3 - 03.09.2017
 * BUGFIX: Fix a crash when using `storage: package` in-line - https://github.com/fsprojects/Paket/pull/2713
 
