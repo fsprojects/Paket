@@ -465,12 +465,19 @@ let private tryUrlOrBlacklist (f: _ -> Async<'a>) (isOk : 'a -> bool) (source:Nu
     | FirstCall t ->
         FirstCall (t |> Task.Map (fun (l, r) -> l, (r :?> 'a)))
 
-let tryAndBlacklistUrl doWarn (source:NugetSource) (tryAgain : 'a -> bool) (f : string -> Async<'a>) (urls: UrlToTry list) : Async<'a>=
+let tryAndBlacklistUrl doBlackList doWarn (source:NugetSource) (tryAgain : 'a -> bool) (f : string -> Async<'a>) (urls: UrlToTry list) : Async<'a>=
     async {
         let! tasks, resultIndex =
             urls
             |> Seq.map (fun url -> async {
-                let cached = tryUrlOrBlacklist (fun () -> async { return! f url.InstanceUrl }) (tryAgain >> not) (source, url.UrlId)
+                let cached =
+                    if doBlackList then
+                        tryUrlOrBlacklist (fun () -> async { return! f url.InstanceUrl }) (tryAgain >> not) (source, url.UrlId)
+                    else 
+                        async {
+                            let! result = f url.InstanceUrl
+                            return (tryAgain result |> not, result)
+                        } |> Async.StartAsTask |> FirstCall
                 match cached with
                 | SubsequentCall task ->
                     let! result = task |> Async.AwaitTask

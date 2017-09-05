@@ -8,6 +8,7 @@ open System
 open System.Xml
 open System.IO
 open Chessie.ErrorHandling
+open PackageResolver
 
 /// Paket API which is optimized for F# Interactive use.
 type Dependencies(dependenciesFileName: string) =
@@ -613,7 +614,7 @@ type Dependencies(dependenciesFileName: string) =
             |> List.distinct
         
         let versions = 
-            NuGet.GetVersions true alternativeProjectRoot root (sources, PackageName name)
+            NuGet.GetVersions true alternativeProjectRoot root (GetPackageVersionsParameters.ofParams sources (GroupName "") (PackageName name))
             |> Async.RunSynchronously
             |> List.map (fun (v,_) -> v.ToString())
             |> List.toArray
