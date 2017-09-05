@@ -96,11 +96,35 @@
         </tr>
         <tr>
           <td class="type-name">
+            <a href="paket-packageresolver-getpackagedetailsparameters.html">GetPackageDetailsParameters</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-packageresolver-getpackageversionsparameters.html">GetPackageVersionsParameters</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
             <a href="paket-packageresolver-packagedetails.html">PackageDetails</a>
           </td>
           <td class="xmldoc"><p>Represents package details</p>
 
 </td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-packageresolver-packagedetailsfunc.html">PackageDetailsFunc</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-packageresolver-packagedetailssyncfunc.html">PackageDetailsSyncFunc</a>
+          </td>
+          <td class="xmldoc"></td>
         </tr>
         <tr>
           <td class="type-name">
@@ -111,6 +135,24 @@
         <tr>
           <td class="type-name">
             <a href="paket-packageresolver-packageresolution.html">PackageResolution</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-packageresolver-packageversionsfunc.html">PackageVersionsFunc</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-packageresolver-packageversionssyncfunc.html">PackageVersionsSyncFunc</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-packageresolver-preferredversionsfunc.html">PreferredVersionsFunc</a>
           </td>
           <td class="xmldoc"></td>
         </tr>
@@ -166,6 +208,12 @@
         </tr>
         <tr>
           <td class="type-name">
+            <a href="paket-packageresolver-sourcepackageinfo.html">SourcePackageInfo</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
             <a href="paket-packageresolver-stackpack.html">StackPack</a>
           </td>
           <td class="xmldoc"></td>
@@ -175,6 +223,14 @@
             <a href="paket-packageresolver-updatemode.html">UpdateMode</a>
           </td>
           <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-packageresolver-versioncache.html">VersionCache</a>
+          </td>
+          <td class="xmldoc"><p>Caches information retrieved by GetVersions until it is required by GetDetails</p>
+
+</td>
         </tr>
         <tr>
           <td class="type-name">
@@ -243,11 +299,11 @@
             calcOpenRequirements (...)
           </code>
           <div class="tip" id="335">
-            <strong>Signature:</strong> (exploredPackage:ResolvedPackage * globalFrameworkRestrictions:FrameworkRestrictions * (SemVerInfo * &#39;?10333) * dependency:PackageRequirement * resolverStep:ResolverStep) -&gt; Set&lt;PackageRequirement&gt;<br />
-                          <strong>Type parameters:</strong> '?10333          </div>
+            <strong>Signature:</strong> (exploredPackage:ResolvedPackage * globalFrameworkRestrictions:FrameworkRestrictions * verCache:VersionCache * dependency:PackageRequirement * resolverStep:ResolverStep) -&gt; Set&lt;PackageRequirement&gt;<br />
+                      </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L262-262" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L297-297" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -265,7 +321,7 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L103-103" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L138-138" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -283,7 +339,7 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L332-332" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L367-367" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -301,7 +357,7 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L834-834" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L881-881" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -315,11 +371,11 @@
             Resolve (...)
           </code>
           <div class="tip" id="339">
-            <strong>Signature:</strong> (getVersionsRaw:(PackageSource list -&gt; GroupName -&gt; PackageName -&gt; Async&lt;&#39;d&gt;) * getPreferredVersionsRaw:(PackageSource list -&gt; ResolverStrategy -&gt; GroupName -&gt; PackageName -&gt; (SemVerInfo * PackageSource list) list) * getPackageDetailsRaw:(PackageSource list -&gt; GroupName -&gt; PackageName -&gt; SemVerInfo -&gt; Async&lt;PackageDetails&gt;) * groupName:GroupName * globalStrategyForDirectDependencies:ResolverStrategy option * globalStrategyForTransitives:ResolverStrategy option * globalFrameworkRestrictions:FrameworkRestrictions * rootDependencies:Set&lt;PackageRequirement&gt; * updateMode:UpdateMode) -&gt; Resolution<br />
-                          <strong>Type parameters:</strong> 'd          </div>
+            <strong>Signature:</strong> (getVersionsRaw:PackageVersionsFunc * getPreferredVersionsRaw:PreferredVersionsFunc * getPackageDetailsRaw:PackageDetailsFunc * groupName:GroupName * globalStrategyForDirectDependencies:ResolverStrategy option * globalStrategyForTransitives:ResolverStrategy option * globalFrameworkRestrictions:FrameworkRestrictions * rootDependencies:Set&lt;PackageRequirement&gt; * updateMode:UpdateMode) -&gt; Resolution<br />
+                      </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L838-838" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L886-886" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -339,7 +395,7 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L818-818" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L865-865" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -357,7 +413,7 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L835-835" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L882-882" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
