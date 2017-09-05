@@ -399,11 +399,12 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
     // Shortcut if we already restored before
     let newContents = File.ReadAllText(lockFileName.FullName)
     let restoreCacheFile = Path.Combine(root, Constants.PaketFilesFolderName, Constants.RestoreHashFile)
+    let isFullRestore = targetFrameworks = None && projectFile = None && group = None && referencesFileNames = []
     let inline isEarlyExit () =
         // We ignore our check when we do a partial restore, this way we can
         // fixup project specific changes (like an additional target framework or a changed references file)
         // We could still skip the actual "restore" work, but that is left as an exercise for the interesting reader.
-        if targetFrameworks = None && projectFile = None && group = None && referencesFileNames = [] && File.Exists restoreCacheFile then
+        if isFullRestore && File.Exists restoreCacheFile then
             let oldContents = File.ReadAllText(restoreCacheFile)
             oldContents = newContents
         else false
@@ -520,5 +521,5 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     |> ignore
 
                 CreateScriptsForGroups dependenciesFile lockFile groups
-                if targetFrameworks = None && projectFile = None && referencesFileNames = [] then
+                if isFullRestore then
                     File.WriteAllText(restoreCacheFile, newContents)))
