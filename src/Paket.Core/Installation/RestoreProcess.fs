@@ -403,7 +403,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         // We ignore our check when we do a partial restore, this way we can
         // fixup project specific changes (like an additional target framework or a changed references file)
         // We could still skip the actual "restore" work, but that is left as an exercise for the interesting reader.
-        if targetFrameworks = None && projectFile = None && referencesFileNames = [] && File.Exists restoreCacheFile then
+        if targetFrameworks = None && projectFile = None && group = None && referencesFileNames = [] && File.Exists restoreCacheFile then
             let oldContents = File.ReadAllText(restoreCacheFile)
             oldContents = newContents
         else false
