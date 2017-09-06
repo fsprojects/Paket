@@ -1,3 +1,6 @@
+#### 5.92.5 - 06.09.2017
+* BUGFIX: calculate hashfile after signing the assembly. - https://github.com/fsprojects/Paket/pull/27
+
 #### 5.92.4 - 05.09.2017
 * BUGFIX: always allow partial restore - https://github.com/fsprojects/Paket/pull/2724
 * BUGFIX: always call GetVersions before GetDetails - https://github.com/fsprojects/Paket/pull/2721
