@@ -78,6 +78,7 @@ let netcoreFiles = !! "src/**.preview?/*.fsproj" |> Seq.toList
 let buildDir = "bin"
 let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
+let paketFile = buildMergedDir @@ "paket.exe"
 
 Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
 // Read additional information from the release notes document
@@ -279,11 +280,9 @@ Target "QuickIntegrationTests" (fun _ ->
 
 let mergeLibs = ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "Argu.dll"; "Chessie.dll"; "Mono.Cecil.dll"]
 
-let mergePaketTool () =
+Target "MergePaketTool" (fun _ ->
     CreateDir buildMergedDir
-
-    let paketFile = buildMergedDir @@ "paket.exe"
-
+    
     let toPack =
         mergeLibs
         |> List.map (fun l -> buildDir @@ l)
@@ -296,19 +295,9 @@ let mergePaketTool () =
             ) (TimeSpan.FromMinutes 5.)
 
     if result <> 0 then failwithf "Error during ILRepack execution."
-
-    use stream = File.OpenRead(paketFile)
-    use sha = new SHA256Managed()
-    let checksum = sha.ComputeHash(stream)
-    let hash = BitConverter.ToString(checksum).Replace("-", String.Empty)
-    File.WriteAllText(buildMergedDir @@ "paket-sha256.txt", sprintf "%s paket.exe" hash)
-
-Target "MergePaketTool" (fun _ ->
-    mergePaketTool ()
 )
 
 Target "RunIntegrationTests" (fun _ ->
-    mergePaketTool ()
     // improves the speed of the test-suite by disabling the runtime resolution.
     System.Environment.SetEnvironmentVariable("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
     !! integrationTestAssemblies    
@@ -339,6 +328,14 @@ Target "SignAssemblies" (fun _ ->
                     info.FileName <- signtool
                     info.Arguments <- args) System.TimeSpan.MaxValue
             if result <> 0 then failwithf "Error during signing %s with %s" executable pfx)
+)
+
+Target "CalculateDownloadHash" (fun _ ->
+    use stream = File.OpenRead(paketFile)
+    use sha = new SHA256Managed()
+    let checksum = sha.ComputeHash(stream)
+    let hash = BitConverter.ToString(checksum).Replace("-", String.Empty)
+    File.WriteAllText(buildMergedDir @@ "paket-sha256.txt", sprintf "%s paket.exe" hash)
 )
 
 Target "NuGet" (fun _ ->    
@@ -599,9 +596,10 @@ Target "All" DoNothing
   =?> ("ReleaseDocs",isLocalBuild && not isMono)
 
 "All"
-  =?> ("RunIntegrationTests", not <| hasBuildParam "SkipIntegrationTests")
   ==> "MergePaketTool"
   ==> "SignAssemblies"
+  =?> ("RunIntegrationTests", not <| hasBuildParam "SkipIntegrationTests")
+  ==> "CalculateDownloadHash"
   =?> ("NuGet", not <| hasBuildParam "SkipNuGet")
   =?> ("MergeDotnetCoreIntoNuget", not <| hasBuildParam "DISABLE_NETCORE" && not <| hasBuildParam "SkipNuGet")
   ==> "BuildPackage"
