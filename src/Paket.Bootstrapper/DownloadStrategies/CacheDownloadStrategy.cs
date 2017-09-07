@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using Paket.Bootstrapper.HelperProxies;
-using System.Security.Cryptography;
 
 namespace Paket.Bootstrapper.DownloadStrategies
 {
@@ -97,20 +96,46 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
             var cached = GetHashFilePathInCache(latestVersion);
 
-            if (!FileSystemProxy.FileExists(cached))
+            if (File.Exists(cached))
             {
-                ConsoleImpl.WriteInfo("Hash file of version {0} not found in cache.", latestVersion);
-                var effectivePath = EffectiveStrategy.DownloadHashFile(latestVersion);
-                if(effectivePath == null)
-                {
-                    // 'EffectiveStrategy.CanDownloadHashFile' should have returned false...
-                    return null;
-                }
-
-                ConsoleImpl.WriteTrace("Copying hash file in cache.");
-                ConsoleImpl.WriteTrace("{0} -> {1}", effectivePath, cached);
+                // Maybe there's another bootstraper process running
+                // We trust it to close the file with the correct contet
+                FileSystemProxy.WaitForFileFinished(cached);
+            }
+            else
+            {
                 FileSystemProxy.CreateDirectory(Path.GetDirectoryName(cached));
-                FileSystemProxy.CopyFile(effectivePath, cached, true);
+                try
+                {
+                    // We take an exclusive hold on the file so that other boostrappers can wait for us
+                    using (var finalStream = FileSystemProxy.CreateExclusive(cached))
+                    {
+                        ConsoleImpl.WriteInfo("Hash file of version {0} not found in cache.", latestVersion);
+                        var effectivePath = EffectiveStrategy.DownloadHashFile(latestVersion);
+                        if (effectivePath == null)
+                        {
+                            // 'EffectiveStrategy.CanDownloadHashFile' should have returned false...
+                            return null;
+                        }
+
+                        using (var tempStream = File.OpenRead(effectivePath))
+                        {
+                            ConsoleImpl.WriteTrace("Copying hash file in cache.");
+                            ConsoleImpl.WriteTrace("{0} -> {1}", effectivePath, cached);
+
+                            tempStream.CopyTo(finalStream);
+                        }
+                    }
+                }
+                catch (IOException ex)
+                {
+                    if (ex.HResult == HelperProxies.FileSystemProxy.HRESULT_ERROR_SHARING_VIOLATION)
+                    {
+                        ConsoleImpl.WriteTrace("Can't lock hash file, another instance might be writing it. Waiting.");
+                        // Same as before let's trust other bootstraper processes
+                        FileSystemProxy.WaitForFileFinished(cached);
+                    }
+                }
             }
 
             return cached;

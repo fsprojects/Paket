@@ -8,6 +8,9 @@ namespace Paket.Bootstrapper.HelperProxies
 {
     class FileSystemProxy : IFileSystemProxy
     {
+        // ReSharper disable once InconsistentNaming
+        public const int HRESULT_ERROR_SHARING_VIOLATION = unchecked((int) 0x80070020);
+
         public string GetCurrentDirectory() { return Directory.GetCurrentDirectory(); }
         public bool FileExists(string filename) { return File.Exists(filename); }
         public void CopyFile(string fileFrom, string fileTo, bool overwrite) { File.Copy(fileFrom, fileTo, overwrite); }
@@ -26,6 +29,30 @@ namespace Paket.Bootstrapper.HelperProxies
 
         public string GetExecutingAssemblyPath() { return Assembly.GetExecutingAssembly().Location; }
         public string GetTempPath() { return Path.GetTempPath(); }
+        public Stream CreateExclusive(string path)
+        {
+            return File.Open(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
+        }
+
+        public void WaitForFileFinished(string path)
+        {
+            var shouldContinue = true;
+            while (shouldContinue)
+            {
+                try
+                {
+                    File.Open(path, FileMode.Open, FileAccess.Read, FileShare.None).Dispose();
+                    shouldContinue = false;
+                }
+                catch (Exception exception)
+                {
+                    if (exception.HResult != HRESULT_ERROR_SHARING_VIOLATION)
+                    {
+                        throw;
+                    }
+                }
+            }
+        }
 
         public void CreateDirectory(string dir) { Directory.CreateDirectory(dir); }
         public IEnumerable<string> GetDirectories(string dir) { return Directory.GetDirectories(dir); }
