@@ -85,7 +85,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             return versions;
         }
 
-        protected override void DownloadVersionCore(string latestVersion, string target, string hashfile)
+        protected override void DownloadVersionCore(string latestVersion, string target, PaketHashFile hashfile)
         {
             var url = String.Format(Constants.PaketExeDownloadUrlTemplate, latestVersion);
             ConsoleImpl.WriteInfo("Starting download from {0}", url);
@@ -149,15 +149,14 @@ namespace Paket.Bootstrapper.DownloadStrategies
             }
         }
 
-        protected override string DownloadHashFileCore(string latestVersion)
+        protected override PaketHashFile DownloadHashFileCore(string latestVersion)
         {
-            var url = String.Format(Constants.PaketCheckSumDownloadUrlTemplate, latestVersion);
+            var url = string.Format(Constants.PaketCheckSumDownloadUrlTemplate, latestVersion);
             ConsoleImpl.WriteInfo("Starting download from {0}", url);
 
-            var tmpFile = BootstrapperHelper.GetTempFile("paket-sha256.txt");
-            WebRequestProxy.DownloadFile(url, tmpFile);
+            var content = WebRequestProxy.DownloadString(url);
 
-            return tmpFile;
+            return PaketHashFile.FromString(content);
         }
     }
 }

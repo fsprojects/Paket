@@ -106,31 +106,22 @@ Options:
             File.Move(oldPath, newPath);
         }
 
-        public static bool ValidateHash(IFileSystemProxy fileSystem, string hashFile, string version, string paketFile)
+        public static bool ValidateHash(IFileSystemProxy fileSystem, PaketHashFile hashFile, string version, string paketFile)
         {
             if (hashFile == null)
             {
-                ConsoleImpl.WriteTrace("No hash file expected, bypassing check.");
+                ConsoleImpl.WriteTrace("No hashFile file expected, bypassing check.");
                 return true;
             }
         
-            if (!fileSystem.FileExists(hashFile))
-            {
-                ConsoleImpl.WriteInfo("No hash file of version {0} found.", version);
-
-                return true;
-            }
-
-            var dict = fileSystem.ReadAllLines(hashFile)
+            var dict = hashFile.Content
                 .Select(i => i.Split(' '))
                 .ToDictionary(i => i[1], i => i[0]);
 
             string expectedHash;
             if (!dict.TryGetValue("paket.exe", out expectedHash))
             {
-                fileSystem.DeleteFile(hashFile);
-
-                throw new InvalidDataException("Paket hash file is corrupted");
+                throw new InvalidDataException("Paket hashFile file is corrupted");
             }
 
             using (var stream = fileSystem.OpenRead(paketFile))

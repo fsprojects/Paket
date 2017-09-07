@@ -14,7 +14,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             return Wrap(() => GetLatestVersionCore(ignorePrerelease), "GetLatestVersion");
         }
 
-        public void DownloadVersion(string latestVersion, string target, string hashfile)
+        public void DownloadVersion(string latestVersion, string target, PaketHashFile hashfile)
         {
             Wrap(() => DownloadVersionCore(latestVersion, target, hashfile), "DownloadVersion");
         }
@@ -24,15 +24,15 @@ namespace Paket.Bootstrapper.DownloadStrategies
             Wrap(() => SelfUpdateCore(latestVersion), "SelfUpdate");
         }
 
-        public string DownloadHashFile(string latestVersion)
+        public PaketHashFile DownloadHashFile(string latestVersion)
         {
             return Wrap(() => DownloadHashFileCore(latestVersion), "DownloadHashFile");
         }
 
         protected abstract string GetLatestVersionCore(bool ignorePrerelease);
-        protected abstract void DownloadVersionCore(string latestVersion, string target, string hashfile);
+        protected abstract void DownloadVersionCore(string latestVersion, string target, PaketHashFile hashfile);
         protected abstract void SelfUpdateCore(string latestVersion);
-        protected abstract string DownloadHashFileCore(string latestVersion);
+        protected abstract PaketHashFile DownloadHashFileCore(string latestVersion);
 
         private void Wrap(Action action, string actionName)
         {

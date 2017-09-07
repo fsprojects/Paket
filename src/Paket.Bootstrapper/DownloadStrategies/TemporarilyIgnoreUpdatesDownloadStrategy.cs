@@ -59,7 +59,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             return latestVersion;
         }
 
-        protected override void DownloadVersionCore(string latestVersion, string target, string hashfile)
+        protected override void DownloadVersionCore(string latestVersion, string target, PaketHashFile hashfile)
         {
             _effectiveStrategy.DownloadVersion(latestVersion, target, hashfile);
             TouchTarget(target);
@@ -123,7 +123,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             }
         }
 
-        protected override string DownloadHashFileCore(string latestVersion)
+        protected override PaketHashFile DownloadHashFileCore(string latestVersion)
         {
             return _effectiveStrategy.DownloadHashFile(latestVersion);
         }

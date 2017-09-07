@@ -138,7 +138,7 @@ namespace Paket.Bootstrapper
 
                     if ((comparison > 0 && specificVersionRequested) || comparison < 0)
                     {
-                        string hashFile = null;
+                        PaketHashFile hashFile = null;
                         if (downloadStrategy.CanDownloadHashFile)
                         {
                             ConsoleImpl.WriteTrace("Downloading hash for v{0} ...", latestVersion);

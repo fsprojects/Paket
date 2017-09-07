@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 
 namespace Paket.Bootstrapper.HelperProxies
 {
@@ -41,7 +42,7 @@ namespace Paket.Bootstrapper.HelperProxies
             {
                 try
                 {
-                    File.Open(path, FileMode.Open, FileAccess.Read, FileShare.None).Dispose();
+                    File.Open(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None).Dispose();
                     shouldContinue = false;
                 }
                 catch (Exception exception)
@@ -50,6 +51,8 @@ namespace Paket.Bootstrapper.HelperProxies
                     {
                         throw;
                     }
+
+                    Thread.Sleep(200);
                 }
             }
         }
