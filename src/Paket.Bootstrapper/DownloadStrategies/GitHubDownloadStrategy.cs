@@ -8,6 +8,15 @@ namespace Paket.Bootstrapper.DownloadStrategies
 {
     public class GitHubDownloadStrategy : DownloadStrategy
     {
+#if DEBUG && LOCAL_GITHUB
+        public static class Constants
+        {
+            public const string PaketReleasesLatestUrl = "http://127.0.0.1:8080/fsprojects/Paket/releases/latest";
+            public const string PaketReleasesUrl = "http://127.0.0.1:8080/fsprojects/Paket/releases";
+            public const string PaketExeDownloadUrlTemplate = "http://127.0.0.1:8080/fsprojects/Paket/releases/download/{0}/paket.exe";
+            public const string PaketCheckSumDownloadUrlTemplate = "http://127.0.0.1:8080/fsprojects/Paket/releases/download/{0}/paket-sha256.txt";
+        }
+#else
         public static class Constants
         {
             public const string PaketReleasesLatestUrl = "https://github.com/fsprojects/Paket/releases/latest";
@@ -15,6 +24,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             public const string PaketExeDownloadUrlTemplate = "https://github.com/fsprojects/Paket/releases/download/{0}/paket.exe";
             public const string PaketCheckSumDownloadUrlTemplate = "https://github.com/fsprojects/Paket/releases/download/{0}/paket-sha256.txt";
         }
+#endif
 
         private IWebRequestProxy WebRequestProxy { get; set; }
         private IFileSystemProxy FileSystemProxy { get; set; }

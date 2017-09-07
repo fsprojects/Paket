@@ -87,7 +87,11 @@ namespace Paket.Bootstrapper
             {
                 if (!fileSystemProxy.FileExists(dlArgs.Target))
                     Environment.ExitCode = 1;
+#if DEBUG
+                ConsoleImpl.WriteError(String.Format("{0} ({1})", exception.ToString(), downloadStrategy.Name));
+#else
                 ConsoleImpl.WriteError(String.Format("{0} ({1})", exception.Message, downloadStrategy.Name));
+#endif
             };
             try
             {
