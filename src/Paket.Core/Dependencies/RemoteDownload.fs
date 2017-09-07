@@ -266,11 +266,13 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
     | Origin.HttpLink(origin), _ ->
         let url = origin + remoteFile.Commit
         let authentication = auth remoteFile.AuthKey url
+        let timeout = (Some(TimeSpan.FromDays(1.0)))
         match Path.GetExtension(destination).ToLowerInvariant() with
         | ".zip" ->
-            do! downloadFromUrl(authentication, url) destination
+            do! downloadFromUrlWithTimeout(authentication, url) timeout destination
             ZipFile.ExtractToDirectory(destination, targetFolder.FullName)
-        | _ -> do! downloadFromUrl(authentication, url) destination
+        | _ -> 
+            do! downloadFromUrlWithTimeout(authentication, url) timeout destination
 }
 
 let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.ResolvedSourceFile list) =
