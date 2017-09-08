@@ -85,13 +85,21 @@ namespace Paket.Bootstrapper
         {
             Action<Exception> handleException = exception =>
             {
-                if (!fileSystemProxy.FileExists(dlArgs.Target))
-                    Environment.ExitCode = 1;
 #if DEBUG
+                Environment.ExitCode = 1;
                 ConsoleImpl.WriteError(String.Format("{0} ({1})", exception.ToString(), downloadStrategy.Name));
-#else
-                ConsoleImpl.WriteError(String.Format("{0} ({1})", exception.Message, downloadStrategy.Name));
+                return;
 #endif
+                ConsoleImpl.WriteError(String.Format("{0} ({1})", exception.Message, downloadStrategy.Name));
+                if (!fileSystemProxy.FileExists(dlArgs.Target))
+                {
+                    Environment.ExitCode = 1;
+                }
+                else
+                {
+                    fileSystemProxy.WaitForFileFinished(dlArgs.Target);
+                    onSuccess();
+                }
             };
             try
             {
