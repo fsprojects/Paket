@@ -1,3 +1,6 @@
+#### 5.92.100 - 08.09.2017
+* BUGFIX: Don't depend on restore cache when using paket.local or force switch - https://github.com/fsprojects/Paket/pull/2734
+
 #### 5.92.9 - 08.09.2017
 * BUGFIX: MSBuild now tracks Paket.Restore.targets for incremental builds - https://github.com/fsprojects/Paket/pull/2742
 
