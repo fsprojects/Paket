@@ -1,3 +1,6 @@
+#### 5.92.8 - 08.09.2017
+* BUGFIX: Removed default 100sec timeout for Http dependencies download  - https://github.com/fsprojects/Paket/pull/2737
+
 #### 5.92.7 - 08.09.2017
 * BUGFIX: Fixing root cause for casing issue in #2676 - https://github.com/fsprojects/Paket/pull/2743
 
