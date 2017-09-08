@@ -2,6 +2,9 @@
   <!-- Prevent dotnet template engine to parse this file -->
   <!--/-:cnd:noEmit-->
   <PropertyGroup>
+    <!-- make MSBuild track this file for incremental builds. -->
+    <!-- ref https://blogs.msdn.microsoft.com/msbuild/2005/09/26/how-to-ensure-changes-to-a-custom-target-file-prompt-a-rebuild/ -->
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <!-- Mark that this target file has been loaded.  -->
     <IsPaketRestoreTargetsFileLoaded>true</IsPaketRestoreTargetsFileLoaded>
     <PaketToolsPath>$(MSBuildThisFileDirectory)</PaketToolsPath>
