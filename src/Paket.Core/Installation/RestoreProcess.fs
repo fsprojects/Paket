@@ -408,8 +408,17 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             let oldContents = File.ReadAllText(restoreCacheFile)
             oldContents = newContents
         else false
+    let lockFile,localFile,hasLocalFile =
+        let lockFile = LockFile.LoadFrom(lockFileName.FullName)
+        if not localFileName.Exists then
+            lockFile,LocalFile.empty,false
+        else
+            let localFile =
+                LocalFile.readFile localFileName.FullName
+                |> returnOrFail
+            LocalFile.overrideLockFile localFile lockFile,localFile,true
 
-    if isEarlyExit () then
+    if not (hasLocalFile || force) && isEarlyExit () then
         tracefn "Last restore is still up to date."
     else
         let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
@@ -417,16 +426,6 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         let targetFilter = 
             targetFrameworks
             |> Option.map (fun s -> s.Split(';') |> Array.map FrameworkDetection.Extract |> Array.choose id)
-
-        let lockFile,localFile,hasLocalFile =
-            let lockFile = LockFile.LoadFrom(lockFileName.FullName)
-            if not localFileName.Exists then
-                lockFile,LocalFile.empty,false
-            else
-                let localFile =
-                    LocalFile.readFile localFileName.FullName
-                    |> returnOrFail
-                LocalFile.overrideLockFile localFile lockFile,localFile,true
 
         if not hasLocalFile && not ignoreChecks then
             let hasAnyChanges,nugetChanges,remoteFilechanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
