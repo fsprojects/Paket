@@ -40,7 +40,7 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
     let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
     let storageOption = defaultArg settings.StorageConfig PackagesFolderGroupConfig.Default
     match storageOption.Resolve root groupName packageName version includeVersionInPath with
-    | ResolvedPackagesFolder.ResolvedFolder targetFolder (*when Directory.Exists targetFolder*) ->
+    | ResolvedPackagesFolder.ResolvedFolder targetFolder ->
         let direct = DirectoryInfo targetFolder
         if direct.Exists then
             direct
@@ -363,7 +363,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
                     match group, package with
                     | Choice1Of2 _, Choice1Of2 package ->
-                        ((kv.Key,ps.Name), (package.Version, ps.Settings + package.Settings))
+                        ((kv.Key,package.Name), (package.Version, ps.Settings + package.Settings))
                         |> Choice1Of2
                     | Choice2Of2 error1, Choice2Of2 error2 -> Choice2Of2 (error1 + "\n" + error2)
                     | Choice2Of2 error, _ | _, Choice2Of2 error -> Choice2Of2 error
