@@ -614,6 +614,18 @@ module LockFileParser =
 /// Allows to parse and analyze paket.lock files.
 type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
     let fileName = if isNull fileName then String.Empty else fileName
+    
+    let tryFindRemoteFile (remoteFiles:ResolvedSourceFile list) name =
+        remoteFiles |> List.tryFind (fun x -> x.Name.EndsWith(name))
+    let findRemoteFile referencesFile remoteFiles name =
+        match tryFindRemoteFile remoteFiles name with
+        | None -> failwithf "Remote file %O was referenced in %s, but not found in paket.lock." name referencesFile
+        | Some lockRemote -> lockRemote
+    let findGroup referencesFile groupName =
+        match groups |> Map.tryFind groupName with
+        | None -> failwithf "Group %O was referenced in %s, but not found in paket.lock." groupName referencesFile
+        | Some lockGroup -> lockGroup
+
     member __.Groups = groups
     member __.FileName = fileName
     member __.RootPath = 
@@ -806,22 +818,18 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
         let usedPackages = Dictionary<_,_>()
 
         for g in referencesFile.Groups do
-            match this.Groups |> Map.tryFind g.Key with
-            | None -> failwithf "Group %O was referenced in %s, but not found in paket.lock."  g.Key referencesFile.FileName
-            | Some lockGroup ->
-                for p in g.Value.NugetPackages do
-                    let k = g.Key,p.Name
-                    if usedPackages.ContainsKey k |> not then
-                        usedPackages.Add(k,p)
+            let lockGroup = findGroup referencesFile.FileName g.Key
+            for p in g.Value.NugetPackages do
+                let k = g.Key,p.Name
+                if usedPackages.ContainsKey k |> not then
+                    usedPackages.Add(k,p)
 
-                for r in g.Value.RemoteFiles do
-                    match lockGroup.RemoteFiles |> List.tryFind (fun x -> x.Name = r.Name) with
-                    | None -> failwithf "Remote file %O was referenced in %s, but not found in paket.lock."  r.Name referencesFile.FileName
-                    | Some lockRemote ->
-                        for p,_ in lockRemote.Dependencies do
-                            let k = g.Key,p
-                            if usedPackages.ContainsKey k |> not then
-                                usedPackages.Add(k,PackageInstallSettings.Default(p.ToString()))
+            for r in g.Value.RemoteFiles do
+                let lockRemote = findRemoteFile  referencesFile.FileName lockGroup.RemoteFiles r.Name
+                for p,_ in lockRemote.Dependencies do
+                    let k = g.Key,p
+                    if usedPackages.ContainsKey k |> not then
+                        usedPackages.Add(k,PackageInstallSettings.Default(p.ToString()))
 
         for g in referencesFile.Groups do
             g.Value.NugetPackages
@@ -837,14 +845,10 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
 
     member this.GetRemoteReferencedPackages(referencesFile:ReferencesFile,installGroup:InstallGroup) =
         [for r in installGroup.RemoteFiles do
-            match this.Groups |> Map.tryFind installGroup.Name with
-            | None -> failwithf "Group %O was referenced in %s, but not found in paket.lock."  installGroup.Name referencesFile.FileName
-            | Some lockGroup ->
-                match lockGroup.RemoteFiles |> List.tryFind (fun x -> x.Name.EndsWith(r.Name)) with
-                | None -> failwithf "Remote file %O was referenced in %s, but not found in paket.lock."  r.Name referencesFile.FileName
-                | Some lockRemote ->
-                    for p,_ in lockRemote.Dependencies do
-                        yield PackageInstallSettings.Default(p.ToString())]
+            let lockGroup = findGroup referencesFile.FileName installGroup.Name
+            let lockRemote = findRemoteFile referencesFile.FileName lockGroup.RemoteFiles r.Name
+            for p,_ in lockRemote.Dependencies do
+                yield PackageInstallSettings.Default(p.ToString())]
 
     member this.GetOrderedPackageHull(groupName,referencesFile:ReferencesFile) =
         let usedPackageKeys = HashSet<_>()

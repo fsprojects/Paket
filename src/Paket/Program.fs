@@ -102,7 +102,7 @@ let processWithValidationEx printUsage silent validateF commandF result =
                 tracefn " - Runtime: %s" (Utils.TimeSpanToReadableString realTime)
                 let omitted = Logging.getOmittedWarningCount()
                 if not verbose && omitted > 0 then
-                    traceWarnfn "Paket omitted '%d' warnings similar to the ones above. You can see them in verbose mode" omitted
+                    traceWarnfn "Paket omitted %d warnings similar to the ones above. You can see them in verbose mode." omitted
 
 
 let processWithValidation silent validateF commandF (result : ParseResults<'T>) =

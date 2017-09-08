@@ -204,7 +204,7 @@ module RuntimeGraph =
         let config = PackagesFolderGroupConfig.NoPackagesFolder
         // 1. downloading packages into cache
         let targetFileName, _ =
-            NuGet.DownloadPackage (None, root, config, package.Source, [], groupName, package.Name, package.Version, package.IsCliTool, false, false, false)
+            NuGet.DownloadAndExtractPackage (None, root, false, config, package.Source, [], groupName, package.Name, package.Version, package.IsCliTool, false, false, false)
             |> Async.RunSynchronously
 
         let extractedDir = NuGetCache.ExtractPackageToUserFolder (targetFileName, package.Name, package.Version, package.IsCliTool, null) |> Async.RunSynchronously

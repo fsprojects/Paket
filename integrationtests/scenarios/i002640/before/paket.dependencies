@@ -1,0 +1,4 @@
+source my-package-source
+source https://nuget.org/api/v2
+
+nuget paket-issue-i002640-never-exists-on-nuget-gallery 1.0.0

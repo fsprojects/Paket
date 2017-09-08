@@ -15,6 +15,7 @@ open System.Runtime.ExceptionServices
 open System.Text
 open FSharp.Polyfill
 open Paket.NuGetCache
+open Paket.PackageResolver
 
 type NuGetContent =
     | NuGetDirectory of name:string * contents:NuGetContent list
@@ -91,12 +92,14 @@ let GetContent dir = lazy (
 
     let spec =
         di.EnumerateFiles("*.nuspec", SearchOption.TopDirectoryOnly)
-        |> Seq.exactlyOne
-        |> fun f -> Nuspec.Load(f.FullName)
-
-    { Content = (ofDirectory dir).Contents
-      Path = dir
-      Spec = spec })
+        |> Seq.tryExactlyOne
+        |> Option.map (fun f -> Nuspec.Load(f.FullName))
+    match spec with
+    | Some spec ->
+        { Content = (ofDirectory dir).Contents
+          Path = dir
+          Spec = spec }
+    | None -> failwithf "Could not find nuspec in '%s', try deleting the directory and restoring again." dir)
 
 let tryFindFolder folder (content:NuGetPackageContent) =
     let rec collectItems prefixFull (prefixInner:string) (content:NuGetContent) =
@@ -231,7 +234,10 @@ let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
     NuGetV3.findVersionsForPackage(nugetV3Url, auth, package)
 
 
-let rec private getPackageDetails alternativeProjectRoot root force (sources:PackageSource list) packageName (version:SemVerInfo) : Async<PackageResolver.PackageDetails> =
+let rec private getPackageDetails alternativeProjectRoot root force (parameters:GetPackageDetailsParameters) : Async<PackageResolver.PackageDetails> =
+    let sources = parameters.Package.Sources
+    let packageName = parameters.Package.PackageName
+    let version = parameters.Version
     async {
         let inCache =
             sources
@@ -243,9 +249,11 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
         let tryV2 (nugetSource:NugetSource) force =
             NuGetV2.getDetailsFromNuGet
                 force
+                parameters.VersionIsAssumed
                 nugetSource
                 packageName
                 version
+
 
         let tryV3 (nugetSource:NugetV3Source) force =
             NuGetV3.GetPackageDetails force nugetSource packageName version
@@ -355,17 +363,17 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
               LicenseUrl = nugetObject.LicenseUrl
               DirectDependencies = NuGetPackageCache.getDependencies nugetObject |> Set.ofList } }
 
-let rec GetPackageDetails alternativeProjectRoot root force (sources:PackageSource list) groupName packageName (version:SemVerInfo) : Async<PackageResolver.PackageDetails> =
+let rec GetPackageDetails alternativeProjectRoot root force (parameters:GetPackageDetailsParameters): Async<PackageResolver.PackageDetails> =
     async {
         try
-            return! getPackageDetails alternativeProjectRoot root force sources packageName version
+            return! getPackageDetails alternativeProjectRoot root force parameters
         with
         | exn ->
             if verbose then
                 traceWarnfn "GetPackageDetails failed: %O" exn
             else
                 traceWarnfn "Something failed in GetPackageDetails, trying again with force: %s" exn.Message
-            return! getPackageDetails alternativeProjectRoot root true sources packageName version
+            return! getPackageDetails alternativeProjectRoot root true parameters
     }
 
 let protocolCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
@@ -411,7 +419,9 @@ let getVersionsCached key f (source, auth, nugetURL, package) =
 
 
 /// Allows to retrieve all version no. for a package from the given sources.
-let GetVersions force alternativeProjectRoot root (sources, packageName:PackageName) = async {
+let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersionsParameters) = async {
+    let packageName = parameters.Package.PackageName
+    let sources = parameters.Package.Sources
     let trial force = async {
         let getVersionsFailedCacheFileName (source:PackageSource) =
             let h = source.Url |> NuGetCache.normalizeUrl |> hash |> abs
@@ -448,7 +458,7 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
 
                                 return v2Feeds
                        | NuGetV3 source ->
-                            let! versionsAPI = PackageSources.getNuGetV3Resource source AllVersionsAPI
+                            let! versionsAPI = NuGetV3.getNuGetV3Resource source NuGetV3.AllVersionsAPI
                             let auth = source.Authentication |> Option.map toCredentials
                             return [ getVersionsCached "V3" tryNuGetV3 (nugetSource, auth, versionsAPI, packageName) ]
                        | LocalNuGet(path,Some _) ->
@@ -607,10 +617,17 @@ let private getLicenseFile (packageName:PackageName) version =
     Path.Combine(NuGetCache.GetTargetUserFolder packageName version, NuGetCache.GetLicenseFileName packageName version)
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(alternativeProjectRoot, root, config:PackagesFolderGroupConfig, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, force, detailed) =
+let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool, config:PackagesFolderGroupConfig, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, force, detailed) =
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
     let normalizedNupkgName = NuGetCache.GetPackageFileName packageName version
-    let targetFileName = NuGetCache.GetTargetUserNupkg packageName version
+    let configResolved = config.Resolve root groupName packageName version includeVersionInPath
+    let targetFileName =
+        if not isLocalOverride then NuGetCache.GetTargetUserNupkg packageName version
+        else
+            match configResolved.Path with
+            | Some p -> Path.Combine(p, nupkgName)
+            | None -> failwithf "paket.local in combination with storage:none is not supported"
+    if isLocalOverride && not force then failwithf "internal error: when isLocalOverride is specified then force needs to be specified as well"
     let targetFile = FileInfo targetFileName
     let licenseFileName = getLicenseFile packageName version
 
@@ -662,7 +679,7 @@ let DownloadPackage(alternativeProjectRoot, root, config:PackagesFolderGroupConf
                         let group = if groupName = Constants.MainDependencyGroup then "" else sprintf " (%O)" groupName
                         tracefn "Downloading %O %O%s" packageName version group
 
-                    let! nugetPackage = GetPackageDetails alternativeProjectRoot root force [source] groupName packageName version
+                    let! nugetPackage = GetPackageDetails alternativeProjectRoot root force (GetPackageDetailsParameters.ofParams [source] groupName packageName version)
 
                     let encodeURL (url:string) = url.Replace("+","%2B")
                     let downloadUri =
@@ -763,12 +780,18 @@ let DownloadPackage(alternativeProjectRoot, root, config:PackagesFolderGroupConf
 
     async {
         do! download true 0
-        let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, isCliTool, detailed)
-        let configResolved = config.Resolve root groupName packageName version includeVersionInPath
-        let! files = NuGetCache.CopyFromCache(configResolved, targetFile.FullName, licenseFileName, packageName, version, force, detailed)
-        let finalFolder =
-            match files with
-            | Some f -> f
-            | None -> extractedUserFolder
-        return targetFileName,finalFolder
+        if not isLocalOverride then
+            let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, isCliTool, detailed)
+            let! files = NuGetCache.CopyFromCache(configResolved, targetFile.FullName, licenseFileName, packageName, version, force, detailed)
+            let finalFolder =
+                match files with
+                | Some f -> f
+                | None -> extractedUserFolder
+            return targetFileName,finalFolder
+        else
+            match configResolved.Path with
+            | None -> return failwithf "paket.local in combination with storage:none is not supported"
+            | Some directory ->
+                let! folder = ExtractPackage(targetFile.FullName, directory, packageName, version, detailed)
+                return targetFileName,folder
     }

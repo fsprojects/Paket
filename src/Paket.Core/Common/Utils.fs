@@ -672,10 +672,12 @@ open System.Collections.Generic
 open System.Runtime.ExceptionServices
 
 /// [omit]
-let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
+let downloadFromUrlWithTimeout (auth:Auth option, url : string) (timeout:TimeSpan option) (filePath: string) =
     async {
         try
             use client = createHttpClient (url,auth)
+            if timeout.IsSome then
+                client.Timeout <- timeout.Value
             let! tok = Async.CancellationToken
             if verbose then
                 verbosefn "Starting download from '%O'" url
@@ -686,6 +688,10 @@ let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
         | exn ->
             raise <| Exception(sprintf "Could not download from '%s'" url, exn)
     }
+
+/// [omit]
+let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
+    downloadFromUrlWithTimeout (auth, url) None filePath
 
 /// [omit]
 let getFromUrl (auth:Auth option, url : string, contentType : string) =
@@ -837,7 +843,7 @@ type PackagesFolderGroupConfig =
             ResolvedPackagesFolder.ResolvedFolder p
         | DefaultPackagesFolder ->
             let groupDir = x.ResolveGroupDir root groupName |> Option.get
-            let packageFolder = string packageName + if includeVersionInPath then "." + string version else ""
+            let packageFolder = string packageName + (if includeVersionInPath then "." + string version else "")
             let parent = Path.Combine(groupDir, packageFolder)
             ResolvedPackagesFolder.ResolvedFolder parent
     static member Default = DefaultPackagesFolder
@@ -1195,6 +1201,16 @@ type StringBuilder with
 
 [<RequireQualifiedAccess>]
 module Seq =
+    let tryExactlyOne (s:#seq<_>) =
+        let mutable i = 0
+        let mutable first = Unchecked.defaultof<_>
+        use e = s.GetEnumerator()
+        while (i < 2 && e.MoveNext()) do
+            i <- i + 1
+            first <- e.Current
+        if i = 1 then Some first
+        else None
+
     /// Unzip a seq by mapping the elements that satisfy the predicate 
     /// into the first seq and mapping the elements that fail to satisfy the predicate
     /// into the second seq

@@ -39,13 +39,13 @@ let CopyToCaches force caches fileName =
                 traceWarnfn "Could not copy %s to cache %s%s%s" fileName cache.Location Environment.NewLine exn.Message)
 
 /// returns - package, libs files, props files, targets files, analyzers files
-let private extractPackage caches (package:PackageInfo) alternativeProjectRoot root source groupName version includeVersionInPath force =
+let private extractPackage caches (package:PackageInfo) alternativeProjectRoot root isLocalOverride source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
         let cfg = defaultArg package.Settings.StorageConfig PackagesFolderGroupConfig.Default
 
         let! fileName,folder = 
-            NuGet.DownloadPackage(
-                alternativeProjectRoot, root, cfg, source, caches, groupName, 
+            NuGet.DownloadAndExtractPackage(
+                alternativeProjectRoot, root, isLocalOverride, cfg, source, caches, groupName, 
                 package.Name, version, package.IsCliTool, includeVersionInPath, force, detailed)
 
         CopyToCaches force caches fileName
@@ -110,10 +110,10 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
                     | None -> failwithf "The NuGet source %s for package %O was not found in the paket.dependencies file with sources %A" package.Source.Url package.Name sources
                     | Some s -> s 
 
-                return! extractPackage caches package alternativeProjectRoot root source groupName v includeVersionInPath force
+                return! extractPackage caches package alternativeProjectRoot root localOverride source groupName v includeVersionInPath force
 
             | LocalNuGet(path,_) as source ->
-                return! extractPackage caches package alternativeProjectRoot root source groupName v includeVersionInPath force
+                return! extractPackage caches package alternativeProjectRoot root localOverride source groupName v includeVersionInPath force
         }
 
         // manipulate overridenFile after package extraction
@@ -399,33 +399,33 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
     // Shortcut if we already restored before
     let newContents = File.ReadAllText(lockFileName.FullName)
     let restoreCacheFile = Path.Combine(root, Constants.PaketFilesFolderName, Constants.RestoreHashFile)
+    let isFullRestore = targetFrameworks = None && projectFile = None && group = None && referencesFileNames = []
     let inline isEarlyExit () =
         // We ignore our check when we do a partial restore, this way we can
         // fixup project specific changes (like an additional target framework or a changed references file)
         // We could still skip the actual "restore" work, but that is left as an exercise for the interesting reader.
-        if targetFrameworks = None && projectFile = None && referencesFileNames = [] && File.Exists restoreCacheFile then
+        if isFullRestore && File.Exists restoreCacheFile then
             let oldContents = File.ReadAllText(restoreCacheFile)
             oldContents = newContents
         else false
+    let lockFile,localFile,hasLocalFile =
+        let lockFile = LockFile.LoadFrom(lockFileName.FullName)
+        if not localFileName.Exists then
+            lockFile,LocalFile.empty,false
+        else
+            let localFile =
+                LocalFile.readFile localFileName.FullName
+                |> returnOrFail
+            LocalFile.overrideLockFile localFile lockFile,localFile,true
 
-    if isEarlyExit () then
-        tracefn "Last restore is still up 2 date."
+    if not (hasLocalFile || force) && isEarlyExit () then
+        tracefn "Last restore is still up to date."
     else
         let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
         let targetFilter = 
             targetFrameworks
             |> Option.map (fun s -> s.Split(';') |> Array.map FrameworkDetection.Extract |> Array.choose id)
-
-        let lockFile,localFile,hasLocalFile =
-            let lockFile = LockFile.LoadFrom(lockFileName.FullName)
-            if not localFileName.Exists then
-                lockFile,LocalFile.empty,false
-            else
-                let localFile =
-                    LocalFile.readFile localFileName.FullName
-                    |> returnOrFail
-                LocalFile.overrideLockFile localFile lockFile,localFile,true
 
         if not hasLocalFile && not ignoreChecks then
             let hasAnyChanges,nugetChanges,remoteFilechanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
@@ -520,5 +520,5 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     |> ignore
 
                 CreateScriptsForGroups dependenciesFile lockFile groups
-                if targetFrameworks = None && projectFile = None && referencesFileNames = [] then
+                if isFullRestore then
                     File.WriteAllText(restoreCacheFile, newContents)))

@@ -89,7 +89,7 @@ github tpetricek/FSharp.Formatting:30cd5366a4f3f25a443ca4cd62cd592fd16ac69
 
 This will download the given repository and put it into your `paket-files`
 directory. In this case we download the source of
-[reveal.js](http://lab.hakim.se/reveal-js/).
+[FSharp.Formatting](https://github.com/fsprojects/FSharp.Formatting).
 
 ## Recognizing build action
 

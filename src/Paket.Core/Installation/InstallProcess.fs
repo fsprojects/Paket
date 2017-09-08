@@ -40,8 +40,36 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
     let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
     let storageOption = defaultArg settings.StorageConfig PackagesFolderGroupConfig.Default
     match storageOption.Resolve root groupName packageName version includeVersionInPath with
-    | ResolvedPackagesFolder.ResolvedFolder targetFolder (*when Directory.Exists targetFolder*) ->
-        DirectoryInfo targetFolder
+    | ResolvedPackagesFolder.ResolvedFolder targetFolder ->
+        let direct = DirectoryInfo targetFolder
+        if direct.Exists then
+            direct
+        else
+            let lowerName = packageName.ToString() + if includeVersionInPath then "." + version.ToString() else ""
+            let di =
+                if groupName = Constants.MainDependencyGroup then
+                    DirectoryInfo(Path.Combine(root, Constants.DefaultPackagesFolderName))
+                else
+                    let groupName = groupName.CompareString
+                    let di = DirectoryInfo(Path.Combine(root, Constants.DefaultPackagesFolderName, groupName))
+                    if di.Exists then di else
+
+                    match di.GetDirectories() |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase groupName subDir.FullName) with
+                    | Some x -> x
+                    | None ->
+                        traceWarnfn "The following directories exists:"
+                        di.GetDirectories() |> Seq.iter (fun d -> traceWarnfn "  %s" d.FullName)
+
+                        failwithf "Group directory for group %s was not found." groupName
+
+            match di.GetDirectories() |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase lowerName subDir.FullName) with
+            | Some x -> x
+            | None ->
+                traceWarnfn "The following directories exists:"
+                di.GetDirectories() |> Seq.iter (fun d -> traceWarnfn "  %s" d.FullName)
+
+                failwithf "Package directory for package %O was not found." packageName
+
     | ResolvedPackagesFolder.NoPackagesFolder ->
         let d = DirectoryInfo(NuGetCache.GetTargetUserFolder packageName version)
         if not d.Exists then failwithf "Package directory for package %O was not found." packageName
@@ -69,11 +97,14 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
             |> Seq.filter (fun (_,_,contentCopySettings,_) -> contentCopySettings <> ContentCopySettings.Omit)
             |> Seq.map (fun ((group, packName),v,s,s') -> s,s',findPackageFolder root (group, packName) v)
             |> Seq.choose (fun (contentCopySettings,contentCopyToOutputSettings,packageDir) ->
+                printfn  "%s" packageDir.FullName
                 packageDir.GetDirectories "Content"
                 |> Array.append (packageDir.GetDirectories "content")
                 |> Array.tryFind (fun _ -> true)
                 |> Option.map (fun x -> x,contentCopySettings,contentCopyToOutputSettings))
             |> Seq.toList
+
+        printfn "%A" packageDirectoriesWithContent
 
         let copyContentFiles (project : ProjectFile, packagesWithContent) =
             let onBlackList (fi : FileInfo) = contentFileBlackList |> List.exists (fun rule -> rule(fi))
@@ -174,7 +205,7 @@ let brokenDeps = HashSet<_>()
 let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindingRedirects
                                   root groupName findDependencies allKnownLibNames
                                   (projectCache: Dictionary<string, ProjectFile option>)
-                                  extractedPackages =
+                                  (extractedPackages:seq<InstallModel * _>) =
 
     let dependencyGraph = Dictionary<_,Set<_>>()
     let referenceFiles = Dictionary<_,ReferencesFile option>()
@@ -203,14 +234,15 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
                     None)
 
             |> Seq.choose id
-            |> Seq.collect (fun p -> dependencyGraph |> getOrAdd p dependencies)
-            |> Seq.append (
+            |> Seq.map (fun p -> dependencyGraph |> getOrAdd p dependencies)
+            |> Set.unionMany
+            |> Set.union (
                 referenceFile.Groups
                 |> Seq.filter (fun g -> g.Key = groupName)
                 |> Seq.collect (fun g -> g.Value.NugetPackages |> List.map (fun p -> (groupName,p.Name)))
                 |> Seq.collect(fun (g,p) -> findDependencies(g,p,projectFile.FileName))
-                |> Seq.map (fun x -> x, projectFile.GetTargetProfile()))
-            |> Set.ofSeq
+                |> Seq.map (fun x -> x, projectFile.GetTargetProfile())
+                |> Set.ofSeq)
         | None -> Set.empty
 
     let bindingRedirects (projectFile : ProjectFile) =
@@ -336,11 +368,8 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                         | None -> Choice2Of2 <| sprintf " - %s uses NuGet package %O, but it was not found in the paket.lock file in group %O.%s" referenceFile.FileName ps.Name kv.Key (lockFile.CheckIfPackageExistsInAnyGroup ps.Name)
 
                     match group, package with
-                    | Choice1Of2 group, Choice1Of2 package ->
-                        let resolvedSettings =
-                            [package.Settings; group.Options.Settings]
-                            |> List.fold (+) ps.Settings
-                        ((kv.Key,ps.Name), (package.Version,resolvedSettings))
+                    | Choice1Of2 _, Choice1Of2 package ->
+                        ((kv.Key,package.Name), (package.Version, ps.Settings + package.Settings))
                         |> Choice1Of2
                     | Choice2Of2 error1, Choice2Of2 error2 -> Choice2Of2 (error1 + "\n" + error2)
                     | Choice2Of2 error, _ | _, Choice2Of2 error -> Choice2Of2 error
@@ -367,13 +396,10 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                         lockFile.Groups |> Map.containsKey groupName)
                     (fun (groupName,(_,parentSettings), dep) ->
                         let group = lockFile.Groups.[groupName]
-                        match group.Resolution |> Map.tryFind dep with
+                        match group.TryFind dep with
                         | None -> None
                         | Some p ->
-                            let resolvedSettings =
-                                [p.Settings; group.Options.Settings]
-                                |> List.fold (+) parentSettings
-                            Some ((groupName,p.Name), (p.Version,resolvedSettings)) )
+                            Some ((groupName,p.Name), (p.Version,parentSettings + p.Settings)) )
                     (fun (groupName,(_,parentSettings), dep) ->
                         Some <| sprintf " - %s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName groupName
                     )

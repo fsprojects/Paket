@@ -8,6 +8,7 @@ open System
 open System.Xml
 open System.IO
 open Chessie.ErrorHandling
+open PackageResolver
 open Requirements
 
 /// Paket API which is optimized for F# Interactive use.
@@ -621,7 +622,7 @@ type Dependencies(dependenciesFileName: string) =
             |> List.distinct
         
         let versions = 
-            NuGet.GetVersions true alternativeProjectRoot root (sources, PackageName name)
+            NuGet.GetVersions true alternativeProjectRoot root (GetPackageVersionsParameters.ofParams sources (GroupName "") (PackageName name))
             |> Async.RunSynchronously
             |> List.map (fun (v,_) -> v.ToString())
             |> List.toArray
@@ -745,6 +746,14 @@ type Dependencies(dependenciesFileName: string) =
             doc.Save fileStream
 
     static member FixNuspecs (referencesFile:ReferencesFile, nuspecFileList:string list) =
+        let deps = Dependencies.Locate(Path.GetDirectoryName(referencesFile.FileName))
+        let locked = deps.GetLockFile()
+
+        // NuGet has thrown away "group" association, so this is best effort.
+        let known =
+            locked.GetPackageHull referencesFile
+            |> Seq.map (fun kv -> kv.Key |> snd)
+            |> Set.ofSeq
 
         for nuspecFile in nuspecFileList do
             if not (File.Exists nuspecFile) then
@@ -769,8 +778,11 @@ type Dependencies(dependenciesFileName: string) =
                     if node.Name = "dependency" then
                         let packageName = 
                             match node.Attributes.["id"] with null -> "" | x -> x.InnerText
-
-                        if not (directDeps.Contains (PackageName packageName)) then
+                        let packName = PackageName packageName
+                        // Ignore unknown packages, see https://github.com/fsprojects/Paket/issues/2694
+                        // TODO: Add some version sanity check here.
+                        // Assert that the version we remove it not newer than what we have in our resolution!
+                        if known.Contains packName && not (directDeps.Contains (PackageName packageName)) then
                             nodesToRemove.Add node |> ignore
 
                 if nodesToRemove.Count = 0 then

@@ -1,4 +1,43 @@
-#### 5.92.0-beta001 - 26.08.2017
+#### 5.92.100 - 08.09.2017
+* BUGFIX: Don't depend on restore cache when using paket.local or force switch - https://github.com/fsprojects/Paket/pull/2734
+
+#### 5.92.9 - 08.09.2017
+* BUGFIX: MSBuild now tracks Paket.Restore.targets for incremental builds - https://github.com/fsprojects/Paket/pull/2742
+
+#### 5.92.8 - 08.09.2017
+* BUGFIX: Removed default 100sec timeout for Http dependencies download - https://github.com/fsprojects/Paket/pull/2737
+
+#### 5.92.7 - 08.09.2017
+* BUGFIX: Fixing root cause for casing issue in #2676 - https://github.com/fsprojects/Paket/pull/2743
+
+#### 5.92.6 - 08.09.2017
+* BUGFIX: Temporary fix for casing issue in #2676 - https://github.com/fsprojects/Paket/pull/2743
+
+#### 5.92.5 - 06.09.2017
+* BUGFIX: calculate hashfile after signing the assembly. - https://github.com/fsprojects/Paket/pull/27
+
+#### 5.92.4 - 05.09.2017
+* BUGFIX: always allow partial restore - https://github.com/fsprojects/Paket/pull/2724
+* BUGFIX: always call GetVersions before GetDetails - https://github.com/fsprojects/Paket/pull/2721
+
+#### 5.92.3 - 03.09.2017
+* BUGFIX: Fix a crash when using `storage: package` in-line - https://github.com/fsprojects/Paket/pull/2713
+
+#### 5.92.2 - 03.09.2017
+* BOOTSTRAPPER: Add support for IgnoreCache to app.config - https://github.com/fsprojects/Paket/pull/2696
+* DOCS: Fix GitHub project dependency description - https://github.com/fsprojects/Paket/pull/2707
+* BUGFIX: Fix V3 implementation - https://github.com/fsprojects/Paket/pull/2708
+* BUGFIX: Don't use the global cache when paket.local is given - https://github.com/fsprojects/Paket/pull/2709
+* BUGFIX: Ignore unknown packages in fix-nuspec - https://github.com/fsprojects/Paket/pull/2710
+
+#### 5.92.0 - 30.08.2017
+* BUGFIX: Fix new restore cache - https://github.com/fsprojects/Paket/pull/2684
+* PERFORMANCE: Make restore faster - https://github.com/fsprojects/Paket/pull/2675
+* BUGFIX: Incorrect warnings on restore - https://github.com/fsprojects/Paket/pull/2687
+* PERFORMANCE: Make install faster - https://github.com/fsprojects/Paket/pull/2688
+
+#### 5.92.0-beta003 - 30.08.2017
+* Paket comes as signed lib for better antivir support
 * BUGFIX: Fix new restore cache - https://github.com/fsprojects/Paket/pull/2684
 
 #### 5.92.0-alpha001 - 26.08.2017

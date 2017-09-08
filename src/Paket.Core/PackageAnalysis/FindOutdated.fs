@@ -36,10 +36,10 @@ let FindOutdated strict force includingPrereleases groupNameFilter environment =
     let root = Path.GetDirectoryName dependenciesFile.FileName
     let alternativeProjectRoot = None
 
-    let getVersionsF sources groupName packageName = async {
-        let! versions = NuGet.GetVersions force alternativeProjectRoot root (sources, packageName)
+    let getVersionsF parameters = async {
+        let! versions = NuGet.GetVersions force alternativeProjectRoot root parameters
         return versions |> List.toSeq }
-    let getPreferredVersionsF sources resolverStrategy groupName packageName = []
+    let getPreferredVersionsF resolverStrategy parameters = []
     let dependenciesFile = UpdateProcess.detectProjectFrameworksForDependenciesFile dependenciesFile
     let checkedDepsGroups = 
         match groupNameFilter with

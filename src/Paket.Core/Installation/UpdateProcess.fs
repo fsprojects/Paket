@@ -105,19 +105,19 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
 
                 v,s :: (List.map PackageSources.PackageSource.FromCache caches))
 
-        let getPreferredVersionsF sources resolverStrategy groupName packageName =
-            match preferredVersions |> Map.tryFind (groupName, packageName), resolverStrategy with
+        let getPreferredVersionsF resolverStrategy (parameters:GetPackageVersionsParameters) =
+            match preferredVersions |> Map.tryFind (parameters.Package.GroupName, parameters.Package.PackageName), resolverStrategy with
             | Some x, ResolverStrategy.Min -> [x]
             | Some x, _ -> 
-                if not (changes |> Set.contains (groupName, packageName)) then
+                if not (changes |> Set.contains (parameters.Package.GroupName, parameters.Package.PackageName)) then
                     [x]
                 else []
             | _ -> []
 
-        let getPackageDetailsF sources groupName packageName version = async {
-            let! (exploredPackage:PackageDetails) = getPackageDetailsF sources groupName packageName version
-            match preferredVersions |> Map.tryFind (groupName,packageName) with
-            | Some (preferedVersion,_) when version = preferedVersion -> return { exploredPackage with Unlisted = false }
+        let getPackageDetailsF (parameters:GetPackageDetailsParameters) = async {
+            let! (exploredPackage:PackageDetails) = getPackageDetailsF parameters
+            match preferredVersions |> Map.tryFind (parameters.Package.GroupName, parameters.Package.PackageName) with
+            | Some (preferedVersion,_) when parameters.Version = preferedVersion -> return { exploredPackage with Unlisted = false }
             | _ -> return exploredPackage }
 
         getPreferredVersionsF,getPackageDetailsF,groups
@@ -179,8 +179,8 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, alternativeProjectRoot,
 
     let getSha1 origin owner repo branch auth = RemoteDownload.getSHA1OfBranch origin owner repo branch auth |> Async.RunSynchronously
     let root = Path.GetDirectoryName dependenciesFile.FileName
-    let inline getVersionsF sources groupName packageName = async {
-        let! result = NuGet.GetVersions force alternativeProjectRoot root (sources, packageName) 
+    let inline getVersionsF (parameters:GetPackageVersionsParameters) = async {
+        let! result = NuGet.GetVersions force alternativeProjectRoot root parameters
         return result |> List.toSeq }
 
     let dependenciesFile = detectProjectFrameworksForDependenciesFile dependenciesFile
