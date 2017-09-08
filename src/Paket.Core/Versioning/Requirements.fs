@@ -780,9 +780,9 @@ type InstallSettings =
               | Some x -> yield "condition: " + x.ToUpper()
               | None -> ()
               match this.CreateBindingRedirects with
-              | Some On -> yield "redirects: on"
-              | Some Off -> yield "redirects: off"
-              | Some Force -> yield "redirects: force"
+              | Some BindingRedirectsSettings.On -> yield "redirects: on"
+              | Some BindingRedirectsSettings.Off -> yield "redirects: off"
+              | Some BindingRedirectsSettings.Force -> yield "redirects: force"
               | None -> ()
               match this.FrameworkRestrictions with
               | ExplicitRestriction FrameworkRestriction.HasNoRestriction -> ()
