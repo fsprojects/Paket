@@ -17,7 +17,7 @@ namespace Paket.Bootstrapper.HelperProxies
         public void CopyFile(string fileFrom, string fileTo, bool overwrite) { File.Copy(fileFrom, fileTo, overwrite); }
         public void DeleteFile(string filename) { File.Delete(filename); }
         public Stream CreateFile(string filename) { return File.Create(filename); }
-        public string GetLocalFileVersion(string filename) { return BootstrapperHelper.GetLocalFileVersion(filename); }
+        public string GetLocalFileVersion(string filename) { return BootstrapperHelper.GetLocalFileVersion(filename, this); }
         public void MoveFile(string fromFile, string toFile) { BootstrapperHelper.FileMove(fromFile, toFile); }
         public void ExtractToDirectory(string zipFile, string targetLocation) { ZipFile.ExtractToDirectory(zipFile, targetLocation); }
         public DateTime GetLastWriteTime(string filename) { return new FileInfo(filename).LastWriteTime; }
@@ -30,20 +30,14 @@ namespace Paket.Bootstrapper.HelperProxies
 
         public string GetExecutingAssemblyPath() { return Assembly.GetExecutingAssembly().Location; }
         public string GetTempPath() { return Path.GetTempPath(); }
-        public Stream CreateExclusive(string path)
-        {
-            return File.Open(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
-        }
 
-        public void WaitForFileFinished(string path)
+        private static Stream WaitForFileOpen(string path, FileMode filemode)
         {
-            var shouldContinue = true;
-            while (shouldContinue)
+            while (true)
             {
                 try
                 {
-                    File.Open(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None).Dispose();
-                    shouldContinue = false;
+                    return File.Open(path, filemode, FileAccess.ReadWrite, FileShare.None);
                 }
                 catch (Exception exception)
                 {
@@ -52,9 +46,19 @@ namespace Paket.Bootstrapper.HelperProxies
                         throw;
                     }
 
-                    Thread.Sleep(200);
+                    Thread.Sleep(100);
                 }
             }
+        }
+
+        public Stream CreateExclusive(string path)
+        {
+            return WaitForFileOpen(path, FileMode.Create);
+        }
+
+        public void WaitForFileFinished(string path)
+        {
+            WaitForFileOpen(path, FileMode.Open).Dispose();
         }
 
         public void CreateDirectory(string dir) { Directory.CreateDirectory(dir); }
@@ -69,12 +73,20 @@ namespace Paket.Bootstrapper.HelperProxies
 
         public IEnumerable<string> ReadAllLines(string filename)
         {
-            return File.ReadAllLines(filename);
+            using (var reader = new StreamReader(OpenRead(filename)))
+            {
+                var line = reader.ReadLine();
+                while (line != null)
+                {
+                    yield return line;
+                    line = reader.ReadLine();
+                }
+            }
         }
 
         public Stream OpenRead(string filename)
         {
-            return File.OpenRead(filename);
+            return WaitForFileOpen(filename, FileMode.Open);
         }
     }
 }

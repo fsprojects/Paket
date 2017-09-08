@@ -74,7 +74,7 @@ namespace Paket.Bootstrapper
             var exitCode = 1;
             if (File.Exists(target))
             {
-                var localVersion = BootstrapperHelper.GetLocalFileVersion(target);
+                var localVersion = BootstrapperHelper.GetLocalFileVersion(target, new FileSystemProxy());
                 Console.WriteLine("Detected existing paket.exe ({0}). Cancelling normally.", localVersion);
                 exitCode = 0;
             }
@@ -114,7 +114,7 @@ namespace Paket.Bootstrapper
                 ConsoleImpl.WriteInfo("Checking Paket version ({0})...", versionRequested);
                 ConsoleImpl.WriteTrace("Target path is {0}", dlArgs.Target);
                 var localVersion = fileSystemProxy.GetLocalFileVersion(dlArgs.Target);
-                ConsoleImpl.WriteTrace("File in target path version: v{0}", localVersion);
+                ConsoleImpl.WriteTrace("File in target path version: v{0}", localVersion ?? "UNKNOWN");
 
                 var specificVersionRequested = true;
                 var latestVersion = dlArgs.LatestVersion;

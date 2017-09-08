@@ -31,7 +31,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         protected override string GetLatestVersionCore(bool ignorePrerelease)
         {
-            var targetVersion = string.Empty;
+            string targetVersion;
             try 
             {
                 targetVersion = fileSystemProxy.GetLocalFileVersion(_target);

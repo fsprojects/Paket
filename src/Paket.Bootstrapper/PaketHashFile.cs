@@ -35,5 +35,10 @@ namespace Paket.Bootstrapper
                 }
             }
         }
+
+        public override string ToString()
+        {
+            return string.Join("\r\n", Content);
+        }
     }
 }

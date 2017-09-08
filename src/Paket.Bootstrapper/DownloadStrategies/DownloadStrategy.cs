@@ -61,13 +61,13 @@ namespace Paket.Bootstrapper.DownloadStrategies
             {
                 var result = func();
                 watch.Stop();
-                ConsoleImpl.WriteTrace("[{0}] {1} took {2:0.##} second(s) and returned {3}.", Name, actionName, watch.Elapsed.TotalSeconds, result);
+                ConsoleImpl.WriteTrace("[{0}] {1} took {2:0.##} second(s) and returned '{3}'.", Name, actionName, watch.Elapsed.TotalSeconds, result);
                 return result;
             }
             catch (Exception exception)
             {
                 watch.Stop();
-                ConsoleImpl.WriteTrace("[{0}] {1} took {2:0.##} second(s) and failed with {3}.", Name, actionName, watch.Elapsed.TotalSeconds, exception.Message);
+                ConsoleImpl.WriteTrace("[{0}] {1} took {2:0.##} second(s) and failed with '{3}'.", Name, actionName, watch.Elapsed.TotalSeconds, exception.Message);
                 throw;
             }
         }
