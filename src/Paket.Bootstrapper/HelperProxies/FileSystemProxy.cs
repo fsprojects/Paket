@@ -2,6 +2,7 @@ using System.IO;
 using System.IO.Compression;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 
@@ -31,9 +32,17 @@ namespace Paket.Bootstrapper.HelperProxies
         public string GetExecutingAssemblyPath() { return Assembly.GetExecutingAssembly().Location; }
         public string GetTempPath() { return Path.GetTempPath(); }
 
+        // This limit is an upper value where we are nearly sure that an some deadlock hapenned and
+        // not just a very slow process downloading a file for example.
+        // It's there mainly to avoid hogging resources on build servers if something really, really
+        // wrong happens.
+        private static readonly TimeSpan WaitHighLimit = TimeSpan.FromMinutes(15);
+
         private static Stream WaitForFileOpen(string path, FileMode filemode)
         {
-            while (true)
+            Stopwatch watch = null;
+            int wait = 100;
+            while (watch == null || watch.Elapsed < WaitHighLimit)
             {
                 try
                 {
@@ -46,9 +55,16 @@ namespace Paket.Bootstrapper.HelperProxies
                         throw;
                     }
 
-                    Thread.Sleep(100);
+                    if (watch == null)
+                    {
+                        watch = Stopwatch.StartNew();
+                    }
+                    Thread.Sleep(wait);
+                    wait = Math.Max(wait + 10, 1000);
                 }
             }
+
+            throw new TimeoutException("Timeout while waiting for a file to be available");
         }
 
         public Stream CreateExclusive(string path)
