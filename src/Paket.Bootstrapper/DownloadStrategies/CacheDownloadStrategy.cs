@@ -78,18 +78,10 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
             ConsoleImpl.WriteInfo("Copying version {0} from cache.", latestVersion);
             ConsoleImpl.WriteTrace("{0} -> {1}", cached, target);
-            try
+            using (var targetStream = FileSystemProxy.CreateExclusive(target))
+            using (var cachedStream = FileSystemProxy.OpenRead(cached))
             {
-                using (var targetStream = FileSystemProxy.CreateExclusive(target))
-                using (var cachedStream = FileSystemProxy.OpenRead(cached))
-                {
-                    cachedStream.CopyTo(targetStream);
-                }
-            }
-            catch
-            {
-                DeleteIfPossible(target);
-                throw;
+                cachedStream.CopyTo(targetStream);
             }
         }
 
@@ -97,51 +89,30 @@ namespace Paket.Bootstrapper.DownloadStrategies
         {
             FileSystemProxy.CreateDirectory(Path.GetDirectoryName(cached));
 
-            try
+            var tempFile = Path.Combine(FileSystemProxy.GetTempPath(), Guid.NewGuid().ToString());
+
+            EffectiveStrategy.DownloadVersion(latestVersion, tempFile, hashFile);
+
+            if (!BootstrapperHelper.ValidateHash(FileSystemProxy, hashFile, latestVersion, tempFile))
             {
-                var tempFile = Path.Combine(FileSystemProxy.GetTempPath(), Guid.NewGuid().ToString());
+                throw new InvalidOperationException(
+                    string.Format("paket.exe was currupted after download by {0}: Invalid hash",
+                        EffectiveStrategy.Name));
+            }
 
-                EffectiveStrategy.DownloadVersion(latestVersion, tempFile, hashFile);
-
-                if (!BootstrapperHelper.ValidateHash(FileSystemProxy, hashFile, latestVersion, tempFile))
+            ConsoleImpl.WriteTrace("Caching version {0} for later, hash is ok", latestVersion);
+            using (var targetStream = FileSystemProxy.CreateExclusive(target))
+            using (var cachedStream = FileSystemProxy.CreateExclusive(cached))
+            {
+                using (var tempStream = FileSystemProxy.OpenRead(tempFile))
                 {
-                    throw new InvalidOperationException(
-                        string.Format("paket.exe was currupted after download by {0}: Invalid hash",
-                            EffectiveStrategy.Name));
+                    tempStream.CopyTo(targetStream);
+                    tempStream.Seek(0, SeekOrigin.Begin);
+                    tempStream.CopyTo(cachedStream);
                 }
+            }
 
-                ConsoleImpl.WriteTrace("Caching version {0} for later, hash is ok", latestVersion);
-                using (var targetStream = FileSystemProxy.CreateExclusive(target))
-                using (var cachedStream = FileSystemProxy.CreateExclusive(cached))
-                {
-                    using (var tempStream = FileSystemProxy.OpenRead(tempFile))
-                    {
-                        tempStream.CopyTo(targetStream);
-                        tempStream.Seek(0, SeekOrigin.Begin);
-                        tempStream.CopyTo(cachedStream);
-                    }
-                }
-
-                FileSystemProxy.DeleteFile(tempFile);
-            }
-            catch
-            {
-                DeleteIfPossible(target);
-                DeleteIfPossible(cached);
-                throw;
-            }
-        }
-
-        private void DeleteIfPossible(string path)
-        {
-            try
-            {
-                FileSystemProxy.DeleteFile(path);
-            }
-            catch
-            {
-                // IGNORE
-            }
+            FileSystemProxy.DeleteFile(tempFile);
         }
 
         protected override PaketHashFile DownloadHashFileCore(string latestVersion)

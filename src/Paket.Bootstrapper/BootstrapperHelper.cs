@@ -44,7 +44,7 @@ Options:
                 {
                     stream.CopyTo(bytes);
                 }
-                var attr = Assembly.ReflectionOnlyLoad(bytes.ToArray()).GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false).Cast<AssemblyInformationalVersionAttribute>().FirstOrDefault();
+                var attr = Assembly.Load(bytes.ToArray()).GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false).Cast<AssemblyInformationalVersionAttribute>().FirstOrDefault();
                 if (attr == null)
                 {
                     ConsoleImpl.WriteWarning("No assembly version found in {0}", target);
