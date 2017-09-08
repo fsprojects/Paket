@@ -1,3 +1,6 @@
+#### 5.92.7 - 08.09.2017
+* BUGFIX: Fixing root cause for casing issue in #2676 - https://github.com/fsprojects/Paket/pull/2743
+
 #### 5.92.6 - 08.09.2017
 * BUGFIX: Temporary fix for casing issue in #2676 - https://github.com/fsprojects/Paket/pull/2743
 
