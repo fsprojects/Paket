@@ -31,8 +31,8 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>fix-nuspecs files src/Paket.Core.preview3/obj/Paket.Core.1.0.0.nuspec project-file "C:/proj/Paket/src/Paket.Core.preview3/Paket.Core.fsproj"</StartArguments>
-    <StartWorkingDirectory>C:\proj\Paket\</StartWorkingDirectory>
+    <StartArguments>install</StartArguments>
+    <StartWorkingDirectory>D:\temp\before</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
