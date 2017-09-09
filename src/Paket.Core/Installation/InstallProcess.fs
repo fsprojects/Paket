@@ -97,14 +97,11 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
             |> Seq.filter (fun (_,_,contentCopySettings,_) -> contentCopySettings <> ContentCopySettings.Omit)
             |> Seq.map (fun ((group, packName),v,s,s') -> s,s',findPackageFolder root (group, packName) v)
             |> Seq.choose (fun (contentCopySettings,contentCopyToOutputSettings,packageDir) ->
-                printfn  "%s" packageDir.FullName
                 packageDir.GetDirectories "Content"
                 |> Array.append (packageDir.GetDirectories "content")
                 |> Array.tryFind (fun _ -> true)
                 |> Option.map (fun x -> x,contentCopySettings,contentCopyToOutputSettings))
             |> Seq.toList
-
-        printfn "%A" packageDirectoriesWithContent
 
         let copyContentFiles (project : ProjectFile, packagesWithContent) =
             let onBlackList (fi : FileInfo) = contentFileBlackList |> List.exists (fun rule -> rule(fi))
