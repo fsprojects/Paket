@@ -619,7 +619,7 @@ let ``should parse lock file with groups``() =
     
     packages2.Length |> shouldEqual 1
     lockFile2.Options.Strict |> shouldEqual false
-    lockFile2.Options.Redirects |> shouldEqual (Some BindingRedirectsSettings.Off)
+    lockFile2.Options.Redirects |> shouldEqual (Some BindingRedirectsSettings.On)
     lockFile2.Options.Settings.ImportTargets |> shouldEqual None
     lockFile2.Options.Settings.CopyLocal |> shouldEqual (Some true)
     lockFile2.Options.Settings.ReferenceCondition |> shouldEqual (Some "LEGACY")
