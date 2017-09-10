@@ -1,0 +1,4 @@
+RESTRICTION: == net461
+NUGET
+  remote: https://www.nuget.org/api/v2
+    NUnit (3.8.1)

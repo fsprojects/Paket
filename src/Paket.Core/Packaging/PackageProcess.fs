@@ -148,41 +148,38 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
     let projDeps = (Dictionary<int,ProjectFile>(),Dictionary<string,int list>())
 
     // load up project files and grab meta data
-    let projectTemplates = 
-        let getAllProjectsFiles workingDir =
-            ProjectFile.FindAllProjectFiles workingDir
-            |> Array.choose (fun (projectFile:FileInfo) ->
-                match ProjectFile.FindCorrespondingFile(projectFile, Constants.TemplateFile) with
-                | None -> None
-                | Some fileName ->
-                    match ProjectFile.tryLoad projectFile.FullName with
-                    | Some projectFile -> Some(projectFile,TemplateFile.Load(fileName,lockFile,version,specificVersions))
-                    | None -> None)
-            |> Array.filter (fun (_,templateFile) -> 
+    let projectTemplates  =
+        ProjectFile.FindAllProjectFiles workingDir
+        |> Array.choose (fun (projectFile:FileInfo) ->
+            match ProjectFile.FindCorrespondingFile(projectFile, Constants.TemplateFile) with
+            | None -> None
+            | Some fileName ->
+                match ProjectFile.tryLoad projectFile.FullName with
+                | Some projectFile -> Some(projectFile,TemplateFile.Load(fileName,lockFile,version,specificVersions))
+                | None -> None)
+        |> Array.filter (fun (_,templateFile) -> 
+            match templateFile with
+            | CompleteTemplate _ -> false 
+            | IncompleteTemplate -> true)
+        |> Array.filter (fun (_,templateFile) -> 
+            match TemplateFile.tryGetId templateFile with
+            | Some id -> 
+                if excludedTemplateIds.Contains id then
+                    allTemplateFiles.Remove(templateFile.FileName) |> ignore
+                    false
+                else true
+            | _ -> true)
+        |> Array.map (fun (projectFile,templateFile') ->
+            allTemplateFiles.Remove(templateFile'.FileName) |> ignore
+
+            let merged = merge buildConfig buildPlatform version specificVersions projectFile templateFile'
+            let willBePacked = 
                 match templateFile with
-                | CompleteTemplate _ -> false 
-                | IncompleteTemplate -> true)
-            |> Array.filter (fun (_,templateFile) -> 
-                match TemplateFile.tryGetId templateFile with
-                | Some id -> 
-                    if excludedTemplateIds.Contains id then
-                        allTemplateFiles.Remove(templateFile.FileName) |> ignore
-                        false
-                    else true
-                | _ -> true)
-            |> Array.map (fun (projectFile,templateFile') ->
-                allTemplateFiles.Remove(templateFile'.FileName) |> ignore
-
-                let merged = merge buildConfig buildPlatform version specificVersions projectFile templateFile'
-                Path.GetFullPath projectFile.FileName |> normalizePath,(merged,projectFile))
-            |> Map.ofArray
-
-        match templateFile with
-        | Some template -> 
-            let projects = getAllProjectsFiles (FileInfo(template).Directory.FullName)
-            projects
-            |> Map.filter (fun p (t,_) -> normalizePath (Path.GetFullPath t.FileName) = normalizePath (Path.GetFullPath template))
-        | None -> getAllProjectsFiles workingDir
+                | Some file -> normalizePath (Path.GetFullPath file) = normalizePath (Path.GetFullPath merged.FileName)
+                | None -> true
+            
+            Path.GetFullPath projectFile.FileName |> normalizePath,(merged,projectFile,willBePacked))
+        |> Map.ofArray
 
     // add dependencies
     let allTemplates =
@@ -209,8 +206,9 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
 
         let remaining = allTemplateFiles |> Seq.collect convertRemainingTemplate |> Seq.toList
         projectTemplates
+        |> Map.filter (fun _ (_,_,willBePacked) -> willBePacked) 
         |> Map.toList
-        |> Seq.collect(fun (_,(t, p)) -> 
+        |> Seq.collect(fun (_,(t, p, _)) -> 
             seq {
                 for template in optWithSymbols p t do 
                     yield template, p
