@@ -33,7 +33,7 @@
     <StartAction>Project</StartAction>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\temp\Gu.Reactive</StartWorkingDirectory>
-    <StartArguments>fix-nuspecs files src/Paket.Core.preview3/obj/Paket.Core.1.0.0.nuspec project-file src/Paket.Core.preview3/Paket.Core.fsproj</StartArguments>
+    <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
     <StartWorkingDirectory>D:\temp\before</StartWorkingDirectory>
   </PropertyGroup>

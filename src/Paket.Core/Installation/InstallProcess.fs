@@ -536,7 +536,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     let packageRedirects =
                         group.Resolution
                         |> Map.tryFind (snd kv.Key)
-                        |> Option.bind (fun p -> groupRedirects ++ p.Settings.CreateBindingRedirects)
+                        |> Option.bind (fun p -> p.Settings.CreateBindingRedirects ++ groupRedirects)
 
                     (snd kv.Value,packageRedirects))
                 |> applyBindingRedirects
