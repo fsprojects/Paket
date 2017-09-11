@@ -425,7 +425,10 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
         let targetFilter = 
             targetFrameworks
-            |> Option.map (fun s -> s.Split(';') |> Array.map FrameworkDetection.Extract |> Array.choose id)
+            |> Option.map (fun s -> 
+                s.Split([|';'|], StringSplitOptions.RemoveEmptyEntries)
+                |> Array.map (fun s -> s.Trim())
+                |> Array.choose FrameworkDetection.Extract)
 
         if not hasLocalFile && not ignoreChecks then
             let hasAnyChanges,nugetChanges,remoteFilechanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)

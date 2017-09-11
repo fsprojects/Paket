@@ -562,6 +562,7 @@ let fixNuspecs silent (results : ParseResults<_>) =
     let nuspecFiles =
         results.GetResult <@ FixNuspecsArgs.Files @>
         |> List.collect (fun s -> s.Split([|';'|], StringSplitOptions.RemoveEmptyEntries) |> Array.toList)
+        |> List.map (fun s -> s.Trim())
 
     match results.TryGetResult <@ FixNuspecsArgs.ProjectFile @> with
     | Some projectFile ->
@@ -582,7 +583,10 @@ let fixNuspecs silent (results : ParseResults<_>) =
 let fixNuspec silent (results : ParseResults<_>) =
     let fileString = results.GetResult <@ FixNuspecArgs.File @>
     let refFile = results.GetResult <@ FixNuspecArgs.ReferencesFile @>
-    let nuspecList = fileString.Split([|';'|])|>List.ofArray
+    let nuspecList = 
+        fileString.Split([|';'|])
+        |> Array.map (fun s -> s.Trim())
+        |> List.ofArray
     Dependencies.FixNuspecs (refFile, nuspecList)
 
 // separated out from showInstalledPackages to allow Paket.PowerShell to get the types

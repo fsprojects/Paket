@@ -1,3 +1,6 @@
+#### 5.93.1 - 11.09.2017
+* BUGFIX: Trim target frameworks for .NET cli - https://github.com/fsprojects/Paket/issues/2749
+
 #### 5.93.0 - 10.09.2017
 * BUGFIX: Don't depend on restore cache when using paket.local or force switch - https://github.com/fsprojects/Paket/pull/2734
 * BUGFIX: MSBuild now tracks Paket.Restore.targets for incremental builds - https://github.com/fsprojects/Paket/pull/2742
