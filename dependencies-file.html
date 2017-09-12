@@ -401,6 +401,19 @@ for each one.</p>
 
   <span class="k">nuget</span> FAKE <span class="k">redirects</span>: on
 </code></pre></td></tr></table>
+<p>If you want Paket to always create redirects for all packages then you can use the following:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">redirects</span>: force
+<span class="k">source</span> https://nuget.org/api/v2
+
+<span class="k">nuget</span> FSharp.Core
+<span class="k">nuget</span> Newtonsoft.JSON
+</code></pre></td></tr></table>
 <h3><a name="Resolver-strategy-for-transitive-dependencies" class="anchor" href="#Resolver-strategy-for-transitive-dependencies">Resolver strategy for transitive dependencies</a></h3>
 <p>The <code>strategy</code> option tells Paket what resolver strategy it should use for
 <a href="faq.html#transitive">transitive dependencies</a>. The strategy can be either <code>min</code>
