@@ -1,3 +1,6 @@
+#### 5.95.0 - 12.09.2017
+* Allow to add packages without running the resolver - https://github.com/fsprojects/Paket/issues/2756
+
 #### 5.94.0 - 12.09.2017
 * Allow to set "redirects: force" on group level - https://github.com/fsprojects/Paket/pull/2666
 * BUGFIX: Trim target frameworks for .NET cli - https://github.com/fsprojects/Paket/issues/2749

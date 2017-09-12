@@ -25,6 +25,7 @@ type AddArgs =
     | [<Unique>] Redirects
     | [<Unique>] Clean_Redirects
     | [<Unique>] No_Install
+    | [<Unique>] No_Resolve
     | [<Unique>] Keep_Major
     | [<Unique>] Keep_Minor
     | [<Unique>] Keep_Patch
@@ -52,6 +53,7 @@ with
             | Interactive -> "ask for every project whether to add the dependency"
             | Redirects -> "create binding redirects"
             | Clean_Redirects -> "remove binding redirects that were not created by Paket"
+            | No_Resolve -> "do not resolve"
             | No_Install -> "do not modify projects"
             | Keep_Major -> "only allow updates that preserve the major version"
             | Keep_Minor -> "only allow updates that preserve the minor version"

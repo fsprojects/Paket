@@ -193,6 +193,7 @@ let add (results : ParseResults<_>) =
          results.TryGetResult <@ AddArgs.Group_Legacy @>)
         |> legacyOption results (ReplaceArgument("--group", "group"))
     let noInstall = results.Contains <@ AddArgs.No_Install @>
+    let noResolve = results.Contains <@ AddArgs.No_Resolve @>
     let semVerUpdateMode =
         if results.Contains <@ AddArgs.Keep_Patch @> then SemVerUpdateMode.KeepPatch else
         if results.Contains <@ AddArgs.Keep_Minor @> then SemVerUpdateMode.KeepMinor else
@@ -206,10 +207,14 @@ let add (results : ParseResults<_>) =
 
     match project with
     | Some projectName ->
-        Dependencies.Locate().AddToProject(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+        Dependencies
+            .Locate()
+            .AddToProject(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not)
     | None ->
         let interactive = results.Contains <@ AddArgs.Interactive @>
-        Dependencies.Locate().Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+        Dependencies
+            .Locate()
+            .Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not)
 
 let validateConfig (results : ParseResults<_>) =
     let credential = results.Contains <@ ConfigArgs.AddCredentials @>
