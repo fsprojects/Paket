@@ -1,4 +1,5 @@
-#### 5.93.1 - 11.09.2017
+#### 5.94.0 - 12.09.2017
+* Allow to set "redirects: force" on group level - https://github.com/fsprojects/Paket/pull/2666
 * BUGFIX: Trim target frameworks for .NET cli - https://github.com/fsprojects/Paket/issues/2749
 
 #### 5.93.0 - 10.09.2017
