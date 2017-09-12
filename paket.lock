@@ -1137,7 +1137,7 @@ CONTENT: NONE
 NUGET
   remote: https://www.nuget.org/api/v2
     0x53A.ReferenceAssemblies.Paket (0.2)
-    FAKE (4.63)
+    FAKE (4.63.2)
     FSharp.Compiler.Service (13.0)
       FSharp.Core (>= 4.1.17) - restriction: >= netstandard1.6
       Microsoft.DiaSymReader (>= 1.1) - restriction: >= netstandard1.6
