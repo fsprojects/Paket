@@ -293,6 +293,16 @@ group Build
   nuget FAKE redirects: on
 ```
 
+If you want Paket to always create redirects for all packages then you can use the following:
+
+```paket
+redirects: force
+source https://nuget.org/api/v2
+
+nuget FSharp.Core
+nuget Newtonsoft.JSON
+```
+
 ### Resolver strategy for transitive dependencies
 
 The `strategy` option tells Paket what resolver strategy it should use for

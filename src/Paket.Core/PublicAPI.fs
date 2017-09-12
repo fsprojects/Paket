@@ -9,6 +9,7 @@ open System.Xml
 open System.IO
 open Chessie.ErrorHandling
 open PackageResolver
+open Requirements
 
 /// Paket API which is optimized for F# Interactive use.
 type Dependencies(dependenciesFileName: string) =
@@ -138,6 +139,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Adds the given package with the given version to the dependencies file.
     member this.Add(groupName: string option, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool,  createNewBindingFiles:bool, interactive: bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
+        let withBindingRedirects = if withBindingRedirects then BindingRedirectsSettings.On else BindingRedirectsSettings.Off
         RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.Add(dependenciesFileName, groupName, PackageName(package.Trim()), version,
@@ -146,6 +148,7 @@ type Dependencies(dependenciesFileName: string) =
 
    /// Adds the given package with the given version to the dependencies file.
     member this.AddToProject(groupName, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, projectName: string, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
+        let withBindingRedirects = if withBindingRedirects then BindingRedirectsSettings.On else BindingRedirectsSettings.Off
         RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.AddToProject(dependenciesFileName, groupName, PackageName package, version,
@@ -166,7 +169,8 @@ type Dependencies(dependenciesFileName: string) =
     member this.Install(force: bool) = this.Install(force, false, false, false, false, SemVerUpdateMode.NoRestriction, false, false, [], [], None)
 
     /// Installs all dependencies.
-    member this.Install(force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, onlyReferenced: bool, semVerUpdateMode, touchAffectedRefs, generateLoadScripts, providedFrameworks, providedScriptTypes, alternativeProjectRoot): unit =        
+    member this.Install(force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, onlyReferenced: bool, semVerUpdateMode, touchAffectedRefs, generateLoadScripts, providedFrameworks, providedScriptTypes, alternativeProjectRoot): unit =
+        let withBindingRedirects = if withBindingRedirects then BindingRedirectsSettings.On else BindingRedirectsSettings.Off
         this.Install({ InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, generateLoadScripts, providedFrameworks, providedScriptTypes, alternativeProjectRoot) with OnlyReferenced = onlyReferenced })
 
     /// Installs all dependencies.
@@ -229,6 +233,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Updates all dependencies.
     member this.Update(force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
+        let withBindingRedirects = if withBindingRedirects then BindingRedirectsSettings.On else BindingRedirectsSettings.Off
         RunInLockedAccessMode(
             this.RootPath,
             fun () -> 
@@ -243,6 +248,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Updates dependencies in single group.
     member this.UpdateGroup(groupName, force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode:SemVerUpdateMode, touchAffectedRefs): unit =
+        let withBindingRedirects = if withBindingRedirects then BindingRedirectsSettings.On else BindingRedirectsSettings.Off
         RunInLockedAccessMode(
             this.RootPath,
             fun () -> UpdateProcess.UpdateGroup(
@@ -258,6 +264,7 @@ type Dependencies(dependenciesFileName: string) =
             match groupName with
             | None -> Constants.MainDependencyGroup
             | Some name -> GroupName name
+        let withBindingRedirects = if withBindingRedirects then BindingRedirectsSettings.On else BindingRedirectsSettings.Off
 
         RunInLockedAccessMode(
             this.RootPath,
@@ -276,6 +283,7 @@ type Dependencies(dependenciesFileName: string) =
             match groupName with
             | None -> Constants.MainDependencyGroup
             | Some name -> GroupName name
+        let withBindingRedirects = if withBindingRedirects then BindingRedirectsSettings.On else BindingRedirectsSettings.Off
 
         RunInLockedAccessMode(
             this.RootPath,

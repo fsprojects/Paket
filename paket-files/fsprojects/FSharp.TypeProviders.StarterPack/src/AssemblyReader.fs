@@ -1,7 +1,7 @@
 // Copyright 2011-2015, Tomas Petricek (http://tomasp.net), Gustavo Guerra (http://functionalflow.co.uk), and other contributors
 // Licensed under the Apache License, Version 2.0, see LICENSE.md in this project
 //
-// A lightweight .NET assembly reader that fits in a single F# file.  Based on the well-tested Abstract IL
+// A lightweight .NET assembly reader that fits in a single F# file.  Based on the well-tested Abstract IL 
 // binary reader code.  Used by the type provider to read referenced asssemblies.
 
 module internal ProviderImplementation.AssemblyReader
@@ -11,39 +11,39 @@ open System.IO
 open System.Collections.Generic
 open System.Collections.Concurrent
 open System.Reflection
-
-// --------------------------------------------------------------------
+ 
+// -------------------------------------------------------------------- 
 // Utilities
-// --------------------------------------------------------------------
+// -------------------------------------------------------------------- 
 
 [<AutoOpen>]
-module Utils =
+module Utils = 
     [<Struct>]
-    type uoption<'T> (hasValue: bool, value: 'T) =
+    type uoption<'T> (hasValue: bool, value: 'T) = 
         member x.HasValue = hasValue
         member x.Value = value
 
     let UNone<'T> = uoption<'T>(false, Unchecked.defaultof<'T>)
     let USome v = uoption<'T>(true, v)
-    let (|UNone|USome|) (x:uoption<'T>) = if x.HasValue then USome x.Value else UNone
+    let (|UNone|USome|) (x:uoption<'T>) = if x.HasValue then USome x.Value else UNone 
 
 
     let tryFindMulti k map = match Map.tryFind k map with Some res -> res | None -> [| |]
 
-    let splitNameAt (nm:string) idx =
+    let splitNameAt (nm:string) idx = 
         if idx < 0 then failwith "splitNameAt: idx < 0";
-        let last = nm.Length - 1
+        let last = nm.Length - 1 
         if idx > last then failwith "splitNameAt: idx > last";
         (nm.Substring(0,idx)),
         (if idx < last then nm.Substring (idx+1,last - idx) else "")
 
-    let splitILTypeName (nm:string) =
+    let splitILTypeName (nm:string) = 
         match nm.LastIndexOf '.' with
         | -1 -> UNone, nm
         | idx -> let a,b = splitNameAt nm idx in USome a, b
 
-    let joinILTypeName (nspace: string uoption) (nm:string) =
-        match nspace with
+    let joinILTypeName (nspace: string uoption) (nm:string) = 
+        match nspace with 
         | UNone -> nm
         | USome ns -> ns + "." + nm
 
@@ -61,9 +61,9 @@ module Utils =
     let b2 n =  ((n >>> 16) &&& 0xFF)
     let b3 n =  ((n >>> 24) &&& 0xFF)
 
-    module SHA1 =
+    module SHA1 = 
         let inline (>>>&)  (x:int) (y:int)  = int32 (uint32 x >>> y)
-        let f(t,b,c,d) =
+        let f(t,b,c,d) = 
             if t < 20 then (b &&& c) ||| ((~~~b) &&& d)
             elif t < 40 then b ^^^ c ^^^ d
             elif t < 60 then (b &&& c) ||| (b &&& d) ||| (c &&& d)
@@ -74,27 +74,27 @@ module Utils =
         let [<Literal>] k40to59 = 0x8F1BBCDC
         let [<Literal>] k60to79 = 0xCA62C1D6
 
-        let k t =
-            if t < 20 then k0to19
-            elif t < 40 then k20to39
-            elif t < 60 then k40to59
-            else k60to79
+        let k t = 
+            if t < 20 then k0to19 
+            elif t < 40 then k20to39 
+            elif t < 60 then k40to59 
+            else k60to79 
 
-        type SHAStream =
+        type SHAStream = 
             { stream: byte[];
               mutable pos: int;
               mutable eof:  bool; }
 
         let rotLeft32 x n =  (x <<< n) ||| (x >>>& (32-n))
 
-        // padding and length (in bits!) recorded at end
-        let shaAfterEof sha  =
+        // padding and length (in bits!) recorded at end 
+        let shaAfterEof sha  = 
             let n = sha.pos
             let len = sha.stream.Length
             if n = len then 0x80
-            else
+            else 
               let padded_len = (((len + 9 + 63) / 64) * 64) - 8
-              if n < padded_len - 8  then 0x0
+              if n < padded_len - 8  then 0x0  
               elif (n &&& 63) = 56 then int32 ((int64 len * int64 8) >>> 56) &&& 0xff
               elif (n &&& 63) = 57 then int32 ((int64 len * int64 8) >>> 48) &&& 0xff
               elif (n &&& 63) = 58 then int32 ((int64 len * int64 8) >>> 40) &&& 0xff
@@ -105,13 +105,13 @@ module Utils =
               elif (n &&& 63) = 63 then (sha.eof <- true; int32 (int64 len * int64 8) &&& 0xff)
               else 0x0
 
-        let shaRead8 sha =
-            let s = sha.stream
+        let shaRead8 sha = 
+            let s = sha.stream 
             let b = if sha.pos >= s.Length then shaAfterEof sha else int32 s.[sha.pos]
             sha.pos <- sha.pos + 1
             b
-
-        let shaRead32 sha  =
+        
+        let shaRead32 sha  = 
             let b0 = shaRead8 sha
             let b1 = shaRead8 sha
             let b2 = shaRead8 sha
@@ -119,7 +119,7 @@ module Utils =
             let res = (b0 <<< 24) ||| (b1 <<< 16) ||| (b2 <<< 8) ||| b3
             res
 
-        let sha1Hash sha =
+        let sha1Hash sha = 
             let mutable h0 = 0x67452301
             let mutable h1 = 0xEFCDAB89
             let mutable h2 = 0x98BADCFE
@@ -136,7 +136,7 @@ module Utils =
                     w.[i] <- shaRead32 sha
                 for t = 16 to 79 do
                     w.[t] <- rotLeft32 (w.[t-3] ^^^ w.[t-8] ^^^ w.[t-14] ^^^ w.[t-16]) 1
-                a <- h0
+                a <- h0 
                 b <- h1
                 c <- h2
                 d <- h3
@@ -155,7 +155,7 @@ module Utils =
                 h4 <- h4 + e
             h0,h1,h2,h3,h4
 
-        let sha1HashBytes s =
+        let sha1HashBytes s = 
             let (_h0,_h1,_h2,h3,h4) = sha1Hash { stream = s; pos = 0; eof = false }   // the result of the SHA algorithm is stored in registers 3 and 4
             Array.map byte [|  b0 h4; b1 h4; b2 h4; b3 h4; b0 h3; b1 h3; b2 h3; b3 h3; |]
 
@@ -172,14 +172,14 @@ type PublicKey =
     member x.Key=match x with PublicKey b -> b | _ -> invalidOp "not a key"
     member x.KeyToken=match x with PublicKeyToken b -> b | _ -> invalidOp"not a key token"
 
-    member x.ToToken() =
-        match x with
+    member x.ToToken() = 
+        match x with 
         | PublicKey bytes -> SHA1.sha1HashBytes bytes
         | PublicKeyToken token -> token
     static member KeyAsToken(k) = PublicKeyToken(PublicKey(k).ToToken())
 
 [<Sealed>]
-type ILAssemblyRef(name: string, hash: byte[] option, publicKey: PublicKey option, retargetable: bool, version: Version option, locale: string uoption)  =
+type ILAssemblyRef(name: string, hash: byte[] option, publicKey: PublicKey option, retargetable: bool, version: Version option, locale: string uoption)  =  
     member x.Name=name
     member x.Hash=hash
     member x.PublicKey=publicKey
@@ -188,32 +188,32 @@ type ILAssemblyRef(name: string, hash: byte[] option, publicKey: PublicKey optio
     member x.Locale=locale
     static member FromAssemblyName (aname:System.Reflection.AssemblyName) =
         let locale = UNone
-        let publicKey =
-           match aname.GetPublicKey()  with
-           | null | [| |] ->
-               match aname.GetPublicKeyToken()  with
+        let publicKey = 
+           match aname.GetPublicKey()  with 
+           | null | [| |] -> 
+               match aname.GetPublicKeyToken()  with 
                | null | [| |] -> None
                | bytes -> Some (PublicKeyToken bytes)
-           | bytes ->
+           | bytes -> 
                Some (PublicKey bytes)
-
-        let version =
-           match aname.Version with
+        
+        let version = 
+           match aname.Version with 
            | null -> None
            | v -> Some (Version(v.Major,v.Minor,v.Build,v.Revision))
-
+           
         let retargetable = aname.Flags = System.Reflection.AssemblyNameFlags.Retargetable
 
         ILAssemblyRef(aname.Name,None,publicKey,retargetable,version,locale)
-
-    member aref.QualifiedName =
+ 
+    member aref.QualifiedName = 
         let b = new System.Text.StringBuilder(100)
         let add (s:string) = (b.Append(s) |> ignore)
         let addC (s:char) = (b.Append(s) |> ignore)
         add(aref.Name);
-        match aref.Version with
+        match aref.Version with 
         | None -> ()
-        | Some v ->
+        | Some v -> 
             add ", Version=";
             add (string v.Major)
             add ".";
@@ -223,19 +223,19 @@ type ILAssemblyRef(name: string, hash: byte[] option, publicKey: PublicKey optio
             add ".";
             add (string v.Revision)
             add ", Culture="
-            match aref.Locale with
+            match aref.Locale with 
             | UNone -> add "neutral"
             | USome b -> add b
             add ", PublicKeyToken="
-            match aref.PublicKey with
+            match aref.PublicKey with 
             | None -> add "null"
-            | Some pki ->
+            | Some pki -> 
                   let pkt = pki.ToToken()
-                  let convDigit(digit) =
-                      let digitc =
-                          if digit < 10
-                          then  System.Convert.ToInt32 '0' + digit
-                          else System.Convert.ToInt32 'a' + (digit - 10)
+                  let convDigit(digit) = 
+                      let digitc = 
+                          if digit < 10 
+                          then  System.Convert.ToInt32 '0' + digit 
+                          else System.Convert.ToInt32 'a' + (digit - 10) 
                       System.Convert.ToChar(digitc)
                   for i = 0 to pkt.Length-1 do
                       let v = pkt.[i]
@@ -243,22 +243,22 @@ type ILAssemblyRef(name: string, hash: byte[] option, publicKey: PublicKey optio
                       addC (convDigit(System.Convert.ToInt32(v)%16))
             // retargetable can be true only for system assemblies that definitely have Version
             if aref.Retargetable then
-                add ", Retargetable=Yes"
+                add ", Retargetable=Yes" 
         b.ToString()
     override x.ToString() = x.QualifiedName
 
 
-type ILModuleRef(name:string, hasMetadata: bool, hash: byte[] option) =
+type ILModuleRef(name:string, hasMetadata: bool, hash: byte[] option) = 
     member x.Name=name
     member x.HasMetadata=hasMetadata
-    member x.Hash=hash
+    member x.Hash=hash 
     override x.ToString() = "module " + name
 
 
 [<RequireQualifiedAccess>]
-type ILScopeRef =
+type ILScopeRef = 
     | Local
-    | Module of ILModuleRef
+    | Module of ILModuleRef 
     | Assembly of ILAssemblyRef
     member x.IsLocalRef   = match x with ILScopeRef.Local      -> true | _ -> false
     member x.IsModuleRef  = match x with ILScopeRef.Module _   -> true | _ -> false
@@ -266,39 +266,39 @@ type ILScopeRef =
     member x.ModuleRef    = match x with ILScopeRef.Module x   -> x | _ -> failwith "not a module reference"
     member x.AssemblyRef  = match x with ILScopeRef.Assembly x -> x | _ -> failwith "not an assembly reference"
 
-    member x.QualifiedName =
-        match x with
+    member x.QualifiedName = 
+        match x with 
         | ILScopeRef.Local -> ""
         | ILScopeRef.Module mref -> "module "+mref.Name
         | ILScopeRef.Assembly aref -> aref.QualifiedName
 
     override x.ToString() = x.QualifiedName
 
-type ILArrayBound = int32 option
+type ILArrayBound = int32 option 
 type ILArrayBounds = ILArrayBound * ILArrayBound
 
 [<StructuralEquality; StructuralComparison>]
-type ILArrayShape =
+type ILArrayShape = 
     | ILArrayShape of ILArrayBounds[] (* lobound/size pairs *)
     member x.Rank = (let (ILArrayShape l) = x in l.Length)
     static member SingleDimensional = ILArrayShapeStatics.SingleDimensional
     static member FromRank n = if n = 1 then ILArrayShape.SingleDimensional else ILArrayShape(List.replicate n (Some 0,None) |> List.toArray)
 
 
-and ILArrayShapeStatics() =
-    static let singleDimensional = ILArrayShape [| (Some 0, None) |]
+and ILArrayShapeStatics() = 
+    static let singleDimensional = ILArrayShape [| (Some 0, None) |]    
     static member SingleDimensional = singleDimensional
 
 /// Calling conventions.  These are used in method pointer types.
 [<StructuralEquality; StructuralComparison; RequireQualifiedAccess>]
-type ILArgConvention =
+type ILArgConvention = 
     | Default
-    | CDecl
-    | StdCall
-    | ThisCall
-    | FastCall
+    | CDecl 
+    | StdCall 
+    | ThisCall 
+    | FastCall 
     | VarArg
-
+      
 [<StructuralEquality; StructuralComparison; RequireQualifiedAccess>]
 type ILThisConvention =
     | Instance
@@ -318,23 +318,23 @@ type ILCallingConv =
     static member Static = ILCallingConvStatics.Static
 
 /// Static storage to amortize the allocation of ILCallingConv.Instance and ILCallingConv.Static
-and ILCallingConvStatics() =
+and ILCallingConvStatics() = 
     static let instanceCallConv = Callconv(ILThisConvention.Instance,ILArgConvention.Default)
     static let staticCallConv =  Callconv(ILThisConvention.Static,ILArgConvention.Default)
     static member Instance = instanceCallConv
     static member Static = staticCallConv
 
-type ILBoxity =
-    | AsObject
+type ILBoxity = 
+    | AsObject 
     | AsValue
 
 [<RequireQualifiedAccess>]
-type ILTypeRefScope =
+type ILTypeRefScope = 
     | Top of ILScopeRef
     | Nested of ILTypeRef
-    member x.AddQualifiedNameExtension(basic) =
-        match x with
-        | Top scoref ->
+    member x.AddQualifiedNameExtension(basic) = 
+        match x with 
+        | Top scoref -> 
             let sco = scoref.QualifiedName
             if sco = "" then basic else String.concat ", " [basic;sco]
         | Nested tref ->
@@ -342,19 +342,19 @@ type ILTypeRefScope =
 
 
 // IL type references have a pre-computed hash code to enable quick lookup tables during binary generation.
-and ILTypeRef(enc: ILTypeRefScope, nsp: string uoption, name: string) =
-
+and ILTypeRef(enc: ILTypeRefScope, nsp: string uoption, name: string) = 
+          
     member x.Scope = enc
     member x.Name = name
     member x.Namespace = nsp
 
-    member tref.FullName =
-        match enc with
+    member tref.FullName = 
+        match enc with 
         | ILTypeRefScope.Top _ -> joinILTypeName tref.Namespace tref.Name
         | ILTypeRefScope.Nested enc -> enc.FullName + "." + tref.Name
-
-    member tref.BasicQualifiedName =
-        match enc with
+        
+    member tref.BasicQualifiedName = 
+        match enc with 
         | ILTypeRefScope.Top _ -> tref.Name
         | ILTypeRefScope.Nested enc -> enc.BasicQualifiedName + "+" + tref.Name
 
@@ -364,21 +364,21 @@ and ILTypeRef(enc: ILTypeRefScope, nsp: string uoption, name: string) =
 
     override x.ToString() = x.FullName
 
-
-and ILTypeSpec(typeRef: ILTypeRef, inst: ILGenericArgs) =
+        
+and ILTypeSpec(typeRef: ILTypeRef, inst: ILGenericArgs) = 
     member x.TypeRef = typeRef
     member x.Scope = x.TypeRef.Scope
     member x.Name = x.TypeRef.Name
     member x.Namespace = x.TypeRef.Namespace
     member x.GenericArgs = inst
-    member x.BasicQualifiedName =
+    member x.BasicQualifiedName = 
         let tc = x.TypeRef.BasicQualifiedName
         if x.GenericArgs.Length = 0 then
             tc
-        else
+        else 
             tc + "[" + String.concat "," (x.GenericArgs |> Array.map (fun arg -> "[" + arg.QualifiedName + "]")) + "]"
 
-    member x.AddQualifiedNameExtension(basic) =
+    member x.AddQualifiedNameExtension(basic) = 
         x.TypeRef.AddQualifiedNameExtension(basic)
 
     member x.FullName = x.TypeRef.FullName
@@ -387,18 +387,18 @@ and ILTypeSpec(typeRef: ILTypeRef, inst: ILGenericArgs) =
 
 and [<RequireQualifiedAccess>]
     ILType =
-    | Void
-    | Array    of ILArrayShape * ILType
-    | Value    of ILTypeSpec
-    | Boxed    of ILTypeSpec
-    | Ptr      of ILType
-    | Byref    of ILType
-    | FunctionPointer     of ILCallingSignature
+    | Void                   
+    | Array    of ILArrayShape * ILType 
+    | Value    of ILTypeSpec      
+    | Boxed    of ILTypeSpec      
+    | Ptr      of ILType             
+    | Byref    of ILType           
+    | FunctionPointer     of ILCallingSignature 
     | Var    of int
     | Modified of bool * ILTypeRef * ILType
 
-    member x.BasicQualifiedName =
-        match x with
+    member x.BasicQualifiedName = 
+        match x with 
         | ILType.Var n -> "!" + string n
         | ILType.Modified(_,_ty1,ty2) -> ty2.BasicQualifiedName
         | ILType.Array (ILArrayShape(s),ty) -> ty.BasicQualifiedName + "[" + System.String(',',s.Length-1) + "]"
@@ -408,8 +408,8 @@ and [<RequireQualifiedAccess>]
         | ILType.Byref _ty -> failwith "unexpected byref type"
         | ILType.FunctionPointer _mref -> failwith "unexpected function pointer type"
 
-    member x.AddQualifiedNameExtension(basic) =
-        match x with
+    member x.AddQualifiedNameExtension(basic) = 
+        match x with 
         | ILType.Var _n -> basic
         | ILType.Modified(_,_ty1,ty2) -> ty2.AddQualifiedNameExtension(basic)
         | ILType.Array (ILArrayShape(_s),ty) -> ty.AddQualifiedNameExtension(basic)
@@ -418,43 +418,43 @@ and [<RequireQualifiedAccess>]
         | ILType.Ptr _ty -> failwith "unexpected pointer type"
         | ILType.Byref _ty -> failwith "unexpected byref type"
         | ILType.FunctionPointer _mref -> failwith "unexpected function pointer type"
-
-    member x.QualifiedName =
+        
+    member x.QualifiedName = 
         x.AddQualifiedNameExtension(x.BasicQualifiedName)
 
     member x.TypeSpec =
-      match x with
+      match x with 
       | ILType.Boxed tr | ILType.Value tr -> tr
       | _ -> invalidOp "not a nominal type"
 
     member x.Boxity =
-      match x with
+      match x with 
       | ILType.Boxed _ -> AsObject
       | ILType.Value _ -> AsValue
       | _ -> invalidOp "not a nominal type"
 
-    member x.TypeRef =
-      match x with
+    member x.TypeRef = 
+      match x with 
       | ILType.Boxed tspec | ILType.Value tspec -> tspec.TypeRef
       | _ -> invalidOp "not a nominal type"
 
-    member x.IsNominal =
-      match x with
+    member x.IsNominal = 
+      match x with 
       | ILType.Boxed _ | ILType.Value _ -> true
       | _ -> false
 
     member x.GenericArgs =
-      match x with
+      match x with 
       | ILType.Boxed tspec | ILType.Value tspec -> tspec.GenericArgs
       | _ -> [| |]
 
     member x.IsTyvar =
-      match x with
+      match x with 
       | ILType.Var _ -> true | _ -> false
 
     override x.ToString() = x.QualifiedName
 
-and ILCallingSignature(callingConv: ILCallingConv, argTypes: ILTypes, returnType: ILType) =
+and ILCallingSignature(callingConv: ILCallingConv, argTypes: ILTypes, returnType: ILType) = 
     member __.CallingConv = callingConv
     member __.ArgTypes = argTypes
     member __.ReturnType = returnType
@@ -482,7 +482,7 @@ type ILFieldRef(enclosingTypeRef: ILTypeRef, name: string, typ: ILType) =
     member __.Type = typ
     override x.ToString() = x.EnclosingTypeRef.ToString() + "::" + x.Name
 
-type ILMethodSpec(methodRef: ILMethodRef, enclosingType: ILType, methodInst: ILGenericArgs) =
+type ILMethodSpec(methodRef: ILMethodRef, enclosingType: ILType, methodInst: ILGenericArgs) = 
     member x.MethodRef = methodRef
     member x.EnclosingType=enclosingType
     member x.GenericArgs=methodInst
@@ -493,7 +493,7 @@ type ILMethodSpec(methodRef: ILMethodRef, enclosingType: ILType, methodInst: ILG
     member x.FormalReturnType = x.MethodRef.ReturnType
     override x.ToString() = x.MethodRef.ToString() + "(...)"
 
-type ILFieldSpec(fieldRef: ILFieldRef, enclosingType: ILType) =
+type ILFieldSpec(fieldRef: ILFieldRef, enclosingType: ILType) = 
     member x.FieldRef = fieldRef
     member x.EnclosingType = enclosingType
     member x.FormalType       = fieldRef.Type
@@ -501,14 +501,14 @@ type ILFieldSpec(fieldRef: ILFieldRef, enclosingType: ILType) =
     member x.EnclosingTypeRef = fieldRef.EnclosingTypeRef
     override x.ToString() = x.FieldRef.ToString()
 
-type ILPlatform =
+type ILPlatform = 
     | X86
     | AMD64
     | IA64
 
 type ILCustomAttrArg =  (ILType * obj)
 type ILCustomAttrNamedArg =  (string * ILType * bool * obj)
-type ILCustomAttr =
+type ILCustomAttr = 
     { Method: ILMethodSpec;
       Data: byte[] }
 
@@ -520,17 +520,17 @@ type ILCustomAttrsStatics() =
    static member Empty = empty
 
 [<RequireQualifiedAccess>]
-type ILMemberAccess =
+type ILMemberAccess = 
     | Assembly
     | CompilerControlled
     | FamilyAndAssembly
     | FamilyOrAssembly
     | Family
-    | Private
-    | Public
+    | Private 
+    | Public 
 
 [<RequireQualifiedAccess>]
-type ILFieldInit =
+type ILFieldInit = 
     | String of string
     | Bool of bool
     | Char of uint16
@@ -545,7 +545,7 @@ type ILFieldInit =
     | Single of single
     | Double of double
     | Null
-
+  
 type ILParameter =
     { Name: string uoption
       ParameterType: ILType
@@ -559,18 +559,18 @@ type ILParameter =
 
 type ILParameters = ILParameter[]
 
-type ILReturn =
+type ILReturn = 
     { //Marshal: ILNativeType option;
-      Type: ILType;
+      Type: ILType; 
       CustomAttrs: ILCustomAttrs }
 
-type ILOverridesSpec =
+type ILOverridesSpec = 
     | OverridesSpec of ILMethodRef * ILType
     member x.MethodRef = let (OverridesSpec(mr,_ty)) = x in mr
     member x.EnclosingType = let (OverridesSpec(_mr,ty)) = x in ty
 
-let typesOfILParamsRaw (ps:ILParameters) : ILTypes = ps |> Array.map (fun p -> p.ParameterType)
-let typesOfILParamsList (ps:ILParameter[]) = ps |> Array.map (fun p -> p.ParameterType)
+let typesOfILParamsRaw (ps:ILParameters) : ILTypes = ps |> Array.map (fun p -> p.ParameterType) 
+let typesOfILParamsList (ps:ILParameter[]) = ps |> Array.map (fun p -> p.ParameterType) 
 
 type ILGenericParameterDef =
     { Name: string
@@ -583,19 +583,19 @@ type ILGenericParameterDef =
     member x.HasDefaultConstructorConstraint= (x.Attributes &&& GenericParameterAttributes.DefaultConstructorConstraint) <> enum 0
     member x.IsCovariant = (x.Attributes &&& GenericParameterAttributes.Covariant) <> enum 0
     member x.IsContravariant = (x.Attributes &&& GenericParameterAttributes.Contravariant) <> enum 0
-    override x.ToString() = x.Name
+    override x.ToString() = x.Name 
 
 type ILGenericParameterDefs = ILGenericParameterDef[]
 
 [<NoComparison; NoEquality>]
-type ILMethodDef =
+type ILMethodDef = 
     { MetadataToken: int32
       Name: string
       CallingConv: ILCallingConv
       Parameters: ILParameters
       Return: ILReturn
       Access: ILMemberAccess
-      //mdBody: ILMethodBody
+      //mdBody: ILMethodBody   
       ImplementationFlags : MethodImplAttributes
       //IsInternalCall: bool
       //IsManaged: bool
@@ -625,23 +625,23 @@ type ILMethodDef =
     member md.CallingSignature =  ILCallingSignature (md.CallingConv,md.ParameterTypes,md.Return.Type)
     override x.ToString() = "method " + x.Name
 
-type ILMethodDefs(larr: Lazy<ILMethodDef[]>) =
+type ILMethodDefs(larr: Lazy<ILMethodDef[]>) = 
 
     let mutable lmap = null
-    let getmap() =
-        if lmap = null then
+    let getmap() = 
+        if lmap = null then 
             lmap <- Dictionary()
-            for y in larr.Force() do
+            for y in larr.Force() do 
                 let key = y.Name
-                if lmap.ContainsKey key then
+                if lmap.ContainsKey key then 
                     lmap.[key] <- Array.append [| y |] lmap.[key]
                 else
-                    lmap.[key] <- [| y |]
+                    lmap.[key] <- [| y |] 
         lmap
 
-    member x.Elements = larr.Force()
+    member x.Elements = larr.Force() 
     member x.FindByName nm  =  getmap().[nm]
-    member x.FindByNameAndArity (nm,arity) =  x.FindByName nm |> Array.filter (fun x -> x.Parameters.Length = arity)
+    member x.FindByNameAndArity (nm,arity) =  x.FindByName nm |> Array.filter (fun x -> x.Parameters.Length = arity) 
 
 
 [<NoComparison; NoEquality>]
@@ -660,11 +660,11 @@ type ILEventDef =
     member x.IsStatic = x.AddMethod.CallingConv.IsStatic
     override x.ToString() = "event " + x.Name
 
-type ILEventDefs =
+type ILEventDefs = 
     abstract Elements : ILEventDef[]
 
 [<NoComparison; NoEquality>]
-type ILPropertyDef =
+type ILPropertyDef = 
     { Name: string
       Attributes : System.Reflection.PropertyAttributes
       SetMethod: ILMethodRef option
@@ -675,19 +675,19 @@ type ILPropertyDef =
       IndexParameterTypes: ILTypes
       CustomAttrs: ILCustomAttrs }
     member x.IsStatic = (match x.CallingConv with ILThisConvention.Static -> true | _ -> false)
-    member x.IndexParameters = x.IndexParameterTypes |> Array.mapi (fun i ty ->
+    member x.IndexParameters = x.IndexParameterTypes |> Array.mapi (fun i ty -> 
         {  Name = USome("arg"+string i)
            ParameterType = ty
            Default = None
            Attributes  = ParameterAttributes.None
            CustomAttrs = ILCustomAttrsStatics.Empty })
     override x.ToString() = "property " + x.Name
-
-type ILPropertyDefs =
+    
+type ILPropertyDefs = 
     abstract Elements : ILPropertyDef[]
 
 [<NoComparison; NoEquality>]
-type ILFieldDef =
+type ILFieldDef = 
     { Name: string
       FieldType: ILType
       IsStatic: bool
@@ -699,21 +699,21 @@ type ILFieldDef =
       IsSpecialName: bool
       //Marshal: ILNativeType option
       NotSerialized: bool
-      IsLiteral: bool
+      IsLiteral: bool 
       IsInitOnly: bool
       CustomAttrs: ILCustomAttrs }
     override x.ToString() = "field " + x.Name
 
 
-type ILFieldDefs =
+type ILFieldDefs = 
     abstract Elements : ILFieldDef[]
 
 type ILMethodImplDef =
     { Overrides: ILOverridesSpec;
       OverrideBy: ILMethodSpec }
 
-// Index table by name and arity.
-type ILMethodImplDefs =
+// Index table by name and arity. 
+type ILMethodImplDefs = 
     abstract Elements : ILMethodImplDef[]
 
 and MethodImplsMap = Map<string * int, ILMethodImplDef array>
@@ -730,36 +730,36 @@ type ILDefaultPInvokeEncoding =
     | Unicode
 
 type ILTypeDefAccess =
-    | Public
+    | Public 
     | Private
-    | Nested of ILMemberAccess
+    | Nested of ILMemberAccess 
 
 [<RequireQualifiedAccess>]
 type ILTypeDefKind =
     | Class
     | ValueType
     | Interface
-    | Enum
+    | Enum 
     | Delegate
 
 [<NoComparison; NoEquality>]
-type ILTypeDef =
+type ILTypeDef =  
     { Kind: ILTypeDefKind
       Namespace: string uoption
-      Name: string
-      GenericParams: ILGenericParameterDefs
-      Access: ILTypeDefAccess
+      Name: string  
+      GenericParams: ILGenericParameterDefs   
+      Access: ILTypeDefAccess  
       Attributes: TypeAttributes
       Encoding: ILDefaultPInvokeEncoding
       NestedTypes: ILTypeDefs
-      Implements: ILTypes
-      Extends: ILType option
+      Implements: ILTypes  
+      Extends: ILType option 
       Methods: ILMethodDefs
       Fields: ILFieldDefs
       InitSemantics: ILTypeInit
       Events: ILEventDefs
       Properties: ILPropertyDefs
-      CustomAttrs: ILCustomAttrs
+      CustomAttrs: ILCustomAttrs 
       Token : int }
     member x.IsClass =     (match x.Kind with ILTypeDefKind.Class -> true | _ -> false)
     member x.IsInterface = (match x.Kind with ILTypeDefKind.Interface -> true | _ -> false)
@@ -771,7 +771,7 @@ type ILTypeDef =
     member x.IsComInterop= (x.Attributes &&& TypeAttributes.Import) <> enum 0
     member x.IsSpecialName= (x.Attributes &&& TypeAttributes.SpecialName) <> enum 0
 
-    member tdef.IsStructOrEnum =
+    member tdef.IsStructOrEnum = 
         match tdef.Kind with
         | ILTypeDefKind.ValueType | ILTypeDefKind.Enum -> true
         | _ -> false
@@ -781,30 +781,30 @@ type ILTypeDef =
 and ILTypeDefs(larr : Lazy<(string uoption * string * Lazy<ILTypeDef>)[]>) =
 
     let mutable lmap = null
-    let getmap() =
-        if lmap = null then
+    let getmap() = 
+        if lmap = null then 
             lmap <- Dictionary()
-            for (nsp, nm, ltd) in larr.Force() do
+            for (nsp, nm, ltd) in larr.Force() do 
                 let key = nsp, nm
                 lmap.[key] <- ltd
         lmap
 
-    member x.Elements =
+    member x.Elements = 
         [| for (_,_,td) in larr.Force() -> td.Force() |]
-
-    member x.TryFindByName (nsp,nm)  =
+    
+    member x.TryFindByName (nsp,nm)  = 
         let tdefs = getmap()
         let key = (nsp,nm)
-        if tdefs.ContainsKey key then
+        if tdefs.ContainsKey key then 
             Some (tdefs.[key].Force())
         else
             None
-
+        
 type ILNestedExportedType =
     { Name: string
       Access: ILMemberAccess
       Nested: ILNestedExportedTypesAndForwarders
-      CustomAttrs: ILCustomAttrs }
+      CustomAttrs: ILCustomAttrs } 
     override x.ToString() = "nested fwd " + x.Name
 
 and ILNestedExportedTypesAndForwarders(larr:Lazy<ILNestedExportedType[]>) =
@@ -817,15 +817,15 @@ and [<NoComparison; NoEquality>]
     { ScopeRef: ILScopeRef
       Namespace : string uoption
       Name: string
-      IsForwarder: bool }
+      IsForwarder: bool } 
     override x.ToString() = "fwd " + x.Name
 
 and ILExportedTypesAndForwarders(larr:Lazy<ILExportedTypeOrForwarder[]>) =
     let mutable lmap = null
-    let getmap() =
-        if lmap = null then
+    let getmap() = 
+        if lmap = null then 
             lmap <- Dictionary()
-            for ltd in larr.Force() do
+            for ltd in larr.Force() do 
                 let key = ltd.Namespace, ltd.Name
                 lmap.[key] <- ltd
         lmap
@@ -833,9 +833,9 @@ and ILExportedTypesAndForwarders(larr:Lazy<ILExportedTypeOrForwarder[]>) =
     member x.TryFindByName (nsp,nm) = match getmap().TryGetValue ((nsp,nm)) with true,v -> Some v | false, _ -> None
 
 [<RequireQualifiedAccess>]
-type ILResourceAccess =
-    | Public
-    | Private
+type ILResourceAccess = 
+    | Public 
+    | Private 
 
 [<RequireQualifiedAccess>]
 type ILResourceLocation =
@@ -850,10 +850,10 @@ type ILResource =
       CustomAttrs: ILCustomAttrs }
     override x.ToString() = "resource " + x.Name
 
-type ILResources(larr: Lazy<ILResource[]>) =
+type ILResources(larr: Lazy<ILResource[]>) = 
     member x.Elements = larr.Force()
 
-type ILAssemblyManifest =
+type ILAssemblyManifest = 
     { Name: string
       PublicKey: byte[] option
       Version: Version option
@@ -861,8 +861,8 @@ type ILAssemblyManifest =
       CustomAttrs: ILCustomAttrs
       Retargetable: bool
       ExportedTypes: ILExportedTypesAndForwarders
-      EntrypointElsewhere: ILModuleRef option }
-    member x.GetName() =
+      EntrypointElsewhere: ILModuleRef option } 
+    member x.GetName() = 
         let asmName = AssemblyName(Name=x.Name)
         x.PublicKey |> Option.iter (fun bytes -> asmName.SetPublicKey(bytes))
         x.Version |> Option.iter (fun v -> asmName.Version <- v)
@@ -882,15 +882,15 @@ type ILAssemblyManifest =
         asmName
     override x.ToString() = "manifest " + x.Name
 
-type ILModuleDef =
+type ILModuleDef = 
     { Manifest: ILAssemblyManifest option
       CustomAttrs: ILCustomAttrs
       Name: string
       TypeDefs: ILTypeDefs
       Resources: ILResources  }
 
-    member x.ManifestOfAssembly =
-        match x.Manifest with
+    member x.ManifestOfAssembly = 
+        match x.Manifest with 
         | Some m -> m
         | None -> failwith "no manifest"
 
@@ -900,7 +900,7 @@ type ILModuleDef =
 
 
 [<NoEquality; NoComparison>]
-type ILGlobals =
+type ILGlobals = 
     { typ_Object: ILType
       typ_String: ILType
       typ_Type: ILType
@@ -918,83 +918,83 @@ type ILGlobals =
       typ_Boolean: ILType
       typ_Char: ILType
       typ_IntPtr: ILType
-      typ_UIntPtr: ILType
+      typ_UIntPtr: ILType 
       systemRuntimeScopeRef : ILScopeRef }
     override x.ToString() = "<ILGlobals>"
 
 //---------------------------------------------------------------------
-// Utilities.
+// Utilities.  
 //---------------------------------------------------------------------
 
 [<Struct>]
-type ILTableName(idx: int) =
+type ILTableName(idx: int) = 
     member x.Index = idx
-    static member FromIndex n = ILTableName n
+    static member FromIndex n = ILTableName n 
 
-module private ILTableNames =
-    let Module               = ILTableName 0
-    let TypeRef              = ILTableName 1
-    let TypeDef              = ILTableName 2
-    let FieldPtr             = ILTableName 3
-    let Field                = ILTableName 4
-    let MethodPtr            = ILTableName 5
-    let Method               = ILTableName 6
-    let ParamPtr             = ILTableName 7
-    let Param                = ILTableName 8
-    let InterfaceImpl        = ILTableName 9
-    let MemberRef            = ILTableName 10
-    let Constant             = ILTableName 11
-    let CustomAttribute      = ILTableName 12
-    let FieldMarshal         = ILTableName 13
-    let Permission           = ILTableName 14
-    let ClassLayout          = ILTableName 15
-    let FieldLayout          = ILTableName 16
-    let StandAloneSig        = ILTableName 17
-    let EventMap             = ILTableName 18
-    let EventPtr             = ILTableName 19
-    let Event                = ILTableName 20
-    let PropertyMap          = ILTableName 21
-    let PropertyPtr          = ILTableName 22
-    let Property             = ILTableName 23
-    let MethodSemantics      = ILTableName 24
-    let MethodImpl           = ILTableName 25
-    let ModuleRef            = ILTableName 26
-    let TypeSpec             = ILTableName 27
-    let ImplMap              = ILTableName 28
-    let FieldRVA             = ILTableName 29
-    let ENCLog               = ILTableName 30
-    let ENCMap               = ILTableName 31
-    let Assembly             = ILTableName 32
-    let AssemblyProcessor    = ILTableName 33
-    let AssemblyOS           = ILTableName 34
-    let AssemblyRef          = ILTableName 35
-    let AssemblyRefProcessor = ILTableName 36
-    let AssemblyRefOS        = ILTableName 37
-    let File                 = ILTableName 38
-    let ExportedType         = ILTableName 39
-    let ManifestResource     = ILTableName 40
-    let Nested               = ILTableName 41
-    let GenericParam           = ILTableName 42
-    let MethodSpec           = ILTableName 43
+module private ILTableNames = 
+    let Module               = ILTableName 0  
+    let TypeRef              = ILTableName 1  
+    let TypeDef              = ILTableName 2  
+    let FieldPtr             = ILTableName 3  
+    let Field                = ILTableName 4  
+    let MethodPtr            = ILTableName 5  
+    let Method               = ILTableName 6  
+    let ParamPtr             = ILTableName 7  
+    let Param                = ILTableName 8  
+    let InterfaceImpl        = ILTableName 9  
+    let MemberRef            = ILTableName 10 
+    let Constant             = ILTableName 11 
+    let CustomAttribute      = ILTableName 12 
+    let FieldMarshal         = ILTableName 13 
+    let Permission           = ILTableName 14 
+    let ClassLayout          = ILTableName 15 
+    let FieldLayout          = ILTableName 16 
+    let StandAloneSig        = ILTableName 17 
+    let EventMap             = ILTableName 18 
+    let EventPtr             = ILTableName 19 
+    let Event                = ILTableName 20 
+    let PropertyMap          = ILTableName 21 
+    let PropertyPtr          = ILTableName 22 
+    let Property             = ILTableName 23 
+    let MethodSemantics      = ILTableName 24 
+    let MethodImpl           = ILTableName 25 
+    let ModuleRef            = ILTableName 26 
+    let TypeSpec             = ILTableName 27 
+    let ImplMap              = ILTableName 28 
+    let FieldRVA             = ILTableName 29 
+    let ENCLog               = ILTableName 30 
+    let ENCMap               = ILTableName 31 
+    let Assembly             = ILTableName 32 
+    let AssemblyProcessor    = ILTableName 33 
+    let AssemblyOS           = ILTableName 34 
+    let AssemblyRef          = ILTableName 35 
+    let AssemblyRefProcessor = ILTableName 36 
+    let AssemblyRefOS        = ILTableName 37 
+    let File                 = ILTableName 38 
+    let ExportedType         = ILTableName 39 
+    let ManifestResource     = ILTableName 40 
+    let Nested               = ILTableName 41 
+    let GenericParam           = ILTableName 42 
+    let MethodSpec           = ILTableName 43 
     let GenericParamConstraint = ILTableName 44
-    let UserStrings           = ILTableName 0x70 (* Special encoding of embedded UserString tokens - See 1.9 Partition III *)
+    let UserStrings           = ILTableName 0x70 (* Special encoding of embedded UserString tokens - See 1.9 Partition III *) 
 
 [<Struct>]
-type TypeDefOrRefOrSpecTag(tag: int32) =
+type TypeDefOrRefOrSpecTag(tag: int32) = 
     member x.Tag = tag
     static member TypeDef = TypeDefOrRefOrSpecTag 0x00
     static member TypeRef = TypeDefOrRefOrSpecTag 0x01
     static member TypeSpec = TypeDefOrRefOrSpecTag 0x2
 
 [<Struct>]
-type HasConstantTag(tag: int32) =
+type HasConstantTag(tag: int32) = 
     member x.Tag = tag
     static member FieldDef = HasConstantTag 0x0
     static member ParamDef  = HasConstantTag 0x1
     static member Property = HasConstantTag 0x2
 
 [<Struct>]
-type HasCustomAttributeTag(tag: int32) =
+type HasCustomAttributeTag(tag: int32) = 
     member x.Tag = tag
     static member MethodDef       = HasCustomAttributeTag 0x0
     static member FieldDef        = HasCustomAttributeTag 0x1
@@ -1020,20 +1020,20 @@ type HasCustomAttributeTag(tag: int32) =
     static member MethodSpec              = HasCustomAttributeTag 0x15
 
 [<Struct>]
-type HasFieldMarshalTag(tag: int32) =
+type HasFieldMarshalTag(tag: int32) = 
     member x.Tag = tag
     static member FieldDef =  HasFieldMarshalTag 0x00
     static member ParamDef =  HasFieldMarshalTag 0x01
 
 [<Struct>]
-type HasDeclSecurityTag(tag: int32) =
+type HasDeclSecurityTag(tag: int32) = 
     member x.Tag = tag
     static member TypeDef =  HasDeclSecurityTag 0x00
     static member MethodDef =  HasDeclSecurityTag 0x01
     static member Assembly =  HasDeclSecurityTag 0x02
 
 [<Struct>]
-type MemberRefParentTag(tag: int32) =
+type MemberRefParentTag(tag: int32) = 
     member x.Tag = tag
     static member TypeRef = MemberRefParentTag 0x01
     static member ModuleRef = MemberRefParentTag 0x02
@@ -1041,39 +1041,39 @@ type MemberRefParentTag(tag: int32) =
     static member TypeSpec  = MemberRefParentTag 0x04
 
 [<Struct>]
-type HasSemanticsTag(tag: int32) =
+type HasSemanticsTag(tag: int32) = 
     member x.Tag = tag
     static member Event =  HasSemanticsTag 0x00
     static member Property =  HasSemanticsTag 0x01
 
 [<Struct>]
-type MethodDefOrRefTag(tag: int32) =
+type MethodDefOrRefTag(tag: int32) = 
     member x.Tag = tag
     static member MethodDef =  MethodDefOrRefTag 0x00
     static member MemberRef =  MethodDefOrRefTag 0x01
     static member MethodSpec =  MethodDefOrRefTag 0x02
 
 [<Struct>]
-type MemberForwardedTag(tag: int32) =
+type MemberForwardedTag(tag: int32) = 
     member x.Tag = tag
     static member FieldDef =  MemberForwardedTag 0x00
     static member MethodDef =  MemberForwardedTag 0x01
 
 [<Struct>]
-type ImplementationTag(tag: int32) =
+type ImplementationTag(tag: int32) = 
     member x.Tag = tag
     static member File =  ImplementationTag 0x00
     static member AssemblyRef =  ImplementationTag 0x01
     static member ExportedType =  ImplementationTag 0x02
 
 [<Struct>]
-type CustomAttributeTypeTag(tag: int32) =
+type CustomAttributeTypeTag(tag: int32) = 
     member x.Tag = tag
     static member MethodDef =  CustomAttributeTypeTag 0x02
     static member MemberRef =  CustomAttributeTypeTag 0x03
 
 [<Struct>]
-type ResolutionScopeTag(tag: int32) =
+type ResolutionScopeTag(tag: int32) = 
     member x.Tag = tag
     static member Module =  ResolutionScopeTag 0x00
     static member ModuleRef =  ResolutionScopeTag 0x01
@@ -1081,7 +1081,7 @@ type ResolutionScopeTag(tag: int32) =
     static member TypeRef =  ResolutionScopeTag 0x03
 
 [<Struct>]
-type TypeOrMethodDefTag(tag: int32) =
+type TypeOrMethodDefTag(tag: int32) = 
     member x.Tag = tag
     static member TypeDef = TypeOrMethodDefTag 0x00
     static member MethodDef = TypeOrMethodDefTag 0x01
@@ -1118,7 +1118,7 @@ let et_MVAR           = 0x1euy
 let et_CMOD_REQD      = 0x1Fuy
 let et_CMOD_OPT       = 0x20uy
 
-let et_SENTINEL       = 0x41uy // sentinel for varargs
+let et_SENTINEL       = 0x41uy // sentinel for varargs 
 let et_PINNED         = 0x45uy
 
 let e_IMAGE_CEE_CS_CALLCONV_FASTCALL = 0x04uy
@@ -1144,77 +1144,77 @@ let align alignment n = ((n + alignment - 0x1) / alignment) * alignment
 
 let uncodedToken (tab:ILTableName) idx = ((tab.Index <<< 24) ||| idx)
 
-let i32ToUncodedToken tok  =
+let i32ToUncodedToken tok  = 
     let idx = tok &&& 0xffffff
     let tab = tok >>>& 24
     (ILTableName.FromIndex tab,  idx)
 
 
 [<Struct>]
-type TaggedIndex<'T> =
+type TaggedIndex<'T> = 
     val tag: 'T
     val index : int32
     new(tag,index) = { tag=tag; index=index }
 
-let uncodedTokenToTypeDefOrRefOrSpec (tab,tok) =
+let uncodedTokenToTypeDefOrRefOrSpec (tab,tok) = 
     let tag =
-        if tab = ILTableNames.TypeDef then TypeDefOrRefOrSpecTag.TypeDef
+        if tab = ILTableNames.TypeDef then TypeDefOrRefOrSpecTag.TypeDef 
         elif tab = ILTableNames.TypeRef then TypeDefOrRefOrSpecTag.TypeRef
         elif tab = ILTableNames.TypeSpec then TypeDefOrRefOrSpecTag.TypeSpec
-        else failwith "bad table in uncodedTokenToTypeDefOrRefOrSpec"
+        else failwith "bad table in uncodedTokenToTypeDefOrRefOrSpec" 
     TaggedIndex(tag,tok)
 
-let uncodedTokenToMethodDefOrRef (tab,tok) =
+let uncodedTokenToMethodDefOrRef (tab,tok) = 
     let tag =
-        if tab = ILTableNames.Method then MethodDefOrRefTag.MethodDef
+        if tab = ILTableNames.Method then MethodDefOrRefTag.MethodDef 
         elif tab = ILTableNames.MemberRef then MethodDefOrRefTag.MemberRef
-        else failwith "bad table in uncodedTokenToMethodDefOrRef"
+        else failwith "bad table in uncodedTokenToMethodDefOrRef" 
     TaggedIndex(tag,tok)
 
-let (|TaggedIndex|) (x:TaggedIndex<'T>) = x.tag, x.index
-let tokToTaggedIdx f nbits tok =
-    let tagmask =
-        if nbits = 1 then 1
-        elif nbits = 2 then 3
-        elif nbits = 3 then 7
-        elif nbits = 4 then 15
-           elif nbits = 5 then 31
+let (|TaggedIndex|) (x:TaggedIndex<'T>) = x.tag, x.index    
+let tokToTaggedIdx f nbits tok = 
+    let tagmask = 
+        if nbits = 1 then 1 
+        elif nbits = 2 then 3 
+        elif nbits = 3 then 7 
+        elif nbits = 4 then 15 
+           elif nbits = 5 then 31 
            else failwith "too many nbits"
     let tag = tok &&& tagmask
     let idx = tok >>>& nbits
-    TaggedIndex(f tag, idx)
-
+    TaggedIndex(f tag, idx) 
+       
 //---------------------------------------------------------------------
-// Read file from memory blocks
+// Read file from memory blocks 
 //---------------------------------------------------------------------
 
 
-type ByteFile(bytes:byte[]) =
+type ByteFile(bytes:byte[]) = 
 
     member x.Bytes = bytes
     member mc.ReadByte addr = bytes.[addr]
     member mc.ReadBytes addr len = Array.sub bytes addr len
-    member m.CountUtf8String addr =
+    member m.CountUtf8String addr = 
         let mutable p = addr
         while bytes.[p] <> 0uy do
             p <- p + 1
         p - addr
 
-    member m.ReadUTF8String addr =
-        let n = m.CountUtf8String addr
+    member m.ReadUTF8String addr = 
+        let n = m.CountUtf8String addr 
         System.Text.Encoding.UTF8.GetString (bytes, addr, n)
 
-    member is.ReadInt32 addr =
+    member is.ReadInt32 addr = 
         let b0 = is.ReadByte addr
         let b1 = is.ReadByte (addr+1)
         let b2 = is.ReadByte (addr+2)
         let b3 = is.ReadByte (addr+3)
         int b0 ||| (int b1 <<< 8) ||| (int b2 <<< 16) ||| (int b3 <<< 24)
 
-    member is.ReadUInt16 addr =
+    member is.ReadUInt16 addr = 
         let b0 = is.ReadByte addr
         let b1 = is.ReadByte (addr+1)
-        uint16 b0 ||| (uint16 b1 <<< 8)
+        uint16 b0 ||| (uint16 b1 <<< 8) 
 
 let seekReadByte (is:ByteFile) addr = is.ReadByte addr
 let seekReadBytes (is:ByteFile) addr len = is.ReadBytes addr len
@@ -1223,7 +1223,7 @@ let seekReadUInt16 (is:ByteFile) addr = is.ReadUInt16 addr
 
 let seekReadByteAsInt32 is addr = int32 (seekReadByte is addr)
 
-let seekReadInt64 is addr =
+let seekReadInt64 is addr = 
     let b0 = seekReadByte is addr
     let b1 = seekReadByte is (addr+1)
     let b2 = seekReadByte is (addr+2)
@@ -1237,72 +1237,72 @@ let seekReadInt64 is addr =
 
 let seekReadUInt16AsInt32 is addr = int32 (seekReadUInt16 is addr)
 
-let seekReadCompressedUInt32 is addr =
+let seekReadCompressedUInt32 is addr = 
     let b0 = seekReadByte is addr
     if b0 <= 0x7Fuy then int b0, addr+1
-    elif b0 <= 0xBFuy then
+    elif b0 <= 0xBFuy then 
         let b0 = b0 &&& 0x7Fuy
-        let b1 = seekReadByteAsInt32 is (addr+1)
+        let b1 = seekReadByteAsInt32 is (addr+1) 
         (int b0 <<< 8) ||| int b1, addr+2
-    else
+    else 
         let b0 = b0 &&& 0x3Fuy
-        let b1 = seekReadByteAsInt32 is (addr+1)
-        let b2 = seekReadByteAsInt32 is (addr+2)
-        let b3 = seekReadByteAsInt32 is (addr+3)
+        let b1 = seekReadByteAsInt32 is (addr+1) 
+        let b2 = seekReadByteAsInt32 is (addr+2) 
+        let b3 = seekReadByteAsInt32 is (addr+3) 
         (int b0 <<< 24) ||| (int b1 <<< 16) ||| (int b2 <<< 8) ||| int b3, addr+4
 
 let seekReadSByte         is addr = sbyte (seekReadByte is addr)
-
-let rec seekCountUtf8String is addr n =
+    
+let rec seekCountUtf8String is addr n = 
     let c = seekReadByteAsInt32 is addr
-    if c = 0 then n
+    if c = 0 then n 
     else seekCountUtf8String is (addr+1) (n+1)
 
-let seekReadUTF8String is addr =
+let seekReadUTF8String is addr = 
     let n = seekCountUtf8String is addr 0
     let bytes = seekReadBytes is addr n
     System.Text.Encoding.UTF8.GetString (bytes, 0, bytes.Length)
 
-let seekReadBlob is addr =
+let seekReadBlob is addr = 
     let len, addr = seekReadCompressedUInt32 is addr
     seekReadBytes is addr len
-
-let seekReadUserString is addr =
+    
+let seekReadUserString is addr = 
     let len, addr = seekReadCompressedUInt32 is addr
     let bytes = seekReadBytes is addr (len - 1)
     System.Text.Encoding.Unicode.GetString(bytes, 0, bytes.Length)
-
+    
 let seekReadGuid is addr =  seekReadBytes is addr 0x10
 
-let seekReadUncodedToken is addr  =
+let seekReadUncodedToken is addr  = 
     i32ToUncodedToken (seekReadInt32 is addr)
 
-
+    
 //---------------------------------------------------------------------
 // Primitives to help read signatures.  These do not use the file cursor
 //---------------------------------------------------------------------
 
-let sigptrGetByte (bytes:byte[]) sigptr =
+let sigptrGetByte (bytes:byte[]) sigptr = 
     bytes.[sigptr], sigptr + 1
 
-let sigptrGetBool bytes sigptr =
+let sigptrGetBool bytes sigptr = 
     let b0,sigptr = sigptrGetByte bytes sigptr
     (b0 = 0x01uy) ,sigptr
 
-let sigptrGetSByte bytes sigptr =
+let sigptrGetSByte bytes sigptr = 
     let i,sigptr = sigptrGetByte bytes sigptr
     sbyte i,sigptr
 
-let sigptrGetUInt16 bytes sigptr =
+let sigptrGetUInt16 bytes sigptr = 
     let b0,sigptr = sigptrGetByte bytes sigptr
     let b1,sigptr = sigptrGetByte bytes sigptr
     uint16 (int b0 ||| (int b1 <<< 8)),sigptr
 
-let sigptrGetInt16 bytes sigptr =
+let sigptrGetInt16 bytes sigptr = 
     let u,sigptr = sigptrGetUInt16 bytes sigptr
     int16 u,sigptr
 
-let sigptrGetInt32 (bytes: byte[]) sigptr =
+let sigptrGetInt32 (bytes: byte[]) sigptr = 
     let b0 = bytes.[sigptr]
     let b1 = bytes.[sigptr+1]
     let b2 = bytes.[sigptr+2]
@@ -1310,90 +1310,90 @@ let sigptrGetInt32 (bytes: byte[]) sigptr =
     let res = int b0 ||| (int b1 <<< 8) ||| (int b2 <<< 16) ||| (int b3 <<< 24)
     res, sigptr + 4
 
-let sigptrGetUInt32 bytes sigptr =
+let sigptrGetUInt32 bytes sigptr = 
     let u,sigptr = sigptrGetInt32 bytes sigptr
     uint32 u,sigptr
 
-let sigptrGetUInt64 bytes sigptr =
+let sigptrGetUInt64 bytes sigptr = 
     let u0,sigptr = sigptrGetUInt32 bytes sigptr
     let u1,sigptr = sigptrGetUInt32 bytes sigptr
     (uint64 u0 ||| (uint64 u1 <<< 32)),sigptr
 
-let sigptrGetInt64 bytes sigptr =
+let sigptrGetInt64 bytes sigptr = 
     let u,sigptr = sigptrGetUInt64 bytes sigptr
     int64 u,sigptr
 
-let sigptrGetSingle bytes sigptr =
+let sigptrGetSingle bytes sigptr = 
     let u,sigptr = sigptrGetInt32 bytes sigptr
     singleOfBits u,sigptr
 
-let sigptrGetDouble bytes sigptr =
+let sigptrGetDouble bytes sigptr = 
     let u,sigptr = sigptrGetInt64 bytes sigptr
     doubleOfBits u,sigptr
 
-let sigptrGetZInt32 bytes sigptr =
+let sigptrGetZInt32 bytes sigptr = 
     let b0,sigptr = sigptrGetByte bytes sigptr
     if b0 <= 0x7Fuy then int b0, sigptr
-    elif b0 <= 0xBFuy then
+    elif b0 <= 0xBFuy then 
         let b0 = b0 &&& 0x7Fuy
         let b1,sigptr = sigptrGetByte bytes sigptr
         (int b0 <<< 8) ||| int b1, sigptr
-    else
+    else 
         let b0 = b0 &&& 0x3Fuy
         let b1,sigptr = sigptrGetByte bytes sigptr
         let b2,sigptr = sigptrGetByte bytes sigptr
         let b3,sigptr = sigptrGetByte bytes sigptr
         (int b0 <<< 24) ||| (int  b1 <<< 16) ||| (int b2 <<< 8) ||| int b3, sigptr
-
-let rec sigptrFoldAcc f n (bytes:byte[]) (sigptr:int) i acc =
-    if i < n then
+         
+let rec sigptrFoldAcc f n (bytes:byte[]) (sigptr:int) i acc = 
+    if i < n then 
         let x,sp = f bytes sigptr
         sigptrFoldAcc f n bytes sp (i+1) (x::acc)
-    else
+    else 
         Array.ofList (List.rev acc), sigptr
 
-let sigptrFold f n (bytes:byte[]) (sigptr:int) =
+let sigptrFold f n (bytes:byte[]) (sigptr:int) = 
     sigptrFoldAcc f n bytes sigptr 0 []
 
-let sigptrGetBytes n (bytes:byte[]) sigptr =
+let sigptrGetBytes n (bytes:byte[]) sigptr = 
         let res = Array.zeroCreate n
-        for i = 0 to (n - 1) do
+        for i = 0 to (n - 1) do 
             res.[i] <- bytes.[sigptr + i]
         res, sigptr + n
 
-let sigptrGetString n bytes sigptr =
+let sigptrGetString n bytes sigptr = 
     let bytearray,sigptr = sigptrGetBytes n bytes sigptr
     (System.Text.Encoding.UTF8.GetString(bytearray, 0, bytearray.Length)),sigptr
-
+  
 //---------------------------------------------------------------------
-//
+// 
 //---------------------------------------------------------------------
 
 type ILImageChunk = { size: int32; addr: int32 }
 
-let chunk sz next = ({addr=next; size=sz},next + sz)
+let chunk sz next = ({addr=next; size=sz},next + sz) 
 let nochunk next = ({addr= 0x0;size= 0x0; } ,next)
 
-type ILRowElementKind =
-    | UShort
-    | ULong
-    | Byte
-    | Data
-    | GGuid
-    | Blob
-    | SString
+type ILRowElementKind = 
+    | UShort 
+    | ULong 
+    | Byte 
+    | Data 
+    | GGuid 
+    | Blob 
+    | SString 
     | SimpleIndex of ILTableName
     | TypeDefOrRefOrSpec
     | TypeOrMethodDef
-    | HasConstant
+    | HasConstant 
     | HasCustomAttribute
-    | HasFieldMarshal
-    | HasDeclSecurity
-    | MemberRefParent
-    | HasSemantics
+    | HasFieldMarshal 
+    | HasDeclSecurity 
+    | MemberRefParent 
+    | HasSemantics 
     | MethodDefOrRef
     | MemberForwarded
-    | Implementation
+    | Implementation 
     | CustomAttributeType
     | ResolutionScope
 
@@ -1444,32 +1444,32 @@ let kindIllegal                = ILRowKind [ ]
 // kind of element in that column.
 //---------------------------------------------------------------------
 
-let hcCompare (TaggedIndex((t1: HasConstantTag), (idx1:int))) (TaggedIndex((t2: HasConstantTag), idx2)) =
+let hcCompare (TaggedIndex((t1: HasConstantTag), (idx1:int))) (TaggedIndex((t2: HasConstantTag), idx2)) = 
     if idx1 < idx2 then -1 elif idx1 > idx2 then 1 else compare t1.Tag t2.Tag
 
-let hsCompare (TaggedIndex((t1:HasSemanticsTag), (idx1:int))) (TaggedIndex((t2:HasSemanticsTag), idx2)) =
+let hsCompare (TaggedIndex((t1:HasSemanticsTag), (idx1:int))) (TaggedIndex((t2:HasSemanticsTag), idx2)) = 
     if idx1 < idx2 then -1 elif idx1 > idx2 then 1 else compare t1.Tag t2.Tag
 
-let hcaCompare (TaggedIndex((t1:HasCustomAttributeTag), (idx1:int))) (TaggedIndex((t2:HasCustomAttributeTag), idx2)) =
+let hcaCompare (TaggedIndex((t1:HasCustomAttributeTag), (idx1:int))) (TaggedIndex((t2:HasCustomAttributeTag), idx2)) = 
     if idx1 < idx2 then -1 elif idx1 > idx2 then 1 else compare t1.Tag t2.Tag
 
-let mfCompare (TaggedIndex((t1:MemberForwardedTag), (idx1:int))) (TaggedIndex((t2:MemberForwardedTag), idx2)) =
+let mfCompare (TaggedIndex((t1:MemberForwardedTag), (idx1:int))) (TaggedIndex((t2:MemberForwardedTag), idx2)) = 
     if idx1 < idx2 then -1 elif idx1 > idx2 then 1 else compare t1.Tag t2.Tag
 
-let hdsCompare (TaggedIndex((t1:HasDeclSecurityTag), (idx1:int))) (TaggedIndex((t2:HasDeclSecurityTag), idx2)) =
+let hdsCompare (TaggedIndex((t1:HasDeclSecurityTag), (idx1:int))) (TaggedIndex((t2:HasDeclSecurityTag), idx2)) = 
     if idx1 < idx2 then -1 elif idx1 > idx2 then 1 else compare t1.Tag t2.Tag
 
-let hfmCompare (TaggedIndex((t1:HasFieldMarshalTag), idx1)) (TaggedIndex((t2:HasFieldMarshalTag), idx2)) =
+let hfmCompare (TaggedIndex((t1:HasFieldMarshalTag), idx1)) (TaggedIndex((t2:HasFieldMarshalTag), idx2)) = 
     if idx1 < idx2 then -1 elif idx1 > idx2 then 1 else compare t1.Tag t2.Tag
 
-let tomdCompare (TaggedIndex((t1:TypeOrMethodDefTag), idx1)) (TaggedIndex((t2:TypeOrMethodDefTag), idx2)) =
+let tomdCompare (TaggedIndex((t1:TypeOrMethodDefTag), idx1)) (TaggedIndex((t2:TypeOrMethodDefTag), idx2)) = 
     if idx1 < idx2 then -1 elif idx1 > idx2 then 1 else compare t1.Tag t2.Tag
 
-let simpleIndexCompare (idx1:int) (idx2:int) =
+let simpleIndexCompare (idx1:int) (idx2:int) = 
     compare idx1 idx2
 
 //---------------------------------------------------------------------
-// The various keys for the various caches.
+// The various keys for the various caches.  
 //---------------------------------------------------------------------
 
 type TypeDefAsTypIdx = TypeDefAsTypIdx of ILBoxity * ILGenericArgs * int
@@ -1491,33 +1491,33 @@ type GenericParamsIdx = GenericParamsIdx of int * TypeOrMethodDefTag * int
 
 let mkCacheInt32 lowMem _infile _nm _sz  =
     if lowMem then (fun f x -> f x) else
-    let cache = ref null
+    let cache = ref null 
     fun f (idx:int32) ->
-        let cache =
+        let cache = 
             match !cache with
             | null -> cache :=  new Dictionary<int32,_>(11)
             | _ -> ()
             !cache
         let mutable res = Unchecked.defaultof<_>
         let ok = cache.TryGetValue(idx, &res)
-        if ok then
+        if ok then 
             res
-        else
-            let res = f idx
-            cache.[idx] <- res;
-            res
+        else 
+            let res = f idx 
+            cache.[idx] <- res; 
+            res 
 
 let mkCacheGeneric lowMem _inbase _nm _sz  =
     if lowMem then (fun f x -> f x) else
-    let cache = ref null
+    let cache = ref null 
     fun f (idx :'T) ->
-        let cache =
+        let cache = 
             match !cache with
-            | null -> cache := new Dictionary<_,_>(11 (* sz:int *) )
+            | null -> cache := new Dictionary<_,_>(11 (* sz:int *) ) 
             | _ -> ()
             !cache
         if cache.ContainsKey idx then cache.[idx]
-        else let res = f idx in cache.[idx] <- res; res
+        else let res = f idx in cache.[idx] <- res; res 
 
 //-----------------------------------------------------------------------
 // Polymorphic general helpers for searching for particular rows.
@@ -1525,84 +1525,84 @@ let mkCacheGeneric lowMem _inbase _nm _sz  =
 
 let seekFindRow numRows rowChooser =
     let mutable i = 1
-    while (i <= numRows &&  not (rowChooser i)) do
+    while (i <= numRows &&  not (rowChooser i)) do 
         i <- i + 1;
-    i
+    i  
 
-// search for rows satisfying predicate
+// search for rows satisfying predicate 
 let seekReadIndexedRows (numRows, rowReader, keyFunc, keyComparer, binaryChop, rowConverter) =
     if binaryChop then
         let mutable low = 0
         let mutable high = numRows + 1
-        begin
+        begin 
           let mutable fin = false
-          while not fin do
-              if high - low <= 1  then
-                  fin <- true
-              else
+          while not fin do 
+              if high - low <= 1  then 
+                  fin <- true 
+              else 
                   let mid = (low + high) / 2
                   let midrow = rowReader mid
                   let c = keyComparer (keyFunc midrow)
-                  if c > 0 then
+                  if c > 0 then 
                       low <- mid
-                  elif c < 0 then
-                      high <- mid
-                  else
+                  elif c < 0 then 
+                      high <- mid 
+                  else 
                       fin <- true
         end;
         let mutable res = []
-        if high - low > 1 then
-            // now read off rows, forward and backwards
+        if high - low > 1 then 
+            // now read off rows, forward and backwards 
             let mid = (low + high) / 2
-            // read forward
-            begin
+            // read forward 
+            begin 
                 let mutable fin = false
                 let mutable curr = mid
-                while not fin do
-                  if curr > numRows then
+                while not fin do 
+                  if curr > numRows then 
                       fin <- true;
-                  else
+                  else 
                       let currrow = rowReader curr
-                      if keyComparer (keyFunc currrow) = 0 then
+                      if keyComparer (keyFunc currrow) = 0 then 
                           res <- rowConverter currrow :: res;
-                      else
+                      else 
                           fin <- true;
                       curr <- curr + 1;
                 done;
             end;
             res <- List.rev res;
-            // read backwards
-            begin
+            // read backwards 
+            begin 
                 let mutable fin = false
                 let mutable curr = mid - 1
-                while not fin do
-                  if curr = 0 then
+                while not fin do 
+                  if curr = 0 then 
                     fin <- true
-                  else
+                  else  
                     let currrow = rowReader curr
-                    if keyComparer (keyFunc currrow) = 0 then
+                    if keyComparer (keyFunc currrow) = 0 then 
                         res <- rowConverter currrow :: res;
-                    else
+                    else 
                         fin <- true;
                     curr <- curr - 1;
             end;
         res |> List.toArray
-    else
+    else 
         let res = ref []
         for i = 1 to numRows do
             let rowinfo = rowReader i
-            if keyComparer (keyFunc rowinfo) = 0 then
+            if keyComparer (keyFunc rowinfo) = 0 then 
               res := rowConverter rowinfo :: !res;
         List.rev !res  |> List.toArray
 
 
 let seekReadOptionalIndexedRow (info) =
-    match seekReadIndexedRows info with
+    match seekReadIndexedRows info with 
     | [| |] -> None
     | xs -> Some xs.[0]
-
+        
 let seekReadIndexedRow (info) =
-    match seekReadOptionalIndexedRow info with
+    match seekReadOptionalIndexedRow info with 
     | Some row -> row
     | None -> failwith ("no row found for key when indexing table")
 
@@ -1611,15 +1611,15 @@ type ILVarArgs = ILTypes option
 type MethodData = MethodData of ILType * ILCallingConv * string * ILTypes * ILType * ILTypes
 type VarArgMethodData = VarArgMethodData of ILType * ILCallingConv * string * ILTypes * ILVarArgs * ILType * ILTypes
 
-
-let getName (ltd: Lazy<ILTypeDef>) =
+  
+let getName (ltd: Lazy<ILTypeDef>) = 
     let td = ltd.Force()
     (td.Name,ltd)
 
 
-let mkILTy boxed tspec =
-    match boxed with
-    | AsObject -> ILType.Boxed tspec
+let mkILTy boxed tspec = 
+    match boxed with 
+    | AsObject -> ILType.Boxed tspec 
     | _ -> ILType.Value tspec
 
 let mkILArr1DTy ty = ILType.Array (ILArrayShape.SingleDimensional, ty)
@@ -1632,17 +1632,17 @@ let mkILTypeForGlobalFunctions scoref = ILType.Boxed (mkILNonGenericTySpec (ILTy
 let mkILMethSpecInTyRaw (typ:ILType, cc, nm, args, rty, minst:ILGenericArgs) =
     ILMethodSpec (ILMethodRef (typ.TypeRef,cc,minst.Length,nm,args,rty),typ,minst)
 
-let mkILFieldSpecInTy (typ:ILType,nm,fty) =
+let mkILFieldSpecInTy (typ:ILType,nm,fty) = 
     ILFieldSpec (ILFieldRef (typ.TypeRef,nm,fty), typ)
 
 let mkILFormalGenericArgsRaw (gparams:ILGenericParameterDefs)  =
-    gparams |> Array.mapi (fun n _gf -> ILType.Var n)
+    gparams |> Array.mapi (fun n _gf -> ILType.Var n) 
 
 //---------------------------------------------------------------------
 // The big fat reader.
 //---------------------------------------------------------------------
 
-let mkILGlobals systemRuntimeScopeRef =
+let mkILGlobals systemRuntimeScopeRef = 
       let mkILTyspec nsp nm =  mkILNonGenericTySpec(ILTypeRef(ILTypeRefScope.Top(systemRuntimeScopeRef),USome nsp,nm))
       { typ_Object = ILType.Boxed (mkILTyspec "System" "Object")
         typ_String = ILType.Boxed (mkILTyspec "System" "String")
@@ -1665,7 +1665,7 @@ let mkILGlobals systemRuntimeScopeRef =
         systemRuntimeScopeRef = systemRuntimeScopeRef }
 
 type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) =
-
+      
     //-----------------------------------------------------------------------
     // Crack the binary headers, build a reader context and return the lazy
     // read of the AbsIL module.
@@ -1689,48 +1689,48 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
          optHeaderSize <> 0xf0 then failwith "not a PE file - bad optional header size";
     let x64adjust = optHeaderSize - 0xe0
     //let only64 = (optHeaderSize = 0xf0)    (* May want to read in the optional header Magic number and check that as well... *)
-    //let platform = match machine with | 0x8664 -> Some(AMD64) | 0x200 -> Some(IA64) | _ -> Some(X86)
+    //let platform = match machine with | 0x8664 -> Some(AMD64) | 0x200 -> Some(IA64) | _ -> Some(X86) 
     let sectionHeadersStartPhysLoc = peOptionalHeaderPhysLoc + optHeaderSize
 
     //let flags = seekReadUInt16AsInt32 is (peFileHeaderPhysLoc + 18)
     //let isDll = (flags &&& 0x2000) <> 0x0
 
     (* OPTIONAL PE HEADER *)
-    (* x86: 000000a0 *)
-    (* x86: 000000b0 *)
+    (* x86: 000000a0 *) 
+    (* x86: 000000b0 *) 
     //let dataSegmentAddr       = seekReadInt32 is (peOptionalHeaderPhysLoc + 24) (* e.g. 0x0000c000 *)
     //let imageBaseReal = if only64 then dataSegmentAddr else seekReadInt32 is (peOptionalHeaderPhysLoc + 28)  (* Image Base Always 0x400000 (see Section 23.1). - QUERY : no it's not always 0x400000, e.g. 0x034f0000 *)
     //let alignVirt      = seekReadInt32 is (peOptionalHeaderPhysLoc + 32)   (*  Section Alignment Always 0x2000 (see Section 23.1). *)
     //let alignPhys      = seekReadInt32 is (peOptionalHeaderPhysLoc + 36)  (* File Alignment Either 0x200 or 0x1000. *)
-    (* x86: 000000c0 *)
+    (* x86: 000000c0 *) 
     //let subsysMajor = seekReadUInt16AsInt32 is (peOptionalHeaderPhysLoc + 48)   (* SubSys Major Always 4 (see Section 23.1). *)
     //let subsysMinor = seekReadUInt16AsInt32 is (peOptionalHeaderPhysLoc + 50)   (* SubSys Minor Always 0 (see Section 23.1). *)
-    (* x86: 000000d0 *)
+    (* x86: 000000d0 *) 
     //let subsys           = seekReadUInt16 is (peOptionalHeaderPhysLoc + 68)   (* SubSystem Subsystem required to run this image. Shall be either IMAGE_SUBSYSTEM_WINDOWS_CE_GUI (!0x3) or IMAGE_SUBSYSTEM_WINDOWS_GUI (!0x2). QUERY: Why is this 3 on the images ILASM produces??? *)
-    //let useHighEntropyVA =
+    //let useHighEntropyVA = 
     //    let n = seekReadUInt16 is (peOptionalHeaderPhysLoc + 70)
     //    let highEnthropyVA = 0x20us
     //    (n &&& highEnthropyVA) = highEnthropyVA
 
-     (* x86: 000000e0 *)
-     (* x86: 000000f0, x64: 00000100 *)
-     (* x86: 00000100 - these addresses are for x86 - for the x64 location, add x64adjust (0x10) *)
-     (* x86: 00000110 *)
-     (* x86: 00000120 *)
-     (* x86: 00000130 *)
-     (* x86: 00000140 *)
-     (* x86: 00000150 *)
-     (* x86: 00000160 *)
+     (* x86: 000000e0 *) 
+     (* x86: 000000f0, x64: 00000100 *) 
+     (* x86: 00000100 - these addresses are for x86 - for the x64 location, add x64adjust (0x10) *) 
+     (* x86: 00000110 *) 
+     (* x86: 00000120 *) 
+     (* x86: 00000130 *) 
+     (* x86: 00000140 *) 
+     (* x86: 00000150 *) 
+     (* x86: 00000160 *) 
     let cliHeaderAddr = seekReadInt32 is (peOptionalHeaderPhysLoc + 208 + x64adjust)
-
-    let anyV2P (n,v) =
-      let rec look i pos =
+    
+    let anyV2P (n,v) = 
+      let rec look i pos = 
         if i >= numSections then (failwith (infile + ": bad "+n+", rva "+string v); 0x0)
         else
           let virtSize = seekReadInt32 is (pos + 8)
           let virtAddr = seekReadInt32 is (pos + 12)
           let physLoc = seekReadInt32 is (pos + 20)
-          if (v >= virtAddr && (v < virtAddr + virtSize)) then (v - virtAddr) + physLoc
+          if (v >= virtAddr && (v < virtAddr + virtSize)) then (v - virtAddr) + physLoc 
           else look (i+1) (pos + 0x28)
       look 0 sectionHeadersStartPhysLoc
 
@@ -1741,7 +1741,7 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
     //let ilOnly             = (cliFlags &&& 0x01) <> 0x00
     //let only32             = (cliFlags &&& 0x02) <> 0x00
     //let is32bitpreferred   = (cliFlags &&& 0x00020003) <> 0x00
-
+    
     let entryPointToken = seekReadUncodedToken is (cliHeaderPhysLoc + 20)
     let resourcesAddr     = seekReadInt32 is (cliHeaderPhysLoc + 24)
 
@@ -1759,8 +1759,8 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
 
     (* Crack stream headers *)
 
-    let tryFindStream name =
-      let rec look i pos =
+    let tryFindStream name = 
+      let rec look i pos = 
         if i >= numStreams then None
         else
           let offset = seekReadInt32 is (pos + 0)
@@ -1768,30 +1768,30 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
           let res = ref true
           let fin = ref false
           let n = ref 0
-          // read and compare the stream name byte by byte
-          while (not !fin) do
+          // read and compare the stream name byte by byte 
+          while (not !fin) do 
               let c= seekReadByteAsInt32 is (pos + 8 + (!n))
-              if c = 0 then
+              if c = 0 then 
                   fin := true
-              elif !n >= Array.length name || c <> name.[!n] then
+              elif !n >= Array.length name || c <> name.[!n] then 
                   res := false;
               incr n
-          if !res then Some(offset + metadataPhysLoc,length)
+          if !res then Some(offset + metadataPhysLoc,length) 
           else look (i+1) (align 0x04 (pos + 8 + (!n)))
       look 0 streamHeadersStart
 
-    let findStream name =
+    let findStream name = 
         match tryFindStream name with
         | None -> (0x0, 0x0)
         | Some positions ->  positions
 
-    let (tablesStreamPhysLoc, _tablesStreamSize) =
+    let (tablesStreamPhysLoc, _tablesStreamSize) = 
       match tryFindStream [| 0x23; 0x7e |] (* #~ *) with
       | Some res -> res
-      | None ->
+      | None -> 
         match tryFindStream [| 0x23; 0x2d |] (* #-: at least one DLL I've seen uses this! *)   with
         | Some res -> res
-        | None ->
+        | None -> 
          let firstStreamOffset = seekReadInt32 is (streamHeadersStart + 0)
          let firstStreamLength = seekReadInt32 is (streamHeadersStart + 4)
          firstStreamOffset,firstStreamLength
@@ -1804,8 +1804,8 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
 
     let usingWhidbeyBeta1TableSchemeForGenericParam = (tablesStreamMajorVersion = 1) && (tablesStreamMinorVersion = 1)
 
-    let tableKinds =
-        [|kindModule               (* Table 0  *);
+    let tableKinds = 
+        [|kindModule               (* Table 0  *); 
           kindTypeRef              (* Table 1  *);
           kindTypeDef              (* Table 2  *);
           kindIllegal (* kindFieldPtr *)             (* Table 3  *);
@@ -1874,11 +1874,11 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
     let heapSizes = seekReadByteAsInt32 is (tablesStreamPhysLoc + 6)
     let valid = seekReadInt64 is (tablesStreamPhysLoc + 8)
     let sorted = seekReadInt64 is (tablesStreamPhysLoc + 16)
-    let tableRowCount, startOfTables =
+    let tableRowCount, startOfTables = 
         let numRows = Array.create 64 0
         let prevNumRowIdx = ref (tablesStreamPhysLoc + 24)
-        for i = 0 to 63 do
-            if (valid &&& (int64 1 <<< i)) <> int64  0 then
+        for i = 0 to 63 do 
+            if (valid &&& (int64 1 <<< i)) <> int64  0 then 
                 numRows.[i] <-  (seekReadInt32 is !prevNumRowIdx);
                 prevNumRowIdx := !prevNumRowIdx + 4
         numRows, !prevNumRowIdx
@@ -1889,26 +1889,26 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
     let blobsBigness = (heapSizes &&& 4) <> 0
 
     let tableBigness = Array.map (fun n -> n >= 0x10000) tableRowCount
-
+      
     let codedBigness nbits tab =
       let rows = getNumRows tab
       rows >= (0x10000 >>>& nbits)
-
-    let tdorBigness =
-      codedBigness 2 ILTableNames.TypeDef ||
-      codedBigness 2 ILTableNames.TypeRef ||
+    
+    let tdorBigness = 
+      codedBigness 2 ILTableNames.TypeDef || 
+      codedBigness 2 ILTableNames.TypeRef || 
       codedBigness 2 ILTableNames.TypeSpec
-
-    let tomdBigness =
-      codedBigness 1 ILTableNames.TypeDef ||
+    
+    let tomdBigness = 
+      codedBigness 1 ILTableNames.TypeDef || 
       codedBigness 1 ILTableNames.Method
-
-    let hcBigness =
+    
+    let hcBigness = 
       codedBigness 2 ILTableNames.Field ||
       codedBigness 2 ILTableNames.Param ||
       codedBigness 2 ILTableNames.Property
-
-    let hcaBigness =
+    
+    let hcaBigness = 
       codedBigness 5 ILTableNames.Method ||
       codedBigness 5 ILTableNames.Field ||
       codedBigness 5 ILTableNames.TypeRef  ||
@@ -1932,52 +1932,52 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
       codedBigness 5 ILTableNames.GenericParamConstraint ||
       codedBigness 5 ILTableNames.MethodSpec
 
-
-    let hfmBigness =
-      codedBigness 1 ILTableNames.Field ||
+    
+    let hfmBigness = 
+      codedBigness 1 ILTableNames.Field || 
       codedBigness 1 ILTableNames.Param
-
-    let hdsBigness =
-      codedBigness 2 ILTableNames.TypeDef ||
+    
+    let hdsBigness = 
+      codedBigness 2 ILTableNames.TypeDef || 
       codedBigness 2 ILTableNames.Method ||
       codedBigness 2 ILTableNames.Assembly
-
-    let mrpBigness =
+    
+    let mrpBigness = 
       codedBigness 3 ILTableNames.TypeRef ||
       codedBigness 3 ILTableNames.ModuleRef ||
       codedBigness 3 ILTableNames.Method ||
       codedBigness 3 ILTableNames.TypeSpec
-
-    let hsBigness =
-      codedBigness 1 ILTableNames.Event ||
-      codedBigness 1 ILTableNames.Property
-
+    
+    let hsBigness = 
+      codedBigness 1 ILTableNames.Event || 
+      codedBigness 1 ILTableNames.Property 
+    
     let mdorBigness =
-      codedBigness 1 ILTableNames.Method ||
-      codedBigness 1 ILTableNames.MemberRef
-
+      codedBigness 1 ILTableNames.Method ||    
+      codedBigness 1 ILTableNames.MemberRef 
+    
     let mfBigness =
       codedBigness 1 ILTableNames.Field ||
-      codedBigness 1 ILTableNames.Method
-
+      codedBigness 1 ILTableNames.Method 
+    
     let iBigness =
-      codedBigness 2 ILTableNames.File ||
-      codedBigness 2 ILTableNames.AssemblyRef ||
-      codedBigness 2 ILTableNames.ExportedType
-
-    let catBigness =
-      codedBigness 3 ILTableNames.Method ||
-      codedBigness 3 ILTableNames.MemberRef
-
-    let rsBigness =
-      codedBigness 2 ILTableNames.Module ||
-      codedBigness 2 ILTableNames.ModuleRef ||
+      codedBigness 2 ILTableNames.File || 
+      codedBigness 2 ILTableNames.AssemblyRef ||    
+      codedBigness 2 ILTableNames.ExportedType 
+    
+    let catBigness =  
+      codedBigness 3 ILTableNames.Method ||    
+      codedBigness 3 ILTableNames.MemberRef 
+    
+    let rsBigness = 
+      codedBigness 2 ILTableNames.Module ||    
+      codedBigness 2 ILTableNames.ModuleRef || 
       codedBigness 2 ILTableNames.AssemblyRef  ||
       codedBigness 2 ILTableNames.TypeRef
-
-    let rowKindSize (ILRowKind kinds) =
-      kinds |> List.sumBy (fun x ->
-            match x with
+      
+    let rowKindSize (ILRowKind kinds) = 
+      kinds |> List.sumBy (fun x -> 
+            match x with 
             | UShort -> 2
             | ULong -> 4
             | Byte -> 1
@@ -1998,19 +1998,19 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
             | MemberForwarded -> (if mfBigness then 4 else 2)
             | Implementation  -> (if iBigness then 4 else 2)
             | CustomAttributeType -> (if catBigness then 4 else 2)
-            | ResolutionScope -> (if rsBigness then 4 else 2))
+            | ResolutionScope -> (if rsBigness then 4 else 2)) 
 
-    let tableRowSizes = tableKinds |> Array.map rowKindSize
+    let tableRowSizes = tableKinds |> Array.map rowKindSize 
 
-    let tablePhysLocations =
+    let tablePhysLocations = 
          let res = Array.create 64 0x0
          let prevTablePhysLoc = ref startOfTables
-         for i = 0 to 63 do
+         for i = 0 to 63 do 
              res.[i] <- !prevTablePhysLoc;
              prevTablePhysLoc := !prevTablePhysLoc + (tableRowCount.[i] * tableRowSizes.[i]);
          res
-
-    // All the caches.  The sizes are guesstimates for the rough sharing-density of the assembly
+    
+    // All the caches.  The sizes are guesstimates for the rough sharing-density of the assembly 
     let cacheAssemblyRef               = mkCacheInt32 lowMem infile "ILAssemblyRef"  (getNumRows ILTableNames.AssemblyRef)
     let cacheMemberRefAsMemberData     = mkCacheGeneric lowMem infile "MemberRefAsMemberData" (getNumRows ILTableNames.MemberRef / 20 + 1)
     let cacheTypeRef                   = mkCacheInt32 lowMem infile "ILTypeRef" (getNumRows ILTableNames.TypeRef / 20 + 1)
@@ -2020,55 +2020,55 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
     let cacheBlobHeapAsMethodSig       = mkCacheGeneric lowMem infile "BlobHeapAsMethodSig" (getNumRows ILTableNames.Method / 20 + 1)
     let cacheTypeDefAsType             = mkCacheGeneric lowMem infile "TypeDefAsType" (getNumRows ILTableNames.TypeDef / 20 + 1)
     let cacheMethodDefAsMethodData     = mkCacheInt32 lowMem infile "MethodDefAsMethodData" (getNumRows ILTableNames.Method / 20 + 1)
-    // nb. Lots and lots of cache hits on this cache, hence never optimize cache away
+    // nb. Lots and lots of cache hits on this cache, hence never optimize cache away 
     let cacheStringHeap                = mkCacheInt32 false infile "string heap" ( stringsStreamSize / 50 + 1)
-    let cacheBlobHeap                  = mkCacheInt32 lowMem infile "blob heap" ( blobsStreamSize / 50 + 1)
+    let cacheBlobHeap                  = mkCacheInt32 lowMem infile "blob heap" ( blobsStreamSize / 50 + 1) 
 
    //-----------------------------------------------------------------------
 
     let rowAddr (tab:ILTableName) idx = tablePhysLocations.[tab.Index] + (idx - 1) * tableRowSizes.[tab.Index]
 
-    let seekReadUInt16Adv (addr: byref<int>) =
+    let seekReadUInt16Adv (addr: byref<int>) =  
         let res = seekReadUInt16 is addr
         addr <- addr + 2
         res
 
-    let seekReadInt32Adv (addr: byref<int>) =
+    let seekReadInt32Adv (addr: byref<int>) = 
         let res = seekReadInt32 is addr
         addr <- addr+4
         res
 
-    let seekReadUInt16AsInt32Adv (addr: byref<int>) =
+    let seekReadUInt16AsInt32Adv (addr: byref<int>) = 
         let res = seekReadUInt16AsInt32 is addr
         addr <- addr+2
         res
 
-    let seekReadTaggedIdx f nbits big (addr: byref<int>) =
-        let tok = if big then seekReadInt32Adv &addr else seekReadUInt16AsInt32Adv &addr
+    let seekReadTaggedIdx f nbits big (addr: byref<int>) =  
+        let tok = if big then seekReadInt32Adv &addr else seekReadUInt16AsInt32Adv &addr 
         tokToTaggedIdx f nbits tok
 
 
-    let seekReadIdx big (addr: byref<int>) =
+    let seekReadIdx big (addr: byref<int>) =  
         if big then seekReadInt32Adv &addr else seekReadUInt16AsInt32Adv &addr
 
-    let seekReadUntaggedIdx (tab:ILTableName) (addr: byref<int>) =
+    let seekReadUntaggedIdx (tab:ILTableName) (addr: byref<int>) =  
         seekReadIdx tableBigness.[tab.Index] &addr
 
 
     let seekReadResolutionScopeIdx     (addr: byref<int>) = seekReadTaggedIdx (fun idx -> ResolutionScopeTag idx)    2 rsBigness   &addr
-    let seekReadTypeDefOrRefOrSpecIdx  (addr: byref<int>) = seekReadTaggedIdx (fun idx -> TypeDefOrRefOrSpecTag idx)  2 tdorBigness &addr
+    let seekReadTypeDefOrRefOrSpecIdx  (addr: byref<int>) = seekReadTaggedIdx (fun idx -> TypeDefOrRefOrSpecTag idx)  2 tdorBigness &addr   
     let seekReadTypeOrMethodDefIdx     (addr: byref<int>) = seekReadTaggedIdx (fun idx -> TypeOrMethodDefTag idx)    1 tomdBigness &addr
-    let seekReadHasConstantIdx         (addr: byref<int>) = seekReadTaggedIdx (fun idx -> HasConstantTag idx)        2 hcBigness   &addr
+    let seekReadHasConstantIdx         (addr: byref<int>) = seekReadTaggedIdx (fun idx -> HasConstantTag idx)        2 hcBigness   &addr   
     let seekReadHasCustomAttributeIdx  (addr: byref<int>) = seekReadTaggedIdx (fun idx -> HasCustomAttributeTag idx)  5 hcaBigness  &addr
     //let seekReadHasFieldMarshalIdx     (addr: byref<int>) = seekReadTaggedIdx (fun idx -> HasFieldMarshalTag idx)    1 hfmBigness &addr
     //let seekReadHasDeclSecurityIdx     (addr: byref<int>) = seekReadTaggedIdx (fun idx -> HasDeclSecurityTag idx)    2 hdsBigness &addr
     let seekReadMemberRefParentIdx     (addr: byref<int>) = seekReadTaggedIdx (fun idx -> MemberRefParentTag idx)    3 mrpBigness &addr
     let seekReadHasSemanticsIdx        (addr: byref<int>) = seekReadTaggedIdx (fun idx -> HasSemanticsTag idx)       1 hsBigness &addr
     let seekReadImplementationIdx      (addr: byref<int>) = seekReadTaggedIdx (fun idx -> ImplementationTag idx)     2 iBigness &addr
-    let seekReadCustomAttributeTypeIdx (addr: byref<int>) = seekReadTaggedIdx (fun idx -> CustomAttributeTypeTag idx) 3 catBigness &addr
+    let seekReadCustomAttributeTypeIdx (addr: byref<int>) = seekReadTaggedIdx (fun idx -> CustomAttributeTypeTag idx) 3 catBigness &addr  
     let seekReadStringIdx (addr: byref<int>) = seekReadIdx stringsBigness &addr
     let seekReadGuidIdx (addr: byref<int>) = seekReadIdx guidsBigness &addr
-    let seekReadBlobIdx (addr: byref<int>) = seekReadIdx blobsBigness &addr
+    let seekReadBlobIdx (addr: byref<int>) = seekReadIdx blobsBigness &addr 
 
     let seekReadModuleRow idx =
         if idx = 0 then failwith "cannot read Module table row 0";
@@ -2078,17 +2078,17 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
         let mvidIdx = seekReadGuidIdx &addr
         let encidIdx = seekReadGuidIdx &addr
         let encbaseidIdx = seekReadGuidIdx &addr
-        (generation, nameIdx, mvidIdx, encidIdx, encbaseidIdx)
+        (generation, nameIdx, mvidIdx, encidIdx, encbaseidIdx) 
 
-    /// Read Table ILTypeRef
+    /// Read Table ILTypeRef 
     let seekReadTypeRefRow idx =
         let mutable addr = rowAddr ILTableNames.TypeRef idx
         let scopeIdx = seekReadResolutionScopeIdx &addr
         let nameIdx = seekReadStringIdx &addr
         let namespaceIdx = seekReadStringIdx &addr
-        (scopeIdx,nameIdx,namespaceIdx)
+        (scopeIdx,nameIdx,namespaceIdx) 
 
-    /// Read Table ILTypeDef
+    /// Read Table ILTypeDef 
     let seekReadTypeDefRow idx =
         let mutable addr = rowAddr ILTableNames.TypeDef idx
         let flags = seekReadInt32Adv &addr
@@ -2097,17 +2097,17 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
         let extendsIdx = seekReadTypeDefOrRefOrSpecIdx &addr
         let fieldsIdx = seekReadUntaggedIdx ILTableNames.Field &addr
         let methodsIdx = seekReadUntaggedIdx ILTableNames.Method &addr
-        (flags, nameIdx, namespaceIdx, extendsIdx, fieldsIdx, methodsIdx)
+        (flags, nameIdx, namespaceIdx, extendsIdx, fieldsIdx, methodsIdx) 
 
-    /// Read Table Field
+    /// Read Table Field 
     let seekReadFieldRow idx =
         let mutable addr = rowAddr ILTableNames.Field idx
         let flags = seekReadUInt16AsInt32Adv &addr
         let nameIdx = seekReadStringIdx &addr
         let typeIdx = seekReadBlobIdx &addr
-        (flags,nameIdx,typeIdx)
+        (flags,nameIdx,typeIdx)  
 
-    /// Read Table Method
+    /// Read Table Method 
     let seekReadMethodRow idx =
         let mutable addr = rowAddr ILTableNames.Method idx
         let codeRVA = seekReadInt32Adv &addr
@@ -2116,15 +2116,15 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
         let nameIdx = seekReadStringIdx &addr
         let typeIdx = seekReadBlobIdx &addr
         let paramIdx = seekReadUntaggedIdx ILTableNames.Param &addr
-        (codeRVA, implflags, flags, nameIdx, typeIdx, paramIdx)
+        (codeRVA, implflags, flags, nameIdx, typeIdx, paramIdx) 
 
-    /// Read Table Param
+    /// Read Table Param 
     let seekReadParamRow idx =
         let mutable addr = rowAddr ILTableNames.Param idx
         let flags = seekReadUInt16AsInt32Adv &addr
         let seq =  seekReadUInt16AsInt32Adv &addr
         let nameIdx = seekReadStringIdx &addr
-        (flags,seq,nameIdx)
+        (flags,seq,nameIdx) 
 
     let seekReadInterfaceImplRow idx =
         let mutable addr = rowAddr ILTableNames.InterfaceImpl idx
@@ -2132,15 +2132,15 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
         let intfIdx = seekReadTypeDefOrRefOrSpecIdx &addr
         (tidx,intfIdx)
 
-    /// Read Table MemberRef
+    /// Read Table MemberRef 
     let seekReadMemberRefRow idx =
         let mutable addr = rowAddr ILTableNames.MemberRef idx
         let mrpIdx = seekReadMemberRefParentIdx &addr
         let nameIdx = seekReadStringIdx &addr
         let typeIdx = seekReadBlobIdx &addr
-        (mrpIdx,nameIdx,typeIdx)
+        (mrpIdx,nameIdx,typeIdx) 
 
-    /// Read Table Constant
+    /// Read Table Constant 
     let seekReadConstantRow idx =
         let mutable addr = rowAddr ILTableNames.Constant idx
         let kind = seekReadUInt16Adv &addr
@@ -2148,45 +2148,45 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
         let valIdx = seekReadBlobIdx &addr
         (kind, parentIdx, valIdx)
 
-    /// Read Table CustomAttribute
+    /// Read Table CustomAttribute 
     let seekReadCustomAttributeRow idx =
         let mutable addr = rowAddr ILTableNames.CustomAttribute idx
         let parentIdx = seekReadHasCustomAttributeIdx &addr
         let typeIdx = seekReadCustomAttributeTypeIdx &addr
         let valIdx = seekReadBlobIdx &addr
-        (parentIdx, typeIdx, valIdx)
+        (parentIdx, typeIdx, valIdx)  
 
-    /// Read Table EventMap
+    /// Read Table EventMap 
     let seekReadEventMapRow idx =
         let mutable addr = rowAddr ILTableNames.EventMap idx
         let tidx = seekReadUntaggedIdx ILTableNames.TypeDef &addr
         let eventsIdx = seekReadUntaggedIdx ILTableNames.Event &addr
-        (tidx,eventsIdx)
+        (tidx,eventsIdx) 
 
-    /// Read Table Event
+    /// Read Table Event 
     let seekReadEventRow idx =
         let mutable addr = rowAddr ILTableNames.Event idx
         let flags = seekReadUInt16AsInt32Adv &addr
         let nameIdx = seekReadStringIdx &addr
         let typIdx = seekReadTypeDefOrRefOrSpecIdx &addr
-        (flags,nameIdx,typIdx)
-
-    /// Read Table PropertyMap
+        (flags,nameIdx,typIdx) 
+   
+    /// Read Table PropertyMap 
     let seekReadPropertyMapRow idx =
         let mutable addr = rowAddr ILTableNames.PropertyMap idx
         let tidx = seekReadUntaggedIdx ILTableNames.TypeDef &addr
         let propsIdx = seekReadUntaggedIdx ILTableNames.Property &addr
         (tidx,propsIdx)
 
-    /// Read Table Property
+    /// Read Table Property 
     let seekReadPropertyRow idx =
         let mutable addr = rowAddr ILTableNames.Property idx
         let flags = seekReadUInt16AsInt32Adv &addr
         let nameIdx = seekReadStringIdx &addr
         let typIdx = seekReadBlobIdx &addr
-        (flags,nameIdx,typIdx)
+        (flags,nameIdx,typIdx) 
 
-    /// Read Table MethodSemantics
+    /// Read Table MethodSemantics 
     let seekReadMethodSemanticsRow idx =
         let mutable addr = rowAddr ILTableNames.MethodSemantics idx
         let flags = seekReadUInt16AsInt32Adv &addr
@@ -2194,19 +2194,19 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
         let assocIdx = seekReadHasSemanticsIdx &addr
         (flags,midx,assocIdx)
 
-    /// Read Table ILModuleRef
+    /// Read Table ILModuleRef 
     let seekReadModuleRefRow idx =
         let mutable addr = rowAddr ILTableNames.ModuleRef idx
         let nameIdx = seekReadStringIdx &addr
-        nameIdx
+        nameIdx  
 
-    /// Read Table ILTypeSpec
+    /// Read Table ILTypeSpec 
     let seekReadTypeSpecRow idx =
         let mutable addr = rowAddr ILTableNames.TypeSpec idx
         let blobIdx = seekReadBlobIdx &addr
-        blobIdx
+        blobIdx  
 
-    /// Read Table Assembly
+    /// Read Table Assembly 
     let seekReadAssemblyRow idx =
         let mutable addr = rowAddr ILTableNames.Assembly idx
         let hash = seekReadInt32Adv &addr
@@ -2220,7 +2220,7 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
         let localeIdx = seekReadStringIdx &addr
         (hash,v1,v2,v3,v4,flags,publicKeyIdx, nameIdx, localeIdx)
 
-    /// Read Table ILAssemblyRef
+    /// Read Table ILAssemblyRef 
     let seekReadAssemblyRefRow idx =
         let mutable addr = rowAddr ILTableNames.AssemblyRef idx
         let v1 = seekReadUInt16Adv &addr
@@ -2232,17 +2232,17 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
         let nameIdx = seekReadStringIdx &addr
         let localeIdx = seekReadStringIdx &addr
         let hashValueIdx = seekReadBlobIdx &addr
-        (v1,v2,v3,v4,flags,publicKeyOrTokenIdx, nameIdx, localeIdx,hashValueIdx)
+        (v1,v2,v3,v4,flags,publicKeyOrTokenIdx, nameIdx, localeIdx,hashValueIdx) 
 
-    /// Read Table File
+    /// Read Table File 
     let seekReadFileRow idx =
         let mutable addr = rowAddr ILTableNames.File idx
         let flags = seekReadInt32Adv &addr
         let nameIdx = seekReadStringIdx &addr
         let hashValueIdx = seekReadBlobIdx &addr
-        (flags, nameIdx, hashValueIdx)
+        (flags, nameIdx, hashValueIdx) 
 
-    /// Read Table ILExportedTypeOrForwarder
+    /// Read Table ILExportedTypeOrForwarder 
     let seekReadExportedTypeRow idx =
         let mutable addr = rowAddr ILTableNames.ExportedType idx
         let flags = seekReadInt32Adv &addr
@@ -2250,76 +2250,76 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
         let nameIdx = seekReadStringIdx &addr
         let namespaceIdx = seekReadStringIdx &addr
         let implIdx = seekReadImplementationIdx &addr
-        (flags,tok,nameIdx,namespaceIdx,implIdx)
+        (flags,tok,nameIdx,namespaceIdx,implIdx) 
 
-    /// Read Table ManifestResource
+    /// Read Table ManifestResource 
     let seekReadManifestResourceRow idx =
         let mutable addr = rowAddr ILTableNames.ManifestResource idx
         let offset = seekReadInt32Adv &addr
         let flags = seekReadInt32Adv &addr
         let nameIdx = seekReadStringIdx &addr
         let implIdx = seekReadImplementationIdx &addr
-        (offset,flags,nameIdx,implIdx)
+        (offset,flags,nameIdx,implIdx) 
 
-    /// Read Table Nested
+    /// Read Table Nested 
     let seekReadNestedRow idx =
         let mutable addr = rowAddr ILTableNames.Nested idx
         let nestedIdx = seekReadUntaggedIdx ILTableNames.TypeDef &addr
         let enclIdx = seekReadUntaggedIdx ILTableNames.TypeDef &addr
         (nestedIdx,enclIdx)
 
-    /// Read Table GenericParam
+    /// Read Table GenericParam 
     let seekReadGenericParamRow idx =
         let mutable addr = rowAddr ILTableNames.GenericParam idx
         let seq = seekReadUInt16Adv &addr
         let flags = seekReadUInt16Adv &addr
         let ownerIdx = seekReadTypeOrMethodDefIdx &addr
         let nameIdx = seekReadStringIdx &addr
-        (idx,seq,flags,ownerIdx,nameIdx)
+        (idx,seq,flags,ownerIdx,nameIdx) 
 
-    // Read Table GenericParamConstraint
+    // Read Table GenericParamConstraint 
     let seekReadGenericParamConstraintRow idx =
         let mutable addr = rowAddr ILTableNames.GenericParamConstraint idx
         let pidx = seekReadUntaggedIdx ILTableNames.GenericParam &addr
         let constraintIdx = seekReadTypeDefOrRefOrSpecIdx &addr
-        (pidx,constraintIdx)
+        (pidx,constraintIdx) 
 
     //let readUserStringHeapUncached idx = seekReadUserString is (userStringsStreamPhysicalLoc + idx)
     //let readUserStringHeap = cacheUserStringHeap readUserStringHeapUncached
 
-    let readStringHeapUncached idx =  seekReadUTF8String is (stringsStreamPhysicalLoc + idx)
+    let readStringHeapUncached idx =  seekReadUTF8String is (stringsStreamPhysicalLoc + idx) 
     let readStringHeap = cacheStringHeap readStringHeapUncached
-    let readStringHeapOption idx = if idx = 0 then UNone else USome (readStringHeap idx)
+    let readStringHeapOption idx = if idx = 0 then UNone else USome (readStringHeap idx) 
 
     let emptyByteArray: byte[] = [||]
-    let readBlobHeapUncached idx =
+    let readBlobHeapUncached idx = 
         // valid index lies in range [1..streamSize)
         // NOTE: idx cannot be 0 - Blob\String heap has first empty element that is one byte 0
         if idx <= 0 || idx >= blobsStreamSize then emptyByteArray
-        else seekReadBlob is (blobsStreamPhysicalLoc + idx)
+        else seekReadBlob is (blobsStreamPhysicalLoc + idx) 
     let readBlobHeap        = cacheBlobHeap readBlobHeapUncached
-    let readBlobHeapOption idx = if idx = 0 then None else Some (readBlobHeap idx)
+    let readBlobHeapOption idx = if idx = 0 then None else Some (readBlobHeap idx) 
 
-    //let readGuidHeap idx = seekReadGuid is (guidsStreamPhysicalLoc + idx)
+    //let readGuidHeap idx = seekReadGuid is (guidsStreamPhysicalLoc + idx) 
 
-    // read a single value out of a blob heap using the given function
-    let readBlobHeapAsBool   vidx = fst (sigptrGetBool   (readBlobHeap vidx) 0)
-    let readBlobHeapAsSByte  vidx = fst (sigptrGetSByte  (readBlobHeap vidx) 0)
-    let readBlobHeapAsInt16  vidx = fst (sigptrGetInt16  (readBlobHeap vidx) 0)
-    let readBlobHeapAsInt32  vidx = fst (sigptrGetInt32  (readBlobHeap vidx) 0)
-    let readBlobHeapAsInt64  vidx = fst (sigptrGetInt64  (readBlobHeap vidx) 0)
-    let readBlobHeapAsByte   vidx = fst (sigptrGetByte   (readBlobHeap vidx) 0)
-    let readBlobHeapAsUInt16 vidx = fst (sigptrGetUInt16 (readBlobHeap vidx) 0)
-    let readBlobHeapAsUInt32 vidx = fst (sigptrGetUInt32 (readBlobHeap vidx) 0)
-    let readBlobHeapAsUInt64 vidx = fst (sigptrGetUInt64 (readBlobHeap vidx) 0)
-    let readBlobHeapAsSingle vidx = fst (sigptrGetSingle (readBlobHeap vidx) 0)
-    let readBlobHeapAsDouble vidx = fst (sigptrGetDouble (readBlobHeap vidx) 0)
-
+    // read a single value out of a blob heap using the given function 
+    let readBlobHeapAsBool   vidx = fst (sigptrGetBool   (readBlobHeap vidx) 0) 
+    let readBlobHeapAsSByte  vidx = fst (sigptrGetSByte  (readBlobHeap vidx) 0) 
+    let readBlobHeapAsInt16  vidx = fst (sigptrGetInt16  (readBlobHeap vidx) 0) 
+    let readBlobHeapAsInt32  vidx = fst (sigptrGetInt32  (readBlobHeap vidx) 0) 
+    let readBlobHeapAsInt64  vidx = fst (sigptrGetInt64  (readBlobHeap vidx) 0) 
+    let readBlobHeapAsByte   vidx = fst (sigptrGetByte   (readBlobHeap vidx) 0) 
+    let readBlobHeapAsUInt16 vidx = fst (sigptrGetUInt16 (readBlobHeap vidx) 0) 
+    let readBlobHeapAsUInt32 vidx = fst (sigptrGetUInt32 (readBlobHeap vidx) 0) 
+    let readBlobHeapAsUInt64 vidx = fst (sigptrGetUInt64 (readBlobHeap vidx) 0) 
+    let readBlobHeapAsSingle vidx = fst (sigptrGetSingle (readBlobHeap vidx) 0) 
+    let readBlobHeapAsDouble vidx = fst (sigptrGetDouble (readBlobHeap vidx) 0) 
+   
     //-----------------------------------------------------------------------
     // Read the AbsIL structure (lazily) by reading off the relevant rows.
     // ----------------------------------------------------------------------
 
-    let isSorted (tab:ILTableName) = ((sorted &&& (int64 1 <<< tab.Index)) <> int64 0x0)
+    let isSorted (tab:ILTableName) = ((sorted &&& (int64 1 <<< tab.Index)) <> int64 0x0) 
 
     //let subsysversion = (subsysMajor, subsysMinor)
     //let ilMetadataVersion = System.Text.Encoding.UTF8.GetString (ilMetadataVersion, 0, ilMetadataVersion.Length)
@@ -2329,8 +2329,8 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
         let ilModuleName = readStringHeap nameIdx
         //let nativeResources = readNativeResources ctxt
 
-        { Manifest =
-             if getNumRows (ILTableNames.Assembly) > 0 then Some (seekReadAssemblyManifest 1)
+        { Manifest =      
+             if getNumRows (ILTableNames.Assembly) > 0 then Some (seekReadAssemblyManifest 1) 
              else None;
           CustomAttrs = seekReadCustomAttrs (TaggedIndex(HasCustomAttributeTag.Module,idx));
           Name = ilModuleName;
@@ -2341,7 +2341,7 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
           //SubsystemVersion = subsysversion
           //UseHighEntropyVA = useHighEntropyVA
           //Platform = platform;
-          //StackReserveSize = None;
+          //StackReserveSize = None;  
           //Is32Bit = only32;
           //Is32BitPreferred = is32bitpreferred;
           //Is64Bit = only64;
@@ -2350,16 +2350,16 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
           //PhysicalAlignment = alignPhys;
           //ImageBase = imageBaseReal;
           //MetadataVersion = ilMetadataVersion;
-          Resources = seekReadManifestResources ();
-          }
+          Resources = seekReadManifestResources (); 
+          }  
 
     and seekReadAssemblyManifest idx =
         let (_hash,v1,v2,v3,v4,flags,publicKeyIdx, nameIdx, localeIdx) = seekReadAssemblyRow idx
         let name = readStringHeap nameIdx
         let pubkey = readBlobHeapOption publicKeyIdx
-        { Name= name;
+        { Name= name; 
           //SecurityDecls= seekReadSecurityDecls (TaggedIndex(hds_Assembly,idx));
-          PublicKey= pubkey;
+          PublicKey= pubkey;  
           Version= Some (Version(int v1,int v2,int v3,int v4));
           Locale= readStringHeapOption localeIdx;
           CustomAttrs = seekReadCustomAttrs (TaggedIndex(HasCustomAttributeTag.Assembly,idx));
@@ -2367,24 +2367,24 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
           EntrypointElsewhere=(if fst entryPointToken = ILTableNames.File then Some (seekReadFile (snd entryPointToken)) else None);
           Retargetable = 0 <> (flags &&& 0x100);
           //DisableJitOptimizations = 0 <> (flags &&& 0x4000);
-          //JitTracking = 0 <> (flags &&& 0x8000)
-          }
-
+          //JitTracking = 0 <> (flags &&& 0x8000) 
+          } 
+     
     and seekReadAssemblyRef idx = cacheAssemblyRef  seekReadAssemblyRefUncached idx
-    and seekReadAssemblyRefUncached idx =
+    and seekReadAssemblyRefUncached idx = 
         let (v1,v2,v3,v4,flags,publicKeyOrTokenIdx, nameIdx, localeIdx,hashValueIdx) = seekReadAssemblyRefRow idx
         let nm = readStringHeap nameIdx
-        let publicKey =
-            match readBlobHeapOption publicKeyOrTokenIdx with
+        let publicKey = 
+            match readBlobHeapOption publicKeyOrTokenIdx with 
               | None -> None
               | Some blob -> Some (if (flags &&& 0x0001) <> 0x0 then PublicKey blob else PublicKeyToken blob)
-
+          
         ILAssemblyRef
-            (name=nm,
-             hash=readBlobHeapOption hashValueIdx,
+            (name=nm, 
+             hash=readBlobHeapOption hashValueIdx, 
              publicKey=publicKey,
-             retargetable=((flags &&& 0x0100) <> 0x0),
-             version=Some(Version(int v1,int v2,int v3,int v4)),
+             retargetable=((flags &&& 0x0100) <> 0x0), 
+             version=Some(Version(int v1,int v2,int v3,int v4)), 
              locale=readStringHeapOption localeIdx;)
 
     and seekReadModuleRef idx =
@@ -2398,76 +2398,76 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
                     hash= readBlobHeapOption hashValueIdx)
 
     //and seekReadClassLayout idx =
-    //    match seekReadOptionalIndexedRow (getNumRows ILTableNames.ClassLayout,seekReadClassLayoutRow,(fun (_,_,tidx) -> tidx),simpleIndexCompare idx,isSorted ILTableNames.ClassLayout,(fun (pack,size,_) -> pack,size)) with
+    //    match seekReadOptionalIndexedRow (getNumRows ILTableNames.ClassLayout,seekReadClassLayoutRow,(fun (_,_,tidx) -> tidx),simpleIndexCompare idx,isSorted ILTableNames.ClassLayout,(fun (pack,size,_) -> pack,size)) with 
     //    | None -> { Size = None; Pack = None }
     //    | Some (pack,size) -> { Size = Some size; Pack = Some pack; }
 
     and memberAccessOfFlags flags =
         let f = (flags &&& 0x00000007)
-        if f = 0x00000001 then  ILMemberAccess.Private
-        elif f = 0x00000006 then  ILMemberAccess.Public
-        elif f = 0x00000004 then  ILMemberAccess.Family
-        elif f = 0x00000002 then  ILMemberAccess.FamilyAndAssembly
-        elif f = 0x00000005 then  ILMemberAccess.FamilyOrAssembly
-        elif f = 0x00000003 then  ILMemberAccess.Assembly
+        if f = 0x00000001 then  ILMemberAccess.Private 
+        elif f = 0x00000006 then  ILMemberAccess.Public 
+        elif f = 0x00000004 then  ILMemberAccess.Family 
+        elif f = 0x00000002 then  ILMemberAccess.FamilyAndAssembly 
+        elif f = 0x00000005 then  ILMemberAccess.FamilyOrAssembly 
+        elif f = 0x00000003 then  ILMemberAccess.Assembly 
         else ILMemberAccess.CompilerControlled
 
     and typeAccessOfFlags flags =
         let f = (flags &&& 0x00000007)
-        if f = 0x00000001 then ILTypeDefAccess.Public
-        elif f = 0x00000002 then ILTypeDefAccess.Nested ILMemberAccess.Public
-        elif f = 0x00000003 then ILTypeDefAccess.Nested ILMemberAccess.Private
-        elif f = 0x00000004 then ILTypeDefAccess.Nested ILMemberAccess.Family
-        elif f = 0x00000006 then ILTypeDefAccess.Nested ILMemberAccess.FamilyAndAssembly
-        elif f = 0x00000007 then ILTypeDefAccess.Nested ILMemberAccess.FamilyOrAssembly
-        elif f = 0x00000005 then ILTypeDefAccess.Nested ILMemberAccess.Assembly
+        if f = 0x00000001 then ILTypeDefAccess.Public 
+        elif f = 0x00000002 then ILTypeDefAccess.Nested ILMemberAccess.Public 
+        elif f = 0x00000003 then ILTypeDefAccess.Nested ILMemberAccess.Private 
+        elif f = 0x00000004 then ILTypeDefAccess.Nested ILMemberAccess.Family 
+        elif f = 0x00000006 then ILTypeDefAccess.Nested ILMemberAccess.FamilyAndAssembly 
+        elif f = 0x00000007 then ILTypeDefAccess.Nested ILMemberAccess.FamilyOrAssembly 
+        elif f = 0x00000005 then ILTypeDefAccess.Nested ILMemberAccess.Assembly 
         else ILTypeDefAccess.Private
 
-    //and typeLayoutOfFlags flags tidx =
+    //and typeLayoutOfFlags flags tidx = 
     //    let f = (flags &&& 0x00000018)
     //    if f = 0x00000008 then ILTypeDefLayout.Sequential (seekReadClassLayout tidx)
     //    elif f = 0x00000010 then  ILTypeDefLayout.Explicit (seekReadClassLayout tidx)
     //    else ILTypeDefLayout.Auto
 
     and typeKindOfFlags nspace nm (super:ILType option) flags =
-        if (flags &&& 0x00000020) <> 0x0 then ILTypeDefKind.Interface
-        else
+        if (flags &&& 0x00000020) <> 0x0 then ILTypeDefKind.Interface 
+        else 
              let isEnum = (match super with None -> false | Some ty -> ty.TypeSpec.Namespace = USome "System" && ty.TypeSpec.Name = "Enum")
              let isDelegate = (match super with None -> false | Some ty -> ty.TypeSpec.Namespace = USome "System" && ty.TypeSpec.Name = "Delegate")
              let isMulticastDelegate = (match super with None -> false | Some ty -> ty.TypeSpec.Namespace = USome "System" && ty.TypeSpec.Name = "MulticastDelegate")
              let selfIsMulticastDelegate = (nspace = USome "System" && nm = "MulticastDelegate")
              let isValueType = (match super with None -> false | Some ty -> ty.TypeSpec.Namespace = USome "System" && ty.TypeSpec.Name = "ValueType" && not (nspace = USome "System" && nm = "Enum"))
-             if isEnum then ILTypeDefKind.Enum
+             if isEnum then ILTypeDefKind.Enum 
              elif  (isDelegate && not selfIsMulticastDelegate) || isMulticastDelegate then ILTypeDefKind.Delegate
-             elif isValueType then ILTypeDefKind.ValueType
-             else ILTypeDefKind.Class
+             elif isValueType then ILTypeDefKind.ValueType 
+             else ILTypeDefKind.Class 
 
-    and typeEncodingOfFlags flags =
+    and typeEncodingOfFlags flags = 
         let f = (flags &&& 0x00030000)
-        if f = 0x00020000 then ILDefaultPInvokeEncoding.Auto
-        elif f = 0x00010000 then ILDefaultPInvokeEncoding.Unicode
+        if f = 0x00020000 then ILDefaultPInvokeEncoding.Auto 
+        elif f = 0x00010000 then ILDefaultPInvokeEncoding.Unicode 
         else ILDefaultPInvokeEncoding.Ansi
 
     and isTopTypeDef flags =
         (typeAccessOfFlags flags =  ILTypeDefAccess.Private) ||
          typeAccessOfFlags flags =  ILTypeDefAccess.Public
-
+       
     and seekIsTopTypeDefOfIdx idx =
         let (flags,_,_, _, _,_) = seekReadTypeDefRow idx
         isTopTypeDef flags
-
-    and readStringHeapAsTypeName (nameIdx,namespaceIdx) =
+       
+    and readStringHeapAsTypeName (nameIdx,namespaceIdx) = 
         let name = readStringHeap nameIdx
         let nspace = readStringHeapOption namespaceIdx
         nspace, name
 
     and seekReadTypeDefRowExtents _info (idx:int) =
-        if idx >= getNumRows ILTableNames.TypeDef then
+        if idx >= getNumRows ILTableNames.TypeDef then 
             getNumRows ILTableNames.Field + 1,
             getNumRows ILTableNames.Method + 1
         else
             let (_, _, _, _, fieldsIdx, methodsIdx) = seekReadTypeDefRow (idx + 1)
-            fieldsIdx, methodsIdx
+            fieldsIdx, methodsIdx 
 
     and seekReadTypeDefRowWithExtents (idx:int) =
         let info= seekReadTypeDefRow idx
@@ -2480,7 +2480,7 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
 
          let name = readStringHeap nameIdx
          let nspace = readStringHeapOption namespaceIdx
-         let rest =
+         let rest = 
             lazy
                let ((flags,nameIdx,namespaceIdx, extendsIdx, fieldsIdx, methodsIdx) as info) = seekReadTypeDefRow idx
                let name = readStringHeap nameIdx
@@ -2495,7 +2495,7 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
                let mdefs = seekReadMethods numtypars methodsIdx endMethodsIdx
                let fdefs = seekReadFields (numtypars,hasLayout) fieldsIdx endFieldsIdx
                let kind = typeKindOfFlags nspace name super flags
-               let nested = seekReadNestedTypeDefs idx
+               let nested = seekReadNestedTypeDefs idx 
                let intfs  = seekReadInterfaceImpls numtypars idx
                //let sdecls =  seekReadSecurityDecls (TaggedIndex(hds_TypeDef,idx))
                //let mimpls = seekReadMethodImpls numtypars idx
@@ -2505,15 +2505,15 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
                { Kind= kind
                  Namespace=nspace
                  Name=name
-                 GenericParams=typars
+                 GenericParams=typars 
                  Attributes = enum<TypeAttributes> flags
                  Access= typeAccessOfFlags flags
                  //Layout = layout
                  Encoding=typeEncodingOfFlags flags
                  NestedTypes= nested
-                 Implements =  intfs
-                 Extends = super
-                 Methods = mdefs
+                 Implements =  intfs  
+                 Extends = super 
+                 Methods = mdefs 
                  //SecurityDecls = sdecls
                  //HasSecurity=(flags &&& 0x00040000) <> 0x0
                  Fields=fdefs
@@ -2521,30 +2521,30 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
                  InitSemantics=
                      if kind = ILTypeDefKind.Interface then ILTypeInit.OnAny
                      elif (flags &&& 0x00100000) <> 0x0 then ILTypeInit.BeforeField
-                     else ILTypeInit.OnAny
+                     else ILTypeInit.OnAny 
                  Events= events
                  Properties=props
-                 CustomAttrs=cas
+                 CustomAttrs=cas 
                  Token = idx }
          Some (nspace, name, rest)
 
     and seekReadTopTypeDefs () =
         [| for i = 1 to getNumRows ILTableNames.TypeDef do
-              match seekReadTypeDef true i  with
+              match seekReadTypeDef true i  with 
               | None -> ()
               | Some td -> yield td |]
 
     and seekReadNestedTypeDefs tidx =
         ILTypeDefs
-          (lazy
+          (lazy 
                let nestedIdxs = seekReadIndexedRows (getNumRows ILTableNames.Nested,seekReadNestedRow,snd,simpleIndexCompare tidx,false,fst)
-               [| for i in nestedIdxs do
-                     match seekReadTypeDef false i with
+               [| for i in nestedIdxs do 
+                     match seekReadTypeDef false i with 
                      | None -> ()
                      | Some td -> yield td |])
 
     and seekReadInterfaceImpls numtypars tidx =
-        seekReadIndexedRows (getNumRows ILTableNames.InterfaceImpl,seekReadInterfaceImplRow ,fst,simpleIndexCompare tidx,isSorted ILTableNames.InterfaceImpl,(snd >> seekReadTypeDefOrRef numtypars AsObject [| |]))
+        seekReadIndexedRows (getNumRows ILTableNames.InterfaceImpl,seekReadInterfaceImplRow ,fst,simpleIndexCompare tidx,isSorted ILTableNames.InterfaceImpl,(snd >> seekReadTypeDefOrRef numtypars AsObject [| |])) 
 
     and seekReadGenericParams numtypars (a,b) : ILGenericParameterDefs =
         let pars =
@@ -2553,17 +2553,17 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
                  (fun (_,_,_,tomd,_) -> tomd),
                  tomdCompare (TaggedIndex(a,b)),
                  isSorted ILTableNames.GenericParam,
-                 (fun (gpidx,seq,flags,_,nameIdx) ->
+                 (fun (gpidx,seq,flags,_,nameIdx) -> 
                      let constraints = seekReadGenericParamConstraintsUncached numtypars gpidx
                      let cas = seekReadCustomAttrs (TaggedIndex(HasCustomAttributeTag.GenericParam,gpidx))
                      seq, {Name=readStringHeap nameIdx
                            Constraints= constraints
                            CustomAttrs=cas
                            Attributes = enum (int32 flags) }))
-        pars |> Array.sortBy fst |> Array.map snd
+        pars |> Array.sortBy fst |> Array.map snd 
 
     and seekReadGenericParamConstraintsUncached numtypars gpidx =
-        seekReadIndexedRows
+        seekReadIndexedRows 
             (getNumRows ILTableNames.GenericParamConstraint,
              seekReadGenericParamConstraintRow,
              fst,
@@ -2577,9 +2577,9 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
         mkILTy boxity (ILTypeSpec(seekReadTypeDefAsTypeRef idx, ginst))
 
     and seekReadTypeDefAsTypeRef idx =
-         let enc =
+         let enc = 
            if seekIsTopTypeDefOfIdx idx then ILTypeRefScope.Top ILScopeRef.Local
-           else
+           else 
              let enclIdx = seekReadIndexedRow (getNumRows ILTableNames.Nested,seekReadNestedRow,fst,simpleIndexCompare idx,isSorted ILTableNames.Nested,snd)
              let tref = seekReadTypeDefAsTypeRef enclIdx
              ILTypeRefScope.Nested tref
@@ -2592,31 +2592,31 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
          let scopeIdx,nameIdx,namespaceIdx = seekReadTypeRefRow idx
          let enc = seekReadTypeRefScope scopeIdx
          let nsp, nm = readStringHeapAsTypeName (nameIdx,namespaceIdx)
-         ILTypeRef(enc, nsp, nm)
+         ILTypeRef(enc, nsp, nm) 
 
     and seekReadTypeRefAsType boxity ginst idx = cacheTypeRefAsType seekReadTypeRefAsTypeUncached (TypeRefAsTypIdx (boxity,ginst,idx))
     and seekReadTypeRefAsTypeUncached (TypeRefAsTypIdx (boxity,ginst,idx)) =
          mkILTy boxity (ILTypeSpec(seekReadTypeRef idx, ginst))
 
     and seekReadTypeDefOrRef numtypars boxity (ginst:ILTypes) (TaggedIndex(tag,idx) ) =
-        match tag with
+        match tag with 
         | tag when tag = TypeDefOrRefOrSpecTag.TypeDef -> seekReadTypeDefAsType boxity ginst idx
         | tag when tag = TypeDefOrRefOrSpecTag.TypeRef -> seekReadTypeRefAsType boxity ginst idx
         | tag when tag = TypeDefOrRefOrSpecTag.TypeSpec -> readBlobHeapAsType numtypars (seekReadTypeSpecRow idx)
         | _ -> failwith "seekReadTypeDefOrRef"
 
     and seekReadTypeDefOrRefAsTypeRef (TaggedIndex(tag,idx) ) =
-        match tag with
+        match tag with 
         | tag when tag = TypeDefOrRefOrSpecTag.TypeDef -> seekReadTypeDefAsTypeRef idx
         | tag when tag = TypeDefOrRefOrSpecTag.TypeRef -> seekReadTypeRef idx
         | tag when tag = TypeDefOrRefOrSpecTag.TypeSpec -> ilg.typ_Object.TypeRef
         | _ -> failwith "seekReadTypeDefOrRefAsTypeRef_readTypeDefOrRefOrSpec"
 
     and seekReadMethodRefParent numtypars (TaggedIndex(tag,idx)) =
-        match tag with
+        match tag with 
         | tag when tag = MemberRefParentTag.TypeRef -> seekReadTypeRefAsType AsObject (* not ok - no way to tell if a member ref parent is a value type or not *) [| |] idx
         | tag when tag = MemberRefParentTag.ModuleRef -> mkILTypeForGlobalFunctions (ILScopeRef.Module (seekReadModuleRef idx))
-        | tag when tag = MemberRefParentTag.MethodDef ->
+        | tag when tag = MemberRefParentTag.MethodDef -> 
             let (MethodData(enclTyp, cc, nm, argtys, retty, minst)) = seekReadMethodDefAsMethodData idx
             let mspec = mkILMethSpecInTyRaw(enclTyp, cc, nm, argtys, retty, minst)
             mspec.EnclosingType
@@ -2625,33 +2625,33 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
 
 
     and seekReadCustomAttrType (TaggedIndex(tag,idx) ) =
-        match tag with
-        | tag when tag = CustomAttributeTypeTag.MethodDef ->
+        match tag with 
+        | tag when tag = CustomAttributeTypeTag.MethodDef -> 
             let (MethodData(enclTyp, cc, nm, argtys, retty, minst)) = seekReadMethodDefAsMethodData idx
             mkILMethSpecInTyRaw (enclTyp, cc, nm, argtys, retty, minst)
-        | tag when tag = CustomAttributeTypeTag.MemberRef ->
+        | tag when tag = CustomAttributeTypeTag.MemberRef -> 
             let (MethodData(enclTyp, cc, nm, argtys, retty, minst)) = seekReadMemberRefAsMethDataNoVarArgs 0 idx
             mkILMethSpecInTyRaw (enclTyp, cc, nm, argtys, retty, minst)
         | _ -> failwith "seekReadCustomAttrType"
-
+    
     and seekReadImplAsScopeRef (TaggedIndex(tag,idx) ) =
          if idx = 0 then ILScopeRef.Local
-         else
-           match tag with
+         else 
+           match tag with 
            | tag when tag = ImplementationTag.File -> ILScopeRef.Module (seekReadFile idx)
            | tag when tag = ImplementationTag.AssemblyRef -> ILScopeRef.Assembly (seekReadAssemblyRef idx)
            | tag when tag = ImplementationTag.ExportedType -> failwith "seekReadImplAsScopeRef"
            | _ -> failwith "seekReadImplAsScopeRef"
 
     and seekReadTypeRefScope (TaggedIndex(tag,idx) ) : ILTypeRefScope =
-        match tag with
+        match tag with 
         | tag when tag = ResolutionScopeTag.Module -> ILTypeRefScope.Top(ILScopeRef.Local)
         | tag when tag = ResolutionScopeTag.ModuleRef -> ILTypeRefScope.Top(ILScopeRef.Module (seekReadModuleRef idx))
         | tag when tag = ResolutionScopeTag.AssemblyRef -> ILTypeRefScope.Top(ILScopeRef.Assembly (seekReadAssemblyRef idx))
         | tag when tag = ResolutionScopeTag.TypeRef -> ILTypeRefScope.Nested (seekReadTypeRef idx)
         | _ -> failwith "seekReadTypeRefScope"
 
-    and seekReadOptionalTypeDefOrRef numtypars boxity idx =
+    and seekReadOptionalTypeDefOrRef numtypars boxity idx = 
         if idx = TaggedIndex(TypeDefOrRefOrSpecTag.TypeDef, 0) then None
         else Some (seekReadTypeDefOrRef numtypars boxity [| |] idx)
 
@@ -2669,46 +2669,46 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
            IsSpecialName = (flags &&& 0x0200) <> 0 || (flags &&& 0x0400) <> 0 (* REVIEW: RTSpecialName *)
            LiteralValue = if (flags &&& 0x8000) = 0 then None else Some (seekReadConstant (TaggedIndex(HasConstantTag.FieldDef,idx)))
     (*
-             Marshal =
-                 if (flags &&& 0x1000) = 0 then None else
+             Marshal = 
+                 if (flags &&& 0x1000) = 0 then None else 
                  Some (seekReadIndexedRow (getNumRows ILTableNames.FieldMarshal,seekReadFieldMarshalRow,
                                            fst,hfmCompare (TaggedIndex(hfm_FieldDef,idx)),
                                            isSorted ILTableNames.FieldMarshal,
                                            (snd >> readBlobHeapAsNativeType ctxt)))
-             Data =
-                 if (flags &&& 0x0100) = 0 then None
-                 else
+             Data = 
+                 if (flags &&& 0x0100) = 0 then None 
+                 else 
                    let rva = seekReadIndexedRow (getNumRows ILTableNames.FieldRVA,seekReadFieldRVARow,
-                                                 snd,simpleIndexCompare idx,isSorted ILTableNames.FieldRVA,fst)
+                                                 snd,simpleIndexCompare idx,isSorted ILTableNames.FieldRVA,fst) 
                    Some (rvaToData "field" rva)
     *)
            Attributes = enum<System.Reflection.FieldAttributes>(flags)
-           //Offset =
-           //      if hasLayout && not isStatic then
+           //Offset = 
+           //      if hasLayout && not isStatic then 
            //          Some (seekReadIndexedRow (getNumRows ILTableNames.FieldLayout,seekReadFieldLayoutRow,
-           //                                    snd,simpleIndexCompare idx,isSorted ILTableNames.FieldLayout,fst)) else None
+           //                                    snd,simpleIndexCompare idx,isSorted ILTableNames.FieldLayout,fst)) else None 
            CustomAttrs=seekReadCustomAttrs (TaggedIndex(HasCustomAttributeTag.FieldDef,idx)) }
-
+     
     and seekReadFields (numtypars, hasLayout) fidx1 fidx2 =
-        { new ILFieldDefs with
-           member __.Elements =
+        { new ILFieldDefs with 
+           member __.Elements = 
                [| for i = fidx1 to fidx2 - 1 do
                    yield seekReadField (numtypars, hasLayout) i |] }
 
     and seekReadMethods numtypars midx1 midx2 =
-        ILMethodDefs
-           (lazy
+        ILMethodDefs 
+           (lazy 
                [| for i = midx1 to midx2 - 1 do
                      yield seekReadMethod numtypars i |])
 
-    and sigptrGetTypeDefOrRefOrSpecIdx bytes sigptr =
+    and sigptrGetTypeDefOrRefOrSpecIdx bytes sigptr = 
         let n, sigptr = sigptrGetZInt32 bytes sigptr
         if (n &&& 0x01) = 0x0 then (* Type Def *)
             TaggedIndex(TypeDefOrRefOrSpecTag.TypeDef,  (n >>>& 2)), sigptr
         else (* Type Ref *)
-            TaggedIndex(TypeDefOrRefOrSpecTag.TypeRef,  (n >>>& 2)), sigptr
+            TaggedIndex(TypeDefOrRefOrSpecTag.TypeRef,  (n >>>& 2)), sigptr         
 
-    and sigptrGetTy numtypars bytes sigptr =
+    and sigptrGetTy numtypars bytes sigptr = 
         let b0,sigptr = sigptrGetByte bytes sigptr
         if b0 = et_OBJECT then ilg.typ_Object , sigptr
         elif b0 = et_STRING then ilg.typ_String, sigptr
@@ -2726,33 +2726,33 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
         elif b0 = et_R8 then ilg.typ_Double, sigptr
         elif b0 = et_CHAR then ilg.typ_Char, sigptr
         elif b0 = et_BOOLEAN then ilg.typ_Boolean, sigptr
-        elif b0 = et_WITH then
+        elif b0 = et_WITH then 
             let b0,sigptr = sigptrGetByte bytes sigptr
             let tdorIdx, sigptr = sigptrGetTypeDefOrRefOrSpecIdx bytes sigptr
             let n, sigptr = sigptrGetZInt32 bytes sigptr
             let argtys,sigptr = sigptrFold (sigptrGetTy numtypars) n bytes sigptr
             seekReadTypeDefOrRef numtypars (if b0 = et_CLASS then AsObject else AsValue) argtys tdorIdx,
             sigptr
-
-        elif b0 = et_CLASS then
+        
+        elif b0 = et_CLASS then 
             let tdorIdx, sigptr = sigptrGetTypeDefOrRefOrSpecIdx bytes sigptr
             seekReadTypeDefOrRef numtypars AsObject [| |] tdorIdx, sigptr
-        elif b0 = et_VALUETYPE then
+        elif b0 = et_VALUETYPE then 
             let tdorIdx, sigptr = sigptrGetTypeDefOrRefOrSpecIdx bytes sigptr
             seekReadTypeDefOrRef numtypars AsValue [| |] tdorIdx, sigptr
-        elif b0 = et_VAR then
+        elif b0 = et_VAR then 
             let n, sigptr = sigptrGetZInt32 bytes sigptr
             ILType.Var n,sigptr
-        elif b0 = et_MVAR then
+        elif b0 = et_MVAR then 
             let n, sigptr = sigptrGetZInt32 bytes sigptr
             ILType.Var (n + numtypars), sigptr
-        elif b0 = et_BYREF then
+        elif b0 = et_BYREF then 
             let typ, sigptr = sigptrGetTy numtypars bytes sigptr
             ILType.Byref typ, sigptr
-        elif b0 = et_PTR then
+        elif b0 = et_PTR then 
             let typ, sigptr = sigptrGetTy numtypars bytes sigptr
             ILType.Ptr typ, sigptr
-        elif b0 = et_SZARRAY then
+        elif b0 = et_SZARRAY then 
             let typ, sigptr = sigptrGetTy numtypars bytes sigptr
             mkILArr1DTy typ, sigptr
         elif b0 = et_ARRAY then
@@ -2762,19 +2762,19 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
             let sizes, sigptr = sigptrFold sigptrGetZInt32 numSized bytes sigptr
             let numLoBounded, sigptr = sigptrGetZInt32 bytes sigptr
             let lobounds, sigptr = sigptrFold sigptrGetZInt32 numLoBounded bytes sigptr
-            let shape =
+            let shape = 
                 let dim i =
                   (if i <  numLoBounded then Some lobounds.[i] else None),
                   (if i <  numSized then Some sizes.[i] else None)
                 ILArrayShape (Array.init rank dim)
             ILType.Array (shape, typ), sigptr
-
+        
         elif b0 = et_VOID then ILType.Void, sigptr
-        elif b0 = et_TYPEDBYREF then
+        elif b0 = et_TYPEDBYREF then 
             match ilg.typ_TypedReference with
             | Some t -> t, sigptr
             | _ -> failwith "system runtime doesn't contain System.TypedReference"
-        elif b0 = et_CMOD_REQD || b0 = et_CMOD_OPT  then
+        elif b0 = et_CMOD_REQD || b0 = et_CMOD_OPT  then 
             let tdorIdx, sigptr = sigptrGetTypeDefOrRefOrSpecIdx bytes sigptr
             let typ, sigptr = sigptrGetTy numtypars bytes sigptr
             ILType.Modified((b0 = et_CMOD_REQD), seekReadTypeDefOrRefAsTypeRef tdorIdx, typ), sigptr
@@ -2788,21 +2788,21 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
             ILType.FunctionPointer (ILCallingSignature(cc, argtys, retty)),sigptr
         elif b0 = et_SENTINEL then failwith "varargs NYI"
         else ILType.Void , sigptr
+        
+    and sigptrGetVarArgTys n numtypars bytes sigptr = 
+        sigptrFold (sigptrGetTy numtypars) n bytes sigptr 
 
-    and sigptrGetVarArgTys n numtypars bytes sigptr =
-        sigptrFold (sigptrGetTy numtypars) n bytes sigptr
-
-    and sigptrGetArgTys n numtypars bytes sigptr acc =
-        if n <= 0 then (Array.ofList (List.rev acc),None),sigptr
+    and sigptrGetArgTys n numtypars bytes sigptr acc = 
+        if n <= 0 then (Array.ofList (List.rev acc),None),sigptr 
         else
           let b0,sigptr2 = sigptrGetByte bytes sigptr
-          if b0 = et_SENTINEL then
+          if b0 = et_SENTINEL then 
             let varargs,sigptr = sigptrGetVarArgTys n numtypars bytes sigptr2
             (Array.ofList (List.rev acc),Some( varargs)),sigptr
           else
             let x,sigptr = sigptrGetTy numtypars bytes sigptr
             sigptrGetArgTys (n-1) numtypars bytes sigptr (x::acc)
-
+         
     and readBlobHeapAsMethodSig numtypars blobIdx  = cacheBlobHeapAsMethodSig readBlobHeapAsMethodSigUncached (BlobAsMethodSigIdx (numtypars,blobIdx))
 
     and readBlobHeapAsMethodSigUncached (BlobAsMethodSigIdx (numtypars,blobIdx)) =
@@ -2815,8 +2815,8 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
         let retty,sigptr = sigptrGetTy numtypars bytes sigptr
         let (argtys,varargs),_sigptr = sigptrGetArgTys  ( numparams) numtypars bytes sigptr []
         generic,genarity,cc,retty,argtys,varargs
-
-    and readBlobHeapAsType numtypars blobIdx =
+      
+    and readBlobHeapAsType numtypars blobIdx = 
         let bytes = readBlobHeap blobIdx
         let ty,_sigptr = sigptrGetTy numtypars bytes 0
         ty
@@ -2830,7 +2830,7 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
         let retty,_sigptr = sigptrGetTy numtypars bytes sigptr
         retty
 
-
+      
     and readBlobHeapAsPropertySig numtypars blobIdx  = cacheBlobHeapAsPropertySig readBlobHeapAsPropertySigUncached (BlobAsPropSigIdx (numtypars,blobIdx))
     and readBlobHeapAsPropertySigUncached (BlobAsPropSigIdx (numtypars,blobIdx))  =
         let bytes = readBlobHeap blobIdx
@@ -2841,58 +2841,58 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
         let retty,sigptr = sigptrGetTy numtypars bytes sigptr
         let argtys,_sigptr = sigptrFold (sigptrGetTy numtypars) ( numparams) bytes sigptr
         hasthis,retty, argtys
-
-    and byteAsHasThis b =
+      
+    and byteAsHasThis b = 
         let hasthis_masked = b &&& 0x60uy
         if hasthis_masked = e_IMAGE_CEE_CS_CALLCONV_INSTANCE then ILThisConvention.Instance
-        elif hasthis_masked = e_IMAGE_CEE_CS_CALLCONV_INSTANCE_EXPLICIT then ILThisConvention.InstanceExplicit
-        else ILThisConvention.Static
+        elif hasthis_masked = e_IMAGE_CEE_CS_CALLCONV_INSTANCE_EXPLICIT then ILThisConvention.InstanceExplicit 
+        else ILThisConvention.Static 
 
-    and byteAsCallConv b =
-        let cc =
+    and byteAsCallConv b = 
+        let cc = 
             let ccMaxked = b &&& 0x0Fuy
-            if ccMaxked =  e_IMAGE_CEE_CS_CALLCONV_FASTCALL then ILArgConvention.FastCall
-            elif ccMaxked = e_IMAGE_CEE_CS_CALLCONV_STDCALL then ILArgConvention.StdCall
-            elif ccMaxked = e_IMAGE_CEE_CS_CALLCONV_THISCALL then ILArgConvention.ThisCall
-            elif ccMaxked = e_IMAGE_CEE_CS_CALLCONV_CDECL then ILArgConvention.CDecl
-            elif ccMaxked = e_IMAGE_CEE_CS_CALLCONV_VARARG then ILArgConvention.VarArg
+            if ccMaxked =  e_IMAGE_CEE_CS_CALLCONV_FASTCALL then ILArgConvention.FastCall 
+            elif ccMaxked = e_IMAGE_CEE_CS_CALLCONV_STDCALL then ILArgConvention.StdCall 
+            elif ccMaxked = e_IMAGE_CEE_CS_CALLCONV_THISCALL then ILArgConvention.ThisCall 
+            elif ccMaxked = e_IMAGE_CEE_CS_CALLCONV_CDECL then ILArgConvention.CDecl 
+            elif ccMaxked = e_IMAGE_CEE_CS_CALLCONV_VARARG then ILArgConvention.VarArg 
             else  ILArgConvention.Default
         let generic = (b &&& e_IMAGE_CEE_CS_CALLCONV_GENERIC) <> 0x0uy
-        generic, Callconv (byteAsHasThis b,cc)
-
+        generic, Callconv (byteAsHasThis b,cc) 
+      
     and seekReadMemberRefAsMethodData numtypars idx : VarArgMethodData =  cacheMemberRefAsMemberData  seekReadMemberRefAsMethodDataUncached (MemberRefAsMspecIdx (numtypars,idx))
 
-    and seekReadMemberRefAsMethodDataUncached (MemberRefAsMspecIdx (numtypars,idx)) =
+    and seekReadMemberRefAsMethodDataUncached (MemberRefAsMspecIdx (numtypars,idx)) = 
         let (mrpIdx,nameIdx,typeIdx) = seekReadMemberRefRow idx
         let nm = readStringHeap nameIdx
         let enclTyp = seekReadMethodRefParent numtypars mrpIdx
         let _generic,genarity,cc,retty,argtys,varargs = readBlobHeapAsMethodSig enclTyp.GenericArgs.Length typeIdx
-        let minst =  Array.init genarity (fun n -> ILType.Var (numtypars+n))
+        let minst =  Array.init genarity (fun n -> ILType.Var (numtypars+n)) 
         (VarArgMethodData(enclTyp, cc, nm, argtys, varargs,retty,minst))
 
     and seekReadMemberRefAsMethDataNoVarArgs numtypars idx : MethodData =
        let (VarArgMethodData(enclTyp, cc, nm, argtys, _varargs, retty,minst)) =  seekReadMemberRefAsMethodData numtypars idx
        (MethodData(enclTyp, cc, nm, argtys, retty,minst))
 
-    // One extremely annoying aspect of the MD format is that given a
-    // ILMethodDef token it is non-trivial to find which ILTypeDef it belongs
-    // to.  So we do a binary chop through the ILTypeDef table
-    // looking for which ILTypeDef has the ILMethodDef within its range.
-    // Although the ILTypeDef table is not "sorted", it is effectively sorted by
-    // method-range and field-range start/finish indexes
+    // One extremely annoying aspect of the MD format is that given a 
+    // ILMethodDef token it is non-trivial to find which ILTypeDef it belongs 
+    // to.  So we do a binary chop through the ILTypeDef table 
+    // looking for which ILTypeDef has the ILMethodDef within its range.  
+    // Although the ILTypeDef table is not "sorted", it is effectively sorted by 
+    // method-range and field-range start/finish indexes  
     and seekReadMethodDefAsMethodData idx = cacheMethodDefAsMethodData seekReadMethodDefAsMethodDataUncached idx
     and seekReadMethodDefAsMethodDataUncached idx =
        let (_code_rva, _implflags, _flags, nameIdx, typeIdx, _paramIdx) = seekReadMethodRow idx
        let nm = readStringHeap nameIdx
-       // Look for the method def parent.
-       let tidx =
+       // Look for the method def parent. 
+       let tidx = 
          seekReadIndexedRow (getNumRows ILTableNames.TypeDef,
                                 (fun i -> i, seekReadTypeDefRowWithExtents i),
                                 (fun r -> r),
                                 (fun (_,((_, _, _, _, _, methodsIdx),
-                                          (_, endMethodsIdx)))  ->
-                                            if endMethodsIdx <= idx then 1
-                                            elif methodsIdx <= idx && idx < endMethodsIdx then 0
+                                          (_, endMethodsIdx)))  -> 
+                                            if endMethodsIdx <= idx then 1 
+                                            elif methodsIdx <= idx && idx < endMethodsIdx then 0 
                                             else -1),
                                 true,fst)
        let _generic,_genarity,cc,retty,argtys,_varargs = readBlobHeapAsMethodSig 0 typeIdx
@@ -2905,14 +2905,14 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
          let (_codeRVA, implflags, flags, nameIdx, typeIdx, paramIdx) = seekReadMethodRow idx
          let nm = readStringHeap nameIdx
          let _generic,_genarity,cc,retty,argtys,_varargs = readBlobHeapAsMethodSig numtypars typeIdx
-
+     
          let endParamIdx =
-           if idx >= getNumRows ILTableNames.Method then
+           if idx >= getNumRows ILTableNames.Method then 
              getNumRows ILTableNames.Param + 1
            else
              let (_,_,_,_,_, paramIdx) = seekReadMethodRow (idx + 1)
              paramIdx
-
+     
          let ret,ilParams = seekReadParams (retty,argtys) paramIdx endParamIdx
 
          { MetadataToken=idx // This value is not a strict metadata token but it's good enough (if needed we could get the real one pretty easily)
@@ -2923,25 +2923,25 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
            //IsEntryPoint= (fst entryPointToken = ILTableNames.Method && snd entryPointToken = idx)
            ImplementationFlags= enum<MethodImplAttributes> implflags
            GenericParams=seekReadGenericParams numtypars (TypeOrMethodDefTag.MethodDef,idx)
-           CustomAttrs=seekReadCustomAttrs (TaggedIndex(HasCustomAttributeTag.MethodDef,idx))
+           CustomAttrs=seekReadCustomAttrs (TaggedIndex(HasCustomAttributeTag.MethodDef,idx)) 
            Parameters= ilParams
            CallingConv=cc
            Return=ret
            //mdBody=
-           //  if (codetype = 0x01) then
+           //  if (codetype = 0x01) then 
            //    ILMethodBody.Native
-           //  elif (codetype <> 0x00) then
+           //  elif (codetype <> 0x00) then 
            //    ILMethodBody.Abstract
-           //  else
-           //    ILMethodBody.IL   //seekReadMethodRVA (idx,nm,internalcall,noinline,numtypars) codeRVA
+           //  else 
+           //    ILMethodBody.IL   //seekReadMethodRVA (idx,nm,internalcall,noinline,numtypars) codeRVA   
          }
-
-
+     
+     
     and seekReadParams (retty,argtys) pidx1 pidx2 =
         let retRes : ILReturn ref =  ref { (* Marshal=None *) Type=retty; CustomAttrs=ILCustomAttrsStatics.Empty }
-        let paramsRes =
-            argtys
-            |> Array.map (fun ty ->
+        let paramsRes = 
+            argtys 
+            |> Array.map (fun ty ->  
                 { Name=UNone
                   Default=None
                   //Marshal=None
@@ -2959,23 +2959,23 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
        //let fmReader idx = seekReadIndexedRow (getNumRows ILTableNames.FieldMarshal,seekReadFieldMarshalRow,fst,hfmCompare idx,isSorted ILTableNames.FieldMarshal,(snd >> readBlobHeapAsNativeType ctxt))
        let cas = seekReadCustomAttrs (TaggedIndex(HasCustomAttributeTag.ParamDef,idx))
        if seq = 0 then
-           retRes := { !retRes with
+           retRes := { !retRes with 
                             //Marshal=(if hasMarshal then Some (fmReader (TaggedIndex(hfm_ParamDef,idx))) else None);
                             CustomAttrs = cas }
-       else
-           paramsRes.[seq - 1] <-
-              { paramsRes.[seq - 1] with
+       else 
+           paramsRes.[seq - 1] <- 
+              { paramsRes.[seq - 1] with 
                    //Marshal=(if hasMarshal then Some (fmReader (TaggedIndex(hfm_ParamDef,idx))) else None)
                    Default = (if hasDefault then Some (seekReadConstant (TaggedIndex(HasConstantTag.ParamDef,idx))) else None)
                    Name = readStringHeapOption nameIdx
                    Attributes = enum<ParameterAttributes> flags
                    CustomAttrs = cas }
-
+          
     //and seekReadMethodImpls numtypars tidx =
-    //   { new ILMethodImplDefs with
-    //      member x.Elements =
+    //   { new ILMethodImplDefs with 
+    //      member x.Elements = 
     //          let mimpls = seekReadIndexedRows (getNumRows ILTableNames.MethodImpl,seekReadMethodImplRow,(fun (a,_,_) -> a),simpleIndexCompare tidx,isSorted ILTableNames.MethodImpl,(fun (_,b,c) -> b,c))
-    //          mimpls |> Array.map (fun (b,c) ->
+    //          mimpls |> Array.map (fun (b,c) -> 
     //              { OverrideBy=
     //                  let (MethodData(enclTyp, cc, nm, argtys, retty,minst)) = seekReadMethodDefOrRefNoVarargs numtypars b
     //                  mkILMethSpecInTyRaw (enclTyp, cc, nm, argtys, retty,minst);
@@ -2985,26 +2985,26 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
     //                  OverridesSpec(mspec.MethodRef, mspec.EnclosingType) }) }
 
     and seekReadMultipleMethodSemantics (flags,id) =
-        seekReadIndexedRows
+        seekReadIndexedRows 
           (getNumRows ILTableNames.MethodSemantics ,
            seekReadMethodSemanticsRow,
            (fun (_flags,_,c) -> c),
            hsCompare id,
            isSorted ILTableNames.MethodSemantics,
-           (fun (a,b,_c) ->
+           (fun (a,b,_c) -> 
                let (MethodData(enclTyp, cc, nm, argtys, retty, minst)) = seekReadMethodDefAsMethodData b
                a, (mkILMethSpecInTyRaw (enclTyp, cc, nm, argtys, retty, minst)).MethodRef))
-        |> Array.filter (fun (flags2,_) -> flags = flags2)
-        |> Array.map snd
+        |> Array.filter (fun (flags2,_) -> flags = flags2) 
+        |> Array.map snd 
 
 
     and seekReadOptionalMethodSemantics id =
-        match seekReadMultipleMethodSemantics id with
+        match seekReadMultipleMethodSemantics id with 
         | [| |] -> None
         | xs -> Some xs.[0]
 
     and seekReadMethodSemantics id =
-        match seekReadOptionalMethodSemantics id with
+        match seekReadOptionalMethodSemantics id with 
         | None -> failwith "seekReadMethodSemantics ctxt: no method found"
         | Some x -> x
 
@@ -3020,15 +3020,15 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
          //FireMethod=seekReadOptionalMethodSemantics (0x0020,TaggedIndex(HasSemanticsTag.Event,idx))
          //OtherMethods = seekReadMultipleMethodSemantics (0x0004, TaggedIndex(HasSemanticsTag.Event, idx))
          CustomAttrs=seekReadCustomAttrs (TaggedIndex(HasCustomAttributeTag.Event,idx)) }
-
+   
     and seekReadEvents numtypars tidx =
-       { new ILEventDefs with
-            member __.Elements =
-               match seekReadOptionalIndexedRow (getNumRows ILTableNames.EventMap,(fun i -> i, seekReadEventMapRow i),(fun (_,row) -> fst row),compare tidx,false,(fun (i,row) -> (i,snd row))) with
+       { new ILEventDefs with 
+            member __.Elements =  
+               match seekReadOptionalIndexedRow (getNumRows ILTableNames.EventMap,(fun i -> i, seekReadEventMapRow i),(fun (_,row) -> fst row),compare tidx,false,(fun (i,row) -> (i,snd row))) with 
                | None -> [| |]
                | Some (rowNum,beginEventIdx) ->
                    let endEventIdx =
-                       if rowNum >= getNumRows ILTableNames.EventMap then
+                       if rowNum >= getNumRows ILTableNames.EventMap then 
                            getNumRows ILTableNames.Event + 1
                        else
                            let (_, endEventIdx) = seekReadEventMapRow (rowNum + 1)
@@ -3043,10 +3043,10 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
        let setter= seekReadOptionalMethodSemantics (0x0001,TaggedIndex(HasSemanticsTag.Property,idx))
        let getter = seekReadOptionalMethodSemantics (0x0002,TaggedIndex(HasSemanticsTag.Property,idx))
        let cc2 =
-           match getter with
+           match getter with 
            | Some mref -> mref.CallingConv.ThisConv
-           | None ->
-               match setter with
+           | None -> 
+               match setter with 
                | Some mref ->  mref.CallingConv .ThisConv
                | None -> cc
        { Name=readStringHeap nameIdx
@@ -3058,15 +3058,15 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
          Init= if (flags &&& 0x1000) = 0 then None else Some (seekReadConstant (TaggedIndex(HasConstantTag.Property,idx)));
          IndexParameterTypes=argtys;
          CustomAttrs=seekReadCustomAttrs (TaggedIndex(HasCustomAttributeTag.Property,idx)) }
-
+   
     and seekReadProperties numtypars tidx =
        { new ILPropertyDefs with
-          member x.Elements =
-               match seekReadOptionalIndexedRow (getNumRows ILTableNames.PropertyMap,(fun i -> i, seekReadPropertyMapRow i),(fun (_,row) -> fst row),compare tidx,false,(fun (i,row) -> (i,snd row))) with
+          member x.Elements = 
+               match seekReadOptionalIndexedRow (getNumRows ILTableNames.PropertyMap,(fun i -> i, seekReadPropertyMapRow i),(fun (_,row) -> fst row),compare tidx,false,(fun (i,row) -> (i,snd row))) with 
                | None -> [| |]
                | Some (rowNum,beginPropIdx) ->
                    let endPropIdx =
-                       if rowNum >= getNumRows ILTableNames.PropertyMap then
+                       if rowNum >= getNumRows ILTableNames.PropertyMap then 
                            getNumRows ILTableNames.Property + 1
                        else
                            let (_, endPropIdx) = seekReadPropertyMapRow (rowNum + 1)
@@ -3075,16 +3075,16 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
                          yield seekReadProperty numtypars i |] }
 
 
-    and seekReadCustomAttrs idx =
-        { new ILCustomAttrs with
-           member __.Elements =
+    and seekReadCustomAttrs idx = 
+        { new ILCustomAttrs with 
+           member __.Elements = 
                seekReadIndexedRows (getNumRows ILTableNames.CustomAttribute,
                                       seekReadCustomAttributeRow,(fun (a,_,_) -> a),
                                       hcaCompare idx,
                                       isSorted ILTableNames.CustomAttribute,
                                       (fun (_,b,c) -> seekReadCustomAttr (b,c))) }
 
-    and seekReadCustomAttr (catIdx,valIdx) =
+    and seekReadCustomAttr (catIdx,valIdx) = 
         { Method=seekReadCustomAttrType catIdx;
           Data=
             match readBlobHeapOption valIdx with
@@ -3092,7 +3092,7 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
             | None -> [| |] }
 
     (*
-    and seekReadSecurityDecls idx =
+    and seekReadSecurityDecls idx = 
        mkILLazySecurityDecls
         (lazy
              seekReadIndexedRows (getNumRows ILTableNames.Permission,
@@ -3102,10 +3102,10 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
                                      isSorted ILTableNames.Permission,
                                      (fun (act,_,ty) -> seekReadSecurityDecl (act,ty))))
 
-    and seekReadSecurityDecl (a,b) =
+    and seekReadSecurityDecl (a,b) = 
         ctxt.seekReadSecurityDecl (SecurityDeclIdx (a,b))
 
-    and seekReadSecurityDeclUncached ctxtH (SecurityDeclIdx (act,ty)) =
+    and seekReadSecurityDeclUncached ctxtH (SecurityDeclIdx (act,ty)) = 
         PermissionSet ((if List.memAssoc (int act) (Lazy.force ILSecurityActionRevMap) then List.assoc (int act) (Lazy.force ILSecurityActionRevMap) else failwith "unknown security action"),
                        readBlobHeap ty)
 
@@ -3114,92 +3114,92 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
     and seekReadConstant idx =
       let kind,vidx = seekReadIndexedRow (getNumRows ILTableNames.Constant,
                                           seekReadConstantRow,
-                                          (fun (_,key,_) -> key),
+                                          (fun (_,key,_) -> key), 
                                           hcCompare idx,isSorted ILTableNames.Constant,(fun (kind,_,v) -> kind,v))
-      match kind with
-      | x when x = uint16 et_STRING ->
+      match kind with 
+      | x when x = uint16 et_STRING -> 
         let blobHeap = readBlobHeap vidx
         let s = System.Text.Encoding.Unicode.GetString(blobHeap, 0, blobHeap.Length)
-        ILFieldInit.String (s)
-      | x when x = uint16 et_BOOLEAN -> ILFieldInit.Bool (readBlobHeapAsBool vidx)
-      | x when x = uint16 et_CHAR -> ILFieldInit.Char (readBlobHeapAsUInt16 vidx)
-      | x when x = uint16 et_I1 -> ILFieldInit.Int8 (readBlobHeapAsSByte vidx)
-      | x when x = uint16 et_I2 -> ILFieldInit.Int16 (readBlobHeapAsInt16 vidx)
-      | x when x = uint16 et_I4 -> ILFieldInit.Int32 (readBlobHeapAsInt32 vidx)
-      | x when x = uint16 et_I8 -> ILFieldInit.Int64 (readBlobHeapAsInt64 vidx)
-      | x when x = uint16 et_U1 -> ILFieldInit.UInt8 (readBlobHeapAsByte vidx)
-      | x when x = uint16 et_U2 -> ILFieldInit.UInt16 (readBlobHeapAsUInt16 vidx)
-      | x when x = uint16 et_U4 -> ILFieldInit.UInt32 (readBlobHeapAsUInt32 vidx)
-      | x when x = uint16 et_U8 -> ILFieldInit.UInt64 (readBlobHeapAsUInt64 vidx)
-      | x when x = uint16 et_R4 -> ILFieldInit.Single (readBlobHeapAsSingle vidx)
-      | x when x = uint16 et_R8 -> ILFieldInit.Double (readBlobHeapAsDouble vidx)
+        ILFieldInit.String (s)  
+      | x when x = uint16 et_BOOLEAN -> ILFieldInit.Bool (readBlobHeapAsBool vidx) 
+      | x when x = uint16 et_CHAR -> ILFieldInit.Char (readBlobHeapAsUInt16 vidx) 
+      | x when x = uint16 et_I1 -> ILFieldInit.Int8 (readBlobHeapAsSByte vidx) 
+      | x when x = uint16 et_I2 -> ILFieldInit.Int16 (readBlobHeapAsInt16 vidx) 
+      | x when x = uint16 et_I4 -> ILFieldInit.Int32 (readBlobHeapAsInt32 vidx) 
+      | x when x = uint16 et_I8 -> ILFieldInit.Int64 (readBlobHeapAsInt64 vidx) 
+      | x when x = uint16 et_U1 -> ILFieldInit.UInt8 (readBlobHeapAsByte vidx) 
+      | x when x = uint16 et_U2 -> ILFieldInit.UInt16 (readBlobHeapAsUInt16 vidx) 
+      | x when x = uint16 et_U4 -> ILFieldInit.UInt32 (readBlobHeapAsUInt32 vidx) 
+      | x when x = uint16 et_U8 -> ILFieldInit.UInt64 (readBlobHeapAsUInt64 vidx) 
+      | x when x = uint16 et_R4 -> ILFieldInit.Single (readBlobHeapAsSingle vidx) 
+      | x when x = uint16 et_R8 -> ILFieldInit.Double (readBlobHeapAsDouble vidx) 
       | x when x = uint16 et_CLASS || x = uint16 et_OBJECT ->  ILFieldInit.Null
       | _ -> ILFieldInit.Null
 
-    and seekReadManifestResources () =
-        ILResources
+    and seekReadManifestResources () = 
+        ILResources 
           (lazy
              [| for i = 1 to getNumRows ILTableNames.ManifestResource do
                  let (offset,flags,nameIdx,implIdx) = seekReadManifestResourceRow i
                  let scoref = seekReadImplAsScopeRef implIdx
-                 let datalab =
+                 let datalab = 
                    match scoref with
-                   | ILScopeRef.Local ->
+                   | ILScopeRef.Local -> 
                       let start = anyV2P ("resource",offset + resourcesAddr)
                       let len = seekReadInt32 is start
                       ILResourceLocation.Local (fun () -> seekReadBytes is (start + 4) len)
                    | ILScopeRef.Module mref -> ILResourceLocation.File (mref,offset)
                    | ILScopeRef.Assembly aref -> ILResourceLocation.Assembly aref
 
-                 let r =
+                 let r = 
                    { Name= readStringHeap nameIdx;
                      Location = datalab;
                      Access = (if (flags &&& 0x01) <> 0x0 then ILResourceAccess.Public else ILResourceAccess.Private);
                      CustomAttrs =  seekReadCustomAttrs (TaggedIndex(HasCustomAttributeTag.ManifestResource, i)) }
                  yield r |])
 
-    and seekReadNestedExportedTypes parentIdx =
+    and seekReadNestedExportedTypes parentIdx = 
         ILNestedExportedTypesAndForwarders
           (lazy
              [| for i = 1 to getNumRows ILTableNames.ExportedType do
                    let (flags,_tok,nameIdx,namespaceIdx,implIdx) = seekReadExportedTypeRow i
                    if not (isTopTypeDef flags) then
                        let (TaggedIndex(tag,idx) ) = implIdx
-                       match tag with
+                       match tag with 
                        | tag when tag = ImplementationTag.ExportedType && idx = parentIdx  ->
                            let _nsp, nm = readStringHeapAsTypeName (nameIdx,namespaceIdx)
-                           yield
+                           yield 
                              { Name=nm
                                Access=(match typeAccessOfFlags flags with ILTypeDefAccess.Nested n -> n | _ -> failwith "non-nested access for a nested type described as being in an auxiliary module")
                                Nested=seekReadNestedExportedTypes i
-                               CustomAttrs=seekReadCustomAttrs (TaggedIndex(HasCustomAttributeTag.ExportedType, i)) }
+                               CustomAttrs=seekReadCustomAttrs (TaggedIndex(HasCustomAttributeTag.ExportedType, i)) } 
                        | _ -> () |])
-
-    and seekReadTopExportedTypes () =
+      
+    and seekReadTopExportedTypes () = 
         ILExportedTypesAndForwarders
           (lazy
              [| for i = 1 to getNumRows ILTableNames.ExportedType do
                  let (flags,_tok,nameIdx,namespaceIdx,implIdx) = seekReadExportedTypeRow i
-                 if isTopTypeDef flags then
+                 if isTopTypeDef flags then 
                    let (TaggedIndex(tag,_idx) ) = implIdx
-
+               
                    // the nested types will be picked up by their enclosing types
                    if tag <> ImplementationTag.ExportedType then
                        let nsp, nm = readStringHeapAsTypeName (nameIdx,namespaceIdx)
-
+                   
                        let scoref = seekReadImplAsScopeRef implIdx
-
-                       let entry =
+                        
+                       let entry = 
                          { ScopeRef=scoref
                            Namespace=nsp
                            Name=nm
                            IsForwarder =   ((flags &&& 0x00200000) <> 0) }
                           // Access=typeAccessOfFlags flags
                           // Nested=seekReadNestedExportedTypes i
-                          // CustomAttrs=seekReadCustomAttrs (TaggedIndex(HasCustomAttributeTag.ExportedType, i)) }
+                          // CustomAttrs=seekReadCustomAttrs (TaggedIndex(HasCustomAttributeTag.ExportedType, i)) } 
                        yield entry |])
 
-
+     
     let ilModule = seekReadModule 1
     let ilAssemblyRefs = [ for i in 1 .. getNumRows ILTableNames.AssemblyRef do yield seekReadAssemblyRef i ]
 
@@ -3207,43 +3207,43 @@ type ILModuleReader(infile: string, is: ByteFile, ilg: ILGlobals, lowMem: bool) 
     member x.ILGlobals = ilg
     member x.ILModuleDef = ilModule
     member x.ILAssemblyRefs = ilAssemblyRefs
-
-let sigptr_get_byte (bytes: byte[]) sigptr =
+    
+let sigptr_get_byte (bytes: byte[]) sigptr = 
     int bytes.[sigptr], sigptr + 1
 
-let sigptr_get_u8 bytes sigptr =
+let sigptr_get_u8 bytes sigptr = 
     let b0,sigptr = sigptr_get_byte bytes sigptr
     byte b0,sigptr
 
-let sigptr_get_bool bytes sigptr =
+let sigptr_get_bool bytes sigptr = 
     let b0,sigptr = sigptr_get_byte bytes sigptr
     (b0 = 0x01) ,sigptr
 
-let sigptr_get_i8 bytes sigptr =
+let sigptr_get_i8 bytes sigptr = 
     let i,sigptr = sigptr_get_u8 bytes sigptr
     sbyte i,sigptr
 
-let sigptr_get_u16 bytes sigptr =
+let sigptr_get_u16 bytes sigptr = 
     let b0,sigptr = sigptr_get_byte bytes sigptr
     let b1,sigptr = sigptr_get_byte bytes sigptr
     uint16 (b0 ||| (b1 <<< 8)),sigptr
 
-let sigptr_get_i16 bytes sigptr =
+let sigptr_get_i16 bytes sigptr = 
     let u,sigptr = sigptr_get_u16 bytes sigptr
     int16 u,sigptr
 
-let sigptr_get_i32 bytes sigptr =
+let sigptr_get_i32 bytes sigptr = 
     let b0,sigptr = sigptr_get_byte bytes sigptr
     let b1,sigptr = sigptr_get_byte bytes sigptr
     let b2,sigptr = sigptr_get_byte bytes sigptr
     let b3,sigptr = sigptr_get_byte bytes sigptr
     b0 ||| (b1 <<< 8) ||| (b2 <<< 16) ||| (b3 <<< 24),sigptr
 
-let sigptr_get_u32 bytes sigptr =
+let sigptr_get_u32 bytes sigptr = 
     let u,sigptr = sigptr_get_i32 bytes sigptr
     uint32 u,sigptr
 
-let sigptr_get_i64 bytes sigptr =
+let sigptr_get_i64 bytes sigptr = 
     let b0,sigptr = sigptr_get_byte bytes sigptr
     let b1,sigptr = sigptr_get_byte bytes sigptr
     let b2,sigptr = sigptr_get_byte bytes sigptr
@@ -3256,7 +3256,7 @@ let sigptr_get_i64 bytes sigptr =
     (int64 b4 <<< 32) ||| (int64 b5 <<< 40) ||| (int64 b6 <<< 48) ||| (int64 b7 <<< 56),
     sigptr
 
-let sigptr_get_u64 bytes sigptr =
+let sigptr_get_u64 bytes sigptr = 
     let u,sigptr = sigptr_get_i64 bytes sigptr
     uint64 u,sigptr
 
@@ -3264,15 +3264,15 @@ let sigptr_get_u64 bytes sigptr =
 let ieee32_of_bits (x:int32) = System.BitConverter.ToSingle(System.BitConverter.GetBytes(x),0)
 let ieee64_of_bits (x:int64) = System.BitConverter.Int64BitsToDouble(x)
 
-let sigptr_get_ieee32 bytes sigptr =
+let sigptr_get_ieee32 bytes sigptr = 
     let u,sigptr = sigptr_get_i32 bytes sigptr
     ieee32_of_bits u,sigptr
 
-let sigptr_get_ieee64 bytes sigptr =
+let sigptr_get_ieee64 bytes sigptr = 
     let u,sigptr = sigptr_get_i64 bytes sigptr
     ieee64_of_bits u,sigptr
 
-let rec decodeCustomAttrElemType ilg bytes sigptr x =
+let rec decodeCustomAttrElemType ilg bytes sigptr x = 
     match x with
     | x when x =  et_I1 -> ilg.typ_SByte, sigptr
     | x when x = et_U1 -> ilg.typ_Byte, sigptr
@@ -3288,8 +3288,8 @@ let rec decodeCustomAttrElemType ilg bytes sigptr x =
     | x when x =  et_BOOLEAN -> ilg.typ_Boolean, sigptr
     | x when x =  et_STRING -> ilg.typ_String, sigptr
     | x when x =  et_OBJECT -> ilg.typ_Object, sigptr
-    | x when x =  et_SZARRAY ->
-         let et,sigptr = sigptr_get_u8 bytes sigptr
+    | x when x =  et_SZARRAY -> 
+         let et,sigptr = sigptr_get_u8 bytes sigptr 
          let elemTy,sigptr = decodeCustomAttrElemType ilg bytes sigptr et
          mkILArr1DTy elemTy, sigptr
     | x when x = 0x50uy -> ilg.typ_Type, sigptr
@@ -3316,7 +3316,7 @@ type ILTypeSigParser(tstring : string) =
     // ignore the current lexeme, advance
     let drop() = skip() ; step() ; skip()
     // return the current lexeme, advance
-    let take() =
+    let take() = 
         let s = if currentPos < tstring.Length then tstring.[startPos..currentPos] else ""
         drop()
         s
@@ -3327,10 +3327,10 @@ type ILTypeSigParser(tstring : string) =
     // System.Collections.Generic.Dictionary
     //     `2[
     //         [System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],
-    //         dev.virtualearth.net.webservices.v1.search.CategorySpecificPropertySet],
+    //         dev.virtualearth.net.webservices.v1.search.CategorySpecificPropertySet], 
     // mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
     //
-    // Note that
+    // Note that 
     //   • Since we're only reading valid IL, we assume that the signature is properly formed
     //   • For type parameters, if the type is non-local, it will be wrapped in brackets ([])
     member x.ParseType() =
@@ -3338,37 +3338,37 @@ type ILTypeSigParser(tstring : string) =
         // Does the type name start with a leading '['?  If so, ignore it
         // (if the specialization type is in another module, it will be wrapped in bracket)
         if here() = '[' then drop()
-
+    
         // 1. Iterate over beginning of type, grabbing the type name and determining if it's generic or an array
-        let typeName =
+        let typeName = 
             while (peek() <> '`') && (peek() <> '[') && (peek() <> ']') && (peek() <> ',') && (peek() <> nil) do step()
             take()
-
+    
         // 2. Classify the type
 
         // Is the type generic?
-        let typeName, specializations =
+        let typeName, specializations = 
             if here() = '`' then
                 drop() // step to the number
                 // fetch the arity
-                let arity =
+                let arity = 
                     while (int(here()) >= (int('0'))) && (int(here()) <= ((int('9')))) && (int(peek()) >= (int('0'))) && (int(peek()) <= ((int('9')))) do step()
                     System.Int32.Parse(take())
 
                 // typically types are saturated, i.e. if generic they have arguments. However, assembly metadata for reflectedDefinitions they occur free.
                 // this code takes care of exactly this case.
-                if here () = '[' then
+                if here () = '[' then  
                     // skip the '['
                     drop()
                     // get the specializations
                     typeName+"`"+(arity.ToString()), Some(([| for _i in 0..arity-1 do yield x.ParseType() |]))
-                else
+                else 
                     typeName+"`"+(arity.ToString()), None
             else
                 typeName, None
 
         // Is the type an array?
-        let rank =
+        let rank = 
             if here() = '[' then
                 let mutable rank = 0
 
@@ -3382,7 +3382,7 @@ type ILTypeSigParser(tstring : string) =
                 None
 
         // Is there a scope?
-        let scope =
+        let scope = 
             if (here() = ',' || here() = ' ') && (peek() <> '[' && peekN(2) <> '[') then
                 let grabScopeComponent() =
                     if here() = ',' then drop() // ditch the ','
@@ -3397,7 +3397,7 @@ type ILTypeSigParser(tstring : string) =
                       yield grabScopeComponent() // culture
                       yield grabScopeComponent() // public key token
                     ] |> String.concat ","
-                ILScopeRef.Assembly(ILAssemblyRef.FromAssemblyName(System.Reflection.AssemblyName(scope)))
+                ILScopeRef.Assembly(ILAssemblyRef.FromAssemblyName(System.Reflection.AssemblyName(scope)))        
             else
                 ILScopeRef.Local
 
@@ -3410,12 +3410,12 @@ type ILTypeSigParser(tstring : string) =
             let nsp, nm = splitILTypeName typeName
             ILTypeRef(ILTypeRefScope.Top scope, nsp, nm)
 
-        let genericArgs =
+        let genericArgs = 
             match specializations with
             | None -> [| |]
             | Some(genericArgs) -> genericArgs
         let tspec = ILTypeSpec(tref,genericArgs)
-        let ilty =
+        let ilty = 
             match tspec.Name with
             | "System.SByte"
             | "System.Byte"
@@ -3435,116 +3435,116 @@ type ILTypeSigParser(tstring : string) =
         match rank with
         | Some(r) -> ILType.Array(r,ilty)
         | _ -> ilty
+    
 
-
-let sigptr_get_z_i32 bytes sigptr =
+let sigptr_get_z_i32 bytes sigptr = 
     let b0,sigptr = sigptr_get_byte bytes sigptr
     if b0 <= 0x7F then b0, sigptr
-    elif b0 <= 0xbf then
+    elif b0 <= 0xbf then 
         let b0 = b0 &&& 0x7f
         let b1,sigptr = sigptr_get_byte bytes sigptr
         (b0 <<< 8) ||| b1, sigptr
-    else
+    else 
         let b0 = b0 &&& 0x3f
         let b1,sigptr = sigptr_get_byte bytes sigptr
         let b2,sigptr = sigptr_get_byte bytes sigptr
         let b3,sigptr = sigptr_get_byte bytes sigptr
         (b0 <<< 24) ||| (b1 <<< 16) ||| (b2 <<< 8) ||| b3, sigptr
 
-let sigptr_get_bytes n (bytes:byte[]) sigptr =
+let sigptr_get_bytes n (bytes:byte[]) sigptr = 
     let res = Array.zeroCreate n
-    for i = 0 to n - 1 do
+    for i = 0 to n - 1 do 
         res.[i] <- bytes.[sigptr + i]
     res, sigptr + n
 
-let sigptr_get_string n bytes sigptr =
+let sigptr_get_string n bytes sigptr = 
     let intarray,sigptr = sigptr_get_bytes n bytes sigptr
     System.Text.Encoding.UTF8.GetString(intarray , 0, intarray.Length), sigptr
 
-let sigptr_get_serstring  bytes sigptr =
-    let len,sigptr = sigptr_get_z_i32 bytes sigptr
-    sigptr_get_string len bytes sigptr
+let sigptr_get_serstring  bytes sigptr = 
+    let len,sigptr = sigptr_get_z_i32 bytes sigptr 
+    sigptr_get_string len bytes sigptr 
 
-let sigptr_get_serstring_possibly_null  bytes sigptr =
-    let b0,new_sigptr = sigptr_get_byte bytes sigptr
+let sigptr_get_serstring_possibly_null  bytes sigptr = 
+    let b0,new_sigptr = sigptr_get_byte bytes sigptr  
     if b0 = 0xFF then // null case
         None,new_sigptr
     else  // throw away  new_sigptr, getting length & text advance
-        let len,sigptr = sigptr_get_z_i32 bytes sigptr
+        let len,sigptr = sigptr_get_z_i32 bytes sigptr 
         let s, sigptr = sigptr_get_string len bytes sigptr
         Some(s),sigptr
 
 
-let decodeILCustomAttribData ilg (ca: ILCustomAttr) : ILCustomAttrArg list  =
+let decodeILCustomAttribData ilg (ca: ILCustomAttr) : ILCustomAttrArg list  = 
     let bytes = ca.Data
     let sigptr = 0
     let bb0,sigptr = sigptr_get_byte bytes sigptr
     let bb1,sigptr = sigptr_get_byte bytes sigptr
     if not (bb0 = 0x01 && bb1 = 0x00) then failwith "decodeILCustomAttribData: invalid data";
 
-    let rec parseVal argty sigptr =
-      match argty with
-      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "SByte" ->
+    let rec parseVal argty sigptr = 
+      match argty with 
+      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "SByte" ->  
           let n,sigptr = sigptr_get_i8 bytes sigptr
           (argty, box n), sigptr
-      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "Byte" ->
+      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "Byte" ->  
           let n,sigptr = sigptr_get_u8 bytes sigptr
           (argty, box n), sigptr
-      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "Int16" ->
+      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "Int16" ->  
           let n,sigptr = sigptr_get_i16 bytes sigptr
           (argty, box n), sigptr
-      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "UInt16" ->
+      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "UInt16" ->  
           let n,sigptr = sigptr_get_u16 bytes sigptr
           (argty, box n), sigptr
-      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "Int32" ->
+      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "Int32" ->  
           let n,sigptr = sigptr_get_i32 bytes sigptr
           (argty, box n), sigptr
-      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "UInt32" ->
+      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "UInt32" ->  
           let n,sigptr = sigptr_get_u32 bytes sigptr
           (argty, box n), sigptr
-      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "Int64" ->
+      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "Int64" ->  
           let n,sigptr = sigptr_get_i64 bytes sigptr
           (argty, box n), sigptr
-      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "UInt64" ->
+      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "UInt64" ->  
           let n,sigptr = sigptr_get_u64 bytes sigptr
           (argty, box n), sigptr
-      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "Double" ->
+      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "Double" ->  
           let n,sigptr = sigptr_get_ieee64 bytes sigptr
           (argty, box n), sigptr
-      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "Single" ->
+      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "Single" ->  
           let n,sigptr = sigptr_get_ieee32 bytes sigptr
           (argty, box n), sigptr
-      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "Char" ->
+      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "Char" ->  
           let n,sigptr = sigptr_get_u16 bytes sigptr
           (argty, box (char n)), sigptr
-      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "Boolean" ->
+      | ILType.Value tspec when tspec.Namespace = USome "System" && tspec.Name = "Boolean" ->  
           let n,sigptr = sigptr_get_byte bytes sigptr
           (argty, box (not (n = 0))), sigptr
-      | ILType.Boxed tspec when tspec.Namespace = USome "System" && tspec.Name = "String" ->
+      | ILType.Boxed tspec when tspec.Namespace = USome "System" && tspec.Name = "String" ->  
           let n,sigptr = sigptr_get_serstring_possibly_null bytes sigptr
           (argty, box (match n with None -> null | Some s -> s)), sigptr
-      | ILType.Boxed tspec when tspec.Namespace = USome "System" && tspec.Name = "Type" ->
+      | ILType.Boxed tspec when tspec.Namespace = USome "System" && tspec.Name = "Type" ->  
           let nOpt,sigptr = sigptr_get_serstring_possibly_null bytes sigptr
           match nOpt with
           | None -> (argty, box null) , sigptr // TODO: read System.Type attributes
-          | Some n ->
+          | Some n -> 
             try
                 let parser = ILTypeSigParser(n)
                 parser.ParseType() |> ignore
                 (argty, box null) , sigptr // TODO: read System.Type attributes
             with e ->
                 failwith (sprintf "decodeILCustomAttribData: error parsing type in custom attribute blob: %s" e.Message)
-      | ILType.Boxed tspec when tspec.Namespace = USome "System" && tspec.Name = "Object" ->
+      | ILType.Boxed tspec when tspec.Namespace = USome "System" && tspec.Name = "Object" ->  
           let et,sigptr = sigptr_get_u8 bytes sigptr
-          if et = 0xFFuy then
+          if et = 0xFFuy then 
               (argty, null), sigptr
           else
-              let ty,sigptr = decodeCustomAttrElemType ilg bytes sigptr et
-              parseVal ty sigptr
-      | ILType.Array(shape,elemTy) when shape = ILArrayShape.SingleDimensional ->
+              let ty,sigptr = decodeCustomAttrElemType ilg bytes sigptr et 
+              parseVal ty sigptr 
+      | ILType.Array(shape,elemTy) when shape = ILArrayShape.SingleDimensional ->  
           let n,sigptr = sigptr_get_i32 bytes sigptr
           if n = 0xFFFFFFFF then (argty, null),sigptr else
-          let rec parseElems acc n sigptr =
+          let rec parseElems acc n sigptr = 
             if n = 0 then List.rev acc else
             let v,sigptr = parseVal elemTy sigptr
             parseElems (v ::acc) (n-1) sigptr
@@ -3554,54 +3554,54 @@ let decodeILCustomAttribData ilg (ca: ILCustomAttr) : ILCustomAttrArg list  =
           let n,sigptr = sigptr_get_i32 bytes sigptr
           (argty, box n), sigptr
       | _ ->  failwith "decodeILCustomAttribData: attribute data involves an enum or System.Type value"
-    let rec parseFixed argtys sigptr =
-      match argtys with
+    let rec parseFixed argtys sigptr = 
+      match argtys with 
         [] -> [],sigptr
-      | h::t ->
+      | h::t -> 
           let nh,sigptr = parseVal h sigptr
           let nt,sigptr = parseFixed t sigptr
           nh ::nt, sigptr
     let fixedArgs,_sigptr = parseFixed (List.ofArray ca.Method.FormalArgTypes) sigptr
 (*
     let nnamed,sigptr = sigptr_get_u16 bytes sigptr
-    let rec parseNamed acc n sigptr =
+    let rec parseNamed acc n sigptr = 
       if n = 0 then List.rev acc else
       let isPropByte,sigptr = sigptr_get_u8 bytes sigptr
       let isProp = (int isPropByte = 0x54)
       let et,sigptr = sigptr_get_u8 bytes sigptr
-      // We have a named value
-      let ty,sigptr =
+      // We have a named value 
+      let ty,sigptr = 
         if (0x50 = (int et) || 0x55 = (int et)) then
             let qualified_tname,sigptr = sigptr_get_serstring bytes sigptr
-            let unqualified_tname, rest =
+            let unqualified_tname, rest = 
                 let pieces = qualified_tname.Split(',')
-                if pieces.Length > 1 then
+                if pieces.Length > 1 then 
                     pieces.[0], Some (String.concat "," pieces.[1..])
-                else
+                else 
                     pieces.[0], None
-            let scoref =
-                match rest with
+            let scoref = 
+                match rest with 
                 | Some aname -> ILTypeRefScope.Top(ILScopeRef.Assembly(ILAssemblyRef.FromAssemblyName(System.Reflection.AssemblyName(aname))))
                 | None -> ilg.typ_Boolean.TypeSpec.Scope
 
             let nsp, nm = splitILTypeName unqualified_tname
             let tref = ILTypeRef (scoref, nsp, nm)
             let tspec = mkILNonGenericTySpec tref
-            ILType.Value(tspec),sigptr
+            ILType.Value(tspec),sigptr            
         else
             decodeCustomAttrElemType ilg bytes sigptr et
       let nm,sigptr = sigptr_get_serstring bytes sigptr
       let (_,v),sigptr = parseVal ty sigptr
       parseNamed ((nm,ty,isProp,v) :: acc) (n-1) sigptr
     let named = parseNamed [] (int nnamed) sigptr
-    fixedArgs, named
+    fixedArgs, named     
 *)
     fixedArgs
 
 
 [<AutoOpen>]
-module private Cache =
-    type CacheValue = ILModuleReader
+module private Cache = 
+    type CacheValue = ILModuleReader 
     let (|CacheValue|_|) (wr: WeakReference) = match wr.Target with null -> None | v -> Some (v :?> CacheValue)
     let CacheValue (reader: CacheValue) = System.WeakReference reader
 
@@ -3609,18 +3609,18 @@ module private Cache =
     // resources when all instantiated at the same time.
     let readersWeakCache = ConcurrentDictionary<(string * string), WeakReference>()
 
-let ILModuleReaderAfterReadingAllBytes  (file:string, ilGlobals: ILGlobals) =
+let ILModuleReaderAfterReadingAllBytes  (file:string, ilGlobals: ILGlobals) = 
     let bytes = File.ReadAllBytes file
     let key = (file, ilGlobals.systemRuntimeScopeRef.QualifiedName)
-    match readersWeakCache.TryGetValue (key) with
+    match readersWeakCache.TryGetValue (key) with 
     | true, CacheValue mr2  when bytes = mr2.Bytes ->
         mr2 // throw away the bytes we just read and recycle the existing ILModuleReader
-    | _ ->
+    | _ -> 
         let mr = ILModuleReader(file, ByteFile(bytes), ilGlobals, true)
         readersWeakCache.[key] <- CacheValue (mr)
         mr
 
 
 (* NOTE: ecma_ prefix refers to the standard "mscorlib" *)
-let EcmaPublicKey = PublicKeyToken ([|0xdeuy; 0xaduy; 0xbeuy; 0xefuy; 0xcauy; 0xfeuy; 0xfauy; 0xceuy |])
+let EcmaPublicKey = PublicKeyToken ([|0xdeuy; 0xaduy; 0xbeuy; 0xefuy; 0xcauy; 0xfeuy; 0xfauy; 0xceuy |]) 
 let EcmaMscorlibScopeRef = ILScopeRef.Assembly (ILAssemblyRef("mscorlib", None, Some EcmaPublicKey, true, None, UNone))

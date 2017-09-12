@@ -199,7 +199,7 @@ let inline private getOrAdd (key: 'key) (getValue: 'key -> 'value) (d: Dictionar
 let brokenDeps = HashSet<_>()
 
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
-let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects cleanBindingRedirects
+let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindingRedirects
                                   root groupName findDependencies allKnownLibNames
                                   (projectCache: Dictionary<string, ProjectFile option>)
                                   (extractedPackages:seq<InstallModel * _>) =
@@ -288,11 +288,17 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
             |> Seq.exists (fun a -> a.Version <> assemblyName.Version)
 
         assemblies
-        |> Seq.choose (fun (assembly,token,refs,redirects,profile) -> token |> Option.map (fun token -> (assembly,token,refs,redirects,profile)))
-        |> Seq.filter (fun (_,_,_,packageRedirects,_) -> defaultArg ((packageRedirects |> Option.map ((<>) Off)) ++ redirects) false)
+        |> Seq.choose (fun (assembly,token,refs,redirects,profile) -> 
+                token |> Option.map (fun token -> (assembly,token,refs,redirects,profile)))
+        |> Seq.filter (fun (_,_,_,redirects,_) -> 
+            match redirects with
+            | Some BindingRedirectsSettings.On
+            | Some BindingRedirectsSettings.Force -> true
+            | Some BindingRedirectsSettings.Off -> false
+            | _ -> false)
         |> Seq.filter (fun (assembly,_,_,redirects,profile) ->
             let assemblyName = assembly.Name
-            redirects = Some Force
+            redirects = Some BindingRedirectsSettings.Force
             || referencesDifferentProfiles assemblyName profile
             || assemblies
             |> Seq.collect (fun (_,_,refs,_,_) -> refs)
@@ -509,31 +515,33 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
             let first = ref true
 
-            let redirects =
-                match options.Redirects with
-                | true -> Some true
-                | false -> None
-
             let allKnownLibNames =
                 model
                 |> Seq.map (fun kv -> (snd kv.Value).GetAllLegacyReferenceAndFrameworkReferenceNames())
                 |> Set.unionMany
 
+            let commandRedirects =
+                if options.Redirects = BindingRedirectsSettings.Off then None
+                else Some options.Redirects
+
             for g in lockFile.Groups do
                 let group = g.Value
+                
+                let groupRedirects =
+                    g.Value.Options.Redirects ++ commandRedirects
+                
                 model
                 |> Seq.filter (fun kv -> (fst kv.Key) = g.Key)
                 |> Seq.map (fun kv ->
                     let packageRedirects =
                         group.Resolution
                         |> Map.tryFind (snd kv.Key)
-                        |> Option.bind (fun p -> p.Settings.CreateBindingRedirects)
+                        |> Option.bind (fun p -> p.Settings.CreateBindingRedirects ++ groupRedirects)
 
                     (snd kv.Value,packageRedirects))
                 |> applyBindingRedirects
                     !first
                     options.CreateNewBindingFiles
-                    (g.Value.Options.Redirects ++ redirects)
                     options.CleanBindingRedirects
                     (FileInfo project.FileName).Directory.FullName
                     g.Key

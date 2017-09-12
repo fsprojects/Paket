@@ -32,6 +32,9 @@
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
     <StartArguments>install</StartArguments>
+    <StartWorkingDirectory>C:\temp\Gu.Reactive</StartWorkingDirectory>
+    <StartArguments>install</StartArguments>
+    <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
     <StartWorkingDirectory>D:\temp\before</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
