@@ -579,8 +579,8 @@ let fixNuspecs silent (results : ParseResults<_>) =
 
 
 
-// For Backwards compatibility
-let fixNuspec silent (results : ParseResults<_>) =
+// For backwards compatibility
+let fixNuspec _silent (results : ParseResults<_>) =
     let fileString = results.GetResult <@ FixNuspecArgs.File @>
     let refFile = results.GetResult <@ FixNuspecArgs.ReferencesFile @>
     let nuspecList = 
