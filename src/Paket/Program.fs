@@ -584,9 +584,10 @@ let fixNuspec silent (results : ParseResults<_>) =
     let fileString = results.GetResult <@ FixNuspecArgs.File @>
     let refFile = results.GetResult <@ FixNuspecArgs.ReferencesFile @>
     let nuspecList = 
-        fileString.Split([|';'|])
+        fileString.Split([|';'|], StringSplitOptions.RemoveEmptyEntries)
         |> Array.map (fun s -> s.Trim())
         |> List.ofArray
+
     Dependencies.FixNuspecs (refFile, nuspecList)
 
 // separated out from showInstalledPackages to allow Paket.PowerShell to get the types
