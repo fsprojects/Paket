@@ -97,10 +97,10 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '679', 679)" onmouseover="showTip(event, '679', 679)">
-            format showDetails (arg2, arg3)
+            format (...)
           </code>
           <div class="tip" id="679">
-            <strong>Signature:</strong> showDetails:bool -&gt; (PackageName * LblPathNode&lt;PackageName,(VersionRequirement * FrameworkRestrictions)&gt;) -&gt; string<br />
+            <strong>Signature:</strong> resolution:PackageResolution -&gt; showDetails:bool -&gt; (PackageName * LblPathNode&lt;PackageName,(VersionRequirement * FrameworkRestrictions)&gt;) -&gt; string<br />
                       </div>
         </td>
         <td class="xmldoc">
@@ -115,14 +115,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '680', 680)" onmouseover="showTip(event, '680', 680)">
-            formatMany showDetails chains
+            formatMany resolution showDetails chains
           </code>
           <div class="tip" id="680">
-            <strong>Signature:</strong> showDetails:bool -&gt; chains:seq&lt;DependencyChain&gt; -&gt; string<br />
+            <strong>Signature:</strong> resolution:PackageResolution -&gt; showDetails:bool -&gt; chains:seq&lt;DependencyChain&gt; -&gt; string<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageAnalysis/Why.fs#L83-83" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageAnalysis/Why.fs#L89-89" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
