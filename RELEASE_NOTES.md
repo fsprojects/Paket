@@ -1,3 +1,6 @@
+#### 5.96.0 - 13.09.2017
+* USABILITY: Print package version in "paket why" - https://github.com/fsprojects/Paket/pull/2760
+
 #### 5.95.0 - 12.09.2017
 * Allow to add packages without running the resolver - https://github.com/fsprojects/Paket/issues/2756
 
