@@ -1,31 +1,14 @@
-# Glossary
+# Contact
 
-## paket.dependencies
 
-The [`paket.dependencies` file](dependencies-file.html) is used to specify rules
-regarding your application's dependencies.
+## Bugs and Feature Requests for Paket
 
-## paket.lock
+Did you found a bug or missing a feature? Please check the [FAQ](faq.html) and feed the [issue tracker](https://github.com/fsprojects/Paket/issues).
 
-The [`paket.lock` file](lock-file.html) records the concrete dependency
-resolution of all direct and indirect dependencies of your project.
+## Bugs for nuget.exe or the website NuGet.org?
 
-## paket.references
+If you're having trouble with the [NuGet.org](https://www.nuget.org) Website, specific NuGet packages or NuGet clients other than Paket then please take a look at [NuGet's contact site](https://www.nuget.org/policies/Contact) to find the corresponding issue tracker.
 
-The [`paket.references` files](references-files.html) are used to specify which
-dependencies are to be installed into the MSBuild projects in your repository.
+## Announcements
 
-## paket.template
-
-The [`paket.template` files](template-files.html) are used to specify rules to
-create new NuGet packages by using the [`paket pack` command](paket-pack.html).
-
-## .paket directory
-
-This directory is used the same way a `.nuget` directory is used for the NuGet
-package restore, that is to cache package archives for reference by the
-development project. Place this directory into the root of your repository. It
-should include the paket.targets and
-[`paket.bootstrapper.exe`](https://github.com/fsprojects/Paket/releases/latest)
-files which can be downloaded from GitHub. The bootstrapper executable will
-always download the latest version of the `paket.exe` file into this directory.
+Announcements and related miscellanea are usually done through Twitter ([@PaketManager](https://twitter.com/PaketManager)).
