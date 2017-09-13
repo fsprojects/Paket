@@ -58,10 +58,22 @@
         <div class="span9" id="main">
           
 <h1><a name="Contact" class="anchor" href="#Contact">Contact</a></h1>
-<h2><a name="Bugs-and-Feature-Requests-for-Paket" class="anchor" href="#Bugs-and-Feature-Requests-for-Paket">Bugs and Feature Requests for Paket</a></h2>
+<h2><a name="Bugs-and-Feature-Requests" class="anchor" href="#Bugs-and-Feature-Requests">Bugs and Feature Requests</a></h2>
+<h3><a name="Paket-dependency-manager" class="anchor" href="#Paket-dependency-manager">Paket dependency manager</a></h3>
 <p>Did you found a bug or missing a feature? Please check the <a href="faq.html">FAQ</a> and feed the <a href="https://github.com/fsprojects/Paket/issues">issue tracker</a>.</p>
-<h2><a name="Bugs-for-nuget-exe-or-the-website-NuGet-org" class="anchor" href="#Bugs-for-nuget-exe-or-the-website-NuGet-org">Bugs for nuget.exe or the website NuGet.org?</a></h2>
+<h3><a name="Bugs-for-nuget-exe-or-the-website-NuGet-org" class="anchor" href="#Bugs-for-nuget-exe-or-the-website-NuGet-org">Bugs for nuget.exe or the website NuGet.org?</a></h3>
 <p>If you're having trouble with the <a href="https://www.nuget.org">NuGet.org</a> Website, specific NuGet packages or NuGet clients other than Paket then please take a look at <a href="https://www.nuget.org/policies/Contact">NuGet's contact site</a> to find the corresponding issue tracker.</p>
+<h2><a name="Quick-contributing-guide" class="anchor" href="#Quick-contributing-guide">Quick contributing guide</a></h2>
+<ul>
+<li>Go to <a href="https://github.com/fsprojects/Paket"><a href="https://github.com/fsprojects/Paket">https://github.com/fsprojects/Paket</a></a></li>
+<li>Fork and clone locally.</li>
+<li>Build the solution with Visual Studio, <code>build.cmd</code> or <code>build.sh</code>.</li>
+<li>Create a topic specific branch in git. Add a nice feature in the code or fix a bug. Do not forget to add tests and/or docs.</li>
+<li>Run <code>build.cmd</code> (<code>build.sh</code> on Mono) to make sure all tests are still passing.</li>
+<li>Send a Pull Request.</li>
+</ul>
+<p>If you want to contribute to the <a href="https://fsprojects.github.io/Paket/">docs</a> then please modify the markdown files in <a href="https://github.com/fsprojects/Paket/tree/master/docs/content"><code>/docs/content</code></a> and send a pull request.
+Note, that short description and syntax for each command is generated automatically from the <code>Paket.Commands</code> module.</p>
 <h2><a name="Announcements" class="anchor" href="#Announcements">Announcements</a></h2>
 <p>Announcements and related miscellanea are usually done through Twitter (<a href="https://twitter.com/PaketManager">@PaketManager</a>).</p>
 
