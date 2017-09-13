@@ -33,9 +33,9 @@
     <StartAction>Project</StartAction>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\temp\Gu.Reactive</StartWorkingDirectory>
-    <StartArguments>install</StartArguments>
+    <StartArguments>restore --project "D:\temp\paket-constrain-framework\paket-constrain-framework.fsproj"</StartArguments>
     <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\temp\before</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\temp\paket-constrain-framework</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

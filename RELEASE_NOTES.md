@@ -1,3 +1,6 @@
+#### 5.96.1 - 13.09.2017
+* BUGFIX: Proper filter by target framework - https://github.com/fsprojects/Paket/issues/2759
+
 #### 5.96.0 - 13.09.2017
 * USABILITY: Print package version in "paket why" - https://github.com/fsprojects/Paket/pull/2760
 
