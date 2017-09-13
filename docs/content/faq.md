@@ -1,6 +1,6 @@
 # FAQ — Frequently Asked Questions
 
-## I do not understand why I need Paket to manage my packages. Why can't I just use NuGet?
+## I do not understand why I need Paket to manage my packages. Why can't I just use NuGet.exe and packages.config?
 
 NuGet does not separate out the concept of
 [transitive dependencies](faq.html#transitive); if you install a package into
