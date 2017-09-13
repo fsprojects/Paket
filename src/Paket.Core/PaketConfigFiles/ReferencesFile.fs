@@ -128,7 +128,8 @@ type ReferencesFile =
         try
             { ReferencesFile.FromLines lines with FileName = fileName }
         with e -> raise <| new Exception(sprintf "Could not parse reference file '%s': %s" fileName e.Message, e)
-
+    static member Merge (a:ReferencesFile) (b:ReferencesFile) =
+        null
     member this.AddNuGetReference(groupName, packageName : PackageName, copyLocal: bool, specificVersion: bool, importTargets: bool, frameworkRestrictions, includeVersionInPath, omitContent : bool, createBindingRedirects, referenceCondition) =
         let package: PackageInstallSettings =
             { Name = packageName

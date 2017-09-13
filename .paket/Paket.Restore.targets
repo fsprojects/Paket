@@ -81,7 +81,7 @@
 
     <!-- Step 3 Restore project specific stuff if required -->
     <Warning Condition=" '$(PaketRestoreRequired)' == 'true' "  Text="Detected a change ('$(PaketRestoreRequiredReason)') in the project file '$(MSBuildProjectFullPath)', calling paket restore" />
-    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)"' Condition=" '$(PaketRestoreRequired)' == 'true' " ContinueOnError="false" />
+    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --additional-references "$(PaketReference)"' Condition=" '$(PaketRestoreRequired)' == 'true' " ContinueOnError="false" />
 
     <!-- This shouldn't actually happen, but just to be sure. -->
     <Error Condition=" !Exists('$(PaketResolvedFilePath)') AND '$(TargetFramework)' != '' " Text="A paket file for the framework '$(TargetFramework)' is missing. Please delete 'paket-files/paket.restore.cached' and call 'paket restore'." />
