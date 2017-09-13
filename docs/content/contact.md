@@ -5,7 +5,7 @@
 
 ### Paket dependency manager
 
-Did you found a bug or missing a feature? Please check the [FAQ](faq.html) and feed the [issue tracker](https://github.com/fsprojects/Paket/issues).
+Did you find a bug or are you missing a feature? Please check the [FAQ](faq.html) and feed the [issue tracker](https://github.com/fsprojects/Paket/issues).
 
 ### Bugs for nuget.exe or the website NuGet.org?
 
