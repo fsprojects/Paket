@@ -262,7 +262,6 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
 
 let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:LockFile) (projectFile:ProjectFile) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) (groups:Map<GroupName,LockFileGroup>) =
     let projectFileInfo = FileInfo projectFile.FileName
-    let list = System.Collections.Generic.List<_>()
     let hulls =
         groups
         |> Seq.map (fun kv ->
@@ -288,6 +287,7 @@ let createProjectReferencesFiles (dependenciesFile:DependenciesFile) (lockFile:L
     if oldReferencesFile.Exists then oldReferencesFile.Delete()
 
     for originalTargetProfileString, targetProfile in targets do
+        let list = System.Collections.Generic.List<_>()
         for kv in groups do
             let hull,_ = hulls.[kv.Key]
             let allDirectPackages =
