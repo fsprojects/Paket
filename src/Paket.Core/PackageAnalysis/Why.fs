@@ -66,8 +66,13 @@ module DependencyChain =
             | AutoDetectFramework 
             | ExplicitRestriction Paket.Requirements.FrameworkRestriction.HasNoRestriction -> ""
             | ExplicitRestriction fr -> sprintf " (%O)" fr
-        let formatName (name: PackageName) i = sprintf "%s-> %O - %s" (String.replicate i "  ") (name.Name)
-                                                    ((resolution.Item name).Version.ToString())
+
+        let formatName (name: PackageName) i = 
+            sprintf "%s-> %O - %O" 
+                (String.replicate i "  ") 
+                name.Name
+                (resolution.Item name).Version
+
         let rec format' i (name,chain) =
             let rest = 
                 match chain, showDetails with
@@ -154,7 +159,7 @@ module Reason =
             | false, false ->
                 Result.Ok ((Transitive chains, group.Resolution), [])
             | false, true ->
-                failwith "impossible"
+                Result.Bad []
 
 let ohWhy (packageName, 
            directDeps : Set<PackageName>, 
@@ -204,4 +209,4 @@ let ohWhy (packageName,
                     failwith "impossible"
                 tracen ""
     | _ ->
-        failwith "impossible"
+        traceErrorfn "Unknown error for %O in %s" packageName Constants.LockFileName
