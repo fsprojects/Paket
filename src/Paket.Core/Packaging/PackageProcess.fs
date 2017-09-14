@@ -169,16 +169,17 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
                     false
                 else true
             | _ -> true)
-        |> Array.map (fun (projectFile,templateFile') ->
+        |> Array.choose (fun (projectFile,templateFile') ->
             allTemplateFiles.Remove(templateFile'.FileName) |> ignore
 
-            let merged = merge buildConfig buildPlatform version specificVersions projectFile templateFile'
             let willBePacked = 
                 match templateFile with
-                | Some file -> normalizePath (Path.GetFullPath file) = normalizePath (Path.GetFullPath merged.FileName)
+                | Some file -> normalizePath (Path.GetFullPath file) = normalizePath (Path.GetFullPath templateFile'.FileName)
                 | None -> true
+            if not willBePacked then None else
+            let merged = merge buildConfig buildPlatform version specificVersions projectFile templateFile'
             
-            Path.GetFullPath projectFile.FileName |> normalizePath,(merged,projectFile,willBePacked))
+            Some(Path.GetFullPath projectFile.FileName |> normalizePath,(merged,projectFile)))
         |> Map.ofArray
 
     // add dependencies
@@ -206,9 +207,8 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
 
         let remaining = allTemplateFiles |> Seq.collect convertRemainingTemplate |> Seq.toList
         projectTemplates
-        |> Map.filter (fun _ (_,_,willBePacked) -> willBePacked) 
         |> Map.toList
-        |> Seq.collect(fun (_,(t, p, _)) -> 
+        |> Seq.collect(fun (_,(t, p)) -> 
             seq {
                 for template in optWithSymbols p t do 
                     yield template, p
