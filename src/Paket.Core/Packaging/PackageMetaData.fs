@@ -159,7 +159,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith (sprintf "You should only try and add files to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
-let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (projectWithTemplates : Map<string, TemplateFile * ProjectFile * bool>) includeReferencedProjects (version :SemVerInfo option) specificVersions (projDeps) =
+let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (projectWithTemplates : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) specificVersions (projDeps) =
     let includeReferencedProjects = template.IncludeReferencedProjects || includeReferencedProjects
     let targetDir = 
         match project.OutputType with
@@ -185,7 +185,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
         |> List.filter (fun proj -> proj <> project)
         |> List.fold (fun (deps, files) p ->
             match Map.tryFind p.FileName projectWithTemplates with
-            | Some (packagedTemplate,packagedProject,true) -> (packagedTemplate,packagedProject) :: deps, files
+            | Some (packagedTemplate,packagedProject) -> (packagedTemplate,packagedProject) :: deps, files
             | _ -> 
                 let p = 
                     match ProjectFile.TryLoad p.FileName with
@@ -300,7 +300,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
         [if includeReferencedProjects then
             for proj in project.GetAllReferencedProjects(false,projDeps) |> Seq.filter ((<>) project) do
                 match Map.tryFind proj.FileName projectWithTemplates with
-                | Some ({ Contents = CompleteInfo(core, _) }, _, _) ->
+                | Some ({ Contents = CompleteInfo(core, _) }, _) ->
                     let versionConstraint = 
                         match core.Version with
                         | Some v -> 
