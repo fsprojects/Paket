@@ -1,3 +1,6 @@
+#### 5.96.2 - 14.09.2017
+* BUGFIX: Fix special cases with include-referenced-projects - https://github.com/fsprojects/Paket/issues/1848
+
 #### 5.96.1 - 13.09.2017
 * BUGFIX: Proper filter by target framework - https://github.com/fsprojects/Paket/issues/2759
 
