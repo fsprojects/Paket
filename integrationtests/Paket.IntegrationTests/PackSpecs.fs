@@ -531,3 +531,12 @@ let ``#2694 paket fixnuspec should not remove project references``() =
     // Problably not as "packaged" console applications have this dependency by default, see https://www.nuget.org/packages/dotnet-mergenupkg
     nuspec.Dependencies.Length
     |> shouldEqual 3
+    
+[<Test>]
+let ``#2765 pack single template does not evaluate other template`` () = 
+    let scenario = "i002765-evaluate-only-single-template"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let templatePath = Path.Combine(rootPath, "projectA", "paket.template")
+    Assert.DoesNotThrow(fun () -> paket ("pack --template " + templatePath + " \"" + outPath + "\"") scenario |> ignore)
+    CleanDir rootPath    

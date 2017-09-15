@@ -171,11 +171,10 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
             | _ -> true)
         |> Array.map (fun (projectFile,templateFile') ->
             allTemplateFiles.Remove(templateFile'.FileName) |> ignore
-
-            let merged = merge buildConfig buildPlatform version specificVersions projectFile templateFile'
+            let merged = lazy (merge buildConfig buildPlatform version specificVersions projectFile templateFile')
             let willBePacked = 
                 match templateFile with
-                | Some file -> normalizePath (Path.GetFullPath file) = normalizePath (Path.GetFullPath merged.FileName)
+                | Some file -> normalizePath (Path.GetFullPath file) = normalizePath (Path.GetFullPath templateFile'.FileName)
                 | None -> true
             
             Path.GetFullPath projectFile.FileName |> normalizePath,(merged,projectFile,willBePacked))
@@ -210,7 +209,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
         |> Map.toList
         |> Seq.collect(fun (_,(t, p, _)) -> 
             seq {
-                for template in optWithSymbols p t do 
+                for template in optWithSymbols p (t.Force()) do 
                     yield template, p
                 }
             )
