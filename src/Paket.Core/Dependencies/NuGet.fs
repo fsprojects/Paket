@@ -631,6 +631,14 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
     let targetFile = FileInfo targetFileName
     let licenseFileName = getLicenseFile packageName version
 
+    if force then 
+        match configResolved.Path with
+        | Some p ->
+            if verbose then
+                verbosefn "Cleaning %s" p
+            CleanDir p
+        | _ -> ()
+
     let rec getFromCache (caches:Cache list) =
         match caches with
         | cache::rest ->
@@ -670,7 +678,7 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
                     use _ = Profile.startCategory Profile.Category.FileIO
                     let parent = Path.GetDirectoryName targetFileName
                     if not (Directory.Exists parent) then Directory.CreateDirectory parent |> ignore
-                    File.Copy(nupkg.FullName,targetFileName)
+                    File.Copy(nupkg.FullName,targetFileName,true)
                 | _ ->
                 // discover the link on the fly
                 let downloadUrl = ref ""
