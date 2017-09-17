@@ -862,19 +862,19 @@ type ResolverTaskMemory<'a> =
 module ResolverTaskMemory =
     let ofWork w = { Work = w; WaitedAlready = false }
 
-let selectVersionsToPreload (verReq:VersionRequirement) versions =
+let selectVersionsToPreload (verReq:VersionRequirement) f versions =
     seq {
-        match versions |> Seq.tryFind (fun v -> verReq.IsInRange(v, true)) with
+        match versions |> Seq.tryFind (fun v -> verReq.IsInRange(f v, true)) with
         | Some verToPreload ->
             yield verToPreload, WorkPriority.LikelyRequired
         | None -> ()
-        match versions |> Seq.tryFind (verReq.IsInRange) with
+        match versions |> Seq.tryFind (f >> verReq.IsInRange) with
         | Some verToPreload ->
             yield verToPreload, WorkPriority.LikelyRequired
         | None -> ()
-        for v in versions |> Seq.filter (fun v -> verReq.IsInRange(v, true)) |> Seq.tryTake 10 do
+        for v in versions |> Seq.filter (fun v -> verReq.IsInRange(f v, true)) |> Seq.tryTake 10 do
             yield v, WorkPriority.MightBeRequired
-        for v in versions |> Seq.filter (verReq.IsInRange) |> Seq.tryTake 10 do
+        for v in versions |> Seq.filter (f >> verReq.IsInRange) |> Seq.tryTake 10 do
             yield v, WorkPriority.MightBeRequired
     }
     
@@ -1213,8 +1213,8 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                             requestVersions.Work.TryReprioritize true WorkPriority.LikelyRequired
                             let! versions = (requestVersions).Work.Task |> Async.AwaitTask
                             // Preload the first version in range of this requirement
-                            for (verToPreload, prio) in selectVersionsToPreload verReq (versions |> Seq.map fst) do
-                                let w = startRequestGetPackageDetails (GetPackageDetailsParameters.ofParams currentRequirement.Sources groupName pack verToPreload)
+                            for ((verToPreload, sources), prio) in selectVersionsToPreload verReq fst versions do
+                                let w = startRequestGetPackageDetails (GetPackageDetailsParameters.ofParams sources groupName pack verToPreload)
                                 w.Work.TryReprioritize true prio
                             return ()
                         } |> Async.Start

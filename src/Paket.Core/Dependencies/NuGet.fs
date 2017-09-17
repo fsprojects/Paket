@@ -598,7 +598,8 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
                     | [] -> sprintf "Could not find versions for package %O, because no sources were specified." packageName
                     | sources -> sprintf "Could not find versions for package %O on any of %A." packageName sources
                 return raise <| getException trial2 errorMsg }
-    return
+
+    let mergedResults =
         versions
         |> Seq.toList
         |> List.collect (fun sr ->
@@ -610,8 +611,10 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
         |> List.map (fun (_,s) ->
             let sorted = s |> List.sortByDescending (fun (_,_,s) -> s.IsLocalFeed)
 
-            let _,v,_ = List.head sorted
-            SemVer.Parse v,sorted |> List.map (fun (_,_,x) -> x)) }
+            let v,_,_ = List.head sorted
+            v,sorted |> List.map (fun (_,_,x) -> x))
+
+    return mergedResults }
 
 let private getLicenseFile (packageName:PackageName) version =
     Path.Combine(NuGetCache.GetTargetUserFolder packageName version, NuGetCache.GetLicenseFileName packageName version)
