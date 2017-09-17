@@ -163,20 +163,23 @@ module RuntimeGraph =
         s |> Seq.fold merge RuntimeGraph.Empty
     /// get the list of compatible RIDs for the given RID. Most compatible are near the head. The list contains the given RID in the HEAD
     let getInheritanceList (rid:Rid) (g:RuntimeGraph) =
-        let rec getListRec currentList toInspect =
+        let rec getListRec worked currentList toInspect =
             match toInspect with
             | rid :: rest ->
-                if List.contains rid currentList then
-                    getListRec currentList rest
+                if List.contains rid worked then
+                    getListRec worked currentList rest
                 else
-                    let desc = g.Runtimes.[rid]
-                    let filtered = desc.InheritedRids |> List.filter (fun inh -> not (List.contains inh currentList))
-                    let newList = currentList @ filtered
-                    let toInspect = rest @ filtered
-                    getListRec newList toInspect
+                    match g.Runtimes.TryFind rid with
+                    | Some desc ->
+                        let desc = g.Runtimes.[rid]
+                        let filtered = desc.InheritedRids |> List.filter (fun inh -> not (List.contains inh currentList))
+                        let newList = currentList @ filtered
+                        let toInspect = rest @ filtered
+                        getListRec (rid :: worked) newList toInspect
+                    | None -> getListRec (rid :: worked) currentList rest
             | _ -> currentList
 
-        getListRec [rid] [rid]
+        getListRec [] [rid] [rid]
     /// get a list of RIDs in no particular order which are part of this runtime graph
     let getKnownRids (g:RuntimeGraph) =
         g.Runtimes |> Map.toSeq |> Seq.map fst

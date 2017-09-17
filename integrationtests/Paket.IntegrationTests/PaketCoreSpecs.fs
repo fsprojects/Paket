@@ -65,3 +65,4 @@ let ``#1259 install via script``() =
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001259-install-script","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Suave"].Version
     |> shouldBeGreaterThan (SemVer.Parse "0.33.0")
+
