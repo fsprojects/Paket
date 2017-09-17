@@ -399,7 +399,16 @@ let envProxies () =
         match Uri.TryCreate(envVarValue, UriKind.Absolute) with
         | true, envUri ->
 #if NETSTANDARD1_6
-            raise <| System.NotImplementedException ("I don't know how WebProxy can should be replace in dotnetcore. Therefore this is currently not supported. Please implement me :)")
+            Some 
+                { new IWebProxy with
+                    member __.Credentials 
+                        with get () = (Option.toObj <| getCredentials envUri) :> ICredentials
+                        and set value = ()
+                    member __.GetProxy _ =
+                        Uri (sprintf "http://%s:%d" envUri.Host envUri.Port)
+                    member __.IsBypassed (host : Uri) =
+                        Array.contains (string host) bypassList
+                }
 #else
             let proxy = WebProxy (Uri (sprintf "http://%s:%d" envUri.Host envUri.Port))
             proxy.Credentials <- Option.toObj <| getCredentials envUri

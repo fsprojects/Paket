@@ -124,7 +124,7 @@ module ScriptGeneration =
                 | Framework name,_ ->
                      sprintf """#r "%s" """ name
         
-            self.Input |> Seq.map refString |> String.concat "\n"
+            self.Input |> Seq.map refString |> Seq.distinct |> String.concat "\n"
         
         /// Save the script in '<directory>/.paket/load/<script>'
         member self.Save (directory:DirectoryInfo) = 

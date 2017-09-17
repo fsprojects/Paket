@@ -5,6 +5,10 @@ if errorlevel 1 (
   exit /b %errorlevel%
 )
 
+setlocal
+
 set MSBuild=packages\build\RoslynTools.MSBuild\tools\msbuild
 
 packages\build\FAKE\tools\FAKE.exe build.fsx %*
+
+endlocal
