@@ -48,6 +48,9 @@ let rids = """
         },
         "win": {
             "#import": [ "any" ]
+        },
+        "win-x86": {
+            "#import": [ "win" ]
         }
    }
 }
@@ -90,7 +93,8 @@ let ``Check if we can parse runtime rids``() =
         { Runtimes =
             [ { Rid = Rid.Of "base"; InheritedRids = [ ]; RuntimeDependencies = Map.empty }
               { Rid = Rid.Of "any"; InheritedRids = [ Rid.Of "base" ]; RuntimeDependencies = Map.empty }
-              { Rid = Rid.Of "win"; InheritedRids = [ Rid.Of "any" ]; RuntimeDependencies = Map.empty } ]
+              { Rid = Rid.Of "win"; InheritedRids = [ Rid.Of "any" ]; RuntimeDependencies = Map.empty }
+              { Rid = Rid.Of "win-x86"; InheritedRids = [ Rid.Of "win" ]; RuntimeDependencies = Map.empty } ]
             |> Seq.map (fun r -> r.Rid, r)
             |> Map.ofSeq
           Supports =
@@ -219,3 +223,34 @@ let ``Check that runtime dependencies are loaded from the lockfile`` () =
     |> List.map (fun r -> string r.Name, string r.Version, r.IsRuntimeDependency)
     |> List.sortBy (fun (t,_,_) ->t)
     |> shouldEqual expected
+
+    
+[<Test>]
+let ``Check that runtime inheritance works`` () =
+    let runtimeGraph = RuntimeGraphParser.readRuntimeGraph rids
+    let content =
+        { NuGet.NuGetPackageContent.Path = "/c/test/blub";
+          NuGet.NuGetPackageContent.Spec = Nuspec.All
+          NuGet.NuGetPackageContent.Content =
+            NuGet.ofFiles [
+              "lib/netstandard1.1/testpackage.xml"
+              "lib/netstandard1.1/testpackage.dll"
+              "runtimes/win/lib/netstandard1.1/testpackage.xml"
+              "runtimes/win/lib/netstandard1.1/testpackage.dll"
+            ]}
+    let model =
+        InstallModel.EmptyModel (PackageName "testpackage", SemVer.Parse "1.0.0")
+        |> InstallModel.addNuGetFiles content
+        
+    let targetProfile = Paket.TargetProfile.SinglePlatform(Paket.FrameworkIdentifier.DotNetStandard (Paket.DotNetStandardVersion.V1_6))
+    model.GetRuntimeAssemblies runtimeGraph (Rid.Of "win-x86") (targetProfile)
+    |> Seq.map (fun fi -> fi.Library.PathWithinPackage)
+    |> Seq.toList
+    |> shouldEqual [ "runtimes/win/lib/netstandard1.1/testpackage.dll" ]
+
+[<Test>]
+let ``Check correct inheritance list`` () =
+    let runtimeGraph = RuntimeGraphParser.readRuntimeGraph rids
+    RuntimeGraph.getInheritanceList (Rid.Of "win-x86") runtimeGraph
+        |> shouldEqual [ Rid.Of "win-x86"; Rid.Of "win"; Rid.Of "any"; Rid.Of "base"]
+    

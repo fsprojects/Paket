@@ -596,9 +596,10 @@ module InstallModel =
         // We need to recalculate the framework association after filtering with the RID
         let allAssemblies = installModel.RuntimeAssemblyFolders |> Seq.collect (fun f -> f.FolderContents |> Seq.map (fun c -> f.Path, c))
         let allRids = allAssemblies |> Seq.choose (fun (_,s) -> s.Rid) |> Set.ofSeq
+        let ridInheritanceList = RuntimeGraph.getInheritanceList rid graph
         let bestMatchingRid =
-            RuntimeGraph.getInheritanceList rid graph
-            |> Seq.tryFind (fun rid -> allRids.Contains rid)
+            ridInheritanceList
+            |> Seq.tryFind allRids.Contains
         let filtered = allAssemblies |> Seq.filter (fun (_, a) -> a.Rid = None || a.Rid = bestMatchingRid) |> Seq.cache
         let unParsedList = filtered |> Seq.map (fun (p, f) ->
             { UnparsedPackageFile.FullPath = f.Library.Path; UnparsedPackageFile.PathWithinPackage = f.Library.PathWithinPackage } ) |> Seq.toList
@@ -611,11 +612,21 @@ module InstallModel =
                 | Some path -> addFileToFolder path (RuntimeLibrary.ofFile fdf) folder Set.add
                 | _ -> folder) recalculated
 
+        let filteredResults =
+            getFileFolders target filledFolder Set.toSeq
+            |> Seq.toList
+        let filteredRids =
+            filteredResults
+            |> Seq.choose (fun rlib -> rlib.Rid)
+            |> Set.ofSeq
+        let fiteredBestMatchingRid =
+            ridInheritanceList
+            |> Seq.tryFind filteredRids.Contains
         let tfmData =
-            getFileFolders target filledFolder (Set.toSeq)
-            |> Seq.filter (fun lib -> lib.Rid = None || lib.Rid = bestMatchingRid)
+            filteredResults
+            |> Seq.filter (fun lib -> lib.Rid = fiteredBestMatchingRid)
             |> Seq.cache
-        if verbose && allRids.Count > 0 && bestMatchingRid = None then
+        if verbose && allRids.Count > 0 && fiteredBestMatchingRid = None then
             // No idea what this means, if this fails for you make this a warning or remove it completely.
             // I added this to see if it appears in the real world...
             printfn "We found RID dependency libraries in the package '%A'-'%A' but nothing matched against '%A'" installModel.PackageName installModel.PackageVersion rid
