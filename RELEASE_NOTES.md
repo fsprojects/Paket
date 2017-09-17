@@ -1,3 +1,6 @@
+#### 5.96.3 - 14.09.2017
+* BUGFIX: Make the resolver request only sources returned by GetVersion - https://github.com/fsprojects/Paket/pull/2771
+
 #### 5.96.2 - 14.09.2017
 * BUGFIX: Fix special cases with include-referenced-projects - https://github.com/fsprojects/Paket/issues/1848
 
