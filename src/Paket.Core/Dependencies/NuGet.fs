@@ -15,6 +15,7 @@ open System.Runtime.ExceptionServices
 open System.Text
 open FSharp.Polyfill
 open Paket.NuGetCache
+open Paket.PackageResolver
 
 type NuGetContent =
     | NuGetDirectory of name:string * contents:NuGetContent list
@@ -233,7 +234,10 @@ let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
     NuGetV3.findVersionsForPackage(nugetV3Url, auth, package)
 
 
-let rec private getPackageDetails alternativeProjectRoot root force (sources:PackageSource list) packageName (version:SemVerInfo) : Async<PackageResolver.PackageDetails> =
+let rec private getPackageDetails alternativeProjectRoot root force (parameters:GetPackageDetailsParameters) : Async<PackageResolver.PackageDetails> =
+    let sources = parameters.Package.Sources
+    let packageName = parameters.Package.PackageName
+    let version = parameters.Version
     async {
         let inCache =
             sources
@@ -245,9 +249,11 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
         let tryV2 (nugetSource:NugetSource) force =
             NuGetV2.getDetailsFromNuGet
                 force
+                parameters.VersionIsAssumed
                 nugetSource
                 packageName
                 version
+
 
         let tryV3 (nugetSource:NugetV3Source) force =
             NuGetV3.GetPackageDetails force nugetSource packageName version
@@ -357,17 +363,17 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
               LicenseUrl = nugetObject.LicenseUrl
               DirectDependencies = NuGetPackageCache.getDependencies nugetObject |> Set.ofList } }
 
-let rec GetPackageDetails alternativeProjectRoot root force (sources:PackageSource list) groupName packageName (version:SemVerInfo) : Async<PackageResolver.PackageDetails> =
+let rec GetPackageDetails alternativeProjectRoot root force (parameters:GetPackageDetailsParameters): Async<PackageResolver.PackageDetails> =
     async {
         try
-            return! getPackageDetails alternativeProjectRoot root force sources packageName version
+            return! getPackageDetails alternativeProjectRoot root force parameters
         with
         | exn ->
             if verbose then
                 traceWarnfn "GetPackageDetails failed: %O" exn
             else
                 traceWarnfn "Something failed in GetPackageDetails, trying again with force: %s" exn.Message
-            return! getPackageDetails alternativeProjectRoot root true sources packageName version
+            return! getPackageDetails alternativeProjectRoot root true parameters
     }
 
 let protocolCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
@@ -413,7 +419,9 @@ let getVersionsCached key f (source, auth, nugetURL, package) =
 
 
 /// Allows to retrieve all version no. for a package from the given sources.
-let GetVersions force alternativeProjectRoot root (sources, packageName:PackageName) = async {
+let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersionsParameters) = async {
+    let packageName = parameters.Package.PackageName
+    let sources = parameters.Package.Sources
     let trial force = async {
         let getVersionsFailedCacheFileName (source:PackageSource) =
             let h = source.Url |> NuGetCache.normalizeUrl |> hash |> abs
@@ -590,7 +598,8 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
                     | [] -> sprintf "Could not find versions for package %O, because no sources were specified." packageName
                     | sources -> sprintf "Could not find versions for package %O on any of %A." packageName sources
                 return raise <| getException trial2 errorMsg }
-    return
+
+    let mergedResults =
         versions
         |> Seq.toList
         |> List.collect (fun sr ->
@@ -602,8 +611,10 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
         |> List.map (fun (_,s) ->
             let sorted = s |> List.sortByDescending (fun (_,_,s) -> s.IsLocalFeed)
 
-            let _,v,_ = List.head sorted
-            SemVer.Parse v,sorted |> List.map (fun (_,_,x) -> x)) }
+            let v,_,_ = List.head sorted
+            v,sorted |> List.map (fun (_,_,x) -> x))
+
+    return mergedResults }
 
 let private getLicenseFile (packageName:PackageName) version =
     Path.Combine(NuGetCache.GetTargetUserFolder packageName version, NuGetCache.GetLicenseFileName packageName version)
@@ -671,7 +682,7 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
                         let group = if groupName = Constants.MainDependencyGroup then "" else sprintf " (%O)" groupName
                         tracefn "Downloading %O %O%s" packageName version group
 
-                    let! nugetPackage = GetPackageDetails alternativeProjectRoot root force [source] groupName packageName version
+                    let! nugetPackage = GetPackageDetails alternativeProjectRoot root force (GetPackageDetailsParameters.ofParams [source] groupName packageName version)
 
                     let encodeURL (url:string) = url.Replace("+","%2B")
                     let downloadUri =

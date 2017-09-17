@@ -393,6 +393,120 @@ let ``#1816 pack localized when satellite dll is missing`` () =
     CleanDir rootPath
 
 [<Test>]
+let ``#1848 single template without include-referenced-projects`` () = 
+    let scenario = "i001848-pack-single-template-wo-incl-flag"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let templatePath = Path.Combine(rootPath, "projectA", "paket.template")
+    paket ("pack --template " + templatePath + " \"" + outPath + "\"") scenario |> ignore
+
+    NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "projectA") (SemVer.Parse "1.0.0.0")
+    |> Async.RunSynchronously
+    |> ODataSearchResult.get
+    |> getDependencies 
+    |> shouldBeEmpty
+
+    ZipFile.ExtractToDirectory(Path.Combine(outPath, "projectA.1.0.0.0.nupkg"), outPath)
+    Path.Combine(outPath, "lib", "net45", "projectB.dll") |> checkFileExists
+
+    CleanDir rootPath
+
+[<Test>]
+let ``#1848 single template with include-referenced-projects`` () = 
+    let scenario = "i001848-pack-single-template-with-incl-flag"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let templatePath = Path.Combine(rootPath, "projectA", "paket.template")
+    paket ("pack --include-referenced-projects --template  " + templatePath + " \"" + outPath + "\"") scenario |> ignore
+
+    NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "projectA") (SemVer.Parse "1.0.0.0")
+    |> Async.RunSynchronously
+    |> ODataSearchResult.get
+    |> getDependencies 
+    |> List.tryFind (fun (name,version,_) -> name = PackageName "projectB" && version = VersionRequirement.Parse "1.0.0.0") 
+    |> shouldNotEqual None
+
+    ZipFile.ExtractToDirectory(Path.Combine(outPath, "projectA.1.0.0.0.nupkg"), outPath)
+    let expectedFile = Path.Combine(outPath, "lib", "net45", "projectB.dll")
+
+    File.Exists expectedFile |> shouldEqual false
+
+    CleanDir rootPath
+
+[<Test>]
+let ``#1848 all templates without include-referenced-projects`` () = 
+    let scenario = "i001848-pack-all-templates-wo-incl-flag"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    paket ("pack \"" + outPath + "\"") scenario |> ignore
+
+    NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "projectA") (SemVer.Parse "1.0.0.0")
+    |> Async.RunSynchronously
+    |> ODataSearchResult.get
+    |> getDependencies 
+    |> List.tryFind (fun (name,version,_) -> name = PackageName "projectB" && version = VersionRequirement.Parse "1.0.0.0") 
+    |> shouldNotEqual None
+
+    NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "projectB") (SemVer.Parse "1.0.0.0")
+    |> Async.RunSynchronously
+    |> ODataSearchResult.get
+    |> getDependencies 
+    |> List.tryFind (fun (name,version,_) -> name = PackageName "nunit" && version = VersionRequirement.Parse "[3.8.1]") 
+    |> shouldNotEqual None
+
+    ZipFile.ExtractToDirectory(Path.Combine(outPath, "projectA.1.0.0.0.nupkg"), outPath)
+    let expectedFile = Path.Combine(outPath, "lib", "net45", "projectB.dll")
+    File.Exists expectedFile |> shouldEqual false
+
+    CleanDir rootPath
+
+[<Test>]
+let ``#1848 all templates with include-referenced-projects`` () = 
+    let scenario = "i001848-pack-all-templates-with-incl-flag"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    paket ("pack --include-referenced-projects \"" + outPath + "\"") scenario |> ignore
+
+    NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "projectA") (SemVer.Parse "1.0.0.0")
+    |> Async.RunSynchronously
+    |> ODataSearchResult.get
+    |> getDependencies 
+    |> List.tryFind (fun (name,version,_) -> name = PackageName "projectB" && version = VersionRequirement.Parse "1.0.0.0") 
+    |> shouldNotEqual None
+
+    NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "projectB") (SemVer.Parse "1.0.0.0")
+    |> Async.RunSynchronously
+    |> ODataSearchResult.get
+    |> getDependencies 
+    |> List.tryFind (fun (name,version,_) -> name = PackageName "nunit" && version = VersionRequirement.Parse "[3.8.1]") 
+    |> shouldNotEqual None
+
+    ZipFile.ExtractToDirectory(Path.Combine(outPath, "projectA.1.0.0.0.nupkg"), outPath)
+    let expectedFile = Path.Combine(outPath, "lib", "net45", "projectB.dll")
+    File.Exists expectedFile |> shouldEqual false
+
+    CleanDir rootPath
+
+[<Test>]
+let ``#1848 include-referenced-projects with non-packed project dependencies`` () = 
+    let scenario = "i001848-pack-with-non-packed-deps"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    paket ("pack --include-referenced-projects \"" + outPath + "\"") scenario |> ignore
+
+    NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "projectA") (SemVer.Parse "1.0.0.0")
+    |> Async.RunSynchronously
+    |> ODataSearchResult.get
+    |> getDependencies 
+    |> List.tryFind (fun (name,version,_) -> name = PackageName "nunit" && version = VersionRequirement.Parse "[3.8.1]") 
+    |> shouldNotEqual None    
+    
+    ZipFile.ExtractToDirectory(Path.Combine(outPath, "projectA.1.0.0.0.nupkg"), outPath)
+    Path.Combine(outPath, "lib", "net45", "projectB.dll") |> checkFileExists
+    
+    CleanDir rootPath
+
+[<Test>]
 let ``#2694 paket fixnuspec should not remove project references``() = 
     let project = "console"
     let scenario = "i002694"

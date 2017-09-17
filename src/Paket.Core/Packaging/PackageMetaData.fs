@@ -159,7 +159,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith (sprintf "You should only try and add files to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
-let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) specificVersions (projDeps) =
+let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (projectWithTemplates : Map<string, TemplateFile * ProjectFile * bool>) includeReferencedProjects (version :SemVerInfo option) specificVersions (projDeps) =
     let includeReferencedProjects = template.IncludeReferencedProjects || includeReferencedProjects
     let targetDir = 
         match project.OutputType with
@@ -183,10 +183,10 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
 
         interProjectDeps
         |> List.filter (fun proj -> proj <> project)
-        |> List.fold (fun (deps, files) p -> 
-            match Map.tryFind p.FileName map with
-            | Some packagedRef -> packagedRef :: deps, files
-            | None -> 
+        |> List.fold (fun (deps, files) p ->
+            match Map.tryFind p.FileName projectWithTemplates with
+            | Some (packagedTemplate,packagedProject,true) -> (packagedTemplate,packagedProject) :: deps, files
+            | _ -> 
                 let p = 
                     match ProjectFile.TryLoad p.FileName with
                     | Some p -> p
@@ -296,30 +296,20 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                 |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> Some kv.Key, p, None))
                 |> List.concat
             | None -> []
-          
+
         [if includeReferencedProjects then
             for proj in project.GetAllReferencedProjects(false,projDeps) |> Seq.filter ((<>) project) do
-                match proj.FindTemplatesFile() with
-                | Some templateFileName when TemplateFile.IsProjectType templateFileName ->
-                    match TemplateFile.Load(templateFileName, lockFile, None, Seq.empty |> Map.ofSeq).Contents with
-                    | CompleteInfo(_) ->
-                        yield! getPackages proj
-                    | ProjectInfo(core, _) ->
-                        let name = 
-                            match core.Id with
-                            | Some name -> name
-                            | None -> proj.GetAssemblyName().Replace(".dll","").Replace(".exe","")
+                match Map.tryFind proj.FileName projectWithTemplates with
+                | Some ({ Contents = CompleteInfo(core, _) }, _, _) ->
+                    let versionConstraint = 
+                        match core.Version with
+                        | Some v -> 
+                            let vr = if lockDependencies || pinProjectReferences then Specific v else Minimum v
+                            VersionRequirement(vr, getPreReleaseStatus v)
+                        | None -> VersionRequirement.AllReleases
 
-                        let versionConstraint = 
-                            match core.Version with
-                            | Some v -> 
-                                let vr = if lockDependencies || pinProjectReferences then Specific v else Minimum v
-                                VersionRequirement(vr, getPreReleaseStatus v)
-                            | None -> VersionRequirement.AllReleases
-
-                        yield None, { Name = PackageName name; Settings = InstallSettings.Default }, Some versionConstraint
+                    yield None, { Name = PackageName core.Id; Settings = InstallSettings.Default }, Some versionConstraint
                 | _ -> yield! getPackages proj
-
          yield! getPackages project]
     
     // filter out any references that are transitive

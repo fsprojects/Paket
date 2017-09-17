@@ -24,7 +24,7 @@ let rec findExnWhichContains msg (exn:exn) =
 
 let resolve graph updateMode (cfg : DependenciesFile) =
     let groups = [Constants.MainDependencyGroup, None ] |> Map.ofSeq
-    cfg.Resolve(true,noSha1,VersionsFromGraphAsSeq graph, (fun _ _ _ _ -> []),PackageDetailsFromGraph graph,(fun _ _ -> None),groups,updateMode).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    cfg.Resolve(true,noSha1,VersionsFromGraphAsSeq graph, (fun _ _ -> []),PackageDetailsFromGraph graph,(fun _ _ -> None),groups,updateMode).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
 
 let graph1 =
   GraphOfNuspecs [
@@ -84,9 +84,9 @@ nuget Chessie"""
         try
             let groupResults =
                 cfg.Resolve(
-                    true,noSha1,VersionsFromGraphAsSeq graph1,(fun _ _ _ _ -> []),
+                    true,noSha1,VersionsFromGraphAsSeq graph1,(fun _ _ -> []),
                     // Will never finish...
-                    (fun _ _ _ _ -> (new TaskCompletionSource<_>()).Task |> Async.AwaitTask),
+                    (fun _ -> (new TaskCompletionSource<_>()).Task |> Async.AwaitTask),
                     (fun _ _ -> None),groups, UpdateMode.UpdateAll)
             let resolved = groupResults.[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
             Assert.Fail "Expected exception"
@@ -215,9 +215,9 @@ nuget Chessie"""
         try
             let groupResults =
                 cfg.Resolve(
-                    true,noSha1,VersionsFromGraphAsSeq graph1,(fun _ _ _ _ -> []),
+                    true,noSha1,VersionsFromGraphAsSeq graph1,(fun _ _ -> []),
                     // Will throw a proper exception when canceled
-                    (fun _ _ _ _ ->
+                    (fun _ ->
                         async {
                             let tcs = new TaskCompletionSource<_>()
                             //let! tok = Async.CancellationToken

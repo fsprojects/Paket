@@ -505,5 +505,8 @@ let replaceNuGetWithPaket initAutoRestore installAfter result =
     UpdateProcess.Update(
         result.PaketEnv.DependenciesFile.FileName, 
         { UpdaterOptions.Default with 
-            Common = { InstallerOptions.Default with Force = true; Redirects = true }
+            Common = { 
+                    InstallerOptions.Default with 
+                        Force = true
+                        Redirects = BindingRedirectsSettings.On }
             NoInstall = not installAfter })

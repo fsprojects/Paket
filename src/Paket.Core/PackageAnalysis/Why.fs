@@ -56,7 +56,7 @@ module DependencyChain =
     | (_, LblPathNode n) -> length n + 1
     | (_, LblPathLeaf _) -> 2
 
-    let format showDetails (c : DependencyChain) =
+    let format (resolution: PackageResolver.PackageResolution) showDetails (c : DependencyChain) =
         let formatVerReq (vr : VersionRequirement) =
             match vr.ToString() with
             | "" -> ""
@@ -66,23 +66,29 @@ module DependencyChain =
             | AutoDetectFramework 
             | ExplicitRestriction Paket.Requirements.FrameworkRestriction.HasNoRestriction -> ""
             | ExplicitRestriction fr -> sprintf " (%O)" fr
-        let formatName name i = sprintf "%s-> %O" (String.replicate i "  ") name
+
+        let formatName (name: PackageName) i = 
+            sprintf "%s-> %O - %O" 
+                (String.replicate i "  ") 
+                name.Name
+                (resolution.Item name).Version
+
         let rec format' i (name,chain) =
             let rest = 
                 match chain, showDetails with
                 | LblPathNode chain,_ -> 
                     format' (i+1) chain
                 | LblPathLeaf (name,(vr,fr)), true -> 
-                    sprintf "%s%s%s" (formatName name (i+1)) (formatVerReq vr) (formatFxReq fr)
+                    sprintf "%s -%s%s" (formatName name (i+1)) (formatVerReq vr) (formatFxReq fr)
                 | LblPathLeaf (name,_), false -> 
                     formatName name (i+1)
             sprintf "%s%s%s" (formatName name i) Environment.NewLine rest
         
         format' 0 c
 
-    let formatMany showDetails chains =
+    let formatMany resolution showDetails chains =
         chains
-        |> Seq.map (format showDetails)
+        |> Seq.map (format resolution showDetails)
         |> String.concat (String.replicate 2 Environment.NewLine)
 
 // In context of FAKE project dependencies
@@ -145,19 +151,15 @@ module Reason =
                 topLevelDeps
                 |> Set.toList
                 |> List.collect (fun p -> AdjLblGraph.paths p packageName graph)
-            let version =
-                group.Resolution
-                |> Map.find packageName
-                |> fun x -> x.Version
             match Set.contains packageName directDeps, Set.contains packageName topLevelDeps with
             | true, true ->
-                Result.Ok ((TopLevel, version), [])
+                Result.Ok ((TopLevel, group.Resolution), [])
             | true, false ->
-                Result.Ok ((Direct chains, version), [])
+                Result.Ok ((Direct chains, group.Resolution), [])
             | false, false ->
-                Result.Ok ((Transitive chains, version), [])
+                Result.Ok ((Transitive chains, group.Resolution), [])
             | false, true ->
-                failwith "impossible"
+                Result.Bad []
 
 let ohWhy (packageName, 
            directDeps : Set<PackageName>, 
@@ -177,12 +179,11 @@ let ohWhy (packageName,
             (otherGroups |> List.map (fun pair -> pair.ToString()))
 
         usage |> traceWarn
-    | Result.Ok ((reason, version), []) ->
+    | Result.Ok ((reason, resolution), []) ->
         reason
         |> Reason.format
-        |> sprintf "NuGet %O%s is a %s" packageName (if options.Details then " " + version.ToString() else "")
+        |> sprintf "NuGet %O - %s is a %s" packageName ((resolution.Item packageName).Version.ToString())
         |> tracen
-
         match reason with
         | TopLevel -> ()
         | Direct chains
@@ -192,9 +193,9 @@ let ohWhy (packageName,
             for (top, chains) in chains |> List.groupBy (DependencyChain.first) do
                 match chains |> List.sortBy DependencyChain.length, options.Details with
                 | shortest :: [], false ->
-                    DependencyChain.format options.Details shortest |> tracen
+                    DependencyChain.format resolution options.Details shortest |> tracen
                 | shortest :: rest, false ->
-                    DependencyChain.format options.Details shortest |> tracen
+                    DependencyChain.format resolution options.Details shortest |> tracen
                     tracen ""
                     tracefn 
                         "... and %d chain%s more starting at %O ..." 
@@ -203,9 +204,9 @@ let ohWhy (packageName,
                         top
                     tracen "To display all chains use --details flag."
                 | all, true ->
-                    DependencyChain.formatMany options.Details all |> tracen
+                    DependencyChain.formatMany resolution options.Details all |> tracen
                 | _ ->
                     failwith "impossible"
                 tracen ""
     | _ ->
-        failwith "impossible"
+        traceErrorfn "Unknown error for %O in %s" packageName Constants.LockFileName

@@ -40,8 +40,36 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
     let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
     let storageOption = defaultArg settings.StorageConfig PackagesFolderGroupConfig.Default
     match storageOption.Resolve root groupName packageName version includeVersionInPath with
-    | ResolvedPackagesFolder.ResolvedFolder targetFolder (*when Directory.Exists targetFolder*) ->
-        DirectoryInfo targetFolder
+    | ResolvedPackagesFolder.ResolvedFolder targetFolder ->
+        let direct = DirectoryInfo targetFolder
+        if direct.Exists then
+            direct
+        else
+            let lowerName = packageName.ToString() + if includeVersionInPath then "." + version.ToString() else ""
+            let di =
+                if groupName = Constants.MainDependencyGroup then
+                    DirectoryInfo(Path.Combine(root, Constants.DefaultPackagesFolderName))
+                else
+                    let groupName = groupName.CompareString
+                    let di = DirectoryInfo(Path.Combine(root, Constants.DefaultPackagesFolderName, groupName))
+                    if di.Exists then di else
+
+                    match di.GetDirectories() |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase groupName subDir.FullName) with
+                    | Some x -> x
+                    | None ->
+                        traceWarnfn "The following directories exists:"
+                        di.GetDirectories() |> Seq.iter (fun d -> traceWarnfn "  %s" d.FullName)
+
+                        failwithf "Group directory for group %s was not found." groupName
+
+            match di.GetDirectories() |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase lowerName subDir.FullName) with
+            | Some x -> x
+            | None ->
+                traceWarnfn "The following directories exists:"
+                di.GetDirectories() |> Seq.iter (fun d -> traceWarnfn "  %s" d.FullName)
+
+                failwithf "Package directory for package %O was not found." packageName
+
     | ResolvedPackagesFolder.NoPackagesFolder ->
         let d = DirectoryInfo(NuGetCache.GetTargetUserFolder packageName version)
         if not d.Exists then failwithf "Package directory for package %O was not found." packageName
@@ -171,10 +199,10 @@ let inline private getOrAdd (key: 'key) (getValue: 'key -> 'value) (d: Dictionar
 let brokenDeps = HashSet<_>()
 
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
-let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects cleanBindingRedirects
+let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindingRedirects
                                   root groupName findDependencies allKnownLibNames
                                   (projectCache: Dictionary<string, ProjectFile option>)
-                                  extractedPackages =
+                                  (extractedPackages:seq<InstallModel * _>) =
 
     let dependencyGraph = Dictionary<_,Set<_>>()
     let referenceFiles = Dictionary<_,ReferencesFile option>()
@@ -260,11 +288,17 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
             |> Seq.exists (fun a -> a.Version <> assemblyName.Version)
 
         assemblies
-        |> Seq.choose (fun (assembly,token,refs,redirects,profile) -> token |> Option.map (fun token -> (assembly,token,refs,redirects,profile)))
-        |> Seq.filter (fun (_,_,_,packageRedirects,_) -> defaultArg ((packageRedirects |> Option.map ((<>) Off)) ++ redirects) false)
+        |> Seq.choose (fun (assembly,token,refs,redirects,profile) -> 
+                token |> Option.map (fun token -> (assembly,token,refs,redirects,profile)))
+        |> Seq.filter (fun (_,_,_,redirects,_) -> 
+            match redirects with
+            | Some BindingRedirectsSettings.On
+            | Some BindingRedirectsSettings.Force -> true
+            | Some BindingRedirectsSettings.Off -> false
+            | _ -> false)
         |> Seq.filter (fun (assembly,_,_,redirects,profile) ->
             let assemblyName = assembly.Name
-            redirects = Some Force
+            redirects = Some BindingRedirectsSettings.Force
             || referencesDifferentProfiles assemblyName profile
             || assemblies
             |> Seq.collect (fun (_,_,refs,_,_) -> refs)
@@ -332,7 +366,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
                     match group, package with
                     | Choice1Of2 _, Choice1Of2 package ->
-                        ((kv.Key,ps.Name), (package.Version, ps.Settings + package.Settings))
+                        ((kv.Key,package.Name), (package.Version, ps.Settings + package.Settings))
                         |> Choice1Of2
                     | Choice2Of2 error1, Choice2Of2 error2 -> Choice2Of2 (error1 + "\n" + error2)
                     | Choice2Of2 error, _ | _, Choice2Of2 error -> Choice2Of2 error
@@ -481,31 +515,33 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
             let first = ref true
 
-            let redirects =
-                match options.Redirects with
-                | true -> Some true
-                | false -> None
-
             let allKnownLibNames =
                 model
                 |> Seq.map (fun kv -> (snd kv.Value).GetAllLegacyReferenceAndFrameworkReferenceNames())
                 |> Set.unionMany
 
+            let commandRedirects =
+                if options.Redirects = BindingRedirectsSettings.Off then None
+                else Some options.Redirects
+
             for g in lockFile.Groups do
                 let group = g.Value
+                
+                let groupRedirects =
+                    g.Value.Options.Redirects ++ commandRedirects
+                
                 model
                 |> Seq.filter (fun kv -> (fst kv.Key) = g.Key)
                 |> Seq.map (fun kv ->
                     let packageRedirects =
                         group.Resolution
                         |> Map.tryFind (snd kv.Key)
-                        |> Option.bind (fun p -> p.Settings.CreateBindingRedirects)
+                        |> Option.bind (fun p -> p.Settings.CreateBindingRedirects ++ groupRedirects)
 
                     (snd kv.Value,packageRedirects))
                 |> applyBindingRedirects
                     !first
                     options.CreateNewBindingFiles
-                    (g.Value.Options.Redirects ++ redirects)
                     options.CleanBindingRedirects
                     (FileInfo project.FileName).Directory.FullName
                     g.Key

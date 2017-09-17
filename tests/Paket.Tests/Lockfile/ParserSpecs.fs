@@ -142,7 +142,7 @@ let ``should parse redirects lock file``() =
     let main = lockFile.Tail.Tail.Head
     main.Packages.Length |> shouldEqual 1
     main.Options.Strict |> shouldEqual false
-    main.Options.Redirects |> shouldEqual (Some true)
+    main.Options.Redirects |> shouldEqual (Some BindingRedirectsSettings.On)
     main.Options.Settings.ImportTargets |> shouldEqual (Some true)
     main.Options.Settings.CopyLocal |> shouldEqual (Some true)
 
@@ -156,7 +156,7 @@ let ``should parse redirects lock file``() =
     let build = lockFile.Head
     build.Packages.Length |> shouldEqual 1
     build.Options.Strict |> shouldEqual false
-    build.Options.Redirects |> shouldEqual (Some false)
+    build.Options.Redirects |> shouldEqual (Some BindingRedirectsSettings.Off)
     build.Options.Settings.ImportTargets |> shouldEqual None
     build.Options.Settings.CopyLocal |> shouldEqual None
 
@@ -605,7 +605,7 @@ let ``should parse lock file with groups``() =
     
     packages1.Length |> shouldEqual 1
     lockFile1.Options.Strict |> shouldEqual false
-    lockFile1.Options.Redirects |> shouldEqual (Some true)
+    lockFile1.Options.Redirects |> shouldEqual (Some BindingRedirectsSettings.On)
     lockFile1.Options.Settings.ImportTargets |> shouldEqual (Some true)
     lockFile1.Options.Settings.CopyLocal |> shouldEqual (Some true)
     lockFile1.Options.Settings.ReferenceCondition |> shouldEqual None
@@ -619,14 +619,14 @@ let ``should parse lock file with groups``() =
     
     packages2.Length |> shouldEqual 1
     lockFile2.Options.Strict |> shouldEqual false
-    lockFile2.Options.Redirects |> shouldEqual (Some true)
+    lockFile2.Options.Redirects |> shouldEqual (Some BindingRedirectsSettings.On)
     lockFile2.Options.Settings.ImportTargets |> shouldEqual None
     lockFile2.Options.Settings.CopyLocal |> shouldEqual (Some true)
     lockFile2.Options.Settings.ReferenceCondition |> shouldEqual (Some "LEGACY")
 
     packages2.Head.Source.Url |> shouldEqual "D:\code\\temp with space"
     packages2.[0].Name |> shouldEqual (PackageName "FAKE")
-    packages2.[0].Settings.CreateBindingRedirects |> shouldEqual (Some On)
+    packages2.[0].Settings.CreateBindingRedirects |> shouldEqual (Some BindingRedirectsSettings.On)
 
 
 [<Test>]
@@ -704,12 +704,12 @@ let ``should parse redirects lock file and packages``() =
     let packages = List.rev main.Packages
     
     packages.Length |> shouldEqual 4
-    main.Options.Redirects |> shouldEqual (Some true)
+    main.Options.Redirects |> shouldEqual (Some BindingRedirectsSettings.On)
 
     packages.Head.Settings.CreateBindingRedirects |> shouldEqual None
-    packages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some On)
-    packages.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Off)
-    packages.Tail.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Force)
+    packages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some BindingRedirectsSettings.On)
+    packages.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some BindingRedirectsSettings.Off)
+    packages.Tail.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some BindingRedirectsSettings.Force)
     
     let build = lockFile.Tail.Head
     let packages = List.rev build.Packages
@@ -717,13 +717,13 @@ let ``should parse redirects lock file and packages``() =
     packages.Length |> shouldEqual 1
     build.Options.Redirects |> shouldEqual None
 
-    packages.Head.Settings.CreateBindingRedirects |> shouldEqual (Some On)
+    packages.Head.Settings.CreateBindingRedirects |> shouldEqual (Some BindingRedirectsSettings.On)
 
     let test = lockFile.Head
     let packages = List.rev test.Packages
     
     packages.Length |> shouldEqual 1
-    test.Options.Redirects |> shouldEqual (Some false)
+    test.Options.Redirects |> shouldEqual (Some BindingRedirectsSettings.Off)
 
     packages.Head.Settings.CreateBindingRedirects |> shouldEqual None
 

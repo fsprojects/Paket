@@ -102,7 +102,7 @@ let processWithValidationEx printUsage silent validateF commandF result =
                 tracefn " - Runtime: %s" (Utils.TimeSpanToReadableString realTime)
                 let omitted = Logging.getOmittedWarningCount()
                 if not verbose && omitted > 0 then
-                    traceWarnfn "Paket omitted '%d' warnings similar to the ones above. You can see them in verbose mode" omitted
+                    traceWarnfn "Paket omitted %d warnings similar to the ones above. You can see them in verbose mode." omitted
 
 
 let processWithValidation silent validateF commandF (result : ParseResults<'T>) =
@@ -193,6 +193,7 @@ let add (results : ParseResults<_>) =
          results.TryGetResult <@ AddArgs.Group_Legacy @>)
         |> legacyOption results (ReplaceArgument("--group", "group"))
     let noInstall = results.Contains <@ AddArgs.No_Install @>
+    let noResolve = results.Contains <@ AddArgs.No_Resolve @>
     let semVerUpdateMode =
         if results.Contains <@ AddArgs.Keep_Patch @> then SemVerUpdateMode.KeepPatch else
         if results.Contains <@ AddArgs.Keep_Minor @> then SemVerUpdateMode.KeepMinor else
@@ -206,10 +207,14 @@ let add (results : ParseResults<_>) =
 
     match project with
     | Some projectName ->
-        Dependencies.Locate().AddToProject(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+        Dependencies
+            .Locate()
+            .AddToProject(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not)
     | None ->
         let interactive = results.Contains <@ AddArgs.Interactive @>
-        Dependencies.Locate().Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+        Dependencies
+            .Locate()
+            .Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not)
 
 let validateConfig (results : ParseResults<_>) =
     let credential = results.Contains <@ ConfigArgs.AddCredentials @>
@@ -563,6 +568,7 @@ let fixNuspecs silent (results : ParseResults<_>) =
     let nuspecFiles =
         results.GetResult <@ FixNuspecsArgs.Files @>
         |> List.collect (fun s -> s.Split([|';'|], StringSplitOptions.RemoveEmptyEntries) |> Array.toList)
+        |> List.map (fun s -> s.Trim())
 
     match results.TryGetResult <@ FixNuspecsArgs.ProjectFile @> with
     | Some projectFile ->
@@ -579,11 +585,15 @@ let fixNuspecs silent (results : ParseResults<_>) =
 
 
 
-// For Backwards compatibility
-let fixNuspec silent (results : ParseResults<_>) =
+// For backwards compatibility
+let fixNuspec _silent (results : ParseResults<_>) =
     let fileString = results.GetResult <@ FixNuspecArgs.File @>
     let refFile = results.GetResult <@ FixNuspecArgs.ReferencesFile @>
-    let nuspecList = fileString.Split([|';'|])|>List.ofArray
+    let nuspecList = 
+        fileString.Split([|';'|], StringSplitOptions.RemoveEmptyEntries)
+        |> Array.map (fun s -> s.Trim())
+        |> List.ofArray
+
     Dependencies.FixNuspecs (refFile, nuspecList)
 
 // separated out from showInstalledPackages to allow Paket.PowerShell to get the types

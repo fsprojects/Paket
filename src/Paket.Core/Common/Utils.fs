@@ -672,10 +672,12 @@ open System.Collections.Generic
 open System.Runtime.ExceptionServices
 
 /// [omit]
-let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
+let downloadFromUrlWithTimeout (auth:Auth option, url : string) (timeout:TimeSpan option) (filePath: string) =
     async {
         try
             use client = createHttpClient (url,auth)
+            if timeout.IsSome then
+                client.Timeout <- timeout.Value
             let! tok = Async.CancellationToken
             if verbose then
                 verbosefn "Starting download from '%O'" url
@@ -686,6 +688,10 @@ let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
         | exn ->
             raise <| Exception(sprintf "Could not download from '%s'" url, exn)
     }
+
+/// [omit]
+let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
+    downloadFromUrlWithTimeout (auth, url) None filePath
 
 /// [omit]
 let getFromUrl (auth:Auth option, url : string, contentType : string) =

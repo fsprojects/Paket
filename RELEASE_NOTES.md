@@ -1,4 +1,32 @@
-#### 5.92.1 - 02.09.2017
+#### 5.96.3 - 14.09.2017
+* BUGFIX: Make the resolver request only sources returned by GetVersion - https://github.com/fsprojects/Paket/pull/2771
+
+#### 5.96.2 - 14.09.2017
+* BUGFIX: Fix special cases with include-referenced-projects - https://github.com/fsprojects/Paket/issues/1848
+
+#### 5.96.1 - 13.09.2017
+* BUGFIX: Proper filter by target framework - https://github.com/fsprojects/Paket/issues/2759
+
+#### 5.96.0 - 13.09.2017
+* USABILITY: Print package version in "paket why" - https://github.com/fsprojects/Paket/pull/2760
+
+#### 5.95.0 - 12.09.2017
+* Allow to add packages without running the resolver - https://github.com/fsprojects/Paket/issues/2756
+
+#### 5.94.0 - 12.09.2017
+* Allow to set "redirects: force" on group level - https://github.com/fsprojects/Paket/pull/2666
+* BUGFIX: Trim target frameworks for .NET cli - https://github.com/fsprojects/Paket/issues/2749
+
+#### 5.93.0 - 10.09.2017
+* BUGFIX: Don't depend on restore cache when using paket.local or force switch - https://github.com/fsprojects/Paket/pull/2734
+* BUGFIX: MSBuild now tracks Paket.Restore.targets for incremental builds - https://github.com/fsprojects/Paket/pull/2742
+* BUGFIX: Removed default 100sec timeout for Http dependencies download - https://github.com/fsprojects/Paket/pull/2737
+* BUGFIX: Fixing root cause for casing issue in #2676 - https://github.com/fsprojects/Paket/pull/2743
+* BUGFIX: Temporary fix for casing issue in #2676 - https://github.com/fsprojects/Paket/pull/2743
+* BUGFIX: calculate hashfile after signing the assembly. - https://github.com/fsprojects/Paket/pull/27
+* BUGFIX: always allow partial restore - https://github.com/fsprojects/Paket/pull/2724
+* BUGFIX: always call GetVersions before GetDetails - https://github.com/fsprojects/Paket/pull/2721
+* BUGFIX: Fix a crash when using `storage: package` in-line - https://github.com/fsprojects/Paket/pull/2713
 * BOOTSTRAPPER: Add support for IgnoreCache to app.config - https://github.com/fsprojects/Paket/pull/2696
 * DOCS: Fix GitHub project dependency description - https://github.com/fsprojects/Paket/pull/2707
 * BUGFIX: Fix V3 implementation - https://github.com/fsprojects/Paket/pull/2708
