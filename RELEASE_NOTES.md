@@ -1,17 +1,12 @@
-#### 5.96.4 - 14.09.2017
-* BUGFIX: fix incorrect runtime assemblies. - https://github.com/fsprojects/Paket/pull/2772
+#### 5.97.0 - 18.09.2017
+* BUGFIX: Do not evaluate all templates with --template switch - https://github.com/fsprojects/Paket/pull/2769
+* BUGFIX: fix incorrect runtime assemblies - https://github.com/fsprojects/Paket/pull/2772
 * BUGFIX: fix for #2755 - https://github.com/fsprojects/Paket/pull/2770
 * BUGFIX: #2716 Duplicates appear in generated scripts. - https://github.com/fsprojects/Paket/pull/2767
 * BUILD: do not export the MSBuild env-var to the outer shell - https://github.com/fsprojects/Paket/pull/2754
 * BUGFIX: support proxy in netstandard - https://github.com/fsprojects/Paket/pull/2738
-
-#### 5.96.3 - 14.09.2017
 * BUGFIX: Make the resolver request only sources returned by GetVersion - https://github.com/fsprojects/Paket/pull/2771
-
-#### 5.96.2 - 14.09.2017
 * BUGFIX: Fix special cases with include-referenced-projects - https://github.com/fsprojects/Paket/issues/1848
-
-#### 5.96.1 - 13.09.2017
 * BUGFIX: Proper filter by target framework - https://github.com/fsprojects/Paket/issues/2759
 
 #### 5.96.0 - 13.09.2017
