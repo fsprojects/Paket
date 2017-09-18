@@ -159,7 +159,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith (sprintf "You should only try and add files to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
-let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (projectWithTemplates : Map<string, TemplateFile * ProjectFile * bool>) includeReferencedProjects (version :SemVerInfo option) specificVersions (projDeps) =
+let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (projectWithTemplates : Map<string, (Lazy<'TemplateFile>) * ProjectFile * bool>) includeReferencedProjects (version :SemVerInfo option) specificVersions (projDeps) =
     let includeReferencedProjects = template.IncludeReferencedProjects || includeReferencedProjects
     let targetDir = 
         match project.OutputType with
@@ -267,15 +267,16 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
     let withDeps = 
         deps
         |> List.map (fun (templateFile, _) -> 
-               match templateFile with
+               let evaluatedTemplate = templateFile.Force()
+               match evaluatedTemplate with
                | CompleteTemplate(core, _) -> 
                    match core.Version with
                    | Some v -> 
                        let versionConstraint = if lockDependencies || pinProjectReferences then Specific v else Minimum v
                        PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v)
-                   | None -> failwithf "There was no version given for %s." templateFile.FileName
+                   | None -> failwithf "There was no version given for %s." evaluatedTemplate.FileName
                | IncompleteTemplate -> 
-                   failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
+                   failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." evaluatedTemplate.FileName)
         |> List.fold addDependency templateWithOutputAndExcludes
     
     // If project refs will not be packaged, add the assembly to the package
@@ -300,15 +301,18 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
         [if includeReferencedProjects then
             for proj in project.GetAllReferencedProjects(false,projDeps) |> Seq.filter ((<>) project) do
                 match Map.tryFind proj.FileName projectWithTemplates with
-                | Some ({ Contents = CompleteInfo(core, _) }, _, _) ->
-                    let versionConstraint = 
-                        match core.Version with
-                        | Some v -> 
-                            let vr = if lockDependencies || pinProjectReferences then Specific v else Minimum v
-                            VersionRequirement(vr, getPreReleaseStatus v)
-                        | None -> VersionRequirement.AllReleases
-
-                    yield None, { Name = PackageName core.Id; Settings = InstallSettings.Default }, Some versionConstraint
+                | Some (template, _, _) ->
+                    match template.Force() with
+                    | { Contents = CompleteInfo(core, _) } -> 
+                        let versionConstraint = 
+                            match core.Version with
+                            | Some v -> 
+                                let vr = if lockDependencies || pinProjectReferences then Specific v else Minimum v
+                                VersionRequirement(vr, getPreReleaseStatus v)
+                            | None -> VersionRequirement.AllReleases
+    
+                        yield None, { Name = PackageName core.Id; Settings = InstallSettings.Default }, Some versionConstraint
+                    | _ -> yield! getPackages proj
                 | _ -> yield! getPackages proj
          yield! getPackages project]
     
