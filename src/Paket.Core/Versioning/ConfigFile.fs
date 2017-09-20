@@ -232,7 +232,7 @@ let askAndAddAuth (source : string) (username : string) (password : string) (aut
 
     let authResult = 
         if verify then 
-            Console.WriteLine "Verifying the source URL and credentials..." 
+            tracef "Verifying the source URL and credentials...\n"
             let cred = Credentials(username, password, parseAuthTypeString authType)
             checkCredentials(source, Some cred) 
         else 
