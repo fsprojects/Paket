@@ -5,7 +5,7 @@ resources into your projects.
 
 ## Referencing a single file
 
-You can reference a single file from a HTTP resource simply by specifying the
+You can reference a single file from an HTTP resource simply by specifying the
 URL in the [`paket.dependencies` file](dependencies-file.html):
 
 ```paket
@@ -43,7 +43,7 @@ The build action is determined depending on the file extension:
 
 ## Options for HTTP dependencies
 
-When referencing a file using a `http` dependency, there are several options
+When referencing a file using an `http` dependency, there are several options
 that help you to deal with things like authentication and file name. The pattern
 expected is:
 
