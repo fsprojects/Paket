@@ -92,10 +92,7 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
             match package.Source with
             | NuGetV2 _ | NuGetV3 _ -> 
                 let source = 
-                    let normalizeFeedUrl s = 
-                        (normalizeFeedUrl s)
-                          .Replace("https://","http://")
-                          .Replace("/api/v3/index.json","")
+                    let normalizeFeedUrl s = (normalizeFeedUrl s).Replace("https://","http://")
 
                     let normalized = normalizeFeedUrl package.Source.Url
                     let source =
