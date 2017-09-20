@@ -66,6 +66,7 @@ type ConfigArgs =
     | [<Unique>] Username of username:string
     | [<Unique>] Password of password:string
     | [<Unique>] AuthType of authType:string
+    | [<Unique;AltCommandLine>] Verify
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -75,6 +76,7 @@ with
             | Username(_) -> "provide username"
             | Password(_) -> "provide password"
             | AuthType (_) -> "specify authentication type: basic|ntlm (default: basic)"
+            | Verify (_) -> "specify in case you want to verify the credentials"
 
 type ConvertFromNugetArgs =
     | [<Unique;AltCommandLine("-f")>] Force

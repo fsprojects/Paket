@@ -13,6 +13,16 @@ The credentials you enter here will then be used for `source`s in the
 [`paket.dependencies` file](nuget-dependencies.html) that match `<source URL>`
 unless they carry a username and password.
 
+### Verifying the source URL and credentials
+
+```sh
+paket config add-credentials <source URL> --verify
+```
+
+Paket will verify that the `<source URL>` and the credentials entered with the given
+authentication type are valid. This feature is useful if you want to avoid storing
+wrong credentials or URL in the Paket configuration file.
+
 ### GitHub credentials
 
 ```sh

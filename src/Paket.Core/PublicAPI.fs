@@ -165,10 +165,10 @@ type Dependencies(dependenciesFileName: string) =
                                               projectName, installAfter, runResolver))
 
     /// Adds credentials for a Nuget feed
-    member this.AddCredentials(source: string, username: string, password : string, authType : string) : unit =
+    member this.AddCredentials(source: string, username: string, password : string, authType : string, verify : bool) : unit =
         RunInLockedAccessMode(
             this.RootPath,
-            fun () -> ConfigFile.askAndAddAuth source username password authType |> returnOrFail )
+            fun () -> ConfigFile.askAndAddAuth source username password authType verify |> returnOrFail )
   
     /// Adds a token for a source
     member this.AddToken(source : string, token : string) : unit =
