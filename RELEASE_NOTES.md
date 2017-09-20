@@ -1,3 +1,6 @@
+#### 5.97.1 - 20.09.2017
+* BUGFIX: Use "--references-file" instead of "--references-files" in paket.targets - https://github.com/fsprojects/Paket/pull/2780
+
 #### 5.97.0 - 18.09.2017
 * BUGFIX: Do not evaluate all templates with --template switch - https://github.com/fsprojects/Paket/pull/2769
 * BUGFIX: fix incorrect runtime assemblies - https://github.com/fsprojects/Paket/pull/2772
