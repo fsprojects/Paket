@@ -1,3 +1,6 @@
+#### 5.99.1 - 21.09.2017
+* BUGFIX: Disable NU1603 - https://github.com/NuGet/Home/issues/5913
+
 #### 5.99.0 - 21.09.2017
 * Adding feature to verify the URL and credential correctness before storing them in paket.config - https://github.com/fsprojects/Paket/pull/2781
 

@@ -35,6 +35,7 @@
     <!-- Step 1 Check if lockfile is properly restored -->
     <PropertyGroup>
       <PaketRestoreRequired>true</PaketRestoreRequired>
+      <NoWarn>$(NoWarn);NU1603</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup Condition="Exists('$(PaketRestoreCacheFile)') ">
