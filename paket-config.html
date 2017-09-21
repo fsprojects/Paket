@@ -76,9 +76,10 @@
 <span class="l">15: </span>
 <span class="l">16: </span>
 <span class="l">17: </span>
+<span class="l">18: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="sh">paket config [--help] [add-credentials &lt;key or URL&gt;] [add-token &lt;key or URL&gt; &lt;token&gt;]
-             [--username &lt;username&gt;] [--password &lt;password&gt;] [--authtype &lt;authType&gt;]
+             [--username &lt;username&gt;] [--password &lt;password&gt;] [--authtype &lt;authType&gt;] [--verify]
 
 OPTIONS:
 
@@ -89,6 +90,7 @@ OPTIONS:
     --username &lt;username&gt; provide username
     --password &lt;password&gt; provide password
     --authtype &lt;authType&gt; specify authentication type: basic|ntlm (default: basic)
+    --verify              specify in case you want to verify the credentials
     --silent, -s          suppress console output
     --verbose, -v         print detailed information to the console
     --log-file &lt;path&gt;     print output to a file
@@ -108,6 +110,14 @@ will be used for the specified <code>&lt;source URL&gt;</code>.</p>
 <p>The credentials you enter here will then be used for <code>source</code>s in the
 <a href="nuget-dependencies.html"><code>paket.dependencies</code> file</a> that match <code>&lt;source URL&gt;</code>
 unless they carry a username and password.</p>
+<h3><a name="Verifying-the-source-URL-and-credentials" class="anchor" href="#Verifying-the-source-URL-and-credentials">Verifying the source URL and credentials</a></h3>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">paket config add-credentials &lt;source URL&gt; --verify
+</code></pre></td></tr></table>
+<p>Paket will verify that the <code>&lt;source URL&gt;</code> and the credentials entered with the given
+authentication type are valid. This feature is useful if you want to avoid storing
+wrong credentials or URL in the Paket configuration file.</p>
 <h3><a name="GitHub-credentials" class="anchor" href="#GitHub-credentials">GitHub credentials</a></h3>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
