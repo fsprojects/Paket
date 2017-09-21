@@ -210,7 +210,7 @@ module RuntimeGraph =
             NuGet.DownloadAndExtractPackage (None, root, false, config, package.Source, [], groupName, package.Name, package.Version, package.IsCliTool, false, false, false)
             |> Async.RunSynchronously
 
-        let extractedDir = NuGetCache.ExtractPackageToUserFolder (targetFileName, package.Name, package.Version, package.IsCliTool, null) |> Async.RunSynchronously
+        let extractedDir = NuGetCache.ExtractPackageToUserFolder (targetFileName, package.Name, package.Version, package.IsCliTool) |> Async.RunSynchronously
         // 2. Get runtime graph
         try
             let runtime = Path.Combine(extractedDir, "runtime.json")

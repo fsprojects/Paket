@@ -625,12 +625,15 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
     let normalizedNupkgName = NuGetCache.GetPackageFileName packageName version
     let configResolved = config.Resolve root groupName packageName version includeVersionInPath
     let targetFileName =
-        if not isLocalOverride then NuGetCache.GetTargetUserNupkg packageName version
+        if not isLocalOverride then 
+            NuGetCache.GetTargetUserNupkg packageName version
         else
             match configResolved.Path with
             | Some p -> Path.Combine(p, nupkgName)
             | None -> failwithf "paket.local in combination with storage:none is not supported"
-    if isLocalOverride && not force then failwithf "internal error: when isLocalOverride is specified then force needs to be specified as well"
+
+    if isLocalOverride && not force then 
+        failwithf "internal error: when isLocalOverride is specified then force needs to be specified as well"
     let targetFile = FileInfo targetFileName
     let licenseFileName = getLicenseFile packageName version
 
@@ -792,7 +795,7 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
     async {
         do! download true 0
         if not isLocalOverride then
-            let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, isCliTool, detailed)
+            let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, isCliTool)
             let! files = NuGetCache.CopyFromCache(configResolved, targetFile.FullName, licenseFileName, packageName, version, force, detailed)
             let finalFolder =
                 match files with

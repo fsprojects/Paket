@@ -293,16 +293,17 @@ let GetTargetUserToolsFolder packageName (version:SemVerInfo) =
     DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,".tools",packageName.ToString(),version.Normalize())).FullName
 
 /// Extracts the given package to the user folder
-let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, isCliTool, detailed) =
+let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, isCliTool) =
     async {
-        let targetFolder =
-            let dir =
+        let! dir =
+            async {
                 if isCliTool then
-                    ExtractPackageToUserFolder(fileName, packageName, version, false, detailed) |> ignore
-                    GetTargetUserToolsFolder packageName version
+                    let! _ = ExtractPackageToUserFolder(fileName, packageName, version, false)
+                    return GetTargetUserToolsFolder packageName version
                 else
-                    GetTargetUserFolder packageName version
-            DirectoryInfo(dir)
+                    return GetTargetUserFolder packageName version }
+
+        let targetFolder = DirectoryInfo(dir)
 
         use _ = Profile.startCategory Profile.Category.FileIO
         if isExtracted targetFolder packageName version |> not then
