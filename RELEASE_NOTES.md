@@ -1,7 +1,4 @@
-#### 5.98.1 - 21.09.2017
-* BUGFIX: Disable NU1603 - https://github.com/NuGet/Home/issues/5913
-
-#### 5.98.0 - 21.09.2017
+#### 5.98.2 - 21.09.2017
 * BUGFIX: Properly extract cli tools to NuGet user folder - https://github.com/fsprojects/Paket/issues/2784
 * BUGFIX: Use "--references-file" instead of "--references-files" in paket.targets - https://github.com/fsprojects/Paket/pull/2780
 

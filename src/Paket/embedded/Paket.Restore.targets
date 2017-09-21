@@ -11,7 +11,6 @@
     <PaketRootPath>$(MSBuildThisFileDirectory)..\</PaketRootPath>
     <PaketRestoreCacheFile>$(PaketRootPath)paket-files\paket.restore.cached</PaketRestoreCacheFile>
     <PaketLockFilePath>$(PaketRootPath)paket.lock</PaketLockFilePath>
-    <NoWarn>$(NoWarn);NU1603</NoWarn>
     <MonoPath Condition="'$(MonoPath)' == '' And Exists('/Library/Frameworks/Mono.framework/Commands/mono')">/Library/Frameworks/Mono.framework/Commands/mono</MonoPath>
     <MonoPath Condition="'$(MonoPath)' == ''">mono</MonoPath>
     <!-- Paket command -->
