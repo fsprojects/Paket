@@ -209,7 +209,7 @@ let AddToken (source, token) =
         | None -> () 
     }
 
-let askAndAddAuth (source : string) (username : string) (password : string) (authType : string) = 
+let askAndAddAuth (source : string) (username : string) (password : string) (authType : string) (verify : bool) = 
     let username =
         if username = "" then
             Console.Write "Username: "
@@ -229,4 +229,15 @@ let askAndAddAuth (source : string) (username : string) (password : string) (aut
             if input = "" then "basic" else input
         else
             authType
+
+    let authResult = 
+        if verify then 
+            tracef "Verifying the source URL and credentials...\n"
+            let cred = Credentials(username, password, parseAuthTypeString authType)
+            checkCredentials(source, Some cred) 
+        else 
+            true
+    if authResult = false then 
+        raise (System.UnauthorizedAccessException("Credentials or the URL for source " + source + " are invalid"))
+
     AddCredentials (source.TrimEnd [|'/'|], username, password, authType)
