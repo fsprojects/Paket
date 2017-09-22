@@ -314,7 +314,7 @@ let pfx = "code-sign.pfx"
 
 Target "SignAssemblies" (fun _ ->
     if not <| fileExists pfx then
-        traceImportant (sprintf "%s not found, skipped signing assemblies" pfx)
+        failwithf "%s not found, can't sign assemblies" pfx
     else
 
     let filesToSign = 
@@ -571,11 +571,7 @@ Target "ReleaseGitHub" (fun _ ->
     |> Async.RunSynchronously
 )
 
-Target "Release" (fun _ ->
-    if not <| fileExists pfx then
-        failwithf "%s not found - can't sign release." pfx
-)
-
+Target "Release" DoNothing
 Target "BuildPackage" DoNothing
 Target "BuildCore" DoNothing
 // --------------------------------------------------------------------------------------
@@ -603,8 +599,8 @@ Target "All" DoNothing
 
 "All"
   ==> "MergePaketTool"
-  ==> "SignAssemblies"
   =?> ("RunIntegrationTests", not <| hasBuildParam "SkipIntegrationTests")
+  ==> "SignAssemblies"
   ==> "CalculateDownloadHash"
   =?> ("NuGet", not <| hasBuildParam "SkipNuGet")
   =?> ("MergeDotnetCoreIntoNuget", not <| hasBuildParam "DISABLE_NETCORE" && not <| hasBuildParam "SkipNuGet")
