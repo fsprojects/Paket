@@ -1,3 +1,6 @@
+#### 5.100.2 - 22.09.2017
+* BUGFIX: Removed V3 -> V2 fallback - https://github.com/fsprojects/Paket/pull/2782
+
 #### 5.100.1 - 22.09.2017
 * BUGFIX: Sign paket.exe and paket.bootstrapper.exe again
 
