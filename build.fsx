@@ -309,8 +309,10 @@ Target "RunIntegrationTests" (fun _ ->
 )
 "Clean" ==> "Build" ==> "RunIntegrationTests" 
 
+
+let pfx = "code-sign.pfx"
+
 Target "SignAssemblies" (fun _ ->
-    let pfx = "code-sign.pfx"
     if not <| fileExists pfx then
         traceImportant (sprintf "%s not found, skipped signing assemblies" pfx)
     else
@@ -569,7 +571,11 @@ Target "ReleaseGitHub" (fun _ ->
     |> Async.RunSynchronously
 )
 
-Target "Release" DoNothing
+Target "Release" (fun _ ->
+    if not <| fileExists pfx then
+        failwithf "%s not found - can't sign release." pfx
+)
+
 Target "BuildPackage" DoNothing
 Target "BuildCore" DoNothing
 // --------------------------------------------------------------------------------------
