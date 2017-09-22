@@ -1,4 +1,4 @@
-#### 5.100.0 - 22.09.2017
+#### 5.100.1 - 22.09.2017
 * BUGFIX: Sign paket.exe and paket.bootstrapper.exe again
 
 #### 5.99.1 - 21.09.2017
