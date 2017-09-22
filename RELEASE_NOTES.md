@@ -1,3 +1,6 @@
+#### 5.99.2 - 22.09.2017
+* BUGFIX: Sign paket.exe again
+
 #### 5.99.1 - 21.09.2017
 * BUGFIX: Disable NU1603 - https://github.com/NuGet/Home/issues/5913
 
