@@ -2022,7 +2022,7 @@ type ProjectFile with
             Symbols = propMap "Symbols" false tryBool
         }
 
-        let optionalInfo =  {
+        let optionalInfo : OptionalPackagingInfo =  {
             Title = title()
             Owners = propMap "Owners" [] (String.split[|';'|]>>List.ofArray)
             ReleaseNotes = prop (if ProjectFile.isNetSdk self then "PackageReleaseNotes" else "ReleaseNotes")
