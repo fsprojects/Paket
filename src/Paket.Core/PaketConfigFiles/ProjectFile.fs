@@ -1515,7 +1515,9 @@ module ProjectFile =
             project.Document
             |> getDescendants "AssemblyName"
             |> function
-               | [] -> failwithf "Project %s has no AssemblyName set" project.FileName
+               | [] -> if isNetSdk project 
+                       then nameWithoutExtension project
+                       else failwithf "Project %s has no AssemblyName set" project.FileName
                | [assemblyName] -> assemblyName.InnerText
                | assemblyName::_ ->
                     traceWarnfn "Found multiple AssemblyName nodes in file %s, using first" project.FileName

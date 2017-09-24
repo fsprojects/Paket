@@ -552,9 +552,10 @@ let ``#2324 pack new csproj format with TargetFramework net45`` () =
 
     Path.Combine(outPath, "lib", "net45", "WithTargetFramework.dll") |> checkFileExists
     Path.Combine(outPath, "lib", "net45", "WithTargetFramework.xml") |> checkFileExists
-    Path.Combine(outPath, "lib", "net45", "WithTargetFramework.pdb") |> checkFileExists
+
     let actual = File.ReadAllText(Path.Combine(outPath, "WithTargetFramework.nuspec"))
-    let expected = """<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+    let expected = """<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
   <metadata>
     <id>WithTargetFramework</id>
     <version>1.2.3.4</version>

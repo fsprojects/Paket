@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net45</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-	<Description>A description.</Description>
+    <Description>A description.</Description>
     <Authors>Author</Authors>
     <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
     <PackageProjectUrl>https://fsprojects.github.io/Paket/</PackageProjectUrl>

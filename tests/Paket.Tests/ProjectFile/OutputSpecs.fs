@@ -91,6 +91,12 @@ let ``should detect assembly name for Project2 proj file`` () =
 [<Test>]
 let ``should detect assembly name for Project3 proj file`` () =
     ensureDir ()
+    ProjectFile.TryLoad("./ProjectFile/TestData/MicrosoftNetSdkWithTargetFramework.fsprojtest").Value.GetAssemblyName()
+    |> shouldEqual ("MicrosoftNetSdkWithTargetFramework.dll")
+
+[<Test>]
+let ``should detect assembly name for empty sdk proj file`` () =
+    ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project3.fsprojtest").Value.GetAssemblyName()
     |> shouldEqual ("Paket.Tests.Win.exe")
 
