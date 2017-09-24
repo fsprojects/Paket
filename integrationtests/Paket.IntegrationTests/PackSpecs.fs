@@ -311,7 +311,6 @@ let ``#1538 symbols src folder structure`` () =
 
     CleanDir rootPath
 
-
 [<Test>]
 [<Ignore("ignore until we hear back")>]
 let ``#1504 unpacking should override``() =
@@ -540,3 +539,38 @@ let ``#2765 pack single template does not evaluate other template`` () =
     let templatePath = Path.Combine(rootPath, "projectA", "paket.template")
     Assert.DoesNotThrow(fun () -> paket ("pack --template " + templatePath + " \"" + outPath + "\"") scenario |> ignore)
     CleanDir rootPath    
+    CleanDir rootPath
+
+[<Test>]
+let ``#2324 pack new csproj format with TargetFramework net45`` () = 
+    let scenario = "i002324-pack-new-csproj-format-TargetFramework-net45"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let package = Path.Combine(outPath, "WithTargetFramework.1.2.3.4.nupkg")
+    paket ("pack \"" + outPath + "\"") scenario |> ignore
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    Path.Combine(outPath, "lib", "net45", "WithTargetFramework.dll") |> checkFileExists
+    Path.Combine(outPath, "lib", "net45", "WithTargetFramework.xml") |> checkFileExists
+    Path.Combine(outPath, "lib", "net45", "WithTargetFramework.pdb") |> checkFileExists
+    let actual = File.ReadAllText(Path.Combine(outPath, "WithTargetFramework.nuspec"))
+    let expected = """<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>WithTargetFramework</id>
+    <version>1.2.3.4</version>
+    <title>WithTargetFramework</title>
+    <authors>Author</authors>
+    <owners>Company</owners>
+    <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+    <projectUrl>https://fsprojects.github.io/Paket/</projectUrl>
+    <repositoryUrl>https://github.com/fsprojects/Paket</repositoryUrl>
+    <description>A description.</description>
+    <releaseNotes>Note 1
+Note 2</releaseNotes>
+    <copyright>Copyright ©Paket 2014</copyright>
+    <language>en-US</language>
+    <tags>tag1 tag2</tags>
+  </metadata>
+</package>"""
+    Assert.AreEqual(expected, actual)
+    CleanDir rootPath
