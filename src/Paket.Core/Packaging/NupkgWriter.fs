@@ -102,7 +102,6 @@ module internal NupkgWriter =
             add g
             g
 
-
         let buildDependencyNodes (excludedDependencies, add, dependencyList)  =
             dependencyList
             |> List.filter (fun (a, _) -> Set.contains a excludedDependencies |> not)
@@ -381,7 +380,6 @@ module NuspecExtensions =
 
         static member FromProject (projectPath:string, dependenciesPath:string) = 
             let dependencies = DependenciesFile.ReadFromFile dependenciesPath
-            let lockFile = (DependenciesFile.FindLockfile dependenciesPath).FullName |> LockFile.LoadFrom
             match ProjectFile.TryLoad projectPath  with
             | None -> failwithf "unable to load project from path '%s'" projectPath
             | Some project ->
@@ -405,6 +403,3 @@ module NuspecExtensions =
                 // TODO - this might be the point to add in some info from the
                 // lock and dependencies fiels that weren't in the project file
                 name + ".nuspec", nuspecDoc (projectInfo.ToCoreInfo name, optionalInfo )
-            
-       
-            
