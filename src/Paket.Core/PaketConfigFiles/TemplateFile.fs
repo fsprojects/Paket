@@ -143,6 +143,7 @@ type OptionalPackagingInfo =
       Summary : string option
       Language : string option
       ProjectUrl : string option
+      RepositoryUrl : string option
       IconUrl : string option
       LicenseUrl : string option
       Copyright : string option
@@ -167,6 +168,7 @@ type OptionalPackagingInfo =
           Summary = None
           Language = None
           ProjectUrl = None
+          RepositoryUrl = None
           LicenseUrl = None
           IconUrl = None
           Copyright = None
@@ -451,6 +453,7 @@ module internal TemplateFile =
           Summary = get "summary"
           Language = get "language"
           ProjectUrl = get "projectUrl"
+          RepositoryUrl = get "repositoryUrl"
           IconUrl = get "iconUrl"
           LicenseUrl = get "licenseUrl"
           Copyright = get "copyright"

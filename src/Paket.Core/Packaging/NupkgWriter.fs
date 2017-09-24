@@ -144,6 +144,7 @@ module internal NupkgWriter =
         if optional.Owners <> [] then !! "owners" (String.Join(", ",optional.Owners))
         (!!?) "licenseUrl" optional.LicenseUrl
         (!!?) "projectUrl" optional.ProjectUrl
+        (!!?) "repositoryUrl" optional.RepositoryUrl
         (!!?) "iconUrl" optional.IconUrl
         if optional.RequireLicenseAcceptance then
             !! "requireLicenseAcceptance" "true"

@@ -2029,6 +2029,7 @@ type ProjectFile with
             Summary = prop "Summary"
             Language = prop "Langauge"
             ProjectUrl = prop (if ProjectFile.isNetSdk self then "PackageProjectUrl" else "ProjectUrl")
+            RepositoryUrl = if ProjectFile.isNetSdk self then prop "RepositoryUrl" else None
             IconUrl = prop "IconUrl"
             LicenseUrl = prop (if ProjectFile.isNetSdk self then "PackageLicenseUrl" else "LicenseUrl")
             Copyright = prop  "Copyright" 

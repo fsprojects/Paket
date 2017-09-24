@@ -20,6 +20,8 @@ let ``Get template metadata from SDK project`` () =
     Assert.AreEqual(Some("Note 1"), optionalInfo.ReleaseNotes)
     Assert.AreEqual(Some("https://opensource.org/licenses/MIT"), optionalInfo.LicenseUrl)
     Assert.AreEqual(Some("https://fsprojects.github.io/Paket"), optionalInfo.ProjectUrl)
+    Assert.AreEqual(Some("https://github.com/fsprojects/Paket"), optionalInfo.RepositoryUrl)
+    Assert.AreEqual(Some("Copyright ©Paket 2014"), optionalInfo.Copyright)
     CollectionAssert.AreEqual([|"tag1"; "tag2"|], optionalInfo.Tags)
     
 
