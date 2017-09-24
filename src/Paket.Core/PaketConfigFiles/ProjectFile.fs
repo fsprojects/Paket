@@ -1999,23 +1999,19 @@ type ProjectFile with
         
         let propMap name value fn =
             defaultArg (self.GetProperty name|>Option.map fn) value
+                
+        let splitString = String.split[|';'|]>>List.ofArray
         
+        let tryBool = Boolean.TryParse>>function true, value-> value| _ -> false
+
         let id () =
             if ProjectFile.isNetSdk self
             then Some(propOr "PackageId" (ProjectFile.nameWithoutExtension self))
             else prop "id"
 
-        let version () =
-            if ProjectFile.isNetSdk self
-            then propMap "Version" (Some(SemVer.Parse "0.0.1")) (SemVer.Parse>>Some)
-            else propMap "version" (Some(SemVer.Parse "0.0.1")) (SemVer.Parse>>Some)
-        let tryBool = Boolean.TryParse>>function true, value-> value| _ -> false
-        
-        let splitString = String.split[|';'|]>>List.ofArray
-
         let coreInfo : ProjectCoreInfo = {
             Id = id()
-            Version = version()
+            Version = propMap (if ProjectFile.isNetSdk self then "Version" else "version") (Some(SemVer.Parse "0.0.1")) (SemVer.Parse>>Some)
             Authors = propMap "Authors" None (splitString>>Some)
             Description = prop "Description" 
             Symbols = propMap "Symbols" false tryBool
@@ -2032,7 +2028,7 @@ type ProjectFile with
             LicenseUrl = prop "LicenseUrl"
             Copyright = prop  "Copyright" 
             RequireLicenseAcceptance = propMap "RequireLicenseAcceptance" false tryBool
-            Tags = propMap "Tags" [] splitString
+            Tags = propMap (if ProjectFile.isNetSdk self then "PackageTags" else "Tags") [] splitString
             DevelopmentDependency = propMap "DevelopmentDependency" false tryBool
             DependencyGroups = []
             ExcludedDependencies = Set.empty //propOr "ExcludedDependencies" 
