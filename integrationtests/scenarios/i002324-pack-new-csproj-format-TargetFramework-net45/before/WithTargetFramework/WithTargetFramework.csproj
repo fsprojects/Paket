@@ -8,7 +8,7 @@
     <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
     <PackageProjectUrl>https://fsprojects.github.io/Paket/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/fsprojects/Paket</RepositoryUrl>
-    <PackageTags>tag1 Tag2</PackageTags>
+    <PackageTags>tag1;tag2</PackageTags>
     <PackageReleaseNotes>Note 1
 Note 2</PackageReleaseNotes>
     <Company>Company</Company>

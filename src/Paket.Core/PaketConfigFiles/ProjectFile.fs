@@ -2008,6 +2008,11 @@ type ProjectFile with
             if ProjectFile.isNetSdk self
             then Some(propOr "PackageId" (ProjectFile.nameWithoutExtension self))
             else prop "id"
+        
+        let title () =
+            if ProjectFile.isNetSdk self
+            then Some(propOr "AssemblyTitle" (ProjectFile.nameWithoutExtension self))
+            else prop "Title"
 
         let coreInfo : ProjectCoreInfo = {
             Id = id()
@@ -2018,14 +2023,14 @@ type ProjectFile with
         }
 
         let optionalInfo =  {
-            Title = prop "Title"
+            Title = title()
             Owners = propMap "Owners" [] (String.split[|';'|]>>List.ofArray)
-            ReleaseNotes = prop "ReleaseNores"
+            ReleaseNotes = prop (if ProjectFile.isNetSdk self then "PackageReleaseNotes" else "ReleaseNotes")
             Summary = prop "Summary"
             Language = prop "Langauge"
-            ProjectUrl = prop "ProjectUrl"
+            ProjectUrl = prop (if ProjectFile.isNetSdk self then "PackageProjectUrl" else "ProjectUrl")
             IconUrl = prop "IconUrl"
-            LicenseUrl = prop "LicenseUrl"
+            LicenseUrl = prop (if ProjectFile.isNetSdk self then "PackageLicenseUrl" else "LicenseUrl")
             Copyright = prop  "Copyright" 
             RequireLicenseAcceptance = propMap "RequireLicenseAcceptance" false tryBool
             Tags = propMap (if ProjectFile.isNetSdk self then "PackageTags" else "Tags") [] splitString

@@ -6,11 +6,10 @@
     <Description>A description.</Description>
     <Authors>Author</Authors>
     <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
-    <PackageProjectUrl>https://fsprojects.github.io/Paket/</PackageProjectUrl>
+    <PackageProjectUrl>https://fsprojects.github.io/Paket</PackageProjectUrl>
     <RepositoryUrl>https://github.com/fsprojects/Paket</RepositoryUrl>
     <PackageTags>tag1;tag2</PackageTags>
-    <PackageReleaseNotes>Note 1
-Note 2</PackageReleaseNotes>
+    <PackageReleaseNotes>Note 1</PackageReleaseNotes>
     <Company>Company</Company>
     <Copyright>Copyright ©Paket 2014</Copyright>
     <Version>1.2.3.4</Version>	
