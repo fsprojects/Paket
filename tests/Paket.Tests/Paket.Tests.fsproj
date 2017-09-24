@@ -302,6 +302,9 @@
     <None Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFramework.csprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFrameworkAndPackageInfo.csprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
     <Compile Include="ProjectFile\TargetFrameworkSpecs.fs" />
     <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />
@@ -311,6 +314,7 @@
     <Compile Include="ProjectFile\ProjectLanguageSpecs.fs" />
     <Compile Include="ProjectFile\LocalizationSpecs.fs" />
     <Compile Include="ProjectFile\UpdateFromNugetSpecs.fs" />
+    <Compile Include="ProjectFile\TemplateMetaDataSpecs.fs" />
     <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
     <Compile Include="InstallModel\Xml\ControlzEx.fs" />

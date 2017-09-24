@@ -169,6 +169,14 @@ module ProjectFile =
         supportedEndings
         |> List.exists (fun e -> fi.Extension.Contains e)
 
+    let isNetSdk (projectFile:ProjectFile) =
+        let node = projectFile.ProjectNode
+        if isNull node || isNull node.Attributes then false else
+        node.Attributes 
+        |> Seq.cast<XmlAttribute>
+        |> Seq.exists (fun a -> String.Equals(a.Name, "SDK", StringComparison.OrdinalIgnoreCase) &&
+                                String.Equals(a.Value, "Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase))
+
     let name (projectFile:ProjectFile) = FileInfo(projectFile.FileName).Name
 
     let nameWithoutExtension (projectFile:ProjectFile) = Path.GetFileNameWithoutExtension (name projectFile)
@@ -1992,17 +2000,27 @@ type ProjectFile with
         let propMap name value fn =
             defaultArg (self.GetProperty name|>Option.map fn) value
         
+        let id () =
+            if ProjectFile.isNetSdk self
+            then Some(propOr "PackageId" (ProjectFile.nameWithoutExtension self))
+            else prop "id"
+
+        let version () =
+            if ProjectFile.isNetSdk self
+            then propMap "Version" (Some(SemVer.Parse "0.0.1")) (SemVer.Parse>>Some)
+            else propMap "version" (Some(SemVer.Parse "0.0.1")) (SemVer.Parse>>Some)
         let tryBool = Boolean.TryParse>>function true, value-> value| _ -> false
         
         let splitString = String.split[|';'|]>>List.ofArray
 
         let coreInfo : ProjectCoreInfo = {
-            Id = prop "id" 
-            Version = propMap "version" (Some(SemVer.Parse "0.0.1")) (SemVer.Parse>>Some)
+            Id = id()
+            Version = version()
             Authors = propMap "Authors" None (splitString>>Some)
             Description = prop "Description" 
             Symbols = propMap "Symbols" false tryBool
         }
+
         let optionalInfo =  {
             Title = prop "Title"
             Owners = propMap "Owners" [] (String.split[|';'|]>>List.ofArray)

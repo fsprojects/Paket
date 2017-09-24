@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net45</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Description>A description.</Description>
+    <Authors>Author</Authors>
+    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <PackageProjectUrl>https://fsprojects.github.io/Paket/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/fsprojects/Paket</RepositoryUrl>
+    <PackageTags>tag1 Tag2</PackageTags>
+    <PackageReleaseNotes>Note 1
+Note 2</PackageReleaseNotes>
+    <Company>Company</Company>
+    <Copyright>Copyright ©Paket 2014</Copyright>
+    <Version>1.2.3.4</Version>	
+    <AssemblyVersion>1.2.3.4</AssemblyVersion>
+    <FileVersion>1.2.3.4</FileVersion>
+    <NeutralLanguage>en-US</NeutralLanguage>
+  </PropertyGroup>
+</Project>
