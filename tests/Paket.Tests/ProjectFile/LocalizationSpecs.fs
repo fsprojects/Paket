@@ -2,9 +2,6 @@
 
 open Paket
 open NUnit.Framework
-open FsUnit
-open System.Xml
-open System.Xml.Linq
 open TestHelpers
 
 [<Test>]
