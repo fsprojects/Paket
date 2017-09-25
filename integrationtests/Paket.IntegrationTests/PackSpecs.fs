@@ -561,7 +561,7 @@ let ``#2324 pack new csproj format with TargetFramework net45`` () =
     <version>1.2.3.4</version>
     <title>WithTargetFramework</title>
     <authors>Author</authors>
-    <owners>Company</owners>
+    <owners>Author</owners>
     <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
     <projectUrl>https://fsprojects.github.io/Paket/</projectUrl>
     <repositoryUrl>https://github.com/fsprojects/Paket</repositoryUrl>
@@ -569,7 +569,6 @@ let ``#2324 pack new csproj format with TargetFramework net45`` () =
     <releaseNotes>Note 1
 Note 2</releaseNotes>
     <copyright>Copyright ©Paket 2014</copyright>
-    <language>en-US</language>
     <tags>tag1 tag2</tags>
   </metadata>
 </package>"""

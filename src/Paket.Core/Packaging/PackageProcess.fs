@@ -31,11 +31,34 @@ let private merge buildConfig buildPlatform versionFromAssembly specificVersions
     | { Contents = ProjectInfo(md, opt) } -> 
         let assemblyReader,id,versionFromAssembly,assemblyFileName = readAssemblyFromProjFile buildConfig buildPlatform projectFile
         let attribs = loadAssemblyAttributes assemblyReader
+        let (sdkCore, sdkOpt) = if ProjectFile.isNetSdk projectFile
+                                then projectFile.GetTemplateMetadata()
+                                else (ProjectCoreInfo.Empty, OptionalPackagingInfo.Empty);
 
-        let mergedOpt =
-            match opt.Title with
-            | Some _ -> opt
-            | None -> { opt with Title = getTitle attribs }
+        let mergedOpt  : OptionalPackagingInfo =  {
+            Title = opt.Title ++ getTitle attribs
+            Owners = opt.Owners +++ (defaultArg sdkCore.Authors []) +++ sdkOpt.Owners
+            ReleaseNotes = opt.ReleaseNotes ++ sdkOpt.ReleaseNotes
+            Summary = opt.Summary
+            Language = opt.Language
+            ProjectUrl = opt.ProjectUrl ++ sdkOpt.ProjectUrl
+            RepositoryUrl = opt.RepositoryUrl ++ sdkOpt.RepositoryUrl
+            IconUrl = opt.IconUrl ++ sdkOpt.IconUrl
+            LicenseUrl = opt.LicenseUrl ++ sdkOpt.LicenseUrl
+            Copyright = opt.Copyright ++ sdkOpt.Copyright
+            RequireLicenseAcceptance = opt.RequireLicenseAcceptance
+            Tags = opt.Tags +++ sdkOpt.Tags
+            DevelopmentDependency = opt.DevelopmentDependency
+            DependencyGroups = opt.DependencyGroups
+            ExcludedDependencies = opt.ExcludedDependencies
+            ExcludedGroups = opt.ExcludedGroups
+            References = opt.References
+            FrameworkAssemblyReferences = opt.FrameworkAssemblyReferences
+            Files = opt.Files
+            FilesExcluded = opt.FilesExcluded
+            IncludePdbs = opt.IncludePdbs
+            IncludeReferencedProjects = opt.IncludeReferencedProjects
+        }
 
         match md with
         | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, mergedOpt) }
@@ -65,7 +88,7 @@ let private merge buildConfig buildPlatform versionFromAssembly specificVersions
                 let merged = 
                     { Id = md.Id
                       Version = md.Version ++ versionFromAssembly
-                      Authors = md.Authors ++ getAuthors attribs
+                      Authors = md.Authors ++ sdkCore.Authors ++ getAuthors attribs
                       Description = md.Description ++ getDescription attribs |> execIfNone (fun _ -> tryGenerateDescription md.Id projectFile.OutputType)
                       Symbols = md.Symbols }
 
