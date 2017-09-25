@@ -545,8 +545,8 @@ let ``#2324 pack new csproj format with TargetFramework net45`` () =
     let scenario = "i002324-pack-new-csproj-format-TargetFramework-net45"
     let rootPath = scenarioTempPath scenario
     let outPath = Path.Combine(rootPath, "out")
-    let package = Path.Combine(outPath, "WithTargetFramework.1.2.3.4.nupkg")
     paket ("pack \"" + outPath + "\"") scenario |> ignore
+    let package = Path.Combine(outPath, "WithTargetFramework.1.2.3.4.nupkg")
     ZipFile.ExtractToDirectory(package, outPath)
 
     Path.Combine(outPath, "lib", "net45", "WithTargetFramework.dll") |> checkFileExists
@@ -569,6 +569,40 @@ let ``#2324 pack new csproj format with TargetFramework net45`` () =
 Note 2</releaseNotes>
     <copyright>Copyright ©Paket 2014</copyright>
     <tags>tag1 tag2</tags>
+  </metadata>
+</package>"""
+    Assert.AreEqual(expected, actual)
+    CleanDir rootPath
+
+[<Test>]
+let ``#2324 pack new csproj format with TargetFramework net45 and explicit template`` () = 
+    let scenario = "i002324-pack-new-csproj-format-TargetFramework-net45-and-explicit-template"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    paket ("pack \"" + outPath + "\"") scenario |> ignore
+
+    let package = Path.Combine(outPath, "WithTargetFramework.2.3.4.5-dev.nupkg")
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    Path.Combine(outPath, "lib", "net45", "WithTargetFramework.dll") |> checkFileExists
+    Path.Combine(outPath, "lib", "net45", "WithTargetFramework.xml") |> checkFileExists
+
+    let actual = File.ReadAllText(Path.Combine(outPath, "WithTargetFramework.nuspec"))
+    let expected = """<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>WithTargetFramework</id>
+    <version>2.3.4.5-dev</version>
+    <title>TitleInTemplate</title>
+    <authors>AuthorInTemplate1, AuthorInTemplate2</authors>
+    <owners>OwnerInTemplate1, OwnerInTemplate2</owners>
+    <licenseUrl>https://opensource.org/licenses/MITInTemplate</licenseUrl>
+    <projectUrl>https://fsprojects.github.io/PaketInTemplate</projectUrl>
+    <repositoryUrl>https://github.com/fsprojects/PaketInTemplate</repositoryUrl>
+    <description>Description in template</description>
+    <releaseNotes>FEATURE: InTemplate</releaseNotes>
+    <copyright>CopyrightInTemplate</copyright>
+    <tags>tagInTemplate1 tagInTemplate2</tags>
   </metadata>
 </package>"""
     Assert.AreEqual(expected, actual)
