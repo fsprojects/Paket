@@ -539,7 +539,6 @@ let ``#2765 pack single template does not evaluate other template`` () =
     let templatePath = Path.Combine(rootPath, "projectA", "paket.template")
     Assert.DoesNotThrow(fun () -> paket ("pack --template " + templatePath + " \"" + outPath + "\"") scenario |> ignore)
     CleanDir rootPath    
-    CleanDir rootPath
 
 [<Test>]
 let ``#2324 pack new csproj format with TargetFramework net45`` () = 
