@@ -143,6 +143,14 @@ let ``#1450 should resolve with twiddle wakka``() =
 let ``#2640 shouldn't try GetDetails if package only exists locally``() =
     updateEx true "i002640" |> ignore
 
+
+
+[<Test>]
+let ``#2790 should not stack overflow on mono``() =
+    let lockFile = update "i002790-no-overflow"
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Akka"].Version
+    |> shouldEqual (SemVer.Parse "1.2.3")
+
 #if INTERACTIVE
 ;;
 

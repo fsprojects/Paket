@@ -1,0 +1,4 @@
+source https://www.nuget.org/api/v2
+nuget Akka 1.2.3
+nuget Akka.FSharp 1.2.3
+nuget Suave 2.2.1
