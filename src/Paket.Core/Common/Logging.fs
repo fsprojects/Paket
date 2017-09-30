@@ -136,7 +136,7 @@ let printErrorExt printFirstStack printAggregatedStacks printInnerStacks (exn:ex
     let rec printErrorHelper exnType useArrow indent (exn:exn) =
         let handleError () =
             let s = if useArrow then "->" else "- "
-            let indentString = new String('\t', indent)
+            let indentString = String('\t', indent)
             let splitMsg = exn.Message.Split([|"\r\n"; "\n"|], StringSplitOptions.None)
             let typeString =
                 let t = exn.GetType()

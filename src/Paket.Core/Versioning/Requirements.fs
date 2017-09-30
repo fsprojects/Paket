@@ -7,6 +7,23 @@ open Paket.PackageSources
 open Paket.Logging
 open Paket.PlatformMatching
 
+
+//module internal FrameworkRestrictionSupportCalculation =
+//    type DynamicCache<'Key, 'Val> =
+//        private { Cache : System.Collections.Concurrent.ConcurrentDictionary<'Key,'Val> }
+//        member x.AddCache key value =
+//            x.Cache.AddOrUpdate(key, value, fun _ _ -> value)
+//            |> ignore
+//        member x.TryGetCache key =
+//            match x.Cache.TryGetValue(key) with
+//            | true, v -> Some v
+//            | _ -> None
+//        static member Create () = { Cache = new System.Collections.Concurrent.ConcurrentDictionary<'Key, 'Val>() }
+//    module DynamicCache =
+//        let Create () = DynamicCache<_,_>.Create()
+//
+//    let frameworkRestrictionIsSubsetOfCache = DynamicCache.Create()
+
 [<RequireQualifiedAccess>]
 // To make reasoning and writing tests easier.
 // Ideally we would "simplify" the trees to a "normal" form internally
@@ -97,7 +114,7 @@ type FrameworkRestrictionP =
     member x.IsSubsetOf (y:FrameworkRestrictionP) =
     
         // better ~ 5 Mins, but below recursive logic should be even better.
-        let inline fallBack doAssert =
+        let inline fallBack doAssert (x:FrameworkRestrictionP) (y:FrameworkRestrictionP) =
 #if DEBUG
             if doAssert then
                 assert (false)// make sure the fallback is never needed
@@ -107,132 +124,156 @@ type FrameworkRestrictionP =
             Set.isSubset subset superset
 
         // Because the formula simplifier needs it this is a quite HOT PATH
-        match x with
-        | FrameworkRestrictionP.ExactlyP x' ->
-            match y with
-            | FrameworkRestrictionP.ExactlyP y' -> x' = y'
-            | FrameworkRestrictionP.AtLeastP y' ->
-                // =x' is a subset of >=y' when 'y is smaller than 'x
-                y'.IsSmallerThanOrEqual x'
+        let inline isSubsetOfCalculation x y =
+            match x with
+            | FrameworkRestrictionP.ExactlyP x' ->
+                match y with
+                | FrameworkRestrictionP.ExactlyP y' -> x' = y'
+                | FrameworkRestrictionP.AtLeastP y' ->
+                    // =x' is a subset of >=y' when 'y is smaller than 'x
+                    y'.IsSmallerThanOrEqual x'
+                // these are or 'common' forms, others are not allowed
+                | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP y') ->
+                    // =x is only a subset of <y when its not a subset of >= y
+                    y'.IsSmallerThanOrEqual x'
+                    |> not
+                | FrameworkRestrictionP.NotP(FrameworkRestrictionP.ExactlyP y') ->
+                    x' <> y'
+                // This one should never actually hit.
+                | FrameworkRestrictionP.NotP(y') -> fallBack true x y
+                | FrameworkRestrictionP.OrP (ys) ->
+                    ys
+                    |> Seq.exists (fun y' -> x.IsSubsetOf y')
+                | FrameworkRestrictionP.AndP (ys) ->
+                    ys
+                    |> Seq.forall (fun y' -> x.IsSubsetOf y')
+            | FrameworkRestrictionP.AtLeastP x' ->
+                match y with
+                | FrameworkRestrictionP.ExactlyP y' ->
+                    // >=x can only be a subset of =y when it is already the max
+                    x' = y' && x'.SupportedPlatforms.IsEmpty
+                | FrameworkRestrictionP.AtLeastP y' ->
+                    // >=x is only a subset of >=y when y is 'smaller" than x
+                    y'.IsSmallerThanOrEqual x'
+                // these are or 'common' forms, others are not allowed
+                | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP y') ->
+                    // >= x' is only a subset of < y' when their intersection is empty
+                    Set.intersect (x'.PlatformsSupporting) (y'.PlatformsSupporting)
+                    |> Set.isEmpty
+                | FrameworkRestrictionP.NotP(FrameworkRestrictionP.ExactlyP y') ->
+                    // >= x' is only a subset of <> y' when y' is not part of >=x'
+                    x'.PlatformsSupporting
+                    |> Set.contains y'
+                    |> not
+                // This one should never actually hit.
+                | FrameworkRestrictionP.NotP(y') -> fallBack true x y
+                | FrameworkRestrictionP.OrP (ys) ->
+                    ys
+                    |> Seq.exists (fun y' -> x.IsSubsetOf y')
+                | FrameworkRestrictionP.AndP (ys) ->
+                    ys
+                    |> Seq.forall (fun y' -> x.IsSubsetOf y')
+                    
             // these are or 'common' forms, others are not allowed
-            | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP y') ->
-                // =x is only a subset of <y when its not a subset of >= y
-                y'.IsSmallerThanOrEqual x'
-                |> not
-            | FrameworkRestrictionP.NotP(FrameworkRestrictionP.ExactlyP y') ->
-                x' <> y'
-            // This one should never actually hit.
-            | FrameworkRestrictionP.NotP(y') -> fallBack true
-            | FrameworkRestrictionP.OrP (ys) ->
-                ys
-                |> Seq.exists (fun y' -> x.IsSubsetOf y')
-            | FrameworkRestrictionP.AndP (ys) ->
-                ys
-                |> Seq.forall (fun y' -> x.IsSubsetOf y')
-        | FrameworkRestrictionP.AtLeastP x' ->
-            match y with
-            | FrameworkRestrictionP.ExactlyP y' ->
-                // >=x can only be a subset of =y when it is already the max
-                x' = y' && x'.SupportedPlatforms.IsEmpty
-            | FrameworkRestrictionP.AtLeastP y' ->
-                // >=x is only a subset of >=y when y is 'smaller" than x
-                y'.IsSmallerThanOrEqual x'
-            // these are or 'common' forms, others are not allowed
-            | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP y') ->
-                // >= x' is only a subset of < y' when their intersection is empty
-                Set.intersect (x'.PlatformsSupporting) (y'.PlatformsSupporting)
-                |> Set.isEmpty
-            | FrameworkRestrictionP.NotP(FrameworkRestrictionP.ExactlyP y') ->
-                // >= x' is only a subset of <> y' when y' is not part of >=x'
-                x'.PlatformsSupporting
-                |> Set.contains y'
-                |> not
-            // This one should never actually hit.
-            | FrameworkRestrictionP.NotP(y') -> fallBack true
-            | FrameworkRestrictionP.OrP (ys) ->
-                ys
-                |> Seq.exists (fun y' -> x.IsSubsetOf y')
-            | FrameworkRestrictionP.AndP (ys) ->
-                ys
-                |> Seq.forall (fun y' -> x.IsSubsetOf y')
-                
-        // these are or 'common' forms, others are not allowed
-        | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP x' as notX) ->
-            match y with
-            | FrameworkRestrictionP.ExactlyP y' ->
-                // < x is a subset of ='y when?
+            | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP x' as notX) ->
+                match y with
+                | FrameworkRestrictionP.ExactlyP y' ->
+                    // < x is a subset of ='y when?
 #if DEBUG
-                assert (not (fallBack false))// TODO: can this happen?
+                    assert (not (fallBack false x y))// TODO: can this happen?
 #endif
-                false 
-            | FrameworkRestrictionP.AtLeastP y' ->
-                // < x is a subset of >= y when there are no smaller things than y and
+                    false 
+                | FrameworkRestrictionP.AtLeastP y' ->
+                    // < x is a subset of >= y when there are no smaller things than y and
 #if DEBUG
-                assert (not (fallBack false))// TODO: can this happen?
+                    assert (not (fallBack false x y))// TODO: can this happen?
 #endif
-                false 
-            // these are or 'common' forms, others are not allowed
-            | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP y' as notY) ->
-                // < 'x is a subset of < y when >=y is a subset of >=x
-                notY.IsSubsetOf notX
-            | FrameworkRestrictionP.NotP(FrameworkRestrictionP.ExactlyP y' as notY) ->
-                // < 'x is a subset of <> y when =y is a subset of >=x
-                notY.IsSubsetOf notX
+                    false 
+                // these are or 'common' forms, others are not allowed
+                | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP y' as notY) ->
+                    // < 'x is a subset of < y when >=y is a subset of >=x
+                    notY.IsSubsetOf notX
+                | FrameworkRestrictionP.NotP(FrameworkRestrictionP.ExactlyP y' as notY) ->
+                    // < 'x is a subset of <> y when =y is a subset of >=x
+                    notY.IsSubsetOf notX
+                // This one should never actually hit.
+                | FrameworkRestrictionP.NotP(y') -> fallBack true x y
+                | FrameworkRestrictionP.OrP (ys) ->
+                    ys
+                    |> Seq.exists (fun y' -> x.IsSubsetOf y')
+                | FrameworkRestrictionP.AndP (ys) ->
+                    ys
+                    |> Seq.forall (fun y' -> x.IsSubsetOf y')
+            | FrameworkRestrictionP.NotP(FrameworkRestrictionP.ExactlyP x' as notX) ->
+                match y with
+                | FrameworkRestrictionP.ExactlyP y' ->
+                    // <> x is a subset of =y ?
+#if DEBUG
+                    assert (not (fallBack false x y))// TODO: can this happen?
+#endif
+                    false
+                | FrameworkRestrictionP.AtLeastP y' ->
+                    // <> x is a subset of >= y
+#if DEBUG
+                    assert (not (fallBack false x y))// TODO: can this happen?
+#endif
+                    false
+                    //fallBack()
+                // these are or 'common' forms, others are not allowed
+                | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP y' as notY) ->
+                    notY.IsSubsetOf notX
+                | FrameworkRestrictionP.NotP(FrameworkRestrictionP.ExactlyP y' as notY) ->
+                    notY.IsSubsetOf notX
+                // This one should never actually hit.
+                | FrameworkRestrictionP.NotP(y') -> fallBack true x y
+                | FrameworkRestrictionP.OrP (ys) ->
+                    ys
+                    |> Seq.exists (fun y' -> x.IsSubsetOf y')
+                | FrameworkRestrictionP.AndP (ys) ->
+                    ys
+                    |> Seq.forall (fun y' -> x.IsSubsetOf y')
             // This one should never actually hit.
-            | FrameworkRestrictionP.NotP(y') -> fallBack true
-            | FrameworkRestrictionP.OrP (ys) ->
-                ys
-                |> Seq.exists (fun y' -> x.IsSubsetOf y')
-            | FrameworkRestrictionP.AndP (ys) ->
-                ys
-                |> Seq.forall (fun y' -> x.IsSubsetOf y')
-        | FrameworkRestrictionP.NotP(FrameworkRestrictionP.ExactlyP x' as notX) ->
-            match y with
-            | FrameworkRestrictionP.ExactlyP y' ->
-                // <> x is a subset of =y ?
-#if DEBUG
-                assert (not (fallBack false))// TODO: can this happen?
-#endif
-                false
-            | FrameworkRestrictionP.AtLeastP y' ->
-                // <> x is a subset of >= y
-#if DEBUG
-                assert (not (fallBack false))// TODO: can this happen?
-#endif
-                false
-                //fallBack()
-            // these are or 'common' forms, others are not allowed
-            | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP y' as notY) ->
-                notY.IsSubsetOf notX
-            | FrameworkRestrictionP.NotP(FrameworkRestrictionP.ExactlyP y' as notY) ->
-                notY.IsSubsetOf notX
-            // This one should never actually hit.
-            | FrameworkRestrictionP.NotP(y') -> fallBack true
-            | FrameworkRestrictionP.OrP (ys) ->
-                ys
-                |> Seq.exists (fun y' -> x.IsSubsetOf y')
-            | FrameworkRestrictionP.AndP (ys) ->
-                ys
-                |> Seq.forall (fun y' -> x.IsSubsetOf y')
-        // This one should never actually hit.
-        | FrameworkRestrictionP.NotP(x') -> fallBack true
-        | FrameworkRestrictionP.OrP (xs) ->
-            xs
-            |> Seq.forall (fun x' -> x'.IsSubsetOf y)
-        | FrameworkRestrictionP.AndP (xs) ->
-            xs
-            |> Seq.exists (fun x' -> x'.IsSubsetOf y)
+            | FrameworkRestrictionP.NotP(x') -> fallBack true x y
+            | FrameworkRestrictionP.OrP (xs) ->
+                xs
+                |> Seq.forall (fun x' -> x'.IsSubsetOf y)
+            | FrameworkRestrictionP.AndP (xs) ->
+                xs
+                |> Seq.exists (fun x' -> x'.IsSubsetOf y)
 
+        isSubsetOfCalculation x y
+        //let key = x.ToString() + " __ " + y.ToString()
+        //match FrameworkRestrictionSupportCalculation.frameworkRestrictionIsSubsetOfCache.TryGetCache(key) with
+        //| Some cached -> cached
+        //| None ->
+        //    let t = System.Diagnostics.Stopwatch.StartNew()
+        //    let result = isSubsetOfCalculation x y
+        //    t.Stop()
+        //    if t.ElapsedMilliseconds > 70L then
+        //        FrameworkRestrictionSupportCalculation.frameworkRestrictionIsSubsetOfCache.AddCache key result
+        //    result            
 
         // Bad ~ 10 mins
         //|> Seq.forall (fun inner -> superset |> Seq.contains inner)
     static member ExactlyFramework (tf: FrameworkIdentifier) =
         ExactlyP (SinglePlatform tf)
 
-    override x.Equals(y) = (match y with :? FrameworkRestrictionP as r -> r.RepresentedFrameworks = x.RepresentedFrameworks | _ -> false)
+    override x.Equals(y) = 
+        match y with 
+        | :? FrameworkRestrictionP as r ->
+            if System.Object.ReferenceEquals(x, r) then true
+            elif (x.ToString() = r.ToString()) then true
+            else r.RepresentedFrameworks = x.RepresentedFrameworks 
+        | _ -> false
     override x.GetHashCode() = x.RepresentedFrameworks.GetHashCode()
     interface System.IComparable with
-        member x.CompareTo(y) = (match y with :? FrameworkRestrictionP as r -> compare x.RepresentedFrameworks r.RepresentedFrameworks | _ -> failwith "wrong type")
+        member x.CompareTo(y) =
+            match y with
+            | :? FrameworkRestrictionP as r ->
+                if System.Object.ReferenceEquals(x, r) then 0
+                elif (x.ToString() = r.ToString()) then 0
+                else compare x.RepresentedFrameworks r.RepresentedFrameworks
+            | _ -> failwith "wrong type"
 
 type FrameworkRestrictionLiteralI =
     | ExactlyL of TargetProfile
@@ -282,10 +323,26 @@ type FrameworkRestriction =
             set
     member x.IsMatch tp =
         x.RawFormular.IsMatch tp
-    override x.Equals(y) = (match y with :? FrameworkRestriction as r -> r.RepresentedFrameworks = x.RepresentedFrameworks | _ -> false)
+    override x.Equals(y) =
+        match y with 
+        | :? FrameworkRestriction as r ->
+            // Cannot delegate because we cache RepresentedFrameworks -> optimization
+            //x.RawFormular.Equals(r.RawFormular)
+            if System.Object.ReferenceEquals(x, y) then true
+            elif (x.ToString() = y.ToString()) then true
+            else r.RepresentedFrameworks = x.RepresentedFrameworks
+        | _ -> false
     override x.GetHashCode() = x.RepresentedFrameworks.GetHashCode()
     interface System.IComparable with
-        member x.CompareTo(y) = (match y with :? FrameworkRestriction as r -> compare x.RepresentedFrameworks r.RepresentedFrameworks | _ -> failwith "wrong type")
+        member x.CompareTo(y) = 
+            match y with 
+            | :? FrameworkRestriction as r ->
+                // Cannot delegate because we cache RepresentedFrameworks -> optimization
+                //compare x.RawFormular r.RawFormular
+                if System.Object.ReferenceEquals(x, y) then 0
+                elif (x.ToString() = y.ToString()) then 0
+                else compare x.RepresentedFrameworks r.RepresentedFrameworks
+            | _ -> failwith "wrong type"
 
 module FrameworkRestriction =
     let EmptySet = FrameworkRestriction.FromOrList [] // false
@@ -333,7 +390,7 @@ module FrameworkRestriction =
             let simplifyAndClause (andClause:FrameworkRestrictionAndList) =
                 let literals = andClause.Literals
                 let newLiterals =
-                    andClause.Literals
+                    literals
                     |> List.filter (fun literal ->
                         // we filter out literals, for which another literal exists which is a subset
                         literals
@@ -605,7 +662,7 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
     |> List.fold (fun state item -> FrameworkRestriction.combineRestrictionsWithOr state item) FrameworkRestriction.EmptySet,
     problems.ToArray()
 
-let parseRestrictions (text:string) =
+let private parseRestrictionsRaw (text:string) =
     let problems = ResizeArray<_>()
     let handleError (p:RestrictionParseProblem) =
         problems.Add p
@@ -684,6 +741,8 @@ let parseRestrictions (text:string) =
         failwithf "Successfully parsed '%O' but got additional text '%s'" result next
     result,
     problems.ToArray()
+
+let parseRestrictions = memoize parseRestrictionsRaw
 
 let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestrictions) =
     match list1,list2 with 
@@ -1069,14 +1128,14 @@ let addFrameworkRestrictionsToDependencies rawDependencies (frameworkGroups:Pars
                         // but now net461 which supports netstandard13 is nowhere -> we need to decide here and add back the intersection
 
                         let missing = FrameworkRestriction.combineRestrictionsWithAnd curRestr (FrameworkRestriction.AtLeastPlatform frameworkGroup)
-                        let combined = FrameworkRestriction.combineRestrictionsWithAnd curRestr (FrameworkRestriction.NotAtLeastPlatform frameworkGroup)
+                        let combined = lazy FrameworkRestriction.combineRestrictionsWithAnd curRestr (FrameworkRestriction.NotAtLeastPlatform frameworkGroup)
                         match packageGroup.Platforms, missing.RepresentedFrameworks.IsEmpty with
                         | [ packageGroupFw ], false ->
                             // the common set goes to the better matching one
                             match PlatformMatching.findBestMatch (frameworkGroups, missing.RepresentedFrameworks.MinimumElement) with
                             | Some { PlatformMatching.ParsedPlatformPath.Platforms = [ cfw ] } when cfw = packageGroupFw -> curRestr
-                            | _ -> combined
-                        | _ -> combined) packageGroupRestriction)
+                            | _ -> combined.Value
+                        | _ -> combined.Value) packageGroupRestriction)
             let combinedRestrictions = restrictions |> List.fold FrameworkRestriction.combineRestrictionsWithOr FrameworkRestriction.EmptySet
             name, req, combinedRestrictions
         )
