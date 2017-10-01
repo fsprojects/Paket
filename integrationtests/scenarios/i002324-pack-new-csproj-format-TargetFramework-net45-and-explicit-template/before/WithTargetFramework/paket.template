@@ -1,0 +1,14 @@
+﻿type project
+version 2.3.4.5-dev
+title TitleInTemplate
+authors AuthorInTemplate1, AuthorInTemplate2
+owners OwnerInTemplate1, OwnerInTemplate2
+copyright CopyrightInTemplate
+description Description in template
+tags tagInTemplate1 tagInTemplate2
+licenseUrl https://opensource.org/licenses/MITInTemplate
+projectUrl https://fsprojects.github.io/PaketInTemplate
+repositoryUrl https://github.com/fsprojects/PaketInTemplate
+
+releasenotes
+  FEATURE: InTemplate

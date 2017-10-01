@@ -990,6 +990,12 @@ let inline (++) x y =
     | None -> y
     | _ -> x
 
+// MonadPlus - "or else"
+let inline (+++) x y =
+    match x with
+    | [] -> y
+    | _ -> x
+
 let parseKeyValuePairs (s:string) : Dictionary<string,string> =
     let s = s.Trim()
     try

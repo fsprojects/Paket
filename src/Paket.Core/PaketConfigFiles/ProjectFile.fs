@@ -169,6 +169,14 @@ module ProjectFile =
         supportedEndings
         |> List.exists (fun e -> fi.Extension.Contains e)
 
+    let isNetSdk (projectFile:ProjectFile) =
+        let node = projectFile.ProjectNode
+        if isNull node || isNull node.Attributes then false else
+        node.Attributes 
+        |> Seq.cast<XmlAttribute>
+        |> Seq.exists (fun a -> String.Equals(a.Name, "SDK", StringComparison.OrdinalIgnoreCase) &&
+                                String.Equals(a.Value, "Microsoft.NET.Sdk", StringComparison.OrdinalIgnoreCase))
+
     let name (projectFile:ProjectFile) = FileInfo(projectFile.FileName).Name
 
     let nameWithoutExtension (projectFile:ProjectFile) = Path.GetFileNameWithoutExtension (name projectFile)
@@ -1507,7 +1515,9 @@ module ProjectFile =
             project.Document
             |> getDescendants "AssemblyName"
             |> function
-               | [] -> failwithf "Project %s has no AssemblyName set" project.FileName
+               | [] -> if isNetSdk project 
+                       then nameWithoutExtension project
+                       else failwithf "Project %s has no AssemblyName set" project.FileName
                | [assemblyName] -> assemblyName.InnerText
                | assemblyName::_ ->
                     traceWarnfn "Found multiple AssemblyName nodes in file %s, using first" project.FileName
@@ -1991,30 +2001,42 @@ type ProjectFile with
         
         let propMap name value fn =
             defaultArg (self.GetProperty name|>Option.map fn) value
+                
+        let splitString = String.split[|';'|]>>List.ofArray
         
         let tryBool = Boolean.TryParse>>function true, value-> value| _ -> false
+
+        let id () =
+            if ProjectFile.isNetSdk self
+            then Some(propOr "PackageId" (ProjectFile.nameWithoutExtension self))
+            else prop "id"
         
-        let splitString = String.split[|';'|]>>List.ofArray
+        let title () =
+            if ProjectFile.isNetSdk self
+            then Some(propOr "AssemblyTitle" (ProjectFile.nameWithoutExtension self))
+            else prop "Title"
 
         let coreInfo : ProjectCoreInfo = {
-            Id = prop "id" 
-            Version = propMap "version" (Some(SemVer.Parse "0.0.1")) (SemVer.Parse>>Some)
+            Id = id()
+            Version = propMap (if ProjectFile.isNetSdk self then "Version" else "version") (Some(SemVer.Parse "0.0.1")) (SemVer.Parse>>Some)
             Authors = propMap "Authors" None (splitString>>Some)
             Description = prop "Description" 
             Symbols = propMap "Symbols" false tryBool
         }
-        let optionalInfo =  {
-            Title = prop "Title"
+
+        let optionalInfo : OptionalPackagingInfo =  {
+            Title = title()
             Owners = propMap "Owners" [] (String.split[|';'|]>>List.ofArray)
-            ReleaseNotes = prop "ReleaseNores"
+            ReleaseNotes = prop (if ProjectFile.isNetSdk self then "PackageReleaseNotes" else "ReleaseNotes")
             Summary = prop "Summary"
             Language = prop "Langauge"
-            ProjectUrl = prop "ProjectUrl"
+            ProjectUrl = prop (if ProjectFile.isNetSdk self then "PackageProjectUrl" else "ProjectUrl")
+            RepositoryUrl = if ProjectFile.isNetSdk self then prop "RepositoryUrl" else None
             IconUrl = prop "IconUrl"
-            LicenseUrl = prop "LicenseUrl"
+            LicenseUrl = prop (if ProjectFile.isNetSdk self then "PackageLicenseUrl" else "LicenseUrl")
             Copyright = prop  "Copyright" 
             RequireLicenseAcceptance = propMap "RequireLicenseAcceptance" false tryBool
-            Tags = propMap "Tags" [] splitString
+            Tags = propMap (if ProjectFile.isNetSdk self then "PackageTags" else "Tags") [] splitString
             DevelopmentDependency = propMap "DevelopmentDependency" false tryBool
             DependencyGroups = []
             ExcludedDependencies = Set.empty //propOr "ExcludedDependencies" 
