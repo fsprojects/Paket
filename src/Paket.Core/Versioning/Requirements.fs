@@ -7,23 +7,6 @@ open Paket.PackageSources
 open Paket.Logging
 open Paket.PlatformMatching
 
-
-//module internal FrameworkRestrictionSupportCalculation =
-//    type DynamicCache<'Key, 'Val> =
-//        private { Cache : System.Collections.Concurrent.ConcurrentDictionary<'Key,'Val> }
-//        member x.AddCache key value =
-//            x.Cache.AddOrUpdate(key, value, fun _ _ -> value)
-//            |> ignore
-//        member x.TryGetCache key =
-//            match x.Cache.TryGetValue(key) with
-//            | true, v -> Some v
-//            | _ -> None
-//        static member Create () = { Cache = new System.Collections.Concurrent.ConcurrentDictionary<'Key, 'Val>() }
-//    module DynamicCache =
-//        let Create () = DynamicCache<_,_>.Create()
-//
-//    let frameworkRestrictionIsSubsetOfCache = DynamicCache.Create()
-
 [<RequireQualifiedAccess>]
 // To make reasoning and writing tests easier.
 // Ideally we would "simplify" the trees to a "normal" form internally
@@ -242,16 +225,6 @@ type FrameworkRestrictionP =
                 |> Seq.exists (fun x' -> x'.IsSubsetOf y)
 
         isSubsetOfCalculation x y
-        //let key = x.ToString() + " __ " + y.ToString()
-        //match FrameworkRestrictionSupportCalculation.frameworkRestrictionIsSubsetOfCache.TryGetCache(key) with
-        //| Some cached -> cached
-        //| None ->
-        //    let t = System.Diagnostics.Stopwatch.StartNew()
-        //    let result = isSubsetOfCalculation x y
-        //    t.Stop()
-        //    if t.ElapsedMilliseconds > 70L then
-        //        FrameworkRestrictionSupportCalculation.frameworkRestrictionIsSubsetOfCache.AddCache key result
-        //    result            
 
         // Bad ~ 10 mins
         //|> Seq.forall (fun inner -> superset |> Seq.contains inner)
