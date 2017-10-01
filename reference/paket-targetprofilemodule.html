@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Map - Paket</title>
+    <title>TargetProfile - Paket</title>
     <link rel="icon" type="image/png" href="..//img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
@@ -59,7 +59,7 @@
 
 
 
-<h1>Map</h1>
+<h1>TargetProfile</h1>
 <p>
   <span>Namespace: Paket</span><br />
 </p>
@@ -77,19 +77,82 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '250', 250)" onmouseover="showTip(event, '250', 250)">
-            merge f m1 m2
+          <code onmouseout="hideTip(event, '559', 559)" onmouseover="showTip(event, '559', 559)">
+            OfPlatform p
           </code>
-          <div class="tip" id="250">
-            <strong>Signature:</strong> f:(&#39;b -&gt; &#39;b -&gt; &#39;b) -&gt; m1:Map&lt;&#39;a,&#39;b&gt; -&gt; m2:Map&lt;&#39;a,&#39;b&gt; -&gt; Map&lt;&#39;a,&#39;b&gt;<br />
-                          <strong>Type parameters:</strong> 'b, 'a          </div>
+          <div class="tip" id="559">
+            <strong>Signature:</strong> p:TargetProfileRaw -&gt; TargetProfile<br />
+                      </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/RuntimeGraph.fs#L128-128" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L986-986" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '560', 560)" onmouseover="showTip(event, '560', 560)">
+            PortableProfile s
+          </code>
+          <div class="tip" id="560">
+            <strong>Signature:</strong> s:PortableProfileType -&gt; TargetProfile<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L988-988" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '561', 561)" onmouseover="showTip(event, '561', 561)">
+            SinglePlatform s
+          </code>
+          <div class="tip" id="561">
+            <strong>Signature:</strong> s:FrameworkIdentifier -&gt; TargetProfile<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L987-987" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <h3>Active patterns</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Active pattern</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '562', 562)" onmouseover="showTip(event, '562', 562)">
+            ( |SinglePlatform|PortableProfile| ) (...)
+          </code>
+          <div class="tip" id="562">
+            <strong>Signature:</strong> profile:TargetProfile -&gt; Choice&lt;FrameworkIdentifier,PortableProfileType&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L982-982" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>|SinglePlatform|PortableProfile|</code></p>
         </td>
       </tr>
     </tbody>
