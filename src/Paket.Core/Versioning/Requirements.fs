@@ -497,15 +497,18 @@ module FrameworkRestriction =
             false,
             ((And2 (FrameworkRestriction.FromOrList [h]) right) |> snd).OrFormulas @ ((And2 (FrameworkRestriction.FromOrList t) right) |> snd).OrFormulas
             |> FrameworkRestriction.FromOrList
-
+    let inline private AndList (rst:FrameworkRestriction list) =
+        List.fold
+            (fun (isSimplified, current) next -> let wasSimple, result = And2 current next in wasSimple && isSimplified, result)
+            (true, NoRestriction)
+            rst
     let And (rst:FrameworkRestriction list) =
-        let isSimple, result =
-            List.fold
-                (fun (isSimplified, current) next -> let wasSimple, result = And2 current next in wasSimple && isSimplified, result)
-                (true, NoRestriction)
-                rst
+        let isSimple, result = AndList rst
         if isSimple then result
         else simplify result
+    let internal AndAlreadySimplified (rst:FrameworkRestriction list) =
+        let _, result = AndList rst
+        result
 
     let private Or2 (left : FrameworkRestriction) (right : FrameworkRestriction) =
         match left.OrFormulas, right.OrFormulas with
@@ -520,14 +523,19 @@ module FrameworkRestriction =
             leftFormumas @ rightFormulas
             |> FrameworkRestriction.FromOrList
 
+    let inline private OrList (rst:FrameworkRestriction list) =
+        List.fold
+            (fun (isSimplified, current) next -> let wasSimple, result = Or2 current next in wasSimple && isSimplified, result)
+            (true, EmptySet)
+            rst
     let Or (rst:FrameworkRestriction list) =
-        let isSimple, result =
-            List.fold
-                (fun (isSimplified, current) next -> let wasSimple, result = Or2 current next in wasSimple && isSimplified, result)
-                (true, EmptySet)
-                rst
+        let isSimple, result = OrList rst
         if isSimple then result
         else simplify result
+    let internal OrAlreadySimplified (rst:FrameworkRestriction list) =
+        let _, result = OrList rst
+        result
+        
 
     //[<Obsolete ("Method is provided for completeness sake. But I don't think its needed")>]
     //let Not (rst:FrameworkRestriction) =
@@ -635,7 +643,7 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
     |> List.fold (fun state item -> FrameworkRestriction.combineRestrictionsWithOr state item) FrameworkRestriction.EmptySet,
     problems.ToArray()
 
-let private parseRestrictionsRaw (text:string) =
+let private parseRestrictionsRaw skipSimplify (text:string) =
     let problems = ResizeArray<_>()
     let handleError (p:RestrictionParseProblem) =
         problems.Add p
@@ -680,7 +688,12 @@ let private parseRestrictionsRaw (text:string) =
 
             let operands, next = parseOperand [] next
             if operands.Length = 0 then failwithf "Operand '%s' without argument is invalid in '%s'" (h.Substring (0, 2)) text
-            let f, def = if isAnd then FrameworkRestriction.And, FrameworkRestriction.NoRestriction else FrameworkRestriction.Or, FrameworkRestriction.EmptySet
+            let f = 
+                match isAnd, skipSimplify with
+                | true, true -> FrameworkRestriction.AndAlreadySimplified
+                | true, false -> FrameworkRestriction.And
+                | false, true -> FrameworkRestriction.OrAlreadySimplified
+                | false, false -> FrameworkRestriction.Or
             operands |> f, next
         | h when h.StartsWith "NOT" ->
             let next = h.Substring 2
@@ -714,8 +727,9 @@ let private parseRestrictionsRaw (text:string) =
         failwithf "Successfully parsed '%O' but got additional text '%s'" result next
     result,
     problems.ToArray()
-
-let parseRestrictions = memoize parseRestrictionsRaw
+    
+let parseRestrictions = memoize (parseRestrictionsRaw false)
+let internal parseRestrictionsSimplified = parseRestrictionsRaw true
 
 let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestrictions) =
     match list1,list2 with 
@@ -845,8 +859,10 @@ type InstallSettings =
                 CreateBindingRedirects = self.CreateBindingRedirects ++ other.CreateBindingRedirects
                 IncludeVersionInPath = self.IncludeVersionInPath ++ other.IncludeVersionInPath
         }
-
-    static member Parse(text:string) : InstallSettings =
+        
+    static member Parse(text:string) : InstallSettings = InstallSettings.Parse(false, text)
+    static member internal Parse(isSimplified: bool, text:string) : InstallSettings =
+        let parseRestrictions = if isSimplified then parseRestrictionsSimplified else parseRestrictions
         let kvPairs = parseKeyValuePairs (text.ToLower())
 
         let getPair key =
