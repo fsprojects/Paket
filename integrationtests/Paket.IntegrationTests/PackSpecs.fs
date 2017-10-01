@@ -540,18 +540,3 @@ let ``#2765 pack single template does not evaluate other template`` () =
     let templatePath = Path.Combine(rootPath, "projectA", "paket.template")
     Assert.DoesNotThrow(fun () -> paket ("pack --template " + templatePath + " \"" + outPath + "\"") scenario |> ignore)
     CleanDir rootPath    
-
-[<Test>]
-let ``#2788 with include-pdbs true`` () = 
-    let scenario = "i002788-pack-with-include-pdbs-true"
-    let rootPath = scenarioTempPath scenario
-    let outPath = Path.Combine(rootPath, "out")
-    let package = Path.Combine(outPath, "BuiltWithSymbols.1.0.0.0.nupkg")
-    paket ("pack \"" + outPath + "\"") scenario |> ignore
-    ZipFile.ExtractToDirectory(package, outPath)
-
-    Path.Combine(outPath, "lib", "net461", "BuiltWithSymbols.dll") |> checkFileExists
-    Path.Combine(outPath, "lib", "net461", "BuiltWithSymbols.xml") |> checkFileExists
-    Path.Combine(outPath, "lib", "net461", "BuiltWithSymbols.pdb") |> checkFileExists
-
-    CleanDir rootPath
