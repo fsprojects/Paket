@@ -761,8 +761,17 @@ module SafeWebResult =
         | UnknownError err -> FSharp.Core.Result.Error err
         | SuccessResponse s -> FSharp.Core.Result.Ok s
 
-/// [omit]
-let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
+let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : string, iTry, nTries) =
+    
+    let rec getExceptionNames (exn:Exception) = [
+        if exn <> null then
+            yield exn.GetType().Name
+            if exn.InnerException <> null then
+                yield! getExceptionNames exn.InnerException
+    ]
+
+    let shouldRetry exn = isMonoRuntime && iTry < nTries && (getExceptionNames exn |> List.contains "MonoBtlsException")
+    
     async {
         try
             let uri = Uri url
@@ -778,6 +787,13 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
             let! raw = client.DownloadStringTaskAsync(uri, tok) |> Async.AwaitTaskWithoutAggregate
             return SuccessResponse raw
         with
+
+        | exn when shouldRetry exn ->
+            raise (Exception("Hello from _safeGetFromUrl.shouldRetry", exn))
+            // there are issues with mono, try again :\
+            Logging.traceWarnfn "Request failed, this is likely due to a mono issue. Trying again, this was try %i/%i" iTry nTries
+            return! _safeGetFromUrl(auth, url, contentType, iTry + 1, nTries)
+
         | :? RequestFailedException as w ->
             match w.Info with
             | Some { StatusCode = HttpStatusCode.NotFound } -> return NotFound
@@ -786,7 +802,10 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
                     Logging.verbosefn "Error while retrieving '%s': %O" url w
                 return UnknownError (ExceptionDispatchInfo.Capture w)
     }
-
+    
+/// [omit]
+let safeGetFromUrl (auth:Auth option, url : string, contentType : string) = _safeGetFromUrl(auth, url, contentType, 1, 10)
+    
 let mutable autoAnswer = None
 let readAnswer() =
     match autoAnswer with
