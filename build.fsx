@@ -343,21 +343,33 @@ Target "CalculateDownloadHash" (fun _ ->
     File.WriteAllText(buildMergedDir @@ "paket-sha256.txt", sprintf "%s paket.exe" hash)
 )
 
-Target "NuGet" (fun _ ->    
-    !! "integrationtests/**/paket.template" |> Seq.iter DeleteFile
-    
-    let files = !! "src/**/*.preview*" |> Seq.toList
-    for file in files do
-        File.Move(file,file + ".temp")
+Target "NuGet" (fun _ ->
+    let testTemplateFiles =
+        !! "integrationtests/**/paket.template"
+        |> Seq.map (fun f -> f, f + "-disabled")
+        |> Seq.toList
+        
 
-    Paket.Pack (fun p -> 
-        { p with 
-            ToolPath = "bin/merged/paket.exe" 
-            Version = release.NugetVersion
-            ReleaseNotes = toLines release.Notes })
+    try
+        testTemplateFiles
+        |> Seq.iter (fun (f, d) -> File.Move(f, d))
 
-    for file in files do
-        File.Move(file + ".temp",file)
+        let files = !! "src/**/*.preview*" |> Seq.toList
+        for file in files do
+            File.Move(file,file + ".temp")
+
+        Paket.Pack (fun p -> 
+            { p with 
+                ToolPath = "bin/merged/paket.exe" 
+                Version = release.NugetVersion
+                ReleaseNotes = toLines release.Notes })
+
+        for file in files do
+            File.Move(file + ".temp",file)
+    finally
+        testTemplateFiles
+        |> Seq.iter (fun (f, d) ->
+            if File.Exists(d) then File.Move(d, f))
 )
 
 Target "MergeDotnetCoreIntoNuget" (fun _ ->
