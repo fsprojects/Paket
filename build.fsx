@@ -311,10 +311,13 @@ Target "RunIntegrationTests" (fun _ ->
 
 
 let pfx = "code-sign.pfx"
+let mutable isUnsignedAllowed = true
+Target "EnsurePackageSigned" (fun _ -> isUnsignedAllowed <- false)
 
 Target "SignAssemblies" (fun _ ->
     if not <| fileExists pfx then
-        failwithf "%s not found, can't sign assemblies" pfx
+        if isUnsignedAllowed then ()
+        else failwithf "%s not found, can't sign assemblies" pfx
     else
 
     let filesToSign = 
@@ -571,6 +574,7 @@ Target "ReleaseGitHub" (fun _ ->
     |> Async.RunSynchronously
 )
 
+
 Target "Release" DoNothing
 Target "BuildPackage" DoNothing
 Target "BuildCore" DoNothing
@@ -606,6 +610,10 @@ Target "All" DoNothing
   =?> ("MergeDotnetCoreIntoNuget", not <| hasBuildParam "DISABLE_NETCORE" && not <| hasBuildParam "SkipNuGet")
   ==> "BuildPackage"
 
+"EnsurePackageSigned"
+  ?=> "SignAssemblies"
+
+
 "CleanDocs"
   ==> "GenerateHelp"
   ==> "GenerateReferenceDocs"
@@ -628,6 +636,9 @@ Target "All" DoNothing
   ?=> "ReleaseDocs"
 
 "ReleaseDocs"
+  ==> "Release"
+
+"EnsurePackageSigned"
   ==> "Release"
 
 "DotnetRestoreTools"
