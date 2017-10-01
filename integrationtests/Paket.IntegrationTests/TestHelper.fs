@@ -141,6 +141,12 @@ let directToolEx isPaket toolPath command workingDir =
             for { IsError = isError; Message = msg } in msgs do
                 printfn "%s%s" (if isError then "ERR: " else "") msg
             reraise()
+
+    // always print stderr
+    for msg in msgs do
+        if msg.IsError then
+            printfn "ERR: %s" msg.Message
+
     if isPaket then
         // Only throw after the result <> 0 check because the current test might check the argument parsing
         // this is the only case where no performance is printed
@@ -151,11 +157,6 @@ let directToolEx isPaket toolPath command workingDir =
             printfn "Performance:"
             for msg in perfMessages do
                 printfn "%s" msg
-
-    // always print stderr
-    for msg in msgs do
-        if msg.IsError then
-            printfn "ERR: %s" msg.Message
 
     if result <> 0 then 
         let errors = String.Join(Environment.NewLine,msgs |> Seq.filter PaketMsg.isError |> Seq.map PaketMsg.getMessage)

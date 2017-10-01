@@ -550,8 +550,8 @@ let ``#2788 with include-pdbs true`` () =
     paket ("pack \"" + outPath + "\"") scenario |> ignore
     ZipFile.ExtractToDirectory(package, outPath)
 
-    Path.Combine(outPath, "lib", "net461", "BuiltWithSymbols.dll") |> checkFileExists
-    Path.Combine(outPath, "lib", "net461", "BuiltWithSymbols.xml") |> checkFileExists
-    Path.Combine(outPath, "lib", "net461", "BuiltWithSymbols.pdb") |> checkFileExists
+    Path.Combine(outPath, "lib", "net45", "BuiltWithSymbols.dll") |> checkFileExists
+    Path.Combine(outPath, "lib", "net45", "BuiltWithSymbols.xml") |> checkFileExists
+    Path.Combine(outPath, "lib", "net45", "BuiltWithSymbols.pdb") |> checkFileExists
 
     CleanDir rootPath

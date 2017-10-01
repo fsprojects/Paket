@@ -482,7 +482,8 @@ type FrameworkIdentifier =
         | MonoAndroid v -> "monoandroid" + v.ShortString()
         | MonoTouch -> "monotouch"
         | MonoMac -> "monomac"
-        | Native(_) -> "native"
+        | Native(BuildMode.NoBuildMode, Platform.NoPlatform) -> "native"
+        | Native(mode, platform) -> sprintf "native(%s,%s)" mode.AsString platform.AsString
         | XamarinTV -> "xamarintvos"
         | XamarinWatch -> "xamarinwatchos"
         | XamariniOS -> "xamarinios"
