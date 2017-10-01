@@ -349,12 +349,12 @@ type MonoAndroidVersion =
     | V4_2
     | V4_3
     | V4_4
-    //| V44W
     | V5
     | V5_1
     | V6
     | V7
     | V7_1
+    | V8
     member this.ShortString() =
         match this with
         | MonoAndroidVersion.V1    -> ""
@@ -365,12 +365,12 @@ type MonoAndroidVersion =
         | MonoAndroidVersion.V4_2   -> "4.2"
         | MonoAndroidVersion.V4_3   -> "4.3"
         | MonoAndroidVersion.V4_4   -> "4.4"
-        //| MonoAndroidVersion.V44W  -> "4.4W"
         | MonoAndroidVersion.V5    -> "5.0"
         | MonoAndroidVersion.V5_1   -> "5.1"
         | MonoAndroidVersion.V6    -> "6.0"
         | MonoAndroidVersion.V7    -> "7.0"
         | MonoAndroidVersion.V7_1   -> "7.1"
+        | MonoAndroidVersion.V8   -> "8.0"
     override this.ToString() =
         match this with
         | MonoAndroidVersion.V1    -> "v1.0"
@@ -381,12 +381,12 @@ type MonoAndroidVersion =
         | MonoAndroidVersion.V4_2   -> "v4.2"
         | MonoAndroidVersion.V4_3   -> "v4.3"
         | MonoAndroidVersion.V4_4   -> "v4.4"
-        //| MonoAndroidVersion.V44W  -> "v4.4W"
         | MonoAndroidVersion.V5    -> "v5.0"
         | MonoAndroidVersion.V5_1    -> "v5.1"
         | MonoAndroidVersion.V6    -> "v6.0"
         | MonoAndroidVersion.V7    -> "v7.0"
         | MonoAndroidVersion.V7_1   -> "v7.1"
+        | MonoAndroidVersion.V8   -> "v8.0"
 
     static member TryParse s =
         match s with
@@ -398,12 +398,14 @@ type MonoAndroidVersion =
         | "4.2" -> Some (MonoAndroidVersion.V4_2)
         | "4.3" -> Some (MonoAndroidVersion.V4_3)
         | "4.4" -> Some (MonoAndroidVersion.V4_4)
-        //| "4.4w" -> Some (MonoAndroidVersion.V44W)
         | "5" -> Some (MonoAndroidVersion.V5)
         | "5.1" -> Some (MonoAndroidVersion.V5_1)
         | "6" -> Some (MonoAndroidVersion.V6)
-        | "7" -> Some (MonoAndroidVersion.V7)
+        | "7"
+        | "7.0" -> Some (MonoAndroidVersion.V7)
         | "7.1" -> Some (MonoAndroidVersion.V7_1)
+        | "8"
+        | "8.0" -> Some (MonoAndroidVersion.V8)
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -530,6 +532,7 @@ type FrameworkIdentifier =
         | MonoAndroid MonoAndroidVersion.V6 -> [ MonoAndroid MonoAndroidVersion.V5_1 ]
         | MonoAndroid MonoAndroidVersion.V7 -> [ MonoAndroid MonoAndroidVersion.V6; DotNetStandard DotNetStandardVersion.V1_6 ]
         | MonoAndroid MonoAndroidVersion.V7_1 -> [ MonoAndroid MonoAndroidVersion.V7 ]
+        | MonoAndroid MonoAndroidVersion.V8 -> [ MonoAndroid MonoAndroidVersion.V7_1 ]
         | MonoTouch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | MonoMac -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Native(_) -> [ ]
@@ -1057,12 +1060,12 @@ module KnownTargetProfiles =
         MonoAndroidVersion.V4_2
         MonoAndroidVersion.V4_3
         MonoAndroidVersion.V4_4
-        //MonoAndroidVersion.V44W
         MonoAndroidVersion.V5
         MonoAndroidVersion.V5_1
         MonoAndroidVersion.V6
         MonoAndroidVersion.V7
         MonoAndroidVersion.V7_1
+        MonoAndroidVersion.V8
     ]
 
     let MonoAndroidProfiles =

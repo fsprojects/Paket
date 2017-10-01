@@ -1,3 +1,6 @@
+#### 5.100.3 - 29.09.2017
+* BUGFIX: Add MonoAndroid v8 - https://github.com/fsprojects/Paket/issues/2800
+
 #### 5.100.2 - 22.09.2017
 * BUGFIX: Removed V3 -> V2 fallback - https://github.com/fsprojects/Paket/pull/2782
 
