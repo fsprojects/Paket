@@ -38,7 +38,7 @@ let GraphOfNuspecs (g:seq<string>) : DependencyGraph =
   g
   |> Seq.map (fun nuspecText ->
     let nspec = Nuspec.Load("in-memory", nuspecText)
-    nspec.OfficialName, nspec.Version, nspec.Dependencies |> List.map (fun (a,b,c) -> a.CompareString, b, c), RuntimeGraph.Empty)
+    nspec.OfficialName, nspec.Version, nspec.Dependencies.Value |> List.map (fun (a,b,c) -> a.CompareString, b, c), RuntimeGraph.Empty)
   |> Seq.toList
 
 let OfGraphWithRuntimeDeps (g:seq<string * string * (string * VersionRequirement) list * RuntimeGraph>) : DependencyGraph =

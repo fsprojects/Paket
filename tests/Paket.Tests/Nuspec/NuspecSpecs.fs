@@ -99,7 +99,7 @@ let ``can detect framework assemblies for Microsoft.Net.Http``() =
 [<Test>]
 let ``can detect deps assemblies for RazorEngine``() = 
     //ensureDir()
-    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"RazorEngine.nuspec")).Dependencies
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"RazorEngine.nuspec")).Dependencies.Value
     |> shouldEqual 
         [PackageName "Microsoft.AspNet.Razor",DependenciesFileParser.parseVersionRequirement("= 2.0.30506.0"), 
             makeOrList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4), DotNetFramework(FrameworkVersion.V4_5))]
@@ -131,7 +131,7 @@ let ``can detect license for SqlCLient``() =
 [<Test>]
 let ``can detect dependencies for SqlCLient``() = 
     //ensureDir()
-    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"FSharp.Data.SqlClient.nuspec")).Dependencies
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"FSharp.Data.SqlClient.nuspec")).Dependencies.Value
     |> shouldEqual 
         [PackageName "Microsoft.SqlServer.Types",DependenciesFileParser.parseVersionRequirement(">= 11.0.0"), makeOrList []]
 
@@ -169,19 +169,19 @@ let ``can detect empty framework assemblies for ReadOnlyCollectionExtensions``()
 [<Test>]
 let ``can detect empty dependencies for log4net``() = 
     //ensureDir()
-    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"log4net.nuspec")).Dependencies
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"log4net.nuspec")).Dependencies.Value
     |> shouldEqual []
 
 [<Test>]
 let ``can detect explicit dependencies for Fantomas``() = 
     //ensureDir()
-    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Fantomas.nuspec")).Dependencies
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Fantomas.nuspec")).Dependencies.Value
     |> shouldEqual [PackageName "FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.57"), makeOrList []]
 
 [<Test>]
 let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() = 
     //ensureDir()
-    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"ReadOnlyCollectionExtensions.nuspec")).Dependencies
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"ReadOnlyCollectionExtensions.nuspec")).Dependencies.Value
     |> shouldEqual 
         [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), 
             makeOrList [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V2), DotNetFramework(FrameworkVersion.V3_5))]
@@ -192,7 +192,7 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
 [<Test>]
 let ``can detect explicit dependencies for Microsoft.AspNetCore.Antiforgery``() = 
     //ensureDir()
-    let deps = Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Microsoft.AspNetCore.Antiforgery.nuspec")).Dependencies
+    let deps = Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Microsoft.AspNetCore.Antiforgery.nuspec")).Dependencies.Value
 
     let v =
         match DependenciesFileParser.parseVersionRequirement(">= 1.0.0-rc3-20550") with
@@ -206,7 +206,7 @@ let ``can detect explicit dependencies for Microsoft.AspNetCore.Antiforgery``() 
 [<Test>]
 let ``can detect explicit dependencies for Microsoft.AspNetCore.Mvc.ViewFeatures``() = 
     //ensureDir()
-    let deps = Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Microsoft.AspNetCore.Mvc.ViewFeatures.nuspec")).Dependencies
+    let deps = Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Microsoft.AspNetCore.Mvc.ViewFeatures.nuspec")).Dependencies.Value
 
     let v =
         match DependenciesFileParser.parseVersionRequirement(">= 1.0.0-rc3-20550") with
@@ -235,7 +235,7 @@ let ``can detect framework assemblies for MathNet.Numerics``() =
 [<Test>]
 let ``can detect dependencies for MathNet.Numerics``() = 
     //ensureDir()
-    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"MathNet.Numerics.nuspec")).Dependencies
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"MathNet.Numerics.nuspec")).Dependencies.Value
     |> shouldEqual 
         [ PackageName "TaskParallelLibrary",
           DependenciesFileParser.parseVersionRequirement(">= 1.0.2856.0"),
@@ -245,7 +245,7 @@ let ``can detect dependencies for MathNet.Numerics``() =
 let ``can detect dependencies for MathNet.Numerics.FSharp``() = 
     //ensureDir()
     let s =
-        Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"MathNet.Numerics.FSharp.nuspec")).Dependencies
+        Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"MathNet.Numerics.FSharp.nuspec")).Dependencies.Value
         |> Seq.head
     s
     |> shouldEqual 
@@ -255,7 +255,7 @@ let ``can detect dependencies for MathNet.Numerics.FSharp``() =
 [<Test>]
 let ``can detect explicit dependencies for WindowsAzure.Storage``() = 
     //ensureDir()
-    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"WindowsAzure.Storage.nuspec")).Dependencies
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"WindowsAzure.Storage.nuspec")).Dependencies.Value
     |> Seq.skip 1
     |> Seq.head
     |> shouldEqual 
@@ -276,17 +276,17 @@ let ``can detect framework assemblies for Microsoft.Framework.Logging``() =
               [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))
                FrameworkRestriction.Exactly(DNX(FrameworkVersion.V4_5_1))])
 
-    let name,_,restrictions = nuspec.Dependencies.[0]
+    let name,_,restrictions = nuspec.Dependencies.Value.[0]
     name  |> shouldEqual (PackageName "Microsoft.Framework.DependencyInjection.Interfaces")
     
-    let name,_,restrictions = nuspec.Dependencies.[2]
+    let name,_,restrictions = nuspec.Dependencies.Value.[2]
     name  |> shouldEqual (PackageName "System.Collections.Concurrent")
     restrictions |> shouldEqual (makeOrList [FrameworkRestriction.AtLeast(DNXCore(FrameworkVersion.V5_0))])
 
 [<Test>]
 let ``can detect explicit dependencies for FluentAssertions 4``() = 
     //ensureDir()
-    let deps = Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"FluentAssertions4.nuspec")).Dependencies |> List.toArray
+    let deps = Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"FluentAssertions4.nuspec")).Dependencies.Value |> List.toArray
 
     deps.[0]
     |> shouldEqual 
@@ -299,7 +299,7 @@ let ``can detect explicit dependencies for FluentAssertions 4``() =
 [<Test>]
 let ``can detect explicit dependencies for EasyNetQ``() = 
     //ensureDir()
-    let deps = Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"EasyNetQ.nuspec")).Dependencies |> Seq.toArray
+    let deps = Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"EasyNetQ.nuspec")).Dependencies.Value |> Seq.toArray
 
     deps.[0]
     |> shouldEqual 
@@ -320,7 +320,7 @@ let ``can detect explicit dependencies for EasyNetQ``() =
 [<Test>]
 let ``can detect deps assemblies for Xamarin.Forms``() = 
     //ensureDir()
-    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Xamarin.Forms.nuspec")).Dependencies
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Xamarin.Forms.nuspec")).Dependencies.Value
     |> shouldEqual 
         [PackageName "WPtoolkit",DependenciesFileParser.parseVersionRequirement(">= 4.2013.08.16"), 
             makeOrList [FrameworkRestriction.AtLeast(WindowsPhone(WindowsPhoneVersion.V8))]

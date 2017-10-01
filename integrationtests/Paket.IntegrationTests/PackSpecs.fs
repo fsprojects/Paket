@@ -520,16 +520,16 @@ let ``#2694 paket fixnuspec should not remove project references``() =
     let nupkgPath = wd @@ "bin" @@ "Debug" @@ project + ".1.0.0.nupkg"
     if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
     let nuspec = NuGetLocal.getNuSpecFromNupgk nupkgPath
-    match nuspec.Dependencies |> Seq.tryFind (fun (name,_,_) -> name = PackageName "library") with
+    match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "library") with
     | None -> Assert.Fail("Expected package to still contain the project reference!")
     | Some s -> ignore s
-    match nuspec.Dependencies |> Seq.tryFind (fun (name,_,_) -> name = PackageName "FSharp.Core") with
+    match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "FSharp.Core") with
     | None -> Assert.Fail("Expected package to still contain the FSharp.Core reference!")
     | Some s -> ignore s
 
     // Should we remove Microsoft.NETCore.App?
     // Problably not as "packaged" console applications have this dependency by default, see https://www.nuget.org/packages/dotnet-mergenupkg
-    nuspec.Dependencies.Length
+    nuspec.Dependencies.Value.Length
     |> shouldEqual 3
     
 [<Test>]
