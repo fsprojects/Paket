@@ -86,7 +86,7 @@ type FrameworkFolder<'T> = {
 } with
     member this.GetSinglePlatforms() =
         this.Targets
-        |> Seq.choose (function SinglePlatform t -> Some t | _ -> None)
+        |> Seq.choose (function TargetProfile.SinglePlatform t -> Some t | _ -> None)
 
 module FrameworkFolder =
     let map f (l:FrameworkFolder<_>) = {

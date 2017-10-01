@@ -57,7 +57,7 @@ let ``Simplify || (>= net45) (>= portable-net45+win8+wp8+wp81+wpa81)`` () =
 
     // this was the underlying bug
     atLeastPortable.RepresentedFrameworks
-    |> shouldContain (SinglePlatform (DotNetFramework FrameworkVersion.V4_5))
+    |> shouldContain (TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4_5))
 
     let formula = FrameworkRestriction.Or [ atLeastPortable; FrameworkRestriction.AtLeast (DotNetFramework FrameworkVersion.V4_5) ]
     
@@ -69,16 +69,16 @@ let ``CustomProfile is Supported by its Platforms``() =
     let unknownProfile =
         ((PlatformMatching.forceExtractPlatforms "portable-net45+monoandroid10+monotouch10+xamarinios10").ToTargetProfile true).Value
 
-    unknownProfile.IsSupportedBy (SinglePlatform (DotNetFramework FrameworkVersion.V4_5))
+    unknownProfile.IsSupportedBy (TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4_5))
     |> shouldEqual true
-    unknownProfile.IsSupportedBy (SinglePlatform (DotNetFramework FrameworkVersion.V4))
+    unknownProfile.IsSupportedBy (TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4))
     |> shouldEqual false
 
-    unknownProfile.IsSupportedBy (SinglePlatform (MonoAndroid MonoAndroidVersion.V1))
+    unknownProfile.IsSupportedBy (TargetProfile.SinglePlatform (MonoAndroid MonoAndroidVersion.V1))
     |> shouldEqual true
-    unknownProfile.IsSupportedBy (SinglePlatform (MonoTouch))
+    unknownProfile.IsSupportedBy (TargetProfile.SinglePlatform (MonoTouch))
     |> shouldEqual true
-    unknownProfile.IsSupportedBy (SinglePlatform (Silverlight SilverlightVersion.V5))
+    unknownProfile.IsSupportedBy (TargetProfile.SinglePlatform (Silverlight SilverlightVersion.V5))
     |> shouldEqual false
 
 [<Test>]
@@ -93,11 +93,11 @@ let ``__unknowntfm__ should not match everything`` () =
                    { References = NuspecReferences.All
                      OfficialName = "Reactive Extensions - XAML Support Library"
                      Version = "2.2.4"
-                     Dependencies = []
+                     Dependencies = lazy []
                      LicenseUrl = ""
                      IsDevelopmentDependency = false
                      FrameworkAssemblyReferences = []})
-        let target = PortableProfile PortableProfileType.Profile344
+        let target = TargetProfile.PortableProfile PortableProfileType.Profile344
         let newModel = model.ApplyFrameworkRestrictions (FrameworkRestriction.ExactlyPlatform target)
         newModel.GetCompileReferences target |> Seq.toArray
         |> shouldEqual [||]
@@ -145,7 +145,7 @@ let ``Generate Support Table``() =
 let ``Unknown Portables are detected correctly``() = 
     PlatformMatching.forceExtractPlatforms "portable-monotouch+monoandroid"
     |> function { Platforms = o } -> TargetProfile.FindPortable true o
-    |> shouldEqual (PortableProfile (PortableProfileType.UnsupportedProfile [MonoAndroid MonoAndroidVersion.V1; MonoTouch]))
+    |> shouldEqual (TargetProfile.PortableProfile (PortableProfileType.UnsupportedProfile [MonoAndroid MonoAndroidVersion.V1; MonoTouch]))
 [<Test>]
 let ``Portables are detected correctly``() = 
     // http://nugettoolsdev.azurewebsites.net/4.0.0/parse-framework?framework=portable-net451%2Bwin81%2Bwpa81%2Bwaspt2
@@ -158,15 +158,15 @@ let ``Portables are detected correctly``() =
           "sl5"; "win8"
           "wp8" ]
         |> List.map PlatformMatching.forceExtractPlatforms
-        |> List.map (function { Platforms = [ h] } -> SinglePlatform h | {Platforms = o} -> TargetProfile.FindPortable true o)
+        |> List.map (function { Platforms = [ h] } -> TargetProfile.SinglePlatform h | {Platforms = o} -> TargetProfile.FindPortable true o)
     let expected =
-        [ SinglePlatform (DotNetFramework FrameworkVersion.V4);
-          PortableProfile (PortableProfileType.UnsupportedProfile [MonoAndroid MonoAndroidVersion.V1; MonoTouch])
-          PortableProfile (PortableProfileType.Profile328); PortableProfile (PortableProfileType.Profile259)
-          PortableProfile (PortableProfileType.Profile32)
-          PortableProfile (PortableProfileType.Profile78)
-          SinglePlatform (Silverlight SilverlightVersion.V5); SinglePlatform (Windows WindowsVersion.V8)
-          SinglePlatform (WindowsPhone WindowsPhoneVersion.V8) ]
+        [ TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4);
+          TargetProfile.PortableProfile (PortableProfileType.UnsupportedProfile [MonoAndroid MonoAndroidVersion.V1; MonoTouch])
+          TargetProfile.PortableProfile (PortableProfileType.Profile328); TargetProfile.PortableProfile (PortableProfileType.Profile259)
+          TargetProfile.PortableProfile (PortableProfileType.Profile32)
+          TargetProfile.PortableProfile (PortableProfileType.Profile78)
+          TargetProfile.SinglePlatform (Silverlight SilverlightVersion.V5); TargetProfile.SinglePlatform (Windows WindowsVersion.V8)
+          TargetProfile.SinglePlatform (WindowsPhone WindowsPhoneVersion.V8) ]
     portables
     |> shouldEqual expected
 

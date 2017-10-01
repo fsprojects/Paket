@@ -721,7 +721,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             match restrictions with
             | Paket.Requirements.AutoDetectFramework -> failwithf "couldn't detect framework"
             | Paket.Requirements.ExplicitRestriction list ->
-                list.RepresentedFrameworks |> Seq.choose (function SinglePlatform tf -> Some tf | _ -> None)
+                list.RepresentedFrameworks |> Seq.choose (function TargetProfile.SinglePlatform tf -> Some tf | _ -> None)
           )
         |> Seq.concat
     )

@@ -16,22 +16,22 @@ let ``should create empty condition for empty profile list``() =
 
 [<Test>]
 let ``should create simple condition for simple .NET Framework``() = 
-    getCondition None (SinglePlatform(DotNetFramework FrameworkVersion.V3) |> Set.singleton)
+    getCondition None (TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V3) |> Set.singleton)
     |> shouldEqual "$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v3.0'"
 
 [<Test>]
 let ``should create nested condition for two .NET Frameworks``() = 
-    getCondition None ([SinglePlatform(DotNetFramework FrameworkVersion.V3); SinglePlatform(DotNetFramework FrameworkVersion.V4_5)] |> Set.ofSeq)
+    getCondition None ([TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V3); TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V4_5)] |> Set.ofSeq)
     |> shouldEqual "$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v3.0' Or $(TargetFrameworkVersion) == 'v4.5')"
 
 [<Test>]
 let ``should create nested condition for two .NET Frameworks in different order``() = 
-    getCondition None ([SinglePlatform(DotNetFramework FrameworkVersion.V4_5); SinglePlatform(DotNetFramework FrameworkVersion.V3)] |> Set.ofSeq)
+    getCondition None ([TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V4_5); TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V3)] |> Set.ofSeq)
     |> shouldEqual "$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v3.0' Or $(TargetFrameworkVersion) == 'v4.5')"
 
 [<Test>]
 let ``should create nested condition for multiple .NET Frameworks``() = 
-    getCondition None ([SinglePlatform(DotNetFramework FrameworkVersion.V3); SinglePlatform(DotNetFramework FrameworkVersion.V4_5); SinglePlatform(DotNetFramework FrameworkVersion.V2)] |> Set.ofSeq)
+    getCondition None ([TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V3); TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V4_5); TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V2)] |> Set.ofSeq)
     |> shouldEqual "$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v3.0' Or $(TargetFrameworkVersion) == 'v4.5')"
 
 [<Test>]
@@ -46,16 +46,16 @@ let ``should minimize condition if we have all WindowsProfiles``() =
 
 [<Test>]
 let ``should create nested condition for .NET Framework and Silverlight``() = 
-    [SinglePlatform(DotNetFramework FrameworkVersion.V3)
-     SinglePlatform(DotNetFramework FrameworkVersion.V4_5)
-     SinglePlatform(Silverlight SilverlightVersion.V3)] 
+    [TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V3)
+     TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V4_5)
+     TargetProfile.SinglePlatform(Silverlight SilverlightVersion.V3)] 
     |> Set.ofSeq
     |> getCondition None
     |> shouldEqual "($(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v3.0' Or $(TargetFrameworkVersion) == 'v4.5')) Or ($(TargetFrameworkIdentifier) == 'Silverlight' And $(TargetFrameworkVersion) == 'v3.0')"
 
 [<Test>]
 let ``should create nested condition for full .NET Framework and Silverlight``() = 
-    SinglePlatform(Silverlight SilverlightVersion.V3) :: KnownTargetProfiles.DotNetFrameworkProfiles
+    TargetProfile.SinglePlatform(Silverlight SilverlightVersion.V3) :: KnownTargetProfiles.DotNetFrameworkProfiles
     |> Set.ofSeq
     |> getCondition None
     |> shouldEqual "($(TargetFrameworkIdentifier) == '.NETFramework') Or ($(TargetFrameworkIdentifier) == 'Silverlight' And $(TargetFrameworkVersion) == 'v3.0')"

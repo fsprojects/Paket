@@ -23,9 +23,6 @@ build/
 [Bb]in/
 [Oo]bj/
 
-# Enable scenarios in integration tests
-!integrationtests/scenarios/*/before/**
-
 # Enable "build/" folder in the NuGet Packages folder since NuGet packages use it for MSBuild targets
 !packages/*/build/
 
@@ -206,3 +203,7 @@ dotnetcore
 # For check-doc-links.sh.
 node_modules
 package-lock.json
+
+# Enable scenarios in integration tests
+!integrationtests/scenarios/*/before/**
+integrationtests/scenarios/*/before/**/obj

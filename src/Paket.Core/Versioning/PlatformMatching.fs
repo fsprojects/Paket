@@ -17,7 +17,7 @@ type ParsedPlatformPath =
         match x.Platforms with
         | _ when System.String.IsNullOrEmpty x.Name -> None
         | [] -> None // Not detected earlier.
-        | [p] -> Some (SinglePlatform p)
+        | [p] -> Some (TargetProfile.SinglePlatform p)
         | plats -> Some (TargetProfile.FindPortable warnIfUnsupported plats)
     member pp.IsEmpty = String.IsNullOrEmpty pp.Name || pp.Platforms.IsEmpty
 
@@ -73,10 +73,10 @@ let rec getPlatformPenalty =
             0
         else
             match targetPlatform, packagePlatform with
-            | PortableProfile _, SinglePlatform _ ->
+            | TargetProfile.PortableProfile _, TargetProfile.SinglePlatform _ ->
                 // There is no point in searching for frameworks in portables...
                 MaxPenalty
-            | _, PortableProfile (PortableProfileType.UnsupportedProfile fws) ->
+            | _, TargetProfile.PortableProfile (PortableProfileType.UnsupportedProfile fws) ->
                 // We cannot find unsupported profiles in our "SupportedPlatforms" list
                 // Just check if we are compatible at all and return a high penalty
                 
@@ -92,14 +92,14 @@ let rec getPlatformPenalty =
                     |> fun p -> p + Penalty_VersionJump
 
                 match targetPlatform, packagePlatform with
-                | SinglePlatform (DotNetFramework _), SinglePlatform (DotNetStandard _) -> Penalty_Netcore + penalty
-                | SinglePlatform (DotNetStandard _), SinglePlatform(DotNetFramework _) -> Penalty_Netcore + penalty
-                | SinglePlatform _, PortableProfile _ -> Penalty_Portable + penalty
-                | PortableProfile _, SinglePlatform _ -> Penalty_Portable + penalty
+                | TargetProfile.SinglePlatform (DotNetFramework _), TargetProfile.SinglePlatform (DotNetStandard _) -> Penalty_Netcore + penalty
+                | TargetProfile.SinglePlatform (DotNetStandard _), TargetProfile.SinglePlatform(DotNetFramework _) -> Penalty_Netcore + penalty
+                | TargetProfile.SinglePlatform _, TargetProfile.PortableProfile _ -> Penalty_Portable + penalty
+                | TargetProfile.PortableProfile _, TargetProfile.SinglePlatform _ -> Penalty_Portable + penalty
                 | _ -> penalty)
 
 let getFrameworkPenalty (fr1, fr2) =
-    getPlatformPenalty (SinglePlatform fr1, SinglePlatform fr2)
+    getPlatformPenalty (TargetProfile.SinglePlatform fr1, TargetProfile.SinglePlatform fr2)
 
 
 let getPathPenalty =
@@ -107,14 +107,14 @@ let getPathPenalty =
       (fun (path:ParsedPlatformPath,platform:TargetProfile) ->
         let handleEmpty () =
             match platform with
-            | SinglePlatform(Native(_)) -> MaxPenalty // an empty path is considered incompatible with native targets
+            | TargetProfile.SinglePlatform(Native(_)) -> MaxPenalty // an empty path is considered incompatible with native targets
             | _ -> Penalty_Fallback // an empty path is considered compatible with every .NET target, but with a high penalty so explicit paths are preferred
         match path.Platforms with
         | _ when String.IsNullOrWhiteSpace path.Name -> handleEmpty()
         | [] -> MaxPenalty // Ignore this path as it contains no platforms, but the folder apparently has a name -> we failed to detect the framework and ignore it
         | [ h ] ->
             let additionalPen = if path.Name.EndsWith "-client" then Penalty_Client else 0
-            additionalPen + getPlatformPenalty(platform,SinglePlatform h)
+            additionalPen + getPlatformPenalty(platform,TargetProfile.SinglePlatform h)
         | _ ->
             // No warnig -> should be reported later
             getPlatformPenalty(platform, TargetProfile.FindPortable false path.Platforms))
@@ -122,7 +122,7 @@ let getPathPenalty =
 [<Obsolete("Used in test code, use getPathPenalty instead.")>]
 let getFrameworkPathPenalty fr path =
     match fr with
-    | [ h ] -> getPathPenalty (path, SinglePlatform h)
+    | [ h ] -> getPathPenalty (path, TargetProfile.SinglePlatform h)
     | _ ->
         // No warnig -> should be reported later
         getPathPenalty (path, TargetProfile.FindPortable false fr)
@@ -203,7 +203,7 @@ let getSupportedTargetProfiles =
 
 let getTargetCondition (target:TargetProfile) =
     match target with
-    | SinglePlatform(platform) ->
+    | TargetProfile.SinglePlatform(platform) ->
         match platform with
         | DotNetFramework(version) ->"$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DNX(version) ->"$(TargetFrameworkIdentifier) == 'DNX'", sprintf "$(TargetFrameworkVersion) == '%O'" version
@@ -234,7 +234,7 @@ let getTargetCondition (target:TargetProfile) =
         | Native(NoBuildMode,bits) -> (sprintf "'$(Platform)'=='%s'" bits.AsString), ""
         | Native(profile,bits) -> (sprintf "'$(Configuration)|$(Platform)'=='%s|%s'" profile.AsString bits.AsString), ""
         | Tizen version ->"$(TargetFrameworkIdentifier) == 'Tizen'", sprintf "$(TargetFrameworkVersion) == '%O'" version
-    | PortableProfile p -> sprintf "$(TargetFrameworkProfile) == '%O'" p.ProfileName,""
+    | TargetProfile.PortableProfile p -> sprintf "$(TargetFrameworkProfile) == '%O'" p.ProfileName,""
 
 let getCondition (referenceCondition:string option) (allTargets: TargetProfile Set list) (targets : TargetProfile Set) =
     let inline CheckIfFullyInGroup typeName matchF filterRestF (processed,targets) =
@@ -252,19 +252,19 @@ let getCondition (referenceCondition:string option) (allTargets: TargetProfile S
     let grouped,targets =
         ([],targets)
         |> CheckIfFullyInGroupS "true" (fun _ -> true)
-        |> CheckIfFullyInGroupS ".NETFramework" (function SinglePlatform (DotNetFramework _) -> true | _ -> false)
-        |> CheckIfFullyInGroup ".NETCore"  (function SinglePlatform (Windows _) -> true | _ -> false) (function SinglePlatform (Windows _) -> true | SinglePlatform (UAP _) -> true | _ -> false)
-        |> CheckIfFullyInGroupS "Silverlight" (function SinglePlatform (Silverlight _) -> true | _ -> false)
-        |> CheckIfFullyInGroupS "WindowsPhoneApp" (function SinglePlatform (WindowsPhoneApp _) -> true | _ -> false)
-        |> CheckIfFullyInGroupS "WindowsPhone" (function SinglePlatform (WindowsPhone _) -> true | _ -> false)
+        |> CheckIfFullyInGroupS ".NETFramework" (function TargetProfile.SinglePlatform (DotNetFramework _) -> true | _ -> false)
+        |> CheckIfFullyInGroup ".NETCore"  (function TargetProfile.SinglePlatform (Windows _) -> true | _ -> false) (function TargetProfile.SinglePlatform (Windows _) -> true | TargetProfile.SinglePlatform (UAP _) -> true | _ -> false)
+        |> CheckIfFullyInGroupS "Silverlight" (function TargetProfile.SinglePlatform (Silverlight _) -> true | _ -> false)
+        |> CheckIfFullyInGroupS "WindowsPhoneApp" (function TargetProfile.SinglePlatform (WindowsPhoneApp _) -> true | _ -> false)
+        |> CheckIfFullyInGroupS "WindowsPhone" (function TargetProfile.SinglePlatform (WindowsPhone _) -> true | _ -> false)
 
     let conditions =
-        if targets.Count = 1 && targets |> Set.minElement = SinglePlatform(Native(NoBuildMode,NoPlatform)) then 
+        if targets.Count = 1 && targets |> Set.minElement = TargetProfile.SinglePlatform(Native(NoBuildMode,NoPlatform)) then 
             targets
         else 
             targets 
             |> Set.filter (function
-                           | SinglePlatform(Native(NoBuildMode,NoPlatform)) -> false
+                           | TargetProfile.SinglePlatform(Native(NoBuildMode,NoPlatform)) -> false
                            | _ -> true)
         |> Seq.map getTargetCondition
         |> Seq.filter (fun (_, v) -> v <> "false")

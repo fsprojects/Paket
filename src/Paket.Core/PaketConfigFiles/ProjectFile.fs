@@ -1038,23 +1038,23 @@ module ProjectFile =
                 match getTargetFrameworkVersion project with
                 | None -> getTargetFramework project
                 | Some x -> Some(prefix + x.Replace("v",""))
-            let defaultResult = SinglePlatform (DotNetFramework FrameworkVersion.V4)
+            let defaultResult = TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4)
             match framework with
             | None -> defaultResult
             | Some s ->
                 match FrameworkDetection.Extract(s) with
                 | None -> defaultResult
-                | Some x -> SinglePlatform x
+                | Some x -> TargetProfile.SinglePlatform x
 
         match getTargetFrameworkProfile project with
         | Some profile when profile = "Unity Web v3.5" ->
-            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Web)
+            TargetProfile.SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Web)
         | Some profile when profile = "Unity Micro v3.5" ->
-            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Micro)
+            TargetProfile.SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Micro)
         | Some profile when profile = "Unity Subset v3.5" ->
-            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Subset)
+            TargetProfile.SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Subset)
         | Some profile when profile = "Unity Full v3.5" ->
-            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Full)
+            TargetProfile.SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Full)
         | Some profile when String.IsNullOrWhiteSpace profile |> not ->
             try
                 KnownTargetProfiles.FindPortableProfile profile

@@ -316,7 +316,7 @@ module LockFileParser =
                                             
             InstallOption (CopyContentToOutputDir setting)
         | _, String.RemovePrefix "FRAMEWORK:" trimmed -> InstallOption(FrameworkRestrictions(ExplicitRestriction (trimmed.Trim() |> Requirements.parseRestrictionsLegacy true |> fst)))
-        | _, String.RemovePrefix "RESTRICTION:" trimmed -> InstallOption(FrameworkRestrictions(ExplicitRestriction (trimmed.Trim() |> Requirements.parseRestrictions |> fst)))
+        | _, String.RemovePrefix "RESTRICTION:" trimmed -> InstallOption(FrameworkRestrictions(ExplicitRestriction (trimmed.Trim() |> Requirements.parseRestrictionsSimplified |> fst)))
         | _, String.RemovePrefix "CONDITION:" trimmed -> InstallOption(ReferenceCondition(trimmed.Trim().ToUpper()))
         | _, String.RemovePrefix "CONTENT:" trimmed -> 
             let setting =
@@ -358,9 +358,9 @@ module LockFileParser =
             let frameworkSettings =
                 if not (String.IsNullOrEmpty settingsPart) then
                     try
-                        InstallSettings.Parse(settingsPart)
+                        InstallSettings.Parse(true, settingsPart)
                     with
-                    | _ -> InstallSettings.Parse("framework: " + settingsPart) // backwards compatible
+                    | _ -> InstallSettings.Parse(true, "framework: " + settingsPart) // backwards compatible
                 else
                     InstallSettings.Default
             if namePart.Contains "(" then
@@ -425,7 +425,7 @@ module LockFileParser =
                     true, ""
                 else false, optionsString
 
-            parts.[0],isCliTool,isRuntimeDependency,InstallSettings.Parse(optionsString)
+            parts.[0],isCliTool,isRuntimeDependency,InstallSettings.Parse(true, optionsString)
 
         ([{ GroupName = Constants.MainDependencyGroup; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false }], lockFileLines)
         ||> Seq.fold(fun state line ->

@@ -770,6 +770,7 @@ let handleCommand silent command =
 
 let main() =
     let resolution = Environment.GetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION")
+    Logging.verboseWarnings <- Environment.GetEnvironmentVariable "PAKET_DETAILED_WARNINGS" = "true"
     if System.String.IsNullOrEmpty resolution then
         Environment.SetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
@@ -793,6 +794,7 @@ let main() =
 
         if results.Contains <@ Verbose @> then
             Logging.verbose <- true
+            Logging.verboseWarnings <- true
 
         let version = results.Contains <@ Version @>
         if not version then
