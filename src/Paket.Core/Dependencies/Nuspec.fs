@@ -57,15 +57,15 @@ module internal NuSpecParserHelper =
 
 type Nuspec = 
     { References : NuspecReferences 
-      Dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) list
+      Dependencies : Lazy<(PackageName * VersionRequirement * FrameworkRestrictions) list>
       OfficialName : string
       // Currently only used for testing
       Version : string
       LicenseUrl : string
       IsDevelopmentDependency : bool
       FrameworkAssemblyReferences : FrameworkAssemblyReference list }
-    static member All = { Version = ""; References = NuspecReferences.All; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false }
-    static member Explicit references = { Version = ""; References = NuspecReferences.Explicit references; Dependencies = []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false }
+    static member All = { Version = ""; References = NuspecReferences.All; Dependencies = lazy []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false }
+    static member Explicit references = { Version = ""; References = NuspecReferences.Explicit references; Dependencies = lazy []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false }
 
     /// load the file from an XmlDocument. The fileName is only used for error reporting.
     static member private Load(fileName:string, doc:XmlDocument) =
@@ -87,9 +87,7 @@ type Nuspec =
             doc 
             |> getDescendants "dependency"
             |> List.choose (NuSpecParserHelper.getDependency fileName)
-
-        let dependencies, warnings = addFrameworkRestrictionsToDependencies rawDependencies frameworks
-
+            
         let name =
             match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "id" with
             | Some node -> node.InnerText
@@ -99,8 +97,13 @@ type Nuspec =
             | Some node -> node.InnerText
             | None -> failwithf "unable to find package version in %s" fileName
 
-        for warning in warnings do
-            Logging.traceWarnfn "%s" (warning.Format name version)
+        let dependencies =
+          lazy
+            let dependencies, warnings = 
+                addFrameworkRestrictionsToDependencies rawDependencies frameworks
+            for warning in warnings do
+                Logging.traceWarnfn "%s" (warning.Format name version)
+            dependencies
 
         let references = 
             doc
