@@ -5,7 +5,7 @@ open FsUnit
 open NUnit.Framework
 open Paket.Requirements
 
-let dotnet x = SinglePlatform(DotNetFramework(x))
+let dotnet x = TargetProfile.SinglePlatform(DotNetFramework(x))
 
 module TestTargetProfiles =
     let DotNetFrameworkVersions =
@@ -31,26 +31,26 @@ module TestTargetProfiles =
         DotNetUnityVersion.V3_5_Web
     ]
 
-    let DotNetUnityProfiles = DotNetUnityVersions |> List.map (DotNetUnity >> SinglePlatform)
+    let DotNetUnityProfiles = DotNetUnityVersions |> List.map (DotNetUnity >> TargetProfile.SinglePlatform)
 
     let WindowsProfiles =
-       [SinglePlatform(Windows WindowsVersion.V8)
-        SinglePlatform(Windows WindowsVersion.V8_1)]
+       [TargetProfile.SinglePlatform(Windows WindowsVersion.V8)
+        TargetProfile.SinglePlatform(Windows WindowsVersion.V8_1)]
 
     let SilverlightProfiles =
-       [SinglePlatform(Silverlight SilverlightVersion.V3)
-        SinglePlatform(Silverlight SilverlightVersion.V4)
-        SinglePlatform(Silverlight SilverlightVersion.V5)]
+       [TargetProfile.SinglePlatform(Silverlight SilverlightVersion.V3)
+        TargetProfile.SinglePlatform(Silverlight SilverlightVersion.V4)
+        TargetProfile.SinglePlatform(Silverlight SilverlightVersion.V5)]
 
     let WindowsPhoneSilverlightProfiles =
-       [SinglePlatform(WindowsPhone WindowsPhoneVersion.V7)
-        SinglePlatform(WindowsPhone WindowsPhoneVersion.V7_5)
-        SinglePlatform(WindowsPhone WindowsPhoneVersion.V8)
-        SinglePlatform(WindowsPhone WindowsPhoneVersion.V8_1)]
+       [TargetProfile.SinglePlatform(WindowsPhone WindowsPhoneVersion.V7)
+        TargetProfile.SinglePlatform(WindowsPhone WindowsPhoneVersion.V7_5)
+        TargetProfile.SinglePlatform(WindowsPhone WindowsPhoneVersion.V8)
+        TargetProfile.SinglePlatform(WindowsPhone WindowsPhoneVersion.V8_1)]
 
 
     let MonoAndroidProfiles =
-       [SinglePlatform(MonoAndroid MonoAndroidVersion.V1)]
+       [TargetProfile.SinglePlatform(MonoAndroid MonoAndroidVersion.V1)]
 
     let AllProfiles =
        DotNetFrameworkProfiles @ 
@@ -59,10 +59,10 @@ module TestTargetProfiles =
        WindowsPhoneSilverlightProfiles @
        MonoAndroidProfiles @
        DotNetUnityProfiles @
-       [SinglePlatform(MonoTouch)
-        SinglePlatform(XamariniOS)
-        SinglePlatform(XamarinMac)
-        SinglePlatform(WindowsPhoneApp WindowsPhoneAppVersion.V8_1)
+       [TargetProfile.SinglePlatform(MonoTouch)
+        TargetProfile.SinglePlatform(XamariniOS)
+        TargetProfile.SinglePlatform(XamarinMac)
+        TargetProfile.SinglePlatform(WindowsPhoneApp WindowsPhoneAppVersion.V8_1)
        ]|> Set.ofList
 
 [<Test>]

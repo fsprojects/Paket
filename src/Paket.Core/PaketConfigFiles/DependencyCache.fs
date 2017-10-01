@@ -95,7 +95,7 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
     let getDllsWithinPackage (framework: FrameworkIdentifier) (installModel :InstallModel) =
         let dllFiles =
             installModel
-            |> InstallModel.getLegacyReferences (SinglePlatform framework)
+            |> InstallModel.getLegacyReferences (TargetProfile.SinglePlatform framework)
             |> Seq.map (fun l -> l.Path)
             |> Seq.map (fun path -> AssemblyDefinition.ReadAssembly path, FileInfo(path))
             |> dict
@@ -113,7 +113,7 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
                 match tryGet (group,pack.Name) installModelCache with
                 | None -> ()
                 | Some model ->
-                    model.GetLibReferenceFiles (SinglePlatform framework) |> Seq.iter (libs.Add >> ignore)
+                    model.GetLibReferenceFiles (TargetProfile.SinglePlatform framework) |> Seq.iter (libs.Add >> ignore)
                     model.GetAllLegacyFrameworkReferences ()|> Seq.iter (sysLibs.Add >> ignore)
             )
 

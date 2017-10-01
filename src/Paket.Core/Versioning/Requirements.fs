@@ -229,7 +229,7 @@ type FrameworkRestrictionP =
         // Bad ~ 10 mins
         //|> Seq.forall (fun inner -> superset |> Seq.contains inner)
     static member ExactlyFramework (tf: FrameworkIdentifier) =
-        ExactlyP (SinglePlatform tf)
+        ExactlyP (TargetProfile.SinglePlatform tf)
 
     override x.Equals(y) = 
         match y with 
@@ -323,11 +323,11 @@ module FrameworkRestriction =
     let FromLiteral lit = FrameworkRestriction.FromOrList [ { Literals = [ lit ] } ]
     let AtLeastPlatform pf = FromLiteral (FrameworkRestrictionLiteral.FromLiteral (AtLeastL pf))
     let ExactlyPlatform pf = FromLiteral (FrameworkRestrictionLiteral.FromLiteral (ExactlyL pf))
-    let Exactly id = ExactlyPlatform (SinglePlatform id)
+    let Exactly id = ExactlyPlatform (TargetProfile.SinglePlatform id)
     let AtLeastPortable (name, fws) = AtLeastPlatform (TargetProfile.FindPortable false fws)
-    let AtLeast id = AtLeastPlatform (SinglePlatform id)
+    let AtLeast id = AtLeastPlatform (TargetProfile.SinglePlatform id)
     let NotAtLeastPlatform pf = FromLiteral (FrameworkRestrictionLiteral.FromNegatedLiteral (AtLeastL pf))
-    let NotAtLeast id = NotAtLeastPlatform (SinglePlatform id)
+    let NotAtLeast id = NotAtLeastPlatform (TargetProfile.SinglePlatform id)
 
     let private simplify (fr:FrameworkRestriction) =
         /// When we have a restriction like (>=net35 && <net45) || >=net45

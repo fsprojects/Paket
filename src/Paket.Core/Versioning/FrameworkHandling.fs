@@ -948,17 +948,43 @@ type PortableProfileType =
             x.Frameworks
             |> List.sort
             |> List.map (fun fw -> fw.ToString()))
-type TargetProfile =
-    | SinglePlatform of FrameworkIdentifier
-    | PortableProfile of PortableProfileType
+type TargetProfileRaw =
+    | SinglePlatformP of FrameworkIdentifier
+    | PortableProfileP of PortableProfileType
     override this.ToString() =
         match this with
-        | SinglePlatform x -> x.ToString()
-        | PortableProfile p -> p.FolderName
+        | SinglePlatformP x -> x.ToString()
+        | PortableProfileP p -> p.FolderName
     member x.IsUnsupportedPortable =
         match x with
-        | PortableProfile p -> p.IsUnsupprted
+        | PortableProfileP p -> p.IsUnsupprted
         | _ -> false
+
+[<CustomEquality; CustomComparison>]
+type TargetProfile =
+    { RawTargetProfile : TargetProfileRaw; CompareString : string }
+    override x.ToString() = x.CompareString
+    member x.IsUnsupportedPortable = x.RawTargetProfile.IsUnsupportedPortable
+    
+    override x.Equals(y) =
+        match y with
+        | :? TargetProfile as r -> x.CompareString.Equals(r.CompareString)
+        | _ -> false
+    override x.GetHashCode() = x.CompareString.GetHashCode()
+    interface System.IComparable with
+        member x.CompareTo(y) =
+            match y with 
+            | :? TargetProfile as r -> x.CompareString.CompareTo(r.CompareString)
+            | _ -> failwith "wrong type"
+
+module TargetProfile =
+    let (|SinglePlatform|PortableProfile|) profile =
+        match profile.RawTargetProfile with
+        | SinglePlatformP x -> SinglePlatform x
+        | PortableProfileP p -> PortableProfile p
+    let OfPlatform p = { RawTargetProfile = p; CompareString = p.ToString() }
+    let SinglePlatform s = OfPlatform (SinglePlatformP s)
+    let PortableProfile s = OfPlatform (PortableProfileP s)
 
 module KnownTargetProfiles =
     // These lists are used primarilty when calculating stuff which requires iterating over ALL profiles
@@ -993,7 +1019,7 @@ module KnownTargetProfiles =
 
     let DotNetFrameworkProfiles =
        DotNetFrameworkIdentifiers
-       |> List.map SinglePlatform
+       |> List.map TargetProfile.SinglePlatform
 
     let DotNetStandardVersions = [
         DotNetStandardVersion.V1_0
@@ -1008,7 +1034,7 @@ module KnownTargetProfiles =
 
     let DotNetStandardProfiles =
        DotNetStandardVersions
-       |> List.map (DotNetStandard >> SinglePlatform)
+       |> List.map (DotNetStandard >> TargetProfile.SinglePlatform)
 
     let DotNetCoreAppVersions = [
         DotNetCoreAppVersion.V1_0
@@ -1025,7 +1051,7 @@ module KnownTargetProfiles =
 
     let DotNetCoreProfiles =
        DotNetCoreAppVersions
-       |> List.map (DotNetCoreApp >> SinglePlatform)
+       |> List.map (DotNetCoreApp >> TargetProfile.SinglePlatform)
 
     let WindowsVersions = [
         WindowsVersion.V8
@@ -1035,11 +1061,11 @@ module KnownTargetProfiles =
 
     let WindowsProfiles =
        WindowsVersions
-       |> List.map (Windows >> SinglePlatform)
+       |> List.map (Windows >> TargetProfile.SinglePlatform)
 
     let DotNetUnityProfiles =
        DotNetUnityVersions
-       |> List.map (DotNetUnity >> SinglePlatform)
+       |> List.map (DotNetUnity >> TargetProfile.SinglePlatform)
 
     let SilverlightVersions = [
         SilverlightVersion.V3
@@ -1049,7 +1075,7 @@ module KnownTargetProfiles =
 
     let SilverlightProfiles =
        SilverlightVersions
-       |> List.map (Silverlight >> SinglePlatform)
+       |> List.map (Silverlight >> TargetProfile.SinglePlatform)
 
     let MonoAndroidVersions = [
         MonoAndroidVersion.V1
@@ -1070,7 +1096,7 @@ module KnownTargetProfiles =
 
     let MonoAndroidProfiles =
        MonoAndroidVersions
-       |> List.map (MonoAndroid >> SinglePlatform)
+       |> List.map (MonoAndroid >> TargetProfile.SinglePlatform)
 
     let UAPVersons = [
         UAPVersion.V10
@@ -1079,7 +1105,7 @@ module KnownTargetProfiles =
 
     let UAPProfiles =
        UAPVersons
-       |> List.map (UAP >> SinglePlatform)
+       |> List.map (UAP >> TargetProfile.SinglePlatform)
 
     let WindowsPhoneVersions = [
         WindowsPhoneVersion.V7
@@ -1091,7 +1117,7 @@ module KnownTargetProfiles =
 
     let WindowsPhoneSilverlightProfiles =
        WindowsPhoneVersions
-       |> List.map (WindowsPhone >> SinglePlatform)
+       |> List.map (WindowsPhone >> TargetProfile.SinglePlatform)
 
     let WindowsPhoneAppVersions = [
         WindowsPhoneAppVersion.V8_1
@@ -1099,7 +1125,7 @@ module KnownTargetProfiles =
 
     let WindowsPhoneAppProfiles =
        WindowsPhoneAppVersions
-       |> List.map (WindowsPhoneApp >> SinglePlatform)
+       |> List.map (WindowsPhoneApp >> TargetProfile.SinglePlatform)
 
     // http://nugettoolsdev.azurewebsites.net/4.0.0/parse-framework?framework=.NETPortable%2CVersion%3Dv0.0%2CProfile%3DProfile3
     let AllPortableProfiles =
@@ -1157,12 +1183,12 @@ module KnownTargetProfiles =
        SilverlightProfiles @
        WindowsPhoneSilverlightProfiles @
        MonoAndroidProfiles @
-       [SinglePlatform(MonoTouch)
-        SinglePlatform(XamariniOS)
-        SinglePlatform(XamarinMac)
-        SinglePlatform(XamarinTV)
-        SinglePlatform(XamarinWatch)] @
-       (AllPortableProfiles |> List.map PortableProfile)
+       [TargetProfile.SinglePlatform(MonoTouch)
+        TargetProfile.SinglePlatform(XamariniOS)
+        TargetProfile.SinglePlatform(XamarinMac)
+        TargetProfile.SinglePlatform(XamarinTV)
+        TargetProfile.SinglePlatform(XamarinWatch)] @
+       (AllPortableProfiles |> List.map TargetProfile.PortableProfile)
 
     let AllDotNetStandardAndCoreProfiles =
        DotNetStandardProfiles @
@@ -1185,7 +1211,7 @@ module KnownTargetProfiles =
           Native(Release,Arm)]
 
     let AllProfiles = 
-        (AllNativeProfiles |> List.map SinglePlatform) @ 
+        (AllNativeProfiles |> List.map TargetProfile.SinglePlatform) @ 
           AllDotNetStandardAndCoreProfiles @
           AllDotNetProfiles
         |> Set.ofList
@@ -1195,7 +1221,7 @@ module KnownTargetProfiles =
         AllProfiles
         |> Set.toSeq
         |> Seq.tryPick (function
-            | PortableProfile p when p.ProfileName.ToLowerInvariant() = lowerName -> Some (PortableProfile p)
+            | TargetProfile.PortableProfile p when p.ProfileName.ToLowerInvariant() = lowerName -> Some (TargetProfile.PortableProfile p)
             | _ -> None)
     let FindPortableProfile name =
         match TryFindPortableProfile name with
@@ -1223,7 +1249,7 @@ module SupportCalculation =
         KnownTargetProfiles.AllPortableProfiles
         |> List.filter (fun p -> p.ProfileName <> name)
         |> List.filter (fun other -> isSupportedNotEqual portable other)
-        |> List.map PortableProfile
+        |> List.map TargetProfile.PortableProfile
     type SupportMap = System.Collections.Concurrent.ConcurrentDictionary<PortableProfileType,PortableProfileType list>
     let ofSeq s = s|> dict |> System.Collections.Concurrent.ConcurrentDictionary
     let toSeq s = s|> Seq.map (fun (kv:System.Collections.Generic.KeyValuePair<_,_>) -> kv.Key, kv.Value)
@@ -1266,7 +1292,7 @@ module SupportCalculation =
         sup
     let private getSupportedPortables p =
         getSupported p
-        |> List.choose (function PortableProfile p -> Some p | _ -> failwithf "Expected portable")
+        |> List.choose (function TargetProfile.PortableProfile p -> Some p | _ -> failwithf "Expected portable")
         
     let createInitialSupportMap () =
         KnownTargetProfiles.AllPortableProfiles
@@ -1295,7 +1321,7 @@ module SupportCalculation =
     let private findPortablePriv =
         memoize (fun (fws: _ list) ->
             if fws.Length = 0 then failwithf "can not find portable for an empty list (Details: Empty lists need to be handled earlier with a warning)!"
-            let fallback = PortableProfile (UnsupportedProfile (fws |> List.sort))
+            let fallback = TargetProfile.PortableProfile (UnsupportedProfile (fws |> List.sort))
             let minimal =
                 fws
                 |> List.filter (function
@@ -1320,7 +1346,7 @@ module SupportCalculation =
                     |> List.sortBy (fun p -> p.Frameworks.Length)
                     |> List.tryHead
                 match firstMatch with
-                | Some p -> PortableProfile p
+                | Some p -> TargetProfile.PortableProfile p
                 | None ->
                     fallback
             else
@@ -1334,10 +1360,10 @@ module SupportCalculation =
 
     let getSupportedPlatforms x =
         match x with
-        | SinglePlatform tf ->
+        | TargetProfile.SinglePlatform tf ->
             let rawSupported =
                 tf.RawSupportedPlatforms
-                |> List.map SinglePlatform
+                |> List.map TargetProfile.SinglePlatform
             let profilesSupported =
                 // See https://docs.microsoft.com/en-us/dotnet/articles/standard/library
                 // NOTE: This is explicit in NuGet world (ie users explicitely need to add "imports")
@@ -1398,11 +1424,11 @@ module SupportCalculation =
                             p.Frameworks
                             |> List.exists (fun fw -> fw = tf))
                     profiles
-                |> List.map PortableProfile
+                |> List.map TargetProfile.PortableProfile
             rawSupported @ profilesSupported
-        | PortableProfile p ->
+        | TargetProfile.PortableProfile p ->
             getSupportedPreCalculated p
-            |> List.map PortableProfile
+            |> List.map TargetProfile.PortableProfile
         |> Set.ofList
 
     let getSupportedPlatformsTransitive =
@@ -1429,13 +1455,13 @@ module SupportCalculation =
     /// true when x is supported by y, for example netstandard15 is supported by netcore10
     let isSupportedBy x y =
         match x with
-        | PortableProfile (PortableProfileType.UnsupportedProfile xs' as x') ->
+        | TargetProfile.PortableProfile (PortableProfileType.UnsupportedProfile xs' as x') ->
             // custom profiles are not in our lists -> custom logic
             match y with
-            | PortableProfile y' ->
+            | TargetProfile.PortableProfile y' ->
                 x' = y' ||
                 isSupportedNotEqual y' x'
-            | SinglePlatform y' ->
+            | TargetProfile.SinglePlatform y' ->
                 y'.RawSupportedPlatformsTransitive |> Seq.exists (fun y'' ->
                     xs' |> Seq.contains y'')
         | _ ->
@@ -1452,8 +1478,8 @@ module SupportCalculation =
 type TargetProfile with
     member p.Frameworks =
         match p with
-        | SinglePlatform fw -> [fw]
-        | PortableProfile p -> p.Frameworks
+        | TargetProfile.SinglePlatform fw -> [fw]
+        | TargetProfile.PortableProfile p -> p.Frameworks
     static member FindPortable warnWhenUnsupported (fws: _ list) = SupportCalculation.findPortable warnWhenUnsupported fws
 
     member inline x.PlatformsSupporting = SupportCalculation.getPlatformsSupporting x

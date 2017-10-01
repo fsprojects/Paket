@@ -95,19 +95,19 @@ module ``Given a list of paths`` =
 
     [<Test>]
     let ``it should find the best match for .NET 4.0``() =
-        findBestMatch (paths, SinglePlatform(DotNetFramework FrameworkVersion.V4)) |> shouldEqual (find "net40" |> Some)
+        findBestMatch (paths, TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V4)) |> shouldEqual (find "net40" |> Some)
 
     [<Test>]
     let ``it should find the best match for Silverlight 5``() =
-        findBestMatch (paths, SinglePlatform(Silverlight SilverlightVersion.V5)) |> shouldEqual (find "sl5"|> Some)
+        findBestMatch (paths, TargetProfile.SinglePlatform(Silverlight SilverlightVersion.V5)) |> shouldEqual (find "sl5"|> Some)
 
     [<Test>]
     let ``it should find no match for Silverlight 4``() =
-        findBestMatch (paths, SinglePlatform(Silverlight SilverlightVersion.V4)) |> shouldEqual None
+        findBestMatch (paths, TargetProfile.SinglePlatform(Silverlight SilverlightVersion.V4)) |> shouldEqual None
 
     [<Test>]
     let ``it should prefer (older) full .NET frameworks over portable class libraries``() =
-        findBestMatch (paths, SinglePlatform(DotNetFramework FrameworkVersion.V4_5)) |> shouldEqual (find "net40"|> Some)
+        findBestMatch (paths, TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V4_5)) |> shouldEqual (find "net40"|> Some)
 
     module ``when I get the supported target profiles`` =
         let supportedTargetProfiles = getSupportedTargetProfiles paths
@@ -129,35 +129,35 @@ module ``Given a list of paths`` =
 module ``General Penalty checks`` =
     [<Test>]
     let ``prefer net20 over emtpy folder``()=
-        Paket.PlatformMatching.findBestMatch ([""; "net20"] |> List.map forceExtractPlatforms, SinglePlatform(DotNetFramework(FrameworkVersion.V4_6_1)))
+        Paket.PlatformMatching.findBestMatch ([""; "net20"] |> List.map forceExtractPlatforms, TargetProfile.SinglePlatform(DotNetFramework(FrameworkVersion.V4_6_1)))
         |> shouldEqual (Some (forceExtractPlatforms "net20"))
 
     [<Test>]
     let ``best match for DotNet Standard 1.0``()=
-        Paket.PlatformMatching.findBestMatch (["net20"; "net40"; "net45"; "net451"]|> List.map forceExtractPlatforms, SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_0)))
+        Paket.PlatformMatching.findBestMatch (["net20"; "net40"; "net45"; "net451"]|> List.map forceExtractPlatforms, TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_0)))
         |> shouldEqual (None)
     
     [<Test>]
     let ``prefer net40-client over net35``()=
-        Paket.PlatformMatching.findBestMatch (["net20"; "net35"; "net40-client"]|> List.map forceExtractPlatforms, SinglePlatform(DotNetFramework(FrameworkVersion.V4_5)))
+        Paket.PlatformMatching.findBestMatch (["net20"; "net35"; "net40-client"]|> List.map forceExtractPlatforms, TargetProfile.SinglePlatform(DotNetFramework(FrameworkVersion.V4_5)))
         |> shouldEqual (Some (forceExtractPlatforms "net40-client"))
 
 
     [<Test>]
     let ``best match for DotNet Standard 1.1``()=
-        Paket.PlatformMatching.findBestMatch (["net20"; "net40"; "net45"; "net451"]|> List.map forceExtractPlatforms, SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_1)))
+        Paket.PlatformMatching.findBestMatch (["net20"; "net40"; "net45"; "net451"]|> List.map forceExtractPlatforms, TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_1)))
         |> shouldEqual (None)
 
     [<Test>]
     let ``best match for DotNet Standard 1.5``()=
-        Paket.PlatformMatching.findBestMatch (["net20"; "net40"; "net45"; "net451"]|> List.map forceExtractPlatforms, SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_5)))
+        Paket.PlatformMatching.findBestMatch (["net20"; "net40"; "net45"; "net451"]|> List.map forceExtractPlatforms, TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_5)))
         |> shouldEqual (None)
 
     [<Test>]
     let ``best match for net45``()=
         Paket.PlatformMatching.findBestMatch
           (["netstandard10"; "netstandard11"; "netstandard12"; "netstandard13"; "netstandard14"; "netstandard15"; "netstandard16"]|> List.map forceExtractPlatforms,
-           SinglePlatform(DotNetFramework(FrameworkVersion.V4_5)))
+           TargetProfile.SinglePlatform(DotNetFramework(FrameworkVersion.V4_5)))
         |> shouldEqual (Some (forceExtractPlatforms "netstandard11"))
 
 
@@ -165,49 +165,49 @@ module ``General Penalty checks`` =
     let ``best match for netstandard in portable``()=
         Paket.PlatformMatching.findBestMatch
           (["portable-netcore451+wpa81"]|> List.map forceExtractPlatforms,
-           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_1)))
+           TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_1)))
         |> shouldEqual (None)
 
         Paket.PlatformMatching.findBestMatch
           (["portable-netcore451+wpa81"]|> List.map forceExtractPlatforms,
-           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_2)))
+           TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_2)))
         |> shouldEqual (Some (forceExtractPlatforms "portable-netcore451+wpa81"))
 
         Paket.PlatformMatching.findBestMatch
           (["portable-netcore451+wpa81"]|> List.map forceExtractPlatforms,
-           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_3)))
+           TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_3)))
         |> shouldEqual (Some (forceExtractPlatforms "portable-netcore451+wpa81"))
 
         Paket.PlatformMatching.findBestMatch
           (["portable-netcore451+wpa81"]|> List.map forceExtractPlatforms,
-           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_4)))
+           TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_4)))
         |> shouldEqual (Some (forceExtractPlatforms "portable-netcore451+wpa81"))
 
         Paket.PlatformMatching.findBestMatch
           (["portable-netcore451+wpa81"]|> List.map forceExtractPlatforms,
-           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_5)))
+           TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_5)))
         |> shouldEqual (Some (forceExtractPlatforms "portable-netcore451+wpa81"))
 
         Paket.PlatformMatching.findBestMatch
           (["portable-netcore451+wpa81"]|> List.map forceExtractPlatforms,
-           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_6)))
+           TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_6)))
         |> shouldEqual (Some (forceExtractPlatforms "portable-netcore451+wpa81"))
 
     [<Test>]
     let ``best match for netstandard, netstandard is preferred``()=
         Paket.PlatformMatching.findBestMatch
           (["portable-win81+wpa81"; "netstandard1.3"]|> List.map forceExtractPlatforms,
-           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_2)))
+           TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_2)))
         |> shouldEqual (Some (forceExtractPlatforms "portable-win81+wpa81"))
 
         Paket.PlatformMatching.findBestMatch
           (["portable-win81+wpa81"; "netstandard1.3"]|> List.map forceExtractPlatforms,
-           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_3)))
+           TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_3)))
         |> shouldEqual (Some (forceExtractPlatforms "netstandard1.3"))
 
         Paket.PlatformMatching.findBestMatch
           (["portable-win81+wpa81"; "netstandard1.3"]|> List.map forceExtractPlatforms,
-           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_4)))
+           TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_4)))
         |> shouldEqual (Some (forceExtractPlatforms "netstandard1.3"))
 
     [<Test>]
@@ -215,19 +215,19 @@ module ``General Penalty checks`` =
         Paket.PlatformMatching.findBestMatch
           // Profile31 (supports netstandard1.0),  Profile32 (supports netstandard1.2)
           (["portable-netcore451+wp81"; "portable-netcore451+wpa81"]|> List.map forceExtractPlatforms,
-           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_0)))
+           TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_0)))
         |> shouldEqual (Some (forceExtractPlatforms "portable-netcore451+wp81"))
 
         Paket.PlatformMatching.findBestMatch
           // Profile31 (supports netstandard1.0),  Profile32 (supports netstandard1.2)
           (["portable-netcore451+wp81"; "portable-netcore451+wpa81"]|> List.map forceExtractPlatforms,
-           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_2)))
+           TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_2)))
         |> shouldEqual (Some (forceExtractPlatforms "portable-netcore451+wpa81"))
 
         Paket.PlatformMatching.findBestMatch
           // Profile31 (supports netstandard1.0),  Profile32 (supports netstandard1.2)
           (["portable-netcore451+wp81"; "portable-netcore451+wpa81"]|> List.map forceExtractPlatforms,
-           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_4)))
+           TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_4)))
         |> shouldEqual (Some (forceExtractPlatforms "portable-netcore451+wpa81"))
 
     [<Test>]
@@ -235,20 +235,20 @@ module ``General Penalty checks`` =
         // Not all portable profiles have a match.
         Paket.PlatformMatching.findBestMatch
           (["portable-net45+win8"]|> List.map forceExtractPlatforms,
-           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_0)))
+           TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_0)))
         |> shouldEqual (None)
 
     [<Test>]
     let ``best match for net451``()=
         Paket.PlatformMatching.findBestMatch
           (["netstandard10"; "netstandard11"; "netstandard12"; "netstandard13"; "netstandard14"; "netstandard15"; "netstandard16"]|> List.map forceExtractPlatforms,
-           SinglePlatform(DotNetFramework(FrameworkVersion.V4_5_1)))
+           TargetProfile.SinglePlatform(DotNetFramework(FrameworkVersion.V4_5_1)))
         |> shouldEqual (Some (forceExtractPlatforms "netstandard12"))
 
     [<Test>]
     let ``best match for net463``()=
         Paket.PlatformMatching.findBestMatch
           (["netstandard10"; "netstandard11"; "netstandard12"; "netstandard13"; "netstandard14"; "netstandard15"; "netstandard16"]|> List.map forceExtractPlatforms,
-           SinglePlatform(DotNetFramework(FrameworkVersion.V4_6_3)))
+           TargetProfile.SinglePlatform(DotNetFramework(FrameworkVersion.V4_6_3)))
         |> shouldEqual (Some (forceExtractPlatforms "netstandard15"))
 

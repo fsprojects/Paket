@@ -30,12 +30,12 @@ open Paket.Requirements
 
 [<Test>]
 let ``net46 should be compatible with netstandard13``() = 
-    (SinglePlatform (DotNetFramework FrameworkVersion.V4_6)).IsAtLeast (SinglePlatform (DotNetStandard DotNetStandardVersion.V1_3))
+    (TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4_6)).IsAtLeast (TargetProfile.SinglePlatform (DotNetStandard DotNetStandardVersion.V1_3))
     |> shouldEqual true
 
-    (SinglePlatform (DotNetStandard DotNetStandardVersion.V1_3)).IsSupportedBy (SinglePlatform (DotNetFramework FrameworkVersion.V4_6))
+    (TargetProfile.SinglePlatform (DotNetStandard DotNetStandardVersion.V1_3)).IsSupportedBy (TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4_6))
     |> shouldEqual true
 
-    (SinglePlatform (DotNetStandard DotNetStandardVersion.V1_3)).IsSmallerThan (SinglePlatform (DotNetFramework FrameworkVersion.V4_6))
+    (TargetProfile.SinglePlatform (DotNetStandard DotNetStandardVersion.V1_3)).IsSmallerThan (TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4_6))
     |> shouldEqual true
 

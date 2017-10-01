@@ -49,7 +49,7 @@ let ``Check that lists are updated``() =
 [<Test>]
 let ``Can detect uap10``() =
     let p = PlatformMatching.forceExtractPlatforms "uap10"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.UAP UAPVersion.V10)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.UAP UAPVersion.V10)))
 
 [<Test>]
 let ``Doesn't fail on profiles``() =
@@ -59,147 +59,147 @@ let ``Doesn't fail on profiles``() =
 [<Test>]
 let ``Can detect uap10.1``() =
     let p = PlatformMatching.forceExtractPlatforms "UAP10.1"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.UAP UAPVersion.V10_1)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.UAP UAPVersion.V10_1)))
 [<Test>]
 let ``Can detect net45``() =
     let p = PlatformMatching.forceExtractPlatforms "net45"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_5)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_5)))
 
 [<Test>]
 let ``Can detect MonoTouch0.0``() =
     let p = PlatformMatching.forceExtractPlatforms "MonoTouch0.0"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.MonoTouch)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.MonoTouch)))
 
 [<Test>]
 let ``Can detect netcore1.0``() =
     // Currently required for backwards compat (2017-08-20), as we wrote these incorrectly in previous versions.
     let p = PlatformMatching.forceExtractPlatforms "netcore1.0"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.DotNetCoreApp DotNetCoreAppVersion.V1_0)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetCoreApp DotNetCoreAppVersion.V1_0)))
 
 [<Test>]
 let ``Can detect wpa``() =
     let p = PlatformMatching.forceExtractPlatforms "wpa"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.WindowsPhoneApp WindowsPhoneAppVersion.V8_1)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.WindowsPhoneApp WindowsPhoneAppVersion.V8_1)))
 
 [<Test>]
 let ``Can detect wpav8.1``() =
     let p = PlatformMatching.forceExtractPlatforms "wpav8.1"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.WindowsPhoneApp WindowsPhoneAppVersion.V8_1)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.WindowsPhoneApp WindowsPhoneAppVersion.V8_1)))
 
 [<Test>]
 let ``Can detect wpv8.0``() =
     let p = PlatformMatching.forceExtractPlatforms "wpv8.0"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.WindowsPhone WindowsPhoneVersion.V8)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.WindowsPhone WindowsPhoneVersion.V8)))
 
 [<Test>]
 let ``Can detect winv4.5``() =
     let p = PlatformMatching.forceExtractPlatforms "winv4.5"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.Windows WindowsVersion.V8)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.Windows WindowsVersion.V8)))
 
 [<Test>]
 let ``Can detect uap101``() =
     // Currently required for backwards compat (2017-08-20), as we wrote these incorrectly in previous versions.
     let p = PlatformMatching.forceExtractPlatforms "uap101"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (UAP UAPVersion.V10_1)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (UAP UAPVersion.V10_1)))
 
 [<Test>]
 let ``Can detect .NETPlatform5.4``() =
     let p = PlatformMatching.forceExtractPlatforms ".NETPlatform5.4"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (DNXCore FrameworkVersion.V5_0)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (DNXCore FrameworkVersion.V5_0)))
 
 
 [<Test>]
 let ``Can detect MonoTouch0.00``() =
     let p = PlatformMatching.forceExtractPlatforms "MonoTouch0.00"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.MonoTouch)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.MonoTouch)))
 
 [<Test>]
 let ``Can detect WindowsPhoneApp0.0``() =
     let p = PlatformMatching.forceExtractPlatforms "WindowsPhoneApp0.0"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.WindowsPhoneApp WindowsPhoneAppVersion.V8_1)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.WindowsPhoneApp WindowsPhoneAppVersion.V8_1)))
 
 [<Test>]
 let ``Can detect WindowsPhone8.0``() =
     let p = PlatformMatching.forceExtractPlatforms "WindowsPhone8.0"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.WindowsPhone WindowsPhoneVersion.V8)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.WindowsPhone WindowsPhoneVersion.V8)))
 
 [<Test>]
 let ``Can detect Windows8.0``() =
     let p = PlatformMatching.forceExtractPlatforms "Windows8.0"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.Windows WindowsVersion.V8)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.Windows WindowsVersion.V8)))
 
 [<Test>]
 let ``Can detect .NETFramework4.0-Client``() =
     let p = PlatformMatching.forceExtractPlatforms ".NETFramework4.0-Client"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4)))
 
 [<Test>]
 let ``Can detect MonoAndroid0.0``() =
     let p = PlatformMatching.forceExtractPlatforms "MonoAndroid0.0"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.MonoAndroid MonoAndroidVersion.V1)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.MonoAndroid MonoAndroidVersion.V1)))
 
 [<Test>]
 let ``Can detect net3.5``() =
     let p = PlatformMatching.forceExtractPlatforms "net3.5"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V3_5)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V3_5)))
 
 
 [<Test>]
 let ``Can detect 35``() =
     let p = PlatformMatching.forceExtractPlatforms "35"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V3_5)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V3_5)))
 
 [<Test>]
 let ``Can detect 3.5``() =
     let p = PlatformMatching.forceExtractPlatforms "3.5"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V3_5)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V3_5)))
 
 [<Test>]
 let ``Can detect net4.00.03``() =
     let p = PlatformMatching.forceExtractPlatforms "net4.00.03"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_0_3)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_0_3)))
 
 [<Test>]
 let ``Can detect netstandard1.6``() =
     let p = PlatformMatching.forceExtractPlatforms "netstandard1.6"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6)))
 
 [<Test>]
 let ``Can detect netstandard16``() =
     let p = PlatformMatching.forceExtractPlatforms "netstandard16"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6)))
 
 [<Test>]
 let ``Can detect .NETCore4.5``() =
     let p = PlatformMatching.forceExtractPlatforms ".NETCore4.5"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.Windows WindowsVersion.V8)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.Windows WindowsVersion.V8)))
 
 [<Test>]
 let ``Can detect net10-full``() =
     let p = PlatformMatching.forceExtractPlatforms "net10-full"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V1)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V1)))
 
 [<Test>]
 let ``Can detect net11-full``() =
     let p = PlatformMatching.forceExtractPlatforms "net11-full"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V1_1)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V1_1)))
 
 [<Test>]
 let ``Can detect net11-client``() =
     let p = PlatformMatching.forceExtractPlatforms "net11-client"
-    p.ToTargetProfile false |> shouldEqual (Some (SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V1_1)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V1_1)))
 
 [<Test>]
 let ``Can detect .NETPortable4.5-Profile111``() =
     let p = PlatformMatching.forceExtractPlatforms ".NETPortable4.5-Profile111"
-    p.ToTargetProfile false |> shouldEqual (Some (PortableProfile PortableProfileType.Profile111))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.PortableProfile PortableProfileType.Profile111))
 
 [<Test>]
 let ``Can detect .NETPortable4.5-Profile259``() =
     let p = PlatformMatching.forceExtractPlatforms ".NETPortable4.5-Profile259"
-    p.ToTargetProfile false |> shouldEqual (Some (PortableProfile PortableProfileType.Profile259))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.PortableProfile PortableProfileType.Profile259))
 
 [<Test>]
 let ``Can detect .NETPortable4.6-Profile151``() =
     let p = PlatformMatching.forceExtractPlatforms ".NETPortable4.6-Profile151"
-    p.ToTargetProfile false |> shouldEqual (Some (PortableProfile PortableProfileType.Profile151))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.PortableProfile PortableProfileType.Profile151))

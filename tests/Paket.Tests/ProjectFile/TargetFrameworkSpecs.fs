@@ -14,15 +14,15 @@ let TestData: obj[][] =
         //  expected TargetProfile.ToString
         //  expected TargetFramework
         [|"Project2.fsprojtest";
-            (SinglePlatform(DotNetFramework FrameworkVersion.V4));
+            (TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V4));
             "net40";
             (DotNetFramework FrameworkVersion.V4)|];
         [|"Empty.fsprojtest";
-            (SinglePlatform(DotNetFramework FrameworkVersion.V4));
+            (TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V4));
             "net40";
             (DotNetFramework FrameworkVersion.V4)|];
         [|"NewSilverlightClassLibrary.csprojtest";
-            (SinglePlatform(Silverlight SilverlightVersion.V5));
+            (TargetProfile.SinglePlatform(Silverlight SilverlightVersion.V5));
             "sl5";
             (Silverlight SilverlightVersion.V5)|];
         [|"FSharp.Core.Fluent-3.1.fsprojtest";
@@ -30,7 +30,7 @@ let TestData: obj[][] =
             "portable-net45+win8+wp8+wpa81";
             (DotNetFramework FrameworkVersion.V4_5)|];
         [|"MicrosoftNetSdkWithTargetFramework.csprojtest";
-            (SinglePlatform(DotNetStandard DotNetStandardVersion.V1_4));
+            (TargetProfile.SinglePlatform(DotNetStandard DotNetStandardVersion.V1_4));
             "netstandard1.4";
             (DotNetStandard DotNetStandardVersion.V1_4)|];
     |]
@@ -38,7 +38,7 @@ let TestData: obj[][] =
 [<Test>]
 let ``should detect profile259`` () =
     portable
-    |> shouldEqual (PortableProfile PortableProfileType.Profile259)
+    |> shouldEqual (TargetProfile.PortableProfile PortableProfileType.Profile259)
     
 [<Test>]
 [<TestCaseSource("TestData")>]

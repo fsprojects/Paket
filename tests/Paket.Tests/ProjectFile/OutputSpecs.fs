@@ -30,13 +30,13 @@ let ``should detect exe output type for Project3 proj file``() =
 let ``should detect target framework for Project1 proj file``() =
     ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project1.fsprojtest").Value.GetTargetProfile()
-    |> shouldEqual (SinglePlatform(DotNetFramework(FrameworkVersion.V4_5)))
+    |> shouldEqual (TargetProfile.SinglePlatform(DotNetFramework(FrameworkVersion.V4_5)))
 
 [<Test>]
 let ``should detect target framework for Project2 proj file``() =
     ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project2.fsprojtest").Value.GetTargetProfile()
-    |> shouldEqual (SinglePlatform(DotNetFramework(FrameworkVersion.V4)))
+    |> shouldEqual (TargetProfile.SinglePlatform(DotNetFramework(FrameworkVersion.V4)))
 
 [<Test>]
 let ``should detect output path for proj file``
@@ -74,7 +74,7 @@ let ``should detect output path for netsdk with outputPath csproj file``
 let ``should detect framework profile for ProjectWithConditions file`` () =
     ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/ProjectWithConditions.fsprojtest").Value.GetTargetProfile()
-    |> shouldEqual (SinglePlatform(DotNetFramework(FrameworkVersion.V4_6)))
+    |> shouldEqual (TargetProfile.SinglePlatform(DotNetFramework(FrameworkVersion.V4_6)))
 
 [<Test>]
 let ``should detect assembly name for Project1 proj file`` () =

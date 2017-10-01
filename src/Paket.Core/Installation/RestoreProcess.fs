@@ -320,7 +320,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
             newFileName.Directory.Create()
 
         elif not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
-            if not (File.Exists(oldReferencesFile.FullName)) || targetProfile = SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6) then
+            if not (File.Exists(oldReferencesFile.FullName)) || targetProfile = TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6) then
                 // compat with old targets and fable - always write but prefer netstandard16.
                 File.WriteAllText(oldReferencesFile.FullName,output)
             File.WriteAllText(newFileName.FullName,output)
@@ -492,7 +492,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                             match resolvedPackage.Settings.FrameworkRestrictions with
                             | Requirements.ExplicitRestriction restrictions ->
                                 targets
-                                |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target))
+                                |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, TargetProfile.SinglePlatform target))
                             | _ -> true)
  
 
