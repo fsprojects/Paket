@@ -108,6 +108,7 @@ let directToolEx isPaket toolPath command workingDir =
     res
     #else
     Environment.SetEnvironmentVariable("PAKET_DETAILED_ERRORS", "true")
+    Environment.SetEnvironmentVariable("PAKET_DETAILED_WARNINGS", "true")
     printfn "%s> %s %s" workingDir (if isPaket then "paket" else toolPath) command
     let perfMessages = ResizeArray()
     let msgs = ResizeArray<PaketMsg>()

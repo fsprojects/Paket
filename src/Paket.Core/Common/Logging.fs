@@ -10,6 +10,9 @@ open System.Threading
 let mutable verbose = false
 
 /// [omit]
+let mutable verboseWarnings = false
+
+/// [omit]
 type Trace = {
     Level: TraceLevel
     Text: string

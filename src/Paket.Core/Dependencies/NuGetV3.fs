@@ -476,9 +476,10 @@ let loadFromCacheOrGetDetails (force:bool)
                 else
                     return false,ODataSearchResult.Match cachedObject
             with exn ->
-                eprintfn "Possible Performance degration, could not retrieve '%O' from cache: %s" packageName exn.Message
-                if verbose then
-                    printfn "Error while retrieving data from cache: %O" exn
+                if verboseWarnings then
+                    eprintfn "Possible Performance degration, could not retrieve '%O' from cache: %O" packageName exn
+                else
+                    eprintfn "Possible Performance degration, could not retrieve '%O' from cache: %s" packageName exn.Message
                 let! details = getPackageDetails source packageName version
                 return true,details
         else

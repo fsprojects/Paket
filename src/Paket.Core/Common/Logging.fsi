@@ -5,6 +5,8 @@ open System.Diagnostics
 
 val mutable verbose : bool
 
+val mutable verboseWarnings : bool
+
 
 val tracen : string -> unit
 
