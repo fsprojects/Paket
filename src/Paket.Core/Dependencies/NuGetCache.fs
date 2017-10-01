@@ -18,6 +18,14 @@ open System.Runtime.ExceptionServices
 
 open System.Threading.Tasks
 
+
+// show the path that was too long
+let FileInfo(str) =
+    try
+        FileInfo(str)
+    with
+      :? PathTooLongException as exn -> raise (PathTooLongException("Path too long: " + str, exn))
+
 type NuGetResponseGetVersionsSuccess = string []
 type NuGetResponseGetVersionsFailure =
     { Url : string; Error : ExceptionDispatchInfo }
