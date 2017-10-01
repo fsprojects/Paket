@@ -1,3 +1,6 @@
+#### 5.101.0 - 2017-10-01
+* PERFORMANCE: Make stuff faster - https://github.com/fsprojects/Paket/pull/2807
+
 #### 5.100.3 - 2017-09-29
 * BUGFIX: Add MonoAndroid v8 - https://github.com/fsprojects/Paket/issues/2800
 
