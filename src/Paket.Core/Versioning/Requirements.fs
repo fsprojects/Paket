@@ -460,7 +460,9 @@ module FrameworkRestriction =
             |> List.map (fun andFormula -> { Literals = andFormula.Literals |> List.distinct |> List.sort })
             |> List.distinct
             |> List.sort 
-            |> fun newOrList -> FrameworkRestriction.WithOrListInternal newOrList fr
+            |> fun newOrList ->
+                if newOrList <> fr.OrFormulas then FrameworkRestriction.WithOrListInternal newOrList fr
+                else fr
         let optimize fr =
             fr
             |> removeNegatedLiteralsWhichOccurSinglePositive
@@ -475,7 +477,7 @@ module FrameworkRestriction =
         while hasChanged do
             let old = newFormula
             newFormula <- optimize newFormula
-            if old = newFormula then hasChanged <- false
+            if System.Object.ReferenceEquals(old, newFormula) then hasChanged <- false
         newFormula
             
 
@@ -542,19 +544,22 @@ module FrameworkRestriction =
     //    Unchecked.defaultof<_>
 
     let Between (x, y) =
-        let isSimple, result = And2 (AtLeast x) (NotAtLeast y)
-        if isSimple then result else simplify result
+        And [ AtLeast x; NotAtLeast y ]
+        //let isSimple, result = And2 (AtLeast x) (NotAtLeast y)
+        //if isSimple then result else simplify result
 
     let combineRestrictionsWithOr (x : FrameworkRestriction) y =
-        let isSimple, result = Or2 x y
-        if isSimple then result else simplify result
+        Or [ x; y ]
+        //let isSimple, result = Or2 x y
+        //if isSimple then result else simplify result
 
     let (|HasNoRestriction|_|) x =
         if x = NoRestriction then Some () else None
 
     let combineRestrictionsWithAnd (x : FrameworkRestriction) y =
-        let isSimple, result = And2 x y
-        if isSimple then result else simplify result
+        And [ x; y ]
+        //let isSimple, result = And2 x y
+        //if isSimple then result else simplify result
 
 type FrameworkRestrictions =
 | ExplicitRestriction of FrameworkRestriction
@@ -694,7 +699,7 @@ let private parseRestrictionsRaw skipSimplify (text:string) =
                 | true, false -> FrameworkRestriction.And
                 | false, true -> FrameworkRestriction.OrAlreadySimplified
                 | false, false -> FrameworkRestriction.Or
-            operands |> f, next
+            operands |> List.rev |> f, next
         | h when h.StartsWith "NOT" ->
             let next = h.Substring 2
 
