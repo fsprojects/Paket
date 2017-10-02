@@ -1,0 +1,3 @@
+source https://api.nuget.org/v3/index.json
+framework: net45
+nuget AutoMapper == 6.1.1
