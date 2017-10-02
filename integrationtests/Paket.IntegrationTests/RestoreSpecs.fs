@@ -15,3 +15,7 @@ let ``#2496 Paket fails on projects that target multiple frameworks``() =
     let wd = (scenarioTempPath scenario) @@ project
     directDotnet true (sprintf "restore %s.csproj" project) wd
         |> ignore
+
+[<Test>]
+let ``#2676 Real test failure on mono: file not found, probably incorrect casing``() = 
+    ()
