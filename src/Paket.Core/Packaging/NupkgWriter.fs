@@ -378,8 +378,7 @@ module NuspecExtensions =
                 Id + ".nuspec", nuspecDoc (projectInfo.ToCoreInfo Id, optionalInfo)
             
 
-        static member FromProject (projectPath:string, dependenciesPath:string) = 
-            let dependencies = DependenciesFile.ReadFromFile dependenciesPath
+        static member FromProject (projectPath:string, dependenciesFile:DependenciesFile) =
             match ProjectFile.TryLoad projectPath  with
             | None -> failwithf "unable to load project from path '%s'" projectPath
             | Some project ->
@@ -389,7 +388,7 @@ module NuspecExtensions =
                         let references = ReferencesFile.FromFile refsPath
                         references.Groups |> Seq.collect (fun kvp -> 
                         kvp.Value.NugetPackages |> List.choose (fun pkg -> 
-                            dependencies.TryGetPackage(kvp.Key,pkg.Name)
+                            dependenciesFile.TryGetPackage(kvp.Key,pkg.Name)
                             |> Option.map (fun verreq -> pkg.Name,verreq.VersionRequirement)))
                         |> List.ofSeq
                     ) |> Option.defaultValue []

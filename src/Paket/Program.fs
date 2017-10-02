@@ -697,8 +697,9 @@ let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
 
 let generateNuspec (results:ParseResults<GenerateNuspecArgs>) =
     let projectFile = results.GetResult <@ GenerateNuspecArgs.Project @>
-    let dependencies = results.GetResult <@ GenerateNuspecArgs.DependenciesFile @>
+    let dependenciesPath = results.GetResult <@ GenerateNuspecArgs.DependenciesFile @>
     let output = defaultArg  (results.TryGetResult <@ GenerateNuspecArgs.Output @>) (Directory.GetCurrentDirectory())
+    let dependencies = DependenciesFile.ReadFromFile dependenciesPath
     let filename, nuspec = Nuspec.FromProject(projectFile,dependencies)
     let nuspecString = nuspec.ToString()
     File.WriteAllText (Path.Combine (output,filename), nuspecString)
