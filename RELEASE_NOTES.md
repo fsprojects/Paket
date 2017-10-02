@@ -1,5 +1,5 @@
-#### 5.101.1 - 2017-10-02
-* PERFORMANCE: Improvements in NuSpec parsing
+#### 5.102.0 - 2017-10-02
+* CLEANUP: Remove dnxcore50 moniker from lock file - https://github.com/fsprojects/Paket/pull/2813
 
 #### 5.101.0 - 2017-10-01
 * PERFORMANCE: Improvements in framework restriction parsing - https://github.com/fsprojects/Paket/pull/2807
