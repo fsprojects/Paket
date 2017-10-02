@@ -380,7 +380,6 @@ module NuspecExtensions =
 
         static member FromProject (projectPath:string, dependenciesPath:string) = 
             let dependencies = DependenciesFile.ReadFromFile dependenciesPath
-            let lockFile = (DependenciesFile.FindLockfile dependenciesPath).FullName |> LockFile.LoadFrom
             match ProjectFile.TryLoad projectPath  with
             | None -> failwithf "unable to load project from path '%s'" projectPath
             | Some project ->
