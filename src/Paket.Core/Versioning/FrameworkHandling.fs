@@ -69,6 +69,7 @@ type FrameworkVersion =
     | V4_6_2
     | V4_6_3
     | V4_7
+    | V4_7_1
     | V5_0
     override this.ToString() =
         match this with
@@ -88,6 +89,7 @@ type FrameworkVersion =
         | V4_6_2    -> "v4.6.2"
         | V4_6_3    -> "v4.6.3"
         | V4_7      -> "v4.7"
+        | V4_7_1    -> "v4.7.1"
         | V5_0      -> "v5.0"
 
     member this.ShortString() =
@@ -108,6 +110,7 @@ type FrameworkVersion =
         | FrameworkVersion.V4_6_2 -> "462"
         | FrameworkVersion.V4_6_3 -> "463"
         | FrameworkVersion.V4_7 -> "47"
+        | FrameworkVersion.V4_7_1 -> "471"
         | FrameworkVersion.V5_0 -> "50"
 
     static member TryParse s =
@@ -128,6 +131,7 @@ type FrameworkVersion =
         | "4.6.2" -> Some FrameworkVersion.V4_6_2
         | "4.6.3" -> Some FrameworkVersion.V4_6_3
         | "4.7" -> Some FrameworkVersion.V4_7
+        | "4.7.1" -> Some FrameworkVersion.V4_7_1
         | "5" -> Some FrameworkVersion.V5_0
         | _ -> None
 
@@ -559,7 +563,8 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_6_2 -> [ DotNetFramework FrameworkVersion.V4_6_1; DotNetStandard DotNetStandardVersion.V1_5 ]
         | DotNetFramework FrameworkVersion.V4_6_3 -> [ DotNetFramework FrameworkVersion.V4_6_2 ]
         | DotNetFramework FrameworkVersion.V4_7 -> [ DotNetFramework FrameworkVersion.V4_6_3]
-        | DotNetFramework FrameworkVersion.V5_0 -> [ DotNetFramework FrameworkVersion.V4_7 ]
+        | DotNetFramework FrameworkVersion.V4_7_1 -> [ DotNetFramework FrameworkVersion.V4_7; DotNetStandard DotNetStandardVersion.V2_0 ]
+        | DotNetFramework FrameworkVersion.V5_0 -> [ DotNetFramework FrameworkVersion.V4_7_1 ]
         | DNX _ -> [ ]
         | DNXCore _ -> [ ]
         | DotNetStandard DotNetStandardVersion.V1_0 -> [  ]
@@ -988,7 +993,7 @@ module TargetProfile =
     let PortableProfile s = OfPlatform (PortableProfileP s)
 
 module KnownTargetProfiles =
-    // These lists are used primarilty when calculating stuff which requires iterating over ALL profiles
+    // These lists are used primarily when calculating stuff which requires iterating over ALL profiles
     //  - Restriction System: "NOT" function
     //  - Generation of Project-File Conditions
     //  - Penalty system (to calculate best matching framework)
@@ -1011,6 +1016,7 @@ module KnownTargetProfiles =
         FrameworkVersion.V4_6_2
         FrameworkVersion.V4_6_3
         FrameworkVersion.V4_7
+        FrameworkVersion.V4_7_1
         FrameworkVersion.V5_0
     ]
 
