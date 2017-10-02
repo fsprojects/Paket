@@ -16,7 +16,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             get { return EffectiveStrategy.CanDownloadHashFile; }
         }
 
-        private readonly string _paketCacheDir =
+        public static readonly string PaketCacheDir =
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NuGet", "Cache", "Paket");
 
         public IDownloadStrategy EffectiveStrategy { get; set; }
@@ -56,7 +56,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         protected override void DownloadVersionCore(string latestVersion, string target, PaketHashFile hashFile)
         {
-            var cached = Path.Combine(_paketCacheDir, latestVersion, "paket.exe");
+            var cached = Path.Combine(PaketCacheDir, latestVersion, "paket.exe");
 
             if (!FileSystemProxy.FileExists(cached))
             {
@@ -96,7 +96,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             if (!BootstrapperHelper.ValidateHash(FileSystemProxy, hashFile, latestVersion, tempFile))
             {
                 throw new InvalidOperationException(
-                    string.Format("paket.exe was currupted after download by {0}: Invalid hash",
+                    string.Format("paket.exe was corrupted after download by {0}: Invalid hash",
                         EffectiveStrategy.Name));
             }
 
@@ -124,7 +124,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
             var cachedPath = GetHashFilePathInCache(latestVersion);
 
-            if (File.Exists(cachedPath))
+            if (FileSystemProxy.FileExists(cachedPath))
             {
                 // Maybe there's another bootstraper process running
                 // We trust it to close the file with the correct content
@@ -175,10 +175,10 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         private string GetLatestVersionInCache(bool ignorePrerelease)
         {
-            FileSystemProxy.CreateDirectory(_paketCacheDir);
+            FileSystemProxy.CreateDirectory(PaketCacheDir);
             var zero = new SemVer();
 
-            return FileSystemProxy.GetDirectories(_paketCacheDir)
+            return FileSystemProxy.GetDirectories(PaketCacheDir)
                 .Select(Path.GetFileName)
                 .OrderByDescending(x =>
                 {
@@ -201,7 +201,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         public string GetHashFilePathInCache(string version)
         {
-            return Path.Combine(_paketCacheDir, version, "paket-sha256.txt");
+            return Path.Combine(PaketCacheDir, version, "paket-sha256.txt");
         }
     }
 }

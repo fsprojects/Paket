@@ -114,7 +114,7 @@ namespace Paket.Bootstrapper
                 ConsoleImpl.WriteInfo("Checking Paket version ({0})...", versionRequested);
                 ConsoleImpl.WriteTrace("Target path is {0}", dlArgs.Target);
                 var localVersion = fileSystemProxy.GetLocalFileVersion(dlArgs.Target);
-                ConsoleImpl.WriteTrace("File in target path version: v{0}", localVersion ?? "UNKNOWN");
+                ConsoleImpl.WriteTrace("File in target path version: v{0}", string.IsNullOrEmpty(localVersion) ? "UNKNOWN" : localVersion);
 
                 var specificVersionRequested = true;
                 var latestVersion = dlArgs.LatestVersion;

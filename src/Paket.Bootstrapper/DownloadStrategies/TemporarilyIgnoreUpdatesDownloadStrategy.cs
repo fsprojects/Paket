@@ -79,15 +79,9 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         public IDownloadStrategy EffectiveStrategy {
             get { return _effectiveStrategy; }
-            set {
-                if (value == null)
-                    throw new ArgumentException("TemporarilyIgnoreUpdatesDownloadStrategy needs a non-null EffectiveStrategy");
-
-                _effectiveStrategy = value;
-            }
         }
             
-        private IDownloadStrategy _effectiveStrategy;
+        private readonly IDownloadStrategy _effectiveStrategy;
 
         private bool IsOlderThanMaxFileAge()
         {
