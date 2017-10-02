@@ -1,3 +1,6 @@
+#### 5.103.0 - 2017-10-02
+* CLEANUP: Support for .NET 4.7.1 - https://github.com/fsprojects/Paket/pull/2815
+
 #### 5.102.0 - 2017-10-02
 * CLEANUP: Remove dnxcore50 moniker from lock file - https://github.com/fsprojects/Paket/pull/2813
 
