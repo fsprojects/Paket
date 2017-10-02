@@ -1017,7 +1017,6 @@ module KnownTargetProfiles =
         FrameworkVersion.V4_6_3
         FrameworkVersion.V4_7
         FrameworkVersion.V4_7_1
-        FrameworkVersion.V5_0
     ]
 
     let DotNetFrameworkIdentifiers =
@@ -1225,8 +1224,9 @@ module KnownTargetProfiles =
 
     let isSupportedProfile profile =
         match profile with
-        | FrameworkIdentifier.DNX _ -> false
-        | FrameworkIdentifier.DNXCore _ -> false
+        | FrameworkIdentifier.DNX _
+        | FrameworkIdentifier.DNXCore _
+        | FrameworkIdentifier.DotNetFramework (FrameworkVersion.V5_0) -> false
         | _ -> true
 
     let TryFindPortableProfile (name:string) =

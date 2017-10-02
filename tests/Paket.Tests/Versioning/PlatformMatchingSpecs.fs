@@ -28,7 +28,8 @@ let ``Check that lists are updated``() =
         let tagReader = FSharp.Reflection.FSharpValue.PreComputeUnionTagReader(typeof<'t>)
         let cases = FSharp.Reflection.FSharpType.GetUnionCases(typeof<'t>)
         checkListEx tagReader cases l
-    checkList KnownTargetProfiles.DotNetFrameworkVersions
+    
+    checkList (FrameworkVersion.V5_0 :: KnownTargetProfiles.DotNetFrameworkVersions) // v5 was unlisted
     checkList KnownTargetProfiles.DotNetCoreAppVersions
     checkList KnownTargetProfiles.DotNetStandardVersions
     checkList KnownTargetProfiles.DotNetUnityVersions

@@ -24,11 +24,3 @@ let ``#2700-1 v3 works properly``() =
     let mainGroup = lockFile.Groups.[Constants.MainDependencyGroup]
     mainGroup.Resolution.[PackageName "Microsoft.CSharp"].Source.Url
     |> shouldEqual "https://www.myget.org/F/dotnet-core-svc/api/v3/index.json"
-
-[<Test>]
-let ``#2700-2 v2 is not upgraded to v3``() =
-    updateEx true "i002700-2" |> ignore
-    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i002700-2","paket.lock"))
-    let mainGroup = lockFile.Groups.[Constants.MainDependencyGroup]
-    mainGroup.Resolution.[PackageName "Microsoft.CSharp"].Source.Url
-    |> shouldEqual "https://www.myget.org/F/dotnet-core-svc"
