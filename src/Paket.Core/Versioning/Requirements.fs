@@ -347,8 +347,7 @@ module FrameworkRestriction =
                         |> List.filter (fun literal ->
                             positiveSingles
                             |> List.exists (fun p -> literal.IsNegated && literal.LiteraL = p.LiteraL)
-                            |> not
-                        )
+                            |> not)
                     if reworkedAnd.Length < andFormula.Literals.Length then
                         true, { Literals = reworkedAnd } :: reworkedOrFormulas
                     else
@@ -568,6 +567,7 @@ type FrameworkRestrictions =
         match x with
         | ExplicitRestriction r -> r.ToString()
         | AutoDetectFramework -> "AutoDetect"
+
     member x.GetExplicitRestriction () =
         match x with
         | ExplicitRestriction list -> list
@@ -598,6 +598,7 @@ type RestrictionParseProblem =
         | RestrictionParseProblem.UnsupportedPortable _ -> false
         | RestrictionParseProblem.ParseSecondOperator _
         | RestrictionParseProblem.ParseFramework _ -> true
+
 let parseRestrictionsLegacy failImmediatly (text:string) =
     // older lockfiles to the new "restriction" semantics
     let problems = ResizeArray<_>()
@@ -655,7 +656,7 @@ let private parseRestrictionsRaw skipSimplify (text:string) =
 
     let rec parseOperator (text:string) =
         match text.Trim() with
-        | t when String.IsNullOrEmpty t -> failwithf "trying to parse an otherator but got no content"
+        | t when String.IsNullOrEmpty t -> failwithf "trying to parse an operator but got no content"
         | h when h.StartsWith ">=" || h.StartsWith "==" || h.StartsWith "<" ->
             // parse >=
             let smallerThan = h.StartsWith "<"
@@ -714,7 +715,7 @@ let private parseRestrictionsRaw skipSimplify (text:string) =
                     | { OrFormulas = [ {Literals = [ lit] } ] } ->
                         [ {Literals = [ { lit with IsNegated = not lit.IsNegated } ] } ]
                         |> FrameworkRestriction.FromOrList
-                    |  _ -> failwithf "a general NOT is not implemted jet (and shouldn't be emitted for now)"
+                    |  _ -> failwithf "a general NOT is not implemented (and shouldn't be emitted for now)"
                 negated, next
             else
                 failwithf "Expected operand after NOT, '%s'" text
@@ -730,8 +731,7 @@ let private parseRestrictionsRaw skipSimplify (text:string) =
     let result, next = parseOperator text
     if String.IsNullOrEmpty next |> not then
         failwithf "Successfully parsed '%O' but got additional text '%s'" result next
-    result,
-    problems.ToArray()
+    result, problems.ToArray()
     
 let parseRestrictions = memoize (parseRestrictionsRaw false)
 let internal parseRestrictionsSimplified = parseRestrictionsRaw true
@@ -1107,6 +1107,10 @@ let addFrameworkRestrictionsToDependencies rawDependencies (frameworkGroups:Pars
                         if prof.IsSome && prof.Value.IsUnsupportedPortable then
                             handleProblem <| UnknownPortableProfile prof.Value
                         prof)
+                    |> Seq.filter (fun frameworkGroup -> 
+                        match frameworkGroup with
+                        | TargetProfile.SinglePlatform sp -> KnownTargetProfiles.isSupportedProfile sp
+                        | _ -> true)
                     // TODO: Check if this is needed (I think the logic below is a general version of this subset logic)
                     |> Seq.filter (fun frameworkGroup ->
                         // filter all restrictions which would render this group to nothing (ie smaller restrictions)
@@ -1123,8 +1127,8 @@ let addFrameworkRestrictionsToDependencies rawDependencies (frameworkGroups:Pars
 
                         let missing = FrameworkRestriction.combineRestrictionsWithAnd curRestr (FrameworkRestriction.AtLeastPlatform frameworkGroup)
                         let combined = lazy FrameworkRestriction.combineRestrictionsWithAnd curRestr (FrameworkRestriction.NotAtLeastPlatform frameworkGroup)
-                        match packageGroup.Platforms, missing.RepresentedFrameworks.IsEmpty with
-                        | [ packageGroupFw ], false ->
+                        match packageGroup.Platforms with
+                        | [ packageGroupFw ] when not missing.RepresentedFrameworks.IsEmpty ->
                             // the common set goes to the better matching one
                             match PlatformMatching.findBestMatch (frameworkGroups, missing.RepresentedFrameworks.MinimumElement) with
                             | Some { PlatformMatching.ParsedPlatformPath.Platforms = [ cfw ] } when cfw = packageGroupFw -> curRestr

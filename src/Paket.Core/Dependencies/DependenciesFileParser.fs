@@ -81,7 +81,6 @@ module DependenciesFileParser =
                     match VersionRange.BasicOperators |> List.tryFind(text.StartsWith) with
                     | Some token -> token, text.Replace(token + " ", "").Split ' ' |> Array.toList
                     | None -> "=", text.Split ' ' |> Array.toList
-
             
                 match splitVersion text with
                 | "==", version :: rest -> 

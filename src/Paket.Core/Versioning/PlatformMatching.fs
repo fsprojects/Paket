@@ -28,7 +28,11 @@ let inline split (path : string) =
 // TODO: This function does now quite a lot, there probably should be several functions.
 let private extractPlatformsPriv = memoize (fun path ->
     let splits = split path
-    let platforms = splits |> Array.choose FrameworkDetection.Extract |> Array.toList
+    let platforms = 
+        splits 
+        |> Array.choose FrameworkDetection.Extract 
+        |> Array.toList
+
     if platforms.Length = 0 then
         if splits.Length = 1 && splits.[0].StartsWith "profile" then
             // might be something like portable4.6-profile151

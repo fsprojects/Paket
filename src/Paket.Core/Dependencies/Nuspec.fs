@@ -51,7 +51,9 @@ module internal NuSpecParserHelper =
         | Some name, Some targetFrameworks ->
             targetFrameworks.Split([|','; ' '|],System.StringSplitOptions.RemoveEmptyEntries)
             |> Array.choose FrameworkDetection.Extract
-            |> Array.map (fun fw -> { AssemblyName = name; FrameworkRestrictions = ExplicitRestriction (FrameworkRestriction.Exactly fw) })
+            |> Array.map (fun fw -> 
+                { AssemblyName = name
+                  FrameworkRestrictions = ExplicitRestriction (FrameworkRestriction.Exactly fw) })
             |> Array.toList
         | _ -> []
 
@@ -99,8 +101,7 @@ type Nuspec =
 
         let dependencies =
           lazy
-            let dependencies, warnings = 
-                addFrameworkRestrictionsToDependencies rawDependencies frameworks
+            let dependencies, warnings = addFrameworkRestrictionsToDependencies rawDependencies frameworks
             for warning in warnings do
                 Logging.traceWarnfn "%s" (warning.Format name version)
             dependencies
@@ -134,7 +135,7 @@ type Nuspec =
                         FrameworkRestrictions =
                             ExplicitRestriction(
                                 restrictions
-                                |> List.map (fun x -> x.FrameworkRestrictions |> getExplicitRestriction)
+                                |> List.map (fun x -> getExplicitRestriction x.FrameworkRestrictions)
                                 |> List.fold FrameworkRestriction.combineRestrictionsWithOr FrameworkRestriction.EmptySet) } ] }
 
     /// load the file from an nuspec text stream. The fileName is only used for error reporting.

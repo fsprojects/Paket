@@ -33,9 +33,9 @@
     <StartAction>Project</StartAction>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\temp\Gu.Reactive</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
+    <StartArguments>update -f</StartArguments>
     <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\temp\androidTest</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\fable-suave-scaffold</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

@@ -1217,6 +1217,12 @@ module KnownTargetProfiles =
           AllDotNetProfiles
         |> Set.ofList
 
+    let isSupportedProfile profile =
+        match profile with
+        | FrameworkIdentifier.DNX _ -> false
+        | FrameworkIdentifier.DNXCore _ -> false
+        | _ -> true
+
     let TryFindPortableProfile (name:string) =
         let lowerName = name.ToLowerInvariant()
         AllProfiles
@@ -1224,6 +1230,7 @@ module KnownTargetProfiles =
         |> Seq.tryPick (function
             | TargetProfile.PortableProfile p when p.ProfileName.ToLowerInvariant() = lowerName -> Some (TargetProfile.PortableProfile p)
             | _ -> None)
+
     let FindPortableProfile name =
         match TryFindPortableProfile name with
         | Some s -> s
@@ -1269,7 +1276,7 @@ module SupportCalculation =
             else
                 // try to optimize on the 'pos' position
                 let curPos = supported.[pos]
-                let supportList = buildSupportMap supportMap curPos // supportMap.[curPos] // 
+                let supportList = buildSupportMap supportMap curPos
                 (supported |> List.take pos |> List.filter (fun s -> supportList |> List.contains s |> not))
                 @ [curPos] @
                 (supported
@@ -1291,6 +1298,7 @@ module SupportCalculation =
                 if old.Count <> sup.Count then
                     hasChanged <- true
         sup
+
     let private getSupportedPortables p =
         getSupported p
         |> List.choose (function TargetProfile.PortableProfile p -> Some p | _ -> failwithf "Expected portable")

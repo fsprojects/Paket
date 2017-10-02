@@ -70,7 +70,7 @@ type NuGetRequestGetVersions =
         }
         
 
-// An unparsed file in the nuget package -> still need to inspect the path for further information. After parsing an entry will be part of a "LibFolder" for example.
+// An unparsed file in the NuGet package -> still need to inspect the path for further information. After parsing an entry will be part of a "LibFolder" for example.
 type UnparsedPackageFile =
     { FullPath : string
       PathWithinPackage : string }
@@ -128,16 +128,18 @@ type NuGetPackageCache =
                     let restrictionString = 
                         match restrictions with
                         | FrameworkRestrictions.AutoDetectFramework -> "AUTO"
-                        | FrameworkRestrictions.ExplicitRestriction re ->
-                            re.ToString()
+                        | FrameworkRestrictions.ExplicitRestriction re -> re.ToString()
                     n, v, restrictionString) }
+
     static member getDependencies (x:NuGetPackageCache) : (PackageName * VersionRequirement * FrameworkRestrictions) list  =
         x.SerializedDependencies
         |> List.map (fun (n,v,restrictionString) ->
             let restrictions =
                 if restrictionString = "AUTO" then
                     FrameworkRestrictions.AutoDetectFramework
-                else FrameworkRestrictions.ExplicitRestriction(Requirements.parseRestrictions restrictionString |> fst)
+                else
+                    let restrictions = Requirements.parseRestrictions restrictionString |> fst
+                    FrameworkRestrictions.ExplicitRestriction restrictions
             n, v, restrictions)
 
 let inline normalizeUrl(url:string) = url.Replace("https://","http://").Replace("www.","")
@@ -159,6 +161,7 @@ let getCacheFiles cacheVersion nugetURL (packageName:PackageName) (version:SemVe
 type ODataSearchResult =
     | EmptyResult
     | Match of NuGetPackageCache
+
 module ODataSearchResult =
     let get x =
         match x with
@@ -176,7 +179,8 @@ let tryGetDetailsFromCache force nugetURL (packageName:PackageName) (version:Sem
                 if (PackageName cachedObject.PackageName <> packageName) ||
                     (cachedObject.Version <> version.Normalize())
                 then
-                    traceVerbose (sprintf "Invalidating Cache '%s:%s' <> '%s:%s'" cachedObject.PackageName cachedObject.Version packageName.Name (version.Normalize()))
+                    if verbose then
+                        traceVerbose (sprintf "Invalidating Cache '%s:%s' <> '%s:%s'" cachedObject.PackageName cachedObject.Version packageName.Name (version.Normalize()))
                     cacheFile.Delete()
                     None
                 else
@@ -292,6 +296,7 @@ let rec private cleanup (dir : DirectoryInfo) =
 
 let GetTargetUserFolder packageName (version:SemVerInfo) =
     DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,packageName.ToString(),version.Normalize())).FullName
+
 let GetTargetUserNupkg packageName (version:SemVerInfo) =
     let normalizedNupkgName = GetPackageFileName packageName version
     let path = GetTargetUserFolder packageName version
