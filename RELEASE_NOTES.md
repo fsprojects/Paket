@@ -1,5 +1,8 @@
+#### 5.101.1 - 2017-10-02
+* PERFORMANCE: Improvements in NuSpec parsing
+
 #### 5.101.0 - 2017-10-01
-* PERFORMANCE: Make stuff faster - https://github.com/fsprojects/Paket/pull/2807
+* PERFORMANCE: Improvements in framework restriction parsing - https://github.com/fsprojects/Paket/pull/2807
 * BREAKING: To make the performance optimizations possible API-compat has been broken slightly
 
 #### 5.100.3 - 2017-09-29
