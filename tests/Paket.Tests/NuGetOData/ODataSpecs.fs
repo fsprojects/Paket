@@ -150,28 +150,6 @@ let ``can detect explicit dependencies for Microsoft.AspNet.WebApi.Client``() =
             |> ExplicitRestriction)
 
 [<Test>]
-let ``can detect explicit dependencies for WindowsAzure.Storage``() = 
-    let odata = parseList "NuGetOData/WindowsAzure.Storage.xml" |> ODataSearchResult.get
-    odata.PackageName |> shouldEqual "WindowsAzure.Storage"
-    odata.DownloadUrl |> shouldEqual"https://www.nuget.org/api/v2/package/WindowsAzure.Storage/4.4.1-preview"
-    let dependencies = odata|> NuGet.NuGetPackageCache.getDependencies |> Array.ofList
-    dependencies.[0] |> shouldEqual 
-        (PackageName "Microsoft.Data.OData", DependenciesFileParser.parseVersionRequirement(">= 5.6.3"), 
-           makeOrList [FrameworkRestriction.AtLeast(DNXCore(FrameworkVersion.V5_0))])
-
-    let vr,pr = 
-        match DependenciesFileParser.parseVersionRequirement(">= 4.0.0-beta-22231") with
-        | VersionRequirement(vr,pr) -> vr,pr
-
-    dependencies.[18] |> shouldEqual 
-        (PackageName "System.Net.Http", VersionRequirement(vr,PreReleaseStatus.All), 
-           makeOrList [FrameworkRestriction.AtLeast(DNXCore(FrameworkVersion.V5_0))])
-
-    dependencies.[44] |> shouldEqual 
-        (PackageName "Newtonsoft.Json", DependenciesFileParser.parseVersionRequirement(">= 6.0.8"), 
-            makeOrList [FrameworkRestriction.AtLeast(WindowsPhone WindowsPhoneVersion.V8); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))])
-
-[<Test>]
 let ``can ignore unknown frameworks``() = 
     let parsed = parseList "NuGetOData/BenchmarkDotNet-UnknownFramework.xml" |> ODataSearchResult.get
     parsed
