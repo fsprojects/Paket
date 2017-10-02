@@ -17,5 +17,5 @@ let ``#2496 Paket fails on projects that target multiple frameworks``() =
         |> ignore
 
 [<Test>]
-let ``#2676 Real test failure on mono: file not found, probably incorrect casing``() = 
+let ``#2812 Lowercase package names in package cache``() = 
     ()
