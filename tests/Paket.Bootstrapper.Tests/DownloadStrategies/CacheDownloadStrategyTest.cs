@@ -284,7 +284,24 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             Assert.That(hashFile.Content, Is.EquivalentTo(new [] { "123test" }));
             mockEffectiveStrategy.Verify(x => x.DownloadHashFile(It.IsAny<string>()), Times.Never);
         }
-        
+
+        private class NonClosableMemoryStream : MemoryStream
+        {
+            public NonClosableMemoryStream()
+            {
+            }
+
+            public override void Close()
+            {
+                
+            }
+
+            public void ReallyClose()
+            {
+                base.Close();
+            }
+        }
+
         [Test]
         public void DownloadHashFile_NotInCache()
         {
@@ -292,14 +309,17 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             mockEffectiveStrategy.SetupGet(x => x.CanDownloadHashFile).Returns(true);
             var pathInCache = sut.GetHashFilePathInCache("42.0");
             mockFileProxy.Setup(x => x.FileExists(pathInCache)).Returns(false);
-            var backingArray = new byte[1024];
-            mockFileProxy.Setup(x => x.CreateExclusive(pathInCache)).Returns(new MemoryStream(backingArray));
+            var backing = new NonClosableMemoryStream();
+            mockFileProxy.Setup(x => x.CreateExclusive(pathInCache)).Returns(backing);
 
             var hashFile = sut.DownloadHashFile("42.0");
 
             Assert.That(hashFile.Content, Is.EquivalentTo(new[] { "123test" }));
             mockEffectiveStrategy.Verify(x => x.DownloadHashFile("42.0"), Times.Once);
-            Assert.That(Encoding.UTF8.GetString(backingArray), Does.StartWith("123test\r\n"));
+            backing.Seek(0, SeekOrigin.Begin);
+            var reader = new StreamReader(backing);
+            Assert.That(reader.ReadToEnd(), Is.EqualTo("123test\r\n"));
+            backing.ReallyClose();
         }
     }
 }
