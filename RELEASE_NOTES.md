@@ -1,5 +1,6 @@
 #### 5.104.0 - 2017-10-03
 * The `Paket.Restore.targets` will be extracted on paket restore - https://github.com/fsprojects/Paket/issues/2817
+* Touch the `Paket.Restore.targets`file only if changes exist
 
 #### 5.103.0 - 2017-10-02
 * Support for .NET 4.7.1 - https://github.com/fsprojects/Paket/pull/2815

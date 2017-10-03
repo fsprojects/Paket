@@ -165,10 +165,19 @@ let extractElement root name =
     let targetFile = FileInfo(Path.Combine(root,".paket",name))
     if not targetFile.Directory.Exists then
         targetFile.Directory.Create()
+
+    use sr = new StreamReader(s)
     
-    use fileStream = File.Create(targetFile.FullName)
     s.Seek(int64 0, SeekOrigin.Begin) |> ignore
-    s.CopyTo(fileStream)
+    s.Flush()
+    let newContent = sr.ReadToEnd()
+    let oldContent = 
+        if targetFile.Exists then
+            File.ReadAllText targetFile.FullName
+        else
+            ""
+    if newContent <> oldContent then
+        File.WriteAllText(targetFile.FullName,newContent)
     targetFile.FullName
 
 let extractRestoreTargets root =
