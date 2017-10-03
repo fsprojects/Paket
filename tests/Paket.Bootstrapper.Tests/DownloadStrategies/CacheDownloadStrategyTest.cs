@@ -318,7 +318,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             mockEffectiveStrategy.Verify(x => x.DownloadHashFile("42.0"), Times.Once);
             backing.Seek(0, SeekOrigin.Begin);
             var reader = new StreamReader(backing);
-            Assert.That(reader.ReadToEnd(), Is.EqualTo("123test\r\n"));
+            Assert.That(reader.ReadToEnd(), Is.EqualTo("123test" + Environment.NewLine));
             backing.ReallyClose();
         }
     }
