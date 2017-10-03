@@ -10,7 +10,6 @@ open Paket.PackageSources
 open System
 open Chessie.ErrorHandling
 open System.Reflection
-open System.Threading.Tasks
 
 /// Finds packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
 let FindPackagesNotExtractedYet(dependenciesFileName) =
@@ -172,7 +171,7 @@ let extractElement root name =
     s.CopyTo(fileStream)
     targetFile.FullName
 
-let extractBuildTask root =
+let extractRestoreTargets root =
     if !copiedElements then
         Path.Combine(root,".paket","Paket.Restore.targets")
     else
@@ -364,7 +363,6 @@ let CreateScriptsForGroups dependenciesFile lockFile (groups:Map<GroupName,LockF
         |> Seq.iter (fun sd -> sd.Save dir)
 
 let FindOrCreateReferencesFile (projectFile:ProjectFile) =
-    
     match projectFile.FindReferencesFile() with
     | Some fileName -> 
         try
@@ -406,6 +404,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             let oldContents = File.ReadAllText(restoreCacheFile)
             oldContents = newContents
         else false
+
     let lockFile,localFile,hasLocalFile =
         let lockFile = LockFile.LoadFrom(lockFileName.FullName)
         if not localFileName.Exists then
@@ -420,6 +419,8 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         tracefn "Last restore is still up to date."
     else
         let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
+        if projectFile = None then
+            extractRestoreTargets root |> ignore
 
         let targetFilter = 
             targetFrameworks
