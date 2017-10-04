@@ -137,6 +137,27 @@ Which may be translated to:
 > Paket, I only compile for `net35` and `net40`, please leave out all other
 > stuff I don't need to compile for this set of frameworks.
 
+The supported framework identifiers include:
+
+* .NET Framework: `net{version}`
+* .NET Core: `netcoreapp{version}`
+* .NET Standard: `netstandard{version}`
+* .NET Framework for Unity: `net{version}-Unity {Web|Micro|Subset|Full} v{version}`
+* Mono for Android: `monoandroid{version}`
+* Mono for Mac: `monomac`
+* MonoTouch: `monotouch`
+* Native: `native` or `native({buildmode},{platform})`
+* Xamarin for Mac: `xamarinmac`
+* Xamarin for iOS: `xamarinios`
+* Xamarin for watchOS: `xamarinwatchos`
+* Xamarin for tvOS: `xamarintvos`
+* Universal Windows Platform: `uap{version}`
+* Windows: `win{version}`
+* Windows Phone: `wp{version}`
+* Windows Phone App: `wpa{version}`
+* Silverlight: `sl{version}`
+* Tizen: `tizen{version}`
+
 #### Automatic framework detection
 
 Paket is able to detect the target frameworks from your projects and then limit
