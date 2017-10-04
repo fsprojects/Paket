@@ -1,3 +1,6 @@
+#### 5.106.0 - 2017-10-04
+* BREAKING: Stricter parsing of framework requirements - https://github.com/fsprojects/Paket/pull/2816
+
 #### 5.105.0 - 2017-10-04
 * BREAKING: Automatic license download is now disabled because of github rate limit trouble - https://fsprojects.github.io/Paket/dependencies-file.html
 * Parallel execution of bootstrapper - https://github.com/fsprojects/Paket/pull/2752
