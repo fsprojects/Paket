@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -75,7 +76,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             var tempFileName = BootstrapperHelper.GetTempFile("paket");
 
             //act
-            sut.DownloadVersion("2.57.1", "paketExeLocation", @"C:\does_not_exists.txt");
+            sut.DownloadVersion("2.57.1", "paketExeLocation", null);
 
             //assert
             mockWebProxy.Verify(x => x.DownloadFile(It.IsAny<string>(), tempFileName), Times.Once);
@@ -92,12 +93,10 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             var checksum = sha.ComputeHash(new MemoryStream(content));
             var hash = BitConverter.ToString(checksum).Replace("-", String.Empty);
             mockFileProxy.Setup(x => x.OpenRead(It.IsAny<string>())).Returns(() => new MemoryStream(Guid.NewGuid().ToByteArray()));
-            mockFileProxy.Setup(x => x.FileExists(@"C:\invalid.txt")).Returns(true);
-            mockFileProxy.Setup(x => x.ReadAllLines(@"C:\invalid.txt")).Returns(new[] { hash + " paket.exe" });
             var tempFileName = BootstrapperHelper.GetTempFile("paket");
 
             //act
-            sut.DownloadVersion("2.57.1", "paketExeLocation", @"C:\invalid.txt");
+            sut.DownloadVersion("2.57.1", "paketExeLocation", new PaketHashFile(new List<string> { hash + " paket.exe" }));
 
             //assert
             mockWebProxy.Verify(x => x.DownloadFile(It.IsAny<string>(), tempFileName), Times.Exactly(2));
@@ -114,12 +113,10 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             var checksum = sha.ComputeHash(new MemoryStream(content));
             var hash = BitConverter.ToString(checksum).Replace("-", String.Empty);
             mockFileProxy.Setup(x => x.OpenRead(It.IsAny<string>())).Returns(new MemoryStream(content));
-            mockFileProxy.Setup(x => x.FileExists(@"C:\valid.txt")).Returns(true);
-            mockFileProxy.Setup(x => x.ReadAllLines(@"C:\valid.txt")).Returns(new[] { hash + " paket.exe" });
             var tempFileName = BootstrapperHelper.GetTempFile("paket");
 
             //act
-            sut.DownloadVersion("2.57.1", "paketExeLocation", @"C:\valid.txt");
+            sut.DownloadVersion("2.57.1", "paketExeLocation", new PaketHashFile(new List<string> { hash + " paket.exe" }));
 
             //assert
             mockWebProxy.Verify(x => x.DownloadFile(It.IsAny<string>(), tempFileName), Times.Once);
@@ -149,13 +146,13 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         [Test]
         public void DownloadHashFile()
         {
-            var expectedPath = BootstrapperHelper.GetTempFile("paket-sha256.txt");
             var expectedUrl = string.Format(GitHubDownloadStrategy.Constants.PaketCheckSumDownloadUrlTemplate, "42.0");
+            mockWebProxy.Setup(x => x.DownloadString(expectedUrl)).Returns("123test");
 
-            var hashFilePath = sut.DownloadHashFile("42.0");
+            var hashFile = sut.DownloadHashFile("42.0");
 
-            Assert.That(hashFilePath, Is.EqualTo(expectedPath));
-            mockWebProxy.Verify(x => x.DownloadFile(expectedUrl, expectedPath), Times.Once);
+            Assert.That(hashFile.Content, Is.EquivalentTo(new[] { "123test"}));
+            mockWebProxy.Verify(x => x.DownloadString(expectedUrl), Times.Once);
         }
 
         [Test]

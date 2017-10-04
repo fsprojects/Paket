@@ -105,7 +105,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             return latestVersion != null ? latestVersion.Original : String.Empty;
         }
 
-        protected override void DownloadVersionCore(string latestVersion, string target, string hashfile)
+        protected override void DownloadVersionCore(string latestVersion, string target, PaketHashFile hashfile)
         {
             var apiHelper = new NugetApiHelper(PaketNugetPackageName, NugetSource);
 
@@ -231,7 +231,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             FileSystemProxy.DeleteDirectory(randomFullPath, true);
         }
 
-        protected override string DownloadHashFileCore(string latestVersion)
+        protected override PaketHashFile DownloadHashFileCore(string latestVersion)
         {
             // TODO: implement get hash file
             return null;

@@ -44,7 +44,7 @@ namespace Paket.Bootstrapper.Tests
 
             public Stream CreateFile(string tmpFile)
             {
-                throw new NotImplementedException();
+                return new MemoryStream();
             }
 
             public string GetLocalFileVersion(string filename)
@@ -106,6 +106,15 @@ namespace Paket.Bootstrapper.Tests
                 return Path.Combine(rootDir, "temp");
             }
 
+            public Stream CreateExclusive(string path)
+            {
+                return new MemoryStream();
+            }
+
+            public void WaitForFileFinished(string path)
+            {
+            }
+
             public IEnumerable<string> ReadAllLines(string filename)
             {
                 return Enumerable.Empty<string>();
@@ -113,7 +122,7 @@ namespace Paket.Bootstrapper.Tests
 
             public Stream OpenRead(string filename)
             {
-                return Stream.Null;
+                return new MemoryStream();
             }
 
             public string GetCurrentDirectory()

@@ -31,7 +31,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         protected override string GetLatestVersionCore(bool ignorePrerelease)
         {
-            var targetVersion = string.Empty;
+            string targetVersion;
             try 
             {
                 targetVersion = fileSystemProxy.GetLocalFileVersion(_target);
@@ -59,7 +59,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             return latestVersion;
         }
 
-        protected override void DownloadVersionCore(string latestVersion, string target, string hashfile)
+        protected override void DownloadVersionCore(string latestVersion, string target, PaketHashFile hashfile)
         {
             _effectiveStrategy.DownloadVersion(latestVersion, target, hashfile);
             TouchTarget(target);
@@ -79,15 +79,9 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         public IDownloadStrategy EffectiveStrategy {
             get { return _effectiveStrategy; }
-            set {
-                if (value == null)
-                    throw new ArgumentException("TemporarilyIgnoreUpdatesDownloadStrategy needs a non-null EffectiveStrategy");
-
-                _effectiveStrategy = value;
-            }
         }
             
-        private IDownloadStrategy _effectiveStrategy;
+        private readonly IDownloadStrategy _effectiveStrategy;
 
         private bool IsOlderThanMaxFileAge()
         {
@@ -123,7 +117,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             }
         }
 
-        protected override string DownloadHashFileCore(string latestVersion)
+        protected override PaketHashFile DownloadHashFileCore(string latestVersion)
         {
             return _effectiveStrategy.DownloadHashFile(latestVersion);
         }

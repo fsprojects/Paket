@@ -29,18 +29,35 @@ Options:
 --run <other args>             run the downloaded paket.exe with all following arguments";
         const string PaketBootstrapperUserAgent = "Paket.Bootstrapper";
 
-        internal static string GetLocalFileVersion(string target)
+        internal static string GetLocalFileVersion(string target, FileSystemProxy fileSystemProxy)
         {
-            if (!File.Exists(target)) return "";
+            if (!File.Exists(target))
+            {
+                ConsoleImpl.WriteTrace("File doesn't exists, no version information: {0}", target);
+                return "";
+            }
 
             try
             {
-                var bytes = File.ReadAllBytes(target);
-                var attr = Assembly.Load(bytes).GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false).Cast<AssemblyInformationalVersionAttribute>().FirstOrDefault();
-                if (attr == null) return "";
+                var bytes = new MemoryStream();
+                using (var stream = fileSystemProxy.OpenRead(target))
+                {
+                    stream.CopyTo(bytes);
+                }
+                var attr = Assembly.Load(bytes.ToArray()).GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false).Cast<AssemblyInformationalVersionAttribute>().FirstOrDefault();
+                if (attr == null)
+                {
+                    ConsoleImpl.WriteWarning("No assembly version found in {0}", target);
+                    return "";
+                }
+                
                 return attr.InformationalVersion;
             }
-            catch (Exception) { return ""; }
+            catch (Exception exception)
+            {
+                ConsoleImpl.WriteWarning("Unable to get file version from {0}: {1}", target, exception);
+                return "";
+            }
         }
 
         internal static string GetTempFile(string name)
@@ -106,31 +123,22 @@ Options:
             File.Move(oldPath, newPath);
         }
 
-        public static bool ValidateHash(IFileSystemProxy fileSystem, string hashFile, string version, string paketFile)
+        public static bool ValidateHash(IFileSystemProxy fileSystem, PaketHashFile hashFile, string version, string paketFile)
         {
             if (hashFile == null)
             {
-                ConsoleImpl.WriteTrace("No hash file expected, bypassing check.");
+                ConsoleImpl.WriteTrace("No hashFile file expected, bypassing check.");
                 return true;
             }
         
-            if (!fileSystem.FileExists(hashFile))
-            {
-                ConsoleImpl.WriteInfo("No hash file of version {0} found.", version);
-
-                return true;
-            }
-
-            var dict = fileSystem.ReadAllLines(hashFile)
+            var dict = hashFile.Content
                 .Select(i => i.Split(' '))
                 .ToDictionary(i => i[1], i => i[0]);
 
             string expectedHash;
             if (!dict.TryGetValue("paket.exe", out expectedHash))
             {
-                fileSystem.DeleteFile(hashFile);
-
-                throw new InvalidDataException("Paket hash file is corrupted");
+                throw new InvalidDataException("Paket hashFile file is corrupted");
             }
 
             using (var stream = fileSystem.OpenRead(paketFile))
@@ -139,6 +147,8 @@ Options:
                 byte[] checksum = sha.ComputeHash(stream);
                 var hash = BitConverter.ToString(checksum).Replace("-", String.Empty);
 
+                ConsoleImpl.WriteTrace("Expected hash  = {0}", expectedHash);
+                ConsoleImpl.WriteTrace("paket.exe hash = {0} ({1})", hash, paketFile);
                 return string.Equals(expectedHash, hash, StringComparison.OrdinalIgnoreCase);
             }
         }

@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using Paket.Bootstrapper.HelperProxies;
-using System.Security.Cryptography;
 
 namespace Paket.Bootstrapper.DownloadStrategies
 {
@@ -16,7 +16,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             get { return EffectiveStrategy.CanDownloadHashFile; }
         }
 
-        private readonly string _paketCacheDir =
+        public static readonly string PaketCacheDir =
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NuGet", "Cache", "Paket");
 
         public IDownloadStrategy EffectiveStrategy { get; set; }
@@ -54,66 +54,118 @@ namespace Paket.Bootstrapper.DownloadStrategies
             }
         }
 
-        protected override void DownloadVersionCore(string latestVersion, string target, string hashfile)
+        protected override void DownloadVersionCore(string latestVersion, string target, PaketHashFile hashFile)
         {
-            var cached = Path.Combine(_paketCacheDir, latestVersion, "paket.exe");
+            var cached = Path.Combine(PaketCacheDir, latestVersion, "paket.exe");
 
             if (!FileSystemProxy.FileExists(cached))
             {
                 ConsoleImpl.WriteInfo("Version {0} not found in cache.", latestVersion);
 
-                DownloadAndPlaceInCache(latestVersion, target, cached, hashfile);
+                DownloadAndPlaceInCache(latestVersion, target, cached, hashFile);
                 return;
             }
 
-            if (!BootstrapperHelper.ValidateHash(FileSystemProxy, hashfile, latestVersion, cached))
-            {
-                ConsoleImpl.WriteWarning("Version {0} found in cache but it's hash isn't valid.", latestVersion);
+            FileSystemProxy.WaitForFileFinished(cached);
 
-                DownloadAndPlaceInCache(latestVersion, target, cached, hashfile);
+            if (!BootstrapperHelper.ValidateHash(FileSystemProxy, hashFile, latestVersion, cached))
+            {
+                ConsoleImpl.WriteWarning("Version {0} found in cache but it's hashFile isn't valid.", latestVersion);
+
+                DownloadAndPlaceInCache(latestVersion, target, cached, hashFile);
                 return;
             }
 
             ConsoleImpl.WriteInfo("Copying version {0} from cache.", latestVersion);
             ConsoleImpl.WriteTrace("{0} -> {1}", cached, target);
-            FileSystemProxy.CopyFile(cached, target, true);
+            using (var targetStream = FileSystemProxy.CreateExclusive(target))
+            using (var cachedStream = FileSystemProxy.OpenRead(cached))
+            {
+                cachedStream.CopyTo(targetStream);
+            }
         }
 
-        private void DownloadAndPlaceInCache(string latestVersion, string target, string cached, string hashfile)
+        private void DownloadAndPlaceInCache(string latestVersion, string target, string cached, PaketHashFile hashFile)
         {
-            EffectiveStrategy.DownloadVersion(latestVersion, target, hashfile);
-
-            ConsoleImpl.WriteTrace("Caching version {0} for later", latestVersion);
             FileSystemProxy.CreateDirectory(Path.GetDirectoryName(cached));
-            FileSystemProxy.CopyFile(target, cached);
+
+            var tempFile = Path.Combine(FileSystemProxy.GetTempPath(), Guid.NewGuid().ToString());
+
+            EffectiveStrategy.DownloadVersion(latestVersion, tempFile, hashFile);
+
+            if (!BootstrapperHelper.ValidateHash(FileSystemProxy, hashFile, latestVersion, tempFile))
+            {
+                throw new InvalidOperationException(
+                    string.Format("paket.exe was corrupted after download by {0}: Invalid hash",
+                        EffectiveStrategy.Name));
+            }
+
+            ConsoleImpl.WriteTrace("Caching version {0} for later, hash is ok", latestVersion);
+            using (var targetStream = FileSystemProxy.CreateExclusive(target))
+            using (var cachedStream = FileSystemProxy.CreateExclusive(cached))
+            {
+                using (var tempStream = FileSystemProxy.OpenRead(tempFile))
+                {
+                    tempStream.CopyTo(targetStream);
+                    tempStream.Seek(0, SeekOrigin.Begin);
+                    tempStream.CopyTo(cachedStream);
+                }
+            }
+
+            FileSystemProxy.DeleteFile(tempFile);
         }
 
-        protected override string DownloadHashFileCore(string latestVersion)
+        protected override PaketHashFile DownloadHashFileCore(string latestVersion)
         {
             if (!EffectiveStrategy.CanDownloadHashFile)
             {
                 return null;
             }
 
-            var cached = GetHashFilePathInCache(latestVersion);
+            var cachedPath = GetHashFilePathInCache(latestVersion);
 
-            if (!FileSystemProxy.FileExists(cached))
+            if (FileSystemProxy.FileExists(cachedPath))
             {
-                ConsoleImpl.WriteInfo("Hash file of version {0} not found in cache.", latestVersion);
-                var effectivePath = EffectiveStrategy.DownloadHashFile(latestVersion);
-                if(effectivePath == null)
+                // Maybe there's another bootstraper process running
+                // We trust it to close the file with the correct content
+                FileSystemProxy.WaitForFileFinished(cachedPath);
+                ConsoleImpl.WriteInfo("Hash file of version {0} found in cache.", latestVersion);
+            }
+            else
+            {
+                FileSystemProxy.CreateDirectory(Path.GetDirectoryName(cachedPath));
+                try
                 {
-                    // 'EffectiveStrategy.CanDownloadHashFile' should have returned false...
-                    return null;
-                }
+                    ConsoleImpl.WriteInfo("Hash file of version {0} not found in cache.", latestVersion);
+                    var hashFile = EffectiveStrategy.DownloadHashFile(latestVersion);
+                    Debug.Assert(hashFile != null,
+                        "'EffectiveStrategy.CanDownloadHashFile' but DownloadHashFile returned null");
 
-                ConsoleImpl.WriteTrace("Copying hash file in cache.");
-                ConsoleImpl.WriteTrace("{0} -> {1}", effectivePath, cached);
-                FileSystemProxy.CreateDirectory(Path.GetDirectoryName(cached));
-                FileSystemProxy.CopyFile(effectivePath, cached, true);
+                    ConsoleImpl.WriteTrace("Writing hashFile file in cache.");
+                    ConsoleImpl.WriteTrace("hashFile -> {0}", cachedPath);
+                    using (var finalStream = FileSystemProxy.CreateExclusive(cachedPath))
+                    {
+                        hashFile.WriteToStream(finalStream);
+                    }
+
+                    return hashFile;
+                }
+                catch (IOException ex)
+                {
+                    if (ex.HResult == HelperProxies.FileSystemProxy.HRESULT_ERROR_SHARING_VIOLATION)
+                    {
+                        ConsoleImpl.WriteTrace("Can't lock hashFile file, another instance might be writing it. Waiting.");
+                        // Same as before let's trust other bootstraper processes
+                        FileSystemProxy.WaitForFileFinished(cachedPath);
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
             }
 
-            return cached;
+            return PaketHashFile.FromStrings(FileSystemProxy.ReadAllLines(cachedPath));
         }
 
         protected override void SelfUpdateCore(string latestVersion)
@@ -123,10 +175,10 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         private string GetLatestVersionInCache(bool ignorePrerelease)
         {
-            FileSystemProxy.CreateDirectory(_paketCacheDir);
+            FileSystemProxy.CreateDirectory(PaketCacheDir);
             var zero = new SemVer();
 
-            return FileSystemProxy.GetDirectories(_paketCacheDir)
+            return FileSystemProxy.GetDirectories(PaketCacheDir)
                 .Select(Path.GetFileName)
                 .OrderByDescending(x =>
                 {
@@ -149,7 +201,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         public string GetHashFilePathInCache(string version)
         {
-            return Path.Combine(_paketCacheDir, version, "paket-sha256.txt");
+            return Path.Combine(PaketCacheDir, version, "paket-sha256.txt");
         }
     }
 }

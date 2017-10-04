@@ -317,9 +317,9 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         {
             CreateSystemUnderTestWithDefaultApi();
 
-            var hashFilePath = sut.DownloadHashFile("42.0");
+            var hashFile = sut.DownloadHashFile("42.0");
 
-            Assert.That(hashFilePath, Is.Null);
+            Assert.That(hashFile, Is.Null);
         }
 
         [Test]

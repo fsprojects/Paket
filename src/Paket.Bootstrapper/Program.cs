@@ -74,7 +74,7 @@ namespace Paket.Bootstrapper
             var exitCode = 1;
             if (File.Exists(target))
             {
-                var localVersion = BootstrapperHelper.GetLocalFileVersion(target);
+                var localVersion = BootstrapperHelper.GetLocalFileVersion(target, new FileSystemProxy());
                 Console.WriteLine("Detected existing paket.exe ({0}). Cancelling normally.", localVersion);
                 exitCode = 0;
             }
@@ -85,9 +85,21 @@ namespace Paket.Bootstrapper
         {
             Action<Exception> handleException = exception =>
             {
-                if (!fileSystemProxy.FileExists(dlArgs.Target))
-                    Environment.ExitCode = 1;
+#if DEBUG
+                Environment.ExitCode = 1;
+                ConsoleImpl.WriteError(String.Format("{0} ({1})", exception.ToString(), downloadStrategy.Name));
+                return;
+#endif
                 ConsoleImpl.WriteError(String.Format("{0} ({1})", exception.Message, downloadStrategy.Name));
+                if (!fileSystemProxy.FileExists(dlArgs.Target))
+                {
+                    Environment.ExitCode = 1;
+                }
+                else
+                {
+                    fileSystemProxy.WaitForFileFinished(dlArgs.Target);
+                    onSuccess();
+                }
             };
             try
             {
@@ -102,7 +114,7 @@ namespace Paket.Bootstrapper
                 ConsoleImpl.WriteInfo("Checking Paket version ({0})...", versionRequested);
                 ConsoleImpl.WriteTrace("Target path is {0}", dlArgs.Target);
                 var localVersion = fileSystemProxy.GetLocalFileVersion(dlArgs.Target);
-                ConsoleImpl.WriteTrace("File in target path version: v{0}", localVersion);
+                ConsoleImpl.WriteTrace("File in target path version: v{0}", string.IsNullOrEmpty(localVersion) ? "UNKNOWN" : localVersion);
 
                 var specificVersionRequested = true;
                 var latestVersion = dlArgs.LatestVersion;
@@ -134,7 +146,7 @@ namespace Paket.Bootstrapper
 
                     if ((comparison > 0 && specificVersionRequested) || comparison < 0)
                     {
-                        string hashFile = null;
+                        PaketHashFile hashFile = null;
                         if (downloadStrategy.CanDownloadHashFile)
                         {
                             ConsoleImpl.WriteTrace("Downloading hash for v{0} ...", latestVersion);

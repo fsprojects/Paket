@@ -27,5 +27,8 @@ namespace Paket.Bootstrapper.HelperProxies
 
         string GetExecutingAssemblyPath();
         string GetTempPath();
+
+        Stream CreateExclusive(string path);
+        void WaitForFileFinished(string path);
     }
 }
