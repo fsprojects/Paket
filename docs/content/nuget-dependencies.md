@@ -320,6 +320,17 @@ source https://nuget.org/api/v2
 nuget Microsoft.Bcl.Build import_targets: false // Do not import *.targets and *.props.
 ```
 
+### License download
+
+If you want paket to download licenses automatically you can use the `download_license` modifier. It is disabled by default.
+
+```paket
+source https://nuget.org/api/v2
+
+nuget suave download_license: true
+```
+
+
 ### Controlling assembly binding redirects
 
 You can instruct Paket to create

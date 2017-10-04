@@ -64,6 +64,7 @@ You can override these options either defined globally or per package in the
 * [`copy_local`](nuget-dependencies.html#Controlling-whether-assemblies-should-be-copied-to-the-output-directory-during-build)
 * [`framework`](nuget-dependencies.html#Framework-restrictions)
 * [`import_targets`](nuget-dependencies.html#Importing-and-files)
+* [`license_download`](nuget-dependencies.html#License-download)
 * [`redirects`](nuget-dependencies.html#Controlling-assembly-binding-redirects)
 * [`specific_version`](nuget-dependencies.html#Referencing-specific-versions-in-projects)
 

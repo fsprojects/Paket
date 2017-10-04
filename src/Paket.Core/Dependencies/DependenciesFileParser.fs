@@ -191,6 +191,7 @@ module DependenciesFileParser =
     | OmitContent of ContentCopySettings
     | FrameworkRestrictions of FrameworkRestrictions
     | AutodetectFrameworkRestrictions
+    | LicenseDownload of bool
     | ImportTargets of bool
     | CopyLocal of bool
     | StorageConfig of PackagesFolderGroupConfig option
@@ -339,6 +340,7 @@ module DependenciesFileParser =
 
             Some (ParserOptions (ParserOption.OmitContent setting))
         | String.RemovePrefix "import_targets" trimmed -> Some (ParserOptions (ParserOption.ImportTargets(trimmed.Replace(":","").Trim() = "true")))
+        | String.RemovePrefix "license_download" trimmed -> Some (ParserOptions (ParserOption.LicenseDownload(trimmed.Replace(":","").Trim() = "true")))
         | String.RemovePrefix "copy_local" trimmed -> Some (ParserOptions (ParserOption.CopyLocal(trimmed.Replace(":","").Trim() = "true")))
         | String.RemovePrefix "specific_version" trimmed -> Some (ParserOptions (ParserOption.SpecificVersion(trimmed.Replace(":","").Trim() = "true")))
         | String.RemovePrefix "copy_content_to_output_dir" trimmed -> 
@@ -445,6 +447,7 @@ module DependenciesFileParser =
         | CopyLocal mode                                 -> { current.Options with Settings = { current.Options.Settings with CopyLocal = Some mode } }
         | SpecificVersion mode                           -> { current.Options with Settings = { current.Options.Settings with SpecificVersion = Some mode } }
         | CopyContentToOutputDir mode                    -> { current.Options with Settings = { current.Options.Settings with CopyContentToOutputDirectory = Some mode } }
+        | LicenseDownload mode                           -> { current.Options with Settings = { current.Options.Settings with LicenseDownload = Some mode } }
         | ImportTargets mode                             -> { current.Options with Settings = { current.Options.Settings with ImportTargets = Some mode } }
         | FrameworkRestrictions r                        -> { current.Options with Settings = { current.Options.Settings with FrameworkRestrictions = r } }
         | AutodetectFrameworkRestrictions                -> { current.Options with Settings = { current.Options.Settings with FrameworkRestrictions = AutoDetectFramework } }

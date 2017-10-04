@@ -773,6 +773,7 @@ type InstallSettings =
       FrameworkRestrictions: FrameworkRestrictions
       OmitContent : ContentCopySettings option
       IncludeVersionInPath: bool option
+      LicenseDownload: bool option
       ReferenceCondition : string option
       CreateBindingRedirects : BindingRedirectsSettings option
       CopyLocal : bool option
@@ -791,6 +792,7 @@ type InstallSettings =
           FrameworkRestrictions = ExplicitRestriction FrameworkRestriction.NoRestriction
           IncludeVersionInPath = None
           ReferenceCondition = None
+          LicenseDownload = None
           CreateBindingRedirects = None
           Excludes = []
           Aliases = Map.empty
@@ -826,6 +828,9 @@ type InstallSettings =
               | None -> ()
               match this.IncludeVersionInPath with
               | Some x -> yield "version_in_path: " + x.ToString().ToLower()
+              | None -> ()
+              match this.LicenseDownload with
+              | Some x -> yield "license_download: " + x.ToString().ToLower()
               | None -> ()
               match this.ReferenceCondition with
               | Some x -> yield "condition: " + x.ToUpper()
@@ -863,6 +868,7 @@ type InstallSettings =
                 Excludes = self.Excludes @ other.Excludes
                 CreateBindingRedirects = self.CreateBindingRedirects ++ other.CreateBindingRedirects
                 IncludeVersionInPath = self.IncludeVersionInPath ++ other.IncludeVersionInPath
+                LicenseDownload = self.LicenseDownload ++ other.LicenseDownload
         }
         
     static member Parse(text:string) : InstallSettings = InstallSettings.Parse(false, text)
@@ -909,6 +915,11 @@ type InstallSettings =
                 | _ ->  None
               IncludeVersionInPath =
                 match getPair "version_in_path" with
+                | Some "false" -> Some false 
+                | Some "true" -> Some true
+                | _ -> None
+              LicenseDownload =
+                match getPair "license_download" with
                 | Some "false" -> Some false 
                 | Some "true" -> Some true
                 | _ -> None 

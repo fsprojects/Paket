@@ -66,6 +66,10 @@ module LockFileSerializer =
         | Some x -> yield "IMPORT-TARGETS: " + x.ToString().ToUpper()
         | None -> ()
 
+        match options.Settings.LicenseDownload with
+        | Some x -> yield "LICENSE-DOWNLOAD: " + x.ToString().ToUpper()
+        | None -> ()
+
         match options.Settings.OmitContent with
         | Some ContentCopySettings.Omit -> yield "CONTENT: NONE"
         | Some ContentCopySettings.Overwrite -> yield "CONTENT: TRUE"
@@ -253,6 +257,7 @@ module LockFileParser =
     | ReferencesMode of bool
     | OmitContent of ContentCopySettings
     | ImportTargets of bool
+    | LicenseDownload of bool
     | GenerateLoadScripts of bool option
     | FrameworkRestrictions of FrameworkRestrictions
     | CopyLocal of bool
@@ -296,6 +301,7 @@ module LockFileParser =
 
             InstallOption (StorageConfig setting)
         | _, String.RemovePrefix "IMPORT-TARGETS:" trimmed -> InstallOption(ImportTargets(trimmed.Trim() = "TRUE"))
+        | _, String.RemovePrefix "LICENSE-DOWNLOAD:" trimmed -> InstallOption(LicenseDownload(trimmed.Trim() = "TRUE"))
         | _, String.RemovePrefix "COPY-LOCAL:" trimmed -> InstallOption(CopyLocal(trimmed.Trim() = "TRUE"))
         | _, String.RemovePrefix "SPECIFIC-VERSION:" trimmed -> InstallOption(SpecificVersion(trimmed.Trim() = "TRUE"))
         | _, String.RemovePrefix "GENERATE-LOAD-SCRIPTS:" trimmed -> 
@@ -386,6 +392,7 @@ module LockFileParser =
         | Redirects mode -> { currentGroup.Options with Redirects = mode }
         | StorageConfig mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with StorageConfig = mode }}
         | ImportTargets mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ImportTargets = Some mode } } 
+        | LicenseDownload mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with LicenseDownload = Some mode } } 
         | CopyLocal mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyLocal = Some mode }}
         | SpecificVersion mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with SpecificVersion = Some mode }}
         | CopyContentToOutputDir mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyContentToOutputDirectory = Some mode }}

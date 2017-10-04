@@ -38,14 +38,14 @@ let CopyToCaches force caches fileName =
                 traceWarnfn "Could not copy %s to cache %s%s%s" fileName cache.Location Environment.NewLine exn.Message)
 
 /// returns - package, libs files, props files, targets files, analyzers files
-let private extractPackage caches (package:PackageInfo) alternativeProjectRoot root isLocalOverride source groupName version includeVersionInPath force =
+let private extractPackage caches (package:PackageInfo) alternativeProjectRoot root isLocalOverride source groupName version includeVersionInPath downloadLicense force =
     let downloadAndExtract force detailed = async {
         let cfg = defaultArg package.Settings.StorageConfig PackagesFolderGroupConfig.Default
 
         let! fileName,folder = 
             NuGet.DownloadAndExtractPackage(
-                alternativeProjectRoot, root, isLocalOverride, cfg, source, caches, groupName, 
-                package.Name, version, package.IsCliTool, includeVersionInPath, force, detailed)
+                alternativeProjectRoot, root, isLocalOverride, cfg, source, caches, groupName,
+                package.Name, version, package.IsCliTool, includeVersionInPath, downloadLicense, force, detailed)
 
         CopyToCaches force caches fileName
         return package, NuGet.GetContent folder
@@ -72,6 +72,7 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
         let storage = defaultArg package.Settings.StorageConfig PackagesFolderGroupConfig.Default
         let v = package.Version
         let includeVersionInPath = defaultArg package.Settings.IncludeVersionInPath false
+        let downloadLicense = defaultArg package.Settings.LicenseDownload false
         let resolvedStorage = storage.Resolve root groupName package.Name package.Version includeVersionInPath
 
         let targetDir, overridenFile, force =
@@ -106,10 +107,10 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
                     | None -> failwithf "The NuGet source %s for package %O was not found in the paket.dependencies file with sources %A" package.Source.Url package.Name sources
                     | Some s -> s 
 
-                return! extractPackage caches package alternativeProjectRoot root localOverride source groupName v includeVersionInPath force
+                return! extractPackage caches package alternativeProjectRoot root localOverride source groupName v includeVersionInPath downloadLicense force
 
             | LocalNuGet(path,_) as source ->
-                return! extractPackage caches package alternativeProjectRoot root localOverride source groupName v includeVersionInPath force
+                return! extractPackage caches package alternativeProjectRoot root localOverride source groupName v includeVersionInPath downloadLicense force
         }
 
         // manipulate overridenFile after package extraction

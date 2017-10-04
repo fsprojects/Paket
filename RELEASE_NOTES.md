@@ -1,3 +1,6 @@
+#### 5.105.0 - 2017-10-04
+* BREAKING: Automatic license download is now disabled because of github rate limit trouble - https://fsprojects.github.io/Paket/dependencies-file.html
+
 #### 5.104.0 - 2017-10-03
 * The `Paket.Restore.targets` will be extracted on paket restore - https://github.com/fsprojects/Paket/issues/2817
 * Touch the `Paket.Restore.targets`file only if changes exist

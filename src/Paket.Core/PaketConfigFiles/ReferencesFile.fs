@@ -129,7 +129,7 @@ type ReferencesFile =
             { ReferencesFile.FromLines lines with FileName = fileName }
         with e -> raise <| new Exception(sprintf "Could not parse reference file '%s': %s" fileName e.Message, e)
 
-    member this.AddNuGetReference(groupName, packageName : PackageName, copyLocal: bool, specificVersion: bool, importTargets: bool, frameworkRestrictions, includeVersionInPath, omitContent : bool, createBindingRedirects, referenceCondition) =
+    member this.AddNuGetReference(groupName, packageName : PackageName, copyLocal: bool, specificVersion: bool, importTargets: bool, frameworkRestrictions, includeVersionInPath, downloadLicense, omitContent : bool, createBindingRedirects, referenceCondition) =
         let package: PackageInstallSettings =
             { Name = packageName
               Settings = 
@@ -140,6 +140,7 @@ type ReferencesFile =
                     ImportTargets = if not importTargets then Some importTargets else None
                     FrameworkRestrictions = frameworkRestrictions
                     IncludeVersionInPath = if includeVersionInPath then Some includeVersionInPath else None
+                    LicenseDownload = if downloadLicense then Some downloadLicense else None
                     ReferenceCondition = if String.IsNullOrWhiteSpace referenceCondition |> not then Some referenceCondition else None
                     CreateBindingRedirects = createBindingRedirects
                     Excludes = []
@@ -171,7 +172,8 @@ type ReferencesFile =
 
                 { this with Groups = newGroups }
 
-    member this.AddNuGetReference(groupName, packageName : PackageName) = this.AddNuGetReference(groupName, packageName, true, true, true, ExplicitRestriction FrameworkRestriction.NoRestriction, false, false, None, null)
+    member this.AddNuGetReference(groupName, packageName : PackageName) = 
+        this.AddNuGetReference(groupName, packageName, true, true, true, ExplicitRestriction FrameworkRestriction.NoRestriction, false, false, false, None, null)
 
     member this.RemoveNuGetReference(groupName, packageName : PackageName) =
         let group = this.Groups.[groupName]

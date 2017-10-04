@@ -123,10 +123,9 @@ let tryFindFolder folder (content:NuGetPackageContent) =
         item
         |> List.collect (collectItems (Path.Combine(content.Path, name)) name))
 
-let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
+let DownloadLicense(downloadLicense,root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
     async {
-        if String.IsNullOrWhiteSpace licenseUrl then return () else
-
+        if not downloadLicense || String.IsNullOrWhiteSpace licenseUrl then return () else
         let targetFile = FileInfo targetFileName
         if not force && targetFile.Exists && targetFile.Length > 0L then
             if verbose then
@@ -620,7 +619,7 @@ let private getLicenseFile (packageName:PackageName) version =
     Path.Combine(NuGetCache.GetTargetUserFolder packageName version, NuGetCache.GetLicenseFileName packageName version)
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool, config:PackagesFolderGroupConfig, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, force, detailed) =
+let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool, config:PackagesFolderGroupConfig, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, downloadLicense, force, detailed) =
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
     let normalizedNupkgName = NuGetCache.GetPackageFileName packageName version
     let configResolved = config.Resolve root groupName packageName version includeVersionInPath
@@ -718,7 +717,7 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
                     if Directory.Exists dir |> not then Directory.CreateDirectory dir |> ignore
 
                     use trackDownload = Profile.startCategory Profile.Category.NuGetDownload
-                    let! license = Async.StartChild(DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
+                    let! license = Async.StartChild(DownloadLicense(downloadLicense,root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
 
                     let request = HttpWebRequest.Create(downloadUri) :?> HttpWebRequest
 #if NETSTANDARD1_6

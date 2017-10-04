@@ -252,6 +252,20 @@ nuget UnionArgParser ~> 0.7
 The global option may be
 [overridden per package](nuget-dependencies.html#Importing-and-files).
 
+### License download
+
+If you want paket to download licenses automatically you can use the `download_license` modifier. It is disabled by default.
+
+```paket
+source https://nuget.org/api/v2
+download_license: true
+
+nuget suave 
+```
+
+The global option may be
+[overridden per package](nuget-dependencies.html#License-download).
+
 ### Controlling assembly binding redirects
 
 This option tells Paket to create

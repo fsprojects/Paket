@@ -341,7 +341,7 @@ let ``should parse framework restricted lock file``() =
 let frameworkRestricted' = """NUGET
   remote: https://www.nuget.org/api/v2
   specs:
-    Fleece (0.4.0)
+    Fleece (0.4.0) - license_download: true
       FSharpPlus (>= 0.0.4)
       ReadOnlyCollectionExtensions (>= 1.2.0)
       ReadOnlyCollectionInterfaces (1.0.0) - framework: >= net40
@@ -368,6 +368,8 @@ let ``should parse framework restricted lock file in new syntax``() =
     |> getExplicitRestriction
     |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4)))
 
+    packages.[0].Settings.LicenseDownload |> shouldEqual (Some true)
+
     packages.[3].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
@@ -379,6 +381,7 @@ let ``should parse framework restricted lock file in new syntax``() =
     packages.[3].Settings.SpecificVersion |> shouldEqual None
     packages.[3].Settings.ImportTargets |> shouldEqual (Some false)
     packages.[3].Settings.IncludeVersionInPath |> shouldEqual (Some true)
+    packages.[3].Settings.LicenseDownload |> shouldEqual None
     packages.[3].Settings.OmitContent |> shouldEqual (Some ContentCopySettings.Omit)
 
     let dependencies4 =
@@ -584,6 +587,7 @@ let ``should parse and serialise multiple feed lockfile``() =
 let groupsLockFile = """REDIRECTS: ON
 COPY-LOCAL: TRUE
 IMPORT-TARGETS: TRUE
+LICENSE-DOWNLOAD: TRUE
 NUGET
   remote: "D:\code\temp with space"
     Castle.Windsor (2.1)
@@ -607,6 +611,7 @@ let ``should parse lock file with groups``() =
     lockFile1.Options.Strict |> shouldEqual false
     lockFile1.Options.Redirects |> shouldEqual (Some BindingRedirectsSettings.On)
     lockFile1.Options.Settings.ImportTargets |> shouldEqual (Some true)
+    lockFile1.Options.Settings.LicenseDownload |> shouldEqual (Some true)
     lockFile1.Options.Settings.CopyLocal |> shouldEqual (Some true)
     lockFile1.Options.Settings.ReferenceCondition |> shouldEqual None
 
@@ -621,6 +626,7 @@ let ``should parse lock file with groups``() =
     lockFile2.Options.Strict |> shouldEqual false
     lockFile2.Options.Redirects |> shouldEqual (Some BindingRedirectsSettings.On)
     lockFile2.Options.Settings.ImportTargets |> shouldEqual None
+    lockFile2.Options.Settings.LicenseDownload |> shouldEqual None
     lockFile2.Options.Settings.CopyLocal |> shouldEqual (Some true)
     lockFile2.Options.Settings.ReferenceCondition |> shouldEqual (Some "LEGACY")
 
