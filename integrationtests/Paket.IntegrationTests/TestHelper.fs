@@ -273,3 +273,38 @@ let isPackageCached name =
             Seq.append dirs files
             |> Seq.toList
         else [])
+
+// Checks if a given package is present in cache ONLY with lowercase naming (see issue #2812)
+let isPackageCachedWithOnlyLowercaseNames (name: string) =
+    // // ~/.nuget/packages
+    let userPackageFolder = Paket.Constants.UserNuGetPackagesFolder
+
+    // // %APPDATA%/NuGet/Cache
+    let nugetCache = Paket.Constants.NuGetCacheFolder
+
+    let lowercaseName = name.ToLowerInvariant()
+
+    let packageFolders = 
+        [ nugetCache; userPackageFolder ]
+        |> List.collect (Directory.GetDirectories >> List.ofArray)
+        |> List.filter (fun x -> Path.GetFileName x |> String.equalsIgnoreCase name)
+
+    let packageFolderNames = packageFolders |> List.map Path.GetFileName |> List.distinct
+    
+    // ensure that names of package directories are lowercase only
+    match packageFolderNames with
+    | [ x ] when x = lowercaseName ->
+        // ensure thet names o package files that start with package name are lowercase only
+        let packageFiles =
+            packageFolders
+            |> Seq.collect Directory.GetDirectories
+            |> Seq.collect Directory.GetFiles
+        let packageFileNames = packageFiles |> Seq.map Path.GetFileName
+        let packageNameSegments =
+            packageFileNames
+            |> Seq.filter (String.startsWithIgnoreCase <| sprintf "%s." name)
+            |> Seq.map (fun x -> x.Substring(0, name.Length))
+            |> Seq.distinct
+            |> List.ofSeq
+        packageNameSegments = [ lowercaseName ]
+    | _ -> false
