@@ -222,6 +222,27 @@ versions than the ones your projects use. You can control this in the
 <p>Paket, I only compile for <code>net35</code> and <code>net40</code>, please leave out all other
 stuff I don't need to compile for this set of frameworks.</p>
 </blockquote>
+<p>The supported framework identifiers include:</p>
+<ul>
+<li>.NET Framework: <code>net{version}</code></li>
+<li>.NET Core: <code>netcoreapp{version}</code></li>
+<li>.NET Standard: <code>netstandard{version}</code></li>
+<li>.NET Framework for Unity: <code>net{version}-Unity {Web|Micro|Subset|Full} v{version}</code></li>
+<li>Mono for Android: <code>monoandroid{version}</code></li>
+<li>Mono for Mac: <code>monomac</code></li>
+<li>MonoTouch: <code>monotouch</code></li>
+<li>Native: <code>native</code> or <code>native({buildmode},{platform})</code></li>
+<li>Xamarin for Mac: <code>xamarinmac</code></li>
+<li>Xamarin for iOS: <code>xamarinios</code></li>
+<li>Xamarin for watchOS: <code>xamarinwatchos</code></li>
+<li>Xamarin for tvOS: <code>xamarintvos</code></li>
+<li>Universal Windows Platform: <code>uap{version}</code></li>
+<li>Windows: <code>win{version}</code></li>
+<li>Windows Phone: <code>wp{version}</code></li>
+<li>Windows Phone App: <code>wpa{version}</code></li>
+<li>Silverlight: <code>sl{version}</code></li>
+<li>Tizen: <code>tizen{version}</code></li>
+</ul>
 <h4><a name="Automatic-framework-detection" class="anchor" href="#Automatic-framework-detection">Automatic framework detection</a></h4>
 <p>Paket is able to detect the target frameworks from your projects and then limit
 the installation to these. You can control this in the
