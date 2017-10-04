@@ -583,25 +583,22 @@ type RestrictionParseProblem =
     | ParseFramework of string
     | ParseSecondOperator of string
     | UnsupportedPortable of string
-    | SyntaxError of string
     member x.AsMessage =
         match x with
         | ParseFramework framework ->  sprintf "Could not parse framework '%s'. Try to update or install again or report a paket bug." framework
         | ParseSecondOperator item -> sprintf "Could not parse second framework of between operator '%s'. Try to update or install again or report a paket bug." item
         | UnsupportedPortable item -> sprintf "Profile '%s' is not a supported portable profile" item
-        | SyntaxError msg -> sprintf "Syntax error: %s" msg
     member x.Framework =
         match x with
         | RestrictionParseProblem.UnsupportedPortable fm
         | RestrictionParseProblem.ParseSecondOperator fm
-        | RestrictionParseProblem.ParseFramework fm -> Some fm
-        | SyntaxError _ -> None
+        | RestrictionParseProblem.ParseFramework fm -> fm
     member x.IsCritical =
         match x with
         | RestrictionParseProblem.UnsupportedPortable _ -> false
         | RestrictionParseProblem.ParseSecondOperator _
-        | RestrictionParseProblem.ParseFramework _
-        | SyntaxError _ -> true
+        | RestrictionParseProblem.ParseFramework _ -> true
+
 let parseRestrictionsLegacy failImmediatly (text:string) =
     // older lockfiles to the new "restriction" semantics
     let problems = ResizeArray<_>()
@@ -610,91 +607,46 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
             failwith p.AsMessage
         else
             problems.Add p
+    let text =
+        // workaround missing spaces
+        text.Replace("<=","<= ").Replace(">=",">= ").Replace("=","= ")
+    if text.StartsWith("||") || text.StartsWith("&&") then
+        raise <| InvalidOperationException("&& and || are not allowed in a legacy 'framework' section.")
 
-    let extractFw = FrameworkDetection.Extract
+    let commaSplit = text.Trim().Split(',')
+    [for p in commaSplit do
+        let operatorSplit = p.Trim().Split([|' '|],StringSplitOptions.RemoveEmptyEntries)
+        let framework =
+            if operatorSplit.Length < 2 then 
+                operatorSplit.[0] 
+            else 
+                operatorSplit.[1]
 
-    let extractProfile framework =
-        PlatformMatching.extractPlatforms false framework |> Option.bind (fun pp ->
-            let prof = pp.ToTargetProfile false
-            if prof.IsSome && prof.Value.IsUnsupportedPortable then
-                handleError <| (RestrictionParseProblem.UnsupportedPortable framework)
-            prof)
 
-    let frameworkToken (str : string) =
-        let withoutLeading = str.TrimStart()
-        match withoutLeading.IndexOfAny([|' ';'=';'<';'>'|]) with
-        | -1 -> withoutLeading, ""
-        | i ->
-            let startIndex = str.Length - withoutLeading.Length
-            let remaining = str.Substring(startIndex + i).Trim()
-            withoutLeading.Substring (0, i), remaining
-
-    let tryParseFramework handlers (token : string) =
-        match handlers |> Seq.choose (fun f -> f token) |> Seq.tryHead with
-        | Some fw -> Some fw
+        match FrameworkDetection.Extract(framework) with
         | None ->
-            handleError <| (RestrictionParseProblem.ParseFramework token)
-            None
-
-    let parseExpr (str : string) =
-        let restriction, remaining =
-            match str.Trim() with
-            | x when x.StartsWith ">=" ->
-                let fw1, remaining = frameworkToken (x.Substring 2)
-
-                let fw2, remaining =
-                    let p str =
-                        let token, remaining = frameworkToken str
-                        Some token, remaining
-                    match remaining with
-                    | x when x.StartsWith "<=" -> p (x.Substring 2)
-                    | x when x.StartsWith "<"  -> p (x.Substring 1)
-                    | x -> None, x
-
-                let restriction =
-                    match fw2 with
+            match PlatformMatching.extractPlatforms false framework |> Option.bind (fun pp -> 
+                let prof = pp.ToTargetProfile false
+                if prof.IsSome && prof.Value.IsUnsupportedPortable then
+                    handleError <| (RestrictionParseProblem.UnsupportedPortable framework)
+                prof) with
+            | Some profile ->
+                yield FrameworkRestriction.AtLeastPlatform profile
+            | None ->
+                handleError <| (RestrictionParseProblem.ParseFramework framework)
+        | Some x -> 
+            if operatorSplit.[0] = ">=" then
+                if operatorSplit.Length < 4 then
+                    yield FrameworkRestriction.AtLeast x
+                else
+                    let item = operatorSplit.[3]
+                    match FrameworkDetection.Extract(item) with
                     | None ->
-                        let handlers =
-                            [ extractFw >> Option.map FrameworkRestriction.AtLeast
-                              extractProfile >> Option.map FrameworkRestriction.AtLeastPlatform ]
-
-                        tryParseFramework handlers fw1
-
-                    | Some fw2 ->
-                        let tryParse = tryParseFramework [extractFw]
-
-                        match tryParse fw1, tryParse fw2 with
-                        | Some x, Some y -> Some (FrameworkRestriction.Between (x, y))
-                        | _ -> None
-
-                restriction, remaining
-
-            | x when x.StartsWith "=" ->
-                let fw, remaining = frameworkToken (x.Substring 1)
-
-                let handlers =
-                    [ extractFw >> Option.map FrameworkRestriction.Exactly ]
-
-                tryParseFramework handlers fw, remaining
-
-            | x ->
-                let fw, remaining = frameworkToken x
-
-                let handlers =
-                    [ extractFw >> Option.map FrameworkRestriction.Exactly
-                      extractProfile >> Option.map FrameworkRestriction.AtLeastPlatform ]
-
-                tryParseFramework handlers fw, remaining
-
-        match remaining with
-        | "" -> restriction
-        | x ->
-            handleError (SyntaxError (sprintf "Expected end of input, got '%s'." x))
-            None
-
-    text.Trim().Split(',')
-    |> Seq.choose parseExpr
-    |> Seq.fold (fun state item -> FrameworkRestriction.combineRestrictionsWithOr state item) FrameworkRestriction.EmptySet,
+                        handleError <| (RestrictionParseProblem.ParseSecondOperator item)
+                    | Some y -> yield FrameworkRestriction.Between(x, y)
+            else
+                yield FrameworkRestriction.Exactly x]
+    |> List.fold (fun state item -> FrameworkRestriction.combineRestrictionsWithOr state item) FrameworkRestriction.EmptySet,
     problems.ToArray()
 
 let private parseRestrictionsRaw skipSimplify (text:string) =
