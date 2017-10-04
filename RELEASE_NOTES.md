@@ -1,3 +1,6 @@
+#### 5.107.0 - 2017-10-04
+* REVERT: Stricter parsing of framework requirements - https://github.com/fsprojects/Paket/pull/2816
+
 #### 5.106.0 - 2017-10-04
 * BREAKING: Stricter parsing of framework requirements - https://github.com/fsprojects/Paket/pull/2816
 
