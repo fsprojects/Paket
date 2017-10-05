@@ -218,33 +218,34 @@ let createAlternativeNuGetConfig (projectFile:FileInfo) =
     if not alternativeConfigFileInfo.Exists || File.ReadAllText(alternativeConfigFileInfo.FullName) <> config then 
         File.WriteAllText(alternativeConfigFileInfo.FullName,config)
 
-let createPaketPropsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
-    if Seq.isEmpty cliTools then
-        if fileInfo.Exists then 
-            File.Delete(fileInfo.FullName)
-    else
-        let cliParts =
-            cliTools
-            |> Seq.map (fun cliTool -> sprintf """        <DotNetCliToolReference Include="%O" Version="%O" />""" cliTool.Name cliTool.Version)
+let createPaketPropsFile (cliTools:ResolvedPackage seq) restoreSuccess (fileInfo:FileInfo) =
+    let cliParts =
+        cliTools
+        |> Seq.map (fun cliTool -> sprintf """        <DotNetCliToolReference Include="%O" Version="%O" />""" cliTool.Name cliTool.Version)
             
-        let content = 
-            sprintf """<?xml version="1.0" encoding="utf-8" standalone="no"?>
+    let content = 
+        sprintf """<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <PropertyGroup>
-        <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    </PropertyGroup>
-    <ItemGroup>
+<PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    %s
+</PropertyGroup>
+<ItemGroup>
 %s
-    </ItemGroup>
+</ItemGroup>
 </Project>""" 
-             (String.Join(Environment.NewLine,cliParts))
+            (if restoreSuccess then 
+                "<!-- <RestoreSuccess>False</RestoreSuccess> -->" 
+             else 
+                "<RestoreSuccess>False</RestoreSuccess>")
+            (String.Join(Environment.NewLine,cliParts))
 
-        if not fileInfo.Exists || File.ReadAllText(fileInfo.FullName) <> content then 
-            File.WriteAllText(fileInfo.FullName,content)
-            tracefn " - %s created" fileInfo.FullName
-        else
-            if verbose then
-                tracefn " - %s already up-to-date" fileInfo.FullName
+    if not fileInfo.Exists || File.ReadAllText(fileInfo.FullName) <> content then 
+        File.WriteAllText(fileInfo.FullName,content)
+        tracefn " - %s created" fileInfo.FullName
+    else
+        if verbose then
+            tracefn " - %s already up-to-date" fileInfo.FullName
 
 let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
     if Seq.isEmpty cliTools then
@@ -340,14 +341,14 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
 
     let cliTools = System.Collections.Generic.List<_>()
     for kv in groups do
-        let _,cliToolsInGroup = hulls.[kv.Key] // lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
+        let _,cliToolsInGroup = hulls.[kv.Key]
         cliTools.AddRange cliToolsInGroup
 
     let paketCLIToolsFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.clitools"))
     createPaketCLIToolsFile cliTools paketCLIToolsFileName
 
     let paketPropsFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.props"))
-    createPaketPropsFile cliTools paketPropsFileName
+    createPaketPropsFile cliTools true paketPropsFileName
 
     // Write "cached" file, this way msbuild can check if the references file has changed.
     let paketCachedReferencesFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.references.cached"))
