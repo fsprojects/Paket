@@ -123,9 +123,8 @@ let tryFindFolder folder (content:NuGetPackageContent) =
         item
         |> List.collect (collectItems (Path.Combine(content.Path, name)) name))
 
-let DownloadLicense(downloadLicense,root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
+let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
     async {
-        if not downloadLicense || String.IsNullOrWhiteSpace licenseUrl then return () else
         let targetFile = FileInfo targetFileName
         if not force && targetFile.Exists && targetFile.Length > 0L then
             if verbose then
@@ -717,7 +716,6 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
                     if Directory.Exists dir |> not then Directory.CreateDirectory dir |> ignore
 
                     use trackDownload = Profile.startCategory Profile.Category.NuGetDownload
-                    let! license = Async.StartChild(DownloadLicense(downloadLicense,root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
 
                     let request = HttpWebRequest.Create(downloadUri) :?> HttpWebRequest
 #if NETSTANDARD1_6
@@ -730,7 +728,6 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
                     request.UserAgent <- "Paket"
                     request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
 #endif
-
                     if authenticated then
                         match source.Auth |> Option.map toCredentials with
                         | None | Some(Token _) -> request.UseDefaultCredentials <- true
@@ -774,7 +771,8 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
                         verbosefn "Downloaded %O %O from %s." packageName version !downloadUrl
 
                     try
-                        do! license
+                        if downloadLicense && not (String.IsNullOrWhiteSpace nugetPackage.LicenseUrl) then
+                            do! DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName)
                     with
                     | exn ->
                         if verbose then
