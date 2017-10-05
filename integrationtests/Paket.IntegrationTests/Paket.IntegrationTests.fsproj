@@ -107,8 +107,8 @@
     <Compile Include="AddSpecs.fs" />
     <Compile Include="OutdatedSpecs.fs" />
     <Compile Include="PackSpecs.fs" />
-    <Compile Include="InstallSpecs.fs" />
-    <Compile Include="RestoreSpecs.fs" /> -->
+    <Compile Include="InstallSpecs.fs" /> -->
+    <Compile Include="RestoreSpecs.fs" />
     <!-- <Compile Include="AutoRestoreSpec.fs" />
     <Compile Include="FrameworkRestrictionsSpecs.fs" />
     <Compile Include="HttpSpecs.fs" />
