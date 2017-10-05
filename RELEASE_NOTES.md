@@ -1,5 +1,5 @@
-#### 5.111.0 - 2017-10-05
-* Set RestoreSuccess property
+#### 5.111.1 - 2017-10-05
+* Set RestoreSuccess property and let paket add/remove/install set it
 
 #### 5.110.0 - 2017-10-05
 * Send header for X-NuGet-Protocol-Version 4.1.0 - https://github.com/NuGet/Announcements/issues/10

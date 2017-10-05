@@ -318,6 +318,12 @@ let installForDotnetSDK root (project:ProjectFile) =
     let relativePath = createRelativePath project.FileName paketTargetsPath
     project.RemoveImportForPaketTargets()
     project.AddImportForPaketTargets(relativePath)
+    let projectFileInfo = FileInfo(project.FileName)
+    let paketPropsFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.props"))
+    if paketPropsFileName.Exists then
+        let old = File.ReadAllText paketPropsFileName.FullName
+        let newContent = old.Replace("<!-- <RestoreSuccess>False</RestoreSuccess> -->","<RestoreSuccess>False</RestoreSuccess>")
+        File.WriteAllText(newContent,paketPropsFileName.FullName)
 
 /// Installs all packages from the lock file.
 let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups) =
