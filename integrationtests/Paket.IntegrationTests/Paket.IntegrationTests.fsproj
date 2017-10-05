@@ -97,19 +97,19 @@
     </Compile>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="TestHelper.fs" />
-    <!-- <Compile Include="InitSpecs.fs" />
+    <Compile Include="InitSpecs.fs" />
     <Compile Include="OutdatedSpecs.fs" />
     <Compile Include="FullGitSpecs.fs" />
     <Compile Include="FrameworkRestrictionsSpecs.fs" />
     <Compile Include="NuGetV3Specs.fs" />
-    <Compile Include="UpdatePackageSpecs.fs" /> 
+    <Compile Include="UpdatePackageSpecs.fs" />
     <Compile Include="UpdateGroupsSpecs.fs" />
     <Compile Include="AddSpecs.fs" />
     <Compile Include="OutdatedSpecs.fs" />
     <Compile Include="PackSpecs.fs" />
-    <Compile Include="InstallSpecs.fs" /> -->
+    <Compile Include="InstallSpecs.fs" />
     <Compile Include="RestoreSpecs.fs" />
-    <!-- <Compile Include="AutoRestoreSpec.fs" />
+    <Compile Include="AutoRestoreSpec.fs" />
     <Compile Include="FrameworkRestrictionsSpecs.fs" />
     <Compile Include="HttpSpecs.fs" />
     <Compile Include="PaketCoreSpecs.fs" />
@@ -121,7 +121,7 @@
     <Compile Include="BindingRedirect.fs" />
     <Compile Include="LoadingScriptGenerationTests.fs" />
     <Compile Include="LocalOverrideSpecs.fs" />
-    <Compile Include="SimplifierSpecs.fs" /> -->
+    <Compile Include="SimplifierSpecs.fs" />
     <None Include="paket.references" />
     <Content Include="App.config" />
   </ItemGroup>
