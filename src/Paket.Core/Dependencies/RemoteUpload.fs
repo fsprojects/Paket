@@ -65,7 +65,7 @@ let Push maxTrials url apiKey clientVersion packageFileName =
             else
                 let client = Utils.createWebClient(url, authOpt)
                 client.Headers.Add ("X-NuGet-ApiKey", apiKey)
-                client.Headers.Add ("X-NuGet-Client-Version", clientVersion) // see https://github.com/NuGet/NuGetGallery/issues/4315
+                client.Headers.Add ("X-NuGet-Protocol-Version", Constants.NuGetProtocolVersion) // see https://github.com/NuGet/Announcements/issues/10
 
                 client.UploadFileAsMultipart (new Uri(url)) packageFileName
                 |> ignore
