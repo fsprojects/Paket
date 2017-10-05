@@ -1200,6 +1200,9 @@ let validFrameworks =
     let any = Seq.fold FrameworkRestriction.combineRestrictionsWithOr FrameworkRestriction.EmptySet
 
     [ TestCaseData("framework: net40").Returns(exactly net40)
+      TestCaseData("frameworks: net40").Returns(exactly net40)
+      TestCaseData("framework net40").Returns(exactly net40)
+      TestCaseData("frameworks net40").Returns(exactly net40)
       TestCaseData("framework: = net40").Returns(exactly net40)
       TestCaseData("framework: =net40").Returns(exactly net40)
       TestCaseData("framework: portable-windows8+net45+wp8").Returns(minPlatform profile78)

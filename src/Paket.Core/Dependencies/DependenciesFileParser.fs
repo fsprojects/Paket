@@ -307,6 +307,7 @@ module DependenciesFileParser =
                 | _ -> None
 
             Some (ParserOptions (ParserOption.ResolverStrategyForDirectDependencies setting))
+        | String.RemovePrefix "frameworks" trimmed
         | String.RemovePrefix "framework" trimmed -> 
             let text = trimmed.Replace(":", "").Trim()
             
