@@ -323,7 +323,7 @@ let installForDotnetSDK root (project:ProjectFile) =
     if paketPropsFileName.Exists then
         let old = File.ReadAllText paketPropsFileName.FullName
         let newContent = old.Replace("<!-- <RestoreSuccess>False</RestoreSuccess> -->","<RestoreSuccess>False</RestoreSuccess>")
-        File.WriteAllText(newContent,paketPropsFileName.FullName)
+        File.WriteAllText(paketPropsFileName.FullName, newContent)
 
 /// Installs all packages from the lock file.
 let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups) =
