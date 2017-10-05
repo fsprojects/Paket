@@ -1,4 +1,4 @@
-#### 5.109.0 - 2017-10-05
+#### 5.110.0 - 2017-10-05
 * Send header for X-NuGet-Protocol-Version 4.1.0 - https://github.com/NuGet/Announcements/issues/10
 
 #### 5.108.0 - 2017-10-04
