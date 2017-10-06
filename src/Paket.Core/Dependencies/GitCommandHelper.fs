@@ -268,7 +268,8 @@ let gitCommand repositoryDir command =
 
     if not ok then failwith error else 
     if verbose then
-        msg |> Seq.iter (tracefn "%s")
+        for m in msg do
+            tracefn "%s" m
 
 /// [omit]
 let gitCommandf repositoryDir fmt = Printf.ksprintf (gitCommand repositoryDir) fmt
@@ -284,7 +285,8 @@ let runFullGitCommand repositoryDir command =
 
         if msg.Count = 0 then [||] else
         if verbose then
-            msg |> Seq.iter (tracefn "%s")
+            for m in msg do
+                tracefn "%s" m
         msg |> Seq.toArray
     with 
     | exn -> raise (Exception(sprintf "Could not run \"git %s\"." command, exn))
@@ -300,7 +302,8 @@ let runSimpleGitCommand repositoryDir command =
 
         if msg.Count = 0 then "" else
         if verbose then
-            msg |> Seq.iter (tracefn "%s")
+            for m in msg do
+                tracefn "%s" m
         msg.[0]
     with 
     | exn -> raise (Exception(sprintf "Could not run \"git %s\"." command, exn))

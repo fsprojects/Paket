@@ -350,7 +350,8 @@ module ScriptGeneration =
                             tracefn "Could not generate any scripts for group '%O'" group
                         else
                             tracefn "[ Group - %O ]" group  
-                            scriptContent |> Seq.iter (fun sc -> tracefn " - %O" sc.PartialPath)
+                            for sc in scriptContent do
+                                tracefn " - %O" sc.PartialPath
         let generated =
             scriptData 
             |> Seq.collect (fun (_fw,groupedContent) -> 

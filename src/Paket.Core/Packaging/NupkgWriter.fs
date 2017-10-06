@@ -81,7 +81,8 @@ module internal NupkgWriter =
         let buildFrameworkReferencesNode frameworkAssembliesList =
             if List.isEmpty frameworkAssembliesList then () else
             let d = XElement(ns + "frameworkAssemblies")
-            frameworkAssembliesList |> List.iter (buildFrameworkReferencesNode >> d.Add)
+            for fa in frameworkAssembliesList do
+                d.Add(buildFrameworkReferencesNode fa)
             metadataNode.Add d
 
         let buildDependencyNode (Id, requirement:VersionRequirement) =
@@ -102,7 +103,6 @@ module internal NupkgWriter =
             add g
             g
 
-
         let buildDependencyNodes (excludedDependencies, add, dependencyList)  =
             dependencyList
             |> List.filter (fun (a, _) -> Set.contains a excludedDependencies |> not)
@@ -120,8 +120,8 @@ module internal NupkgWriter =
             | (1, None) ->
                 buildDependencyNodes(excludedDependencies, d.Add, dependencyGroups.Head.Dependencies)
             | _ -> 
-                dependencyGroups 
-                |> List.iter (fun g -> buildDependencyNodesByGroup excludedDependencies d.Add g)
+                for g in dependencyGroups do
+                    buildDependencyNodesByGroup excludedDependencies d.Add g
             metadataNode.Add d
 
         let buildReferenceNode (fileName) =
@@ -132,7 +132,8 @@ module internal NupkgWriter =
         let buildReferencesNode referenceList =
             if List.isEmpty referenceList then () else
             let d = XElement(ns + "references")
-            referenceList |> List.iter (buildReferenceNode >> d.Add)
+            for r in referenceList do 
+                d.Add(buildReferenceNode r)
             metadataNode.Add d
 
         !! "id" core.Id

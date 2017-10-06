@@ -58,7 +58,8 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
                     | Some x -> x
                     | None ->
                         traceWarnfn "The following directories exists:"
-                        di.GetDirectories() |> Seq.iter (fun d -> traceWarnfn "  %s" d.FullName)
+                        for d in di.GetDirectories() do
+                            traceWarnfn "  %s" d.FullName
 
                         failwithf "Group directory for group %s was not found." groupName
 
@@ -66,7 +67,8 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
             | Some x -> x
             | None ->
                 traceWarnfn "The following directories exists:"
-                di.GetDirectories() |> Seq.iter (fun d -> traceWarnfn "  %s" d.FullName)
+                for d in di.GetDirectories() do 
+                    traceWarnfn "  %s" d.FullName
 
                 failwithf "Package directory for package %O was not found." packageName
 

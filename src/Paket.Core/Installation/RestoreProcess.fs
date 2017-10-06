@@ -28,14 +28,13 @@ let FindPackagesNotExtractedYet(dependenciesFileName) =
 
 
 let CopyToCaches force caches fileName =
-    caches
-    |> Seq.iter (fun cache -> 
+    for cache in caches do
         try
             NuGetCache.CopyToCache(cache,fileName,force)
         with
         | exn ->
             if verbose then
-                traceWarnfn "Could not copy %s to cache %s%s%s" fileName cache.Location Environment.NewLine exn.Message)
+                traceWarnfn "Could not copy %s to cache %s%s%s" fileName cache.Location Environment.NewLine exn.Message
 
 /// returns - package, libs files, props files, targets files, analyzers files
 let private extractPackage caches (package:PackageInfo) alternativeProjectRoot root isLocalOverride source groupName version includeVersionInPath downloadLicense force =
@@ -287,8 +286,8 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
     // scenario: remove a target framework -> change references -> add back target framework
     // -> We reached an invalid state
     let objDir = DirectoryInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj"))
-    objDir.GetFiles(sprintf "%s*.paket.resolved" projectFileInfo.Name)
-        |> Seq.iter (fun f -> f.Delete())
+    for f in objDir.GetFiles(sprintf "%s*.paket.resolved" projectFileInfo.Name) do
+        f.Delete()
 
     // fable 1.0 compat
     let oldReferencesFile = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".references"))
@@ -369,8 +368,9 @@ let CreateScriptsForGroups dependenciesFile lockFile (groups:Map<GroupName,LockF
         let depsCache = DependencyCache(dependenciesFile,lockFile)
         let dir = DirectoryInfo dependenciesFile.Directory
 
-        LoadingScripts.ScriptGeneration.constructScriptsFromData depsCache groupsToGenerate [] []
-        |> Seq.iter (fun sd -> sd.Save dir)
+        let scripts = LoadingScripts.ScriptGeneration.constructScriptsFromData depsCache groupsToGenerate [] []
+        for sd in scripts do
+            sd.Save dir
 
 let FindOrCreateReferencesFile (projectFile:ProjectFile) =
     match projectFile.FindReferencesFile() with
@@ -471,11 +471,12 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             | None ->
                 if referencesFileNames = [] then
                     // Restore all projects
-                    ProjectFile.FindAllProjects root
-                    |> Seq.filter (fun proj -> proj.GetToolsVersion() >= 15.0)
-                    |> Seq.iter (fun proj ->
-                        RestoreNewSdkProject lockFile resolved groups proj
-                        |> ignore)
+                    let allProjects =
+                        ProjectFile.FindAllProjects root
+                        |> Seq.filter (fun proj -> proj.GetToolsVersion() >= 15.0)
+
+                    for proj in allProjects do
+                        RestoreNewSdkProject lockFile resolved groups proj |> ignore
 
                 referencesFileNames
 

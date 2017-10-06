@@ -181,11 +181,13 @@ let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindin
             | _ -> None
         |> Option.iter (applyBindingRedirects isFirstGroup cleanBindingRedirects allKnownLibNames bindingRedirects)
     
-    rootPath
-    |> getProjectFilesWithPaketReferences Directory.GetFiles
-    |> Seq.map ProjectFile.TryLoad
-    |> Seq.choose id
-    |> Seq.iter applyBindingRedirects
+    let projects = 
+        rootPath
+        |> getProjectFilesWithPaketReferences Directory.GetFiles
+        |> Seq.map ProjectFile.TryLoad
+        |> Seq.choose id
+    for p in projects do
+        applyBindingRedirects p
 
 /// Calculates the short form of the public key token for use with binding redirects, if it exists.
 let getPublicKeyToken (assembly:Mono.Cecil.AssemblyDefinition) =

@@ -174,7 +174,10 @@ module SemVer =
 
                 /// sanity check to make sure that all of the integers in the string are positive.
                 /// because we use raw substrings with dashes this is very complex :(
-                version.Split([|'.'|]) |> Array.iter (fun s -> match Int32.TryParse s with | true, s when s < 0 -> failwith "no negatives!" | _ -> ignore ())
+                for s in version.Split([|'.'|]) do
+                    match Int32.TryParse s with 
+                    | true, s when s < 0 -> failwith "no negatives!" 
+                    | _ -> ignore ()
 
                 if version.Contains("!") then 
                     failwithf "Invalid character found in %s" version

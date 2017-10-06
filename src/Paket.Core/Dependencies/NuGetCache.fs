@@ -170,7 +170,8 @@ module ODataSearchResult =
 
 let tryGetDetailsFromCache force nugetURL (packageName:PackageName) (version:SemVerInfo) : ODataSearchResult option =
     let cacheFile, oldFiles = getCacheFiles NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
-    oldFiles |> Seq.iter (fun f -> File.Delete f)
+    for f in oldFiles do
+        File.Delete f
     if not force && cacheFile.Exists then
         let json = File.ReadAllText(cacheFile.FullName)
         let cacheResult =
@@ -201,7 +202,8 @@ let tryGetDetailsFromCache force nugetURL (packageName:PackageName) (version:Sem
 
 let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (get : unit -> ODataSearchResult Async) : ODataSearchResult Async =
     let cacheFile, oldFiles = getCacheFiles NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
-    oldFiles |> Seq.iter (fun f -> File.Delete f)
+    for f in oldFiles do 
+        File.Delete f
     let get() =
         async {
             let! result = get()

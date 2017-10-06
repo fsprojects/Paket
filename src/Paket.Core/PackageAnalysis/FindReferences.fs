@@ -34,13 +34,14 @@ let TouchReferencesOfPackages packages environment = trial {
         |> List.map (fun (group,package) -> FindReferencesForPackage group package environment)
         |> collect
 
-    references
-    |> List.collect id
-    |> List.distinctBy (fun project-> project.FileName)
-    |> List.iter (fun project ->
+    let projects = 
+        references
+        |> List.collect id
+        |> List.distinctBy (fun project-> project.FileName)
+    for project in projects do
         if verbose then
             verbosefn "Touching project %s" project.FileName
-        project.Save(true))
+        project.Save true
 }
 
 let ShowReferencesFor packages environment = trial {
@@ -52,9 +53,9 @@ let ShowReferencesFor packages environment = trial {
             return groupName, package, projects })
         |> collect
 
-    projectsPerPackage
-    |> Seq.iter (fun (g, k, vs) ->
+    for g, k, vs in projectsPerPackage do
         tracefn "%O %O" g k
-        vs |> Seq.map (fun p -> p.FileName) |> Seq.iter (tracefn "%s")
-        tracefn "")
+        for v in vs |> Seq.map (fun p -> p.FileName) do
+            tracefn "%s" v
+        tracefn ""
 }

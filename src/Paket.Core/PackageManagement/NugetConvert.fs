@@ -463,7 +463,9 @@ let replaceNuGetWithPaket initAutoRestore installAfter result =
         tracefn "Removing %s" fi.FullName
         fi.Delete()
 
-    result.NuGetEnv.NuGetConfigFiles |> List.iter remove
+    for f in result.NuGetEnv.NuGetConfigFiles do
+        remove f
+
     result.NuGetEnv.NuGetProjectFiles 
     |> List.map (fun (_,n) -> n |> Option.map (fun x -> x.File))
     |> List.choose id 
@@ -483,13 +485,12 @@ let replaceNuGetWithPaket initAutoRestore installAfter result =
     | _ -> ()
 
     result.PaketEnv.DependenciesFile.Save()
-    result.PaketEnv.Projects 
-    |> List.iter (fun (project, referencesFile) -> 
-        project.Save(true)
-        referencesFile.Save())
+    for project, referencesFile in result.PaketEnv.Projects do
+        project.Save true
+        referencesFile.Save()
 
-    result.SolutionFiles 
-    |> Array.iter (fun s -> s.Save())
+    for s in result.SolutionFiles do
+        s.Save()
 
     let autoVSPackageRestore = 
         result.NuGetEnv.NuGetConfig.PackageRestoreAutomatic &&

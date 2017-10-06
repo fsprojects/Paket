@@ -123,10 +123,9 @@ let removeOlderVersionsFromCache(cache:Cache, packageName:PackageName, versions:
                     |> Seq.map (fun v -> NuGetCache.GetPackageFileName packageName v |> normalizePath)
                     |> Set.ofSeq
 
-                targetFolder.EnumerateFiles(packageName.ToString() + ".*.nupkg")
-                |> Seq.iter (fun fi ->            
-                    if not (fileNames.Contains(fi.Name |> normalizePath)) then
-                        fi.Delete())
+                for fi in targetFolder.EnumerateFiles(packageName.ToString() + ".*.nupkg") do
+                    if not (fileNames.Contains(normalizePath fi.Name)) then
+                        fi.Delete()
             | _ -> ()
 
 let cleanupCaches (dependenciesFile:DependenciesFile) (lockFile:LockFile) =

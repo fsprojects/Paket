@@ -232,8 +232,9 @@ let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
         
         let rootDir = (DirectoryInfo dependenciesFile.RootPath) 
         let depCache= DependencyCache(dependenciesFile,lockFile)
-        LoadingScripts.ScriptGeneration.constructScriptsFromData depCache groupsToGenerate options.Common.ProvidedFrameworks options.Common.ProvidedScriptTypes
-        |> Seq.iter (fun x -> x.Save rootDir)
+        let scripts = LoadingScripts.ScriptGeneration.constructScriptsFromData depCache groupsToGenerate options.Common.ProvidedFrameworks options.Common.ProvidedScriptTypes
+        for script in scripts do
+            script.Save rootDir
 
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =

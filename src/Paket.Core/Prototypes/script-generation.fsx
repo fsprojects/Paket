@@ -12,8 +12,6 @@ open Paket.LoadingScripts.ScriptGeneration
 
 let _ = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
 
-let printSqs sqs = sqs |> Seq.iter (printfn "%A")
-
 let scenarios = System.Collections.Generic.List<_>()
 
 let integrationTestPath = Path.GetFullPath(__SOURCE_DIRECTORY__ + "../../../../integrationtests/scenarios/loading-scripts")

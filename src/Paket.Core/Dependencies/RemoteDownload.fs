@@ -221,7 +221,8 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
                 if not ok then failwith errorText
                 if ok && msg.Count = 0 then tracefn "Done." else
                 if verbose then
-                    msg |> Seq.iter (tracefn "%s")
+                    for m in msg do
+                        tracefn "%s" m
             with 
             | exn -> failwithf "Could not run \"%s\".\r\nError: %s" tCommand exn.Message
     | Origin.GistLink, Constants.FullProjectSourceFileName ->
@@ -326,8 +327,7 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
 
         (versionFile, version), sources)
     |> List.iter (fun ((versionFile, version), sources) ->
-        sources
-        |> List.iter (fun (_, (destination, source)) ->
+        for (_, (destination, source)) in sources do
             let exists =
                 if destination.EndsWith Constants.FullProjectSourceFileName then
                     let di = FileInfo(destination).Directory
@@ -340,9 +340,9 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
                     verbosefn "Sourcefile %O is already there." source
             else 
                 tracefn "Downloading %O to %s" source destination
-                Async.RunSynchronously (downloadRemoteFiles(source,destination)))
+                Async.RunSynchronously (downloadRemoteFiles(source,destination))
 
-        if File.Exists(versionFile.FullName) then
+        if File.Exists versionFile.FullName then
             if not (File.ReadAllText(versionFile.FullName).Contains(version)) then
                 File.AppendAllLines(versionFile.FullName, [version])
         else

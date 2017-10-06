@@ -299,8 +299,7 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
         // there are packages which define multiple dependencies to the same package
         // we compress these here - see #567
         let dict = Dictionary<_,_>()
-        exploredPackage.Dependencies
-        |> Set.iter (fun ((name,v,r) as dep) ->
+        for ((name,v,r) as dep) in exploredPackage.Dependencies do
             match dict.TryGetValue name with
             | true,(_,v2,r2) ->
                 match v,v2 with
@@ -320,7 +319,8 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
                         dict.[name] <- (name,v2,newRestrictions)
                     else dict.[name] <- dep
                 | _ ->  dict.[name] <- dep
-            | _ -> dict.Add(name,dep))
+            | _ -> dict.Add(name,dep)
+
         dict
         |> Seq.map (fun kv -> kv.Value)
         |> Set.ofSeq

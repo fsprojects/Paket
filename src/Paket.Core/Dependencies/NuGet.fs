@@ -512,8 +512,7 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
         let reportRequests withDetails (trial:GetVersionRequestResult) =
             let sb = new StringBuilder()
             let add s = sb.AddLine(s) |> ignore
-            trial.Requests
-            |> Seq.iter (fun sourceResult ->
+            for sourceResult in trial.Requests do
                 match sourceResult.Result with
                 | SourceNoResult ->
                     add(sprintf "Source '%s' yielded no results" sourceResult.Source.Url)
@@ -542,7 +541,7 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
                                     add(sprintf " - Request '%s' finished with: [%s]" req.Request.Url (System.String.Join(" ; ", versions)))
                         else
                             add(sprintf " - Request '%s' is not finished yet" req.Request.Url)
-            )
+
             sb.ToString()
         let getException (trial:GetVersionRequestResult) message =
             trial.Requests

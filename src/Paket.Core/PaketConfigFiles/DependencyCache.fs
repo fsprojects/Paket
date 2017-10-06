@@ -109,13 +109,14 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
         match tryGet group orderedGroupCache with
         | None -> []
         | Some packs -> 
-            packs |> List.iter (fun pack -> 
+            for pack in packs do
                 match tryGet (group,pack.Name) installModelCache with
                 | None -> ()
                 | Some model ->
-                    model.GetLibReferenceFiles (TargetProfile.SinglePlatform framework) |> Seq.iter (libs.Add >> ignore)
-                    model.GetAllLegacyFrameworkReferences ()|> Seq.iter (sysLibs.Add >> ignore)
-            )
+                    for lib in model.GetLibReferenceFiles (TargetProfile.SinglePlatform framework) do
+                        libs.Add lib |> ignore
+                    for sysLib in model.GetAllLegacyFrameworkReferences() do
+                        sysLibs.Add sysLib |> ignore
 
             let assemblyFilePerAssemblyDef = 
                 libs |> Seq.map (fun (f:FileInfo) -> 
