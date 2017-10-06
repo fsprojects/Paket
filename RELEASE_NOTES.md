@@ -1,4 +1,4 @@
-#### 5.111.1 - 2017-10-05
+#### 5.111.2 - 2017-10-05
 * Set RestoreSuccess property and let paket add/remove/install set it
 
 #### 5.110.0 - 2017-10-05
