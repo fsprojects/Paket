@@ -656,7 +656,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                         match vr.VersionRequirement.Range with
                         | Specific _ ->
                             let v = SemVer.Parse version
-                            if not <| p.VersionRequirement.IsInRange v then
+                            if not (p.VersionRequirement.IsInRange v) then
                                 failwithf "Version %O doesn't match the version requirement %O for package %O that was specified in paket.dependencies" v p.VersionRequirement packageName
                         | _ -> ()
 
@@ -693,15 +693,18 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         tracefn "Dependencies files saved to %s" fileName
 
     static member FromSource(rootPath,source:string) : DependenciesFile = 
-        DependenciesFile(DependenciesFileParser.parseDependenciesFile (Path.Combine(rootPath,Constants.DependenciesFileName)) true <| source.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
+        let source = source.Replace("\r\n","\n").Replace("\r","\n").Split('\n')
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile (Path.Combine(rootPath,Constants.DependenciesFileName)) true source)
 
     static member FromSource(source:string) : DependenciesFile = 
-        DependenciesFile(DependenciesFileParser.parseDependenciesFile "" true <| source.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
+        let source = source.Replace("\r\n","\n").Replace("\r","\n").Split('\n')
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile "" true source)
 
     static member ReadFromFile fileName : DependenciesFile = 
         if verbose then
             verbosefn "Parsing %s" fileName
-        DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName true <| File.ReadAllLines fileName)    
+        let source = File.ReadAllLines fileName
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName true source)
 
     /// Find the matching lock file to a dependencies file
     static member FindLockfile(dependenciesFileName) =

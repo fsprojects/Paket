@@ -64,7 +64,8 @@ let getDescription attributes =
     |> Seq.tryPick (function Description d when notNullOrEmpty d -> Some d | _ -> None)
 
 let readAssembly fileName =
-    traceVerbose <| sprintf "Loading assembly metadata for %s" fileName
+    if verbose then
+        traceVerbose (sprintf "Loading assembly metadata for %s" fileName)
     let assemblyReader = 
         ProviderImplementation.AssemblyReader.ILModuleReaderAfterReadingAllBytes(
             fileName, 

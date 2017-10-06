@@ -98,7 +98,7 @@ module NuGetConfig =
 </configuration>""") |> ignore
         let text = sb.ToString()
         let fileName = Path.Combine(directory,Constants.NuGetConfigFile)
-        if not <| File.Exists fileName then
+        if not (File.Exists fileName) then
             File.WriteAllText(fileName,text)
         else
             if File.ReadAllText(fileName) <> text then
@@ -288,7 +288,7 @@ let rec private cleanup (dir : DirectoryInfo) =
         let newFullName = Path.Combine(file.DirectoryName, newName)
         if file.Name <> newName && not (File.Exists newFullName) then
             let dir = Path.GetDirectoryName newFullName
-            if not <| Directory.Exists dir then
+            if not (Directory.Exists dir) then
                 Directory.CreateDirectory dir |> ignore
 
             File.Move(file.FullName, newFullName)
@@ -329,7 +329,7 @@ let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, ver
             ZipFile.ExtractToDirectory(fileName, targetFolder.FullName)
 
             let cachedHashFile = Path.Combine(Constants.NuGetCacheFolder,fi.Name + ".sha512")
-            if not <| File.Exists cachedHashFile then
+            if not (File.Exists cachedHashFile) then
                 let packageHash = getSha512File fileName
                 File.WriteAllText(cachedHashFile,packageHash)
 
@@ -347,7 +347,7 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
              if verbose then
                  verbosefn "%O %O already extracted" packageName version
         else
-            Directory.CreateDirectory(targetFolder) |> ignore
+            Directory.CreateDirectory targetFolder |> ignore
 
             try
                 fixArchive fileName
@@ -356,9 +356,8 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
             | exn ->
                 let text = if detailed then sprintf "%s In rare cases a firewall might have blocked the download. Please look into the file and see if it contains text with further information." Environment.NewLine else ""
                 let path = try Path.GetFullPath fileName with :? PathTooLongException -> sprintf "%s (!too long!)" fileName
-                raise <| Exception(sprintf "Error during extraction of %s.%s%s" path Environment.NewLine text, exn)
-
-
+                raise (Exception(sprintf "Error during extraction of %s.%s%s" path Environment.NewLine text, exn))
+                
             cleanup directory
             if verbose then
                 verbosefn "%O %O unzipped to %s" packageName version targetFolder

@@ -189,14 +189,15 @@ type PackageSource =
     static member WarnIfNoConnection (source,_) = 
         let n url auth =
             use client = Utils.createHttpClient(url, auth |> Option.map toCredentials)
-            try client.DownloadData url |> ignore 
+            try 
+                client.DownloadData url |> ignore 
             with _ ->
                 traceWarnfn "Unable to ping remote NuGet feed: %s." url
         match source with
         | NuGetV2 x -> n x.Url x.Authentication
         | NuGetV3 x -> n x.Url x.Authentication
         | LocalNuGet(path,_) -> 
-            if not <| Directory.Exists (RemoveOutsideQuotes path) then 
+            if not (Directory.Exists (RemoveOutsideQuotes path)) then 
                 traceWarnfn "Local NuGet feed doesn't exist: %s." path
 
 let DefaultNuGetSource = PackageSource.NuGetV2Source Constants.DefaultNuGetStream

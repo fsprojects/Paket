@@ -148,9 +148,9 @@ let findAllReferencesFiles root =
         match p.FindReferencesFile() with
         | Some fileName -> 
             try
-                Some(ok <| (p, ReferencesFile.FromFile fileName))
+                Some(ok (p, ReferencesFile.FromFile fileName))
             with e ->
-                Some(fail <| (ReferencesFileParseError (FileInfo fileName, e)))
+                Some(fail (ReferencesFileParseError (FileInfo fileName, e)))
         | None ->
             None
             

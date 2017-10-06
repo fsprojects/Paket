@@ -7,12 +7,11 @@ open System.IO
 open Paket.Logging
 open Paket.ModuleResolver
 open System.IO.Compression
-open Paket.Domain
 open Paket.Git.CommandHelper
 open Paket.Git.Handling
 
 
-let private safeGetFromUrlCached = memoizeAsync <| safeGetFromUrl
+let private safeGetFromUrlCached = safeGetFromUrl |> memoizeAsync
 
 let private lookupDocument (auth,url : string)  = 
     safeGetFromUrlCached(auth,url,null)
@@ -35,9 +34,9 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
                 let json = JObject.Parse(document)
                 return json.["sha"].ToString()
             | NotFound ->
-                return raise <| new Exception(sprintf "Could not find (404) hash for %s" url)
+                return raise (new Exception(sprintf "Could not find (404) hash for %s" url))
             | UnknownError err ->
-                return raise <| new Exception(sprintf "Could not find hash for %s" url, err.SourceException)
+                return raise (new Exception(sprintf "Could not find hash for %s" url, err.SourceException))
         | ModuleResolver.Origin.GistLink ->
             let branch = ModuleResolver.getVersionRequirement versionRestriction
             let url = sprintf "https://api.github.com/gists/%s/%s" project branch
@@ -48,9 +47,9 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
                 let latest = json.["history"].First.["version"]
                 return latest.ToString()
             | NotFound ->
-                return raise <| new Exception(sprintf "Could not find hash for %s" url)
+                return raise (new Exception(sprintf "Could not find hash for %s" url))
             | UnknownError err ->
-                return raise <| new Exception(sprintf "Could not find hash for %s" url, err.SourceException)
+                return raise (new Exception(sprintf "Could not find hash for %s" url, err.SourceException))
         | ModuleResolver.Origin.GitLink (LocalGitOrigin path) ->
             let path = path.Replace(@"file:///", "")
             let branch = 
@@ -163,8 +162,8 @@ let rec DirectoryCopy(sourceDirName, destDirName, copySubDirs) =
     let dir = DirectoryInfo(sourceDirName)
     let dirs = dir.GetDirectories()
 
-    if not <| Directory.Exists(destDirName) then
-        Directory.CreateDirectory(destDirName) |> ignore
+    if not (Directory.Exists destDirName) then
+        Directory.CreateDirectory destDirName |> ignore
 
     for file in dir.GetFiles() do
         file.CopyTo(Path.Combine(destDirName, file.Name), true) |> ignore
@@ -183,7 +182,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
     match remoteFile.Origin, remoteFile.Name with
     | Origin.GitLink (RemoteGitOrigin cloneUrl), _
     | Origin.GitLink (LocalGitOrigin cloneUrl), _ ->
-        if not <| Utils.isMatchingPlatform remoteFile.OperatingSystemRestriction then () else
+        if not (Utils.isMatchingPlatform remoteFile.OperatingSystemRestriction) then () else
         let cloneUrl = cloneUrl.TrimEnd('/')
         
         let repoCacheFolder = Path.Combine(Constants.GitRepoCacheFolder,remoteFile.Project)
@@ -341,10 +340,10 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
                     verbosefn "Sourcefile %O is already there." source
             else 
                 tracefn "Downloading %O to %s" source destination
-                Async.RunSynchronously <| downloadRemoteFiles(source,destination))
+                Async.RunSynchronously (downloadRemoteFiles(source,destination)))
 
         if File.Exists(versionFile.FullName) then
-            if not <| File.ReadAllText(versionFile.FullName).Contains(version) then
+            if not (File.ReadAllText(versionFile.FullName).Contains(version)) then
                 File.AppendAllLines(versionFile.FullName, [version])
         else
             File.AppendAllLines(versionFile.FullName, [version]))

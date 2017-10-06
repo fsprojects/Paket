@@ -125,7 +125,7 @@ let removeOlderVersionsFromCache(cache:Cache, packageName:PackageName, versions:
 
                 targetFolder.EnumerateFiles(packageName.ToString() + ".*.nupkg")
                 |> Seq.iter (fun fi ->            
-                    if not <| fileNames.Contains(fi.Name |> normalizePath) then
+                    if not (fileNames.Contains(fi.Name |> normalizePath)) then
                         fi.Delete())
             | _ -> ()
 

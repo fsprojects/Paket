@@ -222,21 +222,18 @@ type Dependencies(dependenciesFileName: string) =
         LoadingScripts.ScriptGeneration.constructScriptsFromData depCache (groups|>List.map GroupName) frameworks scriptTypes
         |> List.ofSeq
 
-
     member this.GenerateLoadScripts (groups:string list) (frameworks:string list) (scriptTypes:string list)  =
-        this.GenerateLoadScriptData this.DependenciesFile groups frameworks scriptTypes 
-        |> List.iter (fun sd -> 
+        for sd in this.GenerateLoadScriptData this.DependenciesFile groups frameworks scriptTypes do
             let rootDir = this.RootDirectory
-            Directory.CreateDirectory <| Path.Combine (Constants.PaketFolderName,"load") |> ignore
+            Directory.CreateDirectory (Path.Combine(Constants.PaketFolderName,"load")) |> ignore
             let scriptPath = Path.Combine (rootDir.FullName , sd.PartialPath)
             if verbose then
                 verbosefn "scriptpath - %s" scriptPath
             let scriptDir = Path.GetDirectoryName scriptPath |> Path.GetFullPath |> DirectoryInfo
             scriptDir.Create()
             if verbose then
-                verbosefn "created - '%s'" <| Path.Combine (rootDir.FullName , sd.PartialPath)
+                verbosefn "created - '%s'" (Path.Combine(rootDir.FullName , sd.PartialPath))
             sd.Save rootDir
-        )
 
     /// Updates all dependencies.
     member this.Update(force: bool): unit = 
@@ -731,7 +728,7 @@ type Dependencies(dependenciesFileName: string) =
             let doc =
                 try let doc = Xml.XmlDocument() in doc.LoadXml nuspecText
                     doc
-                with exn -> raise <| Exception(sprintf "Could not parse nuspec file '%s'." nuspecFile, exn)
+                with exn -> raise (Exception(sprintf "Could not parse nuspec file '%s'." nuspecFile, exn))
 
             if not (File.Exists referencesFile) then
                 failwithf "Specified references-file '%s' does not exist." referencesFile
@@ -785,7 +782,7 @@ type Dependencies(dependenciesFileName: string) =
             let doc =
                 try let doc = Xml.XmlDocument() in doc.LoadXml nuspecText
                     doc
-                with exn -> raise <| Exception(sprintf "Could not parse nuspec file '%s'." nuspecFile, exn)
+                with exn -> raise (Exception(sprintf "Could not parse nuspec file '%s'." nuspecFile, exn))
 
             let rec traverse (parent:XmlNode) =
                 let nodesToRemove = ResizeArray()

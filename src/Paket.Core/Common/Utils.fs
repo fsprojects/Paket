@@ -30,7 +30,7 @@ let sndOf3 (_,v,_) = v
 let thirdOf3 (_,_,v) = v
 
 let rethrowf f inner fmt =
-    ksprintf (fun msg -> raise <| f(msg,inner)) fmt
+    ksprintf (fun msg -> raise (f(msg,inner))) fmt
 
 /// Adds quotes around the string
 /// [omit]
@@ -112,11 +112,11 @@ let internal parseAuthTypeString (str:string) =
 let TimeSpanToReadableString(span:TimeSpan) =
     let pluralize x = if x = 1 then String.Empty else "s"
     let notZero x y = if x > 0 then y else String.Empty
-    let days = notZero (span.Duration().Days)  <| String.Format("{0:0} day{1}, ", span.Days, pluralize span.Days)
-    let hours = notZero (span.Duration().Hours) <| String.Format("{0:0} hour{1}, ", span.Hours, pluralize span.Hours) 
-    let minutes = notZero (span.Duration().Minutes) <| String.Format("{0:0} minute{1}, ", span.Minutes, pluralize span.Minutes)
-    let seconds = notZero (span.Duration().Seconds) <| String.Format("{0:0} second{1}", span.Seconds, pluralize span.Seconds) 
-    let milliseconds = notZero (span.Duration().Milliseconds) <| String.Format("{0:0} millisecond{1}", span.Milliseconds, pluralize span.Milliseconds) 
+    let days = notZero (span.Duration().Days) (String.Format("{0:0} day{1}, ", span.Days, pluralize span.Days))
+    let hours = notZero (span.Duration().Hours) (String.Format("{0:0} hour{1}, ", span.Hours, pluralize span.Hours))
+    let minutes = notZero (span.Duration().Minutes) (String.Format("{0:0} minute{1}, ", span.Minutes, pluralize span.Minutes))
+    let seconds = notZero (span.Duration().Seconds) (String.Format("{0:0} second{1}", span.Seconds, pluralize span.Seconds))
+    let milliseconds = notZero (span.Duration().Milliseconds) (String.Format("{0:0} millisecond{1}", span.Milliseconds, pluralize span.Milliseconds) )
 
     let formatted = String.Format("{0}{1}{2}{3}", days, hours, minutes, seconds)
 
@@ -402,7 +402,7 @@ let envProxies () =
             Some 
                 { new IWebProxy with
                     member __.Credentials 
-                        with get () = (Option.toObj <| getCredentials envUri) :> ICredentials
+                        with get () = (Option.toObj (getCredentials envUri)) :> ICredentials
                         and set value = ()
                     member __.GetProxy _ =
                         Uri (sprintf "http://%s:%d" envUri.Host envUri.Port)
@@ -411,7 +411,7 @@ let envProxies () =
                 }
 #else
             let proxy = WebProxy (Uri (sprintf "http://%s:%d" envUri.Host envUri.Port))
-            proxy.Credentials <- Option.toObj <| getCredentials envUri
+            proxy.Credentials <- Option.toObj (getCredentials envUri)
             proxy.BypassProxyOnLocal <- true
             proxy.BypassList <- bypassList
             Some proxy
@@ -464,7 +464,7 @@ type RequestFailedInfo =
         if not (isNull resp.Content) then
             do! resp.Content.CopyToAsync(mem) |> Async.AwaitTaskWithoutAggregate
         mem.Position <- 0L
-        //raise <| RequestReturnedError(resp.StatusCode, mem, resp.Content.Headers.ContentType.MediaType)
+
         let mediaType =
             resp.Content
             |> Option.ofObj
@@ -504,7 +504,7 @@ let failIfNoSuccess (resp:HttpResponseMessage) = async {
         if verbose then
             tracefn "Request failed with '%d': '%s'" (int resp.StatusCode) (resp.RequestMessage.RequestUri.ToString())
         let! info = RequestFailedInfo.ofResponse resp
-        raise <| RequestFailedException(info, null)
+        raise (RequestFailedException(info, null))
     () }
 
 #if USE_WEB_CLIENT_FOR_UPLOAD
@@ -695,7 +695,7 @@ let downloadFromUrlWithTimeout (auth:Auth option, url : string) (timeout:TimeSpa
             do! task
         with
         | exn ->
-            raise <| Exception(sprintf "Could not download from '%s'" url, exn)
+            raise (Exception(sprintf "Could not download from '%s'" url, exn))
     }
 
 /// [omit]
@@ -719,7 +719,7 @@ let getFromUrl (auth:Auth option, url : string, contentType : string) =
             return! client.DownloadStringTaskAsync (uri, tok) |> Async.AwaitTaskWithoutAggregate
         with
         | exn ->
-            return raise <| Exception(sprintf "Could not retrieve data from '%s'" url, exn)
+            return raise (Exception(sprintf "Could not retrieve data from '%s'" url, exn))
 
     }
 
@@ -739,7 +739,7 @@ let getXmlFromUrl (auth:Auth option, url : string) =
             return! client.DownloadStringTaskAsync (Uri url, tok) |> Async.AwaitTaskWithoutAggregate
         with
         | exn ->
-            return raise <| Exception(sprintf "Could not retrieve data from '%s'" url, exn)
+            return raise (Exception(sprintf "Could not retrieve data from '%s'" url, exn))
     }
 
 type SafeWebResult<'a> =
@@ -916,7 +916,7 @@ let RunInLockedAccessMode(rootFolder,action) =
                 tracefn "Could not acquire lock to %s.%s%s%sTrials left: %d." fileName Environment.NewLine exn.Message Environment.NewLine trials
                 acquireLock startTime timeOut trials
             else
-                raise <| Exception(sprintf "Could not acquire lock to '%s'." fileName, exn)
+                raise (Exception(sprintf "Could not acquire lock to '%s'." fileName, exn))
     
     let rec releaseLock() =
         try
@@ -1060,7 +1060,7 @@ let parseKeyValuePairs (s:string) : Dictionary<string,string> =
         d
     with
     | exn -> 
-        raise <| Exception(sprintf "Could not parse '%s' as key/value pairs." s, exn)
+        raise (Exception(sprintf "Could not parse '%s' as key/value pairs." s, exn))
 
 let downloadStringSync (url : string) (client : HttpClient) = 
     try 

@@ -137,7 +137,7 @@ module internal NupkgWriter =
 
         !! "id" core.Id
         match core.Version with
-        | Some v -> !! "version" <| v.ToString()
+        | Some v -> !! "version" (v.ToString())
         | None -> failwithf "No version was given for %s" core.PackageFileName
         (!!?) "title" optional.Title
         !! "authors" (core.Authors |> String.concat ", ")
@@ -322,10 +322,10 @@ module internal NupkgWriter =
 
         // adds all files in a directory to the zipFile
         let rec addDir source target =
-            if not <| isExcluded source then
+            if not (isExcluded source) then
                 let target = ensureValidTargetName target
                 for file in Directory.EnumerateFiles(source,"*.*",SearchOption.TopDirectoryOnly) do
-                    if not <| isExcluded file then
+                    if not (isExcluded file) then
                         let fi = FileInfo file
                         let fileName = ensureValidName fi.Name
                         let path = Path.Combine(target,fileName)
@@ -344,8 +344,8 @@ module internal NupkgWriter =
                 addDir source targetFileName
             else
                 if File.Exists source then
-                    if not <| isExcluded source then
-                        let fi = FileInfo(source)
+                    if not (isExcluded source) then
+                        let fi = FileInfo source
                         let fileName = ensureValidName fi.Name
                         let path = Path.Combine(targetFileName,fileName)
                         addEntryFromFile path source

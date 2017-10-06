@@ -23,7 +23,7 @@ type PaketExiter() =
             else traceError msg ; exit 1
 
 let processWithValidationEx printUsage silent validateF commandF result =
-    if not <| validateF result then
+    if not (validateF result) then
         traceError "Command was:"
         traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
         printUsage result

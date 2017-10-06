@@ -218,4 +218,4 @@ module RuntimeGraph =
             |> Option.map File.ReadAllText
             |> Option.map RuntimeGraphParser.readRuntimeGraph
         with e ->
-            raise <| exn(sprintf "Unable to parse runtime graph of '%O' '%O'" package.Name package.Version, e)
+            raise (exn(sprintf "Unable to parse runtime graph of '%O' '%O'" package.Name package.Version, e))

@@ -388,7 +388,7 @@ module ProjectFile =
                     | None, true -> None
                     | None, false -> Some(data)
                     | Some(left, comp, right, index), _ ->
-                        let data = Some <| data @[(andOr, left, comp, right)]
+                        let data = Some (data @[(andOr, left, comp, right)])
                         parseFullCondition data sb input index
 
         let rec handleConditions data xs lastCondition =
@@ -814,7 +814,7 @@ module ProjectFile =
                         let duplicates = HashSet<_>()
                         for frameworkAssembly in frameworkReferences do
                             for t in libFolder.Targets do
-                                if not <| usedFrameworkLibs.Add(t,frameworkAssembly.Name) then
+                                if not (usedFrameworkLibs.Add(t,frameworkAssembly.Name)) then
                                     assemblyTargets := Set.remove t !assemblyTargets // List.filter ((<>) t) !assemblyTargets
                                     duplicates.Add frameworkAssembly.Name |> ignore
 
@@ -902,7 +902,7 @@ module ProjectFile =
                     let whenNode = 
                         createNode "When" project
                         |> addAttribute "Condition" finalCondition 
-                    if not <| Set.isEmpty propertyNames then
+                    if not (Set.isEmpty propertyNames) then
                         whenNode.AppendChild(propertyGroup) |> ignore
                         containsProperties := true
                     whenNode)
@@ -1278,7 +1278,7 @@ module ProjectFile =
                 match node |> getAttribute "Include" with
                 | Some fileName ->
                     let fi = FileInfo(normalizePath fileName)
-                    Some <| fi.Name.Replace(fi.Extension,"")
+                    Some (fi.Name.Replace(fi.Extension,""))
                 | None -> None
 
         let forceGetInnerText node name =
@@ -1546,9 +1546,9 @@ module ProjectFile =
         let rec tryNextPlat platforms attempted =
             match platforms with
             | [] ->
-                if String.IsNullOrEmpty(targetFramework) = false then
+                if not (String.IsNullOrEmpty targetFramework) then
                     Path.Combine("bin", buildConfiguration, targetFramework)
-                else if String.IsNullOrWhiteSpace(buildPlatform) then
+                elif String.IsNullOrWhiteSpace buildPlatform then
                     failwithf "Unable to find %s output path node in file %s for any known platforms" buildConfiguration project.FileName
                 else
                     failwithf "Unable to find %s output path node in file %s targeting the %s platform" buildConfiguration project.FileName buildPlatform

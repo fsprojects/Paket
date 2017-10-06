@@ -141,7 +141,7 @@ let private getXmlDoc url raw =
     try
         doc.LoadXml raw
     with
-    | e -> raise <| Exception(sprintf "Could not parse response from %s as OData.%sData:%s%s" url Environment.NewLine Environment.NewLine raw, e)
+    | e -> raise (Exception(sprintf "Could not parse response from %s as OData.%sData:%s%s" url Environment.NewLine Environment.NewLine raw, e))
     doc
 
 let private handleODataEntry nugetURL packageName version entry =

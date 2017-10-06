@@ -159,7 +159,10 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
                 removeEmptyDirHierarchy (DirectoryInfo dirPath)
 
         project.GetPaketFileItems()
-        |> List.filter (fun fi -> not <| fi.FullName.Contains(Constants.PaketFilesFolderName) && not (contentFiles.Contains(fi.FullName)) && fi.Name <> "paket.references")
+        |> List.filter (fun fi -> 
+                not (fi.FullName.Contains Constants.PaketFilesFolderName) && 
+                 not (contentFiles.Contains fi.FullName) &&
+                 fi.Name <> "paket.references")
         |> removeFilesAndTrimDirs
 
     removeCopiedFiles project
@@ -366,12 +369,12 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     let group =
                         match lockFile.Groups |> Map.tryFind kv.Key with
                         | Some g -> Choice1Of2 g
-                        | None -> Choice2Of2 <| sprintf " - %s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName kv.Key
+                        | None -> Choice2Of2 (sprintf " - %s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName kv.Key)
 
                     let package =
                         match model |> Map.tryFind (kv.Key, ps.Name) with
                         | Some (p,_) -> Choice1Of2 p
-                        | None -> Choice2Of2 <| sprintf " - %s uses NuGet package %O, but it was not found in the paket.lock file in group %O.%s" referenceFile.FileName ps.Name kv.Key (lockFile.CheckIfPackageExistsInAnyGroup ps.Name)
+                        | None -> Choice2Of2 (sprintf " - %s uses NuGet package %O, but it was not found in the paket.lock file in group %O.%s" referenceFile.FileName ps.Name kv.Key (lockFile.CheckIfPackageExistsInAnyGroup ps.Name))
 
                     match group, package with
                     | Choice1Of2 _, Choice1Of2 package ->
@@ -407,7 +410,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                         | Some p ->
                             Some ((groupName,p.Name), (p.Version,parentSettings + p.Settings)) )
                     (fun (groupName,(_,parentSettings), dep) ->
-                        Some <| sprintf " - %s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName groupName
+                        Some (sprintf " - %s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName groupName)
                     )
             for key,settings in usedPackageDependencies do
                 if d.ContainsKey key |> not then
@@ -428,7 +431,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                         traceWarnfn "Package %O is referenced through multiple groups in %s (inspect lockfile for details). To resolve this warning use a single group for this project to get a unified dependency resolution or use conditions on the groups if you know what you are doing." packageName project.FileName
                         false
                     else
-                        errors.Add <| sprintf "Package %O is referenced in different versions in %s (%O vs %O), (inspect the lockfile for details) to resolve this either add all dependencies to a single group (to get a unified resolution) or use a condition on both groups and control compilation yourself." packageName project.FileName v' v
+                        errors.Add (sprintf "Package %O is referenced in different versions in %s (%O vs %O), (inspect the lockfile for details) to resolve this either add all dependencies to a single group (to get a unified resolution) or use a condition on both groups and control compilation yourself." packageName project.FileName v' v)
                         false
                 | _ ->
                     dict.Add(packageName,(v,hasCondition))
@@ -455,7 +458,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                             |> Seq.find (fun f -> Path.GetFileName(f.Name) = remoteFile.Name)
                             |> fun  file -> Some (remoteFile, (file.FilePath(root,kv.Key))))
                         (fun remoteFile ->
-                            Some <| sprintf "%s references file %s in group %O, but it was not found in the paket.lock file." referenceFile.FileName remoteFile.Name kv.Key
+                            Some (sprintf "%s references file %s in group %O, but it was not found in the paket.lock file." referenceFile.FileName remoteFile.Name kv.Key)
                         )
                 (Seq.append pathAcc refpaths),(Seq.append errorAcc errors)
             )|> fun (refpaths,errors) -> Seq.toArray refpaths, Seq.concat [| errorMessages ; errors |] |> Seq.toArray

@@ -819,7 +819,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
             LockFile(lockFileName, groups)
         with
         | exn ->
-            raise <| Exception (sprintf "Error during parsing of '%s'." lockFileName, exn)
+            raise (Exception (sprintf "Error during parsing of '%s'." lockFileName, exn))
 
     member this.GetPackageHull(referencesFile:ReferencesFile) =
         let usedPackages = Dictionary<_,_>()
@@ -839,18 +839,17 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                         usedPackages.Add(k,PackageInstallSettings.Default(p.ToString()))
 
         for g in referencesFile.Groups do
-            g.Value.NugetPackages
-            |> List.iter (fun package -> 
+            for package in g.Value.NugetPackages do
                 try
                     for d in this.GetAllDependenciesOf(g.Key,package.Name,referencesFile.FileName) do
                         let k = g.Key,d
                         if usedPackages.ContainsKey k |> not then
                             usedPackages.Add(k,package)
-                with exn -> raise <| Exception(sprintf "Error while getting all dependencies in '%s'" referencesFile.FileName, exn))
+                with exn -> raise (Exception(sprintf "Error while getting all dependencies in '%s'" referencesFile.FileName, exn))
 
         usedPackages
 
-    member this.GetRemoteReferencedPackages(referencesFile:ReferencesFile,installGroup:InstallGroup) =
+    member __.GetRemoteReferencedPackages(referencesFile:ReferencesFile,installGroup:InstallGroup) =
         [for r in installGroup.RemoteFiles do
             let lockGroup = findGroup referencesFile.FileName installGroup.Name
             let lockRemote = findRemoteFile referencesFile.FileName lockGroup.RemoteFiles r.Name
@@ -925,14 +924,13 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                     failwithf "Package %O is referenced more than once in %s within group %O." p.Name referencesFile.FileName groupName
                 usedPackages.Add(k,p)
 
-            g.NugetPackages
-            |> List.iter (fun package ->
+            for package in g.NugetPackages do
                 try
                     for d in this.GetAllDependenciesOf(groupName,package.Name,referencesFile.FileName) do
                         let k = groupName,d
                         if usedPackages.ContainsKey k |> not then
                             usedPackages.Add(k,package)
-                with exn -> raise <| Exception(sprintf "Error while getting all dependencies in '%s'" referencesFile.FileName, exn))
+                with exn -> raise (Exception(sprintf "Error while getting all dependencies in '%s'" referencesFile.FileName, exn))
         | None -> ()
 
         usedPackages

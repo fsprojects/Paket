@@ -63,7 +63,7 @@ module private TemplateParser =
                 inner { state with Line = state.Line + 1; Remaining = t }
             | comment when Comment comment ->
                 inner { state with Line = state.Line + 1; Remaining = t }
-            | Indented _ -> Choice2Of2 <| sprintf "Indented block with no name line %d" state.Line
+            | Indented _ -> Choice2Of2 (sprintf "Indented block with no name line %d" state.Line)
             | MultiToken (key, value) ->
                 inner { state with
                             Remaining = t
@@ -72,14 +72,14 @@ module private TemplateParser =
             | SingleToken key ->
                 let value, line, remaining = indentedBlock [] state.Line t
                 if value = "" then
-                    Choice2Of2 <| sprintf "No indented block following name '%s' line %d" key line
+                    Choice2Of2 (sprintf "No indented block following name '%s' line %d" key line)
                 else
                     inner { state with
                                 Remaining = remaining
                                 Map = Map.add key (value.TrimEnd()) state.Map
                                 Line = line }
             | _ ->
-                Choice2Of2 <| sprintf "Invalid syntax line %d" state.Line
+                Choice2Of2 (sprintf "Invalid syntax line %d" state.Line)
 
     let parse (contents : string) =
         let contents = contents.Replace("\r\n","\n").Replace("\r","\n")
@@ -237,7 +237,7 @@ module internal TemplateFile =
             | ProjectInfo(core, optional) -> ProjectInfo(core, { optional with ProjectUrl = Some url })
         { templateFile with Contents = contents }
 
-    let private failP file str = fail <| PackagingConfigParseError(file,str)
+    let private failP file str = fail (PackagingConfigParseError(file,str))
 
     type private PackageConfigType =
         | FileType

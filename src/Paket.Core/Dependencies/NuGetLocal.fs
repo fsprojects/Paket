@@ -44,7 +44,7 @@ let parsePackageInfoFromFileName fileName : (PackageName * SemVerInfo) option =
     | _ -> None
 
 let findLocalPackage directory (packageName:PackageName) (version:SemVerInfo) =
-    if not <| Directory.Exists directory then
+    if not (Directory.Exists directory) then
         failwithf "The package %O %O can't be found in %s. (The directory doesn't exist.)%sPlease check the feed definition in your paket.dependencies file." packageName version directory Environment.NewLine
     let v1 = FileInfo(Path.Combine(directory, sprintf "%O.%O.nupkg" packageName version))
     if v1.Exists then v1 else

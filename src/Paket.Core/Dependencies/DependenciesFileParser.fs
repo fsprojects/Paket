@@ -169,7 +169,7 @@ module DependenciesFileParser =
             let fileName = 
                 if String.IsNullOrEmpty fileSpec then
                     let name = splitted |> Seq.last |> removeQueryString
-                    if String.IsNullOrEmpty <| Path.GetExtension name then name + ".fs"
+                    if String.IsNullOrEmpty (Path.GetExtension name) then name + ".fs"
                     else name
                 else fileSpec
             

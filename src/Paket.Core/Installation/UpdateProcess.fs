@@ -239,7 +239,7 @@ let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
 let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
-    if not <| dependenciesFile.HasPackage(groupName, packageName) then
+    if not (dependenciesFile.HasPackage(groupName, packageName)) then
         failwithf "Package %O was not found in paket.dependencies in group %O.%s" packageName groupName (dependenciesFile.CheckIfPackageExistsInAnyGroup packageName)
 
     let dependenciesFile =
@@ -272,8 +272,7 @@ let UpdateFilteredPackages(dependenciesFileName, groupName, packageName : string
 let UpdateGroup(dependenciesFileName, groupName,  options : UpdaterOptions) =
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
-    if not <| dependenciesFile.Groups.ContainsKey groupName then
-
+    if not (dependenciesFile.Groups.ContainsKey groupName) then
         failwithf "Group %O was not found in paket.dependencies." groupName
     tracefn "Updating group %O in %s" groupName dependenciesFileName
 

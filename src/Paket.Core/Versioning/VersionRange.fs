@@ -171,7 +171,7 @@ type VersionRequirement =
                 | _         -> failwithf "unable to parse bound %O in %s" s text
 
             let parsed =
-                if not <| text.Contains "," then
+                if not (text.Contains ",") then
                     if text.StartsWith "[" then 
                         text.Trim([|'['; ']'|]) 
                         |> analyzeVersion Specific

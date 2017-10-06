@@ -55,9 +55,9 @@ module ScriptGeneration =
         refls |> List.filter ( fun ref ->
             if scriptType = ScriptType.FSharp then 
                 match ref with 
-                | Assembly info -> not <| String.containsIgnoreCase "FSharp.Core" info.Name
-                | Framework info -> not <|  String.containsIgnoreCase "FSharp.Core" info
-                | LoadScript info -> not <| String.containsIgnoreCase "FSharp.Core" info.Name
+                | Assembly info -> not (String.containsIgnoreCase "FSharp.Core" info.Name)
+                | Framework info -> not (String.containsIgnoreCase "FSharp.Core" info)
+                | LoadScript info -> not (String.containsIgnoreCase "FSharp.Core" info.Name)
             else true
         )
 
@@ -116,11 +116,11 @@ module ScriptGeneration =
             let refString (reference:ReferenceType)  = 
                 match reference, self.Lang with
                 | Assembly file, _ ->
-                     sprintf """#r "%s" """ <| relativePath scriptFile file
+                     sprintf """#r "%s" """ (relativePath scriptFile file)
                 | LoadScript script, ScriptType.FSharp ->
-                     sprintf """#load @"%s" """ <| relativePath scriptFile script
+                     sprintf """#load @"%s" """ (relativePath scriptFile script)
                 | LoadScript script, ScriptType.CSharp ->     
-                     sprintf """#load "%s" """ <| relativePath scriptFile script
+                     sprintf """#load "%s" """ (relativePath scriptFile script)
                 | Framework name,_ ->
                      sprintf """#r "%s" """ name
         

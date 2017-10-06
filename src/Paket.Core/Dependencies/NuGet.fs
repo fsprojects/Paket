@@ -595,7 +595,7 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
                     | [source] -> sprintf "Could not find versions for package %O on %O." packageName source
                     | [] -> sprintf "Could not find versions for package %O, because no sources were specified." packageName
                     | sources -> sprintf "Could not find versions for package %O on any of %A." packageName sources
-                return raise <| getException trial2 errorMsg }
+                return raise (getException trial2 errorMsg) }
 
     let mergedResults =
         versions
@@ -786,8 +786,8 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
                       | _ -> false)
                         -> do! download false (attempt + 1)
                 | exn when String.IsNullOrWhiteSpace !downloadUrl ->
-                    raise <| Exception(sprintf "Could not download %O %O." packageName version, exn)
-                | exn -> raise <| Exception(sprintf "Could not download %O %O from %s." packageName version !downloadUrl, exn) }
+                    raise (Exception(sprintf "Could not download %O %O." packageName version, exn))
+                | exn -> raise (Exception(sprintf "Could not download %O %O from %s." packageName version !downloadUrl, exn)) }
 
     async {
         do! download true 0

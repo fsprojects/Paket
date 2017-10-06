@@ -145,8 +145,8 @@ let getHashFromRemote url branch =
 
 let fetchCache repoCacheFolder cloneUrl =
     try
-        if not <| Directory.Exists repoCacheFolder then
-            if not <| Directory.Exists Constants.GitRepoCacheFolder then
+        if not (Directory.Exists repoCacheFolder) then
+            if not (Directory.Exists Constants.GitRepoCacheFolder) then
                 Directory.CreateDirectory Constants.GitRepoCacheFolder |> ignore
             tracefn "Cloning %s to %s" cloneUrl repoCacheFolder
             CommandHelper.runSimpleGitCommand Constants.GitRepoCacheFolder ("clone --mirror " + quote cloneUrl + " " + quote repoCacheFolder) |> ignore
@@ -188,15 +188,15 @@ let checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl commit =
         if Directory.Exists repoFolder then
             if verbose then
                 verbosefn "Fetching %s to %s" cacheCloneUrl repoFolder
-            CommandHelper.runSimpleGitCommand repoFolder (sprintf "fetch --tags --prune %s +refs/heads/*:refs/remotes/origin/*" <| quote cacheCloneUrl) |> ignore
+            CommandHelper.runSimpleGitCommand repoFolder (sprintf "fetch --tags --prune %s +refs/heads/*:refs/remotes/origin/*" (quote cacheCloneUrl)) |> ignore
         else
             let destination = DirectoryInfo(repoFolder).Parent.FullName
-            if not <| Directory.Exists destination then
+            if not (Directory.Exists destination) then
                 Directory.CreateDirectory destination |> ignore
             if verbose then
                 verbosefn "Cloning %s to %s" cacheCloneUrl repoFolder
             CommandHelper.runSimpleGitCommand destination (sprintf "clone %s %s" (quote cacheCloneUrl) (quote repoFolder)) |> ignore
-            CommandHelper.runSimpleGitCommand repoFolder (sprintf "remote set-url origin %s" <| quote cloneUrl) |> ignore
+            CommandHelper.runSimpleGitCommand repoFolder (sprintf "remote set-url origin %s" (quote cloneUrl)) |> ignore
 
         checkForUncommittedChanges repoFolder
         checkForCommitsMadeInDetachedHeadState repoFolder

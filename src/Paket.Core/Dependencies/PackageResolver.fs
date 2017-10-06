@@ -275,7 +275,7 @@ module Resolution =
             let msg =
                 sprintf "There was a version conflict during package resolution.\n\
                          %s\n  Please try to relax some conditions or resolve the conflict manually (see http://fsprojects.github.io/Paket/nuget-dependencies.html#Use-exactly-this-version-constraint)." (getErrorText true res)
-            raise <| AggregateException(msg, res.Errors)
+            raise (AggregateException(msg, res.Errors))
     let (|Ok|Conflict|) (res:Resolution) =
         match res.Raw with
         | ResolutionRaw.OkRaw res -> Ok res
@@ -704,10 +704,10 @@ let private boostConflicts
                 not isNewConflict && DateTime.Now - conflictState.LastConflictReported > TimeSpan.FromSeconds 10.
 
             if Logging.verbose then
-                tracefn "%s" <| conflictStatus.GetErrorText(false)
+                tracefn "%s" (conflictStatus.GetErrorText false)
                 tracefn "    ==> Trying different resolution."
             if reportThatResolverIsTakingLongerThanExpected then
-                traceWarnfn "%s" <| conflictStatus.GetErrorText(false)
+                traceWarnfn "%s" (conflictStatus.GetErrorText false)
                 traceWarn "The process is taking longer than expected."
                 traceWarn "Paket may still find a valid resolution, but this might take a while."
                 DateTime.Now
@@ -935,14 +935,14 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                 // apparently the task didn't return, let's throw here
                 if not isFinished (*&& not Debugger.IsAttached*) then
                     if waitedAlready then
-                        raise <| TimeoutException(sprintf "Tried (again) to access an unfinished task, not waiting %d seconds this time..." (taskTimeout / 1000))
+                        raise (TimeoutException(sprintf "Tried (again) to access an unfinished task, not waiting %d seconds this time..." (taskTimeout / 1000)))
                     else
-                        raise <|
-                            TimeoutException(
+                        raise
+                            (TimeoutException(
                                 (sprintf "Waited %d seconds for a request to finish.\n" (taskTimeout / 1000)) +
                                 "      Check the following sources, they might be rate limiting and stopped responding:\n" +
                                 "       - " + System.String.Join("\n       - ", sources |> Seq.map (fun s -> s.Url))
-                            )
+                             ))
                 if waitedAlready && isFinished then
                     // recovered
                     if verbose then traceVerbose "Recovered on a long running task..."
@@ -970,7 +970,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
         try
             getAndReport details.Package.Sources Profile.BlockReason.PackageDetails workHandle
         with e ->
-            raise <| Exception (sprintf "Unable to retrieve package details for '%O'-%s" details.Package.PackageName details.Version.AsString, e)
+            raise (Exception (sprintf "Unable to retrieve package details for '%O'-%s" details.Package.PackageName details.Version.AsString, e))
 
     let startedGetVersionsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,ResolverTaskMemory<_>>()
     let startRequestGetVersions (versions:GetPackageVersionsParameters) =
@@ -985,9 +985,11 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
     let getVersionsBlock resolverStrategy versionParams =
         let workHandle = startRequestGetVersions versionParams
         let versions =
-            try getAndReport versionParams.Package.Sources Profile.BlockReason.GetVersion workHandle |> Seq.toList
+            try 
+                getAndReport versionParams.Package.Sources Profile.BlockReason.GetVersion workHandle 
+                |> Seq.toList
             with e ->
-                raise <| Exception (sprintf "Unable to retrieve package versions for '%O'" versionParams.Package.PackageName, e)
+                raise (Exception (sprintf "Unable to retrieve package versions for '%O'" versionParams.Package.PackageName, e))
         let sorted =
             match resolverStrategy with
             | ResolverStrategy.Max -> List.sortDescending versions

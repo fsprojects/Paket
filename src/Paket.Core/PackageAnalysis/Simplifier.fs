@@ -49,7 +49,7 @@ let simplifyReferencesFile (refFile:ReferencesFile, groupName, flatLookup, inter
 
         let newPackages = 
             g.NugetPackages 
-            |> List.filter (fun p -> not <| removePackage(p.Name, transitive, refFile.FileName, interactive))
+            |> List.filter (fun p -> not (removePackage(p.Name, transitive, refFile.FileName, interactive)))
 
         let newGroups = refFile.Groups |> Map.add groupName {g with NugetPackages = newPackages }
 

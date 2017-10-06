@@ -616,8 +616,10 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
     let extractProfile framework =
         PlatformMatching.extractPlatforms false framework |> Option.bind (fun pp ->
             let prof = pp.ToTargetProfile false
-            if prof.IsSome && prof.Value.IsUnsupportedPortable then
-                handleError <| (RestrictionParseProblem.UnsupportedPortable framework)
+            match prof with
+            | Some v when v.IsUnsupportedPortable ->
+                handleError (RestrictionParseProblem.UnsupportedPortable framework)
+            | _ -> ()
             prof)
 
     let frameworkToken (str : string) =
@@ -633,7 +635,7 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
         match handlers |> Seq.choose (fun f -> f token) |> Seq.tryHead with
         | Some fw -> Some fw
         | None ->
-            handleError <| (RestrictionParseProblem.ParseFramework token)
+            handleError (RestrictionParseProblem.ParseFramework token)
             None
 
     let parseExpr (str : string) =
@@ -717,7 +719,7 @@ let private parseRestrictionsRaw skipSimplify (text:string) =
             match PlatformMatching.extractPlatforms false operator |> Option.bind (fun (pp:PlatformMatching.ParsedPlatformPath) ->
                 let prof = pp.ToTargetProfile false
                 if prof.IsSome && prof.Value.IsUnsupportedPortable then
-                    handleError <| (RestrictionParseProblem.UnsupportedPortable operator)
+                    handleError (RestrictionParseProblem.UnsupportedPortable operator)
                 prof) with
             | None -> failwithf "invalid parameter '%s' after >= or < in '%s'" operator text
             | Some plat ->
@@ -1163,8 +1165,10 @@ let addFrameworkRestrictionsToDependencies rawDependencies (frameworkGroups:Pars
                     frameworkGroups
                     |> Seq.choose (fun g ->
                         let prof = g.ToTargetProfile false
-                        if prof.IsSome && prof.Value.IsUnsupportedPortable then
-                            handleProblem <| UnknownPortableProfile prof.Value
+                        match prof with
+                        | Some v when v.IsUnsupportedPortable ->
+                            handleProblem (UnknownPortableProfile v)
+                        | _ -> ()
                         prof)
                     |> Seq.filter (fun frameworkGroup -> 
                         match frameworkGroup with

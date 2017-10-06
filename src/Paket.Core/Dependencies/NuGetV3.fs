@@ -57,9 +57,9 @@ let getNuGetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceT
             let rawData =
                 match rawData with
                 | NotFound ->
-                    raise <| new Exception(sprintf "Could not load resources (404) from '%s'" source.Url)
+                    raise (new Exception(sprintf "Could not load resources (404) from '%s'" source.Url))
                 | UnknownError e ->
-                    raise <| new Exception(sprintf "Could not load resources from '%s'" source.Url, e.SourceException)
+                    raise (new Exception(sprintf "Could not load resources from '%s'" source.Url, e.SourceException))
                 | SuccessResponse x -> x
 
             let json = JsonConvert.DeserializeObject<NugetV3SourceRootJSON>(rawData)
@@ -312,13 +312,13 @@ type PackageIndex =
 let private getPackageIndexRaw (source : NugetV3Source) (packageName:PackageName) =
     async {
         let! registrationUrl = getNuGetV3Resource source PackageIndex
-        let url = registrationUrl.Replace("{id-lower}", packageName.ToString().ToLower()) // sprintf "%s%s/%s.json" registrationUrl (packageName.ToString().ToLower()) (version.Normalize())
+        let url = registrationUrl.Replace("{id-lower}", packageName.ToString().ToLower()) 
         let! rawData = safeGetFromUrl (source.Authentication |> Option.map toCredentials, url, acceptJson)
         return
             match rawData with
-            | NotFound -> None //raise <| System.Exception(sprintf "could not get registration data (404) from '%s'" url)
+            | NotFound -> None
             | UnknownError err ->
-                raise <| System.Exception(sprintf "could not get registration data from %s" url, err.SourceException)
+                raise (System.Exception(sprintf "could not get registration data from %s" url, err.SourceException))
             | SuccessResponse x -> Some (JsonConvert.DeserializeObject<PackageIndex>(x))
     }
 
@@ -332,9 +332,9 @@ let private getPackageIndexPageRaw (source:NugetV3Source) (url:string) =
         let! rawData = safeGetFromUrl (source.Authentication |> Option.map toCredentials, url, acceptJson)
         return
             match rawData with
-            | NotFound -> raise <| System.Exception(sprintf "could not get registration data (404) from '%s'" url)
+            | NotFound -> raise (System.Exception(sprintf "could not get registration data (404) from '%s'" url))
             | UnknownError err ->
-                raise <| System.Exception(sprintf "could not get registration data from %s" url, err.SourceException)
+                raise (System.Exception(sprintf "could not get registration data from %s" url, err.SourceException))
             | SuccessResponse x -> JsonConvert.DeserializeObject<PackageIndexPage>(x)
     }
 

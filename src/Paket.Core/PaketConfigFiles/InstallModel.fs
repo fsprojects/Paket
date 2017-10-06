@@ -246,7 +246,6 @@ module FolderScanner =
         else FSharpValue.MakeTuple(matches, typeof<'t>) :?> 't
 
     let trySscanf opts (pf:PrintfFormat<_,_,_,_,'t>) s : 't option =
-        //raise <| FormatException(sprintf "Unable to scan string '%s' with regex '%s'" s regexString)
         match sscanfHelper opts pf s with
         | ScanSuccess matches -> toGenericTuple matches |> Some
         | _ -> None
@@ -254,8 +253,8 @@ module FolderScanner =
     let inline private handleErrors s r =
         match r with
         | ScanSuccess matches -> toGenericTuple matches
-        | ScanRegexFailure (s, regexString) -> raise <| FormatException(sprintf "Unable to scan string '%s' with regex '%s'" s regexString)
-        | ScanParserFailure e -> raise <| FormatException(sprintf "Unable to parse string '%s' with parser: %s" s e)
+        | ScanRegexFailure (s, regexString) -> raise (FormatException(sprintf "Unable to scan string '%s' with regex '%s'" s regexString))
+        | ScanParserFailure e -> raise (FormatException(sprintf "Unable to parse string '%s' with parser: %s" s e))
 
     let sscanf opts (pf:PrintfFormat<_,_,_,_,'t>) s : 't =
         sscanfHelper opts pf s
@@ -313,7 +312,6 @@ module FolderScanner =
         | _ as s -> s
 
     let trySscanfExt context advancedScanners opts (pf:PrintfFormat<_,_,_,_,'t>) s : 't option =
-        //raise <| FormatException(sprintf "Unable to scan string '%s' with regex '%s'" s regexString)
         match sscanfExtHelper context advancedScanners opts pf s with
         | ScanSuccess matches -> toGenericTuple matches |> Some
         | _ -> None

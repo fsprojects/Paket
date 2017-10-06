@@ -65,8 +65,8 @@ type SolutionFile(fileName: string) =
                 ()
         
         let add s =
-            if not <| Seq.exists (fun line -> line = s) projectLines 
-            then content.Insert(paketProjectIndex + 2, s)
+            if not (Seq.exists (fun line -> line = s) projectLines) then 
+                content.Insert(paketProjectIndex + 2, s)
 
         Option.iter (fun lockFile -> 
             add (sprintf"		%s = %s" lockFile lockFile)) lockFile

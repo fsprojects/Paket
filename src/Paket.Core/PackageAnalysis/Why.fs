@@ -137,7 +137,7 @@ module Reason =
                 NuGetNotInGroup otherGroups
 
         let group = lockFile.GetGroup groupName
-        if not <| group.Resolution.ContainsKey packageName then
+        if not (group.Resolution.ContainsKey packageName) then
             inferError () 
             |> List.singleton 
             |> Result.Bad

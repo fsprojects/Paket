@@ -196,7 +196,8 @@ module AsyncExtensions =
                      if Interlocked.Increment exnCount = 1 then
                          innerCts.Cancel(); cc exn
     
-                 for i, task in tasks |> Seq.mapi (fun i t -> i, t) do
-                     ignore <| System.Threading.Tasks.Task.Factory.StartNew(fun () -> 
+                 for i, task in tasks |> Seq.indexed do
+                     System.Threading.Tasks.Task.Factory.StartNew(fun () -> 
                         Async.StartWithContinuations(task, scont i, econt i, ccont i, innerCts.Token))
+                     |> ignore
      }
