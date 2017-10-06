@@ -222,7 +222,7 @@ let ``should read content none config``() =
     cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
 
 let specificFrameworkConfig = """
-framework net40 net35
+framework net40, net35
 source "http://www.nuget.org/api/v2" // first source
 
 nuget "Microsoft.SqlServer.Types"
@@ -1187,6 +1187,55 @@ let ``should read config with target framework``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
     |> getExplicitRestriction
     |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4)))
+
+
+let validFrameworks =
+    let net40 = DotNetFramework(FrameworkVersion.V4)
+    let net45 = DotNetFramework(FrameworkVersion.V4_5)
+    let profile78 = TargetProfile.PortableProfile (PortableProfileType.Profile78)
+    let exactly  = FrameworkRestriction.Exactly
+    let min  = FrameworkRestriction.AtLeast
+    let minPlatform = FrameworkRestriction.AtLeastPlatform
+    let between x y  = FrameworkRestriction.Between(x, y)
+    let any = Seq.fold FrameworkRestriction.combineRestrictionsWithOr FrameworkRestriction.EmptySet
+
+    [ TestCaseData("framework: net40").Returns(exactly net40)
+      TestCaseData("frameworks: net40").Returns(exactly net40)
+      TestCaseData("framework net40").Returns(exactly net40)
+      TestCaseData("frameworks net40").Returns(exactly net40)
+      TestCaseData("framework: = net40").Returns(exactly net40)
+      TestCaseData("framework: =net40").Returns(exactly net40)
+      TestCaseData("framework: portable-windows8+net45+wp8").Returns(minPlatform profile78)
+      TestCaseData("framework: >= portable-windows8+net45+wp8").Returns(minPlatform profile78)
+      TestCaseData("framework: >=portable-windows8+net45+wp8").Returns(minPlatform profile78)
+      TestCaseData("framework: net40,net45").Returns(any [exactly net40; exactly net45])
+      TestCaseData("framework: net40, net45").Returns(any [exactly net40; exactly net45])
+      TestCaseData("framework: net40, >= net45").Returns(any [exactly net40; min net45])
+      TestCaseData("framework: net40,>=net45").Returns(any [exactly net40; min net45])
+      TestCaseData("framework: >= net40 <= net45").Returns(between net40 net45)
+      TestCaseData("framework: >=net40<=net45").Returns(between net40 net45)
+      TestCaseData("framework: >= net40 < net45").Returns(between net40 net45)
+      TestCaseData("framework: >=net40<net45").Returns(between net40 net45)]
+
+[<Test>]
+[<TestCaseSource("validFrameworks")>]
+let ``should read config with valid target framework`` config =
+    let cfg = DependenciesFile.FromSource(config)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions |> getExplicitRestriction
+
+[<TestCase("framework: netstandard 2.0")>]
+[<TestCase("framework: = foo")>]
+[<TestCase("framework: == net40")>]
+[<TestCase("framework: > net40")>]
+[<TestCase("framework: <= net40")>]
+[<TestCase("framework: >= net40 = net45")>]
+[<TestCase("framework: > net40 <= net45")>]
+[<TestCase("framework: = net40 <= net45")>]
+[<TestCase("framework: = portable-windows8+net45+wp8")>]
+[<TestCase("framework: >= portable-windows8+net45+wp8 <= net45")>]
+[<TestCase("framework: net40 net45")>]
+let ``should throw on config with invalid target framework`` config =
+    shouldFail<Exception> (fun () -> DependenciesFile.FromSource(config) |> ignore)
 
 [<Test>]
 let ``should read packages with redirects``() = 
