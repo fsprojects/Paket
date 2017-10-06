@@ -84,7 +84,7 @@
     </PropertyGroup>
 
     <!-- Step 3 Restore project specific stuff if required -->
-    <Warning Condition=" '$(PaketRestoreRequired)' == 'true' "  Text="Detected a change ('$(PaketRestoreRequiredReason)') in the project file '$(MSBuildProjectFullPath)', calling paket restore" />
+    <Message Condition=" '$(PaketRestoreRequired)' == 'true' " Importance="low" Text="Detected a change ('$(PaketRestoreRequiredReason)') in the project file '$(MSBuildProjectFullPath)', calling paket restore" />
     <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)"' Condition=" '$(PaketRestoreRequired)' == 'true' " ContinueOnError="false" />
 
     <!-- This shouldn't actually happen, but just to be sure. -->
