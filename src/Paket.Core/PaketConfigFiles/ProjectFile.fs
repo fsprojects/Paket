@@ -250,6 +250,7 @@ module ProjectFile =
                 "MSBuildThisFileFullPath", projectFileInfo.FullName
                 "MSBuildThisFileName", Path.GetFileNameWithoutExtension(projectFileInfo.FullName)
             ] |> Map.ofList
+
         match projectFile.DefaultProperties with
         | Some p -> p
         | None ->
@@ -1531,18 +1532,16 @@ module ProjectFile =
             | None -> ""
 
         let platforms =
-            if not <| String.IsNullOrWhiteSpace buildPlatform then 
+            if not (String.IsNullOrWhiteSpace buildPlatform) then 
                 [buildPlatform]
             else
-                [
-                    "AnyCPU";
-                    "AnyCPU32BitPreferred";
-                    "x86";
-                    "x64";
-                    "Win32";
-                    "ARM";
-                    "Itanium";
-                ]
+                [ "AnyCPU"
+                  "AnyCPU32BitPreferred"
+                  "x86"
+                  "x64"
+                  "Win32"
+                  "ARM"
+                  "Itanium" ]
 
         let rec tryNextPlat platforms attempted =
             match platforms with
