@@ -1,4 +1,5 @@
-#### 5.111.2 - 2017-10-05
+#### 5.112.0 - 2017-10-06
+* BREAKING: Stricter parsing of framework requirements - https://github.com/fsprojects/Paket/pull/2824
 * Set RestoreSuccess property and let paket add/remove/install set it
 
 #### 5.110.0 - 2017-10-05
