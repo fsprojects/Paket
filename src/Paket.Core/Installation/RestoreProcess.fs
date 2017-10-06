@@ -346,9 +346,8 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
 
     let paketCLIToolsFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.clitools"))
     createPaketCLIToolsFile cliTools paketCLIToolsFileName
-
-    let paketPropsFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.props"))
-    createPaketPropsFile cliTools true paketPropsFileName
+    
+    createPaketPropsFile cliTools true (ProjectFile.getPaketPropsFileInfo projectFileInfo)
 
     // Write "cached" file, this way msbuild can check if the references file has changed.
     let paketCachedReferencesFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.references.cached"))

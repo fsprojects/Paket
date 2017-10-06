@@ -313,17 +313,20 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
 
     applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root allKnownLibNames bindingRedirects
 
+let invalidateRestoreCachesForDotnetSdk (projectFileInfo:FileInfo) =
+    let paketPropsFile = ProjectFile.getPaketPropsFileInfo projectFileInfo
+    if paketPropsFile.Exists then
+        let old = File.ReadAllText paketPropsFile.FullName
+        let newContent = old.Replace("<!-- <RestoreSuccess>False</RestoreSuccess> -->","<RestoreSuccess>False</RestoreSuccess>")
+        File.WriteAllText(paketPropsFile.FullName, newContent)
+
 let installForDotnetSDK root (project:ProjectFile) =
     let paketTargetsPath = RestoreProcess.extractRestoreTargets root
     let relativePath = createRelativePath project.FileName paketTargetsPath
     project.RemoveImportForPaketTargets()
     project.AddImportForPaketTargets(relativePath)
     let projectFileInfo = FileInfo(project.FileName)
-    let paketPropsFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.props"))
-    if paketPropsFileName.Exists then
-        let old = File.ReadAllText paketPropsFileName.FullName
-        let newContent = old.Replace("<!-- <RestoreSuccess>False</RestoreSuccess> -->","<RestoreSuccess>False</RestoreSuccess>")
-        File.WriteAllText(paketPropsFileName.FullName, newContent)
+    invalidateRestoreCachesForDotnetSdk (projectFileInfo)
 
 /// Installs all packages from the lock file.
 let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups) =
