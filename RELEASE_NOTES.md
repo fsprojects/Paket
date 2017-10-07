@@ -1,4 +1,5 @@
-#### 5.112.1 - 2017-10-06
+#### 5.113.0 - 2017-10-07
+* BUGFIX: Lowercase package names in package cache for NuGet compat - https://github.com/fsprojects/Paket/pull/2826
 * BREAKING: Stricter parsing of framework requirements - https://github.com/fsprojects/Paket/pull/2824
 * Set RestoreSuccess property and let paket add/remove/install set it
 
