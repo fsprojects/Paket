@@ -242,8 +242,8 @@ let fixArchive fileName =
     if isMonoRuntime then
         fixDatesInArchive fileName
 
-let GetLicenseFileName (packageName:PackageName) (version:SemVerInfo) = packageName.ToString() + "." + version.Normalize() + ".license.html"
-let GetPackageFileName (packageName:PackageName) (version:SemVerInfo) = packageName.ToString() + "." + version.Normalize() + ".nupkg"
+let GetLicenseFileName (packageName:PackageName) (version:SemVerInfo) = packageName.ToString().ToLower() + "." + version.Normalize() + ".license.html"
+let GetPackageFileName (packageName:PackageName) (version:SemVerInfo) = packageName.ToString().ToLower() + "." + version.Normalize() + ".nupkg"
 
 let inline isExtracted (directory:DirectoryInfo) (packageName:PackageName) (version:SemVerInfo) =
     let inDir f = Path.Combine(directory.FullName, f)
@@ -296,16 +296,16 @@ let rec private cleanup (dir : DirectoryInfo) =
             File.Move(file.FullName, newFullName)
 
 
-let GetTargetUserFolder packageName (version:SemVerInfo) =
-    DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,packageName.ToString(),version.Normalize())).FullName
+let GetTargetUserFolder (packageName:PackageName) (version:SemVerInfo) =
+    DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,packageName.CompareString,version.Normalize())).FullName
 
-let GetTargetUserNupkg packageName (version:SemVerInfo) =
+let GetTargetUserNupkg (packageName:PackageName) (version:SemVerInfo) =
     let normalizedNupkgName = GetPackageFileName packageName version
     let path = GetTargetUserFolder packageName version
     Path.Combine(path, normalizedNupkgName)
 
-let GetTargetUserToolsFolder packageName (version:SemVerInfo) =
-    DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,".tools",packageName.ToString(),version.Normalize())).FullName
+let GetTargetUserToolsFolder (packageName:PackageName) (version:SemVerInfo) =
+    DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,".tools",packageName.CompareString,version.Normalize())).FullName
 
 /// Extracts the given package to the user folder
 let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, isCliTool) =
@@ -329,7 +329,9 @@ let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, ver
                 File.Copy(fileName,targetPackageFileName,true)
 
             ZipFile.ExtractToDirectory(fileName, targetFolder.FullName)
-
+            // lowercase the .nuspec file to mimic NuGet behavior
+            let nuspecFileName = sprintf "%s.nuspec" (packageName.ToString())
+            File.Move(Path.Combine(targetFolder.FullName, nuspecFileName), Path.Combine(targetFolder.FullName, nuspecFileName.ToLowerInvariant()))
             let cachedHashFile = Path.Combine(Constants.NuGetCacheFolder,fi.Name + ".sha512")
             if not (File.Exists cachedHashFile) then
                 let packageHash = getSha512File fileName
