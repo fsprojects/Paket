@@ -256,7 +256,7 @@ let convert (results : ParseResults<_>) =
     let noAutoRestore = results.Contains <@ ConvertFromNugetArgs.No_Auto_Restore @>
     let credsMigrationMode =
         (results.TryGetResult <@ ConvertFromNugetArgs.Migrate_Credentials @>,
-         results.TryGetResult <@ ConvertFromNugetArgs.Migrate_Credentials @>)
+         results.TryGetResult <@ ConvertFromNugetArgs.Migrate_Credentials_Legacy @>)
         |> legacyOption results (ReplaceArgument("--migrate-credentials", "--creds-migration"))
 
     Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
@@ -589,7 +589,7 @@ let fixNuspecs silent (results : ParseResults<_>) =
 let fixNuspec _silent (results : ParseResults<_>) =
     let fileString = results.GetResult <@ FixNuspecArgs.File @>
     let refFile = results.GetResult <@ FixNuspecArgs.ReferencesFile @>
-    let nuspecList = 
+    let nuspecList =
         fileString.Split([|';'|], StringSplitOptions.RemoveEmptyEntries)
         |> Array.map (fun s -> s.Trim())
         |> List.ofArray
@@ -748,7 +748,7 @@ let handleCommand silent command =
     | FindPackages r -> processCommand silent (findPackages silent) r
     | FindPackageVersions r -> processCommand silent findPackageVersions r
     | FixNuspec r ->
-        warnObsolete (ReplaceArgument("fix-nuspec", "fix-nuspecs"))
+        warnObsolete (ReplaceArgument("fix-nuspecs", "fix-nuspec"))
         processCommand silent (fixNuspec silent) r
     | FixNuspecs r -> processCommand silent (fixNuspecs silent) r
     | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
@@ -756,7 +756,7 @@ let handleCommand silent command =
     | Pack r -> processCommand silent pack r
     | Push r -> processCommand silent (push AssemblyVersionInformation.AssemblyInformationalVersion) r
     | GenerateIncludeScripts r ->
-        warnObsolete (ReplaceArgument("generate-include-scripts", "generate-load-scripts"))
+        warnObsolete (ReplaceArgument("generate-load-scripts", "generate-include-scripts"))
         processCommand silent generateLoadScripts r
     | GenerateLoadScripts r -> processCommand silent generateLoadScripts r
     | GenerateNuspec r -> processCommand silent generateNuspec r
