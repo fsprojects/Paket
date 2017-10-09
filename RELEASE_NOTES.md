@@ -1,3 +1,6 @@
+#### 5.113.1 - 2017-10-09
+* BUGFIX: Fixed incorrect warnings about obsolete command-line options - https://github.com/fsprojects/Paket/pull/2828
+
 #### 5.113.0 - 2017-10-07
 * BUGFIX: Lowercase package names in package cache for NuGet compat - https://github.com/fsprojects/Paket/pull/2826
 * BREAKING: Stricter parsing of framework requirements - https://github.com/fsprojects/Paket/pull/2824
