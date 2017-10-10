@@ -1227,7 +1227,6 @@ let ``should read config with valid target framework`` config =
 [<TestCase("framework: = foo")>]
 [<TestCase("framework: == net40")>]
 [<TestCase("framework: > net40")>]
-[<TestCase("framework: <= net40")>]
 [<TestCase("framework: >= net40 = net45")>]
 [<TestCase("framework: > net40 <= net45")>]
 [<TestCase("framework: = net40 <= net45")>]
