@@ -671,8 +671,17 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
 
                 restriction, remaining
 
-            | x when x.StartsWith "=" ->
+            | x when x.StartsWith "="->
                 let fw, remaining = frameworkToken (x.Substring 1)
+
+                let handlers =
+                    [ extractFw >> Option.map FrameworkRestriction.Exactly ]
+
+                tryParseFramework handlers fw, remaining
+
+            | x when x.StartsWith "<="->
+                traceWarn "<= in framework restriction `%s` found. Interpretation as = ." 
+                let fw, remaining = frameworkToken (x.Substring 2)
 
                 let handlers =
                     [ extractFw >> Option.map FrameworkRestriction.Exactly ]
