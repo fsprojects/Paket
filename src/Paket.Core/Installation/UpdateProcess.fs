@@ -200,7 +200,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, alternativeProjectRoot,
     lockFile,hasChanged,updatedGroups
 
 /// Smart install command
-let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
+let SmartInstall(dependenciesFile:DependenciesFile, updateMode, options : UpdaterOptions) =
     let lockFile,hasChanged,updatedGroups = SelectiveUpdate(dependenciesFile, options.Common.AlternativeProjectRoot, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)    
 
     let root = Path.GetDirectoryName dependenciesFile.FileName
@@ -230,8 +230,8 @@ let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
           |> Seq.map (fun g -> g.Name)
           |> Seq.toList
         
-        let rootDir = (DirectoryInfo dependenciesFile.RootPath) 
-        let depCache= DependencyCache(dependenciesFile,lockFile)
+        let rootDir = DirectoryInfo dependenciesFile.RootPath
+        let depCache= DependencyCache(dependenciesFile.FileName,lockFile)
         let scripts = LoadingScripts.ScriptGeneration.constructScriptsFromData depCache groupsToGenerate options.Common.ProvidedFrameworks options.Common.ProvidedScriptTypes
         for script in scripts do
             script.Save rootDir

@@ -286,7 +286,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
         |> List.fold (fun templatefile file -> addFile (toFile config platform file) targetDir templatefile) withDeps
 
     let lockFile = 
-        dependenciesFile.FindLockfile().FullName
+        dependenciesFile.FindLockFile().FullName
         |> LockFile.LoadFrom
 
     let allReferences = 

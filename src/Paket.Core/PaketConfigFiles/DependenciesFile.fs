@@ -139,7 +139,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         let transform (dependenciesFile:DependenciesFile) (group:DependenciesGroup) =
             let getRestrictionList =
                 let projectFrameworks = lazy ( 
-                    let lockFile = dependenciesFile.FindLockfile()
+                    let lockFile = dependenciesFile.FindLockFile()
                     let dir = (lockFile : FileInfo).DirectoryName
                     let projects = ProjectFile.FindAllProjects dir
                     let frameworks = projects |> Array.map ProjectFile.getTargetProfile |> Array.distinct
@@ -741,7 +741,7 @@ type PaketFiles =
 
         let dependenciesFile = findInPath (directory,true) |> DependenciesFile.ReadFromFile
             
-        let file = dependenciesFile.FindLockfile()
+        let file = dependenciesFile.FindLockFile()
         if file.Exists then
             let lockFile = file.FullName |> LockFile.LoadFrom
             DependenciesAndLock(dependenciesFile, lockFile)
