@@ -700,6 +700,19 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
         | Some v -> Some(allDependenciesOf v.Name)
         | None -> None
 
+
+    member this.ResolveFrameworksForScriptGeneration () = lazy (
+        this.Groups
+        |> Seq.map (fun f -> f.Value.Options.Settings.FrameworkRestrictions)
+        |> Seq.map(fun restrictions ->
+            match restrictions with
+            | Paket.Requirements.AutoDetectFramework -> failwithf "couldn't detect framework"
+            | Paket.Requirements.ExplicitRestriction list ->
+                list.RepresentedFrameworks |> Seq.choose (function TargetProfile.SinglePlatform tf -> Some tf | _ -> None)
+          )
+        |> Seq.concat
+    )
+
     /// Gets only direct dependencies of the given package in the given group.
     member this.GetDirectDependenciesOfSafe(groupName:GroupName,package,context) =
         let group = groups.[groupName]

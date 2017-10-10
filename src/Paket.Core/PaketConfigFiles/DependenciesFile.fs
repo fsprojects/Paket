@@ -714,20 +714,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         FileInfo(Path.Combine(FileInfo(dependenciesFileName).Directory.FullName, Constants.LocalFileName))
 
     /// Find the matching lock file to a dependencies file
-    member this.FindLockfile() = DependenciesFile.FindLockfile this.FileName
-
-
-    member this.ResolveFrameworksForScriptGeneration () = lazy (
-        this.Groups
-        |> Seq.map (fun f -> f.Value.Options.Settings.FrameworkRestrictions)
-        |> Seq.map(fun restrictions ->
-            match restrictions with
-            | Paket.Requirements.AutoDetectFramework -> failwithf "couldn't detect framework"
-            | Paket.Requirements.ExplicitRestriction list ->
-                list.RepresentedFrameworks |> Seq.choose (function TargetProfile.SinglePlatform tf -> Some tf | _ -> None)
-          )
-        |> Seq.concat
-    )
+    member this.FindLockFile() = DependenciesFile.FindLockfile this.FileName
 
 
 type PaketFiles = 

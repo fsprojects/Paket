@@ -127,13 +127,13 @@ module ScriptGeneration =
             self.Input |> Seq.map refString |> Seq.distinct |> String.concat "\n"
         
         /// Save the script in '<directory>/.paket/load/<script>'
-        member self.Save (directory:DirectoryInfo) = 
-            directory.Create()
-            let scriptFile = FileInfo (directory.FullName </> self.PartialPath)
+        member self.Save (rootPath:DirectoryInfo) = 
+            rootPath.Create()
+            let scriptFile = FileInfo (rootPath.FullName </> self.PartialPath)
             if verbose then
                 verbosefn "generating script - %s" scriptFile.FullName
             scriptFile.Directory.Create()
-            let text = self.Render directory
+            let text = self.Render rootPath
             File.WriteAllText (scriptFile.FullName, text)
 
 
@@ -249,21 +249,20 @@ module ScriptGeneration =
         
 
     let constructScriptsFromData (depCache:DependencyCache) (groups:GroupName list) providedFrameworks providedScriptTypes =
-        let dependenciesFile = depCache.DependenciesFile
-        let frameworksForDependencyGroups = dependenciesFile.ResolveFrameworksForScriptGeneration()
-        let environmentFramework = FrameworkDetection.resolveEnvironmentFramework
         let lockFile = depCache.LockFile
-
+        let frameworksForDependencyGroups = lockFile.ResolveFrameworksForScriptGeneration()
+        let environmentFramework = FrameworkDetection.resolveEnvironmentFramework
+        
         let groups = 
             if List.isEmpty groups then 
-                dependenciesFile.Groups |> Seq.map (fun kvp -> kvp.Key) |> Seq.toList 
+                lockFile.Groups |> Seq.map (fun kvp -> kvp.Key) |> Seq.toList 
             else 
                 groups
         
         if verbose then
             verbosefn "Generating load scripts for the following groups: %A" (groups |> List.map (fun g -> g.Name.ToString()))
-            verbosefn " - using Paket dependency file: %s" dependenciesFile.FileName
-            verbosefn " - using Packe fock file: %s" lockFile.FileName
+            verbosefn " - using Paket dependency file: %s" depCache.DependenciesFileName
+            verbosefn " - using Packe lock file: %s" lockFile.FileName
 
         let tupleMap f v = (v, f v)
         let failOnMismatch toParse parsed fn message =

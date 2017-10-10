@@ -356,7 +356,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
         // it can happen that the references file doesn't exist if paket doesn't find one in that case we update the cache by deleting it.
         if paketCachedReferencesFileName.Exists then paketCachedReferencesFileName.Delete()
 
-let CreateScriptsForGroups dependenciesFile lockFile (groups:Map<GroupName,LockFileGroup>) =
+let CreateScriptsForGroups dependenciesFileName (lockFile:LockFile) (groups:Map<GroupName,LockFileGroup>) =
     let groupsToGenerate =
         groups
         |> Seq.map (fun kvp -> kvp.Value)
@@ -365,12 +365,12 @@ let CreateScriptsForGroups dependenciesFile lockFile (groups:Map<GroupName,LockF
         |> Seq.toList
 
     if not (List.isEmpty groupsToGenerate) then
-        let depsCache = DependencyCache(dependenciesFile,lockFile)
-        let dir = DirectoryInfo dependenciesFile.Directory
+        let depsCache = DependencyCache(dependenciesFileName,lockFile)
+        let rootPath = DirectoryInfo lockFile.RootPath
 
         let scripts = LoadingScripts.ScriptGeneration.constructScriptsFromData depsCache groupsToGenerate [] []
         for sd in scripts do
-            sd.Save dir
+            sd.Save rootPath
 
 let FindOrCreateReferencesFile (projectFile:ProjectFile) =
     match projectFile.FindReferencesFile() with
@@ -428,7 +428,6 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
     if not (hasLocalFile || force) && isEarlyExit () then
         tracefn "Last restore is still up to date."
     else
-        let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
         if projectFile = None then
             extractRestoreTargets root |> ignore
 
@@ -438,10 +437,12 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                 s.Split([|';'|], StringSplitOptions.RemoveEmptyEntries)
                 |> Array.map (fun s -> s.Trim())
                 |> Array.choose FrameworkDetection.Extract)
+        
+        
+        let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
         if not hasLocalFile && not ignoreChecks then
             let hasAnyChanges,nugetChanges,remoteFilechanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
-
             let checkResponse = if failOnChecks then failwithf else traceWarnfn
             if hasAnyChanges then 
                 checkResponse "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
@@ -532,6 +533,6 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     |> Async.RunSynchronously
                     |> ignore
 
-                CreateScriptsForGroups dependenciesFile lockFile groups
+                CreateScriptsForGroups dependenciesFileName lockFile groups
                 if isFullRestore then
                     File.WriteAllText(restoreCacheFile, newContents)))
