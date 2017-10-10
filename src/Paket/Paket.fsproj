@@ -33,9 +33,9 @@
     <StartAction>Project</StartAction>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\temp\Gu.Reactive</StartWorkingDirectory>
-    <StartArguments>init</StartArguments>
+    <StartArguments>update</StartArguments>
     <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\temp\cs</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\temp\paket-mobile-test\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
