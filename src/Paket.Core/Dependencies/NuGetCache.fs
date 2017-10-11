@@ -116,7 +116,7 @@ type NuGetPackageCache =
       Version: string
       CacheVersion: string }
 
-    static member CurrentCacheVersion = "5.2"
+    static member CurrentCacheVersion = "5.114"
 
 // TODO: is there a better way? for now we use static member because that works with type abbreviations...
 //module NuGetPackageCache =

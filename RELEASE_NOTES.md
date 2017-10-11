@@ -1,3 +1,6 @@
+#### 5.114.0 - 2017-10-11
+* BUGFIX: Invalidate internal NuGet caches
+
 #### 5.113.2 - 2017-10-10
 * BUGFIX: load scripts should only work on lock file - https://github.com/fsprojects/Paket/pull/2834
 * BUGFIX: Fixed Syntax error: Expected end of input, got '<= net45' - https://github.com/fsprojects/Paket/pull/2835
