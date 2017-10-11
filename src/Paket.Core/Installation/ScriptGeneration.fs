@@ -262,7 +262,7 @@ module ScriptGeneration =
         if verbose then
             verbosefn "Generating load scripts for the following groups: %A" (groups |> List.map (fun g -> g.Name.ToString()))
             verbosefn " - using Paket dependency file: %s" depCache.DependenciesFileName
-            verbosefn " - using Packe lock file: %s" lockFile.FileName
+            verbosefn " - using Paket lock file: %s" lockFile.FileName
 
         let tupleMap f v = (v, f v)
         let failOnMismatch toParse parsed fn message =
