@@ -81,7 +81,7 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
                 targetDir, overridenFile, (if (localOverride || overridenFile.Exists) then true else force)
             | None ->
                 if localOverride then
-                    failwithf "Local package override without local storage (global nuget folder) is not supported at the moment. A PR is welcome."
+                    failwithf "Local package override without local storage (global NuGet folder) is not supported at the moment."
                 let targetDir = NuGetCache.GetTargetUserFolder package.Name package.Version
                 let overridenFile = FileInfo(Path.Combine(targetDir, "paket.overriden"))
                 targetDir, overridenFile, force

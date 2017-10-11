@@ -35,7 +35,7 @@
     <StartWorkingDirectory>C:\temp\Gu.Reactive</StartWorkingDirectory>
     <StartArguments>update</StartArguments>
     <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\temp\paket-mobile-test\</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\temp\test</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
