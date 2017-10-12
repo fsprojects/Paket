@@ -253,7 +253,7 @@ let inline isExtracted (directory:DirectoryInfo) (packageName:PackageName) (vers
     if not fi.Exists then false else
     if not directory.Exists then false else
     directory.EnumerateFileSystemInfos()
-    |> Seq.exists (fun f -> f.FullName <> fi.FullName && f.FullName <> licenseFile)
+    |> Seq.exists (fun f -> f.FullName.ToLower() <> fi.FullName.ToLower() && f.FullName.ToLower() <> licenseFile.ToLower())
 
 let IsPackageVersionExtracted(config:ResolvedPackagesFolder, packageName:PackageName, version:SemVerInfo) =
     match config.Path with
