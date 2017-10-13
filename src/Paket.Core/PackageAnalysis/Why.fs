@@ -8,45 +8,43 @@ open Paket.Requirements
 
 open Chessie.ErrorHandling
 
-type AdjLblGraph<'a, 'b> = list<'a * list<('a * 'b)>>
+type AdjLblGraph<'a> = Map<PackageName , Map<PackageName, 'a>>
 
-type LblPath<'a, 'b> = 'a * LblPathNode<'a, 'b>
+type LblPath<'a> = PackageName * LblPathNode<'a>
 
-and LblPathNode<'a, 'b> =
-| LblPathNode of LblPath<'a, 'b>
-| LblPathLeaf of 'a * 'b
+and LblPathNode<'a> =
+| LblPathNode of LblPath<'a>
+| LblPathLeaf of PackageName * 'a
 
 module AdjLblGraph =
-    let adj n (g: AdjLblGraph<_, _>) =
-        g
-        |> List.find (fst >> (=) n)
-        |> snd
+    let inline adj n (g: AdjLblGraph<_>) =
+        Map.find n g
 
-    let removeEdge ((n1,n2): 'a * 'a) (g: AdjLblGraph<'a, 'b>) =
-        g
-        |> List.map (fun (n, es) -> 
-            if n1 <> n then 
-                (n,es)
-            else
-                (n,es |> List.filter (fst >> ((<>)n2))))
+    let inline removeEdge (n1,n2) (g: AdjLblGraph<'b>) =
+        match Map.tryFind n1 g with
+        | None -> g
+        | Some v ->
+          let v' = v |> Map.remove n2
+          Map.add n1 v' g
 
-    let rec paths start stop g : list<LblPath<_, _>> =
-        [ for (n, lbl) in adj start g do
+    let rec paths start stop g : list<LblPath<_>> =
+        [ for kv in adj start g do
+            let n, lbl = kv.Key, kv.Value
             if n = stop then yield (start, LblPathLeaf (stop, lbl))
             for path in paths n stop (removeEdge (start,n) g) do 
                 yield (start, LblPathNode path)]
 
-let depGraph (res : PackageResolver.PackageResolution) : AdjLblGraph<_,_> =
+let depGraph (res : PackageResolver.PackageResolution) : AdjLblGraph<_> =
     res
-    |> Seq.toList
-    |> List.map (fun pair -> pair.Key, (pair.Value.Dependencies 
-                                       |> Set.map (fun (p,v,f) -> p,(v,f)) 
-                                       |> Set.toList))
+    |> Seq.map (fun pair -> pair.Key, (pair.Value.Dependencies
+                                       |> Seq.map (fun (p,v,f) -> p,(v,f)) 
+                                       |> Map.ofSeq))
+    |> Map.ofSeq
 
 type WhyOptions = 
     { Details : bool }
 
-type DependencyChain = LblPath<PackageName, (VersionRequirement * FrameworkRestrictions)>
+type DependencyChain = LblPath<VersionRequirement * FrameworkRestrictions>
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module DependencyChain =
