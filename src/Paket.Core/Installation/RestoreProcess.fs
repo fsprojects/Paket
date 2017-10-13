@@ -470,7 +470,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
                 [referencesFile.FileName]
             | None ->
-                if referencesFileNames = [] then
+                if referencesFileNames = [] && group = None then
                     // Restore all projects
                     let allProjects =
                         ProjectFile.FindAllProjects root

@@ -1,3 +1,6 @@
+#### 5.114.4 - 2017-10-13
+* BUGFIX: Do not restore sdk projects when a group is given - https://github.com/fsprojects/Paket/issues/2838
+
 #### 5.114.3 - 2017-10-13
 * BUGFIX: Use maps instead of lists in why command - https://github.com/fsprojects/Paket/pull/2845
 
