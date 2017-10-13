@@ -329,7 +329,7 @@ module FrameworkRestriction =
     let NotAtLeastPlatform pf = FromLiteral (FrameworkRestrictionLiteral.FromNegatedLiteral (AtLeastL pf))
     let NotAtLeast id = NotAtLeastPlatform (TargetProfile.SinglePlatform id)
 
-    let private simplify (fr:FrameworkRestriction) =
+    let private simplify' (fr:FrameworkRestriction) =
         /// When we have a restriction like (>=net35 && <net45) || >=net45
         /// then we can "optimize" / simplify to (>=net35 || >= net45)
         /// because we don't need to "pseudo" restrict the set with the first restriction 
@@ -478,7 +478,8 @@ module FrameworkRestriction =
             newFormula <- optimize newFormula
             if System.Object.ReferenceEquals(old, newFormula) then hasChanged <- false
         newFormula
-            
+    
+    let simplify = memoize simplify'
 
     let rec private And2 (left : FrameworkRestriction) (right : FrameworkRestriction) =
         match left.OrFormulas, right.OrFormulas with
