@@ -1,3 +1,6 @@
+#### 5.114.1 - 2017-10-13
+* BUGFIX: isExtracted function was falsely returning true to comparison - https://github.com/fsprojects/Paket/pull/2842
+
 #### 5.114.0 - 2017-10-11
 * BUGFIX: Invalidate internal NuGet caches
 
