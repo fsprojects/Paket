@@ -1,3 +1,6 @@
+#### 5.114.3 - 2017-10-13
+* BUGFIX: Use maps instead of lists in why command - https://github.com/fsprojects/Paket/pull/2845
+
 #### 5.114.2 - 2017-10-13
 * BUGFIX: isExtracted function was falsely returning true to comparison - https://github.com/fsprojects/Paket/pull/2842
 
