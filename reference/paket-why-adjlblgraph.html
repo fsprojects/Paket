@@ -82,8 +82,8 @@
             adj n g
           </code>
           <div class="tip" id="685">
-            <strong>Signature:</strong> n:&#39;?9043 -&gt; g:AdjLblGraph&lt;&#39;?9043,&#39;?9044&gt; -&gt; (&#39;?9043 * &#39;?9044) list<br />
-                          <strong>Type parameters:</strong> '?9043, '?9044          </div>
+            <strong>Signature:</strong> n:PackageName -&gt; g:AdjLblGraph&lt;&#39;?9024&gt; -&gt; Map&lt;PackageName,&#39;?9024&gt;<br />
+                          <strong>Type parameters:</strong> '?9024          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageAnalysis/Why.fs#L20-20" class="github-link">
@@ -100,11 +100,11 @@
             paths start stop g
           </code>
           <div class="tip" id="686">
-            <strong>Signature:</strong> start:&#39;?9049 -&gt; stop:&#39;?9049 -&gt; g:AdjLblGraph&lt;&#39;?9049,&#39;?9050&gt; -&gt; LblPath&lt;&#39;?9049,&#39;?9050&gt; list<br />
-                          <strong>Type parameters:</strong> '?9049, '?9050          </div>
+            <strong>Signature:</strong> start:PackageName -&gt; stop:PackageName -&gt; g:AdjLblGraph&lt;&#39;?9028&gt; -&gt; LblPath&lt;&#39;?9028&gt; list<br />
+                          <strong>Type parameters:</strong> '?9028          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageAnalysis/Why.fs#L33-33" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageAnalysis/Why.fs#L30-30" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -115,14 +115,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '687', 687)" onmouseover="showTip(event, '687', 687)">
-            removeEdge (arg1, arg2) g
+            removeEdge (n1, n2) g
           </code>
           <div class="tip" id="687">
-            <strong>Signature:</strong> (&#39;a * &#39;a) -&gt; g:AdjLblGraph&lt;&#39;a,&#39;b&gt; -&gt; (&#39;a * (&#39;a * &#39;b) list) list<br />
-                          <strong>Type parameters:</strong> 'a, 'b          </div>
+            <strong>Signature:</strong> (n1:PackageName * n2:PackageName) -&gt; g:AdjLblGraph&lt;&#39;b&gt; -&gt; AdjLblGraph&lt;&#39;b&gt;<br />
+                          <strong>Type parameters:</strong> 'b          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageAnalysis/Why.fs#L25-25" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageAnalysis/Why.fs#L23-23" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
