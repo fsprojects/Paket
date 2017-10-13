@@ -188,7 +188,7 @@ let ohWhy (packageName,
         | TopLevel -> ()
         | Direct chains
         | Transitive chains ->
-            tracefn "It's a part of following dependency chains:"
+            tracefn "It is part of following dependency chains:"
             tracen ""
             for (top, chains) in chains |> List.groupBy (DependencyChain.first) do
                 match chains |> List.sortBy DependencyChain.length, options.Details with
