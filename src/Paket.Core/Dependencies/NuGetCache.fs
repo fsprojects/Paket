@@ -242,8 +242,8 @@ let fixArchive fileName =
     if isMonoRuntime then
         fixDatesInArchive fileName
 
-let GetLicenseFileName (packageName:PackageName) (version:SemVerInfo) = packageName.ToString().ToLower() + "." + version.Normalize() + ".license.html"
-let GetPackageFileName (packageName:PackageName) (version:SemVerInfo) = packageName.ToString().ToLower() + "." + version.Normalize() + ".nupkg"
+let GetLicenseFileName (packageName:PackageName) (version:SemVerInfo) = packageName.CompareString + "." + version.Normalize() + ".license.html"
+let GetPackageFileName (packageName:PackageName) (version:SemVerInfo) = packageName.CompareString + "." + version.Normalize() + ".nupkg"
 
 let inline isExtracted (directory:DirectoryInfo) (packageName:PackageName) (version:SemVerInfo) =
     let inDir f = Path.Combine(directory.FullName, f)
@@ -333,7 +333,13 @@ let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, ver
             ZipFile.ExtractToDirectory(fileName, targetFolder.FullName)
             // lowercase the .nuspec file to mimic NuGet behavior
             let nuspecFileName = sprintf "%s.nuspec" (packageName.ToString())
-            File.Move(Path.Combine(targetFolder.FullName, nuspecFileName), Path.Combine(targetFolder.FullName, nuspecFileName.ToLowerInvariant()))
+            let nuspecTempFileName = sprintf "%s.nuspec.tmp" (packageName.CompareString)
+            let nuspecLowerFileName = sprintf "%s.nuspec" (packageName.CompareString)
+            let filePath = Path.Combine(targetFolder.FullName, nuspecFileName)
+            let tempFilePath = Path.Combine(targetFolder.FullName, nuspecTempFileName)
+            let lowerFilePath = Path.Combine(targetFolder.FullName, nuspecLowerFileName)
+            File.Move(filePath, tempFilePath)
+            File.Move(tempFilePath, lowerFilePath)
             let cachedHashFile = Path.Combine(Constants.NuGetCacheFolder,fi.Name + ".sha512")
             if not (File.Exists cachedHashFile) then
                 let packageHash = getSha512File fileName
