@@ -333,13 +333,18 @@ let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, ver
             ZipFile.ExtractToDirectory(fileName, targetFolder.FullName)
             // lowercase the .nuspec file to mimic NuGet behavior
             let nuspecFileName = sprintf "%s.nuspec" (packageName.ToString())
-            let nuspecTempFileName = sprintf "%s.nuspec.tmp" (packageName.CompareString)
             let nuspecLowerFileName = sprintf "%s.nuspec" (packageName.CompareString)
             let filePath = Path.Combine(targetFolder.FullName, nuspecFileName)
-            let tempFilePath = Path.Combine(targetFolder.FullName, nuspecTempFileName)
             let lowerFilePath = Path.Combine(targetFolder.FullName, nuspecLowerFileName)
-            File.Move(filePath, tempFilePath)
-            File.Move(tempFilePath, lowerFilePath)
+            if isUnix then
+                File.Move(filePath, lowerFilePath)
+            else
+                let nuspecTempFileName = sprintf "%s.nuspec.tmp" (packageName.CompareString)
+                let tempFilePath = Path.Combine(targetFolder.FullName, nuspecTempFileName)
+                // On windows we have to move the file twice to actually have the correct casing
+                // in the filesystem, because otherwise it is noop (at least in explorer)
+                File.Move(filePath, tempFilePath)
+                File.Move(tempFilePath, lowerFilePath)
             let cachedHashFile = Path.Combine(Constants.NuGetCacheFolder,fi.Name + ".sha512")
             if not (File.Exists cachedHashFile) then
                 let packageHash = getSha512File fileName
