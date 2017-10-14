@@ -56,10 +56,12 @@ let inline tryGet (key:^k) this =
 
 let internal removeInvalidChars (str : string) = RegularExpressions.Regex.Replace(str, "[:@\,]", "_")
 
-let internal memoize (f: 'a -> 'b) : 'a -> 'b =
-    let cache = System.Collections.Concurrent.ConcurrentDictionary<'a, 'b>()
+let internal memoizeBy (getKey : 'a -> 'key) (f: 'a -> 'b) : 'a -> 'b =
+    let cache = System.Collections.Concurrent.ConcurrentDictionary<'key, 'b>()
     fun (x: 'a) ->
-        cache.GetOrAdd(x, f)
+        cache.GetOrAdd(getKey x, fun _ -> f x)
+
+let inline internal memoize (f: 'a -> 'b) : 'a -> 'b = memoizeBy id f
 
 type MemoizeAsyncExResult<'TResult, 'TCached> =
     | FirstCall of ( 'TCached * 'TResult ) Task

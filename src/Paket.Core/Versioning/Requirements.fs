@@ -272,9 +272,10 @@ type FrameworkRestrictionAndList =
 [<CustomEquality; CustomComparison>]
 type FrameworkRestriction =
     private { OrFormulas : FrameworkRestrictionAndList list
+              mutable IsSimple : bool
               mutable PrivateRawFormula : FrameworkRestrictionP option ref
               mutable PrivateRepresentedFrameworks : TargetProfile Set option ref }
-    static member FromOrList l = { OrFormulas = l; PrivateRepresentedFrameworks = ref None; PrivateRawFormula = ref None }
+    static member FromOrList l = { OrFormulas = l; IsSimple = false; PrivateRepresentedFrameworks = ref None; PrivateRawFormula = ref None }
     static member internal WithOrListInternal orList l = { l with OrFormulas = orList }
     member internal x.RawFormular =
         match !x.PrivateRawFormula with
@@ -329,7 +330,9 @@ module FrameworkRestriction =
     let NotAtLeastPlatform pf = FromLiteral (FrameworkRestrictionLiteral.FromNegatedLiteral (AtLeastL pf))
     let NotAtLeast id = NotAtLeastPlatform (TargetProfile.SinglePlatform id)
 
-    let private simplify (fr:FrameworkRestriction) =
+    let private simplify' (fr:FrameworkRestriction) =
+        if (fr.IsSimple) then fr
+        else
         /// When we have a restriction like (>=net35 && <net45) || >=net45
         /// then we can "optimize" / simplify to (>=net35 || >= net45)
         /// because we don't need to "pseudo" restrict the set with the first restriction 
@@ -477,8 +480,12 @@ module FrameworkRestriction =
             let old = newFormula
             newFormula <- optimize newFormula
             if System.Object.ReferenceEquals(old, newFormula) then hasChanged <- false
+        newFormula.IsSimple <- true
         newFormula
-            
+
+    // Equals and Hashcode means semantic equality, for memoize we need "exactly the same"
+    // (ie not only a different formula describing the same set, but the same exact formula)        
+    let simplify = memoizeBy (fun (fr:FrameworkRestriction) -> fr.ToString()) simplify'
 
     let rec private And2 (left : FrameworkRestriction) (right : FrameworkRestriction) =
         match left.OrFormulas, right.OrFormulas with
