@@ -551,7 +551,8 @@ type FrameworkIdentifier =
         | XamarinTV -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | XamarinWatch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | UAP UAPVersion.V10 -> [ Windows WindowsVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1; DotNetStandard DotNetStandardVersion.V1_4  ]
-        | UAP UAPVersion.V10_1 -> [ UAP UAPVersion.V10 ]
+        | UAP UAPVersion.V10_0_15138 -> [ UAP UAPVersion.V10 ]
+        | UAP UAPVersion.V10_1 -> [ UAP UAPVersion.V10_0_15138 ]
         | DotNetFramework FrameworkVersion.V1 -> [ ]
         | DotNetFramework FrameworkVersion.V1_1 -> [ DotNetFramework FrameworkVersion.V1 ]
         | DotNetFramework FrameworkVersion.V2 -> [ DotNetFramework FrameworkVersion.V1_1 ]
@@ -1111,6 +1112,7 @@ module KnownTargetProfiles =
 
     let UAPVersons = [
         UAPVersion.V10
+        UAPVersion.V10_0_15138
         UAPVersion.V10_1
     ]
 
