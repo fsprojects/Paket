@@ -276,7 +276,7 @@ type FrameworkRestriction =
               mutable PrivateRawFormula : FrameworkRestrictionP option ref
               mutable PrivateRepresentedFrameworks : TargetProfile Set option ref }
     static member FromOrList l = { OrFormulas = l; IsSimple = false; PrivateRepresentedFrameworks = ref None; PrivateRawFormula = ref None }
-    static member internal WithOrListInternal orList l = { l with OrFormulas = orList }
+    static member internal WithOrListInternal orList l = { l with OrFormulas = orList; PrivateRawFormula = ref None }
     member internal x.RawFormular =
         match !x.PrivateRawFormula with
         | Some f -> f
@@ -769,7 +769,6 @@ let private parseRestrictionsRaw skipSimplify (text:string) =
             operands |> List.rev |> f, next
         | h when h.StartsWith "NOT" ->
             let next = h.Substring 2
-
             if next.TrimStart().StartsWith "(" then
                 let operand, remaining = parseOperator (next.Substring 1)
                 let remaining = remaining.TrimStart()
