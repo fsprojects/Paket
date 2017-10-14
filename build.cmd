@@ -7,7 +7,7 @@ if errorlevel 1 (
 
 setlocal
 
-set MSBuild=packages\build\RoslynTools.MSBuild\tools\msbuild
+set MSBuild=%~dp0packages\build\RoslynTools.MSBuild\tools\msbuild
 
 packages\build\FAKE\tools\FAKE.exe build.fsx %*
 

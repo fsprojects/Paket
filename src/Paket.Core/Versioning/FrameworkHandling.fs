@@ -140,22 +140,26 @@ type FrameworkVersion =
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 type UAPVersion =
     | V10
+    | V10_0_15138
     | V10_1
     override this.ToString() =
         match this with
         | V10 -> "10.0"
+        | V10_0_15138 -> "10.0.15138"
         | V10_1 -> "10.1"
 
     member this.ShortString() =
         match this with
         | UAPVersion.V10 -> "10.0"
+        | UAPVersion.V10_0_15138 -> "10.0.15138"
         | UAPVersion.V10_1 -> "10.1"
 
     member this.NetCoreVersion =
         // WTF: https://github.com/onovotny/MSBuildSdkExtras/blob/8d2d4ad63b552481da06e646dbb6504abc415260/src/build/platforms/Windows.targets
         match this with
         // Assumed from C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETCore
-        | UAPVersion.V10 -> "v5.0"
+        | UAPVersion.V10
+        | UAPVersion.V10_0_15138 -> "v5.0"
         // No idea, for now use 5.0 to keep project files constant
         // If someone starts complaining fix this and update the baselines.
         | UAPVersion.V10_1 -> "v5.0"
@@ -163,6 +167,7 @@ type UAPVersion =
     static member TryParse s =
         match s with
         | "" | "1" | "10" -> Some UAPVersion.V10
+        | "10.0.15138" -> Some UAPVersion.V10_1
         | "10.1" -> Some UAPVersion.V10_1
         | _ -> None
 
@@ -546,7 +551,8 @@ type FrameworkIdentifier =
         | XamarinTV -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | XamarinWatch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | UAP UAPVersion.V10 -> [ Windows WindowsVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1; DotNetStandard DotNetStandardVersion.V1_4  ]
-        | UAP UAPVersion.V10_1 -> [ UAP UAPVersion.V10 ]
+        | UAP UAPVersion.V10_0_15138 -> [ UAP UAPVersion.V10 ]
+        | UAP UAPVersion.V10_1 -> [ UAP UAPVersion.V10_0_15138 ]
         | DotNetFramework FrameworkVersion.V1 -> [ ]
         | DotNetFramework FrameworkVersion.V1_1 -> [ DotNetFramework FrameworkVersion.V1 ]
         | DotNetFramework FrameworkVersion.V2 -> [ DotNetFramework FrameworkVersion.V1_1 ]
@@ -1106,6 +1112,7 @@ module KnownTargetProfiles =
 
     let UAPVersons = [
         UAPVersion.V10
+        UAPVersion.V10_0_15138
         UAPVersion.V10_1
     ]
 
