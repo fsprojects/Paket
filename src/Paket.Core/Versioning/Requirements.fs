@@ -331,8 +331,6 @@ module FrameworkRestriction =
     let NotAtLeast id = NotAtLeastPlatform (TargetProfile.SinglePlatform id)
 
     let private simplify' (fr:FrameworkRestriction) =
-        if (fr.IsSimple) then fr
-        else
         /// When we have a restriction like (>=net35 && <net45) || >=net45
         /// then we can "optimize" / simplify to (>=net35 || >= net45)
         /// because we don't need to "pseudo" restrict the set with the first restriction 
@@ -485,7 +483,15 @@ module FrameworkRestriction =
 
     // Equals and Hashcode means semantic equality, for memoize we need "exactly the same"
     // (ie not only a different formula describing the same set, but the same exact formula)        
-    let simplify = memoizeBy (fun (fr:FrameworkRestriction) -> fr.ToString()) simplify'
+    let private simplify'', cacheSimple = memoizeByExt (fun (fr:FrameworkRestriction) -> fr.ToString()) simplify'
+
+    let private simplify (fr:FrameworkRestriction) =
+        if fr.IsSimple then fr
+        else 
+            let simpleFormula = simplify'' fr
+            // Add simple formula to cache just in case we construct the same in the future
+            cacheSimple (simpleFormula.ToString(), simpleFormula)
+            simpleFormula
 
     let rec private And2 (left : FrameworkRestriction) (right : FrameworkRestriction) =
         match left.OrFormulas, right.OrFormulas with
