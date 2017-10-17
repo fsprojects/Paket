@@ -1,6 +1,7 @@
 module Paket.Why
 
 open System
+open System.Collections.Generic
 
 open Paket.Domain
 open Paket.Logging
@@ -8,7 +9,7 @@ open Paket.Requirements
 
 open Chessie.ErrorHandling
 
-type AdjLblGraph<'a> = Map<PackageName , Map<PackageName, 'a>>
+type AdjLblGraph<'a> = IDictionary<PackageName , IDictionary<PackageName, 'a>>
 
 type LblPath<'a> = PackageName * LblPathNode<'a>
 
@@ -17,29 +18,25 @@ and LblPathNode<'a> =
 | LblPathLeaf of PackageName * 'a
 
 module AdjLblGraph =
-    let inline adj n (g: AdjLblGraph<_>) =
-        Map.find n g
-
-    let inline removeEdge (n1,n2) (g: AdjLblGraph<'b>) =
-        match Map.tryFind n1 g with
-        | None -> g
-        | Some v ->
-          let v' = v |> Map.remove n2
-          Map.add n1 v' g
-
-    let rec paths start stop g : list<LblPath<_>> =
-        [ for kv in adj start g do
+    let rec paths start stop visited (g: AdjLblGraph<_>) : list<LblPath<_>> =
+        let adjacents = 
+            g.[start]
+            |> Seq.filter (fun kv -> not (Set.contains kv.Key visited))
+        [ for kv in adjacents do
             let n, lbl = kv.Key, kv.Value
             if n = stop then yield (start, LblPathLeaf (stop, lbl))
-            for path in paths n stop (removeEdge (start,n) g) do 
+            for path in paths n stop (Set.add n visited) g do 
                 yield (start, LblPathNode path)]
 
 let depGraph (res : PackageResolver.PackageResolution) : AdjLblGraph<_> =
     res
-    |> Seq.map (fun pair -> pair.Key, (pair.Value.Dependencies
-                                       |> Seq.map (fun (p,v,f) -> p,(v,f)) 
-                                       |> Map.ofSeq))
-    |> Map.ofSeq
+    |> Seq.map (fun pair -> 
+        let k = pair.Key
+        let v = pair.Value.Dependencies
+                |> Seq.map (fun (p,v,f) -> p,(v,f)) 
+                |> dict
+        k,v)
+    |> dict
 
 type WhyOptions = 
     { Details : bool }
@@ -148,7 +145,7 @@ module Reason =
             let chains = 
                 topLevelDeps
                 |> Set.toList
-                |> List.collect (fun p -> AdjLblGraph.paths p packageName graph)
+                |> List.collect (fun p -> AdjLblGraph.paths p packageName Set.empty graph)
             match Set.contains packageName directDeps, Set.contains packageName topLevelDeps with
             | true, true ->
                 Result.Ok ((TopLevel, group.Resolution), [])
