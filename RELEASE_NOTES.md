@@ -1,3 +1,6 @@
+#### 5.114.7 - 2017-10-18
+* BUGFIX: Minor perf improvement for why command - https://github.com/fsprojects/Paket/pull/2851
+
 #### 5.114.6 - 2017-10-18
 * BUGFIX: Make json cache file reading more robust - https://github.com/fsprojects/Paket/issues/2838
 
