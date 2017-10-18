@@ -272,10 +272,11 @@ type FrameworkRestrictionAndList =
 [<CustomEquality; CustomComparison>]
 type FrameworkRestriction =
     private { OrFormulas : FrameworkRestrictionAndList list
+              mutable IsSimple : bool
               mutable PrivateRawFormula : FrameworkRestrictionP option ref
               mutable PrivateRepresentedFrameworks : TargetProfile Set option ref }
-    static member FromOrList l = { OrFormulas = l; PrivateRepresentedFrameworks = ref None; PrivateRawFormula = ref None }
-    static member internal WithOrListInternal orList l = { l with OrFormulas = orList }
+    static member FromOrList l = { OrFormulas = l; IsSimple = false; PrivateRepresentedFrameworks = ref None; PrivateRawFormula = ref None }
+    static member internal WithOrListInternal orList l = { l with OrFormulas = orList; PrivateRawFormula = ref None }
     member internal x.RawFormular =
         match !x.PrivateRawFormula with
         | Some f -> f
@@ -329,7 +330,7 @@ module FrameworkRestriction =
     let NotAtLeastPlatform pf = FromLiteral (FrameworkRestrictionLiteral.FromNegatedLiteral (AtLeastL pf))
     let NotAtLeast id = NotAtLeastPlatform (TargetProfile.SinglePlatform id)
 
-    let private simplify (fr:FrameworkRestriction) =
+    let private simplify' (fr:FrameworkRestriction) =
         /// When we have a restriction like (>=net35 && <net45) || >=net45
         /// then we can "optimize" / simplify to (>=net35 || >= net45)
         /// because we don't need to "pseudo" restrict the set with the first restriction 
@@ -477,8 +478,20 @@ module FrameworkRestriction =
             let old = newFormula
             newFormula <- optimize newFormula
             if System.Object.ReferenceEquals(old, newFormula) then hasChanged <- false
+        newFormula.IsSimple <- true
         newFormula
-            
+
+    // Equals and Hashcode means semantic equality, for memoize we need "exactly the same"
+    // (ie not only a different formula describing the same set, but the same exact formula)        
+    let private simplify'', cacheSimple = memoizeByExt (fun (fr:FrameworkRestriction) -> fr.ToString()) simplify'
+
+    let private simplify (fr:FrameworkRestriction) =
+        if fr.IsSimple then fr
+        else 
+            let simpleFormula = simplify'' fr
+            // Add simple formula to cache just in case we construct the same in the future
+            cacheSimple (simpleFormula.ToString(), simpleFormula)
+            simpleFormula
 
     let rec private And2 (left : FrameworkRestriction) (right : FrameworkRestriction) =
         match left.OrFormulas, right.OrFormulas with
@@ -762,7 +775,6 @@ let private parseRestrictionsRaw skipSimplify (text:string) =
             operands |> List.rev |> f, next
         | h when h.StartsWith "NOT" ->
             let next = h.Substring 2
-
             if next.TrimStart().StartsWith "(" then
                 let operand, remaining = parseOperator (next.Substring 1)
                 let remaining = remaining.TrimStart()
