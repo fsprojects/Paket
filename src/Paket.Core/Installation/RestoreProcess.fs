@@ -253,27 +253,6 @@ let createPaketPropsFile (cliTools:ResolvedPackage seq) restoreSuccess (fileInfo
         if verbose then
             tracefn " - %s already up-to-date" fileInfo.FullName
 
-let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
-    if Seq.isEmpty cliTools then
-        if fileInfo.Exists then 
-            File.Delete(fileInfo.FullName)
-    else
-        let cliParts =
-            cliTools
-            |> Seq.map (fun package -> 
-                package.Name.ToString() + "," + 
-                package.Version.ToString())
-            
-        let content = String.Join(Environment.NewLine,cliParts)
-
-        if not fileInfo.Exists || File.ReadAllText(fileInfo.FullName) <> content then 
-            File.WriteAllText(fileInfo.FullName,content)
-            if verbose then
-                tracefn " - %s created" fileInfo.FullName
-        else
-            if verbose then
-                tracefn " - %s already up-to-date" fileInfo.FullName
-
 let ImplicitPackages = [PackageName "NETStandard.Library"]  |> Set.ofList
 
 let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) (groups:Map<GroupName,LockFileGroup>) =
@@ -354,9 +333,6 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
     for kv in groups do
         let _,cliToolsInGroup = hulls.[kv.Key]
         cliTools.AddRange cliToolsInGroup
-
-    let paketCLIToolsFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.clitools"))
-    createPaketCLIToolsFile cliTools paketCLIToolsFileName
     
     createPaketPropsFile cliTools true (ProjectFile.getPaketPropsFileInfo projectFileInfo)
 

@@ -1,3 +1,6 @@
+#### 5.116.0 - 2017-10-18
+* USABILITY: No need for .clitools file in /obj anymore
+
 #### 5.115.0 - 2017-10-18
 * PERFORMANCE: Fix performance problem introduced in 5.101.0 - https://github.com/fsprojects/Paket/pull/2850
 * BUGFIX: Minor perf improvement for why command - https://github.com/fsprojects/Paket/pull/2851
