@@ -221,8 +221,14 @@ let createAlternativeNuGetConfig (projectFile:FileInfo) =
 
 let createPaketPropsFile (cliTools:ResolvedPackage seq) restoreSuccess (fileInfo:FileInfo) =
     let cliParts =
-        cliTools
-        |> Seq.map (fun cliTool -> sprintf """        <DotNetCliToolReference Include="%O" Version="%O" />""" cliTool.Name cliTool.Version)
+        if Seq.isEmpty cliTools then
+            ""
+        else
+            cliTools
+            |> Seq.map (fun cliTool -> sprintf """        <DotNetCliToolReference Include="%O" Version="%O" />""" cliTool.Name cliTool.Version)
+            |> fun xs -> String.Join(Environment.NewLine,xs)
+            |> fun s -> "    <ItemGroup>" + Environment.NewLine + s + Environment.NewLine + "    </ItemGroup>"
+
             
     let content = 
         sprintf """<?xml version="1.0" encoding="utf-8" standalone="no"?>
@@ -231,15 +237,13 @@ let createPaketPropsFile (cliTools:ResolvedPackage seq) restoreSuccess (fileInfo
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
         %s
     </PropertyGroup>
-    <ItemGroup>
 %s
-    </ItemGroup>
 </Project>""" 
             (if restoreSuccess then 
                 "<!-- <RestoreSuccess>False</RestoreSuccess> -->" 
              else 
                 "<RestoreSuccess>False</RestoreSuccess>")
-            (String.Join(Environment.NewLine,cliParts))
+            cliParts
 
     if not fileInfo.Exists || File.ReadAllText(fileInfo.FullName) <> content then 
         File.WriteAllText(fileInfo.FullName,content)
