@@ -33,9 +33,10 @@
     <StartAction>Project</StartAction>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\temp\Gu.Reactive</StartWorkingDirectory>
-    <StartArguments>restore --group Build</StartArguments>
+    <StartArguments>why ncrontab</StartArguments>
     <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
     <StartWorkingDirectory>D:\temp\PaketTargetFrameworkRepro\</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\bookstore</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
