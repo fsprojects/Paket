@@ -215,7 +215,9 @@ let createAlternativeNuGetConfig (projectFile:FileInfo) =
   </disabledPackageSources>
 </configuration>"""
     if not alternativeConfigFileInfo.Exists || File.ReadAllText(alternativeConfigFileInfo.FullName) <> config then 
-        File.WriteAllText(alternativeConfigFileInfo.FullName,config)
+        File.WriteAllText(alternativeConfigFileInfo.FullName,config) 
+        if verbose then
+            tracefn " - %s created" alternativeConfigFileInfo.FullName
 
 let createPaketPropsFile (cliTools:ResolvedPackage seq) restoreSuccess (fileInfo:FileInfo) =
     let cliParts =
@@ -268,6 +270,8 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
             if verbose then
                 tracefn " - %s already up-to-date" fileInfo.FullName
 
+let ImplicitPackages = [PackageName "NETStandard.Library"]  |> Set.ofList
+
 let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) (groups:Map<GroupName,LockFileGroup>) =
     let projectFileInfo = FileInfo projectFile.FileName
     let hulls =
@@ -289,7 +293,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
     // -> We reached an invalid state
     let objDir = DirectoryInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj"))
     for f in objDir.GetFiles(sprintf "%s*.paket.resolved" projectFileInfo.Name) do
-        f.Delete()
+        try f.Delete() with | _ -> ()
 
     // fable 1.0 compat
     let oldReferencesFile = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".references"))
@@ -308,10 +312,11 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                 let restore =
                     let resolvedPackage = resolved.Force().[key]
 
-                    match resolvedPackage.Settings.FrameworkRestrictions with
-                    | Requirements.ExplicitRestriction restrictions ->
-                        Requirements.isTargetMatchingRestrictions(restrictions, targetProfile)
-                    | _ -> true
+                    not (ImplicitPackages.Contains resolvedPackage.Name) &&
+                        match resolvedPackage.Settings.FrameworkRestrictions with
+                        | Requirements.ExplicitRestriction restrictions ->
+                            Requirements.isTargetMatchingRestrictions(restrictions, targetProfile)
+                        | _ -> true
 
                 if restore then
                     let _,packageName = key

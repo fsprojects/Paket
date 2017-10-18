@@ -1,23 +1,12 @@
-#### 5.114.8 - 2017-10-18
-* COSMETICS: Don't trace so much noise in dotnet restore
-
-#### 5.114.7 - 2017-10-18
-* BUGFIX: Minor perf improvement for why command - https://github.com/fsprojects/Paket/pull/2851
-
-#### 5.114.6 - 2017-10-18
-* BUGFIX: Make json cache file reading more robust - https://github.com/fsprojects/Paket/issues/2838
-
-#### 5.114.5 - 2017-10-14
+#### 5.115.0 - 2017-10-18
 * PERFORMANCE: Fix performance problem introduced in 5.101.0 - https://github.com/fsprojects/Paket/pull/2850
-
-#### 5.114.4 - 2017-10-13
+* BUGFIX: Minor perf improvement for why command - https://github.com/fsprojects/Paket/pull/2851
+* BUGFIX: Make json cache file reading more robust - https://github.com/fsprojects/Paket/issues/2838
 * BUGFIX: Do not restore sdk projects when a group is given - https://github.com/fsprojects/Paket/issues/2838
-
-#### 5.114.3 - 2017-10-13
 * BUGFIX: Use maps instead of lists in why command - https://github.com/fsprojects/Paket/pull/2845
-
-#### 5.114.2 - 2017-10-13
 * BUGFIX: isExtracted function was falsely returning true to comparison - https://github.com/fsprojects/Paket/pull/2842
+* USABILITY: Do not reference NETStandard.Library directly - https://github.com/fsprojects/Paket/issues/2852
+* COSMETICS: Don't trace so much noise in dotnet restore
 
 #### 5.114.0 - 2017-10-11
 * BUGFIX: Invalidate internal NuGet caches
