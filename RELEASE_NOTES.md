@@ -1,4 +1,5 @@
-#### 5.116.2 - 2017-10-18
+#### 5.117.0 - 2017-10-18
+* PERFORMANCE: Paket restore is not longer called for CLI tool restore
 * USABILITY: No need for .clitools file in /obj anymore
 
 #### 5.115.0 - 2017-10-18
