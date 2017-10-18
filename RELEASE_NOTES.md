@@ -1,3 +1,6 @@
+#### 5.118.0 - 2017-10-18
+* PERFORMANCE: Paket why command is now much faster - https://github.com/fsprojects/Paket/pull/2853
+
 #### 5.117.0 - 2017-10-18
 * PERFORMANCE: Paket restore is not longer called for CLI tool restore
 * USABILITY: No need for .clitools file in /obj anymore
