@@ -146,11 +146,8 @@ let inline normalizeUrl(url:string) = url.Replace("https://","http://").Replace(
 
 let getCacheFiles cacheVersion nugetURL (packageName:PackageName) (version:SemVerInfo) =
     let h = nugetURL |> normalizeUrl |> hash |> abs
-    let prefix = 
-        sprintf "%O.%s.s%d" packageName (version.Normalize()) h
-    let packageUrl = 
-        sprintf "%s_v%s.json" 
-           prefix cacheVersion
+    let prefix = sprintf "%O.%s.s%d" packageName (version.Normalize()) h
+    let packageUrl = sprintf "%s_v%s.json" prefix cacheVersion
     let newFile = Path.Combine(Constants.NuGetCacheFolder,packageUrl)
     let oldFiles =
         Directory.EnumerateFiles(Constants.NuGetCacheFolder, sprintf "%s*.json" prefix)
@@ -173,30 +170,36 @@ let tryGetDetailsFromCache force nugetURL (packageName:PackageName) (version:Sem
     for f in oldFiles do
         File.Delete f
     if not force && cacheFile.Exists then
-        let json = File.ReadAllText(cacheFile.FullName)
-        let cacheResult =
+        try
+            let json = File.ReadAllText(cacheFile.FullName)
+            
             try
-                let cachedObject = JsonConvert.DeserializeObject<NuGetPackageCache> json
-                if (PackageName cachedObject.PackageName <> packageName) ||
-                    (cachedObject.Version <> version.Normalize())
-                then
-                    if verbose then
-                        traceVerbose (sprintf "Invalidating Cache '%s:%s' <> '%s:%s'" cachedObject.PackageName cachedObject.Version packageName.Name (version.Normalize()))
-                    cacheFile.Delete()
-                    None
-                else
-                    Some cachedObject
+                let cacheResult =
+                    let cachedObject = JsonConvert.DeserializeObject<NuGetPackageCache> json
+                    if (PackageName cachedObject.PackageName <> packageName) ||
+                        (cachedObject.Version <> version.Normalize())
+                    then
+                        if verbose then
+                            traceVerbose (sprintf "Invalidating Cache '%s:%s' <> '%s:%s'" cachedObject.PackageName cachedObject.Version packageName.Name (version.Normalize()))
+                        cacheFile.Delete()
+                        None
+                    else
+                        Some cachedObject
+
+                match cacheResult with
+                | Some res -> Some (ODataSearchResult.Match res)
+                | None -> None
             with
             | exn ->
-                cacheFile.Delete()
+                try cacheFile.Delete() with | _ -> ()
                 if verbose then
                     traceWarnfn "Error while loading cache: %O" exn
-                else
-                    traceWarnfn "Error while loading cache: %s" exn.Message
                 None
-        match cacheResult with
-        | Some res -> Some (ODataSearchResult.Match res)
-        | None -> None
+        with
+        | exn ->
+            if verbose then
+                traceWarnfn "Error while reading cache file: %O" exn
+            None
     else
         None
 
