@@ -234,7 +234,7 @@ let createPaketPropsFile (cliTools:ResolvedPackage seq) restoreSuccess (fileInfo
         sprintf """<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+        <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
         %s
     </PropertyGroup>
 %s
