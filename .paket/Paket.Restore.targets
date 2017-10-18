@@ -106,6 +106,24 @@
     </ItemGroup>
 
     <PropertyGroup>
+      <PaketCliToolFilePath>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).paket.clitools</PaketCliToolFilePath>
+    </PropertyGroup>
+
+    <ReadLinesFromFile File="$(PaketCliToolFilePath)" >
+      <Output TaskParameter="Lines" ItemName="PaketCliToolFileLines"/>
+    </ReadLinesFromFile>
+
+    <ItemGroup Condition=" '@(PaketCliToolFileLines)' != '' " >
+      <PaketCliToolFileLinesInfo Include="@(PaketCliToolFileLines)" >
+        <PackageName>$([System.String]::Copy('%(PaketCliToolFileLines.Identity)').Split(',')[0])</PackageName>
+        <PackageVersion>$([System.String]::Copy('%(PaketCliToolFileLines.Identity)').Split(',')[1])</PackageVersion>
+      </PaketCliToolFileLinesInfo>
+      <DotNetCliToolReference Include="%(PaketCliToolFileLinesInfo.PackageName)">
+        <Version>%(PaketCliToolFileLinesInfo.PackageVersion)</Version>
+      </DotNetCliToolReference>
+    </ItemGroup>
+
+    <PropertyGroup>
       <RestoreConfigFile>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).NuGet.Config</RestoreConfigFile>
     </PropertyGroup>
 
