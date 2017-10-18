@@ -1,3 +1,6 @@
+#### 5.114.8 - 2017-10-18
+* COSMETICS: Don't trace so much noise in dotnet restore
+
 #### 5.114.7 - 2017-10-18
 * BUGFIX: Minor perf improvement for why command - https://github.com/fsprojects/Paket/pull/2851
 

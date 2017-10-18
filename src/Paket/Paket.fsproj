@@ -35,7 +35,7 @@
     <StartWorkingDirectory>C:\temp\Gu.Reactive</StartWorkingDirectory>
     <StartArguments>restore --group Build</StartArguments>
     <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\temp\repronu110\</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\temp\PaketTargetFrameworkRepro\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

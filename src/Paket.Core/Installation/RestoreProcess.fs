@@ -241,7 +241,8 @@ let createPaketPropsFile (cliTools:ResolvedPackage seq) restoreSuccess (fileInfo
 
     if not fileInfo.Exists || File.ReadAllText(fileInfo.FullName) <> content then 
         File.WriteAllText(fileInfo.FullName,content)
-        tracefn " - %s created" fileInfo.FullName
+        if verbose then
+            tracefn " - %s created" fileInfo.FullName
     else
         if verbose then
             tracefn " - %s already up-to-date" fileInfo.FullName
@@ -261,7 +262,8 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
 
         if not fileInfo.Exists || File.ReadAllText(fileInfo.FullName) <> content then 
             File.WriteAllText(fileInfo.FullName,content)
-            tracefn " - %s created" fileInfo.FullName
+            if verbose then
+                tracefn " - %s created" fileInfo.FullName
         else
             if verbose then
                 tracefn " - %s already up-to-date" fileInfo.FullName
@@ -333,7 +335,8 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                 // compat with old targets and fable - always write but prefer netstandard16.
                 File.WriteAllText(oldReferencesFile.FullName,output)
             File.WriteAllText(newFileName.FullName,output)
-            tracefn " - %s created" newFileName.FullName
+            if verbose then
+                tracefn " - %s created" newFileName.FullName
         else
             if verbose then
                 tracefn " - %s already up-to-date" newFileName.FullName
@@ -426,7 +429,8 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             LocalFile.overrideLockFile localFile lockFile,localFile,true
 
     if not (hasLocalFile || force) && isEarlyExit () then
-        tracefn "Last restore is still up to date."
+        if verbose then
+            tracefn "Last restore is still up to date."
     else
         if projectFile = None then
             extractRestoreTargets root |> ignore
