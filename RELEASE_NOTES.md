@@ -1,3 +1,6 @@
+#### 5.116.1 - 2017-10-18
+* REVERT: Do not reference NETStandard.Library directly - https://github.com/fsprojects/Paket/issues/2852
+
 #### 5.116.0 - 2017-10-18
 * USABILITY: No need for .clitools file in /obj anymore
 
