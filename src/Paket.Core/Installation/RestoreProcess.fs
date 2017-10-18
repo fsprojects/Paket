@@ -253,6 +253,8 @@ let createPaketPropsFile (cliTools:ResolvedPackage seq) restoreSuccess (fileInfo
         if verbose then
             tracefn " - %s already up-to-date" fileInfo.FullName
 
+let ImplicitPackages = [PackageName "NETStandard.Library"]  |> Set.ofList
+
 let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) (groups:Map<GroupName,LockFileGroup>) =
     let projectFileInfo = FileInfo projectFile.FileName
     let hulls =
@@ -293,10 +295,11 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                 let restore =
                     let resolvedPackage = resolved.Force().[key]
 
-                    match resolvedPackage.Settings.FrameworkRestrictions with
-                    | Requirements.ExplicitRestriction restrictions ->
-                        Requirements.isTargetMatchingRestrictions(restrictions, targetProfile)
-                    | _ -> true
+                    not (ImplicitPackages.Contains resolvedPackage.Name) &&
+                        match resolvedPackage.Settings.FrameworkRestrictions with
+                        | Requirements.ExplicitRestriction restrictions ->
+                            Requirements.isTargetMatchingRestrictions(restrictions, targetProfile)
+                        | _ -> true
 
                 if restore then
                     let _,packageName = key
