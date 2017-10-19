@@ -1,3 +1,6 @@
+#### 5.119.3 - 2017-10-19
+* BUGFIX: Only call dotnet restore when it's really requested
+
 #### 5.119.2 - 2017-10-19
 * REVERT: HashSet used in paket why command - https://github.com/fsprojects/Paket/pull/2853
 * REVERT: Clitool restore became unstable - https://github.com/fsprojects/Paket/issues/2854
