@@ -202,7 +202,7 @@ Target "DotnetBuild" (fun _ ->
             { c with
                 Project = proj
                 ToolPath = dotnetExePath
-                AdditionalArgs = [ "/p:SourceLinkCreate=true" ]
+                // TODO: AdditionalArgs = [ "/p:SourceLinkCreate=true" ]
             })
     )
 )
