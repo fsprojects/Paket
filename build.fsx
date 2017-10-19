@@ -170,7 +170,7 @@ Target "Build" (fun _ ->
         |> MSBuildReleaseExt "" [
                 "VisualStudioVersion", "14.0"
                 "ToolsVersion"       , "14.0"
-                "SourceLinkCreate"   , "true"
+                // TODO: "SourceLinkCreate"   , "true"
         ] "Rebuild"
         |> ignore
 )
