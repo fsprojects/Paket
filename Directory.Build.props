@@ -1,5 +1,0 @@
-<Project>
- <PropertyGroup>
-	<TargetFrameworkRootPath>$(MSBuildThisFileDirectory)packages\build\0x53A.ReferenceAssemblies.Paket\tools\framework</TargetFrameworkRootPath>
- </PropertyGroup>
-</Project>

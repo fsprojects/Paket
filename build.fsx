@@ -62,14 +62,17 @@ let gitName = "Paket"
 // The url for the raw files hosted
 let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
-let dotnetcliVersion = "2.1.0-preview1-007002"
+let dotnetcliVersion = "2.0.2"
 
 let dotnetSDKPath = System.Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) </> "dotnetcore" |> FullName
 
-
 let mutable dotnetExePath = "dotnet"    
 
-let netcoreFiles = !! "src/**.preview?/*.fsproj" |> Seq.toList
+let netcoreFiles = 
+    (!! "src/Paket.Bootstrapper/*.csproj" |> Seq.toList) @
+    (!! "src/Paket.Core/*.fsproj" |> Seq.toList) @
+    (!! "src/Paket/*.fsproj" |> Seq.toList) 
+    |> Set.ofList
 
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps
@@ -122,8 +125,8 @@ let genCSAssemblyInfo (projectPath) =
 
 // Generate assembly info files with the right version & up-to-date information
 Target "AssemblyInfo" (fun _ ->
-    let fsProjs =  !! "src/**/*.fsproj" |> Seq.filter (fun s -> not <| s.Contains("preview"))
-    let csProjs = !! "src/**/*.csproj" |> Seq.filter (fun s -> not <| s.Contains("preview"))
+    let fsProjs =  !! "src/**/*.fsproj" |> Seq.filter (netcoreFiles.Contains >> not)
+    let csProjs = !! "src/**/*.csproj" |> Seq.filter (netcoreFiles.Contains >> not)
     fsProjs |> Seq.iter genFSAssemblyInfo
     csProjs |> Seq.iter genCSAssemblyInfo
 )
@@ -167,7 +170,7 @@ Target "Build" (fun _ ->
         |> MSBuildReleaseExt "" [
                 "VisualStudioVersion", "14.0"
                 "ToolsVersion"       , "14.0"
-                "SourceLinkCreate"   , "true"
+                // TODO: "SourceLinkCreate"   , "true"
         ] "Rebuild"
         |> ignore
 )
@@ -192,17 +195,6 @@ Target "DotnetRestoreTools" (fun _ ->
         })
 )
 
-Target "DotnetRestore" (fun _ ->
-    netcoreFiles
-    |> Seq.iter (fun proj ->
-        DotNetCli.Restore (fun c ->
-            { c with
-                Project = proj
-                ToolPath = dotnetExePath
-            })
-    )
-)
-
 Target "DotnetBuild" (fun _ ->
     netcoreFiles
     |> Seq.iter (fun proj ->
@@ -210,7 +202,7 @@ Target "DotnetBuild" (fun _ ->
             { c with
                 Project = proj
                 ToolPath = dotnetExePath
-                AdditionalArgs = [ "/p:SourceLinkCreate=true" ]
+                // TODO: AdditionalArgs = [ "/p:SourceLinkCreate=true" ]
             })
     )
 )
@@ -597,7 +589,6 @@ Target "All" DoNothing
 
 "Clean"
   =?> ("InstallDotNetCore", not <| hasBuildParam "DISABLE_NETCORE")
-  =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetBuild", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
 
@@ -605,8 +596,8 @@ Target "All" DoNothing
 
 "Clean"
   ==> "AssemblyInfo"
+  ==> "BuildCore"
   ==> "Build"
-  <=> "BuildCore"
   ==> "RunTests"
   =?> ("GenerateReferenceDocs",isLocalBuild && not isMono)
   =?> ("GenerateDocs",isLocalBuild && not isMono)
