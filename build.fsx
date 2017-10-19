@@ -194,17 +194,6 @@ Target "DotnetRestoreTools" (fun _ ->
         })
 )
 
-Target "DotnetRestore" (fun _ ->
-    netcoreFiles
-    |> Seq.iter (fun proj ->
-        DotNetCli.Restore (fun c ->
-            { c with
-                Project = proj
-                ToolPath = dotnetExePath
-            })
-    )
-)
-
 Target "DotnetBuild" (fun _ ->
     netcoreFiles
     |> Seq.iter (fun proj ->
@@ -599,7 +588,6 @@ Target "All" DoNothing
 
 "Clean"
   =?> ("InstallDotNetCore", not <| hasBuildParam "DISABLE_NETCORE")
-  =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetBuild", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
 
