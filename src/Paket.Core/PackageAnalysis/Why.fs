@@ -18,19 +18,15 @@ and LblPathNode<'a> =
 | LblPathLeaf of PackageName * 'a
 
 module AdjLblGraph =
-    let paths start stop (visited:HashSet<_>) (g: AdjLblGraph<_>) : list<LblPath<_>> =
-        let rec paths start stop (g: AdjLblGraph<_>) : list<LblPath<_>> =
-            [ for kv in g.[start] do
-                match visited.Add kv.Key with
-                | false -> ()
-                | true -> 
-                    if kv.Key = stop then
-                        yield (start, LblPathLeaf (stop, kv.Value))
-
-                    for path in paths kv.Key stop g do 
-                        yield (start, LblPathNode path)]
-
-        paths start stop g
+    let rec paths start stop visited (g: AdjLblGraph<_>) : list<LblPath<_>> =
+        let adjacents = 
+            g.[start]
+            |> Seq.filter (fun kv -> not (Set.contains kv.Key visited))
+        [ for kv in adjacents do
+            let n, lbl = kv.Key, kv.Value
+            if n = stop then yield (start, LblPathLeaf (stop, lbl))
+            for path in paths n stop (Set.add n visited) g do 
+                yield (start, LblPathNode path)]
 
 let depGraph (res : PackageResolver.PackageResolution) : AdjLblGraph<_> =
     res
@@ -81,7 +77,6 @@ module DependencyChain =
                     sprintf "%s -%s%s" (formatName name (i+1)) (formatVerReq vr) (formatFxReq fr)
                 | LblPathLeaf (name,_), false -> 
                     formatName name (i+1)
-
             sprintf "%s%s%s" (formatName name i) Environment.NewLine rest
         
         format' 0 c
@@ -150,7 +145,7 @@ module Reason =
             let chains = 
                 topLevelDeps
                 |> Set.toList
-                |> List.collect (fun p -> AdjLblGraph.paths p packageName (HashSet<_>()) graph)
+                |> List.collect (fun p -> AdjLblGraph.paths p packageName Set.empty graph)
             match Set.contains packageName directDeps, Set.contains packageName topLevelDeps with
             | true, true ->
                 Result.Ok ((TopLevel, group.Resolution), [])
