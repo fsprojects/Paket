@@ -69,7 +69,7 @@ let dotnetSDKPath = System.Environment.GetFolderPath(Environment.SpecialFolder.L
 
 let mutable dotnetExePath = "dotnet"    
 
-let netcoreFiles = !! "src/**.preview?/*.fsproj" |> Seq.toList
+let netcoreFiles = (!! "src/**.preview?/*.fsproj" |> Seq.toList) @ (!! "src/Paket.Core/*.fsproj" |> Seq.toList)
 
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps
@@ -605,8 +605,8 @@ Target "All" DoNothing
 
 "Clean"
   ==> "AssemblyInfo"
+  ==> "BuildCore"
   ==> "Build"
-  <=> "BuildCore"
   ==> "RunTests"
   =?> ("GenerateReferenceDocs",isLocalBuild && not isMono)
   =?> ("GenerateDocs",isLocalBuild && not isMono)

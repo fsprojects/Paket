@@ -2,8 +2,15 @@ Newtonsoft.Json
 FSharp.Core
 Mono.Cecil
 Chessie
-FSharp.Compiler.Tools
-System.Net.Http
 
-File:Globbing.fs Common\
-File:AssemblyReader.fs Common\
+System.Diagnostics.TraceSource
+System.Xml.XPath.XmlDocument
+System.Diagnostics.Process
+System.Xml.XDocument
+System.Xml.XPath.XDocument
+System.Security.Cryptography.ProtectedData
+System.Security.Cryptography.Algorithms
+System.Diagnostics.FileVersionInfo
+
+File:Globbing.fs .
+File:AssemblyReader.fs .
