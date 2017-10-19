@@ -68,7 +68,10 @@ let dotnetSDKPath = System.Environment.GetFolderPath(Environment.SpecialFolder.L
 
 let mutable dotnetExePath = "dotnet"    
 
-let netcoreFiles = (!! "src/Paket/*.fsproj" |> Seq.toList) @ (!! "src/Paket.Core/*.fsproj" |> Seq.toList)
+let netcoreFiles = 
+    (!! "src/Paket/*.fsproj" |> Seq.toList) @ 
+    (!! "src/Paket.Bootstrapper/*.csproj" |> Seq.toList) @
+    (!! "src/Paket.Core/*.fsproj" |> Seq.toList)
 
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps
