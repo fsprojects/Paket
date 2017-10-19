@@ -72,6 +72,7 @@ let netcoreFiles =
     (!! "src/Paket.Bootstrapper/*.csproj" |> Seq.toList) @
     (!! "src/Paket.Core/*.fsproj" |> Seq.toList) @
     (!! "src/Paket/*.fsproj" |> Seq.toList) 
+    |> Set.ofList
 
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps
@@ -124,8 +125,8 @@ let genCSAssemblyInfo (projectPath) =
 
 // Generate assembly info files with the right version & up-to-date information
 Target "AssemblyInfo" (fun _ ->
-    let fsProjs =  !! "src/**/*.fsproj" |> Seq.filter (fun s -> not <| s.Contains("preview"))
-    let csProjs = !! "src/**/*.csproj" |> Seq.filter (fun s -> not <| s.Contains("preview"))
+    let fsProjs =  !! "src/**/*.fsproj" |> Seq.filter (netcoreFiles.Contains >> not)
+    let csProjs = !! "src/**/*.csproj" |> Seq.filter (netcoreFiles.Contains >> not)
     fsProjs |> Seq.iter genFSAssemblyInfo
     csProjs |> Seq.iter genCSAssemblyInfo
 )

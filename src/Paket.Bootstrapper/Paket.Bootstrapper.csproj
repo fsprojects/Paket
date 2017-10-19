@@ -4,35 +4,6 @@
     <TargetFramework>net45</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="ArgumentParser.cs" />
-    <Compile Include="BootstrapperHelper.cs" />
-    <Compile Include="BootstrapperOptions.cs" />
-    <Compile Include="DownloadStrategies\IDownloadStrategy.cs" />
-    <Compile Include="DownloadStrategies\IHaveEffectiveStrategy.cs" />
-    <Compile Include="PaketHashFile.cs" />
-    <Compile Include="Properties\InternalsVisibleTo.cs" />
-    <Compile Include="PaketDependencies.cs" />
-    <Compile Include="PaketRunner.cs" />
-    <Compile Include="Verbosity.cs" />
-    <Compile Include="WindowsProcessArguments.cs" />
-    <Compile Include="DownloadStrategies\CacheDownloadStrategy.cs" />
-    <Compile Include="HelperProxies\IWebRequestProxy.cs" />
-    <Compile Include="HelperProxies\WebRequestProxy.cs" />
-    <Compile Include="DownloadArguments.cs" />
-    <Compile Include="EnvProxy.cs" />
-    <Compile Include="HelperProxies\FileSystemProxy.cs" />
-    <Compile Include="DownloadStrategies\GitHubDownloadStrategy.cs" />
-    <Compile Include="DownloadStrategies\DownloadStrategy.cs" />
-    <Compile Include="HelperProxies\IFileSystemProxy.cs" />
-    <Compile Include="DownloadStrategies\NugetDownloadStrategy.cs" />
-    <Compile Include="ConsoleImpl.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SemVer.cs" />
-    <Compile Include="DownloadStrategies\TemporarilyIgnoreUpdatesDownloadStrategy.cs" />
-    <Compile Include="HelperProxies\DateTimeProxy.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="paket.template" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
