@@ -95,5 +95,5 @@
       <PackagePath>lib/netstandard1.6</PackagePath>
     </Content>
   </ItemGroup>
-  <Import Project="..\.paket\Paket.Restore.targets" />
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

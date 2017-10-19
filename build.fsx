@@ -66,10 +66,9 @@ let dotnetcliVersion = "2.1.0-preview1-007002"
 
 let dotnetSDKPath = System.Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) </> "dotnetcore" |> FullName
 
-
 let mutable dotnetExePath = "dotnet"    
 
-let netcoreFiles = (!! "src/**.preview?/*.fsproj" |> Seq.toList) @ (!! "src/Paket.Core/*.fsproj" |> Seq.toList)
+let netcoreFiles = (!! "src/Paket/*.fsproj" |> Seq.toList) @ (!! "src/Paket.Core/*.fsproj" |> Seq.toList)
 
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps
