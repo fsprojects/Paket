@@ -1,18 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard1.6</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Common\AssemblyInfo.fs" />
-    <Compile Include="Common\CustomAssemblyInfo.fs" />
-    <Compile Include="..\paket-files\fsprojects\FSharp.TypeProviders.StarterPack\src\AssemblyReader.fs">
-      <Paket>True</Paket>
-      <Link>AssemblyReader.fs</Link>
-    </Compile>
-    <Compile Include="..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
+    <Compile Include="..\..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
       <Paket>True</Paket>
       <Link>Globbing.fs</Link>
     </Compile>
+    <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.StarterPack\src\AssemblyReader.fs">
+      <Paket>True</Paket>
+      <Link>AssemblyReader.fs</Link>
+    </Compile>
+    <Compile Include="Common\AssemblyInfo.fs" />
+    <Compile Include="Common\CustomAssemblyInfo.fs" />
     <Compile Include="Common\Async.fs" />
     <Compile Include="Common\Domain.fs" />
     <Compile Include="Common\Logging.fsi" />
