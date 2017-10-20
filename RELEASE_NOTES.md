@@ -1,4 +1,4 @@
-#### 5.119.6 - 2017-10-20
+#### 5.119.7 - 2017-10-20
 * REVERT: HashSet used in paket why command - https://github.com/fsprojects/Paket/pull/2853
 * REVERT: Clitool restore became unstable - https://github.com/fsprojects/Paket/issues/2854
 
