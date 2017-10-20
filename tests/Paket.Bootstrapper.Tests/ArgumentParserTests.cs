@@ -433,6 +433,35 @@ namespace Paket.Bootstrapper.Tests
         }
 
         [Test]
+        public void LatestVersion_FromEnvironmentVariablePosix()
+        {
+            //arrange
+            var envVariables= new Dictionary<string, string>();
+            envVariables.Add(ArgumentParser.EnvArgs.PaketVersionEnvPosix, "1.0");
+
+            //act
+            var result = Parse(new string[] {}, null, envVariables);
+
+            //assert
+            Assert.That(result.DownloadArguments.LatestVersion, Is.EqualTo("1.0"));
+        }
+
+        [Test]
+        public void LatestVersion_Set_Both_FromEnvironmentVariable_Posix_Wins()
+        {
+            //arrange
+            var envVariables= new Dictionary<string, string>();
+            envVariables.Add(ArgumentParser.EnvArgs.PaketVersionEnv, "1.0");
+            envVariables.Add(ArgumentParser.EnvArgs.PaketVersionEnvPosix, "2.0");
+
+            //act
+            var result = Parse(new string[] {}, null, envVariables);
+
+            //assert
+            Assert.That(result.DownloadArguments.LatestVersion, Is.EqualTo("2.0"));
+        }
+
+        [Test]
         public void LeftoverCommandArgs()
         {
             //arrange

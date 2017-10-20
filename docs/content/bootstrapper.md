@@ -87,8 +87,22 @@ Example:
 
 ### With environment variables
 
-`PAKET.VERSION`: The requested version can also be set using this environment
+`PAKET_VERSION`: The requested version can also be set using this environment
 variable.
+
+* powershell   
+    ```
+    $env:PAKET_VERSION = "5.119.7"
+    ```
+* cmd
+    ```
+    set PAKET_VERSION=5.119.7
+    ```
+* bash
+    ```
+    export PAKET_VERSION="5.119.7"
+    ```
+    
 
 ### In paket.dependencies
 
@@ -146,3 +160,11 @@ A few default settings are applied:
 * The bootstrapper is silenced and only errors are displayed. `-v` can be used
   once to restore normal output or twice to show more details.
 * If no version is specified a default `--max-file-age` of `12` hours is used.
+
+### Setting version in magic mode
+
+You can use the all [settings listed above](#In-application-settings) with two exceptions:
+1. `paket.bootstrapper.exe.config` becomes `paket.exe.config`
+2. you can no longer use the command line to specify
+    
+ 
