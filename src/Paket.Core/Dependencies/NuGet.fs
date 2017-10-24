@@ -655,14 +655,14 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
                 if cacheFile.Exists && cacheFile.Length > 0L then
                     tracefn "Copying %O %O from cache %s" packageName version cache.Location
                     ensureDir targetFileName
-                    File.Copy(cacheFile.FullName,targetFileName)
+                    File.Copy(cacheFile.FullName,targetFileName,true)
                     true
                 else
                     let cacheFile = FileInfo(Path.Combine(cacheFolder,nupkgName))
                     if cacheFile.Exists && cacheFile.Length > 0L then
                         tracefn "Copying %O %O from cache %s" packageName version cache.Location
                         ensureDir targetFileName
-                        File.Copy(cacheFile.FullName,targetFileName)
+                        File.Copy(cacheFile.FullName,targetFileName,true)
                         true
                     else
                         getFromCache rest
