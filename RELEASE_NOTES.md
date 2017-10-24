@@ -1,3 +1,6 @@
+#### 5.119.9-beta001 - 2017-10-24
+* Move Resource to Paket.Core and Refactorings - https://github.com/fsprojects/Paket/pull/2859
+
 #### 5.119.8 - 2017-10-24
 * REVERT: Ensure directory was created before copying package from cache - https://github.com/fsprojects/Paket/pull/2864
 
