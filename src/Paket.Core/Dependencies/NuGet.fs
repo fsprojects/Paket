@@ -642,6 +642,10 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
             CleanDir p
         | _ -> ()
 
+    let ensureDir fileName =
+        let parent = Path.GetDirectoryName fileName
+        if not (Directory.Exists parent) then Directory.CreateDirectory parent |> ignore
+
     let rec getFromCache (caches:Cache list) =
         match caches with
         | cache::rest ->
@@ -650,13 +654,15 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
                 let cacheFile = FileInfo(Path.Combine(cacheFolder,normalizedNupkgName))
                 if cacheFile.Exists && cacheFile.Length > 0L then
                     tracefn "Copying %O %O from cache %s" packageName version cache.Location
-                    File.Copy(cacheFile.FullName,targetFileName)
+                    ensureDir targetFileName
+                    File.Copy(cacheFile.FullName,targetFileName,true)
                     true
                 else
                     let cacheFile = FileInfo(Path.Combine(cacheFolder,nupkgName))
                     if cacheFile.Exists && cacheFile.Length > 0L then
                         tracefn "Copying %O %O from cache %s" packageName version cache.Location
-                        File.Copy(cacheFile.FullName,targetFileName)
+                        ensureDir targetFileName
+                        File.Copy(cacheFile.FullName,targetFileName,true)
                         true
                     else
                         getFromCache rest
@@ -679,8 +685,7 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
                     let nupkg = NuGetLocal.findLocalPackage di.FullName packageName version
 
                     use _ = Profile.startCategory Profile.Category.FileIO
-                    let parent = Path.GetDirectoryName targetFileName
-                    if not (Directory.Exists parent) then Directory.CreateDirectory parent |> ignore
+                    ensureDir targetFileName
                     File.Copy(nupkg.FullName,targetFileName,true)
                 | _ ->
                 // discover the link on the fly
@@ -711,8 +716,8 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
 
                     if authenticated && verbose then
                         tracefn "Downloading from %O to %s" !downloadUrl targetFileName
-                    let dir = Path.GetDirectoryName targetFileName
-                    if Directory.Exists dir |> not then Directory.CreateDirectory dir |> ignore
+
+                    ensureDir targetFileName
 
                     use trackDownload = Profile.startCategory Profile.Category.NuGetDownload
 
