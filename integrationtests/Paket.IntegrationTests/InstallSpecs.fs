@@ -505,7 +505,7 @@ let ``#1860 faulty condition was generated`` () =
 
 
 [<Test>]
-let ``#2777 should not conflict with locked pacakges``() =
+let ``#2777 should not conflict with locked packages``() =
     let newLockFile = install "i002777"
     newLockFile.Groups.[GroupName "main"].Resolution.ContainsKey (PackageName "FsPickler")
 
