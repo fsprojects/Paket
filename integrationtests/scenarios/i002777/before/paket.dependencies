@@ -1,0 +1,9 @@
+source https://api.nuget.org/v3/index.json
+
+framework: net461
+
+nuget FsPickler == 4.0
+nuget FsPickler.Json == 4.0
+
+nuget MBrace.Thespian 1.4.0
+nuget MBrace.Runtime 1.4.0
