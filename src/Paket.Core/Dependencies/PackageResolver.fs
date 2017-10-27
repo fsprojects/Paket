@@ -123,10 +123,11 @@ module DependencySetFilter =
             dependencies
             |> Set.filter (isIncluded restrictions)
 
-    let findFirstIncompatibility (currentStep:ResolverStep) (dependencies:DependencySet) (package:ResolvedPackage) =
+    let findFirstIncompatibility (currentStep:ResolverStep) (lockedPackages: Set<_>) (dependencies:DependencySet) (package:ResolvedPackage) =
         dependencies
         // exists any non-matching stuff
         |> Seq.filter (fun (name, _, _) -> name = package.Name)
+        |> Seq.filter (fun (name, _, _) -> lockedPackages.Contains name |> not)
         |> Seq.filter (fun (name, requirement, restriction) ->
             let allowTransitivePreleases = 
                 (currentStep.ClosedRequirements |> Set.exists (fun r -> r.TransitivePrereleases && r.Name = name)) ||
@@ -294,12 +295,16 @@ type Resolution with
     member self.IsConflict = not self.IsDone
 
 
-let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestrictions,(verCache:VersionCache),dependency,resolverStep:ResolverStep) =
+let calcOpenRequirements (exploredPackage:ResolvedPackage,lockedPackages:Set<_>,globalFrameworkRestrictions,(verCache:VersionCache),dependency,resolverStep:ResolverStep) =
     let dependenciesByName =
         // there are packages which define multiple dependencies to the same package
         // we compress these here - see #567
         let dict = Dictionary<_,_>()
-        for ((name,v,r) as dep) in exploredPackage.Dependencies do
+        let openDeps = 
+            exploredPackage.Dependencies 
+            |> Seq.filter (fun (name,_,_) -> lockedPackages.Contains name |> not)
+
+        for ((name,v,r) as dep) in openDeps do
             match dict.TryGetValue name with
             | true,(_,v2,r2) ->
                 match v,v2 with
@@ -447,9 +452,11 @@ let private explorePackageConfig (getPackageDetailsBlock:PackageDetailsSyncFunc)
     | Install -> tracefn  " - %O %A" dependency.Name version
     | _ ->
         match dependency.VersionRequirement.Range with
-        | Specific _ when dependency.Parent.IsRootRequirement() -> traceWarnfn " - %O is pinned to %O" dependency.Name version
+        | OverrideAll _ when dependency.Parent.IsRootRequirement() -> 
+            traceWarnfn " - %O is locked to %O" dependency.Name version
+        | Specific _ when dependency.Parent.IsRootRequirement() -> 
+            traceWarnfn " - %O is pinned to %O" dependency.Name version
         | _ ->
-            let compareString = dependency.Name.CompareString
             tracefn  " - %O %A" dependency.Name version
 
     let newRestrictions =
@@ -1105,6 +1112,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                 let currentConflict =
                     let getVersionsF packName =
                         getVersionsBlock ResolverStrategy.Max (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName)
+
                     if Seq.isEmpty conflicts then
                         { currentConflict with
                             Status = ResolutionRaw.ConflictRaw {
@@ -1169,7 +1177,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                      && not flags.UnlistedSearch
                      && not currentConflict.Status.IsDone 
                      then
-                     // if it's been determined that an unlisted package must be used, ready must be set to false
+                        // if it's been determined that an unlisted package must be used, ready must be set to false
                         if verbose then
                             verbosefn "\nSearching for compatible unlisted package\n"
                         { flags with 
@@ -1188,7 +1196,8 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                 let ({ Version = version; Sources = sources }: VersionCache) & versionToExplore = Seq.head currentConflict.VersionsToExplore
 
                 let currentConflict = 
-                    { currentConflict with VersionsToExplore = Seq.tail currentConflict.VersionsToExplore }
+                    { currentConflict with 
+                        VersionsToExplore = Seq.tail currentConflict.VersionsToExplore }
 
                 let packageConfig = {
                     GroupName          = groupName
@@ -1235,7 +1244,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                             // Ignore packages which have "OverrideAll", otherwise == will not work anymore.
                             |> Seq.filter (fun resolved -> lockedPackages.Contains resolved.Name |> not)
                             |> Seq.choose (fun r -> 
-                                DependencySetFilter.findFirstIncompatibility currentStep exploredPackage.Dependencies r
+                                DependencySetFilter.findFirstIncompatibility currentStep lockedPackages exploredPackage.Dependencies r
                                 |> Option.map (fun incompat -> r,incompat))
 
                         let canTakePackage = conflictingResolvedPackages |> Seq.isEmpty
@@ -1246,7 +1255,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                     FilteredVersions   = Map.add currentRequirement.Name ([versionToExplore],currentConflict.GlobalOverride) currentStep.FilteredVersions
                                     CurrentResolution  = Map.add exploredPackage.Name exploredPackage currentStep.CurrentResolution
                                     ClosedRequirements = Set.add currentRequirement currentStep.ClosedRequirements
-                                    OpenRequirements   = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,currentStep)
+                                    OpenRequirements   = calcOpenRequirements(exploredPackage,lockedPackages,globalFrameworkRestrictions,versionToExplore,currentRequirement,currentStep)
                                 }
                             if nextStep.OpenRequirements = currentStep.OpenRequirements then
                                 failwithf "The resolver confused itself. The new open requirements are the same as the old ones.\n\

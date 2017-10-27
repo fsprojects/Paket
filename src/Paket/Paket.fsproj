@@ -33,11 +33,11 @@
     <StartAction>Project</StartAction>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\temp\Gu.Reactive</StartWorkingDirectory>
-    <StartArguments>restore --group Build</StartArguments>
+    <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
     <StartWorkingDirectory>D:\temp\PaketTargetFrameworkRepro\</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\bookstore</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\temp\repronu110\</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\temp\build\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
