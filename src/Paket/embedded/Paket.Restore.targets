@@ -141,15 +141,13 @@
       <ContinuePackingAfterGeneratingNuspec>true</ContinuePackingAfterGeneratingNuspec>
       <UseNewPack>false</UseNewPack>
       <UseNewPack Condition=" '$(NuGetToolVersion)' != '4.0.0' ">true</UseNewPack>
+      <NuspecFile>$(BaseIntermediateOutputPath)$(PackageId).$(PackageVersion).nuspec</NuspecFile>
+      <NuspecFile Condition=" '$(IncludeSymbols)' == 'true' Or '$(IncludeSource)' == 'true'">$(BaseIntermediateOutputPath)$(PackageId).$(PackageVersion).symbols.nuspec</NuspecFile>
     </PropertyGroup>
 
-    <ItemGroup>
-      <_NuspecFiles Include="$(BaseIntermediateOutputPath)*.nuspec"/>
-    </ItemGroup>
+    <Exec Command='$(PaketCommand) fix-nuspecs files "$(NuspecFile)" project-file "$(PaketProjectFile)" ' Condition="$(NuspecFile) != ''" />
 
-    <Exec Command='$(PaketCommand) fix-nuspecs files "@(_NuspecFiles)" project-file "$(PaketProjectFile)" ' Condition="@(_NuspecFiles) != ''" />
-
-    <ConvertToAbsolutePath Condition="@(_NuspecFiles) != ''" Paths="@(_NuspecFiles)">
+    <ConvertToAbsolutePath Condition="$(NuspecFile) != ''" Paths="$(NuspecFile)">
       <Output TaskParameter="AbsolutePaths" PropertyName="NuspecFileAbsolutePath" />
     </ConvertToAbsolutePath>
 
