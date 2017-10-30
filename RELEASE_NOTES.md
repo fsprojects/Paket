@@ -1,3 +1,7 @@
+#### 5.120.0 - 2017-10-30
+* Move Resource to Paket.Core and Refactorings - https://github.com/fsprojects/Paket/pull/2859
+* BUGFIX: generate nuspecs in IntermediateOutputPath - https://github.com/fsprojects/Paket/pull/2871
+
 #### 5.119.9 - 2017-10-27
 * BUGFIX: Resolver doesn't fail on locked packages - https://github.com/fsprojects/Paket/issues/2777
 
