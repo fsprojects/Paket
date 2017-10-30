@@ -231,7 +231,7 @@ let SmartInstall(dependenciesFile:DependenciesFile, updateMode, options : Update
           |> Seq.toList
         
         let rootDir = DirectoryInfo dependenciesFile.RootPath
-        let depCache= DependencyCache(dependenciesFile.FileName,lockFile)
+        let depCache= DependencyCache(lockFile)
         let scripts = LoadingScripts.ScriptGeneration.constructScriptsFromData depCache groupsToGenerate options.Common.ProvidedFrameworks options.Common.ProvidedScriptTypes
         for script in scripts do
             script.Save rootDir

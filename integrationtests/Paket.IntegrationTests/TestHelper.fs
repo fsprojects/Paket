@@ -76,7 +76,7 @@ let prepare scenario =
 
 let prepareSdk scenario =
     let tmpPaketFolder = (scenarioTempPath scenario) @@ ".paket"
-    let targetsFile = FullName(__SOURCE_DIRECTORY__ + "../../../src/Paket/embedded/Paket.Restore.targets")
+    let targetsFile = FullName(__SOURCE_DIRECTORY__ + "../../../src/Paket.Core/embedded/Paket.Restore.targets")
     let paketExe = FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.exe")
 
     setEnvironVar "PaketExePath" paketExe

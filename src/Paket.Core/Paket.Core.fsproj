@@ -61,6 +61,7 @@
   <Import Project="$(SolutionDir)\.paket\paket.targets" />
   <ItemGroup>
     <None Include="paket.references" />
+    <EmbeddedResource Include="embedded\Paket.Restore.targets" />
     <Compile Include="Common\AssemblyInfo.fs" />
     <Compile Include="Common\CustomAssemblyInfo.fs" />
     <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.StarterPack\src\AssemblyReader.fs">

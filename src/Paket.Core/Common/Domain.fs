@@ -8,7 +8,8 @@ open System.Text.RegularExpressions
 [<System.Diagnostics.DebuggerDisplay("{ToString()}")>]
 [<CustomEquality; CustomComparison>]
 type PackageName =
-| PackageName of name:string * compareString:string
+    private
+    | PackageName of name:string * compareString:string
     
     member self.Name = 
        self |> function PackageName (name=n) -> n
@@ -37,14 +38,16 @@ type PackageName =
 let PackageName(name:string) =
     if name.Contains(":") then
         failwithf "PackageName can't contain ':'"
-    PackageName.PackageName(name.Trim(),name.ToLowerInvariant().Trim())
+    let trimmed = name.Trim()    
+    PackageName.PackageName(trimmed,trimmed.ToLowerInvariant())
 
 
 /// Represents a normalized group name
 [<System.Diagnostics.DebuggerDisplay("{Item2}")>]
 [<CustomEquality; CustomComparison>]
 type GroupName =
-| GroupName of name:string * compareString:string
+   private
+   | GroupName of name:string * compareString:string
 
    member self.Name = 
        self |> function GroupName (name=n) -> n

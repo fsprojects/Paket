@@ -159,9 +159,11 @@ let findAllReferencesFiles root =
 
 let copiedElements = ref false
 
+type private MyAssemblyFinder () = class end
 let extractElement root name =
-    let a = Assembly.GetEntryAssembly()
+    let a = typeof<MyAssemblyFinder>.GetTypeInfo().Assembly
     let s = a.GetManifestResourceStream name
+    if isNull s then failwithf "Resource stream '%s' could not be found in the Paket.Core assembly" name
     let targetFile = FileInfo(Path.Combine(root,".paket",name))
     if not targetFile.Directory.Exists then
         targetFile.Directory.Create()
@@ -368,7 +370,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
         // it can happen that the references file doesn't exist if paket doesn't find one in that case we update the cache by deleting it.
         if paketCachedReferencesFileName.Exists then paketCachedReferencesFileName.Delete()
 
-let CreateScriptsForGroups dependenciesFileName (lockFile:LockFile) (groups:Map<GroupName,LockFileGroup>) =
+let CreateScriptsForGroups (lockFile:LockFile) (groups:Map<GroupName,LockFileGroup>) =
     let groupsToGenerate =
         groups
         |> Seq.map (fun kvp -> kvp.Value)
@@ -377,7 +379,7 @@ let CreateScriptsForGroups dependenciesFileName (lockFile:LockFile) (groups:Map<
         |> Seq.toList
 
     if not (List.isEmpty groupsToGenerate) then
-        let depsCache = DependencyCache(dependenciesFileName,lockFile)
+        let depsCache = DependencyCache(lockFile)
         let rootPath = DirectoryInfo lockFile.RootPath
 
         let scripts = LoadingScripts.ScriptGeneration.constructScriptsFromData depsCache groupsToGenerate [] []
@@ -546,6 +548,6 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     |> Async.RunSynchronously
                     |> ignore
 
-                CreateScriptsForGroups dependenciesFileName lockFile groups
+                CreateScriptsForGroups lockFile groups
                 if isFullRestore then
                     File.WriteAllText(restoreCacheFile, newContents)))

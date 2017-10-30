@@ -23,7 +23,7 @@ type ReferenceType =
         | Framework info -> sprintf "Framework: '%s'" info
         | LoadScript info -> sprintf "LoadScript: '%s'" info.FullName
 
-type DependencyCache (dependencyFileName:string, lockFile:LockFile) =
+type DependencyCache (lockFile:LockFile) =
     let loadedGroups = HashSet<GroupName>()
     let mutable nuspecCache = ConcurrentDictionary<PackageName*SemVerInfo, Nuspec>()
     let mutable installModelCache = ConcurrentDictionary<GroupName * PackageName,InstallModel>()
@@ -175,7 +175,6 @@ type DependencyCache (dependencyFileName:string, lockFile:LockFile) =
 
 
     member __.LockFile = lockFile
-    member __.DependenciesFileName = dependencyFileName
     
     member __.InstallModels () = 
         installModelCache |> Seq.map (fun x -> x.Value) |> List.ofSeq
@@ -237,7 +236,7 @@ type DependencyCache (dependencyFileName:string, lockFile:LockFile) =
 
     new (dependencyFilePath:string) = 
         let lockFile = DependenciesFile.FindLockfile dependencyFilePath |> fun path -> path.FullName |> LockFile.LoadFrom
-        DependencyCache (dependencyFilePath,lockFile)
+        DependencyCache (lockFile)
 
  
     member __.InstallModel groupName packageName = tryGet (groupName, packageName)  installModelCache
