@@ -626,7 +626,7 @@ with
             | FindRefs _ -> "find all project files that have a dependency installed"
             | Init _ -> "create an empty paket.dependencies file in the current working directory"
             | AutoRestore _ -> "manage automatic package restore during the build process inside Visual Studio"
-            | Install _ -> "download dependencies and update projects"
+            | Install _ -> "compute dependency graph, download dependencies and update projects"
             | Outdated _ -> "find dependencies that have newer versions available"
             | Remove _ -> "remove a dependency"
             | Restore _ -> "download the computed dependency graph"
