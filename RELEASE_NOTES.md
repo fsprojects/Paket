@@ -1,3 +1,6 @@
+#### 5.120.1 - 2017-11-02
+* USABILITY: Clarified `paket install` command documentation  - https://github.com/fsprojects/Paket/pull/2881
+
 #### 5.120.0 - 2017-10-30
 * Move Resource to Paket.Core and Refactorings - https://github.com/fsprojects/Paket/pull/2859
 * BUGFIX: generate nuspecs in IntermediateOutputPath - https://github.com/fsprojects/Paket/pull/2871
