@@ -98,7 +98,7 @@ let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageNa
                 match tryGetAllVersionsFromNugetODataWithFilterWarnings.TryGetValue nugetURL with
                 | true, true -> ()
                 | _, _ ->
-                    eprintfn "Possible Performance degration, could not retrieve '%s', ignoring further warnings for this source" url
+                    eprintfn "Possible Performance degradation, could not retrieve '%s', ignoring further warnings for this source" url
                     tryGetAllVersionsFromNugetODataWithFilterWarnings.TryAdd(nugetURL, true) |> ignore
                 if verbose then
                     printfn "Error while retrieving data from '%s': %O" url exn

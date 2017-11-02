@@ -312,7 +312,7 @@ type PackageIndex =
 let private getPackageIndexRaw (source : NugetV3Source) (packageName:PackageName) =
     async {
         let! registrationUrl = getNuGetV3Resource source PackageIndex
-        let url = registrationUrl.Replace("{id-lower}", packageName.ToString().ToLower()) 
+        let url = registrationUrl.Replace("{id-lower}", packageName.ToString().ToLower())
         let! rawData = safeGetFromUrl (source.Authentication |> Option.map toCredentials, url, acceptJson)
         return
             match rawData with
@@ -367,7 +367,7 @@ let getRelevantPage (source:NugetV3Source) (index:PackageIndex) (version:SemVerI
                     |> Seq.toList
             match packages with
             | [ package ] -> return Some package
-            | [] -> return None 
+            | [] -> return None
             | h :: _ ->
                 // Can happen in theory when multiple versions differ only in casing...
                 traceWarnfn "Multiple package versions matched with '%O' on page '%s'" version page.Id
@@ -409,7 +409,7 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
         | None -> return EmptyResult
         | Some relevantPage ->
         let catalogData = relevantPage.PackageDetails
-        let dependencyGroups, dependencies = 
+        let dependencyGroups, dependencies =
             if catalogData.DependencyGroups = null then
                 [], []
             else
@@ -422,7 +422,7 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
                 catalogData.DependencyGroups |> Seq.map (fun group -> detect group.TargetFramework) |> Seq.toList,
 
                 catalogData.DependencyGroups
-                |> Seq.map(fun group -> 
+                |> Seq.map(fun group ->
                     if group.Dependencies = null then
                         Seq.empty
                     else
@@ -447,7 +447,7 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
         for warning in warnings do
             Logging.traceWarnfn "%s" (warning.Format packageName version)
 
-        return 
+        return
             { SerializedDependencies = []
               PackageName = packageName.ToString()
               SourceUrl = source.Url
@@ -462,8 +462,8 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
 
 let loadFromCacheOrGetDetails (force:bool)
                               (cacheFileName:string)
-                              (source:NugetV3Source) 
-                              (packageName:PackageName) 
+                              (source:NugetV3Source)
+                              (packageName:PackageName)
                               (version:SemVerInfo) =
     async {
         if not force && File.Exists cacheFileName then
@@ -477,9 +477,9 @@ let loadFromCacheOrGetDetails (force:bool)
                     return false,ODataSearchResult.Match cachedObject
             with exn ->
                 if verboseWarnings then
-                    eprintfn "Possible Performance degration, could not retrieve '%O' from cache: %O" packageName exn
+                    eprintfn "Possible Performance degradation, could not retrieve '%O' from cache: %O" packageName exn
                 else
-                    eprintfn "Possible Performance degration, could not retrieve '%O' from cache: %s" packageName exn.Message
+                    eprintfn "Possible Performance degradation, could not retrieve '%O' from cache: %s" packageName exn.Message
                 let! details = getPackageDetails source packageName version
                 return true,details
         else
