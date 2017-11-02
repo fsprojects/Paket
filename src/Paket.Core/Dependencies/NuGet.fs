@@ -301,7 +301,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
                             return! tryV3 nugetSource force
                         with
                         | exn ->
-                            eprintfn "Possible Performance degration, V3 was not working: %s" exn.Message
+                            eprintfn "Possible Performance degradation, V3 was not working: %s" exn.Message
                             if verbose then
                                 printfn "Error while using V3 API: %O" exn
 
@@ -622,19 +622,19 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
     let normalizedNupkgName = NuGetCache.GetPackageFileName packageName version
     let configResolved = config.Resolve root groupName packageName version includeVersionInPath
     let targetFileName =
-        if not isLocalOverride then 
+        if not isLocalOverride then
             NuGetCache.GetTargetUserNupkg packageName version
         else
             match configResolved.Path with
             | Some p -> Path.Combine(p, nupkgName)
             | None -> failwithf "paket.local in combination with storage:none is not supported"
 
-    if isLocalOverride && not force then 
+    if isLocalOverride && not force then
         failwithf "internal error: when isLocalOverride is specified then force needs to be specified as well"
     let targetFile = FileInfo targetFileName
     let licenseFileName = getLicenseFile packageName version
 
-    if force then 
+    if force then
         match configResolved.Path with
         | Some p ->
             if verbose then
@@ -746,7 +746,7 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
                             let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
                             request.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
                         | Some(Credentials(username, password, AuthType.NTLM)) ->
-                            let cred = NetworkCredential(username,password)        
+                            let cred = NetworkCredential(username,password)
                             request.Credentials <- cred.GetCredential(downloadUri, "NTLM")
                     else
                         request.UseDefaultCredentials <- true

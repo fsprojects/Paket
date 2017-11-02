@@ -65,10 +65,10 @@ type NuGetRequestGetVersions =
         async {
             try
                 return! r.DoRequest()
-            with e -> 
+            with e ->
                 return FailedVersionRequest { Url = r.Url; Error = System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture e }
         }
-        
+
 
 // An unparsed file in the NuGet package -> still need to inspect the path for further information. After parsing an entry will be part of a "LibFolder" for example.
 type UnparsedPackageFile =
@@ -79,7 +79,7 @@ type UnparsedPackageFile =
 
 module NuGetConfig =
     open System.Text
-    
+
     let writeNuGetConfig directory sources =
         let start = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
@@ -103,7 +103,7 @@ module NuGetConfig =
         else
             if File.ReadAllText(fileName) <> text then
                 File.WriteAllText(fileName,text)
-       
+
 type FrameworkRestrictionsCache = string
 
 type NuGetPackageCache =
@@ -125,7 +125,7 @@ type NuGetPackageCache =
             SerializedDependencies =
                 l
                 |> List.map (fun (n,v, restrictions) ->
-                    let restrictionString = 
+                    let restrictionString =
                         match restrictions with
                         | FrameworkRestrictions.AutoDetectFramework -> "AUTO"
                         | FrameworkRestrictions.ExplicitRestriction re -> re.ToString()
@@ -172,7 +172,7 @@ let tryGetDetailsFromCache force nugetURL (packageName:PackageName) (version:Sem
     if not force && cacheFile.Exists then
         try
             let json = File.ReadAllText(cacheFile.FullName)
-            
+
             try
                 let cacheResult =
                     let cachedObject = JsonConvert.DeserializeObject<NuGetPackageCache> json
@@ -205,7 +205,7 @@ let tryGetDetailsFromCache force nugetURL (packageName:PackageName) (version:Sem
 
 let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (get : unit -> ODataSearchResult Async) : ODataSearchResult Async =
     let cacheFile, oldFiles = getCacheFiles NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
-    for f in oldFiles do 
+    for f in oldFiles do
         File.Delete f
     let get() =
         async {
@@ -239,7 +239,7 @@ let fixDatesInArchive fileName =
             | _ -> e.LastWriteTime <- maxTime
     with
     | exn -> traceWarnfn "Could not fix timestamps in %s. Error: %s" fileName exn.Message
-    
+
 
 let fixArchive fileName =
     if isMonoRuntime then
@@ -256,8 +256,8 @@ let inline isExtracted (directory:DirectoryInfo) (packageName:PackageName) (vers
     if not fi.Exists then false else
     if not directory.Exists then false else
     directory.EnumerateFileSystemInfos()
-    |> Seq.exists (fun f -> 
-        (not (String.equalsIgnoreCase f.FullName fi.FullName)) && 
+    |> Seq.exists (fun f ->
+        (not (String.equalsIgnoreCase f.FullName fi.FullName)) &&
           (not (String.equalsIgnoreCase f.FullName licenseFile)))
 
 let IsPackageVersionExtracted(config:ResolvedPackagesFolder, packageName:PackageName, version:SemVerInfo) =
@@ -377,7 +377,7 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
                 let text = if detailed then sprintf "%s In rare cases a firewall might have blocked the download. Please look into the file and see if it contains text with further information." Environment.NewLine else ""
                 let path = try Path.GetFullPath fileName with :? PathTooLongException -> sprintf "%s (!too long!)" fileName
                 raise (Exception(sprintf "Error during extraction of %s.%s%s" path Environment.NewLine text, exn))
-                
+
             cleanup directory
             if verbose then
                 verbosefn "%O %O unzipped to %s" packageName version targetFolder
@@ -506,7 +506,7 @@ let tryAndBlacklistUrl doBlackList doWarn (source:NugetSource) (tryAgain : 'a ->
                 let cached =
                     if doBlackList then
                         tryUrlOrBlacklist (fun () -> async { return! f url.InstanceUrl }) (tryAgain >> not) (source, url.UrlId)
-                    else 
+                    else
                         async {
                             let! result = f url.InstanceUrl
                             return (tryAgain result |> not, result)
@@ -523,7 +523,7 @@ let tryAndBlacklistUrl doBlackList doWarn (source:NugetSource) (tryAgain : 'a ->
                     let! (isOk, res) = task |> Async.AwaitTask
                     if not isOk then
                         if doWarn then
-                            eprintfn "Possible Performance degration, blacklist '%s'" url.InstanceUrl
+                            eprintfn "Possible Performance degradation, blacklist '%s'" url.InstanceUrl
                         return Choice2Of3 res
                     else
                         return Choice1Of3 res
