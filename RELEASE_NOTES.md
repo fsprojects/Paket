@@ -1836,7 +1836,7 @@
 * Package names in Dependencies file are no longer case-sensitive - https://github.com/fsprojects/Paket/pull/108
 
 #### 0.1.4 - 2014-09-16
-* Only vbproj, csproj and fsproj files are handled
+* Only vbproj, csproj, fsproj and pyproj files are handled
 
 #### 0.1.3 - 2014-09-15
 * Detect FSharpx.Core in packages

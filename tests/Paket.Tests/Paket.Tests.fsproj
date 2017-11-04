@@ -235,6 +235,9 @@
     <None Include="ProjectFile\TestData\EmptyVbGuid.vbprojtest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="ProjectFile\TestData\EmptyPyGuid.pyprojtest">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="ProjectFile\TestData\Project1.fsprojtest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
