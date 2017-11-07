@@ -152,7 +152,7 @@
 
   <Target Name="PaketOverrideNuspec" AfterTargets="GenerateNuspec" Condition="('$(IsPackable)' == '' Or '$(IsPackable)' == 'true') And Exists('$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).references')" >
     <ItemGroup>
-      <_NuspecFilesNewLocation Include="$(BaseIntermediateOutputPath)$(Configuration)/*.nuspec"/>
+      <_NuspecFilesNewLocation Include="$(BaseIntermediateOutputPath)$(Configuration)\*.nuspec"/>
     </ItemGroup>
 
     <PropertyGroup>
