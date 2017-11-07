@@ -1,5 +1,6 @@
 #### 5.121.0 - 2017-11-07
 * Support for IronPython - https://github.com/fsprojects/Paket/pull/2885
+* PERFORMANCE: Using shasum/awk for comparing hashes on osx and linux - https://github.com/fsprojects/Paket/pull/2870
 * USABILITY: Added PAKET_VERSION posix compliant environment variable for bootstrapper - https://github.com/fsprojects/Paket/pull/2857
 * USABILITY: Clarified `paket install` command documentation  - https://github.com/fsprojects/Paket/pull/2881
 
