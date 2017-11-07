@@ -1,4 +1,5 @@
-#### 5.120.1 - 2017-11-02
+#### 5.121.0 - 2017-11-07
+* USABILITY: Added PAKET_VERSION posix compliant environment variable for bootstrapper - https://github.com/fsprojects/Paket/pull/2857
 * USABILITY: Clarified `paket install` command documentation  - https://github.com/fsprojects/Paket/pull/2881
 
 #### 5.120.0 - 2017-10-30
