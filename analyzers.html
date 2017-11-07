@@ -112,13 +112,14 @@ conforms to the
 <a href="https://docs.nuget.org/Create/Analyzers-Conventions">documented convention</a>
 for analyzers to be installed by NuGet in <code>project.json</code>-based projects.</p>
 <p>If the <code>&lt;language&gt;&lt;/language&gt;</code> is absent from the path the analyzer will be
-installed in any supported project type (<code>.csproj</code>, <code>.vbproj</code> and <code>.fsproj</code>).
+installed in any supported project type (<code>.csproj</code>, <code>.vbproj</code>, <code>.fsproj</code> and <code>.pyproj</code>).
 If it is present the analyzer will only be installed in the corresponding
 project type:</p>
 <ul>
 <li><code>cs</code> -&gt; <code>.csproj</code></li>
 <li><code>vb</code> -&gt; <code>.vbproj</code></li>
 <li><code>fs</code> -&gt; <code>.fsproj</code></li>
+<li><code>py</code> -&gt; <code>.pyproj</code></li>
 </ul>
 <p><strong>Remarks:</strong></p>
 <ul>

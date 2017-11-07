@@ -155,8 +155,22 @@ application setting is ignored.</p>
 <li><code>Prerelease</code>: Same as <code>prerelease</code> option.</li>
 </ul>
 <h3><a name="With-environment-variables" class="anchor" href="#With-environment-variables">With environment variables</a></h3>
-<p><code>PAKET.VERSION</code>: The requested version can also be set using this environment
+<p><code>PAKET_VERSION</code>: The requested version can also be set using this environment
 variable.</p>
+<ul>
+<li>
+powershell <br />
+<code>$env:PAKET_VERSION = "5.119.7"</code>
+</li>
+<li>
+cmd
+<code>set PAKET_VERSION=5.119.7</code>
+</li>
+<li>
+bash
+<code>export PAKET_VERSION="5.119.7"</code>
+</li>
+</ul>
 <h3><a name="In-paket-dependencies" class="anchor" href="#In-paket-dependencies">In paket.dependencies</a></h3>
 <p>If a <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> is found in the current
 directory it may contain a special line containing options for the bootstrapper.</p>
@@ -215,6 +229,10 @@ once to restore normal output or twice to show more details.
 </li>
 <li>If no version is specified a default <code>--max-file-age</code> of <code>12</code> hours is used.</li>
 </ul>
+<h3><a name="Setting-version-in-magic-mode" class="anchor" href="#Setting-version-in-magic-mode">Setting version in magic mode</a></h3>
+<p>You can use the all <a href="#In-application-settings">settings listed above</a> with two exceptions:
+1. <code>paket.bootstrapper.exe.config</code> becomes <code>paket.exe.config</code>
+2. you can no longer use the command line to specify</p>
 
 
         </div>
