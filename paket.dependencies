@@ -27,9 +27,10 @@ nuget NUnit redirects: force
 nuget NUnit.Console
 // current workaround for https://github.com/nunit/nunit3-vs-adapter/issues/366
 nuget NUnit3TestAdapter version_in_path: true
+clitool dotnet-mergenupkg
 
 github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
-github fsprojects/FSharp.TypeProviders.StarterPack src/AssemblyReader.fs
+github fsprojects/FSharp.TypeProviders.SDK:dc5ac01a1ac288eceb1fd6f12a5d388236f4f8e5 src/AssemblyReader.fs
 github forki/FsUnit FsUnit.fs
 
 
