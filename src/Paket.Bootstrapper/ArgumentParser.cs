@@ -38,6 +38,9 @@ namespace Paket.Bootstrapper
         public static class EnvArgs
         {
             public const string PaketVersionEnv = "PAKET.VERSION";
+            // Posix compliant environment variables [a-zA-Z_]+[a-zA-Z0-9_]*
+            // As to not break backwards compatability just adding a second env var
+            public const string PaketVersionEnvPosix = "PAKET_VERSION";
         }
 
         private static void FillTarget(DownloadArguments downloadArguments, bool magicMode, IFileSystemProxy fileSystem)
@@ -147,7 +150,7 @@ namespace Paket.Bootstrapper
 
         private static void FillOptionsFromEnvVariables(BootstrapperOptions options, IDictionary envVariables)
         {
-            var latestVersion = envVariables.GetKey(EnvArgs.PaketVersionEnv);
+            var latestVersion = envVariables.GetKey(EnvArgs.PaketVersionEnvPosix) ?? envVariables.GetKey(EnvArgs.PaketVersionEnv) ;
             if (latestVersion != null)
             {
                 options.DownloadArguments.LatestVersion = latestVersion;
