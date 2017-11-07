@@ -222,7 +222,7 @@ Target "DotnetPackage" (fun _ ->
             { c with
                 Project = proj
                 ToolPath = dotnetExePath
-                AdditionalArgs = [(sprintf "-o %s" currentDirectory </> tempDir </> "dotnetcore"); (sprintf "/p:Version=%s" release.NugetVersion)]
+                AdditionalArgs = [(sprintf "-o \"%s\"" currentDirectory </> tempDir </> "dotnetcore"); (sprintf "/p:Version=%s" release.NugetVersion)]
             })
     )
 )
