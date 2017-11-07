@@ -216,13 +216,15 @@ Target "DotnetBuild" (fun _ ->
 )
 
 Target "DotnetPackage" (fun _ ->
+    let outPath = FullName (currentDirectory </> tempDir </> "dotnetcore")
+    CleanDir outPath
     netcoreFiles
     |> Seq.iter (fun proj ->
         DotNetCli.Pack (fun c ->
             { c with
                 Project = proj
                 ToolPath = dotnetExePath
-                AdditionalArgs = [(sprintf "-o \"%s\"" currentDirectory </> tempDir </> "dotnetcore"); (sprintf "/p:Version=%s" release.NugetVersion)]
+                AdditionalArgs = [(sprintf "-o \"%s\"" outPath); (sprintf "/p:Version=%s" release.NugetVersion)]
             })
     )
 )

@@ -160,19 +160,20 @@
       <ContinuePackingAfterGeneratingNuspec>true</ContinuePackingAfterGeneratingNuspec>
       <UseNewPack>false</UseNewPack>
       <UseNewPack Condition=" '$(NuGetToolVersion)' != '4.0.0' ">true</UseNewPack>
-      <AdjustedNuspecOutputPath>$(BaseIntermediateOutputPath)$(Configuration)/</AdjustedNuspecOutputPath>
+      <AdjustedNuspecOutputPath>$(BaseIntermediateOutputPath)$(Configuration)</AdjustedNuspecOutputPath>
       <AdjustedNuspecOutputPath Condition="@(_NuspecFilesNewLocation) == ''">$(BaseIntermediateOutputPath)</AdjustedNuspecOutputPath>
     </PropertyGroup>
 
     <ItemGroup>
-      <_NuspecFiles Include="$(AdjustedNuspecOutputPath)*.nuspec"/>
+      <_NuspecFiles Include="$(AdjustedNuspecOutputPath)\*.nuspec"/>
     </ItemGroup>
 
     <Exec Command='$(PaketCommand) fix-nuspecs files "@(_NuspecFiles)" project-file "$(PaketProjectFile)" ' Condition="@(_NuspecFiles) != ''" />
 
     <ConvertToAbsolutePath Condition="@(_NuspecFiles) != ''" Paths="@(_NuspecFiles)">
       <Output TaskParameter="AbsolutePaths" PropertyName="NuspecFileAbsolutePath" />
-    </ConvertToAbsolutePath>
+    </ConvertToAbsolutePath>      
+        
 
     <!-- Call Pack -->
     <PackTask Condition="$(UseNewPack)"
