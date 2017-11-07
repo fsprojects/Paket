@@ -59,7 +59,7 @@ type ProjectOutputType =
 | Exe 
 | Library
 
-type ProjectLanguage = Unknown | CSharp | FSharp | VisualBasic | WiX | Nemerle | CPP
+type ProjectLanguage = Unknown | CSharp | FSharp | VisualBasic | WiX | Nemerle | CPP | IronPython
 
 module LanguageEvaluation =
     let private extractProjectTypeGuids (projectDocument:XmlDocument) =
@@ -104,18 +104,25 @@ module LanguageEvaluation =
         [
             "{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}" // Nemerle
         ] |> List.map Guid.Parse |> Set.ofList
+    
+    let private ironPythonGuids =
+        [
+            "{D499C55F-46C0-4FE1-8D05-02605C1891EA}" // IronPython
+        ] |> List.map Guid.Parse |> Set.ofList
 
     let private getGuidLanguage (guid:Guid) = 
         let isCsharp = csharpGuids.Contains(guid)
         let isVb = vbGuids.Contains(guid)
         let isFsharp = fsharpGuids.Contains(guid)
         let isNemerle = nemerleGuids.Contains(guid)
+        let isIronPython = ironPythonGuids.Contains(guid)
 
-        match (isCsharp, isVb, isFsharp, isNemerle) with
-        | (true, false, false, false) -> Some CSharp
-        | (false, true, false, false) -> Some VisualBasic
-        | (false, false, true, false) -> Some FSharp
-        | (false, false, false, true) -> Some Nemerle
+        match (isCsharp, isVb, isFsharp, isNemerle, isIronPython) with
+        | (true, false, false, false, false) -> Some CSharp
+        | (false, true, false, false, false) -> Some VisualBasic
+        | (false, false, true, false, false) -> Some FSharp
+        | (false, false, false, true, false) -> Some Nemerle
+        | (false, false, false, false, true) -> Some IronPython
         | _ -> None
 
     let private getLanguageFromExtension = function
@@ -125,6 +132,7 @@ module LanguageEvaluation =
         | ".vcxproj" -> Some CPP
         | ".wixproj" -> Some WiX
         | ".nproj"  -> Some Nemerle
+        | ".pyproj"  -> Some IronPython
         | _ -> None
 
     let private getLanguageFromFileName (fileName : string) =
@@ -163,7 +171,7 @@ type ProjectFile =
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module ProjectFile =
-    let supportedEndings = [ ".csproj"; ".fsproj"; ".vbproj"; ".wixproj"; ".nproj"; ".vcxproj"]
+    let supportedEndings = [ ".csproj"; ".fsproj"; ".vbproj"; ".wixproj"; ".nproj"; ".vcxproj"; ".pyproj"]
 
     let isSupportedFile (fi:FileInfo) =
         supportedEndings

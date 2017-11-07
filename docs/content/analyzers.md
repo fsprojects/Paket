@@ -62,13 +62,14 @@ conforms to the
 for analyzers to be installed by NuGet in `project.json`-based projects.
 
 If the `<language></language>` is absent from the path the analyzer will be
-installed in any supported project type (`.csproj`, `.vbproj` and `.fsproj`).
+installed in any supported project type (`.csproj`, `.vbproj`, `.fsproj` and `.pyproj`).
 If it is present the analyzer will only be installed in the corresponding
 project type:
 
 * `cs` -> `.csproj`
 * `vb` -> `.vbproj`
 * `fs` -> `.fsproj`
+* `py` -> `.pyproj`
 
 **Remarks:**
 
