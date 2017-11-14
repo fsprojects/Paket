@@ -73,7 +73,11 @@ let private followODataLink auth url =
 
             match atLeastOneFailed with
             | Some i ->
-                traceWarnfn "At least one 'next' link (index %d) returned a empty result (noticed on '%O'): ['%s']" i url (System.String.Join("' ; '", linksToFollow))
+                let mutable uri = null // warn once per apecific API endpoint, but try to cut the query
+                let baseUrl = if Uri.TryCreate(url, UriKind.Absolute, &uri) then uri.AbsolutePath else url
+                traceWarnIfNotBefore baseUrl
+                    "At least one 'next' link (index %d) returned a empty result (noticed on '%O'): ['%s']" 
+                    i url (System.String.Join("' ; '", linksToFollow))
             | None -> ()
             return
                 true,
