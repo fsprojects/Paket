@@ -20,9 +20,23 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
     if (not installToProjects) && existingDependenciesFile.HasPackage(groupName,package) && String.IsNullOrWhiteSpace version then
         traceWarnfn "%s contains package %O in group %O already." dependenciesFileName package groupName
     else
+        let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
+        let lockFileHasPackage =
+            if not lockFileName.Exists then false else
+            let lockFile = LockFile.LoadFrom lockFileName.FullName
+            let lockFileGroup = lockFile.GetGroup(groupName)
+            let vr = DependenciesFileParser.parseVersionString version
+
+            match Map.tryFind package lockFileGroup.Resolution with
+            | Some p when vr.VersionRequirement.IsInRange(p.Version) -> true
+            | _ -> false     
+                
         let dependenciesFile =
-            existingDependenciesFile
-                .Add(groupName,package,version)
+            if lockFileHasPackage then
+                existingDependenciesFile
+            else
+                existingDependenciesFile
+                    .Add(groupName,package,version)
 
         let projects = seq { for p in ProjectFile.FindAllProjects(Path.GetDirectoryName dependenciesFile.FileName) -> p } // lazy sequence in case no project install required
 
