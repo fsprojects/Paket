@@ -1,3 +1,6 @@
+#### 5.122.1 - 2017-11-14
+* PERFORMANCE: Check if lock file has already the package when adding new one
+
 #### 5.122.0 - 2017-11-07
 * Support for IronPython - https://github.com/fsprojects/Paket/pull/2885
 * PERFORMANCE: Using shasum/awk for comparing hashes on osx and linux - https://github.com/fsprojects/Paket/pull/2870
