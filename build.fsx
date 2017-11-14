@@ -143,7 +143,7 @@ Target "Clean" (fun _ ->
     ++ tempDir
     |> CleanDirs
 
-    !! "**/obj/*.nuspec"
+    !! "**/obj/**/*.nuspec"
     |> DeleteFiles
 )
 
