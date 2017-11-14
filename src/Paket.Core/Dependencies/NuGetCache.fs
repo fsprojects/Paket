@@ -524,7 +524,7 @@ let tryAndBlacklistUrl doBlackList doWarn (source:NugetSource) (tryAgain : 'a ->
                     let! (isOk, res) = task |> Async.AwaitTask
                     if not isOk then
                         if doWarn then
-                            eprintfn "Possible Performance degradation, blacklist '%s'" url.InstanceUrl
+                            traceWarnIfNotBefore url.InstanceUrl "Possible Performance degradation, blacklist '%s'" url.InstanceUrl
                         return Choice2Of3 res
                     else
                         return Choice1Of3 res
