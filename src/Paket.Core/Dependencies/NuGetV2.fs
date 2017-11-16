@@ -213,7 +213,8 @@ let private handleODataEntry nugetURL packageName version entry =
     let dependencies, warnings =
         addFrameworkRestrictionsToDependencies cleanedPackages frameworks
     for warning in warnings do
-        Logging.traceWarnfn "%s" (warning.Format officialName version)
+        let message = warning.Format officialName version
+        Logging.traceWarnIfNotBefore message "%s" message
 
     { PackageName = officialName
       DownloadUrl = downloadLink
