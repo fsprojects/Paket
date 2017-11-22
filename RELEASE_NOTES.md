@@ -1,4 +1,4 @@
-#### 5.122.1 - 2017-11-14
+#### 5.122.2 - 2017-11-22
 * PERFORMANCE: Check if lock file has already the package when adding new one
 
 #### 5.122.0 - 2017-11-07
