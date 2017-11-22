@@ -29,7 +29,7 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
 
             match Map.tryFind package lockFileGroup.Resolution with
             | Some p when vr.VersionRequirement.IsInRange(p.Version) -> true
-            | _ -> false     
+            | _ -> false
                 
         let dependenciesFile =
             if lockFileHasPackage then
@@ -40,7 +40,7 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
 
         let projects = seq { for p in ProjectFile.FindAllProjects(Path.GetDirectoryName dependenciesFile.FileName) -> p } // lazy sequence in case no project install required
 
-        if not runResolver then
+        if (not runResolver) || lockFileHasPackage then
             dependenciesFile.Save()
             
             addToProjectsF projects groupName package
