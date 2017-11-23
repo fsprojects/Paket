@@ -6,7 +6,6 @@ open System
 open System.IO
 open Paket.Domain
 open Paket.Logging
-open InstallProcess
 
 let private notInstalled (project : ProjectFile) groupName package = project.HasPackageInstalled(groupName,package) |> not
 
@@ -21,10 +20,12 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
         traceWarnfn "%s contains package %O in group %O already." dependenciesFileName package groupName
     else
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
+        let lockFile = ref None
         let lockFileHasPackage =
             if not lockFileName.Exists then false else
-            let lockFile = LockFile.LoadFrom lockFileName.FullName
-            let lockFileGroup = lockFile.GetGroup(groupName)
+            let lf = LockFile.LoadFrom lockFileName.FullName
+            lockFile := Some lf
+            let lockFileGroup = lf.GetGroup(groupName)
             let vr = DependenciesFileParser.parseVersionString version
 
             match Map.tryFind package lockFileGroup.Resolution with
@@ -40,10 +41,21 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
 
         let projects = seq { for p in ProjectFile.FindAllProjects(Path.GetDirectoryName dependenciesFile.FileName) -> p } // lazy sequence in case no project install required
 
-        if (not runResolver) || lockFileHasPackage then
+        if not runResolver then 
             dependenciesFile.Save()
             
             addToProjectsF projects groupName package
+        elif lockFileHasPackage then
+            dependenciesFile.Save()
+            
+            addToProjectsF projects groupName package
+
+            if installAfter then
+                match !lockFile with
+                | None -> ()
+                | Some lockFile ->
+                    InstallProcess.Install(options, false, dependenciesFile, lockFile, Map.empty)
+                    GarbageCollection.CleanUp(dependenciesFile, lockFile)
         else
             let updateMode = PackageResolver.UpdateMode.Install
             let alternativeProjectRoot = None
