@@ -144,6 +144,9 @@
     <None Include="Prototypes\script-generation.fsx" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Build">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />

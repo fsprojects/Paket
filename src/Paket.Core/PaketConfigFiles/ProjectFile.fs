@@ -1943,32 +1943,30 @@ type ProjectFile with
 
     member this.GetCompileItems (includeReferencedProjects : bool) cache = 
         let getCompileRefs projectFile =
-            projectFile.Document
-            |> getDescendants "Compile"
-            |> Seq.map (fun compileNode -> projectFile, compileNode)
-
-        let getCompileItem (projectFile, compileNode) =
+            let project = Microsoft.Build.Evaluation.Project(projectFile.FileName)
             let projectFolder = projectFile.FileName |> Path.GetFullPath |> Path.GetDirectoryName
-            let sourceFile =
-                compileNode
-                |> getAttribute "Include"
-                |> fun attr -> attr.Value
-                |> normalizePath
-                |> fun relPath -> Path.Combine(projectFolder, relPath)
 
-            let destPath =
-                compileNode
-                |> getDescendants "Link"
-                |> function
+            //Get the evaluated compile nodes. Support MSBuild wildcards for Compile Includes
+            let compileItems = [for item in project.Items do if item.Xml.ItemType = "Compile" then yield (item, item.EvaluatedInclude)]
+
+            let getCompileIncludePath includePath =
+                includePath |> normalizePath |> fun relPath -> Path.Combine(projectFolder, relPath)
+
+            let getLinkPathForCompileNode (compileNode : Microsoft.Build.Evaluation.ProjectItem, sourceFile) =
+                let metaData = compileNode.DirectMetadata
+                let linkNodes = [for i in metaData do if i.Name = "Link" then yield i.EvaluatedValue]
+                match linkNodes with
                     | [] -> createRelativePath (projectFolder + string Path.DirectorySeparatorChar) sourceFile
-                    | linkNode :: _ -> linkNode.InnerText
-                |> normalizePath
-                |> Path.GetDirectoryName
-            {
-                SourceFile = sourceFile
-                DestinationPath = destPath
-                BaseDir = projectFolder
-            }
+                    | nodes -> List.head nodes
+
+            let rec evaluateCompileItems items =
+                match items with
+                    | [] -> []
+                    | item::items' -> (getCompileIncludePath (snd item), getLinkPathForCompileNode item)::evaluateCompileItems(items')
+
+            seq {for item in (evaluateCompileItems compileItems) -> {SourceFile = (fst item)
+                                                                     DestinationPath = (snd item)
+                                                                     BaseDir = projectFolder}}
 
         let getRealItems compileItem =
             let sourceFolder = Path.GetDirectoryName(compileItem.SourceFile)
@@ -1984,7 +1982,6 @@ type ProjectFile with
         this.GetProjects includeReferencedProjects cache 
         |> this.ProjectsWithoutTemplates
         |> Seq.collect getCompileRefs
-        |> Seq.map getCompileItem
         |> Seq.collect getRealItems
 
 
