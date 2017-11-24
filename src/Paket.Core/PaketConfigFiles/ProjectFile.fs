@@ -1957,7 +1957,7 @@ type ProjectFile with
                 let linkNodes = [for i in metaData do if i.Name = "Link" then yield i.EvaluatedValue]
                 match linkNodes with
                     | [] -> createRelativePath (projectFolder + string Path.DirectorySeparatorChar) sourceFile
-                    | nodes -> List.head nodes
+                    | nodes -> List.head nodes |> normalizePath |> Path.GetDirectoryName
 
             let rec evaluateCompileItems items =
                 match items with
