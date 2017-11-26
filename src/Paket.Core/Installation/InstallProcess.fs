@@ -324,6 +324,9 @@ let invalidateRestoreCachesForDotnetSdk (projectFileInfo:FileInfo) =
         let old = File.ReadAllText paketPropsFile.FullName
         let newContent = old.Replace("<!-- <RestoreSuccess>False</RestoreSuccess> -->","<RestoreSuccess>False</RestoreSuccess>")
         File.WriteAllText(paketPropsFile.FullName, newContent)
+    let assetsFile = ProjectFile.getAssetsFileInfo projectFileInfo
+    if assetsFile.Exists then
+        try assetsFile.Delete() with | _ -> ()
 
 let installForDotnetSDK root (project:ProjectFile) =
     let paketTargetsPath = RestoreProcess.extractRestoreTargets root
