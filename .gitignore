@@ -208,3 +208,6 @@ package-lock.json
 # Enable scenarios in integration tests
 !integrationtests/scenarios/*/before/**
 integrationtests/scenarios/*/before/**/obj
+
+# artifacts
+/bin_netcore/

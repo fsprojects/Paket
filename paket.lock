@@ -20,7 +20,7 @@ NUGET
       FSharp.Core  - restriction: < netstandard1.6
       FSharp.Core (>= 4.0.1.7-alpha) - restriction: >= netstandard1.6
       NETStandard.Library (>= 1.6) - restriction: >= netstandard1.6
-    dotnet-mergenupkg (2.1) - clitool: true
+    dotnet-mergenupkg (2.2.2) - clitool: true
       FSharp.Core (>= 4.2.3) - restriction: >= netcoreapp1.0
       Microsoft.NETCore.App (>= 1.0.5) - restriction: && (>= netcoreapp1.0) (< netcoreapp2.0)
       Microsoft.NETCore.App (>= 2.0) - restriction: >= netcoreapp2.0

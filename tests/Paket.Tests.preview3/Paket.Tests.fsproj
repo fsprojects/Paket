@@ -1,0 +1,218 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <PaketTestsSourcesDir>..\Paket.Tests</PaketTestsSourcesDir>
+    <DefineConstants>WEBPROXY_NETSTANDARD;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(PaketTestsSourcesDir)\..\..\paket-files\forki\FsUnit\FsUnit.fs">
+      <Paket>True</Paket>
+      <Link>FsUnit.fs</Link>
+    </Compile>
+    <None Include="$(PaketTestsSourcesDir)\paket.references" />
+    <Compile Include="$(PaketTestsSourcesDir)\AssemblyInfo.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\TestHelpers.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\UtilsSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Versioning\PlatformMatchingSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Versioning\SemVerSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Versioning\FrameworkCompatibilitySpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Versioning\ExtractPackageSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Versioning\NugetVersionRangeSerializerSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Versioning\NugetVersionRangeParserSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Versioning\ConfigFileSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Versioning\FilterVersionSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Versioning\RestrictionFilterSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Versioning\RestrictionApplicationSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Versioning\DependencySetSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Versioning\FrameworkRestrictionTests.fs" />
+    <TestAsset Include="Nuspec\EmptyLibs.nuspec" />
+    <TestAsset Include="Nuspec\Fantomas.nuspec" />
+    <TestAsset Include="Nuspec\FluentAssertions.nuspec" />
+    <TestAsset Include="Nuspec\FluentAssertions4.nuspec" />
+    <TestAsset Include="Nuspec\FSharp.Data.nuspec" />
+    <TestAsset Include="Nuspec\FSharp.Data.Prerelease.nuspec" />
+    <TestAsset Include="Nuspec\FSharp.Data.SqlClient.nuspec" />
+    <TestAsset Include="Nuspec\FSharp.Data.SqlEnumProvider.nuspec" />
+    <TestAsset Include="Nuspec\FsXaml.Wpf.nuspec" />
+    <TestAsset Include="Nuspec\LiteGuard.Source.nuspec" />
+    <TestAsset Include="Nuspec\log4net.nuspec" />
+    <TestAsset Include="Nuspec\MathNet.Numerics.FSharp.nuspec" />
+    <TestAsset Include="Nuspec\MathNet.Numerics.nuspec" />
+    <TestAsset Include="Nuspec\Microsoft.AspNetCore.Antiforgery.nuspec" />
+    <TestAsset Include="Nuspec\Microsoft.AspNetCore.Mvc.ViewFeatures.nuspec" />
+    <TestAsset Include="Nuspec\Microsoft.Framework.Logging.nuspec" />
+    <TestAsset Include="Nuspec\Microsoft.Net.Http.nuspec" />
+    <TestAsset Include="Nuspec\Octokit.nuspec" />
+    <TestAsset Include="Nuspec\RazorEngine.nuspec" />
+    <TestAsset Include="Nuspec\ReadOnlyCollectionExtensions.nuspec" />
+    <TestAsset Include="Nuspec\WindowsAzure.Storage.nuspec" />
+    <TestAsset Include="Nuspec\EasyNetQ.nuspec" />
+    <TestAsset Include="Nuspec\Xamarin.Forms.nuspec" />
+    <Compile Include="$(PaketTestsSourcesDir)\Nuspec\NuspecSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\NuGetLocal\NuGetLocalSpecs.fs" />
+    <TestAsset Include="NuGetLocal\case1\package.name.0.1.0-alpha2.nupkg" />
+    <TestAsset Include="NuGetLocal\case1\package.name.0.1.2.nupkg" />
+    <TestAsset Include="NuGetLocal\case1\package.name.1.2.0.nupkg" />
+    <TestAsset Include="NuGetLocal\case2\package.name.0.1.0.0-alpha2.nupkg" />
+    <TestAsset Include="NuGetLocal\case2\package.name.1.2.0.0.nupkg" />
+    <TestAsset Include="NuGetLocal\case3\netstedFolder\package.in.nested.folder.1.0.0.nupkg" />
+    <TestAsset Include="PackagesConfig\xunit.visualstudio.packages.config" />
+    <TestAsset Include="PackagesConfig\asp.net.packages.config" />
+    <Compile Include="$(PaketTestsSourcesDir)\PackagesConfig\ReadConfig.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\PackagesConfig\WriteConfig.fs" />
+    <TestAsset Include="JSON-LD\Rx-PlatformServices.json" />
+    <Compile Include="$(PaketTestsSourcesDir)\JSON-LD\JSONLDSpecs.fs" />
+    <TestAsset Include="NuGetOData\Fantomas.xml" />
+    <TestAsset Include="NuGetOData\Microsoft.AspNet.WebApi.Client.xml" />
+    <TestAsset Include="NuGetOData\Fleece.xml" />
+    <TestAsset Include="NuGetOData\EmptyFeedList.xml" />
+    <TestAsset Include="NuGetOData\ReadOnlyCollectionExtensions.xml" />
+    <TestAsset Include="NuGetOData\Math.Numerics.xml" />
+    <TestAsset Include="NuGetOData\Math.Numerics.FSharp.xml" />
+    <TestAsset Include="NuGetOData\Rx-PlatformServices.xml" />
+    <TestAsset Include="NuGetOData\EasyNetQ.xml" />
+    <TestAsset Include="NuGetOData\BenchmarkDotNet-UnknownFramework.xml" />
+    <Compile Include="$(PaketTestsSourcesDir)\NuGetOData\ODataSpecs.fs" />
+    <TestAsset Include="NuGetConfig\ClearTextPasswordConfig.xml" />
+    <TestAsset Include="NuGetConfig\PasswordConfig.xml" />
+    <Compile Include="$(PaketTestsSourcesDir)\NuGetConfig\NuGetConfigSpecs.fs" />
+    <TestAsset Include="NuGetConfig\ConfigWithDisabledFeed.xml" />
+    <TestAsset Include="NuGetConfig\ConfigWithDisabledFeedFromUpstream.xml" />
+    <Compile Include="$(PaketTestsSourcesDir)\DependenciesFile\VersionRangeSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\DependenciesFile\VersionRequirementSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\DependenciesFile\ParserSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\DependenciesFile\SaveSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\DependenciesFile\AddPackageSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\DependenciesFile\RemovePackageSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\DependenciesFile\DependencyChangesSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\DependenciesFile\GroupNameSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\DependencyModel\ProjectDependencySpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Resolver\DependencyGraphSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Resolver\SimpleDependenciesSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Resolver\CyclicGraphSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Resolver\ConflictGraphSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Resolver\ConflictSourcesSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Resolver\CasingSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Resolver\PessimisticStrategySpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Resolver\AddingDependenciesSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Resolver\GlobalPessimisticStrategySpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Resolver\GlobalOptimisticStrategySpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Resolver\StrategySpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Resolver\PropertyTestGenerators.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Resolver\PropertyTests.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Resolver\DependencyGroupsAndRestrictions.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Resolver\ResolverErrorSituationTests.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Resolver\PrereleaseSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Lockfile\GeneratorSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Lockfile\GenerateWithOptionsSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Lockfile\GenerateAuthModeSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Lockfile\GeneratorWithMutlipleSourcesSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Lockfile\ParserSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Lockfile\QuerySpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Lockfile\ParserWithMultipleSourcesSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\ReferencesFile\ReferencesFileSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\LocalFile\LocalFileSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Simplifier\BasicScenarioSpecs.fs" />
+    <TestAsset Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFrameworkAndOutputPath.csprojtest" />
+    <TestAsset Include="ProjectFile\TestData\EmptyFsharpGuid.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\EmptyVbGuid.vbprojtest" />
+    <TestAsset Include="ProjectFile\TestData\EmptyPyGuid.pyprojtest" />
+    <TestAsset Include="ProjectFile\TestData\Project1.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\Project1.vcxprojtest" />
+    <TestAsset Include="ProjectFile\TestData\Project2.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\Project3.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\Project4.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\Project5.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\ProjectWithConditions.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\Empty.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\EmptyWithOldStuff.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\FrameworkAssemblies.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\CustomFantomasNode.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\CustomPaketFantomasNode.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\NoCustomFantomasNode.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\MaintainsOrdering.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\NewSilverlightClassLibrary.csprojtest" />
+    <TestAsset Include="ProjectFile\TestData\FSharp.Core.Fluent-3.1.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\WithWildcardCompileItems.csprojtest" />
+    <TestAsset Include="ProjectFile\TestData\LocalizedLib.csprojtest" />
+    <TestAsset Include="ProjectFile\TestData\Unity.csprojtest" />
+    <TestAsset Include="ProjectFile\TestData\EmptyCsharpGuid.csprojtest" />
+    <TestAsset Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFramework.csprojtest" />
+    <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\ConditionSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\TargetFrameworkSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\FileBuildActionSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\InterProjectDependencySpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\FrameworkReferencesSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\OutputSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\ProjectLanguageSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\LocalizationSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\UpdateFromNugetSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\FrameworkIdentifierSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\ProcessingSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\ControlzEx.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\Fantomas.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\xunit.runner.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\StyleCop.MSBuild.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\SQLite.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\GitInfoPlanter.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\LibGit2Sharp.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\EmptyLibs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\Plossum.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\System.Spatial.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\FantomasLib.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\Fuchu.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\RemovesOldNodes.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\SystemNetHttp.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\SystemNetHttpForNet4.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\SystemNetHttpWithFrameworkReferences.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\SystemNetHttpWithExistingFrameworkReferences.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\ManualNodes.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\FSharp.Data.SqlClient.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\RxXaml.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\Microsoft.Bcl.Build.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\CodeCracker.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\RefactoringEssentials.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\Microsoft.CodeAnalysis.Analyzers.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\System.Security.Cryptography.Algorithms.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Penalty\PenaltySpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Penalty\FrameworkConditionsSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\AnalyzerSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\UpdateProcessSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\BindingRedirect.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\RuntimeGraphTests.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\InstallNuGetContentsTests.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Packaging\PackageProcessSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Packaging\NuspecWriterSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Packaging\TemplateFileParsing.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Packaging\RemotePushUrlSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\ScriptGeneration\LoadingScriptTests.fs" />
+    <Content Include="$(PaketTestsSourcesDir)\App.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <Target Name="AddTestAssetAsNoneItems" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+      <!-- MSBUILD BLACK MAGIC!!! .... 
+          is just a `TestAsset list -> None list`, like `List.map`, dont be scared -->
+
+      <None Include="$(PaketTestsSourcesDir)\%(TestAsset.Identity)">
+        <Link>%(TestAsset.Identity)</Link>
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="FsCheck" Version="2.10.4" />
+    <PackageReference Include="nunit" Version="3.9.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Paket.Core.preview3\Paket.Core.fsproj" />
+  </ItemGroup>
+</Project>

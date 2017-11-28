@@ -32,9 +32,14 @@ let TurnOnAutoRestore environment =
 
     trial {
         do! TurnOffAutoRestore environment
+#if NO_BOOTSTRAPPER
+        do! downloadLatestTargets environment 
+#else
         do! downloadLatestBootstrapperAndTargets environment 
+#endif
         let paketTargetsPath = Path.Combine(exeDir, Constants.TargetsFileName)
 
+#if !NO_BOOTSTRAPPER
         let bootStrapperFileName = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName, Constants.BootstrapperFileName)
         let paketFileName = FileInfo(Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName, Constants.PaketFileName))
         try
@@ -43,6 +48,7 @@ let TurnOnAutoRestore environment =
             File.Move(bootStrapperFileName,paketFileName.FullName)
         with
         | _ -> ()
+#endif
 
         let projects =
             environment.Projects

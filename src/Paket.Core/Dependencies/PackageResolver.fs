@@ -780,7 +780,7 @@ and ResolverRequestQueue =
             if workers.Count > 0 then
                 let worker = workers.[0]
                 workers.RemoveAt(0)
-                worker.SetResult (Some w)
+                worker.TrySetResult (Some w) |> ignore
             else
                 queue.Add(w)
         )

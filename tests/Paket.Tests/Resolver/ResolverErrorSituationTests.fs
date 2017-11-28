@@ -68,7 +68,11 @@ let graph1 =
   ]
 
 [<Test>]
+#if NETCOREAPP2_0
+[<Ignore "TimeoutAttribute not supported by netstandard NUnit">]
+#else
 [<Timeout 5000>]
+#endif
 let ``should fallback to timeoutexception when task never cancels``() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
     let config = """
@@ -259,7 +263,11 @@ let ``task priorization works``() =
     cts.Cancel()
 
 [<Test>]
+#if NETCOREAPP2_0
+[<Ignore "TimeoutAttribute not supported by netstandard NUnit">]
+#else
 [<Timeout 5000>]
+#endif
 let ``cancellation fsharp.core``() =
 
     let StartCatchCancellation cancellationToken (work) =
@@ -314,7 +322,11 @@ let ``cancellation fsharp.core``() =
     with :? AggregateException as agg -> ()
 
 [<Test>]
+#if NETCOREAPP2_0
+[<Ignore "TimeoutAttribute not supported by netstandard NUnit">]
+#else
 [<Timeout 5000>]
+#endif
 let ``cancellation WorkerQueue``() =
     use cts = new CancellationTokenSource()
     let workerQueue = ResolverRequestQueue.Create()
