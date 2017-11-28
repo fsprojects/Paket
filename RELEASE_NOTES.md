@@ -1,5 +1,6 @@
-#### 5.122.3 - 2017-11-23
+#### 5.123.1 - 2017-11-27
 * PERFORMANCE: Check if lock file has already the package when adding new one
+* USABILITY: Delete dotnet core assets file on paket install - https://github.com/fsprojects/Paket/pull/2914
 
 #### 5.122.0 - 2017-11-07
 * Support for IronPython - https://github.com/fsprojects/Paket/pull/2885

@@ -1529,7 +1529,7 @@ module ProjectFile =
         FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.props"))
 
     let getAssetsFileInfo (projectFileInfo:FileInfo) =
-        FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj","project.assets"))
+        FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj","project.assets.json"))
 
     let getOutputDirectory buildConfiguration buildPlatform (project:ProjectFile) =
         let targetFramework = 
