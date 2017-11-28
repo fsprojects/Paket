@@ -8,7 +8,6 @@ open System.Text.RegularExpressions
 [<System.Diagnostics.DebuggerDisplay("{ToString()}")>]
 [<CustomEquality; CustomComparison>]
 type PackageName =
-    private
     | PackageName of name:string * compareString:string
     
     member self.Name = 
@@ -46,7 +45,6 @@ let PackageName(name:string) =
 [<System.Diagnostics.DebuggerDisplay("{Item2}")>]
 [<CustomEquality; CustomComparison>]
 type GroupName =
-   private
    | GroupName of name:string * compareString:string
 
    member self.Name = 
