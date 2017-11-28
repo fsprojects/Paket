@@ -1,3 +1,6 @@
+#### 5.123.2 - 2017-11-28
+* BUGFIX: Fix cache parsing
+
 #### 5.123.1 - 2017-11-27
 * PERFORMANCE: Check if lock file has already the package when adding new one
 * USABILITY: Delete dotnet core assets file on paket install - https://github.com/fsprojects/Paket/pull/2914
