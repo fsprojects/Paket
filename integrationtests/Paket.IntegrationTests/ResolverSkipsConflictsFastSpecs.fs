@@ -57,7 +57,11 @@ let ``#2922 paket can jump out of loop of doom``() =
     | exn when exn.Message.Contains("Dependencies file requested package MySqlConnector: < 0.30") -> ()
 
 [<Test>]
+#if NETCOREAPP2_0
+[<Ignore "PlatformAttribute not supported by netstandard NUnit">]
+#else
 [<Platform("Net")>]
+#endif
 let ``#1174 Should find Ninject error``() =
     updateShouldFindPackageConflict "Ninject" "i001174-resolve-fast-conflict"
 

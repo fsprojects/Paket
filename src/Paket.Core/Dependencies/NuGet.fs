@@ -135,7 +135,7 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
                     verbosefn "Downloading license for %O %O to %s" packageName version targetFileName
 
                 let request = HttpWebRequest.Create(Uri licenseUrl) :?> HttpWebRequest
-#if NETSTANDARD1_6
+#if NETSTANDARD1_6 || NETSTANDARD2_0
                 // Note: this code is not working on regular non-dotnetcore
                 // "This header must be modified with the appropriate property."
                 // But we don't have the UserAgent API available.
@@ -722,7 +722,7 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
                     use trackDownload = Profile.startCategory Profile.Category.NuGetDownload
 
                     let request = HttpWebRequest.Create(downloadUri) :?> HttpWebRequest
-#if NETSTANDARD1_6
+#if NETSTANDARD1_6 || NETSTANDARD2_0
                     // Note: this code is not working on regular non-dotnetcore
                     // "This header must be modified with the appropriate property."
                     // But we don't have the UserAgent API available.

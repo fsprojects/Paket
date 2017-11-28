@@ -7,14 +7,8 @@ nuget FSharp.Core redirects: force
 nuget Chessie >= 0.6
 nuget Mono.Cecil prerelease
 
-nuget System.Diagnostics.TraceSource 
-nuget System.Diagnostics.FileVersionInfo 
-nuget System.Xml.XDocument 
-nuget System.Xml.XPath.XmlDocument 
-nuget System.Diagnostics.Process 
-nuget System.Xml.XPath.XDocument 
 nuget System.Security.Cryptography.ProtectedData 
-nuget System.Security.Cryptography.Algorithms
+
 nuget FSharp.Compiler.Tools
 
 nuget NETStandard.Library >= 2.0 prerelease

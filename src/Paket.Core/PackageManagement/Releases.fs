@@ -57,3 +57,8 @@ let downloadLatestBootstrapperAndTargets environment =
     let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
     downloadLatestVersionOf [Constants.TargetsFileName; Constants.BootstrapperFileName] exeDir
 
+/// Downloads the latest version of the paket.bootstrapper and paket.targets to the .paket dir
+let downloadLatestTargets environment =
+    let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
+    downloadLatestVersionOf [Constants.TargetsFileName] exeDir
+
