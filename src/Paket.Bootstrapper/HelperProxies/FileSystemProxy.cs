@@ -38,7 +38,7 @@ namespace Paket.Bootstrapper.HelperProxies
         // wrong happens.
         private static readonly TimeSpan WaitHighLimit = TimeSpan.FromMinutes(15);
 
-        private static Stream WaitForFileOpen(string path, FileMode filemode)
+        private static Stream WaitForFileOpen(string path, FileMode filemode, FileAccess fileAccess)
         {
             Stopwatch watch = null;
             int wait = 100;
@@ -46,7 +46,7 @@ namespace Paket.Bootstrapper.HelperProxies
             {
                 try
                 {
-                    return File.Open(path, filemode, FileAccess.ReadWrite, FileShare.None);
+                    return File.Open(path, filemode, fileAccess, FileShare.None);
                 }
                 catch (Exception exception)
                 {
@@ -69,12 +69,12 @@ namespace Paket.Bootstrapper.HelperProxies
 
         public Stream CreateExclusive(string path)
         {
-            return WaitForFileOpen(path, FileMode.Create);
+            return WaitForFileOpen(path, FileMode.Create, FileAccess.ReadWrite);
         }
 
         public void WaitForFileFinished(string path)
         {
-            WaitForFileOpen(path, FileMode.Open).Dispose();
+            WaitForFileOpen(path, FileMode.Open, FileAccess.Read).Dispose();
         }
 
         public void CreateDirectory(string dir) { Directory.CreateDirectory(dir); }
@@ -102,7 +102,7 @@ namespace Paket.Bootstrapper.HelperProxies
 
         public Stream OpenRead(string filename)
         {
-            return WaitForFileOpen(filename, FileMode.Open);
+            return WaitForFileOpen(filename, FileMode.Open, FileAccess.Read);
         }
     }
 }
