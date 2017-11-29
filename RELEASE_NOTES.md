@@ -1,4 +1,5 @@
-#### 5.123.2 - 2017-11-28
+#### 5.124.0 - 2017-11-29
+* Bootstrapper now correctly access files as ReadWrite only when needed - https://github.com/fsprojects/Paket/pull/2920
 * BUGFIX: Fix cache parsing
 
 #### 5.123.1 - 2017-11-27
