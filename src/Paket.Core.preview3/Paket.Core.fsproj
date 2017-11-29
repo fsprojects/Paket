@@ -97,5 +97,9 @@
       <PackagePath>lib/netstandard1.6</PackagePath>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build" Version="15.3.409" />
+	<PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" />
+  </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
