@@ -1127,8 +1127,6 @@ type PackageRequirement =
                   (not x.VersionRequirement.Range.IsGlobalOverride,x.Depth)
                   (not y.VersionRequirement.Range.IsGlobalOverride,y.Depth)
         if c <> 0 then c else
-        let c = compare existsX existsY
-        if c <> 0 then -c else
         let c = match startWithPackage with
                     | Some filter when filter.Match x.Name -> -1
                     | Some filter when filter.Match y.Name -> 1
@@ -1138,6 +1136,8 @@ type PackageRequirement =
         if c <> 0 then c else
         let c = -compare x.ResolverStrategyForTransitives y.ResolverStrategyForTransitives
         if c <> 0 then c else
+        let c = compare existsX existsY
+        if c <> 0 then -c else
         let c = compare boostX boostY
         if c <> 0 then c else
         let c = -compare x.VersionRequirement y.VersionRequirement
