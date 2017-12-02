@@ -11,7 +11,7 @@ open Chessie.ErrorHandling
 open PackageResolver
 open Requirements
 
-/// Paket API which is optimized for F# Interactive use.
+/// Paket API which is optimized for F# Interactive use
 type Dependencies(dependenciesFileName: string) =
     let listPackages (packages: System.Collections.Generic.KeyValuePair<GroupName*PackageName, PackageResolver.PackageInfo> seq) =
         packages
