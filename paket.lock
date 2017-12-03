@@ -1821,7 +1821,7 @@ NUGET
       System.Threading (>= 4.3) - restriction: || (&& (< net45) (>= netstandard1.3) (< monotouch) (< xamarintvos) (< xamarinwatchos) (< xamarinios) (< xamarinmac) (< win8) (< wpa81)) (>= dnxcore50)
       System.Xml.ReaderWriter (>= 4.3) - restriction: || (&& (< net45) (>= netstandard1.0) (< netstandard1.3) (< monoandroid) (< win8) (< wp8) (< wpa81)) (&& (< net45) (>= netstandard1.3) (< monotouch) (< xamarintvos) (< xamarinwatchos) (< xamarinios) (< xamarinmac) (< win8) (< wpa81)) (>= dnxcore50)
   remote: https://ci.appveyor.com/nuget/fsharp-formatting
-    FSharp.Formatting (3.0.0-beta07)
+    FSharp.Formatting (3.0.0-beta08)
       FSharp.Compiler.Service (>= 13.0 < 14.0)
       Microsoft.AspNet.Razor (>= 3.2.3 < 4.0)
       System.ValueTuple (>= 4.3.1 < 5.0)
