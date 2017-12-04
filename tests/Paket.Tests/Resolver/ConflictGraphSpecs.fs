@@ -41,10 +41,9 @@ let defaultPackage =
 let ``should analyze graph and report conflict``() = 
     match safeResolve graph [ "A", VersionRange.AtLeast "1.0" ] with
     | Resolution.Ok _ -> failwith "we expected an error"
-    | Resolution.Conflict { ResolveStep = step }->
+    | Resolution.Conflict { ResolveStep = step  } ->
         let conflicting = step.OpenRequirements |> Seq.head 
-        conflicting.Name |> shouldEqual (PackageName "D")
-        conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Exactly "1.6")
+        conflicting.Name |> shouldEqual (PackageName "B")
 
 let graph2 = 
     [ "A", "1.0", 
@@ -62,8 +61,7 @@ let ``should analyze graph2 and report conflict``() =
     | Resolution.Ok _ -> failwith "we expected an error"
     | Resolution.Conflict { ResolveStep = step } ->
         let conflicting = step.OpenRequirements |> Seq.head 
-        conflicting.Name |> shouldEqual (PackageName "D")
-        conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Between("1.6", "1.7"))
+        conflicting.Name |> shouldEqual (PackageName "B")
 
 [<Test>]
 let ``should override graph2 conflict to first version``() = 
@@ -101,7 +99,7 @@ let ``should override graph3 conflict to package C``() =
     | Resolution.Conflict { ResolveStep = step } ->
         let conflicting = step.OpenRequirements |> Seq.head 
         conflicting.Name 
-        |> shouldEqual (PackageName "C")
+        |> shouldEqual (PackageName "B")
 
 let configWithServices = """
 source https://www.nuget.org/api/v2
