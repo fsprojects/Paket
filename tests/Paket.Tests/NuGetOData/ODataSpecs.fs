@@ -16,12 +16,12 @@ open System.Xml
 let fakeUrl = "http://doesntmatter"
 
 let parseList fileName =
-    System.Environment.CurrentDirectory <- Path.GetDirectoryName __SOURCE_DIRECTORY__
+    use _cd = TestHelpers.changeWorkingDir (Path.GetDirectoryName __SOURCE_DIRECTORY__)
     let doc = XmlDocument()
     doc.Load (fileName:string)
     parseODataListDetails("tenp",fakeUrl,PackageName "package",SemVer.Parse "0",doc)
 let parseEntry fileName =
-    System.Environment.CurrentDirectory <- Path.GetDirectoryName __SOURCE_DIRECTORY__
+    use _cd = TestHelpers.changeWorkingDir (Path.GetDirectoryName __SOURCE_DIRECTORY__)
     let doc = XmlDocument()
     doc.Load (fileName:string)
     parseODataEntryDetails("tenp",fakeUrl,PackageName "package",SemVer.Parse "0",doc)
