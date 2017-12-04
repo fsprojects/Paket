@@ -1278,7 +1278,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                         r.VersionRequirement.Range.IsConflicting currentRange)
                                     |> Seq.map (fun _ -> name,vr)
                         
-                                Seq.append conflictingWithOpen conflictingWithClosed)
+                                Seq.append conflictingWithClosed conflictingWithOpen)
                             |> Seq.concat
 
                         let canTakePackage = 
