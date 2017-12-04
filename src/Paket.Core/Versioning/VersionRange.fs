@@ -46,6 +46,17 @@ type VersionRange =
         | GreaterThan v1, Specific v2 when v1 < v2 -> true
         | _ -> false
 
+    member this.IsConflicting (other : VersionRange) =
+        match other, this with
+        | Minimum v1, Specific v2 when v1 > v2 -> true
+        | Specific v1, Minimum v2 when v1 < v2 -> true
+        | Specific v1, Specific v2 when v1 <> v2 -> true
+        | Range(_, min1, max1, _), Specific v2 when min1 > v2 || max1 < v2 -> true
+        | Range(_, min1, max1, _), Range(_, min2, max2, _) when max1 < min2 || max2 < min1 -> true
+        | GreaterThan v1, Specific v2 when v1 > v2 -> true
+        | Minimum v1, Maximum v2 when v1 > v2 -> true
+        | Maximum v1, Minimum v2 when v1 < v2 -> true
+        | _ -> false
 
     override this.ToString() =
         match this with
