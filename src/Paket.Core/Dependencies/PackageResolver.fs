@@ -1008,6 +1008,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                 | ResolverStrategy.Min -> List.sort versions
         
             yield! sorted }
+        |> Seq.cache
 
     let packageFilter =
         match updateMode with
