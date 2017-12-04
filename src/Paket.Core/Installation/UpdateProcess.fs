@@ -105,13 +105,13 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
                 v,s :: (List.map PackageSources.PackageSource.FromCache caches))
 
         let getPreferredVersionsF resolverStrategy (parameters:GetPackageVersionsParameters) =
-            match preferredVersions |> Map.tryFind (parameters.Package.GroupName, parameters.Package.PackageName), resolverStrategy with
+            let key = parameters.Package.GroupName, parameters.Package.PackageName
+            match preferredVersions |> Map.tryFind key, resolverStrategy with
             | Some x, ResolverStrategy.Min -> [x]
-            | Some x, _ -> 
-                if not (changes |> Set.contains (parameters.Package.GroupName, parameters.Package.PackageName)) then
-                    [x]
-                else 
-                    []
+            | Some x, _ ->
+                match dependenciesFile.TryGetPackage key with
+                | None -> [x]
+                | _ -> if not (changes |> Set.contains key) then [x] else []
             | _ ->
                 []
 
