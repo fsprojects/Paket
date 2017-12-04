@@ -48,8 +48,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>C:\proj\testing\</StartWorkingDirectory>
+    <StartArguments>install</StartArguments>
+    <StartWorkingDirectory>C:\temp\conflict</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">14.0</VisualStudioVersion>
