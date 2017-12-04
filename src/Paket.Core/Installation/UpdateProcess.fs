@@ -74,7 +74,6 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
                         | PackageFilter.PackageName name -> Set.add (groupName,name) s
                         | _ -> s
                     
-
                 let groups =
                     dependenciesFile.Groups
                     |> Map.filter (fun k _ -> k = groupName || changes |> Seq.exists (fun (g,_) -> g = k))
@@ -106,13 +105,15 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
                 v,s :: (List.map PackageSources.PackageSource.FromCache caches))
 
         let getPreferredVersionsF resolverStrategy (parameters:GetPackageVersionsParameters) =
-            match preferredVersions |> Map.tryFind (parameters.Package.GroupName, parameters.Package.PackageName), resolverStrategy with
+            let key = parameters.Package.GroupName, parameters.Package.PackageName
+            match preferredVersions |> Map.tryFind key, resolverStrategy with
             | Some x, ResolverStrategy.Min -> [x]
-            | Some x, _ -> 
-                if not (changes |> Set.contains (parameters.Package.GroupName, parameters.Package.PackageName)) then
-                    [x]
-                else []
-            | _ -> []
+            | Some x, _ ->
+                match dependenciesFile.TryGetPackage key with
+                | None -> [x]
+                | _ -> if not (changes |> Set.contains key) then [x] else []
+            | _ ->
+                []
 
         let getPackageDetailsF (parameters:GetPackageDetailsParameters) = async {
             let! (exploredPackage:PackageDetails) = getPackageDetailsF parameters
