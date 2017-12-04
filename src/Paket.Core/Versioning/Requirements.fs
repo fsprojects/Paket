@@ -1136,10 +1136,10 @@ type PackageRequirement =
         if c <> 0 then c else
         let c = -compare x.ResolverStrategyForTransitives y.ResolverStrategyForTransitives
         if c <> 0 then c else
-        let c = compare existsX existsY
-        if c <> 0 then -c else
         let c = compare boostX boostY
         if c <> 0 then c else
+        let c = compare existsX existsY
+        if c <> 0 then -c else
         let c = -compare x.VersionRequirement y.VersionRequirement
         if c <> 0 then c else
         let c = compare x.Parent y.Parent

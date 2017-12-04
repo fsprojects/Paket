@@ -12,8 +12,6 @@ open Paket.PackageSources
 open System.Threading.Tasks
 open System.Threading
 open FSharp.Polyfill
-open System.Text.RegularExpressions
-
 
 type DependencySet = Set<PackageName * VersionRequirement * FrameworkRestrictions>
 
@@ -688,7 +686,7 @@ type ConflictState = {
                     self.TryRelaxed self.LastConflictReported
         
         
-let private boostConflicts
+let inline boostConflicts
                     (filteredVersions:Map<PackageName, (VersionCache list * bool)>)
                     (currentRequirement:PackageRequirement)
                     (stackpack:StackPack)
@@ -706,7 +704,7 @@ let private boostConflicts
     let conflicts = conflictStatus.GetConflicts()
     let lastConflictReported =
         match conflicts with
-        | _ when not conflicts.IsEmpty  ->
+        | _ when not conflicts.IsEmpty ->
             let c = conflicts |> Seq.minBy (fun c -> c.Parent)
             let selectedVersion = Map.tryFind c.Name filteredVersions
             let key = conflicts |> HashSet,selectedVersion
@@ -715,9 +713,6 @@ let private boostConflicts
             let reportThatResolverIsTakingLongerThanExpected =
                 not isNewConflict && DateTime.Now - conflictState.LastConflictReported > TimeSpan.FromSeconds 10.
 
-            if Logging.verbose then
-                tracefn "%s" (conflictStatus.GetErrorText false)
-                tracefn "    ==> Trying different resolution."
             if reportThatResolverIsTakingLongerThanExpected then
                 traceWarnfn "%s" (conflictStatus.GetErrorText false)
                 traceWarn "The process is taking longer than expected."
