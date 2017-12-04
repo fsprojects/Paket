@@ -1110,8 +1110,6 @@ type PackageRequirement =
 
     override this.ToString() =
         sprintf "%O %O (from %O)" this.Name this.VersionRequirement this.Parent
-
-
     override this.GetHashCode() = hash (this.Name,this.VersionRequirement)
     
     member this.IncludingPrereleases(releaseStatus) = 
@@ -1123,6 +1121,10 @@ type PackageRequirement =
 
     static member Compare(x,y,startWithPackage:PackageFilter option,boostX,boostY,existsX:bool,existsY:bool) =
         if obj.ReferenceEquals(x, y) then 0 else
+
+        let c = compare existsX existsY
+        if c <> 0 then -c else
+        
         let c = compare
                   (not x.VersionRequirement.Range.IsGlobalOverride,x.Depth)
                   (not y.VersionRequirement.Range.IsGlobalOverride,y.Depth)
@@ -1136,8 +1138,6 @@ type PackageRequirement =
         if c <> 0 then c else
         let c = -compare x.ResolverStrategyForTransitives y.ResolverStrategyForTransitives
         if c <> 0 then c else
-        let c = compare existsX existsY
-        if c <> 0 then -c else
         let c = compare boostX boostY
         if c <> 0 then c else
         let c = -compare x.VersionRequirement y.VersionRequirement
