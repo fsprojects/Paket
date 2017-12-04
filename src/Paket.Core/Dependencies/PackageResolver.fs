@@ -1266,7 +1266,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                         
                         let conflictingDepsRanges =
                             exploredPackage.Dependencies
-                            |> Seq.map (fun (name,vr,_) ->
+                            |> Seq.collect (fun (name,vr,_) ->
                                 let currentRange = vr.Range
                                 let currentPrereleaseStatus = vr.PreReleases
 
@@ -1287,7 +1287,6 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                     |> Seq.map (fun _ -> name,vr)
                         
                                 Seq.append conflictingWithClosed conflictingWithOpen)
-                            |> Seq.concat
 
                         let canTakePackage = 
                             Seq.isEmpty conflictingResolvedPackages &&
