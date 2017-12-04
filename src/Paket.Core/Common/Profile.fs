@@ -15,7 +15,9 @@ type Category =
     | NuGetDownload
     | FileIO
     | Other
+
 type Event = { Category: Category; Duration : TimeSpan }
+
 let events =
     System.Collections.Concurrent.ConcurrentBag<Event>()
     
