@@ -243,7 +243,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName fileName, groupName, force, remoteFiles)
 
             // 1. Package resolution
-            let step1Deps = remoteDependencies @ group.Packages |> Set.ofList
+            let step1Deps = remoteDependencies @ group.Packages
             let resolution =
                 PackageResolver.Resolve(
                     getVersionF, 
@@ -294,9 +294,8 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     tracefn  "Trying to find a valid resolution considering runtime dependencies..."
                     let runtimeResolutionDeps =
                         resolved
-                        |> Map.toSeq
-                        |> Seq.map snd
-                        |> Seq.map (fun p ->
+                        |> Seq.map (fun kv ->
+                            let p = kv.Value
                             let oldDepsInfo = step1Deps |> Seq.tryFind (fun d -> d.Name = p.Name)
                             { Name = p.Name
                               VersionRequirement = VersionRequirement (VersionRange.OverrideAll (SemVer.Parse p.Version.AsString), PreReleaseStatus.All)
@@ -318,7 +317,8 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                                 | Some d -> d.Settings
                                 | None -> p.Settings })
                         |> fun des -> Seq.append des runtimeDeps
-                        |> Seq.distinctBy (fun p -> p.Name) |> Set.ofSeq
+                        |> Seq.distinctBy (fun p -> p.Name)
+                        |> List.ofSeq
 
                     if Environment.GetEnvironmentVariable "PAKET_DEBUG_RUNTIME_DEPS" = "true" then
                         tracefn "Runtime dependencies: "
