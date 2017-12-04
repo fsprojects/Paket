@@ -1040,7 +1040,8 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
 
     let rec step (stage:Stage) (stackpack:StackPack) compatibleVersions (flags:StepFlags) =
 
-        let inline fuseConflicts currentConflict priorConflictSteps conflicts =
+        let inline fuseConflicts currentRequirement filteredVersions currentConflict priorConflictSteps conflicts =
+            let currentConflict,stackpack = boostConflicts filteredVersions currentRequirement stackpack currentConflict
             let findMatchingStep priorConflictSteps =
                 let currentNames =
                     conflicts
@@ -1054,7 +1055,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                     currentNames |> Set.contains lastRequirement.Name)
 
             match findMatchingStep priorConflictSteps with
-            | None, []  -> currentConflict
+            | None, [] -> currentConflict
             | (Some head), priorConflictSteps ->
                 let (lastConflict, lastStep, lastRequirement, lastCompatibleVersions, lastFlags) = head
                 let continueConflict = 
@@ -1129,8 +1130,8 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                 Requirement = Seq.head conflicts
                                 GetPackageVersions = getVersionsF }}
 
-                if not (Seq.isEmpty conflicts) then                
-                    fuseConflicts currentConflict priorConflictSteps conflicts
+                if not (Seq.isEmpty conflicts) then
+                    fuseConflicts currentRequirement currentStep.FilteredVersions currentConflict priorConflictSteps conflicts
                 else
                     let compatibleVersions,globalOverride,tryRelaxed =
                         getCompatibleVersions currentStep groupName currentRequirement getVersionsBlock
@@ -1156,10 +1157,10 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                         HasUnlisted = false
                         UnlistedSearch = false
                     }
-                    step (Outer ((conflictState,currentStep,currentRequirement),priorConflictSteps)) stackpack compatibleVersions  flags 
+                    step (Outer ((conflictState,currentStep,currentRequirement),priorConflictSteps)) stackpack compatibleVersions flags 
         | Outer ((currentConflict,currentStep,currentRequirement), priorConflictSteps) ->
             if flags.Ready then
-                fuseConflicts currentConflict priorConflictSteps (HashSet [ currentRequirement ])
+                fuseConflicts currentRequirement currentStep.FilteredVersions currentConflict priorConflictSteps (HashSet [ currentRequirement ])
             else
                 let flags = {
                   flags with
