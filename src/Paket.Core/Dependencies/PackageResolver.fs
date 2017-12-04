@@ -1248,15 +1248,14 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                         // Example: We took A with version 1.0.0 (in our current resolution), but this version depends on A > 1.0.0
                         let conflictingResolvedPackages =
                             currentStep.CurrentResolution
-                            |> Map.toSeq
-                            |> Seq.map snd
-                            // Ignore packages which have "OverrideAll", otherwise == will not work anymore.
-                            |> Seq.filter (fun resolved -> lockedPackages.Contains resolved.Name |> not)
-                            |> Seq.choose (fun r -> 
-                                DependencySetFilter.findFirstIncompatibility currentStep lockedPackages exploredPackage.Dependencies r
-                                |> Option.map (fun incompat -> r,incompat))
+                            |> Seq.choose (fun kv ->
+                                let resolved = kv.Value
+                                // Ignore packages which have "OverrideAll", otherwise == will not work anymore.
+                                if lockedPackages.Contains resolved.Name then None else
+                                DependencySetFilter.findFirstIncompatibility currentStep lockedPackages exploredPackage.Dependencies resolved
+                                |> Option.map (fun incompat -> resolved,incompat))
 
-                        let canTakePackage = conflictingResolvedPackages |> Seq.isEmpty
+                        let canTakePackage = Seq.isEmpty conflictingResolvedPackages
 
                         if canTakePackage then
                             let nextStep =
