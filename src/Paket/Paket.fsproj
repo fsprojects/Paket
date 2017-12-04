@@ -33,11 +33,11 @@
     <StartAction>Project</StartAction>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\temp\Gu.Reactive</StartWorkingDirectory>
-    <StartArguments>pack "D:\code\Paket\src\Paket.Core.preview3\Paket.Core.fsproj" --configuration Release -o D:\code\Paket\temp\dotnetcore /p:Version=5.122.0</StartArguments>
+    <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
     <StartWorkingDirectory>D:\temp\PaketTargetFrameworkRepro\</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\bookstore</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\src\Paket.Core.preview3</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\eCarApp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

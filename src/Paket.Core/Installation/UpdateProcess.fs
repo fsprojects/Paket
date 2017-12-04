@@ -74,7 +74,6 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
                         | PackageFilter.PackageName name -> Set.add (groupName,name) s
                         | _ -> s
                     
-
                 let groups =
                     dependenciesFile.Groups
                     |> Map.filter (fun k _ -> k = groupName || changes |> Seq.exists (fun (g,_) -> g = k))
@@ -111,8 +110,10 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
             | Some x, _ -> 
                 if not (changes |> Set.contains (parameters.Package.GroupName, parameters.Package.PackageName)) then
                     [x]
-                else []
-            | _ -> []
+                else 
+                    []
+            | _ ->
+                []
 
         let getPackageDetailsF (parameters:GetPackageDetailsParameters) = async {
             let! (exploredPackage:PackageDetails) = getPackageDetailsF parameters

@@ -866,6 +866,7 @@ type ResolverTaskMemory<'a> =
         else
             x.WaitedAlready <- true
             false, x.Work.Task.Wait timeout
+
 module ResolverTaskMemory =
     let ofWork w = { Work = w; WaitedAlready = false }
 
@@ -990,19 +991,23 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
             |> ResolverTaskMemory.ofWork)
 
     let getVersionsBlock resolverStrategy versionParams =
-        let workHandle = startRequestGetVersions versionParams
-        let versions =
-            try 
-                getAndReport versionParams.Package.Sources Profile.BlockReason.GetVersion workHandle 
-                |> Seq.toList
-            with e ->
-                raise (Exception (sprintf "Unable to retrieve package versions for '%O'" versionParams.Package.PackageName, e))
-        let sorted =
-            match resolverStrategy with
-            | ResolverStrategy.Max -> List.sortDescending versions
-            | ResolverStrategy.Min -> List.sort versions
-        let pref = getPreferredVersionsRaw resolverStrategy versionParams
-        pref @ sorted |> List.toSeq
+        seq {
+            let preferred = getPreferredVersionsRaw resolverStrategy versionParams
+            yield! preferred
+
+            let workHandle = startRequestGetVersions versionParams
+            let versions =
+                try 
+                    getAndReport versionParams.Package.Sources Profile.BlockReason.GetVersion workHandle 
+                    |> Seq.toList
+                with e ->
+                    raise (Exception (sprintf "Unable to retrieve package versions for '%O'" versionParams.Package.PackageName, e))
+            let sorted =
+                match resolverStrategy with
+                | ResolverStrategy.Max -> List.sortDescending versions
+                | ResolverStrategy.Min -> List.sort versions
+        
+            yield! sorted }
 
     let packageFilter =
         match updateMode with
