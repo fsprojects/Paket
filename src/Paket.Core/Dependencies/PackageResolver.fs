@@ -1268,6 +1268,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                         r.Name = name && 
                                         r.VersionRequirement.PreReleases = currentPrereleaseStatus &&
                                         r.VersionRequirement.Range.IsConflicting currentRange)
+                                    |> Seq.map (fun _ -> name,vr)
 
                                 let conflictingWithClosed = 
                                     currentStep.ClosedRequirements
@@ -1275,6 +1276,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                         r.Name = name && 
                                         r.VersionRequirement.PreReleases = currentPrereleaseStatus &&
                                         r.VersionRequirement.Range.IsConflicting currentRange)
+                                    |> Seq.map (fun _ -> name,vr)
                         
                                 Seq.append conflictingWithOpen conflictingWithClosed)
                             |> Seq.concat
@@ -1302,9 +1304,9 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                             let conflictingPackageName,vr,parent = 
                                 match Seq.tryHead conflictingResolvedPackages with
                                 | Some (conflictingPackage,(_,vr,_)) -> conflictingPackage.Name,vr,Package(currentRequirement.Name,exploredPackage.Version,exploredPackage.Source) 
-                                | None -> 
-                                    let d = conflictingDepsRanges |> Seq.head 
-                                    d.Name,d.VersionRequirement,d.Parent
+                                | None ->
+                                    let name,vr = conflictingDepsRanges |> Seq.head 
+                                    name,vr,Package(currentRequirement.Name,exploredPackage.Version,exploredPackage.Source)
 
                             let currentConflict =    
                                 { currentConflict with
