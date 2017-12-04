@@ -1,3 +1,7 @@
+#### 5.124.1 - 2017-12-04
+* BUGFIX: Transitive dependencies should be kept as stable as possible in paket install - https://github.com/fsprojects/Paket/pull/2927
+* PERFORMANCE: Preferred versions do not need to query the NuGet server - https://github.com/fsprojects/Paket/pull/2927
+
 #### 5.124.0 - 2017-11-29
 * Bootstrapper now correctly access files as ReadWrite only when needed - https://github.com/fsprojects/Paket/pull/2920
 * BUGFIX: Fix cache parsing
