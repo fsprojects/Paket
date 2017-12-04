@@ -49,6 +49,14 @@ let ``#2294 pin NETStandard.Library = 1.6.0 Strategy Workaround``() =
     |> shouldEqual (SemVer.Parse "1.6")
 
 [<Test>]
+let ``#2922 paket can jump out of loop of doom``() =
+    try
+        install "i002922-loopofdoom" |> ignore
+        failwith "error expected"
+    with
+    | exn when exn.Message.Contains("Dependencies file requested package MySqlConnector: < 0.30") -> ()
+
+[<Test>]
 [<Platform("Net")>]
 let ``#1174 Should find Ninject error``() =
     updateShouldFindPackageConflict "Ninject" "i001174-resolve-fast-conflict"
