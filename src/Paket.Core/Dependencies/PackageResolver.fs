@@ -172,10 +172,9 @@ module ResolutionRaw =
         match res with
         | ResolutionRaw.OkRaw _ -> Set.empty
         | ResolutionRaw.ConflictRaw { ResolveStep = currentStep; Requirement = lastPackageRequirement } ->
-            currentStep.ClosedRequirements
-            |> Set.union currentStep.OpenRequirements
+            (currentStep.ClosedRequirements |> Set.filter (fun x -> x.Name = lastPackageRequirement.Name))
+            |> Set.union (currentStep.OpenRequirements |> Set.filter (fun x -> x.Name = lastPackageRequirement.Name))
             |> Set.add lastPackageRequirement
-            |> Set.filter (fun x -> x.Name = lastPackageRequirement.Name)
 
     let buildConflictReport (errorReport:StringBuilder) (conflicts:PackageRequirement Set) =
         let formatVR (vr:VersionRequirement) =
@@ -701,12 +700,21 @@ let inline boostConflicts
             stackpack.ConflictHistory.Add(currentRequirement.Name, 1)
             true
 
+    let conflicts = conflictStatus.GetConflicts()
+    for c in conflicts do
+        match c.Parent with
+        | PackageRequirementSource.Package(parentName,_,_) ->
+            match stackpack.ConflictHistory.TryGetValue parentName with
+            | true,count ->
+                stackpack.ConflictHistory.[parentName] <- count + 2
+            | _ ->
+                stackpack.ConflictHistory.Add(parentName, 2)
+        | _ -> ()
 
     let reportThatResolverIsTakingLongerThanExpected =
         not isNewConflict && DateTime.Now - conflictState.LastConflictReported > TimeSpan.FromSeconds 10.
   
     if reportThatResolverIsTakingLongerThanExpected then
-        let conflicts = conflictStatus.GetConflicts()
         let lastConflictReported =
             match conflicts with
             | _ when not conflicts.IsEmpty ->
