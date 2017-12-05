@@ -47,16 +47,17 @@ type VersionRange =
         | _ -> false
 
     member this.IsConflicting (other : VersionRange) =
-        match other, this with
-        | Minimum v1, Specific v2 when v1 > v2 -> true
-        | Specific v1, Minimum v2 when v1 < v2 -> true
-        | Specific v1, Specific v2 when v1 <> v2 -> true
-        | Range(_, min1, max1, _), Specific v2 when min1 > v2 || max1 < v2 -> true
-        | Range(_, min1, max1, _), Range(_, min2, max2, _) when max1 < min2 || max2 < min1 -> true
-        | GreaterThan v1, Specific v2 when v1 > v2 -> true
-        | Minimum v1, Maximum v2 when v1 > v2 -> true
-        | Maximum v1, Minimum v2 when v1 < v2 -> true
-        | _ -> false
+        let isConflict this other =
+            match other, this with
+            | Minimum v1, Specific v2 when v1 > v2 -> true
+            | Specific v1, Specific v2 when v1 <> v2 -> true
+            | Range(_, min1, max1, _), Specific v2 when min1 > v2 || max1 < v2 -> true
+            | Range(_, min1, max1, _), Range(_, min2, max2, _) when max1 < min2 || max2 < min1 -> true
+            | GreaterThan v1, Specific v2 when v1 > v2 -> true
+            | Minimum v1, Maximum v2 when v1 > v2 -> true
+            | _ -> false
+
+        isConflict this other || isConflict other this
 
     override this.ToString() =
         match this with
@@ -131,6 +132,11 @@ type VersionRequirement =
     member this.Range =
         match this with
         | VersionRequirement(range,_) -> range
+
+    member this.IsConflicting (other : VersionRequirement) =
+        match other, this with
+        | VersionRequirement(v1,p1), VersionRequirement(v2,p2) ->
+            if p1 = p2 then v1.IsConflicting(v2) else false
 
     member this.PreReleases =
         match this with

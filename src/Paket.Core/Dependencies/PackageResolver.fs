@@ -1263,23 +1263,18 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                         let conflictingDepsRanges =
                             exploredPackage.Dependencies
                             |> Seq.collect (fun (name,vr,_) ->
-                                let currentRange = vr.Range
-                                let currentPrereleaseStatus = vr.PreReleases
-
                                 let conflictingWithOpen =
                                     currentStep.OpenRequirements
                                     |> Seq.filter (fun r ->
                                         r.Name = name && 
-                                        r.VersionRequirement.PreReleases = currentPrereleaseStatus &&
-                                        r.VersionRequirement.Range.IsConflicting currentRange)
+                                        r.VersionRequirement.IsConflicting vr)
                                     |> Seq.map (fun _ -> name,vr)
 
                                 let conflictingWithClosed = 
                                     currentStep.ClosedRequirements
                                     |> Seq.filter (fun r -> 
                                         r.Name = name && 
-                                        r.VersionRequirement.PreReleases = currentPrereleaseStatus &&
-                                        r.VersionRequirement.Range.IsConflicting currentRange)
+                                        r.VersionRequirement.IsConflicting vr)
                                     |> Seq.map (fun _ -> name,vr)
                         
                                 Seq.append conflictingWithClosed conflictingWithOpen)
