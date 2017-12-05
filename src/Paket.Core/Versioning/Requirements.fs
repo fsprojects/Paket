@@ -1121,7 +1121,7 @@ type PackageRequirement =
 
     member this.Depth = this.Graph.Count
 
-    static member Compare(x,y,startWithPackage:PackageFilter option,boostX,boostY,existsX:bool,existsY:bool) =
+    static member Compare(x,y,startWithPackage:PackageFilter option,boostX,boostY) =
         if obj.ReferenceEquals(x, y) then 0 else
         let c = compare
                   (not x.VersionRequirement.Range.IsGlobalOverride,x.Depth)
@@ -1138,8 +1138,6 @@ type PackageRequirement =
         if c <> 0 then c else
         let c = compare boostX boostY
         if c <> 0 then c else
-        let c = compare existsX existsY
-        if c <> 0 then -c else
         let c = -compare x.VersionRequirement y.VersionRequirement
         if c <> 0 then c else
         let c = compare x.Parent y.Parent
@@ -1155,7 +1153,7 @@ type PackageRequirement =
        member this.CompareTo that = 
           match that with 
           | :? PackageRequirement as that ->
-                PackageRequirement.Compare(this,that,None,0,0,false,false)
+                PackageRequirement.Compare(this,that,None,0,0)
           | _ -> invalidArg "that" "cannot compare value of different types"
 
 type AddFrameworkRestrictionWarnings =
