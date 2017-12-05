@@ -47,9 +47,10 @@ type VersionRange =
         | _ -> false
 
     member this.IsConflicting (other : VersionRange) =
+        let checkPre (v:SemVerInfo) = v.PreRelease.IsNone
         let isConflict this other =
             match this, other with
-            | Minimum v1, Specific v2 when v1 > v2 -> true
+            | Minimum v1, Specific v2 when v1 > v2 && checkPre v2 -> true
             | Minimum v1, Maximum v2 when v1 > v2 -> true
             | Minimum v1, LessThan v2 when v1 > v2 -> true
             | Specific v1, Specific v2 when v1 <> v2 -> true
@@ -59,8 +60,8 @@ type VersionRange =
             | Range(_, _, max1, _), GreaterThan min2 when max1 < min2  -> true
             | Range(_, min1, _, _), Maximum max2 when max2 < min1 -> true
             | Range(_, min1, _, _), LessThan max2 when max2 < min1 -> true
-            | GreaterThan v1, Specific v2 when v1 > v2 -> true
-            | LessThan v1, Specific v2 when v1 < v2 -> true
+            | GreaterThan v1, Specific v2 when v1 > v2  && checkPre v2 -> true
+            | LessThan v1, Specific v2 when v1 < v2 && checkPre v2 -> true
             | _ -> false
 
         isConflict this other || isConflict other this
