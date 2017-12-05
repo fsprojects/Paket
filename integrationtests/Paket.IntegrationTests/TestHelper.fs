@@ -254,25 +254,25 @@ let clearPackage name =
             |> Seq.filter (fun n -> Path.GetFileName n |> String.startsWithIgnoreCase name)
             |> Seq.iter (fun n -> File.Delete(n))
 
-let isPackageCached name =
+let isPackageCached name version =
     // ~/.nuget/packages
     let userPackageFolder = Paket.Constants.UserNuGetPackagesFolder
 
     // %APPDATA%/NuGet/Cache
     let nugetCache = Paket.Constants.NuGetCacheFolder
 
-    [ nugetCache; userPackageFolder ]
-    |> List.collect (fun cacheDir ->
+    [ for cacheDir in [ nugetCache; userPackageFolder ] do
         if Directory.Exists cacheDir then
-            let dirs =
+            yield!
                 Directory.EnumerateDirectories(cacheDir)
-                |> Seq.filter (fun n -> Path.GetFileName n |> String.startsWithIgnoreCase name)
-            let files =
-                Directory.EnumerateFiles(cacheDir)
-                |> Seq.filter (fun n -> Path.GetFileName n |> String.startsWithIgnoreCase name)
-            Seq.append dirs files
-            |> Seq.toList
-        else [])
+                |> Seq.filter (fun n -> Path.GetFileName n |> String.equalsIgnoreCase name)
+                |> Seq.collect (fun n -> Directory.EnumerateDirectories(n))
+                |> Seq.filter (fun n -> Path.GetFileName n |> String.equalsIgnoreCase version)
+                |> Seq.toList ]
+
+let clearPackageAtVersion name version =
+    isPackageCached name version
+    |> List.iter (fun n -> Directory.Delete(n, true))
 
 // Checks if a given package is present in cache ONLY with lowercase naming (see issue #2812)
 let isPackageCachedWithOnlyLowercaseNames (name: string) =
