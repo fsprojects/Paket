@@ -36,7 +36,7 @@ let ``#2289 Paket 4.x install command takes hours to complete``() =
     nunitVersion
     |> shouldBeSmallerThan (SemVer.Parse "3.0")
 
-[<Test; Ignore "This is a really good test, but the riddle got a lot harder with netstandard20 release - ignoring until we have a good solution #2631">]
+[<Test>]
 let ``#2294 Cannot pin NETStandard.Library = 1.6.0``() =
     let lockFile = update "i002294-pin-netstandard-1-6"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NETStandard.Library"].Version
@@ -47,6 +47,14 @@ let ``#2294 pin NETStandard.Library = 1.6.0 Strategy Workaround``() =
     let lockFile = update "i002294-withstrategy"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NETStandard.Library"].Version
     |> shouldEqual (SemVer.Parse "1.6")
+
+[<Test>]
+let ``#2922 paket can jump out of loop of doom``() =
+    try
+        install "i002922-loopofdoom" |> ignore
+        failwith "error expected"
+    with
+    | exn when exn.Message.Contains("Dependencies file requested package MySqlConnector: < 0.30") -> ()
 
 [<Test>]
 [<Platform("Net")>]

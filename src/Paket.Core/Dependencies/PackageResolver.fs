@@ -12,8 +12,6 @@ open Paket.PackageSources
 open System.Threading.Tasks
 open System.Threading
 open FSharp.Polyfill
-open System.Text.RegularExpressions
-
 
 type DependencySet = Set<PackageName * VersionRequirement * FrameworkRestrictions>
 
@@ -95,7 +93,7 @@ type VersionCache =
 type ResolverStep = {
     Relax: bool
     FilteredVersions : Map<PackageName, (VersionCache list * bool)>
-    CurrentResolution : Map<PackageName,ResolvedPackage>;
+    CurrentResolution : Map<PackageName,ResolvedPackage>
     ClosedRequirements : Set<PackageRequirement>
     OpenRequirements : Set<PackageRequirement> }
 
@@ -174,10 +172,9 @@ module ResolutionRaw =
         match res with
         | ResolutionRaw.OkRaw _ -> Set.empty
         | ResolutionRaw.ConflictRaw { ResolveStep = currentStep; Requirement = lastPackageRequirement } ->
-            currentStep.ClosedRequirements
-            |> Set.union currentStep.OpenRequirements
+            (currentStep.ClosedRequirements |> Set.filter (fun x -> x.Name = lastPackageRequirement.Name))
+            |> Set.union (currentStep.OpenRequirements |> Set.filter (fun x -> x.Name = lastPackageRequirement.Name))
             |> Set.add lastPackageRequirement
-            |> Set.filter (fun x -> x.Name = lastPackageRequirement.Name)
 
     let buildConflictReport (errorReport:StringBuilder) (conflicts:PackageRequirement Set) =
         let formatVR (vr:VersionRequirement) =
@@ -639,19 +636,20 @@ let private getConflicts (currentStep:ResolverStep) (currentRequirement:PackageR
 
 let private getCurrentRequirement packageFilter (openRequirements:Set<PackageRequirement>) (conflictHistory:Dictionary<_,_>) =
     let initialMin = Seq.head openRequirements
-    let initialBoost = 0
+    let boost (d:PackageRequirement) =
+        match conflictHistory.TryGetValue d.Name with
+        | true,c -> -c
+        | _ -> 0
 
+    let initialBoost = boost initialMin
     let currentMin, _ =
         ((initialMin,initialBoost),openRequirements)
         ||> Seq.fold (fun (cmin,cboost) d ->
-            let boost =
-                match conflictHistory.TryGetValue d.Name with
-                | true,c -> -c
-                | _ -> 0
+            let boost = boost d
             if PackageRequirement.Compare(d,cmin,packageFilter,boost,cboost) = -1 then
                 d, boost
             else
-                cmin,cboost)
+                cmin, cboost)
     currentMin
 
 
@@ -683,7 +681,7 @@ type ConflictState = {
                     self.TryRelaxed self.LastConflictReported
         
         
-let private boostConflicts
+let inline boostConflicts
                     (filteredVersions:Map<PackageName, (VersionCache list * bool)>)
                     (currentRequirement:PackageRequirement)
                     (stackpack:StackPack)
@@ -699,30 +697,38 @@ let private boostConflicts
             true
 
     let conflicts = conflictStatus.GetConflicts()
-    let lastConflictReported =
-        match conflicts with
-        | _ when not conflicts.IsEmpty  ->
-            let c = conflicts |> Seq.minBy (fun c -> c.Parent)
-            let selectedVersion = Map.tryFind c.Name filteredVersions
-            let key = conflicts |> HashSet,selectedVersion
-            stackpack.KnownConflicts.Add key |> ignore
+    for c in conflicts do
+        match c.Parent with
+        | PackageRequirementSource.Package(parentName,_,_) ->
+            match stackpack.ConflictHistory.TryGetValue parentName with
+            | true,count ->
+                stackpack.ConflictHistory.[parentName] <- count + 2
+            | _ ->
+                stackpack.ConflictHistory.Add(parentName, 2)
+        | _ -> ()
 
-            let reportThatResolverIsTakingLongerThanExpected =
-                not isNewConflict && DateTime.Now - conflictState.LastConflictReported > TimeSpan.FromSeconds 10.
-
-            if Logging.verbose then
-                tracefn "%s" (conflictStatus.GetErrorText false)
-                tracefn "    ==> Trying different resolution."
-            if reportThatResolverIsTakingLongerThanExpected then
+    let reportThatResolverIsTakingLongerThanExpected =
+        not isNewConflict && DateTime.Now - conflictState.LastConflictReported > TimeSpan.FromSeconds 10.
+  
+    if reportThatResolverIsTakingLongerThanExpected then
+        let lastConflictReported =
+            match conflicts with
+            | _ when not conflicts.IsEmpty ->
+                let c = conflicts |> Seq.minBy (fun c -> c.Parent)
+                let selectedVersion = Map.tryFind c.Name filteredVersions
+                let key = conflicts |> HashSet,selectedVersion
+                stackpack.KnownConflicts.Add key |> ignore
+            
                 traceWarnfn "%s" (conflictStatus.GetErrorText false)
                 traceWarn "The process is taking longer than expected."
                 traceWarn "Paket may still find a valid resolution, but this might take a while."
                 DateTime.Now
-            else
-                conflictState.LastConflictReported
-        | _ -> conflictState.LastConflictReported
-    { conflictState with
-        LastConflictReported = lastConflictReported }, stackpack
+            | _ -> conflictState.LastConflictReported
+
+        { conflictState with
+            LastConflictReported = lastConflictReported }, stackpack
+    else
+        conflictState, stackpack
 
 
 [<Struct>]
@@ -1046,8 +1052,9 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
 
     let rec step (stage:Stage) (stackpack:StackPack) compatibleVersions (flags:StepFlags) =
 
-        let inline fuseConflicts currentConflict priorConflictSteps conflicts =
-            let findMatchingStep priorConflictSteps =
+        let inline fuseConflicts currentRequirement filteredVersions currentConflict priorConflictSteps conflicts =
+            let currentConflict,stackpack = boostConflicts filteredVersions currentRequirement stackpack currentConflict
+            let matchingStep =
                 let currentNames =
                     conflicts
                     |> Seq.map (fun c ->
@@ -1055,23 +1062,24 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                         |> Set.map (fun (pr:PackageRequirement) -> pr.Name) 
                         |> Set.add c.Name)
                     |> Set.unionMany
+
                 priorConflictSteps
                 |> List.tryExtractOne (fun (_,_,lastRequirement:PackageRequirement,_,_) ->
                     currentNames |> Set.contains lastRequirement.Name)
 
-            match findMatchingStep priorConflictSteps with
-            | None, []  -> currentConflict
+            match matchingStep with
+            | None, [] -> currentConflict
             | (Some head), priorConflictSteps ->
                 let (lastConflict, lastStep, lastRequirement, lastCompatibleVersions, lastFlags) = head
                 let continueConflict = 
-                    { currentConflict with VersionsToExplore = lastConflict.VersionsToExplore }        
-                step (Inner((continueConflict,lastStep,lastRequirement), priorConflictSteps))  stackpack lastCompatibleVersions lastFlags
+                    { currentConflict with VersionsToExplore = lastConflict.VersionsToExplore }
+                step (Inner((continueConflict,lastStep,lastRequirement), priorConflictSteps)) stackpack lastCompatibleVersions lastFlags
             // could not find a specific package - go back one step
             | None, head :: priorConflictSteps ->
                 let (lastConflict, lastStep, lastRequirement, lastCompatibleVersions, lastFlags) = head
                 let continueConflict = 
                     { currentConflict with VersionsToExplore = lastConflict.VersionsToExplore }        
-                step (Inner((continueConflict,lastStep,lastRequirement), priorConflictSteps))  stackpack lastCompatibleVersions lastFlags
+                step (Inner((continueConflict,lastStep,lastRequirement), priorConflictSteps)) stackpack lastCompatibleVersions lastFlags
                         
         match stage with            
         | Step((currentConflict,currentStep,_currentRequirement), priorConflictSteps)  -> 
@@ -1135,8 +1143,8 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                 Requirement = Seq.head conflicts
                                 GetPackageVersions = getVersionsF }}
 
-                if not (Seq.isEmpty conflicts) then                
-                    fuseConflicts currentConflict priorConflictSteps conflicts
+                if not (Seq.isEmpty conflicts) then
+                    fuseConflicts currentRequirement currentStep.FilteredVersions currentConflict priorConflictSteps conflicts
                 else
                     let compatibleVersions,globalOverride,tryRelaxed =
                         getCompatibleVersions currentStep groupName currentRequirement getVersionsBlock
@@ -1162,10 +1170,10 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                         HasUnlisted = false
                         UnlistedSearch = false
                     }
-                    step (Outer ((conflictState,currentStep,currentRequirement),priorConflictSteps)) stackpack compatibleVersions  flags 
+                    step (Outer ((conflictState,currentStep,currentRequirement),priorConflictSteps)) stackpack compatibleVersions flags 
         | Outer ((currentConflict,currentStep,currentRequirement), priorConflictSteps) ->
             if flags.Ready then
-                fuseConflicts currentConflict priorConflictSteps (HashSet [ currentRequirement ])
+                fuseConflicts currentRequirement currentStep.FilteredVersions currentConflict priorConflictSteps (HashSet [ currentRequirement ])
             else
                 let flags = {
                   flags with
@@ -1173,7 +1181,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                     FirstTrial = true
                 }
                 let currentConflict = { currentConflict with VersionsToExplore = compatibleVersions }
-                step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions  flags 
+                step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags 
 
         | Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)->
             if not (keepLooping flags currentConflict currentRequirement) then
@@ -1245,15 +1253,36 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                         // Example: We took A with version 1.0.0 (in our current resolution), but this version depends on A > 1.0.0
                         let conflictingResolvedPackages =
                             currentStep.CurrentResolution
-                            |> Map.toSeq
-                            |> Seq.map snd
-                            // Ignore packages which have "OverrideAll", otherwise == will not work anymore.
-                            |> Seq.filter (fun resolved -> lockedPackages.Contains resolved.Name |> not)
-                            |> Seq.choose (fun r -> 
-                                DependencySetFilter.findFirstIncompatibility currentStep lockedPackages exploredPackage.Dependencies r
-                                |> Option.map (fun incompat -> r,incompat))
+                            |> Seq.choose (fun kv ->
+                                let resolved = kv.Value
+                                // Ignore packages which have "OverrideAll", otherwise == will not work anymore.
+                                if lockedPackages.Contains resolved.Name then None else
+                                DependencySetFilter.findFirstIncompatibility currentStep lockedPackages exploredPackage.Dependencies resolved
+                                |> Option.map (fun incompat -> resolved,incompat))
 
-                        let canTakePackage = conflictingResolvedPackages |> Seq.isEmpty
+                        let conflictingDepsRanges =
+                            exploredPackage.Dependencies
+                            |> Seq.collect (fun (name,vr,_) ->
+                                let conflictingWithOpen =
+                                    currentStep.OpenRequirements
+                                    |> Seq.filter (fun r ->
+                                        r.Name = name && 
+                                        r.VersionRequirement.IsConflicting vr)
+                                    |> Seq.map (fun _ -> name,vr)
+
+                                let conflictingWithClosed = 
+                                    currentStep.ClosedRequirements
+                                    |> Seq.filter (fun r -> 
+                                        r.Name = name && 
+                                        r.VersionRequirement.IsConflicting vr)
+                                    |> Seq.map (fun _ -> name,vr)
+                        
+                                conflictingWithOpen
+                                |> Seq.append conflictingWithClosed)
+
+                        let canTakePackage = 
+                            Seq.isEmpty conflictingResolvedPackages &&
+                            Seq.isEmpty conflictingDepsRanges
 
                         if canTakePackage then
                             let nextStep =
@@ -1271,7 +1300,12 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                         else
                             let getVersionsF packName =
                                 getVersionsBlock ResolverStrategy.Max (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName)
-                            let conflictingPackage,(_,vr,_) = conflictingResolvedPackages |> Seq.head
+
+                            let conflictingPackageName,vr = 
+                                match Seq.tryHead conflictingResolvedPackages with
+                                | Some (conflictingPackage,(_,vr,_)) -> conflictingPackage.Name,vr
+                                | None -> Seq.head conflictingDepsRanges
+
                             let currentConflict =    
                                 { currentConflict with
                                     Status = ResolutionRaw.ConflictRaw {
@@ -1279,9 +1313,9 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                         RequirementSet = Set.empty
                                         Requirement = 
                                             { currentRequirement with 
-                                                  Name = conflictingPackage.Name
+                                                  Name = conflictingPackageName
                                                   VersionRequirement = vr
-                                                  Parent = Package(currentRequirement.Name,exploredPackage.Version,exploredPackage.Source)  }
+                                                  Parent = Package(currentRequirement.Name,exploredPackage.Version,exploredPackage.Source) }
                                         GetPackageVersions = getVersionsF }}
 
                             step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags

@@ -231,7 +231,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                           VersionRequirement = v
                           ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max
                           ResolverStrategyForTransitives = Some ResolverStrategy.Max
-                          Parent = PackageRequirementSource.DependenciesFile fileName
+                          Parent = PackageRequirementSource.DependenciesFile(fileName,0)
                           Graph = Set.empty
                           Sources = group.Sources
                           IsCliTool = false
@@ -280,7 +280,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                               VersionRequirement = versionReq
                               ResolverStrategyForDirectDependencies = group.Options.ResolverStrategyForDirectDependencies
                               ResolverStrategyForTransitives = group.Options.ResolverStrategyForTransitives
-                              Parent = PackageRequirementSource.DependenciesFile "runtimeresolution.dependencies"
+                              Parent = PackageRequirementSource.DependenciesFile("runtimeresolution.dependencies",0)
                               Graph = Set.empty
                               Sources = group.Sources
                               IsCliTool = false
@@ -308,7 +308,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                                 match oldDepsInfo with
                                 | Some d -> d.ResolverStrategyForTransitives
                                 | None -> group.Options.ResolverStrategyForTransitives
-                              Parent = PackageRequirementSource.DependenciesFile "runtimeresolution.dependencies"
+                              Parent = PackageRequirementSource.DependenciesFile("runtimeresolution.dependencies",0)
                               Graph = Set.empty
                               Sources = group.Sources
                               IsCliTool = false
@@ -488,7 +488,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
         match tryFindPackageLine groupName packageName with
         | Some pos -> 
-            let package = DependenciesFileParser.parsePackageLine(groups.[groupName].Sources,PackageRequirementSource.DependenciesFile fileName,list.[pos])
+            let package = DependenciesFileParser.parsePackageLine(groups.[groupName].Sources,PackageRequirementSource.DependenciesFile(fileName,pos),list.[pos])
 
             if versionRequirement.Range.IsIncludedIn(package.VersionRequirement.Range) then
                 list.[pos] <- packageString

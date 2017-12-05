@@ -1,0 +1,3 @@
+Hangfire.MySql.Core
+paket.conflict.lib
+Moq
