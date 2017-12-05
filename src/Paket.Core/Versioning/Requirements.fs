@@ -1139,13 +1139,6 @@ type PackageRequirement =
             | _, Specific _ -> 1
             | _ -> 0
         if c <> 0 then c else
-        let c = 
-            match x.VersionRequirement.PreReleases, y.VersionRequirement.PreReleases with
-            | PreReleaseStatus.No, PreReleaseStatus.No -> 0
-            | PreReleaseStatus.No, _ -> -1
-            | _, PreReleaseStatus.No -> 1
-            | _ -> 0
-        if c <> 0 then c else
         let c = -compare x.ResolverStrategyForDirectDependencies y.ResolverStrategyForDirectDependencies
         if c <> 0 then c else
         let c = -compare x.ResolverStrategyForTransitives y.ResolverStrategyForTransitives

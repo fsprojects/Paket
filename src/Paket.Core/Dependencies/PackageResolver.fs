@@ -1259,7 +1259,6 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                 DependencySetFilter.findFirstIncompatibility currentStep lockedPackages exploredPackage.Dependencies resolved
                                 |> Option.map (fun incompat -> resolved,incompat))
 
-                        
                         let conflictingDepsRanges =
                             exploredPackage.Dependencies
                             |> Seq.collect (fun (name,vr,_) ->
@@ -1277,7 +1276,8 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                         r.VersionRequirement.IsConflicting vr)
                                     |> Seq.map (fun _ -> name,vr)
                         
-                                Seq.append conflictingWithClosed conflictingWithOpen)
+                                conflictingWithOpen
+                                |> Seq.append conflictingWithClosed)
 
                         let canTakePackage = 
                             Seq.isEmpty conflictingResolvedPackages &&
@@ -1299,6 +1299,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                         else
                             let getVersionsF packName =
                                 getVersionsBlock ResolverStrategy.Max (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName)
+
                             let conflictingPackageName,vr = 
                                 match Seq.tryHead conflictingResolvedPackages with
                                 | Some (conflictingPackage,(_,vr,_)) -> conflictingPackage.Name,vr

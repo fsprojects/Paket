@@ -48,13 +48,15 @@ type VersionRange =
 
     member this.IsConflicting (other : VersionRange) =
         let isConflict this other =
-            match other, this with
+            match this, other with
             | Minimum v1, Specific v2 when v1 > v2 -> true
+            | Minimum v1, Maximum v2 when v1 > v2 -> true
+            | Minimum v1, LessThan v2 when v1 > v2 -> true
             | Specific v1, Specific v2 when v1 <> v2 -> true
             | Range(_, min1, max1, _), Specific v2 when min1 > v2 || max1 < v2 -> true
             | Range(_, min1, max1, _), Range(_, min2, max2, _) when max1 < min2 || max2 < min1 -> true
             | GreaterThan v1, Specific v2 when v1 > v2 -> true
-            | Minimum v1, Maximum v2 when v1 > v2 -> true
+            | LessThan v1, Specific v2 when v1 < v2 -> true
             | _ -> false
 
         isConflict this other || isConflict other this
