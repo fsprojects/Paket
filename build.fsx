@@ -193,6 +193,13 @@ Target "DotnetRestoreTools" (fun _ ->
 )
 
 Target "DotnetRestore" (fun _ ->
+
+    //WORKAROUND dotnet restore with paket doesnt restore the PackageReference of SourceLink
+    // ref https://github.com/fsprojects/Paket/issues/2930
+    Paket.Restore (fun p ->
+        { p with
+            Group = "NetCoreTools" })
+
     netcoreFiles
     |> Seq.iter (fun proj ->
         DotNetCli.Restore (fun c ->
