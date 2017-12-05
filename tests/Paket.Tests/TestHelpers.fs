@@ -90,10 +90,10 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
     let sources = [ PackageSource.NuGetV2Source "" ]
     let packages = 
         dependencies
-        |> List.map (fun (n, v) -> 
+        |> List.mapi (fun i (n, v) -> 
                { Name = PackageName n
                  VersionRequirement = VersionRequirement(v, PreReleaseStatus.No)
-                 Parent = PackageRequirementSource.DependenciesFile ""
+                 Parent = PackageRequirementSource.DependenciesFile("",i)
                  Graph = Set.empty
                  Sources = sources
                  IsCliTool = false

@@ -27,7 +27,7 @@ let graph =
 
 let defaultPackage = 
     { Name = PackageName ""
-      Parent = PackageRequirementSource.DependenciesFile ""
+      Parent = PackageRequirementSource.DependenciesFile("",0)
       Graph = Set.empty
       Sources = []
       VersionRequirement = VersionRequirement(VersionRange.Exactly "1.0", PreReleaseStatus.No)
