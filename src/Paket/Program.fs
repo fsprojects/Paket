@@ -730,6 +730,10 @@ let why (results: ParseResults<WhyArgs>) =
 
     Why.ohWhy(packageName, directDeps, lockFile, groupName, results.Parser.PrintUsage(), options)
 
+let waitForDebugger () =
+    while not(System.Diagnostics.Debugger.IsAttached) do
+      System.Threading.Thread.Sleep(100)
+
 let handleCommand silent command =
     match command with
     | Add r -> processCommand silent add r
@@ -770,6 +774,10 @@ let handleCommand silent command =
     | Log_File _ -> failwithf "internal error: this code should never be reached."
 
 let main() =
+    let waitDebuggerEnvVar = Environment.GetEnvironmentVariable ("PAKET_WAIT_DEBUGGER")
+    if waitDebuggerEnvVar = "1" then
+        waitForDebugger()
+
     let resolution = Environment.GetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION")
     Logging.verboseWarnings <- Environment.GetEnvironmentVariable "PAKET_DETAILED_WARNINGS" = "true"
     if System.String.IsNullOrEmpty resolution then
