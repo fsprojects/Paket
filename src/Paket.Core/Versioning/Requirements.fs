@@ -1121,7 +1121,7 @@ type PackageRequirement =
 
     member this.Depth = this.Graph.Count
 
-    static member Compare(x,y,startWithPackage:PackageFilter option,boostX,boostY) =
+    static member Compare(x,y,startWithPackage:PackageFilter option,boostX,boostY) =        
         if obj.ReferenceEquals(x, y) then 0 else
         let c = compare
                   (not x.VersionRequirement.Range.IsGlobalOverride,x.Depth)
@@ -1131,6 +1131,19 @@ type PackageRequirement =
                     | Some filter when filter.Match x.Name -> -1
                     | Some filter when filter.Match y.Name -> 1
                     | _ -> 0
+        if c <> 0 then c else
+        let c = 
+            match x.VersionRequirement.Range, y.VersionRequirement.Range with
+            | Specific _, Specific _ -> 0
+            | Specific _, _ -> -1
+            | _, Specific _ -> 1
+            | _ -> 0
+        let c = 
+            match x.VersionRequirement.PreReleases, y.VersionRequirement.PreReleases with
+            | PreReleaseStatus.No, PreReleaseStatus.No -> 0
+            | PreReleaseStatus.No, _ -> -1
+            | _, PreReleaseStatus.No -> 1
+            | _ -> 0
         if c <> 0 then c else
         let c = -compare x.ResolverStrategyForDirectDependencies y.ResolverStrategyForDirectDependencies
         if c <> 0 then c else

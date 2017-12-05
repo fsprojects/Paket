@@ -1299,12 +1299,10 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                         else
                             let getVersionsF packName =
                                 getVersionsBlock ResolverStrategy.Max (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName)
-                            let conflictingPackageName,vr,parent = 
+                            let conflictingPackageName,vr = 
                                 match Seq.tryHead conflictingResolvedPackages with
-                                | Some (conflictingPackage,(_,vr,_)) -> conflictingPackage.Name,vr,Package(currentRequirement.Name,exploredPackage.Version,exploredPackage.Source) 
-                                | None ->
-                                    let name,vr = conflictingDepsRanges |> Seq.head 
-                                    name,vr,Package(currentRequirement.Name,exploredPackage.Version,exploredPackage.Source)
+                                | Some (conflictingPackage,(_,vr,_)) -> conflictingPackage.Name,vr
+                                | None -> Seq.head conflictingDepsRanges
 
                             let currentConflict =    
                                 { currentConflict with
@@ -1315,7 +1313,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                             { currentRequirement with 
                                                   Name = conflictingPackageName
                                                   VersionRequirement = vr
-                                                  Parent = parent }
+                                                  Parent = Package(currentRequirement.Name,exploredPackage.Version,exploredPackage.Source) }
                                         GetPackageVersions = getVersionsF }}
 
                             step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags
