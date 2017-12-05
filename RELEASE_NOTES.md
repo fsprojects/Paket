@@ -1,5 +1,7 @@
-#### 5.124.1 - 2017-12-04
+#### 5.125.0 - 2017-12-05
+* Resolution by file order in paket.dependencies instead of alphabetical order (as new tie breaker) - https://github.com/fsprojects/Paket/issues/2898
 * BUGFIX: Transitive dependencies should be kept as stable as possible in paket install - https://github.com/fsprojects/Paket/pull/2927
+* PERFORMANCE: Boost conflicts and skip the "loop of doom" - https://github.com/fsprojects/Paket/pull/2928
 * PERFORMANCE: Preferred versions do not need to query the NuGet server - https://github.com/fsprojects/Paket/pull/2927
 
 #### 5.124.0 - 2017-11-29
