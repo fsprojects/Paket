@@ -334,8 +334,8 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             let sourceLines = sources |> List.map (fun s -> DependenciesFileSerializer.sourceString(s.ToString()))
             let packageLines =
                 packages 
-                |> List.map (fun (name,vr,restr, isCliTool) -> 
-                    let vr = createPackageRequirement sources (name, vr, ExplicitRestriction restr) dependenciesFileName
+                |> List.mapi (fun i (name,vr,restr, isCliTool) -> 
+                    let vr = createPackageRequirement sources (name, vr, ExplicitRestriction restr) (dependenciesFileName,i)
                     DependenciesFileSerializer.packageString isCliTool vr.Name vr.VersionRequirement vr.ResolverStrategyForTransitives vr.Settings)
 
             let newLines = sourceLines @ [""] @ packageLines |> Seq.toArray

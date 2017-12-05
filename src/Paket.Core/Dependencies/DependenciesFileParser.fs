@@ -486,14 +486,14 @@ module DependenciesFileParser =
                     lineNo,{ current with Options = parseOptions current options} ::other
 
                 | Package(name,version,rest) ->
-                    let package = parsePackage(current.Sources,DependenciesFile fileName,name,version,false,rest) 
+                    let package = parsePackage(current.Sources,DependenciesFile(fileName,lineNo),name,version,false,rest) 
                     if checkDuplicates && current.Packages |> List.exists (fun p -> p.Name = package.Name) then
                         traceWarnfn "Package %O is defined more than once in group %O of %s" package.Name current.Name fileName
                     
                     lineNo, { current with Packages = current.Packages @ [package] }::other
 
                 | CliTool(name,version,rest) ->
-                    let package = parsePackage(current.Sources,DependenciesFile fileName,name,version,true,rest) 
+                    let package = parsePackage(current.Sources,DependenciesFile(fileName,lineNo),name,version,true,rest) 
                     if checkDuplicates && current.Packages |> List.exists (fun p -> p.Name = package.Name) then
                         traceWarnfn "Package %O is defined more than once in group %O of %s" package.Name current.Name fileName
                     
