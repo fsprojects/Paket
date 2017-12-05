@@ -1138,6 +1138,7 @@ type PackageRequirement =
             | Specific _, _ -> -1
             | _, Specific _ -> 1
             | _ -> 0
+        if c <> 0 then c else
         let c = 
             match x.VersionRequirement.PreReleases, y.VersionRequirement.PreReleases with
             | PreReleaseStatus.No, PreReleaseStatus.No -> 0
