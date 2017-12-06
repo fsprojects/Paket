@@ -144,3 +144,11 @@ let toPath elems = System.IO.Path.Combine(elems |> Seq.toArray)
 let ensureDir () = System.Environment.CurrentDirectory <-  NUnit.Framework.TestContext.CurrentContext.TestDirectory
 
 let printSqs sqs = sqs |> Seq.iter (printfn "%A")
+
+let changeWorkingDir newPath =
+    let oldPath = System.Environment.CurrentDirectory
+    System.Environment.CurrentDirectory <- newPath
+    { new IDisposable with
+        member x.Dispose() = 
+            System.Environment.CurrentDirectory <- oldPath
+    }
