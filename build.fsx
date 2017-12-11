@@ -5,6 +5,7 @@ System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
 
 #r @"packages/build/FAKE/tools/FakeLib.dll"
 #r "System.IO.Compression.FileSystem"
+#r @"packages/build/Newtonsoft.Json/lib/net45/Newtonsoft.Json.dll"
 
 open Fake
 open Fake.Git
