@@ -1,3 +1,6 @@
+#### 5.125.6 - 2017-12-11
+* BUGFIX: Remove possibly nonexistent extension safely - https://github.com/fsprojects/Paket/pull/2901
+
 #### 5.125.5 - 2017-12-11
 * BOOTSTRAPPER: work around fileversion issues
 
