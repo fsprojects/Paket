@@ -56,7 +56,10 @@ type MsBuildFile = {
 module MsBuildFile =
     let ofFile (f:FrameworkDependentFile) =
         let fi = FileInfo(normalizePath f.File.FullPath)
-        let name = fi.Name.Replace(fi.Extension, "")
+        let name =
+            let ext = fi.Extension
+            if String.IsNullOrEmpty ext then fi.Name
+            else fi.Name.Replace(ext, "")
         { Name = name; Path = f.File.FullPath }
 
 type FrameworkReference = {
