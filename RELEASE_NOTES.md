@@ -1,3 +1,6 @@
+#### 5.125.4 - 2017-12-11
+* BOOTSTRAPPER: work around fileversion issues
+
 #### 5.125.3 - 2017-12-05
 * Resolution by file order in paket.dependencies instead of alphabetical order (as new tie breaker) - https://github.com/fsprojects/Paket/issues/2898
 * BUGFIX: Transitive dependencies should be kept as stable as possible in paket install - https://github.com/fsprojects/Paket/pull/2927

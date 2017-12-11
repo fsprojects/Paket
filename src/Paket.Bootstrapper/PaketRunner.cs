@@ -18,8 +18,9 @@ namespace Paket.Bootstrapper
                 var version = new Version(versionInfo.FileVersion);
                 setBootstrapperArg = version >= VersionWithFromBootstrapper;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                ConsoleImpl.WriteWarning("Could not detect bootstrapper version. Message: {0}", ex.Message);
             }
 
             return
