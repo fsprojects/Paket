@@ -67,7 +67,7 @@ let dotnetcliVersion : string =
     try
         let content = File.ReadAllText "global.json"
         let json = Newtonsoft.Json.Linq.JObject.Parse content
-        let sdk = json.Item("sdk") :?> JObject
+        let sdk = json.Item("sdk") :?> Newtonsoft.Json.Linq.JObject
         let version = sdk.Property("version").Value.ToString()
         version
     with
