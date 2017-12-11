@@ -11,11 +11,21 @@ namespace Paket.Bootstrapper
 
         static IEnumerable<string> SetBootstrapperArgument(string program, IEnumerable<string> arguments)
         {
-            var versionInfo = FileVersionInfo.GetVersionInfo(program);
-            var version = new Version(versionInfo.FileVersion);
-            return version >= VersionWithFromBootstrapper
-                ? new[] {"--from-bootstrapper"}.Concat(arguments)
-                : arguments;
+            var setBootstrapperArg = true;
+            try
+            {
+                var versionInfo = FileVersionInfo.GetVersionInfo(program);
+                var version = new Version(versionInfo.FileVersion);
+                setBootstrapperArg = version >= VersionWithFromBootstrapper;
+            }
+            catch (Exception)
+            {
+            }
+
+            return
+               setBootstrapperArg
+                    ? new[] { "--from-bootstrapper" }.Concat(arguments)
+                    : arguments;
         }
 
         public static int Run(string program, IEnumerable<string> arguments)
