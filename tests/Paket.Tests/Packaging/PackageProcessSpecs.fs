@@ -17,7 +17,8 @@ let ``Loading assembly metadata works``() =
         if curDir.ToLowerInvariant().Contains "system32" then
             Path.GetDirectoryName (assemblyLocation)
         else curDir
-    System.Environment.CurrentDirectory <- workingDir
+
+    use _cd = TestHelpers.changeWorkingDir workingDir
 
     let fileName =
         if File.Exists(Path.Combine(workingDir, "Paket.Tests.fsproj")) then

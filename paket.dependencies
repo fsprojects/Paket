@@ -33,6 +33,12 @@ github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
 github fsprojects/FSharp.TypeProviders.SDK:dc5ac01a1ac288eceb1fd6f12a5d388236f4f8e5 src/AssemblyReader.fs
 github forki/FsUnit FsUnit.fs
 
+group NetCoreTools
+  storage: none
+  source https://nuget.org/api/v2
+
+  nuget SourceLink.Create.CommandLine 2.1.1
+  nuget SourceLink.Embed.PaketFiles 2.1.1
 
 group Build
   content: none

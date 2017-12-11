@@ -38,7 +38,7 @@ let ``#2289 Paket 4.x install command takes hours to complete``() =
 
 [<Test>]
 let ``#2294 Cannot pin NETStandard.Library = 1.6.0``() =
-    let lockFile = update "i002294-pin-netstandard-1-6"
+    let lockFile = update "i002294-pin-netstd16"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NETStandard.Library"].Version
     |> shouldEqual (SemVer.Parse "1.6")
 

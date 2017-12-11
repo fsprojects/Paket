@@ -12,7 +12,7 @@ open NUnit.Framework
 
 [<Test>]
 let ``#1633 paket.local local source override``() =
-    clearPackage "NUnit"
+    clearPackageAtVersion "NUnit" "2.6.3"
 
     paketEx true "restore" "i001633-local-source-override" |> ignore
     let doc = new XmlDocument()
@@ -31,14 +31,14 @@ let ``#1633 paket.local local source override``() =
     |> shouldEqual (Some "true")
 
     // The package should not be in cache
-    isPackageCached "NUnit"
+    isPackageCached "NUnit" "2.6.3"
     |> shouldEqual []
 
     // Issue #2690
     paketEx true "restore" "i001633-local-source-override" |> ignore
 
     // The package should not be in cache
-    isPackageCached "NUnit"
+    isPackageCached "NUnit" "2.6.3"
     |> shouldEqual []
 
 let replaceInFile filePath (searchText: string) replaceText =

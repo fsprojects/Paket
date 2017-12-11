@@ -62,7 +62,7 @@ let gitName = "Paket"
 // The url for the raw files hosted
 let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
-let dotnetcliVersion = "2.1.0-preview1-007002"
+let dotnetcliVersion = "2.0.3"
 
 let dotnetSDKPath = System.Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) </> "dotnetcore" |> FullName
 
@@ -193,6 +193,13 @@ Target "DotnetRestoreTools" (fun _ ->
 )
 
 Target "DotnetRestore" (fun _ ->
+
+    //WORKAROUND dotnet restore with paket doesnt restore the PackageReference of SourceLink
+    // ref https://github.com/fsprojects/Paket/issues/2930
+    Paket.Restore (fun p ->
+        { p with
+            Group = "NetCoreTools" })
+
     netcoreFiles
     |> Seq.iter (fun proj ->
         DotNetCli.Restore (fun c ->
