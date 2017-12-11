@@ -16,8 +16,14 @@
     <!-- Paket command -->
     <PaketExePath Condition=" '$(PaketExePath)' == '' AND Exists('$(PaketRootPath)paket.exe')">$(PaketRootPath)paket.exe</PaketExePath>
     <PaketExePath Condition=" '$(PaketExePath)' == '' ">$(PaketToolsPath)paket.exe</PaketExePath>
+    <!-- TODO add check for paket.dll (netcore) in .paket directory -->
     <PaketCommand Condition=" '$(OS)' == 'Windows_NT'">"$(PaketExePath)"</PaketCommand>
     <PaketCommand Condition=" '$(OS)' != 'Windows_NT' ">$(MonoPath) --runtime=v4.0.30319 "$(PaketExePath)"</PaketCommand>
+
+    <_PaketExeExtension>$([System.IO.Path]::GetExtension("$(PaketExePath)"))</_PaketExeExtension>
+    <_PaketExeFileName>$([System.IO.Path]::GetFileName("$(PaketExePath)"))</_PaketExeFileName>
+    <!-- .net core fdd -->
+    <PaketCommand Condition=" '$(_PaketExeExtension)' == '.dll' ">dotnet "$(PaketExePath)"</PaketCommand>
     <PaketBootStrapperExePath Condition=" '$(PaketBootStrapperExePath)' == '' AND Exists('$(PaketRootPath)paket.bootstrapper.exe')">$(PaketRootPath)paket.bootstrapper.exe</PaketBootStrapperExePath>
     <PaketBootStrapperExePath Condition=" '$(PaketBootStrapperExePath)' == '' ">$(PaketToolsPath)paket.bootstrapper.exe</PaketBootStrapperExePath>
     <PaketBootStrapperCommand Condition=" '$(OS)' == 'Windows_NT'">"$(PaketBootStrapperExePath)"</PaketBootStrapperCommand>
