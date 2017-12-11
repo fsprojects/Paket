@@ -50,6 +50,7 @@ group Build
   nuget System.ValueTuple
   nuget Microsoft.AspNet.Razor
   nuget ILRepack
+  nuget Newtonsoft.Json
   
   github fsharp/FAKE modules/Octokit/Octokit.fsx
   

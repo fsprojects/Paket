@@ -62,7 +62,15 @@ let gitName = "Paket"
 // The url for the raw files hosted
 let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
-let dotnetcliVersion = "2.0.3"
+let dotnetcliVersion : string = 
+    try
+        let content = File.ReadAllText "global.json"
+        let json = Newtonsoft.Json.Linq.JObject.Parse content
+        let sdk = json.Item("sdk") :?> JObject
+        let version = sdk.Property("version").Value.ToString()
+        version
+    with
+    | exn -> failwithf "Could not parse global.json: %s" exn.Message
 
 let dotnetSDKPath = System.Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) </> "dotnetcore" |> FullName
 
