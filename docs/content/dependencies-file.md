@@ -8,7 +8,7 @@ specifies dependencies for particular project.
 To give you an overview, consider the following `paket.dependencies` file:
 
 ```paket
-source https://nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 
 // NuGet packages
 nuget NUnit ~> 2.6.3
