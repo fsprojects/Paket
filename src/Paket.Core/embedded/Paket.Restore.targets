@@ -24,6 +24,9 @@
     <_PaketExeFileName>$([System.IO.Path]::GetFileName("$(PaketExePath)"))</_PaketExeFileName>
     <!-- .net core fdd -->
     <PaketCommand Condition=" '$(_PaketExeExtension)' == '.dll' ">dotnet "$(PaketExePath)"</PaketCommand>
+    <!-- .net core fdd wrapped in script -->
+    <PaketCommand Condition=" '$(_PaketExeFileName)' == 'paket' OR '$(_PaketExeFileName)' == 'paket.cmd' ">"$(PaketExePath)"</PaketCommand>
+
     <PaketBootStrapperExePath Condition=" '$(PaketBootStrapperExePath)' == '' AND Exists('$(PaketRootPath)paket.bootstrapper.exe')">$(PaketRootPath)paket.bootstrapper.exe</PaketBootStrapperExePath>
     <PaketBootStrapperExePath Condition=" '$(PaketBootStrapperExePath)' == '' ">$(PaketToolsPath)paket.bootstrapper.exe</PaketBootStrapperExePath>
     <PaketBootStrapperCommand Condition=" '$(OS)' == 'Windows_NT'">"$(PaketBootStrapperExePath)"</PaketBootStrapperCommand>
