@@ -1,14 +1,11 @@
-#### 5.125.6 - 2017-12-11
+#### 5.126.0 - 2017-12-12
 * BUGFIX: Remove possibly nonexistent extension safely - https://github.com/fsprojects/Paket/pull/2901
-
-#### 5.125.5 - 2017-12-11
-* BOOTSTRAPPER: work around fileversion issues
-
-#### 5.125.3 - 2017-12-05
-* Resolution by file order in paket.dependencies instead of alphabetical order (as new tie breaker) - https://github.com/fsprojects/Paket/issues/2898
 * BUGFIX: Transitive dependencies should be kept as stable as possible in paket install - https://github.com/fsprojects/Paket/pull/2927
 * PERFORMANCE: Boost conflicts and skip the "loop of doom" - https://github.com/fsprojects/Paket/pull/2928
 * PERFORMANCE: Preferred versions do not need to query the NuGet server - https://github.com/fsprojects/Paket/pull/2927
+* BOOTSTRAPPER: work around fileversion issues
+* BOOTSTRAPPER: Don't lock files in the bootstrapper when we are only reading - https://github.com/fsprojects/Paket/pull/2936
+* Resolution by file order in paket.dependencies instead of alphabetical order (as new tie breaker) - https://github.com/fsprojects/Paket/issues/2898
 
 #### 5.124.0 - 2017-11-29
 * Bootstrapper now correctly access files as ReadWrite only when needed - https://github.com/fsprojects/Paket/pull/2920
