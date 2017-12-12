@@ -164,9 +164,123 @@ namespace Paket.Bootstrapper.DownloadStrategies
             }
 
             FileSystemProxy.ExtractToDirectory(paketPackageFile, randomFullPath);
-            var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.exe");
-            FileSystemProxy.CopyFile(paketSourceFile, target, true);
+
+            if (Environment.GetEnvironmentVariable("PAKET_FEATURE_LOCALTOOL") == "1")
+            {
+                var paketToolsInstallBaseDir = Path.Combine("paket-files", "paket", "local-tools", "paket");
+                var paketToolsInstallRelativeDir = Path.Combine("..", paketToolsInstallBaseDir, "tools");
+                string paketToolRuntimeRelativePath, paketToolRuntimeHostWin, paketToolRuntimeHostLinux;
+                if (Environment.GetEnvironmentVariable("PAKET_FEATURE_NETCORE") == "1")
+                {
+                    paketToolRuntimeRelativePath = Path.Combine(paketToolsInstallRelativeDir, "netcoreapp2.0", "paket.dll");
+                    paketToolRuntimeHostWin = paketToolRuntimeHostLinux = "dotnet ";
+                }
+                else
+                {
+                    paketToolRuntimeRelativePath = Path.Combine(paketToolsInstallRelativeDir, "net45", "paket.exe");
+                    paketToolRuntimeHostWin = "";
+                    paketToolRuntimeHostLinux = "mono ";
+                }
+
+                ConsoleImpl.WriteTrace("copying tools from extrated nupkg ...");
+                foreach (var dir in Directory.EnumerateDirectories(Path.Combine(randomFullPath, "tools")))
+                {
+                    var netcoreBinDir = Path.Combine(Path.GetDirectoryName(target), paketToolsInstallRelativeDir, Path.GetFileName(dir));
+                    FileSystemProxy.CopyDirectory(dir, netcoreBinDir);
+                }
+
+                ConsoleImpl.WriteTrace("copying paket-files from extrated nupkg ...");
+                FileSystemProxy.CopyDirectory(Path.Combine(randomFullPath, "paket-files"), Path.Combine(Path.GetDirectoryName(target), paketToolsInstallRelativeDir, "..", "paket-files"));
+
+                string cmdWrapperPath = Path.ChangeExtension(target, ".cmd");
+                FileWriteAllLines(cmdWrapperPath, new[] {
+                    "@ECHO OFF",
+                    "",
+                    string.Format(@"{0}""%~dp0{1}"" %*", paketToolRuntimeHostWin, paketToolRuntimeRelativePath)
+                });
+
+                string shellWrapperPath = Path.ChangeExtension(target, null);
+                FileWriteAllLines(shellWrapperPath, new[] {
+                    "#!/bin/sh",
+                    "",
+                    string.Format(@"{0}""$(dirname ""$0"")/{1}"" ""$@""", paketToolRuntimeHostLinux, paketToolRuntimeRelativePath.Replace('\\', '/'))
+                }, "\n");
+
+                FileWriteAllLines(Path.Combine(Path.GetDirectoryName(target), "Paket.Restore.targets"), new[] {
+                    @"<Project xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">",
+                    @"<PropertyGroup>",
+                    @"    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>",
+                    @"    <PaketToolsPath>$(MSBuildThisFileDirectory)</PaketToolsPath>",
+                    @"    <PaketRootPath>$(MSBuildThisFileDirectory)..\</PaketRootPath>",
+                    @"    <PaketExePath Condition="" '$(PaketExePath)' == '' "">$(PaketToolsPath)paket</PaketExePath>",
+                    @"</PropertyGroup>",
+                    @"",
+                    string.Format(@"<Import Project=""$(PaketRootPath){0}\paket-files\Paket.Restore.targets"" />", paketToolsInstallBaseDir),
+                    @"</Project>"
+                });
+
+                if (!OSHelper.IsWindow)
+                {
+                    try
+                    {
+                        ConsoleImpl.WriteTrace("running chmod+x on '{0}' ...", shellWrapperPath);
+                        int exitCode = RunShell("chmod", string.Format(@"+x ""{0}"" ", shellWrapperPath));
+                        if (exitCode != 0)
+                            ConsoleImpl.WriteError("chmod failed with exit code {0}", exitCode);
+                    }
+                    catch (Exception e)
+                    {
+                        ConsoleImpl.WriteError("Running chmod failed with: {0}", e);
+                        throw;
+                    }
+                }
+                else
+                {
+                    ConsoleImpl.WriteTrace("chmod+x of '{0}' skipped on windows, execute it manually if needed", shellWrapperPath);
+                }
+            }
+            else
+            {
+                var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.exe");
+                FileSystemProxy.CopyFile(paketSourceFile, target, true);
+            }
+
             FileSystemProxy.DeleteDirectory(randomFullPath, true);
+        }
+
+        private void FileWriteAllLines(string path, string[] lines, string lineEnding = null)
+        {
+            ConsoleImpl.WriteTrace("writing file '{0}' ...", path);
+
+            using (var stream = FileSystemProxy.CreateFile(path))
+            using (var writer = new StreamWriter(stream))
+            {
+                if (lineEnding != null)
+                {
+                    writer.NewLine = lineEnding;
+                }
+
+                foreach (var line in lines)
+                {
+                    writer.WriteLine(line);
+                }
+            }
+        }
+
+        private int RunShell(string program, string argString)
+        {
+            var process = new System.Diagnostics.Process
+            {
+                StartInfo =
+                {
+                    FileName = program,
+                    Arguments = argString,
+                    UseShellExecute = true
+                }
+            };
+            process.Start();
+            process.WaitForExit();
+            return process.ExitCode;
         }
 
         protected override void SelfUpdateCore(string latestVersion)

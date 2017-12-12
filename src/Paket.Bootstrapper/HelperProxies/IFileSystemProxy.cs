@@ -9,6 +9,7 @@ namespace Paket.Bootstrapper.HelperProxies
         string GetCurrentDirectory();
         bool FileExists(string filename);
         void CopyFile(string fileFrom, string fileTo, bool overwrite = false);
+        void CopyDirectory(string directoryFrom, string directoryTo);
         void DeleteFile(string filename);
         Stream CreateFile(string tmpFile);
         string GetLocalFileVersion(string filename);

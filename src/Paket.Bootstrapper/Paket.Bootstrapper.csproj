@@ -49,6 +49,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.VisualBasic" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArgumentParser.cs" />
@@ -61,6 +62,7 @@
     <Compile Include="PaketDependencies.cs" />
     <Compile Include="PaketRunner.cs" />
     <Compile Include="Verbosity.cs" />
+    <Compile Include="OSHelper.cs" />
     <Compile Include="WindowsProcessArguments.cs" />
     <Compile Include="DownloadStrategies\CacheDownloadStrategy.cs" />
     <Compile Include="HelperProxies\IWebRequestProxy.cs" />

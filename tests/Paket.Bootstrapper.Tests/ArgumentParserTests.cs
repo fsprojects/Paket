@@ -37,6 +37,10 @@ namespace Paket.Bootstrapper.Tests
             {
             }
 
+            public void CopyDirectory(string directoryFrom, string directoryTo)
+            {
+            }
+
             public void DeleteFile(string filename)
             {
                 
