@@ -42,6 +42,7 @@ group NetCoreTools
 
 group Build
   content: none
+  framework >= net461
   source https://nuget.org/api/v2
   source https://ci.appveyor.com/nuget/fsharp-formatting
   
@@ -50,7 +51,6 @@ group Build
   nuget System.ValueTuple
   nuget Microsoft.AspNet.Razor
   nuget ILRepack
-  nuget Newtonsoft.Json
   
   github fsharp/FAKE modules/Octokit/Octokit.fsx
   

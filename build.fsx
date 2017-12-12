@@ -5,7 +5,6 @@ System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
 
 #r @"packages/build/FAKE/tools/FakeLib.dll"
 #r "System.IO.Compression.FileSystem"
-#r @"packages/build/Newtonsoft.Json/lib/net45/Newtonsoft.Json.dll"
 
 open Fake
 open Fake.Git
@@ -63,18 +62,7 @@ let gitName = "Paket"
 // The url for the raw files hosted
 let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
-let dotnetcliVersion : string = 
-    try
-        let content = File.ReadAllText "global.json"
-        let json = Newtonsoft.Json.Linq.JObject.Parse content
-        let sdk = json.Item("sdk") :?> Newtonsoft.Json.Linq.JObject
-        let version = sdk.Property("version").Value.ToString()
-        version
-    with
-    | exn -> failwithf "Could not parse global.json: %s" exn.Message
-
-let dotnetSDKPath = System.Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) </> "dotnetcore" |> FullName
-
+let dotnetcliVersion = DotNetCli.GetDotNetSDKVersionFromGlobalJson()
 
 let mutable dotnetExePath = "dotnet"    
 
