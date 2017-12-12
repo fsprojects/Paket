@@ -46,7 +46,8 @@ namespace Paket.Bootstrapper.HelperProxies
             {
                 try
                 {
-                    return File.Open(path, filemode, fileAccess, FileShare.None);
+                    var readOnly = fileAccess == FileAccess.Read;
+                    return File.Open(path, filemode, fileAccess, readOnly ? FileShare.Read : FileShare.None);
                 }
                 catch (Exception exception)
                 {
