@@ -25,7 +25,11 @@ let ``#1182 framework restrictions overwrite each other``() =
     lockFile.Contains("framework: winv4.5") |> shouldEqual false
 
 [<Test>]
+#if NETCOREAPP2_0
+[<Ignore "PlatformAttribute not supported by netstandard NUnit">]
+#else
 [<Platform("Mono")>] // PATH TOO LONG on Windows...
+#endif
 let ``#1190 paket add nuget should handle transitive dependencies``() = 
     paket "add nuget xunit version 2.1.0" "i001190-transitive-dependencies-with-restr" |> ignore
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-dependencies-with-restr","paket.lock"))

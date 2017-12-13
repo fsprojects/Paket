@@ -34,11 +34,18 @@ let partitionForTravis scenario =
     then Assert.Ignore("ignored in this part of the travis build")
     
 
-let paketToolPath = FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.exe")
 let dotnetToolPath =
     match Environment.GetEnvironmentVariable "DOTNET_EXE_PATH" with
     | null | "" -> "dotnet"
     | s -> s
+
+let paketToolPath =
+#if PAKET_NETCORE
+    dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin_netcore/paket.dll")
+#else
+    "", FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.exe")
+#endif
+
 let integrationTestPath = FullName(__SOURCE_DIRECTORY__ + "../../../integrationtests/scenarios")
 let scenarioTempPath scenario = Path.Combine(integrationTestPath,scenario,"temp")
 let originalScenarioPath scenario = Path.Combine(integrationTestPath,scenario,"before")
@@ -77,7 +84,7 @@ let prepare scenario =
 let prepareSdk scenario =
     let tmpPaketFolder = (scenarioTempPath scenario) @@ ".paket"
     let targetsFile = FullName(__SOURCE_DIRECTORY__ + "../../../src/Paket.Core/embedded/Paket.Restore.targets")
-    let paketExe = FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.exe")
+    let paketExe = snd paketToolPath
 
     setEnvironVar "PaketExePath" paketExe
     prepare scenario
@@ -92,13 +99,20 @@ type PaketMsg =
     static member isError ({ IsError = e}:PaketMsg) = e
     static member getMessage ({ Message = msg }:PaketMsg) = msg
 
-let directToolEx isPaket toolPath command workingDir =
+let directToolEx isPaket toolInfo commands workingDir =
+    let processFilename, processArgs =
+        match fst toolInfo, snd toolInfo with
+        | "", path ->
+            path, commands
+        | host, path ->
+            host, (sprintf "%s %s" path commands)
+
     #if INTERACTIVE
     let result =
         ExecProcessWithLambdas (fun info ->
-          info.FileName <- toolPath
+          info.FileName <- processFilename
           info.WorkingDirectory <- workingDir
-          info.Arguments <- command) 
+          info.Arguments <- processArgs) 
           (System.TimeSpan.FromMinutes 7.)
           false
           (printfn "%s")
@@ -109,7 +123,7 @@ let directToolEx isPaket toolPath command workingDir =
     #else
     Environment.SetEnvironmentVariable("PAKET_DETAILED_ERRORS", "true")
     Environment.SetEnvironmentVariable("PAKET_DETAILED_WARNINGS", "true")
-    printfn "%s> %s %s" workingDir (if isPaket then "paket" else toolPath) command
+    printfn "%s> %s %s" workingDir (if isPaket then "paket" else processFilename) processArgs
     let perfMessages = ResizeArray()
     let msgs = ResizeArray<PaketMsg>()
     let mutable perfMessagesStarted = false
@@ -125,10 +139,10 @@ let directToolEx isPaket toolPath command workingDir =
     let result =
         try
             ExecProcessWithLambdas (fun info ->
-              info.FileName <- toolPath
+              info.FileName <- processFilename
               info.WorkingDirectory <- workingDir
               info.CreateNoWindow <- true
-              info.Arguments <- command)
+              info.Arguments <- processArgs)
               (System.TimeSpan.FromMinutes 7.)
               true
               (addAndPrint true)
@@ -179,7 +193,7 @@ let checkResults msgs =
     |> shouldEqual []
 
 let directDotnet checkZeroWarn command workingDir =
-    let msgs = directToolEx false dotnetToolPath command workingDir
+    let msgs = directToolEx false ("", dotnetToolPath) command workingDir
     if checkZeroWarn then checkResults msgs
     msgs
 

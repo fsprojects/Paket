@@ -16,6 +16,10 @@ namespace Paket.Bootstrapper.HelperProxies
         public string GetCurrentDirectory() { return Directory.GetCurrentDirectory(); }
         public bool FileExists(string filename) { return File.Exists(filename); }
         public void CopyFile(string fileFrom, string fileTo, bool overwrite) { File.Copy(fileFrom, fileTo, overwrite); }
+        public void CopyDirectory(string directoryFrom, string directoryTo)
+        {
+            new Microsoft.VisualBasic.Devices.Computer().FileSystem.CopyDirectory( directoryFrom, directoryTo, true );
+        }
         public void DeleteFile(string filename) { File.Delete(filename); }
         public Stream CreateFile(string filename) { return File.Create(filename); }
         public string GetLocalFileVersion(string filename) { return BootstrapperHelper.GetLocalFileVersion(filename, this); }

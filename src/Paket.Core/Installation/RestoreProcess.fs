@@ -186,9 +186,12 @@ let extractRestoreTargets root =
     if !copiedElements then
         Path.Combine(root,".paket","Paket.Restore.targets")
     else
-        let result = extractElement root "Paket.Restore.targets"
-        copiedElements := true
-        result
+        if System.Environment.GetEnvironmentVariable("PAKET_FEATURE_LOCALTOOL") = "1" then
+            Path.Combine(root,".paket","Paket.Restore.targets")
+        else
+            let result = extractElement root "Paket.Restore.targets"
+            copiedElements := true
+            result
 
 let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package) =
     async {

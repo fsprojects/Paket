@@ -8,19 +8,15 @@ version: 0.0.1.{build}
 artifacts:
   - path: bin
     name: bin
+  - path: bin_netcore
+    name: bin_netcore
   - path: 'temp\*.nupkg'
     type: NuGetPackage
 nuget:
   account_feed: false
   project_feed: true
 
-#environment:
-#  # these variables are common to all jobs
-#  #common_var1: value1
-#
-#  matrix:
-#    # first group
-#    - SkipIntegrationTests: true
-#    # second group
-#    - SkipNuGet: true
-
+environment:
+  matrix:
+   - SkipIntegrationTestsNetCore: true
+   - SkipIntegrationTestsNet: true

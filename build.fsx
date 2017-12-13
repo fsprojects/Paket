@@ -66,13 +66,12 @@ let dotnetcliVersion = DotNetCli.GetDotNetSDKVersionFromGlobalJson()
 
 let mutable dotnetExePath = "dotnet"    
 
-let netcoreFiles = !! "src/**.preview?/*.fsproj" |> Seq.toList
-
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps
 // --------------------------------------------------------------------------------------
 
 let buildDir = "bin"
+let buildDirNetCore = "bin_netcore"
 let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
 let paketFile = buildMergedDir @@ "paket.exe"
@@ -137,6 +136,7 @@ Target "Clean" (fun _ ->
     !! "src/**/bin"
     ++ "tests/**/bin"
     ++ buildDir 
+    ++ buildDirNetCore
     ++ tempDir
     |> CleanDirs
 
@@ -197,42 +197,63 @@ Target "DotnetRestore" (fun _ ->
         { p with
             Group = "NetCoreTools" })
 
-    netcoreFiles
-    |> Seq.iter (fun proj ->
-        DotNetCli.Restore (fun c ->
-            { c with
-                Project = proj
-                ToolPath = dotnetExePath
-            })
-    )
+    DotNetCli.Restore (fun c ->
+        { c with
+            Project = "Paket.preview3.sln"
+            ToolPath = dotnetExePath
+        })
 )
 
 Target "DotnetBuild" (fun _ ->
-    netcoreFiles
-    |> Seq.iter (fun proj ->
-        DotNetCli.Build (fun c ->
-            { c with
-                Project = proj
-                ToolPath = dotnetExePath
-                AdditionalArgs = [ "/p:SourceLinkCreate=true" ]
-            })
-    )
+    DotNetCli.Build (fun c ->
+        { c with
+            Project = "Paket.preview3.sln"
+            ToolPath = dotnetExePath
+            AdditionalArgs = [ "/p:SourceLinkCreate=true" ]
+        })
 )
+"Clean" ==> "DotnetRestore" ==> "DotnetBuild" 
+
+Target "DotnetPublish" (fun _ ->
+    DotNetCli.Publish (fun c ->
+        { c with
+            Project = "src/Paket.preview3"
+            ToolPath = dotnetExePath
+            Output = FullName (currentDirectory </> buildDirNetCore)
+        })
+)
+"Clean" ==> "DotnetBuild" ?=> "DotnetPublish" 
 
 Target "DotnetPackage" (fun _ ->
     let outPath = FullName (currentDirectory </> tempDir </> "dotnetcore")
     CleanDir outPath
-    netcoreFiles
-    |> Seq.iter (fun proj ->
-        DotNetCli.Pack (fun c ->
-            { c with
-                Project = proj
-                ToolPath = dotnetExePath
-                AdditionalArgs = [(sprintf "-o \"%s\"" outPath); (sprintf "/p:Version=%s" release.NugetVersion)]
-            })
-    )
+    DotNetCli.Pack (fun c ->
+        { c with
+            Project = "src/Paket.Core.preview3/Paket.Core.fsproj"
+            ToolPath = dotnetExePath
+            AdditionalArgs = [(sprintf "-o \"%s\"" outPath); (sprintf "/p:Version=%s" release.NugetVersion)]
+        })
 )
 
+Target "DotnetTest" (fun _ ->
+    DotNetCli.Test (fun c ->
+        { c with
+            Project = "tests/Paket.Tests.preview3/Paket.Tests.fsproj"
+            ToolPath = dotnetExePath
+        })
+)
+
+Target "RunIntegrationTestsNetCore" (fun _ ->
+    // improves the speed of the test-suite by disabling the runtime resolution.
+    System.Environment.SetEnvironmentVariable("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
+    DotNetCli.Test (fun c ->
+        { c with
+            Project = "integrationtests/Paket.IntegrationTests.preview3/Paket.IntegrationTests.fsproj"
+            ToolPath = dotnetExePath
+            TimeOut = TimeSpan.FromMinutes 50.
+        })
+)
+"Clean" ==> "DotnetPublish" ==> "RunIntegrationTestsNetCore" 
 
 // --------------------------------------------------------------------------------------
 // Run the unit tests using test runner
@@ -378,6 +399,8 @@ Target "NuGet" (fun _ ->
             if File.Exists(d) then File.Move(d, f))
 )
 
+"DotnetPublish" ==> "NuGet" 
+
 Target "MergeDotnetCoreIntoNuget" (fun _ ->
 
     let nupkg = tempDir </> sprintf "Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
@@ -385,7 +408,7 @@ Target "MergeDotnetCoreIntoNuget" (fun _ ->
 
     let runTool = runCmdIn "tools" dotnetExePath
 
-    runTool """mergenupkg --source "%s" --other "%s" --framework netstandard1.6 """ nupkg netcoreNupkg
+    runTool """mergenupkg --source "%s" --other "%s" --framework netstandard2.0 """ nupkg netcoreNupkg
 )
 
 Target "PublishNuGet" (fun _ ->
@@ -605,8 +628,6 @@ Target "All" DoNothing
   =?> ("InstallDotNetCore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetBuild", not <| hasBuildParam "DISABLE_NETCORE")
-  =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
-
   ==> "BuildCore"
 
 "Clean"
@@ -614,17 +635,20 @@ Target "All" DoNothing
   ==> "Build"
   <=> "BuildCore"
   ==> "RunTests"
-  =?> ("GenerateReferenceDocs",isLocalBuild && not isMono)
-  =?> ("GenerateDocs",isLocalBuild && not isMono)
+  =?> ("DotnetTest", not <| hasBuildParam "DISABLE_NETCORE")
+  =?> ("GenerateReferenceDocs",isLocalBuild && not isMono && not (hasBuildParam "SkipDocs"))
+  =?> ("GenerateDocs",isLocalBuild && not isMono && not (hasBuildParam "SkipDocs"))
   ==> "All"
-  =?> ("ReleaseDocs",isLocalBuild && not isMono)
+  =?> ("ReleaseDocs",isLocalBuild && not isMono && not (hasBuildParam "SkipDocs"))
 
 "All"
   ==> "MergePaketTool"
-  =?> ("RunIntegrationTests", not <| hasBuildParam "SkipIntegrationTests")
+  =?> ("RunIntegrationTests", not <| (hasBuildParam "SkipIntegrationTests" || hasBuildParam "SkipIntegrationTestsNet"))
+  =?> ("RunIntegrationTestsNetCore", not <| (hasBuildParam "SkipIntegrationTests" || hasBuildParam "SkipIntegrationTestsNetCore" || hasBuildParam "DISABLE_NETCORE"))
   ==> "SignAssemblies"
   ==> "CalculateDownloadHash"
   =?> ("NuGet", not <| hasBuildParam "SkipNuGet")
+  =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE" && not <| hasBuildParam "SkipNuGet")
   =?> ("MergeDotnetCoreIntoNuget", not <| hasBuildParam "DISABLE_NETCORE" && not <| hasBuildParam "SkipNuGet")
   ==> "BuildPackage"
 
