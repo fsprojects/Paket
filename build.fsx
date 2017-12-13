@@ -614,10 +614,10 @@ Target "All" DoNothing
   ==> "Build"
   <=> "BuildCore"
   ==> "RunTests"
-  =?> ("GenerateReferenceDocs",isLocalBuild && not isMono)
-  =?> ("GenerateDocs",isLocalBuild && not isMono)
+  =?> ("GenerateReferenceDocs",isLocalBuild && not isMono && not (hasBuildParam "SkipDocs"))
+  =?> ("GenerateDocs",isLocalBuild && not isMono && not (hasBuildParam "SkipDocs"))
   ==> "All"
-  =?> ("ReleaseDocs",isLocalBuild && not isMono)
+  =?> ("ReleaseDocs",isLocalBuild && not isMono && not (hasBuildParam "SkipDocs"))
 
 "All"
   ==> "MergePaketTool"
