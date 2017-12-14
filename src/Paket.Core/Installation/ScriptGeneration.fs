@@ -134,7 +134,19 @@ module ScriptGeneration =
                 verbosefn "generating script - %s" scriptFile.FullName
             scriptFile.Directory.Create()
             let text = self.Render rootPath
-            File.WriteAllText (scriptFile.FullName, text)
+            
+            let existingFileContents =
+                if scriptFile.Exists then 
+                    Some (File.ReadAllText scriptFile.FullName)
+                else
+                    None
+
+            match existingFileContents with
+            | Some contents when contents = text ->
+                if verbose then
+                    verbosefn "script contents hasn't changed - %s" scriptFile.FullName
+            | None | Some _ ->
+                File.WriteAllText (scriptFile.FullName, text)
 
 
     type PaketContext = {
