@@ -123,6 +123,7 @@ ClientBin/
 *.pfx
 *.publishsettings
 project.lock.json
+*.binlog
 
 # RIA/Silverlight projects
 Generated_Code/
