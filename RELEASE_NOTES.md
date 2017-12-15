@@ -1,3 +1,6 @@
+#### 5.126.1 - 2017-12-15
+* USABILITY: Avoid replacing load script files if the contents are the same - https://github.com/fsprojects/Paket/pull/2940
+
 #### 5.126.0 - 2017-12-12
 * BUGFIX: Remove possibly nonexistent extension safely - https://github.com/fsprojects/Paket/pull/2901
 * BUGFIX: Transitive dependencies should be kept as stable as possible in paket install - https://github.com/fsprojects/Paket/pull/2927
