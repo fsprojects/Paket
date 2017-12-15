@@ -882,6 +882,8 @@ type PackagesFolderGroupConfig =
             let parent = Path.Combine(groupDir, packageFolder)
             ResolvedPackagesFolder.ResolvedFolder parent
     static member Default = DefaultPackagesFolder
+
+
 let RunInLockedAccessMode(rootFolder,action) =
     let paketFilesFolder = Path.Combine(rootFolder,Constants.PaketFilesFolderName)
     if Directory.Exists paketFilesFolder |> not then
