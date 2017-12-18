@@ -772,7 +772,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     | HttpStatusCode.OK -> ()
                     | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode
                     
-                    tracefn "Download %O %O%s done in %s." packageName version groupString (Utils.TimeSpanToReadableString sw.Elapsed)
+                    tracefn "Download of %O %O%s done in %s." packageName version groupString (Utils.TimeSpanToReadableString sw.Elapsed)
 
                     try
                         if downloadLicense && not (String.IsNullOrWhiteSpace nugetPackage.LicenseUrl) then
@@ -811,7 +811,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                 let! folder = ExtractPackage(targetFile.FullName, directory, packageName, version, detailed)
                 return targetFileName,folder
     }
-
+    
 
 let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool, config:PackagesFolderGroupConfig, source : PackageSource, caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, downloadLicense, force, detailed) =
     downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride, config, source , caches, groupName, packageName, version, isCliTool, includeVersionInPath, downloadLicense, force, detailed)

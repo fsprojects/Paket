@@ -186,9 +186,16 @@ let CreateModel(alternativeProjectRoot, root, force, dependenciesFile:Dependenci
         kv'.Value.Resolution
         |> Map.filter (fun name _ -> packages.Contains(kv'.Key,name))
         |> Seq.map (fun kv -> RestoreProcess.CreateInstallModel(alternativeProjectRoot, root,kv'.Key,sources,caches,force,kv'.Value.GetPackage kv.Key))
-        |> Seq.toArray
+        |> Seq.splitInto 5
+        |> Seq.map (fun tasks -> async {
+            let results = new System.Collections.Generic.List<_>()
+            for t in tasks do
+                let! r = t
+                results.Add(r)
+            return results })
         |> Async.Parallel
         |> Async.RunSynchronously)
+    |> Seq.concat
     |> Seq.concat
     |> Seq.toArray
 

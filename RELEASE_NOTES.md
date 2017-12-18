@@ -1,3 +1,6 @@
+#### 5.126.3 - 2017-12-18
+* USABILITY: Do not download more than 5 packages at the same time
+
 #### 5.126.2 - 2017-12-18
 * USABILITY: Print download times
 
