@@ -617,7 +617,7 @@ let private getLicenseFile (packageName:PackageName) version =
     Path.Combine(NuGetCache.GetTargetUserFolder packageName version, NuGetCache.GetLicenseFileName packageName version)
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool, config:PackagesFolderGroupConfig, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, downloadLicense, force, detailed) =
+let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool, config:PackagesFolderGroupConfig, source : PackageSource, caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, downloadLicense, force, detailed) =
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
     let normalizedNupkgName = NuGetCache.GetPackageFileName packageName version
     let configResolved = config.Resolve root groupName packageName version includeVersionInPath
@@ -691,9 +691,10 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
                 // discover the link on the fly
                 let downloadUrl = ref ""
                 try
+                    let sw = System.Diagnostics.Stopwatch.StartNew()
+                    let groupString = if groupName = Constants.MainDependencyGroup then "" else sprintf " (%O)" groupName
                     if authenticated then
-                        let group = if groupName = Constants.MainDependencyGroup then "" else sprintf " (%O)" groupName
-                        tracefn "Downloading %O %O%s" packageName version group
+                        tracefn "Downloading %O %O%s" packageName version groupString
 
                     let! nugetPackage = GetPackageDetails alternativeProjectRoot root force (GetPackageDetailsParameters.ofParams [source] groupName packageName version)
 
@@ -770,9 +771,8 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
                     match (httpResponse :?> HttpWebResponse).StatusCode with
                     | HttpStatusCode.OK -> ()
                     | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode
-
-                    if verbose then
-                        verbosefn "Downloaded %O %O from %s." packageName version !downloadUrl
+                    
+                    tracefn "Download %O %O%s done in %s." packageName version groupString (Utils.TimeSpanToReadableString sw.Elapsed)
 
                     try
                         if downloadLicense && not (String.IsNullOrWhiteSpace nugetPackage.LicenseUrl) then
@@ -788,7 +788,8 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
                      (match source.Auth |> Option.map toCredentials with
                       | Some(Credentials(_)) -> true
                       | _ -> false)
-                        -> do! download false (attempt + 1)
+                        ->  traceWarnfn "Could not download %O %O.%s    %s.%sRetry." packageName version Environment.NewLine exn.Message Environment.NewLine
+                            do! download false (attempt + 1)
                 | exn when String.IsNullOrWhiteSpace !downloadUrl ->
                     raise (Exception(sprintf "Could not download %O %O." packageName version, exn))
                 | exn -> raise (Exception(sprintf "Could not download %O %O from %s." packageName version !downloadUrl, exn)) }
@@ -810,3 +811,7 @@ let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool
                 let! folder = ExtractPackage(targetFile.FullName, directory, packageName, version, detailed)
                 return targetFileName,folder
     }
+
+
+let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool, config:PackagesFolderGroupConfig, source : PackageSource, caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, downloadLicense, force, detailed) =
+    downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride, config, source , caches, groupName, packageName, version, isCliTool, includeVersionInPath, downloadLicense, force, detailed)

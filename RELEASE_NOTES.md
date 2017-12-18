@@ -1,3 +1,6 @@
+#### 5.126.2 - 2017-12-18
+* USABILITY: Print download times
+
 #### 5.126.1 - 2017-12-15
 * USABILITY: Avoid replacing load script files if the contents are the same - https://github.com/fsprojects/Paket/pull/2940
 
