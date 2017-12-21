@@ -127,27 +127,28 @@ module ScriptGeneration =
             self.Input |> Seq.map refString |> Seq.distinct |> String.concat "\n"
         
         /// Save the script in '<directory>/.paket/load/<script>'
-        member self.Save (rootPath:DirectoryInfo) = 
-            rootPath.Create()
+        member self.Save (rootPath:DirectoryInfo) =
+            if not rootPath.Exists then rootPath.Create()
             let scriptFile = FileInfo (rootPath.FullName </> self.PartialPath)
             if verbose then
                 verbosefn "generating script - %s" scriptFile.FullName
-            scriptFile.Directory.Create()
-            let text = self.Render rootPath
+            if not scriptFile.Directory.Exists then scriptFile.Directory.Create()            
             
             let existingFileContents =
-                if scriptFile.Exists then 
-                    Some (File.ReadAllText scriptFile.FullName)
+                if scriptFile.Exists then
+                    try
+                        File.ReadAllText scriptFile.FullName
+                    with
+                    | exn -> failwithf "Could not read load script file %s. Message: %s" scriptFile.FullName exn.Message
                 else
-                    None
+                    ""
 
-            match existingFileContents with
-            | Some contents when contents = text ->
-                if verbose then
-                    verbosefn "script contents hasn't changed - %s" scriptFile.FullName
-            | None | Some _ ->
-                File.WriteAllText (scriptFile.FullName, text)
-
+            let text = self.Render rootPath
+            try
+                if existingFileContents <> text then
+                    File.WriteAllText (scriptFile.FullName, text)
+            with
+            | exn -> failwithf "Could not write load script file %s. Message: %s" scriptFile.FullName exn.Message
 
     type PaketContext = {
         Cache : DependencyCache
@@ -160,7 +161,7 @@ module ScriptGeneration =
 
     /// Generate a include scripts for all packages defined in paket.dependencies,
     /// if a package is ordered before its dependencies this function will throw.
-    let generateScriptContent (context:PaketContext as ctx) =
+    let generateScriptContent (ctx:PaketContext) =
         
         let scriptType, groups, (isDefaultFramework, framework) = ctx.ScriptType, ctx.Groups, ctx.DefaultFramework
 
@@ -283,8 +284,7 @@ module ScriptGeneration =
                 |> Seq.filter (snd >> Option.isNone)
                 |> Seq.map fst
                 |> String.concat ", "
-                |> sprintf "%s: %s. Cannot generate include scripts." message
-                |> failwith
+                |> failwithf "%s: %s. Can't generate load scripts." message
 
         // prepare list of frameworks to generate, paired with "is default framework"
         // default framework will get generated under root folder rather than framework specific subfolder

@@ -1,3 +1,6 @@
+#### 5.126.4 - 2017-12-21
+* USABILITY: Better tracing if we have IO error in load script generation
+
 #### 5.126.3 - 2017-12-18
 * USABILITY: Do not download more than 5 packages at the same time
 
