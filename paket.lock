@@ -1144,7 +1144,7 @@ RESTRICTION: >= net461
 NUGET
   remote: https://www.nuget.org/api/v2
     0x53A.ReferenceAssemblies.Paket (0.2)
-    FAKE (4.64.2)
+    FAKE (4.64.3)
     FSharp.Compiler.Service (13.0)
       FSharp.Core (>= 4.1.17) - restriction: && (>= net461) (>= netstandard1.6)
       Microsoft.DiaSymReader (>= 1.1) - restriction: && (>= net461) (>= netstandard1.6)
