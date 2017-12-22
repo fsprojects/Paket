@@ -296,7 +296,7 @@ module internal TemplateFile =
                         | None -> failwithf "The template file %s contains the placeholder CURRENTVERSION, but no version was given." fileName
 
                 elif s.Contains "LOCKEDVERSION" then
-                    let groupRegex = Regex("LOCKEDVERSION-(?<group>.+)")
+                    let groupRegex = Regex("LOCKEDVERSION-(?<group>\w+)")
                     let replaceGroup (m : Match) =
                         let groupName = GroupName m.Groups.["group"].Value
                         match lockFile.Groups |> Map.tryFind groupName with
