@@ -8,6 +8,7 @@ open NUnit.Framework
 open Paket.TestHelpers
 open Paket.Domain
 open Paket.Requirements
+open System.Text.RegularExpressions
 
 [<Literal>]
 let FileBasedShortDesc = """type file
@@ -434,6 +435,83 @@ GITHUB
         name2 |> shouldEqual (PackageName "My.OtherThing")
         range2.Range.ToString() |> shouldEqual "1.2.3"
         range2.FormatInNuGetSyntax() |> shouldEqual "[1.2.3.0]"
+
+    | _ -> Assert.Fail()
+
+
+[<Test>]
+let ``Detect Group-bound LOCKEDVERSION declarations correctly`` () =
+    let fileContent = """type file
+id My.Thing
+authors Bob McBob
+description
+    A longer description
+    on two lines.
+version
+    1.0
+dependencies
+     FSharp.Core 4.3.1
+     My.OtherThing LOCKEDVERSION
+     My.OtherThing LOCKEDVERSION-Build
+"""
+
+    let lockFile = """NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    Argu (1.1.2)
+    FSharp.Core (4.0.0.1) - redirects: on
+    Newtonsoft.Json (7.0.1) - redirects: on
+    My.OtherThing (1.2.3.0) - redirects: on
+GITHUB
+  remote: fsharp/FAKE
+  specs:
+    src/app/FakeLib/Globbing/Globbing.fs (494c549c61dc15ab798b7b92cb4ac6e981267f49)
+  remote: fsprojects/Chessie
+  specs:
+    src/Chessie/ErrorHandling.fs (1f23b1caeb1f87e750abc96a25109376771dd090)
+GROUP Build
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    FAKE (4.7.2)
+    FSharp.Compiler.Service (1.4.0.6)
+    FSharp.Formatting (2.12.0)
+      FSharp.Compiler.Service (1.4.0.6)
+      FSharpVSPowerTools.Core (2.1.0)
+    FSharpVSPowerTools.Core (2.1.0)
+      FSharp.Compiler.Service (>= 1.4.0.6)
+    ILRepack (2.0.8)
+    Microsoft.Bcl (1.1.10)
+      Microsoft.Bcl.Build (>= 1.0.14)
+    Microsoft.Bcl.Build (1.0.21) - import_targets: false
+    Microsoft.Net.Http (2.2.29)
+      Microsoft.Bcl (>= 1.1.10)
+      Microsoft.Bcl.Build (>= 1.0.14)
+    Octokit (0.16.0)
+      Microsoft.Net.Http
+    My.OtherThing (2.3.4.0) - redirects: on
+GITHUB
+  remote: fsharp/FAKE
+  specs:
+    modules/Octokit/Octokit.fsx (494c549c61dc15ab798b7b92cb4ac6e981267f49)
+      Octokit"""
+
+    let sut =
+        TemplateFile.Parse("file1.template", LockFile.Parse("",toLines lockFile), Some(SemVer.Parse "2.1"), Map.empty, strToStream fileContent)
+        |> returnOrFail
+        |> function
+           | CompleteInfo (_, opt)
+           | ProjectInfo (_, opt) -> opt
+    match sut.DependencyGroups.Head.Dependencies with
+    | [name1,range1;name2,range2;name3,range3] ->
+        name1 |> shouldEqual (PackageName "FSharp.Core")
+        range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
+        name2 |> shouldEqual (PackageName "My.OtherThing")
+        range2.Range.ToString() |> shouldEqual "1.2.3"
+        range2.FormatInNuGetSyntax() |> shouldEqual "[1.2.3.0]"
+        name3 |> shouldEqual (PackageName "My.OtherThing")
+        range3.Range.ToString() |> shouldEqual "2.3.4"
+        range3.FormatInNuGetSyntax() |> shouldEqual "[2.3.4.0]"
 
     | _ -> Assert.Fail()
 

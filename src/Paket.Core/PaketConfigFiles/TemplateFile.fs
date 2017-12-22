@@ -296,6 +296,18 @@ module internal TemplateFile =
                         | None -> failwithf "The template file %s contains the placeholder CURRENTVERSION, but no version was given." fileName
 
                 elif s.Contains "LOCKEDVERSION" then
+                    let groupRegex = Regex("LOCKEDVERSION-(?<group>.+)")
+                    let replaceGroup (m : Match) =
+                        let groupName = GroupName m.Groups.["group"].Value
+                        match lockFile.Groups |> Map.tryFind groupName with
+                        | None -> failwithf "The template file %s contains the placeholder LOCKEDVERSION-%O, but no group %O was found in paket.lock" fileName groupName groupName
+                        | Some gp ->
+                            match gp.Resolution |> Map.tryFind name with
+                            | None -> failwithf "The template file %s contains the placeholder LOCKEDVERSION-%O, but no version was given for package %O in group %O in paket.lock" fileName groupName name groupName
+                            | Some p -> string p.Version
+
+                    let s = groupRegex.Replace(s, replaceGroup)
+
                     match lockFile.Groups.[Constants.MainDependencyGroup].Resolution |> Map.tryFind name with
                     | Some p -> s.Replace("LOCKEDVERSION", string p.Version)
                     | None ->

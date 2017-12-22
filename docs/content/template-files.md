@@ -230,6 +230,14 @@ dependencies
   Other.Dep ~> LOCKEDVERSION
 ```
 
+`LOCKEDVERSION` can be constrained to a particular group by suffixing
+the placeholder with the particular group name.
+
+```text
+dependencies
+  FSharp.Core >= LOCKEDVERSION-NetStandard
+```
+
 It's possible to add a line to constrain the target framework:
 
 ```text
