@@ -45,7 +45,11 @@ let processWithValidationEx printUsage silent validateF commandF result =
                     |> Seq.groupBy (fun (ev) -> ev.Category)
                     |> Seq.map (fun (cat, group) ->
                         let l = group |> Seq.toList
-                        cat, l.Length, l |> Seq.map (fun ev -> ev.Duration) |> Seq.fold (+) (TimeSpan()))
+                        let eventBoundaries = l |> List.collect(fun ev -> [ev.Start; ev.End])
+                        let mergedSpans = Profile.getCoalescedEventTimeSpans(eventBoundaries |> List.toArray)
+                        let mergedSpanLengths = mergedSpans |> Array.fold (+) (TimeSpan())
+
+                        cat, l.Length, mergedSpanLengths)
                     |> Seq.toList
                 let blockedRaw =
                     groupedResults
