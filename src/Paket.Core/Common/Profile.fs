@@ -24,17 +24,20 @@ type EventBoundary =
             match b with
             | Start(dt) -> dt
             | End(dt) -> dt
+        static member IsEndBoundary(b: EventBoundary) = 
+            match b with
+            | End(_) -> true
+            | _ -> false
+        static member IsStartBoundary(b: EventBoundary) = 
+            match b with
+            | Start(_) -> true
+            | _ -> false
 
 type Event = { Category: Category; Start: EventBoundary; End: EventBoundary }
 
-let private isEnd eb = 
-    match eb with
-    | EventBoundary.End(_) -> true
-    | _ -> false
-
 let private getNextSpan(startIndex: int, boundaries: EventBoundary array): (TimeSpan * (int * EventBoundary array)) option = 
     let mutable i = startIndex
-    while (i < boundaries.Length) && isEnd(boundaries.[i]) do
+    while (i < boundaries.Length) && EventBoundary.IsEndBoundary(boundaries.[i]) do
         i <- i + 1
 
     if i >= boundaries.Length then
