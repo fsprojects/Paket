@@ -56,25 +56,22 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h4><a name="5-126-4-2017-12-21" class="anchor" href="#5-126-4-2017-12-21">5.126.4 - 2017-12-21</a></h4>
+<h4><a name="5-127-1-2017-12-28" class="anchor" href="#5-127-1-2017-12-28">5.127.1 - 2017-12-28</a></h4>
 <ul>
+<li>Implemented binding LOCKEDVERSION to particular group name - <a href="https://github.com/fsprojects/Paket/pull/2943">https://github.com/fsprojects/Paket/pull/2943</a></li>
+<li>BUGFIXC: Fixed "Incorrect time metrics" - <a href="https://github.com/fsprojects/Paket/pull/2946">https://github.com/fsprojects/Paket/pull/2946</a></li>
 <li>USABILITY: Better tracing if we have IO error in load script generation</li>
-</ul>
-<h4><a name="5-126-3-2017-12-18" class="anchor" href="#5-126-3-2017-12-18">5.126.3 - 2017-12-18</a></h4>
-<ul>
 <li>USABILITY: Do not download more than 5 packages at the same time</li>
-</ul>
-<h4><a name="5-126-2-2017-12-18" class="anchor" href="#5-126-2-2017-12-18">5.126.2 - 2017-12-18</a></h4>
-<ul>
 <li>USABILITY: Print download times</li>
-</ul>
-<h4><a name="5-126-1-2017-12-15" class="anchor" href="#5-126-1-2017-12-15">5.126.1 - 2017-12-15</a></h4>
-<ul>
 <li>USABILITY: Avoid replacing load script files if the contents are the same - <a href="https://github.com/fsprojects/Paket/pull/2940">https://github.com/fsprojects/Paket/pull/2940</a></li>
 </ul>
 <h4><a name="5-126-0-2017-12-12" class="anchor" href="#5-126-0-2017-12-12">5.126.0 - 2017-12-12</a></h4>
 <ul>
 <li>BUGFIX: Remove possibly nonexistent extension safely - <a href="https://github.com/fsprojects/Paket/pull/2901">https://github.com/fsprojects/Paket/pull/2901</a></li>
+</ul>
+<h4><a name="5-125-1-2017-12-05" class="anchor" href="#5-125-1-2017-12-05">5.125.1 - 2017-12-05</a></h4>
+<ul>
+<li>Resolution by file order in paket.dependencies instead of alphabetical order (as new tie breaker) - <a href="https://github.com/fsprojects/Paket/issues/2898">https://github.com/fsprojects/Paket/issues/2898</a></li>
 <li>BUGFIX: Transitive dependencies should be kept as stable as possible in paket install - <a href="https://github.com/fsprojects/Paket/pull/2927">https://github.com/fsprojects/Paket/pull/2927</a></li>
 <li>PERFORMANCE: Boost conflicts and skip the "loop of doom" - <a href="https://github.com/fsprojects/Paket/pull/2928">https://github.com/fsprojects/Paket/pull/2928</a></li>
 <li>PERFORMANCE: Preferred versions do not need to query the NuGet server - <a href="https://github.com/fsprojects/Paket/pull/2927">https://github.com/fsprojects/Paket/pull/2927</a></li>

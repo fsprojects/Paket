@@ -92,6 +92,12 @@
           </td>
           <td class="xmldoc"></td>
         </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-profile-eventboundary.html">EventBoundary</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
     </tbody>
   </table>
 
@@ -114,7 +120,7 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Profile.fs#L21-21" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Profile.fs#L73-73" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -125,14 +131,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '409', 409)" onmouseover="showTip(event, '409', 409)">
-            startCategory cat
+            getCoalescedEventTimeSpans boundaries
           </code>
           <div class="tip" id="409">
-            <strong>Signature:</strong> cat:Category -&gt; IDisposable<br />
+            <strong>Signature:</strong> boundaries:EventBoundary array -&gt; TimeSpan array<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Profile.fs#L27-27" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Profile.fs#L65-65" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -143,14 +149,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '410', 410)" onmouseover="showTip(event, '410', 410)">
-            startCategoryF cat f
+            startCategory cat
           </code>
           <div class="tip" id="410">
-            <strong>Signature:</strong> cat:Category -&gt; f:(unit -&gt; &#39;?11519) -&gt; &#39;?11519<br />
-                          <strong>Type parameters:</strong> '?11519          </div>
+            <strong>Signature:</strong> cat:Category -&gt; IDisposable<br />
+                      </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Profile.fs#L36-36" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Profile.fs#L80-80" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -161,14 +167,32 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '411', 411)" onmouseover="showTip(event, '411', 411)">
-            trackEvent cat
+            startCategoryF cat f
           </code>
           <div class="tip" id="411">
+            <strong>Signature:</strong> cat:Category -&gt; f:(unit -&gt; &#39;?11534) -&gt; &#39;?11534<br />
+                          <strong>Type parameters:</strong> '?11534          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Profile.fs#L92-92" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '412', 412)" onmouseover="showTip(event, '412', 412)">
+            trackEvent cat
+          </code>
+          <div class="tip" id="412">
             <strong>Signature:</strong> cat:Category -&gt; unit<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Profile.fs#L24-24" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Profile.fs#L76-76" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
