@@ -250,6 +250,9 @@ let SmartInstall(dependenciesFile:DependenciesFile, updateMode, options : Update
         for script in scripts do
             script.Save rootDir
 
+    // hardcoded assumption, if there is a repo tool, generate the scripts
+    RestoreProcess.CreateToolWrapperForGroups lockFile lockFile.Groups
+
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
