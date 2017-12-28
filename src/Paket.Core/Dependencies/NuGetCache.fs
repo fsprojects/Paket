@@ -340,6 +340,7 @@ let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, ver
                 | PackageResolver.ResolvedPackageKind.DotnetCliTool ->
                     let! _ = ExtractPackageToUserFolder(fileName, packageName, version, PackageResolver.ResolvedPackageKind.Package)
                     return GetTargetUserToolsFolder packageName version
+                | PackageResolver.ResolvedPackageKind.RepoTool
                 | PackageResolver.ResolvedPackageKind.Package ->
                     return GetTargetUserFolder packageName version }
 
