@@ -271,7 +271,7 @@ module DependenciesFileParser =
             | [name] -> Some (CliTool(name,">= 0",""))
             | _ -> failwithf "could not retrieve cli tool from %s" trimmed
         | _ -> None
-    
+
 
     let private (|ExternalLock|_|) (line:string) =        
         match line.Trim() with
@@ -281,6 +281,28 @@ module DependenciesFileParser =
             match parts with
             | [fileName] -> Some (ExternalLock(fileName))
             | _ -> failwithf "could not retrieve external lock from %s" trimmed
+        | _ -> None
+    
+    let private (|RepoTool|_|) (line:string) =        
+        match line.Trim() with
+        | String.RemovePrefix "repotool" trimmed -> 
+            let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
+
+            let isVersion(text:string) = 
+                let (result,_) = Int32.TryParse(text.[0].ToString()) in result
+           
+            match parts with
+            | name :: operator1 :: version1  :: operator2 :: version2 :: rest
+                when List.exists ((=) operator1) operators && List.exists ((=) operator2) operators -> 
+                Some (RepoTool(name,operator1+" "+version1+" "+operator2+" "+version2, String.Join(" ",rest) |> removeComment))
+            | name :: operator :: version  :: rest 
+                when List.exists ((=) operator) operators ->
+                Some (RepoTool(name,operator + " " + version, String.Join(" ",rest) |> removeComment))
+            | name :: version :: rest when isVersion version -> 
+                Some (RepoTool(name,version,String.Join(" ",rest) |> removeComment))
+            | name :: rest -> Some (RepoTool(name,">= 0", String.Join(" ",rest) |> removeComment))
+            | [name] -> Some (RepoTool(name,">= 0",""))
+            | _ -> failwithf "could not retrieve cli tool from %s" trimmed
         | _ -> None
     
     let private (|Empty|_|) (line:string) =
@@ -457,6 +479,7 @@ module DependenciesFileParser =
         match line with 
         | Package(name,version,rest) -> parsePackage(sources,parent,name,version,PackageRequirementKind.Package,rest)
         | CliTool(name,version,rest) -> parsePackage(sources,parent,name,version,PackageRequirementKind.DotnetCliTool,rest)
+        | RepoTool(name,version,rest) -> parsePackage(sources,parent,name,version,PackageRequirementKind.RepoTool,rest)
         | _ -> failwithf "Not a package line: %s" line
 
     let private parseOptions (current  : DependenciesGroup) options =
@@ -515,6 +538,13 @@ module DependenciesFileParser =
 
                 | CliTool(name,version,rest) ->
                     let package = parsePackage(current.Sources,DependenciesFile(fileName,lineNo),name,version,PackageRequirementKind.DotnetCliTool,rest) 
+                    if checkDuplicates && current.Packages |> List.exists (fun p -> p.Name = package.Name) then
+                        traceWarnfn "Package %O is defined more than once in group %O of %s" package.Name current.Name fileName
+                    
+                    lineNo, { current with Packages = current.Packages @ [package] }::other
+
+                | RepoTool(name,version,rest) ->
+                    let package = parsePackage(current.Sources,DependenciesFile(fileName,lineNo),name,version,PackageRequirementKind.RepoTool,rest) 
                     if checkDuplicates && current.Packages |> List.exists (fun p -> p.Name = package.Name) then
                         traceWarnfn "Package %O is defined more than once in group %O of %s" package.Name current.Name fileName
                     
