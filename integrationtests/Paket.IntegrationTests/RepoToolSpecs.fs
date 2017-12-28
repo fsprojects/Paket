@@ -19,5 +19,6 @@ let ``#3000 repo tool should work after restore``() =
     let helloBashPath = Path.Combine(wrappersPath, "hello")
     Assert.IsTrue(File.Exists(helloBashPath), (sprintf "file '%s' not found" helloBashPath))
 
-
+    let resultCmd = directToolEx false helloCmdPath "" (scenarioTempPath scenario) 
+    CollectionAssert.Contains( (resultCmd |> Seq.map PaketMsg.getMessage), "Hello World from F#!")
 
