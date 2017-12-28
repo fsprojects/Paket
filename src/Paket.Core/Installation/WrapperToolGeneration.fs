@@ -53,12 +53,11 @@ module WrapperToolGeneration =
         RelativeToolPath : string
     } with
         member self.Render (_directory:DirectoryInfo) =
-            let relativeToolPath = self.RelativeToolPath
             let paketToolRuntimeHostWin = ""
             let cmdContent =
                 [ "@ECHO OFF"
                   ""
-                  sprintf """%s"%%~dp0%s" %%*""" paketToolRuntimeHostWin relativeToolPath ]
+                  sprintf """%s"%%~dp0%s" %%*""" paketToolRuntimeHostWin self.RelativeToolPath ]
             
             cmdContent |> String.concat "\r\n"
         
@@ -71,12 +70,11 @@ module WrapperToolGeneration =
         RelativeToolPath : string
     } with
         member self.Render (_directory:DirectoryInfo) =
-            let relativeToolPath = self.RelativeToolPath
             let paketToolRuntimeHostLinux = "mono "
             let cmdContent =
                 [ "#!/bin/sh"
                   ""
-                  sprintf """%s"$(dirname "$0")/%s" "$@" """ paketToolRuntimeHostLinux relativeToolPath ]
+                  sprintf """%s"$(dirname "$0")/%s" "$@" """ paketToolRuntimeHostLinux self.RelativeToolPath ]
             
             cmdContent |> String.concat "\n"
         
