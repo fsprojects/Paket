@@ -1601,7 +1601,7 @@ module ProjectFile =
 
             { NugetPackage.Id = node |> getAttribute "Include" |> Option.get
               VersionRange = versionRange
-              CliTool = false
+              Kind = NugetPackageKind.Package
               TargetFramework = None })
 
     let cliTools (projectFile: ProjectFile) =
@@ -1623,7 +1623,7 @@ module ProjectFile =
 
             { NugetPackage.Id = node |> getAttribute "Include" |> Option.get
               VersionRange = versionRange
-              CliTool = true
+              Kind = NugetPackageKind.DotnetCliTool
               TargetFramework = None })
 
 type ProjectFile with

@@ -1092,7 +1092,7 @@ type PackageRequirement =
       Graph: PackageRequirement Set
       Sources: PackageSource list
       TransitivePrereleases: bool 
-      IsCliTool : bool
+      Kind : PackageRequirementKind
       Settings: InstallSettings }
 
     override this.Equals(that) = 
@@ -1104,7 +1104,7 @@ type PackageRequirement =
             this.ResolverStrategyForDirectDependencies = that.ResolverStrategyForDirectDependencies && 
             this.Settings.FrameworkRestrictions = that.Settings.FrameworkRestrictions &&
             this.TransitivePrereleases = that.TransitivePrereleases &&
-            this.IsCliTool = that.IsCliTool &&
+            this.Kind = that.Kind &&
             this.Parent = that.Parent
         | _ -> false
 
@@ -1162,6 +1162,10 @@ type PackageRequirement =
           | :? PackageRequirement as that ->
                 PackageRequirement.Compare(this,that,None,0,0)
           | _ -> invalidArg "that" "cannot compare value of different types"
+
+and [<RequireQualifiedAccess>] PackageRequirementKind =
+    | Package
+    | DotnetCliTool
 
 type AddFrameworkRestrictionWarnings =
     | UnknownPortableProfile of TargetProfile

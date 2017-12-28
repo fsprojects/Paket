@@ -386,7 +386,7 @@ module DependenciesFileParser =
         | String.RemovePrefix "group" _ as trimmed -> Some (Group (trimmed.Replace("group ","")))
         | _ -> None
 
-    let parsePackage (sources,parent,name,version,isCliTool,rest:string) =
+    let parsePackage (sources,parent,name,version,kind,rest:string) =
         let prereleases,optionsText =
             if rest.Contains ":" then
                 // boah that's reaaaally ugly, but keeps backwards compat
@@ -430,12 +430,12 @@ module DependenciesFileParser =
           Settings = InstallSettings.Parse(optionsText).AdjustWithSpecialCases packageName
           TransitivePrereleases = versionRequirement.PreReleases <> PreReleaseStatus.No
           VersionRequirement = versionRequirement 
-          IsCliTool = isCliTool } 
+          Kind = kind } 
 
     let parsePackageLine(sources,parent,line:string) =
         match line with 
-        | Package(name,version,rest) -> parsePackage(sources,parent,name,version,false,rest)
-        | CliTool(name,version,rest) -> parsePackage(sources,parent,name,version,true,rest)
+        | Package(name,version,rest) -> parsePackage(sources,parent,name,version,PackageRequirementKind.Package,rest)
+        | CliTool(name,version,rest) -> parsePackage(sources,parent,name,version,PackageRequirementKind.DotnetCliTool,rest)
         | _ -> failwithf "Not a package line: %s" line
 
     let private parseOptions (current  : DependenciesGroup) options =
@@ -486,14 +486,14 @@ module DependenciesFileParser =
                     lineNo,{ current with Options = parseOptions current options} ::other
 
                 | Package(name,version,rest) ->
-                    let package = parsePackage(current.Sources,DependenciesFile(fileName,lineNo),name,version,false,rest) 
+                    let package = parsePackage(current.Sources,DependenciesFile(fileName,lineNo),name,version,PackageRequirementKind.Package,rest) 
                     if checkDuplicates && current.Packages |> List.exists (fun p -> p.Name = package.Name) then
                         traceWarnfn "Package %O is defined more than once in group %O of %s" package.Name current.Name fileName
                     
                     lineNo, { current with Packages = current.Packages @ [package] }::other
 
                 | CliTool(name,version,rest) ->
-                    let package = parsePackage(current.Sources,DependenciesFile(fileName,lineNo),name,version,true,rest) 
+                    let package = parsePackage(current.Sources,DependenciesFile(fileName,lineNo),name,version,PackageRequirementKind.DotnetCliTool,rest) 
                     if checkDuplicates && current.Packages |> List.exists (fun p -> p.Name = package.Name) then
                         traceWarnfn "Package %O is defined more than once in group %O of %s" package.Name current.Name fileName
                     

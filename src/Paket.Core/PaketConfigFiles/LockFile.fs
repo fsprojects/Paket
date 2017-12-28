@@ -128,10 +128,10 @@ module LockFileSerializer =
 
                       let s =
                         // add "clitool"
-                        match package.IsCliTool, settings.ToString().ToLower()  with
-                        | true, "" -> "clitool: true"
-                        | true, s -> s + ", clitool: true"
-                        | _, s -> s
+                        match package.Kind, settings.ToString().ToLower()  with
+                        | ResolvedPackageKind.DotnetCliTool, "" -> "clitool: true"
+                        | ResolvedPackageKind.DotnetCliTool, s -> s + ", clitool: true"
+                        | ResolvedPackageKind.Package, s -> s
 
                       let s =
                         // add "isRuntimeDependency"
@@ -416,13 +416,13 @@ module LockFileParser =
                 else
                     parts.[1]
 
-            let isCliTool, optionsString =
+            let kind, optionsString =
                 if optionsString.EndsWith ", clitool: true" then
-                    true,optionsString.Replace(", clitool: true","")
+                    ResolvedPackageKind.DotnetCliTool,optionsString.Replace(", clitool: true","")
                 elif optionsString.EndsWith "clitool: true" then
-                    true,optionsString.Replace("clitool: true","")
+                    ResolvedPackageKind.DotnetCliTool,optionsString.Replace("clitool: true","")
                 else
-                    false,optionsString
+                    ResolvedPackageKind.Package,optionsString
 
             let isRuntimeDependency, optionsString =
                 if optionsString.EndsWith ", isRuntimeDependency: true" then
@@ -432,7 +432,7 @@ module LockFileParser =
                     true, ""
                 else false, optionsString
 
-            parts.[0],isCliTool,isRuntimeDependency,InstallSettings.Parse(true, optionsString)
+            parts.[0],kind,isRuntimeDependency,InstallSettings.Parse(true, optionsString)
 
         ([{ GroupName = Constants.MainDependencyGroup; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false }], lockFileLines)
         ||> Seq.fold(fun state line ->
@@ -467,7 +467,7 @@ module LockFileParser =
                 | NugetPackage details ->
                     match currentGroup.RemoteUrl with
                     | Some remote -> 
-                        let package,isCliTool,isRuntimeDependency,settings = parsePackage details
+                        let package,kind,isRuntimeDependency,settings = parsePackage details
                         let parts' = package.Split ' '
                         let version = 
                             if parts'.Length < 2 then
@@ -483,7 +483,7 @@ module LockFileParser =
                                       Unlisted = false
                                       Settings = settings
                                       Version = SemVer.Parse version
-                                      IsCliTool = isCliTool
+                                      Kind = kind
                                       // TODO: write stuff into the lockfile and read it here
                                       IsRuntimeDependency = isRuntimeDependency } :: currentGroup.Packages }::otherGroups
                     | None -> failwith "no source has been specified."
@@ -888,9 +888,10 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                     | Some p -> p
                     | None -> failwithf "Error for %s: Package %O was not found in group %O of the paket.lock file." referencesFile.FileName p.Name groupName
                 
-                if package.IsCliTool then
+                match package.Kind with
+                | ResolvedPackageKind.DotnetCliTool ->
                     cliTools := Set.add package !cliTools
-                else
+                | ResolvedPackageKind.Package ->
                     if usedPackageKeys.Contains k then
                         failwithf "Package %O is referenced more than once in %s within group %O." p.Name referencesFile.FileName groupName
                 
@@ -977,13 +978,16 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
             match group.TryFind(packageName) with
             | None -> failwithf "Package %O is not installed in group %O." packageName groupName
             | Some resolvedPackage ->
-                let packageName = resolvedPackage.Name
                 let folder = resolvedPackage.Folder this.RootPath groupName
+                let kind =
+                    match resolvedPackage.Kind with
+                    | ResolvedPackageKind.Package -> InstallModelKind.Package
+                    | ResolvedPackageKind.DotnetCliTool -> InstallModelKind.DotnetCliTool
 
                 InstallModel.CreateFromContent(
-                    packageName, 
+                    resolvedPackage.Name, 
                     resolvedPackage.Version,
-                    resolvedPackage.IsCliTool,
+                    kind,
                     FrameworkRestriction.NoRestriction, 
                     NuGet.GetContent(folder).Force())
     

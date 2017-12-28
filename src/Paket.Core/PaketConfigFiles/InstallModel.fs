@@ -133,8 +133,11 @@ type InstallModel = {
     TargetsFileFolders : FrameworkFolder<MsBuildFile Set> list
     Analyzers: AnalyzerLib list
     LicenseUrl: string option
-    CliTool : bool
+    Kind : InstallModelKind
 }
+and [<RequireQualifiedAccess>] InstallModelKind =
+    | Package
+    | DotnetCliTool
 
 module FolderScanner =
     // Stolen and modifed to our needs from http://www.fssnip.net/4I/title/sscanf-parsing-with-format-strings
@@ -345,7 +348,7 @@ module InstallModel =
     open PlatformMatching
     open NuGet
 
-    let emptyModel packageName packageVersion cliTool = {
+    let emptyModel packageName packageVersion kind = {
         PackageName = packageName
         PackageVersion = packageVersion
         CompileLibFolders = []
@@ -355,7 +358,7 @@ module InstallModel =
         TargetsFileFolders = []
         Analyzers = []
         LicenseUrl = None
-        CliTool = cliTool
+        Kind = kind
     }
 
     type Tfm = PlatformMatching.ParsedPlatformPath
@@ -498,7 +501,7 @@ module InstallModel =
             |> Seq.forall (fun (libs, refs) -> Seq.isEmpty libs && Seq.isEmpty refs)
 
         if foldersEmpty && List.isEmpty this.Analyzers then
-            emptyModel this.PackageName this.PackageVersion this.CliTool
+            emptyModel this.PackageName this.PackageVersion this.Kind
         else
             this
 
@@ -825,16 +828,16 @@ module InstallModel =
         |> addLicense content.Spec.LicenseUrl
         |> filterUnknownFiles
 
-    let createFromContent packageName packageVersion cliTool frameworkRestrictions content =
-        emptyModel packageName packageVersion cliTool
+    let createFromContent packageName packageVersion kind frameworkRestrictions content =
+        emptyModel packageName packageVersion kind
         |> addNuGetFiles content
         |> filterBlackList
         |> applyFrameworkRestrictions frameworkRestrictions
         |> removeIfCompletelyEmpty
 
     [<Obsolete "use createFromContent instead">]
-    let createFromLibs packageName packageVersion cliTool frameworkRestrictions (libs:UnparsedPackageFile seq) targetsFiles analyzerFiles (nuspec:Nuspec) =
-        emptyModel packageName packageVersion cliTool
+    let createFromLibs packageName packageVersion kind frameworkRestrictions (libs:UnparsedPackageFile seq) targetsFiles analyzerFiles (nuspec:Nuspec) =
+        emptyModel packageName packageVersion kind
         |> addLibReferences libs nuspec.References
         |> addTargetsFiles targetsFiles
         |> addAnalyzerFiles analyzerFiles
@@ -846,9 +849,9 @@ module InstallModel =
 
 type InstallModel with
 
-    static member EmptyModel (packageName, packageVersion, ?cliTool) =
-        let cliTool = cliTool |> Option.defaultValue false
-        InstallModel.emptyModel packageName packageVersion cliTool
+    static member EmptyModel (packageName, packageVersion, ?kind) =
+        let kind = kind |> Option.defaultValue InstallModelKind.Package
+        InstallModel.emptyModel packageName packageVersion kind
 
     [<Obsolete("usually this should not be used")>]
     member this.GetReferenceFolders() = InstallModel.getCompileLibFolders this
@@ -926,9 +929,9 @@ type InstallModel with
 
     member this.RemoveIfCompletelyEmpty() = InstallModel.removeIfCompletelyEmpty this
 
-    static member CreateFromContent(packageName, packageVersion, cliTool, frameworkRestriction:FrameworkRestriction, content : NuGetPackageContent) =
-        InstallModel.createFromContent packageName packageVersion cliTool frameworkRestriction content
+    static member CreateFromContent(packageName, packageVersion, kind, frameworkRestriction:FrameworkRestriction, content : NuGetPackageContent) =
+        InstallModel.createFromContent packageName packageVersion kind frameworkRestriction content
 
     [<Obsolete "use CreateFromContent instead">]
-    static member CreateFromLibs(packageName, packageVersion, cliTool, frameworkRestriction:FrameworkRestriction, libs : UnparsedPackageFile seq, targetsFiles, analyzerFiles, nuspec : Nuspec) =
-        InstallModel.createFromLibs packageName packageVersion cliTool frameworkRestriction libs targetsFiles analyzerFiles nuspec
+    static member CreateFromLibs(packageName, packageVersion, kind, frameworkRestriction:FrameworkRestriction, libs : UnparsedPackageFile seq, targetsFiles, analyzerFiles, nuspec : Nuspec) =
+        InstallModel.createFromLibs packageName packageVersion kind frameworkRestriction libs targetsFiles analyzerFiles nuspec

@@ -34,11 +34,15 @@ let getInstalledPackageModel (lockFile: LockFile) (QualifiedPackageName(groupNam
                 match resolvedConfig.Path with
                 | Some f -> f
                 | None -> NuGetCache.GetTargetUserFolder packageName resolvedPackage.Version
+            let kind =
+                match resolvedPackage.Kind with
+                | PackageResolver.ResolvedPackageKind.Package -> InstallModelKind.Package
+                | PackageResolver.ResolvedPackageKind.DotnetCliTool -> InstallModelKind.DotnetCliTool
 
             InstallModel.CreateFromContent(
                 packageName,
                 resolvedPackage.Version,
-                resolvedPackage.IsCliTool,
+                kind,
                 Paket.Requirements.FrameworkRestriction.NoRestriction,
                 NuGet.GetContent(folder).Force())
 

@@ -26,7 +26,7 @@ let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*Instal
         |> Seq.map (fun kv ->
             { NugetPackage.Id = (snd kv.Key).ToString()
               VersionRange = VersionRange.Specific (fst kv.Value)
-              CliTool = false
+              Kind = NugetPackageKind.Package
               TargetFramework = None })
         |> Seq.toList
 
@@ -278,7 +278,12 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
 
         let assemblies =
             extractedPackages
-            |> Seq.filter (fun (model,_redirects) -> not model.CliTool)
+            |> Seq.filter (fun (model,_redirects) ->
+                match model.Kind with
+                | InstallModelKind.Package ->
+                    true
+                | InstallModelKind.DotnetCliTool ->
+                    false )
             |> Seq.map (fun (model,redirects) -> (model, redirectsFromReference model.PackageName |> Option.fold (fun _ x -> Some x) redirects))
             |> Seq.collect (fun (model,redirects) ->
                 dependencies

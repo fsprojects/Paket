@@ -206,6 +206,9 @@ let DefaultNuGetSource = PackageSource.NuGetV2Source Constants.DefaultNuGetStrea
 type NugetPackage = {
     Id : string
     VersionRange : VersionRange
-    CliTool : bool
+    Kind : NugetPackageKind
     TargetFramework : string option
 }
+and [<RequireQualifiedAccess>] NugetPackageKind =
+    | Package
+    | DotnetCliTool

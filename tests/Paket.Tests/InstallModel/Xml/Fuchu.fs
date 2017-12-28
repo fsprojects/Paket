@@ -20,7 +20,7 @@ let expected = """
 let ``should generate Xml for Fuchu 0.4``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fuchu", SemVer.Parse "0.4.0", false, FrameworkRestriction.NoRestriction,
+        InstallModel.CreateFromLibs(PackageName "Fuchu", SemVer.Parse "0.4.0", InstallModelKind.Package, FrameworkRestriction.NoRestriction,
             [ @"..\Fuchu\lib\Fuchu.dll"
               @"..\Fuchu\lib\Fuchu.XML"
               @"..\Fuchu\lib\Fuchu.pdb" ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\Fuchu\",

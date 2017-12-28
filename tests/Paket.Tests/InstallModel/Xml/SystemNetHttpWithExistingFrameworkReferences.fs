@@ -51,7 +51,7 @@ let expected = """
 let ``should generate Xml for System.Net.Http 2.2.8``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "System.Net.Http", SemVer.Parse "2.2.8", false, FrameworkRestriction.NoRestriction,
+        InstallModel.CreateFromLibs(PackageName "System.Net.Http", SemVer.Parse "2.2.8", InstallModelKind.Package, FrameworkRestriction.NoRestriction,
             [ @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
               @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll"
               @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll"

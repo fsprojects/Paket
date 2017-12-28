@@ -207,11 +207,15 @@ type DependencyCache (lockFile:LockFile) =
                         let nuspec = FileInfo(Path.Combine (lockFile.RootPath,nuspecShort))
                         let nuspec = Nuspec.Load nuspec.FullName
                         nuspecCache.TryAdd((package.Name,package.Version),nuspec) |>ignore
+                        let kind =
+                            match package.Kind with
+                            | ResolvedPackageKind.Package -> InstallModelKind.Package
+                            | ResolvedPackageKind.DotnetCliTool -> InstallModelKind.DotnetCliTool
                         let model = 
                             InstallModel.CreateFromContent(
                                 package.Name, 
                                 package.Version, 
-                                package.IsCliTool,
+                                kind,
                                 Paket.Requirements.FrameworkRestriction.NoRestriction, 
                                 NuGet.GetContent(folder).Force())
                         installModelCache.TryAdd((groupName,package.Name) , model) |> ignore }) 
