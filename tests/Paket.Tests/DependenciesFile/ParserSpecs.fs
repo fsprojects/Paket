@@ -1616,6 +1616,8 @@ let ``should read config with cli tool``() =
 
 let paketCacheTestPath = System.IO.Path.Combine("~", ".paket-cache")
 let configWithHomePathInCache = String.Concat("""
+
+let configWithRepoTool = """
 source https://www.nuget.org/api/v2
 
 cache """, paketCacheTestPath)
@@ -1630,3 +1632,28 @@ let ``should parse config with home path in cache``() =
     let cfg = DependenciesFile.FromSource(configWithHomePathInCache)
     let expected = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".paket-cache")
     cfg.Groups.[Constants.MainDependencyGroup].Caches.[0].Location |> shouldEqual expected
+    let tool = cfg.Groups.[Constants.MainDependencyGroup].Packages.Head
+    let nuget = cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Head
+    tool.Kind |> shouldEqual (PackageRequirementKind.RepoTool)
+    nuget.Kind |> shouldEqual (PackageRequirementKind.Package)
+
+let configWithRepoTool = """
+source https://www.nuget.org/api/v2
+
+repotool mytool
+nuget FAKE
+"""
+
+[<Test>]
+let ``should read config with repo tool``() = 
+    let cfg = DependenciesFile.FromSource(configWithRepoTool)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources 
+    |> shouldEqual [PackageSources.DefaultNuGetSource]
+
+    let tool = cfg.Groups.[Constants.MainDependencyGroup].Packages.Head
+    let nuget = cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Head
+    tool.Kind |> shouldEqual (PackageRequirementKind.RepoTool)
+    nuget.Kind |> shouldEqual (PackageRequirementKind.Package)
+    
