@@ -48,7 +48,7 @@ module WrapperToolGeneration =
         | exn -> failwithf "Could not write load script file %s. Message: %s" scriptFile.FullName exn.Message
 
 
-    type ScriptContent = {
+    type ScriptContentWindows = {
         PartialPath : string
         ToolPath : string
     } with
@@ -63,6 +63,26 @@ module WrapperToolGeneration =
         /// Save the script in '<directory>/paket-files/bin/<script>'
         member self.Save (rootPath:DirectoryInfo) =
             saveScript self.Render rootPath self.PartialPath
+
+    type ScriptContentShell = {
+        PartialPath : string
+        ToolPath : string
+    } with
+        member self.Render (_directory:DirectoryInfo) =
+                
+            let cmdContent =
+                [ "@ECHO OFF"
+                  self.ToolPath ]
+            
+            cmdContent |> String.concat "\r\n"
+        
+        /// Save the script in '<directory>/paket-files/bin/<script>'
+        member self.Save (rootPath:DirectoryInfo) =
+            saveScript self.Render rootPath self.PartialPath
+
+    type [<RequireQualifiedAccess>] ScriptContent =
+        | Windows of ScriptContentWindows
+        | Shell of ScriptContentShell
 
     let avaiableTools (pkgDir: DirectoryInfo) =
         let toolsTFMDir = pkgDir.FullName </> "tool" </> "net45"
@@ -103,8 +123,8 @@ module WrapperToolGeneration =
                     "bin"
                 else
                     g.Name.Name </> "bin"
-            [ { ScriptContent.PartialPath = Constants.PaketFilesFolderName </> dir </> (sprintf "%s.cmd" name)
-                ToolPath = path}
-              { ScriptContent.PartialPath = Constants.PaketFilesFolderName </> dir </> name
-                ToolPath = path} ] )
+            [ { ScriptContentWindows.PartialPath = Constants.PaketFilesFolderName </> dir </> (sprintf "%s.cmd" name)
+                ToolPath = path} |> ScriptContent.Windows
+              { ScriptContentShell.PartialPath = Constants.PaketFilesFolderName </> dir </> name
+                ToolPath = path} |> ScriptContent.Shell ] )
 
