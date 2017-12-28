@@ -312,6 +312,14 @@ dependency version from the <a href="lock-file.html"><code>paket.lock</code> fil
   FSharp.Core &gt;= 4.3.1
   Other.Dep ~&gt; LOCKEDVERSION
 </code></pre></td></tr></table>
+<p><code>LOCKEDVERSION</code> can be constrained to a particular group by suffixing
+the placeholder with the particular group name.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="text">dependencies
+  FSharp.Core &gt;= LOCKEDVERSION-NetStandard
+</code></pre></td></tr></table>
 <p>It's possible to add a line to constrain the target framework:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
