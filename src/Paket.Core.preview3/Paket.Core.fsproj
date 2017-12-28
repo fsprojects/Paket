@@ -72,6 +72,7 @@
     <Compile Include="$(PaketCoreSourcesDir)\Installation\DependencyChangeDetection.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Installation\ScriptGeneration.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Installation\GarbageCollection.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Installation\WrapperToolGeneration.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Installation\RestoreProcess.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Installation\InstallProcess.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Installation\UpdateProcess.fs" />
