@@ -1,17 +1,15 @@
-#### 5.126.4 - 2017-12-21
+#### 5.127.0 - 2017-12-28
+* Implement binding LOCKEDVERSION to particular group name - https://github.com/fsprojects/Paket/pull/2943
 * USABILITY: Better tracing if we have IO error in load script generation
-
-#### 5.126.3 - 2017-12-18
 * USABILITY: Do not download more than 5 packages at the same time
-
-#### 5.126.2 - 2017-12-18
 * USABILITY: Print download times
-
-#### 5.126.1 - 2017-12-15
 * USABILITY: Avoid replacing load script files if the contents are the same - https://github.com/fsprojects/Paket/pull/2940
 
 #### 5.126.0 - 2017-12-12
 * BUGFIX: Remove possibly nonexistent extension safely - https://github.com/fsprojects/Paket/pull/2901
+
+#### 5.125.1 - 2017-12-05
+* Resolution by file order in paket.dependencies instead of alphabetical order (as new tie breaker) - https://github.com/fsprojects/Paket/issues/2898
 * BUGFIX: Transitive dependencies should be kept as stable as possible in paket install - https://github.com/fsprojects/Paket/pull/2927
 * PERFORMANCE: Boost conflicts and skip the "loop of doom" - https://github.com/fsprojects/Paket/pull/2928
 * PERFORMANCE: Preferred versions do not need to query the NuGet server - https://github.com/fsprojects/Paket/pull/2927
