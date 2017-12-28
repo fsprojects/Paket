@@ -408,6 +408,7 @@ type private PackageConfig = {
     GlobalRestrictions : FrameworkRestrictions
     RootDependencies   : IDictionary<PackageName,PackageRequirement>
     CliTools           : Set<PackageName>
+    RepoTools          : Set<PackageName>
     VersionCache       : VersionCache
     UpdateMode         : UpdateMode
 } with
@@ -494,6 +495,7 @@ let private explorePackageConfig (getPackageDetailsBlock:PackageDetailsSyncFunc)
               Settings            = { settings with FrameworkRestrictions = newRestrictions }
               Source              = packageDetails.Source
               Kind                = if Set.contains packageDetails.Name pkgConfig.CliTools then ResolvedPackageKind.DotnetCliTool
+                                    elif Set.contains packageDetails.Name pkgConfig.RepoTools then ResolvedPackageKind.RepoTool
                                     else ResolvedPackageKind.Package
               IsRuntimeDependency = false
             }
@@ -944,6 +946,15 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
             | _ -> None)
         |> Set.ofSeq
 
+    let repoToolSettings =
+        rootDependencies
+        |> Seq.choose (fun r ->
+            match r.Parent with
+            | PackageRequirementSource.DependenciesFile _ when (r.Kind = PackageRequirementKind.RepoTool) ->
+                Some r.Name
+            | _ -> None)
+        |> Set.ofSeq
+
     use d = Profile.startCategory Profile.Category.ResolverAlgorithm
     use cts = new CancellationTokenSource()
     let workerQueue = ResolverRequestQueue.Create()
@@ -1269,6 +1280,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                     VersionCache       = versionToExplore
                     UpdateMode         = updateMode
                     CliTools           = cliToolSettings
+                    RepoTools          = repoToolSettings
                 }
 
                 match getExploredPackage packageConfig getPackageDetailsBlock stackpack with
