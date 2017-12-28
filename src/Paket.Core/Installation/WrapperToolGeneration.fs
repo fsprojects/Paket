@@ -50,13 +50,15 @@ module WrapperToolGeneration =
 
     type ScriptContentWindows = {
         PartialPath : string
-        ToolPath : string
+        RelativeToolPath : string
     } with
         member self.Render (_directory:DirectoryInfo) =
-                
+            let relativeToolPath = self.RelativeToolPath
+            let paketToolRuntimeHostWin = ""
             let cmdContent =
                 [ "@ECHO OFF"
-                  self.ToolPath ]
+                  ""
+                  sprintf """%s"%%~dp0%s" %%*""" paketToolRuntimeHostWin relativeToolPath ]
             
             cmdContent |> String.concat "\r\n"
         
@@ -66,15 +68,17 @@ module WrapperToolGeneration =
 
     type ScriptContentShell = {
         PartialPath : string
-        ToolPath : string
+        RelativeToolPath : string
     } with
         member self.Render (_directory:DirectoryInfo) =
-                
+            let relativeToolPath = self.RelativeToolPath
+            let paketToolRuntimeHostLinux = "mono "
             let cmdContent =
-                [ "@ECHO OFF"
-                  self.ToolPath ]
+                [ "#!/bin/sh"
+                  ""
+                  sprintf """%s"$(dirname "$0")/%s" "$@" """ paketToolRuntimeHostLinux relativeToolPath ]
             
-            cmdContent |> String.concat "\r\n"
+            cmdContent |> String.concat "\n"
         
         /// Save the script in '<directory>/paket-files/bin/<script>'
         member self.Save (rootPath:DirectoryInfo) =
@@ -123,8 +127,10 @@ module WrapperToolGeneration =
                     "bin"
                 else
                     g.Name.Name </> "bin"
-            [ { ScriptContentWindows.PartialPath = Constants.PaketFilesFolderName </> dir </> (sprintf "%s.cmd" name)
-                ToolPath = path} |> ScriptContent.Windows
-              { ScriptContentShell.PartialPath = Constants.PaketFilesFolderName </> dir </> name
-                ToolPath = path} |> ScriptContent.Shell ] )
+            let scriptPath = Constants.PaketFilesFolderName </> dir
+            let relativePath = createRelativePath (lockFile.RootPath </> scriptPath </> name) path
+            [ { ScriptContentWindows.PartialPath = scriptPath </> (sprintf "%s.cmd" name)
+                RelativeToolPath = relativePath } |> ScriptContent.Windows
+              { ScriptContentShell.PartialPath = scriptPath</> name
+                RelativeToolPath = relativePath } |> ScriptContent.Shell ] )
 
