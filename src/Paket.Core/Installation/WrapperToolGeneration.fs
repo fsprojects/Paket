@@ -24,41 +24,45 @@ module WrapperToolGeneration =
     open System.Collections.Generic
     open Paket.Logging
 
+    let private saveScript render (rootPath:DirectoryInfo) partialPath =
+        if not rootPath.Exists then rootPath.Create()
+        let scriptFile = FileInfo (rootPath.FullName </> partialPath)
+        if verbose then
+            verbosefn "generating wrapper script - %s" scriptFile.FullName
+        if not scriptFile.Directory.Exists then scriptFile.Directory.Create()            
+            
+        let existingFileContents =
+            if scriptFile.Exists then
+                try
+                    File.ReadAllText scriptFile.FullName
+                with
+                | exn -> failwithf "Could not read load script file %s. Message: %s" scriptFile.FullName exn.Message
+            else
+                ""
+
+        let text = render rootPath
+        try
+            if existingFileContents <> text then
+                File.WriteAllText (scriptFile.FullName, text)
+        with
+        | exn -> failwithf "Could not write load script file %s. Message: %s" scriptFile.FullName exn.Message
+
+
     type ScriptContent = {
         PartialPath : string
         ToolPath : string
     } with
-        member self.Render (directory:DirectoryInfo) =
+        member self.Render (_directory:DirectoryInfo) =
                 
             let cmdContent =
                 [ "@ECHO OFF"
                   self.ToolPath ]
             
-            cmdContent |> String.concat "\n"
+            cmdContent |> String.concat "\r\n"
         
         /// Save the script in '<directory>/paket-files/bin/<script>'
         member self.Save (rootPath:DirectoryInfo) =
-            if not rootPath.Exists then rootPath.Create()
-            let scriptFile = FileInfo (rootPath.FullName </> self.PartialPath)
-            if verbose then
-                verbosefn "generating wrapper script - %s" scriptFile.FullName
-            if not scriptFile.Directory.Exists then scriptFile.Directory.Create()            
-            
-            let existingFileContents =
-                if scriptFile.Exists then
-                    try
-                        File.ReadAllText scriptFile.FullName
-                    with
-                    | exn -> failwithf "Could not read load script file %s. Message: %s" scriptFile.FullName exn.Message
-                else
-                    ""
-
-            let text = self.Render rootPath
-            try
-                if existingFileContents <> text then
-                    File.WriteAllText (scriptFile.FullName, text)
-            with
-            | exn -> failwithf "Could not write load script file %s. Message: %s" scriptFile.FullName exn.Message
+            saveScript self.Render rootPath self.PartialPath
 
     let avaiableTools (pkgDir: DirectoryInfo) =
         let toolsTFMDir = pkgDir.FullName </> "tool" </> "net45"
