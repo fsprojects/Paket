@@ -1,3 +1,6 @@
+#### 5.125.2 - 2017-12-28
+* Implement binding LOCKEDVERSION to particular group name - https://github.com/fsprojects/Paket/pull/2943
+
 #### 5.125.1 - 2017-12-05
 * Resolution by file order in paket.dependencies instead of alphabetical order (as new tie breaker) - https://github.com/fsprojects/Paket/issues/2898
 * BUGFIX: Transitive dependencies should be kept as stable as possible in paket install - https://github.com/fsprojects/Paket/pull/2927
