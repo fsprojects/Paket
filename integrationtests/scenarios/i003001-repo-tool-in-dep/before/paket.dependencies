@@ -1,0 +1,3 @@
+source https://www.myget.org/F/paket-repotool/api/v2
+
+repotool RepoTool.Sample
