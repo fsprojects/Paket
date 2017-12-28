@@ -57,7 +57,8 @@ module WrapperToolGeneration =
             let cmdContent =
                 [ "@ECHO OFF"
                   ""
-                  sprintf """%s"%%~dp0%s" %%*""" paketToolRuntimeHostWin self.RelativeToolPath ]
+                  sprintf """%s"%%~dp0%s" %%*""" paketToolRuntimeHostWin self.RelativeToolPath
+                  "" ]
             
             cmdContent |> String.concat "\r\n"
         
@@ -74,7 +75,8 @@ module WrapperToolGeneration =
             let cmdContent =
                 [ "#!/bin/sh"
                   ""
-                  sprintf """%s"$(dirname "$0")/%s" "$@" """ paketToolRuntimeHostLinux self.RelativeToolPath ]
+                  sprintf """%s"$(dirname "$0")/%s" "$@" """ paketToolRuntimeHostLinux (self.RelativeToolPath.Replace('\\','/'))
+                  "" ]
             
             cmdContent |> String.concat "\n"
         
