@@ -26,10 +26,11 @@ module WrapperToolGeneration =
 
     type ScriptContent = {
         PartialPath : string
+        ToolPath : string
     } with
         member self.Render (directory:DirectoryInfo) =
                 
-            let cmdContent = [ "run it!" ]
+            let cmdContent = [ self.ToolPath ]
             
             cmdContent |> String.concat "\n"
         
@@ -57,6 +58,12 @@ module WrapperToolGeneration =
             with
             | exn -> failwithf "Could not write load script file %s. Message: %s" scriptFile.FullName exn.Message
 
+    let avaiableTools (pkgDir: DirectoryInfo) =
+        let toolsTFMDir = pkgDir.FullName </> "tool" </> "net45"
+        Directory.EnumerateFiles(toolsTFMDir , "*.exe")
+        |> Seq.map (fun x -> Path.GetFileNameWithoutExtension(x), x)
+        |> List.ofSeq
+     
     let constructWrapperScriptsFromData (depCache:DependencyCache) (groups: (LockFileGroup * Map<PackageName,PackageResolver.ResolvedPackage>) list) =
         let lockFile = depCache.LockFile
         let frameworksForDependencyGroups = lockFile.ResolveFrameworksForScriptGeneration()
@@ -65,7 +72,33 @@ module WrapperToolGeneration =
         if verbose then
             verbosefn "Generating wrapper scripts for the following groups: %A" (groups |> List.map (fun (g,_) -> g.Name.ToString()))
             verbosefn " - using Paket lock file: %s" lockFile.FileName
+        
+        //depCache.GetOrderedPackageReferences
 
-        [ { ScriptContent.PartialPath = "paket-files" </> "bin" </> "hello.cmd" }
-          { ScriptContent.PartialPath = "paket-files" </> "bin" </> "hello" } ]
+        let allRepoToolPkgs =
+
+            let resolved = lazy (lockFile.GetGroupedResolution())
+
+            [ for (g, pkgs) in groups do
+                
+                for (pkg, resolvedPkg) in pkgs |> Map.toList do
+                    let x = resolved.Force().[ g.Name, pkg ]
+                    let y =
+                        x.Folder lockFile.RootPath g.Name
+                        |> DirectoryInfo
+                    if y.Exists then
+                        yield (g, x, y)  ]
+
+        allRepoToolPkgs
+        |> List.collect (fun (g, _x, y) -> y |> avaiableTools |> List.map (fun (name, path) -> g, name, path))
+        |> List.collect (fun (g, name, path) ->
+            let dir =
+                if g.Name = Constants.MainDependencyGroup then
+                    "bin"
+                else
+                    g.Name.Name </> "bin"
+            [ { ScriptContent.PartialPath = Constants.PaketFilesFolderName </> dir </> (sprintf "%s.cmd" name)
+                ToolPath = path}
+              { ScriptContent.PartialPath = Constants.PaketFilesFolderName </> dir </> name
+                ToolPath = path} ] )
 
