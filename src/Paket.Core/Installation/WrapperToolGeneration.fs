@@ -30,7 +30,9 @@ module WrapperToolGeneration =
     } with
         member self.Render (directory:DirectoryInfo) =
                 
-            let cmdContent = [ self.ToolPath ]
+            let cmdContent =
+                [ "@ECHO OFF"
+                  self.ToolPath ]
             
             cmdContent |> String.concat "\n"
         
