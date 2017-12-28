@@ -85,6 +85,7 @@ type ResolvedPackage = {
 and [<RequireQualifiedAccess>] ResolvedPackageKind =
     | Package
     | DotnetCliTool
+    | RepoTool
 
 type PackageResolution = Map<PackageName, ResolvedPackage>
 /// Caches information retrieved by GetVersions until it is required by GetDetails

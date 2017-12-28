@@ -1043,3 +1043,30 @@ let ``should parse lock file with cli tool``() =
     LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings lockFileWithCLiTool)
+
+let lockFileWithRepoTool = """NUGET
+  remote: https://www.nuget.org/api/v2
+    Argu (2.1)
+    Chessie (0.4)
+      FSharp.Core
+    FSharp.Core (4.0.0.1) - redirects: force
+    mytool (1.1.7) - repotool: true
+    Newtonsoft.Json (8.0.3) - redirects: force"""
+
+[<Test>]
+let ``should parse lock file with repo tool``() = 
+    let lockFile = LockFileParser.Parse(toLines lockFileWithRepoTool)
+    let main = lockFile.Head
+    let packages = List.rev main.Packages
+    
+    packages
+    |> List.find (fun p -> p.Name = PackageName "mytool")
+    |> fun p -> p.Kind |> shouldEqual Paket.PackageResolver.ResolvedPackageKind.RepoTool
+
+    packages
+    |> List.find (fun p -> p.Name = PackageName "Argu")
+    |> fun p -> p.Kind |> shouldEqual Paket.PackageResolver.ResolvedPackageKind.Package
+
+    LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings lockFileWithRepoTool)
