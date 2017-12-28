@@ -444,6 +444,24 @@ let CreateScriptsForGroups (lockFile:LockFile) (groups:Map<GroupName,LockFileGro
         for sd in scripts do
             sd.Save rootPath
 
+let CreateToolWrapperForGroups (lockFile:LockFile) (groups:Map<GroupName,LockFileGroup>) =
+    let groupsToGenerate =
+        groups
+        |> Seq.map (fun kvp -> kvp.Value)
+        |> Seq.choose (fun g -> 
+            match g.Resolution |> Map.filter (fun _ v -> v.Kind = ResolvedPackageKind.RepoTool) with
+            | m when Map.isEmpty m-> None
+            | repoTools -> Some (g, repoTools))
+        |> Seq.toList
+
+    if not (List.isEmpty groupsToGenerate) then
+        let depsCache = DependencyCache(lockFile)
+        let rootPath = DirectoryInfo lockFile.RootPath
+
+        let scripts = RepoTools.WrapperToolGeneration.constructWrapperScriptsFromData depsCache groupsToGenerate
+        for sd in scripts do
+            sd.Save rootPath
+
 let FindOrCreateReferencesFile (projectFile:ProjectFile) =
     match projectFile.FindReferencesFile() with
     | Some fileName -> 
@@ -612,6 +630,8 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     |> ignore
 
                 CreateScriptsForGroups lockFile groups
+                CreateToolWrapperForGroups lockFile groups
+
                 if isFullRestore then
                     File.WriteAllText(restoreCacheFile, newContents))
             )

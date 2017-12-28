@@ -125,6 +125,7 @@
     <Compile Include="Installation\DependencyChangeDetection.fs" />
     <Compile Include="Installation\ScriptGeneration.fs" />
     <Compile Include="Installation\GarbageCollection.fs" />
+    <Compile Include="Installation\WrapperToolGeneration.fs" />
     <Compile Include="Installation\RestoreProcess.fs" />
     <Compile Include="Installation\InstallProcess.fs" />
     <Compile Include="Installation\UpdateProcess.fs" />
