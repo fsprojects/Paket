@@ -1,0 +1,3 @@
+NUGET
+  remote: https://www.myget.org/F/paket-repotool/api/v2
+    RepoTool.Sample (0.1.0)
