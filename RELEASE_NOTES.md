@@ -1,4 +1,4 @@
-#### 5.127.1 - 2017-12-28
+#### 5.127.2 - 2017-12-28
 * Implemented binding LOCKEDVERSION to particular group name - https://github.com/fsprojects/Paket/pull/2943
 * BUGFIXC: Fixed "Incorrect time metrics" - https://github.com/fsprojects/Paket/pull/2946
 * USABILITY: Better tracing if we have IO error in load script generation
