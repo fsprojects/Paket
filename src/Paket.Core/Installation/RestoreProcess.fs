@@ -322,9 +322,8 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                 | None -> Set.empty
 
             for (key,_,_) in hull do
+                let resolvedPackage = resolved.Force().[key]
                 let restore =
-                    let resolvedPackage = resolved.Force().[key]
-
                     not (ImplicitPackages.Contains resolvedPackage.Name) &&
                         match resolvedPackage.Settings.FrameworkRestrictions with
                         | Requirements.ExplicitRestriction restrictions ->
@@ -339,7 +338,8 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                         packageName.ToString() + "," +
                         package.Version.ToString() + "," +
                         (if direct then "Direct" else "Transitive") + "," +
-                        kv.Key.ToString()
+                        kv.Key.ToString() + "," +
+                        resolvedPackage.Settings.CopyLocal.ToString()
 
                     list.Add line
 

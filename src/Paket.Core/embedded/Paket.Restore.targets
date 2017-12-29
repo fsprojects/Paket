@@ -114,9 +114,11 @@
       <PaketReferencesFileLinesInfo Include="@(PaketReferencesFileLines)" >
         <PackageName>$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[0])</PackageName>
         <PackageVersion>$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[1])</PackageVersion>
+        <AllPrivateAssets Condition="$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',').Length > 4">$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[4])</AllPrivateAssets>
       </PaketReferencesFileLinesInfo>
       <PackageReference Include="%(PaketReferencesFileLinesInfo.PackageName)">
         <Version>%(PaketReferencesFileLinesInfo.PackageVersion)</Version>
+        <PrivateAssets Condition="AllPrivateAssets == 'true'">All</PrivateAssets>
       </PackageReference>
     </ItemGroup>
 

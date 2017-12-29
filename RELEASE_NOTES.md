@@ -1,10 +1,11 @@
-#### 5.127.2 - 2017-12-28
+#### 5.127.3 - 2017-12-29
 * Implemented binding LOCKEDVERSION to particular group name - https://github.com/fsprojects/Paket/pull/2943
 * BUGFIXC: Fixed "Incorrect time metrics" - https://github.com/fsprojects/Paket/pull/2946
 * USABILITY: Better tracing if we have IO error in load script generation
 * USABILITY: Do not download more than 5 packages at the same time
 * USABILITY: Print download times
 * USABILITY: Avoid replacing load script files if the contents are the same - https://github.com/fsprojects/Paket/pull/2940
+* Update Paket.Restore.targets to deal with private assets
 
 #### 5.126.0 - 2017-12-12
 * BUGFIX: Remove possibly nonexistent extension safely - https://github.com/fsprojects/Paket/pull/2901
