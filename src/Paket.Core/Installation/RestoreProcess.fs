@@ -334,12 +334,16 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                     let _,packageName = key
                     let direct = allDirectPackages.Contains packageName
                     let package = resolved.Force().[key]
+                    let copy_local =
+                        match resolvedPackage.Settings.CopyLocal with
+                        | Some x -> x.ToString()
+                        | None -> "false"
                     let line =
                         packageName.ToString() + "," +
                         package.Version.ToString() + "," +
                         (if direct then "Direct" else "Transitive") + "," +
                         kv.Key.ToString() + "," +
-                        resolvedPackage.Settings.CopyLocal.ToString()
+                        copy_local
 
                     list.Add line
 
