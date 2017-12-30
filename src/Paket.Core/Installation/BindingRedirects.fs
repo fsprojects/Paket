@@ -158,7 +158,12 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLi
     |> List.iter (fun e -> e.Remove())
 
     let config = Seq.fold setRedirect config bindingRedirects
-    indentAssemblyBindings config
+
+    try
+        indentAssemblyBindings config
+    with
+    | exn -> failwithf "Indenting binding redirects of %s failed.%s%s" configFilePath Environment.NewLine exn.Message
+
     use newContents = new StringReader(config.ToString())
     let newText = XDocument.Load(newContents, LoadOptions.None).ToString()
     if newText <> original then

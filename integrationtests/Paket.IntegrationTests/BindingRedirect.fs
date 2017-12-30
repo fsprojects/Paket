@@ -78,6 +78,14 @@ let ``#1195 should report broken app.config``() =
         failwith "paket should fail"
     with
     | exn when exn.Message.Contains("Project1") && exn.Message.Contains("app.config") -> ()
+
+[<Test>]
+let ``#2408 should report wrong app.config parsing``() =
+    try
+        paket "install --redirects" "i002408-indenting-appconfig" |> ignore
+        failwith "paket should fail"
+    with
+    | exn when exn.Message.Contains("Project1") && exn.Message.Contains("app.config") -> ()
     
 [<Test>]
 let ``#1218 install should replace paket's binding redirects with required only``() = 
