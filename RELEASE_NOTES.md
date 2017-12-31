@@ -1,6 +1,7 @@
-#### 5.127.12 - 2017-12-29
+#### 5.128.0 - 2017-12-31
 * Implemented binding LOCKEDVERSION to particular group name - https://github.com/fsprojects/Paket/pull/2943
 * BUGFIX: Fixed "Incorrect time metrics" - https://github.com/fsprojects/Paket/pull/2946
+* USABILITY: Show parsing errors - https://github.com/fsprojects/Paket/pull/2952/files
 * USABILITY: Better tracing if we have IO error in load script generation
 * USABILITY: Do not download more than 5 packages at the same time
 * USABILITY: Print download times
