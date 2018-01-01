@@ -103,22 +103,28 @@ module internal NupkgWriter =
             add g
             g
 
-        let buildDependencyNodes (excludedDependencies, add, dependencyList)  =
+        let aggregateDependencies excludedDependencies dependencyList =
             dependencyList
-            |> List.filter (fun (a, _) -> Set.contains a excludedDependencies |> not)
-            |> List.map  (fun (a, b) -> a, b)
+            |> List.filter (fun (a, _) -> Set.contains a excludedDependencies |> not)            
+
+        let buildDependencyNodes (add, dependencies)  =
+            dependencies
             |> List.iter (buildDependencyNode >> add)
 
-        let buildDependencyNodesByGroup excludedDependencies add dependencyGroup  =
-            let node = buildGroupNode(dependencyGroup.Framework, add)
-            buildDependencyNodes(excludedDependencies, node.Add, dependencyGroup.Dependencies)
+        let buildDependencyNodesByGroup excludedDependencies add dependencyGroup =
+            match aggregateDependencies excludedDependencies dependencyGroup.Dependencies with
+            | [] when Option.isNone dependencyGroup.Framework -> ()
+            | dependencies ->
+                let node = buildGroupNode(dependencyGroup.Framework, add)
+                buildDependencyNodes(node.Add, dependencies)
 
         let buildDependenciesNode excludedDependencies dependencyGroups =
             if List.isEmpty dependencyGroups then () else
             let d = XElement(ns + "dependencies")
-            match dependencyGroups.Length, dependencyGroups.Head.Framework with
-            | (1, None) ->
-                buildDependencyNodes(excludedDependencies, d.Add, dependencyGroups.Head.Dependencies)
+            match dependencyGroups with
+            | [g] when Option.isNone g.Framework ->
+                let deps = aggregateDependencies excludedDependencies g.Dependencies
+                buildDependencyNodes(d.Add, deps)
             | _ -> 
                 for g in dependencyGroups do
                     buildDependencyNodesByGroup excludedDependencies d.Add g
