@@ -465,6 +465,10 @@ let CreateToolWrapperForGroups (lockFile:LockFile) (groups:Map<GroupName,LockFil
                  script.Save rootPath
             | RepoTools.WrapperToolGeneration.ScriptContent.Shell script ->
                  script.Save rootPath
+            | RepoTools.WrapperToolGeneration.ScriptContent.WindowsAddToPATH script ->
+                 script.Save rootPath
+            | RepoTools.WrapperToolGeneration.ScriptContent.ShellAddToPATH script ->
+                 script.Save rootPath
 
 let FindOrCreateReferencesFile (projectFile:ProjectFile) =
     match projectFile.FindReferencesFile() with

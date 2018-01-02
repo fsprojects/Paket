@@ -59,3 +59,17 @@ let ``#3002 repo tool from flatten tools dir``() =
     for toolName in ["FAKE.cmd"; "FAKE"; "Fake.Deploy.cmd"; "Fake.Deploy"] do
         let toolPath = Path.Combine(wrappersPath, toolName)
         Assert.IsTrue(File.Exists(toolPath), (sprintf "file '%s' not found" toolPath))
+
+[<Test>]
+let ``#3003 repo tool with add to PATH``() =
+    let scenario = "i003003-repo-tool-in-PATH"
+    prepare scenario
+    paket "restore" scenario |> ignore
+
+    let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
+
+    let helloCmdPath = Path.Combine(wrappersPath, "add_to_PATH.cmd")
+    Assert.IsTrue(File.Exists(helloCmdPath), (sprintf "file '%s' not found" helloCmdPath))
+    
+    let helloBashPath = Path.Combine(wrappersPath, "add_to_PATH.cmd")
+    Assert.IsTrue(File.Exists(helloBashPath), (sprintf "file '%s' not found" helloBashPath))

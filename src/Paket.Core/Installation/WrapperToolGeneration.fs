@@ -49,6 +49,22 @@ module WrapperToolGeneration =
 
     type [<RequireQualifiedAccess>]  ScriptContentRuntimeHost = DotNetFramework | DotNetCoreApp | Native
 
+    type ScriptAddToPATHWindows = {
+        PartialPath : string
+    } with
+        member self.Render (_directory:DirectoryInfo) =
+            let cmdContent =
+                [ "@ECHO OFF"
+                  ""
+                  """set PATH=~dp0;%%PATH%%"""
+                  "" ]
+            
+            cmdContent |> String.concat "\r\n"
+
+        /// Save the script in '<directory>/paket-files/bin/<script>'
+        member self.Save (rootPath:DirectoryInfo) =
+            saveScript self.Render rootPath self.PartialPath
+
     type ScriptContentWindows = {
         PartialPath : string
         RelativeToolPath : string
@@ -74,6 +90,23 @@ module WrapperToolGeneration =
         member self.Save (rootPath:DirectoryInfo) =
             saveScript self.Render rootPath self.PartialPath
     and [<RequireQualifiedAccess>] ScriptContentWindowsRuntime = DotNetFramework | DotNetCoreApp | Mono | Native
+
+    type ScriptAddToPATHShell = {
+        PartialPath : string
+    } with
+        member self.Render (_directory:DirectoryInfo) =
+
+            let cmdContent =
+                [ "#!/bin/sh"
+                  ""
+                  """export PATH="$(dirname "$0")":$PATH"""
+                  "" ]
+            
+            cmdContent |> String.concat "\n"
+        
+        /// Save the script in '<directory>/paket-files/bin/<script>'
+        member self.Save (rootPath:DirectoryInfo) =
+            saveScript self.Render rootPath self.PartialPath
 
     type ScriptContentShell = {
         PartialPath : string
@@ -102,6 +135,8 @@ module WrapperToolGeneration =
     type [<RequireQualifiedAccess>] ScriptContent =
         | Windows of ScriptContentWindows
         | Shell of ScriptContentShell
+        | WindowsAddToPATH of ScriptAddToPATHWindows
+        | ShellAddToPATH of ScriptAddToPATHShell
 
     type RepoToolInNupkg =
         { FullPath: string
@@ -180,39 +215,58 @@ module WrapperToolGeneration =
                     if y.Exists then
                         yield (g, x, y)  ]
 
-        allRepoToolPkgs
-        |> List.collect (fun (g, x, y) -> avaiableTools x y |> List.map (fun tool -> g, tool))
-        |> List.collect (fun (g, tool) ->
-            let dir =
-                if g.Name = Constants.MainDependencyGroup then
-                    "bin"
-                else
-                    g.Name.Name </> "bin"
+        let toolWrapperInDir =
+            allRepoToolPkgs
+            |> List.collect (fun (g, x, y) -> avaiableTools x y |> List.map (fun tool -> g, tool))
+            |> List.map (fun (g, tool) ->
+                    let dir =
+                        if g.Name = Constants.MainDependencyGroup then
+                            "bin"
+                        else
+                            g.Name.Name </> "bin"
 
-            let scriptPath = Constants.PaketFilesFolderName </> dir
-            let relativePath = createRelativePath (lockFile.RootPath </> scriptPath </> tool.Name) (tool.FullPath)
+                    let scriptPath = Constants.PaketFilesFolderName </> dir
+                    tool, scriptPath)
 
-            let runtimeOpt =
-                match tool.Kind with
-                | RepoToolInNupkgKind.OldStyle ->
-                    Some ScriptContentRuntimeHost.DotNetFramework
-                | RepoToolInNupkgKind.ByTFM tfm ->
-                    match tfm with
-                    | FrameworkIdentifier.DotNetFramework _ ->
+        let wrapperScripts =
+            toolWrapperInDir
+            |> List.collect (fun (tool, scriptPath) ->
+                let relativePath = createRelativePath (lockFile.RootPath </> scriptPath </> tool.Name) (tool.FullPath)
+
+                let runtimeOpt =
+                    match tool.Kind with
+                    | RepoToolInNupkgKind.OldStyle ->
                         Some ScriptContentRuntimeHost.DotNetFramework
-                    | FrameworkIdentifier.DotNetCoreApp _ ->
-                        Some ScriptContentRuntimeHost.DotNetCoreApp
-                    | _ ->
-                        None
+                    | RepoToolInNupkgKind.ByTFM tfm ->
+                        match tfm with
+                        | FrameworkIdentifier.DotNetFramework _ ->
+                            Some ScriptContentRuntimeHost.DotNetFramework
+                        | FrameworkIdentifier.DotNetCoreApp _ ->
+                            Some ScriptContentRuntimeHost.DotNetCoreApp
+                        | _ ->
+                            None
 
-            match runtimeOpt with
-            | None -> []
-            | Some runtime ->
-              [ { ScriptContentWindows.PartialPath = scriptPath </> (sprintf "%s.cmd" tool.Name)
-                  Runtime = runtime
-                  RelativeToolPath = relativePath } |> ScriptContent.Windows
+                match runtimeOpt with
+                | None -> []
+                | Some runtime ->
+                  [ { ScriptContentWindows.PartialPath = scriptPath </> (sprintf "%s.cmd" tool.Name)
+                      Runtime = runtime
+                      RelativeToolPath = relativePath } |> ScriptContent.Windows
                 
-                { ScriptContentShell.PartialPath = scriptPath</> (tool.Name)
-                  Runtime = runtime
-                  RelativeToolPath = relativePath } |> ScriptContent.Shell ] )
+                    { ScriptContentShell.PartialPath = scriptPath</> (tool.Name)
+                      Runtime = runtime
+                      RelativeToolPath = relativePath } |> ScriptContent.Shell ] )
 
+        let installToPathScripts =
+            toolWrapperInDir
+            |> List.map snd
+            |> List.distinct
+            |> List.collect (fun scriptPath ->
+                [ { ScriptAddToPATHWindows.PartialPath = scriptPath </> "add_to_PATH.cmd" }
+                  |> ScriptContent.WindowsAddToPATH
+
+                  { ScriptAddToPATHShell.PartialPath = scriptPath </> "add_to_PATH.sh" }
+                  |> ScriptContent.ShellAddToPATH ] )
+        
+        [ yield! wrapperScripts
+          yield! installToPathScripts ]
