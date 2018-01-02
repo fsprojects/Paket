@@ -136,7 +136,7 @@ let ``fails on wrong framework given`` () =
     )
     let message = failure.ToString()
     printfn "%s" message
-    Assert.IsTrue(message.Contains "Cannot generate include scripts.")
+    Assert.IsTrue(message.Contains "Can't generate load scripts.")
     Assert.IsTrue(message.Contains "Unrecognized Framework(s)")
     Assert.IsTrue(message.Contains "foo, bar")
 
