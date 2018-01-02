@@ -149,9 +149,9 @@ let detectProjectFrameworksForDependenciesFile (dependenciesFile:DependenciesFil
         let targetFrameworks = lazy (
             let rawRestrictions =
                 RestoreProcess.findAllReferencesFiles root |> returnOrFail
-                |> List.map (fun (p,_) -> 
-                    p.GetTargetProfile() 
-                    |> Requirements.FrameworkRestriction.ExactlyPlatform)
+                |> List.collect (fun (p,_) -> 
+                    p.GetTargetProfiles() 
+                    |> List.map (Requirements.FrameworkRestriction.ExactlyPlatform))
                 |> List.distinct
             if rawRestrictions.IsEmpty then Paket.Requirements.FrameworkRestriction.NoRestriction
             else rawRestrictions |> Seq.fold Paket.Requirements.FrameworkRestriction.combineRestrictionsWithOr Paket.Requirements.FrameworkRestriction.EmptySet)

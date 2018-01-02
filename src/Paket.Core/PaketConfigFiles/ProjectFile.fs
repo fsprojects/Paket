@@ -1040,36 +1040,43 @@ module ProjectFile =
     let getTargetFramework (project:ProjectFile) = getProperty "TargetFramework" project
     let getTargetFrameworks (project:ProjectFile) = getProperty "TargetFrameworks" project
 
-    let getTargetProfile (project:ProjectFile) =
+    let getTargetProfiles (project:ProjectFile) =
         let fallback () =
-            let prefix =
+            let prefix() =
                 match getTargetFrameworkIdentifier project with
                 | None -> "net"
                 | Some x -> x
-            let framework = 
+
+            let frameworks = 
                 match getTargetFrameworkVersion project with
-                | None -> getTargetFramework project
-                | Some x -> Some(prefix + x.Replace("v",""))
-            let defaultResult = TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4)
-            match framework with
-            | None -> defaultResult
-            | Some s ->
-                match FrameworkDetection.Extract(s) with
-                | None -> defaultResult
-                | Some x -> TargetProfile.SinglePlatform x
+                | None -> 
+                    let xs = 
+                        getTargetFrameworks project 
+                        |> Option.map (fun x -> x.Split([|';'|],StringSplitOptions.RemoveEmptyEntries))
+                        |> Option.toArray
+                        |> Array.concat 
+                        |> Seq.toList
+                    (getTargetFramework project |> Option.toList) @ xs
+                    
+                | Some x -> [prefix() + (x.Replace("v",""))]
+
+            match frameworks |> List.choose (fun s -> FrameworkDetection.Extract s |> Option.map TargetProfile.SinglePlatform) with
+            | [] -> [TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4)]
+            | xs -> xs
+            
 
         match getTargetFrameworkProfile project with
         | Some profile when profile = "Unity Web v3.5" ->
-            TargetProfile.SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Web)
+            [TargetProfile.SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Web)]
         | Some profile when profile = "Unity Micro v3.5" ->
-            TargetProfile.SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Micro)
+            [TargetProfile.SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Micro)]
         | Some profile when profile = "Unity Subset v3.5" ->
-            TargetProfile.SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Subset)
+            [TargetProfile.SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Subset)]
         | Some profile when profile = "Unity Full v3.5" ->
-            TargetProfile.SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Full)
+            [TargetProfile.SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Full)]
         | Some profile when String.IsNullOrWhiteSpace profile |> not ->
             try
-                KnownTargetProfiles.FindPortableProfile profile
+                [KnownTargetProfiles.FindPortableProfile profile]
             with e ->
                 traceWarnfn "Could not detect TargetFrameworkProfile '%s' in '%s' via 'FindPortableProfile', using fallback" profile project.FileName
                 fallback()
@@ -1167,15 +1174,17 @@ module ProjectFile =
                     group.CompareString, packName.CompareString)
             |> Seq.map (fun (kv,installSettings,restrictionList,projectModel) ->
                 if directPackages.ContainsKey kv.Key then
-                    let targetProfile = getTargetProfile project 
-                    if isTargetMatchingRestrictions(restrictionList,targetProfile) then
-                        if projectModel.GetLibReferenceFiles targetProfile |> Seq.isEmpty then
+                    let targetProfiles = getTargetProfiles project
+                    targetProfiles
+                    |> Seq.filter (fun targetProfile -> isTargetMatchingRestrictions(restrictionList,targetProfile))
+                    |> Seq.filter (projectModel.GetLibReferenceFiles >> Seq.isEmpty)
+                    |> Seq.iter (fun targetProfile ->
                             let libReferences = 
                                 projectModel.GetAllLegacyReferences() 
 
                             if not (Seq.isEmpty libReferences) then
                                 traceWarnfn "Package %O contains libraries, but not for the selected TargetFramework %O in project %s."
-                                    (snd kv.Key) targetProfile project.FileName
+                                    (snd kv.Key) targetProfile project.FileName)
 
                 let importTargets = defaultArg installSettings.ImportTargets true
             
@@ -1684,7 +1693,7 @@ type ProjectFile with
 
     member this.GetTargetFrameworkProfile () = ProjectFile.getTargetFrameworkProfile this
 
-    member this.GetTargetProfile () =  ProjectFile.getTargetProfile this
+    member this.GetTargetProfiles() =  ProjectFile.getTargetProfiles this
     
     member this.AddImportForPaketTargets relativeTargetsPath = ProjectFile.addImportForPaketTargets relativeTargetsPath this
 

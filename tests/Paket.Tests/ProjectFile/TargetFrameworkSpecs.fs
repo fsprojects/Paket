@@ -45,6 +45,6 @@ let ``should detect profile259`` () =
 let ``should detect the correct framework on test projects`` projectFile expectedProfile expectedProfileString expectedTargetFramework =
     ensureDir()
     let p = ProjectFile.TryLoad("./ProjectFile/TestData/" + projectFile).Value
-    p.GetTargetProfile() |> shouldEqual expectedProfile
-    p.GetTargetProfile().ToString() |> shouldEqual expectedProfileString
+    p.GetTargetProfiles() |> shouldEqual [expectedProfile]
+    p.GetTargetProfiles().Head.ToString() |> shouldEqual expectedProfileString
 
