@@ -56,7 +56,7 @@ module WrapperToolGeneration =
             let cmdContent =
                 [ "@ECHO OFF"
                   ""
-                  """set PATH=~dp0;%%PATH%%"""
+                  """set PATH=%~dp0;%PATH%"""
                   "" ]
             
             cmdContent |> String.concat "\r\n"
@@ -99,7 +99,10 @@ module WrapperToolGeneration =
             let cmdContent =
                 [ "#!/bin/sh"
                   ""
-                  """export PATH="$(dirname "$0")":$PATH"""
+                  """_script="$(readlink -f ${BASH_SOURCE[0]})" """
+                  """_base="$(dirname $_script)" """
+                  ""
+                  """export PATH="$_base:$PATH" """
                   "" ]
             
             cmdContent |> String.concat "\n"

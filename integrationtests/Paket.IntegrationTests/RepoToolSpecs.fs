@@ -70,6 +70,6 @@ let ``#3003 repo tool with add to PATH``() =
 
     let helloCmdPath = Path.Combine(wrappersPath, "add_to_PATH.cmd")
     Assert.IsTrue(File.Exists(helloCmdPath), (sprintf "file '%s' not found" helloCmdPath))
-    
-    let helloBashPath = Path.Combine(wrappersPath, "add_to_PATH.cmd")
+
+    let helloBashPath = Path.Combine(wrappersPath, "add_to_PATH.sh")
     Assert.IsTrue(File.Exists(helloBashPath), (sprintf "file '%s' not found" helloBashPath))
