@@ -20,7 +20,10 @@ let ``#3000 repo tool should work after restore``() =
     Assert.IsTrue(File.Exists(helloBashPath), (sprintf "file '%s' not found" helloBashPath))
 
     let resultCmd = directToolEx false helloCmdPath "" (scenarioTempPath scenario) 
-    CollectionAssert.AreEqual( [| "Hello World from F#!" |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
+    CollectionAssert.AreEqual( [| "Hello World from F#! with args: []" |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
+
+    let resultCmdWithArgs = directToolEx false helloCmdPath "1 2 3" (scenarioTempPath scenario) 
+    CollectionAssert.AreEqual( [| """Hello World from F#! with args: ["1"; "2"; "3"]""" |], (resultCmdWithArgs |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
 
 
 [<Test>]
@@ -39,7 +42,10 @@ let ``#3001 repo tool should work after install``() =
     Assert.IsTrue(File.Exists(helloBashPath), (sprintf "file '%s' not found" helloBashPath))
 
     let resultCmd = directToolEx false helloCmdPath "" (scenarioTempPath scenario) 
-    CollectionAssert.AreEqual( [| "Hello World from F#!" |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
+    CollectionAssert.AreEqual( [| "Hello World from F#! with args: []" |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
+
+    let resultCmdWithArgs = directToolEx false helloCmdPath "1 2 3" (scenarioTempPath scenario) 
+    CollectionAssert.AreEqual( [| """Hello World from F#! with args: ["1"; "2"; "3"]""" |], (resultCmdWithArgs |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
 
 [<Test>]
 let ``#3002 repo tool from flatten tools dir``() =
