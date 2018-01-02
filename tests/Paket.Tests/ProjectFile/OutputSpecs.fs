@@ -29,14 +29,14 @@ let ``should detect exe output type for Project3 proj file``() =
 [<Test>]
 let ``should detect target framework for Project1 proj file``() =
     ensureDir ()
-    ProjectFile.TryLoad("./ProjectFile/TestData/Project1.fsprojtest").Value.GetTargetProfile()
-    |> shouldEqual (TargetProfile.SinglePlatform(DotNetFramework(FrameworkVersion.V4_5)))
+    ProjectFile.TryLoad("./ProjectFile/TestData/Project1.fsprojtest").Value.GetTargetProfiles()
+    |> shouldEqual [TargetProfile.SinglePlatform(DotNetFramework(FrameworkVersion.V4_5))]
 
 [<Test>]
 let ``should detect target framework for Project2 proj file``() =
     ensureDir ()
-    ProjectFile.TryLoad("./ProjectFile/TestData/Project2.fsprojtest").Value.GetTargetProfile()
-    |> shouldEqual (TargetProfile.SinglePlatform(DotNetFramework(FrameworkVersion.V4)))
+    ProjectFile.TryLoad("./ProjectFile/TestData/Project2.fsprojtest").Value.GetTargetProfiles()
+    |> shouldEqual [TargetProfile.SinglePlatform(DotNetFramework(FrameworkVersion.V4))]
 
 [<Test>]
 let ``should detect output path for proj file``
@@ -53,7 +53,7 @@ let ``should detect output path for netsdk csproj file``
         ([<Values("Debug", "Release", "dEbUg", "rElEaSe")>] configuration) =
     ensureDir ()
     let projectFile = ProjectFile.TryLoad(sprintf "./ProjectFile/TestData/%s" project).Value 
-    let target = projectFile.GetTargetProfile().ToString()
+    let target = projectFile.GetTargetProfiles().Head.ToString()
     let outPath = projectFile.GetOutputDirectory configuration ""
     let expected = (System.IO.Path.Combine(@"bin", configuration, target) |> normalizePath)
     outPath.ToLowerInvariant() |> shouldEqual (expected.ToLowerInvariant())
@@ -64,7 +64,7 @@ let ``should detect output path for netsdk with outputPath csproj file``
         ([<Values("Release")>] configuration) =
     ensureDir ()
     let projectFile = ProjectFile.TryLoad(sprintf "./ProjectFile/TestData/%s" project).Value 
-    let target = projectFile.GetTargetProfile().ToString()
+    let target = projectFile.GetTargetProfiles().Head.ToString()
     let outPath = projectFile.GetOutputDirectory configuration ""
     let expected = (System.IO.Path.Combine(@"bin", configuration,"netstandard1.4_bin", target) |> normalizePath)
     outPath.ToLowerInvariant() |> shouldEqual (expected.ToLowerInvariant())
@@ -73,8 +73,8 @@ let ``should detect output path for netsdk with outputPath csproj file``
 [<Test>]
 let ``should detect framework profile for ProjectWithConditions file`` () =
     ensureDir ()
-    ProjectFile.TryLoad("./ProjectFile/TestData/ProjectWithConditions.fsprojtest").Value.GetTargetProfile()
-    |> shouldEqual (TargetProfile.SinglePlatform(DotNetFramework(FrameworkVersion.V4_6)))
+    ProjectFile.TryLoad("./ProjectFile/TestData/ProjectWithConditions.fsprojtest").Value.GetTargetProfiles()
+    |> shouldEqual [TargetProfile.SinglePlatform(DotNetFramework(FrameworkVersion.V4_6))]
 
 [<Test>]
 let ``should detect assembly name for Project1 proj file`` () =

@@ -165,7 +165,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
     let targetDir = 
         match project.OutputType with
         | ProjectOutputType.Exe -> "tools/"
-        | ProjectOutputType.Library -> sprintf "lib/%O/" (project.GetTargetProfile())
+        | ProjectOutputType.Library -> project.GetTargetProfiles() |> List.map (sprintf "lib/%O/") |> List.head // TODO: multi target pack
     
     let projectDir = Path.GetDirectoryName project.FileName
 
