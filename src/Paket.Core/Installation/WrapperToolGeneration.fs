@@ -122,7 +122,7 @@ module WrapperToolGeneration =
         let toolsTFMDirs =
             Directory.EnumerateDirectories(toolsDir, "*", SearchOption.TopDirectoryOnly)
             |> Seq.choose (fun x ->
-                match FrameworkDetection.Extract x with
+                match x |> Path.GetFileName |> FrameworkDetection.Extract with
                 | Some tfm -> Some (x, tfm)
                 | None -> None)
             |> Seq.toList
