@@ -82,12 +82,12 @@ let ``#3004 repo tool multi tfm (net)``() =
 
     let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
 
-    let helloCmdPath = Path.Combine(wrappersPath, "hello.cmd")
+    let helloCmdPath = Path.Combine(wrappersPath, "myhello.cmd")
     Assert.IsTrue(File.Exists(helloCmdPath), (sprintf "file '%s' not found" helloCmdPath))
     StringAssert.DoesNotContain("dotnet", File.ReadAllText(helloCmdPath))
     StringAssert.DoesNotContain("netcoreapp", File.ReadAllText(helloCmdPath))
     
-    let helloBashPath = Path.Combine(wrappersPath, "hello")
+    let helloBashPath = Path.Combine(wrappersPath, "myhello")
     Assert.IsTrue(File.Exists(helloBashPath), (sprintf "file '%s' not found" helloBashPath))
     StringAssert.DoesNotContain("dotnet", File.ReadAllText(helloBashPath))
     StringAssert.DoesNotContain("netcoreapp", File.ReadAllText(helloBashPath))
@@ -96,16 +96,21 @@ let ``#3004 repo tool multi tfm (net)``() =
 let ``#3005 repo tool multi tfm (netcoreapp)``() =
     let scenario = "i003005-repo-tool-multi-tfm-dnc"
     prepare scenario
-    paket "restore" scenario |> ignore
+
+    try
+        System.Environment.SetEnvironmentVariable("PAKET_REPOTOOL_PREFERRED_RUNTIME", "netcoreapp")
+        paket "restore" scenario |> ignore
+    finally
+        System.Environment.SetEnvironmentVariable("PAKET_REPOTOOL_PREFER_RUNTIME", "")
 
     let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
 
-    let helloCmdPath = Path.Combine(wrappersPath, "hello.cmd")
+    let helloCmdPath = Path.Combine(wrappersPath, "myhello.cmd")
     Assert.IsTrue(File.Exists(helloCmdPath), (sprintf "file '%s' not found" helloCmdPath))
     StringAssert.Contains("dotnet", File.ReadAllText(helloCmdPath))
     StringAssert.Contains("netcoreapp", File.ReadAllText(helloCmdPath))
     
-    let helloBashPath = Path.Combine(wrappersPath, "hello")
+    let helloBashPath = Path.Combine(wrappersPath, "myhello")
     Assert.IsTrue(File.Exists(helloBashPath), (sprintf "file '%s' not found" helloBashPath))
     StringAssert.Contains("dotnet", File.ReadAllText(helloBashPath))
     StringAssert.Contains("netcoreapp", File.ReadAllText(helloBashPath))

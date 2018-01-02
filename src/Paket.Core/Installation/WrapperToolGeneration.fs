@@ -149,6 +149,33 @@ module WrapperToolGeneration =
         | OldStyle
         | ByTFM of tfm:FrameworkIdentifier
 
+    let applyPreferencesAboutRuntimeHost (pkgs: RepoToolInNupkg list) =
+
+        let preference =
+            match System.Environment.GetEnvironmentVariable("PAKET_REPOTOOL_PREFERRED_RUNTIME") |> Option.ofObj |> Option.bind FrameworkDetection.Extract with
+            | None -> FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_5)
+            | Some fw -> fw
+
+        pkgs
+        |> List.groupBy (fun p -> p.Name)
+        |> List.collect (fun (name, tools) ->
+            let byPreference tool =
+                match tool.Kind, preference with
+                | RepoToolInNupkgKind.ByTFM(FrameworkIdentifier.DotNetCoreApp _), FrameworkIdentifier.DotNetCoreApp _ -> 1
+                | RepoToolInNupkgKind.ByTFM(FrameworkIdentifier.DotNetFramework _), FrameworkIdentifier.DotNetFramework _ -> 1
+                | RepoToolInNupkgKind.OldStyle, FrameworkIdentifier.DotNetFramework _ -> 2
+                | _ -> 3
+            match tools |> List.sortBy byPreference with
+            | [] -> []
+            | [x] -> [x]
+            | x :: xs ->
+                if verbose then
+                    verbosefn "tool '%s' support multiple frameworks" name
+                    verbosefn "- choosen %A based on preference %A" x preference
+                    for d in xs do
+                        verbosefn "- avaiable but ignored: %A" d
+                [x] )
+
     let avaiableTools (pkg: PackageResolver.PackageInfo) (pkgDir: DirectoryInfo) =
         let toolsDir = pkgDir.FullName </> "tools"
 
@@ -220,7 +247,10 @@ module WrapperToolGeneration =
 
         let toolWrapperInDir =
             allRepoToolPkgs
-            |> List.collect (fun (g, x, y) -> avaiableTools x y |> List.map (fun tool -> g, tool))
+            |> List.collect (fun (g, x, y) ->
+                avaiableTools x y
+                |> applyPreferencesAboutRuntimeHost
+                |> List.map (fun tool -> g, tool) )
             |> List.map (fun (g, tool) ->
                     let dir =
                         if g.Name = Constants.MainDependencyGroup then
