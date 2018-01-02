@@ -250,7 +250,7 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
                 |> Seq.filter (fun g -> g.Key = groupName)
                 |> Seq.collect (fun g -> g.Value.NugetPackages |> List.map (fun p -> (groupName,p.Name)))
                 |> Seq.collect(fun (g,p) -> findDependencies(g,p,projectFile.FileName))
-                |> Seq.map (fun x -> x, projectFile.GetTargetProfiles())
+                |> Seq.collect (fun x -> projectFile.GetTargetProfiles() |> Seq.map (fun p -> x, p))
                 |> Set.ofSeq)
         | None -> Set.empty
 
@@ -278,7 +278,7 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
                     profiles
                     |> Seq.collect (fun profile -> 
                         let refs = model.GetLegacyReferences profile
-                        refs |> Seq.map (fun x -> x, redirects, profile)))
+                        refs |> Seq.map (fun x -> x, redirects, profile))))
             |> Seq.groupBy (fun (p,_,profile) -> profile,FileInfo(p.Path).Name)
             |> Seq.choose(fun (_,librariesForPackage) ->
                 librariesForPackage
@@ -294,7 +294,7 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
             |> Seq.cache
 
         let referencesDifferentProfiles (assemblyName : Mono.Cecil.AssemblyNameDefinition) profile =
-            profile = targetProfile
+            (targetProfiles |> Seq.exists ((=) profile))
             && assemblies
             |> Seq.filter (fun (_,_,_,_,p) -> p <> profile)
             |> Seq.map (fun (a,_,_,_,_) -> a.Name)
