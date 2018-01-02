@@ -297,7 +297,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
     let targets =
         ProjectFile.getTargetFramework projectFile
         |> Option.toList
-        |> List.append (ProjectFile.getTargetFrameworks projectFile |> Option.toList |> List.collect (fun item -> String.split [|';'|] item |> List.ofArray))
+        |> List.append (ProjectFile.getTargetFrameworks projectFile |> Option.toList |> List.collect (fun item -> String.split [|';'|] item |> Array.map (fun x -> x.Trim()) |> List.ofArray))
         |> List.map (fun s -> s, (PlatformMatching.forceExtractPlatforms s |> fun p -> p.ToTargetProfile true))
         |> List.choose (fun (s, c) -> c |> Option.map (fun d -> s, d))
 

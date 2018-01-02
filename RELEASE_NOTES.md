@@ -1,4 +1,4 @@
-#### 5.128.3 - 2018-01-02
+#### 5.128.4 - 2018-01-02
 * BUGFIX: Fix auto-detect for multi targeting - https://github.com/fsprojects/Paket/pull/2956
 
 #### 5.128.1 - 2018-01-02

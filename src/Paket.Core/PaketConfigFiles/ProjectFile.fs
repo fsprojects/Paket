@@ -1054,7 +1054,8 @@ module ProjectFile =
                         getTargetFrameworks project 
                         |> Option.map (fun x -> x.Split([|';'|],StringSplitOptions.RemoveEmptyEntries))
                         |> Option.toArray
-                        |> Array.concat 
+                        |> Array.concat
+                        |> Array.map (fun x -> x.Trim())
                         |> Seq.toList
                     (getTargetFramework project |> Option.toList) @ xs
                     
@@ -2011,18 +2012,18 @@ type ProjectFile with
         
         let tryBool = Boolean.TryParse>>function true, value-> value| _ -> false
         
-        let splitString = String.split[|';'|]>>List.ofArray
+        let splitString = String.split[|';'|] >> Array.map (fun x -> x.Trim()) >> List.ofArray
 
         let coreInfo : ProjectCoreInfo = {
             Id = prop "id" 
             Version = propMap "version" (Some(SemVer.Parse "0.0.1")) (SemVer.Parse>>Some)
-            Authors = propMap "Authors" None (splitString>>Some)
+            Authors = propMap "Authors" None (splitString >> Some)
             Description = prop "Description" 
             Symbols = propMap "Symbols" false tryBool
         }
         let optionalInfo =  {
             Title = prop "Title"
-            Owners = propMap "Owners" [] (String.split[|';'|]>>List.ofArray)
+            Owners = propMap "Owners" [] splitString
             ReleaseNotes = prop "ReleaseNores"
             Summary = prop "Summary"
             Language = prop "Langauge"
