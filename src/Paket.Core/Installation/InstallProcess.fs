@@ -275,8 +275,10 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
                 dependencies
                 |> Set.filter (fst >> ((=) model.PackageName))
                 |> Seq.collect (fun (_,profiles) ->
-                    model.GetLegacyReferences profile
-                    |> Seq.map (fun x -> x, redirects, profile)))
+                    profiles
+                    |> Seq.collect (fun profile -> 
+                        let refs = model.GetLegacyReferences profile
+                        refs |> Seq.map (fun x -> x, redirects, profile)))
             |> Seq.groupBy (fun (p,_,profile) -> profile,FileInfo(p.Path).Name)
             |> Seq.choose(fun (_,librariesForPackage) ->
                 librariesForPackage
