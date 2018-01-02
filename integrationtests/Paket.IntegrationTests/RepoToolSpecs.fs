@@ -73,3 +73,45 @@ let ``#3003 repo tool with add to PATH``() =
 
     let helloBashPath = Path.Combine(wrappersPath, "add_to_PATH.sh")
     Assert.IsTrue(File.Exists(helloBashPath), (sprintf "file '%s' not found" helloBashPath))
+
+[<Test>]
+let ``#3004 repo tool multi tfm (net)``() =
+    let scenario = "i003004-repo-tool-multi-tfm"
+    prepare scenario
+    paket "restore" scenario |> ignore
+
+    let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
+
+    let helloCmdPath = Path.Combine(wrappersPath, "hello.cmd")
+    Assert.IsTrue(File.Exists(helloCmdPath), (sprintf "file '%s' not found" helloCmdPath))
+    StringAssert.DoesNotContain("dotnet", File.ReadAllText(helloCmdPath))
+    StringAssert.DoesNotContain("netcoreapp", File.ReadAllText(helloCmdPath))
+    
+    let helloBashPath = Path.Combine(wrappersPath, "hello")
+    Assert.IsTrue(File.Exists(helloBashPath), (sprintf "file '%s' not found" helloBashPath))
+    StringAssert.DoesNotContain("dotnet", File.ReadAllText(helloBashPath))
+    StringAssert.DoesNotContain("netcoreapp", File.ReadAllText(helloBashPath))
+
+[<Test>]
+let ``#3005 repo tool multi tfm (netcoreapp)``() =
+    let scenario = "i003005-repo-tool-multi-tfm-dnc"
+    prepare scenario
+    paket "restore" scenario |> ignore
+
+    let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
+
+    let helloCmdPath = Path.Combine(wrappersPath, "hello.cmd")
+    Assert.IsTrue(File.Exists(helloCmdPath), (sprintf "file '%s' not found" helloCmdPath))
+    StringAssert.Contains("dotnet", File.ReadAllText(helloCmdPath))
+    StringAssert.Contains("netcoreapp", File.ReadAllText(helloCmdPath))
+    
+    let helloBashPath = Path.Combine(wrappersPath, "hello")
+    Assert.IsTrue(File.Exists(helloBashPath), (sprintf "file '%s' not found" helloBashPath))
+    StringAssert.Contains("dotnet", File.ReadAllText(helloBashPath))
+    StringAssert.Contains("netcoreapp", File.ReadAllText(helloBashPath))
+
+    let resultCmd = directToolEx false helloCmdPath "" (scenarioTempPath scenario) 
+    CollectionAssert.AreEqual( [| "Hello World from F#! with args: []" |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
+
+    let resultCmdWithArgs = directToolEx false helloCmdPath "1 2 3" (scenarioTempPath scenario) 
+    CollectionAssert.AreEqual( [| """Hello World from F#! with args: ["1"; "2"; "3"]""" |], (resultCmdWithArgs |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
