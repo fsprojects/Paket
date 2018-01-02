@@ -1,3 +1,6 @@
+#### 5.128.2 - 2018-01-02
+* BUGFIX: Fix auto-detect for multi targeting - https://github.com/fsprojects/Paket/pull/2956
+
 #### 5.128.1 - 2018-01-02
 * BUGFIX: Do not generate a dependency group for empty framework-neutral groups - https://github.com/fsprojects/Paket/pull/2954
 
