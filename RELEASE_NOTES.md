@@ -1,4 +1,7 @@
 #### 5.128.0 - 2017-12-31
+* BUGFIX: Do not generate a dependency group for empty framework-neutral groups - https://github.com/fsprojects/Paket/pull/2954
+
+#### 5.128.0 - 2017-12-31
 * Implemented binding LOCKEDVERSION to particular group name - https://github.com/fsprojects/Paket/pull/2943
 * BUGFIX: Fixed "Incorrect time metrics" - https://github.com/fsprojects/Paket/pull/2946
 * USABILITY: Show parsing errors - https://github.com/fsprojects/Paket/pull/2952/files
