@@ -40,3 +40,16 @@ let ``#3001 repo tool should work after install``() =
 
     let resultCmd = directToolEx false helloCmdPath "" (scenarioTempPath scenario) 
     CollectionAssert.AreEqual( [| "Hello World from F#!" |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
+
+[<Test>]
+let ``#3002 repo tool from flatten tools dir``() =
+    let scenario = "i003002-repo-tool-flatten-tools-dir"
+    prepare scenario
+
+    paket "restore" scenario |> ignore
+
+    let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
+
+    for toolName in ["FAKE.cmd"; "FAKE"; "Fake.Deploy.cmd"; "Fake.Deploy"] do
+        let toolPath = Path.Combine(wrappersPath, toolName)
+        Assert.IsTrue(File.Exists(toolPath), (sprintf "file '%s' not found" toolPath))
