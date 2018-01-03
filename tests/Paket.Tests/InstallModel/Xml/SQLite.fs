@@ -131,7 +131,7 @@ let ``should init model for SQLite``() =
         |> fromLegacyList @"..\System.Data.SQLite.Core\"
 
     let model =
-        emptyModel (PackageName "System.Data.SQLite.Core") (SemVer.Parse "3.8.2")
+        emptyModel (PackageName "System.Data.SQLite.Core") (SemVer.Parse "3.8.2") false
         |> addLibReferences libs Nuspec.All.References
 
     let libFolder = model.CompileLibFolders |> List.item 2
