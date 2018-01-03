@@ -75,7 +75,7 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
     | ResolvedPackagesFolder.NoPackagesFolder ->
         let d = DirectoryInfo(NuGetCache.GetTargetUserFolder packageName version)
         if not d.Exists then 
-            failwithf "Package directory for package %O was not found in %s." packageName d.FullName
+            failwithf "Package directory for package %O was not found in %s. Storage mode is \"none\"." packageName d.FullName
         d
 
 let contentFileBlackList : list<(FileInfo -> bool)> = [
