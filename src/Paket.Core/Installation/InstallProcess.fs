@@ -108,7 +108,7 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
                             findPackageFolder root (group, packName) (v,i)
                         with
                         | _ -> 
-                            findPackageFolder root (group, packName) (v,{ i with IncludeVersionInPath = false })
+                            findPackageFolder root (group, packName) (v,{ i with IncludeVersionInPath = None })
                     s,s',packageDir)
             |> Seq.choose (fun (contentCopySettings,contentCopyToOutputSettings,packageDir) ->
                 packageDir.GetDirectories "Content"
