@@ -1,3 +1,6 @@
+#### 5.128.6 - 2018-01-03
+* BUGFIX: CliTools should not be added to redirects - https://github.com/fsprojects/Paket/issues/2955
+
 #### 5.128.5 - 2018-01-03
 * BUGFIX: Do not trace warnings for folders starting with _ - https://github.com/fsprojects/Paket/issues/2958
 
