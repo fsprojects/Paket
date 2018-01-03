@@ -69,12 +69,7 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
 
             match found with
             | Some x -> x
-            | None ->
-                traceWarnfn "The following directories exists:"
-                for d in di.GetDirectories() do 
-                    traceWarnfn "  %s" d.FullName
-
-                failwithf "Package directory for package %O was not found in %s." packageName di.FullName
+            | None -> failwithf "Package directory for package %O was not found in %s." packageName di.FullName
 
     | ResolvedPackagesFolder.NoPackagesFolder ->
         let d = DirectoryInfo(NuGetCache.GetTargetUserFolder packageName version)
@@ -98,8 +93,9 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
         let packageDirectoriesWithContent =
             usedPackages
             |> Seq.map (fun kv ->
-                let contentCopySettings = defaultArg (snd kv.Value).OmitContent ContentCopySettings.Overwrite
-                let contentCopyToOutputSettings = (snd kv.Value).CopyContentToOutputDirectory
+                let settings = snd kv.Value
+                let contentCopySettings = defaultArg settings.OmitContent ContentCopySettings.Overwrite
+                let contentCopyToOutputSettings = settings.CopyContentToOutputDirectory
                 kv.Key,kv.Value,contentCopySettings,contentCopyToOutputSettings)
             |> Seq.filter (fun (_,_,contentCopySettings,_) -> contentCopySettings <> ContentCopySettings.Omit)
             |> Seq.map (fun ((group, packName),(v,i),s,s') ->

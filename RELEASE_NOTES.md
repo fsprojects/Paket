@@ -1,4 +1,4 @@
-#### 5.128.8 - 2018-01-03
+#### 5.128.9 - 2018-01-03
 * BUGFIX: CliTools should not be added to redirects - https://github.com/fsprojects/Paket/issues/2955
 
 #### 5.128.5 - 2018-01-03
