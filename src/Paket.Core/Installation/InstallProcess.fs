@@ -70,7 +70,7 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
                 for d in di.GetDirectories() do 
                     traceWarnfn "  %s" d.FullName
 
-                failwithf "Package directory for package %O was not found." packageName
+                failwithf "Package directory for package %O was not found in %s." packageName di.FullName
 
     | ResolvedPackagesFolder.NoPackagesFolder ->
         let d = DirectoryInfo(NuGetCache.GetTargetUserFolder packageName version)
