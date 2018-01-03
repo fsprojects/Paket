@@ -102,12 +102,13 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
                 let contentCopyToOutputSettings = (snd kv.Value).CopyContentToOutputDirectory
                 kv.Key,kv.Value,contentCopySettings,contentCopyToOutputSettings)
             |> Seq.filter (fun (_,_,contentCopySettings,_) -> contentCopySettings <> ContentCopySettings.Omit)
-            |> Seq.map (fun ((group, packName),v,s,s') ->
+            |> Seq.map (fun ((group, packName),(v,i),s,s') ->
                     let packageDir =
                         try
-                            findPackageFolder root (group, packName) v
+                            findPackageFolder root (group, packName) (v,i)
                         with
-                        | _ -> findPackageFolder root (group, packName) { v with IncludeVersionInPath = false }
+                        | _ -> 
+                            findPackageFolder root (group, packName) (v,{ i with IncludeVersionInPath = false })
                     s,s',packageDir)
             |> Seq.choose (fun (contentCopySettings,contentCopyToOutputSettings,packageDir) ->
                 packageDir.GetDirectories "Content"
