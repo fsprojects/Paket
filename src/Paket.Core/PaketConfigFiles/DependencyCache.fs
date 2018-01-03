@@ -211,6 +211,7 @@ type DependencyCache (lockFile:LockFile) =
                             InstallModel.CreateFromContent(
                                 package.Name, 
                                 package.Version, 
+                                package.IsCliTool,
                                 Paket.Requirements.FrameworkRestriction.NoRestriction, 
                                 NuGet.GetContent(folder).Force())
                         installModelCache.TryAdd((groupName,package.Name) , model) |> ignore }) 

@@ -982,7 +982,8 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
 
                 InstallModel.CreateFromContent(
                     packageName, 
-                    resolvedPackage.Version, 
+                    resolvedPackage.Version,
+                    resolvedPackage.IsCliTool,
                     FrameworkRestriction.NoRestriction, 
                     NuGet.GetContent(folder).Force())
     

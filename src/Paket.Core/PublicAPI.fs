@@ -458,7 +458,8 @@ type Dependencies(dependenciesFileName: string) =
 
                 InstallModel.CreateFromContent(
                     resolvedPackage.Name, 
-                    resolvedPackage.Version, 
+                    resolvedPackage.Version,
+                    resolvedPackage.IsCliTool,
                     Paket.Requirements.FrameworkRestriction.NoRestriction, 
                     NuGet.GetContent(folder).Force())
 

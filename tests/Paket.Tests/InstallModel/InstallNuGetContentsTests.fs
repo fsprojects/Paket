@@ -33,7 +33,7 @@ let ``Check that we can detect _._ and ignore xml``() =
               "lib/net40/System.IO.dll"
             ]}
     let model =
-        InstallModel.EmptyModel (PackageName "testpackage", SemVer.Parse "1.0.0")
+        InstallModel.EmptyModel (PackageName "testpackage", SemVer.Parse "1.0.0", false)
         |> InstallModel.addNuGetFiles content
 
     model.GetCompileReferences (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_5))
@@ -68,7 +68,7 @@ let ``Check that we can detect _._ and ignore xml in ref folder``() =
               "ref/net40/System.IO.dll"
             ]}
     let model =
-        InstallModel.EmptyModel (PackageName "testpackage", SemVer.Parse "1.0.0")
+        InstallModel.EmptyModel (PackageName "testpackage", SemVer.Parse "1.0.0", false)
         |> InstallModel.addNuGetFiles content
 
     model.GetCompileReferences (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_5))

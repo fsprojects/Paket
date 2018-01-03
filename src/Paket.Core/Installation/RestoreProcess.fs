@@ -204,6 +204,7 @@ let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches,
                 InstallModel.CreateFromContent(
                     package.Name, 
                     package.Version, 
+                    package.IsCliTool,
                     Requirements.getExplicitRestriction package.Settings.FrameworkRestrictions, 
                     content.Force())
         return (groupName,package.Name), (package,model)

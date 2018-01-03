@@ -270,6 +270,7 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
 
         let assemblies =
             extractedPackages
+            |> Seq.filter (fun (model,_redirects) -> not model.CliTool)
             |> Seq.map (fun (model,redirects) -> (model, redirectsFromReference model.PackageName |> Option.fold (fun _ x -> Some x) redirects))
             |> Seq.collect (fun (model,redirects) ->
                 dependencies

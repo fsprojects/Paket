@@ -133,6 +133,7 @@ type InstallModel = {
     TargetsFileFolders : FrameworkFolder<MsBuildFile Set> list
     Analyzers: AnalyzerLib list
     LicenseUrl: string option
+    CliTool : bool
 }
 
 module FolderScanner =
@@ -344,7 +345,7 @@ module InstallModel =
     open PlatformMatching
     open NuGet
 
-    let emptyModel packageName packageVersion = {
+    let emptyModel packageName packageVersion cliTool = {
         PackageName = packageName
         PackageVersion = packageVersion
         CompileLibFolders = []
@@ -354,6 +355,7 @@ module InstallModel =
         TargetsFileFolders = []
         Analyzers = []
         LicenseUrl = None
+        CliTool = cliTool
     }
 
     type Tfm = PlatformMatching.ParsedPlatformPath
@@ -496,7 +498,7 @@ module InstallModel =
             |> Seq.forall (fun (libs, refs) -> Seq.isEmpty libs && Seq.isEmpty refs)
 
         if foldersEmpty && List.isEmpty this.Analyzers then
-            emptyModel this.PackageName this.PackageVersion
+            emptyModel this.PackageName this.PackageVersion this.CliTool
         else
             this
 
@@ -823,16 +825,16 @@ module InstallModel =
         |> addLicense content.Spec.LicenseUrl
         |> filterUnknownFiles
 
-    let createFromContent packageName packageVersion frameworkRestrictions content =
-        emptyModel packageName packageVersion
+    let createFromContent packageName packageVersion cliTool frameworkRestrictions content =
+        emptyModel packageName packageVersion cliTool
         |> addNuGetFiles content
         |> filterBlackList
         |> applyFrameworkRestrictions frameworkRestrictions
         |> removeIfCompletelyEmpty
 
     [<Obsolete "use createFromContent instead">]
-    let createFromLibs packageName packageVersion frameworkRestrictions (libs:UnparsedPackageFile seq) targetsFiles analyzerFiles (nuspec:Nuspec) =
-        emptyModel packageName packageVersion
+    let createFromLibs packageName packageVersion cliTool frameworkRestrictions (libs:UnparsedPackageFile seq) targetsFiles analyzerFiles (nuspec:Nuspec) =
+        emptyModel packageName packageVersion cliTool
         |> addLibReferences libs nuspec.References
         |> addTargetsFiles targetsFiles
         |> addAnalyzerFiles analyzerFiles
@@ -844,7 +846,9 @@ module InstallModel =
 
 type InstallModel with
 
-    static member EmptyModel (packageName, packageVersion) = InstallModel.emptyModel packageName packageVersion
+    static member EmptyModel (packageName, packageVersion, ?cliTool) =
+        let cliTool = cliTool |> Option.defaultValue false
+        InstallModel.emptyModel packageName packageVersion cliTool
 
     [<Obsolete("usually this should not be used")>]
     member this.GetReferenceFolders() = InstallModel.getCompileLibFolders this
@@ -922,9 +926,9 @@ type InstallModel with
 
     member this.RemoveIfCompletelyEmpty() = InstallModel.removeIfCompletelyEmpty this
 
-    static member CreateFromContent(packageName, packageVersion, frameworkRestriction:FrameworkRestriction, content : NuGetPackageContent) =
-        InstallModel.createFromContent packageName packageVersion frameworkRestriction content
+    static member CreateFromContent(packageName, packageVersion, cliTool, frameworkRestriction:FrameworkRestriction, content : NuGetPackageContent) =
+        InstallModel.createFromContent packageName packageVersion cliTool frameworkRestriction content
 
     [<Obsolete "use CreateFromContent instead">]
-    static member CreateFromLibs(packageName, packageVersion, frameworkRestriction:FrameworkRestriction, libs : UnparsedPackageFile seq, targetsFiles, analyzerFiles, nuspec : Nuspec) =
-        InstallModel.createFromLibs packageName packageVersion frameworkRestriction libs targetsFiles analyzerFiles nuspec
+    static member CreateFromLibs(packageName, packageVersion, cliTool, frameworkRestriction:FrameworkRestriction, libs : UnparsedPackageFile seq, targetsFiles, analyzerFiles, nuspec : Nuspec) =
+        InstallModel.createFromLibs packageName packageVersion cliTool frameworkRestriction libs targetsFiles analyzerFiles nuspec

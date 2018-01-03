@@ -38,6 +38,7 @@ let getInstalledPackageModel (lockFile: LockFile) (QualifiedPackageName(groupNam
             InstallModel.CreateFromContent(
                 packageName,
                 resolvedPackage.Version,
+                resolvedPackage.IsCliTool,
                 Paket.Requirements.FrameworkRestriction.NoRestriction,
                 NuGet.GetContent(folder).Force())
 
