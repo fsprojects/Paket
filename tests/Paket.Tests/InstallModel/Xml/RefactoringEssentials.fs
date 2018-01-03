@@ -18,7 +18,7 @@ let expected = """
 let ``should generate Xml for RefactoringEssentials in CSharp project``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "RefactoringEssentials", SemVer.Parse "1.2.0", FrameworkRestriction.NoRestriction,
+        InstallModel.CreateFromLibs(PackageName "RefactoringEssentials", SemVer.Parse "1.2.0", false, FrameworkRestriction.NoRestriction,
               [],
               [],
               [
@@ -38,7 +38,7 @@ let ``should generate Xml for RefactoringEssentials in CSharp project``() =
 let ``should generate Xml for RefactoringEssentials in VisualBasic project``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "RefactoringEssentials", SemVer.Parse "1.2.0", FrameworkRestriction.NoRestriction,
+        InstallModel.CreateFromLibs(PackageName "RefactoringEssentials", SemVer.Parse "1.2.0", false, FrameworkRestriction.NoRestriction,
               [],
               [],
               [

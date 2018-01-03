@@ -31,7 +31,7 @@ let expectedPropertyDefinitionNodes = """<?xml version="1.0" encoding="utf-16"?>
 let ``should generate Xml for xunit.runner.visualstudio 2.0.0``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "xunit.runner.visualstudio", SemVer.Parse "2.50.0", FrameworkRestriction.NoRestriction,[],
+        InstallModel.CreateFromLibs(PackageName "xunit.runner.visualstudio", SemVer.Parse "2.50.0", false, FrameworkRestriction.NoRestriction,[],
             [ @"..\xunit.runner.visualstudio\build\net20\xunit.runner.visualstudio.props" 
               @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props"  ]
             |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\xunit.runner.visualstudio\",
@@ -63,7 +63,7 @@ let disabledChooseNode = """<?xml version="1.0" encoding="utf-16"?>
 let ``should not generate Xml for xunit.runner.visualstudio 2.0.0 if import is disabled``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "xunit.runner.visualstudio", SemVer.Parse "2.50.0", FrameworkRestriction.NoRestriction,[],
+        InstallModel.CreateFromLibs(PackageName "xunit.runner.visualstudio", SemVer.Parse "2.50.0", false, FrameworkRestriction.NoRestriction,[],
             [ @"..\xunit.runner.visualstudio\build\net20\xunit.runner.visualstudio.props" 
               @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props" ]
             |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\xunit.runner.visualstudio\",

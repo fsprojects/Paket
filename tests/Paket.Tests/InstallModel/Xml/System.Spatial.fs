@@ -33,7 +33,7 @@ let expected = """
 let ``should generate Xml for System.Spatial``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "System.Spatial", SemVer.Parse "5.6.3", FrameworkRestriction.NoRestriction,
+        InstallModel.CreateFromLibs(PackageName "System.Spatial", SemVer.Parse "5.6.3", false, FrameworkRestriction.NoRestriction,
             [ @"..\System.Spatial\lib\net40\System.Spatial.dll"
               @"..\System.Spatial\lib\net40\de\System.Spatial.resources.dll"
               @"..\System.Spatial\lib\net40\es\System.Spatial.resources.dll"

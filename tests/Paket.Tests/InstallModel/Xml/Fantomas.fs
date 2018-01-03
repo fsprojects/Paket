@@ -22,7 +22,7 @@ let fromLegacyList = Paket.InstallModel.ProcessingSpecs.fromLegacyList
 let ``should generate Xml for Fantomas 1.5``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", FrameworkRestriction.NoRestriction,
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", false, FrameworkRestriction.NoRestriction,
             [ @"..\Fantomas\lib\FantomasLib.dll"
               @"..\Fantomas\lib\FSharp.Core.dll"
               @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList @"..\Fantomas\",
@@ -60,7 +60,7 @@ let fullDoc = """<?xml version="1.0" encoding="utf-8"?>
 let ``should generate full Xml for Fantomas 1.5``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", FrameworkRestriction.NoRestriction,
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", false, FrameworkRestriction.NoRestriction,
             [ @"..\Fantomas\lib\FantomasLib.dll"
               @"..\Fantomas\lib\FSharp.Core.dll"
               @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList @"..\Fantomas\",
@@ -82,7 +82,7 @@ let ``should generate full Xml for Fantomas 1.5``() =
 let ``should not generate full Xml for Fantomas 1.5 if not referenced``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", FrameworkRestriction.NoRestriction,
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", false, FrameworkRestriction.NoRestriction,
             [ @"..\Fantomas\lib\FantomasLib.dll"
               @"..\Fantomas\lib\FSharp.Core.dll"
               @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList @"..\Fantomas\",
@@ -119,7 +119,7 @@ let fullDocWithRefernceCondition = """<?xml version="1.0" encoding="utf-8"?>
 let ``should generate full Xml with reference condition for Fantomas 1.5``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", FrameworkRestriction.NoRestriction,
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", false, FrameworkRestriction.NoRestriction,
             [ @"..\Fantomas\lib\FantomasLib.dll"
               @"..\Fantomas\lib\FSharp.Core.dll"
               @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList @"..\Fantomas\",
@@ -161,7 +161,7 @@ let ``should generate full Xml with reference condition and framework restrictio
     // It seems like the warning is triggered when there is an "Or" without parentheses somewhere
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0",
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", false,
             [ FrameworkRestriction.Exactly (FrameworkIdentifier.XamariniOS)
               FrameworkRestriction.Exactly (FrameworkIdentifier.MonoAndroid MonoAndroidVersion.V1)] |> makeOrList |> getExplicitRestriction,
             [ @"..\Fantomas\lib\portable-net45+win8\FantomasLib.dll" ] |> fromLegacyList @"..\Fantomas\",

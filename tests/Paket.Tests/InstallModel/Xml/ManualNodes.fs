@@ -13,7 +13,7 @@ let fromLegacyList = Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\Fant
 let ``should find custom nodes in doc``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", FrameworkRestriction.NoRestriction,
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", false, FrameworkRestriction.NoRestriction,
             [ @"..\Fantomas\lib\FantomasLib.dll"
               @"..\Fantomas\lib\FSharp.Core.dll"
               @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList,
@@ -28,7 +28,7 @@ let ``should find custom nodes in doc``() =
 let ``should find custom Paket nodes in doc``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", FrameworkRestriction.NoRestriction,
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", false, FrameworkRestriction.NoRestriction,
             [ @"..\Fantomas\lib\FantomasLib.dll"
               @"..\Fantomas\lib\FSharp.Core.dll"
               @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList,
@@ -44,7 +44,7 @@ let ``should find custom Paket nodes in doc``() =
 let ``should not find custom nodes if there are none``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", FrameworkRestriction.NoRestriction,
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", false, FrameworkRestriction.NoRestriction,
             [ @"..\Fantomas\lib\FantomasLib.dll"
               @"..\Fantomas\lib\FSharp.Core.dll"
               @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList,
@@ -60,7 +60,7 @@ let ``should not find custom nodes if there are none``() =
 let ``should delete custom nodes if there are some``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", FrameworkRestriction.NoRestriction,
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", false, FrameworkRestriction.NoRestriction,
             [ @"..\Fantomas\lib\FantomasLib.dll"
               @"..\Fantomas\lib\FSharp.Core.dll"
               @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList,

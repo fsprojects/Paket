@@ -18,7 +18,7 @@ let expected = """
 let ``should generate Xml for framework references and empty libs``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "TempPkg", SemVer.Parse "0.1", FrameworkRestriction.NoRestriction,
+        InstallModel.CreateFromLibs(PackageName "TempPkg", SemVer.Parse "0.1", false, FrameworkRestriction.NoRestriction,
             [  ],
               [],
               [],

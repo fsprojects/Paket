@@ -20,7 +20,7 @@ let expected = """
 let ``should generate Xml for Fantomas 1.5``() =
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", FrameworkRestriction.NoRestriction,
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", false, FrameworkRestriction.NoRestriction,
             [ @"..\Fantomas\Lib\FantomasLib.dll"
               @"..\Fantomas\Lib\FSharp.Core.dll"
               @"..\Fantomas\Lib\Fantomas.exe" ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\Fantomas\",

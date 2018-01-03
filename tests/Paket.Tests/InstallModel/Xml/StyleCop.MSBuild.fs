@@ -17,7 +17,7 @@ let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
 let ``should generate Xml for StyleCop.MSBuild``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "StyleCop.MSBuild", SemVer.Parse "4.7.49.1", FrameworkRestriction.NoRestriction,[],
+        InstallModel.CreateFromLibs(PackageName "StyleCop.MSBuild", SemVer.Parse "4.7.49.1", false, FrameworkRestriction.NoRestriction,[],
             [ @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\StyleCop.MSBuild\",
             [],
               Nuspec.All)
