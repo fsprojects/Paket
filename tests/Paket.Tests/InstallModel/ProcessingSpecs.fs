@@ -7,7 +7,7 @@ open Paket.Domain
 open Paket.Requirements
 open System.IO
 
-let emptymodel = InstallModel.EmptyModel(PackageName "Unknown",SemVer.Parse "0.1")
+let emptymodel = InstallModel.EmptyModel(PackageName "Unknown",SemVer.Parse "0.1",false)
 
 let fromLegacyList (prefix:string) l =
     l
@@ -740,7 +740,7 @@ let ``should filter .NET 4.0 dlls for System.Net.Http 2.2.8``() =
         [ @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
           @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll"
           @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll"
-          @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.,dll" ]
+          @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll" ]
         |> Seq.ofList
 
     let model =
