@@ -63,7 +63,11 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
 
                         failwithf "Group directory for group %s was not found." groupName
 
-            match di.GetDirectories() |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase lowerName subDir.FullName) with
+            let found = 
+                di.GetDirectories() 
+                |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase lowerName subDir.FullName)
+
+            match found with
             | Some x -> x
             | None ->
                 traceWarnfn "The following directories exists:"
@@ -98,7 +102,13 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
                 let contentCopyToOutputSettings = (snd kv.Value).CopyContentToOutputDirectory
                 kv.Key,kv.Value,contentCopySettings,contentCopyToOutputSettings)
             |> Seq.filter (fun (_,_,contentCopySettings,_) -> contentCopySettings <> ContentCopySettings.Omit)
-            |> Seq.map (fun ((group, packName),v,s,s') -> s,s',findPackageFolder root (group, packName) v)
+            |> Seq.map (fun ((group, packName),v,s,s') ->
+                    let packageDir =
+                        try
+                            findPackageFolder root (group, packName) v
+                        with
+                        | _ -> findPackageFolder root (group, packName) { v with IncludeVersionInPath = false }
+                    s,s',)
             |> Seq.choose (fun (contentCopySettings,contentCopyToOutputSettings,packageDir) ->
                 packageDir.GetDirectories "Content"
                 |> Array.append (packageDir.GetDirectories "content")
