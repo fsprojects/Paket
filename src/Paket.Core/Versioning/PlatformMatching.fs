@@ -43,11 +43,12 @@ let private extractPlatformsPriv = memoize (fun path ->
     else Some { Name = path; Platforms = platforms })
 
 let extractPlatforms warn path =
-    if System.String.IsNullOrEmpty path then Some ParsedPlatformPath.Empty
+    if System.String.IsNullOrEmpty path then 
+        Some ParsedPlatformPath.Empty
     else
         match extractPlatformsPriv path with
         | None ->
-            if warn then
+            if warn && not (path.StartsWith("_")) then
                 Logging.traceWarnIfNotBefore ("extractPlatforms", path) "Could not detect any platforms from '%s', please tell the package authors" path
             None
         | Some s -> Some s
