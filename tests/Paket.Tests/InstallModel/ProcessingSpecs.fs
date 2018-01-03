@@ -745,7 +745,7 @@ let ``should filter .NET 4.0 dlls for System.Net.Http 2.2.8``() =
 
     let model =
         InstallModel.CreateFromLibs
-            (PackageName "System.Net.Http", SemVer.Parse "2.2.8",
+            (PackageName "System.Net.Http", SemVer.Parse "2.2.8", false,
              FrameworkRestriction.NoRestriction,
              [ @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll"
                @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll"
@@ -780,7 +780,7 @@ let ``should filter .NET 4.5 dlls for System.Net.Http 2.2.8``() =
 
     let model =
         InstallModel.CreateFromLibs
-            (PackageName "System.Net.Http", SemVer.Parse "2.2.8",
+            (PackageName "System.Net.Http", SemVer.Parse "2.2.8", false,
              FrameworkRestriction.NoRestriction,
              [ @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll"
                @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll"
@@ -814,7 +814,7 @@ let ``should filter .NET 4.5 dlls for System.Net.Http 2.2.8``() =
 let ``should filter properly when portables are available``() = 
     let model =
         InstallModel.CreateFromLibs
-            (PackageName "Newtonsoft.Json", SemVer.Parse "8.0.3",
+            (PackageName "Newtonsoft.Json", SemVer.Parse "8.0.3", false,
              FrameworkRestriction.NoRestriction,
              [ @"..\Newtonsoft.Json\lib\net20\Newtonsoft.Json.dll"
                @"..\Newtonsoft.Json\lib\net35\Newtonsoft.Json.dll"
@@ -839,7 +839,7 @@ let ``should filter properly when portables are available``() =
 let ``should keep net20 if nothing better is available``() = 
     let model =
         InstallModel.CreateFromLibs
-            (PackageName "EPPlus", SemVer.Parse "4.0.5",
+            (PackageName "EPPlus", SemVer.Parse "4.0.5", false,
              FrameworkRestriction.NoRestriction,
              [ @"..\EPPlus\lib\net20\EPPlus.dll" ] |> fromLegacyList @"..\EPPlus\", [], [], Nuspec.All)
 
@@ -860,7 +860,7 @@ let ``should keep net20 if nothing better is available``() =
 let ``prefer net20 over empty folder``() =
     let model =
         InstallModel.CreateFromLibs
-            (PackageName "EPPlus", SemVer.Parse "4.0.5",
+            (PackageName "EPPlus", SemVer.Parse "4.0.5", false,
              FrameworkRestriction.NoRestriction,
              [ @"..\EPPlus\lib\readme.txt"
                @"..\EPPlus\lib\net20\EPPlus.dll" ] |> fromLegacyList @"..\EPPlus\", [], [], Nuspec.All)

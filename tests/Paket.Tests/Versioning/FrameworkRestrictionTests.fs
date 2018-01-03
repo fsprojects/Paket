@@ -85,7 +85,7 @@ let ``CustomProfile is Supported by its Platforms``() =
 let ``__unknowntfm__ should not match everything`` () =
     try
         let model =
-            InstallModel.CreateFromLibs(Paket.Domain.PackageName "Rx-XAML", SemVer.Parse "2.2.4", FrameworkRestriction.NoRestriction,
+            InstallModel.CreateFromLibs(Paket.Domain.PackageName "Rx-XAML", SemVer.Parse "2.2.4", false, FrameworkRestriction.NoRestriction,
                 [  { Paket.NuGet.UnparsedPackageFile.FullPath = @"..\Rx-XAML\lib\__unknowntfm__\System.Reactive.Windows.Threading.dll"
                      Paket.NuGet.UnparsedPackageFile.PathWithinPackage = "lib/__unknowntfm__/System.Reactive.Windows.Threading.dll" }  ],
                    [],
