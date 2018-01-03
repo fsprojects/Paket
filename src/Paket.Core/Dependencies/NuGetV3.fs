@@ -417,7 +417,8 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
                     match extractPlatforms false x with
                     | Some p -> p
                     | None ->
-                        Logging.traceErrorIfNotBefore ("Package", x, packageName, version) "Could not detect any platforms from '%s' in %O %O, please tell the package authors" x packageName version
+                        if not (x.StartsWith "_") then
+                            Logging.traceErrorIfNotBefore ("Package", x, packageName, version) "Could not detect any platforms from '%s' in %O %O, please tell the package authors" x packageName version
                         ParsedPlatformPath.Empty
                 catalogData.DependencyGroups |> Seq.map (fun group -> detect group.TargetFramework) |> Seq.toList,
 

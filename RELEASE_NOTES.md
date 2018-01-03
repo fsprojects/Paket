@@ -1,13 +1,7 @@
-#### 5.128.9 - 2018-01-03
+#### 5.129.0 - 2018-01-03
 * BUGFIX: CliTools should not be added to redirects - https://github.com/fsprojects/Paket/issues/2955
-
-#### 5.128.5 - 2018-01-03
 * BUGFIX: Do not trace warnings for folders starting with _ - https://github.com/fsprojects/Paket/issues/2958
-
-#### 5.128.4 - 2018-01-02
 * BUGFIX: Fix auto-detect for multi targeting - https://github.com/fsprojects/Paket/pull/2956
-
-#### 5.128.1 - 2018-01-02
 * BUGFIX: Do not generate a dependency group for empty framework-neutral groups - https://github.com/fsprojects/Paket/pull/2954
 
 #### 5.128.0 - 2017-12-31

@@ -286,7 +286,8 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                     |> List.map (fun fw ->
                         let restrictions, problems = Requirements.parseRestrictionsLegacy false fw
                         for framework in problems |> Seq.choose (fun x -> x.Framework) do
-                            Logging.traceErrorfn "Could not detect any platforms from '%s' in %O %O, please tell the package authors" framework name version
+                            if not (framework.StartsWith "_") then
+                                Logging.traceErrorfn "Could not detect any platforms from '%s' in %O %O, please tell the package authors" framework name version
                         restrictions)
                 | _ -> []
             let restrictions =

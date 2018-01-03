@@ -369,7 +369,7 @@ module InstallModel =
                 (fun upf ->
                     (FolderScanner.choose "invalid tfm" (fun plats ->
                     let parsed = PlatformMatching.extractPlatforms false plats
-                    if parsed.IsNone then
+                    if parsed.IsNone && not (plats.StartsWith "_") then
                         traceWarnIfNotBefore ("File", plats, upf.BasePath) "Could not detect any platforms from '%s' in '%s', please tell the package authors" plats upf.FullPath
                     parsed)) >> FolderScanner.ParseResult.box) }
           { FolderScanner.AdvancedScanner.Name = "rid";
