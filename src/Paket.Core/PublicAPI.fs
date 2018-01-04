@@ -453,13 +453,16 @@ type Dependencies(dependenciesFileName: string) =
             match group.TryFind(packageName) with
             | None -> failwithf "Package %O is not installed in group %O." packageName groupName
             | Some resolvedPackage ->
-                let packageName = resolvedPackage.Name
                 let folder = resolvedPackage.Folder this.RootPath groupName
+                let kind =
+                    match resolvedPackage.Kind with
+                    | ResolvedPackageKind.Package -> InstallModelKind.Package
+                    | ResolvedPackageKind.DotnetCliTool -> InstallModelKind.DotnetCliTool
 
                 InstallModel.CreateFromContent(
                     resolvedPackage.Name, 
                     resolvedPackage.Version,
-                    resolvedPackage.IsCliTool,
+                    kind,
                     Paket.Requirements.FrameworkRestriction.NoRestriction, 
                     NuGet.GetContent(folder).Force())
 

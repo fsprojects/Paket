@@ -1601,5 +1601,5 @@ let ``should read config with cli tool``() =
 
     let tool = cfg.Groups.[Constants.MainDependencyGroup].Packages.Head
     let nuget = cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Head
-    tool.IsCliTool |> shouldEqual true
-    nuget.IsCliTool |> shouldEqual false
+    tool.Kind |> shouldEqual PackageRequirementKind.DotnetCliTool
+    nuget.Kind |> shouldEqual PackageRequirementKind.Package

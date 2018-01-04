@@ -21,7 +21,7 @@ let testData =
               VersionRequirement(VersionRange.Specific (SemVer.Parse "1.0.0"), PreReleaseStatus.No),
               Paket.Requirements.FrameworkRestrictions.AutoDetectFramework)
         PackageResolver.ResolvedPackage.Unlisted = false
-        PackageResolver.ResolvedPackage.IsCliTool = false
+        PackageResolver.ResolvedPackage.Kind = PackageResolver.ResolvedPackageKind.Package
         PackageResolver.ResolvedPackage.Settings = Requirements.InstallSettings.Default
         PackageResolver.ResolvedPackage.Source = PackageSources.PackageSource.NuGetV2 { Url = ""; Authentication = None }
         PackageResolver.IsRuntimeDependency = false }
@@ -30,7 +30,7 @@ let testData =
         Dependencies = Set.empty
         Unlisted = false
         Settings = Requirements.InstallSettings.Default
-        IsCliTool = false
+        Kind = PackageResolver.ResolvedPackageKind.Package
         Source = PackageSources.PackageSource.NuGetV2 { Url = ""; Authentication = None }
         IsRuntimeDependency = false }
     ]

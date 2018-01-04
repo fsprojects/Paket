@@ -17,7 +17,7 @@ let Read fileName =
     [for node in doc.SelectNodes("//package") ->
         { NugetPackage.Id = node.Attributes.["id"].Value
           VersionRange = VersionRange.Specific (SemVer.Parse node.Attributes.["version"].Value)
-          CliTool = false
+          Kind = NugetPackageKind.Package
           TargetFramework = 
             node 
             |> getAttribute "targetFramework" 

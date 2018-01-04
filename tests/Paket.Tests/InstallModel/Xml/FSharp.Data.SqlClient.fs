@@ -32,7 +32,7 @@ let ``should generate Xml for FSharp.Data.SqlClient 1.4.4``() =
     if not isMonoRuntime then // TODO - figure out why nuspec content is different on Mono
         ensureDir()
         let model =
-            InstallModel.CreateFromLibs(PackageName "FSharp.Data.SqlClient", SemVer.Parse "1.4.4", false, FrameworkRestriction.NoRestriction,
+            InstallModel.CreateFromLibs(PackageName "FSharp.Data.SqlClient", SemVer.Parse "1.4.4", InstallModelKind.Package, FrameworkRestriction.NoRestriction,
                 [ @"..\FSharp.Data.SqlClient\lib\net40\FSharp.Data.SqlClient.dll"
                   @"..\FSharp.Data.SqlClient\lib\net40\FSharp.Data.SqlClient.pdb"
                   @"..\FSharp.Data.SqlClient\lib\net40\FSharp.Data.SqlClient.XML"

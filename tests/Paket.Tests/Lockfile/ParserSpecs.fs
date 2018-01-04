@@ -1034,11 +1034,11 @@ let ``should parse lock file with cli tool``() =
     
     packages
     |> List.find (fun p -> p.Name = PackageName "dotnet-fable")
-    |> fun p -> p.IsCliTool |> shouldEqual true
+    |> fun p -> p.Kind |> shouldEqual Paket.PackageResolver.ResolvedPackageKind.DotnetCliTool
 
     packages
     |> List.find (fun p -> p.Name = PackageName "Argu")
-    |> fun p -> p.IsCliTool |> shouldEqual false
+    |> fun p -> p.Kind |> shouldEqual Paket.PackageResolver.ResolvedPackageKind.Package
 
     LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
     |> normalizeLineEndings

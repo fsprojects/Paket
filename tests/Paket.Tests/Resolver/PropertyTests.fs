@@ -68,7 +68,7 @@ let bruteForce ((g,deps):ResolverPuzzle) =
                               Unlisted = false
                               Settings = InstallSettings.Default
                               Source = PackageSources.DefaultNuGetSource
-                              IsCliTool = false
+                              Kind = ResolvedPackageKind.Package
                               IsRuntimeDependency = false }
                                         
                         let deps' = packageDeps @ deps

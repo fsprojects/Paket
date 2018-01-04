@@ -62,7 +62,7 @@ type ResolvedPackage = {
     Dependencies        : DependencySet
     Unlisted            : bool
     IsRuntimeDependency : bool
-    IsCliTool           : bool
+    Kind                : ResolvedPackageKind
     Settings            : InstallSettings
     Source              : PackageSource
 } with
@@ -82,6 +82,9 @@ type ResolvedPackage = {
                 "%A\nDependencies -\n%s\nSource - %A\nInstall Settings\n%A"
                     self.Name deps self.Source self.Settings
 
+and [<RequireQualifiedAccess>] ResolvedPackageKind =
+    | Package
+    | DotnetCliTool
 
 type PackageResolution = Map<PackageName, ResolvedPackage>
 /// Caches information retrieved by GetVersions until it is required by GetDetails
@@ -478,7 +481,8 @@ let private explorePackageConfig (getPackageDetailsBlock:PackageDetailsSyncFunc)
               Unlisted            = packageDetails.Unlisted
               Settings            = { settings with FrameworkRestrictions = newRestrictions }
               Source              = packageDetails.Source
-              IsCliTool           = Set.contains packageDetails.Name pkgConfig.CliTools
+              Kind                = if Set.contains packageDetails.Name pkgConfig.CliTools then ResolvedPackageKind.DotnetCliTool
+                                    else ResolvedPackageKind.Package
               IsRuntimeDependency = false
             }
     with
@@ -904,7 +908,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
         rootDependencies
         |> Seq.choose (fun r ->
             match r.Parent with
-            | PackageRequirementSource.DependenciesFile _ when r.IsCliTool ->
+            | PackageRequirementSource.DependenciesFile _ when (r.Kind = PackageRequirementKind.DotnetCliTool) ->
                 Some r.Name
             | _ -> None)
         |> Set.ofSeq
@@ -1450,7 +1454,7 @@ type PackageInfo =
     member x.Dependencies = x.Resolved.Dependencies
     member x.Unlisted = x.Resolved.Unlisted
     member x.IsRuntimeDependency = x.Resolved.IsRuntimeDependency
-    member x.IsCliTool = x.Resolved.IsCliTool
+    member x.Kind = x.Resolved.Kind
     member x.Source = x.Resolved.Source
     static member from v s =
       { Resolved = v

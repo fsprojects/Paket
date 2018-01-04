@@ -69,7 +69,7 @@ let expected = """
 let ``should generate Xml for System.Security.Cryptography.Algorithms in CSharp project``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "System.Security.Cryptography.Algorithms", SemVer.Parse "1.2.0", false, FrameworkRestriction.NoRestriction,
+        InstallModel.CreateFromLibs(PackageName "System.Security.Cryptography.Algorithms", SemVer.Parse "1.2.0", InstallModelKind.Package, FrameworkRestriction.NoRestriction,
             [ @"..\System.Security.Cryptography.Algorithms\lib\net46\System.Security.Cryptography.Algorithms.dll"
               @"..\System.Security.Cryptography.Algorithms\lib\net461\System.Security.Cryptography.Algorithms.dll"
               @"..\System.Security.Cryptography.Algorithms\lib\net463\System.Security.Cryptography.Algorithms.dll"

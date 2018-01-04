@@ -44,7 +44,7 @@ let private extractPackage caches (package:PackageInfo) alternativeProjectRoot r
         let! fileName,folder = 
             NuGet.DownloadAndExtractPackage(
                 alternativeProjectRoot, root, isLocalOverride, cfg, source, caches, groupName,
-                package.Name, version, package.IsCliTool, includeVersionInPath, downloadLicense, force, detailed)
+                package.Name, version, package.Kind, includeVersionInPath, downloadLicense, force, detailed)
 
         CopyToCaches force caches fileName
         return package, NuGet.GetContent folder
@@ -200,11 +200,15 @@ let extractRestoreTargets root =
 let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package) =
     async {
         let! (package, content) = ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package, false)
+        let kind =
+            match package.Kind with
+            | ResolvedPackageKind.Package -> InstallModelKind.Package
+            | ResolvedPackageKind.DotnetCliTool -> InstallModelKind.DotnetCliTool
         let model = 
                 InstallModel.CreateFromContent(
                     package.Name, 
                     package.Version, 
-                    package.IsCliTool,
+                    kind,
                     Requirements.getExplicitRestriction package.Settings.FrameworkRestrictions, 
                     content.Force())
         return (groupName,package.Name), (package,model)

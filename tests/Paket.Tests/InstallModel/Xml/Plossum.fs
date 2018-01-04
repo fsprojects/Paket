@@ -24,7 +24,7 @@ let expected = """
 let ``should generate Xml for Plossum``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Plossum.CommandLine", SemVer.Parse "1.5.0", false, FrameworkRestriction.NoRestriction,
+        InstallModel.CreateFromLibs(PackageName "Plossum.CommandLine", SemVer.Parse "1.5.0", InstallModelKind.Package, FrameworkRestriction.NoRestriction,
             [ @"..\Plossum.CommandLine\lib\net40\Plossum CommandLine.dll" ]
             |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\Plossum.CommandLine\",
               [],
