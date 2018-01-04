@@ -5,6 +5,8 @@ open Fake
 open FsUnit
 open System.IO
 
+let directExecScript scriptPath = directToolEx false ("", scriptPath)
+
 [<Test>]
 let ``#3000 repo tool should work after restore``() =
     let scenario = "i003000-repo-tool"
@@ -19,10 +21,10 @@ let ``#3000 repo tool should work after restore``() =
     let helloBashPath = Path.Combine(wrappersPath, "hello")
     Assert.IsTrue(File.Exists(helloBashPath), (sprintf "file '%s' not found" helloBashPath))
 
-    let resultCmd = directToolEx false helloCmdPath "" (scenarioTempPath scenario) 
+    let resultCmd = directExecScript helloCmdPath "" (scenarioTempPath scenario) 
     CollectionAssert.AreEqual( [| "Hello World from F#! with args: []" |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
 
-    let resultCmdWithArgs = directToolEx false helloCmdPath "1 2 3" (scenarioTempPath scenario) 
+    let resultCmdWithArgs = directExecScript helloCmdPath "1 2 3" (scenarioTempPath scenario) 
     CollectionAssert.AreEqual( [| """Hello World from F#! with args: ["1"; "2"; "3"]""" |], (resultCmdWithArgs |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
 
 
@@ -41,10 +43,10 @@ let ``#3001 repo tool should work after install``() =
     let helloBashPath = Path.Combine(wrappersPath, "hello")
     Assert.IsTrue(File.Exists(helloBashPath), (sprintf "file '%s' not found" helloBashPath))
 
-    let resultCmd = directToolEx false helloCmdPath "" (scenarioTempPath scenario) 
+    let resultCmd = directExecScript helloCmdPath "" (scenarioTempPath scenario) 
     CollectionAssert.AreEqual( [| "Hello World from F#! with args: []" |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
 
-    let resultCmdWithArgs = directToolEx false helloCmdPath "1 2 3" (scenarioTempPath scenario) 
+    let resultCmdWithArgs = directExecScript helloCmdPath "1 2 3" (scenarioTempPath scenario) 
     CollectionAssert.AreEqual( [| """Hello World from F#! with args: ["1"; "2"; "3"]""" |], (resultCmdWithArgs |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
 
 [<Test>]
@@ -113,8 +115,8 @@ let ``#3005 repo tool multi tfm (netcoreapp)``() =
     StringAssert.Contains("dotnet", File.ReadAllText(helloBashPath))
     StringAssert.Contains("netcoreapp", File.ReadAllText(helloBashPath))
 
-    let resultCmd = directToolEx false helloCmdPath "" (scenarioTempPath scenario) 
+    let resultCmd = directExecScript helloCmdPath "" (scenarioTempPath scenario) 
     CollectionAssert.AreEqual( [| "Hello World from F#! with args: []" |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
 
-    let resultCmdWithArgs = directToolEx false helloCmdPath "1 2 3" (scenarioTempPath scenario) 
+    let resultCmdWithArgs = directExecScript helloCmdPath "1 2 3" (scenarioTempPath scenario) 
     CollectionAssert.AreEqual( [| """Hello World from F#! with args: ["1"; "2"; "3"]""" |], (resultCmdWithArgs |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
