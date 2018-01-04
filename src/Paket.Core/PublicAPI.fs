@@ -514,6 +514,7 @@ type Dependencies(dependenciesFileName: string) =
                     match resolvedPackage.Kind with
                     | ResolvedPackageKind.Package -> InstallModelKind.Package
                     | ResolvedPackageKind.DotnetCliTool -> InstallModelKind.DotnetCliTool
+                    | ResolvedPackageKind.RepoTool -> InstallModelKind.RepoTool
 
                 InstallModel.CreateFromContent(
                     resolvedPackage.Name, 

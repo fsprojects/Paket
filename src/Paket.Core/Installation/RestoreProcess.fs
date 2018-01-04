@@ -230,6 +230,7 @@ let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches,
             match package.Kind with
             | ResolvedPackageKind.Package -> InstallModelKind.Package
             | ResolvedPackageKind.DotnetCliTool -> InstallModelKind.DotnetCliTool
+            | ResolvedPackageKind.RepoTool -> InstallModelKind.RepoTool
         let model = 
                 InstallModel.CreateFromContent(
                     package.Name, 
@@ -460,15 +461,17 @@ let CreateToolWrapperForGroups (lockFile:LockFile) (groups:Map<GroupName,LockFil
 
         let scripts = RepoTools.WrapperToolGeneration.constructWrapperScriptsFromData depsCache groupsToGenerate
         for sd in scripts do
-            match sd with
-            | RepoTools.WrapperToolGeneration.ScriptContent.Windows script ->
-                 script.Save rootPath
-            | RepoTools.WrapperToolGeneration.ScriptContent.Shell script ->
-                 script.Save rootPath
-            | RepoTools.WrapperToolGeneration.ScriptContent.WindowsAddToPATH script ->
-                 script.Save rootPath
-            | RepoTools.WrapperToolGeneration.ScriptContent.ShellAddToPATH script ->
-                 script.Save rootPath
+            let saveScript =
+                match sd with
+                | RepoTools.WrapperToolGeneration.ScriptContent.Windows script ->
+                     script.Save
+                | RepoTools.WrapperToolGeneration.ScriptContent.Shell script ->
+                     script.Save
+                | RepoTools.WrapperToolGeneration.ScriptContent.WindowsAddToPATH script ->
+                     script.Save
+                | RepoTools.WrapperToolGeneration.ScriptContent.ShellAddToPATH script ->
+                     script.Save
+            saveScript rootPath |> ignore
 
 let FindOrCreateReferencesFile (projectFile:ProjectFile) =
     match projectFile.FindReferencesFile() with

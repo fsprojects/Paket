@@ -1005,6 +1005,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                     match resolvedPackage.Kind with
                     | ResolvedPackageKind.Package -> InstallModelKind.Package
                     | ResolvedPackageKind.DotnetCliTool -> InstallModelKind.DotnetCliTool
+                    | ResolvedPackageKind.RepoTool -> InstallModelKind.RepoTool
 
                 InstallModel.CreateFromContent(
                     resolvedPackage.Name, 

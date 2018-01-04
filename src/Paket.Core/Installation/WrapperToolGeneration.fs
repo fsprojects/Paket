@@ -47,6 +47,8 @@ module WrapperToolGeneration =
         with
         | exn -> failwithf "Could not write load script file %s. Message: %s" scriptFile.FullName exn.Message
 
+        scriptFile
+
     type [<RequireQualifiedAccess>]  ScriptContentRuntimeHost = DotNetFramework | DotNetCoreApp | Native
 
     type ScriptAddToPATHWindows = {
@@ -91,6 +93,28 @@ module WrapperToolGeneration =
             saveScript self.Render rootPath self.PartialPath
     and [<RequireQualifiedAccess>] ScriptContentWindowsRuntime = DotNetFramework | DotNetCoreApp | Mono | Native
 
+    let directChmod (workDir: DirectoryInfo) args =
+        let configProcessStartInfoF (psi: Diagnostics.ProcessStartInfo) =
+            psi.UseShellExecute <- true
+            psi.FileName <- "chmod"
+            psi.Arguments <- args
+            psi.WorkingDirectory <- workDir.FullName
+        let chmodTimeout = TimeSpan.FromSeconds 2.
+        let exitCode = Paket.Git.CommandHelper.ExecProcessWithLambdas configProcessStartInfoF chmodTimeout false ignore ignore
+        exitCode
+
+    let chmod_plus_x (path: FileInfo) =
+        if Utils.isWindows then
+            verbosefn "chmod+x of '%s' skipped on windows, execute it manually if needed" path.FullName
+        else
+            try
+                verbosefn "running chmod+x on '%s' ..." path.FullName
+                let exitCode = directChmod path.Directory (sprintf """+x "%s" """ path.FullName)
+                if exitCode <> 0 then
+                    traceErrorfn "chmod+x on '%s' failed with exit code %i. Execute it manually" path.FullName exitCode
+            with e ->
+                verbosefn "Running chmod+x failed with: %O. Execute it manually" e
+
     type ScriptAddToPATHShell = {
         PartialPath : string
     } with
@@ -109,7 +133,9 @@ module WrapperToolGeneration =
         
         /// Save the script in '<directory>/paket-files/bin/<script>'
         member self.Save (rootPath:DirectoryInfo) =
-            saveScript self.Render rootPath self.PartialPath
+            let scriptPath = saveScript self.Render rootPath self.PartialPath
+            chmod_plus_x scriptPath
+            scriptPath
 
     type ScriptContentShell = {
         PartialPath : string

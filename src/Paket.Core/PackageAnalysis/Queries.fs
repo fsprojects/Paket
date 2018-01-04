@@ -38,6 +38,7 @@ let getInstalledPackageModel (lockFile: LockFile) (QualifiedPackageName(groupNam
                 match resolvedPackage.Kind with
                 | PackageResolver.ResolvedPackageKind.Package -> InstallModelKind.Package
                 | PackageResolver.ResolvedPackageKind.DotnetCliTool -> InstallModelKind.DotnetCliTool
+                | PackageResolver.ResolvedPackageKind.RepoTool -> InstallModelKind.RepoTool
 
             InstallModel.CreateFromContent(
                 packageName,

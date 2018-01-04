@@ -221,6 +221,7 @@ type DependencyCache (lockFile:LockFile) =
                             match package.Kind with
                             | ResolvedPackageKind.Package -> InstallModelKind.Package
                             | ResolvedPackageKind.DotnetCliTool -> InstallModelKind.DotnetCliTool
+                            | ResolvedPackageKind.RepoTool -> InstallModelKind.RepoTool
                         let model = 
                             InstallModel.CreateFromContent(
                                 package.Name, 

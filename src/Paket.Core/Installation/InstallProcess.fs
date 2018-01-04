@@ -279,6 +279,7 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
                 match model.Kind with
                 | InstallModelKind.Package ->
                     true
+                | InstallModelKind.RepoTool
                 | InstallModelKind.DotnetCliTool ->
                     false )
             |> Seq.map (fun (model,redirects) -> (model, redirectsFromReference model.PackageName |> Option.fold (fun _ x -> Some x) redirects))

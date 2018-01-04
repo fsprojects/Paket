@@ -138,6 +138,7 @@ type InstallModel = {
 and [<RequireQualifiedAccess>] InstallModelKind =
     | Package
     | DotnetCliTool
+    | RepoTool
 
 module FolderScanner =
     // Stolen and modifed to our needs from http://www.fssnip.net/4I/title/sscanf-parsing-with-format-strings
