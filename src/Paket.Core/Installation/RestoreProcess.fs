@@ -471,6 +471,8 @@ let CreateToolWrapperForGroups (lockFile:LockFile) (groups:Map<GroupName,LockFil
                      script.Save
                 | RepoTools.WrapperToolGeneration.ScriptContent.ShellAddToPATH script ->
                      script.Save
+                | RepoTools.WrapperToolGeneration.ScriptContent.PowershellAddToPATH script ->
+                     script.Save
             saveScript rootPath |> ignore
 
 let FindOrCreateReferencesFile (projectFile:ProjectFile) =

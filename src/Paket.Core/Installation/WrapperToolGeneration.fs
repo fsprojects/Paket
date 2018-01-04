@@ -67,6 +67,21 @@ module WrapperToolGeneration =
         member self.Save (rootPath:DirectoryInfo) =
             saveScript self.Render rootPath self.PartialPath
 
+    type ScriptAddToPATHPowershell = {
+        PartialPath : string
+    } with
+        member self.Render (_directory:DirectoryInfo) =
+            let cmdContent =
+                [ ""
+                  "$env:PATH = $PSScriptRoot + ';' + $env:PATH"
+                  "" ]
+            
+            cmdContent |> String.concat "\r\n"
+
+        /// Save the script in '<directory>/paket-files/bin/<script>'
+        member self.Save (rootPath:DirectoryInfo) =
+            saveScript self.Render rootPath self.PartialPath
+
     type ScriptContentWindows = {
         PartialPath : string
         RelativeToolPath : string
@@ -171,6 +186,7 @@ module WrapperToolGeneration =
         | Shell of ScriptContentShell
         | WindowsAddToPATH of ScriptAddToPATHWindows
         | ShellAddToPATH of ScriptAddToPATHShell
+        | PowershellAddToPATH of ScriptAddToPATHPowershell
 
     type RepoToolInNupkg =
         { FullPath: string
@@ -328,6 +344,9 @@ module WrapperToolGeneration =
             |> List.collect (fun scriptPath ->
                 [ { ScriptAddToPATHWindows.PartialPath = scriptPath </> "add_to_PATH.cmd" }
                   |> ScriptContent.WindowsAddToPATH
+
+                  { ScriptAddToPATHPowershell.PartialPath = scriptPath </> "add_to_PATH.ps1" }
+                  |> ScriptContent.PowershellAddToPATH
 
                   { ScriptAddToPATHShell.PartialPath = scriptPath </> "add_to_PATH.sh" }
                   |> ScriptContent.ShellAddToPATH ] )
