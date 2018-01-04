@@ -19,6 +19,9 @@ let ``#2496 Paket fails on projects that target multiple frameworks``() =
         |> ignore
 
 [<Test>]
+#if NETCOREAPP2_0
+[<Ignore("use an api of FakeLib (net40) unsupported on .net core")>]
+#endif
 let ``#2812 Lowercase package names in package cache: old csproj, packages folder enabled``() =
     let scenario = "i002812-old-csproj-storage-default"
     let projectName = "project"
@@ -78,4 +81,19 @@ let ``#2812 Lowercase package names in package cache: new csproj, packages folde
     directPaket "restore" scenario |> ignore
     isPackageCachedWithOnlyLowercaseNames packageName |> shouldEqual true
     directDotnet false (sprintf "restore --source \"%s\"" emptyFeedPath) projectDir |> ignore
+    directDotnet false "build --no-restore" projectDir |> ignore
+
+
+[<Test>]
+let ``#3000-a dotnet restore``() =
+    let scenario = "i003000-netcoreapp2"
+    let projectName = "c1"
+    let packageName = "AutoMapper"
+    let workingDir = scenarioTempPath scenario
+    let projectDir = workingDir @@ projectName
+
+    [ packageName; (packageName.ToLower()) ] |> Seq.iter clearPackage
+    
+    prepareSdk scenario
+    directDotnet false "restore" projectDir |> ignore
     directDotnet false "build --no-restore" projectDir |> ignore

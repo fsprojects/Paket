@@ -2,6 +2,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <AssemblyName>paket</AssemblyName>
   </PropertyGroup>
   <!--<Win32Resource>paket.res</Win32Resource>-->
   <ItemGroup>
@@ -10,10 +11,6 @@
     <Compile Include="..\Paket\Program.fs" />
     <!--<Content Include="App.config" />-->
     <None Include="paket.references" />
-    <!--<EmbeddedResource Include="embedded\PaketRestoreTask.deps.json" />
-    <EmbeddedResource Include="embedded\PaketRestoreTask.dll" />
-    <EmbeddedResource Include="embedded\Paket.Restore.targets" />-->
-    <Content Include="app.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Paket.Core.preview3\Paket.Core.fsproj" />

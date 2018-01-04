@@ -82,8 +82,10 @@ type Dependencies(dependenciesFileName: string) =
                 |> returnOrFail
         )
 
+#if !NO_BOOTSTRAPPER
         let deps = Dependencies.Locate()
         deps.DownloadLatestBootstrapper()
+#endif
 
     /// Converts the solution from NuGet to Paket.
     static member ConvertFromNuget(force: bool,installAfter: bool, initAutoRestore: bool,credsMigrationMode: string option, ?directory: DirectoryInfo) : unit =

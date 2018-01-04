@@ -1040,6 +1040,28 @@ module ProjectFile =
     let getTargetFramework (project:ProjectFile) = getProperty "TargetFramework" project
     let getTargetFrameworks (project:ProjectFile) = getProperty "TargetFrameworks" project
 
+    let getToolsVersion (project:ProjectFile) =
+        let adjustIfWeHaveSDK v =
+            try
+                let sdkAttr = project.ProjectNode.Attributes.["Sdk"]
+                if isNull sdkAttr || String.IsNullOrWhiteSpace sdkAttr.Value
+                then v   // adjustment so paket still installs to old style msbuild projects that are using MSBuild15 but not the new format
+                else 15.0
+            with
+            | _ -> v
+
+        match project.ProjectNode.Attributes.["ToolsVersion"] with
+        | null -> adjustIfWeHaveSDK 4.0
+        | v ->
+            match Double.TryParse(v.Value, NumberStyles.Any, CultureInfo.InvariantCulture) with
+            | true , 15.0 ->
+                    let sdkAttr = project.ProjectNode.Attributes.["Sdk"]
+                    if  isNull sdkAttr || String.IsNullOrWhiteSpace sdkAttr.Value
+                    then 14.0   // adjustment so paket still installs to old style msbuild projects that are using MSBuild15 but not the new format
+                    else 15.0
+            | true,  version -> adjustIfWeHaveSDK version
+            | _         -> adjustIfWeHaveSDK 4.0
+
     let getTargetProfiles (project:ProjectFile) =
         let fallback () =
             let prefix() =
@@ -1521,7 +1543,10 @@ module ProjectFile =
             project.Document
             |> getDescendants "AssemblyName"
             |> function
-               | [] -> failwithf "Project %s has no AssemblyName set" project.FileName
+               | [] ->
+                  match getToolsVersion project with
+                  | 15.0 -> ""
+                  | _ -> failwithf "Project %s has no AssemblyName set" project.FileName
                | [assemblyName] -> assemblyName.InnerText
                | assemblyName::_ ->
                     traceWarnfn "Found multiple AssemblyName nodes in file %s, using first" project.FileName
@@ -1774,28 +1799,7 @@ type ProjectFile with
 
     member this.FindTemplatesFile() = this.FindCorrespondingFile Constants.TemplateFile
 
-    member this.GetToolsVersion () : float =
-        let adjustIfWeHaveSDK v =
-            try
-                let sdkAttr = this.ProjectNode.Attributes.["Sdk"]
-                if isNull sdkAttr || String.IsNullOrWhiteSpace sdkAttr.Value
-                then v   // adjustment so paket still installs to old style msbuild projects that are using MSBuild15 but not the new format
-                else 15.0
-            with
-            | _ -> v
-
-        match this.ProjectNode.Attributes.["ToolsVersion"] with
-        | null -> adjustIfWeHaveSDK 4.0
-        | v ->
-            match Double.TryParse(v.Value, NumberStyles.Any, CultureInfo.InvariantCulture) with
-            | true , 15.0 ->
-                    let sdkAttr = this.ProjectNode.Attributes.["Sdk"]
-                    if  isNull sdkAttr || String.IsNullOrWhiteSpace sdkAttr.Value
-                    then 14.0   // adjustment so paket still installs to old style msbuild projects that are using MSBuild15 but not the new format
-                    else 15.0
-            | true,  version -> adjustIfWeHaveSDK version
-            | _         -> adjustIfWeHaveSDK 4.0
-
+    member this.GetToolsVersion () = ProjectFile.getToolsVersion this
 
     static member FindOrCreateReferencesFile projectFile =
         match ProjectFile.FindReferencesFile(projectFile) with

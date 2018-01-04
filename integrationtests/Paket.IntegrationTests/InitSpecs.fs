@@ -9,6 +9,9 @@ open System.IO
 open System.Diagnostics
 
 [<Test>]
+#if PAKET_NETCORE
+[<Ignore(".net core paket doesnt init the boostrapper")>]
+#endif
 let ``#1040 init should download release version of bootstrapper``() = 
     paket "init" "i001040-init-downloads-bootstrapper" |> ignore
     let bootstrapperPath = Path.Combine(scenarioTempPath "i001040-init-downloads-bootstrapper",".paket","paket.exe")
@@ -18,6 +21,9 @@ let ``#1040 init should download release version of bootstrapper``() =
     productVersion.Contains("-") |> shouldEqual false
 
 [<Test>]
+#if PAKET_NETCORE
+[<Ignore(".net core paket doesnt init the boostrapper")>]
+#endif
 let ``#1743 empty log file``() =
     try
         paket "init --log-file" "i001040-init-downloads-bootstrapper" |> ignore
@@ -26,6 +32,9 @@ let ``#1743 empty log file``() =
     | exn when exn.Message.Split('\n').[0].Contains "--log-file" -> ()
 
 [<Test>]
+#if PAKET_NETCORE
+[<Ignore(".net core paket doesnt init the boostrapper")>]
+#endif
 let ``#1240 current bootstrapper should work``() = 
     CleanDir (scenarioTempPath "i001240-bootstrapper")
     let paketToolPath = FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.bootstrapper.exe")

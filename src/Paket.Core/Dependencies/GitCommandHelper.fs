@@ -94,8 +94,8 @@ let tryFindFileOnPath (file : string) : string option =
 let appSettings (key : string) (fallbackValue : string) = 
     let value = 
         let setting =
-#if NETSTANDARD1_6
-            null : string
+#if NO_CONFIGURATIONMANAGER
+            ""
 #else
             try 
                 System.Configuration.ConfigurationManager.AppSettings.[key]

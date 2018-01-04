@@ -21,7 +21,6 @@ open System.Threading.Tasks
 open System.Collections.Concurrent
 
 #if !NETSTANDARD1_6
-// TODO: Activate this in .NETCore 2.0
 ServicePointManager.SecurityProtocol <- unbox 192 ||| unbox 768 ||| unbox 3072 ||| unbox 48
                                         ///SecurityProtocolType.Tls ||| SecurityProtocolType.Tls11 ||| SecurityProtocolType.Tls12 ||| SecurityProtocolType.Ssl3
 #endif
@@ -269,7 +268,7 @@ let isMonoRuntime =
 
 /// Determines if the current system is an Unix system
 let isUnix = 
-#if NETSTANDARD1_6
+#if NETSTANDARD1_6 || NETSTANDARD2_0
     System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
         System.Runtime.InteropServices.OSPlatform.Linux) || 
     System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
@@ -280,7 +279,7 @@ let isUnix =
 
 /// Determines if the current system is a MacOs system
 let isMacOS =
-#if NETSTANDARD1_6
+#if NETSTANDARD1_6 || NETSTANDARD2_0
     System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
         System.Runtime.InteropServices.OSPlatform.OSX)
 #else
@@ -291,7 +290,7 @@ let isMacOS =
 
 /// Determines if the current system is a Linux system
 let isLinux = 
-#if NETSTANDARD1_6
+#if NETSTANDARD1_6 || NETSTANDARD2_0
     System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
         System.Runtime.InteropServices.OSPlatform.Linux)
 #else
@@ -300,7 +299,7 @@ let isLinux =
 
 /// Determines if the current system is a Windows system
 let isWindows =
-#if NETSTANDARD1_6
+#if NETSTANDARD1_6 || NETSTANDARD2_0
     System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
         System.Runtime.InteropServices.OSPlatform.Windows)
 #else
@@ -314,7 +313,7 @@ let isWindows =
 /// Todo: Detect mono on windows
 [<Obsolete("use either isMonoRuntime or isUnix, this flag is always false when compiled for NETSTANDARD")>]
 let isMono = 
-#if NETSTANDARD1_6
+#if NETSTANDARD1_6 || NETSTANDARD2_0
     false
 #else
     isUnix
@@ -378,7 +377,7 @@ let normalizeFeedUrl (source:string) =
     | "http://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
     | source -> source
 
-#if NETSTANDARD1_6
+#if CUSTOM_WEBPROXY
 type WebProxy = IWebProxy
 #endif
 
@@ -405,7 +404,7 @@ let envProxies () =
         if isNull envVarValue then None else
         match Uri.TryCreate(envVarValue, UriKind.Absolute) with
         | true, envUri ->
-#if NETSTANDARD1_6
+#if CUSTOM_WEBPROXY
             Some 
                 { new IWebProxy with
                     member __.Credentials 
@@ -440,12 +439,19 @@ let getDefaultProxyFor =
       (fun (url:string) ->
             let uri = Uri url
             let getDefault () =
-#if NETSTANDARD1_6
-                let result = WebRequest.DefaultWebProxy
+#if CUSTOM_WEBPROXY
+                let result =
+                    { new IWebProxy with
+                        member __.Credentials 
+                            with get () = null
+                            and set _value = ()
+                        member __.GetProxy _ = null
+                        member __.IsBypassed (_host : Uri) = true
+                    }
 #else
                 let result = WebRequest.GetSystemWebProxy()
 #endif
-#if NETSTANDARD1_6
+#if CUSTOM_WEBPROXY
                 let proxy = result
 #else
                 let address = result.GetProxy uri
