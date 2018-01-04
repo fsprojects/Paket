@@ -110,10 +110,13 @@ module WrapperToolGeneration =
             try
                 verbosefn "running chmod+x on '%s' ..." path.FullName
                 let exitCode = directChmod path.Directory (sprintf """+x "%s" """ path.FullName)
-                if exitCode <> 0 then
-                    traceErrorfn "chmod+x on '%s' failed with exit code %i. Execute it manually" path.FullName exitCode
+                if exitCode = 0 then
+                    verbosefn "chmod+x on '%s' was successful (exit code %i)." path.FullName exitCode
+                else
+                    verbosefn "chmod+x on '%s' failed with code %i. Execute it manually" path.FullName exitCode
             with e ->
-                verbosefn "Running chmod+x failed with: %O. Execute it manually" e
+                verbosefn "Running chmod+x on '%s' failed with an exception. Execute it manually" path.FullName
+                printError e
 
     type ScriptAddToPATHShell = {
         PartialPath : string
@@ -159,7 +162,9 @@ module WrapperToolGeneration =
         
         /// Save the script in '<directory>/paket-files/bin/<script>'
         member self.Save (rootPath:DirectoryInfo) =
-            saveScript self.Render rootPath self.PartialPath
+            let scriptPath = saveScript self.Render rootPath self.PartialPath
+            chmod_plus_x scriptPath
+            scriptPath
 
     type [<RequireQualifiedAccess>] ScriptContent =
         | Windows of ScriptContentWindows
