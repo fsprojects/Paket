@@ -145,26 +145,34 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Adds the given package with the given version to the dependencies file.
     member this.Add(groupName: string option, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool,  createNewBindingFiles:bool, interactive: bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs, runResolver:bool): unit =
+       this.Add(groupName, package,version,force, withBindingRedirects, cleanBindingRedirects,  createNewBindingFiles, interactive, installAfter, semVerUpdateMode, touchAffectedRefs, true, PackageRequirementKind.Package)
+
+    /// Adds the given package with the given version to the dependencies file.
+    member this.Add(groupName: string option, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool,  createNewBindingFiles:bool, interactive: bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs, runResolver:bool, kind): unit =
         let withBindingRedirects = if withBindingRedirects then BindingRedirectsSettings.On else BindingRedirectsSettings.Off
         RunInLockedAccessMode(
             this.RootPath,
             fun () -> 
                     AddProcess.Add(dependenciesFileName, groupName, PackageName(package.Trim()), version,
                                      InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None),
-                                     interactive, installAfter, runResolver))
+                                     interactive, installAfter, runResolver, kind))
 
    /// Adds the given package with the given version to the dependencies file.
     member this.AddToProject(groupName, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, projectName: string, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
         this.AddToProject(groupName, package,version,force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, projectName, installAfter, semVerUpdateMode, touchAffectedRefs, true)
 
     /// Adds the given package with the given version to the dependencies file.
-    member this.AddToProject(groupName, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, projectName: string, installAfter: bool, semVerUpdateMode, touchAffectedRefs, runResolver:bool): unit =
+    member this.AddToProject(groupName, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, projectName: string, installAfter: bool, semVerUpdateMode, touchAffectedRefs, runResolver): unit =
+        this.AddToProject(groupName, package,version,force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, projectName, installAfter, semVerUpdateMode, touchAffectedRefs, runResolver, PackageRequirementKind.Package)
+
+    /// Adds the given package with the given version to the dependencies file.
+    member this.AddToProject(groupName, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, projectName: string, installAfter: bool, semVerUpdateMode, touchAffectedRefs, runResolver:bool, kind): unit =
         let withBindingRedirects = if withBindingRedirects then BindingRedirectsSettings.On else BindingRedirectsSettings.Off
         RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.AddToProject(dependenciesFileName, groupName, PackageName package, version,
                                               InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None),
-                                              projectName, installAfter, runResolver))
+                                              projectName, installAfter, runResolver, kind))
 
     /// Adds credentials for a Nuget feed
     member this.AddCredentials(source: string, username: string, password : string, authType : string) : unit =

@@ -1166,6 +1166,9 @@ type PackageRequirement =
 and [<RequireQualifiedAccess>] PackageRequirementKind =
     | Package
     | DotnetCliTool
+    | Git
+    | GitHub
+    | Http
 
 type AddFrameworkRestrictionWarnings =
     | UnknownPortableProfile of TargetProfile

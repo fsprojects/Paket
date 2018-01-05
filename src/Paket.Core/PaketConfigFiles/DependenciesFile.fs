@@ -42,6 +42,9 @@ module DependenciesFileSerializer =
             match kind with
             | PackageRequirementKind.DotnetCliTool -> "clitool"
             | PackageRequirementKind.Package -> "nuget"
+            | PackageRequirementKind.Git -> "git"
+            | PackageRequirementKind.GitHub -> "github"
+            | PackageRequirementKind.Http -> "http"
         sprintf "%s %O%s%s" kindString packageName (if version <> "" then " " + version else "") (if s <> "" then " " + s else s)
 
 open Domain
