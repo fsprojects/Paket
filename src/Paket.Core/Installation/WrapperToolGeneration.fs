@@ -5,28 +5,97 @@ open System.IO
 open Paket
 open Paket.Domain
 
+module RepoToolDiscovery =
+
+    open Paket.Logging
+
+    type RepoToolInNupkg =
+        { FullPath: string
+          Name: string
+          Kind: RepoToolInNupkgKind }
+    and [<RequireQualifiedAccess>] RepoToolInNupkgKind =
+        | OldStyle
+        | ByTFM of tfm:FrameworkIdentifier
+
+    let applyPreferencesAboutRuntimeHost (pkgs: RepoToolInNupkg list) =
+
+        let preference =
+            match System.Environment.GetEnvironmentVariable("PAKET_REPOTOOL_PREFERRED_RUNTIME") |> Option.ofObj |> Option.bind FrameworkDetection.Extract with
+            | None -> FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_5)
+            | Some fw -> fw
+
+        pkgs
+        |> List.groupBy (fun p -> p.Name)
+        |> List.collect (fun (name, tools) ->
+            let byPreference tool =
+                match tool.Kind, preference with
+                | RepoToolInNupkgKind.ByTFM(FrameworkIdentifier.DotNetCoreApp _), FrameworkIdentifier.DotNetCoreApp _ -> 1
+                | RepoToolInNupkgKind.ByTFM(FrameworkIdentifier.DotNetFramework _), FrameworkIdentifier.DotNetFramework _ -> 1
+                | RepoToolInNupkgKind.OldStyle, FrameworkIdentifier.DotNetFramework _ -> 2
+                | _ -> 3
+            match tools |> List.sortBy byPreference with
+            | [] -> []
+            | [x] -> [x]
+            | x :: xs ->
+                if verbose then
+                    verbosefn "tool '%s' support multiple frameworks" name
+                    verbosefn "- choosen %A based on preference %A" x preference
+                    for d in xs do
+                        verbosefn "- avaiable but ignored: %A" d
+                [x] )
+
+    let avaiableTools (pkg: PackageResolver.PackageInfo) (pkgDir: DirectoryInfo) =
+        let toolsDir = Path.Combine(pkgDir.FullName, "tools")
+
+        let asTool kind path =
+            { RepoToolInNupkg.FullPath = path
+              Name = Path.GetFileNameWithoutExtension(path)
+              Kind = kind }
+
+        let toolsTFMDirs =
+            Directory.EnumerateDirectories(toolsDir, "*", SearchOption.TopDirectoryOnly)
+            |> Seq.choose (fun x ->
+                match x |> Path.GetFileName |> FrameworkDetection.Extract with
+                | Some tfm -> Some (x, tfm)
+                | None -> None)
+            |> Seq.toList
+
+        [ 
+            //old style (flatten): the .exe directly in tools dir are .net fw console app
+            yield! Directory.EnumerateFiles(toolsDir, "*.exe")
+                   |> Seq.map (asTool RepoToolInNupkgKind.OldStyle)
+
+            //new style (dir by tfm): each dir with a tfm name may contains a console app
+            for (toolsTFMDir, tfm) in toolsTFMDirs do
+                yield!
+                    match tfm with
+                    | FrameworkIdentifier.DotNetFramework _ ->
+                        // for .net fw, just check .exe extension
+                        Directory.EnumerateFiles(toolsTFMDir , "*.exe")
+                        |> Seq.map (asTool (RepoToolInNupkgKind.ByTFM tfm))
+                        |> Seq.toList
+                    | FrameworkIdentifier.DotNetCoreApp _ ->
+                        // for .net core, a console app is .dll
+                        // TODO configuration to specify the alias in the nupkg
+                        // infer by same name of nupkg
+                        Directory.EnumerateFiles(toolsTFMDir , "*.dll")
+                        |> Seq.filter (fun s -> Path.GetFileNameWithoutExtension(s).Contains(pkg.Name.Name))
+                        |> Seq.map (asTool (RepoToolInNupkgKind.ByTFM tfm))
+                        |> Seq.toList
+                    | tfm ->
+                        if verbose then
+                            verbosefn "found tool dir '%s' with known tfm %O but skipping because unsupported as repo tool" toolsTFMDir tfm
+                        []
+        ]
+
 module WrapperToolGeneration =
-
-    type PathCombine = PathCombine with
-        static member (?<-) (_,dir:DirectoryInfo,framework:FrameworkIdentifier) =  Path.Combine (dir.Name, string framework)
-        static member (?<-) (_,dir:DirectoryInfo,group:GroupName) =  Path.Combine (dir.Name, string group)
-        static member (?<-) (_,dir:DirectoryInfo,path:string) =  Path.Combine(dir.Name,path)
-        static member (?<-) (_,dir:DirectoryInfo,file:FileInfo) =  Path.Combine(dir.Name,file.Name)
-        static member (?<-) (_,path:string,framework:FrameworkIdentifier) = Path.Combine(path, string framework)
-        static member (?<-) (_,path:string,group:GroupName) =  Path.Combine (path, string group)
-        static member (?<-) (_,path1:string,path2:string) =  Path.Combine (path1, path2)
-        static member (?<-) (_,path:string,file:FileInfo) =  Path.Combine (path, file.Name)
-        static member (?<-) (_,path:string,package:PackageName) =  Path.Combine (path, string package)
-        static member (?<-) (_,path:string,dir:DirectoryInfo) =  Path.Combine (path, dir.Name)
-
-    let inline (</>) p1 p2 = (?<-) PathCombine p1 p2
 
     open System.Collections.Generic
     open Paket.Logging
 
     let private saveScript render (rootPath:DirectoryInfo) partialPath =
         if not rootPath.Exists then rootPath.Create()
-        let scriptFile = FileInfo (rootPath.FullName </> partialPath)
+        let scriptFile = FileInfo (Path.Combine(rootPath.FullName, partialPath))
         if verbose then
             verbosefn "generating wrapper script - %s" scriptFile.FullName
         if not scriptFile.Directory.Exists then scriptFile.Directory.Create()            
@@ -187,85 +256,6 @@ module WrapperToolGeneration =
         | WindowsAddToPATH of ScriptAddToPATHWindows
         | ShellAddToPATH of ScriptAddToPATHShell
         | PowershellAddToPATH of ScriptAddToPATHPowershell
-
-    type RepoToolInNupkg =
-        { FullPath: string
-          Name: string
-          Kind: RepoToolInNupkgKind }
-    and [<RequireQualifiedAccess>] RepoToolInNupkgKind =
-        | OldStyle
-        | ByTFM of tfm:FrameworkIdentifier
-
-    let applyPreferencesAboutRuntimeHost (pkgs: RepoToolInNupkg list) =
-
-        let preference =
-            match System.Environment.GetEnvironmentVariable("PAKET_REPOTOOL_PREFERRED_RUNTIME") |> Option.ofObj |> Option.bind FrameworkDetection.Extract with
-            | None -> FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_5)
-            | Some fw -> fw
-
-        pkgs
-        |> List.groupBy (fun p -> p.Name)
-        |> List.collect (fun (name, tools) ->
-            let byPreference tool =
-                match tool.Kind, preference with
-                | RepoToolInNupkgKind.ByTFM(FrameworkIdentifier.DotNetCoreApp _), FrameworkIdentifier.DotNetCoreApp _ -> 1
-                | RepoToolInNupkgKind.ByTFM(FrameworkIdentifier.DotNetFramework _), FrameworkIdentifier.DotNetFramework _ -> 1
-                | RepoToolInNupkgKind.OldStyle, FrameworkIdentifier.DotNetFramework _ -> 2
-                | _ -> 3
-            match tools |> List.sortBy byPreference with
-            | [] -> []
-            | [x] -> [x]
-            | x :: xs ->
-                if verbose then
-                    verbosefn "tool '%s' support multiple frameworks" name
-                    verbosefn "- choosen %A based on preference %A" x preference
-                    for d in xs do
-                        verbosefn "- avaiable but ignored: %A" d
-                [x] )
-
-    let avaiableTools (pkg: PackageResolver.PackageInfo) (pkgDir: DirectoryInfo) =
-        let toolsDir = pkgDir.FullName </> "tools"
-
-        let asTool kind path =
-            { RepoToolInNupkg.FullPath = path
-              Name = Path.GetFileNameWithoutExtension(path)
-              Kind = kind }
-
-        let toolsTFMDirs =
-            Directory.EnumerateDirectories(toolsDir, "*", SearchOption.TopDirectoryOnly)
-            |> Seq.choose (fun x ->
-                match x |> Path.GetFileName |> FrameworkDetection.Extract with
-                | Some tfm -> Some (x, tfm)
-                | None -> None)
-            |> Seq.toList
-
-        [ 
-            //old style (flatten): the .exe directly in tools dir are .net fw console app
-            yield! Directory.EnumerateFiles(toolsDir, "*.exe")
-                   |> Seq.map (asTool RepoToolInNupkgKind.OldStyle)
-
-            //new style (dir by tfm): each dir with a tfm name may contains a console app
-            for (toolsTFMDir, tfm) in toolsTFMDirs do
-                yield!
-                    match tfm with
-                    | FrameworkIdentifier.DotNetFramework _ ->
-                        // for .net fw, just check .exe extension
-                        Directory.EnumerateFiles(toolsTFMDir , "*.exe")
-                        |> Seq.map (asTool (RepoToolInNupkgKind.ByTFM tfm))
-                        |> Seq.toList
-                    | FrameworkIdentifier.DotNetCoreApp _ ->
-                        // for .net core, a console app is .dll
-                        // TODO configuration to specify the alias in the nupkg
-                        // infer by same name of nupkg
-                        Directory.EnumerateFiles(toolsTFMDir , "*.dll")
-                        |> Seq.filter (fun s -> Path.GetFileNameWithoutExtension(s).Contains(pkg.Name.Name))
-                        |> Seq.map (asTool (RepoToolInNupkgKind.ByTFM tfm))
-                        |> Seq.toList
-                    | tfm ->
-                        if verbose then
-                            verbosefn "found tool dir '%s' with known tfm %O but skipping because unsupported as repo tool" toolsTFMDir tfm
-                        []
-        ]
      
     let constructWrapperScriptsFromData (depCache:DependencyCache) (groups: (LockFileGroup * Map<PackageName,PackageResolver.ResolvedPackage>) list) =
         let lockFile = depCache.LockFile
@@ -295,29 +285,29 @@ module WrapperToolGeneration =
         let toolWrapperInDir =
             allRepoToolPkgs
             |> List.collect (fun (g, x, y) ->
-                avaiableTools x y
-                |> applyPreferencesAboutRuntimeHost
+                RepoToolDiscovery.avaiableTools x y
+                |> RepoToolDiscovery.applyPreferencesAboutRuntimeHost
                 |> List.map (fun tool -> g, tool) )
             |> List.map (fun (g, tool) ->
                     let dir =
                         if g.Name = Constants.MainDependencyGroup then
                             "bin"
                         else
-                            g.Name.Name </> "bin"
+                            Path.Combine(g.Name.Name, "bin")
 
-                    let scriptPath = Constants.PaketFilesFolderName </> dir
+                    let scriptPath = Path.Combine(Constants.PaketFilesFolderName, dir)
                     tool, scriptPath)
 
         let wrapperScripts =
             toolWrapperInDir
             |> List.collect (fun (tool, scriptPath) ->
-                let relativePath = createRelativePath (lockFile.RootPath </> scriptPath </> tool.Name) (tool.FullPath)
+                let relativePath = createRelativePath (Path.Combine(lockFile.RootPath, scriptPath, tool.Name)) (tool.FullPath)
 
                 let runtimeOpt =
                     match tool.Kind with
-                    | RepoToolInNupkgKind.OldStyle ->
+                    | RepoToolDiscovery.RepoToolInNupkgKind.OldStyle ->
                         Some ScriptContentRuntimeHost.DotNetFramework
-                    | RepoToolInNupkgKind.ByTFM tfm ->
+                    | RepoToolDiscovery.RepoToolInNupkgKind.ByTFM tfm ->
                         match tfm with
                         | FrameworkIdentifier.DotNetFramework _ ->
                             Some ScriptContentRuntimeHost.DotNetFramework
@@ -329,11 +319,11 @@ module WrapperToolGeneration =
                 match runtimeOpt with
                 | None -> []
                 | Some runtime ->
-                  [ { ScriptContentWindows.PartialPath = scriptPath </> (sprintf "%s.cmd" tool.Name)
+                  [ { ScriptContentWindows.PartialPath = Path.Combine(scriptPath, (sprintf "%s.cmd" tool.Name))
                       Runtime = runtime
                       RelativeToolPath = relativePath } |> ScriptContent.Windows
                 
-                    { ScriptContentShell.PartialPath = scriptPath</> (tool.Name)
+                    { ScriptContentShell.PartialPath = Path.Combine(scriptPath, tool.Name)
                       Runtime = runtime
                       RelativeToolPath = relativePath } |> ScriptContent.Shell ] )
 
@@ -342,13 +332,13 @@ module WrapperToolGeneration =
             |> List.map snd
             |> List.distinct
             |> List.collect (fun scriptPath ->
-                [ { ScriptAddToPATHWindows.PartialPath = scriptPath </> "add_to_PATH.cmd" }
+                [ { ScriptAddToPATHWindows.PartialPath = Path.Combine(scriptPath, "add_to_PATH.cmd") }
                   |> ScriptContent.WindowsAddToPATH
 
-                  { ScriptAddToPATHPowershell.PartialPath = scriptPath </> "add_to_PATH.ps1" }
+                  { ScriptAddToPATHPowershell.PartialPath = Path.Combine(scriptPath, "add_to_PATH.ps1") }
                   |> ScriptContent.PowershellAddToPATH
 
-                  { ScriptAddToPATHShell.PartialPath = scriptPath </> "add_to_PATH.sh" }
+                  { ScriptAddToPATHShell.PartialPath = Path.Combine(scriptPath, "add_to_PATH.sh") }
                   |> ScriptContent.ShellAddToPATH ] )
         
         [ yield! wrapperScripts
