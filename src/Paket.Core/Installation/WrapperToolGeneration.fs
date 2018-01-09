@@ -76,10 +76,14 @@ module RepoToolDiscovery =
                         |> Seq.toList
                     | FrameworkIdentifier.DotNetCoreApp _ ->
                         // for .net core, a console app is .dll
-                        // TODO configuration to specify the alias in the nupkg
+
                         // infer by same name of nupkg
+                        let isSameNameOfPackage s = Path.GetFileNameWithoutExtension(s).Contains(pkg.Name.Name)
+                        // infer by a .deps.json file
+                        let hasDepsJson s = File.Exists(Path.ChangeExtension(s, ".deps.json"))
+
                         Directory.EnumerateFiles(toolsTFMDir , "*.dll")
-                        |> Seq.filter (fun s -> Path.GetFileNameWithoutExtension(s).Contains(pkg.Name.Name))
+                        |> Seq.filter (fun s -> (isSameNameOfPackage s) || (hasDepsJson s))
                         |> Seq.map (asTool (RepoToolInNupkgKind.ByTFM tfm))
                         |> Seq.toList
                     | tfm ->
