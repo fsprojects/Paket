@@ -17,18 +17,18 @@ module RepoToolDiscovery =
         | OldStyle
         | ByTFM of tfm:FrameworkIdentifier
 
-    let applyPreferencesAboutRuntimeHost (pkgs: RepoToolInNupkg list) =
+    let getPreferenceFromEnv () =
+        match System.Environment.GetEnvironmentVariable("PAKET_REPOTOOL_PREFERRED_RUNTIME") |> Option.ofObj |> Option.bind FrameworkDetection.Extract with
+        | None -> FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_5)
+        | Some fw -> fw
 
-        let preference =
-            match System.Environment.GetEnvironmentVariable("PAKET_REPOTOOL_PREFERRED_RUNTIME") |> Option.ofObj |> Option.bind FrameworkDetection.Extract with
-            | None -> FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_5)
-            | Some fw -> fw
+    let applyPreferencesAboutRuntimeHost preferredFw (pkgs: RepoToolInNupkg list) =
 
         pkgs
         |> List.groupBy (fun p -> p.Name)
         |> List.collect (fun (name, tools) ->
             let byPreference tool =
-                match tool.Kind, preference with
+                match tool.Kind, preferredFw with
                 | RepoToolInNupkgKind.ByTFM(FrameworkIdentifier.DotNetCoreApp _), FrameworkIdentifier.DotNetCoreApp _ -> 1
                 | RepoToolInNupkgKind.ByTFM(FrameworkIdentifier.DotNetFramework _), FrameworkIdentifier.DotNetFramework _ -> 1
                 | RepoToolInNupkgKind.OldStyle, FrameworkIdentifier.DotNetFramework _ -> 2
@@ -39,7 +39,7 @@ module RepoToolDiscovery =
             | x :: xs ->
                 if verbose then
                     verbosefn "tool '%s' support multiple frameworks" name
-                    verbosefn "- choosen %A based on preference %A" x preference
+                    verbosefn "- choosen %A based on preference %A" x preferredFw
                     for d in xs do
                         verbosefn "- avaiable but ignored: %A" d
                 [x] )
@@ -286,7 +286,7 @@ module WrapperToolGeneration =
             allRepoToolPkgs
             |> List.collect (fun (g, x, y) ->
                 RepoToolDiscovery.avaiableTools x y
-                |> RepoToolDiscovery.applyPreferencesAboutRuntimeHost
+                |> RepoToolDiscovery.applyPreferencesAboutRuntimeHost (RepoToolDiscovery.getPreferenceFromEnv ())
                 |> List.map (fun tool -> g, tool) )
             |> List.map (fun (g, tool) ->
                     let dir =
