@@ -254,7 +254,7 @@ version
     1.0
 dependencies
     xunit 2.0.0
-    framework: net461
+    framework:net461
     framework: net45
         FSharp.Core 4.3.1
         My.OtherThing
@@ -299,6 +299,19 @@ dependencies
         | _ -> Assert.Fail()
     | _ -> Assert.Fail()
 
+[<Test>]
+let ``Fail on invalid targetFramework for dependencies`` () =
+    let fileContent = """type file
+id My.Thing
+dependencies
+    framework: AnswerIs42
+"""
+
+    shouldFail (fun _ ->
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream fileContent)
+        |> returnOrFail
+        |> ignore
+    )
 
 [<Test>]
 let ``Detect dependencies with CURRENTVERSION correctly`` () =
