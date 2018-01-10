@@ -407,15 +407,6 @@ to create them regardless:</p>
 
 <span class="k">nuget</span> FSharp.Core <span class="k">redirects</span>: off
 </code></pre></td></tr></table>
-<p>If you want Paket to always create a redirect then use the following:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
-
-<span class="k">nuget</span> FSharp.Core <span class="k">redirects</span>: force
-</code></pre></td></tr></table>
 <p>You can also override the redirects settings per project, from its
 <a href="references-files.html#Redirects-settings"><code>paket.references</code> file</a>.</p>
 <h3><a name="Referencing-specific-versions-in-projects" class="anchor" href="#Referencing-specific-versions-in-projects">Referencing specific versions in projects</a></h3>
