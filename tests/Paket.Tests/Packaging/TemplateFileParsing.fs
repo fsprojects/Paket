@@ -303,6 +303,12 @@ dependencies
 let ``Fail on invalid targetFramework for dependencies`` () =
     let fileContent = """type file
 id My.Thing
+authors Bob McBob
+description
+    A longer description
+    on two lines.
+version
+    1.0
 dependencies
     framework: AnswerIs42
 """
