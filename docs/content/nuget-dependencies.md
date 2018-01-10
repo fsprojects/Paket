@@ -360,14 +360,6 @@ source https://nuget.org/api/v2
 nuget FSharp.Core redirects: off
 ```
 
-If you want Paket to always create a redirect then use the following:
-
-```paket
-source https://nuget.org/api/v2
-
-nuget FSharp.Core redirects: force
-```
-
 You can also override the redirects settings per project, from its
 [`paket.references` file](references-files.html#Redirects-settings).
 
