@@ -1,6 +1,8 @@
+#### 5.129.2 - 2018-01-10
+* BUGFIX: Fix split of target framework monikers - https://github.com/fsprojects/Paket/issues/2970
 
 #### 5.129.1 - 2018-01-10
-* BUGFIX:  Fixed a few things when framework: lines are parsed in template - https://github.com/fsprojects/Paket/pull/2969
+* BUGFIX: Fixed a few things when framework: lines are parsed in template - https://github.com/fsprojects/Paket/pull/2969
 
 #### 5.129.0 - 2018-01-03
 * BUGFIX: CliTools should not be added to redirects - https://github.com/fsprojects/Paket/issues/2955
