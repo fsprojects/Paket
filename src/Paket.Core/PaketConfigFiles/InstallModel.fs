@@ -468,9 +468,6 @@ module InstallModel =
         getAllFiles installModel.CompileLibFolders (fun f -> f.Libraries |> Set.toSeq)
         |> Seq.cache
 
-    [<Obsolete("usually this should not be used")>]
-    let getCompileLibFolders (installModel: InstallModel) = installModel.CompileLibFolders
-
     /// This is for reference assemblies (new dotnetcore world)
     let getCompileReferences (target: TargetProfile) (installModel : InstallModel) =
         let results =
@@ -854,7 +851,7 @@ type InstallModel with
         InstallModel.emptyModel packageName packageVersion kind
 
     [<Obsolete("usually this should not be used")>]
-    member this.GetReferenceFolders() = InstallModel.getCompileLibFolders this
+    member this.GetReferenceFolders() = this.CompileLibFolders
 
 
     member this.GetLegacyReferences target = InstallModel.getLegacyReferences target this

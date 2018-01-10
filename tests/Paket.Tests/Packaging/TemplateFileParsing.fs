@@ -203,9 +203,10 @@ let ``Optional fields are read`` (fileContent : string) =
     sut.RequireLicenseAcceptance |> shouldEqual false
     sut.DevelopmentDependency |> shouldEqual false
     sut.Language |> shouldEqual (Some "en-gb")
-    sut.DependencyGroups |> shouldContain ({ Framework = None; Dependencies =
-        [PackageName "FSharp.Core",VersionRequirement.Parse("[4.3.1]")
-         PackageName "My.OtherThing",VersionRequirement.AllReleases] })
+    sut.DependencyGroups |> shouldContain ({ Framework = None;
+                                             Dependencies =
+                                                [PackageName "FSharp.Core",VersionRequirement.Parse("[4.3.1]")
+                                                 PackageName "My.OtherThing",VersionRequirement.AllReleases] })
     sut.ExcludedDependencies |> shouldContain (PackageName "Newtonsoft.Json")
     sut.ExcludedDependencies |> shouldContain (PackageName "Chessie")
     sut.ExcludedGroups |> shouldContain (GroupName "build")
