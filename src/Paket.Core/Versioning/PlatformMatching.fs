@@ -99,6 +99,8 @@ let rec getPlatformPenalty =
                 match targetPlatform, packagePlatform with
                 | TargetProfile.SinglePlatform (DotNetFramework _), TargetProfile.SinglePlatform (DotNetStandard _) -> Penalty_Netcore + penalty
                 | TargetProfile.SinglePlatform (DotNetStandard _), TargetProfile.SinglePlatform(DotNetFramework _) -> Penalty_Netcore + penalty
+                | TargetProfile.SinglePlatform (MonoAndroid _), TargetProfile.SinglePlatform(DotNetStandard _) -> Penalty_Netcore + penalty
+                | TargetProfile.SinglePlatform (DotNetStandard _), TargetProfile.SinglePlatform(MonoAndroid _) -> Penalty_Netcore + penalty
                 | TargetProfile.SinglePlatform _, TargetProfile.PortableProfile _ -> Penalty_Portable + penalty
                 | TargetProfile.PortableProfile _, TargetProfile.SinglePlatform _ -> Penalty_Portable + penalty
                 | _ -> penalty)
