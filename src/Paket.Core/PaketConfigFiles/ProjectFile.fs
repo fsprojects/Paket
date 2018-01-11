@@ -59,7 +59,8 @@ type ProjectOutputType =
 | Exe 
 | Library
 
-type ProjectLanguage = Unknown | CSharp | FSharp | VisualBasic | WiX | Nemerle | CPP | IronPython
+[<RequireQualifiedAccess>]
+type ProjectLanguage = Unknown | CSharp | FSharp | VisualBasic | WiX | Nemerle | CPP | IronPython | ServiceFabric
 
 module LanguageEvaluation =
     let private extractProjectTypeGuids (projectDocument:XmlDocument) =
@@ -110,29 +111,36 @@ module LanguageEvaluation =
             "{D499C55F-46C0-4FE1-8D05-02605C1891EA}" // IronPython
         ] |> List.map Guid.Parse |> Set.ofList
 
+    let private serviceFabric =
+        [
+            "{e1296024-58b6-4e25-843e-b9faa9b07be6}" // ServiceFabric
+        ] |> List.map Guid.Parse |> Set.ofList
+
     let private getGuidLanguage (guid:Guid) = 
         let isCsharp = csharpGuids.Contains(guid)
         let isVb = vbGuids.Contains(guid)
         let isFsharp = fsharpGuids.Contains(guid)
         let isNemerle = nemerleGuids.Contains(guid)
         let isIronPython = ironPythonGuids.Contains(guid)
+        let isServiceFabric = serviceFabric.Contains(guid)
 
         match (isCsharp, isVb, isFsharp, isNemerle, isIronPython) with
-        | (true, false, false, false, false) -> Some CSharp
-        | (false, true, false, false, false) -> Some VisualBasic
-        | (false, false, true, false, false) -> Some FSharp
-        | (false, false, false, true, false) -> Some Nemerle
-        | (false, false, false, false, true) -> Some IronPython
+        | (true, false, false, false, false) -> Some ProjectLanguage.CSharp
+        | (false, true, false, false, false) -> Some ProjectLanguage.VisualBasic
+        | (false, false, true, false, false) -> Some ProjectLanguage.FSharp
+        | (false, false, false, true, false) -> Some ProjectLanguage.Nemerle
+        | (false, false, false, false, true) -> Some ProjectLanguage.IronPython
         | _ -> None
 
     let private getLanguageFromExtension = function
-        | ".csproj" -> Some CSharp
-        | ".vbproj" -> Some VisualBasic
-        | ".fsproj" -> Some FSharp
-        | ".vcxproj" -> Some CPP
-        | ".wixproj" -> Some WiX
-        | ".nproj"  -> Some Nemerle
-        | ".pyproj"  -> Some IronPython
+        | ".csproj" -> Some ProjectLanguage.CSharp
+        | ".vbproj" -> Some ProjectLanguage.VisualBasic
+        | ".fsproj" -> Some ProjectLanguage.FSharp
+        | ".vcxproj" -> Some ProjectLanguage.CPP
+        | ".wixproj" -> Some ProjectLanguage.WiX
+        | ".nproj"  -> Some ProjectLanguage.Nemerle
+        | ".pyproj"  -> Some ProjectLanguage.IronPython
+        | ".sfproj"  -> Some ProjectLanguage.ServiceFabric
         | _ -> None
 
     let private getLanguageFromFileName (fileName : string) =
@@ -154,7 +162,7 @@ module LanguageEvaluation =
 
         match languageGroups with
         | [language] -> language
-        | _ -> Unknown
+        | _ -> ProjectLanguage.Unknown
 
 /// Contains methods to read and manipulate project files.
 type ProjectFile = 
@@ -171,7 +179,7 @@ type ProjectFile =
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module ProjectFile =
-    let supportedEndings = [ ".csproj"; ".fsproj"; ".vbproj"; ".wixproj"; ".nproj"; ".vcxproj"; ".pyproj"]
+    let supportedEndings = [ ".csproj"; ".fsproj"; ".vbproj"; ".wixproj"; ".nproj"; ".vcxproj"; ".pyproj"; ".sfproj"]
 
     let isSupportedFile (fi:FileInfo) =
         supportedEndings

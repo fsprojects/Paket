@@ -17,6 +17,7 @@ let ``Language is detected from filename``() =
     evaluate ".fsproj" |> shouldEqual ProjectLanguage.FSharp
     evaluate ".vcxproj" |> shouldEqual ProjectLanguage.CPP
     evaluate ".vbproj" |> shouldEqual ProjectLanguage.VisualBasic
+    evaluate ".sfproj" |> shouldEqual ProjectLanguage.ServiceFabric
     evaluate ".nproj" |> shouldEqual ProjectLanguage.Nemerle
 
 let createProjectXml (projectTypeGuids : string option) : XmlDocument =
