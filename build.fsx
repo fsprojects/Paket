@@ -354,7 +354,7 @@ Target "SignAssemblies" (fun _ ->
     filesToSign
         |> Seq.iter (fun executable ->
             let signtool = currentDirectory @@ "tools" @@ "SignTool" @@ "signtool.exe"
-            let args = sprintf "sign /f %s /t http://timestamp.comodoca.com/authenticode %s" pfx executable
+            let args = sprintf "sign /f %s %s" pfx executable //sprintf "sign /f %s /t http://timestamp.comodoca.com/authenticode %s" pfx executable
             let result =
                 ExecProcess (fun info ->
                     info.FileName <- signtool
