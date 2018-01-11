@@ -1,4 +1,4 @@
-#### 5.130.0 - 2018-01-11
+#### 5.130.1 - 2018-01-11
 * Use ServiceFabric projects - https://github.com/fsprojects/Paket/issues/2977
 * BUGFIX: Fix split of target framework monikers - https://github.com/fsprojects/Paket/issues/2970
 * BUGFIX: Fixed a few things when framework: lines are parsed in template - https://github.com/fsprojects/Paket/pull/2969
