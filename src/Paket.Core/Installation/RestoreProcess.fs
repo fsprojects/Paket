@@ -228,10 +228,11 @@ let createAlternativeNuGetConfig (projectFile:FileInfo) =
      <clear />
   </disabledPackageSources>
 </configuration>"""
-    if not alternativeConfigFileInfo.Exists || File.ReadAllText(alternativeConfigFileInfo.FullName) <> config then 
-        File.WriteAllText(alternativeConfigFileInfo.FullName,config) 
-        if verbose then
-            tracefn " - %s created" alternativeConfigFileInfo.FullName
+    if false then // TODO: Figure restore issue out
+        if not alternativeConfigFileInfo.Exists || File.ReadAllText(alternativeConfigFileInfo.FullName) <> config then 
+            File.WriteAllText(alternativeConfigFileInfo.FullName,config) 
+            if verbose then
+                tracefn " - %s created" alternativeConfigFileInfo.FullName
 
 let createPaketPropsFile (cliTools:ResolvedPackage seq) restoreSuccess (fileInfo:FileInfo) =
     let cliParts =
@@ -424,7 +425,7 @@ let RestoreNewSdkProject lockFile resolved groups (projectFile:ProjectFile) =
     let referencesFile = FindOrCreateReferencesFile projectFile
     let projectFileInfo = FileInfo projectFile.FileName
 
-    // TODO: createAlternativeNuGetConfig projectFileInfo
+    createAlternativeNuGetConfig projectFileInfo
     createProjectReferencesFiles lockFile projectFile referencesFile resolved groups
     referencesFile
 
