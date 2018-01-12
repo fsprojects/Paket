@@ -221,18 +221,21 @@ let createAlternativeNuGetConfig (projectFile:FileInfo) =
     
     let config = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
-  <packageSources>
-    <clear />
-  </packageSources>
-  <disabledPackageSources>
-     <clear />
-  </disabledPackageSources>
+  //<packageSources>
+  //  <clear />
+  //</packageSources>
+  //<disabledPackageSources>
+  //   <clear />
+  //</disabledPackageSources>
 </configuration>"""
-    if false then // TODO: Figure restore issue out
-        if not alternativeConfigFileInfo.Exists || File.ReadAllText(alternativeConfigFileInfo.FullName) <> config then 
-            File.WriteAllText(alternativeConfigFileInfo.FullName,config) 
-            if verbose then
-                tracefn " - %s created" alternativeConfigFileInfo.FullName
+    let config = """<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+</configuration>"""
+
+    if not alternativeConfigFileInfo.Exists || File.ReadAllText(alternativeConfigFileInfo.FullName) <> config then 
+        File.WriteAllText(alternativeConfigFileInfo.FullName,config) 
+        if verbose then
+            tracefn " - %s created" alternativeConfigFileInfo.FullName
 
 let createPaketPropsFile (cliTools:ResolvedPackage seq) restoreSuccess (fileInfo:FileInfo) =
     let cliParts =
