@@ -1,3 +1,6 @@
+#### 5.130.4 - 2018-01-12
+* Disable alternative Nuget.Config for now
+
 #### 5.130.3 - 2018-01-11
 * Use ServiceFabric projects - https://github.com/fsprojects/Paket/issues/2977
 * BUGFIX: Handle Nougat compilation (v7/7.1) target for Xamarin.Android when installing Xamarin.Forms - https://github.com/fsprojects/Paket/issues/2809

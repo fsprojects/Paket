@@ -424,7 +424,7 @@ let RestoreNewSdkProject lockFile resolved groups (projectFile:ProjectFile) =
     let referencesFile = FindOrCreateReferencesFile projectFile
     let projectFileInfo = FileInfo projectFile.FileName
 
-    createAlternativeNuGetConfig projectFileInfo
+    // TODO: createAlternativeNuGetConfig projectFileInfo
     createProjectReferencesFiles lockFile projectFile referencesFile resolved groups
     referencesFile
 

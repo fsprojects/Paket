@@ -5,10 +5,8 @@ open System.Text
 open System.Xml
 open System.Xml.Linq
 open System.IO
-open System.Reflection
 open Paket.Xml.Linq
 open System.Xml.XPath
-open Logging
 
 /// Represents a binding redirection
 type BindingRedirect = 
@@ -102,9 +100,7 @@ let internal getProjectFilesWithPaketReferences getFiles rootPath  =
     |> Seq.choose(fun directory -> getFiles(directory, "*proj", SearchOption.TopDirectoryOnly) |> Seq.tryFind (Path.GetExtension >> isDotNetProject))
     |> Seq.toList
 
-let private getExistingConfigFiles getFiles rootPath = 
-    getFiles(rootPath, "*.config", SearchOption.AllDirectories)
-    |> Seq.filter isAppOrWebConfig
+
 let private baseConfig = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
 </configuration>
@@ -191,6 +187,7 @@ let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindin
         |> getProjectFilesWithPaketReferences Directory.GetFiles
         |> Seq.map ProjectFile.TryLoad
         |> Seq.choose id
+
     for p in projects do
         applyBindingRedirects p
 
