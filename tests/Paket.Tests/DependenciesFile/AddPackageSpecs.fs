@@ -877,3 +877,25 @@ nuget FAKE @~> 1.2
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should add clitool packages``() = 
+    let config = """source http://www.nuget.org/api/v2
+
+nuget Castle.Windsor-log4net ~> 3.2
+nuget Rx-Main ~> 2.0
+nuget FAKE = 1.1
+nuget SignalR = 3.3.2"""
+
+    let cfg = DependenciesFile.FromSource(config).Add(Constants.MainDependencyGroup, PackageName "dotnet-fable","1.3.7", InstallSettings.Default, PackageRequirementKind.DotnetCliTool)
+    
+    let expected = """source http://www.nuget.org/api/v2
+
+nuget Castle.Windsor-log4net ~> 3.2
+clitool dotnet-fable 1.3.7
+nuget Rx-Main ~> 2.0
+nuget FAKE = 1.1
+nuget SignalR = 3.3.2"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
