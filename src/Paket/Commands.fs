@@ -30,6 +30,7 @@ type AddArgs =
     | [<Unique>] Keep_Minor
     | [<Unique>] Keep_Patch
     | [<Unique>] Touch_Affected_Refs
+    | [<Unique;AltCommandLine("-t")>] Type of packageType:AddArgsDependencyType
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -59,6 +60,10 @@ with
             | Keep_Minor -> "only allow updates that preserve the minor version"
             | Keep_Patch -> "only allow updates that preserve the patch version"
             | Touch_Affected_Refs -> "touch project files referencing affected dependencies to help incremental build tools detecting the change"
+            | Type _ -> "the type of dependency: nuget|clitool (default: nuget)"
+and [<RequireQualifiedAccess>] AddArgsDependencyType =
+    | Nuget
+    | Clitool
 
 type ConfigArgs =
     | [<Unique;CustomCommandLine("add-credentials")>] AddCredentials of key_or_URL:string
