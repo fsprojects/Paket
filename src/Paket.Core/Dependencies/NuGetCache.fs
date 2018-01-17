@@ -16,6 +16,7 @@ open Paket.Requirements
 open FSharp.Polyfill
 open System.Runtime.ExceptionServices
 
+open System.Net
 open System.Threading.Tasks
 
 
@@ -499,7 +500,10 @@ let private tryUrlOrBlacklist (f: _ -> Async<'a>) (isOk : 'a -> bool) (source:Nu
     | FirstCall t ->
         FirstCall (t |> Task.Map (fun (l, r) -> l, (r :?> 'a)))
 
-let tryAndBlacklistUrl doBlackList doWarn (source:NugetSource) (tryAgain : 'a -> bool) (f : string -> Async<'a>) (urls: UrlToTry list) : Async<'a>=
+type QueryResult = Choice<ODataSearchResult,System.Exception>
+
+let tryAndBlacklistUrl doBlackList doWarn (source:NugetSource) 
+    (tryAgain : QueryResult -> bool) (f : string -> Async<QueryResult>) (urls: UrlToTry list) : Async<QueryResult>=
     async {
         let! tasks, resultIndex =
             urls
@@ -529,7 +533,17 @@ let tryAndBlacklistUrl doBlackList doWarn (source:NugetSource) (tryAgain : 'a ->
                     else
                         return Choice1Of3 res
                 })
-            |> Async.tryFindSequential (function | Choice1Of3 _ -> true | _ -> false)
+            |> Async.tryFindSequential
+                (fun result ->
+                    match result with
+                    | Choice1Of3 result ->
+                        match result with       // as per NuGetV2.fs ...
+                        | Choice1Of2 _ -> true  // this is the only valid result ...
+                        | Choice2Of2 except ->  
+                            match except with  // but NotFound/404 should allow other query to succeed
+                            | RequestStatus HttpStatusCode.NotFound -> false
+                            | _ -> true        // for any other exceptions, cancel the rest and return                         
+                    | _ -> false )
 
         match resultIndex with
         | Some i ->
