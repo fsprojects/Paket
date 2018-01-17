@@ -26,7 +26,7 @@ module DependenciesFileSerializer =
             | Specific x when strategy = None -> x.ToString()
             | Specific x -> "= " + x.ToString()
             | VersionRange.Range(_, from, _, _) 
-                    when DependenciesFileParser.parseVersionRequirement ("~> " + from.ToString() + preReleases) = versionRequirement -> 
+                    when DependenciesFileParser.parseVersionRequirement ("~> " + from.ToString() + " " + preReleases) = versionRequirement -> 
                         "~> " + from.ToString()
             | _ -> versionRequirement.ToString()
             

@@ -66,8 +66,7 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
                 let changes =
                     lockFile.GetGroupedResolution()
                     |> Seq.map (fun k -> k.Key)
-                    |> Seq.filter (fun (g,_) -> g = groupName)
-                    |> Seq.filter (fun (_, p) -> filter.Match p)
+                    |> Seq.filter (fun (g, p) -> g = groupName && filter.Match p)
                     |> Set.ofSeq
                     |> fun s -> 
                         match filter with

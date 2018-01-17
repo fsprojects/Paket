@@ -1,5 +1,5 @@
-#### 5.130.6 - 2018-01-12
-* Disable alternative Nuget.Config for now
+#### 5.130.7 - 2018-01-12
+* BUGFIX: Fixed "Could not parse version range" - https://github.com/fsprojects/Paket/issues/2988
 
 #### 5.130.3 - 2018-01-11
 * Use ServiceFabric projects - https://github.com/fsprojects/Paket/issues/2977
