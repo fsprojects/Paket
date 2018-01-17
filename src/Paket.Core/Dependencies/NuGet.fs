@@ -366,7 +366,7 @@ let rec GetPackageDetails alternativeProjectRoot root force (parameters:GetPacka
         try
             return! getPackageDetails alternativeProjectRoot root force parameters
         with
-        | exn ->
+        | exn when (not force) ->
             if verbose then
                 traceWarnfn "GetPackageDetails failed: %O" exn
             else
