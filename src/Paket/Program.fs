@@ -28,11 +28,7 @@ let processWithValidationEx printUsage silent validateF commandF result =
         traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
         printUsage result
 
-#if NETCOREAPP1_0
-        // Environment.ExitCode not supported in netcoreapp1.0
-#else
         Environment.ExitCode <- 1
-#endif
     else
         try
             commandF result
@@ -820,11 +816,7 @@ let main() =
             handleCommand silent (results.GetSubCommand())
     with
     | exn when not (exn :? System.NullReferenceException) ->
-#if NETCOREAPP1_0
-        // Environment.ExitCode not supported
-#else
         Environment.ExitCode <- 1
-#endif
         traceErrorfn "Paket failed with"
         if Environment.GetEnvironmentVariable "PAKET_DETAILED_ERRORS" = "true" then
             printErrorExt true true false exn
