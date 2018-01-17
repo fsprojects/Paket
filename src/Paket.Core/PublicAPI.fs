@@ -151,7 +151,7 @@ type Dependencies(dependenciesFileName: string) =
             fun () -> 
                     AddProcess.Add(dependenciesFileName, groupName, PackageName(package.Trim()), version,
                                      InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None),
-                                     interactive, installAfter, runResolver))
+                                     interactive, installAfter, runResolver, Requirements.PackageRequirementKind.Package))
 
    /// Adds the given package with the given version to the dependencies file.
     member this.AddToProject(groupName, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, projectName: string, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
@@ -164,7 +164,7 @@ type Dependencies(dependenciesFileName: string) =
             this.RootPath,
             fun () -> AddProcess.AddToProject(dependenciesFileName, groupName, PackageName package, version,
                                               InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None),
-                                              projectName, installAfter, runResolver))
+                                              projectName, installAfter, runResolver, Requirements.PackageRequirementKind.Package))
 
     /// Adds credentials for a Nuget feed
     member this.AddCredentials(source: string, username: string, password : string, authType : string) : unit =
