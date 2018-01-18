@@ -28,11 +28,7 @@ let processWithValidationEx printUsage silent validateF commandF result =
         traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
         printUsage result
 
-#if NETCOREAPP1_0
-        // Environment.ExitCode not supported in netcoreapp1.0
-#else
         Environment.ExitCode <- 1
-#endif
     else
         try
             commandF result
@@ -208,17 +204,21 @@ let add (results : ParseResults<_>) =
         (results.TryGetResult <@ AddArgs.Project @>,
          results.TryGetResult <@ AddArgs.Project_Legacy @>)
         |> legacyOption results (ReplaceArgument("--project", "project"))
+    let packageKind = 
+        match results.GetResult (<@ AddArgs.Type @>, defaultValue = AddArgsDependencyType.Nuget) with
+        | AddArgsDependencyType.Nuget -> Requirements.PackageRequirementKind.Package
+        | AddArgsDependencyType.Clitool -> Requirements.PackageRequirementKind.DotnetCliTool
 
     match project with
     | Some projectName ->
         Dependencies
             .Locate()
-            .AddToProject(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not)
+            .AddToProject(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
     | None ->
         let interactive = results.Contains <@ AddArgs.Interactive @>
         Dependencies
             .Locate()
-            .Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not)
+            .Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
 
 let validateConfig (results : ParseResults<_>) =
     let credential = results.Contains <@ ConfigArgs.AddCredentials @>
@@ -820,11 +820,7 @@ let main() =
             handleCommand silent (results.GetSubCommand())
     with
     | exn when not (exn :? System.NullReferenceException) ->
-#if NETCOREAPP1_0
-        // Environment.ExitCode not supported
-#else
         Environment.ExitCode <- 1
-#endif
         traceErrorfn "Paket failed with"
         if Environment.GetEnvironmentVariable "PAKET_DETAILED_ERRORS" = "true" then
             printErrorExt true true false exn

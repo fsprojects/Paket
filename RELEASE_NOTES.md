@@ -1,4 +1,7 @@
-#### 5.130.7 - 2018-01-12
+#### 5.131.1 - 2018-01-18
+* New parameter `--type` for `paket add` - https://github.com/fsprojects/Paket/pull/2990
+* WORKAROUND: Disable NuGt.Config to allow runtime deps restore - https://github.com/fsprojects/Paket/issues/2964
+* BUGFIX: Fixed PaketExePath with shell script (without extension) - https://github.com/fsprojects/Paket/pull/2989
 * BUGFIX: Fixed "Could not parse version range" - https://github.com/fsprojects/Paket/issues/2988
 
 #### 5.130.3 - 2018-01-11

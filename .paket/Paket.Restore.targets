@@ -23,6 +23,9 @@
     <_PaketExeExtension>$([System.IO.Path]::GetExtension("$(PaketExePath)"))</_PaketExeExtension>
     <PaketCommand Condition=" '$(_PaketExeExtension)' == '.dll' ">dotnet "$(PaketExePath)"</PaketCommand>
 
+    <!-- no extension is a shell script -->
+    <PaketCommand Condition=" '$(_PaketExeExtension)' == '' ">"$(PaketExePath)"</PaketCommand>
+
     <PaketBootStrapperExePath Condition=" '$(PaketBootStrapperExePath)' == '' AND Exists('$(PaketRootPath)paket.bootstrapper.exe')">$(PaketRootPath)paket.bootstrapper.exe</PaketBootStrapperExePath>
     <PaketBootStrapperExePath Condition=" '$(PaketBootStrapperExePath)' == '' ">$(PaketToolsPath)paket.bootstrapper.exe</PaketBootStrapperExePath>
     <PaketBootStrapperCommand Condition=" '$(OS)' == 'Windows_NT'">"$(PaketBootStrapperExePath)"</PaketBootStrapperCommand>
