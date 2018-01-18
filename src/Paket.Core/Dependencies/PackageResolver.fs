@@ -91,7 +91,7 @@ type PackageResolution = Map<PackageName, ResolvedPackage>
 type VersionCache =
   { Version : SemVerInfo; Sources : PackageSource list; AssumedVersion : bool }
     static member ofParams version sources isAssumed =
-        { Version = version; Sources = sources; AssumedVersion = isAssumed }
+        { Version = version; Sources = sources |> List.distinctBy (fun s -> s.Url); AssumedVersion = isAssumed }
 
 type ResolverStep = {
     Relax: bool
