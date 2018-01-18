@@ -354,7 +354,7 @@ let ``#1458 should not install conflicting deps from different groups``() =
     with
     | exn when exn.Message.Contains "Package Nancy is referenced in different versions" -> ()
 
-[<Test>]
+[<Test;Flaky>]
 let ``#2335 should install deps from different groups when using conditions``() =
     let scenario = "i002335-razorengine"
     install scenario |> ignore

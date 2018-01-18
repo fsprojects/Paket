@@ -42,7 +42,7 @@ let ``#2294 Cannot pin NETStandard.Library = 1.6.0``() =
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NETStandard.Library"].Version
     |> shouldEqual (SemVer.Parse "1.6")
 
-[<Test>]
+[<Test; Flaky>]
 let ``#2294 pin NETStandard.Library = 1.6.0 Strategy Workaround``() =
     let lockFile = update "i002294-withstrategy"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NETStandard.Library"].Version

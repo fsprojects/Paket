@@ -322,3 +322,6 @@ let isPackageCachedWithOnlyLowercaseNames (name: string) =
             |> List.ofSeq
         packageNameSegments = [ lowercaseName ]
     | _ -> false
+
+[<AttributeUsage(AttributeTargets.Method, AllowMultiple=false)>]
+type FlakyAttribute() = inherit CategoryAttribute()
