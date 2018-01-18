@@ -1,5 +1,7 @@
 #### 5.132.0 - 2018-01-18
-* BUGFIX: Allow NuGet2 async query fallback to skip NotFound/404 - https://github.com/fsprojects/Paket/pull/2993 
+* BUGFIX: Allow NuGet2 async query fallback to skip NotFound/404 - https://github.com/fsprojects/Paket/pull/2993
+* COSMETICS: Reduce duplicate warnings for invalid framework requirements - https://github.com/fsprojects/Paket/pull/2996
+* COSMETICS: Reduce next-link warning to once per method/endpoint, omitting the query - https://github.com/fsprojects/Paket/pull/2994
 
 #### 5.131.1 - 2018-01-18
 * New parameter `--type` for `paket add` - https://github.com/fsprojects/Paket/pull/2990
