@@ -108,6 +108,18 @@ let LocalRootForTempData =
 
 let GitRepoCacheFolder = Path.Combine(LocalRootForTempData,".paket","git","db")
 
+let LocalRootForGlobalBin =
+    //TODO LocalApplicationData is not the best for linux/mac
+    match getEnvDir Environment.SpecialFolder.LocalApplicationData with
+    | Some path -> Some path
+    | None ->
+        Logging.traceWarnfn "Could not detect a root for our (user specific) binaries. Try to set the 'LocalAppData' environment variable!."
+        None
+
+let GlobalBinFolder =
+    LocalRootForGlobalBin
+    |> Option.map (fun path -> Path.Combine(path,".paket","bin"))
+
 let [<Literal>] GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES"
 
 let UserNuGetPackagesFolder = 
