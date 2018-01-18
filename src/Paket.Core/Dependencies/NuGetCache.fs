@@ -145,16 +145,22 @@ type NuGetPackageCache =
 
 let inline normalizeUrl(url:string) = url.Replace("https://","http://").Replace("www.","")
 
-let getCacheFiles cacheVersion nugetURL (packageName:PackageName) (version:SemVerInfo) =
+let getCacheFiles force cacheVersion nugetURL (packageName:PackageName) (version:SemVerInfo) =
     let h = nugetURL |> normalizeUrl |> hash |> abs
     let prefix = sprintf "%O.%s.s%d" packageName (version.Normalize()) h
     let packageUrl = sprintf "%s_v%s.json" prefix cacheVersion
-    let newFile = Path.Combine(Constants.NuGetCacheFolder,packageUrl)
-    let oldFiles =
-        Directory.EnumerateFiles(Constants.NuGetCacheFolder, sprintf "%s*.json" prefix)
-        |> Seq.filter (fun p -> Path.GetFileName p <> packageUrl)
-        |> Seq.toList
-    FileInfo(newFile), oldFiles
+    let newFile = Path.Combine(Constants.NuGetCacheFolder, packageUrl)
+    if force then // cleanup only on slow-path
+        try
+            let oldFiles =
+                Directory.EnumerateFiles(Constants.NuGetCacheFolder, sprintf "%s*.json" prefix)
+                |> Seq.filter (fun p -> Path.GetFileName p <> packageUrl)
+                |> Seq.toList
+            for f in oldFiles do
+                File.Delete f
+        with 
+        | ex -> traceErrorfn "Cannot cleanup '%s': %O" (sprintf "%s*.json" prefix) ex
+    FileInfo(newFile)
 
 type ODataSearchResult =
     | EmptyResult
@@ -167,9 +173,7 @@ module ODataSearchResult =
         | Match r -> r
 
 let tryGetDetailsFromCache force nugetURL (packageName:PackageName) (version:SemVerInfo) : ODataSearchResult option =
-    let cacheFile, oldFiles = getCacheFiles NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
-    for f in oldFiles do
-        File.Delete f
+    let cacheFile = getCacheFiles force NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
     if not force && cacheFile.Exists then
         try
             let json = File.ReadAllText(cacheFile.FullName)
@@ -205,15 +209,26 @@ let tryGetDetailsFromCache force nugetURL (packageName:PackageName) (version:Sem
         None
 
 let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (get : unit -> ODataSearchResult Async) : ODataSearchResult Async =
-    let cacheFile, oldFiles = getCacheFiles NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
-    for f in oldFiles do
-        File.Delete f
+    let cacheFile = getCacheFiles force NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
     let get() =
         async {
             let! result = get()
             match result with
             | ODataSearchResult.Match result ->
                 File.WriteAllText(cacheFile.FullName,JsonConvert.SerializeObject(result))
+                let serialized = JsonConvert.SerializeObject(result)
+                let cachedData =
+                    try
+                        if cacheFile.Exists then
+                            use cacheReader = cacheFile.OpenText()
+                            cacheReader.ReadToEnd()
+                        else ""
+                    with 
+                    | ex ->
+                        traceWarnfn "Cannot read %O: %O" cacheFile ex 
+                        ""
+                if String.CompareOrdinal(serialized, cachedData) <> 0 then
+                    File.WriteAllText(cacheFile.FullName, serialized)
             | _ ->
                 // TODO: Should we cache 404? Probably not.
                 ()
