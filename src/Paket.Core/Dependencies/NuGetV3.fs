@@ -479,9 +479,9 @@ let loadFromCacheOrGetDetails (force:bool)
                     return false,ODataSearchResult.Match cachedObject
             with exn ->
                 if verboseWarnings then
-                    eprintfn "Possible Performance degradation, could not retrieve '%O' from cache: %O" packageName exn
+                    traceWarnfn "Possible Performance degradation, could not retrieve '%O' from cache: %O" packageName exn
                 else
-                    eprintfn "Possible Performance degradation, could not retrieve '%O' from cache: %s" packageName exn.Message
+                    traceWarnIfNotBefore ("NuGetV3 n/a", packageName, exn.Message) "Possible Performance degradation, could not retrieve '%O' from cache: %s" packageName exn.Message
                 let! details = getPackageDetails source packageName version
                 return true,details
         else

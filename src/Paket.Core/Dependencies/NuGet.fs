@@ -276,7 +276,18 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
                                 traceWarnfn "I/O error for source '%O': %s" source exn.Message
                             return! trySelectFirst (exn :> exn :: errors) rest
                         | e ->
-                            traceWarnfn "Source '%O' exception: %O" source e
+                            let mutable information = ""
+                            match e.GetBaseException() with 
+                            | :? RequestFailedException as re -> 
+                                match re.Info with 
+                                | Some requestinfo -> if requestinfo.StatusCode = HttpStatusCode.NotFound then
+                                                         information <- re.Message
+                                | None -> ignore()                                
+                            | _ -> ignore()
+                            if information <> "" then
+                                traceWarnIfNotBefore (source, information) "Source '%O' exception: %O" source information
+                            else 
+                                traceWarnfn "Source '%O' exception: %O" source e                                
                             //let capture = ExceptionDispatchInfo.Capture e
                             return! trySelectFirst (e :: errors) rest
                     | [] -> return None, errors
@@ -301,7 +312,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
                             return! tryV3 nugetSource force
                         with
                         | exn ->
-                            eprintfn "Possible Performance degradation, V3 was not working: %s" exn.Message
+                            traceWarnfn "Possible Performance degradation, V3 was not working: %s" exn.Message
                             if verbose then
                                 printfn "Error while using V3 API: %O" exn
 
