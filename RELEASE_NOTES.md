@@ -1,3 +1,6 @@
+#### 5.132.3 - 2018-01-18
+* PERFORMANCE: Avoid duplicates in package source cache - https://github.com/fsprojects/Paket/pull/2999
+
 #### 5.132.2 - 2018-01-18
 * COSMETICS: Only overwrite NuGet metadata cache when needed - https://github.com/fsprojects/Paket/pull/2998
 
