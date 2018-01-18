@@ -1,3 +1,6 @@
+#### 5.132.1 - 2018-01-18
+* COSMETICS: Trace not-found and blacklist warnings as actual warnings - https://github.com/fsprojects/Paket/pull/2997
+
 #### 5.132.0 - 2018-01-18
 * BUGFIX: Allow NuGet2 async query fallback to skip NotFound/404 - https://github.com/fsprojects/Paket/pull/2993
 * COSMETICS: Reduce duplicate warnings for invalid framework requirements - https://github.com/fsprojects/Paket/pull/2996
