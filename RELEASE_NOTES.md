@@ -1,3 +1,6 @@
+#### 5.132.2 - 2018-01-18
+* COSMETICS: Only overwrite NuGet metadata cache when needed - https://github.com/fsprojects/Paket/pull/2998
+
 #### 5.132.1 - 2018-01-18
 * COSMETICS: Trace not-found and blacklist warnings as actual warnings - https://github.com/fsprojects/Paket/pull/2997
 

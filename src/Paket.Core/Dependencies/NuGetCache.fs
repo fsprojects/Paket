@@ -215,7 +215,6 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
             let! result = get()
             match result with
             | ODataSearchResult.Match result ->
-                File.WriteAllText(cacheFile.FullName,JsonConvert.SerializeObject(result))
                 let serialized = JsonConvert.SerializeObject(result)
                 let cachedData =
                     try
@@ -225,7 +224,7 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
                         else ""
                     with 
                     | ex ->
-                        traceWarnfn "Cannot read %O: %O" cacheFile ex 
+                        traceWarnfn "Can't read cache file %O:%s Message: %O" cacheFile Environment.NewLine ex 
                         ""
                 if String.CompareOrdinal(serialized, cachedData) <> 0 then
                     File.WriteAllText(cacheFile.FullName, serialized)
