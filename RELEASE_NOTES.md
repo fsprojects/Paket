@@ -1,7 +1,6 @@
-#### 5.130.8 - 2018-01-17
+#### 5.131.0 - 2018-01-18
+* WORKAROUND: Disable NuGt.Config to allow runtime deps restore - https://github.com/fsprojects/Paket/issues/2964
 * BUGFIX: Fixed PaketExePath with shell script (without extension) - https://github.com/fsprojects/Paket/pull/2989
-
-#### 5.130.7 - 2018-01-17
 * BUGFIX: Fixed "Could not parse version range" - https://github.com/fsprojects/Paket/issues/2988
 
 #### 5.130.3 - 2018-01-11
