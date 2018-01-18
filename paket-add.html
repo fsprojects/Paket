@@ -92,11 +92,13 @@
 <span class="l">31: </span>
 <span class="l">32: </span>
 <span class="l">33: </span>
+<span class="l">34: </span>
+<span class="l">35: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="sh">paket add [--help] [--version &lt;version constraint&gt;] [--project &lt;path&gt;] [--group &lt;name&gt;]
           [--create-new-binding-files] [--force] [--interactive] [--redirects] [--clean-redirects]
           [--no-install] [--no-resolve] [--keep-major] [--keep-minor] [--keep-patch]
-          [--touch-affected-refs] &lt;package ID&gt;
+          [--touch-affected-refs] [--type &lt;packageType&gt;] &lt;package ID&gt;
 
 NUGET:
 
@@ -121,6 +123,8 @@ OPTIONS:
     --keep-patch          only allow updates that preserve the patch version
     --touch-affected-refs touch project files referencing affected dependencies to help incremental
                           build tools detecting the change
+    --type, -t &lt;packageType&gt;
+                          the type of dependency: nuget|clitool (default: nuget)
     --silent, -s          suppress console output
     --verbose, -v         print detailed information to the console
     --log-file &lt;path&gt;     print output to a file
