@@ -152,3 +152,6 @@ let changeWorkingDir newPath =
         member x.Dispose() = 
             System.Environment.CurrentDirectory <- oldPath
     }
+
+[<AttributeUsage(AttributeTargets.Method, AllowMultiple=false)>]
+type FlakyAttribute() = inherit NUnit.Framework.CategoryAttribute()
