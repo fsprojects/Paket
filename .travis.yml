@@ -25,6 +25,7 @@ mono:
 matrix:
   allow_failures:
     - mono: latest
+    - env: PAKET_TESTSUITE_FLAKYTESTS=true
 
 branches:
   except:
