@@ -1,3 +1,6 @@
+#### 5.132.4 - 2018-01-19
+* USABILITY: Trace detailed messages for missing package errors - https://github.com/fsprojects/Paket/pull/3001
+
 #### 5.132.3 - 2018-01-18
 * PERFORMANCE: Avoid duplicates in package source cache - https://github.com/fsprojects/Paket/pull/2999
 
