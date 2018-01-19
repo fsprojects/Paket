@@ -591,7 +591,8 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
         | _ when Array.isEmpty trial1.Versions |> not ->
             return trial1.Requests
         | _ ->
-            traceWarn "Trial1 (NuGet.GetVersions) did not yield any results, trying again."
+            let requested = trial1.Requests |> Seq.collect (fun i -> i.Requests) |> Seq.map (fun r -> "   " + r.Request.Url)
+            traceWarnfn "Trial1 (NuGet.GetVersions) did not yield any results, trying again.%s%O" Environment.NewLine (String.Join(Environment.NewLine, requested)) 
             let! trial2 = trial true
             match trial2 with
             | _ when Array.isEmpty trial2.Versions |> not ->
