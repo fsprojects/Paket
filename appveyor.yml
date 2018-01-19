@@ -5,21 +5,6 @@ init:
 build_script:
   - cmd: build.cmd BuildPackage
 
-on_finish:
-  - ps: >-
-      $wc = New-Object 'System.Net.WebClient'
-      $testResults = @(
-        '.\tests_result\net\Paket.Tests\TestResult.xml'
-        '.\tests_result\net\Paket.IntegrationTests\TestResult.xml'
-        '.\tests_result\netcore\Paket.Tests\TestResult.trx'
-        '.\tests_result\netcore\Paket.IntegrationTests\TestResult.trx'
-      )
-      Foreach ($path in $testResults) {
-        If (Test-Path $path) {
-          $wc.UploadFile("https://ci.appveyor.com/api/testresults/nunit3/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $path))
-        }
-      }
-
 test: off
 version: 0.0.1.{build}
 artifacts:
@@ -47,3 +32,19 @@ environment:
 matrix:
   allow_failures:
     - PAKET_TESTSUITE_FLAKYTESTS: true
+
+on_finish:
+  - ps: >-
+      $wc = New-Object 'System.Net.WebClient';
+      $testResults = @(
+        '.\tests_result\net\Paket.Tests\TestResult.xml'
+        '.\tests_result\net\Paket.IntegrationTests\TestResult.xml'
+        '.\tests_result\netcore\Paket.Tests\TestResult.trx'
+        '.\tests_result\netcore\Paket.IntegrationTests\TestResult.trx'
+      )
+  - ps: >-
+      Foreach ($path in $testResults) {
+        If (Test-Path $path) {
+          $wc.UploadFile("https://ci.appveyor.com/api/testresults/nunit3/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $path))
+        }
+      }
