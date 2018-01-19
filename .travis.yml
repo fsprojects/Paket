@@ -1,28 +1,34 @@
 language: csharp
+dist: trusty
+
+sudo: false
 
 env:
- - HOME=/home/travis APPDATA=/home/travis LocalAppData=/home/travis TRAVIS_STAGE=0 # DISABLE_NETCORE=true
- - HOME=/home/travis APPDATA=/home/travis LocalAppData=/home/travis TRAVIS_STAGE=1 # DISABLE_NETCORE=true
+  global:
+    - HOME=/home/travis
+    - APPDATA=/home/travis
+    - LocalAppData=/home/travis
+  matrix:
+    # run .net integration tests
+    - SkipIntegrationTestsNetCore=true PAKET_TESTSUITE_FLAKYTESTS=false
+    # run .net core integration tests
+    - SkipIntegrationTestsNet=true PAKET_TESTSUITE_FLAKYTESTS=false
+    # just flaky tests
+    - PAKET_TESTSUITE_FLAKYTESTS=true
 
-# dependencies (netcore)
-addons:
-  apt:
-    packages:
-       - libunwind8
-       - msbuild
-
-sudo: false  # use the new container-based Travis infrastructure
-#sudo: required
-dist: trusty # Ubuntu 14.04
+dotnet: 2.1.3
 
 mono:
-  - nightly
+  - 5.4.1
   - latest
-#  - 5.2.0 Note: 5.2 is really unstable, no sense in wasting build resources
+
+matrix:
+  allow_failures:
+    - mono: latest
 
 branches:
   except:
     - gh-pages
 
-script: 
-  - ./build.sh RunIntegrationTests
+script:
+  - ./build.sh BuildPackage
