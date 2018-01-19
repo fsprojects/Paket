@@ -366,6 +366,9 @@ let ``#2335 should install deps from different groups when using conditions``() 
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
 
+    //lots of downloaded files => big disk size, better cleanup if test pass
+    System.IO.Directory.Delete(scenarioTempPath scenario, true)
+
 [<Test>]
 let ``#1442 should not warn on SonarLint``() =
     let result = paket "install" "i001442-dont-warn"
