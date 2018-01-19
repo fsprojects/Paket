@@ -244,8 +244,7 @@ Target "DotnetTest" (fun _ ->
     DotNetCli.Test (fun c ->
         { c with
             Project = "tests/Paket.Tests.preview3/Paket.Tests.fsproj"
-            AdditionalArgs = [ 
-              sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.Tests/TestResult.trx" |> Path.GetFullPath) ]
+            AdditionalArgs = [ sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.Tests/TestResult.trx" |> Path.GetFullPath) ]
             ToolPath = dotnetExePath
         })
 )
@@ -259,9 +258,9 @@ Target "RunIntegrationTestsNetCore" (fun _ ->
         { c with
             Project = "integrationtests/Paket.IntegrationTests.preview3/Paket.IntegrationTests.fsproj"
             ToolPath = dotnetExePath
-            AdditionalArgs = [ 
-              "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
-              sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]
+            AdditionalArgs =
+              [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
+                sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]
             TimeOut = TimeSpan.FromMinutes 50.
         })
 )
