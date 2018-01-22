@@ -148,9 +148,10 @@
       </DotNetCliToolReference>
     </ItemGroup>
 
+    <!-- Disabled for now until we know what to do with runtime deps - https://github.com/fsprojects/Paket/issues/2964
     <PropertyGroup>
       <RestoreConfigFile>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).NuGet.Config</RestoreConfigFile>
-    </PropertyGroup>
+    </PropertyGroup> -->
 
   </Target>
 

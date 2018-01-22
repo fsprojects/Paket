@@ -16,6 +16,7 @@ open Paket.Requirements
 open FSharp.Polyfill
 open System.Runtime.ExceptionServices
 
+open System.Net
 open System.Threading.Tasks
 
 
@@ -144,16 +145,22 @@ type NuGetPackageCache =
 
 let inline normalizeUrl(url:string) = url.Replace("https://","http://").Replace("www.","")
 
-let getCacheFiles cacheVersion nugetURL (packageName:PackageName) (version:SemVerInfo) =
+let getCacheFiles force cacheVersion nugetURL (packageName:PackageName) (version:SemVerInfo) =
     let h = nugetURL |> normalizeUrl |> hash |> abs
     let prefix = sprintf "%O.%s.s%d" packageName (version.Normalize()) h
     let packageUrl = sprintf "%s_v%s.json" prefix cacheVersion
-    let newFile = Path.Combine(Constants.NuGetCacheFolder,packageUrl)
-    let oldFiles =
-        Directory.EnumerateFiles(Constants.NuGetCacheFolder, sprintf "%s*.json" prefix)
-        |> Seq.filter (fun p -> Path.GetFileName p <> packageUrl)
-        |> Seq.toList
-    FileInfo(newFile), oldFiles
+    let newFile = Path.Combine(Constants.NuGetCacheFolder, packageUrl)
+    if force then // cleanup only on slow-path
+        try
+            let oldFiles =
+                Directory.EnumerateFiles(Constants.NuGetCacheFolder, sprintf "%s*.json" prefix)
+                |> Seq.filter (fun p -> Path.GetFileName p <> packageUrl)
+                |> Seq.toList
+            for f in oldFiles do
+                File.Delete f
+        with 
+        | ex -> traceErrorfn "Cannot cleanup '%s': %O" (sprintf "%s*.json" prefix) ex
+    FileInfo(newFile)
 
 type ODataSearchResult =
     | EmptyResult
@@ -166,9 +173,7 @@ module ODataSearchResult =
         | Match r -> r
 
 let tryGetDetailsFromCache force nugetURL (packageName:PackageName) (version:SemVerInfo) : ODataSearchResult option =
-    let cacheFile, oldFiles = getCacheFiles NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
-    for f in oldFiles do
-        File.Delete f
+    let cacheFile = getCacheFiles force NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
     if not force && cacheFile.Exists then
         try
             let json = File.ReadAllText(cacheFile.FullName)
@@ -204,15 +209,25 @@ let tryGetDetailsFromCache force nugetURL (packageName:PackageName) (version:Sem
         None
 
 let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (get : unit -> ODataSearchResult Async) : ODataSearchResult Async =
-    let cacheFile, oldFiles = getCacheFiles NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
-    for f in oldFiles do
-        File.Delete f
+    let cacheFile = getCacheFiles force NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
     let get() =
         async {
             let! result = get()
             match result with
             | ODataSearchResult.Match result ->
-                File.WriteAllText(cacheFile.FullName,JsonConvert.SerializeObject(result))
+                let serialized = JsonConvert.SerializeObject(result)
+                let cachedData =
+                    try
+                        if cacheFile.Exists then
+                            use cacheReader = cacheFile.OpenText()
+                            cacheReader.ReadToEnd()
+                        else ""
+                    with 
+                    | ex ->
+                        traceWarnfn "Can't read cache file %O:%s Message: %O" cacheFile Environment.NewLine ex 
+                        ""
+                if String.CompareOrdinal(serialized, cachedData) <> 0 then
+                    File.WriteAllText(cacheFile.FullName, serialized)
             | _ ->
                 // TODO: Should we cache 404? Probably not.
                 ()
@@ -499,7 +514,10 @@ let private tryUrlOrBlacklist (f: _ -> Async<'a>) (isOk : 'a -> bool) (source:Nu
     | FirstCall t ->
         FirstCall (t |> Task.Map (fun (l, r) -> l, (r :?> 'a)))
 
-let tryAndBlacklistUrl doBlackList doWarn (source:NugetSource) (tryAgain : 'a -> bool) (f : string -> Async<'a>) (urls: UrlToTry list) : Async<'a>=
+type QueryResult = Choice<ODataSearchResult,System.Exception>
+
+let tryAndBlacklistUrl doBlackList doWarn (source:NugetSource) 
+    (tryAgain : QueryResult -> bool) (f : string -> Async<QueryResult>) (urls: UrlToTry list) : Async<QueryResult>=
     async {
         let! tasks, resultIndex =
             urls
@@ -524,12 +542,22 @@ let tryAndBlacklistUrl doBlackList doWarn (source:NugetSource) (tryAgain : 'a ->
                     let! (isOk, res) = task |> Async.AwaitTask
                     if not isOk then
                         if doWarn then
-                            eprintfn "Possible Performance degradation, blacklist '%s'" url.InstanceUrl
+                            traceWarnIfNotBefore url.InstanceUrl "Possible Performance degradation, blacklist '%s'" url.InstanceUrl
                         return Choice2Of3 res
                     else
                         return Choice1Of3 res
                 })
-            |> Async.tryFindSequential (function | Choice1Of3 _ -> true | _ -> false)
+            |> Async.tryFindSequential
+                (fun result ->
+                    match result with
+                    | Choice1Of3 result ->
+                        match result with       // as per NuGetV2.fs ...
+                        | Choice1Of2 _ -> true  // this is the only valid result ...
+                        | Choice2Of2 except ->  
+                            match except with  // but NotFound/404 should allow other query to succeed
+                            | RequestStatus HttpStatusCode.NotFound -> false
+                            | _ -> true        // for any other exceptions, cancel the rest and return                         
+                    | _ -> false )
 
         match resultIndex with
         | Some i ->

@@ -446,7 +446,8 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
         let optimized, warnings =
             addFrameworkRestrictionsToDependencies dependencies dependencyGroups
         for warning in warnings do
-            Logging.traceWarnfn "%s" (warning.Format packageName version)
+            let message = warning.Format packageName version
+            Logging.traceWarnIfNotBefore message "%s" message
 
         return
             { SerializedDependencies = []
@@ -478,9 +479,9 @@ let loadFromCacheOrGetDetails (force:bool)
                     return false,ODataSearchResult.Match cachedObject
             with exn ->
                 if verboseWarnings then
-                    eprintfn "Possible Performance degradation, could not retrieve '%O' from cache: %O" packageName exn
+                    traceWarnfn "Possible Performance degradation, could not retrieve '%O' from cache: %O" packageName exn
                 else
-                    eprintfn "Possible Performance degradation, could not retrieve '%O' from cache: %s" packageName exn.Message
+                    traceWarnIfNotBefore ("NuGetV3 n/a", packageName, exn.Message) "Possible Performance degradation, could not retrieve '%O' from cache: %s" packageName exn.Message
                 let! details = getPackageDetails source packageName version
                 return true,details
         else

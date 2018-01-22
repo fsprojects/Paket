@@ -520,6 +520,30 @@ let failIfNoSuccess (resp:HttpResponseMessage) = async {
         raise (RequestFailedException(info, null))
     () }
 
+let rec requestStatus (ex:Exception) = 
+    match ex with 
+    | null -> None
+    | :? RequestFailedException as rfex ->
+        match rfex.Info with 
+        | Some info -> Some info.StatusCode
+        | _ -> None 
+    | :? WebException as wfex -> 
+        match wfex.Response with
+        | :? HttpWebResponse as webresp -> 
+            Some webresp.StatusCode 
+        | _ -> None
+    | ex -> requestStatus ex.InnerException
+    
+// active pattern for nested HttpStatusCode
+let (|RequestStatus|_|) (ex:Object) =
+    match ex with
+    | :? Exception as except -> requestStatus except
+    | :? HttpWebResponse as resp -> Some resp.StatusCode 
+    | :? RequestFailedInfo as info -> Some info.StatusCode
+    | null -> None
+    | _ -> None
+         
+
 #if USE_WEB_CLIENT_FOR_UPLOAD
 type System.Net.WebClient with
     member x.UploadFileAsMultipart (url : Uri) filename =

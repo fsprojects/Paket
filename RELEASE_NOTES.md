@@ -1,3 +1,20 @@
+#### 5.132.4 - 2018-01-19
+* USABILITY: Trace detailed messages for missing package errors - https://github.com/fsprojects/Paket/pull/3001
+
+#### 5.132.3 - 2018-01-18
+* PERFORMANCE: Avoid duplicates in package source cache - https://github.com/fsprojects/Paket/pull/2999
+
+#### 5.132.2 - 2018-01-18
+* COSMETICS: Only overwrite NuGet metadata cache when needed - https://github.com/fsprojects/Paket/pull/2998
+
+#### 5.132.1 - 2018-01-18
+* COSMETICS: Trace not-found and blacklist warnings as actual warnings - https://github.com/fsprojects/Paket/pull/2997
+
+#### 5.132.0 - 2018-01-18
+* BUGFIX: Allow NuGet2 async query fallback to skip NotFound/404 - https://github.com/fsprojects/Paket/pull/2993
+* COSMETICS: Reduce duplicate warnings for invalid framework requirements - https://github.com/fsprojects/Paket/pull/2996
+* COSMETICS: Reduce next-link warning to once per method/endpoint, omitting the query - https://github.com/fsprojects/Paket/pull/2994
+
 #### 5.131.1 - 2018-01-18
 * New parameter `--type` for `paket add` - https://github.com/fsprojects/Paket/pull/2990
 * WORKAROUND: Disable NuGt.Config to allow runtime deps restore - https://github.com/fsprojects/Paket/issues/2964

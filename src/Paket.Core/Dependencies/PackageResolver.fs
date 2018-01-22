@@ -91,7 +91,7 @@ type PackageResolution = Map<PackageName, ResolvedPackage>
 type VersionCache =
   { Version : SemVerInfo; Sources : PackageSource list; AssumedVersion : bool }
     static member ofParams version sources isAssumed =
-        { Version = version; Sources = sources; AssumedVersion = isAssumed }
+        { Version = version; Sources = sources |> List.distinctBy (fun s -> s.Url); AssumedVersion = isAssumed }
 
 type ResolverStep = {
     Relax: bool
@@ -1000,7 +1000,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                 |> fun a -> Async.StartAsTaskProperCancel(a, cancellationToken = ct))
             |> ResolverTaskMemory.ofWork)
 
-    let getVersionsBlock resolverStrategy versionParams =
+    let getVersionsBlock resolverStrategy versionParams (currentStep:ResolverStep) =
         seq {
             let preferred = getPreferredVersionsRaw resolverStrategy versionParams
             yield! preferred
@@ -1011,7 +1011,12 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                     getAndReport versionParams.Package.Sources Profile.BlockReason.GetVersion workHandle 
                     |> Seq.toList
                 with e ->
-                    raise (Exception (sprintf "Unable to retrieve package versions for '%O'" versionParams.Package.PackageName, e))
+                    let newline = Environment.NewLine
+                    let opened = String.Join(newline + "   ", currentStep.OpenRequirements |> Seq.sort)
+                    let closed = String.Join(newline + "   ", currentStep.ClosedRequirements |> Seq.sort)
+                    let requirements = sprintf "-- CLOSED --%s   %s%s-- OPEN ----%s   %s" newline closed newline newline opened
+                    let message = sprintf "Unable to retrieve package versions for '%O'%s%s" versionParams.Package.PackageName Environment.NewLine requirements
+                    raise (Exception (message, e))
             let sorted =
                 match resolverStrategy with
                 | ResolverStrategy.Max -> List.sortDescending versions
@@ -1129,7 +1134,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
 
                 let currentConflict =
                     let getVersionsF packName =
-                        getVersionsBlock ResolverStrategy.Max (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName)
+                        getVersionsBlock ResolverStrategy.Max (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName) currentStep
 
                     if Seq.isEmpty conflicts then
                         { currentConflict with
@@ -1150,8 +1155,9 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                 if not (Seq.isEmpty conflicts) then
                     fuseConflicts currentRequirement currentStep.FilteredVersions currentConflict priorConflictSteps conflicts
                 else
+                    let getCurrentVersionBlock = fun strategy args -> getVersionsBlock strategy args currentStep
                     let compatibleVersions,globalOverride,tryRelaxed =
-                        getCompatibleVersions currentStep groupName currentRequirement getVersionsBlock
+                        getCompatibleVersions currentStep groupName currentRequirement getCurrentVersionBlock
                                 currentConflict.GlobalOverride
                                 globalStrategyForDirectDependencies
                                 globalStrategyForTransitives
@@ -1303,7 +1309,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                             step (Step((currentConflict,nextStep,currentRequirement), (currentConflict,currentStep,currentRequirement,compatibleVersions,flags)::priorConflictSteps)) stackpack currentConflict.VersionsToExplore flags
                         else
                             let getVersionsF packName =
-                                getVersionsBlock ResolverStrategy.Max (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName)
+                                getVersionsBlock ResolverStrategy.Max (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName) currentStep
 
                             let conflictingPackageName,vr = 
                                 match Seq.tryHead conflictingResolvedPackages with
@@ -1339,7 +1345,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
     let currentRequirement = getCurrentRequirement packageFilter startingStep.OpenRequirements (Dictionary())
 
     let status =
-        let getVersionsF packName = getVersionsBlock ResolverStrategy.Max (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName)
+        let getVersionsF packName = getVersionsBlock ResolverStrategy.Max (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName) startingStep 
         ResolutionRaw.ConflictRaw { ResolveStep = startingStep; RequirementSet = Set.empty; Requirement = currentRequirement; GetPackageVersions = getVersionsF }
 
 
