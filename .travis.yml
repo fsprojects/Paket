@@ -25,7 +25,10 @@ mono:
 matrix:
   allow_failures:
     - mono: latest
+    # flaky test are expected to fail from time to time
     - env: PAKET_TESTSUITE_FLAKYTESTS=true
+    # sporadic MonoBtlsException: Ssl error:1000007d:SSL routines:OPENSSL_internal:CERTIFICATE_VERIFY_FAILED
+    - env: SkipIntegrationTestsNetCore=true PAKET_TESTSUITE_FLAKYTESTS=false
 
 branches:
   except:
