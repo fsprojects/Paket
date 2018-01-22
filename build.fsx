@@ -279,6 +279,7 @@ Target "RunTests" (fun _ ->
         { p with
             ShadowCopy = false
             WorkingDir = "tests_result/net/Paket.Tests" |> Path.GetFullPath
+            Agents = Some 1 //workaround for https://github.com/nunit/nunit-console/issues/219 
             TimeOut = TimeSpan.FromMinutes 20. })
 )
 
