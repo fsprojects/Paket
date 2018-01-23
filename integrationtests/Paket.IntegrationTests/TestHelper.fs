@@ -13,27 +13,6 @@ open Paket.Logging
 let scenarios = System.Collections.Generic.List<_>()
 let isLiveUnitTesting = AppDomain.CurrentDomain.GetAssemblies() |> Seq.exists (fun a -> a.GetName().Name = "Microsoft.CodeAnalysis.LiveUnitTesting.Runtime")
 
-let partitionForTravis scenario =
-
-    // travis executes tests in three stages:
-    // * -1: build only
-    // * 0: first half of the scenario tests
-    // * 1: second half of the scenario tests
-    //
-    // use the hash of the scenario name to key between stage 0 and 1.
-    let currentTravisStage =
-        match Environment.GetEnvironmentVariable "TRAVIS_STAGE" with
-        | null | "" -> None
-        | sInt ->
-            match Int32.TryParse sInt with
-            | true, iState -> Some iState
-            | _ -> None
-    
-    if currentTravisStage <> None &&
-       currentTravisStage <> Some (scenario.GetHashCode() % 2)
-    then Assert.Ignore("ignored in this part of the travis build")
-    
-
 let dotnetToolPath =
     match Environment.GetEnvironmentVariable "DOTNET_EXE_PATH" with
     | null | "" -> "dotnet"
@@ -65,8 +44,6 @@ let cleanupAllScenarios() =
 
 
 let prepare scenario =
-    partitionForTravis scenario
-
     if isLiveUnitTesting then Assert.Inconclusive("Integration tests are disabled when in a Live-Unit-Session")
     if scenarios.Count > 10 then
         cleanupAllScenarios()
@@ -203,7 +180,6 @@ let private fromMessages msgs =
 let directPaketInPath command scenarioPath = directPaketInPathEx command scenarioPath |> fromMessages
 
 let directPaketEx command scenario =
-    partitionForTravis scenario
     directPaketInPathEx command (scenarioTempPath scenario)
 
 let directPaket command scenario = directPaketEx command scenario |> fromMessages
@@ -322,3 +298,6 @@ let isPackageCachedWithOnlyLowercaseNames (name: string) =
             |> List.ofSeq
         packageNameSegments = [ lowercaseName ]
     | _ -> false
+
+[<AttributeUsage(AttributeTargets.Method, AllowMultiple=false)>]
+type FlakyAttribute() = inherit CategoryAttribute()

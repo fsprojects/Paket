@@ -354,7 +354,7 @@ let ``#1458 should not install conflicting deps from different groups``() =
     with
     | exn when exn.Message.Contains "Package Nancy is referenced in different versions" -> ()
 
-[<Test>]
+[<Test;Flaky>]
 let ``#2335 should install deps from different groups when using conditions``() =
     let scenario = "i002335-razorengine"
     install scenario |> ignore
@@ -365,6 +365,9 @@ let ``#2335 should install deps from different groups when using conditions``() 
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
+
+    //lots of downloaded files => big disk size, better cleanup if test pass
+    System.IO.Directory.Delete(scenarioTempPath scenario, true)
 
 [<Test>]
 let ``#1442 should not warn on SonarLint``() =

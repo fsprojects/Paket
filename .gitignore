@@ -196,6 +196,7 @@ System.Management.Automation.dll
 docs/tools/FSharp.Formatting.svclog
 docs/content/paket.exe
 TestResult.xml
+*.trx
 tests/Paket.Tests/NuGetConfig/PasswordConfig.xml
 paket.local
 dotnetcore
