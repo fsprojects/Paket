@@ -36,17 +36,23 @@ let ``#2289 Paket 4.x install command takes hours to complete``() =
     nunitVersion
     |> shouldBeSmallerThan (SemVer.Parse "3.0")
 
-[<Test>]
+[<Test; Flaky>]
 let ``#2294 Cannot pin NETStandard.Library = 1.6.0``() =
     let lockFile = update "i002294-pin-netstd16"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NETStandard.Library"].Version
     |> shouldEqual (SemVer.Parse "1.6")
 
-[<Test>]
+    //lots of downloaded files => big disk size, better cleanup if test pass
+    System.IO.Directory.Delete(scenarioTempPath "i002294-pin-netstd16", true)
+
+[<Test; Flaky>]
 let ``#2294 pin NETStandard.Library = 1.6.0 Strategy Workaround``() =
     let lockFile = update "i002294-withstrategy"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NETStandard.Library"].Version
     |> shouldEqual (SemVer.Parse "1.6")
+
+    //lots of downloaded files => big disk size, better cleanup if test pass
+    System.IO.Directory.Delete(scenarioTempPath "i002294-withstrategy", true)
 
 [<Test>]
 let ``#2922 paket can jump out of loop of doom``() =

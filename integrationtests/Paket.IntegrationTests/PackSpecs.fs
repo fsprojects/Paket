@@ -537,7 +537,7 @@ let ``#2765 pack single template does not evaluate other template`` () =
     let scenario = "i002765-evaluate-only-single-template"
     let rootPath = scenarioTempPath scenario
     let outPath = Path.Combine(rootPath, "out")
-    let templatePath = Path.Combine(rootPath, "projectA", "paket.template")
+    let templatePath = Path.Combine(rootPath, "ProjectA", "paket.template")
     Assert.DoesNotThrow(fun () -> paket ("pack --template " + templatePath + " \"" + outPath + "\"") scenario |> ignore)
     CleanDir rootPath    
 

@@ -28,6 +28,9 @@ let expected = """
 </Choose>"""
 
 [<Test>]
+#if NETCOREAPP2_0
+[<Flaky>]
+#endif
 let ``should generate Xml for FSharp.Data.SqlClient 1.4.4``() = 
     if not isMonoRuntime then // TODO - figure out why nuspec content is different on Mono
         ensureDir()
