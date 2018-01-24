@@ -1,6 +1,7 @@
 ﻿namespace Paket
 
 module DependenciesFileParser =
+    open System.Numerics
     open System
     open System.IO
     open Requirements
@@ -25,29 +26,36 @@ module DependenciesFileParser =
         | PaketStrategy -> Some ResolverStrategy.Max
         | NoStrategy -> None
 
-    let twiddle (minimum:string) =
-        let promote index (values:string array) =
-            let parsed, number = Int32.TryParse values.[index]
-            if parsed then values.[index] <- (number + 1).ToString()
-            if values.Length > 1 then values.[values.Length - 1] <- "0"
-            values
-
-        let parts = minimum.Split '.'
-        let penultimateItem = Math.Max(parts.Length - 2, 0)
-        let promoted = parts |> promote penultimateItem
-        String.Join(".", promoted)
+    let twiddle (minimum:SemVerInfo) =
+        let inline isNumeric item = 
+            match BigInteger.TryParse item with
+            | true, number -> Some(number)
+            | false, _ -> None
+            
+        let mutable fragments = 
+            ((minimum.AsString.Split '-').[0].Split '.')
+            |> Array.map isNumeric 
+            |> Array.takeWhile (fun i -> i.IsSome) 
+            |> Array.choose (fun i -> i)
+            
+        let proIndex = Math.Max(fragments.Length - 2, 0)
+        fragments.[proIndex] <- fragments.[proIndex] + BigInteger.One
+        
+        let promoted = fragments |> Array.take (proIndex + 1)
+        String.Join(".", promoted |> Array.map (fun i -> i.ToString()))
 
     let parseVersionRequirement (text : string) : VersionRequirement =
         try
-            let inline parsePrerelease (versions:SemVerInfo list) (texts : string list) = 
-                match texts |> List.filter ((<>) "") with
+            let inline parsePrerelease (versions:SemVerInfo list) (texts : string list) =
+                let items = texts |> List.filter ((<>) "") |> List.distinct
+                match items with
                 | [] -> 
                     versions
                     |> List.collect (function { PreRelease = Some x } -> [x.Name] | _ -> [])
                     |> List.distinct
                     |> function [] -> PreReleaseStatus.No | xs -> PreReleaseStatus.Concrete xs
                 | [x] when String.equalsIgnoreCase x "prerelease" -> PreReleaseStatus.All
-                | _ -> PreReleaseStatus.Concrete texts
+                | _ -> PreReleaseStatus.Concrete items
 
             if String.IsNullOrWhiteSpace text then VersionRequirement(VersionRange.AtLeast "0",PreReleaseStatus.No) else
 
@@ -61,11 +69,11 @@ module DependenciesFileParser =
                 let v2 = SemVer.Parse v2
                 VersionRequirement(VersionRange.Range(VersionRangeBound.Including,v1,v2,VersionRangeBound.Including),parsePrerelease [v1; v2] rest)
             |  "~>" :: v1 :: ">=" :: v2 :: rest -> 
-                let v1 = SemVer.Parse(twiddle v1)
+                let v1 = SemVer.Parse(twiddle (SemVer.Parse v1))
                 let v2 = SemVer.Parse v2
                 VersionRequirement(VersionRange.Range(VersionRangeBound.Including,v2,v1,VersionRangeBound.Excluding),parsePrerelease [v1; v2] rest)
             |  "~>" :: v1 :: ">" :: v2 :: rest ->
-                let v1 = SemVer.Parse(twiddle v1)
+                let v1 = SemVer.Parse(twiddle (SemVer.Parse v1))
                 let v2 = SemVer.Parse v2
                 VersionRequirement(VersionRange.Range(VersionRangeBound.Excluding,v2,v1,VersionRangeBound.Excluding),parsePrerelease [v1; v2] rest)
             |  ">" :: v1 :: "<" :: v2 :: rest -> 
@@ -100,7 +108,7 @@ module DependenciesFileParser =
                     VersionRequirement(VersionRange.Maximum v,parsePrerelease [v] rest)
                 | "~>", minimum :: rest -> 
                     let v1 = SemVer.Parse minimum
-                    VersionRequirement(VersionRange.Between(minimum,twiddle minimum),parsePrerelease [v1] rest)
+                    VersionRequirement(VersionRange.Between(minimum,twiddle v1),parsePrerelease [v1] rest)
                 | _, version :: rest -> 
                     let v = SemVer.Parse version
                     VersionRequirement(VersionRange.Specific v,parsePrerelease [v] rest)
