@@ -240,6 +240,37 @@ let github (results : ParseResults<_>) =
             .Locate()
             .AddGithub(group, repository, file, version)
 
+
+let addTool (results : ParseResults<_>) =
+    let packageName =
+        let arg = results.TryGetResult <@ AddToolArgs.NuGet @>
+        require arg (fun _ -> results.GetResult <@ AddToolArgs.NuGet @>)
+    let version =
+        let arg = results.TryGetResult <@ AddToolArgs.Version @>
+        defaultArg arg ""
+    let force = results.Contains <@ AddToolArgs.Force @>
+    let redirects = false
+    let createNewBindingFiles = false
+    let cleanBindingRedirects = false
+    let group =
+        results.TryGetResult <@ AddToolArgs.Group @>
+    let noInstall = results.Contains <@ AddToolArgs.No_Install @>
+    let noResolve = results.Contains <@ AddToolArgs.No_Resolve @>
+    let semVerUpdateMode =
+        if results.Contains <@ AddToolArgs.Keep_Patch @> then SemVerUpdateMode.KeepPatch else
+        if results.Contains <@ AddToolArgs.Keep_Minor @> then SemVerUpdateMode.KeepMinor else
+        if results.Contains <@ AddToolArgs.Keep_Major @> then SemVerUpdateMode.KeepMajor else
+        SemVerUpdateMode.NoRestriction
+    let touchAffectedRefs = false
+    let packageKind = Requirements.PackageRequirementKind.RepoTool
+
+    let interactive = results.Contains <@ AddToolArgs.Interactive @>
+
+    Dependencies
+        .Locate()
+        .Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
+
+
 let validateConfig (results : ParseResults<_>) =
     let credential = results.Contains <@ ConfigArgs.AddCredentials @>
     let token = results.Contains <@ ConfigArgs.AddToken @>
@@ -816,6 +847,7 @@ let handleCommand silent command =
     | GenerateNuspec r -> processCommand silent generateNuspec r
     | Why r -> processCommand silent why r
     | Restriction r -> processCommand silent restriction r
+    | AddTool r -> processCommand silent addTool r
     | Info r -> processCommand silent info r
     // global options; list here in order to maintain compiler warnings
     // in case of new subcommands added

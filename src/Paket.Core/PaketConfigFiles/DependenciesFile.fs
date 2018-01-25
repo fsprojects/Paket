@@ -42,6 +42,7 @@ module DependenciesFileSerializer =
             match kind with
             | PackageRequirementKind.DotnetCliTool -> "clitool"
             | PackageRequirementKind.Package -> "nuget"
+            | PackageRequirementKind.RepoTool -> "repotool"
         sprintf "%s %O%s%s" kindString packageName (if version <> "" then " " + version else "") (if s <> "" then " " + s else s)
 
     let githubString repository file version =

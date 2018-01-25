@@ -86,6 +86,37 @@ with
             match this with
             | Add(_) -> "add github repository"
 
+            | No_Install -> "do not modify projects"
+            | Keep_Major -> "only allow updates that preserve the major version"
+            | Keep_Minor -> "only allow updates that preserve the minor version"
+            | Keep_Patch -> "only allow updates that preserve the patch version"
+
+type AddToolArgs =
+    | [<ExactlyOnce;MainCommand>] NuGet of package_ID:string
+    | [<Unique;AltCommandLine("-V")>] Version of version_constraint:string    
+    | [<Unique;AltCommandLine("-g")>] Group of name:string
+    | [<Unique;AltCommandLine("-f")>] Force
+    | [<Unique;AltCommandLine("-i")>] Interactive
+    | [<Unique>] No_Install
+    | [<Unique>] No_Resolve
+    | [<Unique>] Keep_Major
+    | [<Unique>] Keep_Minor
+    | [<Unique>] Keep_Patch
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | NuGet(_) -> "NuGet package ID"
+            | Group(_) -> "add the dependency to a group (default: Main group)"
+            | Version(_) -> "dependency version constraint"
+            | Force -> "force download and reinstallation of all dependencies"
+            | Interactive -> "ask for every project whether to add the dependency"
+            | No_Resolve -> "do not resolve"
+            | No_Install -> "do not modify projects"
+            | Keep_Major -> "only allow updates that preserve the major version"
+            | Keep_Minor -> "only allow updates that preserve the minor version"
+            | Keep_Patch -> "only allow updates that preserve the patch version"
+
 type ConfigArgs =
     | [<Unique;CustomCommandLine("add-credentials")>] AddCredentials of key_or_URL:string
     | [<Unique;CustomCommandLine("add-token")>] AddToken of key_or_URL:string * token:string
@@ -661,6 +692,7 @@ type Command =
     | [<CustomCommandLine("generate-load-scripts")>]    GenerateLoadScripts of ParseResults<GenerateLoadScriptsArgs>
     | [<CustomCommandLine("why")>]                      Why of ParseResults<WhyArgs>
     | [<CustomCommandLine("restriction")>]              Restriction of ParseResults<RestrictionArgs>
+    | [<CustomCommandLine("add-tool")>]                 AddTool of ParseResults<AddToolArgs>
     | [<CustomCommandLine("info")>]                     Info of ParseResults<InfoArgs>
 with
     interface IArgParserTemplate with
@@ -693,6 +725,7 @@ with
             | GenerateLoadScripts _ -> "generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS"
             | Why _ -> "determine why a dependency is required"
             | Restriction _ -> "resolve a framework restriction and show details"
+            | AddTool _ -> "add a new tool"
             | Info _ -> "info"
             | Log_File _ -> "print output to a file"
             | Silent -> "suppress console output"
