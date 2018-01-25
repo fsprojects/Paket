@@ -291,13 +291,15 @@ module WrapperToolGeneration =
                 |> RepoToolDiscovery.applyPreferencesAboutRuntimeHost (RepoToolDiscovery.getPreferenceFromEnv ())
                 |> List.map (fun tool -> g, tool) )
             |> List.map (fun (g, tool) ->
-                    let dir =
-                        if g.Name = Constants.MainDependencyGroup then
-                            "bin"
-                        else
-                            Path.Combine(g.Name.Name, "bin")
-
-                    let scriptPath = Path.Combine(Constants.PaketFilesFolderName, dir)
+                    let scriptPath =
+                        match g.Options.Settings.RepotoolsBinDirectory with
+                        | Some path ->
+                            Path.Combine(lockFile.RootPath, path) |> Path.GetFullPath
+                        | None ->
+                            if g.Name = Constants.MainDependencyGroup then
+                                Path.Combine(Constants.PaketFilesFolderName,"bin")
+                            else
+                                Path.Combine(Constants.PaketFilesFolderName, g.Name.Name, "bin")
                     tool, scriptPath)
 
         let wrapperScripts =
