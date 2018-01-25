@@ -1070,3 +1070,18 @@ let ``should parse lock file with repo tool``() =
     LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings lockFileWithRepoTool)
+
+[<Test>]
+let ``should parse repotools bin dir lock file``() = 
+    let lockFile = """REPOTOOLS-BIN-DIRECTORY: in/my/out
+NUGET
+  remote: "D:\code\temp with space"
+    Castle.Windsor (2.1)
+"""
+    let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
+    let packages = List.rev lockFile.Packages
+    
+    packages.Length |> shouldEqual 1
+
+    lockFile.Options.Settings.RepotoolsBinDirectory
+    |> shouldEqual (Some "in/my/out")
