@@ -1657,3 +1657,20 @@ let ``should read config with repo tool``() =
     tool.Kind |> shouldEqual (PackageRequirementKind.RepoTool)
     nuget.Kind |> shouldEqual (PackageRequirementKind.Package)
     
+    
+let configWithRepotoolDir = """
+repotools_bin_dir: path/to/bin
+
+source https://www.nuget.org/api/v2
+
+nuget Argu
+"""
+
+[<Test>]
+let ``should read repotools_bin_dir config``() = 
+    let cfg = DependenciesFile.FromSource(configWithRepotoolDir)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.RepotoolsBinDirectory
+    |> shouldEqual (Some "path/to/bin")
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources 
+    |> shouldEqual [PackageSources.DefaultNuGetSource]

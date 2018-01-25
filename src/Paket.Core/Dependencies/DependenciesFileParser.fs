@@ -210,6 +210,7 @@ module DependenciesFileParser =
     | Redirects of BindingRedirectsSettings option
     | ResolverStrategyForTransitives of ResolverStrategy option
     | ResolverStrategyForDirectDependencies of ResolverStrategy option
+    | RepotoolsBinDir of string
 
     type RemoteParserOption =
     | PackageSource of PackageSource
@@ -387,6 +388,7 @@ module DependenciesFileParser =
         | String.RemovePrefix "license_download" trimmed -> Some (ParserOptions (ParserOption.LicenseDownload(trimmed.Replace(":","").Trim() = "true")))
         | String.RemovePrefix "copy_local" trimmed -> Some (ParserOptions (ParserOption.CopyLocal(trimmed.Replace(":","").Trim() = "true")))
         | String.RemovePrefix "specific_version" trimmed -> Some (ParserOptions (ParserOption.SpecificVersion(trimmed.Replace(":","").Trim() = "true")))
+        | String.RemovePrefix "repotools_bin_dir" trimmed -> Some (ParserOptions (ParserOption.RepotoolsBinDir(trimmed.Replace(":","").Trim())))
         | String.RemovePrefix "copy_content_to_output_dir" trimmed -> 
             let setting =
                 match trimmed.Replace(":","").Trim() with
@@ -499,6 +501,7 @@ module DependenciesFileParser =
         | OmitContent omit                               -> { current.Options with Settings = { current.Options.Settings with OmitContent = Some omit } }
         | ReferenceCondition condition                   -> { current.Options with Settings = { current.Options.Settings with ReferenceCondition = Some condition } }
         | GenerateLoadScripts mode                       -> { current.Options with Settings = { current.Options.Settings with GenerateLoadScripts = mode }}
+        | RepotoolsBinDir path                           -> { current.Options with Settings = { current.Options.Settings with RepotoolsBinDirectory = Some path }}
 
     let private parseLine fileName checkDuplicates (lineNo, state: DependenciesGroup list) line =
         match state with

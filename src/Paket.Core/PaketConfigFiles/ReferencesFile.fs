@@ -144,6 +144,7 @@ type ReferencesFile =
                     CreateBindingRedirects = createBindingRedirects
                     Excludes = []
                     Aliases = Map.empty
+                    RepotoolsBinDirectory = None
                     OmitContent = if omitContent then Some ContentCopySettings.Omit else None 
                     GenerateLoadScripts = None } }
 

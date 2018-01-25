@@ -853,6 +853,7 @@ type InstallSettings =
       Excludes : string list
       Aliases : Map<string,string>
       CopyContentToOutputDirectory : CopyToOutputDirectorySettings option 
+      RepotoolsBinDirectory: string option
       GenerateLoadScripts : bool option }
 
     static member Default =
@@ -868,6 +869,7 @@ type InstallSettings =
           Excludes = []
           Aliases = Map.empty
           CopyContentToOutputDirectory = None
+          RepotoolsBinDirectory = None
           OmitContent = None 
           GenerateLoadScripts = None }
 
@@ -1014,6 +1016,8 @@ type InstallSettings =
                 | Some "false" -> Some false 
                 | Some "true" -> Some true
                 | _ -> None
+              RepotoolsBinDirectory =
+                getPair "repotools_bin_dir"
               SpecificVersion =
                 match getPair "specific_version" with
                 | Some "false" -> Some false 
