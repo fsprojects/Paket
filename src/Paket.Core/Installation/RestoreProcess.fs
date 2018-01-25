@@ -291,7 +291,7 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
 
 let ImplicitPackages = [PackageName "NETStandard.Library"]  |> Set.ofList
 
-let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) (groups:Map<GroupName,LockFileGroup>) =
+let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) (groups:Map<GroupName,LockFileGroup>) (targetFrameworks: string option) =
     let projectFileInfo = FileInfo projectFile.FileName
     let hulls =
         groups
@@ -305,6 +305,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
             ProjectFile.getTargetFramework projectFile
             |> Option.toList
             |> List.append (ProjectFile.getTargetFrameworks projectFile |> Option.toList)
+            |> List.append (targetFrameworks |> Option.toList)
        
         monikers
         |> List.collect (fun item -> item.Split([|';'|],StringSplitOptions.RemoveEmptyEntries) |> Array.map (fun x -> x.Trim()) |> List.ofArray)
@@ -421,12 +422,12 @@ let FindOrCreateReferencesFile (projectFile:ProjectFile) =
 
         ReferencesFile.New fileName
 
-let RestoreNewSdkProject lockFile resolved groups (projectFile:ProjectFile) =
+let RestoreNewSdkProject lockFile resolved groups (projectFile:ProjectFile) targetFrameworks =
     let referencesFile = FindOrCreateReferencesFile projectFile
     let projectFileInfo = FileInfo projectFile.FileName
 
     createAlternativeNuGetConfig projectFileInfo
-    createProjectReferencesFiles lockFile projectFile referencesFile resolved groups
+    createProjectReferencesFiles lockFile projectFile referencesFile resolved groups targetFrameworks
     referencesFile
 
 let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option) = 
@@ -502,7 +503,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             | Some projectFileName ->
                 let projectFile = ProjectFile.LoadFromFile projectFileName
 
-                let referencesFile = RestoreNewSdkProject lockFile resolved groups projectFile
+                let referencesFile = RestoreNewSdkProject lockFile resolved groups projectFile targetFrameworks
 
                 [referencesFile.FileName]
             | None ->
@@ -513,7 +514,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                         |> Seq.filter (fun proj -> proj.GetToolsVersion() >= 15.0)
 
                     for proj in allProjects do
-                        RestoreNewSdkProject lockFile resolved groups proj |> ignore
+                        RestoreNewSdkProject lockFile resolved groups proj targetFrameworks |> ignore
 
                 referencesFileNames
 
