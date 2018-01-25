@@ -411,7 +411,10 @@ module LockFileParser =
         | ReferenceCondition condition -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition }}
         | DirectDependenciesResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForDirectDependencies = strategy }
         | TransitiveDependenciesResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForTransitives = strategy }
-        | _ -> failwithf "Unknown option %A" option
+        | Command _
+        | PackagePath _
+        | OperatingSystemRestriction _ ->
+            failwithf "Unknown option %A" option
 
     let Parse(lockFileLines) =
         let remove textToRemove (source:string) = source.Replace(textToRemove, "")
