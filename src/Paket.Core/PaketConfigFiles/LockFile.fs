@@ -279,6 +279,7 @@ module LockFileParser =
     | Command of string
     | PackagePath of string
     | OperatingSystemRestriction of string
+    | RepotoolsBinDirectory of string
 
     let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Group|InstallOption|) (state, line:string) =
         match (state.RepositoryType, line.Trim()) with
@@ -313,6 +314,7 @@ module LockFileParser =
         | _, String.RemovePrefix "LICENSE-DOWNLOAD:" trimmed -> InstallOption(LicenseDownload(trimmed.Trim() = "TRUE"))
         | _, String.RemovePrefix "COPY-LOCAL:" trimmed -> InstallOption(CopyLocal(trimmed.Trim() = "TRUE"))
         | _, String.RemovePrefix "SPECIFIC-VERSION:" trimmed -> InstallOption(SpecificVersion(trimmed.Trim() = "TRUE"))
+        | _, String.RemovePrefix "REPOTOOLS-BIN-DIRECTORY:" trimmed -> InstallOption(RepotoolsBinDirectory(trimmed.Trim()))
         | _, String.RemovePrefix "GENERATE-LOAD-SCRIPTS:" trimmed -> 
             let setting =
                 match trimmed.Trim() with
@@ -411,6 +413,7 @@ module LockFileParser =
         | ReferenceCondition condition -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition }}
         | DirectDependenciesResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForDirectDependencies = strategy }
         | TransitiveDependenciesResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForTransitives = strategy }
+        | RepotoolsBinDirectory path -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with RepotoolsBinDirectory = Some path }}
         | Command _
         | PackagePath _
         | OperatingSystemRestriction _ ->
