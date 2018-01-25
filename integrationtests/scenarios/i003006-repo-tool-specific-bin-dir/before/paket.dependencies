@@ -1,0 +1,4 @@
+repotools_bin_dir: use/mybin
+source https://www.myget.org/F/paket-repotool/api/v2
+
+repotool RepoTool.Sample 0.3.0

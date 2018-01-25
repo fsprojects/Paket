@@ -1,0 +1,4 @@
+REPOTOOLS-BIN-DIRECTORY: use/mybin
+NUGET
+  remote: https://www.myget.org/F/paket-repotool/api/v2
+    RepoTool.Sample (0.3.0) - repotool: true

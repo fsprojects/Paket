@@ -120,3 +120,23 @@ let ``#3005 repo tool multi tfm (netcoreapp)``() =
 
     let resultCmdWithArgs = directExecScript helloCmdPath "1 2 3" (scenarioTempPath scenario)
     CollectionAssert.AreEqual( [| """Hello World from F#! with args: ["1"; "2"; "3"]""" |], (resultCmdWithArgs |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
+
+[<Test>]
+let ``#3006 repo tool should restore on specific bin dir based on repotools_bin_dir config``() =
+    let scenario = "i003006-repo-tool-specific-bin-dir"
+    prepare scenario
+    paket "restore" scenario |> ignore
+
+    let wrappersPath = Path.Combine(scenarioTempPath scenario, "use", "mybin")
+
+    let helloCmdPath = Path.Combine(wrappersPath, "hello.cmd")
+    Assert.IsTrue(File.Exists(helloCmdPath), (sprintf "file '%s' not found" helloCmdPath))
+    
+    let helloBashPath = Path.Combine(wrappersPath, "hello")
+    Assert.IsTrue(File.Exists(helloBashPath), (sprintf "file '%s' not found" helloBashPath))
+
+    let resultCmd = directExecScript helloCmdPath "" (scenarioTempPath scenario)
+    CollectionAssert.AreEqual( [| "Hello World from F#! with args: []" |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
+
+    let resultCmdWithArgs = directExecScript helloCmdPath "1 2 3" (scenarioTempPath scenario)
+    CollectionAssert.AreEqual( [| """Hello World from F#! with args: ["1"; "2"; "3"]""" |], (resultCmdWithArgs |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
