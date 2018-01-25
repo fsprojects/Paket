@@ -263,8 +263,6 @@ module WrapperToolGeneration =
      
     let constructWrapperScriptsFromData (depCache:DependencyCache) (groups: (LockFileGroup * Map<PackageName,PackageResolver.ResolvedPackage>) list) =
         let lockFile = depCache.LockFile
-        let frameworksForDependencyGroups = lockFile.ResolveFrameworksForScriptGeneration()
-        let environmentFramework = FrameworkDetection.resolveEnvironmentFramework
         
         if verbose then
             verbosefn "Generating wrapper scripts for the following groups: %A" (groups |> List.map (fun (g,_) -> g.Name.ToString()))
