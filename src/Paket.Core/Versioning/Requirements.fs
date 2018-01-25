@@ -1022,8 +1022,11 @@ type InstallSettings =
                 getPair "repotools_bin_dir"
               RepotoolAliases =
                 match getPair "tool_alias" with
-                | Some a -> Map.ofList [ a, a ]
                 | None -> Map.empty
+                | Some p ->
+                    match p.Split([| "->" |], StringSplitOptions.RemoveEmptyEntries) with
+                    | [| oldName; newName |] -> Map.ofList [ oldName, newName ]
+                    | _ -> Map.empty
               SpecificVersion =
                 match getPair "specific_version" with
                 | Some "false" -> Some false 
