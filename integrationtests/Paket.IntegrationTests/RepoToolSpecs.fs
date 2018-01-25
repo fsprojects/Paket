@@ -140,3 +140,23 @@ let ``#3006 repo tool should restore on specific bin dir based on repotools_bin_
 
     let resultCmdWithArgs = directExecScript helloCmdPath "1 2 3" (scenarioTempPath scenario)
     CollectionAssert.AreEqual( [| """Hello World from F#! with args: ["1"; "2"; "3"]""" |], (resultCmdWithArgs |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
+
+[<Test>]
+let ``#3007 repo tool should consider alias on install``() =
+    let scenario = "i003007-repo-tool-alias"
+    prepare scenario
+    paket "install" scenario |> ignore
+
+    let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
+
+    let ciaoCmdPath = Path.Combine(wrappersPath, "ciao.cmd")
+    Assert.IsTrue(File.Exists(ciaoCmdPath), (sprintf "file '%s' not found" ciaoCmdPath))
+    
+    let ciaoBashPath = Path.Combine(wrappersPath, "ciao")
+    Assert.IsTrue(File.Exists(ciaoBashPath), (sprintf "file '%s' not found" ciaoBashPath))
+
+    let resultCmd = directExecScript ciaoCmdPath "" (scenarioTempPath scenario)
+    CollectionAssert.AreEqual( [| "Hello World from F#! with args: []" |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
+
+    let resultCmdWithArgs = directExecScript ciaoCmdPath "1 2 3" (scenarioTempPath scenario)
+    CollectionAssert.AreEqual( [| """Hello World from F#! with args: ["1"; "2"; "3"]""" |], (resultCmdWithArgs |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
