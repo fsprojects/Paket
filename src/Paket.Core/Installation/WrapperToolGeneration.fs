@@ -47,9 +47,19 @@ module RepoToolDiscovery =
     let avaiableTools (pkg: PackageResolver.PackageInfo) (pkgDir: DirectoryInfo) =
         let toolsDir = Path.Combine(pkgDir.FullName, "tools")
 
+        let getNameOf (exeName: string) =
+            let caseInsensitiveMap =
+                pkg.Settings.RepotoolAliases
+                |> Map.toList
+                |> List.map (fun (s,v) -> s.ToUpper(),v)
+                |> Map.ofList
+            match caseInsensitiveMap |> Map.tryFind (exeName.ToUpper()) with
+            | Some name-> name
+            | None -> exeName
+
         let asTool kind path =
             { RepoToolInNupkg.FullPath = path
-              Name = Path.GetFileNameWithoutExtension(path)
+              Name = getNameOf (Path.GetFileNameWithoutExtension(path))
               Kind = kind }
 
         let toolsTFMDirs =
