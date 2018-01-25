@@ -221,7 +221,7 @@ nuget "Castle.Windsor-log4net" "~> 3.2"
             "Castle.Windsor-log4net","3.2",[]
         ]
 
-    let expected1 = """REPOTOOLS-BIN-DIR: to/my/bin
+    let expected1 = """REPOTOOLS-BIN-DIRECTORY: to/my/bin
 NUGET
   remote: http://www.nuget.org/api/v2
     Castle.Windsor-log4net (3.2)"""

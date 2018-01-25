@@ -77,6 +77,10 @@ module LockFileSerializer =
         | Some ContentCopySettings.OmitIfExisting -> yield "CONTENT: ONCE"
         | None -> ()
 
+        match options.Settings.RepotoolsBinDirectory with
+        | Some path -> yield (sprintf "REPOTOOLS-BIN-DIRECTORY: %s" path)
+        | None -> ()
+
         match options.Settings.ReferenceCondition with
         | Some condition -> yield "CONDITION: " + condition.ToUpper()
         | None -> ()
