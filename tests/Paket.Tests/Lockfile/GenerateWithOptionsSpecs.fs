@@ -206,3 +206,28 @@ NUGET
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected)
 
+[<Test>]
+let ``should generate repotools bin dir``() = 
+
+    let config1 = """
+repotools_bin_dir: to/my/bin
+source "http://www.nuget.org/api/v2"
+
+nuget "Castle.Windsor-log4net" "~> 3.2"
+"""
+
+    let graph1 =
+        OfSimpleGraph [
+            "Castle.Windsor-log4net","3.2",[]
+        ]
+
+    let expected1 = """REPOTOOLS-BIN-DIR: to/my/bin
+NUGET
+  remote: http://www.nuget.org/api/v2
+    Castle.Windsor-log4net (3.2)"""
+
+
+    let cfg = DependenciesFile.FromSource(config1)
+    ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph1, PackageDetailsFromGraph graph1).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
+    |> shouldEqual (normalizeLineEndings expected1)
