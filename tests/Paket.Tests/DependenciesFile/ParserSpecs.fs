@@ -1698,3 +1698,27 @@ let ``should read config with repo tool with alias``() =
     |> shouldEqual (Map.ofList ["oldname","newname"])
 
     nuget.Kind |> shouldEqual (PackageRequirementKind.Package)
+
+let configWithRepoToolWorkingDir = """
+source https://www.nuget.org/api/v2
+
+repotool mytool tool_working_dir: <script_dir>
+nuget FAKE
+"""
+
+[<Test>]
+let ``should read config with repo tool with working dir``() = 
+    let cfg = DependenciesFile.FromSource(configWithRepoToolWorkingDir)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources 
+    |> shouldEqual [PackageSources.DefaultNuGetSource]
+
+    let tool = cfg.Groups.[Constants.MainDependencyGroup].Packages.Head
+    let nuget = cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Head
+
+    tool.Kind |> shouldEqual (PackageRequirementKind.RepoTool)
+
+    tool.Settings.RepotoolWorkingDirectory
+    |> shouldEqual (RepotoolWorkingDirectoryPath.ScriptDir)
+
+    nuget.Kind |> shouldEqual (PackageRequirementKind.Package)

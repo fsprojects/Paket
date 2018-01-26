@@ -839,6 +839,10 @@ type BindingRedirectsSettings =
 | Off
 | Force
 
+type [<RequireQualifiedAccess>] RepotoolWorkingDirectoryPath =
+    | CurrentDirectory
+    | ScriptDir
+
 type InstallSettings = 
     { ImportTargets : bool option
       FrameworkRestrictions: FrameworkRestrictions
@@ -855,6 +859,7 @@ type InstallSettings =
       CopyContentToOutputDirectory : CopyToOutputDirectorySettings option 
       RepotoolsBinDirectory: string option
       RepotoolAliases : Map<string,string>
+      RepotoolWorkingDirectory: RepotoolWorkingDirectoryPath
       GenerateLoadScripts : bool option }
 
     static member Default =
@@ -872,6 +877,7 @@ type InstallSettings =
           CopyContentToOutputDirectory = None
           RepotoolsBinDirectory = None
           RepotoolAliases = Map.empty
+          RepotoolWorkingDirectory = RepotoolWorkingDirectoryPath.CurrentDirectory
           OmitContent = None 
           GenerateLoadScripts = None }
 
@@ -1029,6 +1035,8 @@ type InstallSettings =
                     match p.Split([| "->" |], StringSplitOptions.RemoveEmptyEntries) with
                     | [| oldName; newName |] -> Map.ofList [ oldName, newName ]
                     | _ -> Map.empty
+              RepotoolWorkingDirectory =
+                RepotoolWorkingDirectoryPath.CurrentDirectory
               SpecificVersion =
                 match getPair "specific_version" with
                 | Some "false" -> Some false 

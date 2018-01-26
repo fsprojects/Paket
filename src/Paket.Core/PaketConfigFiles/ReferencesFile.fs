@@ -146,6 +146,7 @@ type ReferencesFile =
                     Aliases = Map.empty
                     RepotoolsBinDirectory = None
                     RepotoolAliases = Map.empty
+                    RepotoolWorkingDirectory = RepotoolWorkingDirectoryPath.CurrentDirectory
                     OmitContent = if omitContent then Some ContentCopySettings.Omit else None 
                     GenerateLoadScripts = None } }
 
