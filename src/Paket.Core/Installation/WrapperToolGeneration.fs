@@ -181,6 +181,8 @@ module WrapperToolGeneration =
             let cmdContent =
                 [ "@ECHO OFF"
                   ""
+                  "SETLOCAL"
+                  ""
                   sprintf """%s"%%~dp0%s" %%*""" paketToolRuntimeHostWin self.RelativeToolPath
                   "" ]
             
