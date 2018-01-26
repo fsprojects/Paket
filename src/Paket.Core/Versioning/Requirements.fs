@@ -928,6 +928,9 @@ type InstallSettings =
               | ExplicitRestriction fr -> yield "restriction: " + (fr.ToString())
               for (oldName, newName) in this.RepotoolAliases |> Map.toList do
                 yield sprintf "tool_alias: %s->%s" oldName newName 
+              match this.RepotoolWorkingDirectory with
+              | RepotoolWorkingDirectoryPath.CurrentDirectory -> ()
+              | RepotoolWorkingDirectoryPath.ScriptDir -> yield "tool_working_dir: <script_dir>"
               match this.GenerateLoadScripts with
               | Some true -> yield "generate_load_scripts: true"
               | Some false -> yield "generate_load_scripts: false"
