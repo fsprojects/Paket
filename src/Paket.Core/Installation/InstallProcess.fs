@@ -599,3 +599,6 @@ let Install(options : InstallerOptions, forceTouch, dependenciesFile, lockFile :
 
     let projects = RestoreProcess.findAllReferencesFiles root |> returnOrFail
     InstallIntoProjects(options, forceTouch, dependenciesFile, lockFile, projects, updatedGroups)
+
+    // hardcoded assumption, if there is a repo tool, generate the scripts
+    RestoreProcess.CreateToolWrapperForGroups lockFile lockFile.Groups
