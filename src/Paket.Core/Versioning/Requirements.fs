@@ -1036,7 +1036,10 @@ type InstallSettings =
                     | [| oldName; newName |] -> Map.ofList [ oldName, newName ]
                     | _ -> Map.empty
               RepotoolWorkingDirectory =
-                RepotoolWorkingDirectoryPath.CurrentDirectory
+                match getPair "tool_working_dir" with
+                | None -> RepotoolWorkingDirectoryPath.CurrentDirectory
+                | Some "<script_dir>" -> RepotoolWorkingDirectoryPath.ScriptDir
+                | Some x -> failwithf "Unknown tool_working_dir settings: %A" x
               SpecificVersion =
                 match getPair "specific_version" with
                 | Some "false" -> Some false 
