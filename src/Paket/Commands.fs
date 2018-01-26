@@ -94,7 +94,7 @@ with
 type AddToolArgs =
     | [<ExactlyOnce;MainCommand>] NuGet of package_ID:string
     | [<Unique;AltCommandLine("-V")>] Version of version_constraint:string    
-    | [<Unique;AltCommandLine("-g")>] Group of name:string
+    | [<Unique>] Group of name:string
     | [<Unique;AltCommandLine("-f")>] Force
     | [<Unique;AltCommandLine("-i")>] Interactive
     | [<Unique>] No_Install
