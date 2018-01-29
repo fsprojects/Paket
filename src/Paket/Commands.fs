@@ -79,6 +79,20 @@ with
             | Group(_) -> "add the dependency to a group (default: Main group)"
             | File(_) -> "only add specified file"
 
+type AddGitArgs =
+    | [<ExactlyOnce;MainCommand>] Repository of repository_path:string
+    | [<Unique;AltCommandLine("-V")>] Version of version_constraint:string
+    | [<Unique;AltCommandLine("-g")>] Group of group_name:string
+    | [<Unique;AltCommandLine("-file")>] File of file_name:string
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | Repository(_) -> "repository location"
+            | Version(_) -> "dependency version constraint"
+            | Group(_) -> "add the dependency to a group (default: Main group)"
+            | File(_) -> "only add specified file"
+
 type ConfigArgs =
     | [<Unique;CustomCommandLine("add-credentials")>] AddCredentials of key_or_URL:string
     | [<Unique;CustomCommandLine("add-token")>] AddToken of key_or_URL:string * token:string
@@ -611,6 +625,7 @@ type Command =
     // subcommands
     | [<CustomCommandLine("add")>]                      Add of ParseResults<AddArgs>
     | [<CustomCommandLine("add-github")>]               AddGithub of ParseResults<AddGithubArgs>
+    | [<CustomCommandLine("add-git")>]                  AddGit of ParseResults<AddGitArgs>
     | [<CustomCommandLine("clear-cache")>]              ClearCache of ParseResults<ClearCacheArgs>
     | [<CustomCommandLine("config")>]                   Config of ParseResults<ConfigArgs>
     | [<CustomCommandLine("convert-from-nuget")>]       ConvertFromNuget of ParseResults<ConvertFromNugetArgs>
@@ -641,6 +656,7 @@ with
             match this with
             | Add _ -> "add a new dependency"
             | AddGithub _ -> "add a github dependency"
+            | AddGit _ -> "add a git dependency"
             | ClearCache _ -> "clear the NuGet and git cache directories"
             | Config _ -> "store global configuration values like NuGet credentials"
             | ConvertFromNuget _ -> "convert projects from NuGet to Paket"

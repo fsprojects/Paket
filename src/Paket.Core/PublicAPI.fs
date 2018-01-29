@@ -160,7 +160,8 @@ type Dependencies(dependenciesFileName: string) =
     /// Adds the given git repository to the dependencies file.
     member this.AddGit(groupName, path) =
         ()
-
+        
+    /// Adds the given gist to the dependencies file.
     member this.AddGist(groupName, repository) =
         ()
 
