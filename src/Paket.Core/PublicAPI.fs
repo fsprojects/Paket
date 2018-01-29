@@ -157,6 +157,28 @@ type Dependencies(dependenciesFileName: string) =
                                      InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None),
                                      interactive, installAfter, runResolver, packageKind))
 
+    /// Adds the given git repository to the dependencies file.
+    member this.AddGit(groupName, path) =
+        ()
+
+    member this.AddGist(groupName, repository) =
+        ()
+
+    /// Adds the given github repository to the dependencies file.
+    member this.AddGithub(groupName, repository, file) =
+        this.AddGithub(groupName, repository, "")
+
+    /// Adds the given github repository to the dependencies file.
+    member this.AddGithub(groupName, repository, file, version) =
+        RunInLockedAccessMode(
+            this.RootPath,
+            fun () ->
+                AddProcess.AddGithub(dependenciesFileName, groupName, repository, file, version))
+
+    /// Adds the given http resource to the dependencies file.
+    member this.AddHttp(groupName, url) =
+        ()
+
    /// Adds the given package with the given version to the dependencies file.
     member this.AddToProject(groupName, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, projectName: string, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
         this.AddToProject(groupName, package,version,force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, projectName, installAfter, semVerUpdateMode, touchAffectedRefs, true)
