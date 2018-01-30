@@ -19,6 +19,7 @@
     <Compile Include="$(PaketTestsSourcesDir)\AssemblyInfo.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\TestHelper.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\InitSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InfoSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\OutdatedSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\FullGitSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\FrameworkRestrictionsSpecs.fs" />
