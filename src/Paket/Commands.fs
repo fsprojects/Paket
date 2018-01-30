@@ -69,7 +69,7 @@ type AddGithubArgs =
     | [<ExactlyOnce;MainCommand>] Repository of repository_name:string
     | [<Unique;AltCommandLine("-V")>] Version of version_constraint:string
     | [<Unique;AltCommandLine("-g")>] Group of group_name:string
-    | [<Unique;AltCommandLine("-file")>] File of file_name:string
+    | [<Unique>] File of file_name:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -83,7 +83,7 @@ type AddGitArgs =
     | [<ExactlyOnce;MainCommand>] Repository of repository_path:string
     | [<Unique;AltCommandLine("-V")>] Version of version_constraint:string
     | [<Unique;AltCommandLine("-g")>] Group of group_name:string
-    | [<Unique;AltCommandLine("-file")>] File of file_name:string
+    | [<Unique>] File of file_name:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -92,6 +92,34 @@ with
             | Version(_) -> "dependency version constraint"
             | Group(_) -> "add the dependency to a group (default: Main group)"
             | File(_) -> "only add specified file"
+
+type AddGistArgs =
+    | [<ExactlyOnce;MainCommand>] Repository of repository_path:string
+    | [<Unique;AltCommandLine("-V")>] Version of version_constraint:string
+    | [<Unique;AltCommandLine("-g")>] Group of group_name:string
+    | [<Unique>] File of file_name:string
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | Repository(_) -> "repository location"
+            | Version(_) -> "dependency version constraint"
+            | Group(_) -> "add the dependency to a group (default: Main group)"
+            | File(_) -> "only add specified file"
+
+type AddHttpArgs =
+    | [<ExactlyOnce;MainCommand>] Url of url:string
+    | [<Unique;AltCommandLine("-g")>] Group of group_name:string
+    | [<Unique>] File of local_path:string
+    | [<Unique>] Source of source:string
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | Url(_) -> "url of the file"
+            | Group(_) -> "add the dependency to a group (default: Main group)"
+            | File(_) -> "local path to place file"
+            | Source(_) -> "source name"
 
 type ConfigArgs =
     | [<Unique;CustomCommandLine("add-credentials")>] AddCredentials of key_or_URL:string
@@ -626,6 +654,8 @@ type Command =
     | [<CustomCommandLine("add")>]                      Add of ParseResults<AddArgs>
     | [<CustomCommandLine("add-github")>]               AddGithub of ParseResults<AddGithubArgs>
     | [<CustomCommandLine("add-git")>]                  AddGit of ParseResults<AddGitArgs>
+    | [<CustomCommandLine("add-gist")>]                 AddGist of ParseResults<AddGistArgs>
+    | [<CustomCommandLine("add-http")>]                 AddHttp of ParseResults<AddHttpArgs>
     | [<CustomCommandLine("clear-cache")>]              ClearCache of ParseResults<ClearCacheArgs>
     | [<CustomCommandLine("config")>]                   Config of ParseResults<ConfigArgs>
     | [<CustomCommandLine("convert-from-nuget")>]       ConvertFromNuget of ParseResults<ConvertFromNugetArgs>
@@ -657,6 +687,8 @@ with
             | Add _ -> "add a new dependency"
             | AddGithub _ -> "add a github dependency"
             | AddGit _ -> "add a git dependency"
+            | AddGist _ -> "add a gist dependency"
+            | AddHttp _ -> "add a http dependency"
             | ClearCache _ -> "clear the NuGet and git cache directories"
             | Config _ -> "store global configuration values like NuGet credentials"
             | ConvertFromNuget _ -> "convert projects from NuGet to Paket"
