@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>paket install
+    <title>paket info
 </title>
     <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -57,8 +57,8 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1><a name="paket-install" class="anchor" href="#paket-install">paket install</a></h1>
-<p>Compute dependency graph, download dependencies and update projects.</p>
+<h1><a name="paket-info" class="anchor" href="#paket-info">paket info</a></h1>
+<p>Info.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
 <span class="l"> 2: </span>
 <span class="l"> 3: </span>
@@ -70,55 +70,13 @@
 <span class="l"> 9: </span>
 <span class="l">10: </span>
 <span class="l">11: </span>
-<span class="l">12: </span>
-<span class="l">13: </span>
-<span class="l">14: </span>
-<span class="l">15: </span>
-<span class="l">16: </span>
-<span class="l">17: </span>
-<span class="l">18: </span>
-<span class="l">19: </span>
-<span class="l">20: </span>
-<span class="l">21: </span>
-<span class="l">22: </span>
-<span class="l">23: </span>
-<span class="l">24: </span>
-<span class="l">25: </span>
-<span class="l">26: </span>
-<span class="l">27: </span>
-<span class="l">28: </span>
-<span class="l">29: </span>
-<span class="l">30: </span>
-<span class="l">31: </span>
-<span class="l">32: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket install [--help] [--force] [--redirects] [--create-new-binding-files] [--clean-redirects]
-              [--keep-major] [--keep-minor] [--keep-patch] [--only-referenced]
-              [--touch-affected-refs] [--generate-load-scripts]
-              [--load-script-framework &lt;framework&gt;] [--load-script-type &lt;csx|fsx&gt;]
+<td class="snippet"><pre class="fssnip"><code lang="sh">paket info [--help] [--paket-dependencies-dir]
 
 OPTIONS:
 
-    --force, -f           force download and reinstallation of all dependencies
-    --redirects           create binding redirects
-    --create-new-binding-files
-                          create binding redirect files if needed
-    --clean-redirects     remove binding redirects that were not created by Paket
-    --keep-major          only allow updates that preserve the major version
-    --keep-minor          only allow updates that preserve the minor version
-    --keep-patch          only allow updates that preserve the patch version
-    --only-referenced     only install dependencies listed in paket.references files, instead of
-                          all packages in paket.dependencies
-    --touch-affected-refs touch project files referencing affected dependencies to help incremental
-                          build tools detecting the change
-    --generate-load-scripts
-                          generate F# and C# include scripts that reference installed packages in a
-                          interactive environment like F# Interactive or ScriptCS
-    --load-script-framework &lt;framework&gt;
-                          framework identifier to generate scripts for, such as net45 or
-                          netstandard1.6; may be repeated
-    --load-script-type &lt;csx|fsx&gt;
-                          language to generate scripts for; may be repeated; may be repeated
+    --paket-dependencies-dir
+                          absolute path of paket.dependencies directory, if exists
     --silent, -s          suppress console output
     --verbose, -v         print detailed information to the console
     --log-file &lt;path&gt;     print output to a file
@@ -127,17 +85,6 @@ OPTIONS:
 </code></pre></td></tr></table>
 <p>If you add the <code>--verbose</code> flag Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [path]</code> you can trace the logged information into a file.</p>
-<h2><a name="Notes-on-changes-to" class="anchor" href="#Notes-on-changes-to">Notes on changes to <a href="dependencies-file.html"><code>paket.dependencies</code></a></a></h2>
-<p>If the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> has been changed
-since the last update of the <a href="lock-file.html"><code>paket.lock</code> file</a> (e.g. you added
-dependencies or changed version constraints), Paket will update the
-<a href="lock-file.html"><code>paket.lock</code> file</a> to make it match
-<a href="dependencies-file.html"><code>paket.dependencies</code></a> again.</p>
-<p>Unlike <a href="paket-update.html"><code>paket update</code></a>,
-<a href="paket-install.html"><code>paket install</code></a> will only look for new versions of
-dependencies that have been modified in
-<a href="dependencies-file.html"><code>paket.dependencies</code></a> and use the version from
-<a href="lock-file.html"><code>paket.lock</code></a> for all other dependencies.</p>
 
 
         </div>
