@@ -98,6 +98,7 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="TestHelper.fs" />
     <Compile Include="InitSpecs.fs" />
+    <Compile Include="InfoSpecs.fs" />
     <Compile Include="OutdatedSpecs.fs" />
     <Compile Include="FullGitSpecs.fs" />
     <Compile Include="FrameworkRestrictionsSpecs.fs" />
