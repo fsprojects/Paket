@@ -1,3 +1,6 @@
+#### 5.132.5 - 2018-01-31
+* API: Added overload for Dependencies.Init - https://github.com/fsprojects/Paket/pull/3019
+
 #### 5.132.4 - 2018-01-19
 * USABILITY: Trace detailed messages for missing package errors - https://github.com/fsprojects/Paket/pull/3001
 
