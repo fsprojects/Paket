@@ -103,31 +103,11 @@ let Add(dependenciesFileName, groupName, package, version, options : InstallerOp
     add interactive addToProjects dependenciesFileName groupName package version options installAfter runResolver packageKind
 
 let AddGithub(dependenciesFileName, groupName, repository, file, version) =
-    let groupName = matchGroupName(groupName)
+    let group = matchGroupName(groupName)
 
     Console.WriteLine("Adding GitHub woop woop " + dependenciesFileName)
 
     let existingDependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
-    let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
-    let lockFile = ref None
-    let lockFileHasPackage =
-        if not lockFileName.Exists then false else
-        let lf = LockFile.LoadFrom lockFileName.FullName
-        lockFile := Some lf
-        let lockFileGroup = lf.GetGroup(groupName)
-        let vr = DependenciesFileParser.parseVersionString version
-
-        false
-        //match Map.tryFind repository lockFileGroup.Resolution with
-        //| Some p when vr.VersionRequirement.IsInRange(p.Version) -> true
-        //| _ -> false
-                
-    let dependenciesFile =
-        if lockFileHasPackage then
-            existingDependenciesFile
-        else
-            existingDependenciesFile
-                //.AddGithub(groupName,package,version, Requirements.InstallSettings.Default, packageKind)
-
-    ()
+    existingDependenciesFile
+        .AddGithub(group, repository, file, version)
