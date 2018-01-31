@@ -81,18 +81,19 @@ module PaketEnv =
         environment.LockFile
         |> failIfNone (LockFileNotFound environment.RootDirectory)
 
-    let init (directory : DirectoryInfo) =
+    let initWithContent sources additional (directory : DirectoryInfo) =
         match locatePaketRootDirectory directory with
         | Some rootDirectory when rootDirectory.FullName = directory.FullName -> 
             Logging.tracefn "Paket is already initialized in %s" rootDirectory.FullName
             ok ()
         | _ -> 
-            let sources = [PackageSources.DefaultNuGetSource]
-            let serialized = 
+            let sourcesSerialized = 
                 (sources
                 |> List.map (string >> DependenciesFileSerializer.sourceString))
                 @ [""]
                 |> Array.ofList
+            
+            let serialized = Array.append sourcesSerialized (additional |> Array.ofList)
 
             let mainGroup = 
                 { Name = Constants.MainDependencyGroup
@@ -102,7 +103,7 @@ module PaketEnv =
                   Packages = []
                   RemoteFiles = [] }
             let groups = [Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
-                
+
             let dependenciesFile = 
                 DependenciesFile(
                     Path.Combine(directory.FullName, Constants.DependenciesFileName),
@@ -110,3 +111,7 @@ module PaketEnv =
                     serialized)
 
             dependenciesFile.ToString() |> saveFile dependenciesFile.FileName
+
+    let init (directory : DirectoryInfo) =
+        let sources = [PackageSources.DefaultNuGetSource]
+        initWithContent sources [] directory

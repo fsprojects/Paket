@@ -87,6 +87,25 @@ type Dependencies(dependenciesFileName: string) =
         deps.DownloadLatestBootstrapper()
 #endif
 
+    /// Initialize paket.dependencies file in the given directory
+    static member Init(directory, sources, additional, downloadBootstrapper) =
+        let directory = DirectoryInfo(directory)
+
+        RunInLockedAccessMode(
+            directory.FullName,
+            fun () ->
+                PaketEnv.initWithContent sources additional directory
+                |> returnOrFail
+        )
+
+#if !NO_BOOTSTRAPPER
+        if downloadBootstrapper then
+            let deps = Dependencies.Locate(directory.FullName)
+            deps.DownloadLatestBootstrapper()
+#else
+        ignore downloadBootstrapper
+#endif
+
     /// Converts the solution from NuGet to Paket.
     static member ConvertFromNuget(force: bool,installAfter: bool, initAutoRestore: bool,credsMigrationMode: string option, ?directory: DirectoryInfo) : unit =
         let dir = defaultArg directory (DirectoryInfo(Directory.GetCurrentDirectory()))

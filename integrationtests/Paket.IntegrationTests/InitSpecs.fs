@@ -55,3 +55,20 @@ let ``#1240 current bootstrapper should work``() =
 
     File.Exists(scenarioTempPath "i001240-bootstrapper" </> "paket.exe")
     |> shouldEqual true
+
+[<Test>]
+let ``#1041 init api``() = 
+    let tempScenarioDir = scenarioTempPath "i001041-init-api"
+
+    let url = "http://my.test/api"
+    let source = Paket.PackageSources.PackageSource.NuGetV2Source(url)
+
+    Paket.Dependencies.Init(tempScenarioDir, [source], [ "download_license: true" ], false)
+
+    let depsPath = tempScenarioDir </> "paket.dependencies"
+    File.Exists(depsPath) |> shouldEqual true
+
+    let lines = File.ReadAllText(depsPath)
+
+    StringAssert.Contains(url, lines);
+    StringAssert.Contains("download_license: true", lines);
