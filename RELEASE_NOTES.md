@@ -1,16 +1,9 @@
-#### 5.132.5 - 2018-01-31
+#### 5.133.0 - 2018-01-31
+* Added `paket info --paket-dependencies-dir` to locate repo root
 * API: Added overload for Dependencies.Init - https://github.com/fsprojects/Paket/pull/3019
-
-#### 5.132.4 - 2018-01-19
 * USABILITY: Trace detailed messages for missing package errors - https://github.com/fsprojects/Paket/pull/3001
-
-#### 5.132.3 - 2018-01-18
 * PERFORMANCE: Avoid duplicates in package source cache - https://github.com/fsprojects/Paket/pull/2999
-
-#### 5.132.2 - 2018-01-18
 * COSMETICS: Only overwrite NuGet metadata cache when needed - https://github.com/fsprojects/Paket/pull/2998
-
-#### 5.132.1 - 2018-01-18
 * COSMETICS: Trace not-found and blacklist warnings as actual warnings - https://github.com/fsprojects/Paket/pull/2997
 
 #### 5.132.0 - 2018-01-18
