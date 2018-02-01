@@ -278,8 +278,10 @@ let addTool (results : ParseResults<_>) =
                 | None ->
                     tracefn "global paket.dependencies not found in '%s', initializing..." globalPaketDependenciesPath
 
-                    let sources = [ PackageSources.DefaultNuGetSource ]
-                    let settings = [ "storage:none"; "repotools_bin_dir:bin" ]
+                    //let sources = [ PackageSources.DefaultNuGetSource ]
+                    //let settings = [ "storage:none"; "repotools_bin_dir:bin" ]
+                    let sources = [ PackageSource.NuGetV2Source "https://www.myget.org/F/paket-repotool-testing/api/v2" ]
+                    let settings = [ "repotools_bin_dir:bin" ]
 
                     Dependencies.Init(globalPaketDependenciesDir, sources, settings, false)
                     tracefn "paket.dependencies initialized."
@@ -290,7 +292,8 @@ let addTool (results : ParseResults<_>) =
                         [ Constants.PaketPackageName.ToLower(), Constants.PaketGlobalExeName ]
                         |> Map.ofList
                     
-                    let paketgVersion = ">= 5"
+                    //let paketgVersion = ">= 5"
+                    let paketgVersion = "5.133.0-repotool-0001"
                     
                     depsFile.AddRepoTool(None, Constants.PaketPackageName, paketgVersion, force, interactive, installDefaultTools, SemVerUpdateMode.NoRestriction, installDefaultTools, paketgAlias, Requirements.RepotoolWorkingDirectoryPath.ScriptDir)
                     tracefn "paket.dependencies updated."
