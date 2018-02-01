@@ -264,11 +264,30 @@ let addTool (results : ParseResults<_>) =
     let touchAffectedRefs = false
     let packageKind = Requirements.PackageRequirementKind.RepoTool
 
-    let interactive = results.Contains <@ AddToolArgs.Interactive @>
+    let interactive = false
 
-    Dependencies
-        .Locate()
-        .Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
+    let asGlobalTool = results.Contains <@ AddToolArgs.Global @>
+
+    if asGlobalTool then
+        match Constants.GlobalBinFolder () with
+        | None ->
+            traceError "cannot choose global bin directory"
+        | Some path ->
+            let globalPaketDependenciesDir = Path.Combine(path, "..") |> Path.GetFullPath
+            let globalPaketDependenciesPath = Path.Combine(globalPaketDependenciesDir, Constants.DependenciesFileName)
+            let dependencies =
+                match Dependencies.TryLocate(globalPaketDependenciesPath) with
+                | Some depFile -> depFile
+                | None ->
+                    traceVerbose (sprintf "global paket.dependencies not found in '%s', initializing..." globalPaketDependenciesPath)
+                    Dependencies.Init(globalPaketDependenciesDir)
+                    traceVerbose (sprintf "paket.dependencies initialized in '%s'." globalPaketDependenciesPath)
+                    Dependencies.Locate(globalPaketDependenciesPath)
+            dependencies.Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
+    else
+        Dependencies
+            .Locate()
+            .Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
 
 
 let validateConfig (results : ParseResults<_>) =

@@ -94,9 +94,9 @@ with
 type AddToolArgs =
     | [<ExactlyOnce;MainCommand>] NuGet of package_ID:string
     | [<Unique;AltCommandLine("-V")>] Version of version_constraint:string    
-    | [<Unique>] Group of name:string
+    | [<Unique;AltCommandLine("-G")>] Global
+    | [<Unique;AltCommandLine("-g")>] Group of name:string
     | [<Unique;AltCommandLine("-f")>] Force
-    | [<Unique;AltCommandLine("-i")>] Interactive
     | [<Unique>] No_Install
     | [<Unique>] No_Resolve
     | [<Unique>] Keep_Major
@@ -107,12 +107,12 @@ with
         member this.Usage =
             match this with
             | NuGet(_) -> "NuGet package ID"
-            | Group(_) -> "add the dependency to a group (default: Main group)"
-            | Version(_) -> "dependency version constraint"
+            | Group(_) -> "add the tool to a group (default: Main group)"
+            | Global -> "add the tool as global (default: Main group)"
+            | Version(_) -> "tool dependency version constraint"
             | Force -> "force download and reinstallation of all dependencies"
-            | Interactive -> "ask for every project whether to add the dependency"
             | No_Resolve -> "do not resolve"
-            | No_Install -> "do not modify projects"
+            | No_Install -> "do not install tools"
             | Keep_Major -> "only allow updates that preserve the major version"
             | Keep_Minor -> "only allow updates that preserve the minor version"
             | Keep_Patch -> "only allow updates that preserve the patch version"
