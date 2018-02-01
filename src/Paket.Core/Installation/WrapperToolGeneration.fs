@@ -195,7 +195,7 @@ module WrapperToolGeneration =
                   match self.WorkingDirectory with
                   | RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.CurrentDirectory -> ()
                   | RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory ->
-                      yield "CD %~dp0"
+                      yield "CD /D %~dp0"
                       yield ""
                   yield sprintf """%s"%%~dp0%s" %%*""" paketToolRuntimeHostWin self.RelativeToolPath
                   yield "" ]
