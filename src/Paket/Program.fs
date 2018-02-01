@@ -285,7 +285,7 @@ let addTool (results : ParseResults<_>) =
                           "repotools_bin_dir:bin" ], false)
                     traceVerbose (sprintf "paket.dependencies initialized in '%s'." globalPaketDependenciesPath)
                     let depsFile = Dependencies.Locate(globalPaketDependenciesPath)
-                    traceVerbose (sprintf "updating paket.dependencies with default packages (global paket, helper script) in '%s'..." globalPaketDependenciesPath)
+                    traceVerbose (sprintf "installing global `paketg` in '%s'..." globalPaketDependenciesPath)
                     let installDefaultTools = true
                     let paketgAlias =
                         [ Constants.PaketPackageName.ToLower(), Constants.PaketGlobalExeName ]
