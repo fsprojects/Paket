@@ -74,7 +74,7 @@ let ``#3003 repo tool with add to PATH``() =
 
     let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
 
-    for name in ["repotools.cmd"; "repotools.sh"; "repotools.ps1"] do
+    for name in ["repotools.cmd"; "repotools"] do
         let cmdPath = Path.Combine(wrappersPath, name)
         Assert.IsTrue(File.Exists(cmdPath), (sprintf "file '%s' not found" cmdPath))
 
@@ -87,10 +87,17 @@ let ``#3003 repo tool with add to PATH``() =
                @"CALL hello" |] )
 
         let resultCmd = directExecScript scriptPath "" (scenarioTempPath scenario)
-        CollectionAssert.AreEqual( [| "Hello World from F#! with args: []" |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
+        CollectionAssert.Contains(resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq, "Hello World from F#! with args: []" )
     else
-        //TODO implement test for shell
-        ()
+        let scriptPath = (scenarioTempPath scenario) </> "runit"
+        File.WriteAllLines(scriptPath,
+            [| "#!/bin/sh"
+               "source <(./paket-files/bin/repotools e)"
+               "hello"
+               "" |] )
+
+        let resultCmd = directExecScript scriptPath "" (scenarioTempPath scenario)
+        CollectionAssert.Contains(resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq, "Hello World from F#! with args: []" )
 
 [<Test>]
 let ``#3004 repo tool multi tfm (net)``() =
