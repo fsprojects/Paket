@@ -277,9 +277,11 @@ let addTool (results : ParseResults<_>) =
                     depFile
                 | None ->
                     tracefn "global paket.dependencies not found in '%s', initializing..." globalPaketDependenciesPath
-                    Dependencies.Init(globalPaketDependenciesDir, [PackageSources.DefaultNuGetSource],
-                        [ "storage:none"
-                          "repotools_bin_dir:bin" ], false)
+
+                    let sources = [PackageSources.DefaultNuGetSource]
+                    let settings = [ "storage:none"; "repotools_bin_dir:bin" ]
+
+                    Dependencies.Init(globalPaketDependenciesDir, sources, settings, false)
                     tracefn "paket.dependencies initialized."
                     let depsFile = Dependencies.Locate(globalPaketDependenciesPath)
                     tracefn "installing global `paketg` in '%s' (may take a while)..." globalPaketDependenciesPath
