@@ -19,7 +19,7 @@ let private addToProject (project : ProjectFile) groupName package =
         .AddNuGetReference(groupName,package)
         .Save()
 
-let private add installToProjects addToProjectsF dependenciesFileName groupName package version options installAfter runResolver packageKind =
+let private add installToProjects addToProjectsF dependenciesFileName groupName package version options installAfter runResolver packageKind packageInstallSettings =
     let existingDependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
     if (not installToProjects) && existingDependenciesFile.HasPackage(groupName,package) && String.IsNullOrWhiteSpace version then
         traceWarnfn "%s contains package %O in group %O already." dependenciesFileName package groupName
@@ -42,7 +42,7 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
                 existingDependenciesFile
             else
                 existingDependenciesFile
-                    .Add(groupName,package,version, Requirements.InstallSettings.Default, packageKind)
+                    .Add(groupName,package,version, packageInstallSettings, packageKind)
 
         let projects = seq { for p in ProjectFile.FindAllProjects(Path.GetDirectoryName dependenciesFile.FileName) -> p } // lazy sequence in case no project install required
 
@@ -88,7 +88,7 @@ let AddToProject(dependenciesFileName, groupName, package, version, options : In
         | None ->
             traceErrorfn "Could not install package in specified project %s. Project not found" projectName
 
-    add true addToSpecifiedProject dependenciesFileName groupName package version options installAfter runResolver packageKind
+    add true addToSpecifiedProject dependenciesFileName groupName package version options installAfter runResolver packageKind Requirements.InstallSettings.Default
 
 // Add a package with the option to interactively add it to multiple projects.
 let Add(dependenciesFileName, groupName, package, version, options : InstallerOptions, interactive, installAfter, runResolver, packageKind) =
@@ -100,7 +100,7 @@ let Add(dependenciesFileName, groupName, package, version, options : InstallerOp
                 if package |> notInstalled project groupName && Utils.askYesNo(sprintf "  Install to %s into group %O?" project.FileName groupName) then
                     addToProject project groupName package
 
-    add interactive addToProjects dependenciesFileName groupName package version options installAfter runResolver packageKind
+    add interactive addToProjects dependenciesFileName groupName package version options installAfter runResolver packageKind Requirements.InstallSettings.Default
     
 let AddGithub(dependenciesFileName, groupName, repository, file, version, options) =
     let group = matchGroupName(groupName)
