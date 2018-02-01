@@ -118,3 +118,20 @@ let AddGithub(dependenciesFileName, groupName, repository, file, version, option
     
     InstallProcess.Install(options, false, dependenciesFile, lockFile, Map.empty)
     GarbageCollection.CleanUp(dependenciesFile, lockFile)
+
+// Add repo tool.
+let AddRepoTool(dependenciesFileName, groupName, package, version, options : InstallerOptions, interactive, installAfter, runResolver, repoToolAliases, repotoolWorkingDirectory) =
+    let groupName = 
+        match groupName with
+        | None -> Constants.MainDependencyGroup
+        | Some name -> GroupName name
+
+    let addToProjects (_projects : ProjectFile seq) _groupName _package =
+        ()
+
+    let packageInstallSettings =
+        { Requirements.InstallSettings.Default with
+            RepotoolAliases = repoToolAliases
+            RepotoolWorkingDirectory = repotoolWorkingDirectory }
+
+    add interactive addToProjects dependenciesFileName groupName package version options installAfter runResolver Requirements.PackageRequirementKind.RepoTool packageInstallSettings

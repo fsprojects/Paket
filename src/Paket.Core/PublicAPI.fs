@@ -186,6 +186,16 @@ type Dependencies(dependenciesFileName: string) =
                                      InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None),
                                      interactive, installAfter, runResolver, packageKind))
 
+    /// Adds the given repo tool package with the given version to the dependencies file.
+    member this.AddRepoTool(groupName: string option, package: string,version: string,force: bool, interactive: bool, installAfter: bool, semVerUpdateMode, runResolver:bool, repotoolAliases, repotoolWorkingDirectory): unit =
+        RunInLockedAccessMode(
+            this.RootPath,
+            fun () ->
+                    AddProcess.AddRepoTool(dependenciesFileName, groupName, PackageName(package.Trim()), version,
+                                           { InstallerOptions.Default with Force = force; SemVerUpdateMode = semVerUpdateMode },
+                                           interactive, installAfter, runResolver,
+                                           repotoolAliases, repotoolWorkingDirectory))
+
     /// Adds the given github repository to the dependencies file.
     member this.AddGithub(groupName, repository, file) =
         this.AddGithub(groupName, repository, file, "")
