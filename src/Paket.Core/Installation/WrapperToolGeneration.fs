@@ -545,7 +545,11 @@ module WrapperToolGeneration =
             |> List.collect (fun scriptPath ->
                 [ { HelperScriptWindows.PartialPath = Path.Combine(scriptPath, sprintf "%s.cmd" Constants.PaketRepotoolsHelperName)
                     Direct = false }
-                  |> HelperScript.Windows ] )
+                  |> HelperScript.Windows
+
+                  { HelperScriptShell.PartialPath = Path.Combine(scriptPath, Constants.PaketRepotoolsHelperName)
+                    Direct = false }
+                  |> HelperScript.Shell ] )
 
         let paketWrapperScript =
             let mainBinDirOpt =
