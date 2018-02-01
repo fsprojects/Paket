@@ -371,13 +371,13 @@ module WrapperToolGeneration =
             |> List.map snd
             |> List.distinct
             |> List.collect (fun scriptPath ->
-                [ { ScriptAddToPATHWindows.PartialPath = Path.Combine(scriptPath, "add_to_PATH.cmd") }
+                [ { ScriptAddToPATHWindows.PartialPath = Path.Combine(scriptPath, sprintf "%s.cmd" Constants.PaketRepotoolsHelperName) }
                   |> ScriptContent.WindowsAddToPATH
 
-                  { ScriptAddToPATHPowershell.PartialPath = Path.Combine(scriptPath, "add_to_PATH.ps1") }
+                  { ScriptAddToPATHPowershell.PartialPath = Path.Combine(scriptPath, sprintf "%s.ps1" Constants.PaketRepotoolsHelperName) }
                   |> ScriptContent.PowershellAddToPATH
 
-                  { ScriptAddToPATHShell.PartialPath = Path.Combine(scriptPath, "add_to_PATH.sh") }
+                  { ScriptAddToPATHShell.PartialPath = Path.Combine(scriptPath, sprintf "%s.sh" Constants.PaketRepotoolsHelperName) }
                   |> ScriptContent.ShellAddToPATH ] )
 
         let isGlobalToolInstall =

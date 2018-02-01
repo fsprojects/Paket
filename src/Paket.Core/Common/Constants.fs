@@ -38,6 +38,7 @@ let [<Literal>] ProjectDefaultNameSpaceCore  = "http://schemas.microsoft.com/dev
 let [<Literal>] NuGetProtocolVersion  = "4.1.0"
 let [<Literal>] PaketPackageName          = "Paket"
 let [<Literal>] PaketGlobalExeName        = "paketg"
+let [<Literal>] PaketRepotoolsHelperName  = "repotools"
 
 #if DOTNETCORE
 module Environment =
