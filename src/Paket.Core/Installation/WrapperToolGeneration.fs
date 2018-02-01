@@ -218,22 +218,6 @@ module WrapperToolGeneration =
             let scriptFile = Path.Combine(rootPath.FullName, self.PartialPath) |> FileInfo
             scriptFile, (if self.Direct then self.Render () else self.RenderGlobal ())
 
-    type HelperScriptPowershell = {
-        PartialPath : string
-    } with
-        member __.Render () =
-            let cmdContent =
-                [ ""
-                  "$env:PATH = $PSScriptRoot + ';' + $env:PATH"
-                  "" ]
-            
-            cmdContent |> String.concat "\r\n"
-
-        /// Save the script in '<directory>/paket-files/bin/<script>'
-        member self.Save (rootPath:DirectoryInfo) =
-            let scriptFile = Path.Combine(rootPath.FullName, self.PartialPath) |> FileInfo
-            scriptFile, self.Render () 
-
     type ScriptContentWindows = {
         PartialPath : string
         RelativeToolPath : string
@@ -465,7 +449,6 @@ module WrapperToolGeneration =
         | Windows of HelperScriptWindows
         | Shell of HelperScriptShell
         | ShellFunctions of HelperFunctionScriptShell
-        | Powershell of HelperScriptPowershell
 
     let constructWrapperScriptsFromData (depCache:DependencyCache) (groups: (LockFileGroup * Map<PackageName,PackageResolver.ResolvedPackage>) list) =
         let lockFile = depCache.LockFile
@@ -554,10 +537,6 @@ module WrapperToolGeneration =
                 [ { HelperScriptWindows.PartialPath = Path.Combine(scriptPath, sprintf "%s.cmd" Constants.PaketRepotoolsHelperName)
                     Direct = true }
                   |> HelperScript.Windows
-
-                  //TODO powershell not yet implemented correctly
-                  //{ HelperScriptPowershell.PartialPath = Path.Combine(scriptPath, sprintf "%s.ps1" Constants.PaketRepotoolsHelperName) }
-                  //|> HelperScript.Powershell
 
                   { HelperScriptShell.PartialPath = Path.Combine(scriptPath, Constants.PaketRepotoolsHelperName)
                     Direct = true }
@@ -678,8 +657,6 @@ module WrapperToolInstall =
         match helper with
         | HelperScript.Windows cmd ->
             cmd.Save dir |> saveScript
-        | HelperScript.Powershell ps1 ->
-            ps1.Save dir |> saveScript
         | HelperScript.ShellFunctions sh ->
             sh.Save dir |> saveScript
         | HelperScript.Shell sh ->
