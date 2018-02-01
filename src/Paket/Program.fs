@@ -788,6 +788,17 @@ let info (results : ParseResults<InfoArgs>) =
         match Dependencies.TryLocate() with
         | None -> ()
         | Some deps -> tracefn "%s" deps.RootPath
+    elif results.Contains <@ InfoArgs.Paket_Repotools_Dir @> then
+        match Dependencies.TryLocate() with
+        | None -> ()
+        | Some deps ->
+            let dir =
+                Path.Combine(deps.RootPath, Constants.PaketFilesFolderName,"bin")
+                |> Path.GetFullPath
+            if Directory.Exists dir then
+                tracefn "%s" dir
+            else
+                ()
 
 let generateNuspec (results:ParseResults<GenerateNuspecArgs>) =
     let projectFile = results.GetResult <@ GenerateNuspecArgs.Project @>

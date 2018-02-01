@@ -485,11 +485,13 @@ with
 
 type InfoArgs =
     | [<Unique>] Paket_Dependencies_Dir
+    | [<Unique>] Paket_Repotools_Dir
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | Paket_Dependencies_Dir -> "absolute path of paket.dependencies directory, if exists"
+            | Paket_Repotools_Dir -> "absolute path of repo tools directory, if exists"
 
 type PackArgs =
     | [<ExactlyOnce;MainCommand>] Output of path:string
