@@ -115,38 +115,13 @@ module WrapperToolGeneration =
     open System.Collections.Generic
     open Paket.Logging
 
-    let private saveScript render (rootPath:DirectoryInfo) partialPath =
-        if not rootPath.Exists then rootPath.Create()
-        let scriptFile = FileInfo (Path.Combine(rootPath.FullName, partialPath))
-        if verbose then
-            verbosefn "generating wrapper script - %s" scriptFile.FullName
-        if not scriptFile.Directory.Exists then scriptFile.Directory.Create()            
-            
-        let existingFileContents =
-            if scriptFile.Exists then
-                try
-                    File.ReadAllText scriptFile.FullName
-                with
-                | exn -> failwithf "Could not read load script file %s. Message: %s" scriptFile.FullName exn.Message
-            else
-                ""
-
-        let text = render rootPath
-        try
-            if existingFileContents <> text then
-                File.WriteAllText (scriptFile.FullName, text)
-        with
-        | exn -> failwithf "Could not write load script file %s. Message: %s" scriptFile.FullName exn.Message
-
-        scriptFile
-
     type [<RequireQualifiedAccess>]  ScriptContentRuntimeHost = DotNetFramework | DotNetCoreApp | Native
 
     type HelperScriptWindows = {
         PartialPath : string
         Direct: bool
     } with
-        member self.Render (_directory:DirectoryInfo) =
+        member self.Render () =
             let cmdContent =
                 [ "@ECHO OFF"
                   ""
@@ -169,7 +144,7 @@ module WrapperToolGeneration =
             
             cmdContent |> String.concat "\r\n"
 
-        member self.RenderGlobal (_directory:DirectoryInfo) =
+        member self.RenderGlobal () =
             let cmdContent =
                 [ "@ECHO OFF"
                   ""
@@ -197,14 +172,14 @@ module WrapperToolGeneration =
             
             cmdContent |> String.concat "\r\n"
 
-        /// Save the script in '<directory>/paket-files/bin/<script>'
         member self.Save (rootPath:DirectoryInfo) =
-            saveScript (if self.Direct then self.Render else self.RenderGlobal) rootPath self.PartialPath
+            let scriptFile = Path.Combine(rootPath.FullName, self.PartialPath) |> FileInfo
+            scriptFile, (if self.Direct then self.Render () else self.RenderGlobal ())
 
     type HelperScriptPowershell = {
         PartialPath : string
     } with
-        member self.Render (_directory:DirectoryInfo) =
+        member self.Render () =
             let cmdContent =
                 [ ""
                   "$env:PATH = $PSScriptRoot + ';' + $env:PATH"
@@ -214,7 +189,8 @@ module WrapperToolGeneration =
 
         /// Save the script in '<directory>/paket-files/bin/<script>'
         member self.Save (rootPath:DirectoryInfo) =
-            saveScript self.Render rootPath self.PartialPath
+            let scriptFile = Path.Combine(rootPath.FullName, self.PartialPath) |> FileInfo
+            scriptFile, self.Render () 
 
     type ScriptContentWindows = {
         PartialPath : string
@@ -222,7 +198,7 @@ module WrapperToolGeneration =
         Runtime: ScriptContentRuntimeHost
         WorkingDirectory: RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath
     } with
-        member self.Render (_directory:DirectoryInfo) =
+        member self.Render () =
 
             let paketToolRuntimeHostWin =
                 match self.Runtime with
@@ -245,41 +221,16 @@ module WrapperToolGeneration =
             
             cmdContent |> String.concat "\r\n"
         
-        /// Save the script in '<directory>/paket-files/bin/<script>'
         member self.Save (rootPath:DirectoryInfo) =
-            saveScript self.Render rootPath self.PartialPath
+            let scriptFile = Path.Combine(rootPath.FullName, self.PartialPath) |> FileInfo
+            scriptFile, self.Render ()
     
     and [<RequireQualifiedAccess>] ScriptContentWindowsRuntime = DotNetFramework | DotNetCoreApp | Mono | Native
-
-    let directChmod (workDir: DirectoryInfo) args =
-        let configProcessStartInfoF (psi: Diagnostics.ProcessStartInfo) =
-            psi.UseShellExecute <- true
-            psi.FileName <- "chmod"
-            psi.Arguments <- args
-            psi.WorkingDirectory <- workDir.FullName
-        let chmodTimeout = TimeSpan.FromSeconds 2.
-        let exitCode = Paket.Git.CommandHelper.ExecProcessWithLambdas configProcessStartInfoF chmodTimeout false ignore ignore
-        exitCode
-
-    let chmod_plus_x (path: FileInfo) =
-        if Utils.isWindows then
-            verbosefn "chmod+x of '%s' skipped on windows, execute it manually if needed" path.FullName
-        else
-            try
-                verbosefn "running chmod+x on '%s' ..." path.FullName
-                let exitCode = directChmod path.Directory (sprintf """+x "%s" """ path.FullName)
-                if exitCode = 0 then
-                    verbosefn "chmod+x on '%s' was successful (exit code %i)." path.FullName exitCode
-                else
-                    verbosefn "chmod+x on '%s' failed with code %i. Execute it manually" path.FullName exitCode
-            with e ->
-                verbosefn "Running chmod+x on '%s' failed with an exception. Execute it manually" path.FullName
-                printError e
 
     type HelperScriptShell = {
         PartialPath : string
     } with
-        member self.Render (_directory:DirectoryInfo) =
+        member self.Render () =
 
             let cmdContent =
                 [ "#!/bin/sh"
@@ -294,7 +245,8 @@ module WrapperToolGeneration =
         
         /// Save the script in '<directory>/paket-files/bin/<script>'
         member self.Save (rootPath:DirectoryInfo) =
-            saveScript self.Render rootPath self.PartialPath
+            let scriptFile = Path.Combine(rootPath.FullName, self.PartialPath) |> FileInfo
+            scriptFile, self.Render ()
 
     type ScriptContentShell = {
         PartialPath : string
@@ -302,7 +254,7 @@ module WrapperToolGeneration =
         Runtime: ScriptContentRuntimeHost
         WorkingDirectory: RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath
     } with
-        member self.Render (_directory:DirectoryInfo) =
+        member self.Render () =
             let paketToolRuntimeHostLinux =
                 match self.Runtime with
                 | ScriptContentRuntimeHost.DotNetFramework -> "mono "
@@ -325,7 +277,8 @@ module WrapperToolGeneration =
         
         /// Save the script in '<directory>/paket-files/bin/<script>'
         member self.Save (rootPath:DirectoryInfo) =
-            saveScript self.Render rootPath self.PartialPath
+            let scriptFile = Path.Combine(rootPath.FullName, self.PartialPath) |> FileInfo
+            scriptFile, self.Render ()
 
     type [<RequireQualifiedAccess>] ToolWrapper =
         | Windows of ScriptContentWindows
@@ -439,19 +392,78 @@ module WrapperToolGeneration =
         
         wrapperScripts, (if isGlobalToolInstall then globalHelperScripts else repoHelperScripts)
 
+module WrapperToolInstall =
+
+    open Paket.Logging
+    open WrapperToolGeneration
+
+    let private saveScript ((scriptFile: FileInfo), text) =
+        if verbose then
+            verbosefn "generating wrapper script - %s" scriptFile.FullName
+        if not scriptFile.Directory.Exists then scriptFile.Directory.Create()            
+            
+        let existingFileContents =
+            if scriptFile.Exists then
+                try
+                    File.ReadAllText scriptFile.FullName
+                with
+                | exn -> failwithf "Could not read load script file %s. Message: %s" scriptFile.FullName exn.Message
+            else
+                ""
+
+        try
+            if existingFileContents <> text then
+                File.WriteAllText (scriptFile.FullName, text)
+        with
+        | exn -> failwithf "Could not write load script file %s. Message: %s" scriptFile.FullName exn.Message
+
+        scriptFile
+
+    let directChmod (workDir: DirectoryInfo) args =
+        let configProcessStartInfoF (psi: Diagnostics.ProcessStartInfo) =
+            psi.UseShellExecute <- true
+            psi.FileName <- "chmod"
+            psi.Arguments <- args
+            psi.WorkingDirectory <- workDir.FullName
+        let chmodTimeout = TimeSpan.FromSeconds 2.
+        let exitCode = Paket.Git.CommandHelper.ExecProcessWithLambdas configProcessStartInfoF chmodTimeout false ignore ignore
+        exitCode
+
+    let chmod_plus_x (path: FileInfo) =
+        if Utils.isWindows then
+            verbosefn "chmod+x of '%s' skipped on windows, execute it manually if needed" path.FullName
+        else
+            try
+                verbosefn "running chmod+x on '%s' ..." path.FullName
+                let exitCode = directChmod path.Directory (sprintf """+x "%s" """ path.FullName)
+                if exitCode = 0 then
+                    verbosefn "chmod+x on '%s' was successful (exit code %i)." path.FullName exitCode
+                else
+                    verbosefn "chmod+x on '%s' failed with code %i. Execute it manually" path.FullName exitCode
+            with e ->
+                verbosefn "Running chmod+x on '%s' failed with an exception. Execute it manually" path.FullName
+                printError e
+
     let saveTool dir tool =
         match tool with
-        | ToolWrapper.Windows cmd -> cmd.Save dir
+        | ToolWrapper.Windows cmd ->
+            cmd.Save dir |> saveScript
         | ToolWrapper.Shell sh ->
-            let scriptPath = sh.Save dir
+            let scriptPath =
+                sh.Save dir
+                |> saveScript
             chmod_plus_x scriptPath
             scriptPath
 
     let saveHelper dir helper =
         match helper with
-        | HelperScript.Windows cmd -> cmd.Save dir
-        | HelperScript.Powershell ps1 -> ps1.Save dir
+        | HelperScript.Windows cmd ->
+            cmd.Save dir |> saveScript
+        | HelperScript.Powershell ps1 ->
+            ps1.Save dir |> saveScript
         | HelperScript.Shell sh ->
-            let scriptPath = sh.Save dir
+            let scriptPath =
+                sh.Save dir
+                |> saveScript
             chmod_plus_x scriptPath
             scriptPath
