@@ -282,12 +282,21 @@ let addTool (results : ParseResults<_>) =
                     traceVerbose (sprintf "global paket.dependencies not found in '%s', initializing..." globalPaketDependenciesPath)
                     Dependencies.Init(globalPaketDependenciesDir)
                     traceVerbose (sprintf "paket.dependencies initialized in '%s'." globalPaketDependenciesPath)
-                    Dependencies.Locate(globalPaketDependenciesPath)
-            dependencies.Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
+                    let depsFile = Dependencies.Locate(globalPaketDependenciesPath)
+                    traceVerbose (sprintf "updating paket.dependencies with default packages (global paket, helper script) in '%s'..." globalPaketDependenciesPath)
+                    let installDefaultTools = true
+                    let paketgAlias =
+                        [ Constants.PaketPackageName.ToLower(), Constants.PaketGlobalExeName ]
+                        |> Map.ofList
+                    depsFile.AddRepoTool(None, Constants.PaketPackageName, ">= 5", force, interactive, installDefaultTools, SemVerUpdateMode.NoRestriction, installDefaultTools, paketgAlias, Requirements.RepotoolWorkingDirectoryPath.ScriptDir)
+                    traceVerbose "paket.dependencies updated."
+                    depsFile
+            dependencies
+                .AddRepoTool(group, packageName, version, force, interactive, noInstall |> not, semVerUpdateMode, noResolve |> not, Map.empty, Requirements.RepotoolWorkingDirectoryPath.CurrentDirectory)
     else
         Dependencies
             .Locate()
-            .Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
+            .AddRepoTool(group, packageName, version, force, interactive, noInstall |> not, semVerUpdateMode, noResolve |> not, Map.empty, Requirements.RepotoolWorkingDirectoryPath.CurrentDirectory)
 
 
 let validateConfig (results : ParseResults<_>) =
