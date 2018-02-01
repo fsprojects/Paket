@@ -356,6 +356,16 @@ module WrapperToolGeneration =
                     if y.Exists then
                         yield (g, x, y)  ]
 
+        let binDirectoryForGroup (g: LockFileGroup) =
+            match g.Options.Settings.RepotoolsBinDirectory with
+            | Some path ->
+                Path.Combine(lockFile.RootPath, path) |> Path.GetFullPath
+            | None ->
+                if g.Name = Constants.MainDependencyGroup then
+                    Path.Combine(Constants.PaketFilesFolderName,"bin")
+                else
+                    Path.Combine(Constants.PaketFilesFolderName, g.Name.Name, "bin")
+
         let toolWrapperInDir =
             allRepoToolPkgs
             |> List.collect (fun (g, x, y) ->
@@ -363,16 +373,8 @@ module WrapperToolGeneration =
                 |> RepoToolDiscovery.applyPreferencesAboutRuntimeHost (RepoToolDiscovery.getPreferenceFromEnv ())
                 |> List.map (fun tool -> g, tool) )
             |> List.map (fun (g, tool) ->
-                    let scriptPath =
-                        match g.Options.Settings.RepotoolsBinDirectory with
-                        | Some path ->
-                            Path.Combine(lockFile.RootPath, path) |> Path.GetFullPath
-                        | None ->
-                            if g.Name = Constants.MainDependencyGroup then
-                                Path.Combine(Constants.PaketFilesFolderName,"bin")
-                            else
-                                Path.Combine(Constants.PaketFilesFolderName, g.Name.Name, "bin")
-                    tool, scriptPath)
+                let scriptPath = binDirectoryForGroup g
+                tool, scriptPath)
 
         let wrapperScripts =
             toolWrapperInDir
@@ -433,8 +435,34 @@ module WrapperToolGeneration =
                 [ { HelperScriptWindows.PartialPath = Path.Combine(scriptPath, sprintf "%s.cmd" Constants.PaketRepotoolsHelperName)
                     Direct = false }
                   |> HelperScript.Windows ] )
+
+        let paketWrapperScript =
+            let mainBinDirOpt =
+                allRepoToolPkgs
+                |> List.tryPick (fun (g,_,_) -> if g.Name = Constants.MainDependencyGroup then Some g else None)
+                |> Option.map binDirectoryForGroup
+
+            match mainBinDirOpt with
+            | None -> []
+            | Some scriptPath ->
+                let toolName = Path.GetFileNameWithoutExtension(Constants.PaketFileName)
+                let toolFullPath = Path.Combine(lockFile.RootPath, Constants.PaketFolderName, Constants.PaketFileName)
+                let relativePath = createRelativePath (Path.Combine(lockFile.RootPath, scriptPath, toolName)) toolFullPath
+
+                [ { ScriptContentWindows.PartialPath = Path.Combine(scriptPath, (sprintf "%s.cmd" toolName))
+                    Runtime = ScriptContentRuntimeHost.DotNetFramework
+                    WorkingDirectory = RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory
+                    RelativeToolPath = relativePath } |> ToolWrapper.Windows
+                
+                  { ScriptContentShell.PartialPath = Path.Combine(scriptPath, toolName)
+                    Runtime = ScriptContentRuntimeHost.DotNetFramework
+                    WorkingDirectory = RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory
+                    RelativeToolPath = relativePath } |> ToolWrapper.Shell ]
         
-        wrapperScripts, (if isGlobalToolInstall then globalHelperScripts else repoHelperScripts)
+        if isGlobalToolInstall then
+             wrapperScripts, globalHelperScripts
+        else
+            (wrapperScripts @ paketWrapperScript), repoHelperScripts
 
 module WrapperToolInstall =
 
