@@ -379,6 +379,14 @@ module WrapperToolGeneration =
 
                   { ScriptAddToPATHShell.PartialPath = Path.Combine(scriptPath, "add_to_PATH.sh") }
                   |> ScriptContent.ShellAddToPATH ] )
+
+        let isGlobalToolInstall =
+            toolWrapperInDir
+            |> List.map fst
+            |> List.exists (fun tool -> tool.Name = Constants.PaketGlobalExeName)
         
         [ yield! wrapperScripts
-          yield! installToPathScripts ]
+          if isGlobalToolInstall then
+            ()
+          else
+            yield! installToPathScripts ]
