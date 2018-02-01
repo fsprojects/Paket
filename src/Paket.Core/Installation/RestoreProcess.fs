@@ -459,21 +459,12 @@ let CreateToolWrapperForGroups (lockFile:LockFile) (groups:Map<GroupName,LockFil
         let depsCache = DependencyCache(lockFile)
         let rootPath = DirectoryInfo lockFile.RootPath
 
-        let scripts = RepoTools.WrapperToolGeneration.constructWrapperScriptsFromData depsCache groupsToGenerate
-        for sd in scripts do
-            let saveScript =
-                match sd with
-                | RepoTools.WrapperToolGeneration.ScriptContent.Windows script ->
-                     script.Save
-                | RepoTools.WrapperToolGeneration.ScriptContent.Shell script ->
-                     script.Save
-                | RepoTools.WrapperToolGeneration.ScriptContent.WindowsAddToPATH script ->
-                     script.Save
-                | RepoTools.WrapperToolGeneration.ScriptContent.ShellAddToPATH script ->
-                     script.Save
-                | RepoTools.WrapperToolGeneration.ScriptContent.PowershellAddToPATH script ->
-                     script.Save
-            saveScript rootPath |> ignore
+        let scripts, helpers = RepoTools.WrapperToolGeneration.constructWrapperScriptsFromData depsCache groupsToGenerate
+        scripts
+        |> List.iter (RepoTools.WrapperToolGeneration.saveTool rootPath >> ignore)
+        
+        helpers
+        |> List.iter (RepoTools.WrapperToolGeneration.saveHelper rootPath >> ignore)
 
 let FindOrCreateReferencesFile (projectFile:ProjectFile) =
     match projectFile.FindReferencesFile() with

@@ -142,8 +142,9 @@ module WrapperToolGeneration =
 
     type [<RequireQualifiedAccess>]  ScriptContentRuntimeHost = DotNetFramework | DotNetCoreApp | Native
 
-    type ScriptAddToPATHWindows = {
+    type HelperScriptWindows = {
         PartialPath : string
+        Direct: bool
     } with
         member self.Render (_directory:DirectoryInfo) =
             let cmdContent =
@@ -168,29 +169,7 @@ module WrapperToolGeneration =
             
             cmdContent |> String.concat "\r\n"
 
-        /// Save the script in '<directory>/paket-files/bin/<script>'
-        member self.Save (rootPath:DirectoryInfo) =
-            saveScript self.Render rootPath self.PartialPath
-
-    type ScriptAddToPATHPowershell = {
-        PartialPath : string
-    } with
-        member self.Render (_directory:DirectoryInfo) =
-            let cmdContent =
-                [ ""
-                  "$env:PATH = $PSScriptRoot + ';' + $env:PATH"
-                  "" ]
-            
-            cmdContent |> String.concat "\r\n"
-
-        /// Save the script in '<directory>/paket-files/bin/<script>'
-        member self.Save (rootPath:DirectoryInfo) =
-            saveScript self.Render rootPath self.PartialPath
-
-    type ScriptGlobalHelperWindows = {
-        PartialPath : string
-    } with
-        member self.Render (_directory:DirectoryInfo) =
+        member self.RenderGlobal (_directory:DirectoryInfo) =
             let cmdContent =
                 [ "@ECHO OFF"
                   ""
@@ -214,6 +193,21 @@ module WrapperToolGeneration =
                   ")"
                   ""
                   "EXIT /B 1"
+                  "" ]
+            
+            cmdContent |> String.concat "\r\n"
+
+        /// Save the script in '<directory>/paket-files/bin/<script>'
+        member self.Save (rootPath:DirectoryInfo) =
+            saveScript (if self.Direct then self.Render else self.RenderGlobal) rootPath self.PartialPath
+
+    type HelperScriptPowershell = {
+        PartialPath : string
+    } with
+        member self.Render (_directory:DirectoryInfo) =
+            let cmdContent =
+                [ ""
+                  "$env:PATH = $PSScriptRoot + ';' + $env:PATH"
                   "" ]
             
             cmdContent |> String.concat "\r\n"
@@ -281,7 +275,7 @@ module WrapperToolGeneration =
                 verbosefn "Running chmod+x on '%s' failed with an exception. Execute it manually" path.FullName
                 printError e
 
-    type ScriptAddToPATHShell = {
+    type HelperScriptShell = {
         PartialPath : string
     } with
         member self.Render (_directory:DirectoryInfo) =
@@ -336,12 +330,14 @@ module WrapperToolGeneration =
             chmod_plus_x scriptPath
             scriptPath
 
-    type [<RequireQualifiedAccess>] ScriptContent =
+    type [<RequireQualifiedAccess>] ToolWrapper =
         | Windows of ScriptContentWindows
         | Shell of ScriptContentShell
-        | WindowsAddToPATH of ScriptAddToPATHWindows
-        | ShellAddToPATH of ScriptAddToPATHShell
-        | PowershellAddToPATH of ScriptAddToPATHPowershell
+    
+    type [<RequireQualifiedAccess>] HelperScript =
+        | Windows of HelperScriptWindows
+        | Shell of HelperScriptShell
+        | Powershell of HelperScriptPowershell
      
     let constructWrapperScriptsFromData (depCache:DependencyCache) (groups: (LockFileGroup * Map<PackageName,PackageResolver.ResolvedPackage>) list) =
         let lockFile = depCache.LockFile
@@ -408,34 +404,51 @@ module WrapperToolGeneration =
                   [ { ScriptContentWindows.PartialPath = Path.Combine(scriptPath, (sprintf "%s.cmd" tool.Name))
                       Runtime = runtime
                       WorkingDirectory = tool.WorkingDirectory
-                      RelativeToolPath = relativePath } |> ScriptContent.Windows
+                      RelativeToolPath = relativePath } |> ToolWrapper.Windows
                 
                     { ScriptContentShell.PartialPath = Path.Combine(scriptPath, tool.Name)
                       Runtime = runtime
                       WorkingDirectory = tool.WorkingDirectory
-                      RelativeToolPath = relativePath } |> ScriptContent.Shell ] )
-
-        let installToPathScripts =
-            toolWrapperInDir
-            |> List.map snd
-            |> List.distinct
-            |> List.collect (fun scriptPath ->
-                [ { ScriptAddToPATHWindows.PartialPath = Path.Combine(scriptPath, sprintf "%s.cmd" Constants.PaketRepotoolsHelperName) }
-                  |> ScriptContent.WindowsAddToPATH
-
-                  { ScriptAddToPATHPowershell.PartialPath = Path.Combine(scriptPath, sprintf "%s.ps1" Constants.PaketRepotoolsHelperName) }
-                  |> ScriptContent.PowershellAddToPATH
-
-                  { ScriptAddToPATHShell.PartialPath = Path.Combine(scriptPath, sprintf "%s.sh" Constants.PaketRepotoolsHelperName) }
-                  |> ScriptContent.ShellAddToPATH ] )
+                      RelativeToolPath = relativePath } |> ToolWrapper.Shell ] )
 
         let isGlobalToolInstall =
             toolWrapperInDir
             |> List.map fst
             |> List.exists (fun tool -> tool.Name = Constants.PaketGlobalExeName)
+
+        let repoHelperScripts =
+            toolWrapperInDir
+            |> List.map snd
+            |> List.distinct
+            |> List.collect (fun scriptPath ->
+                [ { HelperScriptWindows.PartialPath = Path.Combine(scriptPath, sprintf "%s.cmd" Constants.PaketRepotoolsHelperName)
+                    Direct = true }
+                  |> HelperScript.Windows
+                  
+                  { HelperScriptPowershell.PartialPath = Path.Combine(scriptPath, sprintf "%s.ps1" Constants.PaketRepotoolsHelperName) }
+                  |> HelperScript.Powershell
+
+                  { HelperScriptShell.PartialPath = Path.Combine(scriptPath, sprintf "%s.sh" Constants.PaketRepotoolsHelperName) }
+                  |> HelperScript.Shell ] )
+
+        let globalHelperScripts =
+            toolWrapperInDir
+            |> List.map snd
+            |> List.distinct
+            |> List.collect (fun scriptPath ->
+                [ { HelperScriptWindows.PartialPath = Path.Combine(scriptPath, sprintf "%s.cmd" Constants.PaketRepotoolsHelperName)
+                    Direct = false }
+                  |> HelperScript.Windows ] )
         
-        [ yield! wrapperScripts
-          if isGlobalToolInstall then
-            ()
-          else
-            yield! installToPathScripts ]
+        wrapperScripts, (if isGlobalToolInstall then globalHelperScripts else repoHelperScripts)
+
+    let saveTool dir tool =
+        match tool with
+        | ToolWrapper.Windows cmd -> cmd.Save dir
+        | ToolWrapper.Shell sh -> sh.Save dir
+
+    let saveHelper dir helper =
+        match helper with
+        | HelperScript.Windows cmd -> cmd.Save dir
+        | HelperScript.Shell sh -> sh.Save dir
+        | HelperScript.Powershell ps1 -> ps1.Save dir
