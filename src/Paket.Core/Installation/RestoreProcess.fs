@@ -461,9 +461,20 @@ let CreateToolWrapperForGroups (lockFile:LockFile) (groups:Map<GroupName,LockFil
 
         let scripts, helpers = RepoTools.WrapperToolGeneration.constructWrapperScriptsFromData depsCache groupsToGenerate
         scripts
+        |> List.filter (fun tool ->
+            match tool with
+            | RepoTools.WrapperToolGeneration.ToolWrapper.Windows _ -> isWindows
+            | RepoTools.WrapperToolGeneration.ToolWrapper.Shell _ -> not isWindows )
         |> List.iter (RepoTools.WrapperToolInstall.saveTool rootPath >> ignore)
         
         helpers
+        |> List.filter (fun helper ->
+            match helper with
+            | RepoTools.WrapperToolGeneration.HelperScript.Windows _ ->
+                isWindows
+            | RepoTools.WrapperToolGeneration.HelperScript.Shell _
+            | RepoTools.WrapperToolGeneration.HelperScript.ShellFunctions _ ->
+                not isWindows )
         |> List.iter (RepoTools.WrapperToolInstall.saveHelper rootPath >> ignore)
 
 let FindOrCreateReferencesFile (projectFile:ProjectFile) =
