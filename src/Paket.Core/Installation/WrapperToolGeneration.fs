@@ -273,6 +273,7 @@ module WrapperToolGeneration =
 
     type HelperScriptShell = {
         PartialPath : string
+        Direct: string
     } with
         member __.Render () =
 
@@ -346,6 +347,53 @@ module WrapperToolGeneration =
             
             cmdContent |> List.map (fun s -> s.TrimEnd()) |> String.concat "\n"
         
+        member __.RenderGlobal () =
+#!/bin/bash
+#
+# Helper to find paket repo tools in directory hierarchy
+#
+
+write_out () {
+  if [ -t 1 ] ; then
+    # stdout is a terminal
+    echo "$1"
+  else
+    # stdout isn't a terminal
+    echo echo \'"$1"\'
+  fi
+}
+
+find_repotools_dir () {
+
+  local repotools_dir
+  repotools_dir="$(mono /mnt/e/github/Paket/bin/paket.exe info --paket-repotools-dir -s)"
+
+  if [[ $? -eq 0 ]]; then
+    echo echo \'"Found directory $repotools_dir "\'
+    echo echo \'""$repotools_dir/repotools" $@"\'
+    "$repotools_dir/repotools" $@
+  else
+    echo echo \'"Paket repo tools directory not found in directory hierachy"\'
+  fi
+}
+
+main () {
+
+  local _script
+  _script="$(readlink -f "$0")"
+  local _base
+  _base="$(dirname "$_script")"
+
+  if [[ "$1" = '' ]]; then
+    echo echo not implemented yet
+  else
+    find_repotools_dir "$@"
+  fi
+}
+
+main "$@"
+
+
         /// Save the script in '<directory>/paket-files/bin/<script>'
         member self.Save (rootPath:DirectoryInfo) =
             let scriptFile = Path.Combine(rootPath.FullName, self.PartialPath) |> FileInfo
