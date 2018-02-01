@@ -38,8 +38,9 @@ let [<Literal>] ProjectDefaultNameSpaceCore  = "http://schemas.microsoft.com/dev
 let [<Literal>] NuGetProtocolVersion  = "4.1.0"
 let [<Literal>] PaketPackageName          = "Paket"
 let [<Literal>] PaketGlobalExeName        = "paketg"
-let [<Literal>] PaketRepotoolsHelperName  = "repotools"
-let [<Literal>] PaketRepotoolsShellFunctionsHelperName  = "paket_repotools_helpers.sh"
+let [<Literal>] PaketRepotoolsHelperName  = "paketrt"
+let [<Literal>] PaketRepotoolsShellHelperName  = "paket_repotools_p"
+let [<Literal>] PaketRepotoolsShellFunctionsHelperName  = "paket_functions.sh"
 let [<Literal>] PaketRepotoolsDirectoryName  = "bin"
 
 #if DOTNETCORE

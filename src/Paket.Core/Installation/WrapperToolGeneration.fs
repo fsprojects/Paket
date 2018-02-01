@@ -353,8 +353,8 @@ module WrapperToolGeneration =
                   """                                                                                          """
                   """  if [[ $? -eq 0 ]] && [[ -d "$repotools_dir" ]]; then                                    """
                   """    echo echo \'"Found directory $repotools_dir "\'                                       """
-                  """    echo echo \'""$repotools_dir/repotools" $@"\'                                         """
-                  """    "$repotools_dir/repotools" $@                                                         """
+                  sprintf """    echo echo \'""$repotools_dir/%s" $@"\'                                        """ Constants.PaketRepotoolsShellHelperName
+                  sprintf """    "$repotools_dir/%s" $@                                                        """ Constants.PaketRepotoolsShellHelperName
                   """  else                                                                                    """
                   """    echo echo \'"Paket repo tools directory not found in directory hierachy"\'            """
                   """  fi                                                                                      """
@@ -392,14 +392,14 @@ module WrapperToolGeneration =
         member __.Render () =
 
             let cmdContent =
-                [ """#                                                                     """
-                  """# Paket Helper functions                                              """
-                  """#                                                                     """
-                  """                                                                      """
-                  """# source repotools in current shell                                   """
-                  """paket_rt () {                                                         """
-                  """  . <(repotools "$@")                                                 """
-                  """}                                                                     """
+                [ """#                                                    """
+                  """# Paket Helper functions                             """
+                  """#                                                    """
+                  """                                                     """
+                  """# source repotools in current shell                  """
+                  sprintf """%s () {                                      """ Constants.PaketRepotoolsHelperName
+                  sprintf """  . <(%s "$@")                               """ Constants.PaketRepotoolsShellHelperName
+                  """}                                                    """
                   "" ]
             
             cmdContent |> List.map (fun s -> s.TrimEnd()) |> String.concat "\n"
@@ -538,7 +538,7 @@ module WrapperToolGeneration =
                     Direct = true }
                   |> HelperScript.Windows
 
-                  { HelperScriptShell.PartialPath = Path.Combine(scriptPath, Constants.PaketRepotoolsHelperName)
+                  { HelperScriptShell.PartialPath = Path.Combine(scriptPath, Constants.PaketRepotoolsShellHelperName)
                     Direct = true }
                   |> HelperScript.Shell ] )
 
@@ -551,7 +551,7 @@ module WrapperToolGeneration =
                     Direct = false }
                   |> HelperScript.Windows
 
-                  { HelperScriptShell.PartialPath = Path.Combine(scriptPath, Constants.PaketRepotoolsHelperName)
+                  { HelperScriptShell.PartialPath = Path.Combine(scriptPath, Constants.PaketRepotoolsShellHelperName)
                     Direct = false }
                   |> HelperScript.Shell
 
