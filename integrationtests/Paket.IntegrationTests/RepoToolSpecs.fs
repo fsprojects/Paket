@@ -74,7 +74,7 @@ let ``#3003 repo tool with add to PATH``() =
 
     let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
 
-    for name in ["add_to_PATH.cmd"; "add_to_PATH.sh"; "add_to_PATH.ps1"] do
+    for name in ["repotools.cmd"; "repotools.sh"; "repotools.ps1"] do
         let cmdPath = Path.Combine(wrappersPath, name)
         Assert.IsTrue(File.Exists(cmdPath), (sprintf "file '%s' not found" cmdPath))
 
