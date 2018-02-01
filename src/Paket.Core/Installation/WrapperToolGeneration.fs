@@ -496,9 +496,9 @@ module WrapperToolGeneration =
                 Path.Combine(lockFile.RootPath, path) |> Path.GetFullPath
             | None ->
                 if g.Name = Constants.MainDependencyGroup then
-                    Path.Combine(Constants.PaketFilesFolderName,"bin")
+                    Path.Combine(Constants.PaketFilesFolderName, Constants.PaketRepotoolsDirectoryName)
                 else
-                    Path.Combine(Constants.PaketFilesFolderName, g.Name.Name, "bin")
+                    Path.Combine(Constants.PaketFilesFolderName, g.Name.Name, Constants.PaketRepotoolsDirectoryName)
 
         let toolWrapperInDir =
             allRepoToolPkgs
