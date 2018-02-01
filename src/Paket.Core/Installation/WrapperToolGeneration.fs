@@ -445,19 +445,23 @@ module WrapperToolGeneration =
             match mainBinDirOpt with
             | None -> []
             | Some scriptPath ->
-                let toolName = Path.GetFileNameWithoutExtension(Constants.PaketFileName)
                 let toolFullPath = Path.Combine(lockFile.RootPath, Constants.PaketFolderName, Constants.PaketFileName)
-                let relativePath = createRelativePath (Path.Combine(lockFile.RootPath, scriptPath, toolName)) toolFullPath
 
-                [ { ScriptContentWindows.PartialPath = Path.Combine(scriptPath, (sprintf "%s.cmd" toolName))
-                    Runtime = ScriptContentRuntimeHost.DotNetFramework
-                    WorkingDirectory = RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory
-                    RelativeToolPath = relativePath } |> ToolWrapper.Windows
+                if File.Exists toolFullPath then
+                    let toolName = Path.GetFileNameWithoutExtension(Constants.PaketFileName)
+                    let relativePath = createRelativePath (Path.Combine(lockFile.RootPath, scriptPath, toolName)) toolFullPath
+
+                    [ { ScriptContentWindows.PartialPath = Path.Combine(scriptPath, (sprintf "%s.cmd" toolName))
+                        Runtime = ScriptContentRuntimeHost.DotNetFramework
+                        WorkingDirectory = RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory
+                        RelativeToolPath = relativePath } |> ToolWrapper.Windows
                 
-                  { ScriptContentShell.PartialPath = Path.Combine(scriptPath, toolName)
-                    Runtime = ScriptContentRuntimeHost.DotNetFramework
-                    WorkingDirectory = RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory
-                    RelativeToolPath = relativePath } |> ToolWrapper.Shell ]
+                      { ScriptContentShell.PartialPath = Path.Combine(scriptPath, toolName)
+                        Runtime = ScriptContentRuntimeHost.DotNetFramework
+                        WorkingDirectory = RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory
+                        RelativeToolPath = relativePath } |> ToolWrapper.Shell ]
+                else
+                    []
         
         if isGlobalToolInstall then
              wrapperScripts, globalHelperScripts
