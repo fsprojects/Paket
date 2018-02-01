@@ -187,6 +187,41 @@ module WrapperToolGeneration =
         member self.Save (rootPath:DirectoryInfo) =
             saveScript self.Render rootPath self.PartialPath
 
+    type ScriptGlobalHelperWindows = {
+        PartialPath : string
+    } with
+        member self.Render (_directory:DirectoryInfo) =
+            let cmdContent =
+                [ "@ECHO OFF"
+                  ""
+                  """IF "%1" == "" ("""
+                  sprintf "    ECHO Usage: %s ^<enable^|disable^>" Constants.PaketRepotoolsHelperName
+                  "    EXIT /B 0"
+                  ")"
+                  ""
+                  "SET _PAKET_CMD=e:\github\paket\bin\paket.exe"
+                  ""
+                  """FOR /f %%i in ('"%_PAKET_CMD%" info --paket-repotools-dir -s 2^> NUL') DO ("""
+                  """    IF NOT "%%i" == "" ("""
+                  "        ECHO Found directory '%%i'"
+                  ""
+                  """        ECHO "%%i\repotools" enable"""
+                  """        "%%i\repotools" enable"""
+                  ""
+                  "    ) ELSE ("
+                  "        echo Paket repo tools directory not found in directory hierachy"
+                  "    )"
+                  ")"
+                  ""
+                  "EXIT /B 1"
+                  "" ]
+            
+            cmdContent |> String.concat "\r\n"
+
+        /// Save the script in '<directory>/paket-files/bin/<script>'
+        member self.Save (rootPath:DirectoryInfo) =
+            saveScript self.Render rootPath self.PartialPath
+
     type ScriptContentWindows = {
         PartialPath : string
         RelativeToolPath : string
