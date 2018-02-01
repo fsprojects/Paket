@@ -280,7 +280,9 @@ let addTool (results : ParseResults<_>) =
                 | Some depFile -> depFile
                 | None ->
                     traceVerbose (sprintf "global paket.dependencies not found in '%s', initializing..." globalPaketDependenciesPath)
-                    Dependencies.Init(globalPaketDependenciesDir)
+                    Dependencies.Init(globalPaketDependenciesDir, [PackageSources.DefaultNuGetSource],
+                        [ "storage:none"
+                          "repotools_bin_dir:bin" ], false)
                     traceVerbose (sprintf "paket.dependencies initialized in '%s'." globalPaketDependenciesPath)
                     let depsFile = Dependencies.Locate(globalPaketDependenciesPath)
                     traceVerbose (sprintf "updating paket.dependencies with default packages (global paket, helper script) in '%s'..." globalPaketDependenciesPath)
