@@ -280,7 +280,9 @@ let addTool (results : ParseResults<_>) =
 
                     //let sources = [ PackageSources.DefaultNuGetSource ]
                     //let settings = [ "storage:none"; "repotools_bin_dir:bin" ]
-                    let sources = [ PackageSource.NuGetV2Source "https://www.myget.org/F/paket-repotool-testing/api/v2" ]
+                    let sources =
+                        [ PackageSources.DefaultNuGetSource
+                          PackageSource.NuGetV2Source "https://www.myget.org/F/paket-repotool-testing/api/v2" ]
                     let settings = [ "repotools_bin_dir:bin" ]
 
                     Dependencies.Init(globalPaketDependenciesDir, sources, settings, false)
