@@ -121,7 +121,7 @@ module WrapperToolGeneration =
         PartialPath : string
         Direct: bool
     } with
-        member self.Render () =
+        member __.Render () =
             let cmdContent =
                 [ "@ECHO OFF"
                   ""
@@ -144,7 +144,7 @@ module WrapperToolGeneration =
             
             cmdContent |> String.concat "\r\n"
 
-        member self.RenderGlobal () =
+        member __.RenderGlobal () =
             let cmdContent =
                 [ "@ECHO OFF"
                   ""
@@ -179,7 +179,7 @@ module WrapperToolGeneration =
     type HelperScriptPowershell = {
         PartialPath : string
     } with
-        member self.Render () =
+        member __.Render () =
             let cmdContent =
                 [ ""
                   "$env:PATH = $PSScriptRoot + ';' + $env:PATH"
@@ -230,7 +230,7 @@ module WrapperToolGeneration =
     type HelperScriptShell = {
         PartialPath : string
     } with
-        member self.Render () =
+        member __.Render () =
 
             let cmdContent =
                 [ "#!/bin/sh"
