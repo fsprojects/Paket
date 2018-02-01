@@ -80,21 +80,11 @@ let ``#3003 repo tool with add to PATH``() =
 
     if Paket.Utils.isWindows then
         let scriptPath = (scenarioTempPath scenario) </> "runit.bat"
-        File.WriteAllLines(scriptPath,
-            [| @"@ECHO OFF"
-               @"SETLOCAL"
-               @"CALL paket-files\bin\repotools enable"
-               @"CALL hello" |] )
 
         let resultCmd = directExecScript scriptPath "" (scenarioTempPath scenario)
         CollectionAssert.Contains(resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq, "Hello World from F#! with args: []" )
     else
         let scriptPath = (scenarioTempPath scenario) </> "runit"
-        File.WriteAllLines(scriptPath,
-            [| "#!/bin/sh"
-               "source <(./paket-files/bin/repotools e)"
-               "hello"
-               "" |] )
 
         let resultCmd = directExecScript scriptPath "" (scenarioTempPath scenario)
         CollectionAssert.Contains(resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq, "Hello World from F#! with args: []" )

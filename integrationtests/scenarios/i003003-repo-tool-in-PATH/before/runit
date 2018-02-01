@@ -1,0 +1,3 @@
+#!/bin/sh
+source <(./paket-files/bin/repotools e)
+hello
