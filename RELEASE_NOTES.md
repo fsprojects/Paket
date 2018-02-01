@@ -1,3 +1,10 @@
+#### 5.133.1-beta001 - 2018-02-01
+* WIP of https://github.com/fsprojects/Paket/pull/2938
+* USED FOR TESTING in https://github.com/enricosada/paket-repotool-testing/
+* Added `paket add-tool` to add repo tools
+* Added `paket add-tool -G` to add global tools
+* Added `paket info --paket-repotools-dir` to locate repotools dir
+
 #### 5.156.4 - 2018-04-17
 * BUGFIX: `copy_local: false` now works with .NET SDK - https://github.com/fsprojects/Paket/issues/3154
 
