@@ -12,10 +12,14 @@ module RepoToolDiscovery =
     type RepoToolInNupkg =
         { FullPath: string
           Name: string
+          WorkingDirectory: RepoToolInNupkgWorkingDirectoryPath
           Kind: RepoToolInNupkgKind }
     and [<RequireQualifiedAccess>] RepoToolInNupkgKind =
         | OldStyle
         | ByTFM of tfm:FrameworkIdentifier
+    and [<RequireQualifiedAccess>] RepoToolInNupkgWorkingDirectoryPath =
+        | ScriptDirectory
+        | CurrentDirectory
 
     let getPreferenceFromEnv () =
         match System.Environment.GetEnvironmentVariable("PAKET_REPOTOOL_PREFERRED_RUNTIME") |> Option.ofObj |> Option.bind FrameworkDetection.Extract with
@@ -60,6 +64,10 @@ module RepoToolDiscovery =
         let asTool kind path =
             { RepoToolInNupkg.FullPath = path
               Name = getNameOf (Path.GetFileNameWithoutExtension(path))
+              WorkingDirectory =
+                match pkg.Settings.RepotoolWorkingDirectory with
+                | Requirements.RepotoolWorkingDirectoryPath.ScriptDir -> RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory
+                | Requirements.RepotoolWorkingDirectoryPath.CurrentDirectory -> RepoToolInNupkgWorkingDirectoryPath.CurrentDirectory
               Kind = kind }
 
         let toolsTFMDirs =
@@ -169,6 +177,7 @@ module WrapperToolGeneration =
         PartialPath : string
         RelativeToolPath : string
         Runtime: ScriptContentRuntimeHost
+        WorkingDirectory: RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath
     } with
         member self.Render (_directory:DirectoryInfo) =
 
@@ -179,12 +188,17 @@ module WrapperToolGeneration =
                 | ScriptContentRuntimeHost.Native -> ""
 
             let cmdContent =
-                [ "@ECHO OFF"
-                  ""
-                  "SETLOCAL"
-                  ""
-                  sprintf """%s"%%~dp0%s" %%*""" paketToolRuntimeHostWin self.RelativeToolPath
-                  "" ]
+                [ yield "@ECHO OFF"
+                  yield ""
+                  yield "SETLOCAL"
+                  yield ""
+                  match self.WorkingDirectory with
+                  | RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.CurrentDirectory -> ()
+                  | RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory ->
+                      yield "CD %~dp0"
+                      yield ""
+                  yield sprintf """%s"%%~dp0%s" %%*""" paketToolRuntimeHostWin self.RelativeToolPath
+                  yield "" ]
             
             cmdContent |> String.concat "\r\n"
         
@@ -244,6 +258,7 @@ module WrapperToolGeneration =
         PartialPath : string
         RelativeToolPath : string
         Runtime: ScriptContentRuntimeHost
+        WorkingDirectory: RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath
     } with
         member self.Render (_directory:DirectoryInfo) =
             let paketToolRuntimeHostLinux =
@@ -337,10 +352,12 @@ module WrapperToolGeneration =
                 | Some runtime ->
                   [ { ScriptContentWindows.PartialPath = Path.Combine(scriptPath, (sprintf "%s.cmd" tool.Name))
                       Runtime = runtime
+                      WorkingDirectory = tool.WorkingDirectory
                       RelativeToolPath = relativePath } |> ScriptContent.Windows
                 
                     { ScriptContentShell.PartialPath = Path.Combine(scriptPath, tool.Name)
                       Runtime = runtime
+                      WorkingDirectory = tool.WorkingDirectory
                       RelativeToolPath = relativePath } |> ScriptContent.Shell ] )
 
         let installToPathScripts =
