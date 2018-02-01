@@ -277,15 +277,74 @@ module WrapperToolGeneration =
         member __.Render () =
 
             let cmdContent =
-                [ "#!/bin/sh"
-                  ""
-                  """_script="$(readlink -f ${BASH_SOURCE[0]})" """
-                  """_base="$(dirname $_script)" """
-                  ""
-                  """export PATH="$_base:$PATH" """
+                [ """#!/bin/bash                                                           """
+                  """#                                                                     """
+                  """# Output the command to update PATH to enable/disable repo tools      """
+                  """#                                                                     """
+                  """                                                                      """
+                  """write_out () {                                                        """
+                  """  if [ -t 1 ] ; then                                                  """
+                  """    # stdout is a terminal                                            """
+                  """    echo "$1"                                                         """
+                  """  else                                                                """
+                  """    # stdout isn't a terminal                                         """
+                  """    echo echo \'"$1"\'                                                """
+                  """  fi                                                                  """
+                  """}                                                                     """
+                  """                                                                      """
+                  """show_help () {                                                        """
+                  """  write_out 'Paket repo tools helper'                                 """
+                  """  write_out 'Usage: repotools [command] <options>'                    """
+                  """  write_out ''                                                        """
+                  """  write_out 'COMMANDS:'                                               """
+                  """  write_out ''                                                        """
+                  """  write_out 'enable  (alias e)        enable repo tools'              """
+                  """  write_out 'disable (alias d)        disable repo tools'             """
+                  """  write_out ''                                                        """
+                  """  write_out 'OPTIONS:'                                                """
+                  """  write_out ''                                                        """
+                  """  write_out ' --help                 display this help.'              """
+                  """  write_out ''                                                        """
+                  """}                                                                     """
+                  """                                                                      """
+                  """enable_repotools () {                                                 """
+                  """    echo echo \'"Adding $1 dir to PATH env var..."\'                  """
+                  """    echo export PATH=\'"$1:$PATH"\'                                   """
+                  """    echo echo \'"Done."\'                                             """
+                  """}                                                                     """
+                  """                                                                      """
+                  """disable_repotools () {                                                """
+                  """    echo echo \'"Removing $1 dir from PATH env var..."\'              """
+                  """    echo export PATH=\'"${PATH//"$1:"/}"\'                            """
+                  """    echo echo \'"Done."\'                                             """
+                  """}                                                                     """
+                  """                                                                      """
+                  """main () {                                                             """
+                  """                                                                      """
+                  """  local _script                                                       """
+                  """  _script="$(readlink -f "$0")"                                       """
+                  """  local _base                                                         """
+                  """  _base="$(dirname "$_script")"                                       """
+                  """                                                                      """
+                  """  if [[ "$1" = '' ]]; then                                            """
+                  """    show_help                                                         """
+                  """  elif [[ "$1" = '--help' ]]; then                                    """
+                  """    show_help                                                         """
+                  """  elif [[ "$1" = 'enable' ]]; then                                    """
+                  """    enable_repotools "$_base"                                         """
+                  """  elif [[ "$1" = 'e' ]]; then                                         """
+                  """    enable_repotools "$_base"                                         """
+                  """  elif [[ "$1" = 'disable' ]]; then                                   """
+                  """    disable_repotools "$_base"                                        """
+                  """  elif [[ "$1" = 'd' ]]; then                                         """
+                  """    disable_repotools "$_base"                                        """
+                  """  fi                                                                  """
+                  """}                                                                     """
+                  """                                                                      """
+                  """main "$@"                                                             """
                   "" ]
             
-            cmdContent |> String.concat "\n"
+            cmdContent |> List.map (fun s -> s.TrimEnd()) |> String.concat "\n"
         
         /// Save the script in '<directory>/paket-files/bin/<script>'
         member self.Save (rootPath:DirectoryInfo) =
@@ -420,11 +479,12 @@ module WrapperToolGeneration =
                 [ { HelperScriptWindows.PartialPath = Path.Combine(scriptPath, sprintf "%s.cmd" Constants.PaketRepotoolsHelperName)
                     Direct = true }
                   |> HelperScript.Windows
-                  
-                  { HelperScriptPowershell.PartialPath = Path.Combine(scriptPath, sprintf "%s.ps1" Constants.PaketRepotoolsHelperName) }
-                  |> HelperScript.Powershell
 
-                  { HelperScriptShell.PartialPath = Path.Combine(scriptPath, sprintf "%s.sh" Constants.PaketRepotoolsHelperName) }
+                  //TODO powershell not yet implemented correctly
+                  //{ HelperScriptPowershell.PartialPath = Path.Combine(scriptPath, sprintf "%s.ps1" Constants.PaketRepotoolsHelperName) }
+                  //|> HelperScript.Powershell
+
+                  { HelperScriptShell.PartialPath = Path.Combine(scriptPath, Constants.PaketRepotoolsHelperName) }
                   |> HelperScript.Shell ] )
 
         let globalHelperScripts =
