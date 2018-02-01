@@ -149,7 +149,21 @@ module WrapperToolGeneration =
             let cmdContent =
                 [ "@ECHO OFF"
                   ""
-                  """set PATH=%~dp0;%PATH%"""
+                  """IF "%1" == "" ("""
+                  sprintf "    ECHO Usage: %s ^<enable^|disable^>" Constants.PaketRepotoolsHelperName
+                  "    EXIT /B 0"
+                  ")"
+                  ""
+                  """IF "%1" == "enable" ("""
+                  """    SET "PATH=%~dp0;%PATH%" """
+                  "    EXIT /B 0"
+                  """) ELSE IF "%1" == "disable" ("""
+                  "    ECHO disable not yet implemented."
+                  "    ECHO Please modify the PATH env var manually to remove the '%~dp0' dir"
+                  "    EXIT /B 0"
+                  ")"
+                  ""
+                  "EXIT /B 1"
                   "" ]
             
             cmdContent |> String.concat "\r\n"
