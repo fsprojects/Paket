@@ -401,6 +401,30 @@ module WrapperToolGeneration =
             let scriptFile = Path.Combine(rootPath.FullName, self.PartialPath) |> FileInfo
             scriptFile, (if self.Direct then self.Render () else self.RenderGlobal ())
 
+
+    type HelperFunctionScriptShell = {
+        PartialPath : string
+    } with
+        member __.Render () =
+
+            let cmdContent =
+                [ """#                                                                     """
+                  """# Paket Helper functions                                              """
+                  """#                                                                     """
+                  """                                                                      """
+                  """# source repotools in current shell                                   """
+                  """paket_rt () {                                                         """
+                  """  . <(repotools "$@")                                                 """
+                  """}                                                                     """
+                  "" ]
+            
+            cmdContent |> List.map (fun s -> s.TrimEnd()) |> String.concat "\n"
+
+        /// Save the script in '<directory>/paket-files/bin/<script>'
+        member self.Save (rootPath:DirectoryInfo) =
+            let scriptFile = Path.Combine(rootPath.FullName, self.PartialPath) |> FileInfo
+            scriptFile, self.Render ()
+
     type ScriptContentShell = {
         PartialPath : string
         RelativeToolPath : string
@@ -440,8 +464,9 @@ module WrapperToolGeneration =
     type [<RequireQualifiedAccess>] HelperScript =
         | Windows of HelperScriptWindows
         | Shell of HelperScriptShell
+        | ShellFunctions of HelperFunctionScriptShell
         | Powershell of HelperScriptPowershell
-     
+
     let constructWrapperScriptsFromData (depCache:DependencyCache) (groups: (LockFileGroup * Map<PackageName,PackageResolver.ResolvedPackage>) list) =
         let lockFile = depCache.LockFile
         
@@ -549,7 +574,10 @@ module WrapperToolGeneration =
 
                   { HelperScriptShell.PartialPath = Path.Combine(scriptPath, Constants.PaketRepotoolsHelperName)
                     Direct = false }
-                  |> HelperScript.Shell ] )
+                  |> HelperScript.Shell
+
+                  { HelperFunctionScriptShell.PartialPath = Path.Combine(scriptPath, Constants.PaketRepotoolsHelperName) }
+                  |> HelperScript.ShellFunctions ] )
 
         let paketWrapperScript =
             let mainBinDirOpt =
@@ -652,6 +680,8 @@ module WrapperToolInstall =
             cmd.Save dir |> saveScript
         | HelperScript.Powershell ps1 ->
             ps1.Save dir |> saveScript
+        | HelperScript.ShellFunctions sh ->
+            sh.Save dir |> saveScript
         | HelperScript.Shell sh ->
             let scriptPath =
                 sh.Save dir
