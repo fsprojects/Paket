@@ -266,12 +266,18 @@ module WrapperToolGeneration =
                 | ScriptContentRuntimeHost.DotNetFramework -> "mono "
                 | ScriptContentRuntimeHost.DotNetCoreApp -> "dotnet "
                 | ScriptContentRuntimeHost.Native -> ""
+            
+            let runCmd = sprintf """%s"$(dirname "$0")/%s" "$@" """ paketToolRuntimeHostLinux (self.RelativeToolPath.Replace('\\','/'))
 
             let cmdContent =
-                [ "#!/bin/sh"
-                  ""
-                  sprintf """%s"$(dirname "$0")/%s" "$@" """ paketToolRuntimeHostLinux (self.RelativeToolPath.Replace('\\','/'))
-                  "" ]
+                [ yield "#!/bin/sh"
+                  yield ""
+                  match self.WorkingDirectory with
+                  | RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.CurrentDirectory ->
+                      yield runCmd
+                  | RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory ->
+                      yield sprintf """(cd "$(dirname "$0")"; %s)""" runCmd
+                  yield "" ]
             
             cmdContent |> String.concat "\n"
         
