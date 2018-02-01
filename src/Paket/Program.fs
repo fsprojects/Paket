@@ -272,21 +272,23 @@ let addTool (results : ParseResults<_>) =
             let globalPaketDependenciesPath = Path.Combine(globalPaketDependenciesDir, Constants.DependenciesFileName)
             let dependencies =
                 match Dependencies.TryLocate(globalPaketDependenciesPath) with
-                | Some depFile -> depFile
+                | Some depFile ->
+                    traceVerbose (sprintf "global paket.dependencies found in '%s'" depFile.DependenciesFile)
+                    depFile
                 | None ->
-                    traceVerbose (sprintf "global paket.dependencies not found in '%s', initializing..." globalPaketDependenciesPath)
+                    tracefn "global paket.dependencies not found in '%s', initializing..." globalPaketDependenciesPath
                     Dependencies.Init(globalPaketDependenciesDir, [PackageSources.DefaultNuGetSource],
                         [ "storage:none"
                           "repotools_bin_dir:bin" ], false)
-                    traceVerbose (sprintf "paket.dependencies initialized in '%s'." globalPaketDependenciesPath)
+                    tracefn "paket.dependencies initialized."
                     let depsFile = Dependencies.Locate(globalPaketDependenciesPath)
-                    traceVerbose (sprintf "installing global `paketg` in '%s'..." globalPaketDependenciesPath)
+                    tracefn "installing global `paketg` in '%s' (may take a while)..." globalPaketDependenciesPath
                     let installDefaultTools = true
                     let paketgAlias =
                         [ Constants.PaketPackageName.ToLower(), Constants.PaketGlobalExeName ]
                         |> Map.ofList
                     depsFile.AddRepoTool(None, Constants.PaketPackageName, ">= 5", force, interactive, installDefaultTools, SemVerUpdateMode.NoRestriction, installDefaultTools, paketgAlias, Requirements.RepotoolWorkingDirectoryPath.ScriptDir)
-                    traceVerbose "paket.dependencies updated."
+                    tracefn "paket.dependencies updated."
                     depsFile
             dependencies
                 .AddRepoTool(group, packageName, version, force, interactive, noInstall |> not, semVerUpdateMode, noResolve |> not, Map.empty, Requirements.RepotoolWorkingDirectoryPath.CurrentDirectory)
