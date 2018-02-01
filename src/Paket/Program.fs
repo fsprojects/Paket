@@ -249,9 +249,6 @@ let addTool (results : ParseResults<_>) =
         let arg = results.TryGetResult <@ AddToolArgs.Version @>
         defaultArg arg ""
     let force = results.Contains <@ AddToolArgs.Force @>
-    let redirects = false
-    let createNewBindingFiles = false
-    let cleanBindingRedirects = false
     let group =
         results.TryGetResult <@ AddToolArgs.Group @>
     let noInstall = results.Contains <@ AddToolArgs.No_Install @>
@@ -261,8 +258,6 @@ let addTool (results : ParseResults<_>) =
         if results.Contains <@ AddToolArgs.Keep_Minor @> then SemVerUpdateMode.KeepMinor else
         if results.Contains <@ AddToolArgs.Keep_Major @> then SemVerUpdateMode.KeepMajor else
         SemVerUpdateMode.NoRestriction
-    let touchAffectedRefs = false
-    let packageKind = Requirements.PackageRequirementKind.RepoTool
 
     let interactive = false
 
