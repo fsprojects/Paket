@@ -461,10 +461,10 @@ let CreateToolWrapperForGroups (lockFile:LockFile) (groups:Map<GroupName,LockFil
 
         let scripts, helpers = RepoTools.WrapperToolGeneration.constructWrapperScriptsFromData depsCache groupsToGenerate
         scripts
-        |> List.iter (RepoTools.WrapperToolGeneration.saveTool rootPath >> ignore)
+        |> List.iter (RepoTools.WrapperToolInstall.saveTool rootPath >> ignore)
         
         helpers
-        |> List.iter (RepoTools.WrapperToolGeneration.saveHelper rootPath >> ignore)
+        |> List.iter (RepoTools.WrapperToolInstall.saveHelper rootPath >> ignore)
 
 let FindOrCreateReferencesFile (projectFile:ProjectFile) =
     match projectFile.FindReferencesFile() with
