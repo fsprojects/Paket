@@ -78,6 +78,20 @@ let ``#3003 repo tool with add to PATH``() =
         let cmdPath = Path.Combine(wrappersPath, name)
         Assert.IsTrue(File.Exists(cmdPath), (sprintf "file '%s' not found" cmdPath))
 
+    if Paket.Utils.isWindows then
+        let scriptPath = (scenarioTempPath scenario) </> "runit.bat"
+        File.WriteAllLines(scriptPath,
+            [| @"@ECHO OFF"
+               @"SETLOCAL"
+               @"CALL paket-files\bin\repotools enable"
+               @"CALL hello" |] )
+
+        let resultCmd = directExecScript scriptPath "" (scenarioTempPath scenario)
+        CollectionAssert.AreEqual( [| "Hello World from F#! with args: []" |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
+    else
+        //TODO implement test for shell
+        ()
+
 [<Test>]
 let ``#3004 repo tool multi tfm (net)``() =
     let scenario = "i003004-repo-tool-multi-tfm"
