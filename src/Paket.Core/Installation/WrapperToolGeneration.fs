@@ -248,6 +248,7 @@ module WrapperToolGeneration =
         /// Save the script in '<directory>/paket-files/bin/<script>'
         member self.Save (rootPath:DirectoryInfo) =
             saveScript self.Render rootPath self.PartialPath
+    
     and [<RequireQualifiedAccess>] ScriptContentWindowsRuntime = DotNetFramework | DotNetCoreApp | Mono | Native
 
     let directChmod (workDir: DirectoryInfo) args =
@@ -293,9 +294,7 @@ module WrapperToolGeneration =
         
         /// Save the script in '<directory>/paket-files/bin/<script>'
         member self.Save (rootPath:DirectoryInfo) =
-            let scriptPath = saveScript self.Render rootPath self.PartialPath
-            chmod_plus_x scriptPath
-            scriptPath
+            saveScript self.Render rootPath self.PartialPath
 
     type ScriptContentShell = {
         PartialPath : string
@@ -326,9 +325,7 @@ module WrapperToolGeneration =
         
         /// Save the script in '<directory>/paket-files/bin/<script>'
         member self.Save (rootPath:DirectoryInfo) =
-            let scriptPath = saveScript self.Render rootPath self.PartialPath
-            chmod_plus_x scriptPath
-            scriptPath
+            saveScript self.Render rootPath self.PartialPath
 
     type [<RequireQualifiedAccess>] ToolWrapper =
         | Windows of ScriptContentWindows
@@ -445,10 +442,16 @@ module WrapperToolGeneration =
     let saveTool dir tool =
         match tool with
         | ToolWrapper.Windows cmd -> cmd.Save dir
-        | ToolWrapper.Shell sh -> sh.Save dir
+        | ToolWrapper.Shell sh ->
+            let scriptPath = sh.Save dir
+            chmod_plus_x scriptPath
+            scriptPath
 
     let saveHelper dir helper =
         match helper with
         | HelperScript.Windows cmd -> cmd.Save dir
-        | HelperScript.Shell sh -> sh.Save dir
         | HelperScript.Powershell ps1 -> ps1.Save dir
+        | HelperScript.Shell sh ->
+            let scriptPath = sh.Save dir
+            chmod_plus_x scriptPath
+            scriptPath
