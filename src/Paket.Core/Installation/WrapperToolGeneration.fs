@@ -367,7 +367,7 @@ module WrapperToolGeneration =
                   """  local repotools_dir                                                                     """
                   """  repotools_dir="$(mono /mnt/e/github/Paket/bin/paket.exe info --paket-repotools-dir -s)" """
                   """                                                                                          """
-                  """  if [[ $? -eq 0 ]]; then                                                                 """
+                  """  if [[ $? -eq 0 ]] && [[ -d "$repotools_dir" ]]; then                                    """
                   """    echo echo \'"Found directory $repotools_dir "\'                                       """
                   """    echo echo \'""$repotools_dir/repotools" $@"\'                                         """
                   """    "$repotools_dir/repotools" $@                                                         """
