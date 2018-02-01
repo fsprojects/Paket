@@ -167,7 +167,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Adds the given github repository to the dependencies file.
     member this.AddGithub(groupName, repository, file) =
-        this.AddGithub(groupName, repository, "")
+        this.AddGithub(groupName, repository, file, "")
 
     /// Adds the given github repository to the dependencies file.
     member this.AddGithub(groupName, repository, file, version) =
