@@ -39,6 +39,7 @@ let [<Literal>] NuGetProtocolVersion  = "4.1.0"
 let [<Literal>] PaketPackageName          = "Paket"
 let [<Literal>] PaketGlobalExeName        = "paketg"
 let [<Literal>] PaketRepotoolsHelperName  = "repotools"
+let [<Literal>] PaketRepotoolsShellFunctionsHelperName  = "paket_repotools_helpers.sh"
 
 #if DOTNETCORE
 module Environment =

@@ -576,7 +576,7 @@ module WrapperToolGeneration =
                     Direct = false }
                   |> HelperScript.Shell
 
-                  { HelperFunctionScriptShell.PartialPath = Path.Combine(scriptPath, Constants.PaketRepotoolsHelperName) }
+                  { HelperFunctionScriptShell.PartialPath = Path.Combine(scriptPath, Constants.PaketRepotoolsShellFunctionsHelperName) }
                   |> HelperScript.ShellFunctions ] )
 
         let paketWrapperScript =
