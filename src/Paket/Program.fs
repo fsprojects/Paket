@@ -699,6 +699,12 @@ let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
 
     Dependencies.Locate().GenerateLoadScripts providedGroups providedFrameworks providedScriptTypes
 
+let info (results : ParseResults<InfoArgs>) =
+    if results.Contains <@ InfoArgs.Paket_Dependencies_Dir @> then
+        match Dependencies.TryLocate() with
+        | None -> ()
+        | Some deps -> tracefn "%s" deps.RootPath
+
 let generateNuspec (results:ParseResults<GenerateNuspecArgs>) =
     let projectFile = results.GetResult <@ GenerateNuspecArgs.Project @>
     let dependenciesPath = results.GetResult <@ GenerateNuspecArgs.DependenciesFile @>
@@ -769,6 +775,7 @@ let handleCommand silent command =
     | GenerateLoadScripts r -> processCommand silent generateLoadScripts r
     | GenerateNuspec r -> processCommand silent generateNuspec r
     | Why r -> processCommand silent why r
+    | Info r -> processCommand silent info r
     // global options; list here in order to maintain compiler warnings
     // in case of new subcommands added
     | Verbose

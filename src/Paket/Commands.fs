@@ -429,6 +429,14 @@ with
             | Max_Results(_) -> "limit maximum number of results"
             | Max_Results_Legacy(_) -> "[obsolete]"
 
+type InfoArgs =
+    | [<Unique>] Paket_Dependencies_Dir
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | Paket_Dependencies_Dir -> "absolute path of paket.dependencies directory, if exists"
+
 type PackArgs =
     | [<ExactlyOnce;MainCommand>] Output of path:string
     | [<Hidden;ExactlyOnce;CustomCommandLine("output")>] Output_Legacy of path:string
@@ -620,6 +628,7 @@ type Command =
     | [<Hidden;CustomCommandLine("generate-include-scripts")>] GenerateIncludeScripts of ParseResults<GenerateLoadScriptsArgs>
     | [<CustomCommandLine("generate-load-scripts")>]    GenerateLoadScripts of ParseResults<GenerateLoadScriptsArgs>
     | [<CustomCommandLine("why")>]                      Why of ParseResults<WhyArgs>
+    | [<CustomCommandLine("info")>]                     Info of ParseResults<InfoArgs>
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -649,6 +658,7 @@ with
             | GenerateIncludeScripts _ -> "[obsolete]"
             | GenerateLoadScripts _ -> "generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS"
             | Why _ -> "determine why a dependency is required"
+            | Info _ -> "info"
             | Log_File _ -> "print output to a file"
             | Silent -> "suppress console output"
             | Verbose -> "print detailed information to the console"
