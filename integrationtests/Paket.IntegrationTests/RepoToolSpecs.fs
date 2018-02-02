@@ -71,7 +71,7 @@ let ``#3003 repo tool with add to PATH``() =
 
     let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
 
-    let helperNames = if Paket.Utils.isWindows then [ "paketrt.cmd" ] else [ "paket_repotools_p" ]
+    let helperNames = if Paket.Utils.isWindows then [ "paketrt.cmd" ] else [ "paketrt" ]
 
     for name in helperNames do
         let cmdPath = Path.Combine(wrappersPath, name)
