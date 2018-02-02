@@ -1,3 +1,3 @@
 #!/bin/sh
-source <(./paket-files/bin/paket_repotools_p e)
+source <(./paket-files/bin/paketrt e)
 hello a 3003 c
