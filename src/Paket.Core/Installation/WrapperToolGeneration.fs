@@ -290,7 +290,7 @@ module WrapperToolGeneration =
                   """                                                                      """
                   """enable_repotools () {                                                 """
                   """    echo echo \'"Adding $1 dir to PATH env var..."\'                  """
-                  """    echo export PATH=\'"$1:\$PATH"\'                                  """
+                  """    echo export PATH=\""$1:\$PATH"\"                                  """
                   """    echo echo \'"Done."\'                                             """
                   """}                                                                     """
                   """                                                                      """
