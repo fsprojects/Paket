@@ -277,7 +277,7 @@ module WrapperToolGeneration =
                   """                                                                      """
                   """show_help () {                                                        """
                   """  write_out 'Paket repo tools helper'                                 """
-                  """  write_out 'Usage: repotools [command] <options>'                    """
+                  sprintf """  write_out 'Usage: %s [command] <options>'                   """ Constants.PaketRepotoolsShellHelperName
                   """  write_out ''                                                        """
                   """  write_out 'COMMANDS:'                                               """
                   """  write_out ''                                                        """
@@ -292,7 +292,7 @@ module WrapperToolGeneration =
                   """                                                                      """
                   """enable_repotools () {                                                 """
                   """    echo echo \'"Adding $1 dir to PATH env var..."\'                  """
-                  """    echo export PATH=\'"$1:$PATH"\'                                   """
+                  """    echo export PATH=\'"$1:\$PATH"\'                                  """
                   """    echo echo \'"Done."\'                                             """
                   """}                                                                     """
                   """                                                                      """
