@@ -396,7 +396,7 @@ module WrapperToolGeneration =
                   """                                                     """
                   """# source repotools in current shell                  """
                   sprintf """%s () {                                      """ Constants.PaketRepotoolsHelperName
-                  sprintf """  . <(%s "$@")                               """ Constants.PaketRepotoolsShellHelperName
+                  sprintf """  . <(command %s "$@")                       """ Constants.PaketRepotoolsShellHelperName
                   """}                                                    """
                   "" ]
             
