@@ -15,13 +15,9 @@ let ``#3000 repo tool should work after restore``() =
 
     let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
 
-    let helloCmdPath = Path.Combine(wrappersPath, "hello.cmd")
-    Assert.IsTrue(File.Exists(helloCmdPath), (sprintf "file '%s' not found" helloCmdPath))
-    
-    let helloBashPath = Path.Combine(wrappersPath, "hello")
-    Assert.IsTrue(File.Exists(helloBashPath), (sprintf "file '%s' not found" helloBashPath))
+    let helloPath = Path.Combine(wrappersPath, (if Paket.Utils.isWindows then "hello.cmd" else "hello"))
 
-    let helloPath = if Paket.Utils.isWindows then helloCmdPath else helloBashPath
+    Assert.IsTrue(File.Exists(helloPath), (sprintf "file '%s' not found" helloPath))
 
     let resultCmd = directExecScript helloPath "" (scenarioTempPath scenario)
     CollectionAssert.AreEqual( [| "Hello World from F#! with args: []" |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
@@ -39,13 +35,9 @@ let ``#3001 repo tool should work after install``() =
 
     let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
 
-    let helloCmdPath = Path.Combine(wrappersPath, "hello.cmd")
-    Assert.IsTrue(File.Exists(helloCmdPath), (sprintf "file '%s' not found" helloCmdPath))
-    
-    let helloBashPath = Path.Combine(wrappersPath, "hello")
-    Assert.IsTrue(File.Exists(helloBashPath), (sprintf "file '%s' not found" helloBashPath))
+    let helloPath = Path.Combine(wrappersPath, (if Paket.Utils.isWindows then "hello.cmd" else "hello"))
 
-    let helloPath = if Paket.Utils.isWindows then helloCmdPath else helloBashPath
+    Assert.IsTrue(File.Exists(helloPath), (sprintf "file '%s' not found" helloPath))
 
     let resultCmd = directExecScript helloPath "" (scenarioTempPath scenario)
     CollectionAssert.AreEqual( [| "Hello World from F#! with args: []" |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
@@ -62,7 +54,12 @@ let ``#3002 repo tool from flatten tools dir``() =
 
     let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
 
-    for toolName in ["FAKE.cmd"; "FAKE"; "Fake.Deploy.cmd"; "Fake.Deploy"] do
+    let toolNames =
+        let toolsCmdPath =  ["FAKE.cmd"; "Fake.Deploy.cmd"]
+        let toolsBashPath = ["FAKE"; "Fake.Deploy"]
+        if Paket.Utils.isWindows then toolsCmdPath else toolsBashPath
+
+    for toolName in toolNames do
         let toolPath = Path.Combine(wrappersPath, toolName)
         Assert.IsTrue(File.Exists(toolPath), (sprintf "file '%s' not found" toolPath))
 
@@ -74,20 +71,18 @@ let ``#3003 repo tool with add to PATH``() =
 
     let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
 
-    for name in ["repotools.cmd"; "repotools"] do
+    let helperNames = if Paket.Utils.isWindows then [ "paketrt.cmd" ] else [ "paket_repotools_p" ]
+
+    for name in helperNames do
         let cmdPath = Path.Combine(wrappersPath, name)
         Assert.IsTrue(File.Exists(cmdPath), (sprintf "file '%s' not found" cmdPath))
 
-    if Paket.Utils.isWindows then
-        let scriptPath = (scenarioTempPath scenario) </> "runit.bat"
+    let runitName = if Paket.Utils.isWindows then "runit.bat" else "runit"
 
-        let resultCmd = directExecScript scriptPath "" (scenarioTempPath scenario)
-        CollectionAssert.Contains(resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq, "Hello World from F#! with args: []" )
-    else
-        let scriptPath = (scenarioTempPath scenario) </> "runit"
+    let scriptPath = (scenarioTempPath scenario) </> runitName
 
-        let resultCmd = directExecScript scriptPath "" (scenarioTempPath scenario)
-        CollectionAssert.Contains(resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq, "Hello World from F#! with args: []" )
+    let resultCmd = directExecScript scriptPath "" (scenarioTempPath scenario)
+    CollectionAssert.Contains(resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq, """Hello World from F#! with args: ["a"; "3003"; "c"]""" )
 
 [<Test>]
 let ``#3004 repo tool multi tfm (net)``() =
@@ -97,15 +92,11 @@ let ``#3004 repo tool multi tfm (net)``() =
 
     let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
 
-    let helloCmdPath = Path.Combine(wrappersPath, "myhello.cmd")
-    Assert.IsTrue(File.Exists(helloCmdPath), (sprintf "file '%s' not found" helloCmdPath))
-    StringAssert.DoesNotContain("dotnet", File.ReadAllText(helloCmdPath))
-    StringAssert.DoesNotContain("netcoreapp", File.ReadAllText(helloCmdPath))
-    
-    let helloBashPath = Path.Combine(wrappersPath, "myhello")
-    Assert.IsTrue(File.Exists(helloBashPath), (sprintf "file '%s' not found" helloBashPath))
-    StringAssert.DoesNotContain("dotnet", File.ReadAllText(helloBashPath))
-    StringAssert.DoesNotContain("netcoreapp", File.ReadAllText(helloBashPath))
+    let helloPath = Path.Combine(wrappersPath, (if Paket.Utils.isWindows then "myhello.cmd" else "myhello"))
+
+    Assert.IsTrue(File.Exists(helloPath), (sprintf "file '%s' not found" helloPath))
+    StringAssert.DoesNotContain("dotnet", File.ReadAllText(helloPath))
+    StringAssert.DoesNotContain("netcoreapp", File.ReadAllText(helloPath))
 
 [<Test>]
 let ``#3005 repo tool multi tfm (netcoreapp)``() =
@@ -120,17 +111,11 @@ let ``#3005 repo tool multi tfm (netcoreapp)``() =
 
     let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
 
-    let helloCmdPath = Path.Combine(wrappersPath, "myhello.cmd")
-    Assert.IsTrue(File.Exists(helloCmdPath), (sprintf "file '%s' not found" helloCmdPath))
-    StringAssert.Contains("dotnet", File.ReadAllText(helloCmdPath))
-    StringAssert.Contains("netcoreapp", File.ReadAllText(helloCmdPath))
-    
-    let helloBashPath = Path.Combine(wrappersPath, "myhello")
-    Assert.IsTrue(File.Exists(helloBashPath), (sprintf "file '%s' not found" helloBashPath))
-    StringAssert.Contains("dotnet", File.ReadAllText(helloBashPath))
-    StringAssert.Contains("netcoreapp", File.ReadAllText(helloBashPath))
+    let helloPath = Path.Combine(wrappersPath, (if Paket.Utils.isWindows then "myhello.cmd" else "myhello"))
 
-    let helloPath = if Paket.Utils.isWindows then helloCmdPath else helloBashPath
+    Assert.IsTrue(File.Exists(helloPath), (sprintf "file '%s' not found" helloPath))
+    StringAssert.Contains("dotnet", File.ReadAllText(helloPath))
+    StringAssert.Contains("netcoreapp", File.ReadAllText(helloPath))
 
     let resultCmd = directExecScript helloPath "" (scenarioTempPath scenario)
     CollectionAssert.AreEqual( [| "Hello World from F#! with args: []" |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
@@ -146,13 +131,9 @@ let ``#3006 repo tool should restore on specific bin dir based on repotools_bin_
 
     let wrappersPath = Path.Combine(scenarioTempPath scenario, "use", "mybin")
 
-    let helloCmdPath = Path.Combine(wrappersPath, "hello.cmd")
-    Assert.IsTrue(File.Exists(helloCmdPath), (sprintf "file '%s' not found" helloCmdPath))
-    
-    let helloBashPath = Path.Combine(wrappersPath, "hello")
-    Assert.IsTrue(File.Exists(helloBashPath), (sprintf "file '%s' not found" helloBashPath))
+    let helloPath = Path.Combine(wrappersPath, (if Paket.Utils.isWindows then "hello.cmd" else "hello"))
 
-    let helloPath = if Paket.Utils.isWindows then helloCmdPath else helloBashPath
+    Assert.IsTrue(File.Exists(helloPath), (sprintf "file '%s' not found" helloPath))
 
     let resultCmd = directExecScript helloPath "" (scenarioTempPath scenario)
     CollectionAssert.AreEqual( [| "Hello World from F#! with args: []" |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
@@ -168,13 +149,9 @@ let ``#3007 repo tool should consider alias on install``() =
 
     let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
 
-    let ciaoCmdPath = Path.Combine(wrappersPath, "ciao.cmd")
-    Assert.IsTrue(File.Exists(ciaoCmdPath), (sprintf "file '%s' not found" ciaoCmdPath))
-    
-    let ciaoBashPath = Path.Combine(wrappersPath, "ciao")
-    Assert.IsTrue(File.Exists(ciaoBashPath), (sprintf "file '%s' not found" ciaoBashPath))
+    let ciaoPath = Path.Combine(wrappersPath, (if Paket.Utils.isWindows then "ciao.cmd" else "ciao"))
 
-    let ciaoPath = if Paket.Utils.isWindows then ciaoCmdPath else ciaoBashPath
+    Assert.IsTrue(File.Exists(ciaoPath), (sprintf "file '%s' not found" ciaoPath))
 
     let resultCmd = directExecScript ciaoPath "" (scenarioTempPath scenario)
     CollectionAssert.AreEqual( [| "Hello World from F#! with args: []" |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
