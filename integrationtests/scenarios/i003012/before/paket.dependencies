@@ -1,0 +1,4 @@
+source https://api.nuget.org/v3/index.json
+references: strict
+storage: none
+nuget AutoMapper == 6.1.1
