@@ -457,20 +457,6 @@ module WrapperToolGeneration =
         
         //depCache.GetOrderedPackageReferences
 
-        let allRepoToolPkgs =
-
-            let resolved = lazy (lockFile.GetGroupedResolution())
-
-            [ for (g, pkgs) in groups do
-                
-                for (pkg, resolvedPkg) in pkgs |> Map.toList do
-                    let x = resolved.Force().[ g.Name, pkg ]
-                    let y =
-                        x.Folder lockFile.RootPath g.Name
-                        |> DirectoryInfo
-                    if y.Exists then
-                        yield (g, x, y)  ]
-
         let binDirectoryForGroup (g: LockFileGroup) =
             match g.Options.Settings.RepotoolsBinDirectory with
             | Some path ->
@@ -482,6 +468,20 @@ module WrapperToolGeneration =
                     Path.Combine(Constants.PaketFilesFolderName, g.Name.Name, Constants.PaketRepotoolsDirectoryName)
 
         let toolWrapperInDir =
+
+            let allRepoToolPkgs =
+                let resolved = lazy (lockFile.GetGroupedResolution())
+
+                [ for (g, pkgs) in groups do
+                
+                    for (pkg, resolvedPkg) in pkgs |> Map.toList do
+                        let x = resolved.Force().[ g.Name, pkg ]
+                        let y =
+                            x.Folder lockFile.RootPath g.Name
+                            |> DirectoryInfo
+                        if y.Exists then
+                            yield (g, x, y)  ]
+
             allRepoToolPkgs
             |> List.collect (fun (g, x, y) ->
                 RepoToolDiscovery.avaiableTools x y
@@ -489,11 +489,11 @@ module WrapperToolGeneration =
                 |> List.map (fun tool -> g, tool) )
             |> List.map (fun (g, tool) ->
                 let scriptPath = binDirectoryForGroup g
-                tool, scriptPath)
+                g, tool, scriptPath)
 
         let wrapperScripts =
             toolWrapperInDir
-            |> List.collect (fun (tool, scriptPath) ->
+            |> List.collect (fun (_g, tool, scriptPath) ->
                 let runtimeOpt =
                     match tool.Kind with
                     | RepoToolDiscovery.RepoToolInNupkgKind.OldStyle ->
@@ -522,12 +522,11 @@ module WrapperToolGeneration =
 
         let isGlobalToolInstall =
             toolWrapperInDir
-            |> List.map fst
-            |> List.exists (fun tool -> tool.Name = Constants.PaketGlobalExeName)
+            |> List.exists (fun (_, tool, _) -> tool.Name = Constants.PaketGlobalExeName)
 
         let repoHelperScripts =
             toolWrapperInDir
-            |> List.map snd
+            |> List.map (fun (_, _, path) -> path)
             |> List.distinct
             |> List.collect (fun scriptPath ->
                 [ { HelperScriptWindows.PartialPath = Path.Combine(scriptPath, sprintf "%s.cmd" Constants.PaketRepotoolsHelperName)
@@ -540,7 +539,7 @@ module WrapperToolGeneration =
 
         let globalHelperScripts =
             toolWrapperInDir
-            |> List.map snd
+            |> List.map (fun (_, _, path) -> path)
             |> List.distinct
             |> List.collect (fun scriptPath ->
                 [ { HelperScriptWindows.PartialPath = Path.Combine(scriptPath, sprintf "%s.cmd" Constants.PaketRepotoolsHelperName)
@@ -556,7 +555,7 @@ module WrapperToolGeneration =
 
         let paketWrapperScript =
             let mainBinDirOpt =
-                allRepoToolPkgs
+                toolWrapperInDir
                 |> List.tryPick (fun (g,_,_) -> if g.Name = Constants.MainDependencyGroup then Some g else None)
                 |> Option.map binDirectoryForGroup
 
