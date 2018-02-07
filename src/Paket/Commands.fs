@@ -724,7 +724,7 @@ type Command =
     | [<CustomCommandLine("why")>]                      Why of ParseResults<WhyArgs>
     | [<CustomCommandLine("restriction")>]              Restriction of ParseResults<RestrictionArgs>
     | [<CustomCommandLine("add-tool")>]                 AddTool of ParseResults<AddToolArgs>
-    | [<CustomCommandLine("rt-helper")>]                RepotoolHelper of ParseResults<RepotoolHelperArgs>
+    | [<Hidden;CustomCommandLine("rt-helper")>]         RepotoolHelper of ParseResults<RepotoolHelperArgs>
     | [<CustomCommandLine("info")>]                     Info of ParseResults<InfoArgs>
 with
     interface IArgParserTemplate with
