@@ -117,6 +117,35 @@ with
             | Keep_Minor -> "only allow updates that preserve the minor version"
             | Keep_Patch -> "only allow updates that preserve the patch version"
 
+type RepotoolHelperArgs =
+    | [<CustomCommandLine("enable"); AltCommandLine("e")>] Enable of ParseResults<RepotoolHelperEnableArgs>
+    | [<CustomCommandLine("disable"); AltCommandLine("d")>] Disable of ParseResults<RepotoolHelperDisableArgs>
+    | [<Unique>] Export of RepotoolHelperExport
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | Enable(_) -> "enable repotools"
+            | Disable(_) -> "disable repotools"
+            | Export(_) -> "type of export"
+and [<RequireQualifiedAccess>] RepotoolHelperExport =
+    | Sh
+    | Cmd
+and RepotoolHelperEnableArgs =
+    | [<Unique;AltCommandLine("-g")>] Group of name:string
+    with
+        interface IArgParserTemplate with
+            member this.Usage =
+                match this with
+                | Group(_) -> "specify dependency group (default: Main group)"
+and RepotoolHelperDisableArgs =
+    | [<Unique;AltCommandLine("-g")>] Group of name:string
+    with
+        interface IArgParserTemplate with
+            member this.Usage =
+                match this with
+                | Group(_) -> "specify dependency group (default: Main group)"
+
 type ConfigArgs =
     | [<Unique;CustomCommandLine("add-credentials")>] AddCredentials of key_or_URL:string
     | [<Unique;CustomCommandLine("add-token")>] AddToken of key_or_URL:string * token:string
@@ -695,6 +724,7 @@ type Command =
     | [<CustomCommandLine("why")>]                      Why of ParseResults<WhyArgs>
     | [<CustomCommandLine("restriction")>]              Restriction of ParseResults<RestrictionArgs>
     | [<CustomCommandLine("add-tool")>]                 AddTool of ParseResults<AddToolArgs>
+    | [<CustomCommandLine("rt-helper")>]                RepotoolHelper of ParseResults<RepotoolHelperArgs>
     | [<CustomCommandLine("info")>]                     Info of ParseResults<InfoArgs>
 with
     interface IArgParserTemplate with
@@ -728,6 +758,7 @@ with
             | Why _ -> "determine why a dependency is required"
             | Restriction _ -> "resolve a framework restriction and show details"
             | AddTool _ -> "add a new tool"
+            | RepotoolHelper _ -> "helper for repotool scripts"
             | Info _ -> "info"
             | Log_File _ -> "print output to a file"
             | Silent -> "suppress console output"

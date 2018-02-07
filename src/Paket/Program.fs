@@ -308,6 +308,19 @@ let addTool (results : ParseResults<_>) =
             .AddRepoTool(group, packageName, version, force, interactive, noInstall |> not, semVerUpdateMode, noResolve |> not, Map.empty, Requirements.RepotoolWorkingDirectoryPath.CurrentDirectory)
 
 
+let repotoolHelper (results : ParseResults<_>) =
+    let packageName =
+        let arg = results.TryGetResult <@ RepotoolHelperArgs.Enable @>
+        require arg (fun _ -> results.GetResult <@ RepotoolHelperArgs.Enable @>)
+    //let group =
+    //    results.TryGetResult <@ AddToolArgs.Group @>
+
+    printfn "ciao %A" packageName
+    //Dependencies
+    //    .Locate()
+    //    .AddRepoTool(group, packageName, version, force, interactive, noInstall |> not, semVerUpdateMode, noResolve |> not, Map.empty, Requirements.RepotoolWorkingDirectoryPath.CurrentDirectory)
+
+
 let validateConfig (results : ParseResults<_>) =
     let credential = results.Contains <@ ConfigArgs.AddCredentials @>
     let token = results.Contains <@ ConfigArgs.AddToken @>
@@ -896,6 +909,7 @@ let handleCommand silent command =
     | Why r -> processCommand silent why r
     | Restriction r -> processCommand silent restriction r
     | AddTool r -> processCommand silent addTool r
+    | RepotoolHelper r -> processCommand silent repotoolHelper r
     | Info r -> processCommand silent info r
     // global options; list here in order to maintain compiler warnings
     // in case of new subcommands added
