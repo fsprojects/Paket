@@ -158,3 +158,13 @@ let ``#3007 repo tool should consider alias on install``() =
 
     let resultCmdWithArgs = directExecScript ciaoPath "1 2 3" (scenarioTempPath scenario)
     CollectionAssert.AreEqual( [| """Hello World from F#! with args: ["1"; "2"; "3"]""" |], (resultCmdWithArgs |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
+
+[<Test>]
+let ``#3008 repo tool write list of tools``() =
+    let scenario = "i003008-repo-tool-csv"
+    prepare scenario
+    paket "restore" scenario |> ignore
+
+    let repotoolsCsvPath = Path.Combine(scenarioTempPath scenario, "paket-files", "paket.repotools.csv")
+
+    Assert.IsTrue(File.Exists(repotoolsCsvPath), (sprintf "file '%s' not found" repotoolsCsvPath))

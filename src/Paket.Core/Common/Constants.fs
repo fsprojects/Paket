@@ -42,6 +42,7 @@ let [<Literal>] PaketRepotoolsHelperName  = "paketrt"
 let [<Literal>] PaketRepotoolsShellHelperName  = "paketrt"
 let [<Literal>] PaketRepotoolsShellFunctionsHelperName  = "paket_functions.sh"
 let [<Literal>] PaketRepotoolsDirectoryName  = "bin"
+let [<Literal>] PaketRepotoolsCsvName     = "paket.repotools.csv"
 
 #if DOTNETCORE
 module Environment =
