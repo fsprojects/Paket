@@ -185,29 +185,20 @@ module WrapperToolGeneration =
 
         member __.RenderGlobal () =
             let cmdContent =
-                [ """@ECHO OFF                                                                    """
-                  """                                                                             """
-                  """IF "%1" == "" (                                                              """
-                  sprintf """    CALL %s --help                                                   """ Constants.PaketRepotoolsHelperName
-                  """    EXIT /B 1                                                                """
-                  """)                                                                            """
-                  """                                                                             """
-                  """FOR /f %%i in ('"%~dp0\paketg" info --paket-repotools-dir -s 2^> NUL') DO (  """
-                  """    IF NOT "%%i" == "" (                                                     """
-                  """        ECHO Found directory '%%i'                                           """
-                  """                                                                             """
-                  sprintf """        ECHO "%%%%i\%s" %%*                                          """ Constants.PaketRepotoolsHelperName
-                  sprintf """        "%%%%i\%s" %%*                                               """ Constants.PaketRepotoolsHelperName
-                  """                                                                             """
-                  """    ) ELSE (                                                                 """
-                  """        GOTO REPOTOOLS_DIR_NOT_FOUND                                         """
-                  """    )                                                                        """
-                  """)                                                                            """
-                  """                                                                             """
-                  """:REPOTOOLS_DIR_NOT_FOUND                                                     """
-                  """echo Paket repo tools directory not found in directory hierachy              """
-                  """EXIT /B 1                                                                    """
-                  """                                                                             """ 
+                [ """@ECHO OFF                                                                                         """
+                  """                                                                                                  """
+                  """DEL "%TEMP%\.\paketrt.helper.cmd" >NUL 2>&1                                                       """
+                  """                                                                                                  """
+                  """CALL "%_PAKET_CMD%" rt-helper --export cmd --export-path "%TEMP%\.\paketrt.helper.cmd" %*"        """
+                  """                                                                                                  """
+                  """IF ERRORLEVEL 1 (                                                                                 """
+                  """    GOTO :EOF                                                                                     """
+                  """) ELSE (                                                                                          """
+                  """    IF EXIST "%TEMP%\.\paketrt.helper.cmd" (                                                      """
+                  """        "%TEMP%\.\paketrt.helper.cmd"                                                             """
+                  """    )                                                                                             """
+                  """)                                                                                                 """
+                  """                                                                                                  """
                   "" ]
             
             cmdContent |> List.map (fun s -> s.TrimEnd()) |> String.concat "\r\n"
