@@ -317,8 +317,8 @@ let repotoolHelper (results : ParseResults<_>) =
 
     let echo format =
         match exportType with
-        | Some RepotoolHelperExport.Cmd -> Printf.ksprintf (fun s -> sprintf "ECHO cmd: %s" s) format
-        | Some RepotoolHelperExport.Sh -> Printf.ksprintf (fun s -> sprintf "echo sh: %s" s) format
+        | Some RepotoolHelperExport.Cmd -> Printf.ksprintf (fun s -> sprintf "ECHO %s" s) format
+        | Some RepotoolHelperExport.Sh -> Printf.ksprintf (fun s -> sprintf "echo %s" s) format
         | None -> Printf.ksprintf id format
 
     let addToPATH dir =
