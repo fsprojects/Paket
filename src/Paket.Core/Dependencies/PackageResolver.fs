@@ -731,7 +731,7 @@ let inline boostConflicts
                 let key = conflicts |> HashSet,selectedVersion
                 stackpack.KnownConflicts.Add key |> ignore
             
-                traceWarnfn "%s" (conflictStatus.GetErrorText verboseWarnings)
+                traceWarnfn "%s" (conflictStatus.GetErrorText false)
                 traceWarn "The process is taking longer than expected."
                 traceWarn "Paket may still find a valid resolution, but this might take a while."
                 DateTime.Now
