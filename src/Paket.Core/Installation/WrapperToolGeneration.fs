@@ -13,6 +13,7 @@ module RepoToolDiscovery =
         { FullPath: string
           Name: string
           WorkingDirectory: RepoToolInNupkgWorkingDirectoryPath
+          ToolArgs: string
           Kind: RepoToolInNupkgKind }
     and [<RequireQualifiedAccess>] RepoToolInNupkgKind =
         | OldStyle
@@ -58,12 +59,19 @@ module RepoToolDiscovery =
                 |> List.map (fun (s,v) -> s.ToUpper(),v)
                 |> Map.ofList
             match caseInsensitiveMap |> Map.tryFind (exeName.ToUpper()) with
-            | Some (Requirements.RepotoolAliasTo.Alias (name,_args)) -> name
-            | None -> exeName
+            | Some (Requirements.RepotoolAliasTo.Alias (name,args)) ->
+                let argToString t s =
+                    match t with
+                    | Requirements.RepotoolAliasCmdArgs.String x -> x :: s 
+                    | Requirements.RepotoolAliasCmdArgs.VariablePlaceholder _ -> failwithf "variable placeholder in alias not supported"
+                name, (List.foldBack argToString args [] |> String.concat " ")
+            | None -> exeName, ""
 
         let asTool kind path =
+            let toolName, toolArgs = getNameOf (Path.GetFileNameWithoutExtension(path))
             { RepoToolInNupkg.FullPath = path
-              Name = getNameOf (Path.GetFileNameWithoutExtension(path))
+              Name = toolName
+              ToolArgs = toolArgs
               WorkingDirectory =
                 match pkg.Settings.RepotoolWorkingDirectory with
                 | Requirements.RepotoolWorkingDirectoryPath.ScriptDir -> RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory
@@ -145,6 +153,7 @@ module WrapperToolGeneration =
     type ScriptContentWindows = {
         PartialPath : string
         ToolPath : string
+        ToolArgs: string
         Runtime: ScriptContentRuntimeHost
         WorkingDirectory: RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath
     } with
@@ -166,7 +175,7 @@ module WrapperToolGeneration =
                   | RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory ->
                       yield "CD /D %~dp0"
                       yield ""
-                  yield sprintf """%s"%s" %%*""" paketToolRuntimeHostWin self.ToolPath
+                  yield sprintf """%s"%s"%s %%*""" paketToolRuntimeHostWin self.ToolPath (if self.ToolArgs = "" then "" else " " + self.ToolArgs)
                   yield "" ]
             
             cmdContent |> String.concat "\r\n"
@@ -292,6 +301,7 @@ module WrapperToolGeneration =
     type ScriptContentShell = {
         PartialPath : string
         ToolPath : string
+        ToolArgs: string
         Runtime: ScriptContentRuntimeHost
         WorkingDirectory: RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath
     } with
@@ -302,7 +312,7 @@ module WrapperToolGeneration =
                 | ScriptContentRuntimeHost.DotNetCoreApp -> "dotnet "
                 | ScriptContentRuntimeHost.Native -> ""
             
-            let runCmd = sprintf """%s"%s" "$@" """ paketToolRuntimeHostLinux (self.ToolPath.Replace('\\','/'))
+            let runCmd = sprintf """%s"%s"%s "$@" """ paketToolRuntimeHostLinux (self.ToolPath.Replace('\\','/')) (if self.ToolArgs = "" then "" else " " + self.ToolArgs)
 
             let cmdContent =
                 [ yield "#!/bin/sh"
@@ -395,11 +405,13 @@ module WrapperToolGeneration =
                 | Some runtime ->
                   [ { ScriptContentWindows.PartialPath = Path.Combine(scriptPath, (sprintf "%s.cmd" tool.Name))
                       Runtime = runtime
+                      ToolArgs = tool.ToolArgs
                       WorkingDirectory = tool.WorkingDirectory
                       ToolPath = tool.FullPath } |> ToolWrapper.Windows
                 
                     { ScriptContentShell.PartialPath = Path.Combine(scriptPath, tool.Name)
                       Runtime = runtime
+                      ToolArgs = tool.ToolArgs
                       WorkingDirectory = tool.WorkingDirectory
                       ToolPath = tool.FullPath } |> ToolWrapper.Shell ] )
 
@@ -444,11 +456,13 @@ module WrapperToolGeneration =
 
                     [ { ScriptContentWindows.PartialPath = Path.Combine(scriptPath, (sprintf "%s.cmd" toolName))
                         Runtime = ScriptContentRuntimeHost.DotNetFramework
+                        ToolArgs = ""
                         WorkingDirectory = RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory
                         ToolPath = toolFullPath } |> ToolWrapper.Windows
                 
                       { ScriptContentShell.PartialPath = Path.Combine(scriptPath, toolName)
                         Runtime = ScriptContentRuntimeHost.DotNetFramework
+                        ToolArgs = ""
                         WorkingDirectory = RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory
                         ToolPath = toolFullPath } |> ToolWrapper.Shell ]
                 else
