@@ -478,7 +478,7 @@ module DependenciesFileParser =
             | PackageRequirementKind.DotnetCliTool ->
                 InstallSettings.Parse(optionsText).AdjustWithSpecialCases packageName
             | PackageRequirementKind.RepoTool ->
-                InstallSettings.Parse(optionsText)
+                InstallSettings.Parse(false, optionsText)
           TransitivePrereleases = versionRequirement.PreReleases <> PreReleaseStatus.No
           VersionRequirement = versionRequirement 
           Kind = kind } 
