@@ -218,7 +218,7 @@ module WrapperToolGeneration =
 
     type ScriptContentWindows = {
         PartialPath : string
-        RelativeToolPath : string
+        ToolPath : string
         Runtime: ScriptContentRuntimeHost
         WorkingDirectory: RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath
     } with
@@ -240,7 +240,7 @@ module WrapperToolGeneration =
                   | RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory ->
                       yield "CD /D %~dp0"
                       yield ""
-                  yield sprintf """%s"%%~dp0%s" %%*""" paketToolRuntimeHostWin self.RelativeToolPath
+                  yield sprintf """%s"%s" %%*""" paketToolRuntimeHostWin self.ToolPath
                   yield "" ]
             
             cmdContent |> String.concat "\r\n"
@@ -409,7 +409,7 @@ module WrapperToolGeneration =
 
     type ScriptContentShell = {
         PartialPath : string
-        RelativeToolPath : string
+        ToolPath : string
         Runtime: ScriptContentRuntimeHost
         WorkingDirectory: RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath
     } with
@@ -420,7 +420,7 @@ module WrapperToolGeneration =
                 | ScriptContentRuntimeHost.DotNetCoreApp -> "dotnet "
                 | ScriptContentRuntimeHost.Native -> ""
             
-            let runCmd = sprintf """%s"$(dirname "$0")/%s" "$@" """ paketToolRuntimeHostLinux (self.RelativeToolPath.Replace('\\','/'))
+            let runCmd = sprintf """%s"%s" "$@" """ paketToolRuntimeHostLinux (self.ToolPath.Replace('\\','/'))
 
             let cmdContent =
                 [ yield "#!/bin/sh"
@@ -494,8 +494,6 @@ module WrapperToolGeneration =
         let wrapperScripts =
             toolWrapperInDir
             |> List.collect (fun (tool, scriptPath) ->
-                let relativePath = createRelativePath (Path.Combine(lockFile.RootPath, scriptPath, tool.Name)) (tool.FullPath)
-
                 let runtimeOpt =
                     match tool.Kind with
                     | RepoToolDiscovery.RepoToolInNupkgKind.OldStyle ->
@@ -515,12 +513,12 @@ module WrapperToolGeneration =
                   [ { ScriptContentWindows.PartialPath = Path.Combine(scriptPath, (sprintf "%s.cmd" tool.Name))
                       Runtime = runtime
                       WorkingDirectory = tool.WorkingDirectory
-                      RelativeToolPath = relativePath } |> ToolWrapper.Windows
+                      ToolPath = tool.FullPath } |> ToolWrapper.Windows
                 
                     { ScriptContentShell.PartialPath = Path.Combine(scriptPath, tool.Name)
                       Runtime = runtime
                       WorkingDirectory = tool.WorkingDirectory
-                      RelativeToolPath = relativePath } |> ToolWrapper.Shell ] )
+                      ToolPath = tool.FullPath } |> ToolWrapper.Shell ] )
 
         let isGlobalToolInstall =
             toolWrapperInDir
@@ -569,17 +567,16 @@ module WrapperToolGeneration =
 
                 if File.Exists toolFullPath then
                     let toolName = Path.GetFileNameWithoutExtension(Constants.PaketFileName)
-                    let relativePath = createRelativePath (Path.Combine(lockFile.RootPath, scriptPath, toolName)) toolFullPath
 
                     [ { ScriptContentWindows.PartialPath = Path.Combine(scriptPath, (sprintf "%s.cmd" toolName))
                         Runtime = ScriptContentRuntimeHost.DotNetFramework
                         WorkingDirectory = RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory
-                        RelativeToolPath = relativePath } |> ToolWrapper.Windows
+                        ToolPath = toolFullPath } |> ToolWrapper.Windows
                 
                       { ScriptContentShell.PartialPath = Path.Combine(scriptPath, toolName)
                         Runtime = ScriptContentRuntimeHost.DotNetFramework
                         WorkingDirectory = RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory
-                        RelativeToolPath = relativePath } |> ToolWrapper.Shell ]
+                        ToolPath = toolFullPath } |> ToolWrapper.Shell ]
                 else
                     []
         
