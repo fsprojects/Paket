@@ -407,6 +407,23 @@ module WrapperToolGeneration =
             let scriptFile = Path.Combine(rootPath.FullName, self.PartialPath) |> FileInfo
             scriptFile, self.Render ()
 
+    type RestoredToolsInfo = {
+        PartialPath : string
+        InstalledToolsDirectories: (GroupName * DirectoryInfo) list
+    } with
+        member self.Render () =
+            //TODO use CSV lib
+
+            // save as CSV
+            self.InstalledToolsDirectories
+            |> List.map (fun (g, path) -> sprintf "%s,%s" (g.Name) (path.FullName))
+            |> String.concat Environment.NewLine
+
+        /// Save the script in '<directory>/paket-files/bin/<script>'
+        member self.Save (rootPath:DirectoryInfo) =
+            let scriptFile = Path.Combine(rootPath.FullName, self.PartialPath) |> FileInfo
+            scriptFile, self.Render ()
+
     type ScriptContentShell = {
         PartialPath : string
         ToolPath : string
@@ -447,6 +464,7 @@ module WrapperToolGeneration =
         | Windows of HelperScriptWindows
         | Shell of HelperScriptShell
         | ShellFunctions of HelperFunctionScriptShell
+        | RestoredTools of RestoredToolsInfo
 
     let constructWrapperScriptsFromData (depCache:DependencyCache) (groups: (LockFileGroup * Map<PackageName,PackageResolver.ResolvedPackage>) list) =
         let lockFile = depCache.LockFile
@@ -578,11 +596,23 @@ module WrapperToolGeneration =
                         ToolPath = toolFullPath } |> ToolWrapper.Shell ]
                 else
                     []
+
+        let restoredToolsList =
+            let path = Path.Combine(lockFile.RootPath, Constants.PaketFilesFolderName, Constants.PaketRepotoolsCsvName)
+            let dirs =
+                toolWrapperInDir
+                |> List.map (fun (g, _, scriptPath) -> (g.Name), scriptPath)
+                |> List.distinct
+                |> List.map (fun (g, scriptPath) -> g, DirectoryInfo(scriptPath))
+                    
+            { RestoredToolsInfo.PartialPath = path
+              InstalledToolsDirectories = dirs }
+            |> HelperScript.RestoredTools
         
         if isGlobalToolInstall then
-             wrapperScripts, globalHelperScripts
+             wrapperScripts, (restoredToolsList :: globalHelperScripts)
         else
-            (wrapperScripts @ paketWrapperScript), repoHelperScripts
+            (wrapperScripts @ paketWrapperScript), (restoredToolsList :: repoHelperScripts)
 
 module WrapperToolInstall =
 
@@ -649,6 +679,8 @@ module WrapperToolInstall =
 
     let saveHelper dir helper =
         match helper with
+        | HelperScript.RestoredTools restoredTools ->
+            restoredTools.Save dir |> saveScript
         | HelperScript.Windows cmd ->
             cmd.Save dir |> saveScript
         | HelperScript.ShellFunctions sh ->

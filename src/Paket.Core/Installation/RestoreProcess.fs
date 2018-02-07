@@ -470,6 +470,8 @@ let CreateToolWrapperForGroups (lockFile:LockFile) (groups:Map<GroupName,LockFil
         helpers
         |> List.filter (fun helper ->
             match helper with
+            | RepoTools.WrapperToolGeneration.HelperScript.RestoredTools _ ->
+                true
             | RepoTools.WrapperToolGeneration.HelperScript.Windows _ ->
                 isWindows
             | RepoTools.WrapperToolGeneration.HelperScript.Shell _
