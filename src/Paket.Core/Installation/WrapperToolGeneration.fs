@@ -415,14 +415,26 @@ module WrapperToolGeneration =
             //TODO use CSV lib
 
             // save as CSV
-            self.InstalledToolsDirectories
-            |> List.map (fun (g, path) -> sprintf "%s,%s" (g.Name) (path.FullName))
+            [   yield "group_name,base_dir"
+                yield! self.InstalledToolsDirectories
+                     |> List.map (fun (g, path) -> sprintf "%s,%s" (g.Name) (path.FullName)) ]
             |> String.concat Environment.NewLine
 
         /// Save the script in '<directory>/paket-files/bin/<script>'
         member self.Save (rootPath:DirectoryInfo) =
             let scriptFile = Path.Combine(rootPath.FullName, self.PartialPath) |> FileInfo
             scriptFile, self.Render ()
+
+        static member Parse (path: FileInfo) =
+            //TODO use CSV lib
+            File.ReadAllLines(path.FullName)
+            |> List.ofArray
+            |> List.skip 1 //header
+            |> List.map (fun line -> line.Split(',') |> List.ofArray)
+            |> List.map (fun line ->
+                match line with
+                | g :: d :: _ -> GroupName(g), DirectoryInfo(d)
+                | a -> failwithf "cannot parse file '%s', invalid line content '%A'" path.FullName a)
 
     type ScriptContentShell = {
         PartialPath : string
