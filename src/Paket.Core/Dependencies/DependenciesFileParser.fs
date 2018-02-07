@@ -472,7 +472,13 @@ module DependenciesFileParser =
           Parent = parent
           Graph = Set.empty
           Sources = sources
-          Settings = InstallSettings.Parse(optionsText).AdjustWithSpecialCases packageName
+          Settings =
+            match kind with
+            | PackageRequirementKind.Package
+            | PackageRequirementKind.DotnetCliTool ->
+                InstallSettings.Parse(optionsText).AdjustWithSpecialCases packageName
+            | PackageRequirementKind.RepoTool ->
+                InstallSettings.Parse(optionsText)
           TransitivePrereleases = versionRequirement.PreReleases <> PreReleaseStatus.No
           VersionRequirement = versionRequirement 
           Kind = kind } 
