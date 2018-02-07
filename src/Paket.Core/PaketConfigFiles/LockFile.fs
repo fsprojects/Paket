@@ -431,17 +431,17 @@ module LockFileParser =
                 else
                     parts.[1]
 
-            let kind, optionsString =
+            let kind, optionsString, installSettingsParser =
                 if optionsString.EndsWith ", clitool: true" then
-                    ResolvedPackageKind.DotnetCliTool,optionsString.Replace(", clitool: true","")
+                    ResolvedPackageKind.DotnetCliTool,optionsString.Replace(", clitool: true",""), (fun s t -> InstallSettings.Parse(s,t))
                 elif optionsString.EndsWith "clitool: true" then
-                    ResolvedPackageKind.DotnetCliTool,optionsString.Replace("clitool: true","")
+                    ResolvedPackageKind.DotnetCliTool,optionsString.Replace("clitool: true",""), (fun s t -> InstallSettings.Parse(s,t))
                 elif optionsString.EndsWith ", repotool: true" then
-                    ResolvedPackageKind.RepoTool,optionsString.Replace(", repotool: true","")
+                    ResolvedPackageKind.RepoTool,optionsString.Replace(", repotool: true",""), (fun s t -> InstallSettings.ParseWithQuotes(s,t))
                 elif optionsString.EndsWith "repotool: true" then
-                    ResolvedPackageKind.RepoTool,optionsString.Replace("repotool: true","")
+                    ResolvedPackageKind.RepoTool,optionsString.Replace("repotool: true",""), (fun s t -> InstallSettings.ParseWithQuotes(s,t))
                 else
-                    ResolvedPackageKind.Package,optionsString
+                    ResolvedPackageKind.Package,optionsString, (fun s t -> InstallSettings.Parse(s,t))
 
             let isRuntimeDependency, optionsString =
                 if optionsString.EndsWith ", isRuntimeDependency: true" then
@@ -451,7 +451,7 @@ module LockFileParser =
                     true, ""
                 else false, optionsString
 
-            parts.[0],kind,isRuntimeDependency,InstallSettings.Parse(true, optionsString)
+            parts.[0],kind,isRuntimeDependency,(installSettingsParser true optionsString)
 
         ([{ GroupName = Constants.MainDependencyGroup; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false }], lockFileLines)
         ||> Seq.fold(fun state line ->
