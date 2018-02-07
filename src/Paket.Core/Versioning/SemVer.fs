@@ -206,19 +206,19 @@ module SemVer =
     open System.Numerics
   
     /// Matches if str is convertible to Int and not less than zero, and returns the value as UInt.
-    let inline (|Int|_|) str =
+    let inline private (|Int|_|) str =
         match Int32.TryParse (str, NumberStyles.Integer, null) with
         | true, num when num > -1 -> Some num
         | _ -> None
         
     /// Matches if str is convertible to big int and not less than zero, and returns the bigint value.
-    let inline (|Big|_|) str =
+    let inline private (|Big|_|) str =
         match BigInteger.TryParse (str, NumberStyles.Integer, null) with
         | true, big when big > -1I -> Some big
         | _ -> None
 
     /// Splits the given version string by possible delimiters but keeps them as parts of resulting list.
-    let expand delimiter (text : string) =
+    let private expand delimiter (text : string) =
         let sb = Text.StringBuilder()
         let res = seq {
             for ch in text do
