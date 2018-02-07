@@ -1,3 +1,0 @@
-#!/bin/sh
-source <(./paket-files/bin/paketrt e)
-hello a 3003 c

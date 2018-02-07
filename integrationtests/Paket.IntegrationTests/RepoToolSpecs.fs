@@ -64,27 +64,6 @@ let ``#3002 repo tool from flatten tools dir``() =
         Assert.IsTrue(File.Exists(toolPath), (sprintf "file '%s' not found" toolPath))
 
 [<Test>]
-let ``#3003 repo tool with add to PATH``() =
-    let scenario = "i003003-repo-tool-in-PATH"
-    prepare scenario
-    paket "restore" scenario |> ignore
-
-    let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
-
-    let helperNames = if Paket.Utils.isWindows then [ "paketrt.cmd" ] else [ "paketrt" ]
-
-    for name in helperNames do
-        let cmdPath = Path.Combine(wrappersPath, name)
-        Assert.IsTrue(File.Exists(cmdPath), (sprintf "file '%s' not found" cmdPath))
-
-    let runitName = if Paket.Utils.isWindows then "runit.bat" else "runit"
-
-    let scriptPath = (scenarioTempPath scenario) </> runitName
-
-    let resultCmd = directExecScript scriptPath "" (scenarioTempPath scenario)
-    CollectionAssert.Contains(resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq, """Hello World from F#! with args: ["a"; "3003"; "c"]""" )
-
-[<Test>]
 let ``#3004 repo tool multi tfm (net)``() =
     let scenario = "i003004-repo-tool-multi-tfm"
     prepare scenario
