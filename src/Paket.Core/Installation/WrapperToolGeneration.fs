@@ -117,72 +117,7 @@ module WrapperToolGeneration =
 
     type HelperScriptWindows = {
         PartialPath : string
-        Direct: bool
     } with
-        member __.Render () =
-            let cmdContent =
-                [ """@ECHO OFF                                         """
-                  """                                                  """
-                  """IF "%1" == "" (                                   """
-                  """    CALL :SHOW_HELP                               """
-                  """    EXIT /B 1                                     """
-                  """)                                                 """
-                  """                                                  """
-                  """IF "%1" == "--help" (                             """
-                  """    CALL :SHOW_HELP                               """
-                  """    EXIT /B 0                                     """
-                  """)                                                 """
-                  """                                                  """
-                  """IF "%1" == "enable" (                             """
-                  """    GOTO :ENABLE_REPOTOOLS                        """
-                  """)                                                 """
-                  """                                                  """
-                  """IF "%1" == "e" (                                  """
-                  """    GOTO :ENABLE_REPOTOOLS                        """
-                  """)                                                 """
-                  """                                                  """
-                  """IF "%1" == "disable" (                            """
-                  """    GOTO :DISABLE_REPOTOOLS                       """
-                  """)                                                 """
-                  """                                                  """
-                  """IF "%1" == "d" (                                  """
-                  """    GOTO :DISABLE_REPOTOOLS                       """
-                  """)                                                 """
-                  """                                                  """
-                  """CALL :SHOW_HELP                                   """
-                  """EXIT /B 1                                         """
-                  """                                                  """
-                  """:SHOW_HELP                                        """
-                  """ECHO Paket repo tools helper                      """
-                  sprintf """ECHO Usage: %s [command] ^<options^>      """ Constants.PaketRepotoolsHelperName
-                  """ECHO.                                             """
-                  """ECHO COMMANDS:                                    """
-                  """ECHO.                                             """
-                  """ECHO. enable  (alias e)        enable repo tools  """
-                  """ECHO. disable (alias d)        disable repo tools """
-                  """ECHO.                                             """
-                  """ECHO OPTIONS:                                     """
-                  """ECHO.                                             """
-                  """ECHO.   --help                 display this help. """
-                  """ECHO.                                             """
-                  """                                                  """
-                  """GOTO :EOF                                         """
-                  """                                                  """
-                  """:ENABLE_REPOTOOLS                                 """
-                  """ECHO Adding '%~dp0' dir to PATH env var...        """
-                  """SET "PATH=%~dp0;%PATH%"                           """
-                  """ECHO Done.                                        """
-                  """EXIT /B 0                                         """
-                  """                                                  """
-                  """:DISABLE_REPOTOOLS                                """
-                  """ECHO Removing '%~dp0' dir from PATH env var...    """
-                  """CALL SET PATH=%%PATH:%~dp0;=%%                    """
-                  """ECHO Done.                                        """
-                  """EXIT /B 0                                         """
-                  "" ]
-            
-            cmdContent |> List.map (fun s -> s.TrimEnd()) |> String.concat "\r\n"
-
         member __.RenderGlobal () =
             let cmdContent =
                 [ """@ECHO OFF                                                                                         """
@@ -205,7 +140,7 @@ module WrapperToolGeneration =
 
         member self.Save (rootPath:DirectoryInfo) =
             let scriptFile = Path.Combine(rootPath.FullName, self.PartialPath) |> FileInfo
-            scriptFile, (if self.Direct then self.Render () else self.RenderGlobal ())
+            scriptFile, (self.RenderGlobal ())
 
     type ScriptContentWindows = {
         PartialPath : string
@@ -244,80 +179,7 @@ module WrapperToolGeneration =
 
     type HelperScriptShell = {
         PartialPath : string
-        Direct: bool
     } with
-        member __.Render () =
-
-            let cmdContent =
-                [ """#!/bin/bash                                                           """
-                  """#                                                                     """
-                  """# Output the command to update PATH to enable/disable repo tools      """
-                  """#                                                                     """
-                  """                                                                      """
-                  """write_out () {                                                        """
-                  """  if [ -t 1 ] ; then                                                  """
-                  """    # stdout is a terminal                                            """
-                  """    echo "$1"                                                         """
-                  """  else                                                                """
-                  """    # stdout isn't a terminal                                         """
-                  """    echo echo \'"$1"\'                                                """
-                  """  fi                                                                  """
-                  """}                                                                     """
-                  """                                                                      """
-                  """show_help () {                                                        """
-                  """  write_out 'Paket repo tools helper'                                 """
-                  sprintf """  write_out 'Usage: %s [command] <options>'                   """ Constants.PaketRepotoolsShellHelperName
-                  """  write_out ''                                                        """
-                  """  write_out 'COMMANDS:'                                               """
-                  """  write_out ''                                                        """
-                  """  write_out 'enable  (alias e)        enable repo tools'              """
-                  """  write_out 'disable (alias d)        disable repo tools'             """
-                  """  write_out ''                                                        """
-                  """  write_out 'OPTIONS:'                                                """
-                  """  write_out ''                                                        """
-                  """  write_out ' --help                 display this help.'              """
-                  """  write_out ''                                                        """
-                  """}                                                                     """
-                  """                                                                      """
-                  """enable_repotools () {                                                 """
-                  """    echo echo \'"Adding $1 dir to PATH env var..."\'                  """
-                  """    echo export PATH=\""$1:\$PATH"\"                                  """
-                  """    echo echo \'"Done."\'                                             """
-                  """}                                                                     """
-                  """                                                                      """
-                  """disable_repotools () {                                                """
-                  """    echo echo \'"Removing $1 dir from PATH env var..."\'              """
-                  """    echo export PATH=\'"${PATH//"$1:"/}"\'                            """
-                  """    echo echo \'"Done."\'                                             """
-                  """}                                                                     """
-                  """                                                                      """
-                  """main () {                                                             """
-                  """                                                                      """
-                  """  local _script                                                       """
-                  """  _script="$(readlink -f "$0")"                                       """
-                  """  local _base                                                         """
-                  """  _base="$(dirname "$_script")"                                       """
-                  """                                                                      """
-                  """  if [[ "$1" = '' ]]; then                                            """
-                  """    show_help                                                         """
-                  """  elif [[ "$1" = '--help' ]]; then                                    """
-                  """    show_help                                                         """
-                  """  elif [[ "$1" = 'enable' ]]; then                                    """
-                  """    enable_repotools "$_base"                                         """
-                  """  elif [[ "$1" = 'e' ]]; then                                         """
-                  """    enable_repotools "$_base"                                         """
-                  """  elif [[ "$1" = 'disable' ]]; then                                   """
-                  """    disable_repotools "$_base"                                        """
-                  """  elif [[ "$1" = 'd' ]]; then                                         """
-                  """    disable_repotools "$_base"                                        """
-                  """  fi                                                                  """
-                  """}                                                                     """
-                  """                                                                      """
-                  """main "$@"                                                             """
-                  "" ]
-            
-            cmdContent |> List.map (fun s -> s.TrimEnd()) |> String.concat "\n"
-        
         member __.RenderGlobal () =
             let cmdContent =
                 [ """#!/bin/bash                                                                               """
@@ -372,7 +234,7 @@ module WrapperToolGeneration =
         /// Save the script in '<directory>/paket-files/bin/<script>'
         member self.Save (rootPath:DirectoryInfo) =
             let scriptFile = Path.Combine(rootPath.FullName, self.PartialPath) |> FileInfo
-            scriptFile, (if self.Direct then self.Render () else self.RenderGlobal ())
+            scriptFile, (self.RenderGlobal ())
 
 
     type HelperFunctionScriptShell = {
@@ -550,25 +412,17 @@ module WrapperToolGeneration =
             |> List.map (fun (_, _, path) -> path)
             |> List.distinct
             |> List.collect (fun scriptPath ->
-                [ { HelperScriptWindows.PartialPath = Path.Combine(scriptPath, sprintf "%s.cmd" Constants.PaketRepotoolsHelperName)
-                    Direct = true }
-                  |> HelperScript.Windows
-
-                  { HelperScriptShell.PartialPath = Path.Combine(scriptPath, Constants.PaketRepotoolsShellHelperName)
-                    Direct = true }
-                  |> HelperScript.Shell ] )
+                [ ] )
 
         let globalHelperScripts =
             toolWrapperInDir
             |> List.map (fun (_, _, path) -> path)
             |> List.distinct
             |> List.collect (fun scriptPath ->
-                [ { HelperScriptWindows.PartialPath = Path.Combine(scriptPath, sprintf "%s.cmd" Constants.PaketRepotoolsHelperName)
-                    Direct = false }
+                [ { HelperScriptWindows.PartialPath = Path.Combine(scriptPath, sprintf "%s.cmd" Constants.PaketRepotoolsHelperName) }
                   |> HelperScript.Windows
 
-                  { HelperScriptShell.PartialPath = Path.Combine(scriptPath, Constants.PaketRepotoolsShellHelperName)
-                    Direct = false }
+                  { HelperScriptShell.PartialPath = Path.Combine(scriptPath, Constants.PaketRepotoolsShellHelperName) }
                   |> HelperScript.Shell
 
                   { HelperFunctionScriptShell.PartialPath = Path.Combine(scriptPath, Constants.PaketRepotoolsShellFunctionsHelperName) }
