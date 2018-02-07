@@ -1699,6 +1699,35 @@ let ``should read config with repo tool with alias``() =
 
     nuget.Kind |> shouldEqual (PackageRequirementKind.Package)
 
+let configWithRepoToolWithAliasArgs = """
+source https://www.nuget.org/api/v2
+
+repotool mytool tool_alias: "oldname->newname2 1 \"abc\" \"d\""
+nuget FAKE
+"""
+
+[<Test>]
+let ``should read config with repo tool with alias args``() = 
+    let cfg = DependenciesFile.FromSource(configWithRepoToolWithAliasArgs)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources 
+    |> shouldEqual [PackageSources.DefaultNuGetSource]
+
+    let tool = cfg.Groups.[Constants.MainDependencyGroup].Packages.Head
+    let nuget = cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Head
+
+    tool.Kind |> shouldEqual (PackageRequirementKind.RepoTool)
+
+    tool.Settings.RepotoolAliases
+    |> shouldEqual (Map.ofList 
+        [ "oldname",
+          Requirements.RepotoolAliasTo.Alias(
+            "newname2",
+            [ Requirements.RepotoolAliasCmdArgs.String "1 \"abc\" \"d\"" ] )
+        ] )
+
+    nuget.Kind |> shouldEqual (PackageRequirementKind.Package)
+
 let configWithRepoToolWorkingDir = """
 source https://www.nuget.org/api/v2
 

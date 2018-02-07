@@ -1,3 +1,3 @@
 source https://www.myget.org/F/paket-repotool/api/v2
 
-repotool RepoTool.Sample 0.3.0 tool_alias: hello->'hola 0 p1`
+repotool RepoTool.Sample 0.3.0 tool_alias: "hello->hola 0 p1"

@@ -829,8 +829,18 @@ and [<RequireQualifiedAccess>] RepotoolAliasCmdArgs =
     | String of text:string
     | VariablePlaceholder of name:string
 
-let parseRepotoolAlias s =
-    RepotoolAliasTo.Alias (s, [])
+let parseRepotoolAlias (s: string) =
+    if s.Contains(" ") then
+        let name, args =
+            match s.Split([| ' ' |], 2) |> List.ofArray with
+            | [ ] -> failwithf "invalid repo alias %s" s
+            | [ n ] -> n, ""
+            | [ n; a ] -> n, a
+            | _n :: _a :: _xs -> failwithf "invalid repo alias %s" s
+
+        RepotoolAliasTo.Alias (name, [RepotoolAliasCmdArgs.String args])
+    else
+        RepotoolAliasTo.Alias (s, [])
 
 let serializeRepotoolAlias a =
     match a with
@@ -974,6 +984,22 @@ type InstallSettings =
     static member Parse(text:string) : InstallSettings = InstallSettings.Parse(false, text)
     static member internal Parse(isSimplified: bool, text:string) : InstallSettings =
         let kvPairs = parseKeyValuePairs (text.ToLower())
+
+        let getPair key =
+            match kvPairs.TryGetValue key with
+            | true, x -> kvPairs.Remove key |> ignore; Some x
+            | _ -> None
+
+        let settings = InstallSettings.ParsePairs(getPair, isSimplified)
+
+        for kv in kvPairs do
+            failwithf "Unknown package settings %s: %s" kv.Key kv.Value
+
+        settings
+
+    /// Same as InstallSettings.Parse but respect case sensitive and quotes of args
+    static member internal ParseWithQuotes(isSimplified: bool, text:string) : InstallSettings =
+        let kvPairs = parseKeyValuePairsWithQuotes (text.ToLower())
 
         let getPair key =
             match kvPairs.TryGetValue key with
