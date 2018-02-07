@@ -168,3 +168,13 @@ let ``#3008 repo tool write list of tools``() =
     let repotoolsCsvPath = Path.Combine(scenarioTempPath scenario, "paket-files", "paket.repotools.csv")
 
     Assert.IsTrue(File.Exists(repotoolsCsvPath), (sprintf "file '%s' not found" repotoolsCsvPath))
+
+    let lines = File.ReadAllLines(repotoolsCsvPath)
+
+    Assert.AreEqual("group_name,base_dir", lines.[0])
+
+    let g1 = lines.[1].Split(',')
+
+    let helloPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
+
+    CollectionAssert.AreEqual([| "Main"; helloPath |], g1)
