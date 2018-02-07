@@ -632,6 +632,85 @@ let parseKeyValuePairs (s:string) : Dictionary<string,string> =
     | exn ->
         raise (Exception(sprintf "Could not parse '%s' as key/value pairs." s, exn))
 
+
+/// Same as parseKeyValuePairs but allow quoting
+/// TODO burn it at the altar of fparsec gods
+let parseKeyValuePairsWithQuotes (s:string) : Dictionary<string,string> =
+    let s = s.Trim()
+    try
+        let l = List<_>()
+        let add key value =
+            if String.IsNullOrWhiteSpace key |> not then
+                let x = key,value
+                l.Add x |> ignore
+
+        
+        let current = Text.StringBuilder()
+        let quoted = ref false
+        let escaped = ref false
+        let lastKey = ref ""
+        let lastValue = ref ""
+        let isKey = ref true
+        for pos in 0..s.Length - 1 do
+            let x = s.[pos]
+            let restHasKey() =             
+                let rest = s.Substring(pos + 1)
+                if String.IsNullOrEmpty(rest.Trim()) then true else
+                match rest.IndexOf ',' with
+                | -1 -> rest.Contains(":")
+                | p -> 
+                    let s = rest.Substring(0,p)
+                    s.Contains(":")
+
+            if not !quoted then
+                if x = '"' then
+                    quoted := not !quoted
+                elif x = ',' && not !quoted && restHasKey() then
+                    add !lastKey !lastValue
+                    lastKey := ""
+                    lastValue := ""
+                    isKey := true
+                elif x = ':' && not !quoted then
+                    if not !isKey then
+                        failwithf "invalid delimiter at position %d" pos
+                    isKey := false
+                else
+                    if !isKey then
+                        lastKey := !lastKey + x.ToString()
+                    else
+                        lastValue := !lastValue + x.ToString()
+            else
+                let nextIs pos c = s.[pos + 1] = c
+                let valid =
+                    if x = '\\' && (nextIs pos '"') then
+                        escaped := true
+                        false
+                    elif x = '"' && !escaped then
+                        escaped := false
+                        true
+                    elif x = '"' && not !escaped then
+                        quoted := false
+                        escaped := false
+                        false
+                    else
+                        true
+                        
+                if valid then
+                    if !isKey then
+                        lastKey := !lastKey + x.ToString()
+                    else
+                        lastValue := !lastValue + x.ToString()
+
+        add !lastKey !lastValue
+
+        let d = Dictionary<_,_>()
+        for k,v in l do
+            d.Add(k.Trim().ToLower(),v.Trim())
+        d
+    with
+    | exn -> 
+        raise (Exception(sprintf "Could not parse '%s' as key/value pairs." s, exn))
+
 let saveFile (fileName : string) (contents : string) =
     tracefn "Saving file %s" fileName
     try

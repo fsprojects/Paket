@@ -333,13 +333,29 @@ let parseKeyValuePairsTestCases =
     [
         """tool_alias: oldname->newname""", [ "tool_alias", "oldname->newname" ]
         """tool_alias: "oldname->newname a b" """, [ "tool_alias", "oldname->newname a b" ]
-        """tool_alias: "oldname->newname \"a\" b" """, [ "tool_alias", "oldname->newname \"a\" b" ]
+        """tool_alias: "oldname->newname \"a\" b" """, [ "tool_alias", "oldname->newname \\a\\ b" ]
     ] |> List.map (fun (s, e) -> TestCaseData(s, e))
 
 [<TestCaseSource("parseKeyValuePairsTestCases")>]
 let ``parseKeyValuePairs test``(s, expected) =
     let result =
         parseKeyValuePairs s
+        |> Seq.toList
+        |> Seq.map (fun kv -> kv.Key, kv.Value)
+        |> Map.ofSeq
+    result |> shouldEqual (expected |> Map.ofList)
+
+let parseKeyValuePairsWithQuotesTestCases =
+    [
+        """tool_alias: oldname->newname""", [ "tool_alias", "oldname->newname" ]
+        """tool_alias: "oldname->newname a b" """, [ "tool_alias", "oldname->newname a b" ]
+        """tool_alias: "oldname->newname \"a\" b" """, [ "tool_alias", "oldname->newname \"a\" b" ]
+    ] |> List.map (fun (s, e) -> TestCaseData(s, e))
+
+[<TestCaseSource("parseKeyValuePairsWithQuotesTestCases")>]
+let ``parseKeyValuePairsWithQuotes test``(s, expected) =
+    let result =
+        parseKeyValuePairsWithQuotes s
         |> Seq.toList
         |> Seq.map (fun kv -> kv.Key, kv.Value)
         |> Map.ofSeq
