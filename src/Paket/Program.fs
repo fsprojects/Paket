@@ -317,25 +317,53 @@ let repotoolHelper (results : ParseResults<_>) =
 
     let echo format =
         match exportType with
-        | Some (RepotoolHelperExport.Cmd) -> Printf.ksprintf (fun s -> sprintf "ECHO cmd: %s" s) format
-        | Some (RepotoolHelperExport.Sh) -> Printf.ksprintf (fun s -> sprintf "echo sh: %s" s) format
+        | Some RepotoolHelperExport.Cmd -> Printf.ksprintf (fun s -> sprintf "ECHO cmd: %s" s) format
+        | Some RepotoolHelperExport.Sh -> Printf.ksprintf (fun s -> sprintf "echo sh: %s" s) format
         | None -> Printf.ksprintf id format
 
-    let toOut =
-        match enable, disable with
-        | Some e, _ ->
-            [ echo "enabling %A" e ]
-        | _, Some d ->
-            [ echo "disabling %A" d ]
-        | None, None ->
-            printfn "list"
-            []
+    let addToPATH dir =
+        match exportType with
+        | Some (RepotoolHelperExport.Cmd) -> sprintf """SET "PATH=%s;%%PATH%%" """ dir
+        | Some (RepotoolHelperExport.Sh) -> sprintf """export PATH="%s:$PATH" """ dir
+        | None -> ""
 
-    match exportPath with
-    | None -> ()
-    | Some path ->
-        //TODO check is absolute path
-        File.WriteAllLines(path, toOut |> Array.ofList)
+    let removeFromPATH dir =
+        match exportType with
+        | Some (RepotoolHelperExport.Cmd) -> sprintf """CALL SET PATH=%%%%PATH:%s;=%%%% """ dir
+        | Some (RepotoolHelperExport.Sh) -> sprintf """export PATH="${PATH//"%s:"/}" """ dir
+        | None -> ""
+
+    match Dependencies.TryLocate() with
+    | None ->
+        tracefn "Paket repo tools directory not found in directory hierachy"
+    | Some deps ->
+        let dir =
+            Path.Combine(deps.RootPath, Constants.PaketFilesFolderName, "bin")
+            |> Path.GetFullPath
+        if Directory.Exists dir then
+            tracefn "Found dir: %s" dir
+        else
+            ()
+
+        let toOut =
+            match enable, disable with
+            | Some e, _ ->
+                [ echo "adding '%s' to PATH env var" dir
+                  addToPATH dir ]
+            | _, Some d ->
+                [ echo "removing '%s' from PATH env var" dir
+                  removeFromPATH dir ]
+            | None, None ->
+                printfn "list"
+                []
+
+        match exportPath with
+        | None ->
+            toOut
+            |> List.iter (printfn "%s")
+        | Some path ->
+            //TODO check is absolute path
+            File.WriteAllLines(path, toOut |> Array.ofList)
 
     //Dependencies
     //    .Locate()
