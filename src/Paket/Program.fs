@@ -341,7 +341,7 @@ let repotoolHelper (workDir: DirectoryInfo) (results : ParseResults<_>) =
             Path.Combine(deps.RootPath, Constants.PaketFilesFolderName, "bin")
             |> Path.GetFullPath
         if Directory.Exists dir then
-            tracefn "Found dir: %s" dir
+            tracefn "%s" (echo "Found dir: %s" dir)
         else
             ()
 
