@@ -697,6 +697,7 @@ type Command =
     | [<AltCommandLine("-v");Inherit>]                  Verbose
     | [<Inherit>]                                       Log_File of path:string
     | [<Hidden;Inherit>]                                From_Bootstrapper
+    | [<Hidden>]                                        Root_Search_Dir of dir:string
     // subcommands
     | [<CustomCommandLine("add")>]                      Add of ParseResults<AddArgs>
     | [<CustomCommandLine("github")>]                   Github of ParseResults<GithubArgs>
@@ -766,6 +767,7 @@ with
             | Silent -> "suppress console output"
             | Verbose -> "print detailed information to the console"
             | Version -> "show Paket version"
+            | Root_Search_Dir _ -> "start search of paket.dependencies from that directory"
             | From_Bootstrapper -> "call coming from the '--run' feature of the bootstrapper"
 
 let commandParser = ArgumentParser.Create<Command>(programName = "paket", errorHandler = new ProcessExiter(), checkStructure = false)

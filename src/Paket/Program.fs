@@ -170,7 +170,7 @@ let require arg fail =
     | Some(id) -> id
     | _ -> fail()
 
-let add (results : ParseResults<_>) =
+let add (workDir: DirectoryInfo) (results : ParseResults<_>) =
     let packageName =
         let arg = (results.TryGetResult <@ AddArgs.NuGet @>,
                    results.TryGetResult <@ AddArgs.NuGet_Legacy @>)
@@ -212,12 +212,12 @@ let add (results : ParseResults<_>) =
     match project with
     | Some projectName ->
         Dependencies
-            .Locate()
+            .Locate(workDir.FullName)
             .AddToProject(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
     | None ->
         let interactive = results.Contains <@ AddArgs.Interactive @>
         Dependencies
-            .Locate()
+            .Locate(workDir.FullName)
             .Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
 
 let github (results : ParseResults<_>) =
@@ -241,7 +241,7 @@ let github (results : ParseResults<_>) =
             .AddGithub(group, repository, file, version)
 
 
-let addTool (results : ParseResults<_>) =
+let addTool (workDir: DirectoryInfo) (results : ParseResults<_>) =
     let packageName =
         let arg = results.TryGetResult <@ AddToolArgs.NuGet @>
         require arg (fun _ -> results.GetResult <@ AddToolArgs.NuGet @>)
@@ -304,11 +304,11 @@ let addTool (results : ParseResults<_>) =
                 .AddRepoTool(group, packageName, version, force, interactive, noInstall |> not, semVerUpdateMode, noResolve |> not, Map.empty, Requirements.RepotoolWorkingDirectoryPath.CurrentDirectory)
     else
         Dependencies
-            .Locate()
+            .Locate(workDir.FullName)
             .AddRepoTool(group, packageName, version, force, interactive, noInstall |> not, semVerUpdateMode, noResolve |> not, Map.empty, Requirements.RepotoolWorkingDirectoryPath.CurrentDirectory)
 
 
-let repotoolHelper (results : ParseResults<_>) =
+let repotoolHelper (workDir: DirectoryInfo) (results : ParseResults<_>) =
     let enable = results.TryGetResult <@ RepotoolHelperArgs.Enable @>
     let disable = results.TryGetResult <@ RepotoolHelperArgs.Disable @>
 
@@ -333,7 +333,7 @@ let repotoolHelper (results : ParseResults<_>) =
         | Some (RepotoolHelperExport.Sh) -> sprintf """export PATH="${PATH//"%s:"/}" """ dir
         | None -> ""
 
-    match Dependencies.TryLocate() with
+    match Dependencies.TryLocate(workDir.FullName) with
     | None ->
         tracefn "Paket repo tools directory not found in directory hierachy"
     | Some deps ->
@@ -399,10 +399,10 @@ let config (results : ParseResults<_>) =
 let validateAutoRestore (results : ParseResults<_>) =
     results.GetAllResults().Length = 1
 
-let autoRestore (results : ParseResults<_>) =
+let autoRestore (workDir: DirectoryInfo) (results : ParseResults<_>) =
     match results.GetResult <@ Flags @> with
-    | On -> Dependencies.Locate().TurnOnAutoRestore()
-    | Off -> Dependencies.Locate().TurnOffAutoRestore()
+    | On -> Dependencies.Locate(workDir.FullName).TurnOnAutoRestore()
+    | Off -> Dependencies.Locate(workDir.FullName).TurnOffAutoRestore()
 
 let convert (results : ParseResults<_>) =
     let force = results.Contains <@ ConvertFromNugetArgs.Force @>
@@ -415,7 +415,7 @@ let convert (results : ParseResults<_>) =
 
     Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
 
-let findRefs (results : ParseResults<_>) =
+let findRefs (workDir: DirectoryInfo) (results : ParseResults<_>) =
     let packages =
         let arg = (results.TryGetResult <@ FindRefsArgs.NuGets @>,
                    results.TryGetResult <@ FindRefsArgs.NuGets_Legacy @>)
@@ -427,8 +427,9 @@ let findRefs (results : ParseResults<_>) =
                   |> legacyOption results (ReplaceArgument("--group", "group"))
 
         defaultArg arg (Constants.MainDependencyGroup.ToString())
-    packages |> List.map (fun p -> group,p)
-    |> Dependencies.Locate().ShowReferencesFor
+    packages
+    |> List.map (fun p -> group,p)
+    |> Dependencies.Locate(workDir.FullName).ShowReferencesFor
 
 let init (results : ParseResults<InitArgs>) =
     Dependencies.Init(Directory.GetCurrentDirectory())
@@ -437,7 +438,7 @@ let clearCache (results : ParseResults<ClearCacheArgs>) =
     let clearLocal = results.Contains <@ ClearCacheArgs.ClearLocal @>
     Dependencies.ClearCache(clearLocal)
 
-let install (results : ParseResults<_>) =
+let install (workDir: DirectoryInfo) (results : ParseResults<_>) =
     let force = results.Contains <@ InstallArgs.Force @>
     let withBindingRedirects = results.Contains <@ InstallArgs.Redirects @>
     let createNewBindingFiles =
@@ -464,7 +465,7 @@ let install (results : ParseResults<_>) =
         SemVerUpdateMode.NoRestriction
     let touchAffectedRefs = results.Contains <@ InstallArgs.Touch_Affected_Refs @>
 
-    Dependencies.Locate().Install(
+    Dependencies.Locate(workDir.FullName).Install(
         force,
         withBindingRedirects,
         cleanBindingRedirects,
@@ -477,7 +478,7 @@ let install (results : ParseResults<_>) =
         providedScriptTypes,
         alternativeProjectRoot)
 
-let outdated (results : ParseResults<_>) =
+let outdated (workDir: DirectoryInfo) (results : ParseResults<_>) =
     let force = results.Contains <@ OutdatedArgs.Force @>
     let strict = results.Contains <@ OutdatedArgs.Ignore_Constraints @> |> not
     let includePrereleases = results.Contains <@ OutdatedArgs.Include_Prereleases @>
@@ -485,9 +486,9 @@ let outdated (results : ParseResults<_>) =
         (results.TryGetResult<@ OutdatedArgs.Group @>,
          results.TryGetResult<@ OutdatedArgs.Group_Legacy @>)
         |> legacyOption results (ReplaceArgument("--group", "group"))
-    Dependencies.Locate().ShowOutdated(strict, force, includePrereleases, group)
+    Dependencies.Locate(workDir.FullName).ShowOutdated(strict, force, includePrereleases, group)
 
-let remove (results : ParseResults<_>) =
+let remove (workDir: DirectoryInfo) (results : ParseResults<_>) =
     let packageName =
         let arg = (results.TryGetResult <@ RemoveArgs.NuGet @>,
                    results.TryGetResult <@ RemoveArgs.NuGet_Legacy @>)
@@ -506,13 +507,13 @@ let remove (results : ParseResults<_>) =
 
     match project with
     | Some projectName ->
-        Dependencies.Locate()
+        Dependencies.Locate(workDir.FullName)
                     .RemoveFromProject(group, packageName, force, projectName, noInstall |> not)
     | None ->
         let interactive = results.Contains <@ RemoveArgs.Interactive @>
-        Dependencies.Locate().Remove(group, packageName, force, interactive, noInstall |> not)
+        Dependencies.Locate(workDir.FullName).Remove(group, packageName, force, interactive, noInstall |> not)
 
-let restore (results : ParseResults<_>) =
+let restore (workDir: DirectoryInfo) (results : ParseResults<_>) =
     let force = results.Contains <@ RestoreArgs.Force @>
     let files =
         (results.GetResults<@ RestoreArgs.References_File @>,
@@ -534,18 +535,18 @@ let restore (results : ParseResults<_>) =
 
     match project with
     | Some project ->
-        Dependencies.Locate().Restore(force, group, project, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)
+        Dependencies.Locate(workDir.FullName).Restore(force, group, project, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)
     | None ->
         if List.isEmpty files then
-            Dependencies.Locate().Restore(force, group, installOnlyReferenced, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)
+            Dependencies.Locate(workDir.FullName).Restore(force, group, installOnlyReferenced, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)
         else
-            Dependencies.Locate().Restore(force, group, files, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)
+            Dependencies.Locate(workDir.FullName).Restore(force, group, files, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)
 
-let simplify (results : ParseResults<_>) =
+let simplify (workDir: DirectoryInfo) (results : ParseResults<_>) =
     let interactive = results.Contains <@ SimplifyArgs.Interactive @>
-    Dependencies.Locate().Simplify(interactive)
+    Dependencies.Locate(workDir.FullName).Simplify(interactive)
 
-let update (results : ParseResults<_>) =
+let update (workDir: DirectoryInfo) (results : ParseResults<_>) =
     let createNewBindingFiles =
         (results.Contains <@ UpdateArgs.Create_New_Binding_Files @>,
          results.Contains <@ UpdateArgs.Create_New_Binding_Files_Legacy @>)
@@ -581,17 +582,17 @@ let update (results : ParseResults<_>) =
             |> legacyOption results (ReplaceArgument("--version", "version"))
 
         if filter then
-            Dependencies.Locate().UpdateFilteredPackages(group, packageName, version, force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+            Dependencies.Locate(workDir.FullName).UpdateFilteredPackages(group, packageName, version, force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
         else
-            Dependencies.Locate().UpdatePackage(group, packageName, version, force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+            Dependencies.Locate(workDir.FullName).UpdatePackage(group, packageName, version, force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
     | _ ->
         match group with
         | Some groupName ->
-            Dependencies.Locate().UpdateGroup(groupName, force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+            Dependencies.Locate(workDir.FullName).UpdateGroup(groupName, force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
         | None ->
-            Dependencies.Locate().Update(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+            Dependencies.Locate(workDir.FullName).Update(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
 
-let pack (results : ParseResults<_>) =
+let pack (workDir: DirectoryInfo) (results : ParseResults<_>) =
     let outputPath =
         let arg = (results.TryGetResult <@ PackArgs.Output @>,
                    results.TryGetResult <@ PackArgs.Output_Legacy @>)
@@ -650,7 +651,7 @@ let pack (results : ParseResults<_>) =
          results.TryGetResult <@ PackArgs.Project_Url_Legacy @>)
         |> legacyOption results (ReplaceArgument("--project-url", "project-url"))
 
-    Dependencies.Locate()
+    Dependencies.Locate(workDir.FullName)
                 .Pack(outputPath,
                       ?buildConfig = buildConfig,
                       ?buildPlatform = buildPlatform,
@@ -679,14 +680,14 @@ let discoverPackageSources explicitSource (dependencies: Dependencies option) =
         failwithf "Could not find '%s' at or above current directory, and no explicit source was given as parameter (e.g. 'paket.exe find-packages --source https://www.nuget.org/api/v2')."
             Constants.DependenciesFileName
 
-let findPackages silent (results : ParseResults<_>) =
+let findPackages (workDir: DirectoryInfo) silent (results : ParseResults<_>) =
     let maxResults =
         let arg = (results.TryGetResult <@ FindPackagesArgs.Max_Results @>,
                    results.TryGetResult <@ FindPackagesArgs.Max_Results_Legacy @>)
                   |> legacyOption results (ReplaceArgument("--max", "max"))
         defaultArg arg 10000
     let sources  =
-        let dependencies = Dependencies.TryLocate()
+        let dependencies = Dependencies.TryLocate(workDir.FullName)
         let arg = (results.TryGetResult <@ FindPackagesArgs.Source @>,
                    results.TryGetResult <@ FindPackagesArgs.Source_Legacy @>)
                   |> legacyOption results (ReplaceArgument("--source", "source"))
@@ -754,13 +755,13 @@ let fixNuspec _silent (results : ParseResults<_>) =
     Dependencies.FixNuspecs (refFile, nuspecList)
 
 // separated out from showInstalledPackages to allow Paket.PowerShell to get the types
-let getInstalledPackages (results : ParseResults<_>) =
+let getInstalledPackages (workDir: DirectoryInfo) (results : ParseResults<_>) =
     let project =
         (results.TryGetResult <@ ShowInstalledPackagesArgs.Project @>,
          results.TryGetResult <@ ShowInstalledPackagesArgs.Project_Legacy @>)
         |> legacyOption results (ReplaceArgument("--project", "project"))
     let showAll = results.Contains <@ ShowInstalledPackagesArgs.All @>
-    let dependenciesFile = Dependencies.Locate()
+    let dependenciesFile = Dependencies.Locate(workDir.FullName)
     match project with
     | None ->
         if showAll then dependenciesFile.GetInstalledPackages()
@@ -773,22 +774,22 @@ let getInstalledPackages (results : ParseResults<_>) =
             if showAll then dependenciesFile.GetInstalledPackages(referencesFile)
             else dependenciesFile.GetDirectDependencies(referencesFile)
 
-let showInstalledPackages (results : ParseResults<_>) =
-    for groupName,name,version in getInstalledPackages results do
+let showInstalledPackages (workDir: DirectoryInfo) (results : ParseResults<_>) =
+    for groupName,name,version in getInstalledPackages workDir results do
         tracefn "%s %s - %s" groupName name version
 
-let showGroups (results : ParseResults<ShowGroupsArgs>) =
-    let dependenciesFile = Dependencies.Locate()
+let showGroups (workDir: DirectoryInfo) (results : ParseResults<ShowGroupsArgs>) =
+    let dependenciesFile = Dependencies.Locate(workDir.FullName)
     for groupName in dependenciesFile.GetGroups() do
         tracefn "%s" groupName
 
-let findPackageVersions (results : ParseResults<_>) =
+let findPackageVersions (workDir: DirectoryInfo) (results : ParseResults<_>) =
     let maxResults =
         let arg = (results.TryGetResult <@ FindPackageVersionsArgs.Max_Results @>,
                    results.TryGetResult <@ FindPackageVersionsArgs.Max_Results_Legacy @>)
                   |> legacyOption results (ReplaceArgument("--max", "max"))
         defaultArg arg 10000
-    let dependencies = Dependencies.TryLocate()
+    let dependencies = Dependencies.TryLocate(workDir.FullName)
     let name =
         let arg = (results.TryGetResult <@ FindPackageVersionsArgs.NuGet @>,
                    results.TryGetResult <@ FindPackageVersionsArgs.NuGet_Legacy @>)
@@ -835,7 +836,7 @@ let push paketVersion (results : ParseResults<_>) =
                       ?endPoint = endpoint,
                       ?apiKey = apiKey)
 
-let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
+let generateLoadScripts (workDir: DirectoryInfo) (results : ParseResults<GenerateLoadScriptsArgs>) =
     let providedFrameworks =
         (results.GetResults <@ GenerateLoadScriptsArgs.Framework @>,
          results.GetResults <@ GenerateLoadScriptsArgs.Framework_Legacy @>)
@@ -850,15 +851,15 @@ let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
          (defaultArg (results.TryGetResult<@ GenerateLoadScriptsArgs.Group_Legacy @>) []))
         |> legacyList results (ReplaceArgument("--group", "groups"))
 
-    Dependencies.Locate().GenerateLoadScripts providedGroups providedFrameworks providedScriptTypes
+    Dependencies.Locate(workDir.FullName).GenerateLoadScripts providedGroups providedFrameworks providedScriptTypes
 
-let info (results : ParseResults<InfoArgs>) =
+let info (workDir: DirectoryInfo) (results : ParseResults<InfoArgs>) =
     if results.Contains <@ InfoArgs.Paket_Dependencies_Dir @> then
-        match Dependencies.TryLocate() with
+        match Dependencies.TryLocate(workDir.FullName) with
         | None -> ()
         | Some deps -> tracefn "%s" deps.RootPath
     elif results.Contains <@ InfoArgs.Paket_Repotools_Dir @> then
-        match Dependencies.TryLocate() with
+        match Dependencies.TryLocate(workDir.FullName) with
         | None -> ()
         | Some deps ->
             let dir =
@@ -878,7 +879,7 @@ let generateNuspec (results:ParseResults<GenerateNuspecArgs>) =
     let nuspecString = nuspec.ToString()
     File.WriteAllText (Path.Combine (output,filename), nuspecString)
 
-let why (results: ParseResults<WhyArgs>) =
+let why (workDir: DirectoryInfo) (results: ParseResults<WhyArgs>) =
     let packageName =
         let arg = (results.TryGetResult <@ WhyArgs.NuGet @>,
                    results.TryGetResult <@ WhyArgs.NuGet_Legacy @>)
@@ -891,7 +892,7 @@ let why (results: ParseResults<WhyArgs>) =
                   |> legacyOption results (ReplaceArgument("--group", "group"))
                   |> Option.map Domain.GroupName
         defaultArg arg Constants.MainDependencyGroup
-    let dependencies = Dependencies.Locate()
+    let dependencies = Dependencies.Locate(workDir.FullName)
     let lockFile = dependencies.GetLockFile()
     let directDeps =
         dependencies
@@ -924,48 +925,53 @@ let waitForDebugger () =
     while not(System.Diagnostics.Debugger.IsAttached) do
         System.Threading.Thread.Sleep(100)
 
-let handleCommand silent command =
+let handleCommand silent rootSearchDirOpt command =
+    let rootSearchDir =
+        match rootSearchDirOpt with
+        | Some d -> d
+        | None -> Directory.GetCurrentDirectory() |> DirectoryInfo
     match command with
-    | Add r -> processCommand silent add r
+    | Add r -> processCommand silent (add rootSearchDir) r
     | Github r -> processCommand silent github r
     | ClearCache r -> processCommand silent clearCache r
     | Config r -> processWithValidation silent validateConfig config r
     | ConvertFromNuget r -> processCommand silent convert r
-    | FindRefs r -> processCommand silent findRefs r
+    | FindRefs r -> processCommand silent (findRefs rootSearchDir) r
     | Init r -> processCommand silent (init) r
-    | AutoRestore r -> processWithValidation silent validateAutoRestore autoRestore r
-    | Install r -> processCommand silent install r
-    | Outdated r -> processCommand silent outdated r
-    | Remove r -> processCommand silent remove r
-    | Restore r -> processCommand silent restore r
-    | Simplify r -> processCommand silent simplify r
-    | Update r -> processCommand silent update r
-    | FindPackages r -> processCommand silent (findPackages silent) r
-    | FindPackageVersions r -> processCommand silent findPackageVersions r
+    | AutoRestore r -> processWithValidation silent validateAutoRestore (autoRestore rootSearchDir) r
+    | Install r -> processCommand silent (install rootSearchDir) r
+    | Outdated r -> processCommand silent (outdated rootSearchDir) r
+    | Remove r -> processCommand silent (remove rootSearchDir) r
+    | Restore r -> processCommand silent (restore rootSearchDir) r
+    | Simplify r -> processCommand silent (simplify rootSearchDir) r
+    | Update r -> processCommand silent (update rootSearchDir) r
+    | FindPackages r -> processCommand silent (findPackages rootSearchDir silent) r
+    | FindPackageVersions r -> processCommand silent (findPackageVersions rootSearchDir) r
     | FixNuspec r ->
         warnObsolete (ReplaceArgument("fix-nuspecs", "fix-nuspec"))
         processCommand silent (fixNuspec silent) r
     | FixNuspecs r -> processCommand silent (fixNuspecs silent) r
-    | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
-    | ShowGroups r -> processCommand silent showGroups r
-    | Pack r -> processCommand silent pack r
+    | ShowInstalledPackages r -> processCommand silent (showInstalledPackages rootSearchDir) r
+    | ShowGroups r -> processCommand silent (showGroups rootSearchDir) r
+    | Pack r -> processCommand silent (pack rootSearchDir) r
     | Push r -> processCommand silent (push AssemblyVersionInformation.AssemblyInformationalVersion) r
     | GenerateIncludeScripts r ->
         warnObsolete (ReplaceArgument("generate-load-scripts", "generate-include-scripts"))
-        processCommand silent generateLoadScripts r
-    | GenerateLoadScripts r -> processCommand silent generateLoadScripts r
+        processCommand silent (generateLoadScripts rootSearchDir) r
+    | GenerateLoadScripts r -> processCommand silent (generateLoadScripts rootSearchDir) r
     | GenerateNuspec r -> processCommand silent generateNuspec r
-    | Why r -> processCommand silent why r
+    | Why r -> processCommand silent (why rootSearchDir) r
     | Restriction r -> processCommand silent restriction r
-    | AddTool r -> processCommand silent addTool r
-    | RepotoolHelper r -> processCommand silent repotoolHelper r
-    | Info r -> processCommand silent info r
+    | AddTool r -> processCommand silent (addTool rootSearchDir) r
+    | RepotoolHelper r -> processCommand silent (repotoolHelper rootSearchDir) r
+    | Info r -> processCommand silent (info rootSearchDir) r
     // global options; list here in order to maintain compiler warnings
     // in case of new subcommands added
     | Verbose
     | Silent
     | From_Bootstrapper
     | Version
+    | Root_Search_Dir _
     | Log_File _ -> failwithf "internal error: this code should never be reached."
 
 let main() =
@@ -1024,12 +1030,16 @@ let main() =
         let version = results.Contains <@ Version @>
         if not version then
 
+            let rootSearchDir =
+                results.TryGetResult <@ Root_Search_Dir @>
+                |> Option.map DirectoryInfo
+
             use fileTrace =
                 match results.TryGetResult <@ Log_File @> with
                 | Some lf -> setLogFile lf
                 | None -> null
 
-            handleCommand silent (results.GetSubCommand())
+            handleCommand silent rootSearchDir (results.GetSubCommand())
     with
     | exn when not (exn :? System.NullReferenceException) ->
         Environment.ExitCode <- 1
