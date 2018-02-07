@@ -309,13 +309,23 @@ let addTool (results : ParseResults<_>) =
 
 
 let repotoolHelper (results : ParseResults<_>) =
-    let packageName =
-        let arg = results.TryGetResult <@ RepotoolHelperArgs.Enable @>
-        require arg (fun _ -> results.GetResult <@ RepotoolHelperArgs.Enable @>)
-    //let group =
-    //    results.TryGetResult <@ AddToolArgs.Group @>
+    let enable = results.TryGetResult <@ RepotoolHelperArgs.Enable @>
+    let disable = results.TryGetResult <@ RepotoolHelperArgs.Disable @>
 
-    printfn "ciao %A" packageName
+    let exportType = results.TryGetResult <@ RepotoolHelperArgs.Export @>
+    match exportType with
+    | Some (RepotoolHelperExport.Cmd) -> printfn "cmd"
+    | Some (RepotoolHelperExport.Sh) -> printfn "sh"
+    | None -> printfn "boh"
+
+    match enable, disable with
+    | Some e, _ -> 
+        printfn "enabling %A" e
+    | _, Some d -> 
+        printfn "disabling %A" d
+    | None, None ->
+        printfn "list"
+
     //Dependencies
     //    .Locate()
     //    .AddRepoTool(group, packageName, version, force, interactive, noInstall |> not, semVerUpdateMode, noResolve |> not, Map.empty, Requirements.RepotoolWorkingDirectoryPath.CurrentDirectory)
