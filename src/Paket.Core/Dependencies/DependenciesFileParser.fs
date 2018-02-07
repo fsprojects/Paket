@@ -303,7 +303,7 @@ module DependenciesFileParser =
                 Some (RepoTool(name,version,String.Join(" ",rest) |> removeComment))
             | name :: rest -> Some (RepoTool(name,">= 0", String.Join(" ",rest) |> removeComment))
             | [name] -> Some (RepoTool(name,">= 0",""))
-            | _ -> failwithf "could not retrieve cli tool from %s" trimmed
+            | _ -> failwithf "could not retrieve repo tool from %s" trimmed
         | _ -> None
     
     let private (|Empty|_|) (line:string) =
