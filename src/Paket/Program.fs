@@ -313,18 +313,29 @@ let repotoolHelper (results : ParseResults<_>) =
     let disable = results.TryGetResult <@ RepotoolHelperArgs.Disable @>
 
     let exportType = results.TryGetResult <@ RepotoolHelperArgs.Export @>
-    match exportType with
-    | Some (RepotoolHelperExport.Cmd) -> printfn "cmd"
-    | Some (RepotoolHelperExport.Sh) -> printfn "sh"
-    | None -> printfn "boh"
+    let exportPath = results.TryGetResult <@ RepotoolHelperArgs.Export_Path @>
 
-    match enable, disable with
-    | Some e, _ -> 
-        printfn "enabling %A" e
-    | _, Some d -> 
-        printfn "disabling %A" d
-    | None, None ->
-        printfn "list"
+    let echo format =
+        match exportType with
+        | Some (RepotoolHelperExport.Cmd) -> Printf.ksprintf (fun s -> sprintf "ECHO cmd: %s" s) format
+        | Some (RepotoolHelperExport.Sh) -> Printf.ksprintf (fun s -> sprintf "echo sh: %s" s) format
+        | None -> Printf.ksprintf id format
+
+    let toOut =
+        match enable, disable with
+        | Some e, _ ->
+            [ echo "enabling %A" e ]
+        | _, Some d ->
+            [ echo "disabling %A" d ]
+        | None, None ->
+            printfn "list"
+            []
+
+    match exportPath with
+    | None -> ()
+    | Some path ->
+        //TODO check is absolute path
+        File.WriteAllLines(path, toOut |> Array.ofList)
 
     //Dependencies
     //    .Locate()
@@ -973,6 +984,8 @@ let main() =
 
         let results = parser.ParseCommandLine(raiseOnUsage = true)
         let silent = results.Contains <@ Silent @>
+                     || results.Contains <@ RepotoolHelper @>
+                     || results.Contains <@ Info @>
 
         if not silent then tracefn "Paket version %s" paketVersion
 

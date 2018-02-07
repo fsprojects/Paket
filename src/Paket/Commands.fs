@@ -121,6 +121,7 @@ type RepotoolHelperArgs =
     | [<CustomCommandLine("enable"); AltCommandLine("e")>] Enable of ParseResults<RepotoolHelperEnableArgs>
     | [<CustomCommandLine("disable"); AltCommandLine("d")>] Disable of ParseResults<RepotoolHelperDisableArgs>
     | [<Unique>] Export of RepotoolHelperExport
+    | [<Unique>] Export_Path of string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -128,6 +129,7 @@ with
             | Enable(_) -> "enable repotools"
             | Disable(_) -> "disable repotools"
             | Export(_) -> "type of export"
+            | Export_Path(_) -> "path of export file"
 and [<RequireQualifiedAccess>] RepotoolHelperExport =
     | Sh
     | Cmd
