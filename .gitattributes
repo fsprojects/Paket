@@ -25,3 +25,7 @@
 *.PDF diff=astextplain
 *.rtf diff=astextplain
 *.RTF diff=astextplain
+
+# Repo specific
+integrationtests/scenarios/i003003-repo-tool-in-PATH/before/runit text=auto eol=lf
+

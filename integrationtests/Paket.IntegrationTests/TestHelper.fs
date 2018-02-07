@@ -79,7 +79,7 @@ type PaketMsg =
     static member isError ({ IsError = e}:PaketMsg) = e
     static member getMessage ({ Message = msg }:PaketMsg) = msg
 
-let directToolEx isPaket toolInfo commands workingDir =
+let directToolEx (isPaket, checkPaketPerf) toolInfo commands workingDir =
     let processFilename, processArgs =
         match fst toolInfo, snd toolInfo with
         | "", path ->
@@ -147,7 +147,7 @@ let directToolEx isPaket toolInfo commands workingDir =
         // this is the only case where no performance is printed
         let isUsageError = result <> 0 && msgs |> Seq.filter PaketMsg.isError |> Seq.map PaketMsg.getMessage |> Seq.exists (fun msg -> msg.Contains "USAGE:")
         if not isUsageError then
-            if perfMessages.Count = 0 then
+            if perfMessages.Count = 0 && checkPaketPerf then
                 failwith "No Performance messages recieved in test!"
             printfn "Performance:"
             for msg in perfMessages do
@@ -163,8 +163,11 @@ let directToolEx isPaket toolInfo commands workingDir =
     msgs
     #endif
 
+let directPaketInPathExPerf checkPaketPerf command scenarioPath =
+    directToolEx (true,checkPaketPerf) paketToolPath command scenarioPath
+
 let directPaketInPathEx command scenarioPath =
-    directToolEx true paketToolPath command scenarioPath
+    directPaketInPathExPerf true command scenarioPath
 
 let checkResults msgs =
     msgs
@@ -173,7 +176,7 @@ let checkResults msgs =
     |> shouldEqual []
 
 let directDotnet checkZeroWarn command workingDir =
-    let msgs = directToolEx false ("", dotnetToolPath) command workingDir
+    let msgs = directToolEx (false,false) ("", dotnetToolPath) command workingDir
     if checkZeroWarn then checkResults msgs
     msgs
 

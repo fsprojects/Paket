@@ -1,0 +1,4 @@
+#!/bin/sh
+source <(./exported.sh)
+hello a 3003 c
+

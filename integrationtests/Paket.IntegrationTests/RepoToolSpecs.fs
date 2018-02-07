@@ -5,7 +5,7 @@ open Fake
 open FsUnit
 open System.IO
 
-let directExecScript scriptPath = directToolEx false ("", scriptPath)
+let directExecScript scriptPath = directToolEx (false,false) ("", scriptPath)
 
 [<Test>]
 let ``#3000 repo tool should work after restore``() =
@@ -62,6 +62,30 @@ let ``#3002 repo tool from flatten tools dir``() =
     for toolName in toolNames do
         let toolPath = Path.Combine(wrappersPath, toolName)
         Assert.IsTrue(File.Exists(toolPath), (sprintf "file '%s' not found" toolPath))
+
+[<Test>]
+let ``#3003 repo tool with add to PATH``() =
+    let scenario = "i003003-repo-tool-in-PATH"
+    prepare scenario
+    paket "restore" scenario |> ignore
+
+    let export = if Paket.Utils.isWindows then "cmd" else "sh"
+
+    let msgs = directPaketInPathExPerf false (sprintf "rt-helper --export %s enable" export) (scenarioTempPath scenario)
+    checkResults msgs
+
+    let runitName =
+        if Paket.Utils.isWindows then
+            File.WriteAllLines((scenarioTempPath scenario) </> "exported.cmd", msgs |> Seq.map PaketMsg.getMessage)
+            "runit.bat"
+        else
+            File.WriteAllLines((scenarioTempPath scenario) </> "exported.sh", msgs |> Seq.map PaketMsg.getMessage)
+            "runit"
+
+    let scriptPath = (scenarioTempPath scenario) </> runitName
+
+    let resultCmd = directExecScript scriptPath "" (scenarioTempPath scenario)
+    CollectionAssert.Contains(resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq, """Hello World from F#! with args: ["a"; "3003"; "c"]""" )
 
 [<Test>]
 let ``#3004 repo tool multi tfm (net)``() =
