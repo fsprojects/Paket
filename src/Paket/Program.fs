@@ -291,7 +291,7 @@ let addTool (workDir: DirectoryInfo) (results : ParseResults<_>) =
                     tracefn "installing global `paketg` in '%s' (may take a while)..." globalPaketDependenciesPath
                     let installDefaultTools = true
                     let paketgAlias =
-                        [ Constants.PaketPackageName.ToLower(), Constants.PaketGlobalExeName ]
+                        [ Constants.PaketPackageName.ToLower(), Requirements.RepotoolAliasTo.Alias(Constants.PaketGlobalExeName, []) ]
                         |> Map.ofList
                     
                     //let paketgVersion = ">= 5"

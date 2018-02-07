@@ -1695,7 +1695,7 @@ let ``should read config with repo tool with alias``() =
     tool.Kind |> shouldEqual (PackageRequirementKind.RepoTool)
 
     tool.Settings.RepotoolAliases
-    |> shouldEqual (Map.ofList ["oldname","newname"])
+    |> shouldEqual (Map.ofList ["oldname",Requirements.RepotoolAliasTo.Alias("newname",[])])
 
     nuget.Kind |> shouldEqual (PackageRequirementKind.Package)
 

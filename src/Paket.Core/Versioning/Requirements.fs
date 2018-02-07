@@ -823,6 +823,19 @@ let isTargetMatchingRestrictions (restriction:FrameworkRestriction, target)=
 let applyRestrictionsToTargets (restriction:FrameworkRestriction) (targets: TargetProfile Set) =
     Set.intersect targets restriction.RepresentedFrameworks
 
+type [<RequireQualifiedAccess>] RepotoolAliasTo =
+    | Alias of name:string * args:(RepotoolAliasCmdArgs list)
+and [<RequireQualifiedAccess>] RepotoolAliasCmdArgs =
+    | String of text:string
+    | VariablePlaceholder of name:string
+
+let parseRepotoolAlias s =
+    RepotoolAliasTo.Alias (s, [])
+
+let serializeRepotoolAlias a =
+    match a with
+    | RepotoolAliasTo.Alias (name, args) -> name
+
 type ContentCopySettings =
 | Omit
 | Overwrite
@@ -858,7 +871,7 @@ type InstallSettings =
       Aliases : Map<string,string>
       CopyContentToOutputDirectory : CopyToOutputDirectorySettings option 
       RepotoolsBinDirectory: string option
-      RepotoolAliases : Map<string,string>
+      RepotoolAliases : Map<string,RepotoolAliasTo>
       RepotoolWorkingDirectory: RepotoolWorkingDirectoryPath
       GenerateLoadScripts : bool option }
 
@@ -927,7 +940,7 @@ type InstallSettings =
               | AutoDetectFramework -> ()
               | ExplicitRestriction fr -> yield "restriction: " + (fr.ToString())
               for (oldName, newName) in this.RepotoolAliases |> Map.toList do
-                yield sprintf "tool_alias: %s->%s" oldName newName 
+                yield sprintf "tool_alias: %s->%s" oldName (serializeRepotoolAlias newName)
               match this.RepotoolWorkingDirectory with
               | RepotoolWorkingDirectoryPath.CurrentDirectory -> ()
               | RepotoolWorkingDirectoryPath.ScriptDir -> yield "tool_working_dir: <script_dir>"
@@ -1036,7 +1049,9 @@ type InstallSettings =
                 | None -> Map.empty
                 | Some p ->
                     match p.Split([| "->" |], StringSplitOptions.RemoveEmptyEntries) with
-                    | [| oldName; newName |] -> Map.ofList [ oldName, newName ]
+                    | [| oldName; newName |] ->
+                        let newAlias = parseRepotoolAlias newName
+                        Map.ofList [ oldName, newAlias ]
                     | _ -> Map.empty
               RepotoolWorkingDirectory =
                 match getPair "tool_working_dir" with

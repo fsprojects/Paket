@@ -58,7 +58,7 @@ module RepoToolDiscovery =
                 |> List.map (fun (s,v) -> s.ToUpper(),v)
                 |> Map.ofList
             match caseInsensitiveMap |> Map.tryFind (exeName.ToUpper()) with
-            | Some name-> name
+            | Some (Requirements.RepotoolAliasTo.Alias (name,_args)) -> name
             | None -> exeName
 
         let asTool kind path =
