@@ -973,7 +973,6 @@ type InstallSettings =
         
     static member Parse(text:string) : InstallSettings = InstallSettings.Parse(false, text)
     static member internal Parse(isSimplified: bool, text:string) : InstallSettings =
-        let parseRestrictions = if isSimplified then parseRestrictionsSimplified else parseRestrictions
         let kvPairs = parseKeyValuePairs (text.ToLower())
 
         let getPair key =
@@ -981,6 +980,15 @@ type InstallSettings =
             | true, x -> kvPairs.Remove key |> ignore; Some x
             | _ -> None
 
+        let settings = InstallSettings.ParsePairs(getPair, isSimplified)
+
+        for kv in kvPairs do
+            failwithf "Unknown package settings %s: %s" kv.Key kv.Value
+
+        settings
+
+    static member private ParsePairs(getPair: string -> string option, isSimplified) : InstallSettings =
+        let parseRestrictions = if isSimplified then parseRestrictionsSimplified else parseRestrictions
         let settings =
             { ImportTargets =
                 match getPair "import_targets" with
@@ -1072,9 +1080,6 @@ type InstallSettings =
         // ignore resolver settings here
         getPair "strategy" |> ignore
         getPair "lowest_matching" |> ignore
-
-        for kv in kvPairs do
-            failwithf "Unknown package settings %s: %s" kv.Key kv.Value
 
         settings
 
