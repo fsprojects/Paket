@@ -1,4 +1,3 @@
-#!/bin/sh
-source <(./exported.sh)
+#!/bin/bash
+source <(cat ./exported.sh)
 hello a 3003 c
-
