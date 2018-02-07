@@ -287,7 +287,7 @@ module DependenciesFileParser =
     let private (|RepoTool|_|) (line:string) =        
         match line.Trim() with
         | String.RemovePrefix "repotool" trimmed -> 
-            let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
+            let parts = trimmed.Trim().Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
             let isVersion(text:string) = 
                 let (result,_) = Int32.TryParse(text.[0].ToString()) in result
