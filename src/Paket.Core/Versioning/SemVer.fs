@@ -158,7 +158,7 @@ type SemVerInfo =
         | :? SemVerInfo as y -> x.Equals(y)
         | _ -> false
     
-    override x.GetHashCode() = hash (x.Minor, x.Minor, x.Patch, x.Build, x.PreRelease)
+    override x.GetHashCode() = hash (x.Major, x.Minor, x.Patch, x.Build, x.PreRelease)
     
     member x.CompareTo(y) =
         let comparison =  
