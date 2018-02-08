@@ -145,7 +145,7 @@ module WrapperToolGeneration =
                   id_____ """                                                                                             """
                   sprintf """DEL "%%TEMP%%\.\%s.helper.cmd" >NUL 2>&1                                                     """ Constants.PaketRepotoolsHelperName
                   id_____ """                                                                                             """
-                  sprintf """CALL "%%~dp0\%s" rt-helper --export cmd --export-path "%%TEMP%%\.\paketrt.helper.cmd" %%*"   """ Constants.PaketGlobalExeName
+                  sprintf """CALL "%%~dp0\%s" rt-helper --export --export-path "%%TEMP%%\.\paketrt.helper.cmd" %%*"   """ Constants.PaketGlobalExeName
                   id_____ """                                                                                             """
                   id_____ """IF ERRORLEVEL 1 (                                                                            """
                   id_____ """    GOTO :EOF                                                                                """

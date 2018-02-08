@@ -313,11 +313,18 @@ let addTool (workDir: DirectoryInfo) (results : ParseResults<_>) =
             .AddRepoTool(group, packageName, version, force, interactive, noInstall |> not, semVerUpdateMode, noResolve |> not, Map.empty, Requirements.RepotoolWorkingDirectoryPath.CurrentDirectory)
 
 
+type [<RequireQualifiedAccess>] RepotoolHelperExport =
+    | Sh
+    | Cmd
+
 let repotoolHelper (workDir: DirectoryInfo) (results : ParseResults<_>) =
     let enable = results.TryGetResult <@ RepotoolHelperArgs.Enable @>
     let disable = results.TryGetResult <@ RepotoolHelperArgs.Disable @>
 
-    let exportType = results.TryGetResult <@ RepotoolHelperArgs.Export @>
+    let exportType =
+        match results.Contains <@ RepotoolHelperArgs.Export @> with
+        | true -> Some (if isWindows then RepotoolHelperExport.Cmd else RepotoolHelperExport.Sh)
+        | false -> None
     let exportPath = results.TryGetResult <@ RepotoolHelperArgs.Export_Path @>
 
     let echo format =

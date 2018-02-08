@@ -69,9 +69,7 @@ let ``#3003 repo tool with add to PATH``() =
     prepare scenario
     paket "restore" scenario |> ignore
 
-    let export = if Paket.Utils.isWindows then "cmd" else "sh"
-
-    let msgs = directPaketInPathExPerf false (sprintf "rt-helper --export %s enable" export) (scenarioTempPath scenario)
+    let msgs = directPaketInPathExPerf false "rt-helper --export enable" (scenarioTempPath scenario)
     checkResults msgs
 
     let runitName =
