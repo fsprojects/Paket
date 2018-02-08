@@ -827,7 +827,10 @@ type [<RequireQualifiedAccess>] RepotoolAliasTo =
     | Alias of name:string * args:(RepotoolAliasCmdArgs list)
 and [<RequireQualifiedAccess>] RepotoolAliasCmdArgs =
     | String of text:string
-    | VariablePlaceholder of name:string
+    | VariablePlaceholder of RepotoolAliasCmdArgsPlaceholder
+and [<RequireQualifiedAccess>] RepotoolAliasCmdArgsPlaceholder =
+    | PaketBuiltin of name:string
+    | EnvVar of name:string
 
 let parseRepotoolAlias (s: string) =
     if s.Contains(" ") then

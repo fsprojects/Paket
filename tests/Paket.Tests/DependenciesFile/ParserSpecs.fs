@@ -1731,7 +1731,7 @@ let ``should read config with repo tool with alias args``() =
 let configWithRepoToolWithAliasArgsVar = """
 source https://www.nuget.org/api/v2
 
-repotool mytool tool_alias: "oldname->newname2 1 --from \"${PAKET_TOOL_SCRIPT_DIR}\" \"d\""
+repotool mytool tool_alias: "oldname->newname2 1 --from \"${paket.TOOL_SCRIPT_DIR}\" \"d\""
 nuget FAKE
 """
 
@@ -1753,7 +1753,7 @@ let ``should read config with repo tool with alias args var``() =
           Requirements.RepotoolAliasTo.Alias(
             "newname2",
             [ Requirements.RepotoolAliasCmdArgs.String "1 --from "
-              Requirements.RepotoolAliasCmdArgs.VariablePlaceholder "PAKET_TOOL_SCRIPT_DIR"
+              Requirements.RepotoolAliasCmdArgs.VariablePlaceholder (Requirements.RepotoolAliasCmdArgsPlaceholder.PaketBuiltin "TOOL_SCRIPT_DIR" )
               Requirements.RepotoolAliasCmdArgs.String " \"d\""
               ] )
         ] )
