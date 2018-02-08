@@ -1728,6 +1728,38 @@ let ``should read config with repo tool with alias args``() =
 
     nuget.Kind |> shouldEqual (PackageRequirementKind.Package)
 
+let configWithRepoToolWithAliasArgsVar = """
+source https://www.nuget.org/api/v2
+
+repotool mytool tool_alias: "oldname->newname2 1 --from \"${PAKET_TOOL_SCRIPT_DIR}\" \"d\""
+nuget FAKE
+"""
+
+[<Test>]
+let ``should read config with repo tool with alias args var``() = 
+    let cfg = DependenciesFile.FromSource(configWithRepoToolWithAliasArgsVar)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources 
+    |> shouldEqual [PackageSources.DefaultNuGetSource]
+
+    let tool = cfg.Groups.[Constants.MainDependencyGroup].Packages.Head
+    let nuget = cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Head
+
+    tool.Kind |> shouldEqual (PackageRequirementKind.RepoTool)
+
+    tool.Settings.RepotoolAliases
+    |> shouldEqual (Map.ofList 
+        [ "oldname",
+          Requirements.RepotoolAliasTo.Alias(
+            "newname2",
+            [ Requirements.RepotoolAliasCmdArgs.String "1 --from "
+              Requirements.RepotoolAliasCmdArgs.VariablePlaceholder "PAKET_TOOL_SCRIPT_DIR"
+              Requirements.RepotoolAliasCmdArgs.String " \"d\""
+              ] )
+        ] )
+
+    nuget.Kind |> shouldEqual (PackageRequirementKind.Package)
+
 let configWithRepoToolWorkingDir = """
 source https://www.nuget.org/api/v2
 
