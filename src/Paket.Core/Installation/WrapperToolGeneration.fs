@@ -13,7 +13,7 @@ module RepoToolDiscovery =
         { FullPath: string
           Name: string
           WorkingDirectory: RepoToolInNupkgWorkingDirectoryPath
-          ToolArgs: string
+          ToolArgs: RepoToolInNupkgToolArg list
           Kind: RepoToolInNupkgKind }
     and [<RequireQualifiedAccess>] RepoToolInNupkgKind =
         | OldStyle
@@ -21,6 +21,10 @@ module RepoToolDiscovery =
     and [<RequireQualifiedAccess>] RepoToolInNupkgWorkingDirectoryPath =
         | ScriptDirectory
         | CurrentDirectory
+    and [<RequireQualifiedAccess>] RepoToolInNupkgToolArg =
+        | Literal of string
+        | EnvVar of string
+        | ToolWrapperDirectory
 
     let getPreferenceFromEnv () =
         match System.Environment.GetEnvironmentVariable("PAKET_REPOTOOL_PREFERRED_RUNTIME") |> Option.ofObj |> Option.bind FrameworkDetection.Extract with
@@ -60,12 +64,20 @@ module RepoToolDiscovery =
                 |> Map.ofList
             match caseInsensitiveMap |> Map.tryFind (exeName.ToUpper()) with
             | Some (Requirements.RepotoolAliasTo.Alias (name,args)) ->
-                let argToString t s =
+                let argToString t =
                     match t with
-                    | Requirements.RepotoolAliasCmdArgs.String x -> x :: s 
-                    | Requirements.RepotoolAliasCmdArgs.VariablePlaceholder _ -> failwithf "variable placeholder in alias not supported"
-                name, (List.foldBack argToString args [] |> String.concat " ")
-            | None -> exeName, ""
+                    | Requirements.RepotoolAliasCmdArgs.String x ->
+                        RepoToolInNupkgToolArg.Literal x
+                    | Requirements.RepotoolAliasCmdArgs.VariablePlaceholder(Requirements.RepotoolAliasCmdArgsPlaceholder.PaketBuiltin(name)) ->
+                        match name.ToUpper() with
+                        | "TOOL_SCRIPT_DIR" ->
+                            RepoToolInNupkgToolArg.ToolWrapperDirectory
+                        | paketBuiltinVar ->
+                            failwithf "variable placeholder '%s' in alias not supported" paketBuiltinVar
+                    | Requirements.RepotoolAliasCmdArgs.VariablePlaceholder(Requirements.RepotoolAliasCmdArgsPlaceholder.EnvVar(name)) -> 
+                        RepoToolInNupkgToolArg.EnvVar name
+                name, (args |> List.map argToString)
+            | None -> exeName, []
 
         let asTool kind path =
             let toolName, toolArgs = getNameOf (Path.GetFileNameWithoutExtension(path))
@@ -153,11 +165,11 @@ module WrapperToolGeneration =
     type ScriptContentWindows = {
         PartialPath : string
         ToolPath : string
-        ToolArgs: string
+        ToolArgs: RepoToolDiscovery.RepoToolInNupkgToolArg list
         Runtime: ScriptContentRuntimeHost
         WorkingDirectory: RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath
     } with
-        member self.Render () =
+        member self.Render (path: FileInfo) =
 
             let paketToolRuntimeHostWin =
                 match self.Runtime with
@@ -175,14 +187,24 @@ module WrapperToolGeneration =
                   | RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory ->
                       yield "CD /D %~dp0"
                       yield ""
-                  yield sprintf """%s"%s"%s %%*""" paketToolRuntimeHostWin self.ToolPath (if self.ToolArgs = "" then "" else " " + self.ToolArgs)
+                  let argsString =
+                    match self.ToolArgs with
+                    | [] -> ""
+                    | args ->
+                        let serializeArg a =
+                            match a with
+                            | RepoToolDiscovery.RepoToolInNupkgToolArg.Literal s -> s
+                            | RepoToolDiscovery.RepoToolInNupkgToolArg.EnvVar s -> "%" + s + "%"
+                            | RepoToolDiscovery.RepoToolInNupkgToolArg.ToolWrapperDirectory -> path.Directory.FullName
+                        " " + (args |> List.map serializeArg |> String.concat "")
+                  yield sprintf """%s"%s"%s %%*""" paketToolRuntimeHostWin self.ToolPath argsString
                   yield "" ]
             
             cmdContent |> String.concat "\r\n"
         
         member self.Save (rootPath:DirectoryInfo) =
             let scriptFile = Path.Combine(rootPath.FullName, self.PartialPath) |> FileInfo
-            scriptFile, self.Render ()
+            scriptFile, self.Render scriptFile
     
     and [<RequireQualifiedAccess>] ScriptContentWindowsRuntime = DotNetFramework | DotNetCoreApp | Mono | Native
 
@@ -301,18 +323,29 @@ module WrapperToolGeneration =
     type ScriptContentShell = {
         PartialPath : string
         ToolPath : string
-        ToolArgs: string
+        ToolArgs: RepoToolDiscovery.RepoToolInNupkgToolArg list
         Runtime: ScriptContentRuntimeHost
         WorkingDirectory: RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath
     } with
-        member self.Render () =
+        member self.Render (path: FileInfo) =
             let paketToolRuntimeHostLinux =
                 match self.Runtime with
                 | ScriptContentRuntimeHost.DotNetFramework -> "mono "
                 | ScriptContentRuntimeHost.DotNetCoreApp -> "dotnet "
                 | ScriptContentRuntimeHost.Native -> ""
+
+            let argsString =
+                match self.ToolArgs with
+                | [] -> ""
+                | args ->
+                    let serializeArg a =
+                        match a with
+                        | RepoToolDiscovery.RepoToolInNupkgToolArg.Literal s -> s
+                        | RepoToolDiscovery.RepoToolInNupkgToolArg.EnvVar s -> sprintf "${%s}" s
+                        | RepoToolDiscovery.RepoToolInNupkgToolArg.ToolWrapperDirectory -> path.Directory.FullName
+                    " " + (args |> List.map serializeArg |> String.concat "")
             
-            let runCmd = sprintf """%s"%s"%s "$@" """ paketToolRuntimeHostLinux (self.ToolPath.Replace('\\','/')) (if self.ToolArgs = "" then "" else " " + self.ToolArgs)
+            let runCmd = sprintf """%s"%s"%s "$@" """ paketToolRuntimeHostLinux (self.ToolPath.Replace('\\','/')) argsString
 
             let cmdContent =
                 [ yield "#!/bin/sh"
@@ -329,7 +362,7 @@ module WrapperToolGeneration =
         /// Save the script in '<directory>/paket-files/bin/<script>'
         member self.Save (rootPath:DirectoryInfo) =
             let scriptFile = Path.Combine(rootPath.FullName, self.PartialPath) |> FileInfo
-            scriptFile, self.Render ()
+            scriptFile, self.Render scriptFile
 
     type [<RequireQualifiedAccess>] ToolWrapper =
         | Windows of ScriptContentWindows
@@ -456,13 +489,13 @@ module WrapperToolGeneration =
 
                     [ { ScriptContentWindows.PartialPath = Path.Combine(scriptPath, (sprintf "%s.cmd" toolName))
                         Runtime = ScriptContentRuntimeHost.DotNetFramework
-                        ToolArgs = ""
+                        ToolArgs = []
                         WorkingDirectory = RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory
                         ToolPath = toolFullPath } |> ToolWrapper.Windows
                 
                       { ScriptContentShell.PartialPath = Path.Combine(scriptPath, toolName)
                         Runtime = ScriptContentRuntimeHost.DotNetFramework
-                        ToolArgs = ""
+                        ToolArgs = []
                         WorkingDirectory = RepoToolDiscovery.RepoToolInNupkgWorkingDirectoryPath.ScriptDirectory
                         ToolPath = toolFullPath } |> ToolWrapper.Shell ]
                 else

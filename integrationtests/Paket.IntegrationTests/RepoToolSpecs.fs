@@ -213,7 +213,7 @@ let ``#3010 repo tool should consider alias with args var on install``() =
     Assert.IsTrue(File.Exists(holaPath), (sprintf "file '%s' not found" holaPath))
 
     let resultCmd = directExecScript holaPath "" (scenarioTempPath scenario)
-    CollectionAssert.AreEqual( [| sprintf """Hello World from F#! with args: ["0"; "%s"]""" wrappersPath |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
+    Assert.AreEqual( sprintf """Hello World from F#! with args: ["1"; "%s"; "3"]""" wrappersPath , (resultCmd |> Seq.map PaketMsg.getMessage |> String.concat "") )
 
     let resultCmdWithArgs = directExecScript holaPath "5 6" (scenarioTempPath scenario)
-    CollectionAssert.AreEqual( [| sprintf """Hello World from F#! with args: ["0"; "%s"; "3"; "5"; "6"]""" wrappersPath |], (resultCmdWithArgs |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
+    Assert.AreEqual( sprintf """Hello World from F#! with args: ["1"; "%s"; "3"; "5"; "6"]""" wrappersPath , (resultCmdWithArgs |> Seq.map PaketMsg.getMessage  |> String.concat "") )
