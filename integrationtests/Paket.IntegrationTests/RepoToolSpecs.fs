@@ -199,3 +199,21 @@ let ``#3009 repo tool should consider alias with args on install``() =
 
     let resultCmdWithArgs = directExecScript holaPath "5 6" (scenarioTempPath scenario)
     CollectionAssert.AreEqual( [| """Hello World from F#! with args: ["0"; "p1"; "5"; "6"]""" |], (resultCmdWithArgs |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
+
+[<Test>]
+let ``#3010 repo tool should consider alias with args var on install``() =
+    let scenario = "i003010-repo-tool-alias-argv"
+    prepare scenario
+    paket "install" scenario |> ignore
+
+    let wrappersPath = Path.Combine(scenarioTempPath scenario, "paket-files", "bin")
+
+    let holaPath = Path.Combine(wrappersPath, (if Paket.Utils.isWindows then "hola.cmd" else "hola"))
+
+    Assert.IsTrue(File.Exists(holaPath), (sprintf "file '%s' not found" holaPath))
+
+    let resultCmd = directExecScript holaPath "" (scenarioTempPath scenario)
+    CollectionAssert.AreEqual( [| sprintf """Hello World from F#! with args: ["0"; "%s"]""" wrappersPath |], (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
+
+    let resultCmdWithArgs = directExecScript holaPath "5 6" (scenarioTempPath scenario)
+    CollectionAssert.AreEqual( [| sprintf """Hello World from F#! with args: ["0"; "%s"; "3"; "5"; "6"]""" wrappersPath |], (resultCmdWithArgs |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
