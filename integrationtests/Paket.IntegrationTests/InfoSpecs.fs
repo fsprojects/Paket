@@ -16,7 +16,7 @@ let ``#3200 info should locate paket.dependencies``() =
     Directory.CreateDirectory(subDir) |> ignore
 
     let ``paket info --paket-dependencies-dir`` workingDir =
-        directPaketInPathEx "info --paket-dependencies-dir" workingDir
+        directPaketInPathExPerf false "info --paket-dependencies-dir" workingDir
         |> Seq.map PaketMsg.getMessage
         |> List.ofSeq
 
