@@ -139,21 +139,22 @@ module WrapperToolGeneration =
         PartialPath : string
     } with
         member __.RenderGlobal () =
+            let id_____ = id
             let cmdContent =
-                [ """@ECHO OFF                                                                                         """
-                  """                                                                                                  """
-                  """DEL "%TEMP%\.\paketrt.helper.cmd" >NUL 2>&1                                                       """
-                  """                                                                                                  """
-                  """CALL "%_PAKET_CMD%" rt-helper --export cmd --export-path "%TEMP%\.\paketrt.helper.cmd" %*"        """
-                  """                                                                                                  """
-                  """IF ERRORLEVEL 1 (                                                                                 """
-                  """    GOTO :EOF                                                                                     """
-                  """) ELSE (                                                                                          """
-                  """    IF EXIST "%TEMP%\.\paketrt.helper.cmd" (                                                      """
-                  """        "%TEMP%\.\paketrt.helper.cmd"                                                             """
-                  """    )                                                                                             """
-                  """)                                                                                                 """
-                  """                                                                                                  """
+                [ id_____ """@ECHO OFF                                                                                    """
+                  id_____ """                                                                                             """
+                  sprintf """DEL "%%TEMP%%\.\%s.helper.cmd" >NUL 2>&1                                                     """ Constants.PaketRepotoolsHelperName
+                  id_____ """                                                                                             """
+                  sprintf """CALL "%%~dp0\%s" rt-helper --export cmd --export-path "%%TEMP%%\.\paketrt.helper.cmd" %%*"   """ Constants.PaketGlobalExeName
+                  id_____ """                                                                                             """
+                  id_____ """IF ERRORLEVEL 1 (                                                                            """
+                  id_____ """    GOTO :EOF                                                                                """
+                  id_____ """) ELSE (                                                                                     """
+                  sprintf """    IF EXIST "%%TEMP%%\.\%s.helper.cmd" (                                                    """ Constants.PaketRepotoolsHelperName
+                  sprintf """        "%%TEMP%%\.\%s.helper.cmd"                                                           """ Constants.PaketRepotoolsHelperName
+                  id_____ """    )                                                                                        """
+                  id_____ """)                                                                                            """
+                  id_____ """                                                                                             """
                   "" ]
             
             cmdContent |> List.map (fun s -> s.TrimEnd()) |> String.concat "\r\n"
@@ -235,8 +236,8 @@ module WrapperToolGeneration =
                   """                                                                                          """
                   """  if [[ $? -eq 0 ]] && [[ -d "$repotools_dir" ]]; then                                    """
                   """    echo echo \'"Found directory $repotools_dir "\'                                       """
-                  sprintf """    echo echo \'""$repotools_dir/%s" $@"\'                                        """ Constants.PaketRepotoolsShellHelperName
-                  sprintf """    "$repotools_dir/%s" $@                                                        """ Constants.PaketRepotoolsShellHelperName
+                  sprintf """    echo echo \'""$repotools_dir/%s" $@"\'                                        """ Constants.PaketRepotoolsHelperName
+                  sprintf """    "$repotools_dir/%s" $@                                                        """ Constants.PaketRepotoolsHelperName
                   """  else                                                                                    """
                   """    echo echo \'"Paket repo tools directory not found in directory hierachy"\'            """
                   """  fi                                                                                      """
@@ -280,7 +281,7 @@ module WrapperToolGeneration =
                   """                                                     """
                   """# source repotools in current shell                  """
                   sprintf """%s () {                                      """ Constants.PaketRepotoolsHelperName
-                  sprintf """  . <(command %s "$@")                       """ Constants.PaketRepotoolsShellHelperName
+                  sprintf """  . <(command %s "$@")                       """ Constants.PaketRepotoolsHelperName
                   """}                                                    """
                   "" ]
             
@@ -467,7 +468,7 @@ module WrapperToolGeneration =
                 [ { HelperScriptWindows.PartialPath = Path.Combine(scriptPath, sprintf "%s.cmd" Constants.PaketRepotoolsHelperName) }
                   |> HelperScript.Windows
 
-                  { HelperScriptShell.PartialPath = Path.Combine(scriptPath, Constants.PaketRepotoolsShellHelperName) }
+                  { HelperScriptShell.PartialPath = Path.Combine(scriptPath, Constants.PaketRepotoolsHelperName) }
                   |> HelperScript.Shell
 
                   { HelperFunctionScriptShell.PartialPath = Path.Combine(scriptPath, Constants.PaketRepotoolsShellFunctionsHelperName) }
