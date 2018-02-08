@@ -93,15 +93,20 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
 
                 nuGetChanges |> Set.map (fun (f,s,_) -> f,s), groups
 
-        let preferredVersions = 
-            DependencyChangeDetection.GetPreferredNuGetVersions(dependenciesFile,lockFile)
-            |> Map.map (fun (groupName,packageName) (v,s) -> 
-                let caches = 
-                    match dependenciesFile.Groups |> Map.tryFind groupName with
-                    | None -> []
-                    | Some group -> group.Caches
+        let preferredVersions =
 
-                v,s :: (List.map PackageSources.PackageSource.FromCache caches))
+            match updateMode with
+            | UpdateAll ->
+                Map.Empty
+            | _ ->
+                DependencyChangeDetection.GetPreferredNuGetVersions(dependenciesFile,lockFile)
+                |> Map.map (fun (groupName,packageName) (v,s) -> 
+                    let caches = 
+                        match dependenciesFile.Groups |> Map.tryFind groupName with
+                        | None -> []
+                        | Some group -> group.Caches
+
+                    v,s :: (List.map PackageSources.PackageSource.FromCache caches))
 
         let getPreferredVersionsF resolverStrategy (parameters:GetPackageVersionsParameters) =
             let key = parameters.Package.GroupName, parameters.Package.PackageName
