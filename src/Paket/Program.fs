@@ -290,8 +290,13 @@ let addTool (workDir: DirectoryInfo) (results : ParseResults<_>) =
                     let depsFile = Dependencies.Locate(globalPaketDependenciesPath)
                     tracefn "installing global `paketg` in '%s' (may take a while)..." globalPaketDependenciesPath
                     let installDefaultTools = true
+                    let paketgAliasTo =
+                        Requirements.RepotoolAliasTo.Alias(Constants.PaketGlobalExeName,
+                            [ Requirements.RepotoolAliasCmdArgs.String " --root-search-dir=\\\""
+                              Requirements.RepotoolAliasCmdArgs.VariablePlaceholder(Requirements.RepotoolAliasCmdArgsPlaceholder.PaketBuiltin("TOOL_SCRIPT_DIR"))
+                              Requirements.RepotoolAliasCmdArgs.String "\\\"" ])
                     let paketgAlias =
-                        [ Constants.PaketPackageName.ToLower(), Requirements.RepotoolAliasTo.Alias(Constants.PaketGlobalExeName, []) ]
+                        [ Constants.PaketPackageName.ToLower(), paketgAliasTo ]
                         |> Map.ofList
                     
                     //let paketgVersion = ">= 5"
