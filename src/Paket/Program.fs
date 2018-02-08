@@ -292,9 +292,9 @@ let addTool (workDir: DirectoryInfo) (results : ParseResults<_>) =
                     let installDefaultTools = true
                     let paketgAliasTo =
                         Requirements.RepotoolAliasTo.Alias(Constants.PaketGlobalExeName,
-                            [ Requirements.RepotoolAliasCmdArgs.String " --root-search-dir=\\\""
+                            [ Requirements.RepotoolAliasCmdArgs.String " --root-search-dir \""
                               Requirements.RepotoolAliasCmdArgs.VariablePlaceholder(Requirements.RepotoolAliasCmdArgsPlaceholder.PaketBuiltin("TOOL_SCRIPT_DIR"))
-                              Requirements.RepotoolAliasCmdArgs.String "\\\"" ])
+                              Requirements.RepotoolAliasCmdArgs.String "\"" ])
                     let paketgAlias =
                         [ Constants.PaketPackageName.ToLower(), paketgAliasTo ]
                         |> Map.ofList
@@ -302,7 +302,7 @@ let addTool (workDir: DirectoryInfo) (results : ParseResults<_>) =
                     //let paketgVersion = ">= 5"
                     let paketgVersion = "5.133.0-repotool-0001"
                     
-                    depsFile.AddRepoTool(None, Constants.PaketPackageName, paketgVersion, force, interactive, installDefaultTools, SemVerUpdateMode.NoRestriction, installDefaultTools, paketgAlias, Requirements.RepotoolWorkingDirectoryPath.ScriptDir)
+                    depsFile.AddRepoTool(None, Constants.PaketPackageName, paketgVersion, force, interactive, installDefaultTools, SemVerUpdateMode.NoRestriction, installDefaultTools, paketgAlias, Requirements.RepotoolWorkingDirectoryPath.CurrentDirectory)
                     tracefn "paket.dependencies updated."
                     depsFile
             dependencies
