@@ -350,6 +350,8 @@ let parseKeyValuePairsWithQuotesTestCases =
         """tool_alias: oldname->newname""", [ "tool_alias", "oldname->newname" ]
         """tool_alias: "oldname->newname a b" """, [ "tool_alias", "oldname->newname a b" ]
         """tool_alias: "oldname->newname \"a\" b" """, [ "tool_alias", "oldname->newname \"a\" b" ]
+        "tool_alias: \"oldname->newname \\\"a\\\" b\"", [ "tool_alias", "oldname->newname \"a\" b" ]
+        """tool_alias: "oldname->newname \"a\" b", other_arg: 1, another: " \"c\" " """, [ "tool_alias", "oldname->newname \"a\" b"; "other_arg", "1"; "another", "\"c\"" ]
     ] |> List.map (fun (s, e) -> TestCaseData(s, e))
 
 [<TestCaseSource("parseKeyValuePairsWithQuotesTestCases")>]
