@@ -866,9 +866,9 @@ let serializeRepotoolAlias a =
     | RepotoolAliasTo.Alias (name, args) -> 
         let serializeArg a =
             match a with
-            | RepotoolAliasCmdArgs.String s -> s
             | RepotoolAliasCmdArgs.VariablePlaceholder(RepotoolAliasCmdArgsPlaceholder.PaketBuiltin(p)) -> sprintf "${paket.%s}" p
             | RepotoolAliasCmdArgs.VariablePlaceholder(RepotoolAliasCmdArgsPlaceholder.EnvVar(p)) -> sprintf "${env.%s}" p
+            | RepotoolAliasCmdArgs.String s -> s.Replace("\"", "\\\"")
         let argsString = args |> List.map serializeArg |> String.concat ""
         sprintf "\"%s %s\"" name argsString
 
