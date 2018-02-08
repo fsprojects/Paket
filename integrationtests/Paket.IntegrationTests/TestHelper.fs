@@ -79,7 +79,11 @@ type PaketMsg =
     static member isError ({ IsError = e}:PaketMsg) = e
     static member getMessage ({ Message = msg }:PaketMsg) = msg
 
-let directToolEx (isPaket, checkPaketPerf) toolInfo commands workingDir =
+let enablePaketDiagnosticsEnvVars (sd: System.Collections.Specialized.StringDictionary) =
+    sd.Add("PAKET_DETAILED_ERRORS", "true")
+    sd.Add("PAKET_DETAILED_WARNINGS", "true")
+
+let directToolExWithEnv setEnv (isPaket, checkPaketPerf) toolInfo commands workingDir =
     let processFilename, processArgs =
         match fst toolInfo, snd toolInfo with
         | "", path ->
@@ -92,6 +96,7 @@ let directToolEx (isPaket, checkPaketPerf) toolInfo commands workingDir =
         ExecProcessWithLambdas (fun info ->
           info.FileName <- processFilename
           info.WorkingDirectory <- workingDir
+          setEnv info.EnvironmentVariables
           info.Arguments <- processArgs) 
           (System.TimeSpan.FromMinutes 7.)
           false
@@ -101,8 +106,6 @@ let directToolEx (isPaket, checkPaketPerf) toolInfo commands workingDir =
     res.Add (string result)
     res
     #else
-    Environment.SetEnvironmentVariable("PAKET_DETAILED_ERRORS", "true")
-    Environment.SetEnvironmentVariable("PAKET_DETAILED_WARNINGS", "true")
     printfn "%s> %s %s" workingDir (if isPaket then "paket" else processFilename) processArgs
     let perfMessages = ResizeArray()
     let msgs = ResizeArray<PaketMsg>()
@@ -122,6 +125,8 @@ let directToolEx (isPaket, checkPaketPerf) toolInfo commands workingDir =
               info.FileName <- processFilename
               info.WorkingDirectory <- workingDir
               info.CreateNoWindow <- true
+              enablePaketDiagnosticsEnvVars info.EnvironmentVariables
+              setEnv info.EnvironmentVariables
               info.Arguments <- processArgs)
               (System.TimeSpan.FromMinutes 7.)
               true
@@ -162,6 +167,9 @@ let directToolEx (isPaket, checkPaketPerf) toolInfo commands workingDir =
 
     msgs
     #endif
+
+let directToolEx (isPaket, checkPaketPerf) toolInfo commands workingDir =
+    directToolExWithEnv ignore (isPaket, checkPaketPerf) toolInfo commands workingDir
 
 let directPaketInPathExPerf checkPaketPerf command scenarioPath =
     directToolEx (true,checkPaketPerf) paketToolPath command scenarioPath
