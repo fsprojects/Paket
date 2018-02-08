@@ -833,6 +833,21 @@ and [<RequireQualifiedAccess>] RepotoolAliasCmdArgsPlaceholder =
     | EnvVar of name:string
 
 let parseRepotoolAlias (s: string) =
+    let parsePlaceholderName (n: string) =
+        RepotoolAliasCmdArgsPlaceholder.PaketBuiltin (n.Replace("paket.", ""))
+    let parseArguments (args: string) =
+        match args.Split([| '$' |], 2) |> List.ofArray with
+        | [ text ] ->  [ RepotoolAliasCmdArgs.String text ]
+        | [ text; rest ] ->
+            match rest.TrimStart('{').Split([| '}' |], 2) |> List.ofArray with
+            | [ _text ] -> failwithf "invalid repo tool alias '%s'" s
+            | [ name; last ] ->
+                [ RepotoolAliasCmdArgs.String text
+                  RepotoolAliasCmdArgs.VariablePlaceholder (parsePlaceholderName name)
+                  RepotoolAliasCmdArgs.String last ]
+            | _a -> failwithf "invalid repo tool alias '%s'" s
+        | _a -> failwithf "invalid repo tool alias '%s'" s
+
     if s.Contains(" ") then
         let name, args =
             match s.Split([| ' ' |], 2) |> List.ofArray with
@@ -841,7 +856,7 @@ let parseRepotoolAlias (s: string) =
             | [ n; a ] -> n, a
             | _n :: _a :: _xs -> failwithf "invalid repo alias %s" s
 
-        RepotoolAliasTo.Alias (name, [RepotoolAliasCmdArgs.String args])
+        RepotoolAliasTo.Alias (name, parseArguments args)
     else
         RepotoolAliasTo.Alias (s, [])
 

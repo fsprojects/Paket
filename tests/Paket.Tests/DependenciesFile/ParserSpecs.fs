@@ -1752,9 +1752,9 @@ let ``should read config with repo tool with alias args var``() =
         [ "oldname",
           Requirements.RepotoolAliasTo.Alias(
             "newname2",
-            [ Requirements.RepotoolAliasCmdArgs.String "1 --from "
-              Requirements.RepotoolAliasCmdArgs.VariablePlaceholder (Requirements.RepotoolAliasCmdArgsPlaceholder.PaketBuiltin "TOOL_SCRIPT_DIR" )
-              Requirements.RepotoolAliasCmdArgs.String " \"d\""
+            [ Requirements.RepotoolAliasCmdArgs.String "1 --from \""
+              Requirements.RepotoolAliasCmdArgs.VariablePlaceholder (Requirements.RepotoolAliasCmdArgsPlaceholder.PaketBuiltin "tool_script_dir" )
+              Requirements.RepotoolAliasCmdArgs.String "\" \"d\""
               ] )
         ] )
 
