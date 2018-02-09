@@ -184,7 +184,7 @@ let findRemoteFileChangesInDependenciesFile(dependenciesFile:DependenciesFile,lo
         missingRemotes
 
     groupNames
-    |> Seq.map (fun groupName ->
+    |> Seq.collect (fun groupName ->
             match dependenciesFile.Groups |> Map.tryFind groupName with
             | Some dependenciesFileGroup ->
                 match lockFile.Groups |> Map.tryFind groupName with
@@ -200,7 +200,6 @@ let findRemoteFileChangesInDependenciesFile(dependenciesFile:DependenciesFile,lo
                 |> List.map RemoteFileChange.CreateResolvedVersion
                 |> Set.ofList
             |> Set.map (fun x -> groupName,x))
-    |> Seq.concat
     |> Set.ofSeq
 
 let GetPreferredNuGetVersions (dependenciesFile:DependenciesFile,lockFile:LockFile) =
