@@ -295,7 +295,7 @@ type Resolution with
     member self.IsConflict = not self.IsDone
 
 
-let calcOpenRequirements (exploredPackage:ResolvedPackage,lockedPackages:Set<_>,globalFrameworkRestrictions,(verCache:VersionCache),dependency,resolverStep:ResolverStep) =
+let calcOpenRequirements (exploredPackage:ResolvedPackage,lockedPackages:Set<_>,globalFrameworkRestrictions,(verCache:VersionCache),currentRequirement,resolverStep:ResolverStep) =
     let dependenciesByName =
         // there are packages which define multiple dependencies to the same package
         // we compress these here - see #567
@@ -332,7 +332,7 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,lockedPackages:Set<_>,
 
     let rest =
         resolverStep.OpenRequirements
-        |> Set.remove dependency
+        |> Set.remove currentRequirement
 
     dependenciesByName
     |> Set.map (fun (n, v, restriction) ->
@@ -341,13 +341,13 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,lockedPackages:Set<_>,
             |> filterRestrictions globalFrameworkRestrictions
             |> fun xs -> if xs = ExplicitRestriction FrameworkRestriction.NoRestriction then exploredPackage.Settings.FrameworkRestrictions else xs
 
-        { dependency with
+        { currentRequirement with
             Name = n
             VersionRequirement = v
-            Parent = Package(dependency.Name, verCache.Version, exploredPackage.Source)
-            Graph = Set.add dependency dependency.Graph
-            TransitivePrereleases = dependency.TransitivePrereleases && exploredPackage.Version.PreRelease.IsSome
-            Settings = { dependency.Settings with FrameworkRestrictions = newRestrictions } })
+            Parent = Package(currentRequirement.Name, verCache.Version, exploredPackage.Source)
+            Graph = Set.add currentRequirement currentRequirement.Graph
+            TransitivePrereleases = currentRequirement.TransitivePrereleases && exploredPackage.Version.PreRelease.IsSome
+            Settings = { currentRequirement.Settings with FrameworkRestrictions = newRestrictions } })
     |> Set.filter (fun d ->
         resolverStep.ClosedRequirements
         |> Set.exists (fun x ->
@@ -369,21 +369,23 @@ type Resolved = {
     ResolvedSourceFiles : ModuleResolver.ResolvedSourceFile list
 }
 
-let getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives (allRequirementsOfCurrentPackage:Set<PackageRequirement>) (currentRequirement:PackageRequirement) =
-    if currentRequirement.Parent.IsRootRequirement() && Set.count allRequirementsOfCurrentPackage = 1 then
-        let combined = currentRequirement.ResolverStrategyForDirectDependencies ++ globalStrategyForDirectDependencies
+let getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives (rootDependencies:IDictionary<PackageName,PackageRequirement>) (allRequirementsOfCurrentPackage:Set<PackageRequirement>) (currentRequirement:PackageRequirement) =
+    let strategy =
+        if currentRequirement.Parent.IsRootRequirement() && Set.count allRequirementsOfCurrentPackage = 1 then
+            currentRequirement.ResolverStrategyForDirectDependencies ++ globalStrategyForDirectDependencies
+        else
+            match rootDependencies.TryGetValue currentRequirement.Name with
+            | true, r when r.ResolverStrategyForDirectDependencies <> None ->
+                r.ResolverStrategyForDirectDependencies
+            | _ ->
+                (allRequirementsOfCurrentPackage
+                    |> Seq.filter (fun x -> x.Depth > 0)
+                    |> Seq.sortBy (fun x -> x.Depth, x.ResolverStrategyForTransitives <> globalStrategyForTransitives, x.ResolverStrategyForTransitives <> Some ResolverStrategy.Max)
+                    |> Seq.map (fun x -> x.ResolverStrategyForTransitives)
+                    |> Seq.fold (++) None)
+                    ++ globalStrategyForTransitives
 
-        defaultArg combined ResolverStrategy.Max
-    else
-        let combined =
-            (allRequirementsOfCurrentPackage
-                |> Seq.filter (fun x -> x.Depth > 0)
-                |> Seq.sortBy (fun x -> x.Depth, x.ResolverStrategyForTransitives <> globalStrategyForTransitives, x.ResolverStrategyForTransitives <> Some ResolverStrategy.Max)
-                |> Seq.map (fun x -> x.ResolverStrategyForTransitives)
-                |> Seq.fold (++) None)
-                ++ globalStrategyForTransitives
-
-        defaultArg combined ResolverStrategy.Max
+    defaultArg strategy ResolverStrategy.Max
 
 type UpdateMode =
     | UpdateGroup of GroupName
@@ -395,16 +397,16 @@ type private PackageConfig = {
     Dependency         : PackageRequirement
     GroupName          : GroupName
     GlobalRestrictions : FrameworkRestrictions
-    RootSettings       : IDictionary<PackageName,InstallSettings>
+    RootDependencies   : IDictionary<PackageName,PackageRequirement>
     CliTools           : Set<PackageName>
     VersionCache       : VersionCache
     UpdateMode         : UpdateMode
 } with
     member self.HasGlobalRestrictions =
-        not(getExplicitRestriction self.GlobalRestrictions = FrameworkRestriction.NoRestriction)
+        getExplicitRestriction self.GlobalRestrictions <> FrameworkRestriction.NoRestriction
 
     member self.HasDependencyRestrictions =
-        not(getExplicitRestriction self.Dependency.Settings.FrameworkRestrictions = FrameworkRestriction.NoRestriction)
+        getExplicitRestriction self.Dependency.Settings.FrameworkRestrictions <> FrameworkRestriction.NoRestriction
 
 
 let private updateRestrictions (pkgConfig:PackageConfig) (package:ResolvedPackage) =
@@ -417,12 +419,13 @@ let private updateRestrictions (pkgConfig:PackageConfig) (package:ResolvedPackag
         else
             // Setting in the dependencies file
             let globalPackageSettings =
-                match pkgConfig.RootSettings.TryGetValue package.Name with
-                | true, s -> 
-                    match s.FrameworkRestrictions with
+                match pkgConfig.RootDependencies.TryGetValue package.Name with
+                | true, r -> 
+                    match r.Settings.FrameworkRestrictions with
                     | ExplicitRestriction r -> r
                     | _ -> FrameworkRestriction.NoRestriction
                 | _ -> FrameworkRestriction.NoRestriction
+
             // Settings required for the current resolution
             let packageSettings = package.Settings.FrameworkRestrictions |> getExplicitRestriction
             // Settings required for this current dependency
@@ -459,20 +462,20 @@ let private explorePackageConfig (getPackageDetailsBlock:PackageDetailsSyncFunc)
         | _ ->
             tracefn  " - %O %A" dependency.Name version
 
-    let newRestrictions =
-        filterRestrictions dependency.Settings.FrameworkRestrictions pkgConfig.GlobalRestrictions
+    let newRestrictions = filterRestrictions dependency.Settings.FrameworkRestrictions pkgConfig.GlobalRestrictions
+
     try
         let packageDetails : PackageDetails =
             getPackageDetailsBlock (GetPackageDetailsParameters.ofParamsEx isAssumedVersion packageSources pkgConfig.GroupName dependency.Name version)
-        let filteredDependencies =
-            DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies
+        let filteredDependencies = DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies
+
         let settings =
             match dependency.Parent with
             | DependenciesFile _ -> dependency.Settings
             | Package _ ->
-                match pkgConfig.RootSettings.TryGetValue packageDetails.Name with
-                | true, s -> s + dependency.Settings
-                | _ -> dependency.Settings
+                match pkgConfig.RootDependencies.TryGetValue packageDetails.Name with
+                | true, r -> r.Settings + dependency.Settings
+                | _ -> dependency.Settings                
             |> fun x -> x.AdjustWithSpecialCases packageDetails.Name
         Result.Ok
             { Name                = packageDetails.Name
@@ -524,6 +527,7 @@ let private getCompatibleVersions
                (currentStep:ResolverStep)
                 groupName
                (currentRequirement:PackageRequirement)
+               rootDependencies
                (getVersionsF: ResolverStrategy -> PackageVersionsSyncFunc)
                 globalOverride
                 globalStrategyForDirectDependencies
@@ -552,7 +556,8 @@ let private getCompatibleVersions
             Seq.singleton (VersionCache.ofParams v sources true)
 
         let availableVersions =
-            let resolverStrategy = getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives allRequirementsOfCurrentPackage currentRequirement
+            let resolverStrategy = getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives rootDependencies allRequirementsOfCurrentPackage currentRequirement
+
             let allVersions =
                 getVersionsF resolverStrategy (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName currentRequirement.Name)
                 |> Seq.map (fun (v, sources) -> VersionCache.ofParams v sources false)
@@ -900,6 +905,7 @@ let RequestTimeout = 180000
 let WorkerCount = 6
 
 type PreferredVersionsFunc = ResolverStrategy -> GetPackageVersionsParameters -> list<SemVerInfo * PackageSource list>
+
 /// Resolves all direct and transitive dependencies
 let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : PreferredVersionsFunc, getPackageDetailsRaw : PackageDetailsFunc, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
     tracefn "Resolving packages for group %O:" groupName
@@ -1030,10 +1036,10 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
         | UpdateFiltered (g, f) when g = groupName -> Some f
         | _ -> None
 
-    let rootSettings =
+    let rootDependenciesDict =
         rootDependencies
-        |> Seq.map (fun x -> x.Name,x.Settings)
-        |> dict
+        |> Seq.map (fun x -> x.Name,x)
+        |> dict        
 
     let lockedPackages =
         rootDependencies
@@ -1157,7 +1163,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                 else
                     let getCurrentVersionBlock = fun strategy args -> getVersionsBlock strategy args currentStep
                     let compatibleVersions,globalOverride,tryRelaxed =
-                        getCompatibleVersions currentStep groupName currentRequirement getCurrentVersionBlock
+                        getCompatibleVersions currentStep groupName currentRequirement rootDependenciesDict getCurrentVersionBlock
                                 currentConflict.GlobalOverride
                                 globalStrategyForDirectDependencies
                                 globalStrategyForTransitives
@@ -1217,7 +1223,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                 step (Outer((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions  flags 
             else
                 let flags = { flags with FirstTrial = false }
-                let ({ Version = version; Sources = sources }: VersionCache) & versionToExplore = Seq.head currentConflict.VersionsToExplore
+                let versionToExplore = Seq.head currentConflict.VersionsToExplore
 
                 let currentConflict = 
                     { currentConflict with 
@@ -1227,7 +1233,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                     GroupName          = groupName
                     Dependency         = currentRequirement
                     GlobalRestrictions = globalFrameworkRestrictions
-                    RootSettings       = rootSettings
+                    RootDependencies   = rootDependenciesDict
                     VersionCache       = versionToExplore
                     UpdateMode         = updateMode
                     CliTools           = cliToolSettings
