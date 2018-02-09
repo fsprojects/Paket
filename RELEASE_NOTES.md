@@ -1,3 +1,6 @@
+#### 5.134.0 - 2018-02-09
+* BUGFIX: Paket update doesn't prefer versions from lock file anymore - https://github.com/fsprojects/Paket/pull/3031
+
 #### 5.133.0 - 2018-01-31
 * Added `paket info --paket-dependencies-dir` to locate repo root
 * API: Added overload for Dependencies.Init - https://github.com/fsprojects/Paket/pull/3019
