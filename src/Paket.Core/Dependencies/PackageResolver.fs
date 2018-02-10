@@ -375,8 +375,8 @@ let getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTra
             currentRequirement.ResolverStrategyForDirectDependencies ++ globalStrategyForDirectDependencies
         else
             match rootDependencies.TryGetValue currentRequirement.Name with
-            | true, r when r.ResolverStrategyForDirectDependencies <> None ->
-                r.ResolverStrategyForDirectDependencies
+            | true, r ->
+                r.ResolverStrategyForDirectDependencies ++ globalStrategyForDirectDependencies
             | _ ->
                 (allRequirementsOfCurrentPackage
                     |> Seq.filter (fun x -> x.Depth > 0)
