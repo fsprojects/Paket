@@ -1,3 +1,6 @@
+#### 5.135.0 - 2018-02-10
+* BUGFIX: Fixed lowest_matching in transitive deps - https://github.com/fsprojects/Paket/issues/3032
+
 #### 5.134.0 - 2018-02-09
 * BUGFIX: Paket update doesn't prefer versions from lock file anymore - https://github.com/fsprojects/Paket/pull/3031
 
