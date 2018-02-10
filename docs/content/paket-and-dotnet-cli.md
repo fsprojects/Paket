@@ -26,7 +26,7 @@ For `dotnet` CLI to work properly Paket needs to be used in
 1. After the first `.paket/paket.exe` invocation Paket will create a couple of
    files in `.paket` — commit those as well.
 
-There are already a couple of `dotnet` templates available that ship with Paket
+There are already a couple of `dotnet` [templates available](https://github.com/dotnet/templating/wiki/Available-templates-for-dotnet-new#f-templates) that ship with Paket
 support. In that case you don't need to setup the bootstrapper manually.
 
 ### Specifying dependencies
