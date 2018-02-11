@@ -649,27 +649,30 @@ let private getConflicts (currentStep:ResolverStep) (currentRequirement:PackageR
 
 
 let private getCurrentRequirement packageFilter currentResolution (openRequirements:Set<PackageRequirement>) (conflictHistory:Dictionary<_,_>) =
-    let initialMin = Seq.head openRequirements
-    let boost (d:PackageRequirement) =
-        match conflictHistory.TryGetValue d.Name with
-        | true,c -> -c
-        | _ -> 0
+    let selected =
+        openRequirements
+        |> Seq.tryFind (fun r -> currentResolution |> Map.tryFind r.Name <> None)
+   
+    match selected with 
+    | Some p -> p
+    | None ->
+        let initialMin = Seq.head openRequirements
+        let boost (d:PackageRequirement) =
+            match conflictHistory.TryGetValue d.Name with
+            | true,c -> -c
+            | _ -> 0
 
-    let initialBoost = boost initialMin
-    let currentMin, _, _ =
-        ((initialMin,initialBoost,false),openRequirements)
-        ||> Seq.fold (fun (cmin,cboost,skip) d ->
-            if skip then cmin,cboost,skip else
-            match currentResolution |> Map.tryFind d.Name with
-            | Some _ ->
-                d,cboost,true
-            | _ ->
+    
+        let initialBoost = boost initialMin
+        let currentMin, _ =
+            ((initialMin,initialBoost),openRequirements)
+            ||> Seq.fold (fun (cmin,cboost) d ->
                 let boost = boost d
                 if PackageRequirement.Compare(d,cmin,packageFilter,boost,cboost) = -1 then
-                    d, boost, skip
+                    d, boost
                 else
-                    cmin, cboost, skip)
-    currentMin
+                    cmin, cboost)
+        currentMin
 
 
 [<StructuredFormatDisplay "{Display}">]
