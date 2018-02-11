@@ -359,7 +359,12 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,lockedPackages:Set<_>,
         |> not)
     |> Set.filter (fun d ->
         resolverStep.OpenRequirements
-        |> Set.exists (fun x -> x.Name = d.Name && (x = d || x.VersionRequirement.Range.IsGlobalOverride) && x.Settings.FrameworkRestrictions = d.Settings.FrameworkRestrictions)
+        |> Set.exists (fun x ->
+            x.Name = d.Name &&
+               x.Settings.FrameworkRestrictions = d.Settings.FrameworkRestrictions &&
+                (x = d ||
+                 x.VersionRequirement.Range.IsIncludedIn d.VersionRequirement.Range ||
+                 x.VersionRequirement.Range.IsGlobalOverride))
         |> not)
     |> Set.union rest
 
