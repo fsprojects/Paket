@@ -643,7 +643,7 @@ let private getConflicts (currentStep:ResolverStep) (currentRequirement:PackageR
     |> HashSet
 
 
-let private getCurrentRequirement packageFilter (openRequirements:Set<PackageRequirement>) (conflictHistory:Dictionary<_,_>) =
+let private getCurrentRequirement packageFilter currentResolution (openRequirements:Set<PackageRequirement>) (conflictHistory:Dictionary<_,_>) =
     let initialMin = Seq.head openRequirements
     let boost (d:PackageRequirement) =
         match conflictHistory.TryGetValue d.Name with
@@ -651,14 +651,19 @@ let private getCurrentRequirement packageFilter (openRequirements:Set<PackageReq
         | _ -> 0
 
     let initialBoost = boost initialMin
-    let currentMin, _ =
-        ((initialMin,initialBoost),openRequirements)
-        ||> Seq.fold (fun (cmin,cboost) d ->
-            let boost = boost d
-            if PackageRequirement.Compare(d,cmin,packageFilter,boost,cboost) = -1 then
-                d, boost
-            else
-                cmin, cboost)
+    let currentMin, _, _ =
+        ((initialMin,initialBoost,false),openRequirements)
+        ||> Seq.fold (fun (cmin,cboost,skip) d ->
+            if skip then cmin,cboost,skip else
+            match currentResolution |> Map.tryFind d.Name with
+            | Some _ ->
+                d,cboost,true
+            | _ ->
+                let boost = boost d
+                if PackageRequirement.Compare(d,cmin,packageFilter,boost,cboost) = -1 then
+                    d, boost, skip
+                else
+                    cmin, cboost, skip)
     currentMin
 
 
@@ -1133,7 +1138,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                         (currentStep.OpenRequirements  |> Seq.map (fun x -> sprintf "\n     - %O, %O (from %O)" x.Name x.VersionRequirement x.Parent) |> String.Concat)
 
                 let currentRequirement = 
-                    getCurrentRequirement packageFilter currentStep.OpenRequirements stackpack.ConflictHistory
+                    getCurrentRequirement packageFilter currentStep.CurrentResolution currentStep.OpenRequirements stackpack.ConflictHistory
 
                 let conflicts = 
                     getConflicts currentStep currentRequirement stackpack.KnownConflicts
@@ -1348,7 +1353,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
         startRequestGetVersions (GetPackageVersionsParameters.ofParams openReq.Sources groupName openReq.Name)
         |> ignore
 
-    let currentRequirement = getCurrentRequirement packageFilter startingStep.OpenRequirements (Dictionary())
+    let currentRequirement = getCurrentRequirement packageFilter startingStep.CurrentResolution startingStep.OpenRequirements (Dictionary())
 
     let status =
         let getVersionsF packName = getVersionsBlock ResolverStrategy.Max (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName) startingStep 
