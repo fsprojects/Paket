@@ -171,10 +171,14 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Adds the given github repository to the dependencies file.
     member this.AddGithub(groupName, repository, file, version) =
+        this.AddGithub(groupName, repository, file, version, InstallerOptions.Default)
+
+    /// Adds the given github repository to the dependencies file.
+    member this.AddGithub(groupName, repository, file, version, options) =
         RunInLockedAccessMode(
             this.RootPath,
             fun () ->
-                AddProcess.AddGithub(dependenciesFileName, groupName, repository, file, version))
+                AddProcess.AddGithub(dependenciesFileName, groupName, repository, file, version, options))
 
     /// Adds the given http resource to the dependencies file.
     member this.AddHttp(groupName, url) =

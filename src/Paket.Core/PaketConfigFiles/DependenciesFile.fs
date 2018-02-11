@@ -45,7 +45,7 @@ module DependenciesFileSerializer =
         sprintf "%s %O%s%s" kindString packageName (if version <> "" then " " + version else "") (if s <> "" then " " + s else s)
 
     let githubString repository file version =
-        sprintf "github %s %s" repository file
+        sprintf "github %s%s%s" repository (if version <> "" then ":" + version else "") (if file <> "" then " " + file else "")
 
 open Domain
 open System
@@ -641,12 +641,23 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             else
                 tracefn "Adding %O %s to %s into group %O" packageName version fileName groupName
             this.AddAdditionalPackage(groupName, packageName,version,installSettings,kind)
+    
+    member this.AddGithub(groupName, repository) = 
+        this.AddGithub(groupName, repository, "", "")
 
     member this.AddGithub(groupName, repository, file, version) =
         tracefn "Adding %s into group %O" (repository + (if version <> "" then ":" + version else "") + (if file <> "" then "/" + file else "")) groupName
         let packageString = DependenciesFileSerializer.githubString repository file version
 
-        ()
+        let list = new System.Collections.Generic.List<_>()
+        list.AddRange textRepresentation
+
+        list.Add packageString
+
+        DependenciesFile(
+            list 
+            |> Seq.toArray
+            |> DependenciesFileParser.parseDependenciesFile fileName false)
 
     member this.Remove(groupName, packageName) =
         if this.HasPackage(groupName, packageName) then

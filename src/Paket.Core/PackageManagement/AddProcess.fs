@@ -101,13 +101,19 @@ let Add(dependenciesFileName, groupName, package, version, options : InstallerOp
                     addToProject project groupName package
 
     add interactive addToProjects dependenciesFileName groupName package version options installAfter runResolver packageKind
-
-let AddGithub(dependenciesFileName, groupName, repository, file, version) =
+    
+let AddGithub(dependenciesFileName, groupName, repository, file, version, options) =
     let group = matchGroupName(groupName)
-
-    Console.WriteLine("Adding GitHub woop woop " + dependenciesFileName)
-
+    
     let existingDependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
-
+    
     existingDependenciesFile
         .AddGithub(group, repository, file, version)
+        |> ignore
+
+    existingDependenciesFile.Save()
+    
+    let lockFile = LockFile.LoadFrom(existingDependenciesFile.FindLockFile().FullName)
+    
+    InstallProcess.Install(options, false, existingDependenciesFile, lockFile, Map.empty)
+    GarbageCollection.CleanUp(existingDependenciesFile, lockFile)
