@@ -11,8 +11,8 @@ open Paket
 open Paket.Domain
 
 [<Test>]
-let ``#2923 paket add-github clitool``() =
-    let scenario = "i002923-add-github"
+let ``#3014 paket add-github clitool``() =
+    let scenario = "i003014-add-github"
     prepare scenario
     paket "add-github forki/FsUnit" scenario |> ignore
 
