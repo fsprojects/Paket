@@ -5,8 +5,16 @@ open Newtonsoft.Json
 open System.IO
 open System.Collections.Generic
 
+open Newtonsoft.Json.Serialization
+open Paket
 open System
+open System.IO
+open System.IO.Compression
+open System.Text
+open System.Threading
 open System.Threading.Tasks
+open System.Net
+open System.Text.RegularExpressions
 open Paket.Domain
 open Paket.NuGetCache
 open Paket.Utils
@@ -15,7 +23,7 @@ open Paket.PackageSources
 open Paket.Requirements
 open Paket.Logging
 open Paket.PlatformMatching
-
+open FSharp.Polyfill
 
 type NugetV3SourceResourceJSON =
     { [<JsonProperty("@type")>]
@@ -36,6 +44,7 @@ type NugetV3ResourceType =
     | AllVersionsAPI
     //| Registration
     | PackageIndex
+    | Catalog
 
     member this.AsString =
         match this with
@@ -43,6 +52,7 @@ type NugetV3ResourceType =
         //| Registration -> "RegistrationsBaseUrl"
         | AllVersionsAPI -> "PackageBaseAddress/3.0.0"
         | PackageIndex -> "PackageDisplayMetadataUriTemplate"
+        | Catalog -> "Catalog"
 
 // Cache for nuget indices of sources
 type ResourceIndex = Map<NugetV3ResourceType,string>
@@ -76,6 +86,7 @@ let getNuGetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceT
                         //| "registrationsbaseurl" -> Some Registration
                         | s when s.StartsWith "packagedisplaymetadatauritemplate" -> Some PackageIndex
                         | "packagebaseaddress/3.0.0" -> Some AllVersionsAPI
+                        | s when s.StartsWith "catalog/3.0" -> Some Catalog
                         | _ -> None
                     match resType with
                     | None -> None
@@ -176,8 +187,372 @@ let getAllVersionsAPI(auth,nugetUrl) =
                         if verbose then traceWarnfn "getAllVersionsAPI: %s" (ex.ToString())
                         None
         } |> Async.StartAsTask)
+        
+/// [omit]
+let getCatalogAPI auth nugetUrl =
+    let catalogApi =
+        async {
+            match calculateNuGet3Path nugetUrl with
+            | None -> return None
+            | Some v3Path ->
+                let source = { Url = v3Path; Authentication = auth }
+                let! v3res = getNuGetV3Resource source Catalog |> Async.Catch
+                return
+                    match v3res with
+                    | Choice1Of2 s -> Some s
+                    | Choice2Of2 ex ->
+                        if verbose then traceWarnfn "getCatalogAPI: %s" (ex.ToString())
+                        None       
+        } |> Async.RunSynchronously 
+    match catalogApi with 
+    | Some url when url |> String.IsNullOrEmpty |> not -> url
+    | _-> failwithf "NO NuGetV3 Catalog on %s" nugetUrl
 
+type NugetV3CatalogIndexItem =
+    {   [<JsonProperty("@id")>]
+        Id : string
+        [<JsonProperty("@type")>]
+        ItemType : string   
+        [<JsonProperty("commitId")>]
+        CommitId : string
+        [<JsonProperty("commitTimeStamp")>]
+        CommitTimeStamp : DateTimeOffset
+        [<JsonProperty("count")>]
+        Count : int 
+    }
+    
+/// large unused fields are commented-out
+type NugetV3CatalogPageItem =
+    {   //[<JsonProperty("@id")>]
+        //Id : string
+        [<JsonProperty("@type")>]
+        ItemType : string   
+        //[<JsonProperty("commitId")>]
+        //CommitId : string
+        [<JsonProperty("commitTimeStamp")>]
+        CommitTimeStamp : DateTimeOffset
+        [<JsonProperty("nuget:id")>]
+        NuGetId : string
+        [<JsonProperty("nuget:version")>]
+        NuGetVersion : string
+    }
+    
+type NugetV3CatalogPage =
+    {   [<JsonProperty("commitId")>]
+        CommitId : string
+        [<JsonProperty("commitTimeStamp")>]
+        CommitTimeStamp : DateTimeOffset
+        [<JsonProperty("count")>]
+        Count : int
+        [<JsonProperty("items")>]
+        Items : NugetV3CatalogPageItem []
+    }
+        
+type NugetV3CatalogIndex =
+    {   [<JsonProperty("commitId")>]
+        CommitId : string
+        [<JsonProperty("commitTimeStamp")>]
+        CommitTimeStamp : DateTimeOffset
+        [<JsonProperty("count")>]
+        Count : int
+        [<JsonProperty("items")>]
+        Items : NugetV3CatalogIndexItem []
+    }
+    
+/// [omit]
+let private getCatalogIndex auth nugetUrl cancel =
+    let apiAuth = auth |> Option.map toCredentials
+    let catalogApi = getCatalogAPI auth nugetUrl
+    let indexResponse =
+        async {
+            return! safeGetFromUrl (apiAuth, catalogApi, acceptJson)
+        } |> (fun future -> 
+            Async.StartAsTaskProperCancel(future,TaskCreationOptions.None,cancel))
+    match indexResponse.Result with
+    | NotFound -> failwith "Catalog/3.0 Index NotFound/404"; ""
+    | UnknownError e -> failwithf "Catalog/3.0 Index N/A %A" e; ""
+    | SuccessResponse s -> s 
+    |> JsonConvert.DeserializeObject<NugetV3CatalogIndex>
 
+let private getHostSpecificFileName fromUrl =
+    let normalizeFileName name =
+        let invalid = String(Path.GetInvalidFileNameChars())
+        let inmatch = sprintf "[%s]" (Regex.Escape(invalid))
+        Regex.Replace(name, inmatch, "_")
+    match Uri.TryCreate (fromUrl, UriKind.Absolute) with
+    | true, uri -> WebUtility.UrlDecode uri.Host
+    | _ -> normalizeFileName (WebUtility.UrlDecode fromUrl)
+
+let private getCatalogPageDirectory(basePath:String,item:String) =
+    let hostName = getHostSpecificFileName item
+    let cachePath = Path.Combine(basePath, "catalog", hostName)
+    let directory = new DirectoryInfo(cachePath)
+    if directory.Exists |> not then
+        traceWarnfn "Create page cache \"%s\" -- long delay expected" directory.FullName
+        directory.Create()
+    directory;
+    
+let private getPageFileContent(pageFileName:String) =
+    let pageFileInfo = new FileInfo(pageFileName+".gz")
+    if pageFileInfo.Exists then
+        try 
+            // File.ReadAllText(pageFileInfo.FullName)
+            use archive = File.OpenRead(pageFileInfo.FullName)
+            use compressed = new GZipStream(archive,CompressionMode.Decompress)
+            use reader = new StreamReader(compressed,Encoding.UTF8)
+            reader.ReadToEnd()
+            |> JsonConvert.DeserializeObject<NugetV3CatalogPage> 
+            |> Some
+        with 
+        | ex ->
+            traceWarnfn "Cannot read/parse %A: %A" pageFileInfo ex
+            pageFileInfo.Delete() 
+            None
+    else None
+    
+let private setPageFileContent(pageFileName:String,responseData:String) = 
+    try
+        // File.WriteAllText(pageFileName,responseData)
+        let bytes = Encoding.UTF8.GetBytes(responseData)
+        use archive = File.OpenWrite(pageFileName+".gz")
+        use compressed = new GZipStream(archive,CompressionLevel.Optimal)
+        compressed.Write(bytes,0,bytes.Length)
+    with
+    | ex -> traceWarnfn "Cannot over/write %A: %A" pageFileName ex
+    
+/// [omit]
+let private getCatalogPage auth (item:NugetV3CatalogIndexItem)(basePath:String) cancel =
+    let pageDirectory = getCatalogPageDirectory(basePath,item.Id)
+    let pageFileNameOnly = 
+        item.Id |> WebUtility.UrlDecode
+        |> String.split[|'/'|] |> Array.last 
+        |> Path.GetFileNameWithoutExtension
+    let pageFileName = Path.Combine(pageDirectory.FullName, pageFileNameOnly)    
+    let pageFileData = getPageFileContent pageFileName        
+    match pageFileData with
+    | Some pageContent when 
+        pageContent.CommitId = item.CommitId && 
+        pageContent.CommitTimeStamp = item.CommitTimeStamp -> pageContent
+    | _ -> 
+        use localCancel = new CancellationTokenSource(PackageResolver.RequestTimeout)
+        use linkedCancel = 
+            CancellationTokenSource.CreateLinkedTokenSource(localCancel.Token,cancel)
+        let pageResponse =
+            async {
+                let apiAuth = auth |> Option.map toCredentials        
+                return! safeGetFromUrl (apiAuth,item.Id,acceptJson)
+            } |> 
+            (fun future -> 
+                Async.StartAsTaskProperCancel(future,TaskCreationOptions.None,cancel))
+        let responseData = 
+            match pageResponse.Result with
+            | NotFound -> failwith "Catalog/3.0 Page NotFound/404"; ""
+            | UnknownError e -> failwithf "Catalog/3.0 Page N/A %A" e; ""
+            | SuccessResponse s -> s
+        let pageContents = 
+            responseData |> JsonConvert.DeserializeObject<NugetV3CatalogPage>
+        setPageFileContent(pageFileName,pageContents |> JsonConvert.SerializeObject)
+        pageContents;
+        
+
+type NugetV3PackageCatalog = {
+    Source : String
+    Cursor : DateTimeOffset
+    Packages : Map<String,String list>
+}
+
+let private semVerOrder versions =
+    let getSemVer original =
+        let parts = 
+            original |> String.split[|'!'|]
+        try
+            SemVer.Parse(parts.[0])        
+        with
+        | ex -> 
+            { SemVer.Zero with 
+                Original = Some (parts.[0]) }
+                
+    let semVerStr (semVersion:SemVerInfo) =
+        let normal = semVersion.Normalize()
+        let normalized = 
+            match semVersion.BuildMetaData with
+            | null | "" -> normal
+            | some -> normal + "+" + some
+        match semVersion.Original with
+        | Some str when str = normalized -> str
+        | Some str -> str + "!" + normalized
+        | None -> normalized + "!!"
+        
+    versions 
+    |> List.distinct
+    |> List.map getSemVer
+    |> List.sort
+    |> List.map semVerStr
+    
+let private semVerOrder2 _ versions = semVerOrder versions
+      
+//let private 
+
+let getCatalogCursor basePath serviceUrl =
+    let hostName = getHostSpecificFileName serviceUrl
+    let fullName = Path.Combine(basePath, hostName + ".txt")
+    
+    let mutable packName = ""
+    let mutable versions = List.empty
+    
+    let mutable builder = {
+        Source = serviceUrl
+        Cursor = DateTimeOffset.MinValue
+        Packages = Seq.empty |> Map.ofSeq
+    }
+    
+    if File.Exists fullName then    
+        let readLine = File.ReadLines fullName        
+        for line in readLine do // deserialize
+            match line with
+            | null | "" -> ignore() // skip empty
+            
+            | a when a.[0] = ':' ->
+                let cursor = a.Substring(1).Trim()                
+                match DateTimeOffset.TryParse cursor with
+                | true, cursor -> builder <- {
+                    builder with Cursor = cursor}
+                | false, _ -> ignore()
+                
+            | a when a.[0] = '*' ->
+                match packName with
+                | null | "" -> ignore()
+                | name -> 
+                    let ver = 
+                        match Map.tryFind name builder.Packages with
+                        | Some values -> versions @ values
+                        | None -> versions
+                        
+                    builder <- { 
+                        builder with 
+                            Packages = builder.Packages.Add(name,ver)}
+                    
+                versions <- List.empty // cleanup
+                packName <- a.Substring(1).Trim()
+                
+            | a when a.[0] = '`' -> ignore()
+            | a when a.[0] = '.' -> ignore()
+            | a when a.[0] = ',' -> ignore()
+            | a when a.[0] = ';' -> ignore()
+            | a when a.[0] = '>' -> ignore()
+            | a when a.[0] = '<' -> ignore()
+            | a when a.[0] = '/' -> ignore()    
+            | a when a.[0] = '\\' -> ignore()
+            | a when Char.IsControl(a.[0]) -> ignore()
+            | a when Char.IsSeparator(a.[0]) -> ignore()
+            | a when Char.IsWhiteSpace(a.[0]) -> ignore()
+            
+            | version -> versions <- version :: versions
+    else 
+        ignore()
+    let catalog = {
+        builder with
+            Packages = builder.Packages
+            |> Map.map (fun k v -> List.rev v) // we were pre-pending
+            |> Map.map semVerOrder2
+    }
+    catalog;
+    
+let setCatalogCursor basePath catalog =
+    let hostName = getHostSpecificFileName catalog.Source
+    let fullName = Path.Combine(basePath, hostName + ".txt")
+    
+    let fileInfo = new FileInfo(fullName)
+    if fileInfo.Exists then
+        try
+            let backFile = fileInfo.FullName + ".bak"
+            fileInfo.CopyTo(backFile, true) |> ignore
+        with 
+        | ex -> verbosefn "%A" ex
+    elif fileInfo.Directory.Exists then
+        ignore()
+    else
+        fileInfo.Directory.Create()        
+    use textFile = fileInfo.CreateText()
+    
+    textFile.WriteLine(":" + catalog.Cursor.ToString("O"))
+    
+    for package in catalog.Packages do    
+        textFile.WriteLine("*" + package.Key)
+        
+        for version in package.Value do        
+            textFile.WriteLine(version)
+            
+    textFile.Flush()
+
+let getCatalogUpdated auth basePath catalog cancel =
+    let asyncRes = 
+        async {
+            let mutable builder = {
+                Source = catalog.Source
+                Cursor = catalog.Cursor
+                Packages = catalog.Packages |> Map.map (fun k v -> List.rev v)
+            }
+            
+            let catalogIndex = getCatalogIndex auth catalog.Source cancel
+            assert (catalogIndex.CommitId |> String.IsNullOrWhiteSpace = false)
+            
+            for indexItem in catalogIndex.Items do
+                if indexItem.CommitTimeStamp < catalog.Cursor then ignore()
+                else
+                
+                let indexPage = getCatalogPage auth indexItem basePath cancel
+                assert (indexPage.CommitId |> String.IsNullOrWhiteSpace = false)
+                
+                if indexPage.CommitTimeStamp < catalog.Cursor then ignore()
+                else
+                
+                for pageItem in indexPage.Items do
+                    if pageItem.CommitTimeStamp < catalog.Cursor then ignore()
+                    else
+                    
+                    let version = 
+                        match pageItem.ItemType with
+                        | "nuget:PackageDelete" -> Some (Choice1Of2 pageItem.NuGetVersion)
+                        | "nuget:PackageDetails" -> Some (Choice2Of2 pageItem.NuGetVersion)
+                        | _ -> None
+
+                    match version with 
+                    | Some choice ->
+                    
+                        let versionList = 
+                            match Map.tryFind pageItem.NuGetId builder.Packages with
+                            | Some versions ->
+                                match choice with 
+                                | Choice1Of2 delete -> versions |> List.except [delete] 
+                                | Choice2Of2 details -> details :: versions
+                            | None -> 
+                                match choice with 
+                                | Choice1Of2 delete -> []
+                                | Choice2Of2 details -> [details]
+                        
+                        match versionList with 
+                        | [] ->
+                            builder <- { 
+                                builder with 
+                                    Packages = builder.Packages.Remove(pageItem.NuGetId)}
+                        | versions -> 
+                            builder <- {
+                                builder with 
+                                    Packages = builder.Packages.Add(pageItem.NuGetId,versionList)}
+                                                
+                        builder <- {builder with Cursor = indexPage.CommitTimeStamp}
+                        
+                    | None -> ignore() // nothing to do here
+            let updated = { 
+                builder with
+                    Packages = builder.Packages
+                    |> Map.map (fun k v -> List.rev v) // we were pre-pending new items
+                    |> Map.map semVerOrder2 }    
+            return updated
+        }
+    Async.StartAsTaskProperCancel(asyncRes, TaskCreationOptions.None, cancel)
+        
 /// [omit]
 let extractAutoCompleteVersions(response:string) =
     JsonConvert.DeserializeObject<JSONVersionData>(response).Data
