@@ -646,13 +646,13 @@ let private getConflicts (currentStep:ResolverStep) (currentRequirement:PackageR
 
 
 let private getCurrentRequirement packageFilter currentResolution (openRequirements:Set<PackageRequirement>) (conflictHistory:Dictionary<_,_>) =
-    let selected =
-        openRequirements
-        |> Seq.tryFind (fun r -> currentResolution |> Map.tryFind r.Name <> None)
+    //let selected =
+    //    openRequirements
+    //    |> Seq.tryFind (fun r -> currentResolution |> Map.tryFind r.Name <> None)
    
-    match selected with 
-    | Some p -> p
-    | None ->
+    //match selected with 
+    //| Some p -> p
+    //| None ->
         let initialMin = Seq.head openRequirements
         let boost (d:PackageRequirement) =
             match conflictHistory.TryGetValue d.Name with
