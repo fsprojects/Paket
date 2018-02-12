@@ -44,3 +44,56 @@ let ``should add repository with version``() =
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should not error when adding existing github-repository``() =
+    let existing = "github fsprojects/FsUnit"
+
+    let cfg = DependenciesFile.FromSource(existing).AddGithub(Constants.MainDependencyGroup, "fsprojects/FsUnit")
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings existing)
+
+
+[<Test>]
+let ``should add new repositories to the main group``() = 
+    let config = """source http://www.nuget.org/api/v2
+
+group Test
+github fsprojects/FAKE"""
+
+    let cfg = DependenciesFile.FromSource(config).AddGithub(Constants.MainDependencyGroup, "fsprojects/FsUnit")
+    
+    let expected = """source http://www.nuget.org/api/v2
+
+github fsprojects/FsUnit
+
+group Test
+github fsprojects/FAKE"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should add new repositories to the specified group``() = 
+    let config = """source http://www.nuget.org/api/v2
+
+group Test
+github fsprojects/FAKE
+
+group Test2
+github fsprojects/SQLProvider"""
+
+    let cfg = DependenciesFile.FromSource(config).AddGithub("Test", "fsprojects/FsUnit")
+    
+    let expected = """source http://www.nuget.org/api/v2
+
+group Test
+github fsprojects/FAKE
+github fsprojects/FsUnit
+
+group Test2
+github fsprojects/SQLProvider"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
