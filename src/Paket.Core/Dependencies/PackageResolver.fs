@@ -338,8 +338,7 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,lockedPackages:Set<_>,
                 | _ ->  dict.[name] <- dep
             | _ -> dict.Add(name,dep)
 
-        dict
-        |> Seq.map (fun kv -> kv.Value)
+        dict.Values
         |> Set.ofSeq
 
     let rest =
@@ -1303,24 +1302,23 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                         let canTakePackage = 
                             Seq.isEmpty conflictingResolvedPackages &&
                             Seq.isEmpty conflictingDepsRanges
-                      
                         
                         if canTakePackage then
-                            let openRequirements =
+                            let nextStep =
                                 match currentStep.CurrentResolution |> Map.tryFind exploredPackage.Name with
                                 | Some _x ->
-                                    currentStep.OpenRequirements
-                                    |> Set.remove currentRequirement
-                                | _ -> 
-                                    calcOpenRequirements(exploredPackage,lockedPackages,globalFrameworkRestrictions,versionToExplore,currentRequirement,currentStep)
+                                    { Relax              = currentStep.Relax
+                                      FilteredVersions   = Map.add currentRequirement.Name ([versionToExplore],currentConflict.GlobalOverride) currentStep.FilteredVersions
+                                      CurrentResolution  = currentStep.CurrentResolution
+                                      ClosedRequirements = Set.add currentRequirement currentStep.ClosedRequirements
+                                      OpenRequirements   = Set.remove currentRequirement currentStep.OpenRequirements }
+                                | _ ->
+                                    { Relax              = currentStep.Relax
+                                      FilteredVersions   = Map.add currentRequirement.Name ([versionToExplore],currentConflict.GlobalOverride) currentStep.FilteredVersions
+                                      CurrentResolution  = Map.add exploredPackage.Name exploredPackage currentStep.CurrentResolution
+                                      ClosedRequirements = Set.add currentRequirement currentStep.ClosedRequirements
+                                      OpenRequirements   = calcOpenRequirements(exploredPackage,lockedPackages,globalFrameworkRestrictions,versionToExplore,currentRequirement,currentStep) }
 
-                            let nextStep =
-                                {   Relax              = currentStep.Relax
-                                    FilteredVersions   = Map.add currentRequirement.Name ([versionToExplore],currentConflict.GlobalOverride) currentStep.FilteredVersions
-                                    CurrentResolution  = Map.add exploredPackage.Name exploredPackage currentStep.CurrentResolution
-                                    ClosedRequirements = Set.add currentRequirement currentStep.ClosedRequirements
-                                    OpenRequirements   = openRequirements
-                                }
                             if nextStep.OpenRequirements = currentStep.OpenRequirements then
                                 failwithf "The resolver confused itself. The new open requirements are the same as the old ones.\n\
                                            This will result in an endless loop.%sCurrent Requirement: %A%sRequirements: %A"

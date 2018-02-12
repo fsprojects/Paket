@@ -1,3 +1,6 @@
+#### 5.136.0 - 2018-02-12
+* PERFORMANCE: Check if we already added the current package to the open requirement list - https://github.com/fsprojects/Paket/pull/3037
+
 #### 5.135.0 - 2018-02-10
 * BUGFIX: Fixed lowest_matching in transitive deps - https://github.com/fsprojects/Paket/issues/3032
 
