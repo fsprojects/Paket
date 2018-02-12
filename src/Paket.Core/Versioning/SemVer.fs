@@ -61,15 +61,18 @@ type PreRelease =
             let name, values = 
                 match str.Split([|'.'|],notEmpty) with
                 | [|one|] -> 
-                    let list = one.Split([|'-'|],notEmpty) |> Array.map parse |> List.ofArray
-                    
-                    // semver1-like embedded / inlined prerelease numbers
-                    let name =
-                        match Regex("^(?<name>[a-zA-Z]+)").Match(one) with 
+                    // without semver1 embedded numbers but allow hyphens
+                    let prefix = 
+                        Regex(@"(?in)^(?<name>[a-z]+(-[a-z]+)*)")
+                    let preName =
+                        match prefix.Match(one) with 
                         | ex when ex.Success -> ex.Value
-                        | _ -> getName list
+                        | _ -> // "1.2.3.4.5-alpha-45" ==> "alpha"
+                            let list = one.Split([|'-'|],notEmpty) 
+                                        |> Array.map parse |> List.ofArray 
+                            getName list
                         
-                    name, list
+                    preName, [parse one] // both semver 1 and 2 compliant
                                     
                 | multiple -> //semver2: dashes are ok, inline numbers not
                 
