@@ -299,6 +299,8 @@ let isIncludedIn (set:Set<PackageRequirement>) (packageRequirement:PackageRequir
     set
     |> Set.exists (fun x ->
         x.Name = packageRequirement.Name &&
+            x.ResolverStrategyForDirectDependencies = packageRequirement.ResolverStrategyForDirectDependencies &&
+            x.ResolverStrategyForTransitives = packageRequirement.ResolverStrategyForTransitives &&
             x.Settings.FrameworkRestrictions = packageRequirement.Settings.FrameworkRestrictions &&
             (x = packageRequirement ||
                 x.VersionRequirement.Range.IsIncludedIn packageRequirement.VersionRequirement.Range ||
@@ -652,7 +654,6 @@ let private getCurrentRequirement packageFilter (openRequirements:Set<PackageReq
         | true,c -> -c
         | _ -> 0
 
-    
     let initialBoost = boost initialMin
     let currentMin, _ =
         ((initialMin,initialBoost),openRequirements)
@@ -1307,9 +1308,9 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                         if canTakePackage then
                             let openRequirements =
                                 match currentStep.CurrentResolution |> Map.tryFind exploredPackage.Name with
-                                | Some x_ ->
+                                | Some _x ->
                                     currentStep.OpenRequirements
-                                    |> Set.remove currentRequirement 
+                                    |> Set.remove currentRequirement
                                 | _ -> 
                                     calcOpenRequirements(exploredPackage,lockedPackages,globalFrameworkRestrictions,versionToExplore,currentRequirement,currentStep)
 
