@@ -220,7 +220,9 @@ bootstrapper exists is completely hidden and becomes an implementation detail
 that contributors to your repository won't have to know — or care — about.</p>
 <p>While bootstrapper command line options can't be used, the other sources
 (application settings, environment variables and paket.dependencies) may still
-be used to configure the bootstrapper.</p>
+be used to configure the bootstrapper. The only difference is that the
+application settings file should be named <code>paket.exe.config</code> rather than
+<code>paket.bootstrapper.exe.config</code>.</p>
 <p>A few default settings are applied:</p>
 <ul>
 <li>
@@ -229,10 +231,6 @@ once to restore normal output or twice to show more details.
 </li>
 <li>If no version is specified a default <code>--max-file-age</code> of <code>12</code> hours is used.</li>
 </ul>
-<h3><a name="Setting-version-in-magic-mode" class="anchor" href="#Setting-version-in-magic-mode">Setting version in magic mode</a></h3>
-<p>You can use the all <a href="#In-application-settings">settings listed above</a> with two exceptions:
-1. <code>paket.bootstrapper.exe.config</code> becomes <code>paket.exe.config</code>
-2. you can no longer use the command line to specify</p>
 
 
         </div>
