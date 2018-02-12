@@ -43,7 +43,7 @@ let ``should favor max strategy to resolve strategy override conflicts``() =
         |> resolve graph UpdateMode.UpdateAll
     getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.2.0"
     getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.2.0"
-    getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.2.0"
+    getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.3.1"
 
 let configWithStrategy = """
 source http://www.nuget.org/api/v2
@@ -59,7 +59,7 @@ let ``should favor max strategy to resolve strategy override conflicts (with key
         |> resolve graph UpdateMode.UpdateAll
     getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.2.0"
     getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.2.0"
-    getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.2.0"
+    getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.3.1"
 
 let config2 = """
 source "http://www.nuget.org/api/v2"
