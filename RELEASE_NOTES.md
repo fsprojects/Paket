@@ -1,4 +1,4 @@
-#### 5.135.0 - 2018-02-10
+#### 5.135.1 - 2018-02-10
 * BUGFIX: Fixed lowest_matching in transitive deps - https://github.com/fsprojects/Paket/issues/3032
 
 #### 5.134.0 - 2018-02-09

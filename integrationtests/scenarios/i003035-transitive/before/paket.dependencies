@@ -1,0 +1,46 @@
+source https://www.nuget.org/api/v2/
+
+framework: net451
+redirects: on
+content: once
+copy_content_to_output_dir: always
+
+# Misc
+nuget Metrics.NET ~> 0.0
+nuget Newtonsoft.Json >= 9 < 11 lowest_matching: true
+nuget Nito.AsyncEx ~> 4.0
+nuget System.Threading.Tasks.Dataflow ~> 4.0
+nuget ZooKeeperNetEx ~> 3.4 >= 3.4.7.1
+nuget System.ComponentModel.Annotations ~> 4.0
+nuget System.Collections.Immutable ~> 1.0
+nuget DataAnnotationsValidator ~> 2.1.0
+
+# Orleans
+nuget Microsoft.Orleans.Core  1.3.1
+nuget Microsoft.Orleans.OrleansRuntime  1.3.1
+nuget Microsoft.Orleans.OrleansProviders 1.3.1
+nuget Microsoft.Orleans.OrleansSqlUtils  1.3.1
+nuget Microsoft.Orleans.OrleansZooKeeperUtils  1.3.1
+nuget Microsoft.Orleans.OrleansCodeGenerator  1.3.1
+nuget Microsoft.Orleans.OrleansCodeGenerator.Build 1.3.1
+nuget Microsoft.Orleans.TestingHost 1.3.1
+nuget Microsoft.CodeAnalysis.CSharp 1.3.2
+nuget Microsoft.CodeAnalysis.Common 1.3.2
+nuget Microsoft.Extensions.DependencyInjection.Abstractions 1.1.1
+nuget Microsoft.Extensions.DependencyInjection 1.1.1
+
+#Ninject
+nuget Ninject ~> 3.3
+nuget Ninject.Extensions.Factory ~> 3.3
+nuget Ninject.Extensions.Conventions ~> 3.3
+nuget Castle.Core ~> 4.0
+
+#Tests only dependencies
+nuget NUnit ~> 3.0
+nuget RichardSzalay.MockHttp 
+nuget NSubstitute  
+nuget FluentAssertions 
+nuget Nuget.CommandLine 
+nuget Shouldly
+
+nuget NLog ~> 4.0

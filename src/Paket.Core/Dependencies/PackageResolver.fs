@@ -370,8 +370,9 @@ type Resolved = {
 }
 
 let getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives (rootDependencies:IDictionary<PackageName,PackageRequirement>) (allRequirementsOfCurrentPackage:Set<PackageRequirement>) (currentRequirement:PackageRequirement) =
+    let isSingleton = Set.count allRequirementsOfCurrentPackage = 1
     let strategy =
-        if currentRequirement.Parent.IsRootRequirement() && Set.count allRequirementsOfCurrentPackage = 1 then
+        if isSingleton && currentRequirement.Parent.IsRootRequirement() then
             currentRequirement.ResolverStrategyForDirectDependencies ++ globalStrategyForDirectDependencies
         else
             match rootDependencies.TryGetValue currentRequirement.Name with

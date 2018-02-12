@@ -512,6 +512,15 @@ let ``#2777 should not conflict with locked packages``() =
     let newLockFile = install "i002777"
     newLockFile.Groups.[GroupName "main"].Resolution.ContainsKey (PackageName "FsPickler") |> shouldEqual true
 
+[<Test>]
+let ``#3035 install be stable for transitive deps``() =
+    let scenario = "i003035-transitive"
+    let lockFile1 = update scenario
+
+    for i in 1..10 do
+        let lockFile = update scenario
+        Assert.AreEqual(lockFile,lockFile1)
+
 
 #if INTERACTIVE
 ;;
