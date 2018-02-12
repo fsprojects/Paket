@@ -295,6 +295,16 @@ type Resolution with
     member self.IsConflict = not self.IsDone
 
 
+let isIncludedIn (set:Set<PackageRequirement>) (packageRequirement:PackageRequirement) =
+    set
+    |> Set.exists (fun x ->
+        x.Name = packageRequirement.Name &&
+            x.Settings.FrameworkRestrictions = packageRequirement.Settings.FrameworkRestrictions &&
+            (x = packageRequirement ||
+                x.VersionRequirement.Range.IsIncludedIn packageRequirement.VersionRequirement.Range ||
+                x.VersionRequirement.Range.IsGlobalOverride))
+
+
 let calcOpenRequirements (exploredPackage:ResolvedPackage,lockedPackages:Set<_>,globalFrameworkRestrictions,(verCache:VersionCache),currentRequirement,resolverStep:ResolverStep) =
     let dependenciesByName =
         // there are packages which define multiple dependencies to the same package
@@ -333,40 +343,27 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,lockedPackages:Set<_>,
     let rest =
         resolverStep.OpenRequirements
         |> Set.remove currentRequirement
+   
+    let candidates =
+        dependenciesByName
+        |> Set.map (fun (n, v, restriction) ->
+            let newRestrictions =
+                filterRestrictions restriction exploredPackage.Settings.FrameworkRestrictions
+                |> filterRestrictions globalFrameworkRestrictions
+                |> fun xs -> if xs = ExplicitRestriction FrameworkRestriction.NoRestriction then exploredPackage.Settings.FrameworkRestrictions else xs
 
-    dependenciesByName
-    |> Set.map (fun (n, v, restriction) ->
-        let newRestrictions =
-            filterRestrictions restriction exploredPackage.Settings.FrameworkRestrictions
-            |> filterRestrictions globalFrameworkRestrictions
-            |> fun xs -> if xs = ExplicitRestriction FrameworkRestriction.NoRestriction then exploredPackage.Settings.FrameworkRestrictions else xs
-
-        { currentRequirement with
-            Name = n
-            VersionRequirement = v
-            Parent = Package(currentRequirement.Name, verCache.Version, exploredPackage.Source)
-            Graph = Set.add currentRequirement currentRequirement.Graph
-            TransitivePrereleases = currentRequirement.TransitivePrereleases && exploredPackage.Version.PreRelease.IsSome
-            Settings = { currentRequirement.Settings with FrameworkRestrictions = newRestrictions } })
-    |> Set.filter (fun d ->
-        resolverStep.ClosedRequirements
-        |> Set.exists (fun x ->
-            x.Name = d.Name &&
-               x.Settings.FrameworkRestrictions = d.Settings.FrameworkRestrictions &&
-                (x = d ||
-                 x.VersionRequirement.Range.IsIncludedIn d.VersionRequirement.Range ||
-                 x.VersionRequirement.Range.IsGlobalOverride))
-        |> not)
-    |> Set.filter (fun d ->
-        resolverStep.OpenRequirements
-        |> Set.exists (fun x ->
-            x.Name = d.Name &&
-               x.Settings.FrameworkRestrictions = d.Settings.FrameworkRestrictions &&
-                (x = d ||
-                 x.VersionRequirement.Range.IsIncludedIn d.VersionRequirement.Range ||
-                 x.VersionRequirement.Range.IsGlobalOverride))
-        |> not)
-    |> Set.union rest
+            { currentRequirement with
+                Name = n
+                VersionRequirement = v
+                Parent = Package(currentRequirement.Name, verCache.Version, exploredPackage.Source)
+                Graph = Set.add currentRequirement currentRequirement.Graph
+                TransitivePrereleases = currentRequirement.TransitivePrereleases && exploredPackage.Version.PreRelease.IsSome
+                Settings = { currentRequirement.Settings with FrameworkRestrictions = newRestrictions } })
+        |> Set.filter (fun d -> not (isIncludedIn resolverStep.ClosedRequirements d || isIncludedIn resolverStep.OpenRequirements d))
+    
+    rest
+    |> Set.filter (isIncludedIn candidates >> not)
+    |> Set.union candidates
 
 
 type Resolved = {

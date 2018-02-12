@@ -143,7 +143,7 @@ let ``should favor strategy from parent when it overrides``() =
     getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.2.1"
     getVersion resolved.[PackageName "Castle.Windsor-NLog"] |> shouldEqual "3.3.0"
     getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.3.0"
-    getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.3.1"
+    getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.3.0"
     getVersion resolved.[PackageName "Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
 
 [<Test>]
