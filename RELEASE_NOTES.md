@@ -1,3 +1,6 @@
+#### 5.136.3 - 2018-02-13
+* PERFORMANCE: Much faster "paket clear-cache"
+
 #### 5.136.2 - 2018-02-13
 * USABILITY: "paket clear-cache" empties packages folder and paket-files folder - https://github.com/fsprojects/Paket/pull/3043
 

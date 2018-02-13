@@ -23,8 +23,7 @@ type Dependencies(dependenciesFileName: string) =
     /// Clears the NuGet cache
     static member ClearCache() =
         let emptyDir path =
-            if verbose then
-               verbosefn "Emptying '%s'" path
+            tracefn "  - %s" path
             emptyDir (DirectoryInfo path)
 
         match Dependencies.TryLocate() with
