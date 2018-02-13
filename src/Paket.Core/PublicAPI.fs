@@ -27,9 +27,17 @@ type Dependencies(dependenciesFileName: string) =
                verbosefn "Emptying '%s'" path
             emptyDir (DirectoryInfo path)
 
-        emptyDir (Constants.UserNuGetPackagesFolder)
-        emptyDir (Constants.NuGetCacheFolder)
-        emptyDir (Constants.GitRepoCacheFolder)
+        match Dependencies.TryLocate() with
+        | None -> ()
+        | Some dependencies ->
+            RunInLockedAccessMode(dependencies.RootPath, fun () -> 
+                emptyDir (Path.Combine(dependencies.RootPath,Constants.DefaultPackagesFolderName))
+                emptyDir (Path.Combine(dependencies.RootPath,Constants.PaketFilesFolderName))
+            )
+
+        emptyDir Constants.UserNuGetPackagesFolder
+        emptyDir Constants.NuGetCacheFolder
+        emptyDir Constants.GitRepoCacheFolder
 
     /// Tries to locate the paket.dependencies file in the current folder or a parent folder, throws an exception if unsuccessful.
     static member Locate(): Dependencies = Dependencies.Locate(Directory.GetCurrentDirectory())
@@ -38,12 +46,12 @@ type Dependencies(dependenciesFileName: string) =
     static member TryLocate(): Dependencies option = Dependencies.TryLocate(Directory.GetCurrentDirectory())
 
     /// Returns an instance of the paket.lock file.
-    member this.GetLockFile() = 
+    member __.GetLockFile() = 
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
         LockFile.LoadFrom(lockFileName.FullName)
 
     /// Returns an instance of the paket.dependencies file.
-    member this.GetDependenciesFile() = DependenciesFile.ReadFromFile dependenciesFileName
+    member __.GetDependenciesFile() = DependenciesFile.ReadFromFile dependenciesFileName
 
     /// Tries to locate the paket.dependencies file in the given folder or a parent folder, throws an exception if unsuccessful.
     static member Locate(path: string): Dependencies =
@@ -133,10 +141,10 @@ type Dependencies(dependenciesFileName: string) =
         )
 
     /// Get path to dependencies file
-    member this.DependenciesFile with get() = dependenciesFileName
+    member __.DependenciesFile with get() = dependenciesFileName
 
     /// Get the root path
-    member this.RootPath with get() = Path.GetDirectoryName(dependenciesFileName)
+    member __.RootPath with get() = Path.GetDirectoryName(dependenciesFileName)
 
     /// Get the root directory
     member private this.RootDirectory with get() = DirectoryInfo(this.RootPath)
