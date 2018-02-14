@@ -200,26 +200,26 @@ module SemVer =
     /// Matches if str is convertible to Int and not less than zero, and returns the value as UInt.
     let inline private (|Int|_|) str =
         match Int32.TryParse (str, NumberStyles.Integer, null) with
-        | true, num when num > -1 -> Some num
+        | true, num -> Some num // ALLOW negative as we need to fail
         | _ -> None
         
     /// Matches if str is convertible to big int and not less than zero, and returns the bigint value.
     let inline private (|Big|_|) str =
         match BigInteger.TryParse (str, NumberStyles.Integer, null) with
-        | true, big when big > -1I -> Some big
+        | true, big when big > -1I -> Some big // positive, or fallback as prerelease
         | _ -> None
 
     /// Splits the given version string by possible delimiters but keeps them as parts of resulting list.
     let private expand delimiter (text : string) =
         let sb = Text.StringBuilder()
         let res = seq {
-            for ch in text do
+            for ch in text do // no subsequent delims
                 match List.contains ch delimiter with
-                | true -> 
+                | true when sb.Length > 0 ->
                     yield sb.ToString()
                     sb.Clear() |> ignore
                     yield ch.ToString()
-                | false ->
+                | _ ->
                     sb.Append(ch) |> ignore
             if sb.Length > 0 then
                 yield sb.ToString()
@@ -240,15 +240,7 @@ module SemVer =
     ///     parse "1.5.0-beta.2"   > parse "1.5.0-rc.1"     // false
     let Parse = 
         memoize <| fun (version : string) ->
-            try
-
-                /// sanity check to make sure that all of the integers in the string are positive.
-                /// because we use raw substrings with dashes this is very complex :(
-                for s in version.Split([|'.'|]) do
-                    match Int32.TryParse s with 
-                    | true, s when s < 0 -> failwith "no negatives!" 
-                    | _ -> ignore ()  // non-numeric parts are valid
-
+            try // negative numbers are handled diffently for mandatory and optional segments
                 if version.Contains("!") then 
                     failwithf "Invalid character found in %s" version
                 if version.Contains("..") then 
@@ -285,15 +277,15 @@ module SemVer =
                     //| [] | _ -> 0, 0, 0, 0I, []
                 
                 /// recreate the remaining string to parse as prerelease segments
-                let prerelease =
+                let prerelease() =
                     if suffix.IsEmpty || suffix.Tail.IsEmpty then ""
-                    else String.Concat(suffix.Tail).TrimEnd([|'.'; '-'|])
-
-                { Major = uint32 major
-                  Minor = uint32 minor
-                  Patch = uint32 patch
-                  Build = revision
-                  PreRelease = PreRelease.TryParse prerelease
+                    else String.Concat(suffix.Tail).TrimEnd([|'.'|])
+                
+                { Major = Checked.uint32 major
+                  Minor = Checked.uint32 minor
+                  Patch = Checked.uint32 patch
+                  Build = revision // unchecked: positive or pre
+                  PreRelease = PreRelease.TryParse (prerelease())
                   BuildMetaData = buildmeta
                   Original = Some version }
 
