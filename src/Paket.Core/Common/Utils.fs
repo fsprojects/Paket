@@ -194,7 +194,10 @@ let rec emptyDir (dirInfo:DirectoryInfo) =
             fileInfo.Delete()
 
         for childInfo in dirInfo.GetDirectories() do
-            deleteDir childInfo
+            try
+                Directory.Delete(childInfo.FullName,true)
+            with
+            | _ -> deleteDir childInfo
 
         dirInfo.Attributes <- FileAttributes.Normal
 

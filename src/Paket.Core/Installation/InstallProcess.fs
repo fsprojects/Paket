@@ -14,7 +14,6 @@ open Paket.PackagesConfigFile
 open Paket.Requirements
 open System.Collections.Generic
 open Paket.ProjectFile
-open System.Diagnostics
 open System
 
 let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*InstallSettings>) packagesConfigFileName =
@@ -444,23 +443,30 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             d, Seq.append errorMessages groupErrors
 
         let usedPackages, errorMessages =
-            let dict = System.Collections.Generic.Dictionary<PackageName,SemVerInfo*bool>()
+            let dict = System.Collections.Generic.Dictionary<PackageName,SemVerInfo*bool*FrameworkRestrictions>()
             let errors = ResizeArray ()
             usedPackages
-            |> Map.filter (fun (_groupName,packageName) (v,model) ->
-                let hasCondition = model.ReferenceCondition.IsSome
+            |> Map.filter (fun (_groupName,packageName) (v,settings) ->
+                let hasCondition = settings.ReferenceCondition.IsSome
+                //settings.FrameworkRestrictions
                 match dict.TryGetValue packageName with
-                | true,(v',true) when hasCondition ->
+                | true,(v',true,_) when hasCondition ->
                     true
-                | true,(v',hasCondition') ->
+                | true,(v',hasCondition',restrictions') ->
+                    let filtered = filterRestrictions settings.FrameworkRestrictions restrictions'
+                    dict.[packageName] <- (v,hasCondition,filtered)
                     if v' = v then
-                        traceWarnfn "Package %O is referenced through multiple groups in %s (inspect lockfile for details). To resolve this warning use a single group for this project to get a unified dependency resolution or use conditions on the groups if you know what you are doing." packageName project.FileName
+                        traceWarnfn "Package %O is referenced through multiple groups in %s (inspect lockfile for details). To resolve this warning use a single group for this project to get a unified dependency resolution or use conditions on the groups." packageName project.FileName
                         false
                     else
-                        errors.Add (sprintf "Package %O is referenced in different versions in %s (%O vs %O), (inspect the lockfile for details) to resolve this either add all dependencies to a single group (to get a unified resolution) or use a condition on both groups and control compilation yourself." packageName project.FileName v' v)
-                        false
+                        match settings.FrameworkRestrictions, restrictions' with
+                        | ExplicitRestriction r, ExplicitRestriction r2 when not (r.IsSubsetOf r2 || r = r2) ->
+                            true
+                        | _ ->
+                            errors.Add (sprintf "Package %O is referenced in different versions in %s (%O vs %O), (inspect the lockfile for details) to resolve this either add all dependencies to a single group (to get a unified resolution) or use a condition on both groups and control compilation yourself." packageName project.FileName v' v)
+                            false
                 | _ ->
-                    dict.Add(packageName,(v,hasCondition))
+                    dict.Add(packageName,(v,hasCondition,settings.FrameworkRestrictions))
                     true)
             |> fun usedPackages -> usedPackages, Seq.append errorMessages errors
 
