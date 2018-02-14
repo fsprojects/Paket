@@ -454,9 +454,12 @@ let getCatalogCursor basePath serviceUrl =
         builder with
             Packages = builder.Packages
             |> Map.map (fun k v -> List.rev v) // we were pre-pending
-            |> Map.map semVerOrder2
+            // |> Map.map semVerOrder2 -- we need original order here
     }
     catalog;
+    
+let catalogSemVer2ordered (catalog:NugetV3PackageCatalog) =
+    { catalog with Packages = catalog.Packages |> Map.map semVerOrder2 }
     
 let setCatalogCursor basePath catalog =
     let hostName = getHostSpecificFileName catalog.Source
