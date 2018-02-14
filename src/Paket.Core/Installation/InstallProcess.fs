@@ -14,7 +14,6 @@ open Paket.PackagesConfigFile
 open Paket.Requirements
 open System.Collections.Generic
 open Paket.ProjectFile
-open System.Diagnostics
 open System
 
 let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*InstallSettings>) packagesConfigFileName =
@@ -461,7 +460,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                         false
                     else
                         match settings.FrameworkRestrictions, restrictions' with
-                        | ExplicitRestriction r, ExplicitRestriction r2 when not (r.IsSubsetOf r2) ->
+                        | ExplicitRestriction r, ExplicitRestriction r2 when not (r.IsSubsetOf r2 || r = r2) ->
                             true
                         | _ ->
                             errors.Add (sprintf "Package %O is referenced in different versions in %s (%O vs %O), (inspect the lockfile for details) to resolve this either add all dependencies to a single group (to get a unified resolution) or use a condition on both groups and control compilation yourself." packageName project.FileName v' v)
