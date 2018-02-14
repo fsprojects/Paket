@@ -463,17 +463,19 @@ let setCatalogCursor basePath catalog =
     let fullName = Path.Combine(basePath, hostName + ".txt")
     
     let fileInfo = new FileInfo(fullName)
+    let backFile = fileInfo.FullName + ".bak"
     if fileInfo.Exists then
         try
-            let backFile = fileInfo.FullName + ".bak"
             fileInfo.CopyTo(backFile, true) |> ignore
         with 
         | ex -> verbosefn "%A" ex
     elif fileInfo.Directory.Exists then
         ignore()
     else
-        fileInfo.Directory.Create()        
-    use textFile = fileInfo.CreateText()
+        fileInfo.Directory.Create()
+        
+    let nextFile = new FileInfo(fileInfo.FullName + ".tmp")        
+    use textFile = nextFile.CreateText()
     
     textFile.WriteLine(":" + catalog.Cursor.ToString("O"))
     
@@ -482,8 +484,10 @@ let setCatalogCursor basePath catalog =
         
         for version in package.Value do        
             textFile.WriteLine(version)
-            
-    textFile.Flush()
+                        
+    textFile.Close()    
+    
+    nextFile.Replace(fileInfo.FullName,backFile,true).Exists
 
 let getCatalogUpdated auth basePath catalog cancel =
     let asyncRes = 

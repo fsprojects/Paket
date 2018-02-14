@@ -43,7 +43,7 @@ let ``#3030 interpret all versions in nuget catalog`` serviceUrl =
     let updated = (getCatalogUpdated auth tempDir catalog canceler.Token).Result  
     
     canceler.Cancel()
-    setCatalogCursor baseDir updated
+    setCatalogCursor baseDir updated |> ignore // do not care if catalog updated
     
     let warnLog = new List<String>()
     /// this should be "0.0.0-0" per https://semver.org/#spec-item-11
