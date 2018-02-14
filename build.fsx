@@ -1,7 +1,5 @@
 System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
-// --------------------------------------------------------------------------------------
-// FAKE build script
-// --------------------------------------------------------------------------------------
+
 
 #r @"packages/build/FAKE/tools/FakeLib.dll"
 #r "System.IO.Compression.FileSystem"
