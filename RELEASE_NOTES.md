@@ -1,10 +1,7 @@
-#### 5.136.3 - 2018-02-13
+#### 5.137.0 - 2018-02-14
+* BUGFIX: Allow to use different versions from different groups if they are on different frameworks - https://github.com/fsprojects/Paket/issues/3045
 * PERFORMANCE: Much faster "paket clear-cache"
-
-#### 5.136.2 - 2018-02-13
 * USABILITY: "paket clear-cache" empties packages folder and paket-files folder - https://github.com/fsprojects/Paket/pull/3043
-
-#### 5.136.1 - 2018-02-13
 * COSMETICS: Hide shasum output on osx/linux dotnet restore - https://github.com/fsprojects/Paket/pull/3043
 
 #### 5.136.0 - 2018-02-12
