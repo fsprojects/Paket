@@ -1,4 +1,4 @@
-#### 5.137.0 - 2018-02-14
+#### 5.137.1 - 2018-02-14
 * BUGFIX: Allow to use different versions from different groups if they are on different frameworks - https://github.com/fsprojects/Paket/issues/3045
 * PERFORMANCE: Much faster "paket clear-cache"
 * USABILITY: "paket clear-cache" empties packages folder and paket-files folder - https://github.com/fsprojects/Paket/pull/3043
