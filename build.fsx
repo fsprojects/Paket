@@ -448,6 +448,7 @@ Target "PublishNuGet" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Generate the documentation
 
+let disableDocs = true // https://github.com/fsprojects/FSharp.Formatting/issues/461
 
 let fakePath = "packages" @@ "build" @@ "FAKE" @@ "tools" @@ "FAKE.exe"
 let fakeStartInfo fsiargs script workingDirectory args environmentVars =
@@ -498,6 +499,7 @@ let executeHelper executer fail traceMsg failMessage configStartInfo =
 let execute = executeHelper executeWithOutput
 
 Target "GenerateReferenceDocs" (fun _ ->
+    if disableDocs then () else
     let args = ["--define:RELEASE"; "--define:REFERENCE"]
     let argLine = System.String.Join(" ", args)
     execute
@@ -533,6 +535,7 @@ let generateHelp commands fail =
     generateHelp' commands fail false
 
 Target "GenerateHelp" (fun _ ->
+    if disableDocs then () else
     DeleteFile "docs/content/release-notes.md"
     CopyFile "docs/content/" "RELEASE_NOTES.md"
     Rename "docs/content/release-notes.md" "docs/content/RELEASE_NOTES.md"
@@ -545,6 +548,7 @@ Target "GenerateHelp" (fun _ ->
 )
 
 Target "GenerateHelpDebug" (fun _ ->
+    if disableDocs then () else
     DeleteFile "docs/content/release-notes.md"
     CopyFile "docs/content/" "RELEASE_NOTES.md"
     Rename "docs/content/release-notes.md" "docs/content/RELEASE_NOTES.md"
@@ -574,6 +578,7 @@ Target "GenerateDocs" DoNothing
 // Release Scripts
 
 Target "ReleaseDocs" (fun _ ->
+    if disableDocs then () else   
     let tempDocsDir = "temp/gh-pages"
     CleanDir tempDocsDir
     Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
