@@ -159,8 +159,20 @@ let ``can normalize versions``() =
     (SemVer.Parse "1.2.3-alpha.3").Normalize() |> shouldEqual ((SemVer.Parse "1.2.3-alpha.3").ToString())
     (SemVer.Parse "1.0.0-alpha").Normalize() |> shouldEqual ((SemVer.Parse "1.0.0-alpha").ToString())
     (SemVer.Parse "1.0.0-alpha.1").Normalize() |> shouldEqual ((SemVer.Parse "1.0.0-alpha.1").ToString())
-    (SemVer.Parse "3.0.0-alpha-0008").Normalize().ToString() |> shouldEqual "3.0.0-alpha-0008"
-    (SemVer.Parse "3.0.0-alpha123ci-0008").Normalize().ToString() |> shouldEqual "3.0.0-alpha123ci-0008"
+    (SemVer.Parse "3.0.0-alpha-0008").Normalize() |> shouldEqual "3.0.0-alpha-0008"
+    (SemVer.Parse "3.0.0-alpha123ci-0008").Normalize() |> shouldEqual "3.0.0-alpha123ci-0008"
+    
+[<TestCase("3.0.0--")>][<TestCase("3.0.0---")>]
+[<TestCase("3.0.0-.-")>][<TestCase("3.0.0-1-")>]
+[<TestCase("3.0.0-rc-")>][<TestCase("3.0.0-rc1")>]
+[<TestCase("3.0.0-rc-1")>][<TestCase("3.0.0-rc1-")>]
+[<TestCase("3.0.0-rc.1")>][<TestCase("3.0.0-1.rc")>]
+[<TestCase("3.0.0-rc.1-")>][<TestCase("3.0.0-1.rc-")>]
+[<TestCase("3.0.0-rc.-1-")>][<TestCase("3.0.0-1-.rc-")>]
+[<TestCase("3.0.0-rc.-1.1")>][<TestCase("3.0.0-1-.rc.1")>]
+[<TestCase("3.0.0-rc.-1.1-")>][<TestCase("3.0.0-1-.rc.-1")>]
+let ``can normalize semver prereleases`` version =
+    (SemVer.Parse version).Normalize() |> shouldEqual version
 
 [<Test>]
 let ``can normalize build zeros``() =
