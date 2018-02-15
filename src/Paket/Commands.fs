@@ -232,10 +232,12 @@ with
             | No_Install -> "do not modify projects"
 
 type ClearCacheArgs =
-    | [<Hidden;NoCommandLine>] NoArgs
+    | [<Unique;AltCommandLine("--clear-local")>] ClearLocal
 with
     interface IArgParserTemplate with
-        member __.Usage = ""
+        member this.Usage =
+            match this with
+            | ClearLocal -> "Clears local packages folder and paket-files."
 
 type RestoreArgs =
     | [<Unique;AltCommandLine("-f")>] Force

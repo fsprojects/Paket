@@ -21,18 +21,19 @@ type Dependencies(dependenciesFileName: string) =
         |> Seq.toList
 
     /// Clears the NuGet cache
-    static member ClearCache() =
+    static member ClearCache(?clearLocalCache) =
         let emptyDir path =
             tracefn "  - %s" path
             emptyDir (DirectoryInfo path)
 
-        match Dependencies.TryLocate() with
-        | None -> ()
-        | Some dependencies ->
-            RunInLockedAccessMode(dependencies.RootPath, fun () -> 
-                emptyDir (Path.Combine(dependencies.RootPath,Constants.DefaultPackagesFolderName))
-                emptyDir (Path.Combine(dependencies.RootPath,Constants.PaketFilesFolderName))
-            )
+        if clearLocalCache |> Option.defaultValue false then
+            match Dependencies.TryLocate() with
+            | None -> ()
+            | Some dependencies ->
+                RunInLockedAccessMode(dependencies.RootPath, fun () -> 
+                    emptyDir (Path.Combine(dependencies.RootPath,Constants.DefaultPackagesFolderName))
+                    emptyDir (Path.Combine(dependencies.RootPath,Constants.PaketFilesFolderName))
+                )
 
         emptyDir Constants.UserNuGetPackagesFolder
         emptyDir Constants.NuGetCacheFolder
