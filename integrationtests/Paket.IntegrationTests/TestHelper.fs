@@ -42,6 +42,10 @@ let cleanupAllScenarios() =
         cleanup scenario
     scenarios.Clear()
 
+let createScenarioDir scenario =
+    let scenarioPath = scenarioTempPath scenario
+    CleanDir scenarioPath
+    scenarioPath
 
 let prepare scenario =
     if isLiveUnitTesting then Assert.Inconclusive("Integration tests are disabled when in a Live-Unit-Session")
@@ -50,8 +54,7 @@ let prepare scenario =
 
     scenarios.Add scenario
     let originalScenarioPath = originalScenarioPath scenario
-    let scenarioPath = scenarioTempPath scenario
-    CleanDir scenarioPath
+    let scenarioPath = createScenarioDir scenario
     CopyDir scenarioPath originalScenarioPath (fun _ -> true)
 
     for ext in ["fsproj";"csproj";"vcxproj";"template";"json"] do

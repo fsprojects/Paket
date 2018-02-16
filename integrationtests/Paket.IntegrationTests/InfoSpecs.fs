@@ -10,7 +10,7 @@ open System.Diagnostics
 
 [<Test>]
 let ``#3200 info should locate paket.dependencies``() = 
-    let repoDir = scenarioTempPath "i003200-info-paketdeps-dir"
+    let repoDir = createScenarioDir "i003200-info-paketdeps-dir"
 
     let subDir = repoDir </> "src" </> "app"
     Directory.CreateDirectory(subDir) |> ignore
