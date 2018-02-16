@@ -1,6 +1,7 @@
 ﻿namespace Paket
 
 open System
+open System.Collections.Generic
 
 /// Defines if the range bound is including or excluding.
 [<RequireQualifiedAccess>]
@@ -31,26 +32,92 @@ type VersionRange =
     static member BasicOperators = ["~>";"==";"<=";">=";"=";">";"<"]
     static member StrategyOperators = ['!';'@']
     static member Exactly version = Specific(SemVer.Parse version)
+    
+    static member Between(lower,minimum,maximum,upper) =
+        Range(lower,minimum,maximum,upper)      
 
-    static member Between(version1,version2) = Range(VersionRangeBound.Including, SemVer.Parse version1, SemVer.Parse version2, VersionRangeBound.Excluding)
-
+    static member Between(lower,version1,version2,upper) =
+        let minimum = SemVer.Parse version1
+        let maximum = SemVer.Parse version2
+        VersionRange.Between(lower,minimum,maximum,upper)
+        
+    static member Between(minimum:string,maximum:string) =
+        VersionRange.Between(VersionRangeBound.Including,minimum,maximum,VersionRangeBound.Excluding)
+              
+    static member Between(minimum:SemVerInfo,maximum:SemVerInfo) =
+        VersionRange.Between(VersionRangeBound.Including,minimum,maximum,VersionRangeBound.Excluding)
+        
     member x.IsGlobalOverride = match x with | OverrideAll _ -> true | _ -> false
 
     member this.IsIncludedIn (other : VersionRange) =
         match other, this with
         | Minimum v1, Minimum v2 when v1 <= v2 -> true
         | Minimum v1, Specific v2 when v1 <= v2 -> true
+        | Minimum v1, Range(_, min2, max2, _) when v1 <= min2 && v1 <= max2 -> true
         | Specific v1, Specific v2 when v1 = v2 -> true
-        | Range(_, min1, max1, _), Specific v2 when min1 <= v2 && max1 >= v2 -> true
         | GreaterThan v1, GreaterThan v2 when v1 < v2 -> true
         | GreaterThan v1, Specific v2 when v1 < v2 -> true
+        | GreaterThan v1, Range(_, min2, max2, _) when v1 < min2 && v1 < max2 -> true
+        | Range(lower, min1, max1, upper), Specific v2 -> 
+            let left, right = 
+                match lower, upper with
+                | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> (<), (>)
+                | VersionRangeBound.Including, VersionRangeBound.Excluding -> (<=), (>)
+                | VersionRangeBound.Excluding, VersionRangeBound.Including -> (<), (>=)
+                | VersionRangeBound.Including, VersionRangeBound.Including -> (<=), (>=)
+            left min1 v2 && right max1 v2 
+        | Range(from1, min1, max1, upto1), Range(from2, min2, max2, upto2) ->
+            let lowerMatch = 
+                match from1, from2 with
+                | VersionRangeBound.Excluding, VersionRangeBound.Including -> min1 < min2
+                | _ -> min1 <= min2
+            let upperMatch = 
+                match upto1, upto2 with
+                | VersionRangeBound.Including, VersionRangeBound.Excluding -> max2 < max1
+                | _ -> max2 <= max1
+            lowerMatch && upperMatch
         | _ -> false
 
+    member this.GetPreReleaseStatus =
+        let prerelease =
+            match this with 
+            | Minimum v1 -> v1.PreRelease
+            | GreaterThan v1 -> v1.PreRelease 
+            | Maximum v1 -> v1.PreRelease
+            | LessThan v1 -> v1.PreRelease
+            | Specific v1 -> v1.PreRelease
+            | OverrideAll v1 -> v1.PreRelease
+            | Range(_,l1,r1,_) -> 
+                match l1.PreRelease with
+                | Some(p) -> Some(p)
+                | None -> r1.PreRelease
+        match prerelease with 
+        | Some(prerelease) -> 
+            match prerelease.Name with
+            | null | "" -> PreReleaseStatus.No
+            | "prerelease" -> PreReleaseStatus.All
+            | name -> PreReleaseStatus.Concrete [name]
+        | None -> PreReleaseStatus.No
+    
     member this.IsConflicting (other : VersionRange) =
-        let checkPre (v:SemVerInfo) = v.PreRelease.IsNone
-        let (>) v1 v2 = v1 > v2 && checkPre v2
-        let (<) v1 v2 = v1 < v2 && checkPre v2
+        (other, this.GetPreReleaseStatus, other.GetPreReleaseStatus) |> this.IsConflicting 
 
+    member this.IsConflicting (tuple : (VersionRange * PreReleaseStatus * PreReleaseStatus)) =
+        let checkPre pre1 pre2 =
+            match pre1 with 
+            | PreReleaseStatus.No -> true
+            | PreReleaseStatus.All -> pre2 = PreReleaseStatus.No
+            | PreReleaseStatus.Concrete list1 ->
+                match pre2 with 
+                | PreReleaseStatus.No -> true
+                | PreReleaseStatus.All -> false 
+                | PreReleaseStatus.Concrete list2 -> list1.Head <> list2.Head
+        
+        let other, pre1, pre2 = tuple   
+             
+        let (>) v1 v2 = v1 > v2 && checkPre pre1 pre2
+        let (<) v1 v2 = v1 < v2 && checkPre pre1 pre2
+        
         let isConflict this other =
             match this, other with
             | Minimum v1, Specific v2 when v1 > v2 -> true
@@ -145,8 +212,8 @@ type VersionRequirement =
 
     member this.IsConflicting (other : VersionRequirement) =
         match other, this with
-        | VersionRequirement(v1,_), VersionRequirement(v2,_) ->
-            v1.IsConflicting(v2)
+        | VersionRequirement(v1,p1), VersionRequirement(v2,p2) ->
+            (v2,p1,p2) |> v1.IsConflicting
 
     member this.PreReleases =
         match this with
@@ -161,20 +228,20 @@ type VersionRequirement =
     static member Parse text =
         if String.IsNullOrWhiteSpace text || text = "null" then VersionRequirement.AllReleases else
 
-        let prereleases = ref PreReleaseStatus.No
+        let prereleases = List<string>()
         let analyzeVersion operator (text:string) =
             try
               if text.Contains "*" then
                   let v = SemVer.Parse (text.Replace("*","0"))
                   match v.PreRelease with
-                  | Some _ -> prereleases := PreReleaseStatus.All
-                  | _      -> prereleases := PreReleaseStatus.No
+                  | Some p -> prereleases.Add(p.Name)
+                  | _      -> ignore()
                   VersionRange.Minimum v
               else
                   let v = SemVer.Parse text
                   match v.PreRelease with
-                  | Some _ -> prereleases := PreReleaseStatus.All
-                  | _      -> prereleases := PreReleaseStatus.No
+                  | Some p -> prereleases.Add(p.Name)
+                  | _      -> ignore()
                   operator v
             with
             | exn -> failwithf "Error while parsing %s%sMessage: %s" text Environment.NewLine exn.Message
@@ -183,8 +250,8 @@ type VersionRequirement =
             try
                 let v = SemVer.Parse (text.Replace("*","0"))
                 match v.PreRelease with
-                | Some _ -> prereleases := PreReleaseStatus.All
-                | _      -> prereleases := PreReleaseStatus.No
+                | Some p -> prereleases.Add(p.Name)
+                | _      -> ignore()
                 v
             with
             | exn -> failwithf "Error while parsing %s%sMessage: %s" text Environment.NewLine exn.Message
@@ -236,11 +303,18 @@ type VersionRequirement =
                 if (fromB = VersionRangeBound.Including) && (_toB = VersionRangeBound.Including) && (from = _to) then
                     Specific from
                 else
-                    parsed
+                    VersionRange.Between(fromB,from,_to,_toB)
             | x -> x
+            
         let range = parseRange text
-
-        VersionRequirement(range,!prereleases)
+        
+        let prerelease = 
+            match prereleases |> Seq.where (fun s -> not(String.IsNullOrEmpty s)) |> Seq.distinct |> List.ofSeq with
+            | [] -> PreReleaseStatus.No
+            | list when list |> List.contains "prerelease" -> PreReleaseStatus.All 
+            | list -> PreReleaseStatus.Concrete list
+            
+        VersionRequirement(range,prerelease)
 
 
     static member TryParse text =
@@ -256,6 +330,7 @@ type VersionRequirement =
                 match prerelease with
                 | No -> ""
                 | Concrete [x] -> "-" + x
+                | Concrete name -> "-" + List.head name
                 | _ -> "-prerelease"
 
             let normalize (v:SemVerInfo) =

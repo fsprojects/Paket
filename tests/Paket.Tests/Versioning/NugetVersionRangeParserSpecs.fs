@@ -23,7 +23,12 @@ let ``can detect minimum version``() =
 
 [<Test>]
 let ``can detect minimum version for pre-releases``() = 
-    VersionRequirement.Parse("1.0-beta").PreReleases |> shouldEqual PreReleaseStatus.All
+    VersionRequirement.Parse("1.0-beta").PreReleases |> shouldEqual (PreReleaseStatus.Concrete ["beta"])
+    VersionRequirement.Parse("1.0-beta.2").PreReleases |> shouldEqual (PreReleaseStatus.Concrete ["beta"])
+    VersionRequirement.Parse("1.0-beta02").PreReleases |> shouldEqual (PreReleaseStatus.Concrete ["beta"])
+    VersionRequirement.Parse("1.0-3.beta").PreReleases |> shouldEqual (PreReleaseStatus.Concrete ["beta"])
+    VersionRequirement.Parse("1.0.3-beta-4").PreReleases |> shouldEqual (PreReleaseStatus.Concrete ["beta"])
+    VersionRequirement.Parse("1.0-3.beta.4").PreReleases |> shouldEqual (PreReleaseStatus.Concrete ["beta"])
 
 [<Test>]
 let ``can detect greater than version``() = 
@@ -55,6 +60,12 @@ let ``can detect range version``() =
 let ``can detect range version with prerelease``() = 
     parseRange "[2.0.0-prerelease,2.0.0]" 
         |> shouldEqual (VersionRange.Range(VersionRangeBound.Including, SemVer.Parse "2.0.0-prerelease", SemVer.Parse "2.0.0", VersionRangeBound.Including))
+    parseRange "[2.0.0-prerelease,2.0.0)" 
+        |> shouldEqual (VersionRange.Range(VersionRangeBound.Including, SemVer.Parse "2.0.0-prerelease", SemVer.Parse "2.0.0", VersionRangeBound.Excluding))
+    parseRange "[2.0.0-prerelease001,2.0.0)" 
+        |> shouldEqual (VersionRange.Range(VersionRangeBound.Including, SemVer.Parse "2.0.0-prerelease001", SemVer.Parse "2.0.0", VersionRangeBound.Excluding))
+    parseRange "[2.0.0-pre-release.1,2.0.0)" 
+        |> shouldEqual (VersionRange.Range(VersionRangeBound.Including, SemVer.Parse "2.0.0-pre-release.1", SemVer.Parse "2.0.0", VersionRangeBound.Excluding))
 
 [<Test>]
 let ``can detect open range version``() = 

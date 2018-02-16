@@ -19,11 +19,15 @@ let ``can parse semver strings and print the result``() =
     (SemVer.Parse "1.2.3.0").ToString() |> shouldEqual "1.2.3.0"
     (SemVer.Parse "1.2.3.0").Patch |> shouldEqual 3u
     (SemVer.Parse "1.2.3").Patch |> shouldEqual 3u
-    (SemVer.Parse "1.2.3.0").Build |> shouldEqual "0"
-    (SemVer.Parse "1.2.3").Build |> shouldEqual "0"
-    (SemVer.Parse "3.1.1.1").Build |> shouldEqual "1"
+    (SemVer.Parse "1.2.3.0").Build |> shouldEqual 0I
+    (SemVer.Parse "1.2.3").Build |> shouldEqual 0I
+    (SemVer.Parse "3.1.1.1").Build |> shouldEqual 1I
     (SemVer.Parse "1.0.0-rc.3").PreRelease.Value.Values.[1] |> shouldEqual (Numeric (bigint 3))
     (SemVer.Parse "1.0.0-rc.1").PreRelease.Value.Values.[1] |> shouldEqual (Numeric (bigint 1))
+    (SemVer.Parse "1.2.3-4").Build |> shouldEqual 0I
+    (SemVer.Parse "1.2.3-4").PreRelease.Value.Values.[0] |> shouldEqual (Numeric (bigint 4))
+    (SemVer.Parse "1.2.3-4.item78.9").Build |> shouldEqual 0I
+    (SemVer.Parse "1.2.3-4.item78.9").PreRelease.Value.Name |> shouldEqual "item78"
 
 [<Test>]
 let ``can parse semver strings``() = 
@@ -34,6 +38,52 @@ let ``can parse semver strings``() =
     semVer.PreRelease |> shouldEqual (Some { Origin = "alpha.beta"
                                              Name = "alpha"
                                              Values = [ PreReleaseSegment.AlphaNumeric "alpha"; PreReleaseSegment.AlphaNumeric "beta" ] })
+                                             
+[<TestCase("1.2.3-0", 1u, 2u, 3u, 0u, "")>]
+[<TestCase("1.2.3-4.5", 1u, 2u, 3u, 0u, "")>]
+[<TestCase("1.2.3-alpha045", 1u, 2u, 3u, 0u, "alpha")>]
+[<TestCase("1.2.3.alpha045", 1u, 2u, 3u, 0u, "alpha")>]
+[<TestCase("1.2.3-alpha.45", 1u, 2u, 3u, 0u, "alpha")>]
+[<TestCase("1.2.3.alpha.45", 1u, 2u, 3u, 0u, "alpha")>]
+[<TestCase("1.2.3-alpha045.67", 1u, 2u, 3u, 0u, "alpha045")>]
+[<TestCase("1.2.3.alpha045.67", 1u, 2u, 3u, 0u, "alpha045")>]
+[<TestCase("1.2.3.4-alpha045", 1u, 2u, 3u, 4u, "alpha")>]
+[<TestCase("1.2.3.4.alpha045", 1u, 2u, 3u, 4u, "alpha")>]
+[<TestCase("1.2.3.4-alpha.45", 1u, 2u, 3u, 4u, "alpha")>]
+[<TestCase("1.2.3.4.alpha.45", 1u, 2u, 3u, 4u, "alpha")>]
+[<TestCase("1.2.3.4-alpha-45", 1u, 2u, 3u, 4u, "alpha")>]
+[<TestCase("1.2.3.4.alpha-45", 1u, 2u, 3u, 4u, "alpha")>]
+[<TestCase("1.2.3.4-alpha045-67", 1u, 2u, 3u, 4u, "alpha")>]
+[<TestCase("1.2.3.4.alpha045-67", 1u, 2u, 3u, 4u, "alpha")>]
+[<TestCase("1.2.3.4-alpha045.67", 1u, 2u, 3u, 4u, "alpha045")>]
+[<TestCase("1.2.3.4.alpha045.67", 1u, 2u, 3u, 4u, "alpha045")>]
+[<TestCase("1.2.3.4-alpha.45-67", 1u, 2u, 3u, 4u, "alpha")>]
+[<TestCase("1.2.3.4.alpha.45-67", 1u, 2u, 3u, 4u, "alpha")>]
+[<TestCase("1.2.3.4-alpha-45.67", 1u, 2u, 3u, 4u, "alpha-45")>]
+[<TestCase("1.2.3.4.alpha-45.67", 1u, 2u, 3u, 4u, "alpha-45")>]
+// 5-segment semver-like, "5" is the 1st prerelease segment
+[<TestCase("1.2.3.4-5", 1u, 2u, 3u, 4u, "")>] // build & unnamed
+[<TestCase("1.2.3.4.5", 1u, 2u, 3u, 4u, "")>] // unnamed prerelease
+[<TestCase("1.2.3.4.5-alpha", 1u, 2u, 3u, 4u, "alpha")>]
+[<TestCase("1.2.3.4.5.alpha", 1u, 2u, 3u, 4u, "alpha")>]
+[<TestCase("1.2.3.4.5-alpha-45", 1u, 2u, 3u, 4u, "alpha")>]
+[<TestCase("1.2.3.4.5.alpha-45", 1u, 2u, 3u, 4u, "alpha-45")>] 
+[<TestCase("1.2.3.4.5.alpha.45", 1u, 2u, 3u, 4u, "alpha")>]
+[<TestCase("1.2.3.4.5-alpha-45-67", 1u, 2u, 3u, 4u, "alpha")>]
+[<TestCase("1.2.3.4.5.alpha.45-67", 1u, 2u, 3u, 4u, "alpha")>]
+[<TestCase("1.2.3.4.5.alpha.45.67", 1u, 2u, 3u, 4u, "alpha")>]
+[<TestCase("1.2.3.4.5.alpha-45.67", 1u, 2u, 3u, 4u, "alpha-45")>]
+[<TestCase("1.2.3.4.5-alpha-45.67", 1u, 2u, 3u, 4u, "5-alpha-45")>]
+[<TestCase("1.2.3.4.5.alpha-45-67", 1u, 2u, 3u, 4u, "alpha-45-67")>]
+let ``can parse semver2 complex version strings`` str major minor patch (build:uint32) prerelease =
+    let semVer = SemVer.Parse(str)
+    semVer.Major |> shouldEqual major
+    semVer.Minor |> shouldEqual minor
+    semVer.Patch |> shouldEqual patch
+    semVer.Build |> shouldEqual (bigint(build))
+    match semVer.PreRelease with
+    | Some pre -> pre.Name |> shouldEqual prerelease
+    | None -> Assert.Fail "PreRelease was expected"
 
 [<Test>]
 let ``can parse MBrace semver strings``() = 
@@ -65,7 +115,18 @@ let ``can compare semvers``() =
     (SemVer.Parse "2.3.4-alpha.003") |> shouldBeGreaterThan (SemVer.Parse "2.3.4-alpha.2") // numeric sort on the second prerelease segment
     (SemVer.Parse "2.3.4-rc") |> shouldBeGreaterThan (SemVer.Parse "2.3.4-beta2")
     (SemVer.Parse "1.0.12-build0025") |> shouldBeGreaterThan (SemVer.Parse "1.0.11")
-
+    (SemVer.Parse "1.2.3-beta.11") |> shouldBeGreaterThan (SemVer.Parse "1.2.3-10")
+    (SemVer.Parse "1.2.3-beta01") |> shouldBeGreaterThan (SemVer.Parse "1.2.3-1")
+    (SemVer.Parse "1.2.3-beta.1") |> shouldBeGreaterThan (SemVer.Parse "1.2.3-1")
+    (SemVer.Parse "1.2.3-beta.1") |> shouldBeGreaterThan (SemVer.Parse "1.2.3-beta")
+    (SemVer.Parse "1.2.3-beta.2") |> shouldBeGreaterThan (SemVer.Parse "1.2.3-beta.1")
+    (SemVer.Parse "1.2.3-beta.2.1") |> shouldBeGreaterThan (SemVer.Parse "1.2.3-beta.2")
+    (SemVer.Parse "1.2.3-beta.zetta") |> shouldBeGreaterThan (SemVer.Parse "1.2.3-beta")
+    (SemVer.Parse "1.2.3-beta.zetta") |> shouldBeGreaterThan (SemVer.Parse "1.2.3-beta.1")
+    (SemVer.Parse "1.2.3-beta.2.zetta") |> shouldBeGreaterThan (SemVer.Parse "1.2.3-beta.1.zetta")
+    (SemVer.Parse "1.2.3-beta.2.zetta") |> shouldBeGreaterThan (SemVer.Parse "1.2.3-beta.1.alpha")
+    (SemVer.Parse "1.2.3-beta.1.zetta") |> shouldBeGreaterThan (SemVer.Parse "1.2.3-beta.1.alpha")    
+    
 [<Test>]
 let ``can compare 4-parts semvers``() =
     (SemVer.Parse "1.0.0.2420") |> shouldBeGreaterThan (SemVer.Parse "1.0")
@@ -98,8 +159,20 @@ let ``can normalize versions``() =
     (SemVer.Parse "1.2.3-alpha.3").Normalize() |> shouldEqual ((SemVer.Parse "1.2.3-alpha.3").ToString())
     (SemVer.Parse "1.0.0-alpha").Normalize() |> shouldEqual ((SemVer.Parse "1.0.0-alpha").ToString())
     (SemVer.Parse "1.0.0-alpha.1").Normalize() |> shouldEqual ((SemVer.Parse "1.0.0-alpha.1").ToString())
-    (SemVer.Parse "3.0.0-alpha-0008").Normalize().ToString() |> shouldEqual "3.0.0-alpha-0008"
-    (SemVer.Parse "3.0.0-alpha123ci-0008").Normalize().ToString() |> shouldEqual "3.0.0-alpha123ci-0008"
+    (SemVer.Parse "3.0.0-alpha-0008").Normalize() |> shouldEqual "3.0.0-alpha-0008"
+    (SemVer.Parse "3.0.0-alpha123ci-0008").Normalize() |> shouldEqual "3.0.0-alpha123ci-0008"
+    
+[<TestCase("3.0.0--")>][<TestCase("3.0.0---")>]
+[<TestCase("3.0.0-.-")>][<TestCase("3.0.0-1-")>]
+[<TestCase("3.0.0-rc-")>][<TestCase("3.0.0-rc1")>]
+[<TestCase("3.0.0-rc-1")>][<TestCase("3.0.0-rc1-")>]
+[<TestCase("3.0.0-rc.1")>][<TestCase("3.0.0-1.rc")>]
+[<TestCase("3.0.0-rc.1-")>][<TestCase("3.0.0-1.rc-")>]
+[<TestCase("3.0.0-rc.-1-")>][<TestCase("3.0.0-1-.rc-")>]
+[<TestCase("3.0.0-rc.-1.1")>][<TestCase("3.0.0-1-.rc.1")>]
+[<TestCase("3.0.0-rc.-1.1-")>][<TestCase("3.0.0-1-.rc.-1")>]
+let ``can normalize semver prereleases`` version =
+    (SemVer.Parse version).Normalize() |> shouldEqual version
 
 [<Test>]
 let ``can normalize build zeros``() =
@@ -215,3 +288,4 @@ let ``should accept version with leading zero`` () =
 let ``should accept version with minus in prerelease`` () =
     SemVer.Parse("3.0.0-alpha-0008").ToString() |> shouldEqual "3.0.0-alpha-0008"
     (SemVer.Parse "3.0.0-alpha-0008") |> shouldBeSmallerThan (SemVer.Parse "3.0.0-alpha-0009")
+    SemVer.Parse("3.0.0.alpha-0008").ToString() |> shouldEqual "3.0.0.alpha-0008"

@@ -181,12 +181,12 @@ module ResolutionRaw =
 
     let buildConflictReport (errorReport:StringBuilder) (conflicts:PackageRequirement Set) =
         let formatVR (vr:VersionRequirement) =
-            vr.ToString ()
-            |> fun s -> if String.IsNullOrWhiteSpace s then ">= 0" else s
+            vr.ToString()
+            |> fun s -> if String.IsNullOrWhiteSpace s then ">= 0" else sprintf "%O" vr
 
         let formatPR hasPrereleases (vr:VersionRequirement) = 
-            if hasPrereleases && vr.PreReleases = PreReleaseStatus.No then " (no prereleases)" else
             match vr.PreReleases with
+            | PreReleaseStatus.All -> " prerelease"
             | PreReleaseStatus.Concrete [x] -> sprintf " (%s)" x
             | PreReleaseStatus.Concrete x -> sprintf " %A" x
             | _ -> ""
@@ -194,18 +194,18 @@ module ResolutionRaw =
         match conflicts with
         | s when s.IsEmpty -> errorReport
         | conflicts ->
-            let hasPrereleases = Seq.exists (fun r -> r.VersionRequirement.PreReleases <> PreReleaseStatus.No) conflicts
 
             errorReport.AddLine (sprintf "  Conflict detected:")
 
             let getConflictMessage req =
                 let vr = formatVR req.VersionRequirement
-                let pr = formatPR hasPrereleases req.VersionRequirement
+                let pr = formatPR true req.VersionRequirement
+                let tp = if req.TransitivePrereleases then "*" else ""
                 match req.Parent with
                 | DependenciesFile _ ->
-                    sprintf "   - Dependencies file requested package %O: %s%s" req.Name vr pr
+                    sprintf "   - Dependencies file requested package %O: %s%s%s" req.Name vr pr tp
                 | Package (parentName,version,_) ->
-                    sprintf "   - %O %O requested package %O: %s%s" parentName version req.Name vr pr
+                    sprintf "   - %O %O requested package %O: %s%s%s" parentName version req.Name vr pr tp
             
             conflicts
             |> Seq.fold (fun (errorReport:StringBuilder) conflict ->

@@ -284,7 +284,8 @@ let init (results : ParseResults<InitArgs>) =
     Dependencies.Init(Directory.GetCurrentDirectory())
 
 let clearCache (results : ParseResults<ClearCacheArgs>) =
-    Dependencies.ClearCache()
+    let clearLocal = results.Contains <@ ClearCacheArgs.ClearLocal @>
+    Dependencies.ClearCache(clearLocal)
 
 let install (results : ParseResults<_>) =
     let force = results.Contains <@ InstallArgs.Force @>
@@ -742,7 +743,7 @@ let why (results: ParseResults<WhyArgs>) =
 
 let waitForDebugger () =
     while not(System.Diagnostics.Debugger.IsAttached) do
-      System.Threading.Thread.Sleep(100)
+        System.Threading.Thread.Sleep(100)
 
 let handleCommand silent command =
     match command with

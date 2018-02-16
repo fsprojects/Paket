@@ -200,7 +200,7 @@ let ``can detect explicit dependencies for Microsoft.AspNetCore.Antiforgery``() 
 
     deps.[0]
     |> shouldEqual 
-        (PackageName "Microsoft.AspNetCore.DataProtection", VersionRequirement(v,PreReleaseStatus.All), 
+        (PackageName "Microsoft.AspNetCore.DataProtection", VersionRequirement(v, PreReleaseStatus.Concrete ["rc"]), 
             makeOrList [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5_1)); FrameworkRestriction.AtLeast (DotNetStandard(DotNetStandardVersion.V1_3))])
 
 [<Test>]
@@ -214,7 +214,7 @@ let ``can detect explicit dependencies for Microsoft.AspNetCore.Mvc.ViewFeatures
 
     deps.[0]
     |> shouldEqual 
-        (PackageName "Microsoft.AspNetCore.Antiforgery", VersionRequirement(v,PreReleaseStatus.All), 
+        (PackageName "Microsoft.AspNetCore.Antiforgery", VersionRequirement(v, PreReleaseStatus.Concrete ["rc"]), 
             makeOrList [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5_1)); FrameworkRestriction.AtLeast (DotNetStandard(DotNetStandardVersion.V1_5))])
 
 [<Test>]
