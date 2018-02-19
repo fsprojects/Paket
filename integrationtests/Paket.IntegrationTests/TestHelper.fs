@@ -171,6 +171,9 @@ let directToolExWithEnv setEnv (isPaket, checkPaketPerf) toolInfo commands worki
 let directToolEx (isPaket, checkPaketPerf) toolInfo commands workingDir =
     directToolExWithEnv ignore (isPaket, checkPaketPerf) toolInfo commands workingDir
 
+let directPaketInPathExPerfWithEnv setEnv checkPaketPerf command scenarioPath =
+    directToolExWithEnv setEnv (true,checkPaketPerf) paketToolPath command scenarioPath
+
 let directPaketInPathExPerf checkPaketPerf command scenarioPath =
     directToolEx (true,checkPaketPerf) paketToolPath command scenarioPath
 

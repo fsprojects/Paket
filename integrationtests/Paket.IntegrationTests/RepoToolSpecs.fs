@@ -233,3 +233,36 @@ let ``#3011 repo tool should work after add-tool``() =
 
     let resultCmdWithArgs = directExecScript helloPath "1 2 3" (scenarioTempPath scenario)
     CollectionAssert.AreEqual( [| """Hello World from F#! with args: ["1"; "2"; "3"]""" |], (resultCmdWithArgs |> Seq.map PaketMsg.getMessage |> Array.ofSeq) )
+
+[<Test>]
+let ``#3012 repo tool should work after add-tool global``() =
+    let scenario = "i003012-add-tool-global"
+    prepare scenario
+
+    let scenarioDir = scenarioTempPath scenario
+    let globalBinInScenario = Path.Combine(scenarioDir, "global", "bin")
+
+    let setGlobalDirEnvVar (sd: System.Collections.Specialized.StringDictionary) =
+        sd.Add("PAKET_GLOBAL_BIN_DIR", globalBinInScenario)
+
+    let msgs = directPaketInPathExPerfWithEnv setGlobalDirEnvVar true "add-tool NUnit.ConsoleRunner -G --version 3.8 --verbose" scenarioDir
+    checkResults msgs
+
+    let nunitConsolePath = Path.Combine(globalBinInScenario, (if Paket.Utils.isWindows then "nunit3-console.cmd" else "nunit3-console"))
+
+    Assert.IsTrue(File.Exists(nunitConsolePath), (sprintf "file '%s' not found" nunitConsolePath))
+
+    let resultCmd = directExecScript nunitConsolePath "--version" (scenarioTempPath scenario)
+    CollectionAssert.Contains( (resultCmd |> Seq.map PaketMsg.getMessage |> Array.ofSeq), "NUnit Console Runner 3.8.0 " )
+
+    let paketgPath = Path.Combine(globalBinInScenario, (if Paket.Utils.isWindows then "paketg.cmd" else "paketg"))
+
+    try
+        let resultCmdWithArgs = directExecScript paketgPath "--version" (scenarioTempPath scenario)
+        CollectionAssert.Contains( (resultCmdWithArgs |> Seq.map PaketMsg.getMessage |> Array.ofSeq), "Paket version" )
+    with ex ->
+        // for now paketg is downloaded from latest nuget, so is the previous version
+        // who doesnt support that command.. let's do what we can
+        // TODO remove this when --root-search-dir is supported
+        StringAssert.Contains("ERROR: unrecognized argument: '--root-search-dir'", ex.Message)
+        StringAssert.Contains("USAGE: paket ", ex.Message)
