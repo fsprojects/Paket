@@ -1,3 +1,6 @@
+#### 5.138.1 - 2018-02-16
+* USABILITY: Update process just ignores groups that where not in lock file - https://github.com/fsprojects/Paket/pull/3054
+
 #### 5.138.0 - 2018-02-16
 * Extended SemVer v2 compliance and reliability improvements - https://github.com/fsprojects/Paket/pull/3030
 * BUGFIX: Putting local folder clearing under flag in "paket clear-cache" - https://github.com/fsprojects/Paket/issues/3049
