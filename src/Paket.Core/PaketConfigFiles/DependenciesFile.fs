@@ -652,7 +652,15 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         let list = new System.Collections.Generic.List<_>()
         list.AddRange textRepresentation
 
-        list.Add packageString
+        let firstGroupLine,lastGroupLine = findGroupBorders groupName
+
+        let repoExists = 
+            Seq.mapi (fun i x -> (i,x)) list
+            |> Seq.filter(fun (i,_) -> i >= firstGroupLine && i <= lastGroupLine)
+            |> Seq.exists (fun (_,x) -> x = packageString)
+
+        if not repoExists then
+            list.Insert(lastGroupLine, packageString);
 
         DependenciesFile(
             list 

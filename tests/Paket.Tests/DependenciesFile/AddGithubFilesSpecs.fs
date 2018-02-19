@@ -65,7 +65,6 @@ github fsprojects/FAKE"""
     let cfg = DependenciesFile.FromSource(config).AddGithub(Constants.MainDependencyGroup, "fsprojects/FsUnit")
     
     let expected = """source http://www.nuget.org/api/v2
-
 github fsprojects/FsUnit
 
 group Test
@@ -84,7 +83,7 @@ github fsprojects/FAKE
 group Test2
 github fsprojects/SQLProvider"""
 
-    let cfg = DependenciesFile.FromSource(config).AddGithub("Test", "fsprojects/FsUnit")
+    let cfg = DependenciesFile.FromSource(config).AddGithub(GroupName "Test", "fsprojects/FsUnit")
     
     let expected = """source http://www.nuget.org/api/v2
 
