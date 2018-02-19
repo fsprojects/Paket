@@ -271,11 +271,11 @@ let addTool (workDir: DirectoryInfo) (results : ParseResults<_>) =
             let globalPaketDependenciesDir = Path.Combine(path, "..") |> Path.GetFullPath
             let globalPaketDependenciesPath = Path.Combine(globalPaketDependenciesDir, Constants.DependenciesFileName)
             let dependencies =
-                match Dependencies.TryLocate(globalPaketDependenciesPath) with
-                | Some depFile ->
+                if File.Exists(globalPaketDependenciesPath) then
+                    let depFile = Dependencies(globalPaketDependenciesPath)
                     traceVerbose (sprintf "global paket.dependencies found in '%s'" depFile.DependenciesFile)
                     depFile
-                | None ->
+                else
                     tracefn "global paket.dependencies not found in '%s', initializing..." globalPaketDependenciesPath
 
                     //let sources = [ PackageSources.DefaultNuGetSource ]
