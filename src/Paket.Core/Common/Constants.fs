@@ -38,6 +38,7 @@ let [<Literal>] ProjectDefaultNameSpaceCore  = "http://schemas.microsoft.com/dev
 let [<Literal>] NuGetProtocolVersion  = "4.1.0"
 let [<Literal>] PaketPackageName          = "Paket"
 let [<Literal>] PaketGlobalExeName        = "paketg"
+let [<Literal>] PaketGlobalBinEnvVar      = "PAKET_GLOBAL_BIN_DIR"
 let [<Literal>] PaketRepotoolsHelperName  = "paketrt"
 let [<Literal>] PaketRepotoolsShellFunctionsHelperName  = "paket_functions.sh"
 let [<Literal>] PaketRepotoolsDirectoryName  = "bin"
@@ -115,15 +116,18 @@ let LocalRootForTempData =
 let GitRepoCacheFolder = Path.Combine(LocalRootForTempData,".paket","git","db")
 
 let GlobalBinFolder () =
-    let localRootForGlobalBin =
-        match getEnvDir Environment.SpecialFolder.UserProfile with
-        | Some path -> Some path
-        | None ->
-            Logging.traceWarnfn "Could not detect a user profile directory for our (user specific) binaries."
-            None
+    match getEnVar PaketGlobalBinEnvVar with
+    | Some path -> Some path
+    | None ->
+        let localRootForGlobalBin =
+            match getEnvDir Environment.SpecialFolder.UserProfile with
+            | Some path -> Some path
+            | None ->
+                Logging.traceWarnfn "Could not detect a user profile directory for our (user specific) binaries."
+                None
 
-    localRootForGlobalBin
-    |> Option.map (fun path -> Path.Combine(path,".paket","bin"))
+        localRootForGlobalBin
+        |> Option.map (fun path -> Path.Combine(path,".paket","bin"))
 
 let [<Literal>] GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES"
 
