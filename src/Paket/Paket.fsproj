@@ -33,13 +33,13 @@
     <StartAction>Project</StartAction>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\temp\Gu.Reactive</StartWorkingDirectory>
-    <StartArguments>update Microsoft\.AspNetCore\.All --filter</StartArguments>
+    <StartArguments>update --group NetClassic -v</StartArguments>
     <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
     <StartWorkingDirectory>D:\temp\PaketTargetFrameworkRepro\</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\bookstore</StartWorkingDirectory>
     <StartWorkingDirectory>C:\temp\paket-conflict\paket.conflict.app</StartWorkingDirectory>
     <StartWorkingDirectory>D:\temp\i3032</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\temp\paket-update-filter-failure</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\temp\Repro</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
