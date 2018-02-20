@@ -1,3 +1,6 @@
+#### 5.138.2 - 2018-02-20
+* BUGFIX: Fix prerelease selection when having multiple prereleases - https://github.com/fsprojects/Paket/pull/3058
+
 #### 5.138.1 - 2018-02-16
 * USABILITY: Update process just ignores groups that where not in lock file - https://github.com/fsprojects/Paket/pull/3054
 
