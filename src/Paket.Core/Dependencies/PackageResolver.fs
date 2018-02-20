@@ -530,7 +530,7 @@ let private getCompatibleVersions
                (currentStep:ResolverStep)
                 groupName
                (currentRequirement:PackageRequirement)
-               rootDependencies
+               (rootDependencies:IDictionary<PackageName,PackageRequirement>)
                (getVersionsF: ResolverStrategy -> PackageVersionsSyncFunc)
                 globalOverride
                 globalStrategyForDirectDependencies
@@ -546,8 +546,16 @@ let private getCompatibleVersions
 
         // we didn't select a version yet so all versions are possible
         let isInRange mapF (cache:VersionCache) =
-            allRequirementsOfCurrentPackage
-            |> Set.forall (fun r -> (mapF r).VersionRequirement.IsInRange cache.Version)
+            match rootDependencies.TryGetValue currentRequirement.Name with
+            | true, p -> 
+                allRequirementsOfCurrentPackage
+                |> Set.forall (fun r -> 
+                    let mapped = mapF r
+                    mapped.VersionRequirement.IsInRange cache.Version ||
+                    mapped.IncludingPrereleases(p.VersionRequirement.PreReleases).VersionRequirement.IsInRange cache.Version)
+            | _ ->
+                allRequirementsOfCurrentPackage
+                |> Set.forall (fun r -> (mapF r).VersionRequirement.IsInRange cache.Version)
 
         let getSingleVersion v =
             let sources = 
@@ -555,7 +563,9 @@ let private getCompatibleVersions
                 | PackageRequirementSource.Package(_,_,parentSource) ->
                     parentSource :: currentRequirement.Sources |> List.distinct
                 | _ ->
-                    currentRequirement.Sources |> List.sortBy (fun x -> not x.IsLocalFeed, String.containsIgnoreCase "nuget.org" x.Url |> not)
+                    currentRequirement.Sources 
+                    |> List.sortBy (fun x -> not x.IsLocalFeed, String.containsIgnoreCase "nuget.org" x.Url |> not)
+
             Seq.singleton (VersionCache.ofParams v sources true)
 
         let availableVersions =
@@ -564,16 +574,18 @@ let private getCompatibleVersions
             let allVersions =
                 getVersionsF resolverStrategy (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName currentRequirement.Name)
                 |> Seq.map (fun (v, sources) -> VersionCache.ofParams v sources false)
+
             match currentRequirement.VersionRequirement.Range with
             | Specific v
             | OverrideAll v ->
                 let results =
                     allVersions
                     |> Seq.filter (fun cache -> cache.Version = v)
-                    |> Seq.toList
-                match results with
-                | [] -> getSingleVersion v 
-                | _ -> List.toSeq results
+
+                if Seq.isEmpty results then
+                    getSingleVersion v
+                else
+                    results
             | _ -> allVersions
                 
         let compatibleVersions = Seq.filter (isInRange id) availableVersions |> Seq.cache
@@ -584,7 +596,6 @@ let private getCompatibleVersions
             elif Seq.isEmpty compatibleVersions && currentRequirement.TransitivePrereleases && not (currentRequirement.Parent.IsRootRequirement()) then
                 Seq.filter (isInRange (fun r -> r.IncludingPrereleases(PreReleaseStatus.All))) availableVersions |> Seq.cache, globalOverride
             elif Seq.isEmpty compatibleVersions then
-
                 let prereleaseStatus (r:PackageRequirement) =
                     if r.Parent.IsRootRequirement() && r.VersionRequirement <> VersionRequirement.AllReleases then
                         r.VersionRequirement.PreReleases
@@ -1061,12 +1072,9 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
         if flags.ForceBreak then false else
         if conflictState.Status.IsDone then false else
         if Seq.isEmpty conflictState.VersionsToExplore then
-            // TODO: maybe this is the wrong place to report this...
-            //match conflictState.Status with
-            //| Resolution.Ok _ -> ()
-            //| _ -> (tracefn "   Failed to satisfy %O" currentRequirement)
-            false else
-        flags.FirstTrial || Set.isEmpty conflictState.Conflicts
+            false 
+        else
+            flags.FirstTrial || Set.isEmpty conflictState.Conflicts
 
     let rec step (stage:Stage) (stackpack:StackPack) compatibleVersions (flags:StepFlags) =
 
