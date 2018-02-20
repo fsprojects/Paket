@@ -1,3 +1,6 @@
+#### 5.138.4 - 2018-02-20
+* BUGFIX: Some NuGet v2 queries fail with normalized filter syntax and are now skipped/blacklisted - https://github.com/fsprojects/Paket/pull/3059
+
 #### 5.138.3 - 2018-02-20
 * BUGFIX: Be more robust with custom namespaces in app.config - https://github.com/fsprojects/Paket/issues/1607
 
