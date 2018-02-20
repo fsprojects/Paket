@@ -1,3 +1,6 @@
+#### 5.138.5 - 2018-02-20
+* BUGFIX: Fixed unhandled exception when running 'paket config add-credentials' in Jenkins pipeline - https://github.com/fsprojects/Paket/issues/2884
+
 #### 5.138.4 - 2018-02-20
 * BUGFIX: Some NuGet v2 queries fail with normalized filter syntax and are now skipped/blacklisted - https://github.com/fsprojects/Paket/pull/3059
 
