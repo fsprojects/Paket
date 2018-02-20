@@ -556,6 +556,8 @@ let tryAndBlacklistUrl doBlackList doWarn (source:NugetSource)
                         | Choice2Of2 except ->  
                             match except with  // but NotFound/404 should allow other query to succeed
                             | RequestStatus HttpStatusCode.NotFound -> false
+                                               // repos may not support full filter syntax (Artifactory)
+                            | RequestStatus HttpStatusCode.MethodNotAllowed -> false
                             | _ -> true        // for any other exceptions, cancel the rest and return                         
                     | _ -> false )
 
