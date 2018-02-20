@@ -98,7 +98,10 @@ module Linq =
             let node,ns = splitNode node
             match parent |> tryGetElement ns node with
             | None ->
-                let node = XElement(XName.Get(node, defaultArg ns ""))
-                parent.Add node
-                node :> XContainer
+                match parent.Nodes() |> Seq.tryFind (fun e -> match e with | :? XElement as e -> e.Name.LocalName = node | _ -> false) with
+                | Some existingNode -> existingNode :?> XContainer
+                | None ->
+                    let node = XElement(XName.Get(node, defaultArg ns ""))
+                    parent.Add node
+                    node :> XContainer
             | Some existingNode -> existingNode :> XContainer)

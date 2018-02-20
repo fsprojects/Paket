@@ -1,3 +1,6 @@
+#### 5.138.3 - 2018-02-20
+* BUGFIX: Be more robust with custom namespaces in app.config - https://github.com/fsprojects/Paket/issues/1607
+
 #### 5.138.2 - 2018-02-20
 * BUGFIX: Fix prerelease selection when having multiple prereleases - https://github.com/fsprojects/Paket/pull/3058
 
