@@ -11,10 +11,10 @@ open Paket
 open Paket.Domain
 
 [<Test>]
-let ``#3014 paket add-github clitool``() =
+let ``#3014 paket github add clitool``() =
     let scenario = "i003014-add-github"
     prepare scenario
-    paket "add-github forki/FsUnit" scenario |> ignore
+    paket "github add forki/FsUnit" scenario |> ignore
 
     let depsFile = DependenciesFile.ReadFromFile(Path.Combine(scenarioTempPath scenario,"paket.dependencies"))
     let requirement = depsFile.GetGroup(Constants.MainDependencyGroup).Packages |> List.exactlyOne

@@ -78,6 +78,13 @@ with
             | Version(_) -> "dependency version constraint"
             | Group(_) -> "add the dependency to a group (default: Main group)"
             | File(_) -> "only add specified file"
+and GithubArgs =
+    | [<CliPrefix(CliPrefix.None)>] Add of ParseResults<AddGithubArgs>
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | Add(_) -> "add github repository"
 
 type AddGitArgs =
     | [<ExactlyOnce;MainCommand>] Repository of repository_path:string
@@ -652,7 +659,7 @@ type Command =
     | [<Hidden;Inherit>]                                From_Bootstrapper
     // subcommands
     | [<CustomCommandLine("add")>]                      Add of ParseResults<AddArgs>
-    | [<CustomCommandLine("add-github")>]               AddGithub of ParseResults<AddGithubArgs>
+    | [<CustomCommandLine("github")>]                   Github of ParseResults<GithubArgs>
     | [<CustomCommandLine("add-git")>]                  AddGit of ParseResults<AddGitArgs>
     | [<CustomCommandLine("add-gist")>]                 AddGist of ParseResults<AddGistArgs>
     | [<CustomCommandLine("add-http")>]                 AddHttp of ParseResults<AddHttpArgs>
@@ -685,7 +692,7 @@ with
         member this.Usage =
             match this with
             | Add _ -> "add a new dependency"
-            | AddGithub _ -> "add a github dependency"
+            | Github _ -> "commands to manipulate gihub repository references"
             | AddGit _ -> "add a git dependency"
             | AddGist _ -> "add a gist dependency"
             | AddHttp _ -> "add a http dependency"

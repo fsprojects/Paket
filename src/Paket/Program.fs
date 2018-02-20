@@ -220,23 +220,26 @@ let add (results : ParseResults<_>) =
             .Locate()
             .Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
 
-let addGithub (results : ParseResults<_>) =
-    let group =
-        results.TryGetResult <@ AddGithubArgs.Group @>
-    let repository =
-        results.GetResult <@ AddGithubArgs.Repository @>
-    let file =
-        match results.TryGetResult <@ AddGithubArgs.File @> with
-        | Some f -> f
-        | None -> ""
-    let version =
-        match results.TryGetResult <@ AddGithubArgs.Version @> with
-        | Some v -> v
-        | None -> ""
+let github (results : ParseResults<_>) =
+    match results.GetResult <@ GithubArgs.Add @> with
+    | add -> 
+        let group =
+            add.TryGetResult <@ AddGithubArgs.Group @>
+        let repository =
+            add.GetResult <@ AddGithubArgs.Repository @>
+        let file =
+            match add.TryGetResult <@ AddGithubArgs.File @> with
+            | Some f -> f
+            | None -> ""
+        let version =
+            match add.TryGetResult <@ AddGithubArgs.Version @> with
+            | Some v -> v
+            | None -> ""
     
-    Dependencies
-        .Locate()
-        .AddGithub(group, repository, file, version)
+        Dependencies
+            .Locate()
+            .AddGithub(group, repository, file, version)
+    
 
 let addGit (results : ParseResults<_>) =
     Console.WriteLine("Add Git")
@@ -771,7 +774,7 @@ let waitForDebugger () =
 let handleCommand silent command =
     match command with
     | Add r -> processCommand silent add r
-    | AddGithub r -> processCommand silent addGithub r
+    | Github r -> processCommand silent github r
     | AddGit r -> processCommand silent addGit r
     | AddGist r -> processCommand silent addGist r
     | AddHttp r -> processCommand silent addHttp r
