@@ -247,7 +247,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName fileName, groupName, force, remoteFiles)
 
             // 1. Package resolution
-            let step1Deps = remoteDependencies @ group.Packages |> Set.ofList
+            let step1Deps = remoteDependencies @ group.Packages |> List.distinct
             let resolution =
                 PackageResolver.Resolve(
                     getVersionF, 
@@ -322,7 +322,8 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                                 | Some d -> d.Settings
                                 | None -> p.Settings })
                         |> fun des -> Seq.append des runtimeDeps
-                        |> Seq.distinctBy (fun p -> p.Name) |> Set.ofSeq
+                        |> Seq.distinctBy (fun p -> p.Name) 
+                        |> Seq.toList
 
                     if Environment.GetEnvironmentVariable "PAKET_DEBUG_RUNTIME_DEPS" = "true" then
                         tracefn "Runtime dependencies: "
