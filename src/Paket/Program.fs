@@ -240,19 +240,6 @@ let github (results : ParseResults<_>) =
             .Locate()
             .AddGithub(group, repository, file, version)
     
-
-let addGit (results : ParseResults<_>) =
-    Console.WriteLine("Add Git")
-    ()
-
-let addGist (results : ParseResults<_>) =
-    Console.WriteLine("Add Gist")
-    ()
-
-let addHttp (results : ParseResults<_>) =
-    Console.WriteLine("Add HTTP")
-    ()
-
 let validateConfig (results : ParseResults<_>) =
     let credential = results.Contains <@ ConfigArgs.AddCredentials @>
     let token = results.Contains <@ ConfigArgs.AddToken @>
@@ -775,9 +762,6 @@ let handleCommand silent command =
     match command with
     | Add r -> processCommand silent add r
     | Github r -> processCommand silent github r
-    | AddGit r -> processCommand silent addGit r
-    | AddGist r -> processCommand silent addGist r
-    | AddHttp r -> processCommand silent addHttp r
     | ClearCache r -> processCommand silent clearCache r
     | Config r -> processWithValidation silent validateConfig config r
     | ConvertFromNuget r -> processCommand silent convert r
