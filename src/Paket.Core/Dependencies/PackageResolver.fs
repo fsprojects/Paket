@@ -184,7 +184,7 @@ module ResolutionRaw =
             vr.ToString()
             |> fun s -> if String.IsNullOrWhiteSpace s then ">= 0" else sprintf "%O" vr
 
-        let formatPR hasPrereleases (vr:VersionRequirement) = 
+        let formatPR (vr:VersionRequirement) = 
             match vr.PreReleases with
             | PreReleaseStatus.All -> " prerelease"
             | PreReleaseStatus.Concrete [x] -> sprintf " (%s)" x
@@ -199,7 +199,7 @@ module ResolutionRaw =
 
             let getConflictMessage req =
                 let vr = formatVR req.VersionRequirement
-                let pr = formatPR true req.VersionRequirement
+                let pr = formatPR req.VersionRequirement
                 let tp = if req.TransitivePrereleases then "*" else ""
                 match req.Parent with
                 | DependenciesFile _ ->

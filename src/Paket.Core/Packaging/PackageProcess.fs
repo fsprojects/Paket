@@ -3,13 +3,10 @@
 open Paket
 open System
 open System.IO
-open System.Reflection
-open Paket.Domain
 open Paket.Logging
 open System.Collections.Generic
 open Paket.PackageMetaData
 open Chessie.ErrorHandling
-open InstallProcess
 
 let private tryGenerateDescription packageId outputType =
     match packageId with
