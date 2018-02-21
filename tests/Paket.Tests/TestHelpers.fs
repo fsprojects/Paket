@@ -101,7 +101,6 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
                  Settings = InstallSettings.Default
                  ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max 
                  ResolverStrategyForTransitives = Some ResolverStrategy.Max })
-        |> Set.ofList
 
     PackageResolver.Resolve(VersionsFromGraphAsSeq graph, (fun _ _ -> []), PackageDetailsFromGraph graph, Constants.MainDependencyGroup, None, None, ExplicitRestriction FrameworkRestriction.NoRestriction, packages, UpdateMode.UpdateAll)
 
