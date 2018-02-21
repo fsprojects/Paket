@@ -17,7 +17,7 @@ let ``#3014 paket github add clitool``() =
     paket "github add forki/FsUnit" scenario |> ignore
 
     let depsFile = DependenciesFile.ReadFromFile(Path.Combine(scenarioTempPath scenario,"paket.dependencies"))
-    let requirement = depsFile.GetGroup(Constants.MainDependencyGroup).Packages |> List.exactlyOne
-    requirement.Name |> shouldEqual (PackageName "dotnet-fable")
-    requirement.VersionRequirement.ToString() |> shouldEqual "1.3.7"
-    requirement.Kind |> shouldEqual Paket.Requirements.PackageRequirementKind.DotnetCliTool
+    let requirement = depsFile.GetGroup(Constants.MainDependencyGroup).RemoteFiles |> List.exactlyOne
+    requirement.Origin |> shouldEqual ModuleResolver.Origin.GitHubLink
+    requirement.Owner |> shouldEqual "forki"
+    requirement.Project |> shouldEqual "FsUnit"
