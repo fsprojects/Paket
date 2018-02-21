@@ -96,3 +96,25 @@ github fsprojects/SQLProvider"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should add new group if not already exists``() = 
+    let config = """source http://www.nuget.org/api/v2
+
+group Test
+github fsprojects/SQLProvider"""
+
+    let cfg = DependenciesFile.FromSource(config).AddGithub(GroupName "Test2", "fsprojects/FsUnit")
+    
+    let expected = """source http://www.nuget.org/api/v2
+
+group Test
+github fsprojects/SQLProvider
+
+group Test2
+source https://www.nuget.org/api/v2
+
+github fsprojects/FsUnit"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
