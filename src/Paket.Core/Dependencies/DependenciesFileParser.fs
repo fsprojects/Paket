@@ -255,7 +255,8 @@ module DependenciesFileParser =
             let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
             let isVersion(text:string) = 
-                let (result,_) = Int32.TryParse(text.[0].ToString()) in result
+                let result,_ = Int32.TryParse(text.[0].ToString())
+                result
            
             match parts with
             | name :: operator1 :: version1  :: operator2 :: version2 :: rest
@@ -269,6 +270,17 @@ module DependenciesFileParser =
             | name :: rest -> Some (CliTool(name,">= 0", String.Join(" ",rest) |> removeComment))
             | [name] -> Some (CliTool(name,">= 0",""))
             | _ -> failwithf "could not retrieve cli tool from %s" trimmed
+        | _ -> None
+    
+
+    let private (|ExternalLock|_|) (line:string) =        
+        match line.Trim() with
+        | String.RemovePrefix "external_lock" trimmed -> 
+            let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
+
+            match parts with
+            | [fileName] -> Some (ExternalLock(fileName))
+            | _ -> failwithf "could not retrieve external lock from %s" trimmed
         | _ -> None
     
     let private (|Empty|_|) (line:string) =
@@ -506,6 +518,9 @@ module DependenciesFileParser =
                         traceWarnfn "Package %O is defined more than once in group %O of %s" package.Name current.Name fileName
                     
                     lineNo, { current with Packages = current.Packages @ [package] }::other
+
+                | ExternalLock(fileName) ->
+                    lineNo, { current with ExternalLocks = current.ExternalLocks @ [fileName] }::other
 
                 | SourceFile(origin, (owner,project, vr), path, authKey) ->
                     let remoteFile : UnresolvedSource = { 

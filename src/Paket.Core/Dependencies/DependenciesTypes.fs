@@ -32,6 +32,7 @@ type DependenciesGroup = {
     Caches: Cache list 
     Options: InstallOptions
     Packages : PackageRequirement list
+    ExternalLocks : string list
     RemoteFiles : UnresolvedSource list
 }
     with
@@ -41,6 +42,7 @@ type DependenciesGroup = {
               Sources = []
               Caches = []
               Packages = []
+              ExternalLocks = []
               RemoteFiles = [] }
 
         member this.CombineWith (other:DependenciesGroup) =
@@ -54,4 +56,5 @@ type DependenciesGroup = {
               Sources = this.Sources @ other.Sources |> List.distinct
               Caches = this.Caches @ other.Caches |> List.distinct
               Packages = this.Packages @ other.Packages
+              ExternalLocks = this.ExternalLocks @ other.ExternalLocks
               RemoteFiles = this.RemoteFiles @ other.RemoteFiles }

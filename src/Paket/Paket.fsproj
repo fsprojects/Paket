@@ -39,7 +39,7 @@
     <StartWorkingDirectory>D:\code\bookstore</StartWorkingDirectory>
     <StartWorkingDirectory>C:\temp\paket-conflict\paket.conflict.app</StartWorkingDirectory>
     <StartWorkingDirectory>D:\temp\i3032</StartWorkingDirectory>
-    <StartWorkingDirectory>C:\code\Paket\integrationtests\scenarios\i003061-external-lock\before</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\code\Paket\integrationtests\scenarios\i003062-external-lock\before</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
