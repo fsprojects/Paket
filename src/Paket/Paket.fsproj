@@ -33,13 +33,13 @@
     <StartAction>Project</StartAction>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\temp\Gu.Reactive</StartWorkingDirectory>
-    <StartArguments>pack nuget --build-config Debug --build-platform "AnyCPU" --version 1.0.0</StartArguments>
+    <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
     <StartWorkingDirectory>D:\temp\PaketTargetFrameworkRepro\</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\bookstore</StartWorkingDirectory>
     <StartWorkingDirectory>C:\temp\paket-conflict\paket.conflict.app</StartWorkingDirectory>
     <StartWorkingDirectory>D:\temp\i3032</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\temp\i2941</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\code\Paket\integrationtests\scenarios\i003061-external-lock\before</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

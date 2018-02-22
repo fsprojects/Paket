@@ -512,6 +512,12 @@ let ``#2777 should not conflict with locked packages``() =
     let newLockFile = install "i002777"
     newLockFile.Groups.[GroupName "main"].Resolution.ContainsKey (PackageName "FsPickler") |> shouldEqual true
 
+[<Test>]
+let ``#3062 install should use external lock file``() =
+    let newLockFile = install "i003062-external-lock"
+    newLockFile.Groups.[GroupName "main"].Resolution.ContainsKey (PackageName "FAKE") |> shouldEqual true
+    newLockFile.Groups.[GroupName "main"].Resolution.[PackageName "Machine.Specifications"].Version |> shouldEqual (SemVer.Parse "0.12")
+
 
 #if INTERACTIVE
 ;;
