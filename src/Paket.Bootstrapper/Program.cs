@@ -13,12 +13,17 @@ using Paket.Bootstrapper.HelperProxies;
 
 namespace Paket.Bootstrapper
 {
+
     static class Program
     {
         private static readonly Stopwatch executionWatch = new Stopwatch();
 
         static void Main(string[] args)
         {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+                                         | SecurityProtocolType.Tls11
+                                         | SecurityProtocolType.Tls
+                                         | SecurityProtocolType.Ssl3;
             executionWatch.Start();
             Console.CancelKeyPress += CancelKeyPressed;
 

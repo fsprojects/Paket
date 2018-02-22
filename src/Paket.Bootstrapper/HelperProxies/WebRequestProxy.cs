@@ -7,7 +7,6 @@ namespace Paket.Bootstrapper.HelperProxies
     {
         public WebRequestProxy()
         {
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             Client = new WebClient();
         }
 
