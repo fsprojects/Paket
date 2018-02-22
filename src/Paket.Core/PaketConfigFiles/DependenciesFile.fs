@@ -243,11 +243,38 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                           Settings = group.Options.Settings })
                 |> Seq.toList
 
+
+            let externalLockDependencies = 
+                group.ExternalLocks
+                |> List.map (fun x -> 
+                    let fi = FileInfo x
+                    if not (File.Exists fi.FullName) then
+                        failwithf "The external lock file %s that was referenced in group %O does not exist." fi.FullName group.Name
+                    LockFile.LoadFrom fi.FullName)
+                |> Seq.collect (fun lockFile ->
+                    match lockFile.Groups |> Map.tryFind group.Name with
+                    | None -> Seq.empty
+                    | Some externalGroup ->
+                        externalGroup.Resolution
+                        |> Seq.map (fun kv ->
+                            let p = kv.Value
+                            { Name = p.Name
+                              VersionRequirement = VersionRequirement.VersionRequirement(VersionRange.Specific p.Version,if p.Version.PreRelease = None then PreReleaseStatus.No else PreReleaseStatus.All)
+                              ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max
+                              ResolverStrategyForTransitives = Some ResolverStrategy.Max
+                              Parent = PackageRequirementSource.DependenciesFile(fileName,0)
+                              Graph = Set.empty
+                              Sources = group.Sources
+                              Kind = PackageRequirementKind.Package
+                              TransitivePrereleases = p.Version.PreRelease <> None
+                              Settings = group.Options.Settings }))
+                |> Seq.toList
+
             if String.IsNullOrWhiteSpace fileName |> not then
                 RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName fileName, groupName, force, remoteFiles)
 
             // 1. Package resolution
-            let step1Deps = remoteDependencies @ group.Packages |> Set.ofList
+            let step1Deps = remoteDependencies @ externalLockDependencies @ group.Packages |> Set.ofList
             let resolution =
                 PackageResolver.Resolve(
                     getVersionF, 
