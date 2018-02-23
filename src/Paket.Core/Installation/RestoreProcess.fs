@@ -291,6 +291,13 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
 
 let ImplicitPackages = [PackageName "NETStandard.Library"]  |> Set.ofList
 
+type ProjectRef =
+    { TargetProfile : TargetProfile; ResolvedPackage : PackageInfo; IsDirectDependency : bool; Group : GroupName }
+    member x.CopyLocal =
+        match x.ResolvedPackage.Settings.CopyLocal with
+        | Some x -> x
+        | None -> false
+    
 let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) (groups:Map<GroupName,LockFileGroup>) =
     let projectFileInfo = FileInfo projectFile.FileName
     let hulls =
@@ -300,7 +307,44 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
             kv.Key, (hull, cliToolsInGroup))
         |> dict
 
-    let targets =
+    let allDirectPackages =
+        seq {
+          for kv in groups ->
+            let hull,_ = hulls.[kv.Key]
+            let allDirectPackages =
+                match referencesFile.Groups |> Map.tryFind kv.Key with
+                | Some g -> g.NugetPackages |> List.map (fun p -> p.Name) |> Set.ofList
+                | None -> Set.empty 
+            kv.Key, allDirectPackages }
+        |> dict
+                    
+    let getRelevantReferences targets = seq {
+        for targetProfile in targets do
+            for kv in groups do
+                let hull,_ = hulls.[kv.Key]
+                let allDirectPackages = allDirectPackages.[kv.Key]
+
+                for (key,_,_) in hull do
+                    let resolvedPackage = resolved.Force().[key]
+                    let restore =
+                        not (ImplicitPackages.Contains resolvedPackage.Name) &&
+                            match resolvedPackage.Settings.FrameworkRestrictions with
+                            | Requirements.ExplicitRestriction restrictions ->
+                                Requirements.isTargetMatchingRestrictions(restrictions, targetProfile)
+                            | _ -> true
+
+                    if restore then
+                        let _,packageName = key
+                        let direct = allDirectPackages.Contains packageName
+                        let package = resolved.Force().[key]
+                    
+
+                        yield { TargetProfile = targetProfile; ResolvedPackage = package; IsDirectDependency = direct; Group = kv.Key } }
+
+    // write 
+
+    /// ----- COMPAT <project>.references (fable 1.0) and *.paket.resolved
+    let targetsMap =
         let monikers =
             ProjectFile.getTargetFramework projectFile
             |> Option.toList
@@ -308,8 +352,9 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
        
         monikers
         |> List.collect (fun item -> item.Split([|';'|],StringSplitOptions.RemoveEmptyEntries) |> Array.map (fun x -> x.Trim()) |> List.ofArray)
-        |> List.map (fun s -> s, (PlatformMatching.forceExtractPlatforms s |> fun p -> p.ToTargetProfile true))
-        |> List.choose (fun (s, c) -> c |> Option.map (fun d -> s, d))
+        |> List.map (fun s -> (PlatformMatching.forceExtractPlatforms s |> fun p -> p.ToTargetProfile true), s)
+        |> List.choose (fun (c, s) -> c |> Option.map (fun d -> d, s))
+        |> dict
 
     // delete stale entries (otherwise we might not recognize stale data on a change later)
     // scenario: remove a target framework -> change references -> add back target framework
@@ -322,42 +367,29 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
     let oldReferencesFile = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".references"))
     if oldReferencesFile.Exists then oldReferencesFile.Delete()
 
-    for originalTargetProfileString, targetProfile in targets do
-        let list = System.Collections.Generic.List<_>()
-        for kv in groups do
-            let hull,_ = hulls.[kv.Key]
-            let allDirectPackages =
-                match referencesFile.Groups |> Map.tryFind kv.Key with
-                | Some g -> g.NugetPackages |> List.map (fun p -> p.Name) |> Set.ofList
-                | None -> Set.empty
+    for targetProfile, packageRefs in getRelevantReferences targetsMap.Keys |> Seq.groupBy (fun p -> p.TargetProfile) do
+        let lines =
+            packageRefs
+            |> Seq.map (fun ref ->
+                let group,packageName = ref.Group,ref.ResolvedPackage.Name
+                let allDirectPackages = allDirectPackages.[group]
+                let direct = allDirectPackages.Contains packageName
+                let resolvedPackage = ref.ResolvedPackage
+                let copy_local =
+                    match resolvedPackage.Settings.CopyLocal with
+                    | Some x -> x.ToString()
+                    | None -> "false"
+                let line =
+                    packageName.ToString() + "," +
+                    resolvedPackage.Version.ToString() + "," +
+                    (if direct then "Direct" else "Transitive") + "," +
+                    group.ToString() + "," +
+                    copy_local
 
-            for (key,_,_) in hull do
-                let resolvedPackage = resolved.Force().[key]
-                let restore =
-                    not (ImplicitPackages.Contains resolvedPackage.Name) &&
-                        match resolvedPackage.Settings.FrameworkRestrictions with
-                        | Requirements.ExplicitRestriction restrictions ->
-                            Requirements.isTargetMatchingRestrictions(restrictions, targetProfile)
-                        | _ -> true
-
-                if restore then
-                    let _,packageName = key
-                    let direct = allDirectPackages.Contains packageName
-                    let package = resolved.Force().[key]
-                    let copy_local =
-                        match resolvedPackage.Settings.CopyLocal with
-                        | Some x -> x.ToString()
-                        | None -> "false"
-                    let line =
-                        packageName.ToString() + "," +
-                        package.Version.ToString() + "," +
-                        (if direct then "Direct" else "Transitive") + "," +
-                        kv.Key.ToString() + "," +
-                        copy_local
-
-                    list.Add line
-
-        let output = String.Join(Environment.NewLine,list)
+                line)
+            
+        let output = String.Join(Environment.NewLine,lines)
+        let originalTargetProfileString = targetsMap.[targetProfile]
         let newFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + "." + originalTargetProfileString + ".paket.resolved"))
         if not newFileName.Directory.Exists then
             newFileName.Directory.Create()
