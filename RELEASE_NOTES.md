@@ -1,16 +1,9 @@
-#### 5.138.5 - 2018-02-20
+#### 5.140.0 - 2018-02-23
+* BUGFIX: Fixing TLS 1.2 for BootStrapper - https://github.com/fsprojects/Paket/pull/3066
 * BUGFIX: Fixed unhandled exception when running 'paket config add-credentials' in Jenkins pipeline - https://github.com/fsprojects/Paket/issues/2884
-
-#### 5.138.4 - 2018-02-20
 * BUGFIX: Some NuGet v2 queries fail with normalized filter syntax and are now skipped/blacklisted - https://github.com/fsprojects/Paket/pull/3059
-
-#### 5.138.3 - 2018-02-20
 * BUGFIX: Be more robust with custom namespaces in app.config - https://github.com/fsprojects/Paket/issues/1607
-
-#### 5.138.2 - 2018-02-20
 * BUGFIX: Fix prerelease selection when having multiple prereleases - https://github.com/fsprojects/Paket/pull/3058
-
-#### 5.138.1 - 2018-02-16
 * USABILITY: Update process just ignores groups that where not in lock file - https://github.com/fsprojects/Paket/pull/3054
 
 #### 5.138.0 - 2018-02-16
