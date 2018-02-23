@@ -1,0 +1,171 @@
+﻿<?xml version="1.0" encoding="utf-8"?><span>
+<doc>
+  <assembly>
+    <name>System.Security.Cryptography.OpenSsl</name>
+  </assembly>
+  <members>
+    <member name="T:System.Security.Cryptography.RSAOpenSsl">
+      
+    </member>
+    <member name="M:System.Security.Cryptography.RSAOpenSsl.#ctor">
+      
+    </member>
+    <member name="M:System.Security.Cryptography.RSAOpenSsl.#ctor(System.Int32)">
+      <param name="keySize"></param>
+    </member>
+    <member name="M:System.Security.Cryptography.RSAOpenSsl.#ctor(System.IntPtr)">
+      <param name="handle"></param>
+    </member>
+    <member name="M:System.Security.Cryptography.RSAOpenSsl.#ctor(System.Security.Cryptography.RSAParameters)">
+      <param name="parameters"></param>
+    </member>
+    <member name="M:System.Security.Cryptography.RSAOpenSsl.#ctor(System.Security.Cryptography.SafeEvpPKeyHandle)">
+      <param name="pkeyHandle"></param>
+    </member>
+    <member name="M:System.Security.Cryptography.RSAOpenSsl.Decrypt(System.Byte[],System.Security.Cryptography.RSAEncryptionPadding)">
+      <param name="data"></param>
+      <param name="padding"></param>
+      <returns></returns>
+    </member>
+    <member name="M:System.Security.Cryptography.RSAOpenSsl.DuplicateKeyHandle">
+      <returns></returns>
+    </member>
+    <member name="M:System.Security.Cryptography.RSAOpenSsl.Encrypt(System.Byte[],System.Security.Cryptography.RSAEncryptionPadding)">
+      <param name="data"></param>
+      <param name="padding"></param>
+      <returns></returns>
+    </member>
+    <member name="M:System.Security.Cryptography.RSAOpenSsl.ExportParameters(System.Boolean)">
+      <param name="includePrivateParameters"></param>
+      <returns></returns>
+    </member>
+    <member name="M:System.Security.Cryptography.RSAOpenSsl.ImportParameters(System.Security.Cryptography.RSAParameters)">
+      <param name="parameters"></param>
+    </member>
+    <member name="P:System.Security.Cryptography.RSAOpenSsl.KeySize">
+      <returns></returns>
+    </member>
+    <member name="P:System.Security.Cryptography.RSAOpenSsl.LegalKeySizes">
+      <returns></returns>
+    </member>
+    <member name="M:System.Security.Cryptography.RSAOpenSsl.SignHash(System.Byte[],System.Security.Cryptography.HashAlgorithmName,System.Security.Cryptography.RSASignaturePadding)">
+      <param name="hash"></param>
+      <param name="hashAlgorithm"></param>
+      <param name="padding"></param>
+      <returns></returns>
+    </member>
+    <member name="M:System.Security.Cryptography.RSAOpenSsl.VerifyHash(System.Byte[],System.Byte[],System.Security.Cryptography.HashAlgorithmName,System.Security.Cryptography.RSASignaturePadding)">
+      <param name="hash"></param>
+      <param name="signature"></param>
+      <param name="hashAlgorithm"></param>
+      <param name="padding"></param>
+      <returns></returns>
+    </member>
+    <member name="T:System.Security.Cryptography.SafeEvpPKeyHandle">
+      
+    </member>
+    <member name="M:System.Security.Cryptography.SafeEvpPKeyHandle.#ctor(System.IntPtr,System.Boolean)">
+      <param name="handle"></param>
+      <param name="ownsHandle"></param>
+    </member>
+    <member name="M:System.Security.Cryptography.SafeEvpPKeyHandle.DuplicateHandle">
+      <returns></returns>
+    </member>
+    <member name="P:System.Security.Cryptography.SafeEvpPKeyHandle.IsInvalid">
+      <returns></returns>
+    </member>
+    <member name="T:System.Security.Cryptography.ECDsaOpenSsl">
+      
+    </member>
+    <member name="M:System.Security.Cryptography.ECDsaOpenSsl.#ctor">
+      
+    </member>
+    <member name="M:System.Security.Cryptography.ECDsaOpenSsl.#ctor(System.Int32)">
+      <param name="keySize"></param>
+    </member>
+    <member name="M:System.Security.Cryptography.ECDsaOpenSsl.#ctor(System.IntPtr)">
+      <param name="handle"></param>
+    </member>
+    <member name="M:System.Security.Cryptography.ECDsaOpenSsl.#ctor(System.Security.Cryptography.ECCurve)">
+      <param name="curve"></param>
+    </member>
+    <member name="M:System.Security.Cryptography.ECDsaOpenSsl.#ctor(System.Security.Cryptography.SafeEvpPKeyHandle)">
+      <param name="pkeyHandle"></param>
+    </member>
+    <member name="M:System.Security.Cryptography.ECDsaOpenSsl.DuplicateKeyHandle">
+      <returns></returns>
+    </member>
+    <member name="M:System.Security.Cryptography.ECDsaOpenSsl.ExportExplicitParameters(System.Boolean)">
+      <param name="includePrivateParameters"></param>
+      <returns></returns>
+    </member>
+    <member name="M:System.Security.Cryptography.ECDsaOpenSsl.ExportParameters(System.Boolean)">
+      <param name="includePrivateParameters"></param>
+      <returns></returns>
+    </member>
+    <member name="M:System.Security.Cryptography.ECDsaOpenSsl.GenerateKey(System.Security.Cryptography.ECCurve)">
+      <param name="curve"></param>
+    </member>
+    <member name="M:System.Security.Cryptography.ECDsaOpenSsl.ImportParameters(System.Security.Cryptography.ECParameters)">
+      <param name="parameters"></param>
+    </member>
+    <member name="P:System.Security.Cryptography.ECDsaOpenSsl.KeySize">
+      <returns></returns>
+    </member>
+    <member name="P:System.Security.Cryptography.ECDsaOpenSsl.LegalKeySizes">
+      <returns></returns>
+    </member>
+    <member name="M:System.Security.Cryptography.ECDsaOpenSsl.SignHash(System.Byte[])">
+      <param name="hash"></param>
+      <returns></returns>
+    </member>
+    <member name="M:System.Security.Cryptography.ECDsaOpenSsl.VerifyHash(System.Byte[],System.Byte[])">
+      <param name="hash"></param>
+      <param name="signature"></param>
+      <returns></returns>
+    </member>
+    <member name="T:System.Security.Cryptography.DSAOpenSsl">
+      
+    </member>
+    <member name="M:System.Security.Cryptography.DSAOpenSsl.#ctor">
+      
+    </member>
+    <member name="M:System.Security.Cryptography.DSAOpenSsl.#ctor(System.Int32)">
+      <param name="keySize"></param>
+    </member>
+    <member name="M:System.Security.Cryptography.DSAOpenSsl.#ctor(System.IntPtr)">
+      <param name="handle"></param>
+    </member>
+    <member name="M:System.Security.Cryptography.DSAOpenSsl.#ctor(System.Security.Cryptography.DSAParameters)">
+      <param name="parameters"></param>
+    </member>
+    <member name="M:System.Security.Cryptography.DSAOpenSsl.#ctor(System.Security.Cryptography.SafeEvpPKeyHandle)">
+      <param name="pkeyHandle"></param>
+    </member>
+    <member name="M:System.Security.Cryptography.DSAOpenSsl.CreateSignature(System.Byte[])">
+      <param name="rgbHash"></param>
+      <returns></returns>
+    </member>
+    <member name="M:System.Security.Cryptography.DSAOpenSsl.DuplicateKeyHandle">
+      <returns></returns>
+    </member>
+    <member name="M:System.Security.Cryptography.DSAOpenSsl.ExportParameters(System.Boolean)">
+      <param name="includePrivateParameters"></param>
+      <returns></returns>
+    </member>
+    <member name="M:System.Security.Cryptography.DSAOpenSsl.ImportParameters(System.Security.Cryptography.DSAParameters)">
+      <param name="parameters"></param>
+    </member>
+    <member name="P:System.Security.Cryptography.DSAOpenSsl.KeySize">
+      <returns></returns>
+    </member>
+    <member name="P:System.Security.Cryptography.DSAOpenSsl.LegalKeySizes">
+      <returns></returns>
+    </member>
+    <member name="M:System.Security.Cryptography.DSAOpenSsl.VerifySignature(System.Byte[],System.Byte[])">
+      <param name="rgbHash"></param>
+      <param name="rgbSignature"></param>
+      <returns></returns>
+    </member>
+  </members>
+</doc></span>

@@ -1,0 +1,828 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>System.Runtime.WindowsRuntime</name>
+  </assembly>
+  <members>
+    <member name="T:System.WindowsRuntimeSystemExtensions">
+      <summary>为在任务和 Windows 运行时 异步操作及操作之间转换提供扩展方法。</summary>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsAsyncAction(System.Threading.Tasks.Task)">
+      <summary>返回表示开始任务的 Windows 运行时 异步操作。</summary>
+      <returns>一个 Windows.Foundation.IAsyncAction 实例，表示已启动的任务。</returns>
+      <param name="source">已启动的任务。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+      <exception cref="T:System.InvalidOperationException">
+        <paramref name="source" /> 是未开始的任务。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsAsyncOperation``1(System.Threading.Tasks.Task{``0})">
+      <summary>返回表示返回结果的开始任务 Windows 运行时 异步操作。</summary>
+      <returns>一个 Windows.Foundation.IAsyncOperation&lt;TResult&gt; 实例，表示已启动的任务。</returns>
+      <param name="source">已启动的任务。</param>
+      <typeparam name="TResult">返回结果的类型。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+      <exception cref="T:System.InvalidOperationException">
+        <paramref name="source" /> 是未开始的任务。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask(Windows.Foundation.IAsyncAction)">
+      <summary>返回表示 Windows 运行时 异步操作的任务。</summary>
+      <returns>一个表示异步操作的任务。</returns>
+      <param name="source">异步操作。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask(Windows.Foundation.IAsyncAction,System.Threading.CancellationToken)">
+      <summary>返回表示可以取消的 Windows 运行时 异步操作的任务。</summary>
+      <returns>一个表示异步操作的任务。</returns>
+      <param name="source">异步操作。</param>
+      <param name="cancellationToken">可用于请求异步操作取消的标志。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``1(Windows.Foundation.IAsyncActionWithProgress{``0})">
+      <summary>返回表示 Windows 运行时 异步操作的任务。</summary>
+      <returns>一个表示异步操作的任务。</returns>
+      <param name="source">异步操作。</param>
+      <typeparam name="TProgress">提供显示进度的数据的对象的类型。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``1(Windows.Foundation.IAsyncActionWithProgress{``0},System.IProgress{``0})">
+      <summary>返回表示报告进度的 Windows 运行时 异步操作的任务。</summary>
+      <returns>一个表示异步操作的任务。</returns>
+      <param name="source">异步操作。</param>
+      <param name="progress">检索进度更新的对象。</param>
+      <typeparam name="TProgress">提供显示进度的数据的对象的类型。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``1(Windows.Foundation.IAsyncActionWithProgress{``0},System.Threading.CancellationToken)">
+      <summary>返回表示可以取消的 Windows 运行时 异步操作的任务。</summary>
+      <returns>一个表示异步操作的任务。</returns>
+      <param name="source">异步操作。</param>
+      <param name="cancellationToken">可用于请求异步操作取消的标志。</param>
+      <typeparam name="TProgress">提供显示进度的数据的对象的类型。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``1(Windows.Foundation.IAsyncActionWithProgress{``0},System.Threading.CancellationToken,System.IProgress{``0})">
+      <summary>返回表示报告进度并可以取消的 Windows 运行时 异步操作的任务。</summary>
+      <returns>一个表示异步操作的任务。</returns>
+      <param name="source">异步操作。</param>
+      <param name="cancellationToken">可用于请求异步操作取消的标志。</param>
+      <param name="progress">检索进度更新的对象。</param>
+      <typeparam name="TProgress">提供显示进度的数据的对象的类型。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``1(Windows.Foundation.IAsyncOperation{``0})">
+      <summary>返回表示 Windows 运行时 异步操作返回结果的任务。</summary>
+      <returns>表示异步操作的任务。</returns>
+      <param name="source">异步操作。</param>
+      <typeparam name="TResult">返回异步操作结果的对象的类型。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``1(Windows.Foundation.IAsyncOperation{``0},System.Threading.CancellationToken)">
+      <summary>返回表示返回结果并可以取消的 Windows 运行时 异步操作的任务。</summary>
+      <returns>表示异步操作的任务。</returns>
+      <param name="source">异步操作。</param>
+      <param name="cancellationToken">可用于请求异步操作取消的标志。</param>
+      <typeparam name="TResult">返回异步操作结果的对象的类型。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``2(Windows.Foundation.IAsyncOperationWithProgress{``0,``1})">
+      <summary>返回表示 Windows 运行时 异步操作返回结果的任务。</summary>
+      <returns>表示异步操作的任务。</returns>
+      <param name="source">异步操作。</param>
+      <typeparam name="TResult">返回异步操作结果的对象的类型。</typeparam>
+      <typeparam name="TProgress">提供显示进度的数据的对象的类型。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``2(Windows.Foundation.IAsyncOperationWithProgress{``0,``1},System.IProgress{``1})">
+      <summary>返回表示返回结果并报告进度的 Windows 运行时 异步操作的任务。</summary>
+      <returns>表示异步操作的任务。</returns>
+      <param name="source">异步操作。</param>
+      <param name="progress">检索进度更新的对象。</param>
+      <typeparam name="TResult">返回异步操作结果的对象的类型。</typeparam>
+      <typeparam name="TProgress">提供显示进度的数据的对象的类型。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``2(Windows.Foundation.IAsyncOperationWithProgress{``0,``1},System.Threading.CancellationToken)">
+      <summary>返回表示返回结果并可以取消的 Windows 运行时 异步操作的任务。</summary>
+      <returns>表示异步操作的任务。</returns>
+      <param name="source">异步操作。</param>
+      <param name="cancellationToken">可用于请求异步操作取消的标志。</param>
+      <typeparam name="TResult">返回异步操作结果的对象的类型。</typeparam>
+      <typeparam name="TProgress">提供显示进度的数据的对象的类型。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``2(Windows.Foundation.IAsyncOperationWithProgress{``0,``1},System.Threading.CancellationToken,System.IProgress{``1})">
+      <summary>返回表示返回结果、报告进度并可以取消的 Windows 运行时 异步操作的任务。</summary>
+      <returns>表示异步操作的任务。</returns>
+      <param name="source">异步操作。</param>
+      <param name="cancellationToken">可用于请求异步操作取消的标志。</param>
+      <param name="progress">检索进度更新的对象。</param>
+      <typeparam name="TResult">返回异步操作结果的对象的类型。</typeparam>
+      <typeparam name="TProgress">提供显示进度的数据的对象的类型。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.GetAwaiter(Windows.Foundation.IAsyncAction)">
+      <summary>返回等待异步操作的对象。</summary>
+      <returns>等待指定的异步操作的对象。</returns>
+      <param name="source">要等待的异步操作。</param>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.GetAwaiter``1(Windows.Foundation.IAsyncActionWithProgress{``0})">
+      <summary>返回等待报告进度的异步操作对象。</summary>
+      <returns>等待指定的异步操作的对象。</returns>
+      <param name="source">要等待的异步操作。</param>
+      <typeparam name="TProgress">提供显示进度的数据的对象的类型。</typeparam>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.GetAwaiter``1(Windows.Foundation.IAsyncOperation{``0})">
+      <summary>返回等待返回结果的异步操作对象。</summary>
+      <returns>等待指定的异步操作的对象。</returns>
+      <param name="source">等待的异步操作。</param>
+      <typeparam name="TResult">返回异步操作结果的对象的类型。</typeparam>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.GetAwaiter``2(Windows.Foundation.IAsyncOperationWithProgress{``0,``1})">
+      <summary>返回等待报告进度并返回结果的异步操作的对象。</summary>
+      <returns>等待指定的异步操作的对象。</returns>
+      <param name="source">等待的异步操作。</param>
+      <typeparam name="TResult">返回异步操作结果的对象的类型。</typeparam>
+      <typeparam name="TProgress">提供显示进度的数据的对象的类型。</typeparam>
+    </member>
+    <member name="T:System.IO.WindowsRuntimeStorageExtensions">
+      <summary>在开发 Windows 应用商店应用程序时，将 IStorageFile 和 IStorageFolder 接口的扩展方法包含在 Windows 运行时 中。</summary>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStorageExtensions.OpenStreamForReadAsync(Windows.Storage.IStorageFile)">
+      <summary>检索流以从指定的文件中读取。</summary>
+      <returns>表示异步读取操作的任务。</returns>
+      <param name="windowsRuntimeFile">要读取的 IStorageFile Windows 运行时 对象。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeFile" /> 为 null。</exception>
+      <exception cref="T:System.IO.IOException">无法以流的形式打开或检索文件。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStorageExtensions.OpenStreamForReadAsync(Windows.Storage.IStorageFolder,System.String)">
+      <summary>检索流以从指定的父文件夹的一个文件中读取。</summary>
+      <returns>表示异步读取操作的任务。</returns>
+      <param name="rootDirectory">包含要读取文件的 Windows 运行时 IStorageFolder 对象。</param>
+      <param name="relativePath">相对于根文件夹，到要读取的文件的路径。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="rootDirectory" /> 或 <paramref name="relativePath" /> 为 null。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="relativePath" /> 为空，或者只包含空白字符。</exception>
+      <exception cref="T:System.IO.IOException">无法以流的形式打开或检索文件。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStorageExtensions.OpenStreamForWriteAsync(Windows.Storage.IStorageFile)">
+      <summary>检索流以写入指定的文件。</summary>
+      <returns>表示异步写入操作的任务。</returns>
+      <param name="windowsRuntimeFile">要写入的 IStorageFile Windows 运行时 对象。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeFile" /> 为 null。</exception>
+      <exception cref="T:System.IO.IOException">无法以流的形式打开或检索文件。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStorageExtensions.OpenStreamForWriteAsync(Windows.Storage.IStorageFolder,System.String,Windows.Storage.CreationCollisionOption)">
+      <summary>检索流以在指定的父文件夹中写入文件。</summary>
+      <returns>表示异步写入操作的任务。</returns>
+      <param name="rootDirectory">包含写入文件的 Windows 运行时 IStorageFolder 对象。</param>
+      <param name="relativePath">相对于根文件夹，到要写入的文件的路径。</param>
+      <param name="creationCollisionOption">指定行为使用的 Windows 运行时 CreationCollisionOption 枚举值生成该文件的名称时与现有文件的名称线相同。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="rootDirectory" /> 或 <paramref name="relativePath" /> 为 null。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="relativePath" /> 为空，或者只包含空白字符。</exception>
+      <exception cref="T:System.IO.IOException">无法以流的形式打开或检索文件。</exception>
+    </member>
+    <member name="T:System.IO.WindowsRuntimeStreamExtensions">
+      <summary>包含在 Windows 运行时 中的流和在 适用于 Windows 应用商店应用的 .NET 中托管的流之间转换的扩展方法。</summary>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsInputStream(System.IO.Stream)">
+      <summary>将 适用于 Windows 应用商店应用的 .NET 中一个托管的流转换为 Windows 运行时 中的输入流。</summary>
+      <returns>表示转换流的 Windows 运行时 IInputStream 的对象。</returns>
+      <param name="stream">要转换的流。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="stream" /> 为 null。</exception>
+      <exception cref="T:System.NotSupportedException">流不支持读取。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsOutputStream(System.IO.Stream)">
+      <summary>将 适用于 Windows 应用商店应用的 .NET 中一个托管的流转换为 Windows 运行时 中的输出流。</summary>
+      <returns>表示转换流的 Windows 运行时 IOutputStream 的对象。</returns>
+      <param name="stream">要转换的流。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="stream" /> 为 null。</exception>
+      <exception cref="T:System.NotSupportedException">流不支持写入。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsRandomAccessStream(System.IO.Stream)">
+      <summary>将指定的流转换为随机访问的流。</summary>
+      <returns>一个 Windows 运行时 RandomAccessStream，它表示已转换的流。</returns>
+      <param name="stream">要转换的流。</param>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsStream(Windows.Storage.Streams.IRandomAccessStream)">
+      <summary>将 Windows 运行时 中一个随机访问流转换为 适用于 Windows 应用商店应用的 .NET 中的托管流。</summary>
+      <returns>已转换的流。</returns>
+      <param name="windowsRuntimeStream">要转换的 IRandomAccessStream Windows 运行时 对象。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeStream" /> 为 null。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsStream(Windows.Storage.Streams.IRandomAccessStream,System.Int32)">
+      <summary>使用指定的缓冲区大小，将 Windows 运行时 中的一个随机访问流转换为 适用于 Windows 应用商店应用的 .NET 中的托管流。</summary>
+      <returns>已转换的流。</returns>
+      <param name="windowsRuntimeStream">要转换的 IRandomAccessStream Windows 运行时 对象。</param>
+      <param name="bufferSize">缓冲区的大小（以字节为单位）。此值不能为负，但是，它可以是（0）禁用缓冲的 0。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeStream" /> 为 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="bufferSize" /> 为负。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsStreamForRead(Windows.Storage.Streams.IInputStream)">
+      <summary>将 Windows 运行时 中的输入流转换为 适用于 Windows 应用商店应用的 .NET 中的托管流。</summary>
+      <returns>已转换的流。</returns>
+      <param name="windowsRuntimeStream">要转换的 IInputStream Windows 运行时 对象。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeStream" /> 为 null。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsStreamForRead(Windows.Storage.Streams.IInputStream,System.Int32)">
+      <summary>使用指定的缓冲区大小，将 Windows 运行时 中的输入流转换为 适用于 Windows 应用商店应用的 .NET 中的托管流。</summary>
+      <returns>已转换的流。</returns>
+      <param name="windowsRuntimeStream">要转换的 IInputStream Windows 运行时 对象。</param>
+      <param name="bufferSize">缓冲区的大小（以字节为单位）。此值不能为负，但是，它可以是（0）禁用缓冲的 0。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeStream" /> 为 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="bufferSize" /> 为负。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsStreamForWrite(Windows.Storage.Streams.IOutputStream)">
+      <summary>将 Windows 运行时 中输出流转换为 适用于 Windows 应用商店应用的 .NET 中的托管流。</summary>
+      <returns>已转换的流。</returns>
+      <param name="windowsRuntimeStream">要转换的 IOutputStream Windows 运行时 对象。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeStream" /> 为 null。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsStreamForWrite(Windows.Storage.Streams.IOutputStream,System.Int32)">
+      <summary>使用指定的缓冲区大小，将 Windows 运行时 中的输出流转换为 适用于 Windows 应用商店应用的 .NET 中的托管流。</summary>
+      <returns>已转换的流。</returns>
+      <param name="windowsRuntimeStream">要转换的 IOutputStream Windows 运行时 对象。</param>
+      <param name="bufferSize">缓冲区的大小（以字节为单位）。此值不能为负，但是，它可以是（0）禁用缓冲的 0。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeStream" /> 为 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="bufferSize" /> 为负。</exception>
+    </member>
+    <member name="T:System.Runtime.InteropServices.WindowsRuntime.AsyncInfo">
+      <summary>提供出厂默认方法，构造管理任务的表示，其与 Windows 运行时 异步操作和操作兼容。</summary>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.AsyncInfo.Run``1(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{``0}})">
+      <summary>使用生成返回结果的启动任务的函数，创建并启动 Windows 运行时 异步操作。这项任务可以支持取消。</summary>
+      <returns>一个已经启动的 Windows.Foundation.IAsyncOperation&lt;TResult&gt; 实例，表示由 <paramref name="taskProvider" /> 生成的任务。</returns>
+      <param name="taskProvider">表示创建和启动任务的函数的代表。由返回的 Windows 运行时 异步操作表示的开始任务。函数被传入一个可以用来监视任务提醒取消请求的取消标识；如果任务不支持取消，则可以忽略该标识。</param>
+      <typeparam name="TResult">返回结果的类型。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="taskProvider" /> 为 null。</exception>
+      <exception cref="T:System.InvalidOperationException">
+        <paramref name="taskProvider" /> 将返回未开始的任务。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.AsyncInfo.Run(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task})">
+      <summary>使用生成启动任务的函数，创建并启动 Windows 运行时 异步操作。这项任务可以支持取消。</summary>
+      <returns>表示由 <paramref name="taskProvider" /> 生成的任务的启动 Windows.Foundation.IAsyncAction 实例。</returns>
+      <param name="taskProvider">表示创建和启动任务的函数的代表。由返回的 Windows 运行时 异步操作表示的开始任务。函数被传入一个可以用来监视任务提醒取消请求的取消标识；如果任务不支持取消，则可以忽略该标识。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="taskProvider" /> 为 null。</exception>
+      <exception cref="T:System.InvalidOperationException">
+        <paramref name="taskProvider" /> 将返回未开始的任务。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.AsyncInfo.Run``2(System.Func{System.Threading.CancellationToken,System.IProgress{``1},System.Threading.Tasks.Task{``0}})">
+      <summary>使用生成启动任务(该任务返回结果）的函数，创建并启动 Windows 运行时 异步操作，该操作包括进度更新。这项任务可以支持取消和进度报告。</summary>
+      <returns>一个已经启动的 Windows.Foundation.IAsyncOperationWithProgress&lt;TResult,TProgress&gt; 实例，表示由 <paramref name="taskProvider" /> 生成的任务。</returns>
+      <param name="taskProvider">表示创建和启动任务的函数的代表。由返回的 Windows 运行时 异步操作表示的开始任务。函数被传入可以用来监视任务提醒取消请求的取消标识，和报告进度的接口；如果任务不支持进度报告或取消，则可以忽视任一或所有参数。</param>
+      <typeparam name="TResult">返回结果的类型。</typeparam>
+      <typeparam name="TProgress">用于进度通知的类型。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="taskProvider" /> 为 null。</exception>
+      <exception cref="T:System.InvalidOperationException">
+        <paramref name="taskProvider" /> 将返回未开始的任务。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.AsyncInfo.Run``1(System.Func{System.Threading.CancellationToken,System.IProgress{``0},System.Threading.Tasks.Task})">
+      <summary>使用生成启动任务的函数，创建并启动 Windows 运行时 异步操作，该操作包括进度更新。这项任务可以支持取消和进度报告。</summary>
+      <returns>一个已经启动的 Windows.Foundation.IAsyncActionWithProgress&lt;TProgress&gt; 实例，表示由 <paramref name="taskProvider" /> 生成的任务。</returns>
+      <param name="taskProvider">表示创建和启动任务的函数的代表。由返回的 Windows 运行时 异步操作表示的开始任务。函数被传入可以用来监视任务提醒取消请求的取消标识，和报告进度的接口；如果任务不支持进度报告或取消，则可以忽视任一或所有参数。</param>
+      <typeparam name="TProgress">用于进度通知的类型。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="taskProvider" /> 为 null。</exception>
+      <exception cref="T:System.InvalidOperationException">
+        <paramref name="taskProvider" /> 将返回未开始的任务。</exception>
+    </member>
+    <member name="T:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBuffer">
+      <summary>提供 Windows 运行时 IBuffer 接口 (Windows.Storage.Streams.IBuffer) 的实现以及所有其他必需的接口。</summary>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBuffer.Create(System.Byte[],System.Int32,System.Int32,System.Int32)">
+      <summary>返回包含从字节数组中复制的指定某个范围字节的 Windows.Storage.Streams.IBuffer 接口。如果指定的容量大于复制的字节数，则用零值填充缓冲区的其它部分。</summary>
+      <returns>包含字节指定范围的 Windows.Storage.Streams.IBuffer 接口。如果 <paramref name="capacity" /> 大于 <paramref name="length" />，则缓冲区的其余部分为零填充。</returns>
+      <param name="data">将从中复制字节数组。</param>
+      <param name="offset">
+        <paramref name="data" /> 中的偏移量，从其开始复制。</param>
+      <param name="length">要复制的字节数。</param>
+      <param name="capacity">缓冲区可以保存的最大字节数；如果这比 <paramref name="length" /> 大，缓冲区中的剩余字节将被初始化为 0 （零）。</param>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="capacity" />，<paramref name="offset" /> 或者 <paramref name="length" /> 小于0（零）。</exception>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="data" /> 为 null。</exception>
+      <exception cref="T:System.ArgumentException">开始于 <paramref name="offset" />， <paramref name="data" /> 不包含 <paramref name="length" /> 元素。- 或 -从 <paramref name="offset" /> 开始，<paramref name="data" /> 不包含 <paramref name="capacity" /> 元素。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBuffer.Create(System.Int32)">
+      <summary>返回具有指定最大容量的空 Windows.Storage.Streams.IBuffer 接口。</summary>
+      <returns>具有指定的容量和 Length 属性的 Windows.Storage.Streams.IBuffer 接口等于 0（零）。</returns>
+      <param name="capacity">缓冲区可以保存的最大字节数。</param>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="capacity" /> 小于 0（零）。</exception>
+    </member>
+    <member name="T:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions">
+      <summary>为在 Windows 运行时 缓冲区（Windows.Storage.Streams.IBuffer 接口）上操作提供扩展方法。</summary>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsBuffer(System.Byte[])">
+      <summary>返回表示指定字节数组的 Windows.Storage.Streams.IBuffer 接口。</summary>
+      <returns>一个 Windows.Storage.Streams.IBuffer 接口，表示指定的字节数组。</returns>
+      <param name="source">要表示的数组。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsBuffer(System.Byte[],System.Int32,System.Int32)">
+      <summary>返回在指定的字节数组中表示某个范围字节的 Windows.Storage.Streams.IBuffer 接口。</summary>
+      <returns>IBuffer 接口表示 <paramref name="source" /> 中指定的字节范围.</returns>
+      <param name="source">包含 IBuffer 表示的字节范围的数组。</param>
+      <param name="offset">在范围开头的 <paramref name="source" /> 的偏移。</param>
+      <param name="length">由 IBuffer 表示的范围的长度。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="offset" /> 或 <paramref name="length" /> 小于零。</exception>
+      <exception cref="T:System.ArgumentException">数组不够大以作为 IBuffer 的后背存储；即 <paramref name="source" /> 中的字节数，起点为 <paramref name="offset" />，小于 <paramref name="length" />。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsBuffer(System.Byte[],System.Int32,System.Int32,System.Int32)">
+      <summary>返回在指定的字节数组中表示某个范围字节的 Windows.Storage.Streams.IBuffer 接口。可选性地设置  IBuffer 的 Length 属性为小于容量的值。</summary>
+      <returns>表示 <paramref name="source" /> 中指定的字节范围的 IBuffer 接口，具有指定的 Length 属性值。</returns>
+      <param name="source">包含 IBuffer 表示的字节范围的数组。</param>
+      <param name="offset">在范围开头的 <paramref name="source" /> 的偏移。</param>
+      <param name="length">IBuffer 的 Length 属性的值。</param>
+      <param name="capacity">由 IBuffer 表示的范围的大小。将 IBuffer 的 Capacity 属性设置为此值。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="offset" />、<paramref name="length" /> 或 <paramref name="capacity" /> 小于零。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="length" /> 大于 <paramref name="capacity" />。- 或 -数组不够大以作为 IBuffer 的后背存储；即 <paramref name="source" /> 中的字节数，起点为 <paramref name="offset" />，小于 <paramref name="length" /> 或 <paramref name="capacity" />。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsStream(Windows.Storage.Streams.IBuffer)">
+      <summary>返回表示 Windows.Storage.Streams.IBuffer 接口表示相同记忆的流。</summary>
+      <returns>表示指定的 Windows.Storage.Streams.IBuffer 接口表示相同记忆的流。</returns>
+      <param name="source">要表示为流的 IBuffer。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.CopyTo(System.Byte[],System.Int32,Windows.Storage.Streams.IBuffer,System.UInt32,System.Int32)">
+      <summary>从源数组复制字节到目标缓冲区 (Windows.Storage.Streams.IBuffer)，指定该源数组的起始索引、目标缓冲区的起始索引和要复制的字节数。该方法不会更新目标缓存区的 Length 属性。</summary>
+      <param name="source">将从中复制数据的数组。</param>
+      <param name="sourceIndex">在 <paramref name="source" /> 中从其开始复制数据的索引。</param>
+      <param name="destination">数据复制的缓冲区。</param>
+      <param name="destinationIndex">在 <paramref name="destination" /> 中开始复制数据的索引。</param>
+      <param name="count">要复制的字节数。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 或 <paramref name="destination" /> 为 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="count" /> 或 <paramref name="sourceIndex" />，或者 <paramref name="destinationIndex" /> 小于 0（零）。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="sourceIndex" /> 大于或等于 <paramref name="source" /> 的长度。- 或 -以 <paramref name="sourceIndex" /> 开始的 <paramref name="source" /> 中的字节数少于 <paramref name="count" />。- 或 -复制 <paramref name="count" /> 字节，从 <paramref name="destinationIndex" /> 开始，将超出 <paramref name="destination" /> 的容量。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.CopyTo(System.Byte[],Windows.Storage.Streams.IBuffer)">
+      <summary>复制源数组中的所有字节到目标缓冲区 (Windows.Storage.Streams.IBuffer)，开始，两个启动偏移量为 0（零）。该方法不会更新目标缓冲区的长度。</summary>
+      <param name="source">将从中复制数据的数组。</param>
+      <param name="destination">数据复制的缓冲区。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 或 <paramref name="destination" /> 为 null。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="source" /> 的大小超过了 <paramref name="destination" />的容量。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.CopyTo(Windows.Storage.Streams.IBuffer,System.Byte[])">
+      <summary>复制源数组 (Windows.Storage.Streams.IBuffer) 中的所有字节到目标缓冲区，两个启动偏移量为 0（零）。</summary>
+      <param name="source">从中复制数据的缓冲区。</param>
+      <param name="destination">要复制数据到的数组。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 或 <paramref name="destination" /> 为 null。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="source" /> 的大小超出 <paramref name="destination" /> 的大小。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.CopyTo(Windows.Storage.Streams.IBuffer,System.UInt32,System.Byte[],System.Int32,System.Int32)">
+      <summary>从源缓冲区 (Windows.Storage.Streams.IBuffer) 复制字节到目标数组，指定该源缓冲区的起始索引、目标数组的起始索引和要复制的字节数。</summary>
+      <param name="source">从中复制数据的缓冲区。</param>
+      <param name="sourceIndex">在 <paramref name="source" /> 中从其开始复制数据的索引。</param>
+      <param name="destination">要复制数据到的数组。</param>
+      <param name="destinationIndex">在 <paramref name="destination" /> 中开始复制数据的索引。</param>
+      <param name="count">要复制的字节数。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 或 <paramref name="destination" /> 为 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="count" /> 或 <paramref name="sourceIndex" />，或者 <paramref name="destinationIndex" /> 小于 0（零）。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="sourceIndex" /> 的长度大于或等于 <paramref name="source" /> 的容量。- 或 -<paramref name="destinationIndex" /> 大于或等于 <paramref name="destination" /> 的长度。- 或 -以 <paramref name="sourceIndex" /> 开始的 <paramref name="source" /> 中的字节数少于 <paramref name="count" />。- 或 -复制 <paramref name="count" /> 字节，从 <paramref name="destinationIndex" /> 开始，将超出 <paramref name="destination" /> 的大小。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.CopyTo(Windows.Storage.Streams.IBuffer,System.UInt32,Windows.Storage.Streams.IBuffer,System.UInt32,System.UInt32)">
+      <summary>从源缓冲区 (Windows.Storage.Streams.IBuffer) 复制字节到目标缓冲区，指定该源的起始索引、目标的起始索引和要复制的字节数。</summary>
+      <param name="source">从中复制数据的缓冲区。</param>
+      <param name="sourceIndex">在 <paramref name="source" /> 中从其开始复制数据的索引。</param>
+      <param name="destination">数据复制的缓冲区。</param>
+      <param name="destinationIndex">在 <paramref name="destination" /> 中开始复制数据的索引。</param>
+      <param name="count">要复制的字节数。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 或 <paramref name="destination" /> 为 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="count" /> 或 <paramref name="sourceIndex" />，或者 <paramref name="destinationIndex" /> 小于 0（零）。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="sourceIndex" /> 的长度大于或等于 <paramref name="source" /> 的容量。- 或 -<paramref name="destinationIndex" /> 的长度大于或等于 <paramref name="destination" /> 的容量。- 或 -以 <paramref name="sourceIndex" /> 开始的 <paramref name="source" /> 中的字节数少于 <paramref name="count" />。- 或 -复制 <paramref name="count" /> 字节，从 <paramref name="destinationIndex" /> 开始，将超出 <paramref name="destination" /> 的容量。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.CopyTo(Windows.Storage.Streams.IBuffer,Windows.Storage.Streams.IBuffer)">
+      <summary>复制源数组 (Windows.Storage.Streams.IBuffer) 中的所有字节到目标缓冲区，两个启动偏移量为 0（零）。</summary>
+      <param name="source">源缓冲区。</param>
+      <param name="destination">目标缓冲区。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 或 <paramref name="destination" /> 为 null。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="source" /> 的大小超过了 <paramref name="destination" />的容量。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.GetByte(Windows.Storage.Streams.IBuffer,System.UInt32)">
+      <summary>返回在指定的 Windows.Storage.Streams.IBuffer 接口位于指定偏移量的字节。</summary>
+      <returns>位于指定偏移量的字节。</returns>
+      <param name="source">要从其中获取字节的缓冲区。</param>
+      <param name="byteOffset">字节的偏移。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="byteOffset" /> 小于 0（零）。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="byteOffset" /> 的长度大于或等于 <paramref name="source" /> 的容量。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.GetWindowsRuntimeBuffer(System.IO.MemoryStream)">
+      <summary>返回表示作为该指定内存流的相同内存的 Windows.Storage.Streams.IBuffer 接口。</summary>
+      <returns>由支持指定内存流的相同内存支持的 Windows.Storage.Streams.IBuffer 接口。</returns>
+      <param name="underlyingStream">为 IBuffer 提供备份内存的流。</param>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.GetWindowsRuntimeBuffer(System.IO.MemoryStream,System.Int32,System.Int32)">
+      <summary>返回由表示指定内存流的内存中的一个区域表示的 Windows.Storage.Streams.IBuffer 接口。</summary>
+      <returns>由支持指定内存流的内存中的一个区域支持的 Windows.Storage.Streams.IBuffer 接口。</returns>
+      <param name="underlyingStream">与 IBuffer 共享内存的流。</param>
+      <param name="positionInStream">在 <paramref name="underlyingStream" /> 中的共享内存区域位置。</param>
+      <param name="length">共享内存区域的最大大小。如果 <paramref name="underlyingStream" />中，由 <paramref name="positionInStream" />开始的字节数，少于 <paramref name="length" />， 则返回的IBuffer 只表示可用字节数。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="underlyingStream" /> 为 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="positionInStream" /> 或 <paramref name="length" /> 小于零。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="positionInStream" /> 超出 <paramref name="source" /> 的末尾。</exception>
+      <exception cref="T:System.UnauthorizedAccessException">
+        <paramref name="underlyingStream" /> 无法公开其基础的内存缓冲区。</exception>
+      <exception cref="T:System.ObjectDisposedException">
+        <paramref name="underlyingStream" /> 已关闭。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.IsSameData(Windows.Storage.Streams.IBuffer,Windows.Storage.Streams.IBuffer)">
+      <summary>返回一个值，该值指示两个缓冲区（Windows.Storage.Streams.IBuffer 对象）是否表示相同的基础内存区域。</summary>
+      <returns>如果由两个缓冲区委托的内存区域具有相同的起始点，则为 true；否则为 false。</returns>
+      <param name="buffer">第一个缓冲区。</param>
+      <param name="otherBuffer">第二个缓冲区。</param>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.ToArray(Windows.Storage.Streams.IBuffer)">
+      <summary>返回从指定缓冲区（Windows.Storage.Streams.IBuffer）的内容创建的新数组。数组的大小是 IBuffer 的 Length 属性值。</summary>
+      <returns>包含指定 IBuffer 中的字节的，自偏移 0（零）开始并包括与 IBuffer 的 Length 的值等效的字节数的字节数组。</returns>
+      <param name="source">其内容填充新数组的缓冲区。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.ToArray(Windows.Storage.Streams.IBuffer,System.UInt32,System.Int32)">
+      <summary>返回从指定缓冲区（Windows.Storage.Streams.IBuffer）的内容中创建的新数组，在指定的偏移量开始并包含指定的字节数。</summary>
+      <returns>包含字节指定范围的字节数组。</returns>
+      <param name="source">其内容填充新数组的缓冲区。</param>
+      <param name="sourceIndex">在 <paramref name="source" /> 中从其开始复制数据的索引。</param>
+      <param name="count">要复制的字节数。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 为 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="count" /> 或 <paramref name="sourceIndex" /> 小于 0（零）。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="sourceIndex" /> 的长度大于或等于 <paramref name="source" /> 的容量。- 或 -以 <paramref name="sourceIndex" /> 开始的 <paramref name="source" /> 中的字节数少于 <paramref name="count" />。</exception>
+    </member>
+    <member name="T:Windows.Foundation.Point">
+      <summary>表示二维空间内的 X 和 Y 坐标对。还可以表示某些属性用法的"逻辑点"。</summary>
+    </member>
+    <member name="M:Windows.Foundation.Point.#ctor(System.Double,System.Double)">
+      <summary>初始化包含指定值的 <see cref="T:Windows.Foundation.Point" /> 结构。</summary>
+      <param name="x">
+        <see cref="T:Windows.Foundation.Point" /> 结构的 X 坐标值。</param>
+      <param name="y">
+        <see cref="T:Windows.Foundation.Point" /> 结构的 Y 坐标值。</param>
+    </member>
+    <member name="M:Windows.Foundation.Point.Equals(System.Object)">
+      <summary>确定指定的对象是否为 <see cref="T:Windows.Foundation.Point" /> 以及它是否包含与此 <see cref="T:Windows.Foundation.Point" /> 相同的值。</summary>
+      <returns>如果 <paramref name="obj" /> 是 <see cref="T:Windows.Foundation.Point" /> 并且包含与此 <see cref="T:Windows.Foundation.Point" /> 相同的 <see cref="P:Windows.Foundation.Point.X" /> 值和 <see cref="P:Windows.Foundation.Point.Y" /> 值，则为 true；否则为 false。</returns>
+      <param name="o">要比较的对象。</param>
+    </member>
+    <member name="M:Windows.Foundation.Point.Equals(Windows.Foundation.Point)">
+      <summary>比较两个 <see cref="T:Windows.Foundation.Point" /> 结构是否相等。</summary>
+      <returns>如果两个 <see cref="T:Windows.Foundation.Point" /> 结构都包含相同的 <see cref="P:Windows.Foundation.Point.X" /> 值和 <see cref="P:Windows.Foundation.Point.Y" /> 值，则为 true；否则为 false。</returns>
+      <param name="value">要与此实例进行比较的点。</param>
+    </member>
+    <member name="M:Windows.Foundation.Point.GetHashCode">
+      <summary>返回该 <see cref="T:Windows.Foundation.Point" /> 的哈希代码。</summary>
+      <returns>此 <see cref="T:Windows.Foundation.Point" /> 结构的哈希代码。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Point.op_Equality(Windows.Foundation.Point,Windows.Foundation.Point)">
+      <summary>比较两个 <see cref="T:Windows.Foundation.Point" /> 结构是否相等。</summary>
+      <returns>如果 <paramref name="point1" /> 和 <paramref name="point2" /> 的 <see cref="P:Windows.Foundation.Point.X" /> 和 <see cref="P:Windows.Foundation.Point.Y" /> 值相等，则为 true；否则为 false。</returns>
+      <param name="point1">要比较的第一个 <see cref="T:Windows.Foundation.Point" /> 结构。</param>
+      <param name="point2">要比较的第二个 <see cref="T:Windows.Foundation.Point" /> 结构。</param>
+    </member>
+    <member name="M:Windows.Foundation.Point.op_Inequality(Windows.Foundation.Point,Windows.Foundation.Point)">
+      <summary>比较两个 <see cref="T:Windows.Foundation.Point" /> 结构是否不相等。</summary>
+      <returns>如果 <paramref name="point1" /> 和 <paramref name="point2" /> 具有不同的 <see cref="P:Windows.Foundation.Point.X" /> 或 <see cref="P:Windows.Foundation.Point.Y" /> 值，则为 true。如果 <paramref name="point1" /> 和 <paramref name="point2" /> 具有相同的 <see cref="P:Windows.Foundation.Point.X" /> 和 <see cref="P:Windows.Foundation.Point.Y" /> 值，则为 false。</returns>
+      <param name="point1">要比较的第一个点。</param>
+      <param name="point2">要比较的第二个点。</param>
+    </member>
+    <member name="M:Windows.Foundation.Point.System#IFormattable#ToString(System.String,System.IFormatProvider)">
+      <summary>有关此成员的说明，请参见 <see cref="M:System.IFormattable.ToString(System.String,System.IFormatProvider)" />。</summary>
+      <returns>一个字符串，包含采用指定格式的当前实例的值。</returns>
+      <param name="format">指定要使用的格式的字符串。- 或 -null，表示使用为 IFormattable 实现的类型定义的默认格式。</param>
+      <param name="provider">用于格式化该值的 IFormatProvider。- 或 -从操作系统的当前区域设置中获取数字格式信息的 null。</param>
+    </member>
+    <member name="M:Windows.Foundation.Point.ToString">
+      <summary>创建此 <see cref="T:Windows.Foundation.Point" /> 的 <see cref="T:System.String" /> 表示形式。</summary>
+      <returns>一个 <see cref="T:System.String" />，它包含此 <see cref="T:Windows.Foundation.Point" /> 结构的 <see cref="P:Windows.Foundation.Point.X" /> 和 <see cref="P:Windows.Foundation.Point.Y" /> 值。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Point.ToString(System.IFormatProvider)">
+      <summary>创建此 <see cref="T:Windows.Foundation.Point" /> 的 <see cref="T:System.String" /> 表示形式。</summary>
+      <returns>一个 <see cref="T:System.String" />，它包含此 <see cref="T:Windows.Foundation.Point" /> 结构的 <see cref="P:Windows.Foundation.Point.X" /> 和 <see cref="P:Windows.Foundation.Point.Y" /> 值。</returns>
+      <param name="provider">区域性特定的格式设置信息。</param>
+    </member>
+    <member name="P:Windows.Foundation.Point.X">
+      <summary>获取或设置此 <see cref="T:Windows.Foundation.Point" /> 结构的 <see cref="P:Windows.Foundation.Point.X" /> 坐标值。</summary>
+      <returns>此 <see cref="T:Windows.Foundation.Point" /> 结构的 <see cref="P:Windows.Foundation.Point.X" /> 坐标值。默认值为 0。</returns>
+    </member>
+    <member name="P:Windows.Foundation.Point.Y">
+      <summary>获取或设置此 <see cref="T:Windows.Foundation.Point" /> 的 <see cref="P:Windows.Foundation.Point.Y" /> 坐标值。</summary>
+      <returns>此 <see cref="T:Windows.Foundation.Point" /> 结构的 <see cref="P:Windows.Foundation.Point.Y" /> 坐标值。默认值为 0。</returns>
+    </member>
+    <member name="T:Windows.Foundation.Rect">
+      <summary>描述矩形的宽度、高度和原点。</summary>
+    </member>
+    <member name="M:Windows.Foundation.Rect.#ctor(System.Double,System.Double,System.Double,System.Double)">
+      <summary>初始化 <see cref="T:Windows.Foundation.Rect" /> 结构，此结构具有指定的 x 坐标、y 坐标、宽度和高度。</summary>
+      <param name="x">矩形左上角的 x 坐标。</param>
+      <param name="y">矩形左上角的 y 坐标。</param>
+      <param name="width">矩形的宽度。</param>
+      <param name="height">矩形的高度。</param>
+      <exception cref="T:System.ArgumentException">width 或 height 小于 0。</exception>
+    </member>
+    <member name="M:Windows.Foundation.Rect.#ctor(Windows.Foundation.Point,Windows.Foundation.Point)">
+      <summary>初始化 <see cref="T:Windows.Foundation.Rect" /> 结构，此结构的大小刚好足以包含两个指定的点。</summary>
+      <param name="point1">新矩形必须包含的第一个点。</param>
+      <param name="point2">新矩形必须包含的第二个点。</param>
+    </member>
+    <member name="M:Windows.Foundation.Rect.#ctor(Windows.Foundation.Point,Windows.Foundation.Size)">
+      <summary>基于原点和大小初始化 <see cref="T:Windows.Foundation.Rect" /> 结构。</summary>
+      <param name="location">新 <see cref="T:Windows.Foundation.Rect" /> 的原点。</param>
+      <param name="size">新 <see cref="T:Windows.Foundation.Rect" /> 的大小。</param>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Bottom">
+      <summary>获取矩形底边的 y 轴值。</summary>
+      <returns>矩形底边的 y 轴值。如果矩形为空，则该值为 <see cref="F:System.Double.NegativeInfinity" />。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Rect.Contains(Windows.Foundation.Point)">
+      <summary>指示 <see cref="T:Windows.Foundation.Rect" /> 所描述的矩形是否包含指定的点。</summary>
+      <returns>如果 <see cref="T:Windows.Foundation.Rect" /> 所描述的矩形包含指定的点，则为 true；否则为 false。</returns>
+      <param name="point">要检查的点。</param>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Empty">
+      <summary>获取一个特殊值，该值表示没有位置或区域的矩形。</summary>
+      <returns>空矩形，其 <see cref="P:Windows.Foundation.Rect.X" /> 和 <see cref="P:Windows.Foundation.Rect.Y" /> 属性值为 <see cref="F:System.Double.PositiveInfinity" />，<see cref="P:Windows.Foundation.Rect.Width" /> 和 <see cref="P:Windows.Foundation.Rect.Height" /> 属性值为 <see cref="F:System.Double.NegativeInfinity" />。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Rect.Equals(System.Object)">
+      <summary>指示指定对象是否与当前的 <see cref="T:Windows.Foundation.Rect" /> 相等。</summary>
+      <returns>如果 <paramref name="o" /> 是 <see cref="T:Windows.Foundation.Rect" /> 并具有与当前 <see cref="T:Windows.Foundation.Rect" /> 相同的 x、y、宽度和高度，则为 true；否则为 false。</returns>
+      <param name="o">要与当前矩形进行比较的对象。</param>
+    </member>
+    <member name="M:Windows.Foundation.Rect.Equals(Windows.Foundation.Rect)">
+      <summary>指示指定的 <see cref="T:Windows.Foundation.Rect" /> 是否与当前的 <see cref="T:Windows.Foundation.Rect" /> 相等。</summary>
+      <returns>如果指定的 <see cref="T:Windows.Foundation.Rect" /> 具有与当前 <see cref="T:Windows.Foundation.Rect" /> 相同的 x、y、宽度和高度属性值，则为 true；否则为 false。</returns>
+      <param name="value">要与当前矩形进行比较的矩形。</param>
+    </member>
+    <member name="M:Windows.Foundation.Rect.GetHashCode">
+      <summary>创建 <see cref="T:Windows.Foundation.Rect" /> 的哈希代码。</summary>
+      <returns>当前 <see cref="T:Windows.Foundation.Rect" /> 结构的哈希代码。</returns>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Height">
+      <summary>获取或设置矩形的高度。</summary>
+      <returns>表示矩形的高度的值。默认值为 0。</returns>
+      <exception cref="T:System.ArgumentException">指定的值小于 0。</exception>
+    </member>
+    <member name="M:Windows.Foundation.Rect.Intersect(Windows.Foundation.Rect)">
+      <summary>查找当前 <see cref="T:Windows.Foundation.Rect" /> 所表示的矩形和指定 <see cref="T:Windows.Foundation.Rect" /> 所表示的矩形的交集，并将结果存储为当前 <see cref="T:Windows.Foundation.Rect" />。</summary>
+      <param name="rect">要与当前矩形相交的矩形。</param>
+    </member>
+    <member name="P:Windows.Foundation.Rect.IsEmpty">
+      <summary>获取一个值，该值指示矩形是否为 <see cref="P:Windows.Foundation.Rect.Empty" /> 矩形。</summary>
+      <returns>如果矩形为 <see cref="P:Windows.Foundation.Rect.Empty" /> 矩形，则为 true；否则为 false。</returns>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Left">
+      <summary>获取矩形左边的 x 轴值。</summary>
+      <returns>矩形左边的 x 轴值。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Rect.op_Equality(Windows.Foundation.Rect,Windows.Foundation.Rect)">
+      <summary>比较两个 <see cref="T:Windows.Foundation.Rect" /> 结构是否相等。</summary>
+      <returns>如果 <see cref="T:Windows.Foundation.Rect" /> 结构具有相同的 x、y、宽度和高度属性值，则为 true；否则为 false。</returns>
+      <param name="rect1">要比较的第一个矩形。</param>
+      <param name="rect2">要比较的第二个矩形。</param>
+    </member>
+    <member name="M:Windows.Foundation.Rect.op_Inequality(Windows.Foundation.Rect,Windows.Foundation.Rect)">
+      <summary>比较两个 <see cref="T:Windows.Foundation.Rect" /> 结构是否不相等。</summary>
+      <returns>如果 <see cref="T:Windows.Foundation.Rect" /> 结构不具有相同的 x、y、宽度和高度属性值，则为 true；否则为 false。</returns>
+      <param name="rect1">要比较的第一个矩形。</param>
+      <param name="rect2">要比较的第二个矩形。</param>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Right">
+      <summary>获取矩形右边的 x 轴值。</summary>
+      <returns>矩形右边的 x 轴值。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Rect.System#IFormattable#ToString(System.String,System.IFormatProvider)">
+      <summary>有关此成员的说明，请参见 <see cref="M:System.IFormattable.ToString(System.String,System.IFormatProvider)" />。</summary>
+      <returns>一个字符串，包含采用指定格式的当前实例的值。</returns>
+      <param name="format">指定要使用的格式的字符串。- 或 -null，表示使用为 IFormattable 实现的类型定义的默认格式。</param>
+      <param name="provider">用于格式化该值的 IFormatProvider。- 或 -从操作系统的当前区域设置中获取数字格式信息的 null。</param>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Top">
+      <summary>获取矩形顶边的 y 轴位置。</summary>
+      <returns>矩形顶边的 y 轴位置。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Rect.ToString">
+      <summary>返回 <see cref="T:Windows.Foundation.Rect" /> 结构的字符串表示形式。</summary>
+      <returns>当前 <see cref="T:Windows.Foundation.Rect" /> 结构的字符串表示形式。此字符串采用以下格式："<see cref="P:Windows.Foundation.Rect.X" />,<see cref="P:Windows.Foundation.Rect.Y" />,<see cref="P:Windows.Foundation.Rect.Width" />,<see cref="P:Windows.Foundation.Rect.Height" />"。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Rect.ToString(System.IFormatProvider)">
+      <summary>使用指定的格式提供程序返回矩形的字符串表示形式。</summary>
+      <returns>当前矩形的字符串表示形式，由指定的格式提供程序确定。</returns>
+      <param name="provider">区域性特定的格式设置信息。</param>
+    </member>
+    <member name="M:Windows.Foundation.Rect.Union(Windows.Foundation.Point)">
+      <summary>放大当前 <see cref="T:Windows.Foundation.Rect" /> 所表示的矩形，使其刚好足以包含指定的点。</summary>
+      <param name="point">要包含的点。</param>
+    </member>
+    <member name="M:Windows.Foundation.Rect.Union(Windows.Foundation.Rect)">
+      <summary>放大当前 <see cref="T:Windows.Foundation.Rect" /> 所表示的矩形，使其刚好足以包含指定的矩形。</summary>
+      <param name="rect">要包含的矩形。</param>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Width">
+      <summary>获取或设置矩形的宽度。</summary>
+      <returns>一个表示矩形宽度的值（以像素为单位）。默认值为 0。</returns>
+      <exception cref="T:System.ArgumentException">指定的值小于 0。</exception>
+    </member>
+    <member name="P:Windows.Foundation.Rect.X">
+      <summary>获取或设置矩形左边的 x 轴值。</summary>
+      <returns>矩形左边的 x 轴值。将此值解释为坐标空间中的像素。</returns>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Y">
+      <summary>获取或设置矩形顶边的 y 轴值。</summary>
+      <returns>矩形顶边的 y 轴值。将此值解释为坐标空间中的像素。</returns>
+    </member>
+    <member name="T:Windows.Foundation.Size">
+      <summary>描述对象的宽度和高度。</summary>
+    </member>
+    <member name="M:Windows.Foundation.Size.#ctor(System.Double,System.Double)">
+      <summary>初始化 <see cref="T:Windows.Foundation.Size" /> 结构的新实例，并为其分配初始 <paramref name="width" /> 和 <paramref name="height" />。</summary>
+      <param name="width">
+        <see cref="T:Windows.Foundation.Size" /> 的实例的初始宽度。</param>
+      <param name="height">
+        <see cref="T:Windows.Foundation.Size" /> 的实例的初始高度。</param>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="width" /> 或 <paramref name="height" /> 小于零。</exception>
+    </member>
+    <member name="P:Windows.Foundation.Size.Empty">
+      <summary>获取一个值，该值表示空的静态 <see cref="T:Windows.Foundation.Size" />。</summary>
+      <returns>
+        <see cref="T:Windows.Foundation.Size" /> 的空实例。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Size.Equals(System.Object)">
+      <summary>比较某个对象与 <see cref="T:Windows.Foundation.Size" /> 的实例是否相等。</summary>
+      <returns>如果大小相等，则为 true；否则为 false。</returns>
+      <param name="o">要比较的 <see cref="T:System.Object" />。</param>
+    </member>
+    <member name="M:Windows.Foundation.Size.Equals(Windows.Foundation.Size)">
+      <summary>比较某个值与 <see cref="T:Windows.Foundation.Size" /> 的实例是否相等。</summary>
+      <returns>如果 <see cref="T:Windows.Foundation.Size" /> 的实例相等，则为 true；否则为 false。</returns>
+      <param name="value">要与此 <see cref="T:Windows.Foundation.Size" /> 的当前实例进行比较的大小。</param>
+    </member>
+    <member name="M:Windows.Foundation.Size.GetHashCode">
+      <summary>获取此 <see cref="T:Windows.Foundation.Size" /> 实例的哈希代码。</summary>
+      <returns>
+        <see cref="T:Windows.Foundation.Size" /> 的此实例的哈希代码。</returns>
+    </member>
+    <member name="P:Windows.Foundation.Size.Height">
+      <summary>获取或设置此 <see cref="T:Windows.Foundation.Size" /> 实例的高度。</summary>
+      <returns>此 <see cref="T:Windows.Foundation.Size" /> 实例的 <see cref="P:Windows.Foundation.Size.Height" />（以像素为单位）。默认值为 0。该值不能为负数。</returns>
+      <exception cref="T:System.ArgumentException">指定的值小于 0。</exception>
+    </member>
+    <member name="P:Windows.Foundation.Size.IsEmpty">
+      <summary>获取一个值，该值指示此 <see cref="T:Windows.Foundation.Size" /> 实例是否为 <see cref="P:Windows.Foundation.Size.Empty" />。</summary>
+      <returns>如果此 Size 实例为 <see cref="P:Windows.Foundation.Size.Empty" />，则为 true；否则为 false。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Size.op_Equality(Windows.Foundation.Size,Windows.Foundation.Size)">
+      <summary>比较 <see cref="T:Windows.Foundation.Size" /> 的两个实例是否相等。</summary>
+      <returns>如果 <see cref="T:Windows.Foundation.Size" /> 的两个实例相等，则为 true；否则为 false。</returns>
+      <param name="size1">要比较的第一个 <see cref="T:Windows.Foundation.Size" /> 实例。</param>
+      <param name="size2">要比较的第二个 <see cref="T:Windows.Foundation.Size" /> 实例。</param>
+    </member>
+    <member name="M:Windows.Foundation.Size.op_Inequality(Windows.Foundation.Size,Windows.Foundation.Size)">
+      <summary>比较 <see cref="T:Windows.Foundation.Size" /> 的两个实例是否不相等。</summary>
+      <returns>如果 <see cref="T:Windows.Foundation.Size" /> 的实例不相等，则为 true；否则为 false。</returns>
+      <param name="size1">要比较的第一个 <see cref="T:Windows.Foundation.Size" /> 实例。</param>
+      <param name="size2">要比较的第二个 <see cref="T:Windows.Foundation.Size" /> 实例。</param>
+    </member>
+    <member name="M:Windows.Foundation.Size.ToString">
+      <summary>返回此 <see cref="T:Windows.Foundation.Size" /> 的字符串表示形式。</summary>
+      <returns>此 <see cref="T:Windows.Foundation.Size" /> 的字符串表示形式。</returns>
+    </member>
+    <member name="P:Windows.Foundation.Size.Width">
+      <summary>获取或设置此 <see cref="T:Windows.Foundation.Size" /> 实例的宽度。</summary>
+      <returns>此 <see cref="T:Windows.Foundation.Size" /> 实例的 <see cref="P:Windows.Foundation.Size.Width" />（以像素为单位）。默认值为 0。该值不能为负数。</returns>
+      <exception cref="T:System.ArgumentException">指定的值小于 0。</exception>
+    </member>
+    <member name="T:Windows.UI.Color">
+      <summary>用 Alpha 通道、红色通道、绿色通道和蓝色通道描述颜色。</summary>
+    </member>
+    <member name="P:Windows.UI.Color.A">
+      <summary>获取或设置颜色的 sRGB alpha 通道值。</summary>
+      <returns>颜色的 sRGB alpha 通道值，该值介于 0 和 255 之间。</returns>
+    </member>
+    <member name="P:Windows.UI.Color.B">
+      <summary>获取或设置颜色的 sRGB 蓝色通道值。</summary>
+      <returns>sRGB 蓝色通道值，该值介于 0 和 255 之间。</returns>
+    </member>
+    <member name="M:Windows.UI.Color.Equals(System.Object)">
+      <summary>测试指定的对象是否为 <see cref="T:Windows.UI.Color" /> 结构并等同于当前颜色。</summary>
+      <returns>如果指定的对象是 <see cref="T:Windows.UI.Color" /> 结构并与当前的 <see cref="T:Windows.UI.Color" /> 结构相同，则为 true；否则为 false。</returns>
+      <param name="o">与当前的 <see cref="T:Windows.UI.Color" /> 结构比较的对象。</param>
+    </member>
+    <member name="M:Windows.UI.Color.Equals(Windows.UI.Color)">
+      <summary>测试指定的 <see cref="T:Windows.UI.Color" /> 结构是否与当前颜色相同。</summary>
+      <returns>如果指定的 <see cref="T:Windows.UI.Color" /> 结构与当前的 <see cref="T:Windows.UI.Color" /> 结构相同，则为 true；否则为 false。</returns>
+      <param name="color">要与当前的 <see cref="T:Windows.UI.Color" /> 结构进行比较的 <see cref="T:Windows.UI.Color" /> 结构。</param>
+    </member>
+    <member name="M:Windows.UI.Color.FromArgb(System.Byte,System.Byte,System.Byte,System.Byte)">
+      <summary>使用指定的 sRGB Alpha 通道和颜色通道值创建一个新的 <see cref="T:Windows.UI.Color" /> 结构。</summary>
+      <returns>具有指定值的 <see cref="T:Windows.UI.Color" /> 结构。</returns>
+      <param name="a">新颜色的 Alpha 通道 <see cref="P:Windows.UI.Color.A" />。该值必须介于 0 到 255 之间。</param>
+      <param name="r">新颜色的红色通道 <see cref="P:Windows.UI.Color.R" />。该值必须介于 0 到 255 之间。</param>
+      <param name="g">新颜色的绿色通道 <see cref="P:Windows.UI.Color.G" />。该值必须介于 0 到 255 之间。</param>
+      <param name="b">新颜色的蓝色通道 <see cref="P:Windows.UI.Color.B" />。该值必须介于 0 到 255 之间。</param>
+    </member>
+    <member name="P:Windows.UI.Color.G">
+      <summary>获取或设置颜色的 sRGB 绿色通道值。</summary>
+      <returns>sRGB 绿色通道值，该值介于 0 和 255 之间。</returns>
+    </member>
+    <member name="M:Windows.UI.Color.GetHashCode">
+      <summary>获取当前 <see cref="T:Windows.UI.Color" /> 结构的哈希代码。</summary>
+      <returns>当前 <see cref="T:Windows.UI.Color" /> 结构的哈希代码。</returns>
+    </member>
+    <member name="M:Windows.UI.Color.op_Equality(Windows.UI.Color,Windows.UI.Color)">
+      <summary>测试两个 <see cref="T:Windows.UI.Color" /> 结构是否相同。</summary>
+      <returns>如果 <paramref name="color1" /> 与 <paramref name="color2" /> 完全相同，则为 true；否则为 false。</returns>
+      <param name="color1">要比较的第一个 <see cref="T:Windows.UI.Color" /> 结构。</param>
+      <param name="color2">要比较的第二个 <see cref="T:Windows.UI.Color" /> 结构。</param>
+    </member>
+    <member name="M:Windows.UI.Color.op_Inequality(Windows.UI.Color,Windows.UI.Color)">
+      <summary>测试两个 <see cref="T:Windows.UI.Color" /> 结构是否不同。</summary>
+      <returns>如果 <paramref name="color1" /> 与 <paramref name="color2" /> 不相等，则为 true；否则为 false。</returns>
+      <param name="color1">要比较的第一个 <see cref="T:Windows.UI.Color" /> 结构。</param>
+      <param name="color2">要比较的第二个 <see cref="T:Windows.UI.Color" /> 结构。</param>
+    </member>
+    <member name="P:Windows.UI.Color.R">
+      <summary>获取或设置颜色的 sRGB 红色通道值。</summary>
+      <returns>sRGB 红色通道值，该值介于 0 和 255 之间。</returns>
+    </member>
+    <member name="M:Windows.UI.Color.System#IFormattable#ToString(System.String,System.IFormatProvider)">
+      <summary>有关此成员的说明，请参见 <see cref="M:System.IFormattable.ToString(System.String,System.IFormatProvider)" />。</summary>
+      <returns>一个字符串，包含采用指定格式的当前实例的值。</returns>
+      <param name="format">指定要使用的格式的字符串。- 或 -null，表示使用为 IFormattable 实现的类型定义的默认格式。</param>
+      <param name="provider">用于格式化该值的 IFormatProvider。- 或 -从操作系统的当前区域设置中获取数字格式信息的 null。</param>
+    </member>
+    <member name="M:Windows.UI.Color.ToString">
+      <summary>以十六进制表示法使用 ARGB 通道创建颜色的字符串表示形式。</summary>
+      <returns>颜色的字符串表示形式。</returns>
+    </member>
+    <member name="M:Windows.UI.Color.ToString(System.IFormatProvider)">
+      <summary>使用 ARGB 通道和指定的格式提供程序创建颜色的字符串表示形式。</summary>
+      <returns>颜色的字符串表示形式。</returns>
+      <param name="provider">区域性特定的格式设置信息。</param>
+    </member>
+  </members>
+</doc>

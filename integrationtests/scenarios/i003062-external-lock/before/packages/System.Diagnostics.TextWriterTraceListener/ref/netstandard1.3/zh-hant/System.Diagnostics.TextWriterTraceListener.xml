@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>System.Diagnostics.TextWriterTraceListener</name>
+  </assembly>
+  <members>
+    <member name="T:System.Diagnostics.DelimitedListTraceListener">
+      <summary>將追蹤或偵錯輸出導向文字寫入器，例如資料流寫入器，或導向資料流，例如檔案資料流。</summary>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.Stream)">
+      <summary>初始化 <see cref="T:System.Diagnostics.DelimitedListTraceListener" /> 類別的新執行個體，可寫入指定的輸出資料流。</summary>
+      <param name="stream">要接收輸出的 <see cref="T:System.IO.Stream" />。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="stream" /> 為 null。</exception>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.Stream,System.String)">
+      <summary>初始化 <see cref="T:System.Diagnostics.DelimitedListTraceListener" /> 類別的新執行個體，可寫入至指定的輸出資料流，並具有指定的名稱。</summary>
+      <param name="stream">要接收輸出的 <see cref="T:System.IO.Stream" />。</param>
+      <param name="name">追蹤接聽項之新執行個體的名稱。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="stream" /> 為 null。</exception>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.TextWriter)">
+      <summary>初始化 <see cref="T:System.Diagnostics.DelimitedListTraceListener" /> 類別的新執行個體，可寫入至指定的文字寫入器。</summary>
+      <param name="writer">要接收輸出的 <see cref="T:System.IO.TextWriter" />。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="writer" /> 為 null。</exception>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.TextWriter,System.String)">
+      <summary>初始化 <see cref="T:System.Diagnostics.DelimitedListTraceListener" /> 類別的新執行個體，可寫入至指定的文字寫入器，並具有指定的名稱。</summary>
+      <param name="writer">要接收輸出的 <see cref="T:System.IO.TextWriter" />。</param>
+      <param name="name">追蹤接聽項之新執行個體的名稱。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="writer" /> 為 null。</exception>
+    </member>
+    <member name="P:System.Diagnostics.DelimitedListTraceListener.Delimiter">
+      <summary>取得或設定已分隔清單的分隔符。</summary>
+      <returns>已分隔清單的分隔符。</returns>
+      <exception cref="T:System.ArgumentNullException">
+        <see cref="P:System.Diagnostics.DelimitedListTraceListener.Delimiter" /> 設定為 null。</exception>
+      <exception cref="T:System.ArgumentException">
+        <see cref="P:System.Diagnostics.DelimitedListTraceListener.Delimiter" /> 是設定為空字串 ("")。</exception>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceData(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.Object)">
+      <summary>寫入追蹤資訊、資料物件，及事件資訊至輸出檔或資料流。</summary>
+      <param name="eventCache">
+        <see cref="T:System.Diagnostics.TraceEventCache" /> 物件，包含目前處理序 ID、執行緒 ID 和堆疊追蹤資訊。</param>
+      <param name="source">用來識別輸出的名稱，通常是產生追蹤事件的應用程式名稱。</param>
+      <param name="eventType">其中一個 <see cref="T:System.Diagnostics.TraceEventType" /> 值，可指定引發追蹤的事件型別。</param>
+      <param name="id">事件的數值識別項。</param>
+      <param name="data">將資料物件寫入輸出檔或資料流。</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceData(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.Object[])">
+      <summary>將追蹤資訊、資料物件的陣列及事件資訊寫入至輸出檔或資料流。</summary>
+      <param name="eventCache">
+        <see cref="T:System.Diagnostics.TraceEventCache" /> 物件，包含目前處理序 ID、執行緒 ID 和堆疊追蹤資訊。</param>
+      <param name="source">用來識別輸出的名稱，通常是產生追蹤事件的應用程式名稱。</param>
+      <param name="eventType">其中一個 <see cref="T:System.Diagnostics.TraceEventType" /> 值，可指定引發追蹤的事件型別。</param>
+      <param name="id">事件的數值識別項。</param>
+      <param name="data">將資料物件的陣列寫入輸出檔或資料流。</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceEvent(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.String)">
+      <summary>寫入追蹤資訊、訊息，以及事件資訊至檔案或資料流。</summary>
+      <param name="eventCache">
+        <see cref="T:System.Diagnostics.TraceEventCache" /> 物件，包含目前處理序 ID、執行緒 ID 和堆疊追蹤資訊。</param>
+      <param name="source">用來識別輸出的名稱，通常是產生追蹤事件的應用程式名稱。</param>
+      <param name="eventType">其中一個 <see cref="T:System.Diagnostics.TraceEventType" /> 值，可指定引發追蹤的事件型別。</param>
+      <param name="id">事件的數值識別項。</param>
+      <param name="message">要寫入輸出檔或資料流的追蹤訊息。</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceEvent(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.String,System.Object[])">
+      <summary>寫入追蹤資訊、格式化的物件陣列，及事件資訊至輸出檔或資料流。</summary>
+      <param name="eventCache">
+        <see cref="T:System.Diagnostics.TraceEventCache" /> 物件，包含目前處理序 ID、執行緒 ID 和堆疊追蹤資訊。</param>
+      <param name="source">用來識別輸出的名稱，通常是產生追蹤事件的應用程式名稱。</param>
+      <param name="eventType">其中一個 <see cref="T:System.Diagnostics.TraceEventType" /> 值，可指定引發追蹤的事件型別。</param>
+      <param name="id">事件的數值識別項。</param>
+      <param name="format">包含零或多個格式項目的格式字串，這些項目與 <paramref name="args" /> 陣列中的物件相對應。</param>
+      <param name="args">陣列，含有零或多個要格式化的物件。</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="T:System.Diagnostics.TextWriterTraceListener">
+      <summary>將追蹤或偵錯輸出導至 <see cref="T:System.IO.TextWriter" /> 或 <see cref="T:System.IO.Stream" />，例如 <see cref="T:System.IO.FileStream" />。</summary>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor">
+      <summary>使用 <see cref="T:System.IO.TextWriter" /> 做為輸出接收者，來初始化 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 類別的新執行個體。</summary>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.Stream)">
+      <summary>使用資料流做為偵錯和追蹤之輸出的接收者，來初始化 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 類別的新執行個體。</summary>
+      <param name="stream">
+        <see cref="T:System.IO.Stream" />，表示 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 所寫入的資料流。</param>
+      <exception cref="T:System.ArgumentNullException">資料流為 null。</exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.Stream,System.String)">
+      <summary>使用資料流做為偵錯和追蹤之輸出的接收者，以指定的名稱初始化 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 類別的新執行個體。</summary>
+      <param name="stream">
+        <see cref="T:System.IO.Stream" />，表示 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 所寫入的資料流。</param>
+      <param name="name">新執行個體的名稱。</param>
+      <exception cref="T:System.ArgumentNullException">資料流為 null。</exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.TextWriter)">
+      <summary>使用指定的寫入器當做追蹤或偵錯之輸出的接收者，來初始化 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 類別的新執行個體。</summary>
+      <param name="writer">從 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 接收輸出的 <see cref="T:System.IO.TextWriter" />。</param>
+      <exception cref="T:System.ArgumentNullException">寫入器為 null。</exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.TextWriter,System.String)">
+      <summary>使用指定的寫入器做為追蹤或偵錯之輸出的接收者，以指定的名稱初始化 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 類別的新執行個體。</summary>
+      <param name="writer">從 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 接收輸出的 <see cref="T:System.IO.TextWriter" />。</param>
+      <param name="name">新執行個體的名稱。</param>
+      <exception cref="T:System.ArgumentNullException">寫入器為 null。</exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.Dispose(System.Boolean)">
+      <summary>處置這個 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 物件。</summary>
+      <param name="disposing">true 代表要釋放 Managed 資源；若為 false，則 <see cref="M:System.Diagnostics.TextWriterTraceListener.Dispose(System.Boolean)" /> 沒有任何作用。</param>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.Flush">
+      <summary>清除 <see cref="P:System.Diagnostics.TextWriterTraceListener.Writer" /> 的輸出緩衝區。</summary>
+      <filterpriority>1</filterpriority>
+      <PermissionSet>
+        <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />
+      </PermissionSet>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.Write(System.String)">
+      <summary>將訊息寫入這個執行個體的 <see cref="P:System.Diagnostics.TextWriterTraceListener.Writer" />。</summary>
+      <param name="message">要寫入的訊息。</param>
+      <filterpriority>1</filterpriority>
+      <PermissionSet>
+        <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />
+      </PermissionSet>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.WriteLine(System.String)">
+      <summary>將訊息寫入這個執行個體的 <see cref="P:System.Diagnostics.TextWriterTraceListener.Writer" />，後面接著行結束字元。預設行結束字元為後面接著換行符號 (\r\n) 的歸位字元。</summary>
+      <param name="message">要寫入的訊息。</param>
+      <filterpriority>1</filterpriority>
+      <PermissionSet>
+        <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />
+      </PermissionSet>
+    </member>
+    <member name="P:System.Diagnostics.TextWriterTraceListener.Writer">
+      <summary>取行或設定接收追蹤或偵錯之輸出的文字寫入器。</summary>
+      <returns>
+        <see cref="T:System.IO.TextWriter" />，表示接收追蹤或偵錯之輸出的寫入器。</returns>
+      <filterpriority>2</filterpriority>
+    </member>
+  </members>
+</doc>

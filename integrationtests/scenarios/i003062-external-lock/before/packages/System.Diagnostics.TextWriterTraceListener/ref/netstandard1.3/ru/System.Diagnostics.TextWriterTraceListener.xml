@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>System.Diagnostics.TextWriterTraceListener</name>
+  </assembly>
+  <members>
+    <member name="T:System.Diagnostics.DelimitedListTraceListener">
+      <summary>Направляет выходные данные трассировки или отладки в модуль записи текста, такой как модуль записи в поток или в поток, такой как файловый поток.</summary>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.Stream)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.DelimitedListTraceListener" />, с помощью которого осуществляется запись в указанный исходящий поток. </summary>
+      <param name="stream">
+        <see cref="T:System.IO.Stream" /> для получения выходных данных.</param>
+      <exception cref="T:System.ArgumentNullException">Параметр <paramref name="stream" /> имеет значение null. </exception>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.Stream,System.String)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.DelimitedListTraceListener" />, с помощью которого осуществляется запись в заданный исходящий поток и который имеет указанное имя. </summary>
+      <param name="stream">
+        <see cref="T:System.IO.Stream" /> для получения выходных данных.</param>
+      <param name="name">Имя нового экземпляра прослушивателя трассировки. </param>
+      <exception cref="T:System.ArgumentNullException">Параметр <paramref name="stream" /> имеет значение null. </exception>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.TextWriter)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.DelimitedListTraceListener" />, с помощью которого осуществляется запись в указанный модуль записи текста. </summary>
+      <param name="writer">
+        <see cref="T:System.IO.TextWriter" /> для получения выходных данных.</param>
+      <exception cref="T:System.ArgumentNullException">Параметр <paramref name="writer" /> имеет значение null. </exception>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.TextWriter,System.String)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.DelimitedListTraceListener" />, с помощью которого осуществляется запись в заданный модуль записи текста и который имеет указанное имя. </summary>
+      <param name="writer">
+        <see cref="T:System.IO.TextWriter" /> для получения выходных данных.</param>
+      <param name="name">Имя нового экземпляра прослушивателя трассировки. </param>
+      <exception cref="T:System.ArgumentNullException">Параметр <paramref name="writer" /> имеет значение null. </exception>
+    </member>
+    <member name="P:System.Diagnostics.DelimitedListTraceListener.Delimiter">
+      <summary>Возвращает или задает разделитель для разделенного списка.</summary>
+      <returns>Разделитель для разделенного списка.</returns>
+      <exception cref="T:System.ArgumentNullException">Свойству <see cref="P:System.Diagnostics.DelimitedListTraceListener.Delimiter" /> присвоено значение null.</exception>
+      <exception cref="T:System.ArgumentException">Свойству <see cref="P:System.Diagnostics.DelimitedListTraceListener.Delimiter" /> задана пустая строка ("").</exception>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceData(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.Object)">
+      <summary>Записывает сведения трассировки, объект данных и сведения о событии в исходящий файл или поток.</summary>
+      <param name="eventCache">Объект <see cref="T:System.Diagnostics.TraceEventCache" />, содержащий текущие идентификаторы процесса, идентификаторы потока и сведения о трассировке стека.</param>
+      <param name="source">Имя, используемое для идентификации выходных данных, обычно имя приложения, создавшего событие трассировки.</param>
+      <param name="eventType">Одно из значений <see cref="T:System.Diagnostics.TraceEventType" />, с помощью которого можно определить тип события, ставшего причиной трассировки.</param>
+      <param name="id">Числовой идентификатор события.</param>
+      <param name="data">Объект данных для записи в исходящий файл или поток.</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceData(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.Object[])">
+      <summary>Записывает сведения трассировки, массив объектов данных и сведения о событии в выходной файл или поток.</summary>
+      <param name="eventCache">Объект <see cref="T:System.Diagnostics.TraceEventCache" />, содержащий текущие идентификаторы процесса, идентификаторы потока и сведения о трассировке стека.</param>
+      <param name="source">Имя, используемое для идентификации выходных данных, обычно имя приложения, создавшего событие трассировки.</param>
+      <param name="eventType">Одно из значений <see cref="T:System.Diagnostics.TraceEventType" />, с помощью которого можно определить тип события, ставшего причиной трассировки.</param>
+      <param name="id">Числовой идентификатор события.</param>
+      <param name="data">Массив объектов данных для записи в исходящий файл или поток.</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceEvent(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.String)">
+      <summary>Записывает сведения трассировки, сообщение и сведения о событии в исходящий файл или поток.</summary>
+      <param name="eventCache">Объект <see cref="T:System.Diagnostics.TraceEventCache" />, содержащий текущие идентификаторы процесса, идентификаторы потока и сведения о трассировке стека.</param>
+      <param name="source">Имя, используемое для идентификации выходных данных, обычно имя приложения, создавшего событие трассировки.</param>
+      <param name="eventType">Одно из значений <see cref="T:System.Diagnostics.TraceEventType" />, с помощью которого можно определить тип события, ставшего причиной трассировки.</param>
+      <param name="id">Числовой идентификатор события.</param>
+      <param name="message">Сообщение трассировки для записи в исходящий файл или поток.</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceEvent(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.String,System.Object[])">
+      <summary>Записывает сведения трассировки, форматированный массив объектов данных и сведения о событии в исходящий файл или поток.</summary>
+      <param name="eventCache">Объект <see cref="T:System.Diagnostics.TraceEventCache" />, содержащий текущие идентификаторы процесса, идентификаторы потока и сведения о трассировке стека.</param>
+      <param name="source">Имя, используемое для идентификации выходных данных, обычно имя приложения, создавшего событие трассировки.</param>
+      <param name="eventType">Одно из значений <see cref="T:System.Diagnostics.TraceEventType" />, с помощью которого можно определить тип события, ставшего причиной трассировки.</param>
+      <param name="id">Числовой идентификатор события.</param>
+      <param name="format">Строка форматирования, содержащая 0 или несколько элементов форматирования, связанных с объектами в массиве <paramref name="args" />.</param>
+      <param name="args">Массив, содержащий несколько (или ни одного) объектов, которые необходимо отформатировать.</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="T:System.Diagnostics.TextWriterTraceListener">
+      <summary>Направляет вывод отладки или трассировки в <see cref="T:System.IO.TextWriter" /> или в <see cref="T:System.IO.Stream" />, например, <see cref="T:System.IO.FileStream" />.</summary>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.TextWriterTraceListener" /> с <see cref="T:System.IO.TextWriter" /> в качестве получателя выходных данных.</summary>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.Stream)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.TextWriterTraceListener" />, используя этот поток в качестве получателя выходных данных отладки и трассировки.</summary>
+      <param name="stream">Объект <see cref="T:System.IO.Stream" />, представляющий поток, в который записывает объект <see cref="T:System.Diagnostics.TextWriterTraceListener" />. </param>
+      <exception cref="T:System.ArgumentNullException">Поток имеет значение null. </exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.Stream,System.String)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.TextWriterTraceListener" /> с заданным именем, используя этот поток в качестве получателя выходных данных отладки и трассировки.</summary>
+      <param name="stream">Объект <see cref="T:System.IO.Stream" />, представляющий поток, в который записывает объект <see cref="T:System.Diagnostics.TextWriterTraceListener" />. </param>
+      <param name="name">Имя нового экземпляра. </param>
+      <exception cref="T:System.ArgumentNullException">Поток имеет значение null. </exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.TextWriter)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.TextWriterTraceListener" />, используя заданное средство записи в качестве получателя выходных данных отладки или трассировки.</summary>
+      <param name="writer">Поток <see cref="T:System.IO.TextWriter" />, принимающий выходные данные из объекта <see cref="T:System.Diagnostics.TextWriterTraceListener" />. </param>
+      <exception cref="T:System.ArgumentNullException">Средство записи имеет значение null. </exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.TextWriter,System.String)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.TextWriterTraceListener" /> с заданным именем, используя заданное средство записи в качестве получателя выходных данных отладки или трассировки.</summary>
+      <param name="writer">Поток <see cref="T:System.IO.TextWriter" />, принимающий выходные данные из объекта <see cref="T:System.Diagnostics.TextWriterTraceListener" />. </param>
+      <param name="name">Имя нового экземпляра. </param>
+      <exception cref="T:System.ArgumentNullException">Средство записи имеет значение null. </exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.Dispose(System.Boolean)">
+      <summary>Удаляет этот объект <see cref="T:System.Diagnostics.TextWriterTraceListener" />.</summary>
+      <param name="disposing">true для высвобождения управляемых ресурсов, если false, <see cref="M:System.Diagnostics.TextWriterTraceListener.Dispose(System.Boolean)" /> не действует.</param>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.Flush">
+      <summary>Очищает выходной буфер для свойства <see cref="P:System.Diagnostics.TextWriterTraceListener.Writer" />.</summary>
+      <filterpriority>1</filterpriority>
+      <PermissionSet>
+        <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />
+      </PermissionSet>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.Write(System.String)">
+      <summary>Записывает сообщение в свойство <see cref="P:System.Diagnostics.TextWriterTraceListener.Writer" /> данного экземпляра.</summary>
+      <param name="message">Записываемое сообщение. </param>
+      <filterpriority>1</filterpriority>
+      <PermissionSet>
+        <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />
+      </PermissionSet>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.WriteLine(System.String)">
+      <summary>Записывает сообщение в свойство <see cref="P:System.Diagnostics.TextWriterTraceListener.Writer" /> данного экземпляра, за которым следует ограничитель строки.Ограничитель строки по умолчанию — возврат каретки, за которым следует перевод строки (\r\n).</summary>
+      <param name="message">Записываемое сообщение. </param>
+      <filterpriority>1</filterpriority>
+      <PermissionSet>
+        <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />
+      </PermissionSet>
+    </member>
+    <member name="P:System.Diagnostics.TextWriterTraceListener.Writer">
+      <summary>Возвращает или задает средство записи текста, принимающее выходные данные трассировки или отладки.</summary>
+      <returns>Поток <see cref="T:System.IO.TextWriter" />, представляющий средство записи, которое принимает выходные данные трассировки или отладки.</returns>
+      <filterpriority>2</filterpriority>
+    </member>
+  </members>
+</doc>

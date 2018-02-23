@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<coreProperties xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.openxmlformats.org/package/2006/metadata/core-properties">
+  <dc:creator>Machine Project</dc:creator>
+  <dc:description>Machine.Specifications is a Context/Specification framework geared towards removing language noise and simplifying tests.</dc:description>
+  <dc:identifier>Machine.Specifications</dc:identifier>
+  <version>0.12.0</version>
+  <keywords>test unit testing context specification bdd tdd mspec</keywords>
+  <lastModifiedBy>NuGet.Build.Tasks.Pack, Version=4.3.0.5, Culture=neutral, PublicKeyToken=31bf3856ad364e35;</lastModifiedBy>
+</coreProperties>

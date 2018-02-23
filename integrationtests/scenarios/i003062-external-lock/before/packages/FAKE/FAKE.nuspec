@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>FAKE</id>
+    <version>4.64.6</version>
+    <authors>Steffen Forkmann, Mauricio Scheffer, Colin Bull</authors>
+    <owners>Steffen Forkmann, Mauricio Scheffer, Colin Bull</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>http://www.github.com/fsharp/Fake/blob/master/License.txt</licenseUrl>
+    <projectUrl>http://www.github.com/fsharp/Fake</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/fsharp/FAKE/master/help/pics/logo.png</iconUrl>
+    <description>FAKE - F# Make - is a build automation tool for .NET. Tasks and dependencies are specified in a DSL which is integrated in F#. This package bundles all extensions.</description>
+    <summary>FAKE - F# Make - Get rid of the noise in your build scripts.</summary>
+    <releaseNotes>ConvertFileFromWin7ToWin8 reads file line by line</releaseNotes>
+    <language>en-US</language>
+    <tags>build, fake, f#</tags>
+  </metadata>
+</package>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<coreProperties xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.openxmlformats.org/package/2006/metadata/core-properties">
+  <dc:creator>Microsoft</dc:creator>
+  <dc:description>Provides base types for cryptographic algorithms, including hashing, encryption, and signing operations.
+
+Commonly Used Types:
+System.Security.Cryptography.Aes
+System.Security.Cryptography.RSA
+System.Security.Cryptography.RSAParameters
+System.Security.Cryptography.HMACSHA1
+System.Security.Cryptography.SHA256
+System.Security.Cryptography.SHA1
+System.Security.Cryptography.SHA512
+System.Security.Cryptography.SHA384
+System.Security.Cryptography.HMACSHA256
+System.Security.Cryptography.MD5
+System.Security.Cryptography.HMACSHA384
+System.Security.Cryptography.HMACSHA512
+ 
+When using NuGet 3.x this package requires at least version 3.4.</dc:description>
+  <dc:identifier>System.Security.Cryptography.Algorithms</dc:identifier>
+  <version>4.3.1</version>
+  <keywords></keywords>
+  <lastModifiedBy>NuGet.Packaging, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35;Microsoft Windows NT 6.3.9600.0;</lastModifiedBy>
+</coreProperties>

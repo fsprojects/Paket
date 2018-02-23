@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<coreProperties xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.openxmlformats.org/package/2006/metadata/core-properties">
+  <dc:creator>Microsoft</dc:creator>
+  <dc:description>Provides a programming interface for modern HTTP applications, including HTTP client components that allow applications to consume web services over HTTP and HTTP components that can be used by both clients and servers for parsing HTTP headers.
+
+Commonly Used Types:
+System.Net.Http.HttpResponseMessage
+System.Net.Http.DelegatingHandler
+System.Net.Http.HttpRequestException
+System.Net.Http.HttpClient
+System.Net.Http.MultipartContent
+System.Net.Http.Headers.HttpContentHeaders
+System.Net.Http.HttpClientHandler
+System.Net.Http.StreamContent
+System.Net.Http.FormUrlEncodedContent
+System.Net.Http.HttpMessageHandler
+ 
+When using NuGet 3.x this package requires at least version 3.4.</dc:description>
+  <dc:identifier>System.Net.Http</dc:identifier>
+  <version>4.3.3</version>
+  <keywords></keywords>
+  <lastModifiedBy>NuGet.Packaging, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35;Microsoft Windows NT 6.3.9600.0;</lastModifiedBy>
+</coreProperties>

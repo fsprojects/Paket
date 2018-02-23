@@ -1,0 +1,148 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>System.Diagnostics.TextWriterTraceListener</name>
+  </assembly>
+  <members>
+    <member name="T:System.Diagnostics.DelimitedListTraceListener">
+      <summary>将跟踪或调试输出定向到文本编写器（如流编写器）或流（如文件流）。</summary>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.Stream)">
+      <summary>初始化写入指定输出流的 <see cref="T:System.Diagnostics.DelimitedListTraceListener" /> 类的新实例。</summary>
+      <param name="stream">接收输出的 <see cref="T:System.IO.Stream" />。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="stream" /> 为 null。</exception>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.Stream,System.String)">
+      <summary>初始化写入指定输出流并具有指定名称的 <see cref="T:System.Diagnostics.DelimitedListTraceListener" /> 类的新实例。</summary>
+      <param name="stream">接收输出的 <see cref="T:System.IO.Stream" />。</param>
+      <param name="name">跟踪侦听器的新实例的名称。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="stream" /> 为 null。</exception>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.TextWriter)">
+      <summary>初始化写入指定文本编写器的 <see cref="T:System.Diagnostics.DelimitedListTraceListener" /> 类的新实例。</summary>
+      <param name="writer">接收输出的 <see cref="T:System.IO.TextWriter" />。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="writer" /> 为 null。</exception>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.TextWriter,System.String)">
+      <summary>初始化写入指定文本编写器并具有指定名称的 <see cref="T:System.Diagnostics.DelimitedListTraceListener" /> 类的新实例。</summary>
+      <param name="writer">接收输出的 <see cref="T:System.IO.TextWriter" />。</param>
+      <param name="name">跟踪侦听器的新实例的名称。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="writer" /> 为 null。</exception>
+    </member>
+    <member name="P:System.Diagnostics.DelimitedListTraceListener.Delimiter">
+      <summary>获取或设置分隔列表的分隔符。</summary>
+      <returns>分隔列表的分隔符。</returns>
+      <exception cref="T:System.ArgumentNullException">将 <see cref="P:System.Diagnostics.DelimitedListTraceListener.Delimiter" /> 设置为 null。</exception>
+      <exception cref="T:System.ArgumentException">
+        <see cref="P:System.Diagnostics.DelimitedListTraceListener.Delimiter" /> 设置为空字符串 ("")。</exception>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceData(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.Object)">
+      <summary>向输出文件或流中写入跟踪信息、数据对象和事件信息。</summary>
+      <param name="eventCache">包含当前进程 ID、线程 ID 以及堆栈跟踪信息的 <see cref="T:System.Diagnostics.TraceEventCache" /> 对象。</param>
+      <param name="source">标识输出时使用的名称，通常为生成跟踪事件的应用程序的名称。</param>
+      <param name="eventType">
+        <see cref="T:System.Diagnostics.TraceEventType" /> 值之一，指定引发跟踪的事件类型。</param>
+      <param name="id">事件的数值标识符。</param>
+      <param name="data">要向输出文件或流中写入的数据对象。</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceData(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.Object[])">
+      <summary>将跟踪信息、数据对象数组和事件信息写入输出文件或流中。</summary>
+      <param name="eventCache">包含当前进程 ID、线程 ID 以及堆栈跟踪信息的 <see cref="T:System.Diagnostics.TraceEventCache" /> 对象。</param>
+      <param name="source">标识输出时使用的名称，通常为生成跟踪事件的应用程序的名称。</param>
+      <param name="eventType">
+        <see cref="T:System.Diagnostics.TraceEventType" /> 值之一，指定引发跟踪的事件类型。</param>
+      <param name="id">事件的数值标识符。</param>
+      <param name="data">要向输出文件或流中写入的数据对象数组。</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceEvent(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.String)">
+      <summary>将跟踪信息、消息和事件信息写入输出文件或流中。</summary>
+      <param name="eventCache">包含当前进程 ID、线程 ID 以及堆栈跟踪信息的 <see cref="T:System.Diagnostics.TraceEventCache" /> 对象。</param>
+      <param name="source">标识输出时使用的名称，通常为生成跟踪事件的应用程序的名称。</param>
+      <param name="eventType">
+        <see cref="T:System.Diagnostics.TraceEventType" /> 值之一，指定引发跟踪的事件类型。</param>
+      <param name="id">事件的数值标识符。</param>
+      <param name="message">要向输出文件或流中写入的跟踪消息。</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceEvent(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.String,System.Object[])">
+      <summary>将跟踪信息、格式化对象数组和事件信息写入输出文件或流中。</summary>
+      <param name="eventCache">包含当前进程 ID、线程 ID 以及堆栈跟踪信息的 <see cref="T:System.Diagnostics.TraceEventCache" /> 对象。</param>
+      <param name="source">标识输出时使用的名称，通常为生成跟踪事件的应用程序的名称。</param>
+      <param name="eventType">
+        <see cref="T:System.Diagnostics.TraceEventType" /> 值之一，指定引发跟踪的事件类型。</param>
+      <param name="id">事件的数值标识符。</param>
+      <param name="format">包含零个或多个格式项的格式字符串，这些项与 <paramref name="args" /> 数组中的对象相对应。</param>
+      <param name="args">包含零个或多个要格式化的对象的数组。</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="T:System.Diagnostics.TextWriterTraceListener">
+      <summary>将跟踪或调试输出定向到 <see cref="T:System.IO.TextWriter" /> 或 <see cref="T:System.IO.Stream" />，如 <see cref="T:System.IO.FileStream" />。</summary>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor">
+      <summary>用 <see cref="T:System.IO.TextWriter" /> 作为输出接收者来初始化 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 类的新实例。</summary>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.Stream)">
+      <summary>用流作为调试和跟踪输出的接收者来初始化 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 类的新实例。</summary>
+      <param name="stream">表示 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 写入的流的 <see cref="T:System.IO.Stream" />。</param>
+      <exception cref="T:System.ArgumentNullException">此流为 null。</exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.Stream,System.String)">
+      <summary>用流作为调试和跟踪输出的接收者来初始化具有指定名称的 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 类的新实例。</summary>
+      <param name="stream">表示 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 写入的流的 <see cref="T:System.IO.Stream" />。</param>
+      <param name="name">新实例的名称。</param>
+      <exception cref="T:System.ArgumentNullException">此流为 null。</exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.TextWriter)">
+      <summary>用指定的编写器作为跟踪或调试输出的接收者来初始化 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 类的新实例。</summary>
+      <param name="writer">接收来自 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 的输出的 <see cref="T:System.IO.TextWriter" />。</param>
+      <exception cref="T:System.ArgumentNullException">编写器为 null。</exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.TextWriter,System.String)">
+      <summary>用指定的编写器作为跟踪或调试输出的接收者来初始化具有指定名称的 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 类的新实例。</summary>
+      <param name="writer">接收来自 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 的输出的 <see cref="T:System.IO.TextWriter" />。</param>
+      <param name="name">新实例的名称。</param>
+      <exception cref="T:System.ArgumentNullException">编写器为 null。</exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.Dispose(System.Boolean)">
+      <summary>处置此 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 对象。</summary>
+      <param name="disposing">为 true，则释放托管资源；为 false，则 <see cref="M:System.Diagnostics.TextWriterTraceListener.Dispose(System.Boolean)" /> 无效。</param>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.Flush">
+      <summary>刷新 <see cref="P:System.Diagnostics.TextWriterTraceListener.Writer" /> 的输出缓冲区。</summary>
+      <filterpriority>1</filterpriority>
+      <PermissionSet>
+        <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />
+      </PermissionSet>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.Write(System.String)">
+      <summary>将一条消息写入此实例的 <see cref="P:System.Diagnostics.TextWriterTraceListener.Writer" />。</summary>
+      <param name="message">要写入的消息。</param>
+      <filterpriority>1</filterpriority>
+      <PermissionSet>
+        <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />
+      </PermissionSet>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.WriteLine(System.String)">
+      <summary>将一条消息写入该实例的 <see cref="P:System.Diagnostics.TextWriterTraceListener.Writer" />，后跟行结束符。默认行结束符是回车符后接一个换行符 (\r\n)。</summary>
+      <param name="message">要写入的消息。</param>
+      <filterpriority>1</filterpriority>
+      <PermissionSet>
+        <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />
+      </PermissionSet>
+    </member>
+    <member name="P:System.Diagnostics.TextWriterTraceListener.Writer">
+      <summary>获取或设置接收跟踪或调试输出的文本编写器。</summary>
+      <returns>表示接收跟踪或调试输出的编写器的 <see cref="T:System.IO.TextWriter" />。</returns>
+      <filterpriority>2</filterpriority>
+    </member>
+  </members>
+</doc>

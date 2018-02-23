@@ -1,0 +1,370 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>System.Diagnostics.Contracts</name>
+  </assembly>
+  <members>
+    <member name="T:System.Diagnostics.Contracts.Contract">
+      <summary>사전 조건, 사후 조건, 개체 고정 조건 같은 프로그램 계약을 나타내는 정적 메서드가 포함됩니다.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assert(System.Boolean)">
+      <summary>조건을 확인합니다. 조건이 false이면 분석기에 설정된 에스컬레이션 정책을 따릅니다.</summary>
+      <param name="condition">테스트할 조건식입니다.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assert(System.Boolean,System.String)">
+      <summary>조건을 확인합니다. 조건이 false이면 분석기에 설정된 에스컬레이션 정책을 따르고 지정된 메시지를 표시합니다.</summary>
+      <param name="condition">테스트할 조건식입니다.</param>
+      <param name="userMessage">조건이 충족되지 않으면 표시할 메시지입니다.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assume(System.Boolean)">
+      <summary>조건이 항상 true인지 고정적으로 입증할 수 없는 경우를 포함하여, 코드 분석 도구가 지정된 조건을 true라고 가정하도록 지시합니다.</summary>
+      <param name="condition">true라고 가정할 조건식입니다.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assume(System.Boolean,System.String)">
+      <summary>조건이 항상 true인지 고정적으로 입증할 수 없는 경우를 포함하여, 코드 분석 도구가 조건을 true라고 가정하고 가정이 실패한 경우 메시지를 표시하도록 지시합니다.</summary>
+      <param name="condition">true라고 가정할 조건식입니다.</param>
+      <param name="userMessage">가정이 실패할 경우 게시되는 메시지입니다.</param>
+    </member>
+    <member name="E:System.Diagnostics.Contracts.Contract.ContractFailed">
+      <summary>계약이 실패한 경우 발생합니다.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.EndContractBlock">
+      <summary>메서드의 계약에 if-then-throw 형태의 사전 조건만 포함되어 있을 때 계약 섹션의 끝을 표시합니다.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Ensures(System.Boolean)">
+      <summary>바깥쪽 메서드 또는 속성에 대한 사후 조건 계약을 지정합니다.</summary>
+      <param name="condition">테스트할 조건식입니다.식에는 <see cref="M:System.Diagnostics.Contracts.Contract.OldValue``1(``0)" />, <see cref="M:System.Diagnostics.Contracts.Contract.ValueAtReturn``1(``0@)" /> 및 <see cref="M:System.Diagnostics.Contracts.Contract.Result``1" /> 값이 포함될 수 있습니다.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Ensures(System.Boolean,System.String)">
+      <summary>제공된 종료 조건에 대한 사후 조건 계약과 조건이 false인 경우 표시할 메시지를 지정합니다.</summary>
+      <param name="condition">테스트할 조건식입니다.식에는 <see cref="M:System.Diagnostics.Contracts.Contract.OldValue``1(``0)" /> 및 <see cref="M:System.Diagnostics.Contracts.Contract.Result``1" /> 값이 포함될 수 있습니다.</param>
+      <param name="userMessage">식이 true가 아니면 표시할 메시지입니다.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.EnsuresOnThrow``1(System.Boolean)">
+      <summary>제공된 예외와 조건에 따라 바깥쪽 메서드 또는 속성에 대한 사후 조건 계약을 지정합니다.</summary>
+      <param name="condition">테스트할 조건식입니다.</param>
+      <typeparam name="TException">사후 조건 확인을 호출하는 예외의 형식입니다.</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.EnsuresOnThrow``1(System.Boolean,System.String)">
+      <summary>제공된 예외와 조건에 따라 바깥쪽 메서드 또는 속성에 대한 해당 조건이 false인 경우 표시할 사후 조건 계약과 메시지를 지정합니다.</summary>
+      <param name="condition">테스트할 조건식입니다.</param>
+      <param name="userMessage">식이 false이면 표시할 메시지입니다.</param>
+      <typeparam name="TException">사후 조건 확인을 호출하는 예외의 형식입니다.</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Exists``1(System.Collections.Generic.IEnumerable{``0},System.Predicate{``0})">
+      <summary>요소 컬렉션에 속하는 요소가 함수에 존재하는지 확인합니다.</summary>
+      <returns>
+        <paramref name="predicate" />가 <paramref name="collection" />에서 <paramref name="T" /> 형식의 요소에 대해 true를 반환하는 경우에만 true입니다.</returns>
+      <param name="collection">
+        <paramref name="T" /> 형식의 요소를 <paramref name="predicate" />로 전달할 컬렉션입니다.</param>
+      <param name="predicate">
+        <paramref name="collection" />에 있는 요소를 평가하기 위한 함수입니다.</param>
+      <typeparam name="T">
+        <paramref name="collection" />에 포함된 형식입니다.</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="collection" /> or <paramref name="predicate" /> is null.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Exists(System.Int32,System.Int32,System.Predicate{System.Int32})">
+      <summary>정수 범위 내의 정수에 대해 지정된 테스트가 true인지를 확인합니다.</summary>
+      <returns>
+        <paramref name="predicate" />가 <paramref name="fromInclusive" />부터 <paramref name="toExclusive" /> - 1 사이의 정수에 대해 true를 반환하면 true입니다.</returns>
+      <param name="fromInclusive">
+        <paramref name="predicate" />에 전달할 첫 번째 정수입니다.</param>
+      <param name="toExclusive">
+        <paramref name="predicate" />에 전달할 마지막 정수보다 1 더 큽니다.</param>
+      <param name="predicate">지정된 범위에 있는 정수의 값을 평가하기 위한 함수입니다.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="predicate" /> is null.</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="toExclusive " />is less than <paramref name="fromInclusive" />.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.ForAll``1(System.Collections.Generic.IEnumerable{``0},System.Predicate{``0})">
+      <summary>컬렉션의 모든 요소가 함수에 존재하는지 확인합니다.</summary>
+      <returns>
+        <paramref name="predicate" />가 <paramref name="collection" />에 있는 모든 <paramref name="T" /> 형식 요소에 대해 true를 반환하는 경우에만 true입니다.</returns>
+      <param name="collection">
+        <paramref name="T" /> 형식의 요소를 <paramref name="predicate" />로 전달할 컬렉션입니다.</param>
+      <param name="predicate">
+        <paramref name="collection" />에 모든 요소가 존재하는지 확인할 함수입니다.</param>
+      <typeparam name="T">
+        <paramref name="collection" />에 포함된 형식입니다.</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="collection" /> or <paramref name="predicate" /> is null.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.ForAll(System.Int32,System.Int32,System.Predicate{System.Int32})">
+      <summary>지정된 범위의 모든 정수에 대해 특정 조건이 유효한지를 확인합니다.</summary>
+      <returns>
+        <paramref name="predicate" />가 <paramref name="fromInclusive" />에서 <paramref name="toExclusive" /> - 1 사이의 모든 정수에 대해 true를 반환하면 true입니다.</returns>
+      <param name="fromInclusive">
+        <paramref name="predicate" />에 전달할 첫 번째 정수입니다.</param>
+      <param name="toExclusive">
+        <paramref name="predicate" />에 전달할 마지막 정수보다 1이 더 큽니다.</param>
+      <param name="predicate">지정된 범위의 정수가 존재하는지 확인할 함수입니다.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="predicate" /> is null.</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="toExclusive " />is less than <paramref name="fromInclusive" />.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Invariant(System.Boolean)">
+      <summary>바깥쪽 메서드 또는 속성에 대한 고정 계약을 지정합니다. </summary>
+      <param name="condition">테스트할 조건식입니다.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Invariant(System.Boolean,System.String)">
+      <summary>바깥쪽 메서드나 속성에 대한 고정 계약을 지정하고 계약의 조건이 실패한 경우 메시지를 표시합니다.</summary>
+      <param name="condition">테스트할 조건식입니다.</param>
+      <param name="userMessage">조건이 false인 경우 표시할 메시지입니다.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.OldValue``1(``0)">
+      <summary>값을 메서드나 속성의 시작 위치에 있었던 그대로 나타냅니다.</summary>
+      <returns>메서드나 속성의 시작 위치에 있는 필드 또는 매개 변수의 값입니다.</returns>
+      <param name="value">나타낼 값(필드 또는 매개 변수)입니다.</param>
+      <typeparam name="T">값의 형식입니다.</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires``1(System.Boolean)">
+      <summary>바깥쪽 메서드나 속성에 대한 사전 조건 계약을 지정하고 계약의 조건이 실패한 경우 예외를 throw합니다.</summary>
+      <param name="condition">테스트할 조건식입니다.</param>
+      <typeparam name="TException">조건이 false인 경우 throw할 예외입니다.</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires(System.Boolean)">
+      <summary>바깥쪽 메서드 또는 속성에 대한 사전 조건 계약을 지정합니다.</summary>
+      <param name="condition">테스트할 조건식입니다.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires(System.Boolean,System.String)">
+      <summary>바깥쪽 메서드나 속성에 대한 사전 조건 계약을 지정하고 계약의 조건이 실패한 경우 메시지를 표시합니다.</summary>
+      <param name="condition">테스트할 조건식입니다.</param>
+      <param name="userMessage">조건이 false인 경우 표시할 메시지입니다.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires``1(System.Boolean,System.String)">
+      <summary>바깥쪽 메서드 또는 속성에 대한 사전 조건 계약을 지정하고 계약의 조건이 실패할 경우 제공된 메시지와 함께 예외를 throw합니다.</summary>
+      <param name="condition">테스트할 조건식입니다.</param>
+      <param name="userMessage">조건이 false인 경우 표시할 메시지입니다.</param>
+      <typeparam name="TException">조건이 false인 경우 throw할 예외입니다.</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Result``1">
+      <summary>메서드나 속성의 반환 값을 나타냅니다.</summary>
+      <returns>바깥쪽 메서드나 속성의 반환 값입니다.</returns>
+      <typeparam name="T">바깥쪽 메서드나 속성의 반환 값 형식입니다.</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.ValueAtReturn``1(``0@)">
+      <summary>메서드에서 반환되는 out 매개 변수의 최종(출력) 값을 나타냅니다.</summary>
+      <returns>out 매개 변수의 출력 값입니다.</returns>
+      <param name="value">out 매개 변수입니다.</param>
+      <typeparam name="T">out 매개 변수의 형식입니다.</typeparam>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractAbbreviatorAttribute">
+      <summary>전체 계약 구문을 대신 사용할 수 있는 약어를 정의합니다.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractAbbreviatorAttribute.#ctor">
+      <summary>
+        <see cref="T:System.Diagnostics.Contracts.ContractAbbreviatorAttribute" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractArgumentValidatorAttribute">
+      <summary>다시 사용하기 위해 별도의 메서드로 레거시 if-then-throw 코드의 팩터링을 사용하도록 설정하고 throw된 예외 및 인수를 완전히 제어할 수 있도록 합니다.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractArgumentValidatorAttribute.#ctor">
+      <summary>
+        <see cref="T:System.Diagnostics.Contracts.ContractArgumentValidatorAttribute" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractClassAttribute">
+      <summary>별도의 형식이 이 형식에 대한 코드 계약을 포함하도록 지정합니다.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractClassAttribute.#ctor(System.Type)">
+      <summary>
+        <see cref="T:System.Diagnostics.Contracts.ContractClassAttribute" /> 클래스의 새 인스턴스를 초기화합니다. </summary>
+      <param name="typeContainingContracts">이 형식에 대한 코드 계약을 포함하는 형식입니다.</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractClassAttribute.TypeContainingContracts">
+      <summary>이 형식에 대한 코드 계약을 포함하는 형식을 가져옵니다.</summary>
+      <returns>이 형식에 대한 코드 계약을 포함하는 형식입니다. </returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractClassForAttribute">
+      <summary>클래스가 특정 형식의 계약임을 지정합니다.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractClassForAttribute.#ctor(System.Type)">
+      <summary>현재 클래스의 계약 형식을 지정하여 <see cref="T:System.Diagnostics.Contracts.ContractClassForAttribute" /> 클래스의 새 인스턴스를 초기화합니다. </summary>
+      <param name="typeContractsAreFor">현재 클래스의 계약 형식입니다.</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractClassForAttribute.TypeContractsAreFor">
+      <summary>이 코드 계약이 적용되는 형식을 가져옵니다. </summary>
+      <returns>이 계약이 적용되는 형식입니다.</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractFailedEventArgs">
+      <summary>
+        <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" /> 이벤트에 대한 메서드와 데이터를 제공합니다.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractFailedEventArgs.#ctor(System.Diagnostics.Contracts.ContractFailureKind,System.String,System.String,System.Exception)">
+      <summary>
+        <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" /> 이벤트에 대한 데이터를 제공합니다.</summary>
+      <param name="failureKind">실패한 계약을 지정하는 열거형 값 중 하나입니다.</param>
+      <param name="message">이벤트의 메시지입니다.</param>
+      <param name="condition">이벤트에 대한 조건입니다.</param>
+      <param name="originalException">이벤트를 발생시킨 예외입니다.</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Condition">
+      <summary>계약의 실패에 대한 조건을 가져옵니다.</summary>
+      <returns>실패에 대한 조건입니다.</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.FailureKind">
+      <summary>실패한 계약의 형식을 가져옵니다.</summary>
+      <returns>실패한 계약의 형식을 지정하는 열거형 값 중 하나입니다.</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Handled">
+      <summary>
+        <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" /> 이벤트가 처리되었는지 여부를 나타냅니다.</summary>
+      <returns>이벤트가 처리되었으면 true이고, 그렇지 않으면 false입니다. </returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Message">
+      <summary>
+        <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" /> 이벤트를 설명하는 메시지를 가져옵니다.</summary>
+      <returns>이벤트를 설명하는 메시지입니다.</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.OriginalException">
+      <summary>
+        <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" /> 이벤트를 발생시킨 원래 예외를 가져옵니다.</summary>
+      <returns>이벤트를 발생시킨 예외입니다.</returns>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractFailedEventArgs.SetHandled">
+      <summary>
+        <see cref="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Handled" /> 속성을 true로 설정합니다.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractFailedEventArgs.SetUnwind">
+      <summary>
+        <see cref="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Unwind" /> 속성을 true로 설정합니다.</summary>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Unwind">
+      <summary>코드 계약 에스컬레이션 정책을 적용해야 하는지 여부를 나타냅니다.</summary>
+      <returns>에스컬레이션 정책을 적용하면 true이고, 그렇지 않으면 false입니다.기본값은 false입니다.</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractFailureKind">
+      <summary>실패한 계약의 형식을 지정합니다. </summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Assert">
+      <summary>
+        <see cref="Overload:System.Diagnostics.Contracts.Contract.Assert" /> 계약이 실패했습니다.</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Assume">
+      <summary>
+        <see cref="Overload:System.Diagnostics.Contracts.Contract.Assume" /> 계약이 실패했습니다.</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Invariant">
+      <summary>
+        <see cref="Overload:System.Diagnostics.Contracts.Contract.Invariant" /> 계약이 실패했습니다.</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Postcondition">
+      <summary>
+        <see cref="Overload:System.Diagnostics.Contracts.Contract.Ensures" /> 계약이 실패했습니다. </summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.PostconditionOnException">
+      <summary>
+        <see cref="Overload:System.Diagnostics.Contracts.Contract.EnsuresOnThrow" /> 계약이 실패했습니다.</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Precondition">
+      <summary>
+        <see cref="Overload:System.Diagnostics.Contracts.Contract.Requires" /> 계약이 실패했습니다.</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractInvariantMethodAttribute">
+      <summary>메서드를 클래스의 고정 메서드로 표시합니다.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractInvariantMethodAttribute.#ctor">
+      <summary>
+        <see cref="T:System.Diagnostics.Contracts.ContractInvariantMethodAttribute" /> 클래스의 새 인스턴스를 초기화합니다. </summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractOptionAttribute">
+      <summary>어셈블리, 형식 또는 메서드 세분 수준에서 계약 및 도구 옵션을 설정할 수 있도록 합니다.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractOptionAttribute.#ctor(System.String,System.String,System.Boolean)">
+      <summary>제공된 범주, 설정 및 활성화/비활성화 값을 사용하여 <see cref="T:System.Diagnostics.Contracts.ContractOptionAttribute" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="category">설정할 옵션에 대한 범주입니다.</param>
+      <param name="setting">옵션 설정입니다.</param>
+      <param name="enabled">옵션을 활성화하려면 true이고 옵션을 비활성화하려면 false입니다.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractOptionAttribute.#ctor(System.String,System.String,System.String)">
+      <summary>제공된 범주, 설정 및 값을 사용하여 <see cref="T:System.Diagnostics.Contracts.ContractOptionAttribute" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="category">설정할 옵션의 범주입니다.</param>
+      <param name="setting">옵션 설정입니다.</param>
+      <param name="value">설정의 값입니다.</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Category">
+      <summary>옵션의 범주를 가져옵니다.</summary>
+      <returns>옵션의 범주입니다.</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Enabled">
+      <summary>옵션을 사용할 수 있는지 여부를 확인합니다.</summary>
+      <returns>옵션을 사용할 수 있으면 true이고, 그렇지 않으면 false입니다.</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Setting">
+      <summary>옵션에 대한 설정을 가져옵니다.</summary>
+      <returns>옵션에 대한 설정입니다.</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Value">
+      <summary>옵션의 값을 가져옵니다.</summary>
+      <returns>옵션에 대한 값입니다.</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute">
+      <summary>필드의 표시 유형이 메서드보다 제한적인 경우 필드를 메서드 계약에 사용할 수 있음을 지정합니다. </summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute.#ctor(System.String)">
+      <summary>
+        <see cref="T:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute" /> 클래스의 새 인스턴스를 초기화합니다. </summary>
+      <param name="name">필드에 적용할 속성 이름입니다.</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute.Name">
+      <summary>필드에 적용되는 속성 이름을 가져옵니다.</summary>
+      <returns>필드에 적용되는 속성 이름입니다.</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractReferenceAssemblyAttribute">
+      <summary>어셈블리가 계약을 포함하는 참조 어셈블리임을 지정합니다.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractReferenceAssemblyAttribute.#ctor">
+      <summary>
+        <see cref="T:System.Diagnostics.Contracts.ContractReferenceAssemblyAttribute" /> 클래스의 새 인스턴스를 초기화합니다. </summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractRuntimeIgnoredAttribute">
+      <summary>런타임 동작이 없는 멤버를 식별합니다.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractRuntimeIgnoredAttribute.#ctor">
+      <summary>
+        <see cref="T:System.Diagnostics.Contracts.ContractRuntimeIgnoredAttribute" /> 클래스의 새 인스턴스를 초기화합니다. </summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractVerificationAttribute">
+      <summary>분석 도구가 정적 확인을 수행하지 않고 어셈블리, 형식 또는 멤버의 정확성을 가정하도록 지시합니다.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractVerificationAttribute.#ctor(System.Boolean)">
+      <summary>
+        <see cref="T:System.Diagnostics.Contracts.ContractVerificationAttribute" /> 클래스의 새 인스턴스를 초기화합니다. </summary>
+      <param name="value">확인이 필요하면 true이고, 그렇지 않으면 false입니다. </param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractVerificationAttribute.Value">
+      <summary>대상의 계약을 확인할지 여부를 나타내는 값을 가져옵니다. </summary>
+      <returns>확인이 필요하면 true이고, 그렇지 않으면 false입니다.</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.PureAttribute">
+      <summary>시각적인 상태 변화가 없는 순수한 형식이나 메서드를 나타냅니다.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.PureAttribute.#ctor">
+      <summary>
+        <see cref="T:System.Diagnostics.Contracts.PureAttribute" /> 클래스의 새 인스턴스를 초기화합니다. </summary>
+    </member>
+    <member name="T:System.Runtime.CompilerServices.ContractHelper">
+      <summary>이진 재작성기가 계약 실패를 처리하기 위해 사용하는 메서드를 제공합니다.</summary>
+    </member>
+    <member name="M:System.Runtime.CompilerServices.ContractHelper.RaiseContractFailedEvent(System.Diagnostics.Contracts.ContractFailureKind,System.String,System.String,System.Exception)">
+      <summary>이진 재작성기에서 기본 실패 동작을 활성화하는 데 사용됩니다.</summary>
+      <returns>이벤트가 처리되고 실패를 트리거하지 않으면 null 참조(Visual Basic의 Nothing)이고, 그렇지 않으면 지역화된 실패 메시지를 반환합니다.</returns>
+      <param name="failureKind">실패 유형을 지정하는 열거형 값 중 하나입니다.</param>
+      <param name="userMessage">추가 사용자 정보입니다.</param>
+      <param name="conditionText">실패를 발생시킨 조건에 대한 설명입니다.</param>
+      <param name="innerException">현재 예외를 발생시킨 내부 예외입니다.</param>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="failureKind" />은(는) 올바른 <see cref="T:System.Diagnostics.Contracts.ContractFailureKind" /> 값이 아닙니다.</exception>
+    </member>
+    <member name="M:System.Runtime.CompilerServices.ContractHelper.TriggerFailure(System.Diagnostics.Contracts.ContractFailureKind,System.String,System.String,System.String,System.Exception)">
+      <summary>기본 실패 동작을 트리거합니다.</summary>
+      <param name="kind">실패 유형을 지정하는 열거형 값 중 하나입니다.</param>
+      <param name="displayMessage">표시할 메시지입니다.</param>
+      <param name="userMessage">추가 사용자 정보입니다.</param>
+      <param name="conditionText">실패를 발생시킨 조건에 대한 설명입니다.</param>
+      <param name="innerException">현재 예외를 발생시킨 내부 예외입니다.</param>
+    </member>
+  </members>
+</doc>

@@ -1,0 +1,1073 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>System.Xml.XPath</name>
+  </assembly>
+  <members>
+    <member name="T:System.Xml.XmlNodeOrder">
+      <summary>ノードのドキュメント順を 2 番目のノードと比較して記述します。</summary>
+    </member>
+    <member name="F:System.Xml.XmlNodeOrder.After">
+      <summary>このナビゲーターの現在のノードが、提供されたナビゲーターの現在のノードの後にあります。</summary>
+    </member>
+    <member name="F:System.Xml.XmlNodeOrder.Before">
+      <summary>このナビゲーターの現在のノードが、提供されたナビゲーターの現在のノードの前にあります。</summary>
+    </member>
+    <member name="F:System.Xml.XmlNodeOrder.Same">
+      <summary>2 つのナビゲーターが同じノードに配置されています。</summary>
+    </member>
+    <member name="F:System.Xml.XmlNodeOrder.Unknown">
+      <summary>ノードの位置は、互いを基準にしてドキュメント順に比較できません。2 つのノードが別のツリーにある場合は比較できます。</summary>
+    </member>
+    <member name="T:System.Xml.XPath.IXPathNavigable">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> クラスのアクセサーを提供します。</summary>
+    </member>
+    <member name="M:System.Xml.XPath.IXPathNavigable.CreateNavigator">
+      <summary>新しい <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクトを返します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクト。</returns>
+    </member>
+    <member name="T:System.Xml.XPath.XmlCaseOrder">
+      <summary>大文字と小文字の並べ替え順序を指定します。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlCaseOrder.LowerFirst">
+      <summary>小文字は、大文字の前に並べ替えられます。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlCaseOrder.None">
+      <summary>大文字と小文字の区別を無視します。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlCaseOrder.UpperFirst">
+      <summary>大文字は、小文字の前に並べ替えられます。</summary>
+    </member>
+    <member name="T:System.Xml.XPath.XmlDataType">
+      <summary>並べ替え順序を決定するためのデータ型を指定します。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlDataType.Number">
+      <summary>値は数値順に並べ替えられます。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlDataType.Text">
+      <summary>値はアルファベット順に並べ替えられます。</summary>
+    </member>
+    <member name="T:System.Xml.XPath.XmlSortOrder">
+      <summary>並べ替え順序を指定します。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlSortOrder.Ascending">
+      <summary>ノードは昇順に並べ替えられます。たとえば、数字 1、2、3、4 を昇順に並べ替えると、1、2、3、4 となります。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlSortOrder.Descending">
+      <summary>ノードは降順に並べ替えられます。たとえば、数字 1、2、3、4 を降順に並べ替えると、4、3、2、1 となります。</summary>
+    </member>
+    <member name="T:System.Xml.XPath.XPathDocument">
+      <summary>XPath データ モデルを使用して、XML ドキュメントの読み取り専用で高速なインメモリ表現を提供します。</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.#ctor(System.IO.Stream)">
+      <summary>指定した <see cref="T:System.IO.Stream" /> オブジェクトの XML データから <see cref="T:System.Xml.XPath.XPathDocument" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="stream">XML データを格納している <see cref="T:System.IO.Stream" /> オブジェクト。</param>
+      <exception cref="T:System.Xml.XmlException">An error was encountered in the XML data.The <see cref="T:System.Xml.XPath.XPathDocument" /> remains empty.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.IO.Stream" /> object passed as a parameter is null.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.#ctor(System.IO.TextReader)">
+      <summary>指定した <see cref="T:System.IO.TextReader" /> オブジェクトに格納されている XML データから <see cref="T:System.Xml.XPath.XPathDocument" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="textReader">XML データを格納している <see cref="T:System.IO.TextReader" /> オブジェクト。</param>
+      <exception cref="T:System.Xml.XmlException">An error was encountered in the XML data.The <see cref="T:System.Xml.XPath.XPathDocument" /> remains empty.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.IO.TextReader" /> object passed as a parameter is null.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.#ctor(System.String)">
+      <summary>指定したファイルの XML データから <see cref="T:System.Xml.XPath.XPathDocument" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="uri">XML データを格納しているファイルのパス。</param>
+      <exception cref="T:System.Xml.XmlException">An error was encountered in the XML data.The <see cref="T:System.Xml.XPath.XPathDocument" /> remains empty.</exception>
+      <exception cref="T:System.ArgumentNullException">The file path parameter is null.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.#ctor(System.String,System.Xml.XmlSpace)">
+      <summary>指定したファイルの XML データから <see cref="T:System.Xml.XPath.XPathDocument" /> クラスの新しいインスタンスを初期化し、指定した空白処理を実行します。</summary>
+      <param name="uri">XML データを格納しているファイルのパス。</param>
+      <param name="space">
+        <see cref="T:System.Xml.XmlSpace" /> オブジェクト。</param>
+      <exception cref="T:System.Xml.XmlException">An error was encountered in the XML data.The <see cref="T:System.Xml.XPath.XPathDocument" /> remains empty.</exception>
+      <exception cref="T:System.ArgumentNullException">The file path parameter or <see cref="T:System.Xml.XmlSpace" /> object parameter is null.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.#ctor(System.Xml.XmlReader)">
+      <summary>指定した <see cref="T:System.Xml.XmlReader" /> オブジェクトに格納されている XML データから <see cref="T:System.Xml.XPath.XPathDocument" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="reader">XML データを格納している <see cref="T:System.Xml.XmlReader" /> オブジェクト。</param>
+      <exception cref="T:System.Xml.XmlException">An error was encountered in the XML data.The <see cref="T:System.Xml.XPath.XPathDocument" /> remains empty.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object passed as a parameter is null.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.#ctor(System.Xml.XmlReader,System.Xml.XmlSpace)">
+      <summary>指定した <see cref="T:System.Xml.XmlReader" /> オブジェクトに格納されている XML データから <see cref="T:System.Xml.XPath.XPathDocument" /> クラスの新しいインスタンスを初期化し、指定した空白処理を実行します。</summary>
+      <param name="reader">XML データを格納している <see cref="T:System.Xml.XmlReader" /> オブジェクト。</param>
+      <param name="space">
+        <see cref="T:System.Xml.XmlSpace" /> オブジェクト。</param>
+      <exception cref="T:System.Xml.XmlException">An error was encountered in the XML data.The <see cref="T:System.Xml.XPath.XPathDocument" /> remains empty.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object parameter or <see cref="T:System.Xml.XmlSpace" /> object parameter is null.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.CreateNavigator">
+      <summary>読み取り専用の <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクトを初期化します。このオブジェクトは、<see cref="T:System.Xml.XPath.XPathDocument" /> のノード内の移動に使用されます。</summary>
+      <returns>読み取り専用の <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクト。</returns>
+    </member>
+    <member name="T:System.Xml.XPath.XPathException">
+      <summary>Xpath 式の処理中にエラーが発生したときスローされる例外を提供します。</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathException.#ctor">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathException" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathException.#ctor(System.String)">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathException" /> クラスの新しいインスタンスを、指定した例外メッセージを使用して初期化します。</summary>
+      <param name="message">エラー状態の説明。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathException.#ctor(System.String,System.Exception)">
+      <summary>例外メッセージおよび <see cref="T:System.Exception" /> オブジェクトを指定して、<see cref="T:System.Xml.XPath.XPathException" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="message">エラー状態の説明。</param>
+      <param name="innerException">
+        <see cref="T:System.Xml.XPath.XPathException" /> をスローした <see cref="T:System.Exception" /> (存在する場合)。この値は、null の場合もあります。</param>
+    </member>
+    <member name="T:System.Xml.XPath.XPathExpression">
+      <summary>コンパイル済みの XPath 式を表す、型指定されたクラスを提供します。</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.AddSort(System.Object,System.Collections.IComparer)">
+      <summary>派生クラスでオーバーライドされた場合、XPath 式で選択されたノードを、指定された <see cref="T:System.Collections.IComparer" /> オブジェクトに従って並べ替えます。</summary>
+      <param name="expr">並べ替えキーを表すオブジェクト。これは、ノードの string 値、またはコンパイル済みの XPath 式を持つ <see cref="T:System.Xml.XPath.XPathExpression" /> オブジェクトです。</param>
+      <param name="comparer">2 つのオブジェクトが等しいかどうかを比較するために特定のデータ型を提供する <see cref="T:System.Collections.IComparer" /> オブジェクト。</param>
+      <exception cref="T:System.Xml.XPath.XPathException">
+        <see cref="T:System.Xml.XPath.XPathExpression" /> または並べ替えキーにプレフィックスが含まれ、<see cref="T:System.Xml.XmlNamespaceManager" /> が提供されていないか、提供された <see cref="T:System.Xml.XmlNamespaceManager" /> 内にプレフィックスが見つかりません。</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.AddSort(System.Object,System.Xml.XPath.XmlSortOrder,System.Xml.XPath.XmlCaseOrder,System.String,System.Xml.XPath.XmlDataType)">
+      <summary>派生クラスでオーバーライドされた場合、XPath 式で選択されたノードを、提供されたパラメーターに従って並べ替えます。</summary>
+      <param name="expr">並べ替えキーを表すオブジェクト。これは、ノードの string 値、またはコンパイル済みの XPath 式を持つ <see cref="T:System.Xml.XPath.XPathExpression" /> オブジェクトです。</param>
+      <param name="order">並べ替え順序を示す <see cref="T:System.Xml.XPath.XmlSortOrder" /> 値。</param>
+      <param name="caseOrder">大文字または小文字で並べ替える方法を示す <see cref="T:System.Xml.XPath.XmlCaseOrder" /> 値。</param>
+      <param name="lang">比較に使用する言語。言語の種類に応じて <see cref="Overload:System.String.Compare" /> メソッドに渡すことができる <see cref="T:System.Globalization.CultureInfo" /> クラスを使用します。たとえば、米国英語の場合は "us-en" になります。空の文字列を指定した場合、システム環境の情報を使って <see cref="T:System.Globalization.CultureInfo" /> が決定されます。</param>
+      <param name="dataType">データ型での並べ替え順序を示す <see cref="T:System.Xml.XPath.XmlDataType" /> 値。</param>
+      <exception cref="T:System.Xml.XPath.XPathException">
+        <see cref="T:System.Xml.XPath.XPathExpression" /> または並べ替えキーにプレフィックスが含まれ、<see cref="T:System.Xml.XmlNamespaceManager" /> が提供されていないか、提供された <see cref="T:System.Xml.XmlNamespaceManager" /> 内にプレフィックスが見つかりません。</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.Clone">
+      <summary>派生クラスでオーバーライドされた場合、この <see cref="T:System.Xml.XPath.XPathExpression" /> の複製を返します。</summary>
+      <returns>新しい <see cref="T:System.Xml.XPath.XPathExpression" /> オブジェクト。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.Compile(System.String)">
+      <summary>指定された XPath 式をコンパイルし、XPath 式を表す <see cref="T:System.Xml.XPath.XPathExpression" /> オブジェクトを返します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathExpression" /> オブジェクト。</returns>
+      <param name="xpath">XPath 式。</param>
+      <exception cref="T:System.ArgumentException">XPath 式パラメーターが有効な XPath 式ではありません。</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">XPath 式が無効です。</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.Compile(System.String,System.Xml.IXmlNamespaceResolver)">
+      <summary>指定された XPath 式を、名前空間の解決用に指定された <see cref="T:System.Xml.IXmlNamespaceResolver" /> オブジェクトを使用してコンパイルし、XPath 式を表す <see cref="T:System.Xml.XPath.XPathExpression" /> オブジェクトを返します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathExpression" /> オブジェクト。</returns>
+      <param name="xpath">XPath 式。</param>
+      <param name="nsResolver">名前空間を解決するための <see cref="T:System.Xml.IXmlNamespaceResolver" /> インターフェイスを実装するオブジェクト。</param>
+      <exception cref="T:System.ArgumentException">XPath 式パラメーターが有効な XPath 式ではありません。</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">XPath 式が無効です。</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathExpression.Expression">
+      <summary>派生クラスでオーバーライドされた場合、<see cref="T:System.Xml.XPath.XPathExpression" /> の string 表現を取得します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathExpression" /> の string 表現。</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathExpression.ReturnType">
+      <summary>派生クラスでオーバーライドされた場合、XPath 式の結果型を取得します。</summary>
+      <returns>XPath 式の結果型を表す <see cref="T:System.Xml.XPath.XPathResultType" /> 値。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.SetContext(System.Xml.IXmlNamespaceResolver)">
+      <summary>派生クラスでオーバーライドされた場合、名前の解決に使用する <see cref="T:System.Xml.IXmlNamespaceResolver" /> オブジェクトを指定します。</summary>
+      <param name="nsResolver">名前空間を解決するために使用する <see cref="T:System.Xml.IXmlNamespaceResolver" /> インターフェイスを実装するオブジェクト。</param>
+      <exception cref="T:System.Xml.XPath.XPathException">
+        <see cref="T:System.Xml.IXmlNamespaceResolver" /> オブジェクト パラメーターが <see cref="T:System.Xml.IXmlNamespaceResolver" /> から派生していません。</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.SetContext(System.Xml.XmlNamespaceManager)">
+      <summary>派生クラスでオーバーライドされた場合、名前の解決に使用する <see cref="T:System.Xml.XmlNamespaceManager" /> オブジェクトを指定します。</summary>
+      <param name="nsManager">名前空間の解決に使用する <see cref="T:System.Xml.XmlNamespaceManager" /> オブジェクト。</param>
+      <exception cref="T:System.Xml.XPath.XPathException">
+        <see cref="T:System.Xml.XmlNamespaceManager" /> オブジェクト パラメーターが <see cref="T:System.Xml.XmlNamespaceManager" /> クラスから派生していません。</exception>
+    </member>
+    <member name="T:System.Xml.XPath.XPathItem">
+      <summary>XQuery 1.0 および XPath 2.0 データ モデルの項目を表します。</summary>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.IsNode">
+      <summary>派生クラスでオーバーライドされた場合、項目が XPath ノードと原子値のどちらであるかを示す値を取得します。</summary>
+      <returns>項目が XPath ノードを表す場合は true。原子値を表す場合は false。</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.TypedValue">
+      <summary>派生クラスでオーバーライドされた場合、現在の項目を、そのスキーマ型に従って、最適な .NET Framework 2.0 型のボックス化変換されたオブジェクトとして取得します。</summary>
+      <returns>最適な .NET Framework 型のボックス化変換されたオブジェクトとして扱われた現在の項目。</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.Value">
+      <summary>派生クラスでオーバーライドされた場合、項目の string 値を取得します。</summary>
+      <returns>項目の string 値。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathItem.ValueAs(System.Type)">
+      <summary>項目の値を、指定した型にして返します。</summary>
+      <returns>要求した型に変換された項目の値。</returns>
+      <param name="returnType">返す項目の値に指定する型。</param>
+      <exception cref="T:System.FormatException">項目の値が、指定した型の正しい形式になっていません。</exception>
+      <exception cref="T:System.InvalidCastException">試行されたキャストが無効です。</exception>
+      <exception cref="T:System.OverflowException">試行されたキャストで、オーバーフローが発生しました。</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathItem.ValueAs(System.Type,System.Xml.IXmlNamespaceResolver)">
+      <summary>派生クラスでオーバーライドされた場合、名前空間プレフィックスの解決に指定された <see cref="T:System.Xml.IXmlNamespaceResolver" /> オブジェクトを使用して、項目の値を指定された型にして返します。</summary>
+      <returns>要求した型に変換された項目の値。</returns>
+      <param name="returnType">返す項目の値に指定する型。</param>
+      <param name="nsResolver">名前空間プレフィックスの解決に使用する <see cref="T:System.Xml.IXmlNamespaceResolver" /> オブジェクト。</param>
+      <exception cref="T:System.FormatException">項目の値が、指定した型の正しい形式になっていません。</exception>
+      <exception cref="T:System.InvalidCastException">試行されたキャストが無効です。</exception>
+      <exception cref="T:System.OverflowException">試行されたキャストで、オーバーフローが発生しました。</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.ValueAsBoolean">
+      <summary>派生クラスでオーバーライドされた場合、項目の値を <see cref="T:System.Boolean" /> として取得します。</summary>
+      <returns>
+        <see cref="T:System.Boolean" /> としての項目の値。</returns>
+      <exception cref="T:System.FormatException">項目の値が、<see cref="T:System.Boolean" /> 型の正しい形式になっていません。</exception>
+      <exception cref="T:System.InvalidCastException">試行された <see cref="T:System.Boolean" /> へのキャストは無効です。</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.ValueAsDateTime">
+      <summary>派生クラスでオーバーライドされた場合、項目の値を <see cref="T:System.DateTime" /> として取得します。</summary>
+      <returns>
+        <see cref="T:System.DateTime" /> としての項目の値。</returns>
+      <exception cref="T:System.FormatException">項目の値が、<see cref="T:System.DateTime" /> 型の正しい形式になっていません。</exception>
+      <exception cref="T:System.InvalidCastException">試行された <see cref="T:System.DateTime" /> へのキャストは無効です。</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.ValueAsDouble">
+      <summary>派生クラスでオーバーライドされた場合、項目の値を <see cref="T:System.Double" /> として取得します。</summary>
+      <returns>
+        <see cref="T:System.Double" /> としての項目の値。</returns>
+      <exception cref="T:System.FormatException">項目の値が、<see cref="T:System.Double" /> 型の正しい形式になっていません。</exception>
+      <exception cref="T:System.InvalidCastException">試行された <see cref="T:System.Double" /> へのキャストは無効です。</exception>
+      <exception cref="T:System.OverflowException">試行されたキャストで、オーバーフローが発生しました。</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.ValueAsInt">
+      <summary>派生クラスでオーバーライドされた場合、項目の値を <see cref="T:System.Int32" /> として取得します。</summary>
+      <returns>
+        <see cref="T:System.Int32" /> としての項目の値。</returns>
+      <exception cref="T:System.FormatException">項目の値が、<see cref="T:System.Int32" /> 型の正しい形式になっていません。</exception>
+      <exception cref="T:System.InvalidCastException">試行された <see cref="T:System.Int32" /> へのキャストは無効です。</exception>
+      <exception cref="T:System.OverflowException">試行されたキャストで、オーバーフローが発生しました。</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.ValueAsLong">
+      <summary>派生クラスでオーバーライドされた場合、項目の値を <see cref="T:System.Int64" /> として取得します。</summary>
+      <returns>
+        <see cref="T:System.Int64" /> としての項目の値。</returns>
+      <exception cref="T:System.FormatException">項目の値が、<see cref="T:System.Int64" /> 型の正しい形式になっていません。</exception>
+      <exception cref="T:System.InvalidCastException">試行された <see cref="T:System.Int64" /> へのキャストは無効です。</exception>
+      <exception cref="T:System.OverflowException">試行されたキャストで、オーバーフローが発生しました。</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.ValueType">
+      <summary>派生クラスでオーバーライドされた場合、項目の .NET Framework 2.0 型を取得します。</summary>
+      <returns>項目の .NET Framework 型。既定値は <see cref="T:System.String" /> です。</returns>
+    </member>
+    <member name="T:System.Xml.XPath.XPathNamespaceScope">
+      <summary>名前空間スコープを定義します。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNamespaceScope.All">
+      <summary>現在のノードのスコープに定義されている名前空間をすべて返します。この名前空間には、常に暗黙的に宣言される xmlns:xml 名前空間が含まれます。返される名前空間の順序は定義されません。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNamespaceScope.ExcludeXml">
+      <summary>現在のノードのスコープに定義されている名前空間をすべて返します。ただし、xmlns:xml 名前空間は除きます。xmlns:xml 名前空間は、常に暗黙的に宣言されます。返される名前空間の順序は定義されません。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNamespaceScope.Local">
+      <summary>現在のノードでローカルに定義されている名前空間をすべて返します。</summary>
+    </member>
+    <member name="T:System.Xml.XPath.XPathNavigator">
+      <summary>XML データ内を移動したり XML データを編集したりするためのカーソル モデルを提供します。</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.#ctor">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.AppendChild">
+      <summary>現在のノード下に存在する子ノードのリストの末尾に 1 つまたは複数の新しい子ノードを作成するために使用する <see cref="T:System.Xml.XmlWriter" /> オブジェクトを返します。</summary>
+      <returns>現在のノード下に存在する子ノードのリストの末尾に新しい子ノードを作成するために使用する <see cref="T:System.Xml.XmlWriter" /> オブジェクト。</returns>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on is not the root node or an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.AppendChild(System.String)">
+      <summary>指定された XML データ文字列を使用して、現在のノード下に存在する子ノードのリストの末尾に新しい子ノードを作成します。</summary>
+      <param name="newChild">新しい子ノード用の XML データ文字列。</param>
+      <exception cref="T:System.ArgumentNullException">The XML data string parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on is not the root node or an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML data string parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.AppendChild(System.Xml.XmlReader)">
+      <summary>指定された <see cref="T:System.Xml.XmlReader" /> オブジェクトの XML コンテンツを使用して、現在のノード下に存在する子ノードのリストの末尾に新しい子ノードを作成します。</summary>
+      <param name="newChild">新しい子ノード用の XML データに配置された <see cref="T:System.Xml.XmlReader" /> オブジェクト。</param>
+      <exception cref="T:System.ArgumentException">The <see cref="T:System.Xml.XmlReader" /> object is in an error state or closed.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on is not the root node or an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML contents of the <see cref="T:System.Xml.XmlReader" /> object parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.AppendChild(System.Xml.XPath.XPathNavigator)">
+      <summary>指定された <see cref="T:System.Xml.XPath.XPathNavigator" /> のノードを使用して、現在のノード下に存在する子ノードのリストの末尾に新しい子ノードを作成します。</summary>
+      <param name="newChild">新しい子ノードとして追加するノードに配置される <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクト。</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on is not the root node or an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.AppendChildElement(System.String,System.String,System.String,System.String)">
+      <summary>指定された値と共に指定した名前空間プレフィックス、ローカル名、および名前空間 URI を使用して、現在のノード下に存在する子ノードのリストの末尾に新しい子要素ノードを作成します。</summary>
+      <param name="prefix">新しい子要素ノードの名前空間プレフィックス (存在する場合)。</param>
+      <param name="localName">新しい子要素ノードのローカル名 (存在する場合)。</param>
+      <param name="namespaceURI">新しい子要素ノードの名前空間 URI (存在する場合)。<see cref="F:System.String.Empty" /> と null は同等です。</param>
+      <param name="value">新しい子要素ノードの値。<see cref="F:System.String.Empty" /> または null を渡すと、空の要素が作成されます。</param>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on is not the root node or an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.BaseURI">
+      <summary>派生クラスでオーバーライドされると、現在のノードのベース URI を取得します。</summary>
+      <returns> ノードの読み込み元となった場所。または、値がない場合は <see cref="F:System.String.Empty" />。</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.CanEdit">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> で、基になる XML データを編集できるかどうかを示す値を取得します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> で、基になる XML データを編集できる場合は true。それ以外の場合は false。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Clone">
+      <summary>派生クラスでオーバーライドされると、この <see cref="T:System.Xml.XPath.XPathNavigator" /> と同じノードに配置される新しい <see cref="T:System.Xml.XPath.XPathNavigator" /> を作成します。</summary>
+      <returns>この <see cref="T:System.Xml.XPath.XPathNavigator" /> と同じノードに配置された新しい <see cref="T:System.Xml.XPath.XPathNavigator" />。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ComparePosition(System.Xml.XPath.XPathNavigator)">
+      <summary>現在の <see cref="T:System.Xml.XPath.XPathNavigator" /> の位置と指定された <see cref="T:System.Xml.XPath.XPathNavigator" /> の位置を比較します。</summary>
+      <returns>2 つの <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクトの比較位置を表す <see cref="T:System.Xml.XmlNodeOrder" /> 値。</returns>
+      <param name="nav">比較対象の <see cref="T:System.Xml.XPath.XPathNavigator" /></param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Compile(System.String)">
+      <summary>XPath 式を表す文字列をコンパイルし、<see cref="T:System.Xml.XPath.XPathExpression" /> オブジェクトを返します。</summary>
+      <returns>XPath 式を表す <see cref="T:System.Xml.XPath.XPathExpression" /> オブジェクト。</returns>
+      <param name="xpath">XPath 式を表す文字列。</param>
+      <exception cref="T:System.ArgumentException">The <paramref name="xpath" /> parameter contains an XPath expression that is not valid.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.CreateAttribute(System.String,System.String,System.String,System.String)">
+      <summary>指定された値で指定した名前空間プレフィックス、ローカル名、および名前空間 URI を使用して、現在の要素ノードに属性ノードを作成します。</summary>
+      <param name="prefix">新しい属性ノードの名前空間プレフィックス (存在する場合)。</param>
+      <param name="localName">新しい属性ノードのローカル名。これには <see cref="F:System.String.Empty" /> や null を設定できません。</param>
+      <param name="namespaceURI">新しい属性ノードの名前空間 URI (存在する場合)。</param>
+      <param name="value">新しい属性ノードの値。<see cref="F:System.String.Empty" /> または null が渡される場合、空の属性ノードが作成されます。</param>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.CreateAttributes">
+      <summary>現在の要素に新しい属性を作成するために使用する <see cref="T:System.Xml.XmlWriter" /> オブジェクトを返します。</summary>
+      <returns>現在の要素に新しい属性を作成するために使用する <see cref="T:System.Xml.XmlWriter" /> オブジェクト。</returns>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.CreateNavigator">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> のコピーを返します。</summary>
+      <returns>この <see cref="T:System.Xml.XPath.XPathNavigator" />  の <see cref="T:System.Xml.XPath.XPathNavigator" /> コピー。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.DeleteRange(System.Xml.XPath.XPathNavigator)">
+      <summary>現在のノードから指定されたノードまでの範囲にある兄弟ノードを削除します。</summary>
+      <param name="lastSiblingToDelete">削除する範囲内にある最後の兄弟ノードに配置された <see cref="T:System.Xml.XPath.XPathNavigator" />。</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> specified is null.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.InvalidOperationException">The last node to delete specified is not a valid sibling node of the current node.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.DeleteSelf">
+      <summary>現在のノードとその子ノードを削除します。</summary>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on a node that cannot be deleted such as the root node or a namespace node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Evaluate(System.String)">
+      <summary>指定された XPath 式を評価し、型指定された結果を返します。</summary>
+      <returns>式の結果 (ブール値、数値、文字列、またはノード セット)。<see cref="T:System.Boolean" /> オブジェクト、<see cref="T:System.Double" />オブジェクト、<see cref="T:System.String" /> オブジェクト、または <see cref="T:System.Xml.XPath.XPathNodeIterator" /> オブジェクトにそれぞれ割り当てられます。</returns>
+      <param name="xpath">評価可能な XPath 式を表す文字列。</param>
+      <exception cref="T:System.ArgumentException">The return type of the XPath expression is a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Evaluate(System.String,System.Xml.IXmlNamespaceResolver)">
+      <summary>
+        <see cref="T:System.Xml.IXmlNamespaceResolver" /> オブジェクトを使用して XPath 式の名前空間プレフィックスを解決することにより、指定された XPath 式を評価して、型指定された結果を返します。</summary>
+      <returns>式の結果 (ブール値、数値、文字列、またはノード セット)。<see cref="T:System.Boolean" /> オブジェクト、<see cref="T:System.Double" /> オブジェクト、<see cref="T:System.String" /> オブジェクト、または <see cref="T:System.Xml.XPath.XPathNodeIterator" /> オブジェクトにそれぞれ割り当てられます。</returns>
+      <param name="xpath">評価可能な XPath 式を表す文字列。</param>
+      <param name="resolver">XPath 式の名前空間プレフィックスの解決に使用する <see cref="T:System.Xml.IXmlNamespaceResolver" /> オブジェクト。</param>
+      <exception cref="T:System.ArgumentException">The return type of the XPath expression is a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Evaluate(System.Xml.XPath.XPathExpression)">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathExpression" /> を評価し、型指定された結果を返します。</summary>
+      <returns>式の結果 (ブール値、数値、文字列、またはノード セット)。<see cref="T:System.Boolean" /> オブジェクト、<see cref="T:System.Double" /> オブジェクト、<see cref="T:System.String" /> オブジェクト、または <see cref="T:System.Xml.XPath.XPathNodeIterator" /> オブジェクトにそれぞれ割り当てられます。</returns>
+      <param name="expr">計算できる <see cref="T:System.Xml.XPath.XPathExpression" />。</param>
+      <exception cref="T:System.ArgumentException">The return type of the XPath expression is a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Evaluate(System.Xml.XPath.XPathExpression,System.Xml.XPath.XPathNodeIterator)">
+      <summary>提供されたコンテキストを使用して <see cref="T:System.Xml.XPath.XPathExpression" /> を評価し、型指定された結果を返します。</summary>
+      <returns>式の結果 (ブール値、数値、文字列、またはノード セット)。<see cref="T:System.Boolean" /> オブジェクト、<see cref="T:System.Double" /> オブジェクト、<see cref="T:System.String" /> オブジェクト、または <see cref="T:System.Xml.XPath.XPathNodeIterator" /> オブジェクトにそれぞれ割り当てられます。</returns>
+      <param name="expr">計算できる <see cref="T:System.Xml.XPath.XPathExpression" />。</param>
+      <param name="context">評価の実行対象となる選択したノード セットを指す <see cref="T:System.Xml.XPath.XPathNodeIterator" />。</param>
+      <exception cref="T:System.ArgumentException">The return type of the XPath expression is a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.GetAttribute(System.String,System.String)">
+      <summary>指定したローカル名および名前空間 URI に関連付けられた属性の値を取得します。</summary>
+      <returns>指定された属性の値が格納された <see cref="T:System.String" />。一致する属性が見つからないか、または <see cref="T:System.Xml.XPath.XPathNavigator" /> が要素ノードに配置されていない場合は <see cref="F:System.String.Empty" />。</returns>
+      <param name="localName">属性のローカル名。</param>
+      <param name="namespaceURI">属性の名前空間 URI。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.GetNamespace(System.String)">
+      <summary>指定したローカル名に対応する名前空間ノードの値を返します。</summary>
+      <returns>名前空間ノードの値が格納された <see cref="T:System.String" />。一致する名前空間ノードが見つからないか、または <see cref="T:System.Xml.XPath.XPathNavigator" /> が要素ノードに配置されていない場合は <see cref="F:System.String.Empty" />。</returns>
+      <param name="name">名前空間ノードのローカル名。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.GetNamespacesInScope(System.Xml.XmlNamespaceScope)">
+      <summary>現在のノードのスコープ内の名前空間を返します。</summary>
+      <returns>プレフィックスをキーとした名前空間名の <see cref="T:System.Collections.Generic.IDictionary`2" /> コレクション。</returns>
+      <param name="scope">返す名前空間を指定する <see cref="T:System.Xml.XmlNamespaceScope" /> 値。</param>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.HasAttributes">
+      <summary>現在のノードに属性があるかどうかを示す値を取得します。</summary>
+      <returns>現在のノードが属性を持っている場合は true を返します。現在のノードが属性を持っていないか、<see cref="T:System.Xml.XPath.XPathNavigator" /> が要素ノードに配置されていない場合は false を返します。</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.HasChildren">
+      <summary>現在のノードが子ノードを持っているかどうかを示す値を取得します。</summary>
+      <returns>現在のノードが子ノードを持っている場合は true。それ以外の場合は false。</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.InnerXml">
+      <summary>現在のノードの子ノードを表すマークアップを取得または設定します。</summary>
+      <returns>現在のノードの子ノードのマークアップが格納された <see cref="T:System.String" />。</returns>
+      <exception cref="T:System.InvalidOperationException">The <see cref="P:System.Xml.XPath.XPathNavigator.InnerXml" /> property cannot be set.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertAfter">
+      <summary>現在選択されているノードの後に新しい兄弟ノードを作成するために使用する <see cref="T:System.Xml.XmlWriter" /> オブジェクトを返します。</summary>
+      <returns>現在選択されているノードの後に新しい兄弟ノードを作成するために使用する <see cref="T:System.Xml.XmlWriter" /> オブジェクト。</returns>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted after the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertAfter(System.String)">
+      <summary>指定された XML 文字列を使用して、現在選択されているノードの後に新しい兄弟ノードを作成します。</summary>
+      <param name="newSibling">新しい兄弟ノード用の XML データ文字列。</param>
+      <exception cref="T:System.ArgumentNullException">The XML string parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted after the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML string parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertAfter(System.Xml.XmlReader)">
+      <summary>指定された <see cref="T:System.Xml.XmlReader" /> オブジェクトの XML の内容を使用して、現在選択されているノードの後に新しい兄弟ノードを作成します。</summary>
+      <param name="newSibling">新しい兄弟ノード用の XML データに配置された <see cref="T:System.Xml.XmlReader" /> オブジェクト。</param>
+      <exception cref="T:System.ArgumentException">The <see cref="T:System.Xml.XmlReader" /> object is in an error state or closed.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted after the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML contents of the <see cref="T:System.Xml.XmlReader" /> object parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertAfter(System.Xml.XPath.XPathNavigator)">
+      <summary>指定された <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクトのノードを使用して、現在選択されているノードの後に新しい兄弟ノードを作成します。</summary>
+      <param name="newSibling">新しい兄弟ノードとして追加するノードに配置されている <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクト。</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted after the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertBefore">
+      <summary>現在選択されているノードの前に新しい兄弟ノードを作成するために使用する <see cref="T:System.Xml.XmlWriter" /> オブジェクトを返します。</summary>
+      <returns>現在選択されているノードの前に新しい兄弟ノードを作成するために使用する <see cref="T:System.Xml.XmlWriter" /> オブジェクト。</returns>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted before the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertBefore(System.String)">
+      <summary>指定された XML 文字列を使用して、現在選択されているノードの前に新しい兄弟ノードを作成します。</summary>
+      <param name="newSibling">新しい兄弟ノード用の XML データ文字列。</param>
+      <exception cref="T:System.ArgumentNullException">The XML string parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted before the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML string parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertBefore(System.Xml.XmlReader)">
+      <summary>指定された <see cref="T:System.Xml.XmlReader" /> オブジェクトの XML の内容を使用して、現在選択されているノードの前に新しい兄弟ノードを作成します。</summary>
+      <param name="newSibling">新しい兄弟ノード用の XML データに配置された <see cref="T:System.Xml.XmlReader" /> オブジェクト。</param>
+      <exception cref="T:System.ArgumentException">The <see cref="T:System.Xml.XmlReader" /> object is in an error state or closed.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted before the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML contents of the <see cref="T:System.Xml.XmlReader" /> object parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertBefore(System.Xml.XPath.XPathNavigator)">
+      <summary>指定された <see cref="T:System.Xml.XPath.XPathNavigator" /> のノードを使用して、現在選択されているノードの前に新しい兄弟ノードを作成します。</summary>
+      <param name="newSibling">新しい兄弟ノードとして追加するノードに配置されている <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクト。</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted before the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertElementAfter(System.String,System.String,System.String,System.String)">
+      <summary>指定された値と共に指定した名前空間プレフィックス、ローカル名、および名前空間 URI を使用して、現在のノードの後に新しい兄弟要素を作成します。</summary>
+      <param name="prefix">新しい子要素の名前空間プレフィックス (存在する場合)。</param>
+      <param name="localName">新しい子要素のローカル名 (存在する場合)。</param>
+      <param name="namespaceURI">新しい子要素の名前空間 URI (存在する場合)。<see cref="F:System.String.Empty" /> と null は同等です。</param>
+      <param name="value">新しい子要素の値。<see cref="F:System.String.Empty" /> または null を渡すと、空の要素が作成されます。</param>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted after the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertElementBefore(System.String,System.String,System.String,System.String)">
+      <summary>指定された値と共に指定した名前空間プレフィックス、ローカル名、および名前空間 URI を使用して、現在のノードの前に新しい兄弟要素を作成します。</summary>
+      <param name="prefix">新しい子要素の名前空間プレフィックス (存在する場合)。</param>
+      <param name="localName">新しい子要素のローカル名 (存在する場合)。</param>
+      <param name="namespaceURI">新しい子要素の名前空間 URI (存在する場合)。<see cref="F:System.String.Empty" /> と null は同等です。</param>
+      <param name="value">新しい子要素の値。<see cref="F:System.String.Empty" /> または null を渡すと、空の要素が作成されます。</param>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted before the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.IsDescendant(System.Xml.XPath.XPathNavigator)">
+      <summary>指定した <see cref="T:System.Xml.XPath.XPathNavigator" /> が、現在の <see cref="T:System.Xml.XPath.XPathNavigator" /> の子孫かどうかを判断します。</summary>
+      <returns>指定された <see cref="T:System.Xml.XPath.XPathNavigator" /> が現在の <see cref="T:System.Xml.XPath.XPathNavigator" /> の子孫である場合は true。それ以外の場合は false。</returns>
+      <param name="nav">この <see cref="T:System.Xml.XPath.XPathNavigator" /> と比較する <see cref="T:System.Xml.XPath.XPathNavigator" />。</param>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.IsEmptyElement">
+      <summary>派生クラスでオーバーライドされると、現在のノードが終了要素タグのない空の要素かどうかを示す値を取得します。</summary>
+      <returns>現在のノードが空の要素の場合は true。それ以外の場合は false。</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.IsNode">
+      <summary>現在のノードが XPath ノードかどうかを表す値を取得します。</summary>
+      <returns>常に true を返します。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.IsSamePosition(System.Xml.XPath.XPathNavigator)">
+      <summary>派生クラスでオーバーライドされると、現在の <see cref="T:System.Xml.XPath.XPathNavigator" /> が、指定された <see cref="T:System.Xml.XPath.XPathNavigator" /> と同じ位置にあるかどうかを判断します。</summary>
+      <returns>2 つの <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクトが同じ位置にある場合は true、それ以外の場合は false。</returns>
+      <param name="other">この <see cref="T:System.Xml.XPath.XPathNavigator" /> と比較する <see cref="T:System.Xml.XPath.XPathNavigator" />。</param>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.LocalName">
+      <summary>派生クラスでオーバーライドされると、現在のノードの名前空間プレフィックスなしの <see cref="P:System.Xml.XPath.XPathNavigator.Name" /> を取得します。</summary>
+      <returns>現在のノードのローカル名が格納された <see cref="T:System.String" />。現在のノードが名前を持たない場合 (たとえばテキスト ノードまたはコメント ノード) は <see cref="F:System.String.Empty" />。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.LookupNamespace(System.String)">
+      <summary>指定したプレフィックスの名前空間 URI を取得します。</summary>
+      <returns>指定した名前空間プレフィックスに割り当てられている名前空間 URI が格納された  <see cref="T:System.String" />。指定したプレフィックスに名前空間 URI が割り当てられていない場合は null。返される <see cref="T:System.String" /> は最小単位に分割されます。</returns>
+      <param name="prefix">解決する対象となる名前空間 URI のプレフィックス。既定の名前空間と一致するようにするには、<see cref="F:System.String.Empty" /> を渡します。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.LookupPrefix(System.String)">
+      <summary>指定された名前空間 URI に対して宣言されたプレフィックスを取得します。</summary>
+      <returns>指定した名前空間 URI に割り当てられた名前空間プレフィックスが格納された <see cref="T:System.String" />。指定した名前空間 URI にプレフィックスが割り当てられていない場合は <see cref="F:System.String.Empty" />。返される <see cref="T:System.String" /> は最小単位に分割されます。</returns>
+      <param name="namespaceURI">プレフィックスに対して解決する名前空間 URI。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Matches(System.String)">
+      <summary>現在のノードが、指定された XPath 式と一致するかどうかを判断します。</summary>
+      <returns>現在のノードが、指定された XPath 式と一致する場合は true。それ以外の場合は false。</returns>
+      <param name="xpath">XPath 式。</param>
+      <exception cref="T:System.ArgumentException">The XPath expression cannot be evaluated.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Matches(System.Xml.XPath.XPathExpression)">
+      <summary>現在のノードが、指定された <see cref="T:System.Xml.XPath.XPathExpression" /> 式と一致するかどうかを判断します。</summary>
+      <returns>現在のノードが、<see cref="T:System.Xml.XPath.XPathExpression" /> に一致する場合は true。それ以外の場合は false。</returns>
+      <param name="expr">コンパイル済みの XPath 式が格納されている <see cref="T:System.Xml.XPath.XPathExpression" /> オブジェクト。</param>
+      <exception cref="T:System.ArgumentException">The XPath expression cannot be evaluated.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveTo(System.Xml.XPath.XPathNavigator)">
+      <summary>派生クラスでオーバーライドされた場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> を、指定された <see cref="T:System.Xml.XPath.XPathNavigator" /> と同じ位置に移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が、指定された <see cref="T:System.Xml.XPath.XPathNavigator" /> と同じ位置に正常に移動すると、true を返します。それ以外の場合は false を返します。false の場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の位置は変更されません。</returns>
+      <param name="other">移動先のノードに配置される <see cref="T:System.Xml.XPath.XPathNavigator" />。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToAttribute(System.String,System.String)">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> を、ローカル名および名前空間 URI が一致する属性に移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が属性に正常に移動した場合は true を返します。それ以外の場合は false を返します。false の場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の位置は変更されません。</returns>
+      <param name="localName">属性のローカル名。</param>
+      <param name="namespaceURI">属性の名前空間 URI。空の名前空間に対しては null。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToChild(System.String,System.String)">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> を、指定されたローカル名と名前空間 URI を持つ子ノードに移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が子ノードに正常に移動された場合は true を返します。それ以外の場合は false を返します。false の場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の位置は変更されません。</returns>
+      <param name="localName">移動先となる子ノードのローカル名。</param>
+      <param name="namespaceURI">移動先となる子ノードの名前空間 URI。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToChild(System.Xml.XPath.XPathNodeType)">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> を、指定された <see cref="T:System.Xml.XPath.XPathNodeType" /> の子ノードに移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が子ノードに正常に移動された場合は true を返します。それ以外の場合は false を返します。false の場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の位置は変更されません。</returns>
+      <param name="type">移動先となる子ノードの <see cref="T:System.Xml.XPath.XPathNodeType" />。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFirst">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> を現在のノードの最初の兄弟ノードに移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が現在のノードの最初の兄弟ノードに正常に移動した場合は true を返します。最初のレベルに兄弟がないか、<see cref="T:System.Xml.XPath.XPathNavigator" /> が現在属性ノードに配置されている場合は false を返します。<see cref="T:System.Xml.XPath.XPathNavigator" /> が既に最初の兄弟に配置されている場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> は true を返し、その位置を移動しません。最初の兄弟がないために <see cref="M:System.Xml.XPath.XPathNavigator.MoveToFirst" /> が false を返す場合、または <see cref="T:System.Xml.XPath.XPathNavigator" /> が現在属性に配置されている場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の位置は変更されません。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFirstAttribute">
+      <summary>派生クラスでオーバーライドされると、<see cref="T:System.Xml.XPath.XPathNavigator" /> を現在のノードの最初の属性に移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が現在のノードの最初の属性に正常に移動した場合は true を返します。それ以外の場合は false を返します。false の場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の位置は変更されません。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFirstChild">
+      <summary>派生クラスでオーバーライドされると、<see cref="T:System.Xml.XPath.XPathNavigator" /> を現在のノードの最初の子ノードに移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が現在のノードの最初の子ノードに正常に移動した場合は true を返します。それ以外の場合は false を返します。false の場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の位置は変更されません。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFirstNamespace">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> を現在のノードの最初の名前空間ノードに移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が最初の名前空間ノードに正常に移動された場合は true を返します。それ以外の場合は false を返します。false の場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の位置は変更されません。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFirstNamespace(System.Xml.XPath.XPathNamespaceScope)">
+      <summary>派生クラスでオーバーライドされると、<see cref="T:System.Xml.XPath.XPathNavigator" /> を、指定された <see cref="T:System.Xml.XPath.XPathNamespaceScope" /> と一致する最初の名前空間ノードに移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が最初の名前空間ノードに正常に移動された場合は true を返します。それ以外の場合は false を返します。false の場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の位置は変更されません。</returns>
+      <param name="namespaceScope">名前空間スコープを記述する <see cref="T:System.Xml.XPath.XPathNamespaceScope" /> 値。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFollowing(System.String,System.String)">
+      <summary>指定されたローカル名と名前空間 URI を持つ要素に、<see cref="T:System.Xml.XPath.XPathNavigator" /> をドキュメント順に移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が正常に移動された場合は true。それ以外の場合は false。</returns>
+      <param name="localName">要素のローカル名。</param>
+      <param name="namespaceURI">要素の名前空間 URI。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFollowing(System.String,System.String,System.Xml.XPath.XPathNavigator)">
+      <summary>指定されたローカル名と名前空間 URI を持つ要素から指定された境界に、<see cref="T:System.Xml.XPath.XPathNavigator" /> をドキュメント順に移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が正常に移動された場合は true。それ以外の場合は false。</returns>
+      <param name="localName">要素のローカル名。</param>
+      <param name="namespaceURI">要素の名前空間 URI。</param>
+      <param name="end">現在の <see cref="T:System.Xml.XPath.XPathNavigator" /> が、次の要素の検索でこれより先に進まないようにする要素の境界に配置された <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクト。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFollowing(System.Xml.XPath.XPathNodeType)">
+      <summary>指定された <see cref="T:System.Xml.XPath.XPathNodeType" /> の次の要素に、<see cref="T:System.Xml.XPath.XPathNavigator" /> をドキュメント順に移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が正常に移動された場合は true。それ以外の場合は false。</returns>
+      <param name="type">要素の <see cref="T:System.Xml.XPath.XPathNodeType" />。<see cref="T:System.Xml.XPath.XPathNodeType" /> は、<see cref="F:System.Xml.XPath.XPathNodeType.Attribute" /> および <see cref="F:System.Xml.XPath.XPathNodeType.Namespace" /> にはできません。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFollowing(System.Xml.XPath.XPathNodeType,System.Xml.XPath.XPathNavigator)">
+      <summary>指定された <see cref="T:System.Xml.XPath.XPathNodeType" /> の次の要素から指定された境界まで、<see cref="T:System.Xml.XPath.XPathNavigator" /> をドキュメント順に移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が正常に移動された場合は true。それ以外の場合は false。</returns>
+      <param name="type">要素の <see cref="T:System.Xml.XPath.XPathNodeType" />。<see cref="T:System.Xml.XPath.XPathNodeType" /> は、<see cref="F:System.Xml.XPath.XPathNodeType.Attribute" /> および <see cref="F:System.Xml.XPath.XPathNodeType.Namespace" /> にはできません。</param>
+      <param name="end">現在の <see cref="T:System.Xml.XPath.XPathNavigator" /> が、次の要素の検索でこれより先に進まないようにする要素の境界に配置された <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクト。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToId(System.String)">
+      <summary>派生クラスでオーバーライドされると、指定された <see cref="T:System.String" /> と値が一致する型 ID の属性を持つノードに移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が正常に移動された場合は true。それ以外の場合は false。false の場合、ナビゲーターの位置は変更されません。</returns>
+      <param name="id">移動先のノードの ID 値を表す <see cref="T:System.String" />。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNamespace(System.String)">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> を、指定された名前空間プレフィックスを持つ名前空間ノードに移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が、指定された名前空間に正常に移動した場合は true。一致する名前空間ノードが見つからなかった場合、または <see cref="T:System.Xml.XPath.XPathNavigator" /> の位置が要素ノードでない場合は false。false の場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の位置は変更されません。</returns>
+      <param name="name">名前空間ノードの名前空間プレフィックス。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNext">
+      <summary>派生クラスでオーバーライドされると、<see cref="T:System.Xml.XPath.XPathNavigator" /> を現在のノードの次の兄弟ノードに移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が次の兄弟ノードに正常に移動された場合は true。それ以上兄弟がないか、<see cref="T:System.Xml.XPath.XPathNavigator" /> が属性ノードに現在配置されている場合は false。false の場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の位置は変更されません。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNext(System.String,System.String)">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> を、指定されたローカル名と名前空間 URI を持つ次の兄弟ノードに移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が次の兄弟ノードに正常に移動した場合は true を返します。それ以上兄弟がないか、<see cref="T:System.Xml.XPath.XPathNavigator" /> の現在位置が属性ノードの場合は false を返します。false の場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の位置は変更されません。</returns>
+      <param name="localName">移動先となる次の兄弟ノードのローカル名。</param>
+      <param name="namespaceURI">移動先となる次の兄弟ノードの名前空間 URI。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNext(System.Xml.XPath.XPathNodeType)">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> を、指定された <see cref="T:System.Xml.XPath.XPathNodeType" /> に一致する現在のノードの次の兄弟ノードに移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が次の兄弟ノードに正常に移動された場合は true。それ以上兄弟がないか、<see cref="T:System.Xml.XPath.XPathNavigator" /> が属性ノードに現在配置されている場合は false。false の場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の位置は変更されません。</returns>
+      <param name="type">移動先となる兄弟ノードの <see cref="T:System.Xml.XPath.XPathNodeType" />。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNextAttribute">
+      <summary>派生クラスでオーバーライドされると、<see cref="T:System.Xml.XPath.XPathNavigator" /> を次の属性に移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が正常に次の属性に移動した場合は true を返します。それ以上、属性が存在しない場合は false を返します。false の場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の位置は変更されません。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNextNamespace">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> を次の名前空間ノードに移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が次の名前空間ノードに正常に移動された場合は true を返します。それ以外の場合は false を返します。false の場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の位置は変更されません。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNextNamespace(System.Xml.XPath.XPathNamespaceScope)">
+      <summary>派生クラスでオーバーライドされると、<see cref="T:System.Xml.XPath.XPathNavigator" /> を、指定された <see cref="T:System.Xml.XPath.XPathNamespaceScope" /> と一致する次の名前空間ノードに移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が次の名前空間ノードに正常に移動された場合は true を返します。それ以外の場合は false を返します。false の場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の位置は変更されません。</returns>
+      <param name="namespaceScope">名前空間スコープを記述する <see cref="T:System.Xml.XPath.XPathNamespaceScope" /> 値。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToParent">
+      <summary>派生クラスでオーバーライドされると、<see cref="T:System.Xml.XPath.XPathNavigator" /> を現在のノードの親ノードに移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が現在のノードの親ノードに正常に移動した場合は true を返します。それ以外の場合は false を返します。false の場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の位置は変更されません。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToPrevious">
+      <summary>派生クラスでオーバーライドされると、<see cref="T:System.Xml.XPath.XPathNavigator" /> を現在のノードの前の兄弟ノードに移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> が前の兄弟ノードに正常に移動した場合は true を返します。前の兄弟ノードがないか、<see cref="T:System.Xml.XPath.XPathNavigator" /> の現在位置が属性ノードの場合は false を返します。false の場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の位置は変更されません。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToRoot">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> を、現在のノードが属しているルート ノードに移動します。</summary>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.Name">
+      <summary>派生クラスでオーバーライドされると、現在のノードの限定名を取得します。</summary>
+      <returns>現在のノードの修飾 <see cref="P:System.Xml.XPath.XPathNavigator.Name" /> が格納された <see cref="T:System.String" />。現在のノードが名前を持たない場合 (たとえばテキスト ノードまたはコメント ノード) は <see cref="F:System.String.Empty" />。</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.NamespaceURI">
+      <summary>派生クラスでオーバーライドされると、現在のノードの名前空間 URI を取得します。</summary>
+      <returns>現在のノードの名前空間 URI が格納された <see cref="T:System.String" />。現在のノードが名前空間 URI を持っていない場合は <see cref="F:System.String.Empty" />。</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.NameTable">
+      <summary>派生クラスでオーバーライドされた場合、<see cref="T:System.Xml.XPath.XPathNavigator" /> の <see cref="T:System.Xml.XmlNameTable" /> を取得します。</summary>
+      <returns>XML ドキュメント内の最小単位に分割されたバージョンの <see cref="T:System.String" /> を取得できる <see cref="T:System.Xml.XmlNameTable" /> オブジェクト。</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.NavigatorComparer">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクトの等価性を比較するために使用される <see cref="T:System.Collections.IEqualityComparer" /> を取得します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクトの等価性を比較するために使用される <see cref="T:System.Collections.IEqualityComparer" />。</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.NodeType">
+      <summary>派生クラスでオーバーライドされると、現在のノードの <see cref="T:System.Xml.XPath.XPathNodeType" /> を取得します。</summary>
+      <returns>現在のノードを表す <see cref="T:System.Xml.XPath.XPathNodeType" /> 値の 1 つ。</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.OuterXml">
+      <summary>現在のノードとその子ノードの開始タグおよび終了タグを表すマークアップを取得または設定します。</summary>
+      <returns>現在のノードとその子ノードの開始タグおよび終了タグを表すマークアップが格納された <see cref="T:System.String" />。</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.Prefix">
+      <summary>派生クラスでオーバーライドされると、現在のノードに関連付けられている名前空間プレフィックスを取得します。</summary>
+      <returns>現在のノードに関連付けられた名前空間プレフィックスが格納された <see cref="T:System.String" />。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.PrependChild">
+      <summary>現在のノード下に存在する子ノードのリストの先頭に新しい子ノードを作成するために使用する <see cref="T:System.Xml.XmlWriter" /> オブジェクトを返します。</summary>
+      <returns>現在のノード下に存在する子ノードのリストの先頭に新しい子ノードを作成するために使用する <see cref="T:System.Xml.XmlWriter" /> オブジェクト。</returns>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on does not allow a new child node to be prepended.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.PrependChild(System.String)">
+      <summary>指定された XML 文字列を使用して、現在のノード下に存在する子ノードのリストの先頭に新しい子ノードを作成します。</summary>
+      <param name="newChild">新しい子ノード用の XML データ文字列。</param>
+      <exception cref="T:System.ArgumentNullException">The XML string parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on does not allow a new child node to be prepended.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML string parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.PrependChild(System.Xml.XmlReader)">
+      <summary>指定された <see cref="T:System.Xml.XmlReader" /> オブジェクトの XML コンテンツを使用して、現在のノード下に存在する子ノードのリストの先頭に新しい子ノードを作成します。</summary>
+      <param name="newChild">新しい子ノード用の XML データに配置された <see cref="T:System.Xml.XmlReader" /> オブジェクト。</param>
+      <exception cref="T:System.ArgumentException">The <see cref="T:System.Xml.XmlReader" /> object is in an error state or closed.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on does not allow a new child node to be prepended.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML contents of the <see cref="T:System.Xml.XmlReader" /> object parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.PrependChild(System.Xml.XPath.XPathNavigator)">
+      <summary>指定された <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクト内のノードを使用して、現在のノード下に存在する子ノードのリストの先頭に新しい子ノードを作成します。</summary>
+      <param name="newChild">新しい子ノードとして追加するノードに配置される <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクト。</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on does not allow a new child node to be prepended.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.PrependChildElement(System.String,System.String,System.String,System.String)">
+      <summary>指定された値と共に指定した名前空間プレフィックス、ローカル名、および名前空間 URI を使用して、現在のノード下に存在する子ノードのリストの先頭に新しい子要素を作成します。</summary>
+      <param name="prefix">新しい子要素の名前空間プレフィックス (存在する場合)。</param>
+      <param name="localName">新しい子要素のローカル名 (存在する場合)。</param>
+      <param name="namespaceURI">新しい子要素の名前空間 URI (存在する場合)。<see cref="F:System.String.Empty" /> と null は同等です。</param>
+      <param name="value">新しい子要素の値。<see cref="F:System.String.Empty" /> または null を渡すと、空の要素が作成されます。</param>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on does not allow a new child node to be prepended.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ReadSubtree">
+      <summary>現在のノードとその子ノードが格納された <see cref="T:System.Xml.XmlReader" /> オブジェクトを返します。</summary>
+      <returns>現在のノードとその子ノードが格納された <see cref="T:System.Xml.XmlReader" /> オブジェクト。</returns>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element node or the root node.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ReplaceRange(System.Xml.XPath.XPathNavigator)">
+      <summary>現在のノードから指定されたノードまでの範囲内にある兄弟ノードを置き換えます。</summary>
+      <returns>置き換える範囲を指定するために使用する <see cref="T:System.Xml.XmlWriter" /> オブジェクト。</returns>
+      <param name="lastSiblingToReplace">置き換える範囲内にある最後の兄弟ノードに配置された <see cref="T:System.Xml.XPath.XPathNavigator" />。</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> specified is null.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.InvalidOperationException">The last node to replace specified is not a valid sibling node of the current node.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ReplaceSelf(System.String)">
+      <summary>現在のノードを指定された文字列の内容に置き換えます。</summary>
+      <param name="newNode">新しいノード用の XML データ文字列。</param>
+      <exception cref="T:System.ArgumentNullException">The XML string parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element, text, processing instruction, or comment node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML string parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ReplaceSelf(System.Xml.XmlReader)">
+      <summary>現在のノードを指定された <see cref="T:System.Xml.XmlReader" /> オブジェクトの内容に置き換えます。</summary>
+      <param name="newNode">新しいノード用の XML データに配置された <see cref="T:System.Xml.XmlReader" /> オブジェクト。</param>
+      <exception cref="T:System.ArgumentException">The <see cref="T:System.Xml.XmlReader" /> object is in an error state or closed.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element, text, processing instruction, or comment node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML contents of the <see cref="T:System.Xml.XmlReader" /> object parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ReplaceSelf(System.Xml.XPath.XPathNavigator)">
+      <summary>現在のノードを指定された <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクトの内容に置き換えます。</summary>
+      <param name="newNode">新しいノードに配置された <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクト。</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element, text, processing instruction, or comment node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML contents of the <see cref="T:System.Xml.XPath.XPathNavigator" /> object parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Select(System.String)">
+      <summary>指定された XPath 式を使用して、ノード セットを選択します。</summary>
+      <returns>選択されたノード セットを指している <see cref="T:System.Xml.XPath.XPathNodeIterator" />。</returns>
+      <param name="xpath">XPath 式を表す <see cref="T:System.String" />。</param>
+      <exception cref="T:System.ArgumentException">The XPath expression contains an error or its return type is not a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Select(System.String,System.Xml.IXmlNamespaceResolver)">
+      <summary>名前空間プレフィックスを解決するように指定された <see cref="T:System.Xml.IXmlNamespaceResolver" /> オブジェクトと共に指定した XPath 式を使用して、ノード セットを選択します。</summary>
+      <returns>選択されたノード セットを指している <see cref="T:System.Xml.XPath.XPathNodeIterator" />。</returns>
+      <param name="xpath">XPath 式を表す <see cref="T:System.String" />。</param>
+      <param name="resolver">名前空間プレフィックスの解決に使用する <see cref="T:System.Xml.IXmlNamespaceResolver" /> オブジェクト。</param>
+      <exception cref="T:System.ArgumentException">The XPath expression contains an error or its return type is not a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Select(System.Xml.XPath.XPathExpression)">
+      <summary>指定した <see cref="T:System.Xml.XPath.XPathExpression" /> を使用して、ノード セットを選択します。</summary>
+      <returns>選択されたノード セットを指している <see cref="T:System.Xml.XPath.XPathNodeIterator" />。</returns>
+      <param name="expr">コンパイル済みの XPath クエリが格納されている <see cref="T:System.Xml.XPath.XPathExpression" /> オブジェクト。</param>
+      <exception cref="T:System.ArgumentException">The XPath expression contains an error or its return type is not a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectAncestors(System.String,System.String,System.Boolean)">
+      <summary>指定されたローカル名と名前空間 URI を持つ現在のノードのすべての先祖ノードを選択します。</summary>
+      <returns>選択されたノードを格納している <see cref="T:System.Xml.XPath.XPathNodeIterator" />。ノードは、ドキュメントの逆順で返されます。</returns>
+      <param name="name">先祖ノードのローカル名。</param>
+      <param name="namespaceURI">先祖ノードの名前空間 URI。</param>
+      <param name="matchSelf">選択項目にコンテキスト ノードを含める場合は true。それ以外の場合は false。</param>
+      <exception cref="T:System.ArgumentNullException">null cannot be passed as a parameter.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectAncestors(System.Xml.XPath.XPathNodeType,System.Boolean)">
+      <summary>一致する <see cref="T:System.Xml.XPath.XPathNodeType" /> を持つ現在のノードのすべての先祖ノードを選択します。</summary>
+      <returns>選択されたノードを格納している <see cref="T:System.Xml.XPath.XPathNodeIterator" />。ノードは、ドキュメントの逆順で返されます。</returns>
+      <param name="type">先祖ノードの <see cref="T:System.Xml.XPath.XPathNodeType" />。</param>
+      <param name="matchSelf">選択項目にコンテキスト ノードを含める場合は true。それ以外の場合は false。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectChildren(System.String,System.String)">
+      <summary>指定されたローカル名と名前空間 URI を持つ現在のノードのすべての子ノードを選択します。</summary>
+      <returns>選択されたノードを格納している <see cref="T:System.Xml.XPath.XPathNodeIterator" />。</returns>
+      <param name="name">子ノードのローカル名。</param>
+      <param name="namespaceURI">子ノードの名前空間 URI。</param>
+      <exception cref="T:System.ArgumentNullException">null cannot be passed as a parameter.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectChildren(System.Xml.XPath.XPathNodeType)">
+      <summary>一致する <see cref="T:System.Xml.XPath.XPathNodeType" /> を持つ現在のノードのすべての子ノードを選択します。</summary>
+      <returns>選択されたノードを格納している <see cref="T:System.Xml.XPath.XPathNodeIterator" />。</returns>
+      <param name="type">子ノードの <see cref="T:System.Xml.XPath.XPathNodeType" />。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectDescendants(System.String,System.String,System.Boolean)">
+      <summary>指定されたローカル名と名前空間 URI を持つ現在のノードのすべての子孫ノードを選択します。</summary>
+      <returns>選択されたノードを格納している <see cref="T:System.Xml.XPath.XPathNodeIterator" />。</returns>
+      <param name="name">子孫ノードのローカル名。</param>
+      <param name="namespaceURI">子孫ノードの名前空間 URI。 </param>
+      <param name="matchSelf">選択項目にコンテキスト ノードを含める場合は true。それ以外の場合は false。</param>
+      <exception cref="T:System.ArgumentNullException">null cannot be passed as a parameter.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectDescendants(System.Xml.XPath.XPathNodeType,System.Boolean)">
+      <summary>一致する <see cref="T:System.Xml.XPath.XPathNodeType" /> を持つ現在のノードのすべての子孫ノードを選択します。</summary>
+      <returns>選択されたノードを格納している <see cref="T:System.Xml.XPath.XPathNodeIterator" />。</returns>
+      <param name="type">子孫ノードの <see cref="T:System.Xml.XPath.XPathNodeType" />。</param>
+      <param name="matchSelf">選択項目にコンテキスト ノードを含める場合は true。それ以外の場合は false。</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectSingleNode(System.String)">
+      <summary>指定された XPath クエリを使用して、<see cref="T:System.Xml.XPath.XPathNavigator" /> 内の単一のノードを選択します。</summary>
+      <returns>指定された XPath クエリに対して最初に一致するノードが格納された <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクト。クエリ結果がない場合は null。</returns>
+      <param name="xpath">XPath 式を表す <see cref="T:System.String" />。</param>
+      <exception cref="T:System.ArgumentException">An error was encountered in the XPath query or the return type of the XPath expression is not a node.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath query is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectSingleNode(System.String,System.Xml.IXmlNamespaceResolver)">
+      <summary>名前空間プレフィックスを解決するために指定された <see cref="T:System.Xml.IXmlNamespaceResolver" /> オブジェクトと共に、指定された XPath クエリを使用して <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクト内の単一のノードを選択します。</summary>
+      <returns>指定された XPath クエリに対して最初に一致するノードが格納された <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクト。クエリ結果がない場合は null。</returns>
+      <param name="xpath">XPath 式を表す <see cref="T:System.String" />。</param>
+      <param name="resolver">XPath クエリの名前空間プレフィックスの解決に使用する <see cref="T:System.Xml.IXmlNamespaceResolver" /> オブジェクト。</param>
+      <exception cref="T:System.ArgumentException">An error was encountered in the XPath query or the return type of the XPath expression is not a node.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath query is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectSingleNode(System.Xml.XPath.XPathExpression)">
+      <summary>指定された <see cref="T:System.Xml.XPath.XPathExpression" /> オブジェクトを使用して、<see cref="T:System.Xml.XPath.XPathNavigator" /> 内の単一のノードを選択します。</summary>
+      <returns>指定された XPath クエリに対して最初に一致するノードが格納された <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクト。クエリ結果がない場合は null。</returns>
+      <param name="expression">コンパイル済みの XPath クエリが格納されている <see cref="T:System.Xml.XPath.XPathExpression" /> オブジェクト。</param>
+      <exception cref="T:System.ArgumentException">An error was encountered in the XPath query or the return type of the XPath expression is not a node.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath query is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SetTypedValue(System.Object)">
+      <summary>現在のノードの型指定された値を設定します。</summary>
+      <param name="typedValue">ノードの型指定された新しい値。</param>
+      <exception cref="T:System.ArgumentException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support the type of the object specified.</exception>
+      <exception cref="T:System.ArgumentNullException">The value specified cannot be null.</exception>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element or attribute node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SetValue(System.String)">
+      <summary>現在のノードの値を設定します。</summary>
+      <param name="value">ノードの新しい値。</param>
+      <exception cref="T:System.ArgumentNullException">The value parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on the root node, a namespace node, or the specified value is invalid.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ToString">
+      <summary>現在のノードのテキスト値を取得します。</summary>
+      <returns>現在のノードのテキスト値が格納された string。</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.TypedValue">
+      <summary>現在のノードを、最も適切な .NET Framework 型にボックス化変換したオブジェクトとして取得します。</summary>
+      <returns>最も適切な .NET Framework 型にボックス化変換されたオブジェクトとしての現在のノード。</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.UnderlyingObject">
+      <summary>ストアに対する "仮想化された" XML ビューを提供する <see cref="T:System.Xml.XPath.XPathNavigator" /> 実装で使用し、基になるオブジェクトへのアクセスを提供します。</summary>
+      <returns>既定値は、null です。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ValueAs(System.Type,System.Xml.IXmlNamespaceResolver)">
+      <summary>現在のノードの値を指定された <see cref="T:System.Type" /> として取得し、指定された <see cref="T:System.Xml.IXmlNamespaceResolver" /> オブジェクトを使用して名前空間プレフィックスを解決します。</summary>
+      <returns>要求した <see cref="T:System.Type" /> に変換された現在のノードの値。</returns>
+      <param name="returnType">現在のノードの値を返すときの <see cref="T:System.Type" />。</param>
+      <param name="nsResolver">名前空間プレフィックスの解決に使用する <see cref="T:System.Xml.IXmlNamespaceResolver" /> オブジェクト。</param>
+      <exception cref="T:System.FormatException">The current node's value is not in the correct format for the target type.</exception>
+      <exception cref="T:System.InvalidCastException">The attempted cast is not valid.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.ValueAsBoolean">
+      <summary>現在のノードの値を <see cref="T:System.Boolean" /> として取得します。</summary>
+      <returns>現在のノードの <see cref="T:System.Boolean" /> としての値。</returns>
+      <exception cref="T:System.FormatException">The current node's string value cannot be converted to a <see cref="T:System.Boolean" />.</exception>
+      <exception cref="T:System.InvalidCastException">The attempted cast to <see cref="T:System.Boolean" /> is not valid.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.ValueAsDateTime">
+      <summary>現在のノードの値を <see cref="T:System.DateTime" /> として取得します。</summary>
+      <returns>現在のノードの <see cref="T:System.DateTime" /> としての値。</returns>
+      <exception cref="T:System.FormatException">The current node's string value cannot be converted to a <see cref="T:System.DateTime" />.</exception>
+      <exception cref="T:System.InvalidCastException">The attempted cast to <see cref="T:System.DateTime" /> is not valid.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.ValueAsDouble">
+      <summary>現在のノードの値を <see cref="T:System.Double" /> として取得します。</summary>
+      <returns>現在のノードの <see cref="T:System.Double" /> としての値。</returns>
+      <exception cref="T:System.FormatException">The current node's string value cannot be converted to a <see cref="T:System.Double" />.</exception>
+      <exception cref="T:System.InvalidCastException">The attempted cast to <see cref="T:System.Double" /> is not valid.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.ValueAsInt">
+      <summary>現在のノードの値を <see cref="T:System.Int32" /> として取得します。</summary>
+      <returns>現在のノードの <see cref="T:System.Int32" /> としての値。</returns>
+      <exception cref="T:System.FormatException">The current node's string value cannot be converted to a <see cref="T:System.Int32" />.</exception>
+      <exception cref="T:System.InvalidCastException">The attempted cast to <see cref="T:System.Int32" /> is not valid.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.ValueAsLong">
+      <summary>現在のノードの値を <see cref="T:System.Int64" /> として取得します。</summary>
+      <returns>現在のノードの <see cref="T:System.Int64" /> としての値。</returns>
+      <exception cref="T:System.FormatException">The current node's string value cannot be converted to a <see cref="T:System.Int64" />.</exception>
+      <exception cref="T:System.InvalidCastException">The attempted cast to <see cref="T:System.Int64" /> is not valid.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.ValueType">
+      <summary>現在のノードの .NET Framework <see cref="T:System.Type" /> を取得します。</summary>
+      <returns>現在のノードの .NET Framework <see cref="T:System.Type" />。既定値は <see cref="T:System.String" /> です。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.WriteSubtree(System.Xml.XmlWriter)">
+      <summary>現在のノードとその子ノードを、指定された <see cref="T:System.Xml.XmlWriter" /> オブジェクトにストリーム転送します。</summary>
+      <param name="writer">ストリーム転送先の <see cref="T:System.Xml.XmlWriter" /> オブジェクト。</param>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.XmlLang">
+      <summary>現在のノードの xml:lang スコープを取得します。</summary>
+      <returns>xml:lang スコープの値が格納された <see cref="T:System.String" />。または、返す xml:lang スコープの値が現在のノードにない場合は <see cref="F:System.String.Empty" />。</returns>
+    </member>
+    <member name="T:System.Xml.XPath.XPathNodeIterator">
+      <summary>選択したノード セットに対する反復子を提供します。</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNodeIterator.#ctor">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathNodeIterator" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNodeIterator.Clone">
+      <summary>派生クラスでオーバーライドされた場合、この <see cref="T:System.Xml.XPath.XPathNodeIterator" /> オブジェクトの複製を返します。</summary>
+      <returns>この <see cref="T:System.Xml.XPath.XPathNodeIterator" /> オブジェクトを複製した新しい <see cref="T:System.Xml.XPath.XPathNodeIterator" /> オブジェクト。</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNodeIterator.Count">
+      <summary>選択したノード セットの最後のノードのインデックスを取得します。</summary>
+      <returns>選択したノード セットの最後のノードのインデックス。ノードが選択されていない場合は 0。</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNodeIterator.Current">
+      <summary>派生クラスでオーバーライドされると、現在のコンテキスト ノードに配置されている、この <see cref="T:System.Xml.XPath.XPathNavigator" /> に対する <see cref="T:System.Xml.XPath.XPathNodeIterator" /> オブジェクトを取得します。</summary>
+      <returns>ノード セットの選択元であるコンテキスト ノードに配置されている <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクト。<see cref="T:System.Xml.XPath.XPathNodeIterator" /> を選択ノード セットの最初のノードに移動するには、<see cref="M:System.Xml.XPath.XPathNodeIterator.MoveNext" /> メソッドを呼び出す必要があります。</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNodeIterator.CurrentPosition">
+      <summary>派生クラスでオーバーライドされると、選択したノード セットの現在の位置のインデックスを取得します。</summary>
+      <returns>現在の位置のインデックス。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNodeIterator.GetEnumerator">
+      <summary>選択したノード セットを反復処理する <see cref="T:System.Collections.IEnumerator" /> オブジェクトを返します。</summary>
+      <returns>選択したノード セットを反復処理する <see cref="T:System.Collections.IEnumerator" /> オブジェクト。</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNodeIterator.MoveNext">
+      <summary>派生クラスでオーバーライドされた場合、<see cref="P:System.Xml.XPath.XPathNodeIterator.Current" /> プロパティによって返された <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクトを、選択したノード セットの次のノードへ移動します。</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> オブジェクトが次のノードへ移動した場合は true。それ以上選択したノードが存在しない場合は false。</returns>
+    </member>
+    <member name="T:System.Xml.XPath.XPathNodeType">
+      <summary>
+        <see cref="T:System.Xml.XPath.XPathNavigator" /> クラスから返される XPath ノード型を定義します。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.All">
+      <summary>任意の <see cref="T:System.Xml.XPath.XPathNodeType" /> ノード型。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Attribute">
+      <summary>id='123' などの属性。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Comment">
+      <summary>&lt;!-- my comment --&gt; などのコメント。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Element">
+      <summary>&lt;element&gt; などの要素。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Namespace">
+      <summary>xmlns="namespace" などの名前空間。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.ProcessingInstruction">
+      <summary>&lt;?pi test?&gt; などの処理命令。XML 宣言は <see cref="T:System.Xml.XPath.XPathNavigator" /> クラスから参照できないため、これには含まれません。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Root">
+      <summary>XML ドキュメントまたはノード ツリーのルート ノード。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.SignificantWhitespace">
+      <summary>空白文字を含み、xml:space が preserve に設定されているノード。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Text">
+      <summary>ノードのテキストの内容。ドキュメント オブジェクト モデル (DOM: Document Object Model) Text 型および CDATA ノード型と等価です。少なくとも 1 文字を含みます。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Whitespace">
+      <summary>空白文字だけを含み、有意な空白を含まないノード。空白文字は #x20、#x9、#xD、または #xA です。</summary>
+    </member>
+    <member name="T:System.Xml.XPath.XPathResultType">
+      <summary>XPath 式の戻り値の型を指定します。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.Any">
+      <summary>任意の XPath ノード型。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.Boolean">
+      <summary>
+        <see cref="T:System.Boolean" />true 値、または false 値。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.Error">
+      <summary>式が正しい XPath 型を評価しません。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.Navigator">
+      <summary>ツリー フラグメント。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.NodeSet">
+      <summary>ノード コレクション。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.Number">
+      <summary>数値を指定します。</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.String">
+      <summary>
+        <see cref="T:System.String" /> 値。</summary>
+    </member>
+  </members>
+</doc>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<coreProperties xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.openxmlformats.org/package/2006/metadata/core-properties">
+  <dc:creator>Microsoft</dc:creator>
+  <dc:description>Provides common types for the cryptographic libraries.
+
+Commonly Used Types:
+System.Security.Cryptography.ICryptoTransform
+System.Security.Cryptography.AsymmetricAlgorithm
+System.Security.Cryptography.SymmetricAlgorithm
+System.Security.Cryptography.HashAlgorithm
+System.Security.Cryptography.KeyedHashAlgorithm
+System.Security.Cryptography.HMAC
+System.Security.Cryptography.KeySizes
+System.Security.Cryptography.CryptographicException
+System.Security.Cryptography.CipherMode
+System.Security.Cryptography.PaddingMode
+System.Security.Cryptography.CryptoStream
+System.Security.Cryptography.CryptoStreamMode
+ 
+When using NuGet 3.x this package requires at least version 3.4.</dc:description>
+  <dc:identifier>System.Security.Cryptography.Primitives</dc:identifier>
+  <version>4.3.0</version>
+  <keywords></keywords>
+  <lastModifiedBy>NuGet.Packaging, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35;Microsoft Windows NT 6.3.9600.0;</lastModifiedBy>
+</coreProperties>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+<assembly><name>Fake.SQL</name></assembly>
+<members>
+<member name="M:Fake.SQL.SqlServer.RunScriptsFromDirectory(System.String,System.String)">
+ <summary>Runs all sql scripts from the given directory on the server.</summary>
+ <param name="connectionString">Used to open the connection to the database.</param>
+ <param name="scriptDirectory">All *.sql files inside this directory and all subdirectories will be run.</param>
+</member>
+<member name="M:Fake.SQL.SqlServer.RunScripts(System.String,System.Collections.Generic.IEnumerable{System.String})">
+ <summary>Runs the given sql scripts on the server.</summary>
+ <param name="connectionString">Used to open the connection to the database.</param>
+ <param name="scripts">The scripts which will be run.</param>
+</member>
+<member name="M:Fake.SQL.SqlServer.DropAndCreateDatabase(System.String)">
+ <summary>Drops and creates the database (dropped if db exists. created nonetheless)</summary>
+ <param name="connectionString">Used to open the connection to the database.</param>
+</member>
+<member name="M:Fake.SQL.SqlServer.ReplaceDatabaseFilesWithCache(System.String,System.String,System.String,System.Collections.Generic.IEnumerable{System.String},Microsoft.SqlServer.Management.Smo.AttachOptions)">
+ <summary>Replaces the database files from a cache.
+ If the files in the cache are not up to date, they will be refreshed.</summary>
+ <param name="connectionString">Used to open the connection to the database.</param>
+ <param name="targetDir">The directory where the attached files will live.</param>
+ <param name="cacheDir">The file cache. If the files in the cache are not up to date, they will be refreshed.</param>
+ <param name="files">The original database files.</param>
+ <param name="attachOptions">AttachOptions for Sql server.</param>
+</member>
+<member name="M:Fake.SQL.SqlServer.ReplaceDatabaseFiles(System.String,System.String,System.Collections.Generic.IEnumerable{System.String},Microsoft.SqlServer.Management.Smo.AttachOptions)">
+<summary>
+ Replaces the database files
+</summary>
+</member>
+<member name="M:Fake.SQL.SqlServer.replaceDatabaseFiles``1(System.String,Microsoft.SqlServer.Management.Smo.AttachOptions,Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,``0})">
+<summary>
+ Replaces the database files
+</summary>
+</member>
+<member name="M:Fake.SQL.SqlServer.Disconnect(Fake.SQL.SqlServer.ServerInfo)">
+<summary>
+ Closes the connection to the server
+</summary>
+</member>
+<member name="M:Fake.SQL.SqlServer.runScript(Fake.SQL.SqlServer.ServerInfo,System.String)">
+ <summary>Runs a sql script on the server.</summary>
+ <param name="serverInfo">Used as a connection to the database.</param>
+ <param name="sqlFile">The script which will be run.</param>
+</member>
+<member name="M:Fake.SQL.SqlServer.CreateDb(Fake.SQL.SqlServer.ServerInfo)">
+<summary>
+ Creates a new db on the given server
+</summary>
+</member>
+<member name="M:Fake.SQL.SqlServer.Attach(Fake.SQL.SqlServer.ServerInfo,Microsoft.SqlServer.Management.Smo.AttachOptions,System.Collections.Generic.IEnumerable{System.String})">
+<summary>
+ Attach a database
+</summary>
+</member>
+<member name="M:Fake.SQL.SqlServer.Detach(Fake.SQL.SqlServer.ServerInfo)">
+<summary>
+ Detaches a database
+</summary>
+</member>
+<member name="M:Fake.SQL.SqlServer.KillAllProcesses(Fake.SQL.SqlServer.ServerInfo)">
+<summary>
+ Kills all processes with the given server info
+</summary>
+</member>
+<member name="M:Fake.SQL.SqlServer.DropDb(Fake.SQL.SqlServer.ServerInfo)">
+<summary>
+ Drops the given InitialCatalog from the server (if it exists)
+</summary>
+</member>
+<member name="M:Fake.SQL.SqlServer.intitialCatalogExistsOnServer(Fake.SQL.SqlServer.ServerInfo)">
+<summary>
+ Checks whether the given InitialCatalog exists on the server    
+</summary>
+</member>
+<member name="M:Fake.SQL.SqlServer.getDatabase(Fake.SQL.SqlServer.ServerInfo)">
+<summary>
+ Gets the initial catalog as database instance
+</summary>
+</member>
+<member name="M:Fake.SQL.SqlServer.existDBOnServer(Fake.SQL.SqlServer.ServerInfo,System.String)">
+<summary>
+ Checks whether the given Database exists on the server
+</summary>
+</member>
+<member name="M:Fake.SQL.SqlServer.getServerName(Fake.SQL.SqlServer.ServerInfo)">
+<summary>
+ Gets the name of the server
+</summary>
+</member>
+<member name="M:Fake.SQL.SqlServer.getDBName(Fake.SQL.SqlServer.ServerInfo)">
+<summary>
+ Gets the initial catalog name
+</summary>
+</member>
+<member name="M:Fake.SQL.SqlServer.getDatabaseNamesFromServer(Fake.SQL.SqlServer.ServerInfo)">
+<summary>
+ gets the DatabaseNames from the server
+</summary>
+</member>
+<member name="M:Fake.SQL.SqlServer.getDatabasesFromServer(Fake.SQL.SqlServer.ServerInfo)">
+<summary>
+ gets the DatabaseNames from the server
+</summary>
+</member>
+<member name="M:Fake.SQL.SqlServer.getServerInfo(System.String)">
+<summary>
+ Gets a connection to the SQL server and an instance to the ConnectionStringBuilder
+</summary>
+</member>
+</members>
+</doc>

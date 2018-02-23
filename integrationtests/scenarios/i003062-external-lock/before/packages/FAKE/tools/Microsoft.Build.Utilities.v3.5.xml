@@ -1,0 +1,504 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>Microsoft.Build.Utilities.v3.5</name>
+  </assembly>
+  <members>
+    <member name="T:Microsoft.Build.Utilities.CommandLineBuilder">
+      <summary>Comprises utility methods for constructing a command line.</summary>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.#ctor">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.Build.Utilities.CommandLineBuilder" /> class.</summary>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.AppendFileNameIfNotNull(Microsoft.Build.Framework.ITaskItem)">
+      <summary>Appends the command line with the file name of the specified <see cref="T:Microsoft.Build.Framework.ITaskItem" /> object.</summary>
+      <param name="fileItem">The task item specification to append to the command line. If it is null, then this method has no effect.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.AppendFileNameIfNotNull(System.String)">
+      <summary>Appends the command line with file name represented by the parameter, inserting quotation marks if necessary.</summary>
+      <param name="fileName">The file name to append. If it is null, then this method has no effect.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.AppendFileNamesIfNotNull(Microsoft.Build.Framework.ITaskItem[],System.String)">
+      <summary>Appends the command line with the list of file names in the specified <see cref="T:Microsoft.Build.Framework.ITaskItem" /> array, separated by the specified delimiter.</summary>
+      <param name="fileItems">The task item specifications to append. If the array is null, then this method has no effect.</param>
+      <param name="delimiter">The delimiter to put between task item specifications in the command line.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.AppendFileNamesIfNotNull(System.String[],System.String)">
+      <summary>Appends the command line with the list of file names in the specified string array, separated by the specified delimiter.</summary>
+      <param name="fileNames">The file names to append. If the array is null, then this method has no effect.</param>
+      <param name="delimiter">The delimiter to put between file names in the command line.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.AppendFileNameWithQuoting(System.String)">
+      <summary>Appends the command line with a file name, and surrounds the file name with quotation marks as necessary.</summary>
+      <param name="fileName">The file name to append.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.AppendSpaceIfNotEmpty">
+      <summary>Adds a space to the specified string, given the string is not empty.</summary>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.AppendSwitch(System.String)">
+      <summary>Appends the command line with the specified switch.</summary>
+      <param name="switchName">The name of the switch to append to the command line. This value cannot be null.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.AppendSwitchIfNotNull(System.String,Microsoft.Build.Framework.ITaskItem)">
+      <summary>Appends the command line with a switch that takes a task item specification that acts a single string parameter.</summary>
+      <param name="switchName">The name of the switch to append to the command line. This value cannot be null.</param>
+      <param name="parameter">The switch parameter to append to the command line. Quotation marks will be added as necessary. If this value is null, then this method has no effect.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.AppendSwitchIfNotNull(System.String,Microsoft.Build.Framework.ITaskItem[],System.String)">
+      <summary>Appends the command line with a switch that takes an array of task item specifications that act as string parameters.</summary>
+      <param name="switchName">The name of the switch to append to the command line. This value cannot be null.</param>
+      <param name="parameters">An array of switch parameters to append to the command line. Quotation marks will be added as necessary. If the array is null, then this method has no effect.</param>
+      <param name="delimiter">The delimiter that separates individual parameters. This value can be empty, but it cannot be null.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.AppendSwitchIfNotNull(System.String,System.String)">
+      <summary>Appends the command line with a switch that takes a single string parameter.</summary>
+      <param name="switchName">The name of the switch to append to the command line. This value cannot be null.</param>
+      <param name="parameter">The switch parameter to append to the command line. Quotation marks will be added as necessary. If this value is null, then this method has no effect.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.AppendSwitchIfNotNull(System.String,System.String[],System.String)">
+      <summary>Appends the command line with a switch that takes an array of string parameters.</summary>
+      <param name="switchName">The name of the switch to append to the command line. This value cannot be null.</param>
+      <param name="parameters">An array of switch parameters to append to the command line. Quotation marks will be added as necessary. If the array is null, then this method has no effect.</param>
+      <param name="delimiter">The delimiter that separates individual parameters. This value can be empty, but it cannot be null.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.AppendSwitchUnquotedIfNotNull(System.String,Microsoft.Build.Framework.ITaskItem)">
+      <summary>Appends the command line with a switch that takes a task item specification as a single string parameter, without attempting to encapsulate the switch parameter with quotation marks.</summary>
+      <param name="switchName">The name of the switch to append to the command line. This value cannot be null.</param>
+      <param name="parameter">The switch parameter to append to the command line. Quotation marks will not be added. If this value is null, then this method has no effect.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.AppendSwitchUnquotedIfNotNull(System.String,Microsoft.Build.Framework.ITaskItem[],System.String)">
+      <summary>Appends the command line with a switch that takes an array of task item specifications that act as string parameters, without attempting to encapsulate them with quotation marks.</summary>
+      <param name="switchName">The name of the switch to append to the command line. This value cannot be null.</param>
+      <param name="parameters">An array of switch parameters to append to the command line. Quotation marks will not be added. If the array is null, then this method has no effect.</param>
+      <param name="delimiter">The delimiter that separates individual parameters. This value can be empty, but it cannot be null.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.AppendSwitchUnquotedIfNotNull(System.String,System.String)">
+      <summary>Appends the command line with a switch that takes a single string parameter, without attempting to encapsulate the switch parameter with quotation marks.</summary>
+      <param name="switchName">The name of the switch to append to the command line. This value cannot be null.</param>
+      <param name="parameter">The switch parameter to append to the command line. Quotation marks will not be added. If this value is null, then this method has no effect.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.AppendSwitchUnquotedIfNotNull(System.String,System.String[],System.String)">
+      <summary>Appends the command line with a switch that takes an array of string parameters, without attempting to encapsulate switch parameters with quotation marks.</summary>
+      <param name="switchName">The name of the switch to append to the command line. This value cannot be null.</param>
+      <param name="parameters">An array of switch parameters to append to the command line. Quotation marks will not be added. If the array is null, then this method has no effect.</param>
+      <param name="delimiter">The delimiter that separates individual parameters. This value can be empty, but it cannot be null.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.AppendTextUnquoted(System.String)">
+      <summary>Appends the command line with string, without attempting to encapsulate the string with quotation marks.</summary>
+      <param name="textToAppend">The string to append to the command line.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.AppendTextWithQuoting(System.String)">
+      <summary>Appends the command line with string, and surrounds the string with quotations marks as necessary.</summary>
+      <param name="textToAppend">The string to append to the command line.</param>
+    </member>
+    <member name="P:Microsoft.Build.Utilities.CommandLineBuilder.CommandLine">
+      <summary>Gets the <see cref="T:System.Text.StringBuilder" /> instance representing the command line for inheriting classes.</summary>
+      <returns>A <see cref="T:System.Text.StringBuilder" /> for inheriting classes.</returns>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.IsQuotingRequired(System.String)">
+      <summary>Determines whether the specified string parameter should be surrounded with quotation marks because it contains white space.</summary>
+      <returns>true, if the switch parameter should be surrounded with quotation marks; otherwise, false.</returns>
+      <param name="parameter">The string to examine for characters that require quotation marks.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.ToString">
+      <summary>Returns the command line as a string.</summary>
+      <returns>A <see cref="T:System.String" /> that represents the command line.</returns>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.VerifyThrowNoEmbeddedDoubleQuotes(System.String,System.String)">
+      <summary>Returns an error if the command line parameter contains a double-quote (") character. Because double quotes are illegal in command line parameters, this method helps prevent parameter injection attacks.</summary>
+      <param name="switchName">A string representing the switch name for the error message.</param>
+      <param name="parameter">A string representing the switch parameter to scan for double-quotes.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.#ctor(System.Boolean)"></member>
+    <member name="M:Microsoft.Build.Utilities.CommandLineBuilder.AppendQuotedTextToBuffer(System.Text.StringBuilder,System.String)"></member>
+    <member name="T:Microsoft.Build.Utilities.Logger">
+      <summary>When overridden in a derived form, provides functionality for loggers that handle events raised by the MSBuild engine.</summary>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.Logger.#ctor">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.Build.Utilities.Logger" /> class.</summary>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.Logger.FormatErrorEvent(Microsoft.Build.Framework.BuildErrorEventArgs)">
+      <summary>Generates an error message that is in the default format, from a <see cref="T:Microsoft.Build.Framework.BuildErrorEventArgs" /> object.</summary>
+      <returns>A <see cref="T:System.String" /> that represents an error message in canonical format.</returns>
+      <param name="args">The arguments of the error event.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.Logger.FormatWarningEvent(Microsoft.Build.Framework.BuildWarningEventArgs)">
+      <summary>Generates a warning message that is in the default format, from a <see cref="T:Microsoft.Build.Framework.BuildWarningEventArgs" /> object.</summary>
+      <returns>A <see cref="T:System.String" /> that represents a warning message in canonical format.</returns>
+      <param name="args">The arguments of the warning event.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.Logger.Initialize(Microsoft.Build.Framework.IEventSource)">
+      <summary>When overridden in a derived class, subscribes the logger to specific events.</summary>
+      <param name="eventSource">The available events that a logger can subscribe to.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.Logger.IsVerbosityAtLeast(Microsoft.Build.Framework.LoggerVerbosity)">
+      <summary>Determines whether the current <see cref="P:Microsoft.Build.Utilities.Logger.Verbosity" /> setting is at least the value that is passed in.</summary>
+      <returns>true if the current logger verbosity setting is at least the value that is passed in; otherwise, false.</returns>
+      <param name="checkVerbosity">The logger verbosity setting passed in.</param>
+    </member>
+    <member name="P:Microsoft.Build.Utilities.Logger.Parameters">
+      <summary>Gets or sets the user-defined parameters of the logger.</summary>
+      <returns>The logger parameters. This value can be null.</returns>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.Logger.Shutdown">
+      <summary>When overridden in a derived class, releases the resources allocated to the logger at the time of initialization or during the build.</summary>
+    </member>
+    <member name="P:Microsoft.Build.Utilities.Logger.Verbosity">
+      <summary>Gets or sets the level of detail to show in the event log.</summary>
+      <returns>One of the enumeration values. The default is <see cref="F:Microsoft.Build.Framework.LoggerVerbosity.Normal" />.</returns>
+    </member>
+    <member name="T:Microsoft.Build.Utilities.ProcessorArchitecture">
+      <summary>Determines the correct tool in the Toolset that MSBuild should use, based on the current system's processor architecture.</summary>
+    </member>
+    <member name="F:Microsoft.Build.Utilities.ProcessorArchitecture.AMD64">
+      <summary>Represents the AMD64 processor.</summary>
+    </member>
+    <member name="P:Microsoft.Build.Utilities.ProcessorArchitecture.CurrentProcessArchitecture">
+      <summary>Gets the current processor architecture of the system.</summary>
+      <returns>A string containing the processor architecture value.</returns>
+    </member>
+    <member name="F:Microsoft.Build.Utilities.ProcessorArchitecture.IA64">
+      <summary>Represents the IA64 processor.</summary>
+    </member>
+    <member name="F:Microsoft.Build.Utilities.ProcessorArchitecture.MSIL">
+      <summary>Represents MSIL.</summary>
+    </member>
+    <member name="F:Microsoft.Build.Utilities.ProcessorArchitecture.X86">
+      <summary>Represents an x86 processor.</summary>
+    </member>
+    <member name="P:Microsoft.Build.Utilities.Task.BuildEngine2">
+      <summary>Gets the instance of the <see cref="T:Microsoft.Build.Framework.IBuildEngine2" /> object used by the task.</summary>
+      <returns>The <see cref="T:Microsoft.Build.Framework.IBuildEngine2" /> available to tasks.</returns>
+    </member>
+    <member name="T:Microsoft.Build.Utilities.TaskLoggingHelper">
+      <summary>Provides helper logging methods used by tasks.</summary>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.#ctor(Microsoft.Build.Framework.ITask)">
+      <summary>Initializes a new instance of the <see cref="T:Microsoft.Build.Utilities.TaskLoggingHelper" /> class and associates it with the specified task instance.</summary>
+      <param name="taskInstance">The task containing an instance of this task.</param>
+    </member>
+    <member name="P:Microsoft.Build.Utilities.TaskLoggingHelper.BuildEngine">
+      <summary>Gets the build engine that is associated with the task.</summary>
+      <returns>An <see cref="T:Microsoft.Build.Framework.IBuildEngine" /> that represents the instance of the build engine that is associated with the task.</returns>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.ExtractMessageCode(System.String,System.String@)">
+      <summary>Extracts the message code prefix from the given full message string.</summary>
+      <returns>The message code prefix that is extracted from the full message string, or null if there is no message code.</returns>
+      <param name="message">The full message to parse that includes code prefix.</param>
+      <param name="messageWithoutCodePrefix">The message with the code prefix removed.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="message" /> is null.</exception>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.FormatResourceString(System.String,System.Object[])">
+      <summary>Loads the specified resource string and optionally formats it using the given arguments.</summary>
+      <returns>The formatted string.</returns>
+      <param name="resourceName">The name of the string resource to load.</param>
+      <param name="args">Optional arguments for formatting the loaded string.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="resourceName" /> is null.</exception>
+      <exception cref="T:System.ArgumentException">The string resource indicated by <paramref name="resourceName" /> does not exist.</exception>
+      <exception cref="T:System.InvalidOperationException">The <see cref="P:Microsoft.Build.Utilities.Task.TaskResources" /> property of the owner task is not set.</exception>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.FormatString(System.String,System.Object[])">
+      <summary>Formats the given string using the given arguments.</summary>
+      <returns>The formatted string.</returns>
+      <param name="unformatted">The string to format.</param>
+      <param name="args">Arguments for formatting.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="unformatted" /> is null.</exception>
+    </member>
+    <member name="P:Microsoft.Build.Utilities.TaskLoggingHelper.HasLoggedErrors">
+      <summary>Gets a value that indicates whether the task has logged any errors through this logging helper object.</summary>
+      <returns>true if the task has logged any errors through this logging helper object; otherwise, false.</returns>
+    </member>
+    <member name="P:Microsoft.Build.Utilities.TaskLoggingHelper.HelpKeywordPrefix">
+      <summary>Gets or sets the prefix used to compose Help keywords from resource names.</summary>
+      <returns>The prefix used to compose Help keywords from resource names.</returns>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogCommandLine(Microsoft.Build.Framework.MessageImportance,System.String)">
+      <summary>Logs the command line for an underlying tool, executable file, or shell command of a task using the specified importance level.</summary>
+      <param name="importance">One of the values of <see cref="T:Microsoft.Build.Framework.MessageImportance" /> that indicates the importance level of the command line.</param>
+      <param name="commandLine">The command line string.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogCommandLine(System.String)">
+      <summary>Logs the command line for an underlying tool, executable file, or shell command of a task.</summary>
+      <param name="commandLine">The command line string.</param>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogError(System.String,System.Object[])">
+      <summary>Logs an error with the specified message.</summary>
+      <param name="message">The message.</param>
+      <param name="messageArgs">Optional arguments for formatting the message string.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="message" /> is null.</exception>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogError(System.String,System.String,System.String,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.String,System.Object[])">
+      <summary>Logs an error using the specified message and other error details.</summary>
+      <param name="subcategory">The description of the error type.</param>
+      <param name="errorCode">The error code.</param>
+      <param name="helpKeyword">The Help keyword to associate with the error.</param>
+      <param name="file">The path to the file containing the error.</param>
+      <param name="lineNumber">The line in the file where the error occurs.</param>
+      <param name="columnNumber">The column in the file where the error occurs.</param>
+      <param name="endLineNumber">The end line in the file where the error occurs.</param>
+      <param name="endColumnNumber">The end column in the file where the error occurs.</param>
+      <param name="message">The message.</param>
+      <param name="messageArgs">Optional arguments for formatting the message string.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="message" /> is null.</exception>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogErrorFromException(System.Exception)">
+      <summary>Logs an error using the message from the given exception.</summary>
+      <param name="exception">The exception to log.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="e" /> is null.</exception>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogErrorFromException(System.Exception,System.Boolean)">
+      <summary>Logs an error using the message, and optionally the stack trace, from the given exception.</summary>
+      <param name="exception">The exception to log</param>
+      <param name="showStackTrace">true to include the stack trace in the log; otherwise, false.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="e" /> is null.</exception>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogErrorFromResources(System.String,System.Object[])">
+      <summary>Logs an error using the specified resource string.</summary>
+      <param name="messageResourceName">The name of the string resource to load.</param>
+      <param name="messageArgs">The arguments for formatting the loaded string.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="messageResourceName" /> is null.</exception>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogErrorFromResources(System.String,System.String,System.String,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.String,System.Object[])">
+      <summary>Logs an error using the specified resource string and other error details.</summary>
+      <param name="subcategoryResourceName">The name of the string resource that describes the error type.</param>
+      <param name="errorCode">The error code.</param>
+      <param name="helpKeyword">The Help keyword to associate with the error.</param>
+      <param name="file">The path to the file containing the error.</param>
+      <param name="lineNumber">The line in the file where the error occurs.</param>
+      <param name="columnNumber">The column in the file where the error occurs.</param>
+      <param name="endLineNumber">The end line in the file where the error occurs.</param>
+      <param name="endColumnNumber">The end column in the file where the error occurs.</param>
+      <param name="messageResourceName">The name of the string resource to load.</param>
+      <param name="messageArgs">The arguments for formatting the loaded string.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="messageResourceName" /> is null.</exception>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogErrorWithCodeFromResources(System.String,System.Object[])">
+      <summary>Logs an error with an error code using the specified resource string.</summary>
+      <param name="messageResourceName">The name of the string resource to load.</param>
+      <param name="messageArgs">The arguments for formatting the loaded string.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="messageResourceName" /> is null.</exception>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogErrorWithCodeFromResources(System.String,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.String,System.Object[])">
+      <summary>Logs an error using the specified resource string and other error details.</summary>
+      <param name="subcategoryResourceName">The name of the string resource that describes the error type.</param>
+      <param name="file">The path to the file containing the error.</param>
+      <param name="lineNumber">The line in the file where the error occurs.</param>
+      <param name="columnNumber">The column in the file where the error occurs.</param>
+      <param name="endLineNumber">The end line in the file where the error occurs.</param>
+      <param name="endColumnNumber">The end column in the file where the error occurs.</param>
+      <param name="messageResourceName">The name of the string resource to load.</param>
+      <param name="messageArgs">The arguments for formatting the loaded string.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="messageResourceName" /> is null.</exception>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogExternalProjectFinished(System.String,System.String,System.String,System.Boolean)">
+      <summary>Helps log the custom <see cref="T:Microsoft.Build.Framework.ExternalProjectFinishedEventArgs" /> build event.</summary>
+      <param name="message">The text message.</param>
+      <param name="helpKeyword">The help keyword.</param>
+      <param name="projectFile">The name of the project.</param>
+      <param name="succeeded">true to indicate that project was built successfully; otherwise, false.</param>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogExternalProjectStarted(System.String,System.String,System.String,System.String)">
+      <summary>Helps log the custom <see cref="T:Microsoft.Build.Framework.ExternalProjectStartedEventArgs" /> build event.</summary>
+      <param name="message">The text message.</param>
+      <param name="helpKeyword">The help keyword.</param>
+      <param name="projectFile">The name of the project.</param>
+      <param name="targetNames">The targets to build. An empty string indicates default targets.</param>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogMessage(Microsoft.Build.Framework.MessageImportance,System.String,System.Object[])">
+      <summary>Logs a message with the specified string and importance.</summary>
+      <param name="importance">One of the enumeration values that specifies the importance of the message.</param>
+      <param name="message">The message.</param>
+      <param name="messageArgs">The arguments for formatting the message.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="message" /> is null.</exception>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogMessage(System.String,System.Object[])">
+      <summary>Logs a message with the specified string.</summary>
+      <param name="message">The message.</param>
+      <param name="messageArgs">The arguments for formatting the message.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="message" /> is null.</exception>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogMessageFromResources(Microsoft.Build.Framework.MessageImportance,System.String,System.Object[])">
+      <summary>Logs a message with the specified resource string and importance.</summary>
+      <param name="importance">One of the enumeration values that specifies the importance of the message.</param>
+      <param name="messageResourceName">The name of the string resource to load.</param>
+      <param name="messageArgs">The arguments for formatting the loaded string.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="message" /> is null.</exception>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogMessageFromResources(System.String,System.Object[])">
+      <summary>Logs a message with the specified resource string.</summary>
+      <param name="messageResourceName">The name of the string resource to load.</param>
+      <param name="messageArgs">The arguments for formatting the loaded string.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="messageResourceName" /> is null.</exception>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogMessageFromText(System.String,Microsoft.Build.Framework.MessageImportance)">
+      <summary>Logs an error message or warning from the given line of text.</summary>
+      <returns>true if an error was logged; otherwise, false.</returns>
+      <param name="lineOfText">The line of text to log from.</param>
+      <param name="messageImportance">One of the values of <see cref="T:Microsoft.Build.Framework.MessageImportance" /> that indicates the importance level of the command line.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="lineOfText" /> is null.</exception>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogMessagesFromFile(System.String)">
+      <summary>Logs errors, warnings, and messages for each line of text in the given file.</summary>
+      <returns>true to indicate at least one error was logged; otherwise, false.</returns>
+      <param name="fileName">The name of the file to log messages from.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="message" /> is null.</exception>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogMessagesFromFile(System.String,Microsoft.Build.Framework.MessageImportance)">
+      <summary>Logs errors, warnings, and messages for each line of text in the given file. Also logs the importance of messages.</summary>
+      <returns>true to indicate at least one error was logged; otherwise, false.</returns>
+      <param name="fileName">The name of the file to log messages from.</param>
+      <param name="messageImportance">One of the enumeration values that specifies the importance of logged messages.</param>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogMessagesFromStream(System.IO.TextReader,Microsoft.Build.Framework.MessageImportance)">
+      <summary>Logs an error message or warning from the given stream.</summary>
+      <returns>true if an error was logged; otherwise, false.</returns>
+      <param name="stream">A <see cref="T:System.IO.TextReader" /> that reads the stream to log from.</param>
+      <param name="messageImportance">One of the values of <see cref="T:Microsoft.Build.Framework.MessageImportance" /> that indicates the importance level of the command line.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="stream" /> is null.</exception>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogWarning(System.String,System.Object[])">
+      <summary>Logs a warning with the specified message.</summary>
+      <param name="message">The message.</param>
+      <param name="messageArgs">Optional arguments for formatting the message string.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="message" /> is null.</exception>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogWarning(System.String,System.String,System.String,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.String,System.Object[])">
+      <summary>Logs a warning using the specified message and other warning details.</summary>
+      <param name="subcategory">The description of the warning type.</param>
+      <param name="warningCode">The warning code.</param>
+      <param name="helpKeyword">The Help keyword to associate with the warning.</param>
+      <param name="file">The path to the file containing the warning.</param>
+      <param name="lineNumber">The line in the file where the warning occurs.</param>
+      <param name="columnNumber">The column in the file where the warning occurs.</param>
+      <param name="endLineNumber">The end line in the file where the warning occurs.</param>
+      <param name="endColumnNumber">The end column in the file where the warning occurs.</param>
+      <param name="message">The message.</param>
+      <param name="messageArgs">Optional arguments for formatting the message string.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="message" /> is null.</exception>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogWarningFromException(System.Exception)">
+      <summary>Logs a warning using the message from the specified exception.</summary>
+      <param name="exception">The exception to log.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="e" /> is null.</exception>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogWarningFromException(System.Exception,System.Boolean)">
+      <summary>Logs a warning using the message, and optionally the stack trace, from the given exception.</summary>
+      <param name="exception">The exception to log</param>
+      <param name="showStackTrace">true to include the stack trace in the log; otherwise, false.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="e" /> is null.</exception>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogWarningFromResources(System.String,System.Object[])">
+      <summary>Logs a warning using the specified resource string.</summary>
+      <param name="messageResourceName">The name of the string resource to load.</param>
+      <param name="messageArgs">The arguments for formatting the loaded string.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="messageResourceName" /> is null.</exception>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogWarningFromResources(System.String,System.String,System.String,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.String,System.Object[])">
+      <summary>Logs a warning using the specified resource string and other warning details.</summary>
+      <param name="subcategoryResourceName">The name of the string resource that describes the warning type.</param>
+      <param name="warningCode">The warning code.</param>
+      <param name="helpKeyword">The Help keyword to associate with the warning.</param>
+      <param name="file">The path to the file containing the warning.</param>
+      <param name="lineNumber">The line in the file where the warning occurs.</param>
+      <param name="columnNumber">The column in the file where the warning occurs.</param>
+      <param name="endLineNumber">The end line in the file where the warning occurs.</param>
+      <param name="endColumnNumber">The end column in the file where the warning occurs.</param>
+      <param name="messageResourceName">The name of the string resource to load.</param>
+      <param name="messageArgs">The arguments for formatting the loaded string.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="messageResourceName" /> is null.</exception>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogWarningWithCodeFromResources(System.String,System.Object[])">
+      <summary>Logs a warning with a warning code using the specified resource string.</summary>
+      <param name="messageResourceName">The name of the string resource to load.</param>
+      <param name="messageArgs">The arguments for formatting the loaded string.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="messageResourceName" /> is null.</exception>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogWarningWithCodeFromResources(System.String,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.String,System.Object[])">
+      <summary>Logs a warning with a warning code using the specified resource string and other warning details.</summary>
+      <param name="subcategoryResourceName">The name of the string resource that describes the warning type.</param>
+      <param name="file">The path to the file containing the warning.</param>
+      <param name="lineNumber">The line in the file where the warning occurs.</param>
+      <param name="columnNumber">The column in the file where the warning occurs.</param>
+      <param name="endLineNumber">The end line in the file where the warning occurs.</param>
+      <param name="endColumnNumber">The end column in the file where the warning occurs.</param>
+      <param name="messageResourceName">The name of the string resource to load.</param>
+      <param name="messageArgs">The arguments for formatting the loaded string.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="messageResourceName" /> is null.</exception>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="P:Microsoft.Build.Utilities.TaskLoggingHelper.TaskName">
+      <summary>Gets the name of the parent task.</summary>
+      <returns>The name of the parent task.</returns>
+    </member>
+    <member name="P:Microsoft.Build.Utilities.TaskLoggingHelper.TaskResources">
+      <summary>Gets or sets the culture-specific resources used by the logging methods.</summary>
+      <returns>A <see cref="T:System.Resources.ResourceManager" /> that represents the culture-specific resources used by the logging methods. This value can be null.</returns>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.TaskLoggingHelper.LogErrorFromException(System.Exception,System.Boolean,System.Boolean,System.String)">
+      <summary>Logs an error using the message, and optionally the stack-trace from the given exception and any inner exceptions.</summary>
+      <param name="exception">The exception to log.</param>
+      <param name="showStackTrace">true to include the stack trace in the log; otherwise, false.</param>
+      <param name="showDetail">true to log exception types and any inner exceptions; otherwise, false.</param>
+      <param name="file">The name of the file related to the exception, or null if the project file should be logged.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="e" /> is null.</exception>
+      <filterpriority>2</filterpriority>
+    </member>
+    <member name="M:Microsoft.Build.Utilities.ToolLocationHelper.GetDotNetFrameworkSdkRootRegistryKey(Microsoft.Build.Utilities.TargetDotNetFrameworkVersion)"></member>
+    <member name="M:Microsoft.Build.Utilities.ToolLocationHelper.GetPathToDotNetFrameworkReferenceAssemblies(Microsoft.Build.Utilities.TargetDotNetFrameworkVersion)"></member>
+    <member name="M:Microsoft.Build.Utilities.ToolTask.DeleteTempFile(System.String)">
+      <summary>Deletes the specified temporary file.</summary>
+      <param name="fileName">The name of the temporary file to delete.</param>
+    </member>
+    <member name="P:Microsoft.Build.Utilities.ToolTask.HasLoggedErrors"></member>
+    <member name="P:Microsoft.Build.Utilities.ToolTask.StandardErrorImportance"></member>
+    <member name="P:Microsoft.Build.Utilities.ToolTask.StandardOutputImportance"></member>
+    <member name="P:Microsoft.Build.Utilities.ToolTask.ToolExe"></member>
+  </members>
+</doc>

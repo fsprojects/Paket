@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata minClientVersion="2.8.6">
+    <id>System.Threading.Tasks.Extensions</id>
+    <version>4.4.0</version>
+    <title>System.Threading.Tasks.Extensions</title>
+    <authors>Microsoft</authors>
+    <owners>microsoft,dotnetframework</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://github.com/dotnet/corefx/blob/master/LICENSE.TXT</licenseUrl>
+    <projectUrl>https://dot.net/</projectUrl>
+    <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
+    <description>Provides additional types that simplify the work of writing concurrent and asynchronous code.
+
+Commonly Used Types:
+System.Threading.Tasks.ValueTask&lt;TResult&gt;
+ 
+8321c729934c0f8be754953439b88e6e1c120c24</description>
+    <releaseNotes>https://go.microsoft.com/fwlink/?LinkID=799421</releaseNotes>
+    <copyright>© Microsoft Corporation.  All rights reserved.</copyright>
+    <serviceable>true</serviceable>
+    <dependencies>
+      <group targetFramework=".NETCoreApp2.0" />
+      <group targetFramework=".NETStandard1.0">
+        <dependency id="System.Collections" version="4.3.0" />
+        <dependency id="System.Runtime" version="4.3.0" />
+        <dependency id="System.Threading.Tasks" version="4.3.0" />
+      </group>
+      <group targetFramework=".NETStandard2.0" />
+      <group targetFramework=".NETPortable4.5-Profile259" />
+      <group targetFramework="Xamarin.Mac2.0" />
+    </dependencies>
+  </metadata>
+</package>

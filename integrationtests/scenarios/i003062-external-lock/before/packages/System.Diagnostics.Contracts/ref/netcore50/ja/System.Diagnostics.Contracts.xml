@@ -1,0 +1,370 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>System.Diagnostics.Contracts</name>
+  </assembly>
+  <members>
+    <member name="T:System.Diagnostics.Contracts.Contract">
+      <summary>実行前の状態、実行後の状態、オブジェクトの不変部分などのプログラム コントラクトを表す静的メソッドを格納します。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assert(System.Boolean)">
+      <summary>条件をチェックし、その条件が false の場合は、アナライザーに設定されたエスカレーション ポリシーに従います。</summary>
+      <param name="condition">テストする条件式。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assert(System.Boolean,System.String)">
+      <summary>条件をチェックし、その条件が false の場合は、アナライザーによって設定されたエスカレーション ポリシーに従い、指定されたメッセージを表示します。</summary>
+      <param name="condition">テストする条件式。</param>
+      <param name="userMessage">条件が一致しない場合に表示するメッセージ。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assume(System.Boolean)">
+      <summary>常に true であるとは静的に証明されない場合でも、指定した条件が true であると想定するようコード分析ツールに指示します。</summary>
+      <param name="condition">true に想定する条件式。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assume(System.Boolean,System.String)">
+      <summary>常に true であるとは静的に証明されない場合でも、条件が true であると想定するようコード分析ツールに指示し、想定が失敗した場合はメッセージを表示します。</summary>
+      <param name="condition">true に想定する条件式。</param>
+      <param name="userMessage">想定が失敗した場合にポストするメッセージ。</param>
+    </member>
+    <member name="E:System.Diagnostics.Contracts.Contract.ContractFailed">
+      <summary>コントラクトが失敗すると発生します。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.EndContractBlock">
+      <summary>メソッドのコントラクトに if-then-throw の形式で実行前の状態のみが含まれる場合に、コントラクト セクションの終わりをマークします。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Ensures(System.Boolean)">
+      <summary>外側のメソッドまたはプロパティの実行後の状態のコントラクトを指定します。</summary>
+      <param name="condition">テストする条件式。式には <see cref="M:System.Diagnostics.Contracts.Contract.OldValue``1(``0)" />、<see cref="M:System.Diagnostics.Contracts.Contract.ValueAtReturn``1(``0@)" />、および <see cref="M:System.Diagnostics.Contracts.Contract.Result``1" /> の各値を使用できます。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Ensures(System.Boolean,System.String)">
+      <summary>指定された終了条件の実行後の状態のコントラクトと、条件が false の場合に表示するメッセージを指定します。</summary>
+      <param name="condition">テストする条件式。式には <see cref="M:System.Diagnostics.Contracts.Contract.OldValue``1(``0)" /> および <see cref="M:System.Diagnostics.Contracts.Contract.Result``1" /> の各値を使用できます。</param>
+      <param name="userMessage">式が true でない場合に表示するメッセージ。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.EnsuresOnThrow``1(System.Boolean)">
+      <summary>指定された例外および条件に基づいて、外側のメソッドまたはプロパティに実行後の状態のコントラクトを指定します。</summary>
+      <param name="condition">テストする条件式。</param>
+      <typeparam name="TException">実行後の状態のチェックを起動する例外の種類。</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.EnsuresOnThrow``1(System.Boolean,System.String)">
+      <summary>指定された例外および条件に基づいて、実行後の状態のコントラクトと、外側のメソッドまたはプロパティの条件が false の場合に表示するメッセージを指定します。</summary>
+      <param name="condition">テストする条件式。</param>
+      <param name="userMessage">式が false の場合に表示するメッセージ。</param>
+      <typeparam name="TException">実行後の状態のチェックを起動する例外の種類。</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Exists``1(System.Collections.Generic.IEnumerable{``0},System.Predicate{``0})">
+      <summary>ある要素のコレクション内の要素が関数内に存在するかどうかを判断します。</summary>
+      <returns>
+        <paramref name="collection" /> 内の型 <paramref name="T" /> の任意の要素に対して、<paramref name="predicate" /> が true を返す場合にのみ true。</returns>
+      <param name="collection">
+        <paramref name="predicate" /> に渡される型 <paramref name="T" /> の要素が含まれているコレクション。</param>
+      <param name="predicate">
+        <paramref name="collection" /> 内の要素を評価する関数。</param>
+      <typeparam name="T">
+        <paramref name="collection" /> に格納されている型。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="collection" /> or <paramref name="predicate" /> is null.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Exists(System.Int32,System.Int32,System.Predicate{System.Int32})">
+      <summary>ある整数範囲内のすべての整数について指定したテストが true かどうかを判定します。</summary>
+      <returns>
+        <paramref name="fromInclusive" /> から <paramref name="toExclusive" /> - 1 の範囲の任意の整数に対して、<paramref name="predicate" /> が true を返す場合は true。</returns>
+      <param name="fromInclusive">
+        <paramref name="predicate" /> に渡す最初の整数。</param>
+      <param name="toExclusive">
+        <paramref name="predicate" /> に渡す最後の整数より 1 だけ大きい数。</param>
+      <param name="predicate">指定した範囲内の任意の整数値を評価する関数。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="predicate" /> is null.</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="toExclusive " />is less than <paramref name="fromInclusive" />.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.ForAll``1(System.Collections.Generic.IEnumerable{``0},System.Predicate{``0})">
+      <summary>コレクション内のすべての要素が関数内に存在するかどうかを判断します。</summary>
+      <returns>
+        <paramref name="collection" /> 内の型 <paramref name="T" /> のすべての要素に対して、<paramref name="predicate" /> が true を返す場合にのみ true。</returns>
+      <param name="collection">
+        <paramref name="predicate" /> に渡される型 <paramref name="T" /> の要素が含まれているコレクション。</param>
+      <param name="predicate">
+        <paramref name="collection" /> 内のすべての要素の存在を評価する関数。</param>
+      <typeparam name="T">
+        <paramref name="collection" /> に格納されている型。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="collection" /> or <paramref name="predicate" /> is null.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.ForAll(System.Int32,System.Int32,System.Predicate{System.Int32})">
+      <summary>指定した範囲内のすべての整数について特定の状態が有効かどうかを判定します。</summary>
+      <returns>
+        <paramref name="fromInclusive" /> から <paramref name="toExclusive" /> - 1 の範囲のすべての整数に対して、<paramref name="predicate" /> が true を返す場合は true。</returns>
+      <param name="fromInclusive">
+        <paramref name="predicate" /> に渡す最初の整数。</param>
+      <param name="toExclusive">
+        <paramref name="predicate" /> に渡す最後の整数より 1 だけ大きい数。</param>
+      <param name="predicate">指定された範囲の整数の存在を評価する関数。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="predicate" /> is null.</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="toExclusive " />is less than <paramref name="fromInclusive" />.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Invariant(System.Boolean)">
+      <summary>外側のメソッドまたはプロパティの不変コントラクトを指定します。</summary>
+      <param name="condition">テストする条件式。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Invariant(System.Boolean,System.String)">
+      <summary>外側のメソッドまたはプロパティの不変コントラクトを指定し、コントラクトの条件が失敗した場合はメッセージを表示します。</summary>
+      <param name="condition">テストする条件式。</param>
+      <param name="userMessage">条件が false の場合に表示するメッセージ。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.OldValue``1(``0)">
+      <summary>メソッドまたはプロパティの開始時の値を表します。</summary>
+      <returns>メソッドまたはプロパティの開始時のフィールドまたはパラメーターの値。</returns>
+      <param name="value">表す値 (フィールドまたはパラメーター)。</param>
+      <typeparam name="T">値の型。</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires``1(System.Boolean)">
+      <summary>外側のメソッドまたはプロパティの実行前の状態のコントラクトを指定し、コントラクトの条件が失敗した場合は例外をスローします。</summary>
+      <param name="condition">テストする条件式。</param>
+      <typeparam name="TException">条件が false の場合にスローする例外。</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires(System.Boolean)">
+      <summary>外側のメソッドまたはプロパティの実行前の状態のコントラクトを指定します。</summary>
+      <param name="condition">テストする条件式。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires(System.Boolean,System.String)">
+      <summary>外側のメソッドまたはプロパティの実行前の状態のコントラクトを指定し、コントラクトの条件が失敗した場合はメッセージを表示します。</summary>
+      <param name="condition">テストする条件式。</param>
+      <param name="userMessage">条件が false の場合に表示するメッセージ。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires``1(System.Boolean,System.String)">
+      <summary>外側のメソッドまたはプロパティの実行前の状態のコントラクトを指定し、コントラクトの条件が失敗した場合は指定されたメッセージで例外をスローします。</summary>
+      <param name="condition">テストする条件式。</param>
+      <param name="userMessage">条件が false の場合に表示するメッセージ。</param>
+      <typeparam name="TException">条件が false の場合にスローする例外。</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Result``1">
+      <summary>メソッドまたはプロパティの戻り値を表します。</summary>
+      <returns>外側のメソッドまたはプロパティの戻り値。</returns>
+      <typeparam name="T">外側のメソッドまたはプロパティの戻り値の型。</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.ValueAtReturn``1(``0@)">
+      <summary>メソッドから戻るときの out パラメーターの最後の (出力) 値を表します。</summary>
+      <returns>out パラメーターの出力値。</returns>
+      <param name="value">out パラメーター。</param>
+      <typeparam name="T">out パラメーターの型。</typeparam>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractAbbreviatorAttribute">
+      <summary>完全なコントラクトの構文の代わりに使用できる省略を定義します。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractAbbreviatorAttribute.#ctor">
+      <summary>
+        <see cref="T:System.Diagnostics.Contracts.ContractAbbreviatorAttribute" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractArgumentValidatorAttribute">
+      <summary>再利用できるように異なるメソッドへのレガシ if-then-throw コードのファクタリングを有効にし、スローされる例外と引数のフル コントロールを提供します。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractArgumentValidatorAttribute.#ctor">
+      <summary>
+        <see cref="T:System.Diagnostics.Contracts.ContractArgumentValidatorAttribute" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractClassAttribute">
+      <summary>この型のコード コントラクトが別の型に格納されていることを指定します。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractClassAttribute.#ctor(System.Type)">
+      <summary>
+        <see cref="T:System.Diagnostics.Contracts.ContractClassAttribute" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="typeContainingContracts">この型のコード コントラクトを格納する型。</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractClassAttribute.TypeContainingContracts">
+      <summary>この型のコード コントラクトを格納する型を取得します。</summary>
+      <returns>この型のコード コントラクトを格納する型。</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractClassForAttribute">
+      <summary>クラスが型のコントラクトであることを指定します。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractClassForAttribute.#ctor(System.Type)">
+      <summary>現在のクラスがコントラクトである型を使用して、<see cref="T:System.Diagnostics.Contracts.ContractClassForAttribute" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="typeContractsAreFor">現在のクラスがコントラクトである型。</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractClassForAttribute.TypeContractsAreFor">
+      <summary>このコード コントラクトが適用される型を取得します。</summary>
+      <returns>このコード コントラクトが適用される型。</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractFailedEventArgs">
+      <summary>
+        <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" /> イベントのメソッドおよびデータを提供します。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractFailedEventArgs.#ctor(System.Diagnostics.Contracts.ContractFailureKind,System.String,System.String,System.Exception)">
+      <summary>
+        <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" /> イベントにデータを提供します。</summary>
+      <param name="failureKind">失敗したコントラクトを指定する列挙値の 1 つ。</param>
+      <param name="message">イベントに関するメッセージ。</param>
+      <param name="condition">イベントの条件。</param>
+      <param name="originalException">イベントの原因になる例外。</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Condition">
+      <summary>コントラクトのエラーの条件を取得します。</summary>
+      <returns>エラーの条件。</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.FailureKind">
+      <summary>失敗したコントラクトの型を取得します。</summary>
+      <returns>失敗したコントラクトの型を指定する列挙値の 1 つ。</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Handled">
+      <summary>
+        <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" /> イベントが処理されたかどうかを示します。</summary>
+      <returns>イベントが処理済みである場合は true。それ以外の場合は false。</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Message">
+      <summary>
+        <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" /> イベントを説明するメッセージを取得します。</summary>
+      <returns>イベントを説明するメッセージ。</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.OriginalException">
+      <summary>
+        <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" /> イベントの原因となった元の例外を取得します。</summary>
+      <returns>イベントの原因になる例外。</returns>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractFailedEventArgs.SetHandled">
+      <summary>
+        <see cref="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Handled" /> プロパティを true に設定します。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractFailedEventArgs.SetUnwind">
+      <summary>
+        <see cref="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Unwind" /> プロパティを true に設定します。</summary>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Unwind">
+      <summary>コードのコントラクトのエスカレーション ポリシーを適用するかどうかを示します。</summary>
+      <returns>エスカレーション ポリシーを適用する場合は true。それ以外の場合は false。既定値は、false です。</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractFailureKind">
+      <summary>失敗したコントラクトの型を指定します。</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Assert">
+      <summary>
+        <see cref="Overload:System.Diagnostics.Contracts.Contract.Assert" /> コントラクトが失敗しました。</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Assume">
+      <summary>
+        <see cref="Overload:System.Diagnostics.Contracts.Contract.Assume" /> コントラクトが失敗しました。</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Invariant">
+      <summary>
+        <see cref="Overload:System.Diagnostics.Contracts.Contract.Invariant" /> コントラクトが失敗しました。</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Postcondition">
+      <summary>
+        <see cref="Overload:System.Diagnostics.Contracts.Contract.Ensures" /> コントラクトが失敗しました。</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.PostconditionOnException">
+      <summary>
+        <see cref="Overload:System.Diagnostics.Contracts.Contract.EnsuresOnThrow" /> コントラクトが失敗しました。</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Precondition">
+      <summary>
+        <see cref="Overload:System.Diagnostics.Contracts.Contract.Requires" /> コントラクトが失敗しました。</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractInvariantMethodAttribute">
+      <summary>メソッドをクラスのインバリアントなメソッドとしてマークします。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractInvariantMethodAttribute.#ctor">
+      <summary>
+        <see cref="T:System.Diagnostics.Contracts.ContractInvariantMethodAttribute" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractOptionAttribute">
+      <summary>アセンブリ、型、またはメソッドの粒度でコントラクトおよびツールのオプションを設定できるようにします。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractOptionAttribute.#ctor(System.String,System.String,System.Boolean)">
+      <summary>指定したカテゴリ、設定、および有効/無効値を使用して、<see cref="T:System.Diagnostics.Contracts.ContractOptionAttribute" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="category">設定するオプションのためのカテゴリ。</param>
+      <param name="setting">オプションの設定。</param>
+      <param name="enabled">オプションを有効にする場合は true。オプションを無効にする場合は false。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractOptionAttribute.#ctor(System.String,System.String,System.String)">
+      <summary>指定したカテゴリ、設定、および値を使用して、<see cref="T:System.Diagnostics.Contracts.ContractOptionAttribute" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="category">設定するオプションのカテゴリ。</param>
+      <param name="setting">オプションの設定。</param>
+      <param name="value">設定の値。</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Category">
+      <summary>オプションのカテゴリを取得します。</summary>
+      <returns>オプションのカテゴリ。</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Enabled">
+      <summary>オプションが有効かどうかを判断します。</summary>
+      <returns>オプションが有効になっている場合は true。それ以外の場合は false。</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Setting">
+      <summary>オプションの設定を取得します。</summary>
+      <returns>オプションの設定。</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Value">
+      <summary>オプションの値を取得します。</summary>
+      <returns>オプションの値。</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute">
+      <summary>フィールドの可視性がメソッドよりも低い場合に、フィールドをメソッド コントラクトで使用できることを指定します。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute.#ctor(System.String)">
+      <summary>
+        <see cref="T:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="name">フィールドに適用されるプロパティの名前。</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute.Name">
+      <summary>フィールドに適用されるプロパティ名を取得します。</summary>
+      <returns>フィールドに適用されたプロパティ名。</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractReferenceAssemblyAttribute">
+      <summary>アセンブリがコントラクトを含む参照アセンブリであることを指定します。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractReferenceAssemblyAttribute.#ctor">
+      <summary>
+        <see cref="T:System.Diagnostics.Contracts.ContractReferenceAssemblyAttribute" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractRuntimeIgnoredAttribute">
+      <summary>実行時の動作がないメンバーを識別します。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractRuntimeIgnoredAttribute.#ctor">
+      <summary>
+        <see cref="T:System.Diagnostics.Contracts.ContractRuntimeIgnoredAttribute" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractVerificationAttribute">
+      <summary>静的な検証を実行せずにアセンブリ、型、およびメンバーの正確さを想定するよう分析ツールに指示します。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractVerificationAttribute.#ctor(System.Boolean)">
+      <summary>
+        <see cref="T:System.Diagnostics.Contracts.ContractVerificationAttribute" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="value">検証を要求する場合は true。それ以外の場合は false。</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractVerificationAttribute.Value">
+      <summary>ターゲットのコントラクトを検証するかどうかを示す値を取得します。</summary>
+      <returns>検証が必要な場合は true。それ以外の場合は false。</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.PureAttribute">
+      <summary>型またはメソッドが純粋、つまり、可視的な状態の変更が行われないことを示します。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.PureAttribute.#ctor">
+      <summary>
+        <see cref="T:System.Diagnostics.Contracts.PureAttribute" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="T:System.Runtime.CompilerServices.ContractHelper">
+      <summary>バイナリ リライターがコントラクト エラーの処理に使用するメソッドを提供します。</summary>
+    </member>
+    <member name="M:System.Runtime.CompilerServices.ContractHelper.RaiseContractFailedEvent(System.Diagnostics.Contracts.ContractFailureKind,System.String,System.String,System.Exception)">
+      <summary>バイナリ リライターが既定のエラー動作をアクティブにするために使用します。</summary>
+      <returns>イベントが処理されて、エラーが発生しない場合は null 参照 (Visual Basic の場合は Nothing)。それ以外の場合はローカライズされたエラー メッセージが返されます。</returns>
+      <param name="failureKind">エラーの種類を指定する列挙値の 1 つ。</param>
+      <param name="userMessage">追加のユーザー情報。</param>
+      <param name="conditionText">エラーの原因となった条件の説明。</param>
+      <param name="innerException">現在の例外を発生させた内部例外。</param>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="failureKind" /> が有効な <see cref="T:System.Diagnostics.Contracts.ContractFailureKind" /> 値ではありません。</exception>
+    </member>
+    <member name="M:System.Runtime.CompilerServices.ContractHelper.TriggerFailure(System.Diagnostics.Contracts.ContractFailureKind,System.String,System.String,System.String,System.Exception)">
+      <summary>既定のエラー動作を発生させます。</summary>
+      <param name="kind">エラーの種類を指定する列挙値の 1 つ。</param>
+      <param name="displayMessage">表示するメッセージ。</param>
+      <param name="userMessage">追加のユーザー情報。</param>
+      <param name="conditionText">エラーの原因となった条件の説明。</param>
+      <param name="innerException">現在の例外を発生させた内部例外。</param>
+    </member>
+  </members>
+</doc>

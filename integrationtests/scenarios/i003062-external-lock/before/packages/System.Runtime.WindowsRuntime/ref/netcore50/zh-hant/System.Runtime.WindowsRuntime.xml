@@ -1,0 +1,831 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>System.Runtime.WindowsRuntime</name>
+  </assembly>
+  <members>
+    <member name="T:System.WindowsRuntimeSystemExtensions">
+      <summary>提供擴充方法來轉換工作以及 Windows 執行階段 非同步動作和作業。</summary>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsAsyncAction(System.Threading.Tasks.Task)">
+      <summary>傳回代表已開始的動作的 Windows 執行階段 非同步動作。</summary>
+      <returns>Windows.Foundation.IAsyncAction 執行個體，表示啟動的工作。</returns>
+      <param name="source">已開始的工作。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+      <exception cref="T:System.InvalidOperationException">
+        <paramref name="source" /> 是尚未開始的工作。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsAsyncOperation``1(System.Threading.Tasks.Task{``0})">
+      <summary>傳回 Windows 執行階段 非同步作業，代表會傳回結果的已開始的工作。</summary>
+      <returns>Windows.Foundation.IAsyncOperation&lt;TResult&gt; 執行個體，表示啟動的工作。</returns>
+      <param name="source">已開始的工作。</param>
+      <typeparam name="TResult">傳回結果的型別。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+      <exception cref="T:System.InvalidOperationException">
+        <paramref name="source" /> 是尚未開始的工作。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask(Windows.Foundation.IAsyncAction)">
+      <summary>傳回代表 Windows 執行階段 非同步動作的工作。</summary>
+      <returns>表示非同步動作的工作。</returns>
+      <param name="source">非同步動作。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask(Windows.Foundation.IAsyncAction,System.Threading.CancellationToken)">
+      <summary>傳回工作，代表可取消的 Windows 執行階段 非同步動作。</summary>
+      <returns>表示非同步動作的工作。</returns>
+      <param name="source">非同步動作。</param>
+      <param name="cancellationToken">可用來要求取消非同步動作的權杖。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``1(Windows.Foundation.IAsyncActionWithProgress{``0})">
+      <summary>傳回代表 Windows 執行階段 非同步動作的工作。</summary>
+      <returns>表示非同步動作的工作。</returns>
+      <param name="source">非同步動作。</param>
+      <typeparam name="TProgress">物件型別，會提供表示進度的資料。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``1(Windows.Foundation.IAsyncActionWithProgress{``0},System.IProgress{``0})">
+      <summary>傳回工作，代表報告進度的 Windows 執行階段 非同步動作。</summary>
+      <returns>表示非同步動作的工作。</returns>
+      <param name="source">非同步動作。</param>
+      <param name="progress">接收進度更新的物件。</param>
+      <typeparam name="TProgress">物件型別，會提供表示進度的資料。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``1(Windows.Foundation.IAsyncActionWithProgress{``0},System.Threading.CancellationToken)">
+      <summary>傳回工作，代表可取消的 Windows 執行階段 非同步動作。</summary>
+      <returns>表示非同步動作的工作。</returns>
+      <param name="source">非同步動作。</param>
+      <param name="cancellationToken">可用來要求取消非同步動作的權杖。</param>
+      <typeparam name="TProgress">物件型別，會提供表示進度的資料。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``1(Windows.Foundation.IAsyncActionWithProgress{``0},System.Threading.CancellationToken,System.IProgress{``0})">
+      <summary>傳回工作，代表報告進度且可取消的 Windows 執行階段 非同步動作。</summary>
+      <returns>表示非同步動作的工作。</returns>
+      <param name="source">非同步動作。</param>
+      <param name="cancellationToken">可用來要求取消非同步動作的權杖。</param>
+      <param name="progress">接收進度更新的物件。</param>
+      <typeparam name="TProgress">物件型別，會提供表示進度的資料。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``1(Windows.Foundation.IAsyncOperation{``0})">
+      <summary>傳回工作，代表傳回結果的 Windows 執行階段 非同步作業。</summary>
+      <returns>表示非同步作業的工作。</returns>
+      <param name="source">非同步作業。</param>
+      <typeparam name="TResult">物件型別，會傳回非同步作業的結果。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``1(Windows.Foundation.IAsyncOperation{``0},System.Threading.CancellationToken)">
+      <summary>傳回工作，代表傳回結果且可取消的 Windows 執行階段 非同步作業。</summary>
+      <returns>表示非同步作業的工作。</returns>
+      <param name="source">非同步作業。</param>
+      <param name="cancellationToken">可用來要求取消非同步作業的權杖。</param>
+      <typeparam name="TResult">物件型別，會傳回非同步作業的結果。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``2(Windows.Foundation.IAsyncOperationWithProgress{``0,``1})">
+      <summary>傳回工作，代表傳回結果的 Windows 執行階段 非同步作業。</summary>
+      <returns>表示非同步作業的工作。</returns>
+      <param name="source">非同步作業。</param>
+      <typeparam name="TResult">物件型別，會傳回非同步作業的結果。</typeparam>
+      <typeparam name="TProgress">物件型別，會提供表示進度的資料。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``2(Windows.Foundation.IAsyncOperationWithProgress{``0,``1},System.IProgress{``1})">
+      <summary>傳回工作，代表傳回結果並報告進度的 Windows 執行階段 非同步作業。</summary>
+      <returns>表示非同步作業的工作。</returns>
+      <param name="source">非同步作業。</param>
+      <param name="progress">接收進度更新的物件。</param>
+      <typeparam name="TResult">物件型別，會傳回非同步作業的結果。</typeparam>
+      <typeparam name="TProgress">物件型別，會提供表示進度的資料。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``2(Windows.Foundation.IAsyncOperationWithProgress{``0,``1},System.Threading.CancellationToken)">
+      <summary>傳回工作，代表傳回結果且可取消的 Windows 執行階段 非同步作業。</summary>
+      <returns>表示非同步作業的工作。</returns>
+      <param name="source">非同步作業。</param>
+      <param name="cancellationToken">可用來要求取消非同步作業的權杖。</param>
+      <typeparam name="TResult">物件型別，會傳回非同步作業的結果。</typeparam>
+      <typeparam name="TProgress">物件型別，會提供表示進度的資料。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``2(Windows.Foundation.IAsyncOperationWithProgress{``0,``1},System.Threading.CancellationToken,System.IProgress{``1})">
+      <summary>傳回工作，代表傳回結果、報告進度且可取消的 Windows 執行階段 非同步作業。</summary>
+      <returns>表示非同步作業的工作。</returns>
+      <param name="source">非同步作業。</param>
+      <param name="cancellationToken">可用來要求取消非同步作業的權杖。</param>
+      <param name="progress">接收進度更新的物件。</param>
+      <typeparam name="TResult">物件型別，會傳回非同步作業的結果。</typeparam>
+      <typeparam name="TProgress">物件型別，會提供表示進度的資料。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.GetAwaiter(Windows.Foundation.IAsyncAction)">
+      <summary>傳回等候非同步動作的物件。</summary>
+      <returns>等候指定之非同步動作的物件。</returns>
+      <param name="source">要等待的非同步動作。</param>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.GetAwaiter``1(Windows.Foundation.IAsyncActionWithProgress{``0})">
+      <summary>傳回等候報告進度之非同步動作的物件。</summary>
+      <returns>等候指定之非同步動作的物件。</returns>
+      <param name="source">要等待的非同步動作。</param>
+      <typeparam name="TProgress">物件型別，會提供表示進度的資料。</typeparam>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.GetAwaiter``1(Windows.Foundation.IAsyncOperation{``0})">
+      <summary>傳回等候傳回結果之非同步作業的物件。</summary>
+      <returns>等候指定之非同步作業的物件。</returns>
+      <param name="source">要等候的非同步作業。</param>
+      <typeparam name="TResult">物件型別，會傳回非同步作業的結果。</typeparam>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.GetAwaiter``2(Windows.Foundation.IAsyncOperationWithProgress{``0,``1})">
+      <summary>傳回物件，該物件會等候報告進度並傳回結果的非同步作業。</summary>
+      <returns>等候指定之非同步作業的物件。</returns>
+      <param name="source">要等候的非同步作業。</param>
+      <typeparam name="TResult">物件型別，會傳回非同步作業的結果。</typeparam>
+      <typeparam name="TProgress">物件型別，會提供表示進度的資料。</typeparam>
+    </member>
+    <member name="T:System.IO.WindowsRuntimeStorageExtensions">
+      <summary>包含開發 Windows 市集應用程式時，用於 Windows 執行階段中的 IStorageFile 和 IStorageFolder 介面的擴充方法。</summary>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStorageExtensions.OpenStreamForReadAsync(Windows.Storage.IStorageFile)">
+      <summary>從指定檔案擷取資料流進行讀取。</summary>
+      <returns>表示非同步讀取作業的工作。</returns>
+      <param name="windowsRuntimeFile">做為讀取來源的 Windows 執行階段 IStorageFile 物件。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeFile" /> 為 null。</exception>
+      <exception cref="T:System.IO.IOException">檔案無法開啟，或無法擷取成資料流。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStorageExtensions.OpenStreamForReadAsync(Windows.Storage.IStorageFolder,System.String)">
+      <summary>從指定上層資料夾中的檔案中擷取資料流進行讀取。</summary>
+      <returns>表示非同步讀取作業的工作。</returns>
+      <param name="rootDirectory">包含做為讀取來源檔案的 Windows 執行階段 IStorageFolder 物件。</param>
+      <param name="relativePath">要讀取之檔案的路徑（相對於根資料夾）。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="rootDirectory" /> 或 <paramref name="relativePath" /> 是 null。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="relativePath" /> 是空的或僅包含空白字元。</exception>
+      <exception cref="T:System.IO.IOException">檔案無法開啟，或無法擷取成資料流。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStorageExtensions.OpenStreamForWriteAsync(Windows.Storage.IStorageFile)">
+      <summary>擷取資料流以寫入特定檔案。</summary>
+      <returns>表示非同步寫入作業的工作。</returns>
+      <param name="windowsRuntimeFile">做為寫入目標的 Windows 執行階段 IStorageFile 物件。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeFile" /> 為 null。</exception>
+      <exception cref="T:System.IO.IOException">檔案無法開啟，或無法擷取成資料流。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStorageExtensions.OpenStreamForWriteAsync(Windows.Storage.IStorageFolder,System.String,Windows.Storage.CreationCollisionOption)">
+      <summary>擷取資料流以寫入指定上層資料夾中的檔案。</summary>
+      <returns>表示非同步寫入作業的工作。</returns>
+      <param name="rootDirectory">包含做為寫入目標檔案的 Windows 執行階段 IStorageFolder 物件。</param>
+      <param name="relativePath">要寫入之檔案的路徑（相對於根資料夾）。</param>
+      <param name="creationCollisionOption">Windows 執行階段 CreationCollisionOption 列舉值，會指定當要建立的檔案名稱和現有檔案名稱相同時要使用的行為。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="rootDirectory" /> 或 <paramref name="relativePath" /> 是 null。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="relativePath" /> 是空的或僅包含空白字元。</exception>
+      <exception cref="T:System.IO.IOException">檔案無法開啟，或無法擷取成資料流。</exception>
+    </member>
+    <member name="T:System.IO.WindowsRuntimeStreamExtensions">
+      <summary>包含用在 Windows 執行階段 中資料流與 適用於 Windows 市集應用程式的 .NET 中 Managed 資料流之間進行轉換的擴充方法。</summary>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsInputStream(System.IO.Stream)">
+      <summary>將 適用於 Windows 市集應用程式的 .NET 中的 Managed 資料流轉換為 Windows 執行階段 中的輸入資料流。</summary>
+      <returns>表示已轉換之資料流的 Windows 執行階段 IInputStream 物件。</returns>
+      <param name="stream">要轉換的資料流。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="stream" /> 為 null。</exception>
+      <exception cref="T:System.NotSupportedException">資料流不支援讀取。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsOutputStream(System.IO.Stream)">
+      <summary>將 適用於 Windows 市集應用程式的 .NET 中的 Managed 資料流轉換為 Windows 執行階段 中的輸出資料流。</summary>
+      <returns>表示已轉換之資料流的 Windows 執行階段 IOutputStream 物件。</returns>
+      <param name="stream">要轉換的資料流。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="stream" /> 為 null。</exception>
+      <exception cref="T:System.NotSupportedException">資料流不支援寫入。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsRandomAccessStream(System.IO.Stream)">
+      <summary>將指定的資料流轉換為隨機存取資料流。</summary>
+      <returns>Windows 執行階段 RandomAccessStream，表示已轉換的資料流。</returns>
+      <param name="stream">要轉換的資料流。</param>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsStream(Windows.Storage.Streams.IRandomAccessStream)">
+      <summary>將 Windows 執行階段 中的隨機存取資料流轉換為 適用於 Windows 市集應用程式的 .NET 中的 Managed 資料流。</summary>
+      <returns>轉換的資料流。</returns>
+      <param name="windowsRuntimeStream">要轉換的 Windows 執行階段 IRandomAccessStream (英文) 物件。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeStream" /> 為 null。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsStream(Windows.Storage.Streams.IRandomAccessStream,System.Int32)">
+      <summary>使用指定的緩衝區大小將 Windows 執行階段 中的隨機存取資料流轉換為 適用於 Windows 市集應用程式的 .NET 中的 managed 資料流。</summary>
+      <returns>轉換的資料流。</returns>
+      <param name="windowsRuntimeStream">要轉換的 Windows 執行階段 IRandomAccessStream (英文) 物件。</param>
+      <param name="bufferSize">緩衝區的大小 (以位元組為單位)。這個值不可以是負數，但可以是 0 (零)，以停用緩衝處理。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeStream" /> 為 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="bufferSize" /> 為負值。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsStreamForRead(Windows.Storage.Streams.IInputStream)">
+      <summary>將 Windows 執行階段中的輸入資料流轉換為適用於 Windows 市集應用程式的 .NET 中的 Managed 資料流。</summary>
+      <returns>轉換的資料流。</returns>
+      <param name="windowsRuntimeStream">要轉換的 Windows 執行階段 IInputStream (英文) 物件。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeStream" /> 為 null。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsStreamForRead(Windows.Storage.Streams.IInputStream,System.Int32)">
+      <summary>使用指定的緩衝區大小將 Windows 執行階段中的輸入資料流轉換為適用於 Windows 市集應用程式的 .NET 中的 Managed 資料流。</summary>
+      <returns>轉換的資料流。</returns>
+      <param name="windowsRuntimeStream">要轉換的 Windows 執行階段 IInputStream (英文) 物件。</param>
+      <param name="bufferSize">緩衝區的大小 (以位元組為單位)。這個值不可以是負數，但可以是 0 (零)，以停用緩衝處理。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeStream" /> 為 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="bufferSize" /> 為負值。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsStreamForWrite(Windows.Storage.Streams.IOutputStream)">
+      <summary>將 Windows 執行階段中的輸出資料流轉換為適用於 Windows 市集應用程式的 .NET 中的 Managed 資料流。</summary>
+      <returns>轉換的資料流。</returns>
+      <param name="windowsRuntimeStream">要轉換的 Windows 執行階段 IOutputStream (英文) 物件。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeStream" /> 為 null。</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsStreamForWrite(Windows.Storage.Streams.IOutputStream,System.Int32)">
+      <summary>使用指定的緩衝區大小將 Windows 執行階段中的輸出資料流轉換為適用於 Windows 市集應用程式的 .NET 中的 Managed 資料流。</summary>
+      <returns>轉換的資料流。</returns>
+      <param name="windowsRuntimeStream">要轉換的 Windows 執行階段 IOutputStream (英文) 物件。</param>
+      <param name="bufferSize">緩衝區的大小 (以位元組為單位)。這個值不可以是負數，但可以是 0 (零)，以停用緩衝處理。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeStream" /> 為 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="bufferSize" /> 為負值。</exception>
+    </member>
+    <member name="T:System.Runtime.InteropServices.WindowsRuntime.AsyncInfo">
+      <summary>提供 factory 方法，來建構與 Windows 執行階段 非同步動作和作業相容 Managed 工作的表示。</summary>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.AsyncInfo.Run``1(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{``0}})">
+      <summary>使用產生會傳回結果之已啟動工作的函式，建立並啟動 Windows 執行階段 非同步作業。此工作可以支援取消。</summary>
+      <returns>表示 <paramref name="taskProvider" /> 所產生之工作的已啟動 Windows.Foundation.IAsyncOperation&lt;TResult&gt; 執行個體。</returns>
+      <param name="taskProvider">委派，表示會建立並啟動工作的函式。已開始的工作是由傳回的Windows 執行階段非同步作業代表。此函式會被傳遞取消語彙基元，該工作可以監視以取得取消要求的通知； 如果您的工作不支援取消動作，您可以忽略該語彙基元。</param>
+      <typeparam name="TResult">傳回結果的型別。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="taskProvider" /> 為 null。</exception>
+      <exception cref="T:System.InvalidOperationException">
+        <paramref name="taskProvider" /> 傳回尚未開始的工作。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.AsyncInfo.Run(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task})">
+      <summary>使用產生已啟動工作的函式，建立並啟動 Windows 執行階段 非同步動作。此工作可以支援取消。</summary>
+      <returns>表示 <paramref name="taskProvider" /> 所產生之工作的已啟動 Windows.Foundation.IAsyncAction 執行個體。</returns>
+      <param name="taskProvider">委派，表示會建立並啟動工作的函式。已開始的工作是由傳回的Windows 執行階段非同步動作代表。此函式會被傳遞取消語彙基元，該工作可以監視以取得取消要求的通知； 如果您的工作不支援取消動作，您可以忽略該語彙基元。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="taskProvider" /> 為 null。</exception>
+      <exception cref="T:System.InvalidOperationException">
+        <paramref name="taskProvider" /> 傳回尚未開始的工作。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.AsyncInfo.Run``2(System.Func{System.Threading.CancellationToken,System.IProgress{``1},System.Threading.Tasks.Task{``0}})">
+      <summary>使用產生會傳回結果之已啟動工作的函式，建立並啟動 Windows 執行階段 非同步作業。此工作可以支援取消和進度報告。</summary>
+      <returns>表示 <paramref name="taskProvider" /> 所產生之工作的已啟動 Windows.Foundation.IAsyncOperationWithProgress&lt;TResult,TProgress&gt; 執行個體。</returns>
+      <param name="taskProvider">委派，表示會建立並啟動工作的函式。已開始的工作是由傳回的Windows 執行階段非同步動作代表。此函式會被傳遞取消語彙基元，該工作可以監視以取得取消要求的通知，並有報告進度的介面；如果您的工作不支援進度報告或取消動作，您可以忽略其中一個或兩個引數。</param>
+      <typeparam name="TResult">傳回結果的型別。</typeparam>
+      <typeparam name="TProgress">用於進度通知的型別。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="taskProvider" /> 為 null。</exception>
+      <exception cref="T:System.InvalidOperationException">
+        <paramref name="taskProvider" /> 傳回尚未開始的工作。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.AsyncInfo.Run``1(System.Func{System.Threading.CancellationToken,System.IProgress{``0},System.Threading.Tasks.Task})">
+      <summary>使用產生已啟動工作的函式，建立並啟動包含進度更新的 Windows 執行階段 非同步動作。此工作可以支援取消和進度報告。</summary>
+      <returns>表示 <paramref name="taskProvider" /> 所產生之工作的已啟動 Windows.Foundation.IAsyncActionWithProgress&lt;TProgress&gt; 執行個體。</returns>
+      <param name="taskProvider">委派，表示會建立並啟動工作的函式。已開始的工作是由傳回的Windows 執行階段非同步動作代表。此函式會被傳遞取消語彙基元，該工作可以監視以取得取消要求的通知，並有報告進度的介面；如果您的工作不支援進度報告或取消動作，您可以忽略其中一個或兩個引數。</param>
+      <typeparam name="TProgress">用於進度通知的型別。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="taskProvider" /> 為 null。</exception>
+      <exception cref="T:System.InvalidOperationException">
+        <paramref name="taskProvider" /> 傳回尚未開始的工作。</exception>
+    </member>
+    <member name="T:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBuffer">
+      <summary>提供 Windows 執行階段 IBuffer 介面 (Windows.Storage.Streams.IBuffer)，以及所有其他必要介面的實作。</summary>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBuffer.Create(System.Byte[],System.Int32,System.Int32,System.Int32)">
+      <summary>傳回 Windows.Storage.Streams.IBuffer介面，其中包含從位元組陣列複製的指定位元組範圍。如果指定的容量大於複製的位元組數，緩衝區的其餘部分會以零填滿。</summary>
+      <returns>包含指定範圍之位元組的 Windows.Storage.Streams.IBuffer 介面。如果 <paramref name="capacity" /> 大於 <paramref name="length" />，緩衝區的其餘部分會以零填滿。</returns>
+      <param name="data">要從其中複製的位元組陣列。</param>
+      <param name="offset">
+        <paramref name="data" /> 中要開始複製之處的位移 (Offset)。</param>
+      <param name="length">要複製的位元組數目。</param>
+      <param name="capacity">緩衝區可以容納的最大位元組數目；如果這大於<paramref name="length" />，則緩衝區中的其餘位元組會初始化為 0 (零)。</param>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="capacity" />、<paramref name="offset" /> 或 <paramref name="length" /> 小於 0 (零)。</exception>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="data" /> 為 null。</exception>
+      <exception cref="T:System.ArgumentException">開始於<paramref name="offset" />，<paramref name="data" />不包含<paramref name="length" />項目。-或-開始於<paramref name="offset" />，<paramref name="data" />不包含<paramref name="capacity" />項目。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBuffer.Create(System.Int32)">
+      <summary>傳回空的 Windows.Storage.Streams.IBuffer 介面，其中包含指定的最大容量。</summary>
+      <returns>具有指定之容量及等於 0 (零) 之 Length 屬性的 Windows.Storage.Streams.IBuffer 介面。</returns>
+      <param name="capacity">緩衝區可保留的最大位元組數目。</param>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="capacity" /> 小於 0 (零)。</exception>
+    </member>
+    <member name="T:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions">
+      <summary>提供擴充方法來操作 Windows 執行階段 緩衝區 (Windows.Storage.Streams.IBuffer 介面)。</summary>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsBuffer(System.Byte[])">
+      <summary>傳回Windows.Storage.Streams.IBuffer介面，代表指定的位元組陣列。</summary>
+      <returns>Windows.Storage.Streams.IBuffer 介面，表示指定的位元組陣列。</returns>
+      <param name="source">要表示的陣列。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsBuffer(System.Byte[],System.Int32,System.Int32)">
+      <summary>傳回Windows.Storage.Streams.IBuffer介面，代表指定位元組陣列中的位元組範圍。</summary>
+      <returns>表示 <paramref name="source" /> 中指定之位元組範圍的 IBuffer 介面。</returns>
+      <param name="source">陣列，包含以 IBuffer 表示的位元組範圍。</param>
+      <param name="offset">
+        <paramref name="source" />中範圍起始處的位移。</param>
+      <param name="length">IBuffer 所表示的範圍的長度。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="offset" /> 或 <paramref name="length" /> 小於 0 (零)。</exception>
+      <exception cref="T:System.ArgumentException">陣列並不夠大，無法做為 IBuffer 的支援存放區；也就是說，<paramref name="source" /> 中的位元組數字 (以 <paramref name="offset" /> 開頭) 小於 <paramref name="length" />。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsBuffer(System.Byte[],System.Int32,System.Int32,System.Int32)">
+      <summary>傳回Windows.Storage.Streams.IBuffer介面，代表指定位元組陣列中的位元組範圍。選擇性地將 IBuffer 的 Length 屬性值設定為小於容量。</summary>
+      <returns>表示 <paramref name="source" /> 中指定之位元組範圍且具有指定之 Length 屬性值的 IBuffer 介面。</returns>
+      <param name="source">陣列，包含以 IBuffer 表示的位元組範圍。</param>
+      <param name="offset">
+        <paramref name="source" />中範圍起始處的位移。</param>
+      <param name="length">IBuffer 的 Length 屬性的值。</param>
+      <param name="capacity">IBuffer 所表示的範圍的大小。將 IBuffer 的 Capacity 屬性設為這個值。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="offset" />、<paramref name="length" /> 或 <paramref name="capacity" /> 小於 0 (零)。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="length" /> 大於 <paramref name="capacity" />。-或-陣列並不夠大，無法做為 IBuffer 的支援存放區；也就是說，<paramref name="source" /> 中的位元組數字 (以 <paramref name="offset" /> 開頭) 小於 <paramref name="length" />或<paramref name="capacity" />。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsStream(Windows.Storage.Streams.IBuffer)">
+      <summary>船回資料流，表示指定之 Windows.Storage.Streams.IBuffer 介面所代表的相同記憶體。</summary>
+      <returns>資料流，表示指定之 Windows.Storage.Streams.IBuffer 介面所代表的相同記憶體。</returns>
+      <param name="source">要表示為資料流的 IBuffer。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.CopyTo(System.Byte[],System.Int32,Windows.Storage.Streams.IBuffer,System.UInt32,System.Int32)">
+      <summary>指定來源陣列中的起始索引、目的緩衝區中的起始索引以及要複製的位元組數目，將位元組從來源陣列複製到目的緩衝區 (Windows.Storage.Streams.IBuffer)。此方法不會更新目標緩衝區的 Length 屬性。</summary>
+      <param name="source">要從其中複製資料的陣列。</param>
+      <param name="sourceIndex">要在 <paramref name="source" /> 中從此處開始複製資料的索引。</param>
+      <param name="destination">要將資料複製到的緩衝區。</param>
+      <param name="destinationIndex">要在 <paramref name="destination" /> 中於此處開始複製資料的索引。</param>
+      <param name="count">要複製的位元組數目。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 或 <paramref name="destination" /> 是 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="count" />、<paramref name="sourceIndex" /> 或 <paramref name="destinationIndex" /> 小於 0 (零)。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="sourceIndex" /> 大於或等於 <paramref name="source" /> 的長度。-或-<paramref name="source" /> 中的位元組數 (從 <paramref name="sourceIndex" /> 開始) 小於 <paramref name="count" />。-或-起始於 <paramref name="destinationIndex" /> 複製 <paramref name="count" /> 個位元組將會超過 <paramref name="destination" /> 的容量。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.CopyTo(System.Byte[],Windows.Storage.Streams.IBuffer)">
+      <summary>將來源陣列中的所有位元組複製到目的緩衝區 (Windows.Storage.Streams.IBuffer)，在這兩處的複製位置都起始於位移 0 (零)。此方法不會更新目標緩衝區的長度。</summary>
+      <param name="source">要從其中複製資料的陣列。</param>
+      <param name="destination">要將資料複製到的緩衝區。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 或 <paramref name="destination" /> 是 null。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="source" /> 的大小超過 <paramref name="destination" /> 的容量。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.CopyTo(Windows.Storage.Streams.IBuffer,System.Byte[])">
+      <summary>將來源緩衝區 (Windows.Storage.Streams.IBuffer) 中的所有位元組複製到目的陣列，在這兩處的複製位置都起始於位移 0 (零)。</summary>
+      <param name="source">要從其中複製資料的緩衝區。</param>
+      <param name="destination">要將資料複製到的陣列。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 或 <paramref name="destination" /> 是 null。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="source" /> 的大小超過 <paramref name="destination" /> 的大小。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.CopyTo(Windows.Storage.Streams.IBuffer,System.UInt32,System.Byte[],System.Int32,System.Int32)">
+      <summary>指定來源緩衝區中的起始索引、目的陣列中的起始索引以及要複製的位元組數目，將位元組從來源緩衝區 (Windows.Storage.Streams.IBuffer) 複製到目的陣列。</summary>
+      <param name="source">要從其中複製資料的緩衝區。</param>
+      <param name="sourceIndex">要在 <paramref name="source" /> 中從此處開始複製資料的索引。</param>
+      <param name="destination">要將資料複製到的陣列。</param>
+      <param name="destinationIndex">要在 <paramref name="destination" /> 中於此處開始複製資料的索引。</param>
+      <param name="count">要複製的位元組數目。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 或 <paramref name="destination" /> 是 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="count" />、<paramref name="sourceIndex" /> 或 <paramref name="destinationIndex" /> 小於 0 (零)。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="sourceIndex" /> 大於或等於 <paramref name="source" /> 的容量。-或-<paramref name="destinationIndex" /> 大於或等於 <paramref name="destination" /> 的長度。-或-<paramref name="source" /> 中的位元組數 (從 <paramref name="sourceIndex" /> 開始) 小於 <paramref name="count" />。-或-起始於 <paramref name="destinationIndex" /> 複製 <paramref name="count" /> 個位元組將會超過 <paramref name="destination" /> 的大小。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.CopyTo(Windows.Storage.Streams.IBuffer,System.UInt32,Windows.Storage.Streams.IBuffer,System.UInt32,System.UInt32)">
+      <summary>指定來源緩衝區中的起始索引、目的地中的起始索引以及要複製的位元組數目，將位元組從來源緩衝區 (Windows.Storage.Streams.IBuffer) 複製到目的緩衝區。</summary>
+      <param name="source">要從其中複製資料的緩衝區。</param>
+      <param name="sourceIndex">要在 <paramref name="source" /> 中從此處開始複製資料的索引。</param>
+      <param name="destination">要將資料複製到的緩衝區。</param>
+      <param name="destinationIndex">要在 <paramref name="destination" /> 中於此處開始複製資料的索引。</param>
+      <param name="count">要複製的位元組數目。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 或 <paramref name="destination" /> 是 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="count" />、<paramref name="sourceIndex" /> 或 <paramref name="destinationIndex" /> 小於 0 (零)。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="sourceIndex" /> 大於或等於 <paramref name="source" /> 的容量。-或-<paramref name="destinationIndex" /> 大於或等於 <paramref name="destination" /> 的容量。-或-<paramref name="source" /> 中的位元組數 (從 <paramref name="sourceIndex" /> 開始) 小於 <paramref name="count" />。-或-起始於 <paramref name="destinationIndex" /> 複製 <paramref name="count" /> 個位元組將會超過 <paramref name="destination" /> 的容量。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.CopyTo(Windows.Storage.Streams.IBuffer,Windows.Storage.Streams.IBuffer)">
+      <summary>將來源緩衝區 (Windows.Storage.Streams.IBuffer) 中的所有位元組複製到目的緩衝區，在這兩處的複製位置都起始於位移 0 (零)。</summary>
+      <param name="source">來源緩衝區。</param>
+      <param name="destination">目的緩衝區。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 或 <paramref name="destination" /> 是 null。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="source" /> 的大小超過 <paramref name="destination" /> 的容量。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.GetByte(Windows.Storage.Streams.IBuffer,System.UInt32)">
+      <summary>傳回在指定位移的位元組，在指定的Windows.Storage.Streams.IBuffer介面。</summary>
+      <returns>指定位移的位元組。</returns>
+      <param name="source">要從中取得位元組的緩衝區。</param>
+      <param name="byteOffset">位元組的位移。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="byteOffset" /> 小於 0 (零)。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="byteOffset" /> 大於或等於 <paramref name="source" /> 的容量。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.GetWindowsRuntimeBuffer(System.IO.MemoryStream)">
+      <summary>傳回 Windows.Storage.Streams.IBuffer 介面，代表與指定記憶體資料流相同的記憶體。</summary>
+      <returns>由支援指定記憶體資料流之相同記憶體所支援的 Windows.Storage.Streams.IBuffer 介面。</returns>
+      <param name="underlyingStream">為 IBuffer 提供支援記憶體的資料流。</param>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.GetWindowsRuntimeBuffer(System.IO.MemoryStream,System.Int32,System.Int32)">
+      <summary>傳回 Windows.Storage.Streams.IBuffer 介面，表示記憶體內指定記憶體資料流所代表的區域。</summary>
+      <returns>由支援指定記憶體資料流之記憶體內部區域所支援的 Windows.Storage.Streams.IBuffer 介面。</returns>
+      <param name="underlyingStream">和 IBuffer 共用記憶體的資料流。</param>
+      <param name="positionInStream">
+        <paramref name="underlyingStream" />中共用記憶體區域的位置。</param>
+      <param name="length">共用記憶體區域的大小上限。如果 <paramref name="underlyingStream" /> 中從 <paramref name="positionInStream" /> 開始的位元組數小於 <paramref name="length" />，則傳回的 IBuffer 代表可用位元組數。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="underlyingStream" /> 為 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="positionInStream" /> 或 <paramref name="length" /> 小於 0 (零)。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="positionInStream" />是在 <paramref name="source" /> 結尾之外。</exception>
+      <exception cref="T:System.UnauthorizedAccessException">
+        <paramref name="underlyingStream" /> 無法公開其基礎的記憶體緩衝區。</exception>
+      <exception cref="T:System.ObjectDisposedException">這個 <paramref name="underlyingStream" /> 已關閉。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.IsSameData(Windows.Storage.Streams.IBuffer,Windows.Storage.Streams.IBuffer)">
+      <summary>傳回值，指出兩個緩衝區 (Windows.Storage.Streams.IBuffer 物件) 是否表示相同的基礎記憶體區域。</summary>
+      <returns>如果由兩個緩衝區所代表的記憶體區域有相同的起始點，則為 true，否則為 false。</returns>
+      <param name="buffer">第一個緩衝區。</param>
+      <param name="otherBuffer">第二個緩衝區。</param>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.ToArray(Windows.Storage.Streams.IBuffer)">
+      <summary>傳回從指定緩衝區內容建立的新陣列 (Windows.Storage.Streams.IBuffer)。陣列大小是 IBuffer 的 Length 屬性的值。</summary>
+      <returns>位元組陣列，這個陣列包含指定之 IBuffer 中，從位移 0 (零) 開始算起位元組數目等於 IBuffer 之 Length 屬性值的位元組。</returns>
+      <param name="source">其內容會填入新陣列的緩衝區。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.ToArray(Windows.Storage.Streams.IBuffer,System.UInt32,System.Int32)">
+      <summary>傳回從指定緩衝區內容建立的新陣列 (Windows.Storage.Streams.IBuffer)、從指定的位移開始，並包括指定的位元組數。</summary>
+      <returns>包含指定範圍之位元組的位元組陣列。</returns>
+      <param name="source">其內容會填入新陣列的緩衝區。</param>
+      <param name="sourceIndex">要在 <paramref name="source" /> 中從此處開始複製資料的索引。</param>
+      <param name="count">要複製的位元組數目。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> 為 null。</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="count" /> 或 <paramref name="sourceIndex" /> 小於 0 (零)。</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="sourceIndex" /> 大於或等於 <paramref name="source" /> 的容量。-或-<paramref name="source" /> 中的位元組數 (從 <paramref name="sourceIndex" /> 開始) 小於 <paramref name="count" />。</exception>
+    </member>
+    <member name="T:Windows.Foundation.Point">
+      <summary>以二維空間表示 X 座標和 Y 座標組。也可以表示特定屬性用法的「邏輯點」。</summary>
+    </member>
+    <member name="M:Windows.Foundation.Point.#ctor(System.Double,System.Double)">
+      <summary>初始化包含特定值的 <see cref="T:Windows.Foundation.Point" /> 結構。</summary>
+      <param name="x">
+        <see cref="T:Windows.Foundation.Point" /> 結構的 X 座標值。</param>
+      <param name="y">
+        <see cref="T:Windows.Foundation.Point" /> 結構的 Y 座標值。</param>
+    </member>
+    <member name="M:Windows.Foundation.Point.Equals(System.Object)">
+      <summary>判斷特定物件是否為 <see cref="T:Windows.Foundation.Point" />，以及它包含的值是否與這個 <see cref="T:Windows.Foundation.Point" /> 相同。</summary>
+      <returns>如果 <paramref name="obj" /> 是 <see cref="T:Windows.Foundation.Point" /> 而且包含的 <see cref="P:Windows.Foundation.Point.X" /> 和 <see cref="P:Windows.Foundation.Point.Y" /> 值與這個 <see cref="T:Windows.Foundation.Point" /> 相同，則為 true，否則為 false。</returns>
+      <param name="o">要比較的物件。</param>
+    </member>
+    <member name="M:Windows.Foundation.Point.Equals(Windows.Foundation.Point)">
+      <summary>比較兩個 <see cref="T:Windows.Foundation.Point" /> 結構是否相等。</summary>
+      <returns>如果兩個 <see cref="T:Windows.Foundation.Point" /> 結構都包含相同的 <see cref="P:Windows.Foundation.Point.X" /> 和 <see cref="P:Windows.Foundation.Point.Y" /> 值則為 true，否則為 false。</returns>
+      <param name="value">要與這個執行個體比較的點。</param>
+    </member>
+    <member name="M:Windows.Foundation.Point.GetHashCode">
+      <summary>傳回這個 <see cref="T:Windows.Foundation.Point" /> 的雜湊程式碼。</summary>
+      <returns>這個 <see cref="T:Windows.Foundation.Point" /> 結構的雜湊程式碼。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Point.op_Equality(Windows.Foundation.Point,Windows.Foundation.Point)">
+      <summary>比較兩個 <see cref="T:Windows.Foundation.Point" /> 結構是否相等。</summary>
+      <returns>如果 <paramref name="point1" /> 和 <paramref name="point2" /> 的 <see cref="P:Windows.Foundation.Point.X" /> 和 <see cref="P:Windows.Foundation.Point.Y" /> 值相等則為 true，否則為 false。</returns>
+      <param name="point1">要比較的第一個 <see cref="T:Windows.Foundation.Point" /> 結構。</param>
+      <param name="point2">要比較的第二個 <see cref="T:Windows.Foundation.Point" /> 結構。</param>
+    </member>
+    <member name="M:Windows.Foundation.Point.op_Inequality(Windows.Foundation.Point,Windows.Foundation.Point)">
+      <summary>比較兩個 <see cref="T:Windows.Foundation.Point" /> 結構是否相等。</summary>
+      <returns>如果 <paramref name="point1" /> 和 <paramref name="point2" /> 的 <see cref="P:Windows.Foundation.Point.X" /> 或 <see cref="P:Windows.Foundation.Point.Y" /> 值不同則為 true，如果 <paramref name="point1" /> 和 <paramref name="point2" /> 的 <see cref="P:Windows.Foundation.Point.X" /> 和 <see cref="P:Windows.Foundation.Point.Y" /> 值相同則為 false。</returns>
+      <param name="point1">要比較的第一個點。</param>
+      <param name="point2">要比較的第二個點。</param>
+    </member>
+    <member name="M:Windows.Foundation.Point.System#IFormattable#ToString(System.String,System.IFormatProvider)">
+      <summary>如需這個成員的說明，請參閱 <see cref="M:System.IFormattable.ToString(System.String,System.IFormatProvider)" />。</summary>
+      <returns>字串，包含目前執行個體的值，且該值採用指定的格式。</returns>
+      <param name="format">指定要使用之格式的字串。-或-null，使用定義給 IFormattable 實作 (Implementation) 類型的預設格式。</param>
+      <param name="provider">IFormatProvider，用來格式化數值。-或-null，用來從作業系統的目前地區設定 (Locale) 取得數值格式資訊。</param>
+    </member>
+    <member name="M:Windows.Foundation.Point.ToString">
+      <summary>建立這個 <see cref="T:Windows.Foundation.Point" /> 的 <see cref="T:System.String" /> 表示。</summary>
+      <returns>
+        <see cref="T:System.String" />，包含這個 <see cref="T:Windows.Foundation.Point" /> 結構的 <see cref="P:Windows.Foundation.Point.X" /> 和 <see cref="P:Windows.Foundation.Point.Y" /> 值。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Point.ToString(System.IFormatProvider)">
+      <summary>建立這個 <see cref="T:Windows.Foundation.Point" /> 的 <see cref="T:System.String" /> 表示。</summary>
+      <returns>
+        <see cref="T:System.String" />，包含這個 <see cref="T:Windows.Foundation.Point" /> 結構的 <see cref="P:Windows.Foundation.Point.X" /> 和 <see cref="P:Windows.Foundation.Point.Y" /> 值。</returns>
+      <param name="provider">文化特性 (Culture) 特有的格式資訊。</param>
+    </member>
+    <member name="P:Windows.Foundation.Point.X">
+      <summary>取得或設定這個 <see cref="T:Windows.Foundation.Point" /> 結構的 <see cref="P:Windows.Foundation.Point.X" /> 座標。</summary>
+      <returns>這個 <see cref="T:Windows.Foundation.Point" /> 結構的 <see cref="P:Windows.Foundation.Point.X" /> 座標值。預設值是 0。</returns>
+    </member>
+    <member name="P:Windows.Foundation.Point.Y">
+      <summary>取得或設定這個 <see cref="T:Windows.Foundation.Point" /> 的 <see cref="P:Windows.Foundation.Point.Y" /> 座標值。</summary>
+      <returns>這個 <see cref="T:Windows.Foundation.Point" /> 結構的 <see cref="P:Windows.Foundation.Point.Y" /> 座標值。預設值是 0。</returns>
+    </member>
+    <member name="T:Windows.Foundation.Rect">
+      <summary>描述矩形的寬度、高度和原點。</summary>
+    </member>
+    <member name="M:Windows.Foundation.Rect.#ctor(System.Double,System.Double,System.Double,System.Double)">
+      <summary>初始化 <see cref="T:Windows.Foundation.Rect" /> 結構，這個結構具有指定的 X 座標、Y 座標、寬度和高度。</summary>
+      <param name="x">矩形左上角的 X 座標。</param>
+      <param name="y">矩形左上角的 Y 座標。</param>
+      <param name="width">矩形的寬度。</param>
+      <param name="height">矩形的高度。</param>
+      <exception cref="T:System.ArgumentException">width 或 height 小於 0。</exception>
+    </member>
+    <member name="M:Windows.Foundation.Rect.#ctor(Windows.Foundation.Point,Windows.Foundation.Point)">
+      <summary>初始化 <see cref="T:Windows.Foundation.Rect" /> 結構，這個結構剛好足以包含兩個指定的點。</summary>
+      <param name="point1">新矩形必須包含的第一個點。</param>
+      <param name="point2">新矩形必須包含的第二個點。</param>
+    </member>
+    <member name="M:Windows.Foundation.Rect.#ctor(Windows.Foundation.Point,Windows.Foundation.Size)">
+      <summary>根據原點與初始化，初始化 <see cref="T:Windows.Foundation.Rect" /> 結構。</summary>
+      <param name="location">新 <see cref="T:Windows.Foundation.Rect" /> 的原點。</param>
+      <param name="size">新 <see cref="T:Windows.Foundation.Rect" /> 的大小。</param>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Bottom">
+      <summary>取得矩形底端的 Y 軸值。</summary>
+      <returns>矩形底端的 Y 軸值。如果矩形是空的，則值為 <see cref="F:System.Double.NegativeInfinity" />。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Rect.Contains(Windows.Foundation.Point)">
+      <summary>表示 <see cref="T:Windows.Foundation.Rect" /> 描述的矩形是否包含指定的點。</summary>
+      <returns>如果 <see cref="T:Windows.Foundation.Rect" /> 描述的矩形包含指定的點，則為 true，否則為 false。</returns>
+      <param name="point">要檢查的點。</param>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Empty">
+      <summary>取得特殊值，這個值表示沒有位置或區域的矩形。</summary>
+      <returns>空白矩形 (<see cref="P:Windows.Foundation.Rect.X" /> 和 <see cref="P:Windows.Foundation.Rect.Y" /> 屬性值為 <see cref="F:System.Double.PositiveInfinity" /> 而且 <see cref="P:Windows.Foundation.Rect.Width" /> 和 <see cref="P:Windows.Foundation.Rect.Height" /> 屬性值為 <see cref="F:System.Double.NegativeInfinity" />)。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Rect.Equals(System.Object)">
+      <summary>指出指定的物件是否等於目前的 <see cref="T:Windows.Foundation.Rect" />。</summary>
+      <returns>如果 <paramref name="o" /> 為 <see cref="T:Windows.Foundation.Rect" /> 且具有與目前 <see cref="T:Windows.Foundation.Rect" /> 之相同的 x、y、width、height 值，則為 true，否則為 false。</returns>
+      <param name="o">要與目前矩形相比較的物件。</param>
+    </member>
+    <member name="M:Windows.Foundation.Rect.Equals(Windows.Foundation.Rect)">
+      <summary>指出特定的 <see cref="T:Windows.Foundation.Rect" /> 和目前的 <see cref="T:Windows.Foundation.Rect" /> 是否相等。</summary>
+      <returns>如果指定的 <see cref="T:Windows.Foundation.Rect" /> 具有與目前之 <see cref="T:Windows.Foundation.Rect" /> 相同的 x、y、width、height 屬性值，則為 true，否則為 false。</returns>
+      <param name="value">要與目前矩形相比較的矩形。</param>
+    </member>
+    <member name="M:Windows.Foundation.Rect.GetHashCode">
+      <summary>建立 <see cref="T:Windows.Foundation.Rect" /> 的雜湊程式碼。</summary>
+      <returns>目前 <see cref="T:Windows.Foundation.Rect" /> 結構的雜湊程式碼。</returns>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Height">
+      <summary>取得或設定矩形的高度。</summary>
+      <returns>表示矩形高度的值。預設值為 0。</returns>
+      <exception cref="T:System.ArgumentException">指定小於 0 的值。</exception>
+    </member>
+    <member name="M:Windows.Foundation.Rect.Intersect(Windows.Foundation.Rect)">
+      <summary>尋找目前 <see cref="T:Windows.Foundation.Rect" /> 所表示之矩形與特定 <see cref="T:Windows.Foundation.Rect" /> 所表示之矩形的交集，然後將結果儲存為目前的 <see cref="T:Windows.Foundation.Rect" />。</summary>
+      <param name="rect">與目前矩形交集的矩形。</param>
+    </member>
+    <member name="P:Windows.Foundation.Rect.IsEmpty">
+      <summary>取得值，這個值表示矩形是否為 <see cref="P:Windows.Foundation.Rect.Empty" /> 矩形。</summary>
+      <returns>如果矩形是 <see cref="P:Windows.Foundation.Rect.Empty" /> 矩形則為 true，否則為 false。</returns>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Left">
+      <summary>取得矩形左側的 X 軸值。</summary>
+      <returns>矩形左側的 X 軸值。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Rect.op_Equality(Windows.Foundation.Rect,Windows.Foundation.Rect)">
+      <summary>比較兩個 <see cref="T:Windows.Foundation.Rect" /> 結構是否相等。</summary>
+      <returns>如果 <see cref="T:Windows.Foundation.Rect" /> 結構具有相同的 x、y、width、height 屬性值，則為 true，否則為 false。</returns>
+      <param name="rect1">要比較的第一個矩形。</param>
+      <param name="rect2">要比較的第二個矩形。</param>
+    </member>
+    <member name="M:Windows.Foundation.Rect.op_Inequality(Windows.Foundation.Rect,Windows.Foundation.Rect)">
+      <summary>比較兩個 <see cref="T:Windows.Foundation.Rect" /> 結構是否相等。</summary>
+      <returns>如果 <see cref="T:Windows.Foundation.Rect" /> 結構沒有相同的 x、y、width、height 屬性值，則為 true，否則為 false。</returns>
+      <param name="rect1">要比較的第一個矩形。</param>
+      <param name="rect2">要比較的第二個矩形。</param>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Right">
+      <summary>取得矩形右側的 X 軸值。</summary>
+      <returns>矩形右側的 X 軸值。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Rect.System#IFormattable#ToString(System.String,System.IFormatProvider)">
+      <summary>如需這個成員的說明，請參閱 <see cref="M:System.IFormattable.ToString(System.String,System.IFormatProvider)" />。</summary>
+      <returns>字串，包含目前執行個體的值，且該值採用指定的格式。</returns>
+      <param name="format">指定要使用之格式的字串。-或-null，使用定義給 IFormattable 實作 (Implementation) 類型的預設格式。</param>
+      <param name="provider">IFormatProvider，用來格式化數值。-或-null，用來從作業系統的目前地區設定 (Locale) 取得數值格式資訊。</param>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Top">
+      <summary>取得矩形頂端的 Y 軸位置。</summary>
+      <returns>矩形頂端的 Y 軸位置。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Rect.ToString">
+      <summary>傳回 <see cref="T:Windows.Foundation.Rect" /> 結構的字串表示。</summary>
+      <returns>目前 <see cref="T:Windows.Foundation.Rect" /> 結構的字串表示。字串的格式如下："<see cref="P:Windows.Foundation.Rect.X" />,<see cref="P:Windows.Foundation.Rect.Y" />,<see cref="P:Windows.Foundation.Rect.Width" />,<see cref="P:Windows.Foundation.Rect.Height" />"。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Rect.ToString(System.IFormatProvider)">
+      <summary>使用指定的格式提供者，傳回矩形的字串表示。</summary>
+      <returns>目前矩形的字串表示，透過指定的格式提供者進行判斷。</returns>
+      <param name="provider">文化特性 (Culture) 特有的格式資訊。</param>
+    </member>
+    <member name="M:Windows.Foundation.Rect.Union(Windows.Foundation.Point)">
+      <summary>將目前 <see cref="T:Windows.Foundation.Rect" /> 表示的矩形展開為剛好足以包含指定的點。</summary>
+      <param name="point">要包含的點。</param>
+    </member>
+    <member name="M:Windows.Foundation.Rect.Union(Windows.Foundation.Rect)">
+      <summary>將目前 <see cref="T:Windows.Foundation.Rect" /> 表示的矩形展開為剛好足以包含指定的矩形。</summary>
+      <param name="rect">要包含的矩形。</param>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Width">
+      <summary>取得或設定矩形的寬度。</summary>
+      <returns>表示矩形寬度的值 (以像素為單位)。預設值為 0。</returns>
+      <exception cref="T:System.ArgumentException">指定小於 0 的值。</exception>
+    </member>
+    <member name="P:Windows.Foundation.Rect.X">
+      <summary>取得或設定矩形左側的 X 軸值。</summary>
+      <returns>矩形左側的 X 軸值。這個值會解譯為座標空間內的像素。</returns>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Y">
+      <summary>取得或設定矩形上方的 Y 軸值。</summary>
+      <returns>矩形上方的 Y 軸值。這個值會解譯為座標空間內的像素。</returns>
+    </member>
+    <member name="T:Windows.Foundation.Size">
+      <summary>描述物件的寬度與高度。</summary>
+    </member>
+    <member name="M:Windows.Foundation.Size.#ctor(System.Double,System.Double)">
+      <summary>初始化 <see cref="T:Windows.Foundation.Size" /> 結構的新執行個體，並對其指派初始 <paramref name="width" /> 及 <paramref name="height" />。</summary>
+      <param name="width">
+        <see cref="T:Windows.Foundation.Size" /> 之執行個體的初始寬度。</param>
+      <param name="height">
+        <see cref="T:Windows.Foundation.Size" /> 之執行個體的初始高度。</param>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="width" /> 或 <paramref name="height" /> 小於 0。</exception>
+    </member>
+    <member name="P:Windows.Foundation.Size.Empty">
+      <summary>取得值，表示靜態的空 <see cref="T:Windows.Foundation.Size" />。</summary>
+      <returns>
+        <see cref="T:Windows.Foundation.Size" /> 的空執行個體。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Size.Equals(System.Object)">
+      <summary>比較物件與 <see cref="T:Windows.Foundation.Size" /> 執行個體是否相等。</summary>
+      <returns>如果大小相等則為 true，否則為 false。</returns>
+      <param name="o">要比較的 <see cref="T:System.Object" />。</param>
+    </member>
+    <member name="M:Windows.Foundation.Size.Equals(Windows.Foundation.Size)">
+      <summary>比較值與 <see cref="T:Windows.Foundation.Size" /> 執行個體是否相等。</summary>
+      <returns>如果 <see cref="T:Windows.Foundation.Size" /> 的執行個體相等，則為 true，否則為 false。</returns>
+      <param name="value">要與 <see cref="T:Windows.Foundation.Size" /> 目前這個執行個體相比較的大小。</param>
+    </member>
+    <member name="M:Windows.Foundation.Size.GetHashCode">
+      <summary>取得 <see cref="T:Windows.Foundation.Size" /> 之這個執行個體的雜湊程式碼。</summary>
+      <returns>這個 <see cref="T:Windows.Foundation.Size" /> 執行個體的雜湊程式碼。</returns>
+    </member>
+    <member name="P:Windows.Foundation.Size.Height">
+      <summary>取得或設定這個 <see cref="T:Windows.Foundation.Size" /> 執行個體的高度。</summary>
+      <returns>此 <see cref="T:Windows.Foundation.Size" /> 執行個體的 <see cref="P:Windows.Foundation.Size.Height" /> (以像素為單位)。預設值為 0。值不能為負。</returns>
+      <exception cref="T:System.ArgumentException">指定小於 0 的值。</exception>
+    </member>
+    <member name="P:Windows.Foundation.Size.IsEmpty">
+      <summary>取得值，表示 <see cref="T:Windows.Foundation.Size" /> 的這個執行個體是否為 <see cref="P:Windows.Foundation.Size.Empty" />。</summary>
+      <returns>如果 size 的這個執行個體為 <see cref="P:Windows.Foundation.Size.Empty" /> 則為 true，否則為 false。</returns>
+    </member>
+    <member name="M:Windows.Foundation.Size.op_Equality(Windows.Foundation.Size,Windows.Foundation.Size)">
+      <summary>比較 <see cref="T:Windows.Foundation.Size" /> 的兩個執行個體是否相等。</summary>
+      <returns>如果兩個 <see cref="T:Windows.Foundation.Size" /> 執行個體相等則為 true，否則為 false。</returns>
+      <param name="size1">要比較之 <see cref="T:Windows.Foundation.Size" /> 的第一個執行個體。</param>
+      <param name="size2">要比較的第二個 <see cref="T:Windows.Foundation.Size" /> 執行個體。</param>
+    </member>
+    <member name="M:Windows.Foundation.Size.op_Inequality(Windows.Foundation.Size,Windows.Foundation.Size)">
+      <summary>比較 <see cref="T:Windows.Foundation.Size" /> 的兩個執行個體是否不相等。</summary>
+      <returns>如果 <see cref="T:Windows.Foundation.Size" /> 的執行個體不相等則為 true，否則為 false。</returns>
+      <param name="size1">要比較之 <see cref="T:Windows.Foundation.Size" /> 的第一個執行個體。</param>
+      <param name="size2">要比較的第二個 <see cref="T:Windows.Foundation.Size" /> 執行個體。</param>
+    </member>
+    <member name="M:Windows.Foundation.Size.ToString">
+      <summary>傳回這個 <see cref="T:Windows.Foundation.Size" /> 的字串表示。</summary>
+      <returns>這個 <see cref="T:Windows.Foundation.Size" /> 的字串表示。</returns>
+    </member>
+    <member name="P:Windows.Foundation.Size.Width">
+      <summary>取得或設定這個 <see cref="T:Windows.Foundation.Size" /> 執行個體的寬度。</summary>
+      <returns>此 <see cref="T:Windows.Foundation.Size" /> 執行個體的 <see cref="P:Windows.Foundation.Size.Width" /> (以像素為單位)。預設值是 0。值不能為負。</returns>
+      <exception cref="T:System.ArgumentException">指定小於 0 的值。</exception>
+    </member>
+    <member name="T:Windows.UI.Color">
+      <summary>以 Alpha、紅色、綠色及藍色色頻描述色彩。</summary>
+    </member>
+    <member name="P:Windows.UI.Color.A">
+      <summary>取得或設定色彩的 sRGB Alpha 色頻值。</summary>
+      <returns>色彩的 sRGB Alpha 色頻值，為介於 0 到 255 之間的值。</returns>
+    </member>
+    <member name="P:Windows.UI.Color.B">
+      <summary>取得或設定色彩的 sRGB 藍色色頻值。</summary>
+      <returns>sRGB 藍色色頻值，為介於 0 到 255 之間的值。</returns>
+    </member>
+    <member name="M:Windows.UI.Color.Equals(System.Object)">
+      <summary>測試指定的物件是否為 <see cref="T:Windows.UI.Color" /> 結構，而且是否和目前色彩相等。</summary>
+      <returns>如果指定的物件為 <see cref="T:Windows.UI.Color" /> 結構，而且和目前的 <see cref="T:Windows.UI.Color" /> 結構相等則為 true，否則為 false。</returns>
+      <param name="o">要與目前 <see cref="T:Windows.UI.Color" /> 結構比較的物件。</param>
+    </member>
+    <member name="M:Windows.UI.Color.Equals(Windows.UI.Color)">
+      <summary>測試指定的 <see cref="T:Windows.UI.Color" /> 結構是否和目前色彩相等。</summary>
+      <returns>如果指定的 <see cref="T:Windows.UI.Color" /> 結構和目前的 <see cref="T:Windows.UI.Color" /> 結構相等則為 true，否則為 false。</returns>
+      <param name="color">要與目前的 <see cref="T:Windows.UI.Color" /> 結構相比較的 <see cref="T:Windows.UI.Color" /> 結構。</param>
+    </member>
+    <member name="M:Windows.UI.Color.FromArgb(System.Byte,System.Byte,System.Byte,System.Byte)">
+      <summary>使用指定的 sRGB Alpha 色頻和色頻值建立新的 <see cref="T:Windows.UI.Color" /> 結構。</summary>
+      <returns>具有指定之值的 <see cref="T:Windows.UI.Color" /> 結構。</returns>
+      <param name="a">新色彩的 Alpha 色頻 <see cref="P:Windows.UI.Color.A" />。值必須介於 0 到 255 之間。</param>
+      <param name="r">新色彩的紅色色頻 <see cref="P:Windows.UI.Color.R" />。值必須介於 0 到 255 之間。</param>
+      <param name="g">新色彩的綠色色頻 <see cref="P:Windows.UI.Color.G" />。值必須介於 0 到 255 之間。</param>
+      <param name="b">新色彩的藍色色頻 <see cref="P:Windows.UI.Color.B" />。值必須介於 0 到 255 之間。</param>
+    </member>
+    <member name="P:Windows.UI.Color.G">
+      <summary>取得或設定色彩的 sRGB 綠色色頻值。</summary>
+      <returns>sRGB 綠色色頻值，為介於 0 到 255 之間的值。</returns>
+    </member>
+    <member name="M:Windows.UI.Color.GetHashCode">
+      <summary>取得目前 <see cref="T:Windows.UI.Color" /> 結構的雜湊程式碼。</summary>
+      <returns>目前 <see cref="T:Windows.UI.Color" /> 結構的雜湊程式碼。</returns>
+    </member>
+    <member name="M:Windows.UI.Color.op_Equality(Windows.UI.Color,Windows.UI.Color)">
+      <summary>測試兩個 <see cref="T:Windows.UI.Color" /> 結構是否一致。</summary>
+      <returns>如果 <paramref name="color1" /> 和 <paramref name="color2" /> 完全相等則為 true，否則為 false。</returns>
+      <param name="color1">要比較的第一個 <see cref="T:Windows.UI.Color" /> 結構。</param>
+      <param name="color2">要比較的第二個 <see cref="T:Windows.UI.Color" /> 結構。</param>
+    </member>
+    <member name="M:Windows.UI.Color.op_Inequality(Windows.UI.Color,Windows.UI.Color)">
+      <summary>測試兩個 <see cref="T:Windows.UI.Color" /> 結構是否不相等。</summary>
+      <returns>如果 <paramref name="color1" /> 和 <paramref name="color2" /> 不相等，則為 true，否則為 false。</returns>
+      <param name="color1">要比較的第一個 <see cref="T:Windows.UI.Color" /> 結構。</param>
+      <param name="color2">要比較的第二個 <see cref="T:Windows.UI.Color" /> 結構。</param>
+    </member>
+    <member name="P:Windows.UI.Color.R">
+      <summary>取得或設定色彩的 sRGB 紅色色頻值。</summary>
+      <returns>sRGB 紅色色頻值，為介於 0 到 255 之間的值。</returns>
+    </member>
+    <member name="M:Windows.UI.Color.System#IFormattable#ToString(System.String,System.IFormatProvider)">
+      <summary>如需這個成員的說明，請參閱 <see cref="M:System.IFormattable.ToString(System.String,System.IFormatProvider)" />。</summary>
+      <returns>字串，包含目前執行個體的值，且該值採用指定的格式。</returns>
+      <param name="format">指定要使用之格式的字串。-或-null，使用定義給 IFormattable 實作 (Implementation) 類型的預設格式。</param>
+      <param name="provider">IFormatProvider，用來格式化數值。-或-null，用來從作業系統的目前地區設定 (Locale) 取得數值格式資訊。</param>
+    </member>
+    <member name="M:Windows.UI.Color.ToString">
+      <summary>使用 ARGB 色頻建立色彩的字串表示 (以十六進位標記法表示)。</summary>
+      <returns>色彩的字串表示。</returns>
+    </member>
+    <member name="M:Windows.UI.Color.ToString(System.IFormatProvider)">
+      <summary>使用 ARGB 色頻和指定的格式提供者建立色彩的字串表示。</summary>
+      <returns>色彩的字串表示。</returns>
+      <param name="provider">文化特性 (Culture) 特有的格式資訊。</param>
+    </member>
+  </members>
+</doc>

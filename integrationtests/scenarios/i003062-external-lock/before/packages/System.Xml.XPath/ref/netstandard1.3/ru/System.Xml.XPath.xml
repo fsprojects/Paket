@@ -1,0 +1,1047 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>System.Xml.XPath</name>
+  </assembly>
+  <members>
+    <member name="T:System.Xml.XmlNodeOrder">
+      <summary>Описывает документный порядок узла по отношению ко второму узлу.</summary>
+    </member>
+    <member name="F:System.Xml.XmlNodeOrder.After">
+      <summary>Текущий узел данного навигатора находится после текущего узла указанного навигатора.</summary>
+    </member>
+    <member name="F:System.Xml.XmlNodeOrder.Before">
+      <summary>Текущий узел данного навигатора находится перед текущим узлом указанного навигатора.</summary>
+    </member>
+    <member name="F:System.Xml.XmlNodeOrder.Same">
+      <summary>Два навигатора расположены на одном и том же узле.</summary>
+    </member>
+    <member name="F:System.Xml.XmlNodeOrder.Unknown">
+      <summary>Не удается определить расположения узлов в документном порядке по отношению друг ко другу.Это может произойти, если два узла находятся в различных деревьях.</summary>
+    </member>
+    <member name="T:System.Xml.XPath.IXPathNavigable">
+      <summary>Предоставляет метод доступа к классу <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+    </member>
+    <member name="M:System.Xml.XPath.IXPathNavigable.CreateNavigator">
+      <summary>Возвращает новый объект <see cref="T:System.Xml.XPath.XPathNavigator" />. </summary>
+      <returns>Объект <see cref="T:System.Xml.XPath.XPathNavigator" />.</returns>
+    </member>
+    <member name="T:System.Xml.XPath.XmlCaseOrder">
+      <summary>Указывает порядок сортировки для строчных и прописных букв.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlCaseOrder.LowerFirst">
+      <summary>Строчные буквы сортируются перед прописными буквами.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlCaseOrder.None">
+      <summary>Игнорирование регистра.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlCaseOrder.UpperFirst">
+      <summary>Прописные буквы сортируются перед строчными буквами.</summary>
+    </member>
+    <member name="T:System.Xml.XPath.XmlDataType">
+      <summary>Указывает тип данных для определения порядка сортировки.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlDataType.Number">
+      <summary>Значения сортируются по числам.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlDataType.Text">
+      <summary>Значения сортируются в алфавитном порядке.</summary>
+    </member>
+    <member name="T:System.Xml.XPath.XmlSortOrder">
+      <summary>Указывает порядок сортировки.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlSortOrder.Ascending">
+      <summary>узлы сортируются в восходящем порядке.Например, если номера 1, 2, 3 и 4 сортируются в восходящем порядке, они отображаются в последовательности 1, 2, 3, 4.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlSortOrder.Descending">
+      <summary>узлы сортируются в нисходящем порядке.Например, если номера 1, 2, 3 и 4 сортируются в нисходящем порядке, они отображаются в последовательности 4, 3, 2, 1.</summary>
+    </member>
+    <member name="T:System.Xml.XPath.XPathDocument">
+      <summary>Предоставляет быстрое, хранимое в памяти и доступное только для чтения представление XML-документа с помощью модели данных XPath.</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.#ctor(System.IO.Stream)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Xml.XPath.XPathDocument" /> из XML-данных в указанном объекте <see cref="T:System.IO.Stream" />.</summary>
+      <param name="stream">Объект <see cref="T:System.IO.Stream" />, содержащий XML-данные.</param>
+      <exception cref="T:System.Xml.XmlException">An error was encountered in the XML data.The <see cref="T:System.Xml.XPath.XPathDocument" /> remains empty.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.IO.Stream" /> object passed as a parameter is null.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.#ctor(System.IO.TextReader)">
+      <summary>Инициализация нового экземпляра класса <see cref="T:System.Xml.XPath.XPathDocument" /> из XML-данных, содержащихся в указанном объекте <see cref="T:System.IO.TextReader" />.</summary>
+      <param name="textReader">Объект <see cref="T:System.IO.TextReader" />, содержащий XML-данные.</param>
+      <exception cref="T:System.Xml.XmlException">An error was encountered in the XML data.The <see cref="T:System.Xml.XPath.XPathDocument" /> remains empty.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.IO.TextReader" /> object passed as a parameter is null.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.#ctor(System.String)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Xml.XPath.XPathDocument" /> из XML-данных в указанном файле.</summary>
+      <param name="uri">Путь к файлу, содержащему XML-данные.</param>
+      <exception cref="T:System.Xml.XmlException">An error was encountered in the XML data.The <see cref="T:System.Xml.XPath.XPathDocument" /> remains empty.</exception>
+      <exception cref="T:System.ArgumentNullException">The file path parameter is null.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.#ctor(System.String,System.Xml.XmlSpace)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Xml.XPath.XPathDocument" /> из XML-данных в указанном файле с указанной обработкой пробелов.</summary>
+      <param name="uri">Путь к файлу, содержащему XML-данные.</param>
+      <param name="space">Объект <see cref="T:System.Xml.XmlSpace" />.</param>
+      <exception cref="T:System.Xml.XmlException">An error was encountered in the XML data.The <see cref="T:System.Xml.XPath.XPathDocument" /> remains empty.</exception>
+      <exception cref="T:System.ArgumentNullException">The file path parameter or <see cref="T:System.Xml.XmlSpace" /> object parameter is null.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.#ctor(System.Xml.XmlReader)">
+      <summary>Инициализация нового экземпляра класса <see cref="T:System.Xml.XPath.XPathDocument" /> из XML-данных, содержащихся в указанном объекте <see cref="T:System.Xml.XmlReader" />.</summary>
+      <param name="reader">Объект <see cref="T:System.Xml.XmlReader" />, содержащий XML-данные. </param>
+      <exception cref="T:System.Xml.XmlException">An error was encountered in the XML data.The <see cref="T:System.Xml.XPath.XPathDocument" /> remains empty.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object passed as a parameter is null.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.#ctor(System.Xml.XmlReader,System.Xml.XmlSpace)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Xml.XPath.XPathDocument" /> из XML-данных, содержащихся в заданном объекте <see cref="T:System.Xml.XmlReader" /> с указанной обработкой пробелов.</summary>
+      <param name="reader">Объект <see cref="T:System.Xml.XmlReader" />, содержащий XML-данные.</param>
+      <param name="space">Объект <see cref="T:System.Xml.XmlSpace" />.</param>
+      <exception cref="T:System.Xml.XmlException">An error was encountered in the XML data.The <see cref="T:System.Xml.XPath.XPathDocument" /> remains empty.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object parameter or <see cref="T:System.Xml.XmlSpace" /> object parameter is null.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.CreateNavigator">
+      <summary>Инициализирует объект только для чтения <see cref="T:System.Xml.XPath.XPathNavigator" /> для перехода по узлам в данном <see cref="T:System.Xml.XPath.XPathDocument" />.</summary>
+      <returns>Объект <see cref="T:System.Xml.XPath.XPathNavigator" />, доступный только для чтения.</returns>
+    </member>
+    <member name="T:System.Xml.XPath.XPathException">
+      <summary>Предоставляет исключение, которое порождается при происхождении ошибки при обработке выражения XPath. </summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathException.#ctor">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Xml.XPath.XPathException" />.</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathException.#ctor(System.String)">
+      <summary>Инициализация нового экземпляра  класса <see cref="T:System.Xml.XPath.XPathException" /> с указанным сообщением об исключении.</summary>
+      <param name="message">Описание условий возникновения ошибки.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathException.#ctor(System.String,System.Exception)">
+      <summary>Инициализация нового экземпляра  класса <see cref="T:System.Xml.XPath.XPathException" /> с указанным сообщением об исключении и объектом <see cref="T:System.Exception" />.</summary>
+      <param name="message">Описание условий возникновения ошибки. </param>
+      <param name="innerException">
+        <see cref="T:System.Exception" />, породивший <see cref="T:System.Xml.XPath.XPathException" /> (при наличии).Это значение может быть равно null.</param>
+    </member>
+    <member name="T:System.Xml.XPath.XPathExpression">
+      <summary>Предоставляет типизированный класс, представляющий скомпилированное выражение XPath.</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.AddSort(System.Object,System.Collections.IComparer)">
+      <summary>При переопределении в производном классе выполняется сортировка узлов, выбранных выражением XPath, согласно заданному объекту <see cref="T:System.Collections.IComparer" />.</summary>
+      <param name="expr">Объект, представляющий ключ сортировки.Это может быть значение string узла или объект <see cref="T:System.Xml.XPath.XPathExpression" /> со скомпилированным выражением XPath.</param>
+      <param name="comparer">Объект <see cref="T:System.Collections.IComparer" />, предоставляющий сравнения определенных типов данных для сравнения двух объектов на предмет эквивалентности. </param>
+      <exception cref="T:System.Xml.XPath.XPathException">
+        <see cref="T:System.Xml.XPath.XPathExpression" /> или ключ сортировки включает префикс и либо не предоставлен <see cref="T:System.Xml.XmlNamespaceManager" />, либо префикс не удается найти в указанном <see cref="T:System.Xml.XmlNamespaceManager" />.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.AddSort(System.Object,System.Xml.XPath.XmlSortOrder,System.Xml.XPath.XmlCaseOrder,System.String,System.Xml.XPath.XmlDataType)">
+      <summary>При переопределении в производном классе выполняется сортировка узлов, выбранных выражением XPath, согласно указанным параметрам.</summary>
+      <param name="expr">Объект, представляющий ключ сортировки.Это может быть значение string узла или объект <see cref="T:System.Xml.XPath.XPathExpression" /> со скомпилированным выражением XPath.</param>
+      <param name="order">Значение <see cref="T:System.Xml.XPath.XmlSortOrder" />, указывающее порядок сортировки. </param>
+      <param name="caseOrder">Значение <see cref="T:System.Xml.XPath.XmlCaseOrder" />, указывающее способ сортировки строчных и прописных букв.</param>
+      <param name="lang">Язык, используемый для сравнения.Использует класс <see cref="T:System.Globalization.CultureInfo" />, который может передаваться в метод <see cref="Overload:System.String.Compare" /> для типов языков, например, "us-en" для английского языка (американская версия).Если указывается пустая строка, для определения <see cref="T:System.Globalization.CultureInfo" /> используется системное окружение.</param>
+      <param name="dataType">Значение <see cref="T:System.Xml.XPath.XmlDataType" />, указывающее порядок сортировки для типа данных. </param>
+      <exception cref="T:System.Xml.XPath.XPathException">
+        <see cref="T:System.Xml.XPath.XPathExpression" /> или ключ сортировки включает префикс и либо не предоставлен <see cref="T:System.Xml.XmlNamespaceManager" />, либо префикс не удается найти в указанном <see cref="T:System.Xml.XmlNamespaceManager" />. </exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.Clone">
+      <summary>При переопределении в производном классе возвращает клон <see cref="T:System.Xml.XPath.XPathExpression" />.</summary>
+      <returns>Новый объект <see cref="T:System.Xml.XPath.XPathExpression" />.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.Compile(System.String)">
+      <summary>Компилирует заданное выражение XPath и возвращает объект <see cref="T:System.Xml.XPath.XPathExpression" />, представляющий выражение XPath.</summary>
+      <returns>Объект <see cref="T:System.Xml.XPath.XPathExpression" />.</returns>
+      <param name="xpath">Выражение XPath.</param>
+      <exception cref="T:System.ArgumentException">Параметр выражения XPath не является допустимым выражением XPath.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">Недопустимое выражение XPath.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.Compile(System.String,System.Xml.IXmlNamespaceResolver)">
+      <summary>Компилирует заданное выражение XPath, при указанном для разрешения пространства имен объекте <see cref="T:System.Xml.IXmlNamespaceResolver" />, и возвращает объект <see cref="T:System.Xml.XPath.XPathExpression" />, представляющий выражение XPath.</summary>
+      <returns>Объект <see cref="T:System.Xml.XPath.XPathExpression" />.</returns>
+      <param name="xpath">Выражение XPath.</param>
+      <param name="nsResolver">Объект, реализующий интерфейс <see cref="T:System.Xml.IXmlNamespaceResolver" /> для разрешения пространства имен.</param>
+      <exception cref="T:System.ArgumentException">Параметр выражения XPath не является допустимым выражением XPath.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">Недопустимое выражение XPath.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathExpression.Expression">
+      <summary>При переопределении в производном классе получает представление string для <see cref="T:System.Xml.XPath.XPathExpression" />.</summary>
+      <returns>Представление string для <see cref="T:System.Xml.XPath.XPathExpression" />.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathExpression.ReturnType">
+      <summary>При переопределении в производном классе получает тип результата выражения XPath.</summary>
+      <returns>Значение <see cref="T:System.Xml.XPath.XPathResultType" />, представляющее тип результата выражения XPath.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.SetContext(System.Xml.IXmlNamespaceResolver)">
+      <summary>При переопределении в производном классе указывает объект <see cref="T:System.Xml.IXmlNamespaceResolver" />, который следует использовать для разрешения пространства имен.</summary>
+      <param name="nsResolver">Объект, реализующий интерфейс <see cref="T:System.Xml.IXmlNamespaceResolver" />, для использования для разрешения пространства имен.</param>
+      <exception cref="T:System.Xml.XPath.XPathException">Параметр объекта <see cref="T:System.Xml.IXmlNamespaceResolver" /> не является производным от <see cref="T:System.Xml.IXmlNamespaceResolver" />. </exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.SetContext(System.Xml.XmlNamespaceManager)">
+      <summary>При переопределении в производном классе указывает объект <see cref="T:System.Xml.XmlNamespaceManager" />, который следует использовать для разрешения пространства имен.</summary>
+      <param name="nsManager">Объект <see cref="T:System.Xml.XmlNamespaceManager" /> для использования для разрешения пространства имен. </param>
+      <exception cref="T:System.Xml.XPath.XPathException">Параметр объекта <see cref="T:System.Xml.XmlNamespaceManager" />, не являющийся производным от класса <see cref="T:System.Xml.XmlNamespaceManager" />. </exception>
+    </member>
+    <member name="T:System.Xml.XPath.XPathItem">
+      <summary>Представляет элемент в моделях данных XQuery 1.0 и XPath 2.0.</summary>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.IsNode">
+      <summary>При переопределении в производном классе возвращает значение, указывающее, представляет ли элемент узел XPath или атомарное значение.</summary>
+      <returns>true, если элемент представляет узел XPath; false, если элемент представляет атомарное значение.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.TypedValue">
+      <summary>При переопределении в производном классе возвращает текущий элемент как упакованный объект наиболее подходящего типа .NET Framework 2.0, соответствующего типу схемы.</summary>
+      <returns>Текущий элемент в виде упакованного объекта наиболее соответствующего типа .NET Framework.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.Value">
+      <summary>Переопределяемый в производных классах возвращает значение string для элемента.</summary>
+      <returns>Значение string для элемента.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathItem.ValueAs(System.Type)">
+      <summary>Возвращает значение элемента с заданным типом.</summary>
+      <returns>Значение элемента в заданном типе.</returns>
+      <param name="returnType">Тип, в котором необходимо возвратить значение элемента.</param>
+      <exception cref="T:System.FormatException">Значение элемента имеет неверный формат для целевого типа.</exception>
+      <exception cref="T:System.InvalidCastException">Недопустимая попытка приведения.</exception>
+      <exception cref="T:System.OverflowException">Попытка приведения типов вызвала переполнение.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathItem.ValueAs(System.Type,System.Xml.IXmlNamespaceResolver)">
+      <summary>Переопределяемый в производных классах возвращает значение элемента с типом, задаваемым с помощью объекта <see cref="T:System.Xml.IXmlNamespaceResolver" /> для разрешения префиксов пространств имен.</summary>
+      <returns>Значение элемента в заданном типе.</returns>
+      <param name="returnType">Тип, в котором необходимо возвратить значение элемента.</param>
+      <param name="nsResolver">Объект <see cref="T:System.Xml.IXmlNamespaceResolver" />, используемый для разрешения префиксов пространств имен.</param>
+      <exception cref="T:System.FormatException">Значение элемента имеет неверный формат для целевого типа.</exception>
+      <exception cref="T:System.InvalidCastException">Недопустимая попытка приведения.</exception>
+      <exception cref="T:System.OverflowException">Попытка приведения типов вызвала переполнение.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.ValueAsBoolean">
+      <summary>При переопределении в производном классе получает значение элемента в представлении <see cref="T:System.Boolean" />.</summary>
+      <returns>Значение элемента в представлении <see cref="T:System.Boolean" />.</returns>
+      <exception cref="T:System.FormatException">Значение элемента имеет неверный формат для типа <see cref="T:System.Boolean" />.</exception>
+      <exception cref="T:System.InvalidCastException">Попытка преобразования к типу <see cref="T:System.Boolean" /> недопустима.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.ValueAsDateTime">
+      <summary>При переопределении в производном классе получает значение элемента в представлении <see cref="T:System.DateTime" />.</summary>
+      <returns>Значение элемента в представлении <see cref="T:System.DateTime" />.</returns>
+      <exception cref="T:System.FormatException">Значение элемента имеет неверный формат для типа <see cref="T:System.DateTime" />.</exception>
+      <exception cref="T:System.InvalidCastException">Попытка преобразования к типу <see cref="T:System.DateTime" /> недопустима.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.ValueAsDouble">
+      <summary>При переопределении в производном классе получает значение элемента в представлении <see cref="T:System.Double" />.</summary>
+      <returns>Значение элемента в представлении <see cref="T:System.Double" />.</returns>
+      <exception cref="T:System.FormatException">Значение элемента имеет неверный формат для типа <see cref="T:System.Double" />.</exception>
+      <exception cref="T:System.InvalidCastException">Попытка преобразования к типу <see cref="T:System.Double" /> недопустима.</exception>
+      <exception cref="T:System.OverflowException">Попытка приведения типов вызвала переполнение.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.ValueAsInt">
+      <summary>При переопределении в производном классе получает значение элемента в представлении <see cref="T:System.Int32" />.</summary>
+      <returns>Значение элемента в представлении <see cref="T:System.Int32" />.</returns>
+      <exception cref="T:System.FormatException">Значение элемента имеет неверный формат для типа <see cref="T:System.Int32" />.</exception>
+      <exception cref="T:System.InvalidCastException">Попытка преобразования к типу <see cref="T:System.Int32" /> недопустима.</exception>
+      <exception cref="T:System.OverflowException">Попытка приведения типов вызвала переполнение.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.ValueAsLong">
+      <summary>При переопределении в производном классе получает значение элемента в представлении <see cref="T:System.Int64" />.</summary>
+      <returns>Значение элемента в представлении <see cref="T:System.Int64" />.</returns>
+      <exception cref="T:System.FormatException">Значение элемента имеет неверный формат для типа <see cref="T:System.Int64" />.</exception>
+      <exception cref="T:System.InvalidCastException">Попытка преобразования к типу <see cref="T:System.Int64" /> недопустима.</exception>
+      <exception cref="T:System.OverflowException">Попытка приведения типов вызвала переполнение.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.ValueType">
+      <summary>Переопределяемый в производных классах возвращает тип .NET Framework 2.0 элемента.</summary>
+      <returns>Тип .NET Framework для элемента.Значение по умолчанию — <see cref="T:System.String" />.</returns>
+    </member>
+    <member name="T:System.Xml.XPath.XPathNamespaceScope">
+      <summary>Определяет область пространства имен.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNamespaceScope.All">
+      <summary>Возвращает все пространства имен, заданные в области текущего узла.Это включает пространство имен xmlns:xml, которое всегда объявляется неявно.Порядок возвращения пространств имен не задан.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNamespaceScope.ExcludeXml">
+      <summary>Возвращает все пространства имен, заданные в области текущего узла, исключая пространство имен xmlns:xml.Пространство имен xmlns:xml всегда объявлено неявно.Порядок возвращения пространств имен не задан.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNamespaceScope.Local">
+      <summary>Возвращает все пространства имен, которые заданы локально в текущем узле. </summary>
+    </member>
+    <member name="T:System.Xml.XPath.XPathNavigator">
+      <summary>Представляет модель курсора для навигации по данным XML и их редактирования.</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.#ctor">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.AppendChild">
+      <summary>Возвращает объект <see cref="T:System.Xml.XmlWriter" />, используемый для создания одного и более дочерних узлов в конце списка дочерних узлов текущего узла. </summary>
+      <returns>Объект <see cref="T:System.Xml.XmlWriter" />, используемый для создания новых дочерних узлов в конце списка дочерних узлов текущего узла.</returns>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on is not the root node or an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.AppendChild(System.String)">
+      <summary>Создает новый дочерний узел в конце списка дочерних узлов текущего узла, используя заданную строку данных XML.</summary>
+      <param name="newChild">Строка данных XML для нового дочернего узла.</param>
+      <exception cref="T:System.ArgumentNullException">The XML data string parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on is not the root node or an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML data string parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.AppendChild(System.Xml.XmlReader)">
+      <summary>Создает новый дочерний узел в конце списка дочерних узлов текущего узла, используя содержимое XML заданного объекта <see cref="T:System.Xml.XmlReader" />.</summary>
+      <param name="newChild">Объект <see cref="T:System.Xml.XmlReader" />, расположенный на данных XML для нового дочернего узла.</param>
+      <exception cref="T:System.ArgumentException">The <see cref="T:System.Xml.XmlReader" /> object is in an error state or closed.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on is not the root node or an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML contents of the <see cref="T:System.Xml.XmlReader" /> object parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.AppendChild(System.Xml.XPath.XPathNavigator)">
+      <summary>Создает новый дочерний узел в конце списка дочерних узлов текущего узла, используя узлы из заданного <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+      <param name="newChild">Объект <see cref="T:System.Xml.XPath.XPathNavigator" />, расположенный на узле, который следует добавить как новый дочерний узел.</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on is not the root node or an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.AppendChildElement(System.String,System.String,System.String,System.String)">
+      <summary>Создает новый элемент дочернего узла в конце списка дочерних узлов текущего узла, используя заданный префикс пространства имен, локальное имя, URI пространства имен и указанное значение.</summary>
+      <param name="prefix">Префикс пространства имен нового элемента дочернего узла (если имеется).</param>
+      <param name="localName">Локальное имя нового элемента дочернего узла (если имеется).</param>
+      <param name="namespaceURI">URI пространства имен для нового узла дочернего элемента (если он имеется).<see cref="F:System.String.Empty" /> и null эквивалентны.</param>
+      <param name="value">Значение нового элемента дочернего узла.Если передается значение <see cref="F:System.String.Empty" /> или null, то создается пустой элемент.</param>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on is not the root node or an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.BaseURI">
+      <summary>Когда переопределено в производном классе, возвращает базовый URI для текущего узла.</summary>
+      <returns>Расположение, из которого был загружен узел, или <see cref="F:System.String.Empty" />, если значение отсутствует.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.CanEdit">
+      <summary>Получает значение, указывающее, может ли <see cref="T:System.Xml.XPath.XPathNavigator" /> редактировать базовые данные XML.</summary>
+      <returns>true, если <see cref="T:System.Xml.XPath.XPathNavigator" /> может редактировать базовые данные XML, в противном случае — false.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Clone">
+      <summary>При переопределении в производных классах создает новый <see cref="T:System.Xml.XPath.XPathNavigator" />, расположенный на том же узле, что и этот <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+      <returns>Новый <see cref="T:System.Xml.XPath.XPathNavigator" />, расположенный на том же узле, что и этот <see cref="T:System.Xml.XPath.XPathNavigator" />.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ComparePosition(System.Xml.XPath.XPathNavigator)">
+      <summary>Сравнивает положение текущего <see cref="T:System.Xml.XPath.XPathNavigator" /> с положением заданного <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+      <returns>Значение <see cref="T:System.Xml.XmlNodeOrder" />, представляющее сравнительное положение двух объектов <see cref="T:System.Xml.XPath.XPathNavigator" />.</returns>
+      <param name="nav">
+        <see cref="T:System.Xml.XPath.XPathNavigator" />, с которым выполняется сравнение.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Compile(System.String)">
+      <summary>Компилирует строчное представление выражения XPath и возвращает объект <see cref="T:System.Xml.XPath.XPathExpression" />.</summary>
+      <returns>Объект <see cref="T:System.Xml.XPath.XPathExpression" />, представляющий выражение XPath.</returns>
+      <param name="xpath">Строчное представление выражения XPath.</param>
+      <exception cref="T:System.ArgumentException">The <paramref name="xpath" /> parameter contains an XPath expression that is not valid.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.CreateAttribute(System.String,System.String,System.String,System.String)">
+      <summary>Создает узел атрибута в текущем узле элемента, используя заданный префикс пространства имен, локальное имя, URI пространства имен и указанное значение.</summary>
+      <param name="prefix">Префикс пространства имен нового узла атрибута (если имеется).</param>
+      <param name="localName">Локальное имя нового узла атрибута, которое не может быть <see cref="F:System.String.Empty" /> или null.</param>
+      <param name="namespaceURI">URI пространства имен нового узла атрибута (если имеется).</param>
+      <param name="value">Значение нового узла атрибута.Если передается значение <see cref="F:System.String.Empty" /> или null, то создается пустой узел атрибута.</param>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.CreateAttributes">
+      <summary>Возвращает объект <see cref="T:System.Xml.XmlWriter" />, используемый для создания новых атрибутов текущего элемента.</summary>
+      <returns>Объект <see cref="T:System.Xml.XmlWriter" />, используемый для создания новых атрибутов текущего элемента.</returns>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.CreateNavigator">
+      <summary>Возвращает копию <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+      <returns>Копия <see cref="T:System.Xml.XPath.XPathNavigator" /> этого <see cref="T:System.Xml.XPath.XPathNavigator" />.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.DeleteRange(System.Xml.XPath.XPathNavigator)">
+      <summary>Удаляет узлы того же уровня в диапазоне от текущего до заданного узла.</summary>
+      <param name="lastSiblingToDelete">
+        <see cref="T:System.Xml.XPath.XPathNavigator" />, расположенный на последнем узле того же уровня в удаляемом диапазоне.</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> specified is null.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.InvalidOperationException">The last node to delete specified is not a valid sibling node of the current node.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.DeleteSelf">
+      <summary>Удаляет текущий узел и его дочерние узлы.</summary>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on a node that cannot be deleted such as the root node or a namespace node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Evaluate(System.String)">
+      <summary>Вычисляет заданное выражение XPath и возвращает типизированный результат.</summary>
+      <returns>Результат выражения (логическое значение, число, строка или набор узлов).Он отображается на объекты <see cref="T:System.Boolean" />, <see cref="T:System.Double" />, <see cref="T:System.String" /> или <see cref="T:System.Xml.XPath.XPathNodeIterator" /> соответственно.</returns>
+      <param name="xpath">Строка, представляющая выражение XPath, которое следует вычислить.</param>
+      <exception cref="T:System.ArgumentException">The return type of the XPath expression is a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Evaluate(System.String,System.Xml.IXmlNamespaceResolver)">
+      <summary>Вычисляет значение заданного выражения XPath и возвращает типизированный результат с помощью указанного объекта <see cref="T:System.Xml.IXmlNamespaceResolver" />, который разрешает префиксы пространства имен в выражении XPath.</summary>
+      <returns>Результат выражения (логическое значение, число, строка или набор узлов).Он отображается на объекты <see cref="T:System.Boolean" />, <see cref="T:System.Double" />, <see cref="T:System.String" /> или <see cref="T:System.Xml.XPath.XPathNodeIterator" /> соответственно.</returns>
+      <param name="xpath">Строка, представляющая выражение XPath, которое следует вычислить.</param>
+      <param name="resolver">Объект <see cref="T:System.Xml.IXmlNamespaceResolver" />, используемый для разрешения префиксов пространства имен в выражении XPath.</param>
+      <exception cref="T:System.ArgumentException">The return type of the XPath expression is a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Evaluate(System.Xml.XPath.XPathExpression)">
+      <summary>Вычисляет значение <see cref="T:System.Xml.XPath.XPathExpression" /> и возвращает типизированный результат.</summary>
+      <returns>Результат выражения (логическое значение, число, строка или набор узлов).Он отображается на объекты <see cref="T:System.Boolean" />, <see cref="T:System.Double" />, <see cref="T:System.String" /> или <see cref="T:System.Xml.XPath.XPathNodeIterator" /> соответственно.</returns>
+      <param name="expr">
+        <see cref="T:System.Xml.XPath.XPathExpression" />, которое можно вычислить.</param>
+      <exception cref="T:System.ArgumentException">The return type of the XPath expression is a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Evaluate(System.Xml.XPath.XPathExpression,System.Xml.XPath.XPathNodeIterator)">
+      <summary>Использует предоставленный контекст для вычисления значения <see cref="T:System.Xml.XPath.XPathExpression" /> и возвращает типизированный результат.</summary>
+      <returns>Результат выражения (логическое значение, число, строка или набор узлов).Он отображается на объекты <see cref="T:System.Boolean" />, <see cref="T:System.Double" />, <see cref="T:System.String" /> или <see cref="T:System.Xml.XPath.XPathNodeIterator" /> соответственно.</returns>
+      <param name="expr">
+        <see cref="T:System.Xml.XPath.XPathExpression" />, которое можно вычислить.</param>
+      <param name="context">
+        <see cref="T:System.Xml.XPath.XPathNodeIterator" />, указывающий на выбранный узел, вычисление значения которого следует выполнить.</param>
+      <exception cref="T:System.ArgumentException">The return type of the XPath expression is a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.GetAttribute(System.String,System.String)">
+      <summary>Возвращает значение атрибута с указанным локальным именем и универсальным кодом ресурса (URI) пространства имен.</summary>
+      <returns>
+        <see cref="T:System.String" />, содержащая значение указанного атрибута; <see cref="F:System.String.Empty" />, если совпадающий атрибут не найден, или если <see cref="T:System.Xml.XPath.XPathNavigator" /> не расположен на узле элемента.</returns>
+      <param name="localName">Локальное имя атрибута.</param>
+      <param name="namespaceURI">Универсальный код ресурса (URI) пространства имен атрибута.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.GetNamespace(System.String)">
+      <summary>Возвращает значение узла пространства имен, соответствующее указанному локальному имени.</summary>
+      <returns>
+        <see cref="T:System.String" />, содержащая значение узла пространства имен; <see cref="F:System.String.Empty" /> если не найден совпадающий узел пространства имен, или если <see cref="T:System.Xml.XPath.XPathNavigator" /> не расположен на узле элемента.</returns>
+      <param name="name">Локальное имя узла пространства имен.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.GetNamespacesInScope(System.Xml.XmlNamespaceScope)">
+      <summary>Возвращает пространства имен, находящиеся в области видимости для текущего узла.</summary>
+      <returns>Коллекция <see cref="T:System.Collections.Generic.IDictionary`2" /> имен пространств имен, ключами которой являются префиксы.</returns>
+      <param name="scope">Значение <see cref="T:System.Xml.XmlNamespaceScope" />, определяющее пространства имен, которые следует возвратить.</param>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.HasAttributes">
+      <summary>Возвращает значение, показывающее, имеются ли атрибуты у текущего узла.</summary>
+      <returns>Возвращает true, если у текущего узла есть атрибуты; возвращает false, если у текущего узла нет атрибутов или если <see cref="T:System.Xml.XPath.XPathNavigator" /> не расположен на узле элемента.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.HasChildren">
+      <summary>Возвращает значение, указывающее, имеются ли у текущего узла какие-либо дочерние узлы.</summary>
+      <returns>Значение true, если у текущего узла имеются дочерние узлы; в противном случае — значение false.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.InnerXml">
+      <summary>Возвращает или задает разметку, представляющую дочерние узлы текущего узла.</summary>
+      <returns>
+        <see cref="T:System.String" />, содержащая разметку дочерних узлов текущего узла.</returns>
+      <exception cref="T:System.InvalidOperationException">The <see cref="P:System.Xml.XPath.XPathNavigator.InnerXml" /> property cannot be set.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertAfter">
+      <summary>Возвращает объект <see cref="T:System.Xml.XmlWriter" />, используемый для создания нового узла того же уровня после текущего выбранного узла.</summary>
+      <returns>Объект <see cref="T:System.Xml.XmlWriter" />, используемый для создания нового узла того же уровня после текущего выбранного узла.</returns>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted after the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertAfter(System.String)">
+      <summary>Создает после текущего выбранного узла новый узел того же уровня, используя заданную строку XML.</summary>
+      <param name="newSibling">Строка данных XML для нового узла того же уровня.</param>
+      <exception cref="T:System.ArgumentNullException">The XML string parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted after the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML string parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertAfter(System.Xml.XmlReader)">
+      <summary>Создает новый узел того же уровня после выбранного в данный момент узла, используя содержимое XML указанного объекта <see cref="T:System.Xml.XmlReader" />.</summary>
+      <param name="newSibling">Объект <see cref="T:System.Xml.XmlReader" />, расположенный на данных XML для нового узла-брата.</param>
+      <exception cref="T:System.ArgumentException">The <see cref="T:System.Xml.XmlReader" /> object is in an error state or closed.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted after the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML contents of the <see cref="T:System.Xml.XmlReader" /> object parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertAfter(System.Xml.XPath.XPathNavigator)">
+      <summary>Создает новый узел того же уровня после выбранного в данный момент узла, используя узлы, содержащиеся в указанном объекте <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+      <param name="newSibling">Объект <see cref="T:System.Xml.XPath.XPathNavigator" />, расположенный на узле, который следует добавить как новый узел-брат.</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted after the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertBefore">
+      <summary>Возвращает объект <see cref="T:System.Xml.XmlWriter" />, используемый для создания нового узла того же уровня перед текущим выбранным узлом.</summary>
+      <returns>Объект <see cref="T:System.Xml.XmlWriter" />, используемый для создания нового узла того же уровня перед текущим выбранным узлом.</returns>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted before the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertBefore(System.String)">
+      <summary>Создает перед текущим выбранным узлом новый узел того же уровня, используя заданную строку XML.</summary>
+      <param name="newSibling">Строка данных XML для нового узла того же уровня.</param>
+      <exception cref="T:System.ArgumentNullException">The XML string parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted before the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML string parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertBefore(System.Xml.XmlReader)">
+      <summary>Создает новый узел того же уровня перед выбранным в данный момент узлом, используя содержимое XML указанного объекта <see cref="T:System.Xml.XmlReader" />.</summary>
+      <param name="newSibling">Объект <see cref="T:System.Xml.XmlReader" />, расположенный на данных XML для нового узла-брата.</param>
+      <exception cref="T:System.ArgumentException">The <see cref="T:System.Xml.XmlReader" /> object is in an error state or closed.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted before the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML contents of the <see cref="T:System.Xml.XmlReader" /> object parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertBefore(System.Xml.XPath.XPathNavigator)">
+      <summary>Создает новый узел того же уровня перед выбранным в данный момент узлом, используя узлы, содержащиеся в указанном объекте <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+      <param name="newSibling">Объект <see cref="T:System.Xml.XPath.XPathNavigator" />, расположенный на узле, который следует добавить как новый узел-брат.</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted before the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertElementAfter(System.String,System.String,System.String,System.String)">
+      <summary>Создает после текущего узла новый элемент с тем же родителем, используя заданный префикс пространства имен, локальное имя, URI пространства имен и значение.</summary>
+      <param name="prefix">Префикс пространства имен нового дочернего элемента (если имеется).</param>
+      <param name="localName">Локальное имя нового дочернего элемента (если имеется).</param>
+      <param name="namespaceURI">URI пространства имен для нового дочернего элемента (если имеется).<see cref="F:System.String.Empty" /> и null эквивалентны.</param>
+      <param name="value">Значение нового дочернего элемента.Если передается значение <see cref="F:System.String.Empty" /> или null, то создается пустой элемент.</param>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted after the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertElementBefore(System.String,System.String,System.String,System.String)">
+      <summary>Создает перед текущим узлом новый элемент того же уровня, используя заданный префикс пространства имен, локальное имя, URI пространства имен и значение.</summary>
+      <param name="prefix">Префикс пространства имен нового дочернего элемента (если имеется).</param>
+      <param name="localName">Локальное имя нового дочернего элемента (если имеется).</param>
+      <param name="namespaceURI">URI пространства имен для нового дочернего элемента (если имеется).<see cref="F:System.String.Empty" /> и null эквивалентны.</param>
+      <param name="value">Значение нового дочернего элемента.Если передается значение <see cref="F:System.String.Empty" /> или null, то создается пустой элемент.</param>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted before the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.IsDescendant(System.Xml.XPath.XPathNavigator)">
+      <summary>Определяет, является ли заданный <see cref="T:System.Xml.XPath.XPathNavigator" /> потомком текущего <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+      <returns>Значение true, если указанный объект <see cref="T:System.Xml.XPath.XPathNavigator" /> является потомком текущего объекта <see cref="T:System.Xml.XPath.XPathNavigator" />; в противном случае — значение false.</returns>
+      <param name="nav">Структура <see cref="T:System.Xml.XPath.XPathNavigator" /> для сравнения с данной структурой <see cref="T:System.Xml.XPath.XPathNavigator" />.</param>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.IsEmptyElement">
+      <summary>Когда переопределено в производном классе, возвращает значение, указывающее, является ли текущий узел пустым элементом без тега конечного элемента.</summary>
+      <returns>Значение true, если текущий узел является пустым элементом; в противном случае — значение false.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.IsNode">
+      <summary>Возвращает значение, указывающее, представлен ли узел XPath текущим узлом.</summary>
+      <returns>Всегда возвращает значение true.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.IsSamePosition(System.Xml.XPath.XPathNavigator)">
+      <summary>При переопределении в производном классе определяет, находится ли текущий <see cref="T:System.Xml.XPath.XPathNavigator" /> в той же позиции, что и указанный <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+      <returns>Значение true, если расположение двух объектов <see cref="T:System.Xml.XPath.XPathNavigator" /> совпадает, в противном случае — значение false.</returns>
+      <param name="other">Структура <see cref="T:System.Xml.XPath.XPathNavigator" /> для сравнения с данной структурой <see cref="T:System.Xml.XPath.XPathNavigator" />.</param>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.LocalName">
+      <summary>При переопределении в производном классе возвращает <see cref="P:System.Xml.XPath.XPathNavigator.Name" /> текущего узла без какого-либо префикса пространства имен.</summary>
+      <returns>
+        <see cref="T:System.String" />, содержащая локальное имя текущего узла, или <see cref="F:System.String.Empty" />, если у текущего узла нет имени (например, у текстового узла или узла комментария).</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.LookupNamespace(System.String)">
+      <summary>Возвращает URI пространства имен для указанного префикса.</summary>
+      <returns>
+        <see cref="T:System.String" />, содержащая URI пространства имен, назначенный указанному префиксу пространства; null, если указанному префиксу пространства имен не назначен URI пространства имен.Возвращаемая <see cref="T:System.String" /> атомизирована.</returns>
+      <param name="prefix">Префикс, для которого требуется разрешить URI пространства имен.Для сопоставления с пространством имен по умолчанию следует передать значение <see cref="F:System.String.Empty" />.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.LookupPrefix(System.String)">
+      <summary>Возвращает префикс, объявленный для указанного URI пространства имен.</summary>
+      <returns>
+        <see cref="T:System.String" />, содержащая префикс пространства имен, назначенный указанному URI пространства имен; в противном случае — значение <see cref="F:System.String.Empty" />, если указанному URI пространства имен не назначен префикс.Возвращаемая <see cref="T:System.String" /> атомизирована.</returns>
+      <param name="namespaceURI">URI пространства имен, который необходимо разрешить для получения префикса.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Matches(System.String)">
+      <summary>Определяет, соответствует ли текущий узел указанному выражению XPath.</summary>
+      <returns>Значение true, если текущий узел соответствует указанному выражению XPath; в противном случае — значение false.</returns>
+      <param name="xpath">Выражение XPath.</param>
+      <exception cref="T:System.ArgumentException">The XPath expression cannot be evaluated.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Matches(System.Xml.XPath.XPathExpression)">
+      <summary>Определяет, соответствует ли текущий узел указанному выражению <see cref="T:System.Xml.XPath.XPathExpression" />.</summary>
+      <returns>Значение true, если текущий узел соответствует <see cref="T:System.Xml.XPath.XPathExpression" />; в противном случае — значение false.</returns>
+      <param name="expr">Объект <see cref="T:System.Xml.XPath.XPathExpression" />, содержащий скомпилированное выражение XPath.</param>
+      <exception cref="T:System.ArgumentException">The XPath expression cannot be evaluated.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveTo(System.Xml.XPath.XPathNavigator)">
+      <summary>При переопределении в производном классе перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> в то же положение, в котором находится указанный <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+      <returns>Возвращает true, если объект <see cref="T:System.Xml.XPath.XPathNavigator" /> успешно перемещается к положению указанного <see cref="T:System.Xml.XPath.XPathNavigator" />, иначе возвращает false.Если возвращается значение false, то положение <see cref="T:System.Xml.XPath.XPathNavigator" /> остается неизменным.</returns>
+      <param name="other">
+        <see cref="T:System.Xml.XPath.XPathNavigator" />, расположенный на узле, к которому необходимо переместиться. </param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToAttribute(System.String,System.String)">
+      <summary>Перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> к атрибуту с совпадающим локальным именем и URI пространства имен.</summary>
+      <returns>Возвращает true, если <see cref="T:System.Xml.XPath.XPathNavigator" /> успешно перемещается к атрибуту, иначе возвращает false.Если возвращается значение false, то положение <see cref="T:System.Xml.XPath.XPathNavigator" /> остается неизменным.</returns>
+      <param name="localName">Локальное имя атрибута.</param>
+      <param name="namespaceURI">URI пространства имен атрибута; null обозначает пустое пространство имен.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToChild(System.String,System.String)">
+      <summary>Перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> к дочернему узлу с заданным локальным именем и URI пространства имен.</summary>
+      <returns>Возвращает true, если <see cref="T:System.Xml.XPath.XPathNavigator" /> успешно перемещается к дочернему узлу, иначе возвращает false.Если возвращается значение false, то положение <see cref="T:System.Xml.XPath.XPathNavigator" /> остается неизменным.</returns>
+      <param name="localName">Локальное имя дочернего узла, к которому следует перейти.</param>
+      <param name="namespaceURI">URI пространства имен дочернего узла, к которому следует перейти.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToChild(System.Xml.XPath.XPathNodeType)">
+      <summary>Перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> на дочерний узел указанного <see cref="T:System.Xml.XPath.XPathNodeType" />..</summary>
+      <returns>Возвращает true, если <see cref="T:System.Xml.XPath.XPathNavigator" /> успешно перемещается к дочернему узлу, иначе возвращает false.Если возвращается значение false, то положение <see cref="T:System.Xml.XPath.XPathNavigator" /> остается неизменным.</returns>
+      <param name="type">
+        <see cref="T:System.Xml.XPath.XPathNodeType" /> дочернего узла, к которому следует перейти.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFirst">
+      <summary>Перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> к первому узлу того же уровня текущего узла.</summary>
+      <returns>Возвращает true, если <see cref="T:System.Xml.XPath.XPathNavigator" /> успешно перемещается к первому узлу того же уровня текущего узла; возвращает false, если первый узел того же уровня отсутствует, или если <see cref="T:System.Xml.XPath.XPathNavigator" /> в данный момент находится на узле атрибута.Если <see cref="T:System.Xml.XPath.XPathNavigator" /> уже расположен на первом узле того же уровня, то <see cref="T:System.Xml.XPath.XPathNavigator" /> возвращает true, а его положение не изменяется.Если <see cref="M:System.Xml.XPath.XPathNavigator.MoveToFirst" /> возвращает false, так как первый узел того же уровня отсутствует или так как <see cref="T:System.Xml.XPath.XPathNavigator" /> в данный момент расположен на атрибуте, то положение <see cref="T:System.Xml.XPath.XPathNavigator" /> остается неизменным.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFirstAttribute">
+      <summary>При переопределении в производном классе перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> к первому атрибуту текущего узла.</summary>
+      <returns>Возвращает true, если <see cref="T:System.Xml.XPath.XPathNavigator" /> успешно перемещается к первому атрибуту текущего узла, иначе возвращает false.Если возвращается значение false, то положение <see cref="T:System.Xml.XPath.XPathNavigator" /> остается неизменным.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFirstChild">
+      <summary>При переопределении в производном классе перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> к первому дочернему узлу текущего узла.</summary>
+      <returns>Возвращает true, если <see cref="T:System.Xml.XPath.XPathNavigator" /> успешно перемещается к первому дочернему узлу текущего узла, иначе возвращает false.Если возвращается значение false, то положение <see cref="T:System.Xml.XPath.XPathNavigator" /> остается неизменным.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFirstNamespace">
+      <summary>Перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> к первому узлу пространства имен текущего узла.</summary>
+      <returns>Возвращает true, если <see cref="T:System.Xml.XPath.XPathNavigator" /> успешно перемещается к первому узлу пространства имен, иначе возвращает false.Если возвращается значение false, то положение <see cref="T:System.Xml.XPath.XPathNavigator" /> остается неизменным.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFirstNamespace(System.Xml.XPath.XPathNamespaceScope)">
+      <summary>При переопределении в производном классе перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> к первому узлу пространства имен, соответствующему указанному <see cref="T:System.Xml.XPath.XPathNamespaceScope" />.</summary>
+      <returns>Возвращает true, если <see cref="T:System.Xml.XPath.XPathNavigator" /> успешно перемещается к первому узлу пространства имен, иначе возвращает false.Если возвращается значение false, то положение <see cref="T:System.Xml.XPath.XPathNavigator" /> остается неизменным.</returns>
+      <param name="namespaceScope">Значение <see cref="T:System.Xml.XPath.XPathNamespaceScope" />, описывающее область пространства имен. </param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFollowing(System.String,System.String)">
+      <summary>Перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> к элементу с указанным локальным именем и URI пространства имен в порядке документов.</summary>
+      <returns>true, если объект <see cref="T:System.Xml.XPath.XPathNavigator" /> был перемещен успешно, иначе false.</returns>
+      <param name="localName">Локальное имя элемента.</param>
+      <param name="namespaceURI">Универсальный код ресурса (URI) пространства имен элемента.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFollowing(System.String,System.String,System.Xml.XPath.XPathNavigator)">
+      <summary>Перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> к элементу с указанным локальным именем и URI пространства имен до достижения заданной границы в порядке документов.</summary>
+      <returns>true, если объект <see cref="T:System.Xml.XPath.XPathNavigator" /> был перемещен успешно, иначе false.</returns>
+      <param name="localName">Локальное имя элемента.</param>
+      <param name="namespaceURI">Универсальный код ресурса (URI) пространства имен элемента.</param>
+      <param name="end">Объект <see cref="T:System.Xml.XPath.XPathNavigator" />, размещенный на границе элемента, которая не пересекается текущим <see cref="T:System.Xml.XPath.XPathNavigator" /> при поиске следующего элемента.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFollowing(System.Xml.XPath.XPathNodeType)">
+      <summary>Перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> к следующему элементу типа <see cref="T:System.Xml.XPath.XPathNodeType" />, указанному в порядке документов.</summary>
+      <returns>true, если объект <see cref="T:System.Xml.XPath.XPathNavigator" /> был перемещен успешно, иначе false.</returns>
+      <param name="type">
+        <see cref="T:System.Xml.XPath.XPathNodeType" /> элемента.<see cref="T:System.Xml.XPath.XPathNodeType" /> не может быть <see cref="F:System.Xml.XPath.XPathNodeType.Attribute" /> или <see cref="F:System.Xml.XPath.XPathNodeType.Namespace" />.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFollowing(System.Xml.XPath.XPathNodeType,System.Xml.XPath.XPathNavigator)">
+      <summary>Перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> к следующему элементу указанного <see cref="T:System.Xml.XPath.XPathNodeType" /> до указанной границы в порядке документов.</summary>
+      <returns>true, если объект <see cref="T:System.Xml.XPath.XPathNavigator" /> был перемещен успешно, иначе false.</returns>
+      <param name="type">
+        <see cref="T:System.Xml.XPath.XPathNodeType" /> элемента.<see cref="T:System.Xml.XPath.XPathNodeType" /> не может быть <see cref="F:System.Xml.XPath.XPathNodeType.Attribute" /> или <see cref="F:System.Xml.XPath.XPathNodeType.Namespace" />.</param>
+      <param name="end">Объект <see cref="T:System.Xml.XPath.XPathNavigator" />, размещенный на границе элемента, которая не пересекается текущим <see cref="T:System.Xml.XPath.XPathNavigator" /> при поиске следующего элемента.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToId(System.String)">
+      <summary>При переопределении в производном классе переходит к узлу, имеющему атрибут типа ID, значение которого соответствует указанной <see cref="T:System.String" />.</summary>
+      <returns>true, если объект <see cref="T:System.Xml.XPath.XPathNavigator" /> перемещается успешно, иначе false.Если возвращается значение false, то положение навигатора остается неизменным.</returns>
+      <param name="id">
+        <see cref="T:System.String" />, представляющая значение ID узла, к которому следует перейти.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNamespace(System.String)">
+      <summary>Перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> на узел пространства имен с указанным префиксом пространства имен.</summary>
+      <returns>true, если <see cref="T:System.Xml.XPath.XPathNavigator" /> успешно перемещается к указанному пространству имен; false, если соответствующее пространство имен не найдено, или если <see cref="T:System.Xml.XPath.XPathNavigator" /> не расположен на узле элемента.Если возвращается значение false, то положение <see cref="T:System.Xml.XPath.XPathNavigator" /> остается неизменным.</returns>
+      <param name="name">Префикс пространства имен для узла пространства имен.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNext">
+      <summary>При переопределении в производном классе перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> к следующему узлу того же уровня текущего узла.</summary>
+      <returns>Значение true, если <see cref="T:System.Xml.XPath.XPathNavigator" /> успешно перемещается к следующему узлу-брату текущего узла, иначе значение false, если больше нет узлов-братьев, или если <see cref="T:System.Xml.XPath.XPathNavigator" /> в данный момент находится на узле атрибута.Если возвращается значение false, то положение <see cref="T:System.Xml.XPath.XPathNavigator" /> остается неизменным.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNext(System.String,System.String)">
+      <summary>Перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> к следующему узлу того же уровня с заданным локальным именем и URI пространства имен.</summary>
+      <returns>Возвращает true, если <see cref="T:System.Xml.XPath.XPathNavigator" /> успешно перемещается к следующему узлу того же уровня текущего узла; возвращает false, если больше нет узлов-братьев или если <see cref="T:System.Xml.XPath.XPathNavigator" /> в данный момент находится на узле атрибута.Если возвращается значение false, то положение <see cref="T:System.Xml.XPath.XPathNavigator" /> остается неизменным.</returns>
+      <param name="localName">Локальное имя следующего узла того же уровня, к которому следует перейти.</param>
+      <param name="namespaceURI">URI пространства имен следующего узла того же уровня, к которому следует перейти.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNext(System.Xml.XPath.XPathNodeType)">
+      <summary>Перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> к следующему узлу того же уровня текущего узла, соответствующему заданному <see cref="T:System.Xml.XPath.XPathNodeType" />.</summary>
+      <returns>Значение true, если <see cref="T:System.Xml.XPath.XPathNavigator" /> успешно перемещается к следующему узлу того же уровня текущего узла, иначе значение false, если больше нет узлов того же уровня, или если <see cref="T:System.Xml.XPath.XPathNavigator" /> в данный момент находится на узле атрибута.Если возвращается значение false, то положение <see cref="T:System.Xml.XPath.XPathNavigator" /> остается неизменным.</returns>
+      <param name="type">
+        <see cref="T:System.Xml.XPath.XPathNodeType" /> узла того же уровня, к которому следует перейти.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNextAttribute">
+      <summary>При переопределении в производном классе перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> на следующий атрибут.</summary>
+      <returns>Возвращает true, если <see cref="T:System.Xml.XPath.XPathNavigator" /> успешно перемещается на следующий атрибут; возвращает false, если атрибутов больше нет.Если возвращается значение false, то положение <see cref="T:System.Xml.XPath.XPathNavigator" /> остается неизменным.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNextNamespace">
+      <summary>Перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> на следующий узел пространства имен.</summary>
+      <returns>Возвращает true, если <see cref="T:System.Xml.XPath.XPathNavigator" /> успешно перемещается к следующему узлу пространства имен, иначе возвращает false.Если возвращается значение false, то положение <see cref="T:System.Xml.XPath.XPathNavigator" /> остается неизменным.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNextNamespace(System.Xml.XPath.XPathNamespaceScope)">
+      <summary>При переопределении в производном классе перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> к следующему узлу пространства имен, соответствующему указанному <see cref="T:System.Xml.XPath.XPathNamespaceScope" />.</summary>
+      <returns>Возвращает true, если <see cref="T:System.Xml.XPath.XPathNavigator" /> успешно перемещается к следующему узлу пространства имен, иначе возвращает false.Если возвращается значение false, то положение <see cref="T:System.Xml.XPath.XPathNavigator" /> остается неизменным.</returns>
+      <param name="namespaceScope">Значение <see cref="T:System.Xml.XPath.XPathNamespaceScope" />, описывающее область пространства имен. </param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToParent">
+      <summary>При переопределении в производном классе перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> к родительскому узлу текущего узла.</summary>
+      <returns>Возвращает true, если <see cref="T:System.Xml.XPath.XPathNavigator" /> успешно перемещается к родительскому узлу текущего узла, иначе возвращает false.Если возвращается значение false, то положение <see cref="T:System.Xml.XPath.XPathNavigator" /> остается неизменным.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToPrevious">
+      <summary>При переопределении в производном классе перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> к предыдущему узлу того же уровня текущего узла.</summary>
+      <returns>Возвращает значение true, если <see cref="T:System.Xml.XPath.XPathNavigator" /> успешно перемещается к предыдущему узлу того же уровня текущего узла; возвращает false, если больше нет предыдущих узлов того же уровня или если <see cref="T:System.Xml.XPath.XPathNavigator" /> в данный момент находится на узле атрибута.Если возвращается значение false, то положение <see cref="T:System.Xml.XPath.XPathNavigator" /> остается неизменным.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToRoot">
+      <summary>Перемещает <see cref="T:System.Xml.XPath.XPathNavigator" /> к корневому узлу, к которому относится текущий узел.</summary>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.Name">
+      <summary>Когда переопределено в производном классе, возвращает полное имя текущего узла.</summary>
+      <returns>
+        <see cref="T:System.String" />, содержащая полное имя <see cref="P:System.Xml.XPath.XPathNavigator.Name" /> текущего узла, или <see cref="F:System.String.Empty" />, если у текущего узла нет имени (например, у текстового узла или у узла комментария).</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.NamespaceURI">
+      <summary>Когда переопределено в производном классе, возвращает URI пространства имен текущего узла.</summary>
+      <returns>
+        <see cref="T:System.String" />, содержащая URI пространства имен текущего узла или <see cref="F:System.String.Empty" />, если у текущего узла нет URI пространства имен.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.NameTable">
+      <summary>При переопределении в производном классе возвращает <see cref="T:System.Xml.XmlNameTable" />, принадлежащую <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+      <returns>Объект <see cref="T:System.Xml.XmlNameTable" />, обеспечивающий доступ к атомизированной версии <see cref="T:System.String" /> в документе XML.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.NavigatorComparer">
+      <summary>Получает <see cref="T:System.Collections.IEqualityComparer" />, используемый для определения равенства объектов <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+      <returns>
+        <see cref="T:System.Collections.IEqualityComparer" />, используемый для определения равенства объектов <see cref="T:System.Xml.XPath.XPathNavigator" />.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.NodeType">
+      <summary>При переопределении в производном классе возвращает <see cref="T:System.Xml.XPath.XPathNodeType" /> текущего узла.</summary>
+      <returns>Одно из значений <see cref="T:System.Xml.XPath.XPathNodeType" />, представляющих текущий узел.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.OuterXml">
+      <summary>Возвращает или задает разметку, представляющую открывающие и закрывающие теги текущего узла и его дочерних узлов.</summary>
+      <returns>
+        <see cref="T:System.String" />, содержащая разметку, которая представляет открывающие и закрывающие теги текущего узла и его дочерних узлов.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.Prefix">
+      <summary>Когда переопределено в производном классе, возвращает префикс пространства имен, связанный с текущим узлом.</summary>
+      <returns>
+        <see cref="T:System.String" />, содержащая префикс пространства имен, связанный с текущим узлом.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.PrependChild">
+      <summary>Возвращает объект <see cref="T:System.Xml.XmlWriter" />, используемый для создания нового дочернего узла в начале списка дочерних узлов текущего узла.</summary>
+      <returns>Объект <see cref="T:System.Xml.XmlWriter" />, используемый для создания нового дочернего узла в начале списка дочерних узлов текущего узла.</returns>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on does not allow a new child node to be prepended.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.PrependChild(System.String)">
+      <summary>Создает новый дочерний узел в начале списка дочерних узлов текущего узла, используя заданную строку XML.</summary>
+      <param name="newChild">Строка данных XML для нового дочернего узла.</param>
+      <exception cref="T:System.ArgumentNullException">The XML string parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on does not allow a new child node to be prepended.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML string parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.PrependChild(System.Xml.XmlReader)">
+      <summary>Создает новый дочерний узел в начале списка дочерних узлов текущего узла, используя содержимое XML заданного объекта <see cref="T:System.Xml.XmlReader" />.</summary>
+      <param name="newChild">Объект <see cref="T:System.Xml.XmlReader" />, расположенный на данных XML для нового дочернего узла.</param>
+      <exception cref="T:System.ArgumentException">The <see cref="T:System.Xml.XmlReader" /> object is in an error state or closed.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on does not allow a new child node to be prepended.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML contents of the <see cref="T:System.Xml.XmlReader" /> object parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.PrependChild(System.Xml.XPath.XPathNavigator)">
+      <summary>Создает новый дочерний узел в начале списка дочерних узлов текущего узла, используя узлы из указанного объекта <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+      <param name="newChild">Объект <see cref="T:System.Xml.XPath.XPathNavigator" />, расположенный на узле, который следует добавить как новый дочерний узел.</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on does not allow a new child node to be prepended.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.PrependChildElement(System.String,System.String,System.String,System.String)">
+      <summary>Создает новый элемент дочернего узла в начале списка дочерних узлов текущего узла, используя заданный префикс пространства имен, локальное имя, URI пространства имен значение.</summary>
+      <param name="prefix">Префикс пространства имен нового дочернего элемента (если имеется).</param>
+      <param name="localName">Локальное имя нового дочернего элемента (если имеется).</param>
+      <param name="namespaceURI">URI пространства имен для нового дочернего элемента (если имеется).<see cref="F:System.String.Empty" /> и null эквивалентны.</param>
+      <param name="value">Значение нового дочернего элемента.Если передается значение <see cref="F:System.String.Empty" /> или null, то создается пустой элемент.</param>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on does not allow a new child node to be prepended.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ReadSubtree">
+      <summary>Возвращает объект <see cref="T:System.Xml.XmlReader" />, содержащий текущий узел и его дочерние узлы.</summary>
+      <returns>Объект <see cref="T:System.Xml.XmlReader" />, содержащий текущий узел и его дочерние узлы.</returns>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element node or the root node.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ReplaceRange(System.Xml.XPath.XPathNavigator)">
+      <summary>Заменяет узлы того же уровня в диапазоне от текущего до заданного узла.</summary>
+      <returns>Объект <see cref="T:System.Xml.XmlWriter" />, используемый для определения диапазона замены.</returns>
+      <param name="lastSiblingToReplace">
+        <see cref="T:System.Xml.XPath.XPathNavigator" />, расположенный на последнем узле того же уровня в заменяемом диапазоне.</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> specified is null.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.InvalidOperationException">The last node to replace specified is not a valid sibling node of the current node.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ReplaceSelf(System.String)">
+      <summary>Заменяет текущий узел содержимым указанной строки.</summary>
+      <param name="newNode">Строка данных XML для нового узла.</param>
+      <exception cref="T:System.ArgumentNullException">The XML string parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element, text, processing instruction, or comment node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML string parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ReplaceSelf(System.Xml.XmlReader)">
+      <summary>Заменяет текущий узел содержимым указанного объекта <see cref="T:System.Xml.XmlReader" />.</summary>
+      <param name="newNode">Объект <see cref="T:System.Xml.XmlReader" />, расположенный в данных XML для нового узла.</param>
+      <exception cref="T:System.ArgumentException">The <see cref="T:System.Xml.XmlReader" /> object is in an error state or closed.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element, text, processing instruction, or comment node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML contents of the <see cref="T:System.Xml.XmlReader" /> object parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ReplaceSelf(System.Xml.XPath.XPathNavigator)">
+      <summary>Заменяет текущий узел содержимым указанного объекта <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+      <param name="newNode">Объект <see cref="T:System.Xml.XPath.XPathNavigator" />, расположенный на новом узле.</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element, text, processing instruction, or comment node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML contents of the <see cref="T:System.Xml.XPath.XPathNavigator" /> object parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Select(System.String)">
+      <summary>Выбирает набор узлов с помощью заданного выражения XPath.</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNodeIterator" />, указывающий на выбранный набор узлов.</returns>
+      <param name="xpath">
+        <see cref="T:System.String" />, представляющая выражение XPath.</param>
+      <exception cref="T:System.ArgumentException">The XPath expression contains an error or its return type is not a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Select(System.String,System.Xml.IXmlNamespaceResolver)">
+      <summary>Выбирает набор узлов, используя указанное выражение XPath совместно с объектом <see cref="T:System.Xml.IXmlNamespaceResolver" /> для разрешения префиксов пространств имен.</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNodeIterator" />, указывающий на набор выбранных узлов.</returns>
+      <param name="xpath">
+        <see cref="T:System.String" />, представляющая выражение XPath.</param>
+      <param name="resolver">Объект <see cref="T:System.Xml.IXmlNamespaceResolver" />, используемый для разрешения префиксов пространств имен.</param>
+      <exception cref="T:System.ArgumentException">The XPath expression contains an error or its return type is not a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Select(System.Xml.XPath.XPathExpression)">
+      <summary>Выбирает набор узлов с помощью заданного <see cref="T:System.Xml.XPath.XPathExpression" />.</summary>
+      <returns>
+        <see cref="T:System.Xml.XPath.XPathNodeIterator" />, указывающий на набор выбранных узлов.</returns>
+      <param name="expr">Объект <see cref="T:System.Xml.XPath.XPathExpression" />, содержащий скомпилированный запрос XPath.</param>
+      <exception cref="T:System.ArgumentException">The XPath expression contains an error or its return type is not a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectAncestors(System.String,System.String,System.Boolean)">
+      <summary>Выбирает все узлы-предки текущего узла с заданным локальным именем и URI пространства имен.</summary>
+      <returns>Объект <see cref="T:System.Xml.XPath.XPathNodeIterator" />, содержащий выбранные узлы.Возвращаемые узлы располагаются в порядке, обратном их следованию в документе.</returns>
+      <param name="name">Локальное имя узлов-предков.</param>
+      <param name="namespaceURI">URI пространства имен узлов-предков.</param>
+      <param name="matchSelf">true для включения в выбираемые узлы узла контекста, иначе false. </param>
+      <exception cref="T:System.ArgumentNullException">null cannot be passed as a parameter.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectAncestors(System.Xml.XPath.XPathNodeType,System.Boolean)">
+      <summary>Выбирает все узлы-предки текущего узла с совпадающим <see cref="T:System.Xml.XPath.XPathNodeType" />.</summary>
+      <returns>Объект <see cref="T:System.Xml.XPath.XPathNodeIterator" />, содержащий выбранные узлы.Возвращаемые узлы располагаются в порядке, обратном их следованию в документе.</returns>
+      <param name="type">
+        <see cref="T:System.Xml.XPath.XPathNodeType" /> узлов-предков.</param>
+      <param name="matchSelf">true для включения в выбираемые узлы узла контекста, иначе false.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectChildren(System.String,System.String)">
+      <summary>Выбирает все дочерние узлы текущего узла с заданным локальным именем и URI пространства имен.</summary>
+      <returns>Объект <see cref="T:System.Xml.XPath.XPathNodeIterator" />, содержащий выбранные узлы.</returns>
+      <param name="name">Локальное имя дочерних узлов. </param>
+      <param name="namespaceURI">URI пространства имен дочерних узлов. </param>
+      <exception cref="T:System.ArgumentNullException">null cannot be passed as a parameter.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectChildren(System.Xml.XPath.XPathNodeType)">
+      <summary>Выбирает все дочерние узлы текущего узла с совпадающим <see cref="T:System.Xml.XPath.XPathNodeType" />.</summary>
+      <returns>Объект <see cref="T:System.Xml.XPath.XPathNodeIterator" />, содержащий выбранные узлы.</returns>
+      <param name="type">
+        <see cref="T:System.Xml.XPath.XPathNodeType" /> дочерних узлов.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectDescendants(System.String,System.String,System.Boolean)">
+      <summary>Выбирает все узлы-потомки текущего узла с заданным локальным именем и URI пространства имен.</summary>
+      <returns>Объект <see cref="T:System.Xml.XPath.XPathNodeIterator" />, содержащий выбранные узлы.</returns>
+      <param name="name">Локальное имя узлов-потомков. </param>
+      <param name="namespaceURI">URI пространства имен узлов-потомков. </param>
+      <param name="matchSelf">true для включения в выбираемые узлы узла контекста, иначе false.</param>
+      <exception cref="T:System.ArgumentNullException">null cannot be passed as a parameter.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectDescendants(System.Xml.XPath.XPathNodeType,System.Boolean)">
+      <summary>Выбирает все узлы-потомки текущего узла с совпадающим <see cref="T:System.Xml.XPath.XPathNodeType" />.</summary>
+      <returns>Объект <see cref="T:System.Xml.XPath.XPathNodeIterator" />, содержащий выбранные узлы.</returns>
+      <param name="type">
+        <see cref="T:System.Xml.XPath.XPathNodeType" /> узлов-потомков.</param>
+      <param name="matchSelf">true для включения в выбираемые узлы узла контекста, иначе false.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectSingleNode(System.String)">
+      <summary>Выбирает один узел в <see cref="T:System.Xml.XPath.XPathNavigator" />, используя указанный запрос XPath.</summary>
+      <returns>Объект <see cref="T:System.Xml.XPath.XPathNavigator" />, содержащий первый узел, соответствующий указанному запросу XPath, или null, если результаты запроса отсутствуют.</returns>
+      <param name="xpath">
+        <see cref="T:System.String" />, представляющая выражение XPath.</param>
+      <exception cref="T:System.ArgumentException">An error was encountered in the XPath query or the return type of the XPath expression is not a node.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath query is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectSingleNode(System.String,System.Xml.IXmlNamespaceResolver)">
+      <summary>Выбирает один узел в объекте <see cref="T:System.Xml.XPath.XPathNavigator" />, используя указанный запрос XPath совместно с указанным объектом <see cref="T:System.Xml.IXmlNamespaceResolver" /> для разрешения префиксов пространства имен.</summary>
+      <returns>Объект <see cref="T:System.Xml.XPath.XPathNavigator" />, содержащий первый узел, соответствующий указанному запросу XPath, или null, если результаты запроса отсутствуют.</returns>
+      <param name="xpath">
+        <see cref="T:System.String" />, представляющая выражение XPath.</param>
+      <param name="resolver">Объект <see cref="T:System.Xml.IXmlNamespaceResolver" />, используемый для разрешения префиксов пространства имен в запросе XPath.</param>
+      <exception cref="T:System.ArgumentException">An error was encountered in the XPath query or the return type of the XPath expression is not a node.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath query is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectSingleNode(System.Xml.XPath.XPathExpression)">
+      <summary>Выбирает один узел в <see cref="T:System.Xml.XPath.XPathNavigator" />, используя указанный объект <see cref="T:System.Xml.XPath.XPathExpression" />.</summary>
+      <returns>Объект <see cref="T:System.Xml.XPath.XPathNavigator" />, содержащий первый узел, соответствующий указанному запросу XPath, или null, если результаты запроса отсутствуют.</returns>
+      <param name="expression">Объект <see cref="T:System.Xml.XPath.XPathExpression" />, содержащий скомпилированный запрос XPath.</param>
+      <exception cref="T:System.ArgumentException">An error was encountered in the XPath query or the return type of the XPath expression is not a node.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath query is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SetTypedValue(System.Object)">
+      <summary>Устанавливает типизированное значение текущего узла.</summary>
+      <param name="typedValue">Новое типизированное значение узла.</param>
+      <exception cref="T:System.ArgumentException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support the type of the object specified.</exception>
+      <exception cref="T:System.ArgumentNullException">The value specified cannot be null.</exception>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element or attribute node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SetValue(System.String)">
+      <summary>Устанавливает значение текущего узла.</summary>
+      <param name="value">Новое значение узла.</param>
+      <exception cref="T:System.ArgumentNullException">The value parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on the root node, a namespace node, or the specified value is invalid.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ToString">
+      <summary>Возвращает текстовое значение текущего узла.</summary>
+      <returns>string, содержащая текстовое значение текущего узла.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.TypedValue">
+      <summary>Возвращает текущий узел в виде упакованного объекта наиболее подходящего типа .NET Framework.</summary>
+      <returns>Текущий узел в виде упакованного объекта наиболее подходящего типа .NET Framework.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.UnderlyingObject">
+      <summary>Используется реализациями <see cref="T:System.Xml.XPath.XPathNavigator" />, предоставляющими "виртуализированное" представление XML для хранилища, для обеспечения доступа к нижележащим объектам.</summary>
+      <returns>Значение по умолчанию — null.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ValueAs(System.Type,System.Xml.IXmlNamespaceResolver)">
+      <summary>Получает значение текущего узла в соответствии с заданным <see cref="T:System.Type" />, используя заданный объект <see cref="T:System.Xml.IXmlNamespaceResolver" /> для разрешения префиксов пространства имен.</summary>
+      <returns>Значение текущего узла в соответствии с запрошенным <see cref="T:System.Type" />.</returns>
+      <param name="returnType">
+        <see cref="T:System.Type" />, в котором следует возвратить значение текущего узла.</param>
+      <param name="nsResolver">Объект <see cref="T:System.Xml.IXmlNamespaceResolver" />, используемый для разрешения префиксов пространств имен.</param>
+      <exception cref="T:System.FormatException">The current node's value is not in the correct format for the target type.</exception>
+      <exception cref="T:System.InvalidCastException">The attempted cast is not valid.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.ValueAsBoolean">
+      <summary>Получает значение текущего узла в представлении <see cref="T:System.Boolean" />.</summary>
+      <returns>Значение текущего узла в представлении <see cref="T:System.Boolean" />.</returns>
+      <exception cref="T:System.FormatException">The current node's string value cannot be converted to a <see cref="T:System.Boolean" />.</exception>
+      <exception cref="T:System.InvalidCastException">The attempted cast to <see cref="T:System.Boolean" /> is not valid.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.ValueAsDateTime">
+      <summary>Получает значение текущего узла в представлении <see cref="T:System.DateTime" />.</summary>
+      <returns>Значение текущего узла в представлении <see cref="T:System.DateTime" />.</returns>
+      <exception cref="T:System.FormatException">The current node's string value cannot be converted to a <see cref="T:System.DateTime" />.</exception>
+      <exception cref="T:System.InvalidCastException">The attempted cast to <see cref="T:System.DateTime" /> is not valid.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.ValueAsDouble">
+      <summary>Получает значение текущего узла в представлении <see cref="T:System.Double" />.</summary>
+      <returns>Значение текущего узла в представлении <see cref="T:System.Double" />.</returns>
+      <exception cref="T:System.FormatException">The current node's string value cannot be converted to a <see cref="T:System.Double" />.</exception>
+      <exception cref="T:System.InvalidCastException">The attempted cast to <see cref="T:System.Double" /> is not valid.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.ValueAsInt">
+      <summary>Получает значение текущего узла в представлении <see cref="T:System.Int32" />.</summary>
+      <returns>Значение текущего узла в представлении <see cref="T:System.Int32" />.</returns>
+      <exception cref="T:System.FormatException">The current node's string value cannot be converted to a <see cref="T:System.Int32" />.</exception>
+      <exception cref="T:System.InvalidCastException">The attempted cast to <see cref="T:System.Int32" /> is not valid.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.ValueAsLong">
+      <summary>Получает значение текущего узла в представлении <see cref="T:System.Int64" />.</summary>
+      <returns>Значение текущего узла в представлении <see cref="T:System.Int64" />.</returns>
+      <exception cref="T:System.FormatException">The current node's string value cannot be converted to a <see cref="T:System.Int64" />.</exception>
+      <exception cref="T:System.InvalidCastException">The attempted cast to <see cref="T:System.Int64" /> is not valid.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.ValueType">
+      <summary>Получает <see cref="T:System.Type" /> платформы .NET Framework текущего узла.</summary>
+      <returns>
+        <see cref="T:System.Type" /> платформы .NET Framework текущего узла.Значение по умолчанию — <see cref="T:System.String" />.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.WriteSubtree(System.Xml.XmlWriter)">
+      <summary>Передает данные текущего узла и его дочерних узлов указанному объекту <see cref="T:System.Xml.XmlWriter" /> в потоковом режиме.</summary>
+      <param name="writer">Объект <see cref="T:System.Xml.XmlWriter" />, которому следует передать данные в потоковом режиме.</param>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.XmlLang">
+      <summary>Получает область xml:lang для текущего узла.</summary>
+      <returns>
+        <see cref="T:System.String" />, содержащая значение области xml:lang, или <see cref="F:System.String.Empty" />, если у текущего узла нет значения области xml:lang, которое можно возвратить.</returns>
+    </member>
+    <member name="T:System.Xml.XPath.XPathNodeIterator">
+      <summary>Обеспечивает итератор над выбранным набором узлов.</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNodeIterator.#ctor">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Xml.XPath.XPathNodeIterator" />.</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNodeIterator.Clone">
+      <summary>При переопределении в производном классе возвращает клон объекта <see cref="T:System.Xml.XPath.XPathNodeIterator" />.</summary>
+      <returns>Новый клон <see cref="T:System.Xml.XPath.XPathNodeIterator" />объекта <see cref="T:System.Xml.XPath.XPathNodeIterator" />.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNodeIterator.Count">
+      <summary>Получает индекс последнего узла в выбранном наборе узлов.</summary>
+      <returns>Индекс последнего узла в выбранном наборе узлов или значение 0 при отсутствии выбранных узлов.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNodeIterator.Current">
+      <summary>При переопределении в производном классе получает объект <see cref="T:System.Xml.XPath.XPathNavigator" /> для данного <see cref="T:System.Xml.XPath.XPathNodeIterator" />, который размещается в текущем контекстном узле.</summary>
+      <returns>Объект <see cref="T:System.Xml.XPath.XPathNavigator" /> размещается в контекстном узле, из которого был выбран набор узлов.Необходимо вызвать метод <see cref="M:System.Xml.XPath.XPathNodeIterator.MoveNext" /> для перемещения <see cref="T:System.Xml.XPath.XPathNodeIterator" /> в первый узел в выбранном наборе.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNodeIterator.CurrentPosition">
+      <summary>При переопределении в производном классе получает индекс текущей позиции в выбранном наборе узлов.</summary>
+      <returns>Индекс текущей позиции.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNodeIterator.GetEnumerator">
+      <summary>Возвращает объект <see cref="T:System.Collections.IEnumerator" /> для итерации по выбранному набору узлов.</summary>
+      <returns>Объект <see cref="T:System.Collections.IEnumerator" /> для итерации по выбранному набору узлов.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNodeIterator.MoveNext">
+      <summary>При переопределении в производном классе объект <see cref="T:System.Xml.XPath.XPathNavigator" />, возвращенный свойством <see cref="P:System.Xml.XPath.XPathNodeIterator.Current" />, перемещается в следующий узел выбранного набора узлов.</summary>
+      <returns>true, если объект <see cref="T:System.Xml.XPath.XPathNavigator" /> перемещен в следующий узел; false, если отсутствуют другие выбранные узлы.</returns>
+    </member>
+    <member name="T:System.Xml.XPath.XPathNodeType">
+      <summary>Определяет типы узлов XPath, которые могут быть возвращены из класса <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.All">
+      <summary>Любые из типов узлов <see cref="T:System.Xml.XPath.XPathNodeType" />.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Attribute">
+      <summary>Атрибут, например id='123'.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Comment">
+      <summary>Комментарий, например &lt;!-- my comment --&gt;</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Element">
+      <summary>Элемент, например &lt;element&gt;.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Namespace">
+      <summary>Пространство имен, например xmlns="namespace".</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.ProcessingInstruction">
+      <summary>Инструкция по обработке, например &lt;?pi test?&gt;.При этом не включаются объявления XML, невидимые для класса <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Root">
+      <summary>Корневой узел XML-документа или дерева узлов.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.SignificantWhitespace">
+      <summary>узел с символами пробелов и xml:space с установленным значением preserve.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Text">
+      <summary>Текстовое содержимое узла.Эквивалентно тексту объектной модели документов (DOM) и типам узлов CDATA.Содержит, по крайней мере, один символ.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Whitespace">
+      <summary>узел, содержащий только символы пробела без значащих пробелов.Символы пробелов — #x20, #x9, #xD или #xA.</summary>
+    </member>
+    <member name="T:System.Xml.XPath.XPathResultType">
+      <summary>Указывает тип возвращаемого значения выражения XPath.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.Any">
+      <summary>Любые из типов узлов XPath.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.Boolean">
+      <summary>Значение типа <see cref="T:System.Boolean" />, равное true или false.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.Error">
+      <summary>Выражение не вычисляется как правильный тип XPath.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.Navigator">
+      <summary>Фрагмент дерева.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.NodeSet">
+      <summary>Коллекция узлов.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.Number">
+      <summary>Числовое значение.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.String">
+      <summary>Значение <see cref="T:System.String" />.</summary>
+    </member>
+  </members>
+</doc>

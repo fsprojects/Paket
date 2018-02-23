@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>System.Diagnostics.TextWriterTraceListener</name>
+  </assembly>
+  <members>
+    <member name="T:System.Diagnostics.DelimitedListTraceListener">
+      <summary>トレース出力またはデバッグ出力をストリーム ライターなどのテキスト ライターや、ファイル ストリームなどのストリームに転送します。</summary>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.Stream)">
+      <summary>指定された出力ストリームへの書き込みを行う <see cref="T:System.Diagnostics.DelimitedListTraceListener" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="stream">出力を受信する <see cref="T:System.IO.Stream" />。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="stream" /> は null なので、</exception>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.Stream,System.String)">
+      <summary>指定された出力ストリームへの書き込みを行い、指定された名前を持つ、<see cref="T:System.Diagnostics.DelimitedListTraceListener" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="stream">出力を受信する <see cref="T:System.IO.Stream" />。</param>
+      <param name="name">トレース リスナーの新しいインスタンスの名前。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="stream" /> は null なので、</exception>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.TextWriter)">
+      <summary>指定されたテキスト ライターへの書き込みを行う <see cref="T:System.Diagnostics.DelimitedListTraceListener" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="writer">出力を受信する <see cref="T:System.IO.TextWriter" />。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="writer" /> は null なので、</exception>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.TextWriter,System.String)">
+      <summary>指定されたテキスト ライターへの書き込みを行い、指定された名前を持つ、<see cref="T:System.Diagnostics.DelimitedListTraceListener" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="writer">出力を受信する <see cref="T:System.IO.TextWriter" />。</param>
+      <param name="name">トレース リスナーの新しいインスタンスの名前。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="writer" /> は null なので、</exception>
+    </member>
+    <member name="P:System.Diagnostics.DelimitedListTraceListener.Delimiter">
+      <summary>区切りリストの区切り記号を取得または設定します。</summary>
+      <returns>区切りリストの区切り記号。</returns>
+      <exception cref="T:System.ArgumentNullException">
+        <see cref="P:System.Diagnostics.DelimitedListTraceListener.Delimiter" /> が null に設定されます。</exception>
+      <exception cref="T:System.ArgumentException">
+        <see cref="P:System.Diagnostics.DelimitedListTraceListener.Delimiter" /> が空の文字列 ("") に設定されています。</exception>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceData(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.Object)">
+      <summary>トレース情報、データ オブジェクト、およびイベント情報を出力ファイルまたはストリームに書き込みます。</summary>
+      <param name="eventCache">現在のプロセス ID、スレッド ID、およびスタック トレース情報を格納している <see cref="T:System.Diagnostics.TraceEventCache" /> オブジェクト。</param>
+      <param name="source">出力を識別するために使用される名前。通常は、トレース イベントを生成したアプリケーションの名前。</param>
+      <param name="eventType">トレースを発生させたイベントのタイプを指定する <see cref="T:System.Diagnostics.TraceEventType" /> 値の 1 つ。</param>
+      <param name="id">イベントの数値識別子。</param>
+      <param name="data">出力ファイルまたは出力ストリームに書き込むデータ オブジェクト。</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceData(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.Object[])">
+      <summary>トレース情報、データ オブジェクトの配列、およびイベント情報を出力ファイルまたはストリームに書き込みます。</summary>
+      <param name="eventCache">現在のプロセス ID、スレッド ID、およびスタック トレース情報を格納している <see cref="T:System.Diagnostics.TraceEventCache" /> オブジェクト。</param>
+      <param name="source">出力を識別するために使用される名前。通常は、トレース イベントを生成したアプリケーションの名前。</param>
+      <param name="eventType">トレースを発生させたイベントのタイプを指定する <see cref="T:System.Diagnostics.TraceEventType" /> 値の 1 つ。</param>
+      <param name="id">イベントの数値識別子。</param>
+      <param name="data">出力ファイルまたはストリームに書き込むデータ オブジェクトの配列。</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceEvent(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.String)">
+      <summary>トレース情報、メッセージ、およびイベント情報を出力ファイルまたはストリームに書き込みます。</summary>
+      <param name="eventCache">現在のプロセス ID、スレッド ID、およびスタック トレース情報を格納している <see cref="T:System.Diagnostics.TraceEventCache" /> オブジェクト。</param>
+      <param name="source">出力を識別するために使用される名前。通常は、トレース イベントを生成したアプリケーションの名前。</param>
+      <param name="eventType">トレースを発生させたイベントのタイプを指定する <see cref="T:System.Diagnostics.TraceEventType" /> 値の 1 つ。</param>
+      <param name="id">イベントの数値識別子。</param>
+      <param name="message">出力ファイルまたはストリームに書き込むトレース メッセージ。</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceEvent(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.String,System.Object[])">
+      <summary>トレース情報、書式設定されたオブジェクトの配列、およびイベント情報を出力ファイルまたはストリームに書き込みます。</summary>
+      <param name="eventCache">現在のプロセス ID、スレッド ID、およびスタック トレース情報を格納している <see cref="T:System.Diagnostics.TraceEventCache" /> オブジェクト。</param>
+      <param name="source">出力を識別するために使用される名前。通常は、トレース イベントを生成したアプリケーションの名前。</param>
+      <param name="eventType">トレースを発生させたイベントのタイプを指定する <see cref="T:System.Diagnostics.TraceEventType" /> 値の 1 つ。</param>
+      <param name="id">イベントの数値識別子。</param>
+      <param name="format">0 個以上の書式項目を格納している書式指定文字列。<paramref name="args" /> 配列内のオブジェクトに対応します。</param>
+      <param name="args">0 個以上の書式設定対象オブジェクトを含んだ配列。</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="T:System.Diagnostics.TextWriterTraceListener">
+      <summary>トレース出力またはデバッグ出力を <see cref="T:System.IO.TextWriter" /> または <see cref="T:System.IO.Stream" /> (<see cref="T:System.IO.FileStream" /> など) に転送します。</summary>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor">
+      <summary>
+        <see cref="T:System.IO.TextWriter" /> を出力の受信者として使用して、<see cref="T:System.Diagnostics.TextWriterTraceListener" /> クラスの新しいインスタンスを初期化します。</summary>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.Stream)">
+      <summary>ストリームをデバッグ出力およびトレース出力の受信者として使用して、<see cref="T:System.Diagnostics.TextWriterTraceListener" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="stream">
+        <see cref="T:System.Diagnostics.TextWriterTraceListener" /> が書き込むストリームを表す <see cref="T:System.IO.Stream" />。</param>
+      <exception cref="T:System.ArgumentNullException">ストリームが null です。</exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.Stream,System.String)">
+      <summary>ストリームをデバッグ出力およびトレース出力の受信者として使用して、<see cref="T:System.Diagnostics.TextWriterTraceListener" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="stream">
+        <see cref="T:System.Diagnostics.TextWriterTraceListener" /> が書き込むストリームを表す <see cref="T:System.IO.Stream" />。</param>
+      <param name="name">新規インスタンスの名前。</param>
+      <exception cref="T:System.ArgumentNullException">ストリームが null です。</exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.TextWriter)">
+      <summary>指定したライターをトレース出力またはデバッグ出力の受信者として使用して、<see cref="T:System.Diagnostics.TextWriterTraceListener" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="writer">
+        <see cref="T:System.Diagnostics.TextWriterTraceListener" /> からの出力を受信する <see cref="T:System.IO.TextWriter" />。</param>
+      <exception cref="T:System.ArgumentNullException">ライターが null です。</exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.TextWriter,System.String)">
+      <summary>指定したライターをトレース出力またはデバッグ出力の受信者として使用して、指定した名前で <see cref="T:System.Diagnostics.TextWriterTraceListener" /> クラスの新しいインスタンスを初期化します。</summary>
+      <param name="writer">
+        <see cref="T:System.Diagnostics.TextWriterTraceListener" /> からの出力を受信する <see cref="T:System.IO.TextWriter" />。</param>
+      <param name="name">新規インスタンスの名前。</param>
+      <exception cref="T:System.ArgumentNullException">ライターが null です。</exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.Dispose(System.Boolean)">
+      <summary>この <see cref="T:System.Diagnostics.TextWriterTraceListener" /> オブジェクトを破棄します。</summary>
+      <param name="disposing">マネージ リソースを解放する場合は true。<see cref="M:System.Diagnostics.TextWriterTraceListener.Dispose(System.Boolean)" /> が影響をもたらさない場合は false。</param>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.Flush">
+      <summary>
+        <see cref="P:System.Diagnostics.TextWriterTraceListener.Writer" /> 用の出力バッファーをフラッシュします。</summary>
+      <filterpriority>1</filterpriority>
+      <PermissionSet>
+        <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />
+      </PermissionSet>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.Write(System.String)">
+      <summary>このインスタンスの <see cref="P:System.Diagnostics.TextWriterTraceListener.Writer" /> にメッセージを書き込みます。</summary>
+      <param name="message">書き込むメッセージ。</param>
+      <filterpriority>1</filterpriority>
+      <PermissionSet>
+        <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />
+      </PermissionSet>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.WriteLine(System.String)">
+      <summary>このインスタンスの <see cref="P:System.Diagnostics.TextWriterTraceListener.Writer" /> にメッセージを書き込み、続けて行終端記号を書き込みます。既定の行終端記号は、キャリッジ リターンの次に改行が付いた形です (\r\n)。</summary>
+      <param name="message">書き込むメッセージ。</param>
+      <filterpriority>1</filterpriority>
+      <PermissionSet>
+        <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />
+      </PermissionSet>
+    </member>
+    <member name="P:System.Diagnostics.TextWriterTraceListener.Writer">
+      <summary>トレース出力またはデバッグ出力を受信するテキスト ライターを取得または設定します。</summary>
+      <returns>トレース出力またはデバッグ出力を受信するライターを表す <see cref="T:System.IO.TextWriter" />。</returns>
+      <filterpriority>2</filterpriority>
+    </member>
+  </members>
+</doc>

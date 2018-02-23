@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+<assembly><name>Fake.Gallio</name></assembly>
+<members>
+<member name="P:Fake.Gallio.GallioParams.Filters">
+<summary>
+ Test filters (i.e. exclusion rules)
+</summary>
+</member>
+<member name="P:Fake.Gallio.GallioParams.ReportNameFormat">
+<summary>
+ Sets the format string to use to generate the reports filenames.
+ Any occurence of {0} will be replaced by the date, and any occurrence of {1} by the time.
+ The default format string is test-report-{0}-{1}.
+</summary>
+</member>
+<member name="P:Fake.Gallio.GallioParams.ReportDirectory">
+<summary>
+ Sets the name of the directory where the reports will be put.
+ The directory will be created if it doesn&apos;t exist. Existing files will be overwritten.
+ The default report directory is &quot;Reports&quot;.
+</summary>
+</member>
+<member name="P:Fake.Gallio.GallioParams.RuntimeVersion">
+<summary>
+ Gets or sets the version of the .Net runtime to use for running tests.
+ For the CLR, this must be the name of one of the framework directories in %SystemRoot%\Microsoft.Net\Framework.  eg. &apos;v2.0.50727&apos;.
+ The default is null which uses the most recent installed and supported framework.
+</summary>
+</member>
+<member name="P:Fake.Gallio.GallioParams.Debug">
+<summary>
+ Attaches the debugger to the test process when set to true.
+</summary>
+</member>
+<member name="P:Fake.Gallio.GallioParams.ShadowCopy">
+<summary>
+ Shadow copying allows the original assemblies to be modified while the tests are running.
+ However, shadow copying may occasionally cause some tests to fail if they depend on their original location.
+</summary>
+</member>
+<member name="P:Fake.Gallio.GallioParams.WorkingDirectory">
+<summary>
+ Gets or sets the relative or absolute path of the working directory
+ or null to use a default value selected by the consumer.
+</summary>
+</member>
+<member name="P:Fake.Gallio.GallioParams.ApplicationBaseDirectory">
+<summary>
+ Gets or sets the relative or absolute path of the application base directory,
+ or null to use a default value selected by the consumer.
+</summary>
+</member>
+<member name="P:Fake.Gallio.GallioParams.PluginDirectories">
+<summary>
+ Additional Gallio plugin directories to search recursively.
+</summary>
+</member>
+<member name="P:Fake.Gallio.GallioParams.HintDirectories">
+<summary>
+ The list of directories used for loading referenced assemblies and other dependent resources.
+</summary>
+</member>
+<member name="P:Fake.Gallio.GallioParams.RunnerExtensions">
+<summary>
+ Specifies the type, assembly, and parameters of custom test runner
+ extensions to use during the test run.
+ The value must be in the form &apos;[Namespace.]Type,Assembly[;Parameters]&apos;
+</summary>
+</member>
+<member name="P:Fake.Gallio.GallioParams.RunnerType">
+<summary>
+ The types supported &quot;out of the box&quot; are: Local, IsolatedAppDomain
+ and IsolatedProcess (default), but more types could be available as plugins.
+</summary>
+</member>
+<member name="P:Fake.Gallio.GallioParams.TestRunnerOptions">
+<summary>
+ Specifies option property key/value pairs for the test runner.
+</summary>
+</member>
+<member name="P:Fake.Gallio.GallioParams.ReportFormatterOptions">
+<summary>
+ Specifies option property key/value pairs for the report formatter
+</summary>
+</member>
+<member name="P:Fake.Gallio.GallioParams.ShowReports">
+<summary>
+ Sets whether to show generated reports in a window using the default system application
+ registered to the report file type.
+</summary>
+</member>
+<member name="P:Fake.Gallio.GallioParams.RunTimeLimit">
+<summary>
+ Sets the maximum amount of time (in seconds) the tests can run 
+ before they are canceled.
+</summary>
+</member>
+<member name="P:Fake.Gallio.GallioParams.IgnoreAnnotations">
+<summary>
+ Sets whether to ignore annotations when determining the result code.
+</summary>
+</member>
+<member name="P:Fake.Gallio.GallioParams.EchoResults">
+<summary>
+ Sets whether to echo results to the screen as tests finish.
+</summary>
+</member>
+<member name="P:Fake.Gallio.GallioParams.DoNotRun">
+<summary>
+ Sets whether to load the tests but not run them.
+</summary>
+</member>
+<member name="M:Fake.Gallio.Run(Microsoft.FSharp.Core.FSharpFunc{Fake.Gallio.GallioParams,Fake.Gallio.GallioParams},System.Collections.Generic.IEnumerable{System.String})">
+ <summary>
+ Runs tests through Gallio.
+ </summary>
+ <param name="setParam">Function that modifies the default parameters</param>
+ <param name="assemblies">List of test assemblies</param>
+</member>
+<member name="P:Fake.Gallio.GallioDefaults">
+<summary>
+ Default Gallio parameters
+</summary>
+</member>
+</members>
+</doc>

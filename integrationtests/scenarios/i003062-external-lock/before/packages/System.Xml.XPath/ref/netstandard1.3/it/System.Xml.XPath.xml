@@ -1,0 +1,1009 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>System.Xml.XPath</name>
+  </assembly>
+  <members>
+    <member name="T:System.Xml.XmlNodeOrder">
+      <summary>Descrive l'ordine dei documenti di un nodo confrontato con un secondo nodo.</summary>
+    </member>
+    <member name="F:System.Xml.XmlNodeOrder.After">
+      <summary>Il nodo corrente dello strumento di spostamento segue il nodo corrente dello strumento di spostamento fornito.</summary>
+    </member>
+    <member name="F:System.Xml.XmlNodeOrder.Before">
+      <summary>Il nodo corrente dello strumento di spostamento precede il nodo corrente dello strumento di spostamento fornito.</summary>
+    </member>
+    <member name="F:System.Xml.XmlNodeOrder.Same">
+      <summary>I due strumenti di spostamento sono posizionati sullo stesso nodo.</summary>
+    </member>
+    <member name="F:System.Xml.XmlNodeOrder.Unknown">
+      <summary>Non è possibile determinare nel documento la posizione reciproca dei due nodi.Questo problema può verificarsi se i due nodi risiedono in strutture ad albero diverse.</summary>
+    </member>
+    <member name="T:System.Xml.XPath.IXPathNavigable">
+      <summary>Fornisce una funzione di accesso per la classe <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+    </member>
+    <member name="M:System.Xml.XPath.IXPathNavigable.CreateNavigator">
+      <summary>Restituisce un nuovo oggetto <see cref="T:System.Xml.XPath.XPathNavigator" />. </summary>
+      <returns>Un oggetto <see cref="T:System.Xml.XPath.XPathNavigator" />.</returns>
+    </member>
+    <member name="T:System.Xml.XPath.XmlCaseOrder">
+      <summary>Specifica l'ordinamento per le lettere maiuscole e minuscole.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlCaseOrder.LowerFirst">
+      <summary>Le lettere minuscole sono ordinate prima delle lettere maiuscole.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlCaseOrder.None">
+      <summary>La differenza tra maiuscole e minuscole viene ignorata.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlCaseOrder.UpperFirst">
+      <summary>Le lettere maiuscole sono ordinate prima delle lettere minuscole.</summary>
+    </member>
+    <member name="T:System.Xml.XPath.XmlDataType">
+      <summary>Specifica il tipo di dati utilizzato per determinare l'ordinamento.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlDataType.Number">
+      <summary>I valori vengono ordinati numericamente.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlDataType.Text">
+      <summary>I valori vengono ordinati alfabeticamente.</summary>
+    </member>
+    <member name="T:System.Xml.XPath.XmlSortOrder">
+      <summary>Specifica il tipo di ordinamento.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlSortOrder.Ascending">
+      <summary>I nodi sono disposti in ordine crescente.Se ad esempio i numeri 1, 2, 3 e 4 sono ordinati in ordine crescente, verranno visualizzati come 1,2,3,4.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XmlSortOrder.Descending">
+      <summary>I nodi sono disposti in ordine decrescente.Se ad esempio i numeri 1, 2, 3 e 4 sono ordinati in ordine decrescente, verranno visualizzati come 4,3,2,1.</summary>
+    </member>
+    <member name="T:System.Xml.XPath.XPathDocument">
+      <summary>Fornisce una rappresentazione in memoria rapida e di sola lettura di un documento XML usando il modello di dati XPath.</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.#ctor(System.IO.Stream)">
+      <summary>Inizializza una nuova istanza della classe <see cref="T:System.Xml.XPath.XPathDocument" /> dai dati XML nell'oggetto <see cref="T:System.IO.Stream" /> specificato.</summary>
+      <param name="stream">Oggetto <see cref="T:System.IO.Stream" /> contenente i dati XML.</param>
+      <exception cref="T:System.Xml.XmlException">An error was encountered in the XML data.The <see cref="T:System.Xml.XPath.XPathDocument" /> remains empty.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.IO.Stream" /> object passed as a parameter is null.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.#ctor(System.IO.TextReader)">
+      <summary>Inizializza una nuova istanza della classe <see cref="T:System.Xml.XPath.XPathDocument" /> dai dati XML contenuti nell'oggetto <see cref="T:System.IO.TextReader" /> specificato.</summary>
+      <param name="textReader">Oggetto <see cref="T:System.IO.TextReader" /> contenente i dati XML.</param>
+      <exception cref="T:System.Xml.XmlException">An error was encountered in the XML data.The <see cref="T:System.Xml.XPath.XPathDocument" /> remains empty.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.IO.TextReader" /> object passed as a parameter is null.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.#ctor(System.String)">
+      <summary>Inizializza una nuova istanza della classe <see cref="T:System.Xml.XPath.XPathDocument" /> dai dati XML nel file specificato.</summary>
+      <param name="uri">Percorso del file contenente i dati XML.</param>
+      <exception cref="T:System.Xml.XmlException">An error was encountered in the XML data.The <see cref="T:System.Xml.XPath.XPathDocument" /> remains empty.</exception>
+      <exception cref="T:System.ArgumentNullException">The file path parameter is null.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.#ctor(System.String,System.Xml.XmlSpace)">
+      <summary>Inizializza una nuova istanza della classe <see cref="T:System.Xml.XPath.XPathDocument" /> dai dati XML nel file specificato con la gestione degli spazi vuoti specificata.</summary>
+      <param name="uri">Percorso del file contenente i dati XML.</param>
+      <param name="space">Oggetto <see cref="T:System.Xml.XmlSpace" />.</param>
+      <exception cref="T:System.Xml.XmlException">An error was encountered in the XML data.The <see cref="T:System.Xml.XPath.XPathDocument" /> remains empty.</exception>
+      <exception cref="T:System.ArgumentNullException">The file path parameter or <see cref="T:System.Xml.XmlSpace" /> object parameter is null.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.#ctor(System.Xml.XmlReader)">
+      <summary>Inizializza una nuova istanza della classe <see cref="T:System.Xml.XPath.XPathDocument" /> dai dati XML contenuti nell'oggetto <see cref="T:System.Xml.XmlReader" /> specificato.</summary>
+      <param name="reader">Oggetto <see cref="T:System.Xml.XmlReader" /> contenente i dati XML. </param>
+      <exception cref="T:System.Xml.XmlException">An error was encountered in the XML data.The <see cref="T:System.Xml.XPath.XPathDocument" /> remains empty.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object passed as a parameter is null.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.#ctor(System.Xml.XmlReader,System.Xml.XmlSpace)">
+      <summary>Inizializza una nuova istanza della classe <see cref="T:System.Xml.XPath.XPathDocument" /> dai dati XML data contenuti nell'oggetto <see cref="T:System.Xml.XmlReader" /> specificato con la gestione degli spazi vuoti specificata.</summary>
+      <param name="reader">Oggetto <see cref="T:System.Xml.XmlReader" /> contenente i dati XML.</param>
+      <param name="space">Oggetto <see cref="T:System.Xml.XmlSpace" />.</param>
+      <exception cref="T:System.Xml.XmlException">An error was encountered in the XML data.The <see cref="T:System.Xml.XPath.XPathDocument" /> remains empty.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object parameter or <see cref="T:System.Xml.XmlSpace" /> object parameter is null.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathDocument.CreateNavigator">
+      <summary>Inizializza un oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> di sola lettura per l'esplorazione dei nodi di questo oggetto <see cref="T:System.Xml.XPath.XPathDocument" />.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> di sola lettura.</returns>
+    </member>
+    <member name="T:System.Xml.XPath.XPathException">
+      <summary>Fornisce l'eccezione generata quando si verifica un errore durante l'elaborazione di un'espressione XPath. </summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathException.#ctor">
+      <summary>Inizializza una nuova istanza della classe <see cref="T:System.Xml.XPath.XPathException" />.</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathException.#ctor(System.String)">
+      <summary>Inizializza una nuova istanza della classe <see cref="T:System.Xml.XPath.XPathException" /> con il messaggio di eccezione specificato.</summary>
+      <param name="message">Descrizione della condizione di errore.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathException.#ctor(System.String,System.Exception)">
+      <summary>Inizializza una nuova istanza della classe <see cref="T:System.Xml.XPath.XPathException" /> utilizzando il messaggio di eccezione specificato e l'oggetto <see cref="T:System.Exception" />.</summary>
+      <param name="message">Descrizione della condizione di errore. </param>
+      <param name="innerException">
+        <see cref="T:System.Exception" /> che ha generato l'eccezione <see cref="T:System.Xml.XPath.XPathException" />, se presente.Il valore può essere null.</param>
+    </member>
+    <member name="T:System.Xml.XPath.XPathExpression">
+      <summary>Fornisce una classe tipizzata che rappresenta un'espressione XPath compilata.</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.AddSort(System.Object,System.Collections.IComparer)">
+      <summary>Quando sottoposto a override in una classe derivata, ordina i nodi selezionati mediante l'espressione XPath in base all'oggetto <see cref="T:System.Collections.IComparer" /> specificato.</summary>
+      <param name="expr">Oggetto che rappresenta la chiave di ordinamento.Può corrispondere al valore string del nodo o a un oggetto <see cref="T:System.Xml.XPath.XPathExpression" /> con un'espressione XPath compilata.</param>
+      <param name="comparer">Oggetto <see cref="T:System.Collections.IComparer" /> che fornisce i confronti di tipi di dati specifici per il confronto di due oggetti allo scopo di verificarne l'equivalenza. </param>
+      <exception cref="T:System.Xml.XPath.XPathException">In <see cref="T:System.Xml.XPath.XPathExpression" /> o nella chiave di ordinamento è incluso un prefisso e non è stato fornito un <see cref="T:System.Xml.XmlNamespaceManager" /> oppure è impossibile trovare il prefisso nell'oggetto <see cref="T:System.Xml.XmlNamespaceManager" /> specificato.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.AddSort(System.Object,System.Xml.XPath.XmlSortOrder,System.Xml.XPath.XmlCaseOrder,System.String,System.Xml.XPath.XmlDataType)">
+      <summary>Quando sottoposto a override in una classe derivata, ordina i nodi selezionati mediante l'espressione XPath in base ai parametri specificati.</summary>
+      <param name="expr">Oggetto che rappresenta la chiave di ordinamento.Può corrispondere al valore string del nodo o a un oggetto <see cref="T:System.Xml.XPath.XPathExpression" /> con un'espressione XPath compilata.</param>
+      <param name="order">Valore <see cref="T:System.Xml.XPath.XmlSortOrder" /> che indica il tipo di ordinamento. </param>
+      <param name="caseOrder">Valore <see cref="T:System.Xml.XPath.XmlCaseOrder" /> che indica la modalità di ordinamento delle lettere maiuscole e minuscole.</param>
+      <param name="lang">Lingua da utilizzare per il confronto.Utilizza la classe <see cref="T:System.Globalization.CultureInfo" /> che può essere passata al metodo <see cref="Overload:System.String.Compare" /> per indicare i tipi di lingua, ad esempio "us-en" per Inglese Stati Uniti.Se viene specificata una stringa vuota, per determinare <see cref="T:System.Globalization.CultureInfo" /> viene utilizzato l'ambiente di sistema.</param>
+      <param name="dataType">Valore <see cref="T:System.Xml.XPath.XmlDataType" /> che indica l'ordinamento del tipo di dati. </param>
+      <exception cref="T:System.Xml.XPath.XPathException">In <see cref="T:System.Xml.XPath.XPathExpression" /> o nella chiave di ordinamento è incluso un prefisso e non è stato fornito un <see cref="T:System.Xml.XmlNamespaceManager" /> oppure è impossibile trovare il prefisso nell'oggetto <see cref="T:System.Xml.XmlNamespaceManager" /> specificato. </exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.Clone">
+      <summary>Quando sottoposto a override in una classe derivata, restituisce un clone di questo <see cref="T:System.Xml.XPath.XPathExpression" />.</summary>
+      <returns>Nuovo oggetto <see cref="T:System.Xml.XPath.XPathExpression" />.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.Compile(System.String)">
+      <summary>Compila l'espressione XPath specificata e restituisce un oggetto <see cref="T:System.Xml.XPath.XPathExpression" /> che rappresenta l'espressione XPath.</summary>
+      <returns>Un oggetto <see cref="T:System.Xml.XPath.XPathExpression" />.</returns>
+      <param name="xpath">Espressione XPath.</param>
+      <exception cref="T:System.ArgumentException">Il parametro dell'espressione XPath non è un'espressione XPath valida.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">L'espressione XPath non è valida.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.Compile(System.String,System.Xml.IXmlNamespaceResolver)">
+      <summary>Compila l'espressione XPath specificata, con l'oggetto <see cref="T:System.Xml.IXmlNamespaceResolver" /> specificato per la risoluzione dello spazio dei nomi, e restituisce un oggetto <see cref="T:System.Xml.XPath.XPathExpression" /> che rappresenta l'espressione XPath.</summary>
+      <returns>Un oggetto <see cref="T:System.Xml.XPath.XPathExpression" />.</returns>
+      <param name="xpath">Espressione XPath.</param>
+      <param name="nsResolver">Oggetto che implementa l'interfaccia <see cref="T:System.Xml.IXmlNamespaceResolver" /> per la risoluzione dello spazio dei nomi.</param>
+      <exception cref="T:System.ArgumentException">Il parametro dell'espressione XPath non è un'espressione XPath valida.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">L'espressione XPath non è valida.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathExpression.Expression">
+      <summary>Quando sottoposto a override in una classe derivata, ottiene una rappresentazione in formato string di <see cref="T:System.Xml.XPath.XPathExpression" />.</summary>
+      <returns>Rappresentazione in formato string di <see cref="T:System.Xml.XPath.XPathExpression" />.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathExpression.ReturnType">
+      <summary>Quando sottoposto a override in una classe derivata, ottiene il tipo di risultato dell'espressione XPath.</summary>
+      <returns>Valore <see cref="T:System.Xml.XPath.XPathResultType" /> che rappresenta il tipo di risultato dell'espressione XPath.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.SetContext(System.Xml.IXmlNamespaceResolver)">
+      <summary>Quando sottoposto a override in una classe derivata, specifica l'oggetto <see cref="T:System.Xml.IXmlNamespaceResolver" /> da utilizzare per la risoluzione dello spazio dei nomi.</summary>
+      <param name="nsResolver">Oggetto che implementa l'interfaccia <see cref="T:System.Xml.IXmlNamespaceResolver" /> da utilizzare per la risoluzione dello spazio dei nomi.</param>
+      <exception cref="T:System.Xml.XPath.XPathException">Il parametro dell'oggetto <see cref="T:System.Xml.IXmlNamespaceResolver" /> non deriva da <see cref="T:System.Xml.IXmlNamespaceResolver" />. </exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathExpression.SetContext(System.Xml.XmlNamespaceManager)">
+      <summary>Quando sottoposto a override in una classe derivata, specifica l'oggetto <see cref="T:System.Xml.XmlNamespaceManager" /> da utilizzare per la risoluzione dello spazio dei nomi.</summary>
+      <param name="nsManager">Oggetto <see cref="T:System.Xml.XmlNamespaceManager" /> da utilizzare per la risoluzione dello spazio dei nomi. </param>
+      <exception cref="T:System.Xml.XPath.XPathException">Il parametro dell'oggetto <see cref="T:System.Xml.XmlNamespaceManager" /> non deriva dalla classe <see cref="T:System.Xml.XmlNamespaceManager" />. </exception>
+    </member>
+    <member name="T:System.Xml.XPath.XPathItem">
+      <summary>Rappresenta un elemento del modello di dati XQuery 1.0 e XPath 2.0.</summary>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.IsNode">
+      <summary>Quando sottoposto a override in una classe derivata, ottiene un valore che indica se l'elemento rappresenta un nodo XPath o un valore atomico.</summary>
+      <returns>true se l'elemento rappresenta un nodo XPath, false se rappresenta un valore atomico.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.TypedValue">
+      <summary>Quando sottoposto a override in una classe derivata, ottiene l'elemento corrente come oggetto boxed del tipo .NET Framework 2.0 più appropriato in base al relativo tipo di schema.</summary>
+      <returns>Elemento corrente come oggetto boxed del tipo .NET Framework più appropriato.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.Value">
+      <summary>Quando sottoposto a override in una classe derivata, ottiene il valore string dell'elemento.</summary>
+      <returns>Valore dell'elemento string.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathItem.ValueAs(System.Type)">
+      <summary>Restituisce il valore dell'elemento in base al tipo specificato.</summary>
+      <returns>Valore dell'elemento in base al tipo richiesto.</returns>
+      <param name="returnType">Tipo in base al quale restituire il valore dell'elemento.</param>
+      <exception cref="T:System.FormatException">Il valore dell'elemento non presenta il formato corretto per il tipo di destinazione.</exception>
+      <exception cref="T:System.InvalidCastException">Il tentativo di cast non è valido.</exception>
+      <exception cref="T:System.OverflowException">Il tentativo di cast ha causato un overflow.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathItem.ValueAs(System.Type,System.Xml.IXmlNamespaceResolver)">
+      <summary>Quando sottoposto a override in una classe derivata, restituisce il valore dell'elemento in base al tipo specificato tramite l'oggetto <see cref="T:System.Xml.IXmlNamespaceResolver" /> specificato per la risoluzione dei prefissi degli spazi dei nomi.</summary>
+      <returns>Valore dell'elemento in base al tipo richiesto.</returns>
+      <param name="returnType">Tipo in base al quale restituire il valore dell'elemento.</param>
+      <param name="nsResolver">Oggetto <see cref="T:System.Xml.IXmlNamespaceResolver" /> utilizzato per la risoluzione dei prefissi degli spazi dei nomi.</param>
+      <exception cref="T:System.FormatException">Il valore dell'elemento non presenta il formato corretto per il tipo di destinazione.</exception>
+      <exception cref="T:System.InvalidCastException">Il tentativo di cast non è valido.</exception>
+      <exception cref="T:System.OverflowException">Il tentativo di cast ha causato un overflow.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.ValueAsBoolean">
+      <summary>Quando sottoposto a override in una classe derivata, ottiene il valore dell'elemento come <see cref="T:System.Boolean" />.</summary>
+      <returns>Valore dell'elemento come <see cref="T:System.Boolean" />.</returns>
+      <exception cref="T:System.FormatException">Il valore dell'elemento non presenta il formato corretto per il tipo <see cref="T:System.Boolean" />.</exception>
+      <exception cref="T:System.InvalidCastException">Il tentativo di cast a <see cref="T:System.Boolean" /> non è valido.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.ValueAsDateTime">
+      <summary>Quando sottoposto a override in una classe derivata, ottiene il valore dell'elemento come <see cref="T:System.DateTime" />.</summary>
+      <returns>Valore dell'elemento come <see cref="T:System.DateTime" />.</returns>
+      <exception cref="T:System.FormatException">Il valore dell'elemento non presenta il formato corretto per il tipo <see cref="T:System.DateTime" />.</exception>
+      <exception cref="T:System.InvalidCastException">Il tentativo di cast a <see cref="T:System.DateTime" /> non è valido.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.ValueAsDouble">
+      <summary>Quando sottoposto a override in una classe derivata, ottiene il valore dell'elemento come <see cref="T:System.Double" />.</summary>
+      <returns>Valore dell'elemento come <see cref="T:System.Double" />.</returns>
+      <exception cref="T:System.FormatException">Il valore dell'elemento non presenta il formato corretto per il tipo <see cref="T:System.Double" />.</exception>
+      <exception cref="T:System.InvalidCastException">Il tentativo di cast a <see cref="T:System.Double" /> non è valido.</exception>
+      <exception cref="T:System.OverflowException">Il tentativo di cast ha causato un overflow.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.ValueAsInt">
+      <summary>Quando sottoposto a override in una classe derivata, ottiene il valore dell'elemento come <see cref="T:System.Int32" />.</summary>
+      <returns>Valore dell'elemento come <see cref="T:System.Int32" />.</returns>
+      <exception cref="T:System.FormatException">Il valore dell'elemento non presenta il formato corretto per il tipo <see cref="T:System.Int32" />.</exception>
+      <exception cref="T:System.InvalidCastException">Il tentativo di cast a <see cref="T:System.Int32" /> non è valido.</exception>
+      <exception cref="T:System.OverflowException">Il tentativo di cast ha causato un overflow.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.ValueAsLong">
+      <summary>Quando sottoposto a override in una classe derivata, ottiene il valore dell'elemento come <see cref="T:System.Int64" />.</summary>
+      <returns>Valore dell'elemento come <see cref="T:System.Int64" />.</returns>
+      <exception cref="T:System.FormatException">Il valore dell'elemento non presenta il formato corretto per il tipo <see cref="T:System.Int64" />.</exception>
+      <exception cref="T:System.InvalidCastException">Il tentativo di cast a <see cref="T:System.Int64" /> non è valido.</exception>
+      <exception cref="T:System.OverflowException">Il tentativo di cast ha causato un overflow.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathItem.ValueType">
+      <summary>Quando sottoposto a override in una classe derivata, ottiene il tipo .NET Framework 2.0 dell'elemento.</summary>
+      <returns>Tipo .NET Framework dell'elemento.Il valore predefinito è <see cref="T:System.String" />.</returns>
+    </member>
+    <member name="T:System.Xml.XPath.XPathNamespaceScope">
+      <summary>Definisce l'ambito dello spazio dei nomi.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNamespaceScope.All">
+      <summary>Restituisce tutti gli spazi dei nomi definiti nell'ambito del nodo corrente,incluso lo spazio dei nomi xmlns:xml, che viene sempre dichiarato in modo implicito.L'ordine degli spazi dei nomi restituiti non è definito.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNamespaceScope.ExcludeXml">
+      <summary>Restituisce tutti gli spazi dei nomi definiti nell'ambito del nodo corrente, escluso lo spazio dei nomi xmlns:xml.Lo spazio dei nomi xmlns:xml viene sempre dichiarato in modo implicito.L'ordine degli spazi dei nomi restituiti non è definito.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNamespaceScope.Local">
+      <summary>Restituisce tutti gli spazi dei nomi definiti localmente nel nodo corrente. </summary>
+    </member>
+    <member name="T:System.Xml.XPath.XPathNavigator">
+      <summary>Fornisce un modello di cursore per esplorare e modificare dati XML.</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.#ctor">
+      <summary>Inizializza una nuova istanza della classe <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.AppendChild">
+      <summary>Restituisce un oggetto <see cref="T:System.Xml.XmlWriter" /> usato per creare uno o più nodi figlio nuovi alla fine dell'elenco dei nodi figlio del nodo corrente. </summary>
+      <returns>Oggetto <see cref="T:System.Xml.XmlWriter" /> usato per creare nuovi nodi figlio alla fine dell'elenco dei nodi figlio del nodo corrente.</returns>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on is not the root node or an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.AppendChild(System.String)">
+      <summary>Crea un nuovo nodo figlio alla fine dell'elenco dei nodi figlio del nodo corrente usando la stringa di dati XML specificata.</summary>
+      <param name="newChild">Stringa di dati XML per il nuovo nodo figlio.</param>
+      <exception cref="T:System.ArgumentNullException">The XML data string parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on is not the root node or an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML data string parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.AppendChild(System.Xml.XmlReader)">
+      <summary>Crea un nuovo nodo figlio alla fine dell'elenco dei nodi figlio del nodo corrente usando il contenuto XML dell'oggetto <see cref="T:System.Xml.XmlReader" /> specificato.</summary>
+      <param name="newChild">Oggetto <see cref="T:System.Xml.XmlReader" /> posizionato in corrispondenza dei dati XML per il nuovo nodo figlio.</param>
+      <exception cref="T:System.ArgumentException">The <see cref="T:System.Xml.XmlReader" /> object is in an error state or closed.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on is not the root node or an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML contents of the <see cref="T:System.Xml.XmlReader" /> object parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.AppendChild(System.Xml.XPath.XPathNavigator)">
+      <summary> Crea un nuovo nodo figlio alla fine dell'elenco dei nodi figlio del nodo corrente usando i nodi nella classe <see cref="T:System.Xml.XPath.XPathNavigator" /> specificata.</summary>
+      <param name="newChild">Oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> posizionato in corrispondenza del nodo da aggiungere come nuovo nodo figlio.</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on is not the root node or an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.AppendChildElement(System.String,System.String,System.String,System.String)">
+      <summary>Crea un nuovo nodo elemento figlio alla fine dell'elenco dei nodi figlio del nodo corrente usando il prefisso dello spazio dei nomi, il nome locale e l'URI dello spazio dei nomi specificati con il valore specificato.</summary>
+      <param name="prefix">Prefisso dello spazio dei nomi del nuovo nodo elemento figlio, se presente.</param>
+      <param name="localName">Nome locale del nuovo nodo elemento figlio, se presente.</param>
+      <param name="namespaceURI">URI dello spazio dei nomi del nuovo nodo elemento figlio, se presente.<see cref="F:System.String.Empty" /> e null sono equivalenti.</param>
+      <param name="value">Valore del nuovo nodo elemento figlio.Se viene passato <see cref="F:System.String.Empty" /> o null, viene creato un elemento vuoto.</param>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on is not the root node or an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.BaseURI">
+      <summary>Quando ne viene eseguito l'override in una classe derivata, ottiene l'URI di base del nodo corrente.</summary>
+      <returns>Posizione da cui il nodo è stato caricato o <see cref="F:System.String.Empty" /> se non è disponibile un valore.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.CanEdit">
+      <summary>Ottiene un valore che indica se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> può modificare i dati XML sottostanti.</summary>
+      <returns>true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> può modificare i dati XML sottostanti; in caso contrario, false.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Clone">
+      <summary>Quando ne viene eseguito l'override in una classe derivata, crea una nuova classe <see cref="T:System.Xml.XPath.XPathNavigator" /> posizionata nello stesso nodo della classe <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+      <returns>Nuova classe <see cref="T:System.Xml.XPath.XPathNavigator" /> posizionata nello stesso nodo della classe <see cref="T:System.Xml.XPath.XPathNavigator" />.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ComparePosition(System.Xml.XPath.XPathNavigator)">
+      <summary>Confronta la posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> corrente con quella dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> specificato.</summary>
+      <returns>Valore <see cref="T:System.Xml.XmlNodeOrder" /> che rappresenta la posizione comparata dei due oggetti <see cref="T:System.Xml.XPath.XPathNavigator" />.</returns>
+      <param name="nav">Oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> con cui eseguire il confronto.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Compile(System.String)">
+      <summary> Compila una stringa che rappresenta un'espressione XPath e restituisce un oggetto <see cref="T:System.Xml.XPath.XPathExpression" />.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XPath.XPathExpression" /> che rappresenta l'espressione XPath.</returns>
+      <param name="xpath">Stringa che rappresenta un'espressione XPath.</param>
+      <exception cref="T:System.ArgumentException">The <paramref name="xpath" /> parameter contains an XPath expression that is not valid.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.CreateAttribute(System.String,System.String,System.String,System.String)">
+      <summary>Crea un nodo attributo in corrispondenza del nodo elemento corrente usando il prefisso dello spazio dei nomi, il nome locale e l'URI dello spazio dei nomi specificati con il valore specificato.</summary>
+      <param name="prefix">Prefisso dello spazio dei nomi del nuovo nodo attributo, se presente.</param>
+      <param name="localName">Nome locale del nuovo nodo attributo che non può essere <see cref="F:System.String.Empty" /> o null.</param>
+      <param name="namespaceURI">URI dello spazio dei nomi del nuovo nodo attributo, se presente.</param>
+      <param name="value">Valore del nuovo nodo attributo.Se viene passato <see cref="F:System.String.Empty" /> o null, viene creato un nodo attributo vuoto.</param>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.CreateAttributes">
+      <summary>Restituisce un oggetto <see cref="T:System.Xml.XmlWriter" /> usato per creare nuovi attributi nell'elemento corrente.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XmlWriter" /> usato per creare nuovi attributi nell'elemento corrente.</returns>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.CreateNavigator">
+      <summary>Restituisce una copia dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+      <returns>Copia della classe <see cref="T:System.Xml.XPath.XPathNavigator" /> di questa classe <see cref="T:System.Xml.XPath.XPathNavigator" />.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.DeleteRange(System.Xml.XPath.XPathNavigator)">
+      <summary>Elimina un intervallo di nodi di pari livello dal nodo corrente per il nodo specificato.</summary>
+      <param name="lastSiblingToDelete">Oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> posizionato in corrispondenza dell'ultimo nodo di pari livello nell'intervallo da eliminare.</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> specified is null.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.InvalidOperationException">The last node to delete specified is not a valid sibling node of the current node.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.DeleteSelf">
+      <summary>Elimina il nodo corrente e i relativi nodi figlio.</summary>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on a node that cannot be deleted such as the root node or a namespace node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Evaluate(System.String)">
+      <summary>Valuta l'espressione XPath specificata e restituisce il risultato tipizzato.</summary>
+      <returns>Risultato dell'espressione (valore booleano, numero, stringa o set di nodi).Mappa rispettivamente agli oggetti <see cref="T:System.Boolean" />, <see cref="T:System.Double" />, <see cref="T:System.String" /> o <see cref="T:System.Xml.XPath.XPathNodeIterator" />.</returns>
+      <param name="xpath">Stringa che rappresenta un'espressione XPath valutabile.</param>
+      <exception cref="T:System.ArgumentException">The return type of the XPath expression is a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Evaluate(System.String,System.Xml.IXmlNamespaceResolver)">
+      <summary>Valuta l'espressione XPath specificata e restituisce il risultato tipizzato usando l'oggetto <see cref="T:System.Xml.IXmlNamespaceResolver" /> specificato per risolvere i prefissi degli spazi dei nomi contenuti nell'espressione XPath.</summary>
+      <returns>Risultato dell'espressione (valore booleano, numero, stringa o set di nodi).Mappa rispettivamente agli oggetti <see cref="T:System.Boolean" />, <see cref="T:System.Double" />, <see cref="T:System.String" /> o <see cref="T:System.Xml.XPath.XPathNodeIterator" />.</returns>
+      <param name="xpath">Stringa che rappresenta un'espressione XPath valutabile.</param>
+      <param name="resolver">Oggetto <see cref="T:System.Xml.IXmlNamespaceResolver" /> usato per la risoluzione dei prefissi degli spazi dei nomi contenuti nell'espressione XPath.</param>
+      <exception cref="T:System.ArgumentException">The return type of the XPath expression is a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Evaluate(System.Xml.XPath.XPathExpression)">
+      <summary>Valuta la classe <see cref="T:System.Xml.XPath.XPathExpression" /> e restituisce il risultato tipizzato.</summary>
+      <returns>Risultato dell'espressione (valore booleano, numero, stringa o set di nodi).Mappa rispettivamente agli oggetti <see cref="T:System.Boolean" />, <see cref="T:System.Double" />, <see cref="T:System.String" /> o <see cref="T:System.Xml.XPath.XPathNodeIterator" />.</returns>
+      <param name="expr">Oggetto <see cref="T:System.Xml.XPath.XPathExpression" /> che può essere valutato.</param>
+      <exception cref="T:System.ArgumentException">The return type of the XPath expression is a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Evaluate(System.Xml.XPath.XPathExpression,System.Xml.XPath.XPathNodeIterator)">
+      <summary>Usa il contesto specificato per valutare l'oggetto <see cref="T:System.Xml.XPath.XPathExpression" /> e restituisce il risultato tipizzato.</summary>
+      <returns>Risultato dell'espressione (valore booleano, numero, stringa o set di nodi).Mappa rispettivamente agli oggetti <see cref="T:System.Boolean" />, <see cref="T:System.Double" />, <see cref="T:System.String" /> o <see cref="T:System.Xml.XPath.XPathNodeIterator" />.</returns>
+      <param name="expr">Oggetto <see cref="T:System.Xml.XPath.XPathExpression" /> che può essere valutato.</param>
+      <param name="context">Oggetto <see cref="T:System.Xml.XPath.XPathNodeIterator" /> che punta al set di nodi selezionato su cui deve essere eseguita la valutazione.</param>
+      <exception cref="T:System.ArgumentException">The return type of the XPath expression is a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.GetAttribute(System.String,System.String)">
+      <summary>Ottiene il valore dell'attributo con il nome locale e l'URI dello spazio dei nomi specificati.</summary>
+      <returns>Oggetto <see cref="T:System.String" /> contenente il valore dell'attributo specificato; <see cref="F:System.String.Empty" /> se non viene trovato un attributo corrispondente oppure se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> non si trova in corrispondenza di un nodo elemento.</returns>
+      <param name="localName">Nome locale dell'attributo.</param>
+      <param name="namespaceURI">URI dello spazio dei nomi dell'attributo.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.GetNamespace(System.String)">
+      <summary>Ripristina il valore del nodo spazio dei nomi corrispondente al nome locale specificato.</summary>
+      <returns>Oggetto <see cref="T:System.String" /> contenente il valore del nodo spazio dei nomi; <see cref="F:System.String.Empty" /> se non viene trovato un nodo spazio dei nomi corrispondente oppure se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> non è posizionato in corrispondenza di un nodo elemento.</returns>
+      <param name="name">Nome locale del nodo spazio dei nomi.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.GetNamespacesInScope(System.Xml.XmlNamespaceScope)">
+      <summary>Restituisce gli spazi dei nomi nell'ambito del nodo corrente.</summary>
+      <returns>Raccolta <see cref="T:System.Collections.Generic.IDictionary`2" /> dei nomi degli spazi dei nomi con chiave in base al prefisso.</returns>
+      <param name="scope">Valore di <see cref="T:System.Xml.XmlNamespaceScope" /> che specifica gli spazi dei nomi da restituire.</param>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.HasAttributes">
+      <summary>Ottiene un valore che indica se il nodo corrente dispone di attributi.</summary>
+      <returns>Restituisce true se il nodo corrente contiene attributi; restituisce false se il nodo corrente non contiene attributi oppure se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> non è posizionato in corrispondenza del nodo di un elemento.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.HasChildren">
+      <summary>Ottiene un valore che indica se il nodo corrente include nodi figlio.</summary>
+      <returns>true se il nodo corrente include nodi figlio; in caso contrario, false.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.InnerXml">
+      <summary>Ottiene o imposta il markup che rappresenta i nodi figlio del nodo corrente.</summary>
+      <returns>Oggetto <see cref="T:System.String" /> contenente il markup dei nodi figlio del nodo corrente.</returns>
+      <exception cref="T:System.InvalidOperationException">The <see cref="P:System.Xml.XPath.XPathNavigator.InnerXml" /> property cannot be set.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertAfter">
+      <summary>Restituisce un oggetto <see cref="T:System.Xml.XmlWriter" /> usato per creare un nuovo nodo di pari livello successivo al nodo attualmente selezionato.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XmlWriter" /> usato per creare un nuovo nodo di pari livello successivo al nodo attualmente selezionato.</returns>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted after the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertAfter(System.String)">
+      <summary>Crea un nuovo nodo di pari livello dopo il nodo attualmente selezionato usando la stringa XML specificata.</summary>
+      <param name="newSibling">Stringa di dati XML per il nuovo nodo di pari livello.</param>
+      <exception cref="T:System.ArgumentNullException">The XML string parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted after the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML string parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertAfter(System.Xml.XmlReader)">
+      <summary>Crea un nuovo nodo di pari livello dopo il nodo attualmente selezionato usando il contenuto XML dell'oggetto <see cref="T:System.Xml.XmlReader" /> specificato.</summary>
+      <param name="newSibling">Oggetto <see cref="T:System.Xml.XmlReader" /> posizionato in corrispondenza dei dati XML per il nuovo nodo di pari livello.</param>
+      <exception cref="T:System.ArgumentException">The <see cref="T:System.Xml.XmlReader" /> object is in an error state or closed.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted after the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML contents of the <see cref="T:System.Xml.XmlReader" /> object parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertAfter(System.Xml.XPath.XPathNavigator)">
+      <summary>Crea un nuovo nodo di pari livello dopo il nodo attualmente selezionato usando i nodi dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> specificato.</summary>
+      <param name="newSibling">Oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> posizionato in corrispondenza del nodo da aggiungere come nuovo nodo di pari livello.</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted after the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertBefore">
+      <summary>Restituisce un oggetto <see cref="T:System.Xml.XmlWriter" /> usato per creare un nuovo nodo di pari livello prima del nodo attualmente selezionato.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XmlWriter" /> usato per creare un nuovo nodo di pari livello prima del nodo attualmente selezionato.</returns>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted before the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertBefore(System.String)">
+      <summary>Crea un nuovo nodo di pari livello prima del nodo attualmente selezionato usando la stringa XML specificata.</summary>
+      <param name="newSibling">Stringa di dati XML per il nuovo nodo di pari livello.</param>
+      <exception cref="T:System.ArgumentNullException">The XML string parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted before the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML string parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertBefore(System.Xml.XmlReader)">
+      <summary>Crea un nuovo nodo di pari livello prima del nodo attualmente selezionato usando il contenuto XML dell'oggetto <see cref="T:System.Xml.XmlReader" /> specificato.</summary>
+      <param name="newSibling">Oggetto <see cref="T:System.Xml.XmlReader" /> posizionato in corrispondenza dei dati XML per il nuovo nodo di pari livello.</param>
+      <exception cref="T:System.ArgumentException">The <see cref="T:System.Xml.XmlReader" /> object is in an error state or closed.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted before the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML contents of the <see cref="T:System.Xml.XmlReader" /> object parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertBefore(System.Xml.XPath.XPathNavigator)">
+      <summary>Crea un nuovo nodo di pari livello prima del nodo attualmente selezionato usando i nodi dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> specificato.</summary>
+      <param name="newSibling">Oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> posizionato in corrispondenza del nodo da aggiungere come nuovo nodo di pari livello.</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted before the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertElementAfter(System.String,System.String,System.String,System.String)">
+      <summary>Crea un nuovo elemento di pari livello dopo il nodo corrente usando il prefisso dello spazio dei nomi, il nome locale e l'URI dello spazio dei nomi specificati con il valore specificato.</summary>
+      <param name="prefix">Prefisso dello spazio dei nomi del nuovo elemento figlio, se presente.</param>
+      <param name="localName">Nome locale del nuovo elemento figlio, se presente.</param>
+      <param name="namespaceURI">URI dello spazio dei nomi del nuovo elemento figlio, se presente.<see cref="F:System.String.Empty" /> e null sono equivalenti.</param>
+      <param name="value">Valore del nuovo elemento figlio.Se viene passato <see cref="F:System.String.Empty" /> o null, viene creato un elemento vuoto.</param>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted after the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.InsertElementBefore(System.String,System.String,System.String,System.String)">
+      <summary>Crea un nuovo elemento di pari livello prima del nodo corrente usando il prefisso dello spazio dei nomi, il nome locale e l'URI dello spazio dei nomi specificati con il valore specificato.</summary>
+      <param name="prefix">Prefisso dello spazio dei nomi del nuovo elemento figlio, se presente.</param>
+      <param name="localName">Nome locale del nuovo elemento figlio, se presente.</param>
+      <param name="namespaceURI">URI dello spazio dei nomi del nuovo elemento figlio, se presente.<see cref="F:System.String.Empty" /> e null sono equivalenti.</param>
+      <param name="value">Valore del nuovo elemento figlio.Se viene passato <see cref="F:System.String.Empty" /> o null, viene creato un elemento vuoto.</param>
+      <exception cref="T:System.InvalidOperationException">The position of the <see cref="T:System.Xml.XPath.XPathNavigator" /> does not allow a new sibling node to be inserted before the current node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.IsDescendant(System.Xml.XPath.XPathNavigator)">
+      <summary>Determina se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> specificato o un discendente dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> corrente.</summary>
+      <returns>true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> specificato è un discendente dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> corrente; in caso contrario, false.</returns>
+      <param name="nav">Oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> da confrontare con questo oggetto <see cref="T:System.Xml.XPath.XPathNavigator" />.</param>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.IsEmptyElement">
+      <summary>Quando ne viene eseguito l'override in una classe derivata, ottiene un valore che indica se il nodo corrente rappresenta un elemento vuoto senza un tag di fine dell'elemento.</summary>
+      <returns>true se il nodo corrente è un elemento vuoto; in caso contrario, false.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.IsNode">
+      <summary>Ottiene un valore che indica se il nodo corrente rappresenta un nodo XPath.</summary>
+      <returns>Restituisce sempre true.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.IsSamePosition(System.Xml.XPath.XPathNavigator)">
+      <summary>Quando ne viene eseguito l'override in una classe derivata, determina se l'oggetto<see cref="T:System.Xml.XPath.XPathNavigator" /> corrente si trova nella stessa posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> specificato.</summary>
+      <returns>true se i due oggetti <see cref="T:System.Xml.XPath.XPathNavigator" /> sono nella stessa posizione; in caso contrario, false.</returns>
+      <param name="other">Oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> da confrontare con questo oggetto <see cref="T:System.Xml.XPath.XPathNavigator" />.</param>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.LocalName">
+      <summary>Quando ne viene eseguito l'override in una classe derivata, ottiene l'oggetto <see cref="P:System.Xml.XPath.XPathNavigator.Name" /> del nodo corrente senza prefisso dello spazio dei nomi.</summary>
+      <returns>Oggetto <see cref="T:System.String" /> contenente il nome locale del nodo corrente o <see cref="F:System.String.Empty" /> se il nodo corrente è privo di nome (se si tratta, ad esempio, di un nodo testo o commento).</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.LookupNamespace(System.String)">
+      <summary>Ottiene l'URI dello spazio dei nomi per il prefisso specificato.</summary>
+      <returns>Oggetto <see cref="T:System.String" /> contenente l'URI dello spazio dei nomi assegnato al prefisso dello spazio dei nomi specificato; null se non è stato assegnato un URI al prefisso specificato.L'oggetto <see cref="T:System.String" /> restituito è suddiviso in elementi di base.</returns>
+      <param name="prefix">Prefisso di cui risolvere l'URI dello spazio dei nomi.Per ottenere la corrispondenza con lo spazio dei nomi predefinito, passare <see cref="F:System.String.Empty" />.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.LookupPrefix(System.String)">
+      <summary>Ottiene il prefisso dichiarato per l'URI dello spazio dei nomi specificato.</summary>
+      <returns>Oggetto <see cref="T:System.String" /> contenente il prefisso dello spazio dei nomi assegnato all'URI dello spazio dei nomi specificato; in caso contrario, <see cref="F:System.String.Empty" /> se non è stato assegnato un prefisso all'URI dello spazio dei nomi specificato.L'oggetto <see cref="T:System.String" /> restituito è suddiviso in elementi di base.</returns>
+      <param name="namespaceURI">URI dello spazio dei nomi da risolvere per il prefisso.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Matches(System.String)">
+      <summary>Determina se il nodo corrente corrisponde all'espressione XPath specificata.</summary>
+      <returns>true se il nodo corrente corrisponde all'espressione XPath specificata; in caso contrario, false.</returns>
+      <param name="xpath">Espressione XPath.</param>
+      <exception cref="T:System.ArgumentException">The XPath expression cannot be evaluated.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Matches(System.Xml.XPath.XPathExpression)">
+      <summary>Determina se il nodo corrente corrisponde all'espressione <see cref="T:System.Xml.XPath.XPathExpression" /> specificata.</summary>
+      <returns>true se il nodo corrente corrisponde a <see cref="T:System.Xml.XPath.XPathExpression" />; in caso contrario, false.</returns>
+      <param name="expr">Oggetto <see cref="T:System.Xml.XPath.XPathExpression" /> contenente l'espressione XPath compilata.</param>
+      <exception cref="T:System.ArgumentException">The XPath expression cannot be evaluated.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveTo(System.Xml.XPath.XPathNavigator)">
+      <summary>Quando ne viene eseguito l'override in una classe derivata, sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> nella stessa posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> specificato.</summary>
+      <returns>Restituisce true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato nella stessa posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" />; in caso contrario, false.Se false, la posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> rimane immutata.</returns>
+      <param name="other">Oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> posizionato sul nodo su cui spostarsi. </param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToAttribute(System.String,System.String)">
+      <summary>Sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sull'attributo con il nome locale e l'URI dello spazio dei nomi corrispondenti.</summary>
+      <returns>Restituisce true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato sull'attributo; in caso contrario, false.Se false, la posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> rimane immutata.</returns>
+      <param name="localName">Nome locale dell'attributo.</param>
+      <param name="namespaceURI">URI dello spazio del nome dell'attributo; null per uno spazio dei nomi vuoto.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToChild(System.String,System.String)">
+      <summary>Sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sul nodo figlio con il nome locale e l'URI dello spazio dei nomi specificati.</summary>
+      <returns>Restituisce true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato sul nodo figlio; in caso contrario, restituisce false.Se false, la posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> rimane immutata.</returns>
+      <param name="localName">Nome locale del nodo figlio su cui eseguire lo spostamento.</param>
+      <param name="namespaceURI">URI dello spazio dei nomi del nodo figlio su cui eseguire lo spostamento.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToChild(System.Xml.XPath.XPathNodeType)">
+      <summary>Sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sul nodo figlio dell'oggetto <see cref="T:System.Xml.XPath.XPathNodeType" /> specificato.</summary>
+      <returns>Restituisce true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato sul nodo figlio; in caso contrario, restituisce false.Se false, la posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> rimane immutata.</returns>
+      <param name="type">Oggetto <see cref="T:System.Xml.XPath.XPathNodeType" /> del nodo figlio in cui eseguire lo spostamento.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFirst">
+      <summary>Sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sul primo nodo di pari livello del nodo corrente.</summary>
+      <returns>Restituisce true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato sul primo nodo di pari livello del nodo corrente; false se non è presente un primo nodo di pari livello o se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> è attualmente posizionato in corrispondenza di un nodo attributo.Se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> è già posizionato sul primo elemento di pari livello, <see cref="T:System.Xml.XPath.XPathNavigator" /> restituirà true e non verrà spostato.Se <see cref="M:System.Xml.XPath.XPathNavigator.MoveToFirst" /> restituisce false perché non esiste un primo elemento di pari livello oppure se <see cref="T:System.Xml.XPath.XPathNavigator" /> è attualmente posizionato su un attributo, la posizione di <see cref="T:System.Xml.XPath.XPathNavigator" /> resta invariata.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFirstAttribute">
+      <summary>Quando ne viene eseguito l'override in una classe derivata, sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sul primo attributo del nodo corrente.</summary>
+      <returns>Restituisce true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato sul primo attributo del nodo corrente; in caso contrario, false.Se false, la posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> rimane immutata.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFirstChild">
+      <summary>Quando ne viene eseguito l'override in una classe derivata, sposta l'oggetto<see cref="T:System.Xml.XPath.XPathNavigator" /> sul primo nodo figlio del nodo corrente.</summary>
+      <returns>Restituisce true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato sul primo nodo figlio del nodo corrente; in caso contrario, false.Se false, la posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> rimane immutata.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFirstNamespace">
+      <summary>Sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sul primo nodo spazio dei nomi del nodo corrente.</summary>
+      <returns>Restituisce true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato sul primo nodo spazio dei nomi; in caso contrario, restituisce false.Se false, la posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> rimane immutata.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFirstNamespace(System.Xml.XPath.XPathNamespaceScope)">
+      <summary>Quando ne viene eseguito l'override in una classe derivata,sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sul primo nodo spazio dei nomi corrispondente all'oggetto <see cref="T:System.Xml.XPath.XPathNamespaceScope" /> specificato.</summary>
+      <returns>Restituisce true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato sul primo nodo spazio dei nomi; in caso contrario, restituisce false.Se false, la posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> rimane immutata.</returns>
+      <param name="namespaceScope">Valore di <see cref="T:System.Xml.XPath.XPathNamespaceScope" /> che descrive l'ambito dello spazio dei nomi. </param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFollowing(System.String,System.String)">
+      <summary>Sposta l'oggetto<see cref="T:System.Xml.XPath.XPathNavigator" /> sull'elemento con il nome locale e l'URI dello spazio dei nomi specificati nell'ordine dei documenti.</summary>
+      <returns>true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato; in caso contrario, false.</returns>
+      <param name="localName">Nome locale dell'elemento.</param>
+      <param name="namespaceURI">URI dello spazio dei nomi dell'elemento.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFollowing(System.String,System.String,System.Xml.XPath.XPathNavigator)">
+      <summary>Sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sull'elemento con il nome locale e l'URI dello spazio dei nomi specificati, sul limite specificato, nell'ordine dei documenti.</summary>
+      <returns>true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato; in caso contrario, false.</returns>
+      <param name="localName">Nome locale dell'elemento.</param>
+      <param name="namespaceURI">URI dello spazio dei nomi dell'elemento.</param>
+      <param name="end">Oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> posizionato in corrispondenza del limite dell'elemento che l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> corrente non deve superare durante la ricerca dell'elemento seguente.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFollowing(System.Xml.XPath.XPathNodeType)">
+      <summary>Sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sull'elemento seguente dell'oggetto <see cref="T:System.Xml.XPath.XPathNodeType" /> specificato nell'ordine dei documenti.</summary>
+      <returns>true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato; in caso contrario, false.</returns>
+      <param name="type">Oggetto <see cref="T:System.Xml.XPath.XPathNodeType" /> dell'elemento.L'oggetto <see cref="T:System.Xml.XPath.XPathNodeType" /> non può essere <see cref="F:System.Xml.XPath.XPathNodeType.Attribute" /> o <see cref="F:System.Xml.XPath.XPathNodeType.Namespace" />.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToFollowing(System.Xml.XPath.XPathNodeType,System.Xml.XPath.XPathNavigator)">
+      <summary>Sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sull'elemento seguente dell'oggetto <see cref="T:System.Xml.XPath.XPathNodeType" /> specificato, sul limite specificato, nell'ordine dei documenti.</summary>
+      <returns>true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato; in caso contrario, false.</returns>
+      <param name="type">Oggetto <see cref="T:System.Xml.XPath.XPathNodeType" /> dell'elemento.L'oggetto <see cref="T:System.Xml.XPath.XPathNodeType" /> non può essere <see cref="F:System.Xml.XPath.XPathNodeType.Attribute" /> o <see cref="F:System.Xml.XPath.XPathNodeType.Namespace" />.</param>
+      <param name="end">Oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> posizionato in corrispondenza del limite dell'elemento che l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> corrente non deve superare durante la ricerca dell'elemento seguente.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToId(System.String)">
+      <summary>Quando ne viene eseguito l'override in una classe derivata, passa al nodo con un attributo di tipo ID il cui valore corrisponde all'elemento <see cref="T:System.String" /> specificato.</summary>
+      <returns>true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato; in caso contrario, false.Se false, la posizione dello strumento di spostamento rimane immutata.</returns>
+      <param name="id">Oggetto <see cref="T:System.String" /> che rappresenta il valore ID del nodo su cui eseguire lo spostamento.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNamespace(System.String)">
+      <summary>Sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sul nodo spazio dei nomi con il prefisso dello spazio dei nomi specificato.</summary>
+      <returns>true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato nello spazio dei nomi; false se non viene trovato un nodo spazio dei nomi corrispondente o se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> non è posizionato in corrispondenza di un nodo elemento.Se false, la posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> rimane immutata.</returns>
+      <param name="name">Prefisso dello spazio dei nomi del nodo spazio dei nomi.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNext">
+      <summary>Quando ne viene eseguito l'override in una classe derivata, sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sul nodo di pari livello successivo del nodo corrente.</summary>
+      <returns>true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato sul nodo di pari livello successivo; in caso contrario, false se non sono disponibili altri nodi di pari livello o se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> è attualmente posizionato in corrispondenza di un nodo attributo.Se false, la posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> rimane immutata.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNext(System.String,System.String)">
+      <summary>Sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sul nodo di pari livello successivo con il nome locale e l'URI dello spazio dei nomi specificati.</summary>
+      <returns>Restituisce true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato sul nodo di pari livello successivo; false se non sono disponibili altri nodi di pari livello o se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> è attualmente posizionato in corrispondenza di un nodo attributo.Se false, la posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> rimane immutata.</returns>
+      <param name="localName">Nome locale del nodo di pari livello successivo su cui eseguire lo spostamento.</param>
+      <param name="namespaceURI">URI dello spazio dei nomi del nodo di pari livello successivo su cui eseguire lo spostamento.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNext(System.Xml.XPath.XPathNodeType)">
+      <summary>Sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sul nodo di pari livello successivo del nodo corrente corrispondente all'oggetto <see cref="T:System.Xml.XPath.XPathNodeType" /> specificato.</summary>
+      <returns>true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato sul nodo di pari livello successivo; in caso contrario, false se non sono disponibili altri nodi di pari livello o se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> è attualmente posizionato in corrispondenza di un nodo attributo.Se false, la posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> rimane immutata.</returns>
+      <param name="type">Oggetto <see cref="T:System.Xml.XPath.XPathNodeType" /> del nodo di pari livello su cui eseguire lo spostamento.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNextAttribute">
+      <summary>Quando ne viene eseguito l'override in una classe derivata, sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> all'attributo successivo.</summary>
+      <returns>Restituiscetrue se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato all'attributo successivo; false se non sono disponibili altri attributi.Se false, la posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> rimane immutata.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNextNamespace">
+      <summary>Sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sul successivo nodo spazio dei nomi.</summary>
+      <returns>Restituisce true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato sul nodo spazio dei nomi successivo; in caso contrario, restituisce false.Se false, la posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> rimane immutata.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToNextNamespace(System.Xml.XPath.XPathNamespaceScope)">
+      <summary>Quando ne viene eseguito l'override in una classe derivata, sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sul nodo spazio dei nomi successivo corrispondente a <see cref="T:System.Xml.XPath.XPathNamespaceScope" />.</summary>
+      <returns>Restituisce true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato sul nodo spazio dei nomi successivo; in caso contrario, restituisce false.Se false, la posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> rimane immutata.</returns>
+      <param name="namespaceScope">Valore di <see cref="T:System.Xml.XPath.XPathNamespaceScope" /> che descrive l'ambito dello spazio dei nomi. </param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToParent">
+      <summary>quando ne viene eseguito l'override in una classe derivata, sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sul nodo padre del nodo corrente.</summary>
+      <returns>Restituisce true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato sul nodo padre del nodo corrente; in caso contrario, false.Se false, la posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> rimane immutata.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToPrevious">
+      <summary>Quando ne viene eseguito l'override in una classe derivata, sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sul nodo di pari livello precedente al nodo corrente.</summary>
+      <returns>Restituisce true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> viene spostato sul nodo di pari livello precedente; in caso contrario, false se non sono disponibili nodi di pari livello precedenti o se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> è attualmente posizionato in corrispondenza di un nodo attributo.Se false, la posizione dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> rimane immutata.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.MoveToRoot">
+      <summary>Sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> sul nodo radice a cui appartiene il nodo corrente.</summary>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.Name">
+      <summary>Quando ne viene eseguito l'override in una classe derivata, ottiene il nome completo del nodo corrente.</summary>
+      <returns>Oggetto <see cref="T:System.String" /> contenente l'elemento <see cref="P:System.Xml.XPath.XPathNavigator.Name" /> completo del nodo corrente o <see cref="F:System.String.Empty" /> se il nodo corrente è privo di nome (se si tratta, ad esempio, di un nodo testo o commento).</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.NamespaceURI">
+      <summary>Quando ne viene eseguito l'override in una classe derivata, ottiene l'URI dello spazio dei nomi del nodo corrente.</summary>
+      <returns>Oggetto <see cref="T:System.String" /> contenente l'URI dello spazio dei nomi del nodo corrente o <see cref="F:System.String.Empty" /> se il nodo corrente non dispone di un URI dello spazio dei nomi.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.NameTable">
+      <summary>Quando ne viene eseguito l'override in una classe derivata, ottiene l'oggetto <see cref="T:System.Xml.XmlNameTable" /> della classe <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XmlNameTable" /> che consente di ottenere la versione atomizzata di un elemento <see cref="T:System.String" /> contenuto nel documento XML.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.NavigatorComparer">
+      <summary>Ottiene un'interfaccia <see cref="T:System.Collections.IEqualityComparer" /> usata per il confronto di uguaglianza di oggetti <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+      <returns>Interfaccia <see cref="T:System.Collections.IEqualityComparer" /> usata per il confronto di uguaglianza di oggetti <see cref="T:System.Xml.XPath.XPathNavigator" />.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.NodeType">
+      <summary>Quando ne viene eseguito l'override in una classe derivata, ottiene l'oggetto <see cref="T:System.Xml.XPath.XPathNodeType" /> del nodo corrente.</summary>
+      <returns>Uno dei valori di <see cref="T:System.Xml.XPath.XPathNodeType" /> che rappresenta il nodo corrente.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.OuterXml">
+      <summary>Ottiene o imposta il markup che rappresenta i tag di apertura e di chiusura del nodo corrente e dei relativi nodi figlio.</summary>
+      <returns>Oggetto <see cref="T:System.String" /> contenente il markup che rappresenta i tag di apertura e di chiusura del nodo corrente e dei relativi nodi figlio.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.Prefix">
+      <summary>Quando ne viene eseguito l'override in una classe derivata, ottiene il prefisso dello spazio dei nomi associato al nodo corrente.</summary>
+      <returns>Oggetto <see cref="T:System.String" /> contenente il prefisso dello spazio dei nomi associato al nodo corrente.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.PrependChild">
+      <summary>Restituisce un oggetto<see cref="T:System.Xml.XmlWriter" /> usato per creare un nuovo nodo figlio all'inizio dell'elenco di nodi figlio del nodo corrente.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XmlWriter" /> usato per creare un nuovo nodo figlio all'inizio dell'elenco di nodi figlio del nodo corrente.</returns>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on does not allow a new child node to be prepended.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.PrependChild(System.String)">
+      <summary>Crea un nuovo nodo figlio all'inizio dell'elenco di nodi figlio del nodo corrente usando la stringa XML specificata.</summary>
+      <param name="newChild">Stringa di dati XML per il nuovo nodo figlio.</param>
+      <exception cref="T:System.ArgumentNullException">The XML string parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on does not allow a new child node to be prepended.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML string parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.PrependChild(System.Xml.XmlReader)">
+      <summary>Crea un nuovo nodo figlio all'inizio dell'elenco di nodi figlio del nodo corrente usando il contenuto XML dell'oggetto <see cref="T:System.Xml.XmlReader" /> specificato.</summary>
+      <param name="newChild">Oggetto <see cref="T:System.Xml.XmlReader" /> posizionato in corrispondenza dei dati XML per il nuovo nodo figlio.</param>
+      <exception cref="T:System.ArgumentException">The <see cref="T:System.Xml.XmlReader" /> object is in an error state or closed.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on does not allow a new child node to be prepended.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML contents of the <see cref="T:System.Xml.XmlReader" /> object parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.PrependChild(System.Xml.XPath.XPathNavigator)">
+      <summary>Crea un nuovo nodo figlio all'inizio dell'elenco di nodi figlio del nodo corrente usando i nodi nell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> specificato.</summary>
+      <param name="newChild">Oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> posizionato in corrispondenza del nodo da aggiungere come nuovo nodo figlio.</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on does not allow a new child node to be prepended.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.PrependChildElement(System.String,System.String,System.String,System.String)">
+      <summary>Crea un nuovo elemento figlio all'inizio dell'elenco di nodi figlio del nodo corrente usando il prefisso dello spazio dei nomi, il nome locale e l'URI dello spazio dei nomi specificati con il valore specificato.</summary>
+      <param name="prefix">Prefisso dello spazio dei nomi del nuovo elemento figlio, se presente.</param>
+      <param name="localName">Nome locale del nuovo elemento figlio, se presente.</param>
+      <param name="namespaceURI">URI dello spazio dei nomi del nuovo elemento figlio, se presente.<see cref="F:System.String.Empty" /> e null sono equivalenti.</param>
+      <param name="value">Valore del nuovo elemento figlio.Se viene passato <see cref="F:System.String.Empty" /> o null, viene creato un elemento vuoto.</param>
+      <exception cref="T:System.InvalidOperationException">The current node the <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on does not allow a new child node to be prepended.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ReadSubtree">
+      <summary>Restituisce un oggetto <see cref="T:System.Xml.XmlReader" /> contenente il nodo corrente e i relativi nodi figlio.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XmlReader" /> contenente il nodo corrente e i relativi nodi figlio.</returns>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element node or the root node.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ReplaceRange(System.Xml.XPath.XPathNavigator)">
+      <summary>Sostituisce un intervallo di nodi di pari livello dal nodo corrente al nodo specificato.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XmlWriter" /> usato per specificare l'intervallo della sostituzione.</returns>
+      <param name="lastSiblingToReplace">Oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> posizionato in corrispondenza dell'ultimo nodo di pari livello nell'intervallo da sostituire.</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> specified is null.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.InvalidOperationException">The last node to replace specified is not a valid sibling node of the current node.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ReplaceSelf(System.String)">
+      <summary>Sostituisce il nodo corrente con il contenuto della stringa specificato.</summary>
+      <param name="newNode">Stringa di dati XML per il nuovo nodo.</param>
+      <exception cref="T:System.ArgumentNullException">The XML string parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element, text, processing instruction, or comment node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML string parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ReplaceSelf(System.Xml.XmlReader)">
+      <summary>Sostituisce il nodo corrente con il contenuto dell'oggetto <see cref="T:System.Xml.XmlReader" /> specificato.</summary>
+      <param name="newNode">Oggetto <see cref="T:System.Xml.XmlReader" /> posizionato in corrispondenza dei dati XML per il nuovo nodo.</param>
+      <exception cref="T:System.ArgumentException">The <see cref="T:System.Xml.XmlReader" /> object is in an error state or closed.</exception>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XmlReader" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element, text, processing instruction, or comment node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML contents of the <see cref="T:System.Xml.XmlReader" /> object parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ReplaceSelf(System.Xml.XPath.XPathNavigator)">
+      <summary>Sostituisce il nodo corrente con il contenuto dell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> specificato.</summary>
+      <param name="newNode">Oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> posizionato in corrispondenza del nuovo nodo.</param>
+      <exception cref="T:System.ArgumentNullException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> object parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element, text, processing instruction, or comment node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+      <exception cref="T:System.Xml.XmlException">The XML contents of the <see cref="T:System.Xml.XPath.XPathNavigator" /> object parameter is not well-formed.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Select(System.String)">
+      <summary>Seleziona un insieme di nodi usando l'espressione XPath specificata.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XPath.XPathNodeIterator" /> che punta al set di nodi selezionato.</returns>
+      <param name="xpath">Oggetto <see cref="T:System.String" /> che rappresenta un'espressione XPath.</param>
+      <exception cref="T:System.ArgumentException">The XPath expression contains an error or its return type is not a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Select(System.String,System.Xml.IXmlNamespaceResolver)">
+      <summary>Seleziona un set di nodi usando l'espressione XPath specificata con l'oggetto <see cref="T:System.Xml.IXmlNamespaceResolver" /> specificato per la risoluzione dei prefissi degli spazi dei nomi.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XPath.XPathNodeIterator" /> che punta al set di nodi selezionato.</returns>
+      <param name="xpath">Oggetto <see cref="T:System.String" /> che rappresenta un'espressione XPath.</param>
+      <param name="resolver">Oggetto <see cref="T:System.Xml.IXmlNamespaceResolver" /> usato per la risoluzione dei prefissi degli spazi dei nomi.</param>
+      <exception cref="T:System.ArgumentException">The XPath expression contains an error or its return type is not a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.Select(System.Xml.XPath.XPathExpression)">
+      <summary>Seleziona un set di nodi usando l'oggetto <see cref="T:System.Xml.XPath.XPathExpression" /> specificato.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XPath.XPathNodeIterator" /> che punta al set di nodi selezionato.</returns>
+      <param name="expr">Oggetto <see cref="T:System.Xml.XPath.XPathExpression" /> contenente la query XPath compilata.</param>
+      <exception cref="T:System.ArgumentException">The XPath expression contains an error or its return type is not a node set.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath expression is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectAncestors(System.String,System.String,System.Boolean)">
+      <summary>Seleziona tutti i nodi predecessore del nodo corrente con il nome locale e l'URI dello spazio dei nomi specificati.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XPath.XPathNodeIterator" /> contenente i nodi selezionati.I nodi restituiti sono in ordine inverso rispetto al documento.</returns>
+      <param name="name">Nome locale dei nodi predecessore.</param>
+      <param name="namespaceURI">URI dello spazio dei nomi dei nodi predecessore.</param>
+      <param name="matchSelf">true per includere il nodo contesto nella selezione; in caso contrario, false. </param>
+      <exception cref="T:System.ArgumentNullException">null cannot be passed as a parameter.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectAncestors(System.Xml.XPath.XPathNodeType,System.Boolean)">
+      <summary>Seleziona tutti i nodi predecessore del nodo corrente con un oggetto <see cref="T:System.Xml.XPath.XPathNodeType" /> corrispondente.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XPath.XPathNodeIterator" /> contenente i nodi selezionati.I nodi restituiti sono in ordine inverso rispetto al documento.</returns>
+      <param name="type">Oggetto <see cref="T:System.Xml.XPath.XPathNodeType" /> dei nodi predecessore.</param>
+      <param name="matchSelf">true per includere il nodo contesto nella selezione; in caso contrario, false.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectChildren(System.String,System.String)">
+      <summary>Seleziona tutti i nodi figlio del nodo corrente con il nome locale e l'URI dello spazio dei nomi specificati.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XPath.XPathNodeIterator" /> contenente i nodi selezionati.</returns>
+      <param name="name">Nome locale dei nodi figlio. </param>
+      <param name="namespaceURI">URI dello spazio dei nomi dei nodi figlio. </param>
+      <exception cref="T:System.ArgumentNullException">null cannot be passed as a parameter.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectChildren(System.Xml.XPath.XPathNodeType)">
+      <summary>Seleziona tutti i nodi figlio del nodo corrente con l'oggetto <see cref="T:System.Xml.XPath.XPathNodeType" /> corrispondente.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XPath.XPathNodeIterator" /> contenente i nodi selezionati.</returns>
+      <param name="type">Oggetto <see cref="T:System.Xml.XPath.XPathNodeType" /> dei nodi figlio.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectDescendants(System.String,System.String,System.Boolean)">
+      <summary>Seleziona tutti i nodi discendente del nodo corrente con il nome locale e l'URI dello spazio dei nomi specificati.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XPath.XPathNodeIterator" /> contenente i nodi selezionati.</returns>
+      <param name="name">Nome locale dei nodi discendente. </param>
+      <param name="namespaceURI">URI dello spazio dei nomi dei nodi discendente. </param>
+      <param name="matchSelf">true per includere il nodo contesto nella selezione; in caso contrario, false.</param>
+      <exception cref="T:System.ArgumentNullException">null cannot be passed as a parameter.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectDescendants(System.Xml.XPath.XPathNodeType,System.Boolean)">
+      <summary>Seleziona tutti i nodi discendente del nodo corrente che presentano un oggetto <see cref="T:System.Xml.XPath.XPathNodeType" /> corrispondente.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XPath.XPathNodeIterator" /> contenente i nodi selezionati.</returns>
+      <param name="type">Oggetto <see cref="T:System.Xml.XPath.XPathNodeType" /> dei nodi discendente.</param>
+      <param name="matchSelf">true per includere il nodo contesto nella selezione; in caso contrario, false.</param>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectSingleNode(System.String)">
+      <summary>Seleziona un singolo nodo della classe <see cref="T:System.Xml.XPath.XPathNavigator" /> usando la query XPath specificata.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> contenente il primo nodo corrispondente per la query XPath specificata; in caso contrario, null se non sono disponibili risultati della query.</returns>
+      <param name="xpath">Oggetto <see cref="T:System.String" /> che rappresenta un'espressione XPath.</param>
+      <exception cref="T:System.ArgumentException">An error was encountered in the XPath query or the return type of the XPath expression is not a node.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath query is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectSingleNode(System.String,System.Xml.IXmlNamespaceResolver)">
+      <summary>Seleziona un singolo nodo nell'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> usando la query XPath specificata con l'oggetto <see cref="T:System.Xml.IXmlNamespaceResolver" /> specificato per la risoluzione dei prefissi dello spazio dei nomi.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> contenente il primo nodo corrispondente per la query XPath specificata; in caso contrario, null se non sono disponibili risultati della query.</returns>
+      <param name="xpath">Oggetto <see cref="T:System.String" /> che rappresenta un'espressione XPath.</param>
+      <param name="resolver">Oggetto <see cref="T:System.Xml.IXmlNamespaceResolver" /> usato per la risoluzione dei prefissi degli spazi dei nomi contenuti nella query XPath.</param>
+      <exception cref="T:System.ArgumentException">An error was encountered in the XPath query or the return type of the XPath expression is not a node.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath query is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SelectSingleNode(System.Xml.XPath.XPathExpression)">
+      <summary>Seleziona un singolo nodo della classe <see cref="T:System.Xml.XPath.XPathNavigator" /> usando l'oggetto <see cref="T:System.Xml.XPath.XPathExpression" /> specificato.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> contenente il primo nodo corrispondente per la query XPath specificata; in caso contrario, null se non sono disponibili risultati della query.</returns>
+      <param name="expression">Oggetto <see cref="T:System.Xml.XPath.XPathExpression" /> contenente la query XPath compilata.</param>
+      <exception cref="T:System.ArgumentException">An error was encountered in the XPath query or the return type of the XPath expression is not a node.</exception>
+      <exception cref="T:System.Xml.XPath.XPathException">The XPath query is not valid.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SetTypedValue(System.Object)">
+      <summary>Imposta il valore tipizzato del nodo corrente.</summary>
+      <param name="typedValue">Valore tipizzato del nodo.</param>
+      <exception cref="T:System.ArgumentException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support the type of the object specified.</exception>
+      <exception cref="T:System.ArgumentNullException">The value specified cannot be null.</exception>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is not positioned on an element or attribute node.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.SetValue(System.String)">
+      <summary>Imposta il valore del nodo corrente.</summary>
+      <param name="value">Nuovo valore del nodo.</param>
+      <exception cref="T:System.ArgumentNullException">The value parameter is null.</exception>
+      <exception cref="T:System.InvalidOperationException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> is positioned on the root node, a namespace node, or the specified value is invalid.</exception>
+      <exception cref="T:System.NotSupportedException">The <see cref="T:System.Xml.XPath.XPathNavigator" /> does not support editing.</exception>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ToString">
+      <summary>Ottiene il valore di testo del nodo corrente.</summary>
+      <returns>Oggetto string contenente il valore testuale del nodo corrente.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.TypedValue">
+      <summary>Ottiene il nodo corrente come oggetto boxed del tipo di .NET Framework più appropriato.</summary>
+      <returns>Nodo corrente come oggetto boxed del tipo .NET Framework più appropriato.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.UnderlyingObject">
+      <summary>Usato dalle implementazioni di <see cref="T:System.Xml.XPath.XPathNavigator" /> che forniscono una visualizzazione XML "virtualizzata" di un archivio per consentire l'accesso agli oggetti sottostanti.</summary>
+      <returns>Il valore predefinito è null.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.ValueAs(System.Type,System.Xml.IXmlNamespaceResolver)">
+      <summary>Ottiene il valore del nodo corrente come valore <see cref="T:System.Type" /> specificato, usando l'oggetto <see cref="T:System.Xml.IXmlNamespaceResolver" /> specificato per la risoluzione dei prefissi degli spazi dei nomi.</summary>
+      <returns>Valore del nodo corrente come <see cref="T:System.Type" /> richiesto.</returns>
+      <param name="returnType">Oggetto <see cref="T:System.Type" /> da restituire come valore del nodo corrente.</param>
+      <param name="nsResolver">Oggetto <see cref="T:System.Xml.IXmlNamespaceResolver" /> usato per la risoluzione dei prefissi degli spazi dei nomi.</param>
+      <exception cref="T:System.FormatException">The current node's value is not in the correct format for the target type.</exception>
+      <exception cref="T:System.InvalidCastException">The attempted cast is not valid.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.ValueAsBoolean">
+      <summary>Ottiene il valore del nodo corrente come <see cref="T:System.Boolean" />.</summary>
+      <returns>Valore del nodo corrente come <see cref="T:System.Boolean" />.</returns>
+      <exception cref="T:System.FormatException">The current node's string value cannot be converted to a <see cref="T:System.Boolean" />.</exception>
+      <exception cref="T:System.InvalidCastException">The attempted cast to <see cref="T:System.Boolean" /> is not valid.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.ValueAsDateTime">
+      <summary>Ottiene il valore del nodo corrente come <see cref="T:System.DateTime" />.</summary>
+      <returns>Valore del nodo corrente come <see cref="T:System.DateTime" />.</returns>
+      <exception cref="T:System.FormatException">The current node's string value cannot be converted to a <see cref="T:System.DateTime" />.</exception>
+      <exception cref="T:System.InvalidCastException">The attempted cast to <see cref="T:System.DateTime" /> is not valid.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.ValueAsDouble">
+      <summary>Ottiene il valore del nodo corrente come <see cref="T:System.Double" />.</summary>
+      <returns>Valore del nodo corrente come <see cref="T:System.Double" />.</returns>
+      <exception cref="T:System.FormatException">The current node's string value cannot be converted to a <see cref="T:System.Double" />.</exception>
+      <exception cref="T:System.InvalidCastException">The attempted cast to <see cref="T:System.Double" /> is not valid.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.ValueAsInt">
+      <summary>Ottiene il valore del nodo corrente come <see cref="T:System.Int32" />.</summary>
+      <returns>Valore del nodo corrente come <see cref="T:System.Int32" />.</returns>
+      <exception cref="T:System.FormatException">The current node's string value cannot be converted to a <see cref="T:System.Int32" />.</exception>
+      <exception cref="T:System.InvalidCastException">The attempted cast to <see cref="T:System.Int32" /> is not valid.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.ValueAsLong">
+      <summary>Ottiene il valore del nodo corrente come <see cref="T:System.Int64" />.</summary>
+      <returns>Valore del nodo corrente come <see cref="T:System.Int64" />.</returns>
+      <exception cref="T:System.FormatException">The current node's string value cannot be converted to a <see cref="T:System.Int64" />.</exception>
+      <exception cref="T:System.InvalidCastException">The attempted cast to <see cref="T:System.Int64" /> is not valid.</exception>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.ValueType">
+      <summary>Ottiene l'oggetto <see cref="T:System.Type" /> di .NET Framework del nodo corrente.</summary>
+      <returns>Oggetto <see cref="T:System.Type" /> di .NET Framework del nodo corrente.Il valore predefinito è <see cref="T:System.String" />.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNavigator.WriteSubtree(System.Xml.XmlWriter)">
+      <summary>Crea un flusso del nodo corrente e dei relativi nodi figlio all'oggetto <see cref="T:System.Xml.XmlWriter" /> specificato.</summary>
+      <param name="writer">Oggetto <see cref="T:System.Xml.XmlWriter" /> a cui inviare il flusso.</param>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNavigator.XmlLang">
+      <summary>Ottiene l'ambito xml:lang per il nodo corrente.</summary>
+      <returns>Oggetto <see cref="T:System.String" /> contenente il valore dell'ambito xml:lang o <see cref="F:System.String.Empty" /> se il nodo corrente non può restituire alcun valore dell'ambito xml:lang.</returns>
+    </member>
+    <member name="T:System.Xml.XPath.XPathNodeIterator">
+      <summary>Fornisce un iteratore su un set selezionato di nodi.</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNodeIterator.#ctor">
+      <summary>Inizializza una nuova istanza della classe <see cref="T:System.Xml.XPath.XPathNodeIterator" />.</summary>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNodeIterator.Clone">
+      <summary>Quando sottoposto a override in una classe derivata, restituisce un clone di questo oggetto <see cref="T:System.Xml.XPath.XPathNodeIterator" />.</summary>
+      <returns>Nuovo clone dell'oggetto <see cref="T:System.Xml.XPath.XPathNodeIterator" /> di questo oggetto <see cref="T:System.Xml.XPath.XPathNodeIterator" />.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNodeIterator.Count">
+      <summary>Ottiene l'indice dell'ultimo nodo del set di nodi selezionato.</summary>
+      <returns>Indice dell'ultimo nodo nel set di nodi selezionato oppure 0 se non è selezionato alcun nodo.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNodeIterator.Current">
+      <summary>Quando sottoposto a override in una classe derivata, ottiene l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> per questo <see cref="T:System.Xml.XPath.XPathNodeIterator" />, posizionato sul nodo contesto corrente.</summary>
+      <returns>Oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> posizionato sul nodo contesto da cui è stato selezionato l'insieme di nodi.Per spostare l'oggetto <see cref="T:System.Xml.XPath.XPathNodeIterator" /> sul primo nodo dell'insieme selezionato, è necessario chiamare il metodo <see cref="M:System.Xml.XPath.XPathNodeIterator.MoveNext" />.</returns>
+    </member>
+    <member name="P:System.Xml.XPath.XPathNodeIterator.CurrentPosition">
+      <summary>Quando sottoposto a override in una classe derivata, ottiene l'indice della posizione corrente nel set di nodi selezionato.</summary>
+      <returns>Indice della posizione corrente.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNodeIterator.GetEnumerator">
+      <summary>Restituisce un oggetto <see cref="T:System.Collections.IEnumerator" /> con cui scorrere l'insieme di nodi selezionato.</summary>
+      <returns>Oggetto <see cref="T:System.Collections.IEnumerator" /> con cui scorrere l'insieme di nodi selezionato.</returns>
+    </member>
+    <member name="M:System.Xml.XPath.XPathNodeIterator.MoveNext">
+      <summary>Quando sottoposto a override in una classe derivata, sposta l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> restituito dalla proprietà <see cref="P:System.Xml.XPath.XPathNodeIterator.Current" /> sul nodo di testo nell'insieme di nodi selezionato.</summary>
+      <returns>true se l'oggetto <see cref="T:System.Xml.XPath.XPathNavigator" /> è stato spostato al nodo successivo, false se non esistono altri nodi selezionati.</returns>
+    </member>
+    <member name="T:System.Xml.XPath.XPathNodeType">
+      <summary>Definisce i tipi di nodo XPath che possono essere restituiti dalla classe <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.All">
+      <summary>Uno qualsiasi dei tipi di nodo <see cref="T:System.Xml.XPath.XPathNodeType" />.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Attribute">
+      <summary>Attributo, ad esempio id='123'.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Comment">
+      <summary>Commento, ad esempio &lt;!-- my comment --&gt;.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Element">
+      <summary>Elemento, ad esempio &lt;element&gt;.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Namespace">
+      <summary>Spazio dei nomi, ad esempio xmlns="namespace".</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.ProcessingInstruction">
+      <summary>Istruzione di elaborazione, ad esempio &lt;?pi test?&gt;.Non sono incluse le dichiarazioni XML, in quanto non visibili alla classe <see cref="T:System.Xml.XPath.XPathNavigator" />.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Root">
+      <summary>Nodo radice del documento XML o della struttura ad albero di nodi.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.SignificantWhitespace">
+      <summary>Nodo con spazi vuoti e xml:space impostato su preserve.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Text">
+      <summary>Contenuto di un nodo.Equivalente ai tipi di nodo CDATA e Text DOM (Document Object Model).Contiene almeno un carattere.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathNodeType.Whitespace">
+      <summary>Nodo contenente solo caratteri di spazio vuoto e senza spazi vuoti significativi.I caratteri di spazio vuoto sono #x20, #x9, #xD o #xA.</summary>
+    </member>
+    <member name="T:System.Xml.XPath.XPathResultType">
+      <summary>Specifica il tipo restituito dell'espressione XPath.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.Any">
+      <summary>Uno qualsiasi dei tipi di nodo XPath.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.Boolean">
+      <summary>Valore <see cref="T:System.Boolean" />true o false.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.Error">
+      <summary>L'espressione non viene valutata nel tipo XPath corretto.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.Navigator">
+      <summary>Frammento di struttura ad albero.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.NodeSet">
+      <summary>Raccolta di nodi.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.Number">
+      <summary>Valore numerico.</summary>
+    </member>
+    <member name="F:System.Xml.XPath.XPathResultType.String">
+      <summary>Valore di <see cref="T:System.String" />.</summary>
+    </member>
+  </members>
+</doc>

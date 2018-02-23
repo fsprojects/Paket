@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+<assembly><name>Fake.IIS</name></assembly>
+<members>
+<member name="T:Fake.IISExpress.IISExpressOptions">
+<summary>
+ Options for using IISExpress
+</summary>
+</member>
+<member name="M:Fake.IISExpress.OpenWebsiteInBrowser(System.String,System.Int32)">
+<summary>
+ Opens the given website in the browser
+</summary>
+</member>
+<member name="M:Fake.IISExpress.OpenUrlInBrowser(System.String)">
+<summary>
+ Opens the given url in the browser
+</summary>
+</member>
+<member name="M:Fake.IISExpress.HostWebsite(Microsoft.FSharp.Core.FSharpFunc{Fake.IISExpress.IISExpressOptions,Fake.IISExpress.IISExpressOptions},System.String,System.Int32)">
+<summary>
+ This task starts the given site in IISExpress with the given ConfigFile.
+ ## Parameters
+
+  - `setParams` - Function used to overwrite the default parameters.
+  - `configFileName` - The file name of the IISExpress configfile.
+  - `siteId` - The id (in the config file) of the website to run.
+
+ ## Sample
+
+      HostWebsite (fun p -&gt; { p with ToolPath = &quot;iisexpress.exe&quot; }) &quot;configfile.config&quot; 1
+</summary>
+</member>
+<member name="M:Fake.IISExpress.createConfigFile``1(``0,System.Int32,System.String,System.String,System.String,System.Int32)">
+<summary>
+ Create a IISExpress config file from a given template
+</summary>
+</member>
+<member name="P:Fake.IISExpress.IISExpressDefaults">
+<summary>
+ IISExpress default parameters - tries to locate the iisexpress.exe
+</summary>
+</member>
+<member name="T:Fake.IISExpress">
+<summary>
+ Contains tasks to host webprojects in IIS Express.
+</summary>
+</member>
+</members>
+</doc>

@@ -1,0 +1,334 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>System.Diagnostics.Contracts</name>
+  </assembly>
+  <members>
+    <member name="T:System.Diagnostics.Contracts.Contract">
+      <summary>Enthält statische Methoden zum Darstellen von Programmverträgen, z. B. Vorbedingungen, Nachbedingungen und Objektinvarianten.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assert(System.Boolean)">
+      <summary>Überprüft eine Bedingung. Wenn die Bedingung false ist, wird die festgelegte Ausweitungsrichtlinie für den Analyzer angewendet.</summary>
+      <param name="condition">Der bedingte Ausdruck, der getestet werden soll.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assert(System.Boolean,System.String)">
+      <summary>Überprüft eine Bedingung. Wenn die Bedingung false ist, wird die vom Analyzer festgelegte Ausweitungsrichtlinie angewendet und die angegebene Meldung angezeigt.</summary>
+      <param name="condition">Der bedingte Ausdruck, der getestet werden soll.</param>
+      <param name="userMessage">Eine Meldung, die angezeigt wird, wenn die Bedingung nicht erfüllt wird.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assume(System.Boolean)">
+      <summary>Weist Codeanalysetools an, für eine Bedingung das Ergebnis true anzunehmen, auch wenn nicht statisch belegt werden kann, dass sie immer true ist.</summary>
+      <param name="condition">Der auszuwertende bedingte Ausdruck, für den true angenommen werden soll.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assume(System.Boolean,System.String)">
+      <summary>Weist Codeanalysetools an, für eine Bedingung das Ergebnis true anzunehmen, auch wenn nicht statisch belegt werden kann, dass sie immer true ist, und zeigt eine Meldung an, wenn die Annahme fehlschlägt.</summary>
+      <param name="condition">Der auszuwertende bedingte Ausdruck, für den true angenommen werden soll.</param>
+      <param name="userMessage">Die Meldung, die angezeigt wird, wenn die Annahme fehlschlägt.</param>
+    </member>
+    <member name="E:System.Diagnostics.Contracts.Contract.ContractFailed">
+      <summary>Tritt auf, wenn ein Vertrag fehlschlägt.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.EndContractBlock">
+      <summary>Markiert das Ende des Vertragsabschnitts, wenn die Verträge einer Methode nur Vorbedingungen im if-then-throw-Format enthalten.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Ensures(System.Boolean)">
+      <summary>Gibt einen Nachbedingungsvertrag für die einschließende Methode oder Eigenschaft an.</summary>
+      <param name="condition">Der bedingte Ausdruck, der getestet werden soll.Der Ausdruck kann folgende Werte enthalten: <see cref="M:System.Diagnostics.Contracts.Contract.OldValue``1(``0)" />, <see cref="M:System.Diagnostics.Contracts.Contract.ValueAtReturn``1(``0@)" /> und <see cref="M:System.Diagnostics.Contracts.Contract.Result``1" />.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Ensures(System.Boolean,System.String)">
+      <summary>Gibt einen Nachbedingungsvertrag für eine vorhandene Exit-Bedingung und eine Meldung an, die angezeigt wird, wenn die Bedingung false ist.</summary>
+      <param name="condition">Der bedingte Ausdruck, der getestet werden soll.Der Ausdruck kann folgende Werte enthalten: <see cref="M:System.Diagnostics.Contracts.Contract.OldValue``1(``0)" /> und <see cref="M:System.Diagnostics.Contracts.Contract.Result``1" />.</param>
+      <param name="userMessage">Die Meldung, die angezeigt wird, wenn der Ausdruck nicht true ist.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.EnsuresOnThrow``1(System.Boolean)">
+      <summary>Gibt einen Nachbedingungsvertrag für die einschließende Methode oder Eigenschaft auf Grundlage der angegebenen Ausnahme und Bedingung an.</summary>
+      <param name="condition">Der bedingte Ausdruck, der getestet werden soll.</param>
+      <typeparam name="TException">Der Ausnahmetyp, von dem die Nachbedingungsüberprüfung aufgerufen wird.</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.EnsuresOnThrow``1(System.Boolean,System.String)">
+      <summary>Gibt auf Grundlage der angegebenen Ausnahme und Bedingung einen Nachbedingungsvertrag für die Ausnahme und Bedingung und eine Meldung an, die angezeigt wird, wenn die Bedingung false ist.</summary>
+      <param name="condition">Der bedingte Ausdruck, der getestet werden soll.</param>
+      <param name="userMessage">Die Meldung, die angezeigt werden soll, wenn die Bedingung false lautet.</param>
+      <typeparam name="TException">Der Ausnahmetyp, von dem die Nachbedingungsüberprüfung aufgerufen wird.</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Exists``1(System.Collections.Generic.IEnumerable{``0},System.Predicate{``0})">
+      <summary>Bestimmt, ob ein Element in einer Auflistung von Elementen in einer Funktion vorhanden ist.</summary>
+      <returns>true, wenn <paramref name="predicate" /> für ein beliebiges Element des Typs <paramref name="T" /> in <paramref name="collection" />true zurückgibt.</returns>
+      <param name="collection">Die Auflistung, aus der Elemente des Typs <paramref name="T" /> an <paramref name="predicate" /> übergeben werden.</param>
+      <param name="predicate">Die Funktion, mit der überprüft wird, ob ein Element in <paramref name="collection" /> vorhanden ist.</param>
+      <typeparam name="T">Der in <paramref name="collection" /> enthaltene Typ.</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="collection" /> or <paramref name="predicate" /> is null.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Exists(System.Int32,System.Int32,System.Predicate{System.Int32})">
+      <summary>Bestimmt, ob ein bestimmter Test für jede ganze Zahl in einem Bereich von ganzen Zahlen den den Wert true zurückgibt.</summary>
+      <returns>true, wenn <paramref name="predicate" /> für eine beliebige ganze Zahl zwischen <paramref name="fromInclusive" /> und <paramref name="toExclusive" /> -1 true zurückgibt.</returns>
+      <param name="fromInclusive">Die erste ganze Zahl, die an <paramref name="predicate" /> übergeben werden soll.</param>
+      <param name="toExclusive">Die letzte ganze Zahl, die an <paramref name="predicate" /> übergeben werden soll, +1.</param>
+      <param name="predicate">Die Funktion zum Auswerten auf Ganzzahlwerte im angegebenen Bereich.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="predicate" /> is null.</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="toExclusive " />is less than <paramref name="fromInclusive" />.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.ForAll``1(System.Collections.Generic.IEnumerable{``0},System.Predicate{``0})">
+      <summary>Bestimmt, ob alle Elemente in einer Auflistung in einer Funktion vorhanden sind.</summary>
+      <returns>true, wenn <paramref name="predicate" /> für alle Elemente des Typs <paramref name="T" /> in <paramref name="collection" />true zurückgibt.</returns>
+      <param name="collection">Die Auflistung, aus der Elemente des Typs <paramref name="T" /> an <paramref name="predicate" /> übergeben werden.</param>
+      <param name="predicate">Die Funktion, mit der überprüft wird, ob alle Elemente in <paramref name="collection" /> vorhanden sind.</param>
+      <typeparam name="T">Der in <paramref name="collection" /> enthaltene Typ.</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="collection" /> or <paramref name="predicate" /> is null.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.ForAll(System.Int32,System.Int32,System.Predicate{System.Int32})">
+      <summary>Bestimmt, ob eine angegebene Bedingung für alle ganzen Zahlen in einem angegebenen Bereich gültig ist.</summary>
+      <returns>true, wenn <paramref name="predicate" /> für alle ganzen Zahlen zwischen <paramref name="fromInclusive" /> und <paramref name="toExclusive" /> -1 true zurückgibt.</returns>
+      <param name="fromInclusive">Die erste ganze Zahl, die an <paramref name="predicate" /> übergeben werden soll.</param>
+      <param name="toExclusive">Die letzte ganze Zahl, die an <paramref name="predicate" /> übergeben werden soll, +1.</param>
+      <param name="predicate">Die Funktion, mit der überprüft wird, ob die ganzen Zahlen im angegebenen Bereich vorhanden sind.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="predicate" /> is null.</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="toExclusive " />is less than <paramref name="fromInclusive" />.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Invariant(System.Boolean)">
+      <summary>Gibt einen invarianten Vertrag für die einschließende Methode oder Eigenschaft an. </summary>
+      <param name="condition">Der bedingte Ausdruck, der getestet werden soll.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Invariant(System.Boolean,System.String)">
+      <summary>Gibt einen invarianten Vertrag für die einschließende Methode oder Eigenschaft an und zeigt eine Meldung an, wenn die Bedingung für den Vertrag nicht erfüllt wird.</summary>
+      <param name="condition">Der bedingte Ausdruck, der getestet werden soll.</param>
+      <param name="userMessage">Die Meldung, die angezeigt werden soll, wenn die Bedingung false lautet.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.OldValue``1(``0)">
+      <summary>Stellt Werte in ihrem Zustand beim Starten einer Methode oder einer Eigenschaft dar.</summary>
+      <returns>Der Wert des Parameters oder Felds am Anfang einer Methode oder Eigenschaft.</returns>
+      <param name="value">Der darzustellende Wert (Feld oder Parameter).</param>
+      <typeparam name="T">Der Typ des Werts.</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires``1(System.Boolean)">
+      <summary>Gibt einen Vorbedingungsvertrag für die einschließende Methode oder Eigenschaft an, und löst eine Ausnahme aus, wenn die Bedingung für den Vertrag nicht erfüllt wird.</summary>
+      <param name="condition">Der bedingte Ausdruck, der getestet werden soll.</param>
+      <typeparam name="TException">Die Ausnahme, die ausgelöst wird, wenn die Bedingung false ist.</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires(System.Boolean)">
+      <summary>Gibt einen Vorbedingungsvertrag für die einschließende Methode oder Eigenschaft an.</summary>
+      <param name="condition">Der bedingte Ausdruck, der getestet werden soll.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires(System.Boolean,System.String)">
+      <summary>Gibt einen Vorbedingungsvertrag für die einschließende Methode oder Eigenschaft an, und zeigt eine Meldung an, wenn die Bedingung für den Vertrag nicht erfüllt wird.</summary>
+      <param name="condition">Der bedingte Ausdruck, der getestet werden soll.</param>
+      <param name="userMessage">Die Meldung, die angezeigt werden soll, wenn die Bedingung false lautet.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires``1(System.Boolean,System.String)">
+      <summary>Gibt einen Vorbedingungsvertrag für die einschließende Methode oder Eigenschaft an, und löst eine Ausnahme mit der angegebenen Meldung aus, wenn die Bedingung für den Vertrag nicht erfüllt wird.</summary>
+      <param name="condition">Der bedingte Ausdruck, der getestet werden soll.</param>
+      <param name="userMessage">Die Meldung, die angezeigt werden soll, wenn die Bedingung false lautet.</param>
+      <typeparam name="TException">Die Ausnahme, die ausgelöst wird, wenn die Bedingung false ist.</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Result``1">
+      <summary>Stellt den Rückgabewert einer Methode oder Eigenschaft dar.</summary>
+      <returns>Der Rückgabewert der einschließenden Methode oder Eigenschaft.</returns>
+      <typeparam name="T">Der Typ des Rückgabewerts der einschließenden Methode oder Eigenschaft.</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.ValueAtReturn``1(``0@)">
+      <summary>Stellt den von einer Methode zurückgegebenen endgültigen Wert (Ausgabewert) eines out-Parameters dar.</summary>
+      <returns>Der Ausgabewert des out-Parameters.</returns>
+      <param name="value">Der out-Parameter.</param>
+      <typeparam name="T">Der Typ des out-Parameters.</typeparam>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractAbbreviatorAttribute">
+      <summary>Definiert Abkürzungen, die Sie anstelle der vollständigen Vertragssyntax verwenden können.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractAbbreviatorAttribute.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:System.Diagnostics.Contracts.ContractAbbreviatorAttribute" />-Klasse.</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractArgumentValidatorAttribute">
+      <summary>Aktiviert die Verarbeitung von Legacy if-then-throw-Code in separate Methoden zur Wiederverwendung und stellt die vollständige Kontrolle über ausgelösten Ausnahmen und Argumenten bereit.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractArgumentValidatorAttribute.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:System.Diagnostics.Contracts.ContractArgumentValidatorAttribute" />-Klasse.</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractClassAttribute">
+      <summary>Gibt an, dass ein separater Typ die Codeverträge für diesen Typ enthält.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractClassAttribute.#ctor(System.Type)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:System.Diagnostics.Contracts.ContractClassAttribute" />-Klasse. </summary>
+      <param name="typeContainingContracts">Der Typ, der die Codeverträge für diesen Typ enthält.</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractClassAttribute.TypeContainingContracts">
+      <summary>Ruft den Typ ab, der die Codeverträge für diesen Typ enthält.</summary>
+      <returns>Der Typ, der die Codeverträge für diesen Typ enthält. </returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractClassForAttribute">
+      <summary>Gibt an, dass eine Klasse ein Vertrag für einen Typ ist.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractClassForAttribute.#ctor(System.Type)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:System.Diagnostics.Contracts.ContractClassForAttribute" />-Klasse und gibt den Typ an, für den die aktuelle Klasse ein Vertrag ist. </summary>
+      <param name="typeContractsAreFor">Der Typ, für den die aktuelle Klasse ein Vertrag ist.</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractClassForAttribute.TypeContractsAreFor">
+      <summary>Ruft den Typ ab, für den dieser Codevertrag gilt. </summary>
+      <returns>Der Typ, für den dieser Vertrag gilt.</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractFailedEventArgs">
+      <summary>Stellt Methoden und Daten für das <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" />-Ereignis bereit.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractFailedEventArgs.#ctor(System.Diagnostics.Contracts.ContractFailureKind,System.String,System.String,System.Exception)">
+      <summary>Stellt Daten für das <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" />-Ereignis bereit.</summary>
+      <param name="failureKind">Einer der Enumerationswerte, der den fehlgeschlagenen Vertrag angibt.</param>
+      <param name="message">Die Meldung für das Ereignis.</param>
+      <param name="condition">Die Bedingung für das Ereignis.</param>
+      <param name="originalException">Die Ausnahme, durch die das Ereignis verursacht wurde.</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Condition">
+      <summary>Ruft die Bedingung für den Fehler des Vertrags ab.</summary>
+      <returns>Die Bedingung für den Fehler.</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.FailureKind">
+      <summary>Ruft den Typ des fehlgeschlagenen Vertrags ab.</summary>
+      <returns>Einer der Enumerationswerte, der den Typ des fehlgeschlagenen Vertrags angibt.</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Handled">
+      <summary>Gibt an, ob das <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" />-Ereignis behandelt wurde.</summary>
+      <returns>true, wenn das Ereignis behandelt wurde, andernfalls false. </returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Message">
+      <summary>Ruft die Meldung ab, in der das <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" />-Ereignis beschrieben wird.</summary>
+      <returns>Die Meldung, in der das Ereignis beschrieben wird.</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.OriginalException">
+      <summary>Ruft die ursprüngliche Ausnahme ab, durch die das <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" />-Ereignis verursacht wurde.</summary>
+      <returns>Die Ausnahme, durch die das Ereignis verursacht wurde.</returns>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractFailedEventArgs.SetHandled">
+      <summary>Legt die <see cref="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Handled" />-Eigenschaft auf true fest.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractFailedEventArgs.SetUnwind">
+      <summary>Legt die <see cref="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Unwind" />-Eigenschaft auf true fest.</summary>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Unwind">
+      <summary>Gibt an, ob die Ausweitungsrichtlinie für den Codevertrag angewendet werden soll.</summary>
+      <returns>true, um die Ausweitungsrichtlinie anzuwenden, andernfalls false.Die Standardeinstellung ist false.</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractFailureKind">
+      <summary>Gibt den Typ des fehlgeschlagenen Vertrags an. </summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Assert">
+      <summary>Ein fehlgeschlagener <see cref="Overload:System.Diagnostics.Contracts.Contract.Assert" />-Vertrag.</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Assume">
+      <summary>Ein fehlgeschlagener <see cref="Overload:System.Diagnostics.Contracts.Contract.Assume" />-Vertrag.</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Invariant">
+      <summary>Ein fehlgeschlagener <see cref="Overload:System.Diagnostics.Contracts.Contract.Invariant" />-Vertrag.</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Postcondition">
+      <summary>Ein fehlgeschlagener <see cref="Overload:System.Diagnostics.Contracts.Contract.Ensures" />-Vertrag. </summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.PostconditionOnException">
+      <summary>Ein fehlgeschlagener <see cref="Overload:System.Diagnostics.Contracts.Contract.EnsuresOnThrow" />-Vertrag.</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Precondition">
+      <summary>Ein fehlgeschlagener <see cref="Overload:System.Diagnostics.Contracts.Contract.Requires" />-Vertrag.</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractInvariantMethodAttribute">
+      <summary>Markiert eine Methode als invariante Methode für eine Klasse.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractInvariantMethodAttribute.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:System.Diagnostics.Contracts.ContractInvariantMethodAttribute" />-Klasse. </summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractOptionAttribute">
+      <summary>Ermöglicht es Ihnen, Vertrags- und Tool-Optionen in der Assembly, am Typ oder Methodengranularität festzulegen.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractOptionAttribute.#ctor(System.String,System.String,System.Boolean)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:System.Diagnostics.Contracts.ContractOptionAttribute" />-Klasse unter Verwendung der angegebenen Kategorie, Einstellung und des aktivieren/deaktivieren-Werts.</summary>
+      <param name="category">Die Kategorie für die festzulegende Option.</param>
+      <param name="setting">Die Optionseinstellung.</param>
+      <param name="enabled">true, um die Option zu aktivieren; false, um die Option zu deaktivieren.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractOptionAttribute.#ctor(System.String,System.String,System.String)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:System.Diagnostics.Contracts.ContractOptionAttribute" />-Klasse unter Verwendung der angegebenen Kategorie, Einstellung und des Werts.</summary>
+      <param name="category">Die Kategorie der festzulegenden Option.</param>
+      <param name="setting">Die Optionseinstellung.</param>
+      <param name="value">Der Wert für diese Einstellung.</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Category">
+      <summary>Ruft die Kategorie der Option ab.</summary>
+      <returns>Die Kategorie der Option.</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Enabled">
+      <summary>Bestimmt, ob eine Option aktiviert ist.</summary>
+      <returns>true, wenn die Option aktiviert ist, andernfalls false.</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Setting">
+      <summary>Ruft die Einstellung für die Option ab.</summary>
+      <returns>Die Einstellung für die Option.</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Value">
+      <summary>Ruft den Wert der Option ab.</summary>
+      <returns>Der Wert für die Option.</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute">
+      <summary>Gibt an, dass ein Feld in Methodenverträgen verwendet werden kann, wenn die Sichtbarkeit des Felds geringer ist als die der Methode. </summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute.#ctor(System.String)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute" />-Klasse. </summary>
+      <param name="name">Der für das Feld zu übernehmende Eigenschaftenname.</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute.Name">
+      <summary>Ruft den für das Feld zu übernehmenden Eigenschaftennamen ab.</summary>
+      <returns>Der für das Feld zu übernehmende Eigenschaftenname.</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractReferenceAssemblyAttribute">
+      <summary>Gibt an, dass eine Assembly eine Verweisassembly ist, die Verträge enthält.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractReferenceAssemblyAttribute.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:System.Diagnostics.Contracts.ContractReferenceAssemblyAttribute" />-Klasse. </summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractRuntimeIgnoredAttribute">
+      <summary>Identifiziert einen Member ohne Laufzeitverhalten.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractRuntimeIgnoredAttribute.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:System.Diagnostics.Contracts.ContractRuntimeIgnoredAttribute" />-Klasse. </summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractVerificationAttribute">
+      <summary>Weist Analysetools an, die Korrektheit einer Assembly, eines Typs oder eines Members ohne statische Überprüfung anzunehmen.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractVerificationAttribute.#ctor(System.Boolean)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:System.Diagnostics.Contracts.ContractVerificationAttribute" />-Klasse. </summary>
+      <param name="value">true, um die Überprüfung als erforderlich festzulegen, andernfalls false. </param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractVerificationAttribute.Value">
+      <summary>Ruft den Wert ab, der angibt, ob der Vertrag des Ziels überprüft werden soll. </summary>
+      <returns>true, wenn die Überprüfung erforderlich ist, andernfalls false.</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.PureAttribute">
+      <summary>Gibt an, dass ein Typ oder eine Methode rein ist, d. h., keine sichtbaren Zustandsänderungen vornimmt.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.PureAttribute.#ctor">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:System.Diagnostics.Contracts.PureAttribute" />-Klasse. </summary>
+    </member>
+    <member name="T:System.Runtime.CompilerServices.ContractHelper">
+      <summary>Stellt Methoden bereit, mit denen der binäre Rewriter Vertragsfehler behandelt.</summary>
+    </member>
+    <member name="M:System.Runtime.CompilerServices.ContractHelper.RaiseContractFailedEvent(System.Diagnostics.Contracts.ContractFailureKind,System.String,System.String,System.Exception)">
+      <summary>Wird vom binären Rewriter verwendet, um das Standardfehlerverhalten zu aktivieren.</summary>
+      <returns>Ein NULL-Verweis (Nothing in Visual Basic), wenn das Ereignis behandelt wurde und keinen Fehler auslösen soll. Andernfalls wird die lokalisierte Fehlermeldung zurückgegeben.</returns>
+      <param name="failureKind">Einer der Enumerationswerte, der den Typ der Fehlfunktion angibt.</param>
+      <param name="userMessage">Weitere Informationen für den Benutzer.</param>
+      <param name="conditionText">Die Beschreibung der Bedingung, die den Fehler verursacht hat.</param>
+      <param name="innerException">Die interne Ausnahme, durch die die aktuelle Ausnahme verursacht wurde.</param>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="failureKind" /> ist kein gültiger <see cref="T:System.Diagnostics.Contracts.ContractFailureKind" />-Wert.</exception>
+    </member>
+    <member name="M:System.Runtime.CompilerServices.ContractHelper.TriggerFailure(System.Diagnostics.Contracts.ContractFailureKind,System.String,System.String,System.String,System.Exception)">
+      <summary>Löst das Standardfehlerverhalten aus.</summary>
+      <param name="kind">Einer der Enumerationswerte, der den Typ der Fehlfunktion angibt.</param>
+      <param name="displayMessage">Die anzuzeigende Meldung.</param>
+      <param name="userMessage">Weitere Informationen für den Benutzer.</param>
+      <param name="conditionText">Die Beschreibung der Bedingung, die den Fehler verursacht hat.</param>
+      <param name="innerException">Die interne Ausnahme, durch die die aktuelle Ausnahme verursacht wurde.</param>
+    </member>
+  </members>
+</doc>

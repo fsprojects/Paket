@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>System.Diagnostics.TextWriterTraceListener</name>
+  </assembly>
+  <members>
+    <member name="T:System.Diagnostics.DelimitedListTraceListener">
+      <summary>추적 또는 디버깅 출력을 스트림 작성자와 같은 텍스트 작성자나 파일 스트림과 같은 스트림에 보냅니다.</summary>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.Stream)">
+      <summary>지정된 출력 스트림에 쓰는 <see cref="T:System.Diagnostics.DelimitedListTraceListener" /> 클래스의 새 인스턴스를 초기화합니다. </summary>
+      <param name="stream">출력을 받을 <see cref="T:System.IO.Stream" />입니다.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="stream" />가 null입니다. </exception>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.Stream,System.String)">
+      <summary>지정된 출력 스트림에 쓰고 지정된 이름을 가진 <see cref="T:System.Diagnostics.DelimitedListTraceListener" /> 클래스의 새 인스턴스를 초기화합니다. </summary>
+      <param name="stream">출력을 받을 <see cref="T:System.IO.Stream" />입니다.</param>
+      <param name="name">추적 수신기의 새 인스턴스 이름입니다. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="stream" />가 null입니다. </exception>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.TextWriter)">
+      <summary>지정된 텍스트 작성자에 쓰는 <see cref="T:System.Diagnostics.DelimitedListTraceListener" /> 클래스의 새 인스턴스를 초기화합니다. </summary>
+      <param name="writer">출력을 받을 <see cref="T:System.IO.TextWriter" />입니다.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="writer" />가 null입니다. </exception>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.TextWriter,System.String)">
+      <summary>지정된 텍스트 작성자에 쓰고 지정된 이름을 가진 <see cref="T:System.Diagnostics.DelimitedListTraceListener" /> 클래스의 새 인스턴스를 초기화합니다. </summary>
+      <param name="writer">출력을 받을 <see cref="T:System.IO.TextWriter" />입니다.</param>
+      <param name="name">추적 수신기의 새 인스턴스 이름입니다. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="writer" />가 null입니다. </exception>
+    </member>
+    <member name="P:System.Diagnostics.DelimitedListTraceListener.Delimiter">
+      <summary>구분된 목록에 대한 구분 기호를 가져오거나 설정합니다.</summary>
+      <returns>구분된 목록에 대한 구분 기호입니다.</returns>
+      <exception cref="T:System.ArgumentNullException">
+        <see cref="P:System.Diagnostics.DelimitedListTraceListener.Delimiter" />이 null로 설정됩니다.</exception>
+      <exception cref="T:System.ArgumentException">
+        <see cref="P:System.Diagnostics.DelimitedListTraceListener.Delimiter" />를 빈 문자열("")로 설정한 경우</exception>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceData(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.Object)">
+      <summary>추적 정보, 데이터 개체 및 이벤트 정보를 출력 파일이나 스트림에 씁니다.</summary>
+      <param name="eventCache">현재 프로세스 ID, 스레드 ID 및 스택 추적 정보가 포함된 <see cref="T:System.Diagnostics.TraceEventCache" /> 개체입니다.</param>
+      <param name="source">출력을 식별하는 데 사용되는 이름이며 일반적으로 추적 이벤트를 생성한 응용 프로그램의 이름입니다.</param>
+      <param name="eventType">추적을 발생시킨 이벤트의 형식을 지정하는 <see cref="T:System.Diagnostics.TraceEventType" /> 값 중 하나입니다.</param>
+      <param name="id">이벤트의 숫자 식별자입니다.</param>
+      <param name="data">출력 파일이나 스트림에 쓸 데이터 개체입니다.</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceData(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.Object[])">
+      <summary>추적 정보, 데이터 개체의 배열 및 이벤트 정보를 출력 파일이나 스트림에 씁니다.</summary>
+      <param name="eventCache">현재 프로세스 ID, 스레드 ID 및 스택 추적 정보가 포함된 <see cref="T:System.Diagnostics.TraceEventCache" /> 개체입니다.</param>
+      <param name="source">출력을 식별하는 데 사용되는 이름이며 일반적으로 추적 이벤트를 생성한 응용 프로그램의 이름입니다.</param>
+      <param name="eventType">추적을 발생시킨 이벤트의 형식을 지정하는 <see cref="T:System.Diagnostics.TraceEventType" /> 값 중 하나입니다.</param>
+      <param name="id">이벤트의 숫자 식별자입니다.</param>
+      <param name="data">출력 파일이나 스트림에 쓸 데이터 개체 배열입니다.</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceEvent(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.String)">
+      <summary>추적 정보, 메시지 및 이벤트 정보를 출력 파일이나 스트림에 씁니다.</summary>
+      <param name="eventCache">현재 프로세스 ID, 스레드 ID 및 스택 추적 정보가 포함된 <see cref="T:System.Diagnostics.TraceEventCache" /> 개체입니다.</param>
+      <param name="source">출력을 식별하는 데 사용되는 이름이며 일반적으로 추적 이벤트를 생성한 응용 프로그램의 이름입니다.</param>
+      <param name="eventType">추적을 발생시킨 이벤트의 형식을 지정하는 <see cref="T:System.Diagnostics.TraceEventType" /> 값 중 하나입니다.</param>
+      <param name="id">이벤트의 숫자 식별자입니다.</param>
+      <param name="message">출력 파일이나 스트림에 쓸 추적 메시지입니다.</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceEvent(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.String,System.Object[])">
+      <summary>추적 정보, 형식 지정된 개체 배열 및 이벤트 정보를 출력 파일이나 스트림에 씁니다.</summary>
+      <param name="eventCache">현재 프로세스 ID, 스레드 ID 및 스택 추적 정보가 포함된 <see cref="T:System.Diagnostics.TraceEventCache" /> 개체입니다.</param>
+      <param name="source">출력을 식별하는 데 사용되는 이름이며 일반적으로 추적 이벤트를 생성한 응용 프로그램의 이름입니다.</param>
+      <param name="eventType">추적을 발생시킨 이벤트의 형식을 지정하는 <see cref="T:System.Diagnostics.TraceEventType" /> 값 중 하나입니다.</param>
+      <param name="id">이벤트의 숫자 식별자입니다.</param>
+      <param name="format">
+        <paramref name="args" /> 배열에 들어 있는 개체에 해당하는 0개 이상의 형식 항목이 포함된 형식 문자열입니다.</param>
+      <param name="args">형식을 지정할 개체를 0개 이상 포함하는 배열입니다.</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="T:System.Diagnostics.TextWriterTraceListener">
+      <summary>추적 또는 디버깅 결과가 <see cref="T:System.IO.FileStream" />과 같은 <see cref="T:System.IO.Stream" />이나 <see cref="T:System.IO.TextWriter" />로 출력되도록 지정합니다.</summary>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor">
+      <summary>
+        <see cref="T:System.IO.TextWriter" />를 출력 수신자로 사용하여 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.Stream)">
+      <summary>스트림을 디버깅 및 추적 출력의 수신자로 사용하여 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="stream">
+        <see cref="T:System.Diagnostics.TextWriterTraceListener" />가 쓸 스트림을 나타내는 <see cref="T:System.IO.Stream" />입니다. </param>
+      <exception cref="T:System.ArgumentNullException">스트림이 null인 경우 </exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.Stream,System.String)">
+      <summary>스트림을 디버깅 및 추적 출력의 수신자로 사용하여, 지정된 이름의 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="stream">
+        <see cref="T:System.Diagnostics.TextWriterTraceListener" />가 쓸 스트림을 나타내는 <see cref="T:System.IO.Stream" />입니다. </param>
+      <param name="name">새 인스턴스 이름입니다. </param>
+      <exception cref="T:System.ArgumentNullException">스트림이 null인 경우 </exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.TextWriter)">
+      <summary>지정된 텍스트 작성기를 추적 또는 디버깅 출력의 수신자로 사용하여 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="writer">
+        <see cref="T:System.Diagnostics.TextWriterTraceListener" />에서 출력을 받는 <see cref="T:System.IO.TextWriter" />입니다. </param>
+      <exception cref="T:System.ArgumentNullException">텍스트 작성기가 null인 경우 </exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.TextWriter,System.String)">
+      <summary>지정된 텍스트 작성기를 추적 및 디버깅 출력의 수신자로 사용하여, 지정된 이름의 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 클래스의 새 인스턴스를 초기화합니다.</summary>
+      <param name="writer">
+        <see cref="T:System.Diagnostics.TextWriterTraceListener" />에서 출력을 받는 <see cref="T:System.IO.TextWriter" />입니다. </param>
+      <param name="name">새 인스턴스 이름입니다. </param>
+      <exception cref="T:System.ArgumentNullException">텍스트 작성기가 null인 경우 </exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.Dispose(System.Boolean)">
+      <summary>이 <see cref="T:System.Diagnostics.TextWriterTraceListener" /> 개체를 삭제합니다.</summary>
+      <param name="disposing">관리되는 리소스를 해제하면 true입니다. false이면 <see cref="M:System.Diagnostics.TextWriterTraceListener.Dispose(System.Boolean)" />가 아무런 영향을 주지 않습니다.</param>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.Flush">
+      <summary>
+        <see cref="P:System.Diagnostics.TextWriterTraceListener.Writer" />의 출력 버퍼를 플러시합니다.</summary>
+      <filterpriority>1</filterpriority>
+      <PermissionSet>
+        <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />
+      </PermissionSet>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.Write(System.String)">
+      <summary>이 인스턴스의 <see cref="P:System.Diagnostics.TextWriterTraceListener.Writer" />에 메시지를 씁니다.</summary>
+      <param name="message">쓸 메시지입니다. </param>
+      <filterpriority>1</filterpriority>
+      <PermissionSet>
+        <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />
+      </PermissionSet>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.WriteLine(System.String)">
+      <summary>줄 종결자가 뒤에 오는 이 인스턴스의 <see cref="P:System.Diagnostics.TextWriterTraceListener.Writer" />에 메시지를 씁니다.기본 줄 종결자는 캐리지 리턴과 줄 바꿈(\r\n) 조합입니다.</summary>
+      <param name="message">쓸 메시지입니다. </param>
+      <filterpriority>1</filterpriority>
+      <PermissionSet>
+        <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />
+      </PermissionSet>
+    </member>
+    <member name="P:System.Diagnostics.TextWriterTraceListener.Writer">
+      <summary>추적 또는 디버깅 출력을 받는 텍스트 작성기를 가져오거나 설정합니다.</summary>
+      <returns>추적 또는 디버깅 출력을 받는 텍스트 작성기를 나타내는 <see cref="T:System.IO.TextWriter" />입니다.</returns>
+      <filterpriority>2</filterpriority>
+    </member>
+  </members>
+</doc>

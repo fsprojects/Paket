@@ -1,0 +1,820 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>System.Runtime.WindowsRuntime</name>
+  </assembly>
+  <members>
+    <member name="T:System.WindowsRuntimeSystemExtensions">
+      <summary>Stellt Erweiterungsmethoden für das Konvertieren zwischen Aufgaben und asynchronen Windows-Runtime-Vorgängen und -Aktionen bereit. </summary>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsAsyncAction(System.Threading.Tasks.Task)">
+      <summary>Gibt eine asynchrone Windows-Runtime-Aktion zurück, die eine begonnene Aufgabe darstellt. </summary>
+      <returns>Eine Windows.Foundation.IAsyncAction-Instanz, die die gestartete Aufgabe darstellt. </returns>
+      <param name="source">Die begonnene Aufgabe. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+      <exception cref="T:System.InvalidOperationException">
+        <paramref name="source" /> ist ein nicht angefangener Vorgang. </exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsAsyncOperation``1(System.Threading.Tasks.Task{``0})">
+      <summary>Gibt einen asynchronen Windows-Runtime-Vorgang zurück, der eine begonnene Aufgabe darstellt, die ein Ergebnis zurückgibt. </summary>
+      <returns>Eine Windows.Foundation.IAsyncOperation&lt;TResult&gt;-Instanz, die die gestartete Aufgabe darstellt. </returns>
+      <param name="source">Die begonnene Aufgabe. </param>
+      <typeparam name="TResult">Der Typ, der die Abfrage zurückgibt. </typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+      <exception cref="T:System.InvalidOperationException">
+        <paramref name="source" /> ist ein nicht angefangener Vorgang. </exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask(Windows.Foundation.IAsyncAction)">
+      <summary>Gibt eine Aufgabe zurück, die eine asynchrone Windows-Runtime-Aktion darstellt. </summary>
+      <returns>Eine Aufgabe, die die asynchrone Aktion darstellt. </returns>
+      <param name="source">Die asynchrone Aktion. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask(Windows.Foundation.IAsyncAction,System.Threading.CancellationToken)">
+      <summary>Gibt eine Aufgabe zurück, die eine asynchrone Windows-Runtime-Aktion darstellt, die abgebrochen werden kann. </summary>
+      <returns>Eine Aufgabe, die die asynchrone Aktion darstellt. </returns>
+      <param name="source">Die asynchrone Aktion. </param>
+      <param name="cancellationToken">Ein Token, das verwendet werden kann, um den Abbruch des asynchronen Vorgangs anzufordern. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``1(Windows.Foundation.IAsyncActionWithProgress{``0})">
+      <summary>Gibt eine Aufgabe zurück, die eine asynchrone Windows-Runtime-Aktion darstellt. </summary>
+      <returns>Eine Aufgabe, die die asynchrone Aktion darstellt. </returns>
+      <param name="source">Die asynchrone Aktion. </param>
+      <typeparam name="TProgress">Der Typ des Objekts, das Daten enthält, die den Status angeben. </typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``1(Windows.Foundation.IAsyncActionWithProgress{``0},System.IProgress{``0})">
+      <summary>Gibt eine Aufgabe zurück, die eine asynchrone Windows-Runtime-Aktion darstellt, die den Status berichtet. </summary>
+      <returns>Eine Aufgabe, die die asynchrone Aktion darstellt. </returns>
+      <param name="source">Die asynchrone Aktion. </param>
+      <param name="progress">Ein Objekt, das Statusupdates empfängt. </param>
+      <typeparam name="TProgress">Der Typ des Objekts, das Daten enthält, die den Status angeben. </typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``1(Windows.Foundation.IAsyncActionWithProgress{``0},System.Threading.CancellationToken)">
+      <summary>Gibt eine Aufgabe zurück, die eine asynchrone Windows-Runtime-Aktion darstellt, die abgebrochen werden kann. </summary>
+      <returns>Eine Aufgabe, die die asynchrone Aktion darstellt. </returns>
+      <param name="source">Die asynchrone Aktion. </param>
+      <param name="cancellationToken">Ein Token, das verwendet werden kann, um den Abbruch des asynchronen Vorgangs anzufordern. </param>
+      <typeparam name="TProgress">Der Typ des Objekts, das Daten enthält, die den Status angeben. </typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``1(Windows.Foundation.IAsyncActionWithProgress{``0},System.Threading.CancellationToken,System.IProgress{``0})">
+      <summary>Gibt eine Aufgabe zurück, die eine asynchrone Windows-Runtime-Aktion darstellt, die den Status berichtet und abgebrochen werden kann.</summary>
+      <returns>Eine Aufgabe, die die asynchrone Aktion darstellt. </returns>
+      <param name="source">Die asynchrone Aktion. </param>
+      <param name="cancellationToken">Ein Token, das verwendet werden kann, um den Abbruch des asynchronen Vorgangs anzufordern. </param>
+      <param name="progress">Ein Objekt, das Statusupdates empfängt. </param>
+      <typeparam name="TProgress">Der Typ des Objekts, das Daten enthält, die den Status angeben. </typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``1(Windows.Foundation.IAsyncOperation{``0})">
+      <summary>Gibt eine Aufgabe zurück, die einen asynchronen Windows-Runtime-Vorgang darstellt, der ein Ergebnis zurückgibt. </summary>
+      <returns>Eine Aufgabe, die den asynchronen Vorgang darstellt. </returns>
+      <param name="source">Der asynchronen Vorgang. </param>
+      <typeparam name="TResult">Der Typ des Objekts, das das Ergebnis des asynchronen Vorgangs zurückgibt. </typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``1(Windows.Foundation.IAsyncOperation{``0},System.Threading.CancellationToken)">
+      <summary>Gibt eine Aufgabe zurück, die einen asynchronen Windows-Runtime-Vorgang darstellt, der ein Ergebnis zurückgibt und abgebrochen werden kann. </summary>
+      <returns>Eine Aufgabe, die den asynchronen Vorgang darstellt. </returns>
+      <param name="source">Der asynchronen Vorgang. </param>
+      <param name="cancellationToken">Ein Token, das verwendet werden kann, um den Abbruch des asynchronen Vorgangs anzufordern. </param>
+      <typeparam name="TResult">Der Typ des Objekts, das das Ergebnis des asynchronen Vorgangs zurückgibt. </typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``2(Windows.Foundation.IAsyncOperationWithProgress{``0,``1})">
+      <summary>Gibt eine Aufgabe zurück, die einen asynchronen Windows-Runtime-Vorgang darstellt, der ein Ergebnis zurückgibt. </summary>
+      <returns>Eine Aufgabe, die den asynchronen Vorgang darstellt. </returns>
+      <param name="source">Der asynchronen Vorgang. </param>
+      <typeparam name="TResult">Der Typ des Objekts, das das Ergebnis des asynchronen Vorgangs zurückgibt. </typeparam>
+      <typeparam name="TProgress">Der Typ des Objekts, das Daten enthält, die den Status angeben. </typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``2(Windows.Foundation.IAsyncOperationWithProgress{``0,``1},System.IProgress{``1})">
+      <summary>Gibt eine Aufgabe zurück, die einen asynchronen Windows-Runtime-Vorgang darstellt, der ein Ergebnis zurückgibt und den Status berichtet. </summary>
+      <returns>Eine Aufgabe, die den asynchronen Vorgang darstellt. </returns>
+      <param name="source">Der asynchronen Vorgang. </param>
+      <param name="progress">Ein Objekt, das Statusupdates empfängt. </param>
+      <typeparam name="TResult">Der Typ des Objekts, das das Ergebnis des asynchronen Vorgangs zurückgibt. </typeparam>
+      <typeparam name="TProgress">Der Typ des Objekts, das Daten enthält, die den Status angeben. </typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``2(Windows.Foundation.IAsyncOperationWithProgress{``0,``1},System.Threading.CancellationToken)">
+      <summary>Gibt eine Aufgabe zurück, die einen asynchronen Windows-Runtime-Vorgang darstellt, der ein Ergebnis zurückgibt und abgebrochen werden kann. </summary>
+      <returns>Eine Aufgabe, die den asynchronen Vorgang darstellt. </returns>
+      <param name="source">Der asynchronen Vorgang. </param>
+      <param name="cancellationToken">Ein Token, das verwendet werden kann, um den Abbruch des asynchronen Vorgangs anzufordern. </param>
+      <typeparam name="TResult">Der Typ des Objekts, das das Ergebnis des asynchronen Vorgangs zurückgibt. </typeparam>
+      <typeparam name="TProgress">Der Typ des Objekts, das Daten enthält, die den Status angeben. </typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.AsTask``2(Windows.Foundation.IAsyncOperationWithProgress{``0,``1},System.Threading.CancellationToken,System.IProgress{``1})">
+      <summary>Gibt eine Aufgabe zurück, die einen asynchronen Windows-Runtime-Vorgang darstellt, der ein Ergebnis zurückgibt, den Status berichtet und abgebrochen werden kann. </summary>
+      <returns>Eine Aufgabe, die den asynchronen Vorgang darstellt. </returns>
+      <param name="source">Der asynchronen Vorgang. </param>
+      <param name="cancellationToken">Ein Token, das verwendet werden kann, um den Abbruch des asynchronen Vorgangs anzufordern. </param>
+      <param name="progress">Ein Objekt, das Statusupdates empfängt. </param>
+      <typeparam name="TResult">Der Typ des Objekts, das das Ergebnis des asynchronen Vorgangs zurückgibt. </typeparam>
+      <typeparam name="TProgress">Der Typ des Objekts, das Daten enthält, die den Status angeben. </typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.GetAwaiter(Windows.Foundation.IAsyncAction)">
+      <summary>Gibt ein Objekt zurück, das eine asynchrone Aktion erwartet. </summary>
+      <returns>Ein Objekt, das die angegebene asynchrone Aktion erwartet. </returns>
+      <param name="source">Die asynchrone, zu erwartende Aktion. </param>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.GetAwaiter``1(Windows.Foundation.IAsyncActionWithProgress{``0})">
+      <summary>Gibt ein Objekt zurück, das eine asynchrone Aktion erwartet, die den Status berichtet. </summary>
+      <returns>Ein Objekt, das die angegebene asynchrone Aktion erwartet. </returns>
+      <param name="source">Die asynchrone, zu erwartende Aktion. </param>
+      <typeparam name="TProgress">Der Typ des Objekts, das Daten enthält, die den Status angeben. </typeparam>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.GetAwaiter``1(Windows.Foundation.IAsyncOperation{``0})">
+      <summary>Gibt ein Objekt zurück, das einen asynchronen Vorgang erwartet, der ein Ergebnis zurückgibt.</summary>
+      <returns>Ein Objekt, das den angegebenen asynchronen Vorgang erwartet. </returns>
+      <param name="source">Der zu erwartende asynchrone Vorgang. </param>
+      <typeparam name="TResult">Der Typ des Objekts, das das Ergebnis des asynchronen Vorgangs zurückgibt. </typeparam>
+    </member>
+    <member name="M:System.WindowsRuntimeSystemExtensions.GetAwaiter``2(Windows.Foundation.IAsyncOperationWithProgress{``0,``1})">
+      <summary>Gibt ein Objekt zurück, das einen asynchronen Vorgang erwartet, der den Status berichtet und ein Ergebnis zurückgibt. </summary>
+      <returns>Ein Objekt, das den angegebenen asynchronen Vorgang erwartet. </returns>
+      <param name="source">Der zu erwartende asynchrone Vorgang. </param>
+      <typeparam name="TResult">Der Typ des Objekts, das das Ergebnis des asynchronen Vorgangs zurückgibt.</typeparam>
+      <typeparam name="TProgress">Der Typ des Objekts, das Daten enthält, die den Status angeben. </typeparam>
+    </member>
+    <member name="T:System.IO.WindowsRuntimeStorageExtensions">
+      <summary>Enthält Erweiterungsmethoden für IStorageFile Windows-Runtime und IStorageFolder-Schnittstellen bei der Entwicklung von Windows Store Apps.</summary>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStorageExtensions.OpenStreamForReadAsync(Windows.Storage.IStorageFile)">
+      <summary>Ruft einen Stream zum Lesen aus einer angegebenen Datei ab.</summary>
+      <returns>Eine Aufgabe, die den asynchronen Lesevorgang darstellt.</returns>
+      <param name="windowsRuntimeFile">Das Windows-Runtime IStorageFile-Objekt, aus dem gelesen werden soll.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeFile" /> ist null.</exception>
+      <exception cref="T:System.IO.IOException">Die Datei konnte nicht als Stream geöffnet oder abgerufen werden.</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStorageExtensions.OpenStreamForReadAsync(Windows.Storage.IStorageFolder,System.String)">
+      <summary>Ruft einen Stream zum Lesen aus einer Datei im angegebenen übergeordneten Ordner ab.</summary>
+      <returns>Eine Aufgabe, die den asynchronen Lesevorgang darstellt.</returns>
+      <param name="rootDirectory">Das Windows-Runtime IStorageFolder-Objekt, das die zu lesende Datei enthält.</param>
+      <param name="relativePath">Der Pfad, relativ zum Stammordner, zur Datei, aus der gelesen werden soll.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="rootDirectory" /> oder <paramref name="relativePath" /> ist null.</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="relativePath" /> ist leer oder enthält nur Leerzeichen.</exception>
+      <exception cref="T:System.IO.IOException">Die Datei konnte nicht als Stream geöffnet oder abgerufen werden.</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStorageExtensions.OpenStreamForWriteAsync(Windows.Storage.IStorageFile)">
+      <summary>Ruft einen Stream zum Schreiben in eine angegebene Datei ab.</summary>
+      <returns>Eine Aufgabe, die den asynchronen Schreibvorgang darstellt.</returns>
+      <param name="windowsRuntimeFile">Das Windows-Runtime IStorageFile-Objekt, in das geschrieben werden soll.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeFile" /> ist null.</exception>
+      <exception cref="T:System.IO.IOException">Die Datei konnte nicht als Stream geöffnet oder abgerufen werden.</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStorageExtensions.OpenStreamForWriteAsync(Windows.Storage.IStorageFolder,System.String,Windows.Storage.CreationCollisionOption)">
+      <summary>Ruft einen Stream zum Schreiben in eine Datei im angegebenen übergeordneten Ordner ab.</summary>
+      <returns>Eine Aufgabe, die den asynchronen Schreibvorgang darstellt.</returns>
+      <param name="rootDirectory">Das Windows-Runtime IStorageFolder-Objekt, das die Datei enthält, in die geschrieben werden soll.</param>
+      <param name="relativePath">Der Pfad, relativ zum Stammordner, zur Datei, in die geschrieben werden soll.</param>
+      <param name="creationCollisionOption">Der Windows-Runtime CreationCollisionOption-Enumerationswert, der das Verhalten angibt, das verwendet werden soll, wenn der Name der zu erstellenden Datei mit dem einer vorhandenen Datei übereinstimmt.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="rootDirectory" /> oder <paramref name="relativePath" /> ist null.</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="relativePath" /> ist leer oder enthält nur Leerzeichen.</exception>
+      <exception cref="T:System.IO.IOException">Die Datei konnte nicht als Stream geöffnet oder abgerufen werden.</exception>
+    </member>
+    <member name="T:System.IO.WindowsRuntimeStreamExtensions">
+      <summary>Enthält Erweiterungsmethoden zum Konvertieren zwischen Streams in den Windows-Runtime und verwalteten Streams in .NET für Windows Store-Apps.</summary>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsInputStream(System.IO.Stream)">
+      <summary>Konvertiert einen verwalteten Stream in .NET für Windows Store-Apps zu einem Eingabestream in Windows-Runtime.</summary>
+      <returns>Ein Windows-Runtime  IInputStream-Objekt, das den konvertierten Stream darstellt.</returns>
+      <param name="stream">Die zu konvertierende Stream.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="stream" /> ist null.</exception>
+      <exception cref="T:System.NotSupportedException">Lesevorgänge werden vom Stream nicht unterstützt.</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsOutputStream(System.IO.Stream)">
+      <summary>Konvertiert einen verwalteten Stream in .NET für Windows Store-Apps zu einem Ausgabestream in Windows-Runtime.</summary>
+      <returns>Ein Windows-Runtime  IOutputStream-Objekt, das den konvertierten Stream darstellt.</returns>
+      <param name="stream">Die zu konvertierende Stream.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="stream" /> ist null.</exception>
+      <exception cref="T:System.NotSupportedException">Der Stream unterstützt das Schreiben nicht.</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsRandomAccessStream(System.IO.Stream)">
+      <summary>Konvertiert den angegebenen Datenstrom in einen Stream mit zufälligem Zugriff.</summary>
+      <returns>Windows-Runtime  RandomAccessStream, das den konvertierten Stream darstellt.</returns>
+      <param name="stream">Die zu konvertierende Stream.</param>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsStream(Windows.Storage.Streams.IRandomAccessStream)">
+      <summary>Konvertiert einen Datenstrom mit wahlfreiem Zugriff in Windows-Runtime in einen verwalteten Datenstrom in .NET für Windows Store-Apps.</summary>
+      <returns>Die konvertierte Stream.</returns>
+      <param name="windowsRuntimeStream">Das Windows-Runtime  IRandomAccessStream-Objekt zum Konvertieren.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeStream" /> ist null.</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsStream(Windows.Storage.Streams.IRandomAccessStream,System.Int32)">
+      <summary>Konvertiert einen zufälligen Zugriffsstream mithilfe der angegebenen Puffergröße in der Windows-Runtime zu einem verwalteten Stream im .NET für Windows Store-Apps.</summary>
+      <returns>Die konvertierte Stream.</returns>
+      <param name="windowsRuntimeStream">Das Windows-Runtime  IRandomAccessStream-Objekt zum Konvertieren.</param>
+      <param name="bufferSize">Die Größe des Cookies in Bytes.Dieser Wert kann nicht negativ sein, aber er kann 0 (null) sein, um die Pufferung zu deaktivieren.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeStream" /> ist null.</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="bufferSize" /> ist negativ.</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsStreamForRead(Windows.Storage.Streams.IInputStream)">
+      <summary>Konvertiert einen Eingabestream in Windows-Runtime zu einem verwalteten Stream in .NET für Windows Store-Apps.</summary>
+      <returns>Die konvertierte Stream.</returns>
+      <param name="windowsRuntimeStream">Das Windows-Runtime  IInputStream-Objekt zum Konvertieren.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeStream" /> ist null.</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsStreamForRead(Windows.Storage.Streams.IInputStream,System.Int32)">
+      <summary>Konvertiert einen Eingabestream mithilfe der angegebenen Puffergröße in der Windows-Runtime zu einem verwalteten Stream im .NET für Windows Store-Apps.</summary>
+      <returns>Die konvertierte Stream.</returns>
+      <param name="windowsRuntimeStream">Das Windows-Runtime  IInputStream-Objekt zum Konvertieren.</param>
+      <param name="bufferSize">Die Größe des Cookies in Bytes.Dieser Wert kann nicht negativ sein, aber er kann 0 (null) sein, um die Pufferung zu deaktivieren.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeStream" /> ist null.</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="bufferSize" /> ist negativ.</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsStreamForWrite(Windows.Storage.Streams.IOutputStream)">
+      <summary>Konvertiert einen Ausgabestream in Windows-Runtime zu einem verwalteten Stream in .NET für Windows Store-Apps.</summary>
+      <returns>Die konvertierte Stream.</returns>
+      <param name="windowsRuntimeStream">Das Windows-Runtime  IOutputStream-Objekt zum Konvertieren.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeStream" /> ist null.</exception>
+    </member>
+    <member name="M:System.IO.WindowsRuntimeStreamExtensions.AsStreamForWrite(Windows.Storage.Streams.IOutputStream,System.Int32)">
+      <summary>Konvertiert einen Ausgabestream mithilfe der angegebenen Puffergröße in der Windows-Runtime zu einem verwalteten Stream im .NET für Windows Store-Apps.</summary>
+      <returns>Die konvertierte Stream.</returns>
+      <param name="windowsRuntimeStream">Das Windows-Runtime  IOutputStream-Objekt zum Konvertieren.</param>
+      <param name="bufferSize">Die Größe des Cookies in Bytes.Dieser Wert kann nicht negativ sein, aber er kann 0 (null) sein, um die Pufferung zu deaktivieren.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="windowsRuntimeStream" /> ist null.</exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="bufferSize" /> ist negativ.</exception>
+    </member>
+    <member name="T:System.Runtime.InteropServices.WindowsRuntime.AsyncInfo">
+      <summary>Enthält Factorymethoden zum Erstellen von Darstellungen verwalteter Aufgaben bereit, die mit asynchronen Windows-Runtime-Aktionen und -Vorgängen kompatibel sind. </summary>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.AsyncInfo.Run``1(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{``0}})">
+      <summary>Erstellt und startet einen Windows-Runtime asynchronen Vorgang mithilfe einer Funktion, die eine begonnene Aufgabe generiert, die Ergebnisse zurückgibt.Die Aufgabe kann den Abbruch unterstützen.</summary>
+      <returns>Eine gestartete Windows.Foundation.IAsyncOperation&lt;TResult&gt;-Instanz, die die Aufgabe darstellt, die durch <paramref name="taskProvider" /> generiert wird. </returns>
+      <param name="taskProvider">Ein Delegat, der die Funktion darstellt, die die Aufgabe erstellt und startet.Die begonnene Aufgabe wird durch den asynchronen Vorgang Windows-Runtime dargestellt, der zurückgegeben wird.Der Funktion wird ein Abbruchtoken übergeben, das die Aufgabe überwachen kann, um Abbruchanforderungen festzustellen. Sie können das Token ignorieren, wenn Ihre Aufgabe keinen Abbruch unterstützt.</param>
+      <typeparam name="TResult">Der Typ, der die Abfrage zurückgibt. </typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="taskProvider" /> ist null. </exception>
+      <exception cref="T:System.InvalidOperationException">
+        <paramref name="taskProvider" /> gibt eine nicht gestartete Aufgabe zurück. </exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.AsyncInfo.Run(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task})">
+      <summary>Erstellt und startet eine Windows-Runtime asynchrone Aktion mithilfe einer Funktion, die eine begonnene Aufgabe generiert.Die Aufgabe kann den Abbruch unterstützen.</summary>
+      <returns>Eine gestartete Windows.Foundation.IAsyncAction-Instanz, die die Aufgabe darstellt, die durch <paramref name="taskProvider" /> generiert wird. </returns>
+      <param name="taskProvider">Ein Delegat, der die Funktion darstellt, die die Aufgabe erstellt und startet.Die begonnene Aufgabe wird durch die asynchrone Aktion Windows-Runtime dargestellt, die zurückgegeben wird.Der Funktion wird ein Abbruchtoken übergeben, das die Aufgabe überwachen kann, um Abbruchanforderungen festzustellen. Sie können das Token ignorieren, wenn Ihre Aufgabe keinen Abbruch unterstützt.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="taskProvider" /> ist null. </exception>
+      <exception cref="T:System.InvalidOperationException">
+        <paramref name="taskProvider" /> gibt eine nicht gestartete Aufgabe zurück. </exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.AsyncInfo.Run``2(System.Func{System.Threading.CancellationToken,System.IProgress{``1},System.Threading.Tasks.Task{``0}})">
+      <summary>Erstellt und startet einen Windows-Runtime asynchronen Vorgang, der Statusaktualisierungen enthält, mithilfe einer Funktion, die eine begonnene Aufgabe generiert, die Ergebnisse zurückgibt.Die Aufgabe kann die Abbruchs- und Statusberichterstellung unterstützen.</summary>
+      <returns>Eine gestartete Windows.Foundation.IAsyncOperationWithProgress&lt;TResult,TProgress&gt;-Instanz, die die Aufgabe darstellt, die durch <paramref name="taskProvider" /> generiert wird. </returns>
+      <param name="taskProvider">Ein Delegat, der die Funktion darstellt, die die Aufgabe erstellt und startet.Die begonnene Aufgabe wird durch die asynchrone Aktion Windows-Runtime dargestellt, die zurückgegeben wird.Die Funktion wird ein Abbruchtoken übergeben, das die Aufgabe überwachen kann, um Abbruchanforderungen festzustellen, und eine Schnittstelle zur Fortschrittsbenachrichtigung. Sie können eines oder beide Argumente ignorieren, wenn Ihre Aufgabe keinen Abbruch oder keine Fortschrittsbenachrichtigung unterstützt.</param>
+      <typeparam name="TResult">Der Typ, der die Abfrage zurückgibt. </typeparam>
+      <typeparam name="TProgress">Der Typ, der für Fortschrittsbenachrichtigungen verwendet wird. </typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="taskProvider" /> ist null. </exception>
+      <exception cref="T:System.InvalidOperationException">
+        <paramref name="taskProvider" /> gibt eine nicht gestartete Aufgabe zurück. </exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.AsyncInfo.Run``1(System.Func{System.Threading.CancellationToken,System.IProgress{``0},System.Threading.Tasks.Task})">
+      <summary>Erstellt und startet eine Windows-Runtime asynchrone Aktion, die Statusaktualisierungen enthält, mithilfe einer Funktion, die eine begonnene Aufgabe generiert.Die Aufgabe kann die Abbruchs- und Statusberichterstellung unterstützen.</summary>
+      <returns>Eine gestartete Windows.Foundation.IAsyncActionWithProgress&lt;TProgress&gt;-Instanz, die die Aufgabe darstellt, die durch <paramref name="taskProvider" /> generiert wird. </returns>
+      <param name="taskProvider">Ein Delegat, der die Funktion darstellt, die die Aufgabe erstellt und startet.Die begonnene Aufgabe wird durch die asynchrone Aktion Windows-Runtime dargestellt, die zurückgegeben wird.Die Funktion wird ein Abbruchtoken übergeben, das die Aufgabe überwachen kann, um Abbruchanforderungen festzustellen, und eine Schnittstelle zur Fortschrittsbenachrichtigung. Sie können eines oder beide Argumente ignorieren, wenn Ihre Aufgabe keinen Abbruch oder keine Fortschrittsbenachrichtigung unterstützt.</param>
+      <typeparam name="TProgress">Der Typ, der für Fortschrittsbenachrichtigungen verwendet wird. </typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="taskProvider" /> ist null. </exception>
+      <exception cref="T:System.InvalidOperationException">
+        <paramref name="taskProvider" /> gibt eine nicht gestartete Aufgabe zurück. </exception>
+    </member>
+    <member name="T:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBuffer">
+      <summary>Stellt eine Implementierung der Schnittstelle Windows-Runtime IBuffer (Windows.Storage.Streams.IBuffer) sowie alle zusätzlichen erforderlichen Schnittstellen bereit. </summary>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBuffer.Create(System.Byte[],System.Int32,System.Int32,System.Int32)">
+      <summary>Gibt eine Windows.Storage.Streams.IBuffer-Schnittstelle zurück, die den angegebenen Bereich von Bytes enthält, die aus einem Bytearray kopiert werden.Wenn die angegebene Kapazität größer als die Anzahl der kopierten Bytes ist, wird der Rest des Puffers mit Nullen aufgefüllt.</summary>
+      <returns>Eine Windows.Storage.Streams.IBuffer-Schnittstelle, die den angegebenen Bereich von Bytes enthält.Wenn <paramref name="capacity" /> größer als <paramref name="length" /> ist, wird der Rest des Puffers null-ausgefüllt.</returns>
+      <param name="data">Das Bytearray, aus dem kopiert werden soll. </param>
+      <param name="offset">Der Offset in <paramref name="data" />, an dem der Kopiervorgang beginnt. </param>
+      <param name="length">Die Anzahl der zu kopierenden Bytes. </param>
+      <param name="capacity">Die maximale Anzahl von Bytes, die der Puffer aufnehmen kann. Wenn dieser Wert größer als <paramref name="length" /> ist, wird der Rest der Bytes im Puffer mit 0 (null) initialisiert.</param>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="capacity" />, <paramref name="offset" /> oder <paramref name="length" /> ist kleiner als 0 (null). </exception>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="data" /> ist null. </exception>
+      <exception cref="T:System.ArgumentException">Start bei <paramref name="offset" />, <paramref name="data" /> beinhaltet keine <paramref name="length" />-Elemente. - oder -Beginnend bei <paramref name="offset" />, <paramref name="data" /> enthalten keine <paramref name="capacity" />-Elemente. </exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBuffer.Create(System.Int32)">
+      <summary>Gibt eine leere Windows.Storage.Streams.IBuffer-Schnittstelle zurück, die über die angegebene maximale Kapazität verfügt. </summary>
+      <returns>Eine Windows.Storage.Streams.IBuffer-Schnittstelle, die die angegebene Kapazität und eine Length-Eigenschaft gleich 0 (null) hat. </returns>
+      <param name="capacity">Die maximale Anzahl von Bytes, die der Puffer enthalten kann. </param>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="capacity" /> ist kleiner als 0 (null). </exception>
+    </member>
+    <member name="T:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions">
+      <summary>Stellt Erweiterungsmethoden für die Ausführung von Vorgängen bei Windows-Runtime Puffern bereit (Windows.Storage.Streams.IBuffer-Schnittstelle). </summary>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsBuffer(System.Byte[])">
+      <summary>Gibt eine Windows.Storage.Streams.IBuffer-Schnittstelle zurück, die das angegebene Bytearray darstellt. </summary>
+      <returns>Eine Windows.Storage.Streams.IBuffer-Schnittstelle, die das angegebene Bytearray darstellt. </returns>
+      <param name="source">Das darzustellende Array. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null.</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsBuffer(System.Byte[],System.Int32,System.Int32)">
+      <summary>Gibt eine Windows.Storage.Streams.IBuffer-Schnittstelle zurück, die einen Bereich von Bytes in dem angegebenen Bytearray darstellt. </summary>
+      <returns>Eine IBuffer-Schnittstelle, die den angegebenen Bereich von Bytes in <paramref name="source" /> darstellt.</returns>
+      <param name="source">Das Array, das den Bereich von Bytes enthält, der von dem IBuffer dargestellt wird. </param>
+      <param name="offset">Der Offset in <paramref name="source" />, an dem der Bereich beginnt. </param>
+      <param name="length">Die Länge des Bereichs, der durch IBuffer dargestellt wird. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="offset" /> oder <paramref name="length" /> ist kleiner als 0 (null). </exception>
+      <exception cref="T:System.ArgumentException">Das Array ist nicht groß genug, um dem IBuffer als Sicherungsspeicher zu dienen. Dies bedeutet, dass die Anzahl der Bytes in <paramref name="source" />, beginnend bei <paramref name="offset" />, kleiner ist als <paramref name="length" />. </exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsBuffer(System.Byte[],System.Int32,System.Int32,System.Int32)">
+      <summary>Gibt eine Windows.Storage.Streams.IBuffer-Schnittstelle zurück, die einen Bereich von Bytes in dem angegebenen Bytearray darstellt.Legt bei Bedarf die Length-Eigenschaft des IBuffer auf einen Wert fest, der kleiner ist als die Kapazität.</summary>
+      <returns>Eine IBuffer-Schnittstelle, die den angegebenen Bereich von Bytes in der <paramref name="source" /> darstellt und über den angegebenen Length-Eigenschaftswert verfügt. </returns>
+      <param name="source">Das Array, das den Bereich von Bytes enthält, der von dem IBuffer dargestellt wird. </param>
+      <param name="offset">Der Offset in <paramref name="source" />, an dem der Bereich beginnt. </param>
+      <param name="length">Der Wert der Length-Eigenschaft von IBuffer. </param>
+      <param name="capacity">Die Größe des Bereichs, der durch IBuffer dargestellt wird.Die Capacity-Eigenschaft des IBuffer ist auf diesen Wert festgelegt.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="offset" />, <paramref name="length" /> oder <paramref name="capacity" /> ist kleiner als 0 (null). </exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="length" /> ist größer als <paramref name="capacity" />. - oder -Das Array ist nicht groß genug, um dem IBuffer als Sicherungsspeicher zu dienen. Dies bedeutet, dass die Anzahl der Bytes in <paramref name="source" />, beginnend bei <paramref name="offset" />, kleiner ist als <paramref name="length" /> oder <paramref name="capacity" />. </exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.AsStream(Windows.Storage.Streams.IBuffer)">
+      <summary>Gibt einen Stream zurück, der den gleichen Arbeitsspeicher darstellt, den die angegebene Windows.Storage.Streams.IBuffer-Schnittstelle darstellt. </summary>
+      <returns>Ein Stream, der den gleichen Arbeitsspeicher darstellt, den die angegebene Windows.Storage.Streams.IBuffer-Schnittstelle darstellt. </returns>
+      <param name="source">Das IBuffer, das den Stream darstellen soll. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null.</exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.CopyTo(System.Byte[],System.Int32,Windows.Storage.Streams.IBuffer,System.UInt32,System.Int32)">
+      <summary>Kopiert Bytes aus dem Quellarray in den Zielpuffer (Windows.Storage.Streams.IBuffer) und gibt den Anfangsindex im Quellarray, den Anfangsindex im Zielpuffer, und die Anzahl der zu kopierenden Bytes an.Die Methode aktualisiert nicht die Length-Eigenschaft des Zielpuffers.</summary>
+      <param name="source">Das Array, aus dem Daten kopiert werden sollen. </param>
+      <param name="sourceIndex">Der Index in der <paramref name="source" />, ab dem Daten kopiert werden sollen. </param>
+      <param name="destination">Der Puffer, in den Daten kopiert werden sollen. </param>
+      <param name="destinationIndex">Der Index im <paramref name="destination" />, zu dem mit dem Kopieren von Daten begonnen werden soll. </param>
+      <param name="count">Die Anzahl der zu kopierenden Bytes. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> oder <paramref name="destination" /> ist null. </exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="count" />, <paramref name="sourceIndex" /> oder <paramref name="destinationIndex" /> ist kleiner als 0 (null). </exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="sourceIndex" /> ist größer oder gleich der Länge von <paramref name="source" />. - oder -Die Anzahl der Bytes in <paramref name="source" />, beginnend bei <paramref name="sourceIndex" />, ist kleiner als <paramref name="count" />. - oder -Das Kopieren von <paramref name="count" /> Bytes, beginnend bei <paramref name="destinationIndex" />, wird die Kapazität von <paramref name="destination" /> überschreiten. </exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.CopyTo(System.Byte[],Windows.Storage.Streams.IBuffer)">
+      <summary>Kopiert alle Bytes aus dem Quellarray in den Zielpuffer (Windows.Storage.Streams.IBuffer), beginnend am Offset 0 (null) in beiden.Die Methode aktualisiert nicht die Länge des Zielpuffers.</summary>
+      <param name="source">Das Array, aus dem Daten kopiert werden sollen. </param>
+      <param name="destination">Der Puffer, in den Daten kopiert werden sollen. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> oder <paramref name="destination" /> ist null. </exception>
+      <exception cref="T:System.ArgumentException">Die Größe von <paramref name="source" /> überschreitet die Kapazität von <paramref name="destination" />. </exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.CopyTo(Windows.Storage.Streams.IBuffer,System.Byte[])">
+      <summary>Kopiert alle Bytes aus dem Quellarray (Windows.Storage.Streams.IBuffer) in den Zielarray, beginnend am Offset 0 (null) in beiden. </summary>
+      <param name="source">Der Puffer, aus dem Daten kopiert werden sollen. </param>
+      <param name="destination">Das Array, in das Daten kopiert werden soll. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> oder <paramref name="destination" /> ist null. </exception>
+      <exception cref="T:System.ArgumentException">Die Größe von <paramref name="source" /> überschreitet die Größe von <paramref name="destination" />. </exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.CopyTo(Windows.Storage.Streams.IBuffer,System.UInt32,System.Byte[],System.Int32,System.Int32)">
+      <summary>Kopiert Bytes aus dem Quellarray (Windows.Storage.Streams.IBuffer) in den Zielarray und gibt den Anfangsindex im Quellpuffer, den Anfangsindex im Zielarray, und die Anzahl der zu kopierenden Bytes an. </summary>
+      <param name="source">Der Puffer, aus dem Daten kopiert werden sollen. </param>
+      <param name="sourceIndex">Der Index in der <paramref name="source" />, ab dem Daten kopiert werden sollen. </param>
+      <param name="destination">Das Array, in das Daten kopiert werden soll. </param>
+      <param name="destinationIndex">Der Index im <paramref name="destination" />, zu dem mit dem Kopieren von Daten begonnen werden soll. </param>
+      <param name="count">Die Anzahl der zu kopierenden Bytes. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> oder <paramref name="destination" /> ist null. </exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="count" />, <paramref name="sourceIndex" /> oder <paramref name="destinationIndex" /> ist kleiner als 0 (null). </exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="sourceIndex" /> ist größer oder gleich der Kapazität von <paramref name="source" />.. - oder -<paramref name="destinationIndex" /> ist größer oder gleich der Länge von <paramref name="destination" />. - oder -Die Anzahl der Bytes in <paramref name="source" />, beginnend bei <paramref name="sourceIndex" />, ist kleiner als <paramref name="count" />. - oder -Das Kopieren von <paramref name="count" /> Bytes, beginnend bei <paramref name="destinationIndex" />, wird die Größe von <paramref name="destination" /> überschreiten. </exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.CopyTo(Windows.Storage.Streams.IBuffer,System.UInt32,Windows.Storage.Streams.IBuffer,System.UInt32,System.UInt32)">
+      <summary>Kopiert Bytes aus dem Quellarray (Windows.Storage.Streams.IBuffer) in den Zielpuffer und gibt den Anfangsindex in der Quelle, den Anfangsindex im Ziel, und die Anzahl der zu kopierenden Bytes an.</summary>
+      <param name="source">Der Puffer, aus dem Daten kopiert werden sollen. </param>
+      <param name="sourceIndex">Der Index in der <paramref name="source" />, ab dem Daten kopiert werden sollen. </param>
+      <param name="destination">Der Puffer, in den Daten kopiert werden sollen. </param>
+      <param name="destinationIndex">Der Index im <paramref name="destination" />, zu dem mit dem Kopieren von Daten begonnen werden soll. </param>
+      <param name="count">Die Anzahl der zu kopierenden Bytes. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> oder <paramref name="destination" /> ist null. </exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="count" />, <paramref name="sourceIndex" /> oder <paramref name="destinationIndex" /> ist kleiner als 0 (null). </exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="sourceIndex" /> ist größer oder gleich der Kapazität von <paramref name="source" />.. - oder -<paramref name="destinationIndex" /> ist größer oder gleich der Kapazität von <paramref name="destination" />.. - oder -Die Anzahl der Bytes in <paramref name="source" />, beginnend bei <paramref name="sourceIndex" />, ist kleiner als <paramref name="count" />. - oder -Das Kopieren von <paramref name="count" /> Bytes, beginnend bei <paramref name="destinationIndex" />, wird die Kapazität von <paramref name="destination" /> überschreiten. </exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.CopyTo(Windows.Storage.Streams.IBuffer,Windows.Storage.Streams.IBuffer)">
+      <summary>Kopiert alle Bytes aus dem Quellpuffer (Windows.Storage.Streams.IBuffer) in den Zielpuffer, beginnend am Offset 0 (null) in beiden. </summary>
+      <param name="source">Der Quellpuffer. </param>
+      <param name="destination">Der Zielpuffer. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> oder <paramref name="destination" /> ist null. </exception>
+      <exception cref="T:System.ArgumentException">Die Größe von <paramref name="source" /> überschreitet die Kapazität von <paramref name="destination" />. </exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.GetByte(Windows.Storage.Streams.IBuffer,System.UInt32)">
+      <summary>Gibt das Byte zum angegebenen Offset in der angegebenen Windows.Storage.Streams.IBuffer-Schnittstelle zurück.</summary>
+      <returns>Das Byte am angegebenen Offset. </returns>
+      <param name="source">Der Puffer, aus dem Bytes abgerufen werden sollen. </param>
+      <param name="byteOffset">Das nächste Offset des Bytes. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="byteOffset" /> ist kleiner als 0 (null). </exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="byteOffset" /> ist größer oder gleich der Kapazität von <paramref name="source" />.. </exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.GetWindowsRuntimeBuffer(System.IO.MemoryStream)">
+      <summary>Gibt eine Windows.Storage.Streams.IBuffer-Schnittstelle zurück, die den gleichen Speicher darstellt wie der angegebene Speicherstream. </summary>
+      <returns>Eine Windows.Storage.Streams.IBuffer-Schnittstelle, die von dem gleichen Arbeitsspeicher unterstützt wird, der den angegebenen Arbeitsspeicherdatenstrom unterstützt.</returns>
+      <param name="underlyingStream">Der Stream, der den zusätzlicher Arbeitsspeicher für den IBuffer bereitstellt. </param>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.GetWindowsRuntimeBuffer(System.IO.MemoryStream,System.Int32,System.Int32)">
+      <summary>Gibt eine Windows.Storage.Streams.IBuffer-Schnittstelle zurück, die einen Bereich innerhalb des Speichers darstellt, die der angegebene Speicherstream darstellt. </summary>
+      <returns>Eine Windows.Storage.Streams.IBuffer-Schnittstelle, die von einem Bereich im Arbeitsspeicher unterstützt wird, der den angegebenen Arbeitsspeicherdatenstrom unterstützt. </returns>
+      <param name="underlyingStream">Der Stream, der gemeinsam mit dem IBuffer Arbeitsspeicher nutzt. </param>
+      <param name="positionInStream">Die Position des freigegebenen Arbeitsspeicherbereichs in <paramref name="underlyingStream" />. </param>
+      <param name="length">Die maximale Größe des freigegebenen Arbeitsspeicherbereichs.Wenn die Anzahl der Bytes in <paramref name="underlyingStream" />, beginnend bei <paramref name="positionInStream" />, kleiner als <paramref name="length" /> ist, stellt der zurückgegebene IBuffer nur die verfügbaren Bytes dar.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="underlyingStream" /> ist null. </exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="positionInStream" /> oder <paramref name="length" /> ist kleiner als 0 (null). </exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="positionInStream" /> liegt hinter dem Ende der <paramref name="source" />. </exception>
+      <exception cref="T:System.UnauthorizedAccessException">
+        <paramref name="underlyingStream" /> kann seinen zugrunde liegenden Speicherpuffer nicht verfügbar machen. </exception>
+      <exception cref="T:System.ObjectDisposedException">
+        <paramref name="underlyingStream" /> wurde geschlossen. </exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.IsSameData(Windows.Storage.Streams.IBuffer,Windows.Storage.Streams.IBuffer)">
+      <summary>Gibt einen Wert zurück, der angibt, ob zwei Puffer (Windows.Storage.Streams.IBuffer-Objekte) die gleiche zugrundeliegende Speicherregion darstellen. </summary>
+      <returns>true, wenn die Arbeitsspeicherbereiche, die durch die zwei Puffer dargestellt werden, den gleichen Ausgangspunkt haben; andernfalls false. </returns>
+      <param name="buffer">Der erste Puffer. </param>
+      <param name="otherBuffer">Der zweite Puffer. </param>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.ToArray(Windows.Storage.Streams.IBuffer)">
+      <summary>Gibt ein neues Array zurück, das aus den Inhalten des angegebenen Puffers (Windows.Storage.Streams.IBuffer) erstellt wird.Die Größe des Arrays ist der Wert der Length-Eigenschaft des IBuffer.</summary>
+      <returns>Ein Bytearray, das die Bytes im angegebenen IBuffer enthält, beginnend am Offset 0 (null). Dazu zählen Anzahl von Bytes, die gleich dem Wert der Length-Eigenschaft des IBuffer sind. </returns>
+      <param name="source">Der Puffer, dessen Inhalt das neue Array füllen soll. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+    </member>
+    <member name="M:System.Runtime.InteropServices.WindowsRuntime.WindowsRuntimeBufferExtensions.ToArray(Windows.Storage.Streams.IBuffer,System.UInt32,System.Int32)">
+      <summary>Gibt ein neues Array zurück, das aus den Inhalten des angegebenen Puffers (Windows.Storage.Streams.IBuffer) erstellt wird, beginnend an einem angegebenen Offset und einschließlich einer angegebenen Anzahl von Bytes. </summary>
+      <returns>Ein Bytearray, das den angegebenen Bereich von Bytes enthält. </returns>
+      <param name="source">Der Puffer, dessen Inhalt das neue Array füllen soll. </param>
+      <param name="sourceIndex">Der Index in der <paramref name="source" />, ab dem Daten kopiert werden sollen. </param>
+      <param name="count">Die Anzahl der zu kopierenden Bytes. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="source" /> ist null. </exception>
+      <exception cref="T:System.ArgumentOutOfRangeException">
+        <paramref name="count" /> oder <paramref name="sourceIndex" /> ist kleiner als 0 (null). </exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="sourceIndex" /> ist größer oder gleich der Kapazität von <paramref name="source" />.. - oder -Die Anzahl der Bytes in <paramref name="source" />, beginnend bei <paramref name="sourceIndex" />, ist kleiner als <paramref name="count" />. </exception>
+    </member>
+    <member name="T:Windows.Foundation.Point">
+      <summary>Stellt ein Paar von x- und y-Koordinaten im zweidimensionalen Raum dar.Kann auch einen logischen Punkt für bestimmte Eigenschaftenverwendungen darstellen.</summary>
+    </member>
+    <member name="M:Windows.Foundation.Point.#ctor(System.Double,System.Double)">
+      <summary>Initialisiert eine <see cref="T:Windows.Foundation.Point" />-Struktur, die die angegebenen Werte enthält. </summary>
+      <param name="x">Der x-Koordinatenwert der neuen <see cref="T:Windows.Foundation.Point" />-Struktur. </param>
+      <param name="y">Der y-Koordinatenwert der neuen <see cref="T:Windows.Foundation.Point" />-Struktur. </param>
+    </member>
+    <member name="M:Windows.Foundation.Point.Equals(System.Object)">
+      <summary>Bestimmt, ob das angegebene Objekt ein <see cref="T:Windows.Foundation.Point" /> ist und ob es die gleichen Werte wie dieser <see cref="T:Windows.Foundation.Point" /> enthält. </summary>
+      <returns>true, wenn <paramref name="obj" /> ein <see cref="T:Windows.Foundation.Point" /> ist dieselben Werte für <see cref="P:Windows.Foundation.Point.X" /> und <see cref="P:Windows.Foundation.Point.Y" /> enthält wie dieser <see cref="T:Windows.Foundation.Point" />, andernfalls false.</returns>
+      <param name="o">Das zu vergleichende Objekt.</param>
+    </member>
+    <member name="M:Windows.Foundation.Point.Equals(Windows.Foundation.Point)">
+      <summary>Vergleicht zwei <see cref="T:Windows.Foundation.Point" />-Strukturen auf Gleichheit.</summary>
+      <returns>true, wenn beide <see cref="T:Windows.Foundation.Point" />-Strukturen dieselben Werte für <see cref="P:Windows.Foundation.Point.X" /> und <see cref="P:Windows.Foundation.Point.Y" /> enthalten, andernfalls false.</returns>
+      <param name="value">Der Punkt, der mit dieser Instanz verglichen werden soll.</param>
+    </member>
+    <member name="M:Windows.Foundation.Point.GetHashCode">
+      <summary>Gibt den Hashcode für diese <see cref="T:Windows.Foundation.Point" /> zurück.</summary>
+      <returns>Der Hashcode für diese <see cref="T:Windows.Foundation.Point" />-Struktur.</returns>
+    </member>
+    <member name="M:Windows.Foundation.Point.op_Equality(Windows.Foundation.Point,Windows.Foundation.Point)">
+      <summary>Vergleicht zwei <see cref="T:Windows.Foundation.Point" />-Strukturen auf Gleichheit.</summary>
+      <returns>true, wenn der <see cref="P:Windows.Foundation.Point.X" />-Wert und der <see cref="P:Windows.Foundation.Point.Y" />-Wert von <paramref name="point1" /> und von <paramref name="point2" /> jeweils gleich sind, andernfalls false.</returns>
+      <param name="point1">Die erste zu vergleichende <see cref="T:Windows.Foundation.Point" />-Struktur.</param>
+      <param name="point2">Die zweite zu vergleichende <see cref="T:Windows.Foundation.Point" />-Struktur.</param>
+    </member>
+    <member name="M:Windows.Foundation.Point.op_Inequality(Windows.Foundation.Point,Windows.Foundation.Point)">
+      <summary>Vergleicht zwei <see cref="T:Windows.Foundation.Point" />-Strukturen auf Ungleichheit.</summary>
+      <returns>true, wenn <paramref name="point1" /> und <paramref name="point2" /> unterschiedliche <see cref="P:Windows.Foundation.Point.X" />-Werte oder <see cref="P:Windows.Foundation.Point.Y" />-Werte aufweisen. false, wenn <paramref name="point1" /> und <paramref name="point2" /> die gleichen <see cref="P:Windows.Foundation.Point.X" />-Werte und <see cref="P:Windows.Foundation.Point.Y" />-Werte besitzen.</returns>
+      <param name="point1">Der erste zu vergleichende Punkt.</param>
+      <param name="point2">Der zweite zu vergleichende Punkt.</param>
+    </member>
+    <member name="M:Windows.Foundation.Point.System#IFormattable#ToString(System.String,System.IFormatProvider)">
+      <summary>Eine Beschreibung dieses Members finden Sie unter <see cref="M:System.IFormattable.ToString(System.String,System.IFormatProvider)" />.</summary>
+      <returns>Eine Zeichenfolge mit dem Wert der aktuellen Instanz im angegebenen Format.</returns>
+      <param name="format">Die Zeichenfolge, die das zu verwendende Format angibt. – oder – null, wenn das für diese Art der IFormattable-Implementierung definierte Standardformat verwendet werden soll. </param>
+      <param name="provider">Der zum Formatieren des Werts zu verwendende IFormatProvider. – oder – null, wenn die Informationen über numerische Formate dem aktuellen Gebietsschema des Betriebssystems entnommen werden sollen. </param>
+    </member>
+    <member name="M:Windows.Foundation.Point.ToString">
+      <summary>Erstellt eine <see cref="T:System.String" />-Darstellung dieses <see cref="T:Windows.Foundation.Point" />. </summary>
+      <returns>Ein <see cref="T:System.String" /> mit den <see cref="P:Windows.Foundation.Point.X" />- und <see cref="P:Windows.Foundation.Point.Y" />-Werten dieser <see cref="T:Windows.Foundation.Point" />-Struktur.</returns>
+    </member>
+    <member name="M:Windows.Foundation.Point.ToString(System.IFormatProvider)">
+      <summary>Erstellt eine <see cref="T:System.String" />-Darstellung dieses <see cref="T:Windows.Foundation.Point" />. </summary>
+      <returns>Ein <see cref="T:System.String" /> mit den <see cref="P:Windows.Foundation.Point.X" />- und <see cref="P:Windows.Foundation.Point.Y" />-Werten dieser <see cref="T:Windows.Foundation.Point" />-Struktur.</returns>
+      <param name="provider">Kulturspezifische Formatierungsinformationen.</param>
+    </member>
+    <member name="P:Windows.Foundation.Point.X">
+      <summary>Ruft den <see cref="P:Windows.Foundation.Point.X" />-Koordinatenwert dieser <see cref="T:Windows.Foundation.Point" />-Struktur ab oder legt den Wert fest. </summary>
+      <returns>Der <see cref="P:Windows.Foundation.Point.X" />-Koordinatenwert dieser <see cref="T:Windows.Foundation.Point" />-Struktur.Der Standardwert ist 0.</returns>
+    </member>
+    <member name="P:Windows.Foundation.Point.Y">
+      <summary>Ruft den <see cref="P:Windows.Foundation.Point.Y" />-Koordinatenwert dieser <see cref="T:Windows.Foundation.Point" />-Struktur ab oder legt den Wert fest. </summary>
+      <returns>Der <see cref="P:Windows.Foundation.Point.Y" />-Koordinatenwert dieser <see cref="T:Windows.Foundation.Point" />-Struktur.  Der Standardwert ist 0.</returns>
+    </member>
+    <member name="T:Windows.Foundation.Rect">
+      <summary>Beschreibt die Breite, die Höhe und den Ursprungspunkt eines Rechtecks. </summary>
+    </member>
+    <member name="M:Windows.Foundation.Rect.#ctor(System.Double,System.Double,System.Double,System.Double)">
+      <summary>Initialisiert eine <see cref="T:Windows.Foundation.Rect" />-Struktur mit der angegebenen x-Koordinate, y-Koordinate, Breite und Höhe. </summary>
+      <param name="x">Die x-Koordinate der oberen linken Ecke des Rechtecks.</param>
+      <param name="y">Die y-Koordinate der oberen linken Ecke des Rechtecks.</param>
+      <param name="width">Die Breite des Rechtecks.</param>
+      <param name="height">Die Höhe des Rechtecks.</param>
+      <exception cref="T:System.ArgumentException">width oder height ist kleiner als 0.</exception>
+    </member>
+    <member name="M:Windows.Foundation.Rect.#ctor(Windows.Foundation.Point,Windows.Foundation.Point)">
+      <summary>Initialisiert eine <see cref="T:Windows.Foundation.Rect" />-Struktur, die genau die erforderliche Größe hat, um die beiden angegebenen Punkte einzuschließen. </summary>
+      <param name="point1">Der erste Punkt, den das neue Rechteck enthalten muss.</param>
+      <param name="point2">Der zweite Punkt, den das neue Rechteck enthalten muss.</param>
+    </member>
+    <member name="M:Windows.Foundation.Rect.#ctor(Windows.Foundation.Point,Windows.Foundation.Size)">
+      <summary>Initialisiert eine <see cref="T:Windows.Foundation.Rect" />-Struktur auf Grundlage eines Ursprungs und einer Größe. </summary>
+      <param name="location">Der Ursprung des neuen <see cref="T:Windows.Foundation.Rect" />.</param>
+      <param name="size">Die Größe des neuen <see cref="T:Windows.Foundation.Rect" />.</param>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Bottom">
+      <summary>Ruft den y-Achsen-Wert des unteren Rands des Rechtecks ab. </summary>
+      <returns>Der y-Achsen-Wert des unteren Rands des Rechtecks.Wenn das Rechteck leer ist, ist der Wert <see cref="F:System.Double.NegativeInfinity" />.</returns>
+    </member>
+    <member name="M:Windows.Foundation.Rect.Contains(Windows.Foundation.Point)">
+      <summary>Gibt an, ob das durch das <see cref="T:Windows.Foundation.Rect" /> beschriebene Rechteck den angegebenen Punkt enthält.</summary>
+      <returns>true, wenn das durch das <see cref="T:Windows.Foundation.Rect" /> beschriebene Rechteck den angegebenen Punkt enthält, andernfalls false.</returns>
+      <param name="point">Der zu überprüfende Punkt.</param>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Empty">
+      <summary>Ruft einen besonderen Wert ab, der ein Rechteck ohne Position oder Bereich darstellt. </summary>
+      <returns>Das leere Rechteck, dessen <see cref="P:Windows.Foundation.Rect.X" />-Eigenschaftswert und <see cref="P:Windows.Foundation.Rect.Y" />-Eigenschaftswert <see cref="F:System.Double.PositiveInfinity" /> sind und dessen <see cref="P:Windows.Foundation.Rect.Width" />-Eigenschaftswert und <see cref="P:Windows.Foundation.Rect.Height" />-Eigenschaftswert <see cref="F:System.Double.NegativeInfinity" /> sind.</returns>
+    </member>
+    <member name="M:Windows.Foundation.Rect.Equals(System.Object)">
+      <summary>Gibt an, ob das angegebene Objekt dem aktuellen <see cref="T:Windows.Foundation.Rect" /> entspricht.</summary>
+      <returns>true, wenn <paramref name="o" /> ein <see cref="T:Windows.Foundation.Rect" /> ist und die gleichen Werte für x, y, width und height wie das aktuelle <see cref="T:Windows.Foundation.Rect" /> besitzt, andernfalls false.</returns>
+      <param name="o">Das Objekt, mit dem das aktuelle Rechteck verglichen werden soll.</param>
+    </member>
+    <member name="M:Windows.Foundation.Rect.Equals(Windows.Foundation.Rect)">
+      <summary>Gibt an, ob das angegebene <see cref="T:Windows.Foundation.Rect" /> und das aktuelle <see cref="T:Windows.Foundation.Rect" /> gleich sind. </summary>
+      <returns>true, wenn das angegebene <see cref="T:Windows.Foundation.Rect" /> die gleichen Eigenschaftswerte x, y, width und height wie das aktuelle <see cref="T:Windows.Foundation.Rect" /> besitzt, andernfalls false.</returns>
+      <param name="value">Das Rechteck, mit dem das aktuelle Rechteck verglichen werden soll.</param>
+    </member>
+    <member name="M:Windows.Foundation.Rect.GetHashCode">
+      <summary>Erstellt einen Hashcode für das <see cref="T:Windows.Foundation.Rect" />. </summary>
+      <returns>Ein Hashcode für die aktuelle <see cref="T:Windows.Foundation.Rect" />-Struktur.</returns>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Height">
+      <summary>Ruft die Höhe des Rechtecks ab oder legt diese fest. </summary>
+      <returns>Ein Wert, der die Höhe des Rechtecks darstellt.Der Standard ist 0.</returns>
+      <exception cref="T:System.ArgumentException">Es wurde ein Wert kleiner als 0 angegeben.</exception>
+    </member>
+    <member name="M:Windows.Foundation.Rect.Intersect(Windows.Foundation.Rect)">
+      <summary>Sucht die Schnittfläche des Rechtecks, das durch das aktuelle <see cref="T:Windows.Foundation.Rect" /> dargestellt wird, und des Rechtecks, das durch das angegebene <see cref="T:Windows.Foundation.Rect" /> dargestellt wird, und speichert das Ergebnis als aktuelles <see cref="T:Windows.Foundation.Rect" />. </summary>
+      <param name="rect">Das Rechteck, das eine Schnittfläche mit dem aktuellen Rechteck bildet.</param>
+    </member>
+    <member name="P:Windows.Foundation.Rect.IsEmpty">
+      <summary>Ruft einen Wert ab, der angibt, ob das Rechteck das <see cref="P:Windows.Foundation.Rect.Empty" />-Rechteck ist.</summary>
+      <returns>true, wenn das Rechteck das <see cref="P:Windows.Foundation.Rect.Empty" />-Rechteck ist, andernfalls false.</returns>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Left">
+      <summary>Ruft den x-Achsen-Wert des linken Rands des Rechtecks ab. </summary>
+      <returns>Der x-Achsen-Wert des linken Rands des Rechtecks.</returns>
+    </member>
+    <member name="M:Windows.Foundation.Rect.op_Equality(Windows.Foundation.Rect,Windows.Foundation.Rect)">
+      <summary>Vergleicht zwei <see cref="T:Windows.Foundation.Rect" />-Strukturen auf Gleichheit.</summary>
+      <returns>true, wenn die <see cref="T:Windows.Foundation.Rect" />-Strukturen die gleichen Eigenschaftswerte x, y, width und height besitzen, andernfalls false.</returns>
+      <param name="rect1">Das erste der zu vergleichenden Rechtecke.</param>
+      <param name="rect2">Das zweite der zu vergleichenden Rechtecke.</param>
+    </member>
+    <member name="M:Windows.Foundation.Rect.op_Inequality(Windows.Foundation.Rect,Windows.Foundation.Rect)">
+      <summary>Vergleicht zwei <see cref="T:Windows.Foundation.Rect" />-Strukturen auf Ungleichheit.  </summary>
+      <returns>true, wenn die <see cref="T:Windows.Foundation.Rect" />-Strukturen nicht die gleichen Eigenschaftswerte x, y, width und height besitzen, andernfalls false.</returns>
+      <param name="rect1">Das erste der zu vergleichenden Rechtecke.</param>
+      <param name="rect2">Das zweite der zu vergleichenden Rechtecke.</param>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Right">
+      <summary>Ruft den x-Achsen-Wert des rechten Rands des Rechtecks ab.  </summary>
+      <returns>Der x-Achsen-Wert des rechten Rands des Rechtecks.</returns>
+    </member>
+    <member name="M:Windows.Foundation.Rect.System#IFormattable#ToString(System.String,System.IFormatProvider)">
+      <summary>Eine Beschreibung dieses Members finden Sie unter <see cref="M:System.IFormattable.ToString(System.String,System.IFormatProvider)" />.</summary>
+      <returns>Eine Zeichenfolge mit dem Wert der aktuellen Instanz im angegebenen Format.</returns>
+      <param name="format">Die Zeichenfolge, die das zu verwendende Format angibt. – oder – null, wenn das für diese Art der IFormattable-Implementierung definierte Standardformat verwendet werden soll. </param>
+      <param name="provider">Der zum Formatieren des Werts zu verwendende IFormatProvider. – oder – null, wenn die Informationen über numerische Formate dem aktuellen Gebietsschema des Betriebssystems entnommen werden sollen. </param>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Top">
+      <summary>Ruft die y-Achsen-Position des oberen Rands des Rechtecks ab. </summary>
+      <returns>Die y-Achsen-Position des oberen Rands des Rechtecks.</returns>
+    </member>
+    <member name="M:Windows.Foundation.Rect.ToString">
+      <summary>Gibt eine Zeichenfolgendarstellung der <see cref="T:Windows.Foundation.Rect" />-Struktur zurück. </summary>
+      <returns>Eine Zeichenfolgendarstellung der aktuellen <see cref="T:Windows.Foundation.Rect" />-Struktur.Die Zeichenfolge weist das folgende Format auf: "<see cref="P:Windows.Foundation.Rect.X" />,<see cref="P:Windows.Foundation.Rect.Y" />,<see cref="P:Windows.Foundation.Rect.Width" />,<see cref="P:Windows.Foundation.Rect.Height" />".</returns>
+    </member>
+    <member name="M:Windows.Foundation.Rect.ToString(System.IFormatProvider)">
+      <summary>Gibt mithilfe des angegebenen Formatanbieters eine Zeichenfolgendarstellung des Rechtecks zurück. </summary>
+      <returns>Eine Zeichenfolgendarstellung des aktuellen Rechtecks, die vom angegebenen Formatanbieter bestimmt wird.</returns>
+      <param name="provider">Kulturspezifische Formatierungsinformationen.</param>
+    </member>
+    <member name="M:Windows.Foundation.Rect.Union(Windows.Foundation.Point)">
+      <summary>Erweitert das Rechteck, das durch <see cref="T:Windows.Foundation.Rect" /> dargestellt wird, genau so weit, dass es den angegebenen Punkt einschließt. </summary>
+      <param name="point">Der einzuschließende Punkt.</param>
+    </member>
+    <member name="M:Windows.Foundation.Rect.Union(Windows.Foundation.Rect)">
+      <summary>Erweitert das Rechteck, das durch <see cref="T:Windows.Foundation.Rect" /> dargestellt wird, genau so weit, dass es das angegebene Rechteck einschließt. </summary>
+      <param name="rect">Das einzuschließende Rechteck.</param>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Width">
+      <summary>Ruft die Breite des Rechtecks ab oder legt diese fest.  </summary>
+      <returns>Ein Wert, der die Breite des Rechtecks in Pixel darstellt.Der Standard ist 0.</returns>
+      <exception cref="T:System.ArgumentException">Es wurde ein Wert kleiner als 0 angegeben.</exception>
+    </member>
+    <member name="P:Windows.Foundation.Rect.X">
+      <summary>Ruft den x-Achsen-Wert des linken Rands des Rechtecks ab oder legt ihn fest. </summary>
+      <returns>Der x-Achsen-Wert des linken Rands des Rechtecks.Dieser Wert wird als Pixel im Koordinatenraum interpretiert.</returns>
+    </member>
+    <member name="P:Windows.Foundation.Rect.Y">
+      <summary>Ruft den y-Achsen-Wert des oberen Rands des Rechtecks ab oder legt ihn fest. </summary>
+      <returns>Der y-Achsen-Wert des oberen Rands des Rechtecks.Dieser Wert wird als Pixel im Koordinatenraum interpretiert.</returns>
+    </member>
+    <member name="T:Windows.Foundation.Size">
+      <summary>Beschreibt die Breite und die Höhe eines Objekts. </summary>
+    </member>
+    <member name="M:Windows.Foundation.Size.#ctor(System.Double,System.Double)">
+      <summary>Initialisiert eine neue Instanz der <see cref="T:Windows.Foundation.Size" />-Struktur und weist dieser eine ursprüngliche <paramref name="width" /> und <paramref name="height" /> zu.</summary>
+      <param name="width">Die Ausgangsbreite der Instanz von <see cref="T:Windows.Foundation.Size" />.</param>
+      <param name="height">Die Ausgangshöhe der Instanz von <see cref="T:Windows.Foundation.Size" />.</param>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="width" /> oder <paramref name="height" /> ist kleiner als 0.</exception>
+    </member>
+    <member name="P:Windows.Foundation.Size.Empty">
+      <summary>Ruft einen Wert ab, der eine statische leere <see cref="T:Windows.Foundation.Size" /> darstellt. </summary>
+      <returns>Eine leere Instanz von <see cref="T:Windows.Foundation.Size" />.</returns>
+    </member>
+    <member name="M:Windows.Foundation.Size.Equals(System.Object)">
+      <summary>Vergleicht ein Objekt mit einer Instanz von <see cref="T:Windows.Foundation.Size" /> auf Gleichheit. </summary>
+      <returns>true, wenn die Größen gleich sind, andernfalls false.</returns>
+      <param name="o">Das <see cref="T:System.Object" />, das verglichen werden soll.</param>
+    </member>
+    <member name="M:Windows.Foundation.Size.Equals(Windows.Foundation.Size)">
+      <summary>Vergleicht einen Wert mit einer Instanz von <see cref="T:Windows.Foundation.Size" /> auf Gleichheit. </summary>
+      <returns>true, wenn die Instanzen von <see cref="T:Windows.Foundation.Size" /> gleich sind, andernfalls false.</returns>
+      <param name="value">Die Größe, die mit dieser aktuellen Instanz von <see cref="T:Windows.Foundation.Size" /> verglichen werden soll.</param>
+    </member>
+    <member name="M:Windows.Foundation.Size.GetHashCode">
+      <summary>Ruft den Hashcode für diese Instanz von <see cref="T:Windows.Foundation.Size" /> ab. </summary>
+      <returns>Der Hashcode für diese Instanz von <see cref="T:Windows.Foundation.Size" />.</returns>
+    </member>
+    <member name="P:Windows.Foundation.Size.Height">
+      <summary>Ruft die Höhe dieser Instanz von <see cref="T:Windows.Foundation.Size" /> ab oder legt diese fest. </summary>
+      <returns>
+        <see cref="P:Windows.Foundation.Size.Height" /> dieser Instanz von <see cref="T:Windows.Foundation.Size" /> in Pixel.Der Standard ist 0.Der Wert kann nicht negativ sein.</returns>
+      <exception cref="T:System.ArgumentException">Es wurde ein Wert kleiner als 0 angegeben.</exception>
+    </member>
+    <member name="P:Windows.Foundation.Size.IsEmpty">
+      <summary>Ruft einen Wert ab, der angibt, ob diese Instanz von <see cref="T:Windows.Foundation.Size" /> gleich <see cref="P:Windows.Foundation.Size.Empty" /> ist. </summary>
+      <returns>true, wenn diese Instanz der Größe <see cref="P:Windows.Foundation.Size.Empty" /> ist, andernfalls false.</returns>
+    </member>
+    <member name="M:Windows.Foundation.Size.op_Equality(Windows.Foundation.Size,Windows.Foundation.Size)">
+      <summary>Prüft zwei Instanzen von <see cref="T:Windows.Foundation.Size" /> auf Gleichheit. </summary>
+      <returns>true, wenn die beiden Instanzen von <see cref="T:Windows.Foundation.Size" /> gleich sind, andernfalls false.</returns>
+      <param name="size1">Die erste zu vergleichende Instanz von <see cref="T:Windows.Foundation.Size" />.</param>
+      <param name="size2">Die zweite zu vergleichende Instanz von <see cref="T:Windows.Foundation.Size" />.</param>
+    </member>
+    <member name="M:Windows.Foundation.Size.op_Inequality(Windows.Foundation.Size,Windows.Foundation.Size)">
+      <summary>Vergleicht zwei Instanzen von <see cref="T:Windows.Foundation.Size" /> auf Ungleichheit. </summary>
+      <returns>true, wenn die Instanzen von <see cref="T:Windows.Foundation.Size" /> ungleich sind, andernfalls false.</returns>
+      <param name="size1">Die erste zu vergleichende Instanz von <see cref="T:Windows.Foundation.Size" />.</param>
+      <param name="size2">Die zweite zu vergleichende Instanz von <see cref="T:Windows.Foundation.Size" />.</param>
+    </member>
+    <member name="M:Windows.Foundation.Size.ToString">
+      <summary>Gibt eine Zeichenfolgendarstellung für diese <see cref="T:Windows.Foundation.Size" /> zurück.</summary>
+      <returns>Eine Zeichenfolgendarstellung für diese <see cref="T:Windows.Foundation.Size" />.</returns>
+    </member>
+    <member name="P:Windows.Foundation.Size.Width">
+      <summary>Ruft die Breite dieser Instanz von <see cref="T:Windows.Foundation.Size" /> ab oder legt diese fest. </summary>
+      <returns>
+        <see cref="P:Windows.Foundation.Size.Width" /> dieser Instanz von <see cref="T:Windows.Foundation.Size" /> in Pixel.Der Standardwert ist 0.Der Wert kann nicht negativ sein.</returns>
+      <exception cref="T:System.ArgumentException">Es wurde ein Wert kleiner als 0 angegeben.</exception>
+    </member>
+    <member name="T:Windows.UI.Color">
+      <summary>Beschreibt eine Farbe anhand des Alpha-, Rot-, Grün- und Blaukanals. </summary>
+    </member>
+    <member name="P:Windows.UI.Color.A">
+      <summary>Ruft den sRGB-Alphakanalwert der Farbe ab oder legt diesen fest. </summary>
+      <returns>Der sRGB-Alphakanalwert der Farbe als Wert zwischen 0 und 255.</returns>
+    </member>
+    <member name="P:Windows.UI.Color.B">
+      <summary>Ruft den sRGB-Blaukanalwert der Farbe ab oder legt diesen fest. </summary>
+      <returns>Der sRGB-Blaukanalwert als Wert zwischen 0 und 255.</returns>
+    </member>
+    <member name="M:Windows.UI.Color.Equals(System.Object)">
+      <summary>Überprüft, ob das angegebene Objekt eine <see cref="T:Windows.UI.Color" />-Struktur ist und der aktuellen Farbe entspricht. </summary>
+      <returns>true, wenn das angegebene Objekt eine <see cref="T:Windows.UI.Color" />-Struktur ist und mit der aktuellen <see cref="T:Windows.UI.Color" />-Struktur identisch ist, andernfalls false.</returns>
+      <param name="o">Das Objekt, das mit der aktuellen <see cref="T:Windows.UI.Color" />-Struktur verglichen werden soll.</param>
+    </member>
+    <member name="M:Windows.UI.Color.Equals(Windows.UI.Color)">
+      <summary>Überprüft, ob die angegebene <see cref="T:Windows.UI.Color" />-Struktur mit der aktuellen Farbe identisch ist.</summary>
+      <returns>true, wenn die angegebene <see cref="T:Windows.UI.Color" />-Struktur mit der aktuellen <see cref="T:Windows.UI.Color" />-Struktur identisch ist, andernfalls false.</returns>
+      <param name="color">Die <see cref="T:Windows.UI.Color" />-Struktur, die mit der aktuellen <see cref="T:Windows.UI.Color" />-Struktur verglichen werden soll.</param>
+    </member>
+    <member name="M:Windows.UI.Color.FromArgb(System.Byte,System.Byte,System.Byte,System.Byte)">
+      <summary>Erstellt mithilfe der angegebenen sRGB-Alphakanal- und -Farbkanalwerte eine neue <see cref="T:Windows.UI.Color" />-Struktur. </summary>
+      <returns>Eine <see cref="T:Windows.UI.Color" />-Struktur mit den angegebenen Werten.</returns>
+      <param name="a">Der Alphakanal <see cref="P:Windows.UI.Color.A" /> der neuen Farbe.Der Wert muss zwischen 0 und 255 liegen.</param>
+      <param name="r">Der Rotkanal <see cref="P:Windows.UI.Color.R" /> der neuen Farbe.Der Wert muss zwischen 0 und 255 liegen.</param>
+      <param name="g">Der Grünkanal <see cref="P:Windows.UI.Color.G" /> der neuen Farbe.Der Wert muss zwischen 0 und 255 liegen.</param>
+      <param name="b">Der Blaukanal <see cref="P:Windows.UI.Color.B" /> der neuen Farbe.Der Wert muss zwischen 0 und 255 liegen.</param>
+    </member>
+    <member name="P:Windows.UI.Color.G">
+      <summary>Ruft den sRGB-Grünkanalwert der Farbe ab oder legt diesen fest. </summary>
+      <returns>Der sRGB-Grünkanalwert als Wert zwischen 0 und 255.</returns>
+    </member>
+    <member name="M:Windows.UI.Color.GetHashCode">
+      <summary>Ruft einen Hashcode für die aktuelle <see cref="T:Windows.UI.Color" />-Struktur ab. </summary>
+      <returns>Ein Hashcode für die aktuelle <see cref="T:Windows.UI.Color" />-Struktur.</returns>
+    </member>
+    <member name="M:Windows.UI.Color.op_Equality(Windows.UI.Color,Windows.UI.Color)">
+      <summary>Überprüft, ob zwei <see cref="T:Windows.UI.Color" />-Strukturen identisch sind. </summary>
+      <returns>true, wenn <paramref name="color1" /> und <paramref name="color2" /> identisch sind, andernfalls false.</returns>
+      <param name="color1">Die erste zu vergleichende <see cref="T:Windows.UI.Color" />-Struktur.</param>
+      <param name="color2">Die zweite zu vergleichende <see cref="T:Windows.UI.Color" />-Struktur.</param>
+    </member>
+    <member name="M:Windows.UI.Color.op_Inequality(Windows.UI.Color,Windows.UI.Color)">
+      <summary>Überprüft, ob zwei <see cref="T:Windows.UI.Color" />-Strukturen nicht identisch sind. </summary>
+      <returns>true, wenn <paramref name="color1" /> und <paramref name="color2" /> ungleich sind, andernfalls false.</returns>
+      <param name="color1">Die erste zu vergleichende <see cref="T:Windows.UI.Color" />-Struktur.</param>
+      <param name="color2">Die zweite zu vergleichende <see cref="T:Windows.UI.Color" />-Struktur.</param>
+    </member>
+    <member name="P:Windows.UI.Color.R">
+      <summary>Ruft den sRGB-Rotkanalwert der Farbe ab oder legt diesen fest. </summary>
+      <returns>Der sRGB-Rotkanalwert als Wert zwischen 0 und 255.</returns>
+    </member>
+    <member name="M:Windows.UI.Color.System#IFormattable#ToString(System.String,System.IFormatProvider)">
+      <summary>Eine Beschreibung dieses Members finden Sie unter <see cref="M:System.IFormattable.ToString(System.String,System.IFormatProvider)" />.</summary>
+      <returns>Eine Zeichenfolge mit dem Wert der aktuellen Instanz im angegebenen Format.</returns>
+      <param name="format">Die Zeichenfolge, die das zu verwendende Format angibt. – oder – null, wenn das für diese Art der IFormattable-Implementierung definierte Standardformat verwendet werden soll. </param>
+      <param name="provider">Der zum Formatieren des Werts zu verwendende IFormatProvider. – oder – null, wenn die Informationen über numerische Formate dem aktuellen Gebietsschema des Betriebssystems entnommen werden sollen. </param>
+    </member>
+    <member name="M:Windows.UI.Color.ToString">
+      <summary>Erstellt mithilfe der ARGB-Kanäle eine Zeichenfolgendarstellung der Farbe in Hexadezimalschreibweise. </summary>
+      <returns>Die Zeichenfolgendarstellung der Farbe.</returns>
+    </member>
+    <member name="M:Windows.UI.Color.ToString(System.IFormatProvider)">
+      <summary>Erstellt mithilfe der ARGB-Kanäle und des angegebenen Formatanbieters eine Zeichenfolgendarstellung der Farbe. </summary>
+      <returns>Die Zeichenfolgendarstellung der Farbe.</returns>
+      <param name="provider">Kulturspezifische Formatierungsinformationen.</param>
+    </member>
+  </members>
+</doc>

@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata minClientVersion="2.12">
+    <id>System.Diagnostics.TextWriterTraceListener</id>
+    <version>4.3.0</version>
+    <title>System.Diagnostics.TextWriterTraceListener</title>
+    <authors>Microsoft</authors>
+    <owners>microsoft,dotnetframework</owners>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <licenseUrl>http://go.microsoft.com/fwlink/?LinkId=329770</licenseUrl>
+    <projectUrl>https://dot.net/</projectUrl>
+    <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
+    <description>Provides trace listeners for directing tracing output to a text writer, such as System.IO.StreamWriter, or a stream, such as a System.IO.FileStream.
+
+Commonly Used Types:
+System.Diagnostics.TextWriterTraceListener
+System.Diagnostics.DelimitedListTraceListener
+ 
+When using NuGet 3.x this package requires at least version 3.4.</description>
+    <releaseNotes>https://go.microsoft.com/fwlink/?LinkID=799421</releaseNotes>
+    <copyright>© Microsoft Corporation.  All rights reserved.</copyright>
+    <serviceable>true</serviceable>
+    <dependencies>
+      <group targetFramework="MonoAndroid1.0" />
+      <group targetFramework="MonoTouch1.0" />
+      <group targetFramework=".NETFramework4.6">
+        <dependency id="System.Diagnostics.TraceSource" version="4.3.0" />
+      </group>
+      <group targetFramework=".NETStandard1.3">
+        <dependency id="System.Diagnostics.TraceSource" version="4.3.0" />
+        <dependency id="System.Globalization" version="4.3.0" exclude="Compile" />
+        <dependency id="System.IO" version="4.3.0" />
+        <dependency id="System.Resources.ResourceManager" version="4.3.0" exclude="Compile" />
+        <dependency id="System.Runtime" version="4.3.0" />
+        <dependency id="System.Threading" version="4.3.0" exclude="Compile" />
+      </group>
+      <group targetFramework="Xamarin.iOS1.0" />
+      <group targetFramework="Xamarin.Mac2.0" />
+      <group targetFramework="Xamarin.TVOS1.0" />
+      <group targetFramework="Xamarin.WatchOS1.0" />
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="mscorlib" targetFramework=".NETFramework4.6" />
+      <frameworkAssembly assemblyName="System" targetFramework=".NETFramework4.6" />
+    </frameworkAssemblies>
+  </metadata>
+</package>

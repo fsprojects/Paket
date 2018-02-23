@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata minClientVersion="2.12">
+    <id>System.Buffers</id>
+    <version>4.4.0</version>
+    <title>System.Buffers</title>
+    <authors>Microsoft</authors>
+    <owners>microsoft,dotnetframework</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://github.com/dotnet/corefx/blob/master/LICENSE.TXT</licenseUrl>
+    <projectUrl>https://dot.net/</projectUrl>
+    <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
+    <description>Provides resource pooling of any type for performance-critical applications that allocate and deallocate objects frequently.
+
+Commonly Used Types:
+System.Buffers.ArrayPool&lt;T&gt;
+ 
+8321c729934c0f8be754953439b88e6e1c120c24 
+When using NuGet 3.x this package requires at least version 3.4.</description>
+    <releaseNotes>https://go.microsoft.com/fwlink/?LinkID=799421</releaseNotes>
+    <copyright>© Microsoft Corporation.  All rights reserved.</copyright>
+    <serviceable>true</serviceable>
+    <dependencies>
+      <group targetFramework=".NETCoreApp2.0" />
+      <group targetFramework=".NETStandard1.1">
+        <dependency id="System.Diagnostics.Debug" version="4.3.0" exclude="Compile" />
+        <dependency id="System.Diagnostics.Tracing" version="4.3.0" exclude="Compile" />
+        <dependency id="System.Resources.ResourceManager" version="4.3.0" exclude="Compile" />
+        <dependency id="System.Runtime" version="4.3.0" />
+        <dependency id="System.Threading" version="4.3.0" exclude="Compile" />
+      </group>
+      <group targetFramework=".NETStandard2.0" />
+      <group targetFramework=".NETPortable4.5-Profile111" />
+      <group targetFramework="Xamarin.Mac2.0" />
+    </dependencies>
+  </metadata>
+</package>

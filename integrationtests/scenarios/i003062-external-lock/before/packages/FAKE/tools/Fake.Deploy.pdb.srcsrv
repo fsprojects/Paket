@@ -1,0 +1,20 @@
+SRCSRV: ini ------------------------------------------------
+VERSION=2
+SRCSRV: variables ------------------------------------------
+SRCSRVVERCTRL=https
+SRCSRVTRG=https://raw.github.com/fsharp/FAKE/0425a96c0672f0261d423fe884a5ba180fd034a9/%var2%
+SRCSRV: source files ---------------------------------------
+D:\code\fake\src\app\Fake.Deploy\AppConfig.fs*src/app/Fake.Deploy/AppConfig.fs
+D:\code\fake\src\app\Fake.Deploy\Logger.fs*src/app/Fake.Deploy/Logger.fs
+D:\code\fake\src\app\Fake.Deploy\DeploymentHelper.fs*src/app/Fake.Deploy/DeploymentHelper.fs
+D:\code\fake\src\app\Fake.Deploy\DeployAgentModule.fs*src/app/Fake.Deploy/DeployAgentModule.fs
+D:\code\fake\src\app\Fake.Deploy\DeploymentAgent.fs*src/app/Fake.Deploy/DeploymentAgent.fs
+D:\code\fake\src\app\Fake.Deploy\AuthenticatedUser.fs*src/app/Fake.Deploy/AuthenticatedUser.fs
+D:\code\fake\src\app\Fake.Deploy\UserMapper.fs*src/app/Fake.Deploy/UserMapper.fs
+D:\code\fake\src\app\Fake.Deploy\AuthModule.fs*src/app/Fake.Deploy/AuthModule.fs
+D:\code\fake\src\app\Fake.Deploy\JSonSerializers.fs*src/app/Fake.Deploy/JSonSerializers.fs
+D:\code\fake\src\app\Fake.Deploy\NancyBootStrapper.fs*src/app/Fake.Deploy/NancyBootStrapper.fs
+D:\code\fake\src\app\Fake.Deploy\Services.fs*src/app/Fake.Deploy/Services.fs
+D:\code\fake\src\app\Fake.Deploy\Installers.fs*src/app/Fake.Deploy/Installers.fs
+D:\code\fake\src\app\Fake.Deploy\Program.fs*src/app/Fake.Deploy/Program.fs
+SRCSRV: end ------------------------------------------------

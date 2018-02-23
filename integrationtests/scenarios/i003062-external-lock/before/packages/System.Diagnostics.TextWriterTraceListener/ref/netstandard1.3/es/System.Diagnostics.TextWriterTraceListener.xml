@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>System.Diagnostics.TextWriterTraceListener</name>
+  </assembly>
+  <members>
+    <member name="T:System.Diagnostics.DelimitedListTraceListener">
+      <summary>Dirige los resultados de traza o de depuración a un escritor de texto, como un escritor de secuencias, o a una secuencia, como una secuencia de archivo.</summary>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.Stream)">
+      <summary>Inicializa una nueva instancia de la clase <see cref="T:System.Diagnostics.DelimitedListTraceListener" /> que escribe en el flujo de salida especificado. </summary>
+      <param name="stream">
+        <see cref="T:System.IO.Stream" /> que va a recibir el resultado.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="stream" /> es null. </exception>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.Stream,System.String)">
+      <summary>Inicializa una nueva instancia de la clase <see cref="T:System.Diagnostics.DelimitedListTraceListener" /> que escribe en el flujo de salida especificado y tiene el nombre especificado. </summary>
+      <param name="stream">
+        <see cref="T:System.IO.Stream" /> que va a recibir el resultado.</param>
+      <param name="name">Nombre de la nueva instancia del agente de escucha de seguimiento. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="stream" /> es null. </exception>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.TextWriter)">
+      <summary>Inicializa una nueva instancia de la clase <see cref="T:System.Diagnostics.DelimitedListTraceListener" /> que escribe en el escritor de texto especificado. </summary>
+      <param name="writer">
+        <see cref="T:System.IO.TextWriter" /> que va a recibir el resultado.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="writer" /> es null. </exception>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.#ctor(System.IO.TextWriter,System.String)">
+      <summary>Inicializa una nueva instancia de la clase <see cref="T:System.Diagnostics.DelimitedListTraceListener" /> que escribe en el escritor de texto especificado y tiene el nombre especificado. </summary>
+      <param name="writer">
+        <see cref="T:System.IO.TextWriter" /> que va a recibir el resultado.</param>
+      <param name="name">Nombre de la nueva instancia del agente de escucha de seguimiento. </param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="writer" /> es null. </exception>
+    </member>
+    <member name="P:System.Diagnostics.DelimitedListTraceListener.Delimiter">
+      <summary>Obtiene o establece el delimitador de la lista delimitada.</summary>
+      <returns>El delimitador de la lista delimitada.</returns>
+      <exception cref="T:System.ArgumentNullException">La propiedad <see cref="P:System.Diagnostics.DelimitedListTraceListener.Delimiter" /> está establecida en null.</exception>
+      <exception cref="T:System.ArgumentException">El valor de <see cref="P:System.Diagnostics.DelimitedListTraceListener.Delimiter" /> se establece en una cadena vacía ("").</exception>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceData(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.Object)">
+      <summary>Escribe la información de seguimiento, un objeto de datos y la información de evento en el archivo de salida o el flujo de salida.</summary>
+      <param name="eventCache">Objeto <see cref="T:System.Diagnostics.TraceEventCache" /> que contiene el identificador de proceso actual, el identificador de subproceso e información sobre el seguimiento de la pila.</param>
+      <param name="source">Nombre usado para identificar el resultado; normalmente es el nombre de la aplicación que generó el evento de seguimiento.</param>
+      <param name="eventType">Uno de los valores de <see cref="T:System.Diagnostics.TraceEventType" /> que indican el tipo de evento que provocó el seguimiento.</param>
+      <param name="id">Identificador numérico para el evento.</param>
+      <param name="data">Objeto de datos que se va a escribir en el archivo de salida o el flujo de salida.</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceData(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.Object[])">
+      <summary>Escribe la información de seguimiento, una matriz de objetos de datos y la información de evento en el archivo de salida o el flujo de salida.</summary>
+      <param name="eventCache">Objeto <see cref="T:System.Diagnostics.TraceEventCache" /> que contiene el identificador de proceso actual, el identificador de subproceso e información sobre el seguimiento de la pila.</param>
+      <param name="source">Nombre usado para identificar el resultado; normalmente es el nombre de la aplicación que generó el evento de seguimiento.</param>
+      <param name="eventType">Uno de los valores de <see cref="T:System.Diagnostics.TraceEventType" /> que indican el tipo de evento que provocó el seguimiento.</param>
+      <param name="id">Identificador numérico para el evento.</param>
+      <param name="data">Matriz de objetos de datos que se van a escribir en el archivo de salida o el flujo de salida.</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceEvent(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.String)">
+      <summary>Escribe la información de seguimiento, un mensaje y la información de evento en el archivo de salida o el flujo de salida.</summary>
+      <param name="eventCache">Objeto <see cref="T:System.Diagnostics.TraceEventCache" /> que contiene el identificador de proceso actual, el identificador de subproceso e información sobre el seguimiento de la pila.</param>
+      <param name="source">Nombre usado para identificar el resultado; normalmente es el nombre de la aplicación que generó el evento de seguimiento.</param>
+      <param name="eventType">Uno de los valores de <see cref="T:System.Diagnostics.TraceEventType" /> que indican el tipo de evento que provocó el seguimiento.</param>
+      <param name="id">Identificador numérico para el evento.</param>
+      <param name="message">Mensaje de seguimiento que se va a escribir en el archivo de salida o el flujo de salida.</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.DelimitedListTraceListener.TraceEvent(System.Diagnostics.TraceEventCache,System.String,System.Diagnostics.TraceEventType,System.Int32,System.String,System.Object[])">
+      <summary>Escribe la información de seguimiento, una matriz de objetos con formato y la información de evento en el archivo de salida o el flujo de salida.</summary>
+      <param name="eventCache">Objeto <see cref="T:System.Diagnostics.TraceEventCache" /> que contiene el identificador de proceso actual, el identificador de subproceso e información sobre el seguimiento de la pila.</param>
+      <param name="source">Nombre usado para identificar el resultado; normalmente es el nombre de la aplicación que generó el evento de seguimiento.</param>
+      <param name="eventType">Uno de los valores de <see cref="T:System.Diagnostics.TraceEventType" /> que indican el tipo de evento que provocó el seguimiento.</param>
+      <param name="id">Identificador numérico para el evento.</param>
+      <param name="format">Cadena de formato que contiene cero o más elementos de formato que corresponden a los objetos de la matriz <paramref name="args" />.</param>
+      <param name="args">Matriz que contiene cero o más objetos a los que se va a aplicar formato.</param>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="T:System.Diagnostics.TextWriterTraceListener">
+      <summary>Dirige los resultados de la traza o la depuración a un objeto <see cref="T:System.IO.TextWriter" /> o a un objeto de la clase <see cref="T:System.IO.Stream" /> como un archivo <see cref="T:System.IO.FileStream" />.</summary>
+      <filterpriority>1</filterpriority>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor">
+      <summary>Inicializa una nueva instancia de la clase <see cref="T:System.Diagnostics.TextWriterTraceListener" /> con <see cref="T:System.IO.TextWriter" /> como destinatario de resultados.</summary>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.Stream)">
+      <summary>Inicializa una nueva instancia de la clase <see cref="T:System.Diagnostics.TextWriterTraceListener" /> utilizando la secuencia como destinatario de los resultados de la traza y la depuración.</summary>
+      <param name="stream">Objeto <see cref="T:System.IO.Stream" /> que representa la secuencia en la que <see cref="T:System.Diagnostics.TextWriterTraceListener" /> escribe. </param>
+      <exception cref="T:System.ArgumentNullException">El flujo es null. </exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.Stream,System.String)">
+      <summary>Inicializa una nueva instancia de la clase <see cref="T:System.Diagnostics.TextWriterTraceListener" /> con el nombre especificado, utilizando la secuencia como destinatario de los resultados de la traza y la depuración.</summary>
+      <param name="stream">Objeto <see cref="T:System.IO.Stream" /> que representa la secuencia en la que <see cref="T:System.Diagnostics.TextWriterTraceListener" /> escribe. </param>
+      <param name="name">Nombre de la nueva instancia. </param>
+      <exception cref="T:System.ArgumentNullException">El flujo es null. </exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.TextWriter)">
+      <summary>Inicializa una nueva instancia de la clase <see cref="T:System.Diagnostics.TextWriterTraceListener" /> utilizando el escritor especificado como destinatario de los resultados de la traza o la depuración.</summary>
+      <param name="writer">Objeto <see cref="T:System.IO.TextWriter" /> que recibe los resultados de <see cref="T:System.Diagnostics.TextWriterTraceListener" />. </param>
+      <exception cref="T:System.ArgumentNullException">El escritor es null. </exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.#ctor(System.IO.TextWriter,System.String)">
+      <summary>Inicializa una nueva instancia de la clase <see cref="T:System.Diagnostics.TextWriterTraceListener" /> con el nombre especificado, utilizando el escritor como destinatario de los resultados de la traza o la depuración.</summary>
+      <param name="writer">Objeto <see cref="T:System.IO.TextWriter" /> que recibe los resultados de <see cref="T:System.Diagnostics.TextWriterTraceListener" />. </param>
+      <param name="name">Nombre de la nueva instancia. </param>
+      <exception cref="T:System.ArgumentNullException">El escritor es null. </exception>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.Dispose(System.Boolean)">
+      <summary>Desecha este objeto <see cref="T:System.Diagnostics.TextWriterTraceListener" />.</summary>
+      <param name="disposing">Es true para liberar los recursos administrados; si es false, <see cref="M:System.Diagnostics.TextWriterTraceListener.Dispose(System.Boolean)" /> no tiene efecto.</param>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.Flush">
+      <summary>Vacía el búfer de resultados de la propiedad <see cref="P:System.Diagnostics.TextWriterTraceListener.Writer" />.</summary>
+      <filterpriority>1</filterpriority>
+      <PermissionSet>
+        <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />
+      </PermissionSet>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.Write(System.String)">
+      <summary>Escribe un mensaje en la propiedad <see cref="P:System.Diagnostics.TextWriterTraceListener.Writer" /> de esta instancia.</summary>
+      <param name="message">Mensaje que se va a escribir. </param>
+      <filterpriority>1</filterpriority>
+      <PermissionSet>
+        <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />
+      </PermissionSet>
+    </member>
+    <member name="M:System.Diagnostics.TextWriterTraceListener.WriteLine(System.String)">
+      <summary>Escribe en la propiedad <see cref="P:System.Diagnostics.TextWriterTraceListener.Writer" /> de esta instancia un mensaje seguido de un terminador de línea.El terminador de línea predeterminado corresponde a un retorno de carro seguido de un avance de línea (\r\n).</summary>
+      <param name="message">Mensaje que se va a escribir. </param>
+      <filterpriority>1</filterpriority>
+      <PermissionSet>
+        <IPermission class="System.Security.Permissions.FileIOPermission, mscorlib, Version=2.0.3600.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" version="1" Unrestricted="true" />
+      </PermissionSet>
+    </member>
+    <member name="P:System.Diagnostics.TextWriterTraceListener.Writer">
+      <summary>Obtiene o establece el escritor de texto que recibe los resultados de la traza o la depuración.</summary>
+      <returns>Objeto <see cref="T:System.IO.TextWriter" /> que representa el escritor que recibe los resultados de la traza o la depuración.</returns>
+      <filterpriority>2</filterpriority>
+    </member>
+  </members>
+</doc>

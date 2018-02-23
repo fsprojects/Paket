@@ -1,0 +1,334 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>System.Diagnostics.Contracts</name>
+  </assembly>
+  <members>
+    <member name="T:System.Diagnostics.Contracts.Contract">
+      <summary>Содержит статические методы для представления контрактов программы, таких как предусловие, постусловие и инвариантность объектов.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assert(System.Boolean)">
+      <summary>Проверяет условие; если условие имеет значениеfalse, следует политике эскалации, заданной для анализатора.</summary>
+      <param name="condition">Условное выражение, которое требуется подвергнуть проверке.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assert(System.Boolean,System.String)">
+      <summary>Проверяет условие; если условие имеет значение false, следует политике эскалации, заданной анализатором, и отображает указанное сообщение.</summary>
+      <param name="condition">Условное выражение, которое требуется подвергнуть проверке.</param>
+      <param name="userMessage">Сообщение, отображаемое при несоответствии условия.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assume(System.Boolean)">
+      <summary>Дает инструментам анализа кода команду полагать, что указанным условием является true, даже если статически невозможно подтвердить постоянное значение true.</summary>
+      <param name="condition">Предполагаемое условное выражение true.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assume(System.Boolean,System.String)">
+      <summary>Дает инструментам анализа кода команду полагать, что условием является true, даже если статически невозможно подтвердить постоянное значение true, и отображает сообщение, если предположение было ошибочным.</summary>
+      <param name="condition">Предполагаемое условное выражение true.</param>
+      <param name="userMessage">Сообщение, создаваемое при ошибочном предположении.</param>
+    </member>
+    <member name="E:System.Diagnostics.Contracts.Contract.ContractFailed">
+      <summary>Происходит, когда контракт не выполняется.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.EndContractBlock">
+      <summary>Помечает конец раздела контракта, когда контракты метода содержат только предусловия вида if-then-throw.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Ensures(System.Boolean)">
+      <summary>Указывает контракт постусловия для включающего метода или свойства.</summary>
+      <param name="condition">Условное выражение, которое требуется подвергнуть проверке.Выражение может включать значения <see cref="M:System.Diagnostics.Contracts.Contract.OldValue``1(``0)" />, <see cref="M:System.Diagnostics.Contracts.Contract.ValueAtReturn``1(``0@)" /> и <see cref="M:System.Diagnostics.Contracts.Contract.Result``1" />.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Ensures(System.Boolean,System.String)">
+      <summary>Указывает контракт постусловия для предоставленного выходного условия и сообщение, отображаемое, если условие имеет значение false.</summary>
+      <param name="condition">Условное выражение, которое требуется подвергнуть проверке.Выражение может включать значения <see cref="M:System.Diagnostics.Contracts.Contract.OldValue``1(``0)" /> и <see cref="M:System.Diagnostics.Contracts.Contract.Result``1" />.</param>
+      <param name="userMessage">Сообщение, отображаемое в том случае, если выражение не является true.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.EnsuresOnThrow``1(System.Boolean)">
+      <summary>Задает контракт постусловия для включающего метода или свойства на основе предоставленных исключения и состояния.</summary>
+      <param name="condition">Условное выражение, которое требуется подвергнуть проверке.</param>
+      <typeparam name="TException">Тип исключения, вызвавшего проверку постусловия.</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.EnsuresOnThrow``1(System.Boolean,System.String)">
+      <summary>Задает контракт постусловия и сообщение, которое необходимо отобразить, если условие имеет значение false, для включающего метода или свойства на основе предоставленных исключения и условия.</summary>
+      <param name="condition">Условное выражение, которое требуется подвергнуть проверке.</param>
+      <param name="userMessage">Отображаемое сообщение, если выражение — false.</param>
+      <typeparam name="TException">Тип исключения, вызвавшего проверку постусловия.</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Exists``1(System.Collections.Generic.IEnumerable{``0},System.Predicate{``0})">
+      <summary>Определяет, существует ли в рамках функции элемент в указанной коллекции элементов.</summary>
+      <returns>Значение true, если и только если <paramref name="predicate" /> возвращает значение true для любого из элементов типа <paramref name="T" />, содержащихся в параметре <paramref name="collection" />.</returns>
+      <param name="collection">Коллекция, из которой будут извлекаться элементы типа <paramref name="T" /> для передачи в <paramref name="predicate" />.</param>
+      <param name="predicate">Функция, оцениваемая на предмет элемента, содержащегося в параметре <paramref name="collection" />.</param>
+      <typeparam name="T">Тип, содержащийся в <paramref name="collection" />.</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="collection" /> or <paramref name="predicate" /> is null.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Exists(System.Int32,System.Int32,System.Predicate{System.Int32})">
+      <summary>Определяет, удовлетворяет ли проверке какое-либо целое число в диапазоне целых чисел.</summary>
+      <returns>Значение true, если <paramref name="predicate" /> возвращает true для любого целого числа, начиная от <paramref name="fromInclusive" /> до минус один <paramref name="toExclusive" />.</returns>
+      <param name="fromInclusive">Первое целое число для передачи в <paramref name="predicate" />.</param>
+      <param name="toExclusive">Последнее целое число для передачи в <paramref name="predicate" /> плюс один.</param>
+      <param name="predicate">Функция, оцениваемая на предмет любого значения целого числа в указанном диапазоне.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="predicate" /> is null.</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="toExclusive " />is less than <paramref name="fromInclusive" />.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.ForAll``1(System.Collections.Generic.IEnumerable{``0},System.Predicate{``0})">
+      <summary>Определяет, существуют ли в рамках функции все элементы в коллекции.</summary>
+      <returns>Значение true, если и только если <paramref name="predicate" /> возвращает значение true для всех элементов типа <paramref name="T" />, содержащихся в параметре <paramref name="collection" />.</returns>
+      <param name="collection">Коллекция, из которой будут извлекаться элементы типа <paramref name="T" /> для передачи в <paramref name="predicate" />.</param>
+      <param name="predicate">Функция, оцениваемая на предмет наличия всех элементов, содержащихся в параметре <paramref name="collection" />.</param>
+      <typeparam name="T">Тип, содержащийся в <paramref name="collection" />.</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="collection" /> or <paramref name="predicate" /> is null.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.ForAll(System.Int32,System.Int32,System.Predicate{System.Int32})">
+      <summary>Определяет, выполняется ли определенное условие для всех целых чисел в указанном диапазоне.</summary>
+      <returns>Значение true, если <paramref name="predicate" /> возвращает true для всех целых чисел, начиная от <paramref name="fromInclusive" /> до минус один <paramref name="toExclusive" />.</returns>
+      <param name="fromInclusive">Первое целое число для передачи в <paramref name="predicate" />.</param>
+      <param name="toExclusive">Последнее целое число для передачи в <paramref name="predicate" /> плюс один.</param>
+      <param name="predicate">Функция, оцениваемая, чтобы установить существование целых чисел в указанном диапазоне.</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="predicate" /> is null.</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="toExclusive " />is less than <paramref name="fromInclusive" />.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Invariant(System.Boolean)">
+      <summary>Задает инвариантный контракт ля включающего метода или свойства. </summary>
+      <param name="condition">Условное выражение, которое требуется подвергнуть проверке.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Invariant(System.Boolean,System.String)">
+      <summary>Указывает инвариантный контракт для включающего метода или свойства и отображает сообщение, если условие для контракта не выполняется.</summary>
+      <param name="condition">Условное выражение, которое требуется подвергнуть проверке.</param>
+      <param name="userMessage">Отображаемое сообщение при условии false.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.OldValue``1(``0)">
+      <summary>Представляет значения, какими они были в начале метода или свойства.</summary>
+      <returns>Значение параметра или поля при запуске метода или свойства.</returns>
+      <param name="value">Представляемое значение (поле или параметр).</param>
+      <typeparam name="T">Тип значения.</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires``1(System.Boolean)">
+      <summary>Указывает контракт предусловия для включающего метода или свойства и выдает исключение, если условие для контракта не выполняется.</summary>
+      <param name="condition">Условное выражение, которое требуется подвергнуть проверке.</param>
+      <typeparam name="TException">Выдаваемое исключение при условии false.</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires(System.Boolean)">
+      <summary>Указывает контракт предусловия для включающего метода или свойства.</summary>
+      <param name="condition">Условное выражение, которое требуется подвергнуть проверке.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires(System.Boolean,System.String)">
+      <summary>Указывает контракт предусловия для включающего метода или свойства и отображает сообщение, если условие для контракта не выполняется.</summary>
+      <param name="condition">Условное выражение, которое требуется подвергнуть проверке.</param>
+      <param name="userMessage">Отображаемое сообщение при условии false.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires``1(System.Boolean,System.String)">
+      <summary>Задает контракт предусловия для включающего метода или свойства и создает исключение с предоставленным сообщением, если условие для контракта не выполняется.</summary>
+      <param name="condition">Условное выражение, которое требуется подвергнуть проверке.</param>
+      <param name="userMessage">Отображаемое сообщение при условии false.</param>
+      <typeparam name="TException">Выдаваемое исключение при условии false.</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Result``1">
+      <summary>Представляет возвращаемое значение метода или свойства.</summary>
+      <returns>Возвращаемое значение включающего метода или свойства.</returns>
+      <typeparam name="T">Тип возвращаемого значения включающего метода или свойства.</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.ValueAtReturn``1(``0@)">
+      <summary>Представляет итоговое (выходное) значение параметра out по возвращении из метода.</summary>
+      <returns>Выходное значение параметра out.</returns>
+      <param name="value">Параметр out.</param>
+      <typeparam name="T">Тип параметра out</typeparam>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractAbbreviatorAttribute">
+      <summary>Определяет аббревиатуры, которые можно использовать вместо полного синтаксиса контракта.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractAbbreviatorAttribute.#ctor">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.Contracts.ContractAbbreviatorAttribute" />.</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractArgumentValidatorAttribute">
+      <summary>Включает факторизацию устаревшего кода if-then-throw в отдельные методы для многократного использования, и обеспечивает полный контроль над созданными исключениями и аргументами.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractArgumentValidatorAttribute.#ctor">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.Contracts.ContractArgumentValidatorAttribute" />.</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractClassAttribute">
+      <summary>Указывает, что отдельный тип содержит контракты кода для этого типа.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractClassAttribute.#ctor(System.Type)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.Contracts.ContractClassAttribute" />. </summary>
+      <param name="typeContainingContracts">Тип, содержащий контракты кода для этого типа.</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractClassAttribute.TypeContainingContracts">
+      <summary>Получает тип, содержащий контракты кода для этого типа.</summary>
+      <returns>Тип, содержащий контракты кода для этого типа. </returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractClassForAttribute">
+      <summary>Указывает, что класс является контрактом для типа.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractClassForAttribute.#ctor(System.Type)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.Contracts.ContractClassForAttribute" /> с заданием типа, для которого текущий класс является контрактом. </summary>
+      <param name="typeContractsAreFor">Тип, для которого текущий класс является контрактом.</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractClassForAttribute.TypeContractsAreFor">
+      <summary>Получает тип, к которому применяется этот контракт кода. </summary>
+      <returns>Тип, к которому применяется этот контракт.</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractFailedEventArgs">
+      <summary>Предоставляет методы и данные для события <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" />.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractFailedEventArgs.#ctor(System.Diagnostics.Contracts.ContractFailureKind,System.String,System.String,System.Exception)">
+      <summary>Предоставляет данные для события <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" />.</summary>
+      <param name="failureKind">Одно из значений перечисления, указывающее контракт, вызвавший сбой.</param>
+      <param name="message">Сообщение для события.</param>
+      <param name="condition">Условие события.</param>
+      <param name="originalException">Исключение, которое вызвало событие.</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Condition">
+      <summary>Получает условие сбоя контракта.</summary>
+      <returns>Условие сбоя.</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.FailureKind">
+      <summary>Получает тип контракта, вызвавшего сбой.</summary>
+      <returns>Одно из значений перечисления, указывающее тип контракта, вызвавшего сбой.</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Handled">
+      <summary>Указывает, обработано ли событие <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" />.</summary>
+      <returns>Значение true, если событие обработано; в противном случае — значение false. </returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Message">
+      <summary>Получает сообщение, описывающее событие <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" />.</summary>
+      <returns>Сообщение, описывающее событие.</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.OriginalException">
+      <summary>Получает исходное исключение, вызвавшее событие <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" />.</summary>
+      <returns>Исключение, которое вызвало событие.</returns>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractFailedEventArgs.SetHandled">
+      <summary>Присваивает свойству <see cref="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Handled" /> значение true.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractFailedEventArgs.SetUnwind">
+      <summary>Присваивает свойству <see cref="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Unwind" /> значение true.</summary>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Unwind">
+      <summary>Указывает, должна ли применяться политика эскалации контракта кода.</summary>
+      <returns>Значение true, если политика эскалации должна применяться; в противном случае — значение false.Значение по умолчанию — false.</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractFailureKind">
+      <summary>Указывает тип контракта, вызвавшего сбой. </summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Assert">
+      <summary>Контракт <see cref="Overload:System.Diagnostics.Contracts.Contract.Assert" /> вызвал сбой.</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Assume">
+      <summary>Контракт <see cref="Overload:System.Diagnostics.Contracts.Contract.Assume" /> вызвал сбой.</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Invariant">
+      <summary>Контракт <see cref="Overload:System.Diagnostics.Contracts.Contract.Invariant" /> вызвал сбой.</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Postcondition">
+      <summary>Контракт <see cref="Overload:System.Diagnostics.Contracts.Contract.Ensures" /> вызвал сбой. </summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.PostconditionOnException">
+      <summary>Контракт <see cref="Overload:System.Diagnostics.Contracts.Contract.EnsuresOnThrow" /> вызвал сбой.</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Precondition">
+      <summary>Контракт <see cref="Overload:System.Diagnostics.Contracts.Contract.Requires" /> вызвал сбой.</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractInvariantMethodAttribute">
+      <summary>Помечает метод как инвариантный метод для класса.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractInvariantMethodAttribute.#ctor">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.Contracts.ContractInvariantMethodAttribute" />. </summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractOptionAttribute">
+      <summary>Позволяет задавать параметры контракта и средств на уровне сборки, типа или метода.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractOptionAttribute.#ctor(System.String,System.String,System.Boolean)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.Contracts.ContractOptionAttribute" />, используя предоставленную категорию, настройку и значение включения/отключения.</summary>
+      <param name="category">Категория для задаваемого параметра.</param>
+      <param name="setting">Настройка параметра.</param>
+      <param name="enabled">Значение true, чтобы включить параметр; значение false, чтобы отключить параметр.</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractOptionAttribute.#ctor(System.String,System.String,System.String)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.Contracts.ContractOptionAttribute" />, используя предоставленную категорию, настройку и значение.</summary>
+      <param name="category">Категория задаваемого параметра.</param>
+      <param name="setting">Настройка параметра.</param>
+      <param name="value">Значение параметра.</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Category">
+      <summary>Получает категорию параметра.</summary>
+      <returns>Категория параметра.</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Enabled">
+      <summary>Определяет, включен ли параметр.</summary>
+      <returns>Значение true, если параметр включен; в противном случае — значение false.</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Setting">
+      <summary>Получает настройку для параметра.</summary>
+      <returns>Настройка для параметра.</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Value">
+      <summary>Получает значение для параметра.</summary>
+      <returns>Значение для параметра.</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute">
+      <summary>Указывает, что поле может использоваться в контрактах методов, если видимость поля ниже, чем видимость метода. </summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute.#ctor(System.String)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute" />. </summary>
+      <param name="name">Имя применяемого к полю свойства.</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute.Name">
+      <summary>Получает имя свойства, применяемого к полю.</summary>
+      <returns>Имя свойства, которое следует применить к полю.</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractReferenceAssemblyAttribute">
+      <summary>Указывает на то, что сборка является ссылочной сборкой, которая содержит контракты.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractReferenceAssemblyAttribute.#ctor">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.Contracts.ContractReferenceAssemblyAttribute" />. </summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractRuntimeIgnoredAttribute">
+      <summary>Определяет член, не имеющий поведения во время выполнения.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractRuntimeIgnoredAttribute.#ctor">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.Contracts.ContractRuntimeIgnoredAttribute" />. </summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractVerificationAttribute">
+      <summary>Указывает средствам анализа, что следует принять правильность сборки, типа или элемента без проведения статической проверки.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractVerificationAttribute.#ctor(System.Boolean)">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.Contracts.ContractVerificationAttribute" />. </summary>
+      <param name="value">Значение true для запроса проверки; в противном случае — значение false. </param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractVerificationAttribute.Value">
+      <summary>Получает значение, определяющее, следует ли проверять контракт целевого объекта. </summary>
+      <returns>Значение true, если проверка необходима; в противном случае — значение false.</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.PureAttribute">
+      <summary>Указывает на то, что тип или метод являются чистыми, т. е. не вносят каких-либо видимых изменений в состояние.</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.PureAttribute.#ctor">
+      <summary>Инициализирует новый экземпляр класса <see cref="T:System.Diagnostics.Contracts.PureAttribute" />. </summary>
+    </member>
+    <member name="T:System.Runtime.CompilerServices.ContractHelper">
+      <summary>Предоставляет методы, которые двоичный метод перезаписи использует для обработки сбоев контракта.</summary>
+    </member>
+    <member name="M:System.Runtime.CompilerServices.ContractHelper.RaiseContractFailedEvent(System.Diagnostics.Contracts.ContractFailureKind,System.String,System.String,System.Exception)">
+      <summary>Используется двоичным методом перезаписи для активации поведения при сбоях по умолчанию.</summary>
+      <returns>Пустая ссылка (Nothing в Visual Basic), если событие было обработано и не должно спровоцировать сбой; в противном случае возвращает локализованное сообщение об ошибке.</returns>
+      <param name="failureKind">Одно из значений перечисления, задающее тип сбоя.</param>
+      <param name="userMessage">Дополнительные данные пользователя.</param>
+      <param name="conditionText">Описание условия, вызвавшего сбой.</param>
+      <param name="innerException">Внутреннее исключение, вызвавшее текущее исключение.</param>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="failureKind" /> не является допустимым значением <see cref="T:System.Diagnostics.Contracts.ContractFailureKind" />.</exception>
+    </member>
+    <member name="M:System.Runtime.CompilerServices.ContractHelper.TriggerFailure(System.Diagnostics.Contracts.ContractFailureKind,System.String,System.String,System.String,System.Exception)">
+      <summary>Активирует поведение при сбоях по умолчанию.</summary>
+      <param name="kind">Одно из значений перечисления, задающее тип сбоя.</param>
+      <param name="displayMessage">Отображаемое сообщение.</param>
+      <param name="userMessage">Дополнительные данные пользователя.</param>
+      <param name="conditionText">Описание условия, вызвавшего сбой.</param>
+      <param name="innerException">Внутреннее исключение, вызвавшее текущее исключение.</param>
+    </member>
+  </members>
+</doc>

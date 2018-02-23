@@ -1,0 +1,414 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata minClientVersion="2.12">
+    <id>NETStandard.Library</id>
+    <version>2.0.1</version>
+    <title>NETStandard.Library</title>
+    <authors>Microsoft</authors>
+    <owners>microsoft,dotnetframework</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://github.com/dotnet/standard/blob/master/LICENSE.TXT</licenseUrl>
+    <projectUrl>https://dot.net/</projectUrl>
+    <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
+    <description>A set of standard .NET APIs that are prescribed to be used and supported together. 
+b7f182415927d3b98445d043e1680c56b9d1f17c 
+When using NuGet 3.x this package requires at least version 3.4.</description>
+    <releaseNotes>https://go.microsoft.com/fwlink/?LinkID=799421</releaseNotes>
+    <copyright>.NET Foundation and Contributors</copyright>
+    <serviceable>true</serviceable>
+    <dependencies>
+      <group targetFramework="MonoAndroid1.0">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+      </group>
+      <group targetFramework="MonoTouch1.0">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+      </group>
+      <group targetFramework=".NETFramework4.5">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+        <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="4.3.0" />
+      </group>
+      <group targetFramework=".NETFramework4.5.1">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+        <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="4.3.0" />
+      </group>
+      <group targetFramework=".NETFramework4.6">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+        <dependency id="Microsoft.Win32.Primitives" version="4.3.0" />
+        <dependency id="System.AppContext" version="4.3.0" />
+        <dependency id="System.Console" version="4.3.0" />
+        <dependency id="System.Globalization.Calendars" version="4.3.0" />
+        <dependency id="System.IO.Compression" version="4.3.0" />
+        <dependency id="System.IO.Compression.ZipFile" version="4.3.0" />
+        <dependency id="System.IO.FileSystem" version="4.3.0" />
+        <dependency id="System.IO.FileSystem.Primitives" version="4.3.0" />
+        <dependency id="System.Net.Http" version="4.3.2" />
+        <dependency id="System.Net.Sockets" version="4.3.0" />
+        <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Algorithms" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Encoding" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Primitives" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.X509Certificates" version="4.3.0" />
+        <dependency id="System.Xml.ReaderWriter" version="4.3.0" />
+      </group>
+      <group targetFramework=".NETFramework4.6.1">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+      </group>
+      <group targetFramework=".NETCoreApp2.0">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+      </group>
+      <group targetFramework=".NETStandard1.0">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+        <dependency id="System.Collections" version="4.3.0" />
+        <dependency id="System.Diagnostics.Debug" version="4.3.0" />
+        <dependency id="System.Diagnostics.Tools" version="4.3.0" />
+        <dependency id="System.Globalization" version="4.3.0" />
+        <dependency id="System.IO" version="4.3.0" />
+        <dependency id="System.Linq" version="4.3.0" />
+        <dependency id="System.Linq.Expressions" version="4.3.0" />
+        <dependency id="System.Net.Primitives" version="4.3.0" />
+        <dependency id="System.ObjectModel" version="4.3.0" />
+        <dependency id="System.Reflection" version="4.3.0" />
+        <dependency id="System.Reflection.Extensions" version="4.3.0" />
+        <dependency id="System.Reflection.Primitives" version="4.3.0" />
+        <dependency id="System.Resources.ResourceManager" version="4.3.0" />
+        <dependency id="System.Runtime" version="4.3.0" />
+        <dependency id="System.Runtime.Extensions" version="4.3.0" />
+        <dependency id="System.Text.Encoding" version="4.3.0" />
+        <dependency id="System.Text.Encoding.Extensions" version="4.3.0" />
+        <dependency id="System.Text.RegularExpressions" version="4.3.0" />
+        <dependency id="System.Threading" version="4.3.0" />
+        <dependency id="System.Threading.Tasks" version="4.3.0" />
+        <dependency id="System.Xml.ReaderWriter" version="4.3.0" />
+        <dependency id="System.Xml.XDocument" version="4.3.0" />
+      </group>
+      <group targetFramework=".NETStandard1.1">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+        <dependency id="System.Collections" version="4.3.0" />
+        <dependency id="System.Collections.Concurrent" version="4.3.0" />
+        <dependency id="System.Diagnostics.Debug" version="4.3.0" />
+        <dependency id="System.Diagnostics.Tools" version="4.3.0" />
+        <dependency id="System.Diagnostics.Tracing" version="4.3.0" />
+        <dependency id="System.Globalization" version="4.3.0" />
+        <dependency id="System.IO" version="4.3.0" />
+        <dependency id="System.IO.Compression" version="4.3.0" />
+        <dependency id="System.Linq" version="4.3.0" />
+        <dependency id="System.Linq.Expressions" version="4.3.0" />
+        <dependency id="System.Net.Http" version="4.3.2" />
+        <dependency id="System.Net.Primitives" version="4.3.0" />
+        <dependency id="System.ObjectModel" version="4.3.0" />
+        <dependency id="System.Reflection" version="4.3.0" />
+        <dependency id="System.Reflection.Extensions" version="4.3.0" />
+        <dependency id="System.Reflection.Primitives" version="4.3.0" />
+        <dependency id="System.Resources.ResourceManager" version="4.3.0" />
+        <dependency id="System.Runtime" version="4.3.0" />
+        <dependency id="System.Runtime.Extensions" version="4.3.0" />
+        <dependency id="System.Runtime.InteropServices" version="4.3.0" />
+        <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="4.3.0" />
+        <dependency id="System.Runtime.Numerics" version="4.3.0" />
+        <dependency id="System.Text.Encoding" version="4.3.0" />
+        <dependency id="System.Text.Encoding.Extensions" version="4.3.0" />
+        <dependency id="System.Text.RegularExpressions" version="4.3.0" />
+        <dependency id="System.Threading" version="4.3.0" />
+        <dependency id="System.Threading.Tasks" version="4.3.0" />
+        <dependency id="System.Xml.ReaderWriter" version="4.3.0" />
+        <dependency id="System.Xml.XDocument" version="4.3.0" />
+      </group>
+      <group targetFramework=".NETStandard1.2">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+        <dependency id="System.Collections" version="4.3.0" />
+        <dependency id="System.Collections.Concurrent" version="4.3.0" />
+        <dependency id="System.Diagnostics.Debug" version="4.3.0" />
+        <dependency id="System.Diagnostics.Tools" version="4.3.0" />
+        <dependency id="System.Diagnostics.Tracing" version="4.3.0" />
+        <dependency id="System.Globalization" version="4.3.0" />
+        <dependency id="System.IO" version="4.3.0" />
+        <dependency id="System.IO.Compression" version="4.3.0" />
+        <dependency id="System.Linq" version="4.3.0" />
+        <dependency id="System.Linq.Expressions" version="4.3.0" />
+        <dependency id="System.Net.Http" version="4.3.2" />
+        <dependency id="System.Net.Primitives" version="4.3.0" />
+        <dependency id="System.ObjectModel" version="4.3.0" />
+        <dependency id="System.Reflection" version="4.3.0" />
+        <dependency id="System.Reflection.Extensions" version="4.3.0" />
+        <dependency id="System.Reflection.Primitives" version="4.3.0" />
+        <dependency id="System.Resources.ResourceManager" version="4.3.0" />
+        <dependency id="System.Runtime" version="4.3.0" />
+        <dependency id="System.Runtime.Extensions" version="4.3.0" />
+        <dependency id="System.Runtime.InteropServices" version="4.3.0" />
+        <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="4.3.0" />
+        <dependency id="System.Runtime.Numerics" version="4.3.0" />
+        <dependency id="System.Text.Encoding" version="4.3.0" />
+        <dependency id="System.Text.Encoding.Extensions" version="4.3.0" />
+        <dependency id="System.Text.RegularExpressions" version="4.3.0" />
+        <dependency id="System.Threading" version="4.3.0" />
+        <dependency id="System.Threading.Tasks" version="4.3.0" />
+        <dependency id="System.Threading.Timer" version="4.3.0" />
+        <dependency id="System.Xml.ReaderWriter" version="4.3.0" />
+        <dependency id="System.Xml.XDocument" version="4.3.0" />
+      </group>
+      <group targetFramework=".NETStandard1.3">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+        <dependency id="Microsoft.Win32.Primitives" version="4.3.0" />
+        <dependency id="System.AppContext" version="4.3.0" />
+        <dependency id="System.Collections" version="4.3.0" />
+        <dependency id="System.Collections.Concurrent" version="4.3.0" />
+        <dependency id="System.Console" version="4.3.0" />
+        <dependency id="System.Diagnostics.Debug" version="4.3.0" />
+        <dependency id="System.Diagnostics.Tools" version="4.3.0" />
+        <dependency id="System.Diagnostics.Tracing" version="4.3.0" />
+        <dependency id="System.Globalization" version="4.3.0" />
+        <dependency id="System.Globalization.Calendars" version="4.3.0" />
+        <dependency id="System.IO" version="4.3.0" />
+        <dependency id="System.IO.Compression" version="4.3.0" />
+        <dependency id="System.IO.Compression.ZipFile" version="4.3.0" />
+        <dependency id="System.IO.FileSystem" version="4.3.0" />
+        <dependency id="System.IO.FileSystem.Primitives" version="4.3.0" />
+        <dependency id="System.Linq" version="4.3.0" />
+        <dependency id="System.Linq.Expressions" version="4.3.0" />
+        <dependency id="System.Net.Http" version="4.3.2" />
+        <dependency id="System.Net.Primitives" version="4.3.0" />
+        <dependency id="System.Net.Sockets" version="4.3.0" />
+        <dependency id="System.ObjectModel" version="4.3.0" />
+        <dependency id="System.Reflection" version="4.3.0" />
+        <dependency id="System.Reflection.Extensions" version="4.3.0" />
+        <dependency id="System.Reflection.Primitives" version="4.3.0" />
+        <dependency id="System.Resources.ResourceManager" version="4.3.0" />
+        <dependency id="System.Runtime" version="4.3.0" />
+        <dependency id="System.Runtime.Extensions" version="4.3.0" />
+        <dependency id="System.Runtime.Handles" version="4.3.0" />
+        <dependency id="System.Runtime.InteropServices" version="4.3.0" />
+        <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="4.3.0" />
+        <dependency id="System.Runtime.Numerics" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Algorithms" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Encoding" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Primitives" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.X509Certificates" version="4.3.0" />
+        <dependency id="System.Text.Encoding" version="4.3.0" />
+        <dependency id="System.Text.Encoding.Extensions" version="4.3.0" />
+        <dependency id="System.Text.RegularExpressions" version="4.3.0" />
+        <dependency id="System.Threading" version="4.3.0" />
+        <dependency id="System.Threading.Tasks" version="4.3.0" />
+        <dependency id="System.Threading.Timer" version="4.3.0" />
+        <dependency id="System.Xml.ReaderWriter" version="4.3.0" />
+        <dependency id="System.Xml.XDocument" version="4.3.0" />
+      </group>
+      <group targetFramework=".NETStandard1.4">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+        <dependency id="Microsoft.Win32.Primitives" version="4.3.0" />
+        <dependency id="System.AppContext" version="4.3.0" />
+        <dependency id="System.Collections" version="4.3.0" />
+        <dependency id="System.Collections.Concurrent" version="4.3.0" />
+        <dependency id="System.Console" version="4.3.0" />
+        <dependency id="System.Diagnostics.Debug" version="4.3.0" />
+        <dependency id="System.Diagnostics.Tools" version="4.3.0" />
+        <dependency id="System.Diagnostics.Tracing" version="4.3.0" />
+        <dependency id="System.Globalization" version="4.3.0" />
+        <dependency id="System.Globalization.Calendars" version="4.3.0" />
+        <dependency id="System.IO" version="4.3.0" />
+        <dependency id="System.IO.Compression" version="4.3.0" />
+        <dependency id="System.IO.Compression.ZipFile" version="4.3.0" />
+        <dependency id="System.IO.FileSystem" version="4.3.0" />
+        <dependency id="System.IO.FileSystem.Primitives" version="4.3.0" />
+        <dependency id="System.Linq" version="4.3.0" />
+        <dependency id="System.Linq.Expressions" version="4.3.0" />
+        <dependency id="System.Net.Http" version="4.3.2" />
+        <dependency id="System.Net.Primitives" version="4.3.0" />
+        <dependency id="System.Net.Sockets" version="4.3.0" />
+        <dependency id="System.ObjectModel" version="4.3.0" />
+        <dependency id="System.Reflection" version="4.3.0" />
+        <dependency id="System.Reflection.Extensions" version="4.3.0" />
+        <dependency id="System.Reflection.Primitives" version="4.3.0" />
+        <dependency id="System.Resources.ResourceManager" version="4.3.0" />
+        <dependency id="System.Runtime" version="4.3.0" />
+        <dependency id="System.Runtime.Extensions" version="4.3.0" />
+        <dependency id="System.Runtime.Handles" version="4.3.0" />
+        <dependency id="System.Runtime.InteropServices" version="4.3.0" />
+        <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="4.3.0" />
+        <dependency id="System.Runtime.Numerics" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Algorithms" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Encoding" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Primitives" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.X509Certificates" version="4.3.0" />
+        <dependency id="System.Text.Encoding" version="4.3.0" />
+        <dependency id="System.Text.Encoding.Extensions" version="4.3.0" />
+        <dependency id="System.Text.RegularExpressions" version="4.3.0" />
+        <dependency id="System.Threading" version="4.3.0" />
+        <dependency id="System.Threading.Tasks" version="4.3.0" />
+        <dependency id="System.Threading.Timer" version="4.3.0" />
+        <dependency id="System.Xml.ReaderWriter" version="4.3.0" />
+        <dependency id="System.Xml.XDocument" version="4.3.0" />
+      </group>
+      <group targetFramework=".NETStandard1.5">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+        <dependency id="Microsoft.Win32.Primitives" version="4.3.0" />
+        <dependency id="System.AppContext" version="4.3.0" />
+        <dependency id="System.Collections" version="4.3.0" />
+        <dependency id="System.Collections.Concurrent" version="4.3.0" />
+        <dependency id="System.Console" version="4.3.0" />
+        <dependency id="System.Diagnostics.Debug" version="4.3.0" />
+        <dependency id="System.Diagnostics.Tools" version="4.3.0" />
+        <dependency id="System.Diagnostics.Tracing" version="4.3.0" />
+        <dependency id="System.Globalization" version="4.3.0" />
+        <dependency id="System.Globalization.Calendars" version="4.3.0" />
+        <dependency id="System.IO" version="4.3.0" />
+        <dependency id="System.IO.Compression" version="4.3.0" />
+        <dependency id="System.IO.Compression.ZipFile" version="4.3.0" />
+        <dependency id="System.IO.FileSystem" version="4.3.0" />
+        <dependency id="System.IO.FileSystem.Primitives" version="4.3.0" />
+        <dependency id="System.Linq" version="4.3.0" />
+        <dependency id="System.Linq.Expressions" version="4.3.0" />
+        <dependency id="System.Net.Http" version="4.3.2" />
+        <dependency id="System.Net.Primitives" version="4.3.0" />
+        <dependency id="System.Net.Sockets" version="4.3.0" />
+        <dependency id="System.ObjectModel" version="4.3.0" />
+        <dependency id="System.Reflection" version="4.3.0" />
+        <dependency id="System.Reflection.Extensions" version="4.3.0" />
+        <dependency id="System.Reflection.Primitives" version="4.3.0" />
+        <dependency id="System.Resources.ResourceManager" version="4.3.0" />
+        <dependency id="System.Runtime" version="4.3.0" />
+        <dependency id="System.Runtime.Extensions" version="4.3.0" />
+        <dependency id="System.Runtime.Handles" version="4.3.0" />
+        <dependency id="System.Runtime.InteropServices" version="4.3.0" />
+        <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="4.3.0" />
+        <dependency id="System.Runtime.Numerics" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Algorithms" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Encoding" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Primitives" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.X509Certificates" version="4.3.0" />
+        <dependency id="System.Text.Encoding" version="4.3.0" />
+        <dependency id="System.Text.Encoding.Extensions" version="4.3.0" />
+        <dependency id="System.Text.RegularExpressions" version="4.3.0" />
+        <dependency id="System.Threading" version="4.3.0" />
+        <dependency id="System.Threading.Tasks" version="4.3.0" />
+        <dependency id="System.Threading.Timer" version="4.3.0" />
+        <dependency id="System.Xml.ReaderWriter" version="4.3.0" />
+        <dependency id="System.Xml.XDocument" version="4.3.0" />
+      </group>
+      <group targetFramework=".NETStandard1.6">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+        <dependency id="Microsoft.Win32.Primitives" version="4.3.0" />
+        <dependency id="System.AppContext" version="4.3.0" />
+        <dependency id="System.Collections" version="4.3.0" />
+        <dependency id="System.Collections.Concurrent" version="4.3.0" />
+        <dependency id="System.Console" version="4.3.0" />
+        <dependency id="System.Diagnostics.Debug" version="4.3.0" />
+        <dependency id="System.Diagnostics.Tools" version="4.3.0" />
+        <dependency id="System.Diagnostics.Tracing" version="4.3.0" />
+        <dependency id="System.Globalization" version="4.3.0" />
+        <dependency id="System.Globalization.Calendars" version="4.3.0" />
+        <dependency id="System.IO" version="4.3.0" />
+        <dependency id="System.IO.Compression" version="4.3.0" />
+        <dependency id="System.IO.Compression.ZipFile" version="4.3.0" />
+        <dependency id="System.IO.FileSystem" version="4.3.0" />
+        <dependency id="System.IO.FileSystem.Primitives" version="4.3.0" />
+        <dependency id="System.Linq" version="4.3.0" />
+        <dependency id="System.Linq.Expressions" version="4.3.0" />
+        <dependency id="System.Net.Http" version="4.3.2" />
+        <dependency id="System.Net.Primitives" version="4.3.0" />
+        <dependency id="System.Net.Sockets" version="4.3.0" />
+        <dependency id="System.ObjectModel" version="4.3.0" />
+        <dependency id="System.Reflection" version="4.3.0" />
+        <dependency id="System.Reflection.Extensions" version="4.3.0" />
+        <dependency id="System.Reflection.Primitives" version="4.3.0" />
+        <dependency id="System.Resources.ResourceManager" version="4.3.0" />
+        <dependency id="System.Runtime" version="4.3.0" />
+        <dependency id="System.Runtime.Extensions" version="4.3.0" />
+        <dependency id="System.Runtime.Handles" version="4.3.0" />
+        <dependency id="System.Runtime.InteropServices" version="4.3.0" />
+        <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="4.3.0" />
+        <dependency id="System.Runtime.Numerics" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Algorithms" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Encoding" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Primitives" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.X509Certificates" version="4.3.0" />
+        <dependency id="System.Text.Encoding" version="4.3.0" />
+        <dependency id="System.Text.Encoding.Extensions" version="4.3.0" />
+        <dependency id="System.Text.RegularExpressions" version="4.3.0" />
+        <dependency id="System.Threading" version="4.3.0" />
+        <dependency id="System.Threading.Tasks" version="4.3.0" />
+        <dependency id="System.Threading.Timer" version="4.3.0" />
+        <dependency id="System.Xml.ReaderWriter" version="4.3.0" />
+        <dependency id="System.Xml.XDocument" version="4.3.0" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+      </group>
+      <group targetFramework=".NETPortable4.5-Profile259">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+      </group>
+      <group targetFramework=".NETPortable4.5-Profile111">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+        <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="4.3.0" />
+      </group>
+      <group targetFramework=".NETPortable4.6-Profile151">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+        <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="4.3.0" />
+      </group>
+      <group targetFramework="UAP10.0">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+        <dependency id="Microsoft.Win32.Primitives" version="4.3.0" />
+        <dependency id="System.AppContext" version="4.3.0" />
+        <dependency id="System.Collections" version="4.3.0" />
+        <dependency id="System.Collections.Concurrent" version="4.3.0" />
+        <dependency id="System.Console" version="4.3.0" />
+        <dependency id="System.Diagnostics.Debug" version="4.3.0" />
+        <dependency id="System.Diagnostics.Tools" version="4.3.0" />
+        <dependency id="System.Diagnostics.Tracing" version="4.3.0" />
+        <dependency id="System.Globalization" version="4.3.0" />
+        <dependency id="System.Globalization.Calendars" version="4.3.0" />
+        <dependency id="System.IO" version="4.3.0" />
+        <dependency id="System.IO.Compression" version="4.3.0" />
+        <dependency id="System.IO.Compression.ZipFile" version="4.3.0" />
+        <dependency id="System.IO.FileSystem" version="4.3.0" />
+        <dependency id="System.IO.FileSystem.Primitives" version="4.3.0" />
+        <dependency id="System.Linq" version="4.3.0" />
+        <dependency id="System.Linq.Expressions" version="4.3.0" />
+        <dependency id="System.Net.Http" version="4.3.2" />
+        <dependency id="System.Net.Primitives" version="4.3.0" />
+        <dependency id="System.Net.Sockets" version="4.3.0" />
+        <dependency id="System.ObjectModel" version="4.3.0" />
+        <dependency id="System.Reflection" version="4.3.0" />
+        <dependency id="System.Reflection.Extensions" version="4.3.0" />
+        <dependency id="System.Reflection.Primitives" version="4.3.0" />
+        <dependency id="System.Resources.ResourceManager" version="4.3.0" />
+        <dependency id="System.Runtime" version="4.3.0" />
+        <dependency id="System.Runtime.Extensions" version="4.3.0" />
+        <dependency id="System.Runtime.Handles" version="4.3.0" />
+        <dependency id="System.Runtime.InteropServices" version="4.3.0" />
+        <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="4.3.0" />
+        <dependency id="System.Runtime.Numerics" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Algorithms" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Encoding" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Primitives" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.X509Certificates" version="4.3.0" />
+        <dependency id="System.Text.Encoding" version="4.3.0" />
+        <dependency id="System.Text.Encoding.Extensions" version="4.3.0" />
+        <dependency id="System.Text.RegularExpressions" version="4.3.0" />
+        <dependency id="System.Threading" version="4.3.0" />
+        <dependency id="System.Threading.Tasks" version="4.3.0" />
+        <dependency id="System.Threading.Timer" version="4.3.0" />
+        <dependency id="System.Xml.ReaderWriter" version="4.3.0" />
+        <dependency id="System.Xml.XDocument" version="4.3.0" />
+      </group>
+      <group targetFramework="UAP10.0.15138">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+      </group>
+      <group targetFramework="WindowsPhoneApp8.1">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+        <dependency id="System.Runtime.InteropServices.RuntimeInformation" version="4.3.0" />
+      </group>
+      <group targetFramework="Xamarin.iOS1.0">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+      </group>
+      <group targetFramework="Xamarin.Mac2.0">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+      </group>
+      <group targetFramework="Xamarin.TVOS1.0">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+      </group>
+      <group targetFramework="Xamarin.WatchOS1.0">
+        <dependency id="Microsoft.NETCore.Platforms" version="1.1.0" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

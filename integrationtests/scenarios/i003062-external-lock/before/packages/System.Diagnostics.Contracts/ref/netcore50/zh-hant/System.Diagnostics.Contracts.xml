@@ -1,0 +1,340 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<doc>
+  <assembly>
+    <name>System.Diagnostics.Contracts</name>
+  </assembly>
+  <members>
+    <member name="T:System.Diagnostics.Contracts.Contract">
+      <summary>包含表示程式合約的靜態方法，例如前置條件、後置條件及物件非變異。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assert(System.Boolean)">
+      <summary>檢查條件，且如果條件為 false，則遵循已為分析器設定的擴大原則。</summary>
+      <param name="condition">要測試的條件運算式。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assert(System.Boolean,System.String)">
+      <summary>檢查條件。如果條件為 false，則遵循分析器所設定的擴大原則，並顯示指定的訊息。</summary>
+      <param name="condition">要測試的條件運算式。</param>
+      <param name="userMessage">當條件不符合時所顯示的訊息。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assume(System.Boolean)">
+      <summary>指示程式碼分析工具假設指定的條件為 true，即使該條件無法以靜態方式證明永遠是 true 亦然。</summary>
+      <param name="condition">要假設 true 的條件運算式。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Assume(System.Boolean,System.String)">
+      <summary>指示程式碼分析工具假設條件為 true，即使該條件無法以靜態方式證明永遠是 true 亦然，同時在假設失敗時顯示訊息。</summary>
+      <param name="condition">要假設 true 的條件運算式。</param>
+      <param name="userMessage">要在假設失敗時張貼的訊息。</param>
+    </member>
+    <member name="E:System.Diagnostics.Contracts.Contract.ContractFailed">
+      <summary>發生於合約失敗時。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.EndContractBlock">
+      <summary>當方法的合約僅包含 if-then-throw 形式的前置條件時，標記合約區段的結尾。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Ensures(System.Boolean)">
+      <summary>指定封入方法或屬性的後置條件合約。</summary>
+      <param name="condition">要測試的條件運算式。運算式可以包含 <see cref="M:System.Diagnostics.Contracts.Contract.OldValue``1(``0)" />、<see cref="M:System.Diagnostics.Contracts.Contract.ValueAtReturn``1(``0@)" /> 及 <see cref="M:System.Diagnostics.Contracts.Contract.Result``1" /> 值。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Ensures(System.Boolean,System.String)">
+      <summary>為提供的結束條件指定後置條件合約，以及在條件為 false 時所要顯示的訊息。</summary>
+      <param name="condition">要測試的條件運算式。運算式可以包含 <see cref="M:System.Diagnostics.Contracts.Contract.OldValue``1(``0)" /> 和 <see cref="M:System.Diagnostics.Contracts.Contract.Result``1" /> 值。</param>
+      <param name="userMessage">當運算式不是 true 時所顯示的訊息。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.EnsuresOnThrow``1(System.Boolean)">
+      <summary>根據所提供的例外狀況和條件，針對封入方法或屬性指定後置條件合約。</summary>
+      <param name="condition">要測試的條件運算式。</param>
+      <typeparam name="TException">例外狀況類型，其會叫用後置條件檢查。</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.EnsuresOnThrow``1(System.Boolean,System.String)">
+      <summary>根據所提供之例外狀況和條件，針對封入方法或屬性來指定後置條件合約，和當條件是 false 時顯示的訊息。</summary>
+      <param name="condition">要測試的條件運算式。</param>
+      <param name="userMessage">如果運算式為 false 時所顯示的訊息。</param>
+      <typeparam name="TException">例外狀況類型，其會叫用後置條件檢查。</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Exists``1(System.Collections.Generic.IEnumerable{``0},System.Predicate{``0})">
+      <summary>判斷項目集合內的項目是否出現在函式中。</summary>
+      <returns>只有在 <paramref name="predicate" /> 為 <paramref name="collection" /> 中任何 <paramref name="T" /> 類型之元素傳回 true 時，才為 true。</returns>
+      <param name="collection">將從中取出 <paramref name="T" /> 類型的項目以傳遞至 <paramref name="predicate" /> 的集合。</param>
+      <param name="predicate">要評估 <paramref name="collection" /> 中元素的函式。</param>
+      <typeparam name="T">包含在 <paramref name="collection" /> 中的類型。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="collection" /> or <paramref name="predicate" /> is null.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Exists(System.Int32,System.Int32,System.Predicate{System.Int32})">
+      <summary>判斷整數範圍內是否有任何整數使指定的測試成立。</summary>
+      <returns>如果 <paramref name="predicate" /> 為從 <paramref name="fromInclusive" /> 開始到 <paramref name="toExclusive" /> - 1 的任何整數傳回 true，則為 true。</returns>
+      <param name="fromInclusive">要傳遞至 <paramref name="predicate" /> 的第一個整數。</param>
+      <param name="toExclusive">要傳遞至 <paramref name="predicate" /> 的最後一個整數加一。</param>
+      <param name="predicate">要評估指定範圍內任何整數值的函式。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="predicate" /> is null.</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="toExclusive " />is less than <paramref name="fromInclusive" />.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.ForAll``1(System.Collections.Generic.IEnumerable{``0},System.Predicate{``0})">
+      <summary>判斷集合內的所有項目是否都出現在函式中。</summary>
+      <returns>只有在 <paramref name="predicate" /> 為 <paramref name="collection" /> 中所有 <paramref name="T" /> 類型的元素傳回 true 時，才為 true。</returns>
+      <param name="collection">將從中取出 <paramref name="T" /> 類型的項目以傳遞至 <paramref name="predicate" /> 的集合。</param>
+      <param name="predicate">要評估 <paramref name="collection" /> 中所有元素是否存在的函式。</param>
+      <typeparam name="T">包含在 <paramref name="collection" /> 中的類型。</typeparam>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="collection" /> or <paramref name="predicate" /> is null.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.ForAll(System.Int32,System.Int32,System.Predicate{System.Int32})">
+      <summary>判斷特定條件對於指定之範圍內的所有整數是否有效。</summary>
+      <returns>如果 <paramref name="predicate" /> 為從 <paramref name="fromInclusive" /> 開始到 <paramref name="toExclusive" /> - 1 的所有整數傳回 true，則為 true。</returns>
+      <param name="fromInclusive">要傳遞至 <paramref name="predicate" /> 的第一個整數。</param>
+      <param name="toExclusive">要傳遞至 <paramref name="predicate" /> 的最後一個整數加一。</param>
+      <param name="predicate">要評估指定範圍中整數是否存在的函式。</param>
+      <exception cref="T:System.ArgumentNullException">
+        <paramref name="predicate" /> is null.</exception>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="toExclusive " />is less than <paramref name="fromInclusive" />.</exception>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Invariant(System.Boolean)">
+      <summary>指定封入方法或屬性的非變異合約。</summary>
+      <param name="condition">要測試的條件運算式。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Invariant(System.Boolean,System.String)">
+      <summary>指定封入方法或屬性的非變異合約，並在合約的條件失敗時顯示訊息。</summary>
+      <param name="condition">要測試的條件運算式。</param>
+      <param name="userMessage">如果條件為 false 時所顯示的訊息。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.OldValue``1(``0)">
+      <summary>表示其在方法或屬性開始時的值。</summary>
+      <returns>在方法或屬性開始時之欄位或參數的值。</returns>
+      <param name="value">要表示的值 (欄位或參數)。</param>
+      <typeparam name="T">值的類型。</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires``1(System.Boolean)">
+      <summary>指定封入方法或屬性的前置條件合約，並在合約的條件失敗時擲回例外狀況。</summary>
+      <param name="condition">要測試的條件運算式。</param>
+      <typeparam name="TException">當條件為 false 時所要擲回的例外狀況。</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires(System.Boolean)">
+      <summary>指定封入方法或屬性的前置條件合約。</summary>
+      <param name="condition">要測試的條件運算式。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires(System.Boolean,System.String)">
+      <summary>指定封入方法或屬性的前置條件合約，並在合約的條件失敗時顯示訊息。</summary>
+      <param name="condition">要測試的條件運算式。</param>
+      <param name="userMessage">如果條件為 false 時所顯示的訊息。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Requires``1(System.Boolean,System.String)">
+      <summary>指定封入方法或屬性的前置條件合約，並在合約的條件失敗時擲回包含所提供訊息的例外狀況。</summary>
+      <param name="condition">要測試的條件運算式。</param>
+      <param name="userMessage">如果條件為 false 時所顯示的訊息。</param>
+      <typeparam name="TException">當條件為 false 時所要擲回的例外狀況。</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.Result``1">
+      <summary>表示方法或屬性的傳回值。</summary>
+      <returns>封入方法或屬性的傳回值。</returns>
+      <typeparam name="T">封入方法或屬性的傳回值類型。</typeparam>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.Contract.ValueAtReturn``1(``0@)">
+      <summary>表示從方法傳回時的最後 (輸出) out 參數值。</summary>
+      <returns>out 參數的輸出值。</returns>
+      <param name="value">out 參數。</param>
+      <typeparam name="T">out 參數的類型。</typeparam>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractAbbreviatorAttribute">
+      <summary>定義可以取代完整合約語法的縮寫。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractAbbreviatorAttribute.#ctor">
+      <summary>初始化 <see cref="T:System.Diagnostics.Contracts.ContractAbbreviatorAttribute" /> 類別的新執行個體。</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractArgumentValidatorAttribute">
+      <summary>可讓您將舊版 if-then-throw 程式碼分成不同的方法以供重複使用，並讓您完整控制擲回的例外狀況和引數。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractArgumentValidatorAttribute.#ctor">
+      <summary>初始化 <see cref="T:System.Diagnostics.Contracts.ContractArgumentValidatorAttribute" /> 類別的新執行個體。</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractClassAttribute">
+      <summary>指定不同的型別包含此型別的程式碼合約。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractClassAttribute.#ctor(System.Type)">
+      <summary>初始化 <see cref="T:System.Diagnostics.Contracts.ContractClassAttribute" /> 類別的新執行個體。</summary>
+      <param name="typeContainingContracts">型別，包含這個型別的程式碼合約。</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractClassAttribute.TypeContainingContracts">
+      <summary>取得型別，此型別包含這個型別的程式碼合約。</summary>
+      <returns>型別，包含這個型別的程式碼合約。</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractClassForAttribute">
+      <summary>指定類別是某個型別的合約。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractClassForAttribute.#ctor(System.Type)">
+      <summary>初始化 <see cref="T:System.Diagnostics.Contracts.ContractClassForAttribute" /> 類別的新執行個體，指定目前類別為其合約的型別。</summary>
+      <param name="typeContractsAreFor">目前類別為其合約的型別。</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractClassForAttribute.TypeContractsAreFor">
+      <summary>取得型別，即其中要套用此程式碼合約的型別。</summary>
+      <returns>其中要套用此程式碼合約的型別。</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractFailedEventArgs">
+      <summary>提供 <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" /> 事件的方法與資料。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractFailedEventArgs.#ctor(System.Diagnostics.Contracts.ContractFailureKind,System.String,System.String,System.Exception)">
+      <summary>提供 <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" /> 事件的資料。</summary>
+      <param name="failureKind">一個列舉值，指定失敗的合約。</param>
+      <param name="message">事件的訊息。</param>
+      <param name="condition">事件的條件。</param>
+      <param name="originalException">造成事件的例外狀況。</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Condition">
+      <summary>取得合約失敗的條件。</summary>
+      <returns>失敗的條件。</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.FailureKind">
+      <summary>取得失敗的合約類型。</summary>
+      <returns>一個列舉值，指定失敗之合約的型別。</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Handled">
+      <summary>表示是否已處理 <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" /> 事件。</summary>
+      <returns>如果已處理事件則為 true，否則為 false。</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Message">
+      <summary>取得描述 <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" /> 事件的訊息。</summary>
+      <returns>描述事件的訊息。</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.OriginalException">
+      <summary>取得造成 <see cref="E:System.Diagnostics.Contracts.Contract.ContractFailed" /> 事件的原始例外狀況。</summary>
+      <returns>造成事件的例外狀況。</returns>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractFailedEventArgs.SetHandled">
+      <summary>將 <see cref="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Handled" /> 屬性設定為 true。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractFailedEventArgs.SetUnwind">
+      <summary>將 <see cref="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Unwind" /> 屬性設定為 true。</summary>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractFailedEventArgs.Unwind">
+      <summary>指出是否應該套用程式碼合約擴大原則。</summary>
+      <returns>true 表示要套用擴大原則，否則為 false。預設為 false。</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractFailureKind">
+      <summary>指定失敗的合約類型。</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Assert">
+      <summary>
+        <see cref="Overload:System.Diagnostics.Contracts.Contract.Assert" /> 合約失敗。</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Assume">
+      <summary>
+        <see cref="Overload:System.Diagnostics.Contracts.Contract.Assume" /> 合約失敗。</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Invariant">
+      <summary>
+        <see cref="Overload:System.Diagnostics.Contracts.Contract.Invariant" /> 合約失敗。</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Postcondition">
+      <summary>
+        <see cref="Overload:System.Diagnostics.Contracts.Contract.Ensures" /> 合約失敗。</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.PostconditionOnException">
+      <summary>
+        <see cref="Overload:System.Diagnostics.Contracts.Contract.EnsuresOnThrow" /> 合約失敗。</summary>
+    </member>
+    <member name="F:System.Diagnostics.Contracts.ContractFailureKind.Precondition">
+      <summary>
+        <see cref="Overload:System.Diagnostics.Contracts.Contract.Requires" /> 合約失敗。</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractInvariantMethodAttribute">
+      <summary>將方法標示為類別的非變異方法。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractInvariantMethodAttribute.#ctor">
+      <summary>初始化 <see cref="T:System.Diagnostics.Contracts.ContractInvariantMethodAttribute" /> 類別的新執行個體。</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractOptionAttribute">
+      <summary>可讓您以組件、型別或方法的資料粒度設定合約及工具選項。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractOptionAttribute.#ctor(System.String,System.String,System.Boolean)">
+      <summary>使用提供的分類、設定和啟用/停用值，初始化 <see cref="T:System.Diagnostics.Contracts.ContractOptionAttribute" /> 類別的新執行個體。</summary>
+      <param name="category">要設定其選項的分類。</param>
+      <param name="setting">選項設定。</param>
+      <param name="enabled">true 表示要啟用選項，false 表示要停用選項。</param>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractOptionAttribute.#ctor(System.String,System.String,System.String)">
+      <summary>使用提供的分類、設定和值，初始化 <see cref="T:System.Diagnostics.Contracts.ContractOptionAttribute" /> 類別的新執行個體。</summary>
+      <param name="category">要設定之選項的分類。</param>
+      <param name="setting">選項設定。</param>
+      <param name="value">設定的值。</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Category">
+      <summary>取得選項的分類。</summary>
+      <returns>選項的分類。</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Enabled">
+      <summary>判斷是否選項已啟用。</summary>
+      <returns>如果已啟用此選項，則為 true，否則為 false。</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Setting">
+      <summary>取得選項的設定。</summary>
+      <returns>選項的設定值。</returns>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractOptionAttribute.Value">
+      <summary>取得選項的值。</summary>
+      <returns>選項的值。</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute">
+      <summary>指定當欄位的可視性比方法還低時，可在方法合約中使用的欄位。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute.#ctor(System.String)">
+      <summary>初始化 <see cref="T:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute" /> 類別的新執行個體。</summary>
+      <param name="name">要套用至欄位的屬性名稱。</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractPublicPropertyNameAttribute.Name">
+      <summary>取得要套用至欄位的屬性名稱。</summary>
+      <returns>要套用至欄位的屬性名稱。</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractReferenceAssemblyAttribute">
+      <summary>指定組件是包含合約的參考組件。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractReferenceAssemblyAttribute.#ctor">
+      <summary>初始化 <see cref="T:System.Diagnostics.Contracts.ContractReferenceAssemblyAttribute" /> 類別的新執行個體。</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractRuntimeIgnoredAttribute">
+      <summary>識別沒有執行階段行為的成員。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractRuntimeIgnoredAttribute.#ctor">
+      <summary>初始化 <see cref="T:System.Diagnostics.Contracts.ContractRuntimeIgnoredAttribute" /> 類別的新執行個體。</summary>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.ContractVerificationAttribute">
+      <summary>指示分析工具不執行靜態驗證便假設組件、型別或成員的正確性。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.ContractVerificationAttribute.#ctor(System.Boolean)">
+      <summary>初始化 <see cref="T:System.Diagnostics.Contracts.ContractVerificationAttribute" /> 類別的新執行個體。</summary>
+      <param name="value">true 表示需要驗證，否則為 false。</param>
+    </member>
+    <member name="P:System.Diagnostics.Contracts.ContractVerificationAttribute.Value">
+      <summary>取得指出是否要驗證目標合約的值。</summary>
+      <returns>如果需要驗證則為 true，否則為 false。</returns>
+    </member>
+    <member name="T:System.Diagnostics.Contracts.PureAttribute">
+      <summary>指出型別或方法是純正的，也就是它不會執行任何可見的狀態變更。</summary>
+    </member>
+    <member name="M:System.Diagnostics.Contracts.PureAttribute.#ctor">
+      <summary>初始化 <see cref="T:System.Diagnostics.Contracts.PureAttribute" /> 類別的新執行個體。</summary>
+    </member>
+    <member name="T:System.Runtime.CompilerServices.ContractHelper">
+      <summary>提供方法，即二進位重寫器用來處理合約失敗的方法。</summary>
+    </member>
+    <member name="M:System.Runtime.CompilerServices.ContractHelper.RaiseContractFailedEvent(System.Diagnostics.Contracts.ContractFailureKind,System.String,System.String,System.Exception)">
+      <summary>由二進位重寫器用來啟動預設失敗行為。</summary>
+      <returns>如果已處理該事件且應該不會觸發失敗，則為 Null 參考 (在 Visual Basic 中的 Nothing)，否則會傳回當地語系化的失敗訊息。</returns>
+      <param name="failureKind">其中一個列舉值，這個值指定失敗的類型。</param>
+      <param name="userMessage">其他使用者資訊。</param>
+      <param name="conditionText">造成失敗的條件描述。</param>
+      <param name="innerException">造成目前例外狀況的內部例外狀況。</param>
+      <exception cref="T:System.ArgumentException">
+        <paramref name="failureKind" /> 不是有效的 <see cref="T:System.Diagnostics.Contracts.ContractFailureKind" /> 值。</exception>
+    </member>
+    <member name="M:System.Runtime.CompilerServices.ContractHelper.TriggerFailure(System.Diagnostics.Contracts.ContractFailureKind,System.String,System.String,System.String,System.Exception)">
+      <summary>觸發預設的失敗行為。</summary>
+      <param name="kind">其中一個列舉值，這個值指定失敗的類型。</param>
+      <param name="displayMessage">要顯示的訊息。</param>
+      <param name="userMessage">其他使用者資訊。</param>
+      <param name="conditionText">造成失敗的條件描述。</param>
+      <param name="innerException">造成目前例外狀況的內部例外狀況。</param>
+    </member>
+  </members>
+</doc>

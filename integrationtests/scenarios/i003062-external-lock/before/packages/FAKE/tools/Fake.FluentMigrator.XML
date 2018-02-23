@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+<assembly><name>Fake.FluentMigrator</name></assembly>
+<members>
+<member name="T:Fake.FluentMigratorHelper.MigrationOptions">
+<summary>
+ Fluent Migrator options
+</summary>
+</member>
+<member name="T:Fake.FluentMigratorHelper.DatabaseTask">
+<summary>
+ Database operation to execute
+</summary>
+</member>
+<member name="T:Fake.FluentMigratorHelper.MigrationRunningMode.Script">
+<summary>
+ Create migration script
+</summary>
+</member>
+<member name="T:Fake.FluentMigratorHelper.MigrationRunningMode.Preview">
+<summary>
+ Execute migrations in preview-only mode
+</summary>
+</member>
+<member name="T:Fake.FluentMigratorHelper.MigrationRunningMode.ExecuteAndScript">
+<summary>
+ Execute migrations on the target database and script SQL to the output file
+</summary>
+</member>
+<member name="T:Fake.FluentMigratorHelper.MigrationRunningMode.Execute">
+<summary>
+ Execute migrations on the target database
+</summary>
+</member>
+<member name="T:Fake.FluentMigratorHelper.MigrationRunningMode">
+<summary>
+ Fluent Migrator execution mode
+</summary>
+</member>
+<member name="T:Fake.FluentMigratorHelper.DatabaseConnection.ConnectionStringFromConfig">
+<summary>
+Connection string specified in application config file
+</summary>
+</member>
+<member name="T:Fake.FluentMigratorHelper.DatabaseConnection.ConnectionString">
+<summary>
+Explicit connection string
+</summary>
+</member>
+<member name="T:Fake.FluentMigratorHelper.DatabaseConnection">
+<summary>
+ Database connection configuration
+</summary>
+</member>
+<member name="T:Fake.FluentMigratorHelper.DatabaseProvider">
+<summary>
+ Fluent Migrator SQL syntax provider
+</summary>
+</member>
+<member name="T:Fake.FluentMigratorHelper.OracleVersion">
+<summary>
+ Oracle database driver version
+</summary>
+</member>
+<member name="T:Fake.FluentMigratorHelper.SqlServerVersion">
+<summary>
+ MS SQL Server driver version
+</summary>
+</member>
+<member name="M:Fake.FluentMigratorHelper.ListAppliedMigrations(Fake.FluentMigratorHelper.DatabaseConnection,System.Collections.Generic.IEnumerable{System.String})">
+<summary>
+ Lists all migrations which were applied to the database
+  - `connection` - Database connection
+  - `assemblies` - Assembly files which contain migrations
+</summary>
+</member>
+<member name="M:Fake.FluentMigratorHelper.RollbackLatest(Fake.FluentMigratorHelper.DatabaseConnection,System.Collections.Generic.IEnumerable{System.String},Fake.FluentMigratorHelper.MigrationOptions)">
+<summary>
+ Rollbacks latest applied migration
+  - `connection` - Database connection
+  - `assemblies` - Assembly files which contain migrations
+  - `options` - Migration options which are passed to FluentMigrator
+</summary>
+</member>
+<member name="M:Fake.FluentMigratorHelper.Rollback(System.Int32,Fake.FluentMigratorHelper.DatabaseConnection,System.Collections.Generic.IEnumerable{System.String},Fake.FluentMigratorHelper.MigrationOptions)">
+<summary>
+ Rollbacks several applied migrations
+ ## Parameters
+  - `steps` - Number of migrations to rollback
+  - `connection` - Database connection
+  - `assemblies` - Assembly files which contain migrations
+  - `options` - Migration options which are passed to FluentMigrator
+</summary>
+</member>
+<member name="M:Fake.FluentMigratorHelper.MigrateDown(System.Int64,Fake.FluentMigratorHelper.DatabaseConnection,System.Collections.Generic.IEnumerable{System.String},Fake.FluentMigratorHelper.MigrationOptions)">
+<summary>
+ Migrates database up to the specified version
+ ## Parameters
+  - `version` - Target version
+  - `connection` - Database connection
+  - `assemblies` - Assembly files which contain migrations
+  - `options` - Migration options which are passed to FluentMigrator
+</summary>
+</member>
+<member name="M:Fake.FluentMigratorHelper.MigrateToLatest(Fake.FluentMigratorHelper.DatabaseConnection,System.Collections.Generic.IEnumerable{System.String},Fake.FluentMigratorHelper.MigrationOptions)">
+<summary>
+ Migrates database up to the latest version
+ ## Parameters
+  - `connection` - Database connection
+  - `assemblies` - Assembly files which contain migrations
+  - `options` - Migration options which are passed to FluentMigrator
+</summary>
+</member>
+<member name="M:Fake.FluentMigratorHelper.MigrateUp(System.Int64,Fake.FluentMigratorHelper.DatabaseConnection,System.Collections.Generic.IEnumerable{System.String},Fake.FluentMigratorHelper.MigrationOptions)">
+<summary>
+ Migrates database up to the specified version
+ ## Parameters
+  - `version` - Target version
+  - `connection` - Database connection
+  - `assemblies` - Assembly files which contain migrations
+  - `options` - Migration options which are passed to FluentMigrator
+</summary>
+</member>
+<member name="M:Fake.FluentMigratorHelper.ExecuteDatabaseTask(Fake.FluentMigratorHelper.DatabaseTask,System.Collections.Generic.IEnumerable{System.String},Fake.FluentMigratorHelper.MigrationOptions)">
+<summary>
+ Executes the specified task using configuration options
+ ## Parameters
+  - `task` - Database task to execute
+  - `assemblies` - Assembly files which contain migrations
+  - `options` - Migration options which are passed to FluentMigrator
+</summary>
+</member>
+<member name="P:Fake.FluentMigratorHelper.DefaultMigrationOptions">
+<summary>
+ Default migration options
+</summary>
+</member>
+<member name="T:Fake.FluentMigratorHelper">
+<summary>
+ Contains functions to run FluentMigrator
+</summary>
+</member>
+</members>
+</doc>
