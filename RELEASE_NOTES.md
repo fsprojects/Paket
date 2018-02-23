@@ -1,4 +1,4 @@
-#### 5.141.0 - 2018-02-23
+#### 5.142.0 - 2018-02-23
 * BUGFIX: Fixing TLS 1.2 for BootStrapper - https://github.com/fsprojects/Paket/pull/3066
 * BUGFIX: Fixed unhandled exception when running 'paket config add-credentials' in Jenkins pipeline - https://github.com/fsprojects/Paket/issues/2884
 * BUGFIX: Some NuGet v2 queries fail with normalized filter syntax and are now skipped/blacklisted - https://github.com/fsprojects/Paket/pull/3059
