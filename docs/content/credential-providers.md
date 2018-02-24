@@ -15,3 +15,13 @@ Example VSTS:
 
 ## CI
 
+There are two options to use Credential Providers in your build agent:
+
+1. Either install a global Credential Provider on your agent
+2. Use Tasks to provide Credential Providers as part of your build.
+
+Example VSTS:
+
+Install https://github.com/matthid/Paket.TeamBuildCredentials/releases/tag/0.1.1 on your TFS
+Add the "Setup Paket credential manager" build step before calling Paket.
+See more infos [here](https://github.com/matthid/Paket.TeamBuildCredentials)
