@@ -1741,7 +1741,7 @@ type ProjectFile with
 
     member this.GetTargetFramework() =
         match this.GetTargetFrameworks() with
-        | [] -> failwithf "could not locate a target framework for project file %s" this.Name
+        | [] -> ""
         | fwk :: _ -> fwk
 
     member this.GetAssemblyName () = ProjectFile.getAssemblyName this
