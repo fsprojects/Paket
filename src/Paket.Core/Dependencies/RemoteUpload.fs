@@ -41,9 +41,9 @@ let Push maxTrials url apiKey clientVersion packageFileName =
         tracefn "Pushing package %s to %s - trial %d" packageFileName url trial
 
         try
-            let authOpt = ConfigFile.GetAuthentication(url)
+            let authOpt = AuthService.GetGlobalAuthenticationProvider(url).Retrieve (1 = trial)
             match authOpt with
-            | Some (Auth.Credentials (u,_,_)) -> 
+            | Some (Auth.Credentials {Username = u}) ->
                 tracefnVerbose "Authorizing using credentials for user %s" u
             | Some (Auth.Token _) -> 
                 tracefnVerbose "Authorizing using token"

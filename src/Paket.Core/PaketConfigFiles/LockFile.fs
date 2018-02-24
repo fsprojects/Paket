@@ -93,15 +93,16 @@ module LockFileSerializer =
                     match package.Source with
                     | NuGetV2 source -> source.Url,source.Authentication,package
                     | NuGetV3 source -> source.Url,source.Authentication,package
-                    | LocalNuGet(path,_) -> path,None,package
+                    // TODO: Add credentials provider...
+                    | LocalNuGet(path,_) -> path,AuthService.GetGlobalAuthenticationProvider path,package
                 )
-            |> Seq.groupBy (fun (a,b,_) -> a,b)
+            |> Seq.groupBy (fun (a,b,_) -> a)
 
         let all = 
             let hasReported = ref false
             [ yield! serializeOptionsAsLines options
 
-              for (source, _), packages in sources do
+              for (source), packages in sources do
                   if not !hasReported then
                     yield "NUGET"
                     hasReported := true
@@ -477,7 +478,7 @@ module LockFileParser =
                         { currentGroup with 
                             LastWasPackage = true
                             Packages = 
-                                    { Source = PackageSource.Parse(remote, None)
+                                    { Source = PackageSource.Parse(remote, AuthService.GetGlobalAuthenticationProvider remote)
                                       Name = PackageName parts'.[0]
                                       Dependencies = Set.empty
                                       Unlisted = false

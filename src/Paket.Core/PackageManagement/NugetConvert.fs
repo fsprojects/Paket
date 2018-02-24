@@ -28,19 +28,19 @@ type CredsMigrationMode =
 
     static member ToAuthentication mode sourceName auth =
         match mode, auth with
-        | Encrypt, Credentials(username, password, authType) -> 
-            ConfigAuthentication(username, password, authType)
-        | Plaintext, Credentials(username, password, authType) -> 
-            PlainTextAuthentication(username, password, authType)
-        | Selective, Credentials(username, password, authType) -> 
+        | Encrypt, Credentials userPass ->
+            Credentials userPass
+        | Plaintext, Credentials userPass ->
+            Credentials userPass
+        | Selective, Credentials userPass ->
             let question =
                 sprintf "Credentials for source '%s': " sourceName  + 
                     "[encrypt and save in config (Yes) " + 
                     sprintf "| save as plaintext in %s (No)]" Constants.DependenciesFileName
                     
             match Utils.askYesNo question with
-            | true -> ConfigAuthentication(username, password, authType)
-            | false -> PlainTextAuthentication(username, password, authType)
+            | true -> Credentials userPass
+            | false -> Credentials userPass
         | _ -> failwith "invalid auth"
 
 /// Represents type of NuGet packages.config file
@@ -96,8 +96,10 @@ type NugetConfig =
                 let encryptedPass = authNode |> tryGetValue "Password"
 
                 match userName, encryptedPass, clearTextPass with 
-                | Some userName, Some encryptedPass, _ -> Some(Credentials(userName, ConfigFile.DecryptNuget encryptedPass, AuthType.Basic))
-                | Some userName, _, Some clearTextPass -> Some(Credentials(userName,clearTextPass, AuthType.Basic))
+                | Some userName, Some encryptedPass, _ ->
+                    Some(Credentials{Username = userName; Password = ConfigFile.DecryptNuget encryptedPass; Type = AuthType.Basic})
+                | Some userName, _, Some clearTextPass ->
+                    Some(Credentials{Username = userName; Password = clearTextPass; Type = AuthType.Basic})
                 | _ -> None
 
             configNode 
@@ -308,7 +310,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     let read() =
         let addPackages dependenciesFile =
             packages
-            |> List.map (fun (name, vr, restrictions, kind) -> 
+            |> List.map (fun (name, vr, restrictions, kind) ->
                 Constants.MainDependencyGroup, PackageName name, vr, { InstallSettings.Default with FrameworkRestrictions = ExplicitRestriction restrictions}, kind)
             |> List.fold (fun (dependenciesFile:DependenciesFile) (groupName, packageName,versionRange,installSettings,kind) -> 
                 let reqKind =
@@ -331,9 +333,9 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                  |> List.map snd)
             |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.ToAuthentication mode n))
             |> List.filter (fun (key,v) -> key.Contains "NuGetFallbackFolder" |> not)
-            |> List.map (fun source -> 
-                            try source |> PackageSource.Parse |> ok
-                            with _ -> source |> fst |> PackageSourceParseError |> fail
+            |> List.map (fun (source, auth) -> 
+                            try PackageSource.Parse(source,AuthProvider.ofFunction (fun _ -> auth)) |> ok
+                            with _ -> source |> PackageSourceParseError |> fail
                             |> successTee PackageSource.WarnIfNoConnection)
                             
             |> collect

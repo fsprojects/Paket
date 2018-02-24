@@ -722,7 +722,9 @@ type Dependencies(dependenciesFileName: string) =
 
         let configKey =
             let url = defaultArg url "https://nuget.org"
-            ConfigFile.GetAuthentication url |> Option.bind (fun a -> match a with Token t -> Some t | _ -> None )
+            AuthService.GetGlobalAuthenticationProvider url
+            |> AuthProvider.retrieve false
+            |> Option.bind (fun a -> match a with Token t -> Some t | _ -> None )
 
         let firstPresentKey =
             [apiKey; envKey; configKey]

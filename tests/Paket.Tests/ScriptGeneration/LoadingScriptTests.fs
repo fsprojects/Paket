@@ -23,7 +23,7 @@ let testData =
         PackageResolver.ResolvedPackage.Unlisted = false
         PackageResolver.ResolvedPackage.Kind = PackageResolver.ResolvedPackageKind.Package
         PackageResolver.ResolvedPackage.Settings = Requirements.InstallSettings.Default
-        PackageResolver.ResolvedPackage.Source = PackageSources.PackageSource.NuGetV2 { Url = ""; Authentication = None }
+        PackageResolver.ResolvedPackage.Source = PackageSources.PackageSource.NuGetV2 { Url = ""; Authentication = AuthProvider.empty }
         PackageResolver.IsRuntimeDependency = false }
       { Name = PackageName "other"
         Version = SemVer.Parse "1.0.0"
@@ -31,7 +31,7 @@ let testData =
         Unlisted = false
         Settings = Requirements.InstallSettings.Default
         Kind = PackageResolver.ResolvedPackageKind.Package
-        Source = PackageSources.PackageSource.NuGetV2 { Url = ""; Authentication = None }
+        Source = PackageSources.PackageSource.NuGetV2 { Url = ""; Authentication = AuthProvider.empty }
         IsRuntimeDependency = false }
     ]
     
