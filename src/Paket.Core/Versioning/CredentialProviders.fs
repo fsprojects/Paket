@@ -55,8 +55,9 @@ type CredentialProviderUnknownStatusException =
 module CredentialProviders =
     open Logging
     open System.Collections.Concurrent
-
-    let pattern = "CredentialProvider*.exe"
+    
+    let patternExe = "CredentialProvider*.exe"
+    let patternDll = "CredentialProvider*.dll"
     let envVar = "NUGET_CREDENTIALPROVIDERS_PATH"
     let directoryRoot =
         Path.Combine(
@@ -84,7 +85,8 @@ module CredentialProviders =
 
     let collectProviders () =
         let customPaths = findPathsFromEnvVar envVar
-        findAll directoryRoot customPaths pattern pattern
+        findAll directoryRoot customPaths patternExe patternExe @ findAll directoryRoot customPaths patternDll patternDll
+        |> List.distinct
 
     // See https://github.com/NuGet/NuGet.Client/blob/c17547b5c64ab8d498cc24340a09ae647456cf20/src/NuGet.Clients/NuGet.Credentials/PluginCredentialProvider.cs#L169
     let formatCommandLine args =

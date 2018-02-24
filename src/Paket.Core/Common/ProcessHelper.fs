@@ -8,11 +8,6 @@ open System.Collections.Generic
 /// Arguments on the Mono executable
 let mutable monoArguments = ""
 
-/// Modifies the ProcessStartInfo according to the platform semantics
-let platformInfoAction (psi : ProcessStartInfo) =
-    if isMonoRuntime && psi.FileName.EndsWith ".exe" then
-        psi.Arguments <- monoArguments + " " + psi.FileName + " " + psi.Arguments
-        psi.FileName <- monoPath
 
 /// Searches the given directories for all occurrences of the given file name
 /// [omit]
@@ -79,6 +74,24 @@ let tryFindFileOnPath (file : string) : string option =
     |> Seq.append [ "." ]
     |> fun path -> tryFindFile path file
 
+/// Modifies the ProcessStartInfo according to the platform semantics
+let platformInfoAction (psi : ProcessStartInfo) =
+    if isMonoRuntime && psi.FileName.EndsWith ".exe" then
+        psi.Arguments <- monoArguments + " \"" + psi.FileName + "\" " + psi.Arguments
+        psi.FileName <- monoPath
+
+    if psi.FileName.ToLowerInvariant().EndsWith(".dll") then
+        // Run DotNetCore
+        let exeName = if isUnix then "dotnet" else "dotnet.exe"
+        let dotnetExe = 
+            match tryFindFileOnPath exeName with
+            | Some exe -> exe
+            | None -> exeName
+        psi.Arguments <- "\"" + psi.FileName + "\" " + psi.Arguments
+        psi.FileName <- dotnetExe
+
+
+
 /// Returns the AppSettings for the key - Splitted on ;
 /// [omit]
 let appSettings (key : string) (fallbackValue : string) =
@@ -115,10 +128,7 @@ let internal startedProcesses = HashSet()
 
 /// [omit]
 let start (proc : Process) =
-    if isMonoRuntime && proc.StartInfo.FileName.ToLowerInvariant().EndsWith(".exe") then
-        proc.StartInfo.Arguments <- "--debug \"" + proc.StartInfo.FileName + "\" " + proc.StartInfo.Arguments
-        proc.StartInfo.FileName <- monoPath
-
+    platformInfoAction proc.StartInfo
     proc.Start() |> ignore
     startedProcesses.Add(proc.Id, proc.StartTime) |> ignore
 
