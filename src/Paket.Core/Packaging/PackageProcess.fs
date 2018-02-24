@@ -26,7 +26,7 @@ let private merge buildConfig buildPlatform versionFromAssembly specificVersions
 
     match withVersion with
     | { Contents = ProjectInfo(md, opt) } -> 
-        let assemblyReader,id,versionFromAssembly,assemblyFileName = readAssemblyFromProjFile buildConfig buildPlatform projectFile
+        let assemblyReader,id,versionFromAssembly,assemblyFileName = readAssemblyFromProjFile buildConfig buildPlatform (projectFile.GetTargetFramework()) projectFile
         let attribs = loadAssemblyAttributes assemblyReader
 
         let mergedOpt =

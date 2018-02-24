@@ -43,7 +43,8 @@ let ``should detect output path for proj file``
         ([<Values("Project1", "Project2", "Project3", "ProjectWithConditions")>] project)
         ([<Values("Debug", "Release", "dEbUg", "rElEaSe")>] configuration) =
     ensureDir ()
-    let outPath = ProjectFile.TryLoad(sprintf "./ProjectFile/TestData/%s.fsprojtest" project).Value.GetOutputDirectory configuration ""
+    let project = ProjectFile.TryLoad(sprintf "./ProjectFile/TestData/%s.fsprojtest" project).Value
+    let outPath = project.GetOutputDirectory configuration "" (project.GetTargetFramework())
     let expected = (System.IO.Path.Combine(@"bin", configuration) |> normalizePath)
     outPath.ToLowerInvariant() |> shouldEqual (expected.ToLowerInvariant())
 
@@ -54,7 +55,7 @@ let ``should detect output path for netsdk csproj file``
     ensureDir ()
     let projectFile = ProjectFile.TryLoad(sprintf "./ProjectFile/TestData/%s" project).Value 
     let target = projectFile.GetTargetProfiles().Head.ToString()
-    let outPath = projectFile.GetOutputDirectory configuration ""
+    let outPath = projectFile.GetOutputDirectory configuration "" (projectFile.GetTargetFramework())
     let expected = (System.IO.Path.Combine(@"bin", configuration, target) |> normalizePath)
     outPath.ToLowerInvariant() |> shouldEqual (expected.ToLowerInvariant())
 
@@ -65,7 +66,7 @@ let ``should detect output path for netsdk with outputPath csproj file``
     ensureDir ()
     let projectFile = ProjectFile.TryLoad(sprintf "./ProjectFile/TestData/%s" project).Value 
     let target = projectFile.GetTargetProfiles().Head.ToString()
-    let outPath = projectFile.GetOutputDirectory configuration ""
+    let outPath = projectFile.GetOutputDirectory configuration "" (projectFile.GetTargetFramework())
     let expected = (System.IO.Path.Combine(@"bin", configuration,"netstandard1.4_bin", target) |> normalizePath)
     outPath.ToLowerInvariant() |> shouldEqual (expected.ToLowerInvariant())
 
