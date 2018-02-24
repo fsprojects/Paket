@@ -2,6 +2,8 @@
 
 Paket supports Credential Providers through the same interface as [NuGet](https://docs.microsoft.com/en-us/nuget/reference/extensibility/nuget-exe-credential-providers).
 
+Paket extends the definition and allows to run FDD-NetCore applications to run as well (`*.dll` files!), so Paket additionally searches for `CredentialProvider*.dll` files in the given paths. For this to work Paket needs to be able to resolve a `dotnet` executable from the `PATH` variable.
+
 ## Development
 
 For regular paket users installing Credential Providers works the same as for the NuGet client. If you have already installed Credential Providers in `%LOCALAPPDATA%\NuGet\CredentialProviders` paket should pick them up immediatly.
