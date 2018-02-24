@@ -1047,6 +1047,12 @@ module ProjectFile =
     let getTargetFrameworkVersion (project:ProjectFile) = getProperty "TargetFrameworkVersion" project
     let getTargetFramework (project:ProjectFile) = getProperty "TargetFramework" project
     let getTargetFrameworks (project:ProjectFile) = getProperty "TargetFrameworks" project
+    let getTargetFrameworksParsed (project:ProjectFile) =
+        getTargetFrameworks project
+        |> Option.map (fun x -> x.Split([|';'|],StringSplitOptions.RemoveEmptyEntries))
+        |> Option.toArray
+        |> Array.concat
+        |> Array.map (fun x -> x.Trim())
 
     let getToolsVersion (project:ProjectFile) =
         let adjustIfWeHaveSDK v =
@@ -1080,13 +1086,7 @@ module ProjectFile =
             let frameworks = 
                 match getTargetFrameworkVersion project with
                 | None -> 
-                    let xs = 
-                        getTargetFrameworks project 
-                        |> Option.map (fun x -> x.Split([|';'|],StringSplitOptions.RemoveEmptyEntries))
-                        |> Option.toArray
-                        |> Array.concat
-                        |> Array.map (fun x -> x.Trim())
-                        |> Seq.toList
+                    let xs = getTargetFrameworksParsed project |> Array.toList
                     (getTargetFramework project |> Option.toList) @ xs
                     
                 | Some x -> [prefix() + (x.Replace("v",""))]
@@ -1574,12 +1574,7 @@ module ProjectFile =
     let getAssetsFileInfo (projectFileInfo:FileInfo) =
         FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj","project.assets.json"))
 
-    let getOutputDirectory buildConfiguration buildPlatform (project:ProjectFile) =
-        let targetFramework = 
-            match getTargetFramework project with
-            | Some x -> x
-            | None -> ""
-
+    let getOutputDirectory buildConfiguration buildPlatform targetFramework (project:ProjectFile) =
         let platforms =
             if not (String.IsNullOrWhiteSpace buildPlatform) then 
                 [buildPlatform]
@@ -1737,7 +1732,17 @@ type ProjectFile with
 
     member this.DetermineBuildActionForRemoteItems fileName = ProjectFile.determineBuildActionForRemoteItems fileName this
 
-    member this.GetOutputDirectory buildConfiguration buildPlatform =  ProjectFile.getOutputDirectory buildConfiguration buildPlatform this
+    member this.GetOutputDirectory buildConfiguration buildPlatform targetFramework = ProjectFile.getOutputDirectory buildConfiguration buildPlatform targetFramework this
+
+    member this.GetTargetFrameworks() =
+        match ProjectFile.getTargetFramework this with
+        | Some x -> [x]
+        | None -> ProjectFile.getTargetFrameworksParsed this |> Array.toList
+
+    member this.GetTargetFramework() =
+        match this.GetTargetFrameworks() with
+        | [] -> failwithf "could not locate a target framework for project file %s" this.Name
+        | fwk :: _ -> fwk
 
     member this.GetAssemblyName () = ProjectFile.getAssemblyName this
 

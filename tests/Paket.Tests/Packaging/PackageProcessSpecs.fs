@@ -43,7 +43,7 @@ let ``Loading assembly metadata works``() =
         elif assemblyLocation.Contains "Debug" then "Debug"
         else "Release"
     
-    let assemblyReader,id,versionFromAssembly,fileName = PackageMetaData.readAssemblyFromProjFile config "" projFile
+    let assemblyReader,id,versionFromAssembly,fileName = PackageMetaData.readAssemblyFromProjFile config "" (projFile.GetTargetFramework()) projFile
     id |> shouldEqual "Paket.Tests"
     
     let attribs = PackageMetaData.loadAssemblyAttributes assemblyReader
