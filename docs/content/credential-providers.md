@@ -25,3 +25,6 @@ Example VSTS:
 Install https://github.com/matthid/Paket.TeamBuildCredentials/releases/tag/0.1.1 on your TFS
 Add the "Setup Paket credential manager" build step before calling Paket.
 See more infos [here](https://github.com/matthid/Paket.TeamBuildCredentials)
+
+> Note: Disable failing on standard error for your build step calling paket.
+> ![Disable Failing on Standard Error](paket-vsts-disable-stderr.png)
