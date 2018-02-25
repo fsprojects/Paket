@@ -53,7 +53,6 @@ let testData =
 
 let scriptGenInputWithNoDendency = {
     PackageName                  = Paket.Domain.PackageName "foo"
-    IncludeScriptsRootFolder     = DirectoryInfo "b"
     DependentScripts             = List.empty
     FrameworkReferences          = List.empty
     OrderedDllReferences         = List.empty

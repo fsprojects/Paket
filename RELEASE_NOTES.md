@@ -1,3 +1,7 @@
+#### 5.143.1-alpha001 - 2018-02-26
+* BUGFIX: Fix https://github.com/fsharp/FAKE/issues/1744
+* BUGFIX: Fix https://github.com/fsharp/FAKE/issues/1778
+
 #### 5.143.0 - 2018-02-26
 * BUGFIX: Fixed bug when attempting to pack multi-target frameworks - https://github.com/fsprojects/Paket/pull/3073
 
