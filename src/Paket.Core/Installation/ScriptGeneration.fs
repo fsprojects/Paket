@@ -39,7 +39,6 @@ module ScriptGeneration =
 
     type ScriptGenInput = {
         PackageName              : PackageName
-        IncludeScriptsRootFolder : DirectoryInfo
         DependentScripts         : FileInfo list
         FrameworkReferences      : string list
         OrderedDllReferences     : FileInfo list
@@ -104,11 +103,7 @@ module ScriptGeneration =
         UseRelativePath : bool
         PartialPath : string
     } with
-        /// use the provided directory to compute the relative paths for the script's contents
-        /// and construct the 
-        member self.Render (directory:DirectoryInfo) =
-            let scriptFile = FileInfo (directory.FullName </> self.PartialPath)
-
+        member self.RenderDirect (baseDirectory:DirectoryInfo) scriptFile =
             // create a relative pathReferenceType directory of the script to the dll or script to load
             let relativePath (scriptFile: FileInfo) (libFile: FileInfo) =
                 if self.UseRelativePath then
@@ -121,16 +116,23 @@ module ScriptGeneration =
                 | Assembly file, _ ->
                      sprintf """#r "%s" """ (relativePath scriptFile file)
                 | LoadScript script, ScriptType.FSharp ->
-                     sprintf """#load @"%s" """ (relativePath scriptFile script)
+                     sprintf """#load @"%s" """ (relativePath scriptFile (baseDirectory.FullName </> script |> FileInfo))
                 | LoadScript script, ScriptType.CSharp ->     
-                     sprintf """#load "%s" """ (relativePath scriptFile script)
+                     sprintf """#load "%s" """ (relativePath scriptFile (baseDirectory.FullName </> script |> FileInfo))
                 | Framework name,_ ->
                      sprintf """#r "%s" """ name
         
             self.Input |> Seq.map refString |> Seq.distinct |> String.concat "\n"
         
-        /// Save the script in '<directory>/.paket/load/<script>'
+        /// use the provided directory to compute the relative paths for the script's contents
+        /// and construct the 
+        member self.Render (directory:DirectoryInfo) =
+            let scriptFile = FileInfo (directory.FullName </> self.PartialPath)
+            self.RenderDirect directory scriptFile
+
+        /// Save the script in '<rootPath>/.paket/load/<script>'
         member self.Save (rootPath:DirectoryInfo) =
+            let rootPath = DirectoryInfo (rootPath.FullName </> Constants.PaketFolderName </> "load")
             if not rootPath.Exists then rootPath.Create()
             let scriptFile = FileInfo (rootPath.FullName </> self.PartialPath)
             if verbose then
@@ -157,7 +159,6 @@ module ScriptGeneration =
         Cache : DependencyCache
         Groups : GroupName list
         DefaultFramework : bool * FrameworkIdentifier
-        LoadScriptRootDir : DirectoryInfo
         ScriptType : ScriptType
     }
 
@@ -169,9 +170,6 @@ module ScriptGeneration =
         let scriptType, groups, (isDefaultFramework, framework) = ctx.ScriptType, ctx.Groups, ctx.DefaultFramework
 
         // -- LOAD SCRIPT FORMATTING POINT --
-        let loadScriptsRootFolder = ctx.LoadScriptRootDir
-
-        // -- LOAD SCRIPT FORMATTING POINT --
         /// Create the path for a script that will load all of the packages in the provided Group
         let getGroupFile group = 
             let folder = 
@@ -179,13 +177,13 @@ module ScriptGeneration =
                 let framework = if isDefaultFramework then String.Empty else string framework
                 framework </> group
             let fileName = (sprintf "%s.group.%s" (string group) scriptType.Extension).ToLowerInvariant()
-            loadScriptsRootFolder </> folder </> fileName
+            folder </> fileName
               
        // -- LOAD SCRIPT FORMATTING POINT --
         let scriptFolder groupName (package: PackageResolver.PackageInfo) =
             let group = if groupName = Constants.MainDependencyGroup then String.Empty else (string groupName)
             let framework = if isDefaultFramework then String.Empty else string framework
-            loadScriptsRootFolder </> framework </> group </> package.Name
+            framework </> group </> package.Name
 
         // -- LOAD SCRIPT FORMATTING POINT --
         let scriptFile (scriptFolder:string) =
@@ -225,7 +223,6 @@ module ScriptGeneration =
 
                         let scriptInfo = {
                             PackageName                  = package.Name
-                            IncludeScriptsRootFolder     = loadScriptsRootFolder 
                             FrameworkReferences          = frameworkRefs
                             OrderedDllReferences         = dllFiles
                             DependentScripts             = dependencies
@@ -331,8 +328,7 @@ module ScriptGeneration =
                 [ for scriptType in scriptTypesToGenerate ->
                     let content = generateScriptContent {
                         Cache = depCache
-                        ScriptType = scriptType  
-                        LoadScriptRootDir = DirectoryInfo (lockFile.RootPath </> Constants.PaketFolderName </> "load")
+                        ScriptType = scriptType
                         Groups = groups
                         DefaultFramework = isDefaultFramework,framework
                     }
