@@ -1047,6 +1047,13 @@ module ProjectFile =
     let getTargetFrameworkVersion (project:ProjectFile) = getProperty "TargetFrameworkVersion" project
     let getTargetFramework (project:ProjectFile) = getProperty "TargetFramework" project
     let getTargetFrameworks (project:ProjectFile) = getProperty "TargetFrameworks" project
+    let getTargetFrameworksParsed (project:ProjectFile) = 
+        getTargetFrameworks project 
+        |> Option.map (fun x -> x.Split([|';'|],StringSplitOptions.RemoveEmptyEntries))
+        |> Option.toArray
+        |> Array.concat
+        |> Array.map (fun x -> x.Trim())
+        |> Array.toList
 
     let getToolsVersion (project:ProjectFile) =
         let adjustIfWeHaveSDK v =
@@ -1080,13 +1087,7 @@ module ProjectFile =
             let frameworks = 
                 match getTargetFrameworkVersion project with
                 | None -> 
-                    let xs = 
-                        getTargetFrameworks project 
-                        |> Option.map (fun x -> x.Split([|';'|],StringSplitOptions.RemoveEmptyEntries))
-                        |> Option.toArray
-                        |> Array.concat
-                        |> Array.map (fun x -> x.Trim())
-                        |> Seq.toList
+                    let xs = getTargetFrameworksParsed project 
                     (getTargetFramework project |> Option.toList) @ xs
                     
                 | Some x -> [prefix() + (x.Replace("v",""))]
@@ -1578,7 +1579,10 @@ module ProjectFile =
         let targetFramework = 
             match getTargetFramework project with
             | Some x -> x
-            | None -> ""
+            | None ->
+                match getTargetFrameworksParsed project with
+                | fwk :: _ -> fwk
+                | [] -> ""
 
         let platforms =
             if not (String.IsNullOrWhiteSpace buildPlatform) then 
