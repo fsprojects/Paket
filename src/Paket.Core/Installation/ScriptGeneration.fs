@@ -101,6 +101,7 @@ module ScriptGeneration =
     type ScriptContent = {
         Lang : ScriptType         
         Input : ReferenceType seq
+        UseRelativePath : bool
         PartialPath : string
     } with
         /// use the provided directory to compute the relative paths for the script's contents
@@ -110,8 +111,10 @@ module ScriptGeneration =
 
             // create a relative pathReferenceType directory of the script to the dll or script to load
             let relativePath (scriptFile: FileInfo) (libFile: FileInfo) =
-                (Uri scriptFile.FullName).MakeRelativeUri(Uri libFile.FullName).ToString()
-                
+                if self.UseRelativePath then
+                    (Uri scriptFile.FullName).MakeRelativeUri(Uri libFile.FullName).ToString()
+                else libFile.FullName
+
             // create the approiate load string for the target resource
             let refString (reference:ReferenceType)  = 
                 match reference, self.Lang with
@@ -154,7 +157,7 @@ module ScriptGeneration =
         Cache : DependencyCache
         Groups : GroupName list
         DefaultFramework : bool * FrameworkIdentifier
-        RootDir : DirectoryInfo
+        LoadScriptRootDir : DirectoryInfo
         ScriptType : ScriptType
     }
 
@@ -166,7 +169,7 @@ module ScriptGeneration =
         let scriptType, groups, (isDefaultFramework, framework) = ctx.ScriptType, ctx.Groups, ctx.DefaultFramework
 
         // -- LOAD SCRIPT FORMATTING POINT --
-        let loadScriptsRootFolder = Constants.PaketFolderName </> "load"
+        let loadScriptsRootFolder = ctx.LoadScriptRootDir
 
         // -- LOAD SCRIPT FORMATTING POINT --
         /// Create the path for a script that will load all of the packages in the provided Group
@@ -222,7 +225,7 @@ module ScriptGeneration =
 
                         let scriptInfo = {
                             PackageName                  = package.Name
-                            IncludeScriptsRootFolder     = DirectoryInfo loadScriptsRootFolder 
+                            IncludeScriptsRootFolder     = loadScriptsRootFolder 
                             FrameworkReferences          = frameworkRefs
                             OrderedDllReferences         = dllFiles
                             DependentScripts             = dependencies
@@ -233,10 +236,12 @@ module ScriptGeneration =
                             (knownIncludeScripts,scriptFiles)
                         | Generate pieces -> 
                             let knownScripts = knownIncludeScripts |> Map.add package.Name scriptFile
+                            let storageConf = defaultArg package.Settings.StorageConfig PackagesFolderGroupConfig.Default
                             let rendered =  
                                 {   PartialPath = scriptFile
                                     Lang = scriptType
-                                    Input = pieces 
+                                    Input = pieces
+                                    UseRelativePath = storageConf = PackagesFolderGroupConfig.DefaultPackagesFolder
                                 } 
                             (knownScripts, rendered::scriptFiles)) 
                     |> fun (_,sfs) -> groupName, sfs
@@ -247,6 +252,7 @@ module ScriptGeneration =
             ctx.Groups 
             |> List.map (fun group ->
                 let scriptFile = getGroupFile group
+                let storageConf = defaultArg ctx.Cache.LockFile.Groups.[group].Options.Settings.StorageConfig PackagesFolderGroupConfig.Default
                 let pieces =
                     ctx.Cache.GetOrderedReferences group framework
                     |> filterReferences ctx.ScriptType
@@ -254,12 +260,12 @@ module ScriptGeneration =
                 let scriptContent : ScriptContent =
                     { PartialPath = scriptFile
                       Lang = ctx.ScriptType 
-                      Input = pieces } 
+                      Input = pieces
+                      UseRelativePath = storageConf = PackagesFolderGroupConfig.DefaultPackagesFolder } 
 
                 group,[scriptContent]
             ) 
         List.append scriptContent groupScriptContent
-        
 
     let constructScriptsFromData (depCache:DependencyCache) (groups:GroupName list) providedFrameworks providedScriptTypes =
         let lockFile = depCache.LockFile
@@ -326,7 +332,7 @@ module ScriptGeneration =
                     let content = generateScriptContent {
                         Cache = depCache
                         ScriptType = scriptType  
-                        RootDir = DirectoryInfo lockFile.RootPath
+                        LoadScriptRootDir = DirectoryInfo (lockFile.RootPath </> Constants.PaketFolderName </> "load")
                         Groups = groups
                         DefaultFramework = isDefaultFramework,framework
                     }
