@@ -60,7 +60,7 @@ module Environment =
         let homePath = 
             if isWindows then
                 let defaultPath = Environment.GetEnvironmentVariable("USERPROFILE")
-                if System.String.isNullOrEmpty defaultPath then
+                if System.String.IsNullOrEmpty defaultPath then
                     Environment.GetEnvironmentVariable("HOME")
                 else defaultPath
             else Environment.GetEnvironmentVariable("HOME")
