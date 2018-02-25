@@ -172,19 +172,25 @@ module CredentialProviders =
         | true, v when not isRetry ->
             v
         | _ ->
-            Logging.verbosefn "Calling provider '%s' for credentials" provider
-            let result =
-                try callProvider provider args
-                with :? CredentialProviderUnknownStatusException when args.Verbosity <> CredentialProviderVerbosity.Normal ->
-                    // https://github.com/NuGet/NuGet.Client/blob/c17547b5c64ab8d498cc24340a09ae647456cf20/src/NuGet.Clients/NuGet.Credentials/PluginCredentialProvider.cs#L117
-                    callProvider provider { args with Verbosity = CredentialProviderVerbosity.Normal }
-
-            match result with
-            | CredentialProviderResult.Abort _ -> ()
+          // Only ever show a single provider at the same time.
+          lock _providerCredentialCache (fun _ ->
+            match _providerCredentialCache.TryGetValue key with
+            | true, v when not isRetry ->
+                v
             | _ ->
-                _providerCredentialCache.[key] <- result
+                Logging.verbosefn "Calling provider '%s' for credentials" provider
+                let result =
+                    try callProvider provider args
+                    with :? CredentialProviderUnknownStatusException when args.Verbosity <> CredentialProviderVerbosity.Normal ->
+                        // https://github.com/NuGet/NuGet.Client/blob/c17547b5c64ab8d498cc24340a09ae647456cf20/src/NuGet.Clients/NuGet.Credentials/PluginCredentialProvider.cs#L117
+                        callProvider provider { args with Verbosity = CredentialProviderVerbosity.Normal }
 
-            result
+                match result with
+                | CredentialProviderResult.Abort _ -> ()
+                | _ ->
+                    _providerCredentialCache.[key] <- result
+
+                result)
 
     let GetAuthenticationDirect (source : string) (isRetry) =
         collectProviders()
