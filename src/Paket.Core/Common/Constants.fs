@@ -43,16 +43,16 @@ module Environment =
         | ApplicationData
         | UserProfile
         | LocalApplicationData
-        //| ProgramFiles
-        //| ProgramFilesX86
+        | ProgramFiles
+        | ProgramFilesX86
     let GetFolderPath sf =
         let envVar, monoPathSuffix =
             match sf with
             | ApplicationData -> "APPDATA", ".config"
             | UserProfile -> "USERPROFILE", ""
             | LocalApplicationData -> "LocalAppData", ".local/share"
-            //| ProgramFiles -> "PROGRAMFILES", ".programfiles"
-            //| ProgramFilesX86 -> "PROGRAMFILES(X86)", ".programfilesX86"
+            | ProgramFiles -> "PROGRAMFILES", ".programfiles"
+            | ProgramFilesX86 -> "PROGRAMFILES(X86)", ".programfilesX86"
         
         let isWindows =
             System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
