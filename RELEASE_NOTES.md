@@ -1,3 +1,6 @@
+#### 5.144.0-alpha.0 - 2018-02-26
+* Added support for credential managers - https://github.com/fsprojects/Paket/pull/3069
+
 #### 5.143.0 - 2018-02-26
 * BUGFIX: Fixed bug when attempting to pack multi-target frameworks - https://github.com/fsprojects/Paket/pull/3073
 
