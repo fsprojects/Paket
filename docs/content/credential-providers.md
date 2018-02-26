@@ -31,4 +31,4 @@ Add the "Setup Paket credential manager" build step before calling Paket.
 See more infos [here](https://github.com/matthid/Paket.TeamBuildCredentials)
 
 > Note: Disable failing on standard error for your build step calling paket.
-> ![Disable Failing on Standard Error](paket-vsts-disable-stderr.png)
+> ![Disable Failing on Standard Error](img/paket-vsts-disable-stderr.png)
