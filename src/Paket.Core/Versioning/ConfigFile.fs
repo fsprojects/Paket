@@ -209,24 +209,28 @@ let AddToken (source, token) =
         | None -> () 
     }
 
-let askAndAddAuth (source : string) (username : string) (password : string) (authType : string) (verify : bool) = 
+let askAndAddAuth (source : string) (passedUserName : string) (passedPassword : string) (authType : string) (verify : bool) = 
     let username =
-        if username = "" then
+        if passedUserName = "" then
             Console.Write "Username: "
             Console.ReadLine()
         else 
-            username
+            passedUserName
 
     let password = 
-        if password = "" then
+        if passedPassword = "" then
             readPassword "Password: "
         else
-            password
+            passedPassword
+
     let authType =
         if authType = "" then
-            Console.Write "Authentication type (basic|ntlm, default = basic): "
-            let input = Console.ReadLine().Trim()
-            if input = "" then "basic" else input
+            if passedUserName <> "" && passedPassword <> "" then 
+                "basic" 
+            else
+                Console.Write "Authentication type (basic|ntlm, default = basic): "
+                let input = Console.ReadLine().Trim()
+                if input = "" then "basic" else input
         else
             authType
 

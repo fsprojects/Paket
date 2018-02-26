@@ -82,6 +82,18 @@ let ``should resolve overwritten config4``() =
     getVersion resolved.[PackageName "packageA"] |> shouldEqual "1.0.11250"
     getVersion resolved.[PackageName "packageB"] |> shouldEqual "2.0.0"
 
+let config5 = """
+source "https://www.nuget.org/api/v2"
+nuget PackageA prerelease
+nuget PackageB prerelease
+"""
+
+[<Test>]
+let ``should resolve prerelease config5``() = 
+    let cfg = DependenciesFile.FromSource(config5)
+    let resolved = ResolveWithGraph(cfg,noSha1, VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    getVersion resolved.[PackageName "packageA"] |> shouldEqual "1.0.11250"
+    getVersion resolved.[PackageName "packageB"] |> shouldEqual "1.0.11204-custom"
     
 [<Test>]
 let ``should resolve prerelease config2 but no prerelease for transitive deps``() = 

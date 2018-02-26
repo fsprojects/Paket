@@ -1,3 +1,15 @@
+#### 5.143.0 - 2018-02-26
+* BUGFIX: Fixed bug when attempting to pack multi-target frameworks - https://github.com/fsprojects/Paket/pull/3073
+
+#### 5.142.0 - 2018-02-24
+* BUGFIX: Fixed bootstrapper to handle Github TLS issue
+* BUGFIX: Fixed unhandled exception when running 'paket config add-credentials' in Jenkins pipeline - https://github.com/fsprojects/Paket/issues/2884
+* BUGFIX: Fixed unhandled exception when running 'paket config add-credentials' in Jenkins pipeline - https://github.com/fsprojects/Paket/issues/2884
+* BUGFIX: Some NuGet v2 queries fail with normalized filter syntax and are now skipped/blacklisted - https://github.com/fsprojects/Paket/pull/3059
+* BUGFIX: Be more robust with custom namespaces in app.config - https://github.com/fsprojects/Paket/issues/1607
+* BUGFIX: Fix prerelease selection when having multiple prereleases - https://github.com/fsprojects/Paket/pull/3058
+* USABILITY: Update process just ignores groups that where not in lock file - https://github.com/fsprojects/Paket/pull/3054
+
 #### 5.138.0 - 2018-02-16
 * Extended SemVer v2 compliance and reliability improvements - https://github.com/fsprojects/Paket/pull/3030
 * BUGFIX: Putting local folder clearing under flag in "paket clear-cache" - https://github.com/fsprojects/Paket/issues/3049

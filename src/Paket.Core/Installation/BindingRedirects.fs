@@ -145,7 +145,7 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLi
             let needle = (sprintf "name=\"%s\"" b).ToLower()
             haystack.Contains needle)
 
-    let nsManager = XmlNamespaceManager(NameTable());
+    let nsManager = XmlNamespaceManager(NameTable())
     nsManager.AddNamespace("bindings", bindingNs)
     config.XPathSelectElements("//bindings:assemblyBinding", nsManager)
     |> Seq.collect (fun e -> e.Elements(XName.Get("dependentAssembly", bindingNs)))

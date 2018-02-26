@@ -136,19 +136,23 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
 
     let groups = 
         dependenciesFile.Groups
-        |> Map.map (fun groupName dependenciesGroup -> 
+        |> Seq.choose (fun kv -> 
+                let groupName = kv.Key
                 match resolution |> Map.tryFind groupName with
                 | Some group ->
                     let model = group.ResolvedPackages.GetModelOrFail()
                     for x in model do
                         if x.Value.Unlisted then
                             traceWarnfn "The owner of %O %A has unlisted the package. This could mean that the package version is deprecated or shouldn't be used anymore." x.Value.Name x.Value.Version
-
-                    { Name = dependenciesGroup.Name
-                      Options = dependenciesGroup.Options
-                      Resolution = model
-                      RemoteFiles = group.ResolvedSourceFiles }
-                | None -> lockFile.GetGroup groupName) // just copy from lockfile
+                    let dependenciesGroup = kv.Value
+                    Some
+                        (groupName, 
+                            { Name = dependenciesGroup.Name
+                              Options = dependenciesGroup.Options
+                              Resolution = model
+                              RemoteFiles = group.ResolvedSourceFiles })
+                | None -> lockFile.Groups |> Map.tryFind groupName |> Option.map (fun g -> groupName,g)) // just copy from lockfile
+        |> Map.ofSeq
     
     LockFile(lockFile.FileName, groups),groupsToUpdate
 
