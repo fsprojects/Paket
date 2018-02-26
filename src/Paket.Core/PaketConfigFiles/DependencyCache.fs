@@ -17,11 +17,12 @@ open ProviderImplementation.AssemblyReader.Utils.SHA1
 type ReferenceType =
     | Assembly  of FileInfo
     | Framework of string
-    | LoadScript of FileInfo
+    /// Relative path based on base-directory
+    | LoadScript of string
     override self.ToString () = self |> function
         | Assembly info -> sprintf "Assembly: '%s'" info.FullName
         | Framework info -> sprintf "Framework: '%s'" info
-        | LoadScript info -> sprintf "LoadScript: '%s'" info.FullName
+        | LoadScript info -> sprintf "LoadScript: '%s'" info
 
 type DependencyCache (lockFile:LockFile) =
     let loadedGroups = HashSet<GroupName>()

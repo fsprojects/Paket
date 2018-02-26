@@ -1,3 +1,6 @@
+#### 5.145.1 - 2018-02-27
+* BUGFIX: generate-load-script was broken - https://github.com/fsprojects/Paket/issues/3080
+
 #### 5.145.0 - 2018-02-26
 * Added support for credential managers - https://github.com/fsprojects/Paket/pull/3069
 

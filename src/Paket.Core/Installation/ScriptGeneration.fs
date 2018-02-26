@@ -39,7 +39,7 @@ module ScriptGeneration =
 
     type ScriptGenInput = {
         PackageName              : PackageName
-        DependentScripts         : FileInfo list
+        DependentScripts         : string list
         FrameworkReferences      : string list
         OrderedDllReferences     : FileInfo list
     }
@@ -56,7 +56,7 @@ module ScriptGeneration =
                 match ref with 
                 | Assembly info -> not (String.containsIgnoreCase "FSharp.Core" info.Name)
                 | Framework info -> not (String.containsIgnoreCase "FSharp.Core" info)
-                | LoadScript info -> not (String.containsIgnoreCase "FSharp.Core" info.Name)
+                | LoadScript info -> not (String.containsIgnoreCase "FSharp.Core" info)
             else true
         )
 
@@ -116,9 +116,9 @@ module ScriptGeneration =
                 | Assembly file, _ ->
                      sprintf """#r "%s" """ (relativePath scriptFile file)
                 | LoadScript script, ScriptType.FSharp ->
-                     sprintf """#load @"%s" """ (relativePath scriptFile (baseDirectory.FullName </> script |> FileInfo))
+                     sprintf """#load @"%s" """ (relativePath scriptFile ((baseDirectory.FullName </> script) |> FileInfo))
                 | LoadScript script, ScriptType.CSharp ->     
-                     sprintf """#load "%s" """ (relativePath scriptFile (baseDirectory.FullName </> script |> FileInfo))
+                     sprintf """#load "%s" """ (relativePath scriptFile ((baseDirectory.FullName </> script) |> FileInfo))
                 | Framework name,_ ->
                      sprintf """#r "%s" """ name
         
@@ -212,7 +212,6 @@ module ScriptGeneration =
                             package.Dependencies 
                             |> Seq.choose (fun (x,_,_) -> knownIncludeScripts.TryFind x)
                             |> List.ofSeq
-                            |> List.map FileInfo
 
                         let dllFiles = 
                             ctx.Cache.GetOrderedPackageReferences groupName package.Name framework

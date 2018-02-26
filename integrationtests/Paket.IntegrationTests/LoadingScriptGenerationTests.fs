@@ -201,6 +201,11 @@ let ``mscorlib excluded from f# script`` () =
 
     Assert.False hasFilesWithMsCorlib
 
+    // Important to have the correct relative path
+    let expectedContent = "#load @\"Microsoft.Rest.ClientRuntime.Azure.fsx\""
+    let scriptPath = Path.Combine(scriptRootDir.FullName, "net46", "Microsoft.Azure.Management.ResourceManager.fsx")
+    let scriptContent = File.ReadAllText(scriptPath)
+    Assert.IsTrue(scriptContent.Contains expectedContent, sprintf "Should contain '%s' but script content was:\n%s" expectedContent scriptContent)
 
 [<Test; Category("scriptgen")>]
 let ``fsharp.core excluded from f# script`` () =
