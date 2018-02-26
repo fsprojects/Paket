@@ -19,6 +19,7 @@ open FsUnit
 open System
 open System.IO
 open Paket.Domain
+open System
 
 [<Test>]
 let ``#1166 Should resolve Nancy without timeout``() =
@@ -62,6 +63,19 @@ let ``#2922 paket can jump out of loop of doom``() =
         failwith "error expected"
     with
     | exn when exn.Message.Contains("Dependencies file requested package MySqlConnector: < 0.30") -> ()
+    
+[<Test>]
+let ``#2922-1 paket can timeout out of loop of doom``() =
+    try
+        let timeout = Environment.GetEnvironmentVariable("PAKET_RESOLVER_TIMEOUT")
+        Environment.SetEnvironmentVariable("PAKET_RESOLVER_TIMEOUT", "1000")
+        try
+            install "i002922-loopofdoom" |> ignore
+            failwith "timeout expected"
+        finally
+            Environment.SetEnvironmentVariable("PAKET_RESOLVER_TIMEOUT", timeout)
+    with
+    | exn when exn.Message.Contains("TimeoutException") -> ()
 
 [<Test>]
 #if NETCOREAPP2_0
