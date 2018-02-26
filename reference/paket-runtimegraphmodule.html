@@ -77,10 +77,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '535', 535)" onmouseover="showTip(event, '535', 535)">
+          <code onmouseout="hideTip(event, '565', 565)" onmouseover="showTip(event, '565', 565)">
             areCompatible projectRid assetRid g
           </code>
-          <div class="tip" id="535">
+          <div class="tip" id="565">
             <strong>Signature:</strong> projectRid:Rid -&gt; assetRid:Rid -&gt; g:RuntimeGraph -&gt; bool<br />
                       </div>
         </td>
@@ -98,10 +98,10 @@ consider a project targeting projectRid, this returns true if an asset with asse
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '536', 536)" onmouseover="showTip(event, '536', 536)">
+          <code onmouseout="hideTip(event, '566', 566)" onmouseover="showTip(event, '566', 566)">
             findRuntimeDependencies (...)
           </code>
-          <div class="tip" id="536">
+          <div class="tip" id="566">
             <strong>Signature:</strong> rid:Rid -&gt; packageName:PackageName -&gt; g:RuntimeGraph -&gt; (PackageName * VersionRequirement) list<br />
                       </div>
         </td>
@@ -118,10 +118,10 @@ consider a project targeting projectRid, this returns true if an asset with asse
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '537', 537)" onmouseover="showTip(event, '537', 537)">
+          <code onmouseout="hideTip(event, '567', 567)" onmouseover="showTip(event, '567', 567)">
             getInheritanceList rid g
           </code>
-          <div class="tip" id="537">
+          <div class="tip" id="567">
             <strong>Signature:</strong> rid:Rid -&gt; g:RuntimeGraph -&gt; Rid list<br />
                       </div>
         </td>
@@ -138,10 +138,10 @@ consider a project targeting projectRid, this returns true if an asset with asse
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '538', 538)" onmouseover="showTip(event, '538', 538)">
+          <code onmouseout="hideTip(event, '568', 568)" onmouseover="showTip(event, '568', 568)">
             getKnownRids g
           </code>
-          <div class="tip" id="538">
+          <div class="tip" id="568">
             <strong>Signature:</strong> g:RuntimeGraph -&gt; seq&lt;Rid&gt;<br />
                       </div>
         </td>
@@ -158,10 +158,10 @@ consider a project targeting projectRid, this returns true if an asset with asse
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '539', 539)" onmouseover="showTip(event, '539', 539)">
+          <code onmouseout="hideTip(event, '569', 569)" onmouseover="showTip(event, '569', 569)">
             getRuntimeGraphFromNugetCache (...)
           </code>
-          <div class="tip" id="539">
+          <div class="tip" id="569">
             <strong>Signature:</strong> root:string -&gt; groupName:GroupName -&gt; package:ResolvedPackage -&gt; RuntimeGraph option<br />
                       </div>
         </td>
@@ -178,10 +178,10 @@ consider a project targeting projectRid, this returns true if an asset with asse
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '540', 540)" onmouseover="showTip(event, '540', 540)">
+          <code onmouseout="hideTip(event, '570', 570)" onmouseover="showTip(event, '570', 570)">
             merge r1 r2
           </code>
-          <div class="tip" id="540">
+          <div class="tip" id="570">
             <strong>Signature:</strong> r1:RuntimeGraph -&gt; r2:RuntimeGraph -&gt; RuntimeGraph<br />
                       </div>
         </td>
@@ -198,10 +198,10 @@ consider a project targeting projectRid, this returns true if an asset with asse
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '541', 541)" onmouseover="showTip(event, '541', 541)">
+          <code onmouseout="hideTip(event, '571', 571)" onmouseover="showTip(event, '571', 571)">
             mergeCompatibility s1 s2
           </code>
-          <div class="tip" id="541">
+          <div class="tip" id="571">
             <strong>Signature:</strong> s1:CompatibilityProfile -&gt; s2:CompatibilityProfile -&gt; CompatibilityProfile<br />
                       </div>
         </td>
@@ -216,10 +216,10 @@ consider a project targeting projectRid, this returns true if an asset with asse
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '542', 542)" onmouseover="showTip(event, '542', 542)">
+          <code onmouseout="hideTip(event, '572', 572)" onmouseover="showTip(event, '572', 572)">
             mergeDescription d1 d2
           </code>
-          <div class="tip" id="542">
+          <div class="tip" id="572">
             <strong>Signature:</strong> d1:RuntimeDescription -&gt; d2:RuntimeDescription -&gt; RuntimeDescription<br />
                       </div>
         </td>
@@ -234,10 +234,10 @@ consider a project targeting projectRid, this returns true if an asset with asse
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '543', 543)" onmouseover="showTip(event, '543', 543)">
+          <code onmouseout="hideTip(event, '573', 573)" onmouseover="showTip(event, '573', 573)">
             mergeSeq s
           </code>
-          <div class="tip" id="543">
+          <div class="tip" id="573">
             <strong>Signature:</strong> s:seq&lt;RuntimeGraph&gt; -&gt; RuntimeGraph<br />
                       </div>
         </td>
@@ -300,6 +300,7 @@ consider a project targeting projectRid, this returns true if an asset with asse
             <li><a href="..//reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="..//editor-support.html">Editor support</a></li>
             <li><a href="..//shell-completion.html">Shell completion</a></li>
+            <li><a href="..//credential-providers.html">Credential Providers</a></li>
             <li class="divider"></li>
             <li><a href="..//reference/index.html">API Reference</a></li>
 

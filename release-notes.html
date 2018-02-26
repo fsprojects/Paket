@@ -56,12 +56,40 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h4><a name="5-136-2-2018-02-13" class="anchor" href="#5-136-2-2018-02-13">5.136.2 - 2018-02-13</a></h4>
+<h4><a name="5-145-0-2018-02-26" class="anchor" href="#5-145-0-2018-02-26">5.145.0 - 2018-02-26</a></h4>
 <ul>
-<li>USABILITY: "paket clear-cache" empties packages folder and paket-files folder - <a href="https://github.com/fsprojects/Paket/pull/3043">https://github.com/fsprojects/Paket/pull/3043</a></li>
+<li>Added support for credential managers - <a href="https://github.com/fsprojects/Paket/pull/3069">https://github.com/fsprojects/Paket/pull/3069</a></li>
 </ul>
-<h4><a name="5-136-1-2018-02-13" class="anchor" href="#5-136-1-2018-02-13">5.136.1 - 2018-02-13</a></h4>
+<h4><a name="5-144-0-2018-02-26" class="anchor" href="#5-144-0-2018-02-26">5.144.0 - 2018-02-26</a></h4>
 <ul>
+<li>BUGFIX: Fix <a href="https://github.com/fsharp/FAKE/issues/1744">https://github.com/fsharp/FAKE/issues/1744</a></li>
+<li>BUGFIX: Fix <a href="https://github.com/fsharp/FAKE/issues/1778">https://github.com/fsharp/FAKE/issues/1778</a></li>
+<li>BUGFIX: Fixed bug when attempting to pack multi-target frameworks - <a href="https://github.com/fsprojects/Paket/pull/3073">https://github.com/fsprojects/Paket/pull/3073</a></li>
+</ul>
+<h4><a name="5-144-0-alpha-2-2018-02-26" class="anchor" href="#5-144-0-alpha-2-2018-02-26">5.144.0-alpha.2 - 2018-02-26</a></h4>
+<ul>
+<li>Added support for credential managers - <a href="https://github.com/fsprojects/Paket/pull/3069">https://github.com/fsprojects/Paket/pull/3069</a></li>
+</ul>
+<h4><a name="5-142-0-2018-02-24" class="anchor" href="#5-142-0-2018-02-24">5.142.0 - 2018-02-24</a></h4>
+<ul>
+<li>BUGFIX: Fixed bootstrapper to handle Github TLS issue</li>
+<li>BUGFIX: Fixed unhandled exception when running 'paket config add-credentials' in Jenkins pipeline - <a href="https://github.com/fsprojects/Paket/issues/2884">https://github.com/fsprojects/Paket/issues/2884</a></li>
+<li>BUGFIX: Fixed unhandled exception when running 'paket config add-credentials' in Jenkins pipeline - <a href="https://github.com/fsprojects/Paket/issues/2884">https://github.com/fsprojects/Paket/issues/2884</a></li>
+<li>BUGFIX: Some NuGet v2 queries fail with normalized filter syntax and are now skipped/blacklisted - <a href="https://github.com/fsprojects/Paket/pull/3059">https://github.com/fsprojects/Paket/pull/3059</a></li>
+<li>BUGFIX: Be more robust with custom namespaces in app.config - <a href="https://github.com/fsprojects/Paket/issues/1607">https://github.com/fsprojects/Paket/issues/1607</a></li>
+<li>BUGFIX: Fix prerelease selection when having multiple prereleases - <a href="https://github.com/fsprojects/Paket/pull/3058">https://github.com/fsprojects/Paket/pull/3058</a></li>
+<li>USABILITY: Update process just ignores groups that where not in lock file - <a href="https://github.com/fsprojects/Paket/pull/3054">https://github.com/fsprojects/Paket/pull/3054</a></li>
+</ul>
+<h4><a name="5-138-0-2018-02-16" class="anchor" href="#5-138-0-2018-02-16">5.138.0 - 2018-02-16</a></h4>
+<ul>
+<li>Extended SemVer v2 compliance and reliability improvements - <a href="https://github.com/fsprojects/Paket/pull/3030">https://github.com/fsprojects/Paket/pull/3030</a></li>
+<li>BUGFIX: Putting local folder clearing under flag in "paket clear-cache" - <a href="https://github.com/fsprojects/Paket/issues/3049">https://github.com/fsprojects/Paket/issues/3049</a></li>
+</ul>
+<h4><a name="5-137-1-2018-02-14" class="anchor" href="#5-137-1-2018-02-14">5.137.1 - 2018-02-14</a></h4>
+<ul>
+<li>BUGFIX: Allow to use different versions from different groups if they are on different frameworks - <a href="https://github.com/fsprojects/Paket/issues/3045">https://github.com/fsprojects/Paket/issues/3045</a></li>
+<li>PERFORMANCE: Much faster "paket clear-cache"</li>
+<li>USABILITY: "paket clear-cache" empties packages folder and paket-files folder - <a href="https://github.com/fsprojects/Paket/pull/3043">https://github.com/fsprojects/Paket/pull/3043</a></li>
 <li>COSMETICS: Hide shasum output on osx/linux dotnet restore - <a href="https://github.com/fsprojects/Paket/pull/3043">https://github.com/fsprojects/Paket/pull/3043</a></li>
 </ul>
 <h4><a name="5-136-0-2018-02-12" class="anchor" href="#5-136-0-2018-02-12">5.136.0 - 2018-02-12</a></h4>
@@ -2339,6 +2367,7 @@ BREAKING CHANGE: Removed --hard parameter from all commands.
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
             <li><a href="./shell-completion.html">Shell completion</a></li>
+            <li><a href="./credential-providers.html">Credential Providers</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 

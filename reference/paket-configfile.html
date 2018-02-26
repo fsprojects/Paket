@@ -77,10 +77,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '22', 22)" onmouseover="showTip(event, '22', 22)">
+          <code onmouseout="hideTip(event, '23', 23)" onmouseover="showTip(event, '23', 23)">
             AddCredentials (...)
           </code>
-          <div class="tip" id="22">
+          <div class="tip" id="23">
             <strong>Signature:</strong> (source:string * username:string * password:string * authType:string) -&gt; Result&lt;unit,DomainMessage&gt;<br />
                       </div>
         </td>
@@ -95,10 +95,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '23', 23)" onmouseover="showTip(event, '23', 23)">
+          <code onmouseout="hideTip(event, '24', 24)" onmouseover="showTip(event, '24', 24)">
             AddToken (source, token)
           </code>
-          <div class="tip" id="23">
+          <div class="tip" id="24">
             <strong>Signature:</strong> (source:string * token:string) -&gt; Result&lt;unit,DomainMessage&gt;<br />
                       </div>
         </td>
@@ -113,11 +113,11 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '24', 24)" onmouseover="showTip(event, '24', 24)">
+          <code onmouseout="hideTip(event, '25', 25)" onmouseover="showTip(event, '25', 25)">
             askAndAddAuth (...)
           </code>
-          <div class="tip" id="24">
-            <strong>Signature:</strong> source:string -&gt; username:string -&gt; password:string -&gt; authType:string -&gt; verify:bool -&gt; Result&lt;unit,DomainMessage&gt;<br />
+          <div class="tip" id="25">
+            <strong>Signature:</strong> source:string -&gt; passedUserName:string -&gt; passedPassword:string -&gt; authType:string -&gt; verify:bool -&gt; Result&lt;unit,DomainMessage&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
@@ -131,10 +131,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '25', 25)" onmouseover="showTip(event, '25', 25)">
+          <code onmouseout="hideTip(event, '26', 26)" onmouseover="showTip(event, '26', 26)">
             checkCredentials (url, cred)
           </code>
-          <div class="tip" id="25">
+          <div class="tip" id="26">
             <strong>Signature:</strong> (url:string * cred:Auth option) -&gt; bool<br />
                       </div>
         </td>
@@ -151,10 +151,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '26', 26)" onmouseover="showTip(event, '26', 26)">
+          <code onmouseout="hideTip(event, '27', 27)" onmouseover="showTip(event, '27', 27)">
             Decrypt salt encrypted
           </code>
-          <div class="tip" id="26">
+          <div class="tip" id="27">
             <strong>Signature:</strong> salt:string -&gt; encrypted:string -&gt; string<br />
                       </div>
         </td>
@@ -171,10 +171,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '27', 27)" onmouseover="showTip(event, '27', 27)">
+          <code onmouseout="hideTip(event, '28', 28)" onmouseover="showTip(event, '28', 28)">
             DecryptNuget encrypted
           </code>
-          <div class="tip" id="27">
+          <div class="tip" id="28">
             <strong>Signature:</strong> encrypted:string -&gt; string<br />
                       </div>
         </td>
@@ -189,10 +189,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '28', 28)" onmouseover="showTip(event, '28', 28)">
+          <code onmouseout="hideTip(event, '29', 29)" onmouseover="showTip(event, '29', 29)">
             Encrypt password
           </code>
-          <div class="tip" id="28">
+          <div class="tip" id="29">
             <strong>Signature:</strong> password:string -&gt; string * string<br />
                       </div>
         </td>
@@ -202,26 +202,6 @@
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           <p>Encrypts a string with a user specific keys</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '29', 29)" onmouseover="showTip(event, '29', 29)">
-            GetAuthentication source
-          </code>
-          <div class="tip" id="29">
-            <strong>Signature:</strong> source:string -&gt; Auth option<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/ConfigFile.fs#L173-173" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Get the authentication from the authentication store for a specific source</p>
 
 
         </td>
@@ -250,9 +230,29 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '31', 31)" onmouseover="showTip(event, '31', 31)">
-            getAuthFromNode node
+            GetAuthenticationProvider source
           </code>
           <div class="tip" id="31">
+            <strong>Signature:</strong> source:string -&gt; AuthProvider<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/ConfigFile.fs#L173-173" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Get the authentication from the authentication store for a specific source</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '32', 32)" onmouseover="showTip(event, '32', 32)">
+            getAuthFromNode node
+          </code>
+          <div class="tip" id="32">
             <strong>Signature:</strong> node:XmlNode -&gt; Auth<br />
                       </div>
         </td>
@@ -267,10 +267,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '32', 32)" onmouseover="showTip(event, '32', 32)">
+          <code onmouseout="hideTip(event, '33', 33)" onmouseover="showTip(event, '33', 33)">
             getSourceNodes (...)
           </code>
-          <div class="tip" id="32">
+          <div class="tip" id="33">
             <strong>Signature:</strong> credentialsNode:XmlNode -&gt; source:string -&gt; nodeType:string -&gt; XmlElement list<br />
                       </div>
         </td>
@@ -331,6 +331,7 @@
             <li><a href="..//reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="..//editor-support.html">Editor support</a></li>
             <li><a href="..//shell-completion.html">Shell completion</a></li>
+            <li><a href="..//credential-providers.html">Credential Providers</a></li>
             <li class="divider"></li>
             <li><a href="..//reference/index.html">API Reference</a></li>
 
