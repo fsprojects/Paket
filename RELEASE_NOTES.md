@@ -1,4 +1,4 @@
-#### 5.144.0-alpha.1 - 2018-02-26
+#### 5.144.0-alpha.2 - 2018-02-26
 * Added support for credential managers - https://github.com/fsprojects/Paket/pull/3069
 
 #### 5.143.0 - 2018-02-26
