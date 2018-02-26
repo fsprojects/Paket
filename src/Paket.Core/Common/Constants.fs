@@ -46,18 +46,31 @@ module Environment =
         | ProgramFiles
         | ProgramFilesX86
     let GetFolderPath sf =
-        let envVar =
+        let envVar, monoPathSuffix =
             match sf with
-            | ApplicationData -> "APPDATA"
-            | UserProfile -> "USERPROFILE"
-            | LocalApplicationData -> "LocalAppData"
-            | ProgramFiles -> "PROGRAMFILES"
-            | ProgramFilesX86 -> "PROGRAMFILES(X86)"
+            | ApplicationData -> "APPDATA", ".config"
+            | UserProfile -> "USERPROFILE", ""
+            | LocalApplicationData -> "LocalAppData", ".local/share"
+            | ProgramFiles -> "PROGRAMFILES", ".programfiles"
+            | ProgramFilesX86 -> "PROGRAMFILES(X86)", ".programfilesX86"
         
-        let res = Environment.GetEnvironmentVariable(envVar)
-        if System.String.IsNullOrEmpty res && sf = UserProfile then
-            Environment.GetEnvironmentVariable("HOME")
-        else res
+        let isWindows =
+            System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+                System.Runtime.InteropServices.OSPlatform.Windows)
+        let homePath = 
+            if isWindows then
+                let defaultPath = Environment.GetEnvironmentVariable("USERPROFILE")
+                if System.String.IsNullOrEmpty defaultPath then
+                    Environment.GetEnvironmentVariable("HOME")
+                else defaultPath
+            else Environment.GetEnvironmentVariable("HOME")
+        if isWindows then
+            let res = Environment.GetEnvironmentVariable(envVar)
+            if System.String.IsNullOrEmpty res then
+                System.IO.Path.Combine(homePath, monoPathSuffix)
+            else res
+        else
+            System.IO.Path.Combine(homePath, monoPathSuffix)
 #endif
 
 let MainDependencyGroup = GroupName "Main"
@@ -75,6 +88,8 @@ let AppDataFolder =
     |> Option.defaultWith (fun _ ->
         let fallback = Path.GetFullPath ".paket"
         Logging.traceWarnfn "Could not find AppDataFolder, try to set the APPDATA environment variable. Using '%s' instead." fallback
+        if not (Directory.Exists fallback) then
+            Directory.CreateDirectory fallback |> ignore
         fallback)
 
 let PaketConfigFolder   = Path.Combine(AppDataFolder, "Paket")
@@ -86,6 +101,8 @@ let LocalRootForTempData =
     |> Option.defaultWith (fun _ ->
         let fallback = Path.GetFullPath ".paket"
         Logging.traceWarnfn "Could not detect a root for our (user specific) temporary files. Try to set the 'HOME' or 'LocalAppData' environment variable!. Using '%s' instead." fallback
+        if not (Directory.Exists fallback) then
+            Directory.CreateDirectory fallback |> ignore
         fallback
     )
 
