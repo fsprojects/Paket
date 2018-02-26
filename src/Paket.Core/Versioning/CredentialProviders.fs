@@ -104,12 +104,13 @@ module CredentialProviders =
         [ AuthType.Basic; AuthType.NTLM ]
         |> List.map (fun t -> t.ToString().ToLower(), t)
     let callProvider provider args =
+        let cmdLine = formatCommandLine args
         let procResult =
             ProcessHelper.ExecProcessAndReturnMessages (fun info ->
               info.FileName <- provider
               info.WindowStyle <- System.Diagnostics.ProcessWindowStyle.Hidden
               info.ErrorDialog <- false
-              info.Arguments <- formatCommandLine args) (TimeSpan.FromMinutes 10.)
+              info.Arguments <- cmdLine) (TimeSpan.FromMinutes 10.)
 
         let stdError = ProcessHelper.toLines procResult.Errors
         for line in procResult.Errors do
@@ -154,7 +155,8 @@ module CredentialProviders =
         | CredentialProviderExitCode.ProviderNotApplicable ->
             NoCredentials (if parsableResult then credentialResponse.Message else "")
         | CredentialProviderExitCode.Abort ->
-            Abort (if parsableResult then credentialResponse.Message else "")
+            let msg = if parsableResult then credentialResponse.Message else ""
+            Abort (sprintf "\"'%s' %s\":%s\nStandard Error: %s" provider cmdLine msg stdError)
         | _ ->
             raise <| CredentialProviderUnknownStatusException (sprintf "Credential provider returned an invalid result (%d): %s\nStandard Error: %s" procResult.ExitCode json stdError, (null : exn))
 
@@ -198,7 +200,7 @@ module CredentialProviders =
             match handleProvider isRetry provider source with
             | CredentialProviderResult.Success l -> l
             | CredentialProviderResult.NoCredentials _ -> []
-            | CredentialProviderResult.Abort msg -> failwithf "Credential provider aborted: %s" msg)
+            | CredentialProviderResult.Abort msg -> failwith msg)
 
     let GetAuthenticationProvider source =
         AuthProvider.ofFunction (fun isRetry ->

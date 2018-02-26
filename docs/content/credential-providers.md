@@ -12,7 +12,7 @@ For regular paket users installing Credential Providers works the same as for th
 
 Example VSTS:
 
-1. Download the credential providers from you VSTS Instance.
+1. Download the credential providers from your VSTS Instance.
    ![VSTS Credential Providers](img/credential-providers-vsts.png)
 2. Extract the `CredentialProvider.VSS.exe` file into the above path (`%LOCALAPPDATA%\NuGet\CredentialProviders`)
 3. use paket normally (without password in `paket.dependencies` and config) and enter the password in the provided dialog.
