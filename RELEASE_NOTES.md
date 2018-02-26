@@ -3,6 +3,9 @@
 * BUGFIX: Fix https://github.com/fsharp/FAKE/issues/1778
 * BUGFIX: Fixed bug when attempting to pack multi-target frameworks - https://github.com/fsprojects/Paket/pull/3073
 
+#### 5.144.0-alpha.2 - 2018-02-26
+* Added support for credential managers - https://github.com/fsprojects/Paket/pull/3069
+
 #### 5.142.0 - 2018-02-24
 * BUGFIX: Fixed bootstrapper to handle Github TLS issue
 * BUGFIX: Fixed unhandled exception when running 'paket config add-credentials' in Jenkins pipeline - https://github.com/fsprojects/Paket/issues/2884

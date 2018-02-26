@@ -16,10 +16,11 @@ let private safeGetFromUrlCached = safeGetFromUrl |> memoizeAsync
 let private lookupDocument (auth,url : string)  = 
     safeGetFromUrlCached(auth,url,null)
 
-let private auth key url = 
-    key
-    |> Option.bind (fun key -> ConfigFile.GetAuthenticationForUrl(key,url))
-
+let private auth key =
+    match key with
+    | None -> AuthProvider.empty
+    | Some key ->
+        AuthService.GetGlobalAuthenticationProvider key
 
 // Gets the sha1 of a branch
 let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction) authKey = 
@@ -28,19 +29,21 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
         | ModuleResolver.Origin.GitHubLink -> 
             let branch = ModuleResolver.getVersionRequirement versionRestriction
             let url = sprintf "https://api.github.com/repos/%s/%s/commits/%s" owner project branch
-            let! document = lookupDocument(auth authKey url,url)
+            let! document = lookupDocument(auth authKey,url)
             match document with
             | SuccessResponse (document) ->
                 let json = JObject.Parse(document)
                 return json.["sha"].ToString()
             | NotFound ->
                 return raise (new Exception(sprintf "Could not find (404) hash for %s" url))
+            | Unauthorized ->
+                return raise (new Exception(sprintf "Could not find (401) hash for %s" url))
             | UnknownError err ->
                 return raise (new Exception(sprintf "Could not find hash for %s" url, err.SourceException))
         | ModuleResolver.Origin.GistLink ->
             let branch = ModuleResolver.getVersionRequirement versionRestriction
             let url = sprintf "https://api.github.com/gists/%s/%s" project branch
-            let! document = lookupDocument(auth authKey url,url)
+            let! document = lookupDocument(auth authKey,url)
             match document with
             | SuccessResponse document ->
                 let json = JObject.Parse(document)
@@ -48,6 +51,8 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
                 return latest.ToString()
             | NotFound ->
                 return raise (new Exception(sprintf "Could not find hash for %s" url))
+            | Unauthorized ->
+                return raise (new Exception(sprintf "Could not find (401) hash for %s" url))
             | UnknownError err ->
                 return raise (new Exception(sprintf "Could not find hash for %s" url, err.SourceException))
         | ModuleResolver.Origin.GitLink (LocalGitOrigin path) ->
@@ -113,12 +118,14 @@ let downloadDependenciesFile(force,rootPath,groupName,parserF,remoteFile:ModuleR
                 url.Replace(remoteFile.Name,Constants.DependenciesFileName)
             | ModuleResolver.GitLink _ -> failwithf "Can't compute dependencies file url for %O" remoteFile
 
-        let auth = 
+        let auth isRetry =
+            // TODO: Add CredentialsProvider
             try
                 remoteFile.AuthKey
                 |> Option.bind (fun key -> ConfigFile.GetAuthenticationForUrl(key,url))
             with
             | _ -> None
+        let auth = AuthProvider.ofFunction auth
   
         let exists =
             let di = destination.Directory
@@ -145,6 +152,9 @@ let downloadDependenciesFile(force,rootPath,groupName,parserF,remoteFile:ModuleR
                             with
                             | _ -> return  "",parserF ""
                     | NotFound -> return "", parserF ""
+                    | Unauthorized ->
+                        Logging.traceWarnfn "Error (401) while retrieving '%s'" url
+                        return  "",parserF ""
                     | UnknownError e ->
                         Logging.traceWarnfn "Error while retrieving '%s': %O" url e.SourceException
                         return  "",parserF ""
@@ -210,14 +220,14 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
             try
                 tracefn "Running \"%s\"" tCommand
                 let processResult = 
-                    ExecProcessAndReturnMessages (fun info ->
+                    ProcessHelper.ExecProcessAndReturnMessages (fun info ->
                         info.FileName <- command
                         info.WorkingDirectory <- repoFolder
                         info.Arguments <- args) gitTimeOut
 
-                let ok,msg,errors = processResult.OK,processResult.Messages,toLines processResult.Errors
+                let ok,msg,errors = processResult.OK,processResult.Messages,ProcessHelper.toLines processResult.Errors
                
-                let errorText = toLines msg + Environment.NewLine + errors
+                let errorText = ProcessHelper.toLines msg + Environment.NewLine + errors
                 if not ok then failwith errorText
                 if ok && msg.Count = 0 then tracefn "Done." else
                 if verbose then
@@ -230,7 +240,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         let projectPath = fi.Directory.FullName
 
         let url = sprintf "https://api.github.com/gists/%s/%s" remoteFile.Project remoteFile.Commit
-        let authentication = auth remoteFile.AuthKey url
+        let authentication = auth remoteFile.AuthKey
         let! document = getFromUrl(authentication, url, null)
         let json = JObject.Parse(document)
         let files = json.["files"] |> Seq.map (fun i -> i.First.["filename"].ToString(), i.First.["raw_url"].ToString())
@@ -239,7 +249,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
             files |> Seq.map (fun (filename, url) -> 
                 async {
                     let path = Path.Combine(projectPath,filename)
-                    do! downloadFromUrl(None, url) path
+                    do! downloadFromUrl(AuthProvider.ofFunction (fun _ -> None), url) path
                 } 
             ) |> Async.Parallel
         task |> Async.RunSynchronously |> ignore
@@ -248,7 +258,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         let projectPath = fi.Directory.FullName
         let zipFile = Path.Combine(projectPath,sprintf "%s.zip" remoteFile.Commit)
         let downloadUrl = sprintf "https://github.com/%s/%s/archive/%s.zip" remoteFile.Owner remoteFile.Project remoteFile.Commit
-        let authentication = auth remoteFile.AuthKey downloadUrl
+        let authentication = auth remoteFile.AuthKey
         CleanDir projectPath
         do! downloadFromUrl(authentication, downloadUrl) zipFile
         ZipFile.ExtractToDirectory(zipFile,projectPath)
@@ -257,15 +267,15 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         DirectoryCopy(source,projectPath,true)
     | Origin.GistLink, _ -> 
         let downloadUrl = rawGistFileUrl remoteFile.Owner remoteFile.Project remoteFile.Name
-        let authentication = auth remoteFile.AuthKey downloadUrl
+        let authentication = auth remoteFile.AuthKey
         return! downloadFromUrl(authentication, downloadUrl) destination
     | Origin.GitHubLink, _ ->
         let url = rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name
-        let authentication = auth remoteFile.AuthKey url
+        let authentication = auth remoteFile.AuthKey
         return! downloadFromUrl(authentication, url) destination
     | Origin.HttpLink(origin), _ ->
         let url = origin + remoteFile.Commit
-        let authentication = auth remoteFile.AuthKey url
+        let authentication = auth remoteFile.AuthKey
         let timeout = (Some(TimeSpan.FromDays(1.0)))
         match Path.GetExtension(destination).ToLowerInvariant() with
         | ".zip" ->

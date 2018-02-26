@@ -53,7 +53,7 @@ let ``can detect encrypted passwords in nuget.config``() =
         |> shouldEqual
             { PackageSources = 
                 [ "https://www.nuget.org/api/v2/", ("https://www.nuget.org/api/v2/",None)
-                  "tc", ("https://tc/httpAuth/app/nuget/v1/FeedService.svc/", Some(Credentials("notty", "secret", Utils.AuthType.Basic))) ]
+                  "tc", ("https://tc/httpAuth/app/nuget/v1/FeedService.svc/", Some(Credentials{Username = "notty"; Password = "secret"; Type = Utils.AuthType.Basic})) ]
                 |> Map.ofList
               PackageRestoreEnabled = false
               PackageRestoreAutomatic = false }
@@ -67,7 +67,7 @@ let ``can detect cleartextpasswords in nuget.config``() =
     |> shouldEqual
         { PackageSources =
             [ "https://www.nuget.org/api/v2/", ("https://www.nuget.org/api/v2/",None)
-              "somewhere", ("https://nuget/somewhere/",Some (Credentials("myUser", "myPassword", Utils.AuthType.Basic))) ]
+              "somewhere", ("https://nuget/somewhere/",Some (Credentials{Username ="myUser"; Password = "myPassword"; Type = Utils.AuthType.Basic})) ]
             |> Map.ofList 
           PackageRestoreEnabled = false
           PackageRestoreAutomatic = false }

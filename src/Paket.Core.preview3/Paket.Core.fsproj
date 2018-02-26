@@ -26,11 +26,14 @@
     <Compile Include="$(PaketCoreSourcesDir)\Common\Profile.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\Utils.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\Xml.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Common\ProcessHelper.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\SemVer.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\VersionRange.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\FrameworkHandling.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\PlatformMatching.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\ConfigFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Versioning\CredentialProviders.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Versioning\AuthService.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\Cache.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\PackageSources.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\Requirements.fs" />

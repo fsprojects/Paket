@@ -28,27 +28,6 @@ type EnvironmentVariable =
         else
             None
 
-[<StructuredFormatDisplay("{AsString}")>]
-type NugetSourceAuthentication = 
-    | PlainTextAuthentication of username : string * password : string * authType : Utils.AuthType
-    | EnvVarAuthentication of usernameVar : EnvironmentVariable * passwordVar : EnvironmentVariable * authType : Utils.AuthType
-    | ConfigAuthentication of username : string * password : string * authType : Utils.AuthType
-        with
-            override x.ToString() =
-                match x with
-                    | PlainTextAuthentication(u,_,t) -> sprintf "PlainTextAuthentication (username = %s, password = ***, authType = %A)" u t
-                    | EnvVarAuthentication(u,_,t) ->  sprintf "EnvVarAuthentication (usernameVar = %s, passwordVar = ***, authType = %A)" u.Variable t
-                    | ConfigAuthentication(u,_,t) -> sprintf "ConfigAuthentication (username = %s, password = ***, authType = %A)" u t
-            member x.AsString = x.ToString()
-
-let toCredentials = function
-    | PlainTextAuthentication(username,password,authType) ->
-        Credentials(username, password, authType)
-    | ConfigAuthentication(username, password,authType) ->
-        Credentials(username, password, authType)
-    | EnvVarAuthentication(usernameVar, passwordVar, authType) -> 
-        Credentials(usernameVar.Value, passwordVar.Value, authType)
-
 let tryParseWindowsStyleNetworkPath (path : string) =
     let trimmed = path.TrimStart()
     if (isUnix || isMacOS) && trimmed.StartsWith @"\\" then
@@ -74,12 +53,23 @@ type KnownNuGetSources =
     | MyGet
     | UnknownNuGetServer
 
-
+[<CustomComparison;CustomEquality>]
 type NugetSource = 
     { Url : string
-      Authentication : NugetSourceAuthentication option }
-    member x.BasicAuth =
-        x.Authentication |> Option.map toCredentials
+      Authentication : AuthProvider }
+    member x.BasicAuth isRetry =
+        x.Authentication.Retrieve isRetry
+    override x.Equals(yobj) =
+        match yobj with
+        | :? NugetSource as y -> (x.Url = y.Url)
+
+        | _ -> false
+    override x.GetHashCode() = hash x.Url
+    interface System.IComparable with
+      member x.CompareTo yobj =
+          match yobj with
+          | :? NugetSource as y -> compare x.Url y.Url
+          | _ -> invalidArg "yobj" "cannot compare values of different types"
 
 type NugetV3Source = NugetSource
 
@@ -88,7 +78,10 @@ let passwordRegex = Regex("password[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.Ignore
 let authTypeRegex = Regex("authtype[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 
 let internal parseAuth(text:string, source) =
-    let getAuth() = ConfigFile.GetAuthentication source |> Option.map (function Credentials(username, password, authType) -> ConfigAuthentication(username, password, authType) | _ -> ConfigAuthentication("","",AuthType.Basic))
+    let getAuth() =
+        AuthService.GetGlobalAuthenticationProvider source
+        //|> Option.map (function Credentials userPass -> ConfigAuthentication userPass | _ -> ConfigAuthentication{ Username = ""; Password = ""; Type = AuthType.Basic})
+
     if text.Contains("username:") || text.Contains("password:") then
         if not (userNameRegex.IsMatch(text) && passwordRegex.IsMatch(text)) then 
             failwithf "Could not parse auth in \"%s\"" text
@@ -103,15 +96,16 @@ let internal parseAuth(text:string, source) =
 
         let auth = 
             match EnvironmentVariable.Create(username),
-                  EnvironmentVariable.Create(password) with
+                    EnvironmentVariable.Create(password) with
             | Some userNameVar, Some passwordVar ->
-                EnvVarAuthentication(userNameVar, passwordVar, authType) 
+               {Username = userNameVar.Value; Password = passwordVar.Value; Type = authType }
             | _, _ -> 
-                PlainTextAuthentication(username, password, authType)
+               {Username = username; Password = password; Type = authType }
 
-        match toCredentials auth with
-        | Credentials(username, password, _) when username = "" && password = "" -> getAuth()
-        | _ -> Some auth
+        match auth with
+        | {Username = username; Password = password} when username = "" && password = "" -> getAuth()
+        | _ -> //Some auth
+            AuthProvider.ofFunction (fun _ -> Some (Auth.Credentials auth))
     else
         getAuth()
 
@@ -179,16 +173,16 @@ type PackageSource =
         match this with
         | NuGetV2 n -> n.Authentication
         | NuGetV3 n -> n.Authentication
-        | LocalNuGet(n,_) -> None
+        | LocalNuGet(n,_) -> CredentialProviders.GetAuthenticationProvider n
 
-    static member NuGetV2Source url = NuGetV2 { Url = url; Authentication = None }
-    static member NuGetV3Source url = NuGetV3 { Url = url; Authentication = None }
+    static member NuGetV2Source url = NuGetV2 { Url = url; Authentication = CredentialProviders.GetAuthenticationProvider url }
+    static member NuGetV3Source url = NuGetV3 { Url = url; Authentication = CredentialProviders.GetAuthenticationProvider url }
 
     static member FromCache (cache:Cache) = LocalNuGet(cache.Location,Some cache)
 
     static member WarnIfNoConnection (source,_) = 
-        let n url auth =
-            use client = Utils.createHttpClient(url, auth |> Option.map toCredentials)
+        let n url (auth:AuthProvider) =
+            use client = Utils.createHttpClient(url, auth.Retrieve true)
             try 
                 client.DownloadData url |> ignore 
             with _ ->

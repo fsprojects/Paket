@@ -108,7 +108,7 @@ let getAuthFromNode (node : XmlNode) =
             | n -> n.Value |> Utils.parseAuthTypeString
 
         let salt = node.Attributes.["salt"].Value
-        Credentials (username, Decrypt salt password, authType)
+        Credentials ({Username = username; Password = Decrypt salt password; Type = authType})
     | "token" -> Token node.Attributes.["value"].Value
     | _ -> failwith "unknown node"
 
@@ -170,8 +170,8 @@ let GetAuthenticationForUrl =
     | _ -> None)
 
 /// Get the authentication from the authentication store for a specific source
-let GetAuthentication (source : string) =
-    GetAuthenticationForUrl(source,source)
+let GetAuthenticationProvider (source : string) =
+    AuthProvider.ofFunction (fun _ -> GetAuthenticationForUrl(source,source))
 
 let AddCredentials (source, username, password, authType) = 
     trial { 
@@ -181,7 +181,7 @@ let AddCredentials (source, username, password, authType) =
             | None -> createSourceNode credentialsNode source "credential" |> Some
             | Some existingNode -> 
                 match getAuthFromNode existingNode with
-                | Credentials (_, existingPassword, _) ->
+                | Credentials ({Password = existingPassword}) ->
                     if existingPassword <> password then existingNode |> Some
                     else None
                 | _ -> None
@@ -237,7 +237,7 @@ let askAndAddAuth (source : string) (passedUserName : string) (passedPassword : 
     let authResult = 
         if verify then 
             tracef "Verifying the source URL and credentials...\n"
-            let cred = Credentials(username, password, parseAuthTypeString authType)
+            let cred = Credentials({Username = username; Password = password; Type = parseAuthTypeString authType})
             checkCredentials(source, Some cred) 
         else 
             true

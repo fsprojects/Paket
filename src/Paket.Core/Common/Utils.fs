@@ -105,10 +105,30 @@ let internal memoizeAsync f =
         cache.GetOrAdd(x, fun x -> f(x) |> Async.StartAsTask) |> Async.AwaitTask
 
 type AuthType = | Basic | NTLM
-
-type Auth = 
-    | Credentials of Username : string * Password : string * Type : AuthType
+type UserPassword = { Username: string; Password: string; Type : AuthType }
+type Auth =
+    | Credentials of UserPass : UserPassword
     | Token of string
+
+/// Credentials Provider, the paramter indicates whether we need to retry, because some previous request failed
+type AuthProvider =
+    abstract Retrieve : isRetry:bool -> Auth option
+module AuthProvider =
+    let ofFunction f =
+        { new AuthProvider with
+            member x.Retrieve isRetry = f isRetry }
+    let ofUserPasswordFunction f =
+        ofFunction (f >> Option.map Credentials)
+
+    let combine providers =
+        ofFunction (fun isRetry ->
+            providers
+            |> Seq.tryPick (fun (p:AuthProvider) -> p.Retrieve isRetry))
+    let retrieve isRetry (auth:AuthProvider) =
+        auth.Retrieve isRetry
+    let empty = ofFunction(fun _ -> None)
+    let ofUserPassword userPass = ofUserPasswordFunction (fun _ -> Some userPass)
+    let ofAuth auth = ofFunction (fun _ -> Some auth)
 
 let internal parseAuthTypeString (str:string) =
     match str.Trim().ToLowerInvariant() with
@@ -514,6 +534,12 @@ type RequestFailedException =
     }
 #endif
     member x.Info with get () = x.info
+    member x.Wrap() =
+        match x.info with
+        | Some info ->
+            RequestFailedException(info, x:>exn)
+        | None ->
+            RequestFailedException(x.Message, x:>exn)
 
 let failIfNoSuccess (resp:HttpResponseMessage) = async {
     if not resp.IsSuccessStatusCode then
@@ -654,7 +680,7 @@ let createHttpClient (url,auth:Auth option) =
     let client = new HttpClient(handler)
     match auth with
     | None -> handler.UseDefaultCredentials <- true
-    | Some(Credentials(username, password, AuthType.Basic)) -> 
+    | Some(Credentials({Username = username; Password = password; Type = AuthType.Basic})) ->
         // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
         //this works ONLY if the server returns 401 first
         //client DOES NOT send credentials on first request
@@ -663,9 +689,9 @@ let createHttpClient (url,auth:Auth option) =
 
         //so use THIS instead to send credentials RIGHT AWAY
         let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
-        client.DefaultRequestHeaders.Authorization <- 
+        client.DefaultRequestHeaders.Authorization <-
             new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials)
-    | Some(Credentials(username, password, AuthType.NTLM)) ->
+    | Some(Credentials({Username = username; Password = password; Type = AuthType.NTLM})) ->
         let cred = System.Net.NetworkCredential(username,password)        
         handler.Credentials <- cred.GetCredential(new Uri(url), "NTLM")
     | Some(Token token) ->
@@ -691,7 +717,7 @@ let createWebClient (url,auth:Auth option) =
     let githubToken = Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN"
 
     match auth with
-    | Some (Credentials(username, password, AuthType.Basic)) ->
+    | Some (Credentials({Username = username; Password = password; Type = AuthType.Basic})) ->
         // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
         //this works ONLY if the server returns 401 first
         //client DOES NOT send credentials on first request
@@ -702,8 +728,8 @@ let createWebClient (url,auth:Auth option) =
         let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
         client.Headers.[HttpRequestHeader.Authorization] <- sprintf "Basic %s" credentials
         client.Credentials <- new NetworkCredential(username,password)
-    | Some (Credentials(username, password, AuthType.NTLM)) ->
-        let cred = NetworkCredential(username,password)        
+    | Some (Credentials{Username = username; Password = password; Type = AuthType.NTLM}) ->
+        let cred = NetworkCredential(username,password)
         client.Credentials <- cred.GetCredential(new Uri(url), "NTLM")
     | Some (Token token) ->
         client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" token
@@ -720,63 +746,83 @@ open System.Diagnostics
 open System.Collections.Generic
 open System.Runtime.ExceptionServices
 
-/// [omit]
-let downloadFromUrlWithTimeout (auth:Auth option, url : string) (timeout:TimeSpan option) (filePath: string) =
+
+let private resolveAuth (auth: AuthProvider) doRequest =
     async {
-        try
-            use client = createHttpClient (url,auth)
-            if timeout.IsSome then
-                client.Timeout <- timeout.Value
-            let! tok = Async.CancellationToken
-            if verbose then
-                verbosefn "Starting download from '%O'" url
-            use _ = Profile.startCategory Profile.Category.NuGetDownload
-            let task = client.DownloadFileTaskAsync (Uri url, tok, filePath) |> Async.AwaitTaskWithoutAggregate
-            do! task
+        try return! doRequest (auth.Retrieve false)
+        with
+        | :? RequestFailedException as w ->
+            match w.Info with
+            | Some { StatusCode = HttpStatusCode.Unauthorized } ->
+                return! doRequest (auth.Retrieve false)
+            | _ ->
+                return raise <| w.Wrap()
+    }
+
+/// [omit]
+let downloadFromUrlWithTimeout (auth:AuthProvider, url : string) (timeout:TimeSpan option) (filePath: string) =
+    let doRequest auth = async {
+        use client = createHttpClient (url,auth)
+        if timeout.IsSome then
+            client.Timeout <- timeout.Value
+        let! tok = Async.CancellationToken
+        if verbose then
+            verbosefn "Starting download from '%O'" url
+        use _ = Profile.startCategory Profile.Category.NuGetDownload
+        let task = client.DownloadFileTaskAsync (Uri url, tok, filePath) |> Async.AwaitTaskWithoutAggregate
+        do! task
+    }
+    async {
+        try return! resolveAuth auth doRequest
         with
         | exn ->
             raise (Exception(sprintf "Could not download from '%s'" url, exn))
     }
 
 /// [omit]
-let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
+let downloadFromUrl (auth:AuthProvider, url : string) (filePath: string) =
     downloadFromUrlWithTimeout (auth, url) None filePath
 
-/// [omit]
-let getFromUrl (auth:Auth option, url : string, contentType : string) =
-    async { 
-        let uri = Uri url
-        try
-            use client = createHttpClient(url,auth)
-            let! tok = Async.CancellationToken
-            if notNullOrEmpty contentType then
-                addAcceptHeader client contentType
 
-            if verbose then
-                verbosefn "Starting request to '%O'" url
-            use _ = Profile.startCategory Profile.Category.NuGetRequest
+/// [omit]
+let getFromUrl (auth:AuthProvider, url : string, contentType : string) =
+    let uri = Uri url
+    let doRequest auth = async {
+        use client = createHttpClient(url,auth)
+        let! tok = Async.CancellationToken
+        if notNullOrEmpty contentType then
+            addAcceptHeader client contentType
+
+        if verbose then
+            verbosefn "Starting request to '%O'" url
+        use _ = Profile.startCategory Profile.Category.NuGetRequest
             
-            return! client.DownloadStringTaskAsync (uri, tok) |> Async.AwaitTaskWithoutAggregate
-        with
-        | exn ->
+        return! client.DownloadStringTaskAsync (uri, tok) |> Async.AwaitTaskWithoutAggregate
+    }
+
+    async {
+        try return! resolveAuth auth doRequest
+        with exn ->
             return raise (Exception(sprintf "Could not retrieve data from '%s'" url, exn))
 
     }
 
-let getXmlFromUrl (auth:Auth option, url : string) =
+let getXmlFromUrl (auth:AuthProvider, url : string) =
+    let doRequest auth = async {
+        use client = createHttpClient (url,auth)
+        let! tok = Async.CancellationToken
+        // mimic the headers sent from nuget client to odata/ endpoints
+        addAcceptHeader client "application/atom+xml, application/xml"
+        addHeader client "AcceptCharset" "UTF-8"
+        addHeader client "DataServiceVersion" "1.0;NetFx"
+        addHeader client "MaxDataServiceVersion" "2.0;NetFx"
+        if verbose then
+            verbosefn "Starting request to '%O'" url
+        use _ = Profile.startCategory Profile.Category.NuGetRequest
+        return! client.DownloadStringTaskAsync (Uri url, tok) |> Async.AwaitTaskWithoutAggregate
+    }
     async {
-        try
-            use client = createHttpClient (url,auth)
-            let! tok = Async.CancellationToken
-            // mimic the headers sent from nuget client to odata/ endpoints
-            addAcceptHeader client "application/atom+xml, application/xml"
-            addHeader client "AcceptCharset" "UTF-8"
-            addHeader client "DataServiceVersion" "1.0;NetFx"
-            addHeader client "MaxDataServiceVersion" "2.0;NetFx"
-            if verbose then
-                verbosefn "Starting request to '%O'" url
-            use _ = Profile.startCategory Profile.Category.NuGetRequest
-            return! client.DownloadStringTaskAsync (Uri url, tok) |> Async.AwaitTaskWithoutAggregate
+        try return! resolveAuth auth doRequest
         with
         | exn ->
             return raise (Exception(sprintf "Could not retrieve data from '%s'" url, exn))
@@ -784,6 +830,7 @@ let getXmlFromUrl (auth:Auth option, url : string) =
 
 type SafeWebResult<'a> =
     | NotFound
+    | Unauthorized
     | SuccessResponse of 'a
     | UnknownError of ExceptionDispatchInfo
 module SafeWebResult =
@@ -792,11 +839,16 @@ module SafeWebResult =
         | SuccessResponse r -> SuccessResponse (f r)
         | UnknownError err -> UnknownError err
         | NotFound -> NotFound
+        | Unauthorized -> Unauthorized
     let asResult s =
         match s with
         | NotFound ->
             let notFound = Exception("Request returned 404")
             ExceptionDispatchInfo.Capture notFound
+            |> FSharp.Core.Result.Error
+        | Unauthorized ->
+            let unauthorized = Exception("Request returned 401")
+            ExceptionDispatchInfo.Capture unauthorized
             |> FSharp.Core.Result.Error
         | UnknownError err -> FSharp.Core.Result.Error err
         | SuccessResponse s -> FSharp.Core.Result.Ok s
@@ -837,6 +889,7 @@ let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : s
         | :? RequestFailedException as w ->
             match w.Info with
             | Some { StatusCode = HttpStatusCode.NotFound } -> return NotFound
+            | Some { StatusCode = HttpStatusCode.Unauthorized } -> return Unauthorized
             | _ ->
                 if verbose then
                     Logging.verbosefn "Error while retrieving '%s': %O" url w
@@ -844,7 +897,13 @@ let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : s
     }
     
 /// [omit]
-let safeGetFromUrl (auth:Auth option, url : string, contentType : string) = _safeGetFromUrl(auth, url, contentType, 1, 10)
+let safeGetFromUrl (auth:AuthProvider, url : string, contentType : string) = async {
+    let! result = _safeGetFromUrl(auth.Retrieve false, url, contentType, 1, 10)
+    match result with
+    | Unauthorized ->
+        return! _safeGetFromUrl(auth.Retrieve true, url, contentType, 1, 10)
+    | _ ->
+        return result }
     
 let mutable autoAnswer = None
 let readAnswer() =

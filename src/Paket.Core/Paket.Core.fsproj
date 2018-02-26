@@ -80,11 +80,14 @@
     <Compile Include="Common\Profile.fs" />
     <Compile Include="Common\Utils.fs" />
     <Compile Include="Common\Xml.fs" />
+    <Compile Include="Common\ProcessHelper.fs" />
     <Compile Include="Versioning\SemVer.fs" />
     <Compile Include="Versioning\VersionRange.fs" />
     <Compile Include="Versioning\FrameworkHandling.fs" />
     <Compile Include="Versioning\PlatformMatching.fs" />
     <Compile Include="Versioning\ConfigFile.fs" />
+    <Compile Include="Versioning\CredentialProviders.fs" />
+    <Compile Include="Versioning\AuthService.fs" />
     <Compile Include="Versioning\Cache.fs" />
     <Compile Include="Versioning\PackageSources.fs" />
     <Compile Include="Versioning\Requirements.fs" />

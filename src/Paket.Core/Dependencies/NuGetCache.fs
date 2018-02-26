@@ -60,6 +60,7 @@ type NuGetRequestGetVersions =
                     match res with
                     | SuccessResponse r -> SuccessVersionResponse r
                     | NotFound -> SuccessVersionResponse [||]
+                    | Unauthorized -> FailedVersionRequest { Url = url; Error = ExceptionDispatchInfo.Capture(exn("Not authorized (401)")) }
                     | UnknownError err -> FailedVersionRequest { Url = url; Error = err }
             })
     static member run (r:NuGetRequestGetVersions) : Async<NuGetResponseGetVersions> =
