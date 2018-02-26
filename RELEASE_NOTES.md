@@ -1,3 +1,6 @@
+#### 5.145.0 - 2018-02-26
+* Added support for credential managers - https://github.com/fsprojects/Paket/pull/3069
+
 #### 5.144.0 - 2018-02-26
 * BUGFIX: Fix https://github.com/fsharp/FAKE/issues/1744
 * BUGFIX: Fix https://github.com/fsharp/FAKE/issues/1778

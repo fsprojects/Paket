@@ -1,6 +1,6 @@
 # Paket support for Credential Providers
 
-> Support for Credential Providers needs at least Paket version `5.144.0`
+> Support for Credential Providers needs at least Paket version `5.145.0`
 
 Paket supports Credential Providers through the same interface as [NuGet](https://docs.microsoft.com/en-us/nuget/reference/extensibility/nuget-exe-credential-providers).
 
