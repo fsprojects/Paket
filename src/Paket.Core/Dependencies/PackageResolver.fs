@@ -93,12 +93,17 @@ type VersionCache =
     static member ofParams version sources isAssumed =
         { Version = version; Sources = sources |> List.distinctBy (fun s -> s.Url); AssumedVersion = isAssumed }
 
-type ResolverStep = {
-    Relax: bool
+type ResolverStep = 
+  { Relax: bool
     FilteredVersions : Map<PackageName, (VersionCache list * bool)>
     CurrentResolution : Map<PackageName,ResolvedPackage>
     ClosedRequirements : Set<PackageRequirement>
-    OpenRequirements : Set<PackageRequirement> }
+    OpenRequirements : Set<PackageRequirement> } 
+    member this.RequirementDisplay =
+        let newline = Environment.NewLine
+        let opened = String.Join(newline + "   ", this.OpenRequirements |> Seq.sort)
+        let closed = String.Join(newline + "   ", this.ClosedRequirements |> Seq.sort)
+        sprintf "-- CLOSED --%s   %s%s-- OPEN ----%s   %s" newline closed newline newline opened
 
 module DependencySetFilter =
     let isIncluded (restriction:FrameworkRestriction) (dependency:PackageName * VersionRequirement * FrameworkRestrictions) =
@@ -499,7 +504,7 @@ let private explorePackageConfig (getPackageDetailsBlock:PackageDetailsSyncFunc)
 
 type StackPack = {
     ExploredPackages     : Dictionary<PackageName*SemVerInfo,ResolvedPackage>
-    KnownConflicts       : HashSet<HashSet<PackageRequirement> * (VersionCache list * bool) option>
+    KnownConflicts       : HashSet<Set<PackageRequirement> * (VersionCache list * bool) option>
     ConflictHistory      : Dictionary<PackageName, int>
 }
 
@@ -635,7 +640,7 @@ let private getCompatibleVersions
         compatibleVersions, false, tryRelaxed
 
 
-let private getConflicts (currentStep:ResolverStep) (currentRequirement:PackageRequirement) (knownConflicts:HashSet<HashSet<PackageRequirement> * (VersionCache list * bool) option>) =
+let private getConflicts (currentStep:ResolverStep) (currentRequirement:PackageRequirement) (knownConflicts:HashSet<Set<PackageRequirement> * (VersionCache list * bool) option>) =
     
     let allRequirements =
         currentStep.OpenRequirements
@@ -651,8 +656,8 @@ let private getConflicts (currentStep:ResolverStep) (currentRequirement:PackageR
             let n = (Seq.head conflicts).Name
             match currentStep.FilteredVersions |> Map.tryFind n with
             | Some(v,_) when v = selectedVersion && isSubset -> conflicts
-            | _ -> HashSet()
-        | _ -> HashSet())
+            | _ -> Set.empty
+        | _ -> Set.empty)
     |> Seq.collect id
     |> HashSet
 
@@ -701,7 +706,7 @@ type ConflictState = {
                 | TryRelaxed   - %A\n
                 | LastReport   - %A\n"                
                     self.Status conflicts explore 
-                    self.TryRelaxed self.LastConflictReported
+                    self.TryRelaxed self.LastConflictReported.ToLocalTime
         
         
 let inline boostConflicts
@@ -729,23 +734,28 @@ let inline boostConflicts
             | _ ->
                 stackpack.ConflictHistory.Add(parentName, 2)
         | _ -> ()
+        
+    let isKnownConflict =     
+        match conflicts with
+        | _ when not conflicts.IsEmpty ->
+            let c = conflicts |> Seq.minBy (fun c -> c.Parent)
+            let selectedVersion = Map.tryFind c.Name filteredVersions
+            let key = conflicts |> Set,selectedVersion
+            not (stackpack.KnownConflicts.Add key) // true if known
+        | _ -> false
 
     let reportThatResolverIsTakingLongerThanExpected =
-        not isNewConflict && DateTime.Now - conflictState.LastConflictReported > TimeSpan.FromSeconds 10.
+        if isNewConflict then isKnownConflict
+        else DateTime.UtcNow - conflictState.LastConflictReported > TimeSpan.FromSeconds 10.
   
     if reportThatResolverIsTakingLongerThanExpected then
         let lastConflictReported =
             match conflicts with
             | _ when not conflicts.IsEmpty ->
-                let c = conflicts |> Seq.minBy (fun c -> c.Parent)
-                let selectedVersion = Map.tryFind c.Name filteredVersions
-                let key = conflicts |> HashSet,selectedVersion
-                stackpack.KnownConflicts.Add key |> ignore
-            
                 traceWarnfn "%s" (conflictStatus.GetErrorText false)
                 traceWarn "The process is taking longer than expected."
                 traceWarn "Paket may still find a valid resolution, but this might take a while."
-                DateTime.Now
+                DateTime.UtcNow
             | _ -> conflictState.LastConflictReported
 
         { conflictState with
@@ -958,6 +968,23 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
             | true, v -> v
             | _ -> traceWarnfn "PAKET_RESOLVER_TASK_TIMEOUT is not set to an interval in milliseconds, ignoring the value and defaulting to %d" RequestTimeout
                    RequestTimeout
+                   
+    let loopTimeout =
+        match Environment.GetEnvironmentVariable("PAKET_RESOLVER_TIMEOUT") with
+        | a when System.String.IsNullOrWhiteSpace a -> Timeout.InfiniteTimeSpan
+        | a ->
+            match System.Int32.TryParse a with
+            | true, msecs when msecs >= -1 ->
+                tracefn "PAKET_RESOLVER_TIMEOUT is set to %d milliseconds" msecs
+                TimeSpan.FromMilliseconds (float(msecs))
+            | _ ->
+                match System.TimeSpan.TryParse a with
+                | true, timeSpan when timeSpan > TimeSpan.Zero ->
+                    tracefn "PAKET_RESOLVER_TIMEOUT is set to timespan of %A" timeSpan
+                    timeSpan
+                | _ -> 
+                    traceWarnfn "PAKET_RESOLVER_TIMEOUT is not set to a valid timespan (%A), defaulting to Infinite" a
+                    Timeout.InfiniteTimeSpan
 
     let getAndReport (sources:PackageSource list) blockReason (mem:ResolverTaskMemory<_>) =
         try
@@ -1031,11 +1058,9 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                     getAndReport versionParams.Package.Sources Profile.BlockReason.GetVersion workHandle 
                     |> Seq.toList
                 with e ->
-                    let newline = Environment.NewLine
-                    let opened = String.Join(newline + "   ", currentStep.OpenRequirements |> Seq.sort)
-                    let closed = String.Join(newline + "   ", currentStep.ClosedRequirements |> Seq.sort)
-                    let requirements = sprintf "-- CLOSED --%s   %s%s-- OPEN ----%s   %s" newline closed newline newline opened
-                    let message = sprintf "Unable to retrieve package versions for '%O'%s%s" versionParams.Package.PackageName Environment.NewLine requirements
+                    let message = 
+                        sprintf "Unable to retrieve package versions for '%O'%s%s" 
+                            versionParams.Package.PackageName Environment.NewLine currentStep.RequirementDisplay
                     raise (Exception (message, e))
             let sorted =
                 match resolverStrategy with
@@ -1067,18 +1092,27 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
     if Set.isEmpty rootDependencies then Resolution.ofRaw [] (ResolutionRaw.OkRaw Map.empty)
     else
 
+
+    let loopTime = DateTime.UtcNow
     /// Evaluates whethere the innermost step-looping stage should continue or not
     let keepLooping (flags:StepFlags) (conflictState:ConflictState) (currentRequirement:PackageRequirement) =
         if flags.ForceBreak then false else
         if conflictState.Status.IsDone then false else
         if Seq.isEmpty conflictState.VersionsToExplore then
-            false 
-        else
-            flags.FirstTrial || Set.isEmpty conflictState.Conflicts
+            false else
+        flags.FirstTrial || Set.isEmpty conflictState.Conflicts
 
     let rec step (stage:Stage) (stackpack:StackPack) compatibleVersions (flags:StepFlags) =
-
-        let inline fuseConflicts currentRequirement filteredVersions currentConflict priorConflictSteps conflicts =
+    
+        let resolverTimeout (conflictState:ConflictState) (currentStep:ResolverStep) =
+            if (loopTimeout > TimeSpan.Zero) && (loopTimeout < DateTime.UtcNow - loopTime) then
+                let require = currentStep.RequirementDisplay
+                let results = conflictState.Status.GetErrorText false
+                let message = sprintf "Paket Resolve exceeded timeout of %A, %s%s" loopTimeout results require
+                conflictState.AddError(raise(TimeoutException(message)))
+            else conflictState
+    
+        let fuseConflicts currentRequirement filteredVersions currentConflict priorConflictSteps conflicts =
             let currentConflict,stackpack = boostConflicts filteredVersions currentRequirement stackpack currentConflict
             let matchingStep =
                 let currentNames =
@@ -1108,7 +1142,8 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                 step (Inner((continueConflict,lastStep,lastRequirement), priorConflictSteps)) stackpack lastCompatibleVersions lastFlags
                         
         match stage with            
-        | Step((currentConflict,currentStep,_currentRequirement), priorConflictSteps)  -> 
+        | Step((conflictState,currentStep,_currentRequirement), priorConflictSteps)  ->
+            let currentConflict = resolverTimeout conflictState currentStep
             if Set.isEmpty currentStep.OpenRequirements then
                 let currentConflict =
                     { currentConflict with
@@ -1198,7 +1233,8 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                         UnlistedSearch = false
                     }
                     step (Outer ((conflictState,currentStep,currentRequirement),priorConflictSteps)) stackpack compatibleVersions flags 
-        | Outer ((currentConflict,currentStep,currentRequirement), priorConflictSteps) ->
+        | Outer ((conflictState,currentStep,currentRequirement), priorConflictSteps) ->
+            let currentConflict = resolverTimeout conflictState currentStep
             if flags.Ready then
                 fuseConflicts currentRequirement currentStep.FilteredVersions currentConflict priorConflictSteps (HashSet [ currentRequirement ])
             else
@@ -1210,7 +1246,8 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                 let currentConflict = { currentConflict with VersionsToExplore = compatibleVersions }
                 step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags 
 
-        | Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)->
+        | Inner ((conflictState,currentStep,currentRequirement), priorConflictSteps)->
+            let currentConflict = resolverTimeout conflictState currentStep
             if not (keepLooping flags currentConflict currentRequirement) then
                 let flags =
                     if  not flags.UseUnlisted 
@@ -1377,7 +1414,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
     let currentConflict : ConflictState = {
         Status               = (status : ResolutionRaw)
         Errors               = []
-        LastConflictReported = DateTime.Now
+        LastConflictReported = DateTime.UtcNow
         TryRelaxed           = false
         GlobalOverride       = false
         Conflicts            = (Set.empty : Set<PackageRequirement>)
@@ -1386,7 +1423,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
 
     let stackpack = {
         ExploredPackages     = Dictionary<PackageName*SemVerInfo,ResolvedPackage>()
-        KnownConflicts       = (HashSet() : HashSet<HashSet<PackageRequirement> * (VersionCache list * bool) option>)
+        KnownConflicts       = (HashSet() : HashSet<Set<PackageRequirement> * (VersionCache list * bool) option>)
         ConflictHistory      = (Dictionary() : Dictionary<PackageName, int>)
     }
 
