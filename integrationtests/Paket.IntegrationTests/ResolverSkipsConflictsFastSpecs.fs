@@ -28,9 +28,10 @@ let ``#1166 Should resolve Nancy without timeout``() =
 
 [<Test>]
 let ``#2289 Paket 4.x install command takes hours to complete``() =
-    let lockFile = installEx true "i002289-resolve-nunit-timeout"
+    let lockFile = install "i002289-resolve-nunit-timeout"
     let nunitVersion =
         lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NUnit"].Version
+
     nunitVersion
     |> shouldBeGreaterThan (SemVer.Parse "2.0")
     nunitVersion
