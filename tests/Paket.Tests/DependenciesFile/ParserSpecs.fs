@@ -1613,3 +1613,15 @@ let ``should read config with cli tool``() =
     let nuget = cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Head
     tool.Kind |> shouldEqual PackageRequirementKind.DotnetCliTool
     nuget.Kind |> shouldEqual PackageRequirementKind.Package
+
+let paketCacheTestPath = System.IO.Path.Combine("~", ".paket-cache")
+let configWithHomePathInCache = String.Concat("""
+source https://www.nuget.org/api/v2
+
+cache """, paketCacheTestPath)
+
+[<Test>]
+let ``should parse config with home path in cache``() =
+    let cfg = DependenciesFile.FromSource(configWithHomePathInCache)
+    let expected = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".paket-cache")
+    cfg.Groups.[Constants.MainDependencyGroup].Caches.[0].Location |> shouldEqual expected
