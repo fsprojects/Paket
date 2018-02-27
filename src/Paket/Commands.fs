@@ -597,6 +597,14 @@ with
 
         | Details -> "display detailed information with all paths, versions and framework restrictions"
 
+type RestrictionArgs =
+    | [<ExactlyOnce;MainCommand>] Restriction of restrictionRaw:string
+with
+  interface IArgParserTemplate with
+      member this.Usage =
+        match this with
+        | Restriction(_) -> "The restriction to resolve"
+
 type Command =
     // global options
     |                                                   Version
@@ -630,6 +638,7 @@ type Command =
     | [<Hidden;CustomCommandLine("generate-include-scripts")>] GenerateIncludeScripts of ParseResults<GenerateLoadScriptsArgs>
     | [<CustomCommandLine("generate-load-scripts")>]    GenerateLoadScripts of ParseResults<GenerateLoadScriptsArgs>
     | [<CustomCommandLine("why")>]                      Why of ParseResults<WhyArgs>
+    | [<CustomCommandLine("restriction")>]              Restriction of ParseResults<RestrictionArgs>
     | [<CustomCommandLine("info")>]                     Info of ParseResults<InfoArgs>
 with
     interface IArgParserTemplate with
@@ -660,6 +669,7 @@ with
             | GenerateIncludeScripts _ -> "[obsolete]"
             | GenerateLoadScripts _ -> "generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS"
             | Why _ -> "determine why a dependency is required"
+            | Restriction _ -> "resolve a framework restriction and show details"
             | Info _ -> "info"
             | Log_File _ -> "print output to a file"
             | Silent -> "suppress console output"
