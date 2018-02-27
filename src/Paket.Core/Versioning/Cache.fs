@@ -19,9 +19,9 @@ type Cache = {
             { this with Location = Path.Combine(root,this.Location) |> normalizePath }
 
     static member Parse(line : string) =
-        let normalizeHomeDirectory (fileName : string) =
+        let normalizeHomeDirectory (line : string) =
             let homeDirectory = "~"
-            fileName.Replace(homeDirectory, Environment.GetFolderPath(Environment.SpecialFolder.UserProfile))
+            line.Replace(homeDirectory, Environment.GetFolderPath(Environment.SpecialFolder.UserProfile))
 
         let normalizedLine = normalizeHomeDirectory line
 
