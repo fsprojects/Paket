@@ -1,3 +1,6 @@
+#### 5.145.3 - 2018-02-27
+* BUGFIX: Paket pack was putting entire directory into package lib folder when files block contained an empty line - https://github.com/fsprojects/Paket/issues/2949
+
 #### 5.145.2 - 2018-02-27
 * BUGFIX: Better error message when a HTTP request fails - https://github.com/fsprojects/Paket/pull/3078
 
