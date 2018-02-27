@@ -19,17 +19,23 @@ type Cache = {
             { this with Location = Path.Combine(root,this.Location) |> normalizePath }
 
     static member Parse(line : string) =
+        let normalizeHomeDirectory (fileName : string) =
+            let homeDirectory = "~"
+            fileName.Replace(homeDirectory, Environment.GetFolderPath(Environment.SpecialFolder.UserProfile))
+
+        let normalizedLine = normalizeHomeDirectory line
+
         let sourceRegex = Regex("cache[ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
-        let parts = line.Split ' '
+        let parts = normalizedLine.Split ' '
         let source = 
-            if sourceRegex.IsMatch line then
-                sourceRegex.Match(line).Groups.[1].Value.TrimEnd([| '/' |])
+            if sourceRegex.IsMatch normalizedLine then
+                sourceRegex.Match(normalizedLine).Groups.[1].Value.TrimEnd([| '/' |])
             else
                 parts.[1].Replace("\"","").TrimEnd([| '/' |])
 
         let rest =
-            let start = line.IndexOf source + source.Length
-            line.Substring(start)
+            let start = normalizedLine.IndexOf source + source.Length
+            normalizedLine.Substring(start)
 
         let kvPairs = parseKeyValuePairs (rest.ToLower())
 
