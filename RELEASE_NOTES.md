@@ -1,4 +1,4 @@
-#### 5.145.4 - 2018-02-27
+#### 5.145.5 - 2018-02-27
 * BUGFIX: Fixed repeated conflict detection and introduced optional resolver timeout  - https://github.com/fsprojects/Paket/pull/3084
 
 #### 5.145.3 - 2018-02-27
