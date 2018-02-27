@@ -148,7 +148,7 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
 #endif
 
                 request.UseDefaultCredentials <- true
-                request.Proxy <- Utils.getDefaultProxyFor licenseUrl
+                request.Proxy <- NetUtils.getDefaultProxyFor licenseUrl
                 use _ = Profile.startCategory Profile.Category.NuGetRequest
                 use! httpResponse = request.AsyncGetResponse()
 
@@ -763,7 +763,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     else
                         request.UseDefaultCredentials <- true
 
-                    request.Proxy <- Utils.getDefaultProxyFor source.Url
+                    request.Proxy <- NetUtils.getDefaultProxyFor source.Url
                     use! httpResponse = request.AsyncGetResponse()
 
                     use httpResponseStream = httpResponse.GetResponseStream()

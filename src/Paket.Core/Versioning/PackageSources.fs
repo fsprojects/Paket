@@ -91,8 +91,8 @@ let internal parseAuth(text:string, source) =
 
         let authType = 
             if (authTypeRegex.IsMatch(text))
-            then authTypeRegex.Match(text).Groups.[1].Value |> Utils.parseAuthTypeString
-            else Utils.AuthType.Basic
+            then authTypeRegex.Match(text).Groups.[1].Value |> NetUtils.parseAuthTypeString
+            else NetUtils.AuthType.Basic
 
         let auth = 
             match EnvironmentVariable.Create(username),
@@ -182,7 +182,7 @@ type PackageSource =
 
     static member WarnIfNoConnection (source,_) = 
         let n url (auth:AuthProvider) =
-            use client = Utils.createHttpClient(url, auth.Retrieve true)
+            use client = NetUtils.createHttpClient(url, auth.Retrieve true)
             try 
                 client.DownloadData url |> ignore 
             with _ ->

@@ -105,7 +105,7 @@ let getAuthFromNode (node : XmlNode) =
         let authType =                         
             match node.Attributes.["authType"] with
             | null -> AuthType.Basic
-            | n -> n.Value |> Utils.parseAuthTypeString
+            | n -> n.Value |> NetUtils.parseAuthTypeString
 
         let salt = node.Attributes.["salt"].Value
         Credentials ({Username = username; Password = Decrypt salt password; Type = authType})
@@ -132,7 +132,7 @@ let private setToken (token : string) (node : XmlElement) =
 
 /// Check if the provided credentials for a specific source are correct
 let checkCredentials(url, cred) = 
-    let client = Utils.createHttpClient(url,cred)
+    let client = NetUtils.createHttpClient(url,cred)
     try 
         client.DownloadData (Uri url) |> ignore
         true
