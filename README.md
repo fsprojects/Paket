@@ -54,8 +54,12 @@ For more reasons see the [FAQ][10].
 
  - Fork and clone locally.
  - Build the solution with Visual Studio, `build.cmd` or `build.sh`.
- - Create a topic specific branch in git. Add a nice feature in the code. Do not forget to add tests and/or docs.
- - Run `build.cmd` (`build.sh` on Mono) to make sure all tests are still passing.
+ - Create a topic specific branch in git. Add a nice feature in the code. Do not
+   forget to add tests and/or docs.
+ - Run `build.cmd` (`build.sh` on Mono) to make sure all tests are still
+   passing.
+ - When built, you'll find the binaries in `./bin` which you can then test
+   with locally, to ensure the bug or feature has been successfully implemented.
  - Send a Pull Request.
 
 If you want to contribute to the [docs][2] then please modify the markdown files in `/docs/content` and send a pull request.
