@@ -210,7 +210,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
                     yield template, p
                 }
             )
-         |> Seq.map (fun (t, p) -> findDependencies dependenciesFile buildConfig buildPlatform t p lockDependencies minimumFromLockFile pinProjectReferences projectTemplates includeReferencedProjects version specificVersions projDeps)
+         |> Seq.map (fun (t, p) -> findDependencies dependenciesFile buildConfig buildPlatform t p lockDependencies minimumFromLockFile pinProjectReferences projectTemplates includeReferencedProjects version projDeps)
          |> Seq.append remaining
          |> Seq.toList
 
@@ -243,7 +243,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
                     |> NuGetCache.fixDatesInArchive 
                     tracefn "Packed: %s" templateFile.FileName
                 | IncompleteTemplate -> 
-                    failwithf "There was an attempt to pack incomplete template file %s." templateFile.FileName
+                    failwithf "There was an attempt to pack the incomplete template file %s." templateFile.FileName
             })
     |> Async.Parallel
     |> Async.RunSynchronously

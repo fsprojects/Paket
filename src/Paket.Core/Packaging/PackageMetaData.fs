@@ -160,7 +160,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith (sprintf "You should only try and add files to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
-let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (projectWithTemplates : Map<string, (Lazy<'TemplateFile>) * ProjectFile * bool>) includeReferencedProjects (version :SemVerInfo option) specificVersions (projDeps) =
+let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (projectWithTemplates : Map<string, (Lazy<'TemplateFile>) * ProjectFile * bool>) includeReferencedProjects (version :SemVerInfo option) projDeps =
     let includeReferencedProjects = template.IncludeReferencedProjects || includeReferencedProjects
     let targetDir = 
         match project.OutputType with
@@ -319,6 +319,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
     
     // filter out any references that are transitive
     let distinctRefs = allReferences |> List.distinct
+    
     let refs = 
         distinctRefs
         |> List.filter (fun (group, settings: Paket.PackageInstallSettings, _) ->
@@ -344,7 +345,8 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
         |> List.sortByDescending (fun (_, settings,_) -> settings.Name)
     
     match refs with
-    | [] -> withDepsAndIncluded
+    | [] -> 
+        withDepsAndIncluded
     | _ -> 
         let deps =
             refs
@@ -371,7 +373,8 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                 | None ->
                     match version with
                     | Some v -> 
-                        np.Name,VersionRequirement.Parse (v.ToString())
+                        let vr = if lockDependencies || pinProjectReferences then Specific v else Minimum v
+                        np.Name,VersionRequirement(vr, getPreReleaseStatus v)
                     | None -> 
                         if minimumFromLockFile then
                             let groupName =

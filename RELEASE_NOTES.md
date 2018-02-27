@@ -1,5 +1,8 @@
+#### 5.145.6 - 2018-02-27
+* BUGFIX: Fixed inconsistent pinned version of referenced projects with include-referenced-projects enabled - https://github.com/fsprojects/Paket/issues/3076
+
 #### 5.145.5 - 2018-02-27
-* BUGFIX: Fixed repeated conflict detection and introduced optional resolver timeout  - https://github.com/fsprojects/Paket/pull/3084
+* BUGFIX: Fixed repeated conflict detection and introduced optional resolver timeout - https://github.com/fsprojects/Paket/pull/3084
 
 #### 5.145.3 - 2018-02-27
 * BUGFIX: Paket pack was putting entire directory into package lib folder when files block contained an empty line - https://github.com/fsprojects/Paket/issues/2949
