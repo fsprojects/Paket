@@ -118,7 +118,7 @@ type NuGetPackageCache =
       Version: string
       CacheVersion: string }
 
-    static member CurrentCacheVersion = "5.114"
+    static member CurrentCacheVersion = "5.115"
 
 // TODO: is there a better way? for now we use static member because that works with type abbreviations...
 //module NuGetPackageCache =
@@ -159,7 +159,7 @@ let getCacheFiles force cacheVersion nugetURL (packageName:PackageName) (version
                 |> Seq.toList
             for f in oldFiles do
                 File.Delete f
-        with 
+        with
         | ex -> traceErrorfn "Cannot cleanup '%s': %O" (sprintf "%s*.json" prefix) ex
     FileInfo(newFile)
 
@@ -223,9 +223,9 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
                             use cacheReader = cacheFile.OpenText()
                             cacheReader.ReadToEnd()
                         else ""
-                    with 
+                    with
                     | ex ->
-                        traceWarnfn "Can't read cache file %O:%s Message: %O" cacheFile Environment.NewLine ex 
+                        traceWarnfn "Can't read cache file %O:%s Message: %O" cacheFile Environment.NewLine ex
                         ""
                 if String.CompareOrdinal(serialized, cachedData) <> 0 then
                     File.WriteAllText(cacheFile.FullName, serialized)
@@ -517,7 +517,7 @@ let private tryUrlOrBlacklist (f: _ -> Async<'a>) (isOk : 'a -> bool) (source:Nu
 
 type QueryResult = Choice<ODataSearchResult,System.Exception>
 
-let tryAndBlacklistUrl doBlackList doWarn (source:NugetSource) 
+let tryAndBlacklistUrl doBlackList doWarn (source:NugetSource)
     (tryAgain : QueryResult -> bool) (f : string -> Async<QueryResult>) (urls: UrlToTry list) : Async<QueryResult>=
     async {
         let! tasks, resultIndex =
@@ -554,12 +554,12 @@ let tryAndBlacklistUrl doBlackList doWarn (source:NugetSource)
                     | Choice1Of3 result ->
                         match result with       // as per NuGetV2.fs ...
                         | Choice1Of2 _ -> true  // this is the only valid result ...
-                        | Choice2Of2 except ->  
+                        | Choice2Of2 except ->
                             match except with  // but NotFound/404 should allow other query to succeed
                             | RequestStatus HttpStatusCode.NotFound -> false
                                                // repos may not support full filter syntax (Artifactory)
                             | RequestStatus HttpStatusCode.MethodNotAllowed -> false
-                            | _ -> true        // for any other exceptions, cancel the rest and return                         
+                            | _ -> true        // for any other exceptions, cancel the rest and return
                     | _ -> false )
 
         match resultIndex with
