@@ -8,6 +8,7 @@ open Mono.Cecil
 open System.Collections.Generic
 open Logging
 open ProviderImplementation.AssemblyReader.Utils.SHA1
+open System
 
 // Needs an update so that all work is not done at once
 // computation should be done on a per group/per framework basis
@@ -102,7 +103,7 @@ type DependencyCache (lockFile:LockFile) =
                 try 
                     (AssemblyDefinition.ReadAssembly path, FileInfo(path)) |> Some
                 with
-                | _ -> None
+                | :? BadImageFormatException -> None
             )
             |> Seq.choose id
             |> dict
@@ -130,7 +131,7 @@ type DependencyCache (lockFile:LockFile) =
                     try
                         (AssemblyDefinition.ReadAssembly (f.FullName:string), f) |> Some
                     with
-                    | _ -> None)
+                    | :? BadImageFormatException -> None)
                 |> Seq.choose id
                 |> dict
 
