@@ -350,7 +350,7 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
                     Async.RunSynchronously (downloadRemoteFiles(source,destination))
                 with
                 | _ when trials > 0 ->
-                    tracefn "Download of %s failed. Trying again. (%d trials left)" source (trials - 1)
+                    tracefn "  - Download failed. Trying again. (%d trials left)" (trials - 1)
                     download (trials - 1)
 
             if not force && exists then
