@@ -1,3 +1,6 @@
+#### 5.145.8 - 2018-02-28
+* BUGFIX: Safer loading of assemblies during load script generation - https://github.com/fsprojects/Paket/pull/3098
+
 #### 5.145.7 - 2018-02-28
 * PERFORMANCE: Faster "hot" restore - https://github.com/fsprojects/Paket/pull/3092
 
