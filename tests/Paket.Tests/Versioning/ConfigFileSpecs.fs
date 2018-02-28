@@ -36,7 +36,7 @@ let ``get username, password, and auth type from node``() =
     node.SetAttribute("salt", salt)
     node.SetAttribute("authType", "ntlm")
     // Act
-    let (Credentials{Username = username; Password = password; Type = Utils.AuthType.NTLM}) = getAuthFromNode node
+    let (Credentials{Username = username; Password = password; Type = NetUtils.AuthType.NTLM}) = getAuthFromNode node
 
     // Assert
     username |> shouldEqual  "demo-user"
@@ -57,7 +57,7 @@ let ``get username and password from node without auth type``() =
     node.SetAttribute("password", password)
     node.SetAttribute("salt", salt)
     // Act
-    let (Credentials{Username = username; Password = password; Type = Utils.AuthType.Basic}) = getAuthFromNode node
+    let (Credentials{Username = username; Password = password; Type = NetUtils.AuthType.Basic}) = getAuthFromNode node
 
     // Assert
     username |> shouldEqual  "demo-user"

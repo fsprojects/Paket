@@ -711,7 +711,7 @@ let ``should read config with encapsulated password source with no auth type spe
             Url = "http://www.nuget.org/api/v2"
             Authentication = AuthProvider.empty } ]
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth.Retrieve true
-        |> shouldEqual (Some (Credentials{ Username = "tatü tata"; Password = "you got hacked!"; Type = Utils.AuthType.Basic}))
+        |> shouldEqual (Some (Credentials{ Username = "tatü tata"; Password = "you got hacked!"; Type = NetUtils.AuthType.Basic}))
 
 let configWithPasswordWithAuthType = """
 source http://www.nuget.org/api/v2 username: "tatü tata" password: "you got hacked!" authtype: "ntlm"
@@ -726,7 +726,7 @@ let ``should read config with encapsulated password source and auth type specifi
     |> shouldEqual [ 
         PackageSource.NuGetV2 { 
             Url = "http://www.nuget.org/api/v2"
-            Authentication = AuthProvider.ofUserPassword { Username = "tatü tata"; Password = "you got hacked!"; Type = Utils.AuthType.NTLM} } ]
+            Authentication = AuthProvider.ofUserPassword { Username = "tatü tata"; Password = "you got hacked!"; Type = NetUtils.AuthType.NTLM} } ]
 
 let configWithPasswordInSingleQuotes = """
 source http://www.nuget.org/api/v2 username: 'tatü tata' password: 'you got hacked!'
@@ -758,7 +758,7 @@ let ``should read config with password in env variable``() =
             Url = "http://www.nuget.org/api/v2"
             Authentication = AuthProvider.empty} ]
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth.Retrieve true
-        |> shouldEqual (Some (Credentials{ Username = "user XYZ"; Password = "pw Love"; Type = Utils.AuthType.Basic}))
+        |> shouldEqual (Some (Credentials{ Username = "user XYZ"; Password = "pw Love"; Type = NetUtils.AuthType.Basic}))
 
 let configWithPasswordInEnvVariableAndAuthType = """
 source http://www.nuget.org/api/v2 username: "%FEED_USERNAME%" password: "%FEED_PASSWORD%" authtype: "nTlM"
@@ -777,7 +777,7 @@ let ``should read config with password in env variable and auth type specified``
             Url = "http://www.nuget.org/api/v2"
             Authentication = AuthProvider.empty } ]
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth.Retrieve true
-        |> shouldEqual (Some (Credentials{ Username = "user XYZ"; Password = "pw Love"; Type = Utils.AuthType.NTLM}))
+        |> shouldEqual (Some (Credentials{ Username = "user XYZ"; Password = "pw Love"; Type = NetUtils.AuthType.NTLM}))
 
 let configWithExplicitVersions = """
 source "http://www.nuget.org/api/v2"

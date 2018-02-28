@@ -27,6 +27,7 @@
     <Compile Include="$(PaketCoreSourcesDir)\Common\Utils.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\Xml.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\ProcessHelper.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Common\NetUtils.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\SemVer.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\VersionRange.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\FrameworkHandling.fs" />

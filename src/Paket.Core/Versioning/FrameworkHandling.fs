@@ -1321,22 +1321,30 @@ module SupportCalculation =
         |> List.map (fun p -> p, getSupportedPortables p)
         |> ofSeq
 
-    let mutable private supportMap = optimizeSupportMap (createInitialSupportMap())
+    let mutable private supportMap: SupportMap option = None
+
+    let private getSupportMap () =
+        match supportMap with
+        | Some supportMap ->
+            supportMap
+        | None ->
+            supportMap <- Some (optimizeSupportMap (createInitialSupportMap()))
+            supportMap.Value
 
     let getSupportedPreCalculated (p:PortableProfileType) =
-        match supportMap.TryGetValue p with
+        match getSupportMap().TryGetValue p with
         | true, v -> v
         | _ ->
             match p with
             | UnsupportedProfile tfs ->
-                match supportMap.TryGetValue p with
+                match getSupportMap().TryGetValue p with
                 | true, v -> v
                 | _ ->
-                    let clone = supportMap |> toSeq |> ofSeq
+                    let clone = getSupportMap() |> toSeq |> ofSeq
                     clone.[p] <- getSupportedPortables p
                     let opt = optimizeSupportMap clone
                     let result = opt.[p]
-                    supportMap <- opt
+                    supportMap <- Some opt
                     result
             | _ -> failwithf "Expected that default profiles are already created."
     
