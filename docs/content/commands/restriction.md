@@ -1,4 +1,4 @@
-# paket why
+# paket restriction
 
 Determine how a restriction formula is interpreted by paket.
 
