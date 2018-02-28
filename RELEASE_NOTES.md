@@ -1,3 +1,6 @@
+#### 5.145.9 - 2018-02-28
+* BUGFIX: Normalize Home directory (~) everywhere  - https://github.com/fsprojects/Paket/pull/3096
+
 #### 5.145.8 - 2018-02-28
 * BUGFIX: Safer loading of assemblies during load script generation - https://github.com/fsprojects/Paket/pull/3098
 
