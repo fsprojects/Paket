@@ -345,12 +345,20 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
                 else
                     File.Exists destination
 
+            let rec download trials =
+                try
+                    Async.RunSynchronously (downloadRemoteFiles(source,destination))
+                with
+                | _ when trials > 0 ->
+                    tracefn "Download of %s failed. Trying again. (%d trials left)" source (trials - 1)
+                    download (trials - 1)
+
             if not force && exists then
                 if verbose then
                     verbosefn "Sourcefile %O is already there." source
             else 
                 tracefn "Downloading %O to %s" source destination
-                Async.RunSynchronously (downloadRemoteFiles(source,destination))
+                download 5
 
         if File.Exists versionFile.FullName then
             if not (File.ReadAllText(versionFile.FullName).Contains(version)) then
