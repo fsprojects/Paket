@@ -569,6 +569,8 @@ let findPackages silent (results : ParseResults<_>) =
 
 #nowarn "44" // because FixNuspecs is deprecated and we have warnaserror
 
+open Paket.Requirements
+
 let fixNuspecs silent (results : ParseResults<_>) =
     let nuspecFiles =
         results.GetResult <@ FixNuspecsArgs.Files @>
@@ -741,6 +743,22 @@ let why (results: ParseResults<WhyArgs>) =
 
     Why.ohWhy(packageName, directDeps, lockFile, groupName, results.Parser.PrintUsage(), options)
 
+let restriction (results: ParseResults<RestrictionArgs>) =
+    let restrictionRaw = results.GetResult <@ RestrictionArgs.Restriction @>
+    let restriction, parseProblems = Requirements.parseRestrictions restrictionRaw
+    
+    for problem in parseProblems |> Seq.map (fun x -> x.AsMessage) do
+        Logging.traceWarnfn "Problem: %s" problem
+        
+    Logging.tracefn "Restriction: %s" restrictionRaw
+    Logging.tracefn "Simplified: %s" (restriction.ToString())
+    Logging.tracefn "Frameworks: [ "
+    for framework in restriction.RepresentedFrameworks do
+        Logging.tracefn "   %s" framework.CompareString
+    Logging.tracefn "]"
+
+
+
 let waitForDebugger () =
     while not(System.Diagnostics.Debugger.IsAttached) do
         System.Threading.Thread.Sleep(100)
@@ -776,6 +794,7 @@ let handleCommand silent command =
     | GenerateLoadScripts r -> processCommand silent generateLoadScripts r
     | GenerateNuspec r -> processCommand silent generateNuspec r
     | Why r -> processCommand silent why r
+    | Restriction r -> processCommand silent restriction r
     | Info r -> processCommand silent info r
     // global options; list here in order to maintain compiler warnings
     // in case of new subcommands added

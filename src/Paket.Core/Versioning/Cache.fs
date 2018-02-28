@@ -39,7 +39,7 @@ type Cache = {
             | _ -> None
 
         let settings = { 
-            Location = normalizeFeedUrl source
+            Location = normalizeFeedUrl (normalizeHomeDirectory source)
             CacheType = 
                 match getPair "versions" with
                 | Some "current" -> Some CacheType.CurrentVersion
