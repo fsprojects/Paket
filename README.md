@@ -1,4 +1,4 @@
-[![Travis build status](https://api.travis-ci.org/fsprojects/Paket.svg)](https://travis-ci.org/fsprojects/Paket)
+[![Travis build status](https://api.travis-ci.org/fsprojects/Paket.svg?branch=master)](https://travis-ci.org/fsprojects/Paket?branch=master)
 [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/f77ejdp6mtkris2u/branch/master?svg=true)](https://ci.appveyor.com/project/paket/paket/branch/master)
 [![NuGet Status](https://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
 [![Join the chat at https://gitter.im/fsprojects/Paket](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/fsprojects/Paket?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
