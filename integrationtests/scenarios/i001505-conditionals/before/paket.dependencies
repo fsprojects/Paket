@@ -1,2 +1,3 @@
 source https://nuget.org/api/v2
 nuget EasyNetQ 0.53.6.419 framework: >= net45
+nuget Microsoft.Diagnostics.Tracing.EventSource.Redist 1.1.28 framework: >= net45
