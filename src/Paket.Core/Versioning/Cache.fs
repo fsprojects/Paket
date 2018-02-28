@@ -19,23 +19,17 @@ type Cache = {
             { this with Location = Path.Combine(root,this.Location) |> normalizePath }
 
     static member Parse(line : string) =
-        let normalizeHomeDirectory (line : string) =
-            let homeDirectory = "~"
-            line.Replace(homeDirectory, Environment.GetFolderPath(Environment.SpecialFolder.UserProfile))
-
-        let normalizedLine = normalizeHomeDirectory line
-
         let sourceRegex = Regex("cache[ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
-        let parts = normalizedLine.Split ' '
+        let parts = line.Split ' '
         let source = 
-            if sourceRegex.IsMatch normalizedLine then
-                sourceRegex.Match(normalizedLine).Groups.[1].Value.TrimEnd([| '/' |])
+            if sourceRegex.IsMatch line then
+                sourceRegex.Match(line).Groups.[1].Value.TrimEnd([| '/' |])
             else
                 parts.[1].Replace("\"","").TrimEnd([| '/' |])
 
         let rest =
-            let start = normalizedLine.IndexOf source + source.Length
-            normalizedLine.Substring(start)
+            let start = line.IndexOf source + source.Length
+            line.Substring(start)
 
         let kvPairs = parseKeyValuePairs (rest.ToLower())
 
@@ -45,7 +39,7 @@ type Cache = {
             | _ -> None
 
         let settings = { 
-            Location = normalizeFeedUrl source
+            Location = normalizeFeedUrl (normalizeHomeDirectory source)
             CacheType = 
                 match getPair "versions" with
                 | Some "current" -> Some CacheType.CurrentVersion

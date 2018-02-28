@@ -378,7 +378,18 @@ let askYesNo question =
 
 let dirSeparator = Path.DirectorySeparatorChar.ToString()
 
-let inline normalizePath(path:string) = path.Replace("\\",dirSeparator).Replace("/",dirSeparator).TrimEnd(Path.DirectorySeparatorChar).Replace(dirSeparator + "." + dirSeparator, dirSeparator)
+let inline normalizeHomeDirectory (path : string) =
+    let homeDirectory = "~"
+    if path.StartsWith homeDirectory then
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),path.Substring(1))
+    else
+        path
+let inline normalizePath(path:string) = 
+    (normalizeHomeDirectory path)
+      .Replace("\\",dirSeparator)
+      .Replace("/",dirSeparator).TrimEnd(Path.DirectorySeparatorChar)
+      .Replace(dirSeparator + "." + dirSeparator, dirSeparator)
+
 let inline windowsPath (path:string) = path.Replace(Path.DirectorySeparatorChar, '\\')
 /// Gets all files with the given pattern
 let inline FindAllFiles(folder, pattern) = DirectoryInfo(folder).GetFiles(pattern, SearchOption.AllDirectories)
