@@ -279,9 +279,13 @@ module ProjectFile =
         Map.fold (fun state key value -> Map.add key value state) first second
 
     let inline getPackageIdAttribute (pf:ProjectFile) (node:XmlNode) =
-        node |> getAttribute "Include"
-        |> Option.orElseWith (fun _ -> node |> getAttribute "Update")
-        |> Option.defaultWith (fun _ -> failwithf "project file '%s' contains a reference without 'Include' or 'Update' attribute" pf.FileName)
+        let maybePackageId =
+            node
+            |> getAttribute "Include"
+            |> Option.orElseWith (fun _ -> node |> getAttribute "Update")
+        match maybePackageId with
+        | Some id -> id
+        | None -> failwithf "project file '%s' contains a reference without 'Include' or 'Update' attribute" pf.FileName
 
     let private calculatePropertyMap (projectFile:ProjectFile) defaultProperties =
         let defaultProperties = appendMap defaultProperties (getReservedProperties projectFile)
