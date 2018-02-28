@@ -1,3 +1,6 @@
+#### 5.145.7 - 2018-02-28
+* PERFORMANCE: Faster "hot" restore - https://github.com/fsprojects/Paket/pull/3092
+
 #### 5.145.6 - 2018-02-27
 * BUGFIX: Fixed inconsistent pinned version of referenced projects with include-referenced-projects enabled - https://github.com/fsprojects/Paket/issues/3076
 
