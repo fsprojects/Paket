@@ -750,12 +750,12 @@ let restriction (results: ParseResults<RestrictionArgs>) =
     for problem in parseProblems |> Seq.map (fun x -> x.AsMessage) do
         Logging.traceWarnfn "Problem: %s" problem
         
-    printfn "Restriction: %s" restrictionRaw
-    printfn "Simplified: %s" (restriction.ToString())
-    printfn "Frameworks: [ "
+    Logging.tracefn "Restriction: %s" restrictionRaw
+    Logging.tracefn "Simplified: %s" (restriction.ToString())
+    Logging.tracefn "Frameworks: [ "
     for framework in restriction.RepresentedFrameworks do
-        printfn "   %s" framework.CompareString
-    printfn "]"
+        Logging.tracefn "   %s" framework.CompareString
+    Logging.tracefn "]"
 
 
 
