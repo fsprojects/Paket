@@ -99,13 +99,12 @@ type DependencyCache (lockFile:LockFile) =
             installModel
             |> InstallModel.getLegacyReferences (TargetProfile.SinglePlatform framework)
             |> Seq.map (fun l -> l.Path)
-            |> Seq.map (fun path -> 
+            |> Seq.choose (fun path -> 
                 try 
                     (AssemblyDefinition.ReadAssembly path, FileInfo(path)) |> Some
                 with
                 | :? BadImageFormatException -> None
             )
-            |> Seq.choose id
             |> dict
 
         getDllOrder (dllFiles.Keys |> Seq.toList)
@@ -127,12 +126,11 @@ type DependencyCache (lockFile:LockFile) =
                         sysLibs.Add sysLib |> ignore
 
             let assemblyFilePerAssemblyDef = 
-                libs |> Seq.map (fun (f:FileInfo) -> 
+                libs |> Seq.choose (fun (f:FileInfo) -> 
                     try
                         (AssemblyDefinition.ReadAssembly (f.FullName:string), f) |> Some
                     with
                     | :? BadImageFormatException -> None)
-                |> Seq.choose id
                 |> dict
 
             let assemblies = 
