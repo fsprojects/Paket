@@ -278,6 +278,15 @@ module ProjectFile =
     let private appendMap first second =
         Map.fold (fun state key value -> Map.add key value state) first second
 
+    let inline getPackageIdAttribute (pf:ProjectFile) (node:XmlNode) =
+        let maybePackageId =
+            node
+            |> getAttribute "Include"
+            |> Option.orElseWith (fun _ -> node |> getAttribute "Update")
+        match maybePackageId with
+        | Some id -> id
+        | None -> failwithf "project file '%s' contains a reference without 'Include' or 'Update' attribute" pf.FileName
+
     let private calculatePropertyMap (projectFile:ProjectFile) defaultProperties =
         let defaultProperties = appendMap defaultProperties (getReservedProperties projectFile)
 
@@ -1460,10 +1469,10 @@ module ProjectFile =
         |> List.filter (getDescendants "PrivateAssets" >>
                         List.exists (fun x -> x.InnerText = "All") >>
                         not)
-        
+
     let getPackageReferences project =
         packageReferencesNoPrivateAssets project
-        |> List.map (getAttribute "Include" >> Option.get)
+        |> List.map (getPackageIdAttribute project)
 
     let getCliReferences project =
         cliToolsNoPrivateAssets project
@@ -1635,8 +1644,7 @@ module ProjectFile =
                     VersionRange.AtLeast (v.Replace("*","0"))
                 else
                     VersionRange.Exactly v
-
-            { NugetPackage.Id = node |> getAttribute "Include" |> Option.get
+            { NugetPackage.Id = getPackageIdAttribute projectFile node
               VersionRange = versionRange
               Kind = NugetPackageKind.Package
               TargetFramework = None })

@@ -111,16 +111,16 @@ module ScriptGeneration =
                 else libFile.FullName
 
             // create the approiate load string for the target resource
-            let refString (reference:ReferenceType)  = 
+            let refString (reference:ReferenceType)  =
+                let escapeString (s:string) =
+                    s.Replace("\\", "\\\\").Replace("\"", "\\\"")
                 match reference, self.Lang with
                 | Assembly file, _ ->
-                     sprintf """#r "%s" """ (relativePath scriptFile file)
-                | LoadScript script, ScriptType.FSharp ->
-                     sprintf """#load @"%s" """ (relativePath scriptFile ((baseDirectory.FullName </> script) |> FileInfo))
-                | LoadScript script, ScriptType.CSharp ->     
-                     sprintf """#load "%s" """ (relativePath scriptFile ((baseDirectory.FullName </> script) |> FileInfo))
+                     sprintf """#r "%s" """ (relativePath scriptFile file |> escapeString)
+                | LoadScript script, _ ->
+                     sprintf """#load "%s" """ (relativePath scriptFile ((baseDirectory.FullName </> script) |> FileInfo) |> escapeString)
                 | Framework name,_ ->
-                     sprintf """#r "%s" """ name
+                     sprintf """#r "%s" """ (escapeString name)
         
             self.Input |> Seq.map refString |> Seq.distinct |> String.concat "\n"
         

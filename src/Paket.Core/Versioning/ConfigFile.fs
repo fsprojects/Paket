@@ -160,13 +160,7 @@ let GetAuthenticationForUrl =
         getSourceNodes credentialsNode source "credential" @ getSourceNodes credentialsNode source "token"
 
     match sourceNodes with
-    | sourceNode :: _ ->
-        let auth = getAuthFromNode sourceNode
-        if checkCredentials (url, Some auth) then 
-            Some auth
-        else 
-            failwithf "Credentials from authentication store for %s are invalid" source
-            None
+    | sourceNode :: _ -> Some (getAuthFromNode sourceNode)
     | _ -> None)
 
 /// Get the authentication from the authentication store for a specific source
