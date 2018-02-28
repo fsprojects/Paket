@@ -382,7 +382,7 @@ let inline normalizeHomeDirectory (path : string) =
     let homeDirectory = "~"
     if path.StartsWith homeDirectory then
         let path = path.Substring(1)
-        let path = if path.StartsWith "\\" then path.Substring(1) else path
+        let path = if path.StartsWith "\\" || path.StartsWith "/" then path.Substring(1) else path
         Path.Combine(GetHomeDirectory(),path)
     else
         path
