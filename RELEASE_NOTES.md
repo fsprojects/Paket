@@ -1,3 +1,15 @@
+#### 5.145.6 - 2018-02-27
+* BUGFIX: Fixed inconsistent pinned version of referenced projects with include-referenced-projects enabled - https://github.com/fsprojects/Paket/issues/3076
+
+#### 5.145.5 - 2018-02-27
+* BUGFIX: Fixed repeated conflict detection and introduced optional resolver timeout - https://github.com/fsprojects/Paket/pull/3084
+
+#### 5.145.3 - 2018-02-27
+* BUGFIX: Paket pack was putting entire directory into package lib folder when files block contained an empty line - https://github.com/fsprojects/Paket/issues/2949
+
+#### 5.145.2 - 2018-02-27
+* BUGFIX: Better error message when a HTTP request fails - https://github.com/fsprojects/Paket/pull/3078
+
 #### 5.145.1 - 2018-02-27
 * BUGFIX: generate-load-script was broken - https://github.com/fsprojects/Paket/issues/3080
 
@@ -14,7 +26,6 @@
 
 #### 5.142.0 - 2018-02-24
 * BUGFIX: Fixed bootstrapper to handle Github TLS issue
-* BUGFIX: Fixed unhandled exception when running 'paket config add-credentials' in Jenkins pipeline - https://github.com/fsprojects/Paket/issues/2884
 * BUGFIX: Fixed unhandled exception when running 'paket config add-credentials' in Jenkins pipeline - https://github.com/fsprojects/Paket/issues/2884
 * BUGFIX: Some NuGet v2 queries fail with normalized filter syntax and are now skipped/blacklisted - https://github.com/fsprojects/Paket/pull/3059
 * BUGFIX: Be more robust with custom namespaces in app.config - https://github.com/fsprojects/Paket/issues/1607

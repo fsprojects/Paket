@@ -1904,13 +1904,12 @@ type ProjectFile with
 
     member this.ProjectsWithTemplates projects =
         projects
-        |> Seq.filter(fun proj ->
-            if proj = this then true
-            else
-                let templateFilename = proj.FindTemplatesFile()
-                match templateFilename with
-                | Some tfn -> TemplateFile.IsProjectType tfn
-                | None -> false
+        |> Seq.filter (fun proj ->
+            if proj = this then true else
+            let templateFilename = proj.FindTemplatesFile()
+            match templateFilename with
+            | Some tfn -> TemplateFile.IsProjectType tfn
+            | None -> false
         )
 
     member this.GetAllReferencedProjects (onlyWithOutput,cache:Dictionary<int,(ProjectFile)>*Dictionary<string,int list>) =
