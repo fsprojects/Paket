@@ -1,29 +1,15 @@
-#### 5.145.10 - 2018-02-28
-* USABILITY: Retry HTTP downloads - https://github.com/fsprojects/Paket/issues/3088
-
-#### 5.145.9 - 2018-02-28
+#### 5.146.0 - 2018-02-28
+* BUGFIX: Fixed UriFormatException for gist references with GitHubApi token - https://github.com/fsprojects/Paket/issues/3086
+* BUGFIX: convert-from-nuget fails with ArgumentException - https://github.com/fsprojects/Paket/issues/3089
 * BUGFIX: Normalize Home directory (~) everywhere - https://github.com/fsprojects/Paket/pull/3096
-
-#### 5.145.8 - 2018-02-28
 * BUGFIX: Safer loading of assemblies during load script generation - https://github.com/fsprojects/Paket/pull/3098
-
-#### 5.145.7 - 2018-02-28
-* PERFORMANCE: Faster "hot" restore - https://github.com/fsprojects/Paket/pull/3092
-
-#### 5.145.6 - 2018-02-27
 * BUGFIX: Fixed inconsistent pinned version of referenced projects with include-referenced-projects enabled - https://github.com/fsprojects/Paket/issues/3076
-
-#### 5.145.5 - 2018-02-27
 * BUGFIX: Fixed repeated conflict detection and introduced optional resolver timeout - https://github.com/fsprojects/Paket/pull/3084
-
-#### 5.145.3 - 2018-02-27
 * BUGFIX: Paket pack was putting entire directory into package lib folder when files block contained an empty line - https://github.com/fsprojects/Paket/issues/2949
-
-#### 5.145.2 - 2018-02-27
 * BUGFIX: Better error message when a HTTP request fails - https://github.com/fsprojects/Paket/pull/3078
-
-#### 5.145.1 - 2018-02-27
 * BUGFIX: generate-load-script was broken - https://github.com/fsprojects/Paket/issues/3080
+* PERFORMANCE: Faster "hot" restore - https://github.com/fsprojects/Paket/pull/3092
+* USABILITY: Retry HTTP downloads - https://github.com/fsprojects/Paket/issues/3088
 
 #### 5.145.0 - 2018-02-26
 * Added support for credential managers - https://github.com/fsprojects/Paket/pull/3069
