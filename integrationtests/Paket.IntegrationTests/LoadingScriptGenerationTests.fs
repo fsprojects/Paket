@@ -80,7 +80,7 @@ let assertNhibernateForFramework35IsThere scenario =
         "iesi.collections.csx", ["Net35/Iesi.Collections.dll"]
         "iesi.collections.fsx", ["Net35/Iesi.Collections.dll"]
         "nhibernate.csx", ["Net35/NHibernate.dll";"#load \"iesi.collections.csx\""]
-        "nhibernate.fsx", ["Net35/NHibernate.dll";"#load @\"iesi.collections.fsx\""]
+        "nhibernate.fsx", ["Net35/NHibernate.dll";"#load \"iesi.collections.fsx\""]
     ]
     let folder = getLoadScriptDefaultFolder scenario
     let failures = getScriptContentsFailedExpectations folder expectations
