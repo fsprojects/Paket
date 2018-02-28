@@ -1621,6 +1621,11 @@ source https://www.nuget.org/api/v2
 cache """, paketCacheTestPath)
 
 [<Test>]
+let ``should normalize home path``() =
+    let expected = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".paket-cache")
+    paketCacheTestPath |> Paket.Utils.normalizeHomeDirectory |> shouldEqual expected
+
+[<Test>]
 let ``should parse config with home path in cache``() =
     let cfg = DependenciesFile.FromSource(configWithHomePathInCache)
     let expected = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".paket-cache")

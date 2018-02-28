@@ -381,9 +381,12 @@ let dirSeparator = Path.DirectorySeparatorChar.ToString()
 let inline normalizeHomeDirectory (path : string) =
     let homeDirectory = "~"
     if path.StartsWith homeDirectory then
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),path.Substring(1))
+        let path = path.Substring(1)
+        let path = if path.StartsWith "\\" then path.Substring(1) else path
+        Path.Combine(GetHomeDirectory(),path)
     else
         path
+
 let inline normalizePath(path:string) = 
     (normalizeHomeDirectory path)
       .Replace("\\",dirSeparator)
