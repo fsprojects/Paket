@@ -228,9 +228,7 @@ let private handleODataEntry nugetURL packageName version entry =
       LicenseUrl = licenseUrl
       Version = (SemVer.Parse v).Normalize()
       Unlisted = publishDate = Constants.MagicUnlistingDate }
-    |> NuGetPackageCache.withDependencies dependencies
-
-
+        .WithDependencies dependencies
 
 // parse search results.
 let parseODataListDetails (url,nugetURL,packageName:PackageName,version:SemVerInfo,doc) : ODataSearchResult =

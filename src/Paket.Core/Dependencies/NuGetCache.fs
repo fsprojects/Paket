@@ -1,4 +1,4 @@
-﻿/// Contains NuGet support.
+﻿/// Contains NuGet cache support.
 module Paket.NuGetCache
 
 open System
@@ -19,34 +19,39 @@ open System.Runtime.ExceptionServices
 open System.Net
 open System.Threading.Tasks
 
-
 // show the path that was too long
-let FileInfo(str) =
+let FileInfo str =
     try
-        FileInfo(str)
+        FileInfo str 
     with
       :? PathTooLongException as exn -> raise (PathTooLongException("Path too long: " + str, exn))
 
 type NuGetResponseGetVersionsSuccess = string []
+
 type NuGetResponseGetVersionsFailure =
     { Url : string; Error : ExceptionDispatchInfo }
     static member ofTuple (url,err) =
         { Url = url; Error = err }
+
 type NuGetResponseGetVersions =
     | SuccessVersionResponse of NuGetResponseGetVersionsSuccess
     | ProtocolNotCached
     | FailedVersionRequest of NuGetResponseGetVersionsFailure
+
     member x.Versions =
         match x with
         | SuccessVersionResponse l -> l
-        | ProtocolNotCached -> [||]
+        | ProtocolNotCached
         | FailedVersionRequest _ -> [||]
+
     member x.IsSuccess =
         match x with
         | SuccessVersionResponse _ -> true
-        | ProtocolNotCached -> false
+        | ProtocolNotCached
         | FailedVersionRequest _ -> false
+
 type NuGetResponseGetVersionsSimple = SafeWebResult<NuGetResponseGetVersionsSuccess>
+
 type NuGetRequestGetVersions =
     { DoRequest : unit -> Async<NuGetResponseGetVersions>
       Url : string }
@@ -80,7 +85,6 @@ type UnparsedPackageFile =
         x.FullPath.Substring(0, x.FullPath.Length - (x.PathWithinPackage.Length + 1))
 
 module NuGetConfig =
-    open System.Text
 
     let writeNuGetConfig directory sources =
         let start = """<?xml version="1.0" encoding="utf-8"?>
@@ -120,12 +124,10 @@ type NuGetPackageCache =
 
     static member CurrentCacheVersion = "5.147"
 
-// TODO: is there a better way? for now we use static member because that works with type abbreviations...
-//module NuGetPackageCache =
-    static member withDependencies (l:(PackageName * VersionRequirement * FrameworkRestrictions) list) d =
-        { d with
+    member this.WithDependencies (dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) list) =
+        { this with
             SerializedDependencies =
-                l
+                dependencies
                 |> List.map (fun (n,v, restrictions) ->
                     let restrictionString =
                         match restrictions with
@@ -133,8 +135,8 @@ type NuGetPackageCache =
                         | FrameworkRestrictions.ExplicitRestriction re -> re.ToString()
                     n, v, restrictionString) }
 
-    static member getDependencies (x:NuGetPackageCache) : (PackageName * VersionRequirement * FrameworkRestrictions) list  =
-        x.SerializedDependencies
+    member this.GetDependencies() : (PackageName * VersionRequirement * FrameworkRestrictions) Set =
+        this.SerializedDependencies
         |> List.map (fun (n,v,restrictionString) ->
             let restrictions =
                 if restrictionString = "AUTO" then
@@ -143,6 +145,7 @@ type NuGetPackageCache =
                     let restrictions = Requirements.parseRestrictions restrictionString |> fst
                     FrameworkRestrictions.ExplicitRestriction restrictions
             n, v, restrictions)
+        |> Set.ofList
 
 let inline normalizeUrl(url:string) = url.Replace("https://","http://").Replace("www.","")
 

@@ -125,8 +125,8 @@ let ``can detect explicit dependencies for Math.Numerics``() =
 
 [<Test>]
 let ``can detect explicit dependencies for Math.Numerics.FSharp``() = 
-    (parseList "NuGetOData/Math.Numerics.FSharp.xml") |> ODataSearchResult.get |> NuGet.NuGetPackageCache.getDependencies |> Seq.head
-    |> shouldEqual 
+    ((parseList "NuGetOData/Math.Numerics.FSharp.xml") |> ODataSearchResult.get).GetDependencies()
+    |> shouldContain 
         (PackageName "MathNet.Numerics",
          DependenciesFileParser.parseVersionRequirement("3.3.0"),makeOrList [])
 
@@ -140,11 +140,11 @@ let ``can detect explicit dependencies for Microsoft.AspNet.WebApi.Client``() =
     let odata = parseList "NuGetOData/Microsoft.AspNet.WebApi.Client.xml" |> ODataSearchResult.get
     odata.PackageName |> shouldEqual "Microsoft.AspNet.WebApi.Client"
     odata.DownloadUrl |> shouldEqual"https://www.nuget.org/api/v2/package/Microsoft.AspNet.WebApi.Client/5.2.3"
-    let dependencies = odata|> NuGet.NuGetPackageCache.getDependencies |> Array.ofList
-    dependencies.[0] |> shouldEqual 
+    let dependencies = odata.GetDependencies()
+    dependencies |> shouldContain
         (PackageName "Newtonsoft.Json", DependenciesFileParser.parseVersionRequirement(">= 6.0.4"), 
             makeOrList [getPortableRestriction("portable-net45+win8+wp8+wp81+wpa81"); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))])
-    dependencies.[1] |> shouldEqual
+    dependencies |> shouldContain
         (PackageName "Microsoft.Net.Http", DependenciesFileParser.parseVersionRequirement(">= 2.2.22"), 
             FrameworkRestriction.And [getPortableRestriction("portable-net45+win8+wp8+wp81+wpa81"); FrameworkRestriction.NotAtLeast(DotNetFramework(FrameworkVersion.V4_5))]
             |> ExplicitRestriction)

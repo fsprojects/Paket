@@ -844,7 +844,7 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
               LicenseUrl = catalogData.LicenseUrl
               Version = version.Normalize()
               CacheVersion = NuGetPackageCache.CurrentCacheVersion }
-            |> NuGetPackageCache.withDependencies optimized
+                .WithDependencies optimized
             |> ODataSearchResult.Match
     }
 
