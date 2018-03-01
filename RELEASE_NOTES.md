@@ -1,3 +1,6 @@
+#### 5.147.0 - 2018-03-01
+* Added .NETCoreApp2.1 and UAP10.0.16300 TFMs - https://github.com/fsprojects/Paket/pull/3094
+
 #### 5.146.0 - 2018-02-28
 * BUGFIX: Fixed UriFormatException for gist references with GitHubApi token - https://github.com/fsprojects/Paket/issues/3086
 * BUGFIX: convert-from-nuget fails with ArgumentException - https://github.com/fsprojects/Paket/issues/3089
