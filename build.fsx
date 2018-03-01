@@ -75,6 +75,9 @@ let buildMergedDir = buildDir @@ "merged"
 let paketFile = buildMergedDir @@ "paket.exe"
 
 Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
+
+System.Net.ServicePointManager.SecurityProtocol <- unbox 192 ||| unbox 768 ||| unbox 3072 ||| unbox 48
+
 // Read additional information from the release notes document
 let releaseNotesData = 
     File.ReadAllLines "RELEASE_NOTES.md"

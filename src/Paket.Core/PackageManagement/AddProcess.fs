@@ -7,6 +7,11 @@ open System.IO
 open Paket.Domain
 open Paket.Logging
 
+let private matchGroupName(groupName) =
+    match groupName with
+        | None -> Constants.MainDependencyGroup
+        | Some name -> GroupName name
+
 let private notInstalled (project : ProjectFile) groupName package = project.HasPackageInstalled(groupName,package) |> not
 
 let private addToProject (project : ProjectFile) groupName package =
@@ -71,10 +76,7 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
 
 // Add a package with the option to add it to a specified project.
 let AddToProject(dependenciesFileName, groupName, package, version, options : InstallerOptions, projectName, installAfter, runResolver, packageKind) =
-    let groupName = 
-        match groupName with
-        | None -> Constants.MainDependencyGroup
-        | Some name -> GroupName name
+    let groupName = matchGroupName(groupName)
 
     let addToSpecifiedProject (projects : ProjectFile seq) groupName packageName =
         
@@ -90,10 +92,7 @@ let AddToProject(dependenciesFileName, groupName, package, version, options : In
 
 // Add a package with the option to interactively add it to multiple projects.
 let Add(dependenciesFileName, groupName, package, version, options : InstallerOptions, interactive, installAfter, runResolver, packageKind) =
-    let groupName = 
-        match groupName with
-        | None -> Constants.MainDependencyGroup
-        | Some name -> GroupName name
+    let groupName = matchGroupName(groupName)
 
     let addToProjects (projects : ProjectFile seq) groupName package =
         if interactive then
@@ -102,3 +101,20 @@ let Add(dependenciesFileName, groupName, package, version, options : InstallerOp
                     addToProject project groupName package
 
     add interactive addToProjects dependenciesFileName groupName package version options installAfter runResolver packageKind
+    
+let AddGithub(dependenciesFileName, groupName, repository, file, version, options) =
+    let group = matchGroupName(groupName)
+    
+    let existingDependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
+    
+    let dependenciesFile = 
+        existingDependenciesFile.AddGithub(group, repository, file, version)
+
+    dependenciesFile.Save()
+    
+    let updateMode = PackageResolver.UpdateMode.Install
+    let alternativeProjectRoot = None
+    let lockFile,_,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, updateMode, options.SemVerUpdateMode, options.Force)
+    
+    InstallProcess.Install(options, false, dependenciesFile, lockFile, Map.empty)
+    GarbageCollection.CleanUp(dependenciesFile, lockFile)

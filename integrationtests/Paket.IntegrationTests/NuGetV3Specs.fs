@@ -93,7 +93,7 @@ let ``#3030-9 update nuget catalog from public index`` serviceUrl =
     let tempDir = Path.Combine(Path.GetTempPath(), "PaketTests\\nuget3")
     
     let catalog = getCatalogCursor baseDir serviceUrl
-    let updated = (getCatalogUpdated None tempDir catalog canceler.Token).Result
+    let updated = (getCatalogUpdated AuthProvider.empty tempDir catalog canceler.Token).Result
       
     Assert.IsTrue (setCatalogCursor baseDir updated)
     finally

@@ -65,6 +65,27 @@ and [<RequireQualifiedAccess>] AddArgsDependencyType =
     | Nuget
     | Clitool
 
+type AddGithubArgs =
+    | [<ExactlyOnce;MainCommand>] Repository of repository_name:string
+    | [<Unique;AltCommandLine("-V")>] Version of version_constraint:string
+    | [<Unique;AltCommandLine("-g")>] Group of group_name:string
+    | [<Unique>] File of file_name:string
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | Repository(_) -> "repository name <author>/<repo> on github"
+            | Version(_) -> "dependency version constraint"
+            | Group(_) -> "add the dependency to a group (default: Main group)"
+            | File(_) -> "only add specified file"
+and GithubArgs =
+    | [<CliPrefix(CliPrefix.None)>] Add of ParseResults<AddGithubArgs>
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | Add(_) -> "add github repository"
+
 type ConfigArgs =
     | [<Unique;CustomCommandLine("add-credentials")>] AddCredentials of key_or_URL:string
     | [<Unique;CustomCommandLine("add-token")>] AddToken of key_or_URL:string * token:string
@@ -597,6 +618,14 @@ with
 
         | Details -> "display detailed information with all paths, versions and framework restrictions"
 
+type RestrictionArgs =
+    | [<ExactlyOnce;MainCommand>] Restriction of restrictionRaw:string
+with
+  interface IArgParserTemplate with
+      member this.Usage =
+        match this with
+        | Restriction(_) -> "The restriction to resolve"
+
 type Command =
     // global options
     |                                                   Version
@@ -606,6 +635,7 @@ type Command =
     | [<Hidden;Inherit>]                                From_Bootstrapper
     // subcommands
     | [<CustomCommandLine("add")>]                      Add of ParseResults<AddArgs>
+    | [<CustomCommandLine("github")>]                   Github of ParseResults<GithubArgs>
     | [<CustomCommandLine("clear-cache")>]              ClearCache of ParseResults<ClearCacheArgs>
     | [<CustomCommandLine("config")>]                   Config of ParseResults<ConfigArgs>
     | [<CustomCommandLine("convert-from-nuget")>]       ConvertFromNuget of ParseResults<ConvertFromNugetArgs>
@@ -630,12 +660,14 @@ type Command =
     | [<Hidden;CustomCommandLine("generate-include-scripts")>] GenerateIncludeScripts of ParseResults<GenerateLoadScriptsArgs>
     | [<CustomCommandLine("generate-load-scripts")>]    GenerateLoadScripts of ParseResults<GenerateLoadScriptsArgs>
     | [<CustomCommandLine("why")>]                      Why of ParseResults<WhyArgs>
+    | [<CustomCommandLine("restriction")>]              Restriction of ParseResults<RestrictionArgs>
     | [<CustomCommandLine("info")>]                     Info of ParseResults<InfoArgs>
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | Add _ -> "add a new dependency"
+            | Github _ -> "commands to manipulate gihub repository references"
             | ClearCache _ -> "clear the NuGet and git cache directories"
             | Config _ -> "store global configuration values like NuGet credentials"
             | ConvertFromNuget _ -> "convert projects from NuGet to Paket"
@@ -660,6 +692,7 @@ with
             | GenerateIncludeScripts _ -> "[obsolete]"
             | GenerateLoadScripts _ -> "generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS"
             | Why _ -> "determine why a dependency is required"
+            | Restriction _ -> "resolve a framework restriction and show details"
             | Info _ -> "info"
             | Log_File _ -> "print output to a file"
             | Silent -> "suppress console output"

@@ -1211,7 +1211,7 @@ NUGET
     Microsoft.NETCore.Targets (2.0) - restriction: && (>= net461) (>= netstandard1.6)
     NETStandard.Library (2.0)
       Microsoft.NETCore.Platforms (>= 1.1)
-    Octokit (0.25) - content: none
+    Octokit (0.29) - content: none
     runtime.native.System (4.3) - restriction: && (>= net461) (>= netstandard1.6)
       Microsoft.NETCore.Platforms (>= 1.1)
       Microsoft.NETCore.Targets (>= 1.1)

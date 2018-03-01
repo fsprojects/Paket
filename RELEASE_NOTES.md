@@ -1,9 +1,35 @@
-#### 5.143.0 - 2018-02-26
+#### 5.148.0 - 2018-03-01
+* New command to add GitHub sources in PublicAPI and CLI - https://github.com/fsprojects/Paket/pull/3023
+
+#### 5.147.0 - 2018-03-01
+* Added .NETCoreApp2.1 and UAP10.0.16300 TFMs - https://github.com/fsprojects/Paket/pull/3094
+
+#### 5.146.0 - 2018-02-28
+* BUGFIX: Fixed UriFormatException for gist references with GitHubApi token - https://github.com/fsprojects/Paket/issues/3086
+* BUGFIX: convert-from-nuget fails with ArgumentException - https://github.com/fsprojects/Paket/issues/3089
+* BUGFIX: Normalize Home directory (~) everywhere - https://github.com/fsprojects/Paket/pull/3096
+* BUGFIX: Safer loading of assemblies during load script generation - https://github.com/fsprojects/Paket/pull/3098
+* BUGFIX: Fixed inconsistent pinned version of referenced projects with include-referenced-projects enabled - https://github.com/fsprojects/Paket/issues/3076
+* BUGFIX: Fixed repeated conflict detection and introduced optional resolver timeout - https://github.com/fsprojects/Paket/pull/3084
+* BUGFIX: Paket pack was putting entire directory into package lib folder when files block contained an empty line - https://github.com/fsprojects/Paket/issues/2949
+* BUGFIX: Better error message when a HTTP request fails - https://github.com/fsprojects/Paket/pull/3078
+* BUGFIX: generate-load-script was broken - https://github.com/fsprojects/Paket/issues/3080
+* PERFORMANCE: Faster "hot" restore - https://github.com/fsprojects/Paket/pull/3092
+* USABILITY: Retry HTTP downloads - https://github.com/fsprojects/Paket/issues/3088
+
+#### 5.145.0 - 2018-02-26
+* Added support for credential managers - https://github.com/fsprojects/Paket/pull/3069
+
+#### 5.144.0 - 2018-02-26
+* BUGFIX: Fix https://github.com/fsharp/FAKE/issues/1744
+* BUGFIX: Fix https://github.com/fsharp/FAKE/issues/1778
 * BUGFIX: Fixed bug when attempting to pack multi-target frameworks - https://github.com/fsprojects/Paket/pull/3073
+
+#### 5.144.0-alpha.2 - 2018-02-26
+* Added support for credential managers - https://github.com/fsprojects/Paket/pull/3069
 
 #### 5.142.0 - 2018-02-24
 * BUGFIX: Fixed bootstrapper to handle Github TLS issue
-* BUGFIX: Fixed unhandled exception when running 'paket config add-credentials' in Jenkins pipeline - https://github.com/fsprojects/Paket/issues/2884
 * BUGFIX: Fixed unhandled exception when running 'paket config add-credentials' in Jenkins pipeline - https://github.com/fsprojects/Paket/issues/2884
 * BUGFIX: Some NuGet v2 queries fail with normalized filter syntax and are now skipped/blacklisted - https://github.com/fsprojects/Paket/pull/3059
 * BUGFIX: Be more robust with custom namespaces in app.config - https://github.com/fsprojects/Paket/issues/1607

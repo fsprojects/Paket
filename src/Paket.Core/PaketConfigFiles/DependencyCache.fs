@@ -8,6 +8,7 @@ open Mono.Cecil
 open System.Collections.Generic
 open Logging
 open ProviderImplementation.AssemblyReader.Utils.SHA1
+open System
 
 // Needs an update so that all work is not done at once
 // computation should be done on a per group/per framework basis
@@ -17,11 +18,12 @@ open ProviderImplementation.AssemblyReader.Utils.SHA1
 type ReferenceType =
     | Assembly  of FileInfo
     | Framework of string
-    | LoadScript of FileInfo
+    /// Relative path based on base-directory
+    | LoadScript of string
     override self.ToString () = self |> function
         | Assembly info -> sprintf "Assembly: '%s'" info.FullName
         | Framework info -> sprintf "Framework: '%s'" info
-        | LoadScript info -> sprintf "LoadScript: '%s'" info.FullName
+        | LoadScript info -> sprintf "LoadScript: '%s'" info
 
 type DependencyCache (lockFile:LockFile) =
     let loadedGroups = HashSet<GroupName>()
@@ -97,7 +99,12 @@ type DependencyCache (lockFile:LockFile) =
             installModel
             |> InstallModel.getLegacyReferences (TargetProfile.SinglePlatform framework)
             |> Seq.map (fun l -> l.Path)
-            |> Seq.map (fun path -> AssemblyDefinition.ReadAssembly path, FileInfo(path))
+            |> Seq.choose (fun path -> 
+                try 
+                    (AssemblyDefinition.ReadAssembly path, FileInfo(path)) |> Some
+                with
+                | :? BadImageFormatException -> None
+            )
             |> dict
 
         getDllOrder (dllFiles.Keys |> Seq.toList)
@@ -119,8 +126,11 @@ type DependencyCache (lockFile:LockFile) =
                         sysLibs.Add sysLib |> ignore
 
             let assemblyFilePerAssemblyDef = 
-                libs |> Seq.map (fun (f:FileInfo) -> 
-                    AssemblyDefinition.ReadAssembly (f.FullName:string), f)
+                libs |> Seq.choose (fun (f:FileInfo) -> 
+                    try
+                        (AssemblyDefinition.ReadAssembly (f.FullName:string), f) |> Some
+                    with
+                    | :? BadImageFormatException -> None)
                 |> dict
 
             let assemblies = 

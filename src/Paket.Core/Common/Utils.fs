@@ -4,7 +4,6 @@ module Paket.Utils
 
 open System
 open System.IO
-open System.Net
 open System.Xml
 open System.Text
 open Paket
@@ -12,18 +11,13 @@ open Paket.Logging
 open Paket.Constants
 open Chessie.ErrorHandling
 open Paket.Domain
-open FSharp.Polyfill
 
-open System.Net.Http
 open System.Threading
 open Microsoft.FSharp.Core.Printf
 open System.Threading.Tasks
 open System.Collections.Concurrent
-
-#if !NETSTANDARD1_6
-ServicePointManager.SecurityProtocol <- unbox 192 ||| unbox 768 ||| unbox 3072 ||| unbox 48
-                                        ///SecurityProtocolType.Tls ||| SecurityProtocolType.Tls11 ||| SecurityProtocolType.Tls12 ||| SecurityProtocolType.Ssl3
-#endif
+open System.Diagnostics
+open System.Collections.Generic
 
 let sndOf3 (_,v,_) = v
 let thirdOf3 (_,_,v) = v
@@ -44,7 +38,7 @@ let acceptJson = "application/atom+json,application/json"
 let notNullOrEmpty = not << System.String.IsNullOrEmpty
 
 let inline force (lz: 'a Lazy)  = lz.Force()
-let inline endsWith text x = (^a:(member EndsWith:string->bool)x, text) 
+let inline endsWith text x = (^a:(member EndsWith:string->bool)x, text)
 let inline toLower str = (^a:(member ToLower:unit->string)str)
 
 let internal removeInvalidChars (str : string) = RegularExpressions.Regex.Replace(str, "[:@\,]", "_")
@@ -78,7 +72,7 @@ let internal memoizeAsyncEx (f: 'iext -> 'i -> Async<'o * 'oext>) =
         let task_cached = cache.GetOrAdd(x, fun x ->
             tcs_result <- TaskCompletionSource()
             let tcs = TaskCompletionSource()
-            
+
             Async.Start (async {
                 try
                     let! o, oext = f ex x
@@ -103,17 +97,6 @@ let internal memoizeAsync f =
     let cache = System.Collections.Concurrent.ConcurrentDictionary<'a, System.Threading.Tasks.Task<'b>>()
     fun (x: 'a) -> // task.Result serialization to sync after done.
         cache.GetOrAdd(x, fun x -> f(x) |> Async.StartAsTask) |> Async.AwaitTask
-
-type AuthType = | Basic | NTLM
-
-type Auth = 
-    | Credentials of Username : string * Password : string * Type : AuthType
-    | Token of string
-
-let internal parseAuthTypeString (str:string) =
-    match str.Trim().ToLowerInvariant() with
-        | "ntlm" -> AuthType.NTLM
-        | _ -> AuthType.Basic
 
 let TimeSpanToReadableString(span:TimeSpan) =
     let pluralize x = if x = 1 then String.Empty else "s"
@@ -153,10 +136,10 @@ let normalizeLocalPath (path:string) =
         AbsolutePath path
     else
         RelativePath path
-        
+
 let getDirectoryInfoForLocalNuGetFeed pathInfo alternativeProjectRoot root =
     match pathInfo with
-    | AbsolutePath s -> DirectoryInfo s 
+    | AbsolutePath s -> DirectoryInfo s
     | RelativePath s ->
         match alternativeProjectRoot with
         | Some root -> DirectoryInfo(Path.Combine(root, s))
@@ -179,7 +162,7 @@ let DirectoryInfo(str) =
       :? PathTooLongException as exn -> raise (PathTooLongException("Path too long: " + str, exn))
 
 /// Creates a directory if it does not exist.
-let createDir path = 
+let createDir path =
     try
         let dir = DirectoryInfo path
         if not dir.Exists then dir.Create()
@@ -208,13 +191,13 @@ and deleteDir (dirInfo:DirectoryInfo) =
         dirInfo.Delete()
 
 /// Cleans a directory by deleting it and recreating it.
-let CleanDir path = 
+let CleanDir path =
     let di = DirectoryInfo path
-    if di.Exists then 
+    if di.Exists then
         try
             emptyDir di
         with
-        | exn -> failwithf "Error during cleaning of %s%s  - %s" di.FullName Environment.NewLine exn.Message 
+        | exn -> failwithf "Error during cleaning of %s%s  - %s" di.FullName Environment.NewLine exn.Message
     else
         Directory.CreateDirectory path |> ignore
     // set writeable
@@ -251,14 +234,14 @@ let createRelativePath root (path:string) =
 let ProgramFiles = Environment.GetFolderPath Environment.SpecialFolder.ProgramFiles
 
 /// The path of Program Files (x86)
-/// It seems this covers all cases where PROCESSOR\_ARCHITECTURE may misreport and the case where the other variable 
+/// It seems this covers all cases where PROCESSOR\_ARCHITECTURE may misreport and the case where the other variable
 /// PROCESSOR\_ARCHITEW6432 can be null
-let ProgramFilesX86 = 
+let ProgramFilesX86 =
     let wow64 = Environment.GetEnvironmentVariable "PROCESSOR_ARCHITEW6432"
     let globalArch = Environment.GetEnvironmentVariable "PROCESSOR_ARCHITECTURE"
     match wow64, globalArch with
-    | "AMD64", "AMD64" 
-    | null, "AMD64" 
+    | "AMD64", "AMD64"
+    | null, "AMD64"
     | "x86", "AMD64" -> Environment.GetEnvironmentVariable "ProgramFiles(x86)"
     | _ -> Environment.GetEnvironmentVariable "ProgramFiles"
     |> fun detected -> if detected = null then @"C:\Program Files (x86)\" else detected
@@ -270,10 +253,10 @@ let isMonoRuntime =
     not (Object.ReferenceEquals(Type.GetType "Mono.Runtime", null))
 
 /// Determines if the current system is an Unix system
-let isUnix = 
+let isUnix =
 #if NETSTANDARD1_6 || NETSTANDARD2_0
     System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
-        System.Runtime.InteropServices.OSPlatform.Linux) || 
+        System.Runtime.InteropServices.OSPlatform.Linux) ||
     System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
         System.Runtime.InteropServices.OSPlatform.OSX)
 #else
@@ -292,7 +275,7 @@ let isMacOS =
 #endif
 
 /// Determines if the current system is a Linux system
-let isLinux = 
+let isLinux =
 #if NETSTANDARD1_6 || NETSTANDARD2_0
     System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
         System.Runtime.InteropServices.OSPlatform.Linux)
@@ -315,7 +298,7 @@ let isWindows =
 /// Determines if the current system is a mono system
 /// Todo: Detect mono on windows
 [<Obsolete("use either isMonoRuntime or isUnix, this flag is always false when compiled for NETSTANDARD")>]
-let isMono = 
+let isMono =
 #if NETSTANDARD1_6 || NETSTANDARD2_0
     false
 #else
@@ -351,7 +334,7 @@ let isMatchingPlatform (operatingSystemFilter : string option) =
 let inline normalizeXml (doc:XmlDocument) =
     use stringWriter = new StringWriter()
     let settings = XmlWriterSettings (Indent=true)
-        
+
     use xmlTextWriter = XmlWriter.Create (stringWriter, settings)
     doc.WriteTo xmlTextWriter
     xmlTextWriter.Flush()
@@ -370,482 +353,6 @@ let saveNormalizedXml (fileName:string) (doc:XmlDocument) =
     with _ ->
         FileSaveError fileName |> fail
 
-let normalizeFeedUrl (source:string) =
-    match source.TrimEnd([|'/'|]) with
-    | "https://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream 
-    | "http://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream.Replace("https","http")
-    | "https://nuget.org/api/v2" -> Constants.DefaultNuGetStream
-    | "http://nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
-    | "https://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream
-    | "http://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
-    | source -> source
-
-#if CUSTOM_WEBPROXY
-type WebProxy = IWebProxy
-#endif
-
-let envProxies () =
-    let getEnvValue (name:string) =
-        let v = Environment.GetEnvironmentVariable(name.ToUpperInvariant())
-        // under mono, env vars are case sensitive
-        if isNull v then Environment.GetEnvironmentVariable(name.ToLowerInvariant()) else v
-    let bypassList =
-        let noproxyString = getEnvValue "NO_PROXY"
-        let noproxy = if not (String.IsNullOrEmpty (noproxyString)) then System.Text.RegularExpressions.Regex.Escape(noproxyString).Replace(@"*", ".*")  else noproxyString
-        
-        if String.IsNullOrEmpty noproxy then [||] else
-        noproxy.Split([| ',' |], StringSplitOptions.RemoveEmptyEntries)
-    let getCredentials (uri:Uri) =
-        let userPass = uri.UserInfo.Split([| ':' |], 2)
-        if userPass.Length <> 2 || userPass.[0].Length = 0 then None else
-        let credentials = NetworkCredential(Uri.UnescapeDataString userPass.[0], Uri.UnescapeDataString userPass.[1])
-        Some credentials
-
-    let getProxy (scheme:string) =
-        let envVarName = sprintf "%s_PROXY" (scheme.ToUpperInvariant())
-        let envVarValue = getEnvValue envVarName
-        if isNull envVarValue then None else
-        match Uri.TryCreate(envVarValue, UriKind.Absolute) with
-        | true, envUri ->
-#if CUSTOM_WEBPROXY
-            Some 
-                { new IWebProxy with
-                    member __.Credentials 
-                        with get () = (Option.toObj (getCredentials envUri)) :> ICredentials
-                        and set value = ()
-                    member __.GetProxy _ =
-                        Uri (sprintf "http://%s:%d" envUri.Host envUri.Port)
-                    member __.IsBypassed (host : Uri) =
-                        Array.contains (string host) bypassList
-                }
-#else
-            let proxy = WebProxy (Uri (sprintf "http://%s:%d" envUri.Host envUri.Port))
-            proxy.Credentials <- Option.toObj (getCredentials envUri)
-            proxy.BypassProxyOnLocal <- true
-            proxy.BypassList <- bypassList
-            Some proxy
-#endif
-        | _ -> None
-
-    let addProxy (map:Map<string, WebProxy>) scheme =
-        match getProxy scheme with
-        | Some p -> Map.add scheme p map
-        | _ -> map
-
-    [ "http"; "https" ]
-    |> List.fold addProxy Map.empty
-
-let calcEnvProxies = lazy (envProxies())
-
-let getDefaultProxyFor =
-    memoize
-      (fun (url:string) ->
-            let uri = Uri url
-            let getDefault () =
-#if CUSTOM_WEBPROXY
-                let result =
-                    { new IWebProxy with
-                        member __.Credentials 
-                            with get () = null
-                            and set _value = ()
-                        member __.GetProxy _ = null
-                        member __.IsBypassed (_host : Uri) = true
-                    }
-#else
-                let result = WebRequest.GetSystemWebProxy()
-#endif
-#if CUSTOM_WEBPROXY
-                let proxy = result
-#else
-                let address = result.GetProxy uri
-                if address = uri then null else
-                let proxy = WebProxy address
-                proxy.BypassProxyOnLocal <- true
-#endif
-                proxy.Credentials <- CredentialCache.DefaultCredentials
-                proxy
-
-            match calcEnvProxies.Force().TryFind uri.Scheme with
-            | Some p -> if p.GetProxy uri <> uri then p else getDefault()
-            | None -> getDefault())
-
-
-type RequestFailedInfo =
-    { StatusCode:HttpStatusCode
-      Content:Stream
-      MediaType:string option
-      Url:string }
-    static member ofResponse (resp:HttpResponseMessage) = async {
-        let mem = new MemoryStream()
-        if not (isNull resp.Content) then
-            do! resp.Content.CopyToAsync(mem) |> Async.AwaitTaskWithoutAggregate
-        mem.Position <- 0L
-
-        let mediaType =
-            resp.Content
-            |> Option.ofObj
-            |> Option.bind (fun c -> c.Headers |> Option.ofObj)
-            |> Option.bind (fun h -> h.ContentType |> Option.ofObj)
-            |> Option.bind (fun c -> c.MediaType |> Option.ofObj)
-        return
-            { StatusCode = resp.StatusCode
-              Content = mem
-              MediaType = mediaType
-              Url = resp.RequestMessage.RequestUri.ToString() } }
-    override x.ToString() =
-        sprintf "Request to '%s' failed with: '%A'" x.Url x.StatusCode
-/// Exception for request errors
-#if !NETSTANDARD1_6
-[<System.Serializable>]
-#endif
-type RequestFailedException =
-    val private info : RequestFailedInfo option
-    inherit Exception
-    new (msg:string, inner:exn) = {
-      inherit Exception(msg, inner)
-      info = None }
-    new (info:RequestFailedInfo, inner:exn) = {
-      inherit Exception(info.ToString(), inner)
-      info = Some info }
-#if !NETSTANDARD1_5
-    new (info:System.Runtime.Serialization.SerializationInfo, context:System.Runtime.Serialization.StreamingContext) = {
-      inherit Exception(info, context)
-      info = None
-    }
-#endif
-    member x.Info with get () = x.info
-
-let failIfNoSuccess (resp:HttpResponseMessage) = async {
-    if not resp.IsSuccessStatusCode then
-        if verbose then
-            tracefn "Request failed with '%d': '%s'" (int resp.StatusCode) (resp.RequestMessage.RequestUri.ToString())
-        let! info = RequestFailedInfo.ofResponse resp
-        raise (RequestFailedException(info, null))
-    () }
-
-let rec requestStatus (ex:Exception) = 
-    match ex with 
-    | null -> None
-    | :? RequestFailedException as rfex ->
-        match rfex.Info with 
-        | Some info -> Some info.StatusCode
-        | _ -> None 
-    | :? WebException as wfex -> 
-        match wfex.Response with
-        | :? HttpWebResponse as webresp -> 
-            Some webresp.StatusCode 
-        | _ -> None
-    | ex -> requestStatus ex.InnerException
-    
-// active pattern for nested HttpStatusCode
-let (|RequestStatus|_|) (ex:Object) =
-    match ex with
-    | :? Exception as except -> requestStatus except
-    | :? HttpWebResponse as resp -> Some resp.StatusCode 
-    | :? RequestFailedInfo as info -> Some info.StatusCode
-    | null -> None
-    | _ -> None
-         
-
-#if USE_WEB_CLIENT_FOR_UPLOAD
-type System.Net.WebClient with
-    member x.UploadFileAsMultipart (url : Uri) filename =
-        let fileTemplate =
-            "--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n\r\n"
-        let boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x", System.Globalization.CultureInfo.InvariantCulture)
-        let fileInfo = (new FileInfo(Path.GetFullPath(filename)))
-        let fileHeaderBytes =
-            System.String.Format
-                (System.Globalization.CultureInfo.InvariantCulture, fileTemplate, boundary, "package", "package", "application/octet-stream")
-            |> Encoding.UTF8.GetBytes
-        // we use a windows-style newline rather than Environment.NewLine for compatibility
-        let newlineBytes = "\r\n" |> Encoding.UTF8.GetBytes
-        let trailerbytes = String.Format(System.Globalization.CultureInfo.InvariantCulture, "--{0}--", boundary) |> Encoding.UTF8.GetBytes
-        x.Headers.Add(HttpRequestHeader.ContentType, "multipart/form-data; boundary=" + boundary)
-        use stream = x.OpenWrite(url, "PUT")
-        stream.Write(fileHeaderBytes, 0, fileHeaderBytes.Length)
-        use fileStream = File.OpenRead fileInfo.FullName
-        fileStream.CopyTo(stream, (4 * 1024))
-        stream.Write(newlineBytes, 0, newlineBytes.Length)
-        stream.Write(trailerbytes, 0, trailerbytes.Length)
-        stream.Write(newlineBytes, 0, newlineBytes.Length)
-        ()
-#endif
-
-type HttpClient with
-    member x.DownloadFileTaskAsync (uri : Uri, tok : CancellationToken, filePath : string) =
-      async {
-        if uri.Scheme = "file" then
-            File.Copy(uri.AbsolutePath, filePath, true)
-        else
-            let! response = x.GetAsync(uri, tok) |> Async.AwaitTaskWithoutAggregate
-            do! failIfNoSuccess response
-            use fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None)
-            do! response.Content.CopyToAsync(fileStream) |> Async.AwaitTaskWithoutAggregate
-            fileStream.Flush()
-      } |> Async.StartAsTask
-    member x.DownloadFileTaskAsync (uri : string, tok : CancellationToken, filePath : string) = x.DownloadFileTaskAsync(Uri uri, tok, filePath)
-    member x.DownloadFile (uri : string, filePath : string) =
-        x.DownloadFileTaskAsync(uri, CancellationToken.None, filePath).GetAwaiter().GetResult()
-    member x.DownloadFile (uri : Uri, filePath : string) =
-        x.DownloadFileTaskAsync(uri, CancellationToken.None, filePath).GetAwaiter().GetResult()
-    member x.DownloadStringTaskAsync (uri : Uri, tok : CancellationToken) =
-      async { 
-        let! response = x.GetAsync(uri, tok) |> Async.AwaitTaskWithoutAggregate
-        do! failIfNoSuccess response
-        let! result = response.Content.ReadAsStringAsync() |> Async.AwaitTaskWithoutAggregate
-        return result
-      } |> Async.StartAsTask
-    member x.DownloadStringTaskAsync (uri : string, tok : CancellationToken) = x.DownloadStringTaskAsync(Uri uri, tok)
-    member x.DownloadString (uri : string) =
-        x.DownloadStringTaskAsync(uri, CancellationToken.None).GetAwaiter().GetResult()
-    member x.DownloadString (uri : Uri) =
-        x.DownloadStringTaskAsync(uri, CancellationToken.None).GetAwaiter().GetResult()
-
-    member x.DownloadDataTaskAsync(uri : Uri, tok : CancellationToken) =
-      async {
-        let! response = x.GetAsync(uri, tok) |> Async.AwaitTaskWithoutAggregate
-        do! failIfNoSuccess response
-        let! result = response.Content.ReadAsByteArrayAsync() |> Async.AwaitTaskWithoutAggregate
-        return result
-      } |> Async.StartAsTask
-    member x.DownloadDataTaskAsync (uri : string, tok : CancellationToken) = x.DownloadDataTaskAsync(Uri uri, tok)
-    member x.DownloadData(uri : string) =
-        x.DownloadDataTaskAsync(uri, CancellationToken.None).GetAwaiter().GetResult()
-    member x.DownloadData(uri : Uri) =
-        x.DownloadDataTaskAsync(uri, CancellationToken.None).GetAwaiter().GetResult()
-
-    member x.UploadFileAsMultipart (url : Uri) filename =
-        let fileTemplate = 
-            "--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n\r\n"
-        let boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x", System.Globalization.CultureInfo.InvariantCulture)
-        let fileInfo = (new FileInfo(Path.GetFullPath(filename)))
-        let fileHeaderBytes = 
-            System.String.Format
-                (System.Globalization.CultureInfo.InvariantCulture, fileTemplate, boundary, "package", "package", "application/octet-stream") 
-            |> Encoding.UTF8.GetBytes
-        let newlineBytes = Environment.NewLine |> Encoding.UTF8.GetBytes
-        let trailerbytes = String.Format(System.Globalization.CultureInfo.InvariantCulture, "--{0}--", boundary) |> Encoding.UTF8.GetBytes
-        x.DefaultRequestHeaders.Add("ContentType", "multipart/form-data; boundary=" + boundary)
-        use stream = new MemoryStream() // x.OpenWrite(url, "PUT")
-        stream.Write(fileHeaderBytes, 0, fileHeaderBytes.Length)
-        use fileStream = File.OpenRead fileInfo.FullName
-        fileStream.CopyTo(stream, (4 * 1024))
-        stream.Write(newlineBytes, 0, newlineBytes.Length)
-        stream.Write(trailerbytes, 0, trailerbytes.Length)
-        stream.Write(newlineBytes, 0, newlineBytes.Length)
-        stream.Position <- 0L
-        let result = x.PutAsync(url, new StreamContent(stream)).GetAwaiter().GetResult()
-        failIfNoSuccess result |> Async.RunSynchronously
-        result
-
-let internal addAcceptHeader (client:HttpClient) (contentType:string) =
-    for headerVal in contentType.Split([|','|], System.StringSplitOptions.RemoveEmptyEntries) do
-        client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(headerVal))
-let internal addHeader (client:HttpClient) (headerKey:string) (headerVal:string) =
-    client.DefaultRequestHeaders.Add(headerKey, headerVal)
-
-let createHttpClient (url,auth:Auth option) =
-    let handler =
-        new HttpClientHandler(
-            UseProxy = true,
-            Proxy = getDefaultProxyFor url)
-
-    let client = new HttpClient(handler)
-    match auth with
-    | None -> handler.UseDefaultCredentials <- true
-    | Some(Credentials(username, password, AuthType.Basic)) -> 
-        // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
-        //this works ONLY if the server returns 401 first
-        //client DOES NOT send credentials on first request
-        //ONLY after a 401
-        //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
-
-        //so use THIS instead to send credentials RIGHT AWAY
-        let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
-        client.DefaultRequestHeaders.Authorization <- 
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials)
-    | Some(Credentials(username, password, AuthType.NTLM)) ->
-        let cred = System.Net.NetworkCredential(username,password)        
-        handler.Credentials <- cred.GetCredential(new Uri(url), "NTLM")
-    | Some(Token token) ->
-        client.DefaultRequestHeaders.Authorization <-
-            new System.Net.Http.Headers.AuthenticationHeaderValue("token", token)
-    client.DefaultRequestHeaders.Add("user-agent", "Paket")
-    handler.UseProxy <- true
-    client
-
-#if USE_WEB_CLIENT_FOR_UPLOAD
-type CustomTimeoutWebClient(timeout) =
-    inherit WebClient()
-    override x.GetWebRequest (uri:Uri) =
-        let w = base.GetWebRequest(uri)
-        w.Timeout <- timeout
-        w
-
-let createWebClient (url,auth:Auth option) =
-    let client = new CustomTimeoutWebClient(20 * 60 * 1000)
-    client.Headers.Add("User-Agent", "Paket")
-    client.Proxy <- getDefaultProxyFor url
-
-    let githubToken = Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN"
-
-    match auth with
-    | Some (Credentials(username, password, AuthType.Basic)) ->
-        // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
-        //this works ONLY if the server returns 401 first
-        //client DOES NOT send credentials on first request
-        //ONLY after a 401
-        //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
-
-        //so use THIS instead to send credentials RIGHT AWAY
-        let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
-        client.Headers.[HttpRequestHeader.Authorization] <- sprintf "Basic %s" credentials
-        client.Credentials <- new NetworkCredential(username,password)
-    | Some (Credentials(username, password, AuthType.NTLM)) ->
-        let cred = NetworkCredential(username,password)        
-        client.Credentials <- cred.GetCredential(new Uri(url), "NTLM")
-    | Some (Token token) ->
-        client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" token
-    | None when not (isNull githubToken) ->
-        client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" githubToken
-    | None ->
-        client.UseDefaultCredentials <- true
-    client
-#endif
-
-#nowarn "40"
-
-open System.Diagnostics
-open System.Collections.Generic
-open System.Runtime.ExceptionServices
-
-/// [omit]
-let downloadFromUrlWithTimeout (auth:Auth option, url : string) (timeout:TimeSpan option) (filePath: string) =
-    async {
-        try
-            use client = createHttpClient (url,auth)
-            if timeout.IsSome then
-                client.Timeout <- timeout.Value
-            let! tok = Async.CancellationToken
-            if verbose then
-                verbosefn "Starting download from '%O'" url
-            use _ = Profile.startCategory Profile.Category.NuGetDownload
-            let task = client.DownloadFileTaskAsync (Uri url, tok, filePath) |> Async.AwaitTaskWithoutAggregate
-            do! task
-        with
-        | exn ->
-            raise (Exception(sprintf "Could not download from '%s'" url, exn))
-    }
-
-/// [omit]
-let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
-    downloadFromUrlWithTimeout (auth, url) None filePath
-
-/// [omit]
-let getFromUrl (auth:Auth option, url : string, contentType : string) =
-    async { 
-        let uri = Uri url
-        try
-            use client = createHttpClient(url,auth)
-            let! tok = Async.CancellationToken
-            if notNullOrEmpty contentType then
-                addAcceptHeader client contentType
-
-            if verbose then
-                verbosefn "Starting request to '%O'" url
-            use _ = Profile.startCategory Profile.Category.NuGetRequest
-            
-            return! client.DownloadStringTaskAsync (uri, tok) |> Async.AwaitTaskWithoutAggregate
-        with
-        | exn ->
-            return raise (Exception(sprintf "Could not retrieve data from '%s'" url, exn))
-
-    }
-
-let getXmlFromUrl (auth:Auth option, url : string) =
-    async {
-        try
-            use client = createHttpClient (url,auth)
-            let! tok = Async.CancellationToken
-            // mimic the headers sent from nuget client to odata/ endpoints
-            addAcceptHeader client "application/atom+xml, application/xml"
-            addHeader client "AcceptCharset" "UTF-8"
-            addHeader client "DataServiceVersion" "1.0;NetFx"
-            addHeader client "MaxDataServiceVersion" "2.0;NetFx"
-            if verbose then
-                verbosefn "Starting request to '%O'" url
-            use _ = Profile.startCategory Profile.Category.NuGetRequest
-            return! client.DownloadStringTaskAsync (Uri url, tok) |> Async.AwaitTaskWithoutAggregate
-        with
-        | exn ->
-            return raise (Exception(sprintf "Could not retrieve data from '%s'" url, exn))
-    }
-
-type SafeWebResult<'a> =
-    | NotFound
-    | SuccessResponse of 'a
-    | UnknownError of ExceptionDispatchInfo
-module SafeWebResult =
-    let map f s =
-        match s with
-        | SuccessResponse r -> SuccessResponse (f r)
-        | UnknownError err -> UnknownError err
-        | NotFound -> NotFound
-    let asResult s =
-        match s with
-        | NotFound ->
-            let notFound = Exception("Request returned 404")
-            ExceptionDispatchInfo.Capture notFound
-            |> FSharp.Core.Result.Error
-        | UnknownError err -> FSharp.Core.Result.Error err
-        | SuccessResponse s -> FSharp.Core.Result.Ok s
-
-let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : string, iTry, nTries) =
-    
-    let rec getExceptionNames (exn:Exception) = [
-        if exn <> null then
-            yield exn.GetType().Name
-            if exn.InnerException <> null then
-                yield! getExceptionNames exn.InnerException
-    ]
-
-    let shouldRetry exn = isMonoRuntime && iTry < nTries && (getExceptionNames exn |> List.contains "MonoBtlsException")
-    
-    async {
-        try
-            let uri = Uri url
-            use client = createHttpClient (url,auth)
-            let! tok = Async.CancellationToken
-
-            if notNullOrEmpty contentType then
-                addAcceptHeader client contentType
-
-            if verbose then
-                verbosefn "Starting request to '%O'" uri
-            use _ = Profile.startCategory Profile.Category.NuGetRequest
-            let! raw = client.DownloadStringTaskAsync(uri, tok) |> Async.AwaitTaskWithoutAggregate
-            return SuccessResponse raw
-        with
-
-        | exn when shouldRetry exn ->
-            raise (Exception("Hello from _safeGetFromUrl.shouldRetry", exn))
-            // there are issues with mono, try again :\
-            Logging.traceWarnfn "Request failed, this is likely due to a mono issue. Trying again, this was try %i/%i" iTry nTries
-            return! _safeGetFromUrl(auth, url, contentType, iTry + 1, nTries)
-
-        | :? RequestFailedException as w ->
-            match w.Info with
-            | Some { StatusCode = HttpStatusCode.NotFound } -> return NotFound
-            | _ ->
-                if verbose then
-                    Logging.verbosefn "Error while retrieving '%s': %O" url w
-                return UnknownError (ExceptionDispatchInfo.Capture w)
-    }
-    
-/// [omit]
-let safeGetFromUrl (auth:Auth option, url : string, contentType : string) = _safeGetFromUrl(auth, url, contentType, 1, 10)
-    
 let mutable autoAnswer = None
 let readAnswer() =
     match autoAnswer with
@@ -856,7 +363,7 @@ let readAnswer() =
 /// If the guard is true then a [Y]es / [N]o question will be ask.
 /// Until the user pressed y or n.
 let askYesNo question =
-    let rec getAnswer() = 
+    let rec getAnswer() =
         Logging.tracefn "%s" question
         Logging.tracef "    [Y]es/[N]o => "
         let answer = readAnswer()
@@ -871,7 +378,21 @@ let askYesNo question =
 
 let dirSeparator = Path.DirectorySeparatorChar.ToString()
 
-let inline normalizePath(path:string) = path.Replace("\\",dirSeparator).Replace("/",dirSeparator).TrimEnd(Path.DirectorySeparatorChar).Replace(dirSeparator + "." + dirSeparator, dirSeparator)
+let inline normalizeHomeDirectory (path : string) =
+    let homeDirectory = "~"
+    if path.StartsWith homeDirectory then
+        let path = path.Substring(1)
+        let path = if path.StartsWith "\\" || path.StartsWith "/" then path.Substring(1) else path
+        Path.Combine(GetHomeDirectory(),path)
+    else
+        path
+
+let inline normalizePath(path:string) = 
+    (normalizeHomeDirectory path)
+      .Replace("\\",dirSeparator)
+      .Replace("/",dirSeparator).TrimEnd(Path.DirectorySeparatorChar)
+      .Replace(dirSeparator + "." + dirSeparator, dirSeparator)
+
 let inline windowsPath (path:string) = path.Replace(Path.DirectorySeparatorChar, '\\')
 /// Gets all files with the given pattern
 let inline FindAllFiles(folder, pattern) = DirectoryInfo(folder).GetFiles(pattern, SearchOption.AllDirectories)
@@ -933,7 +454,7 @@ let RunInLockedAccessMode(rootFolder,action) =
                     let content = File.ReadAllText fileName
                     if content <> string p.Id then
                         let currentProcess = System.Diagnostics.Process.GetCurrentProcess()
-                        let hasRunningPaketProcess = 
+                        let hasRunningPaketProcess =
                             Process.GetProcessesByName p.ProcessName
                             |> Array.filter (fun p -> p.Id <> currentProcess.Id)
                             |> Array.exists (fun p -> content = string p.Id && (not p.HasExited))
@@ -953,13 +474,13 @@ let RunInLockedAccessMode(rootFolder,action) =
         | exn when exn.Message = "timeout" ->
             failwithf "Could not acquire lock to '%s'.%sThe process timed out." fileName Environment.NewLine
         | exn ->
-            if trials > 0 then 
+            if trials > 0 then
                 let trials = trials - 1
                 tracefn "Could not acquire lock to %s.%s%s%sTrials left: %d." fileName Environment.NewLine exn.Message Environment.NewLine trials
                 acquireLock startTime timeOut trials
             else
                 raise (Exception(sprintf "Could not acquire lock to '%s'." fileName, exn))
-    
+
     let rec releaseLock() =
         try
             if File.Exists fileName then
@@ -973,7 +494,7 @@ let RunInLockedAccessMode(rootFolder,action) =
         acquireLock DateTime.Now (TimeSpan.FromMinutes 10.) 100
 
         let result = action()
-        
+
         releaseLock()
         result
     with
@@ -989,7 +510,7 @@ module String =
     /// Match if 'text' starts with the 'prefix' string case
     let (|StartsWith|_|) prefix (input: string) =
         if input.StartsWith prefix then Some () else None
-    
+
     /// Match if 'text' starts with the 'prefix' and return the text with the prefix removed
     let (|RemovePrefix|_|) prefix (input: string) =
         if input.StartsWith prefix then Some (input.Substring prefix.Length)
@@ -1004,19 +525,19 @@ module String =
             if str.EndsWith "\n" then   // last trailing space not returned
                 yield String.Empty      // http://stackoverflow.com/questions/19365404/stringreader-omits-trailing-linebreak
         |]
-    
+
     /// Check if the two strings are equal ignoring case
     let inline equalsIgnoreCase str1 str2 =
-        String.Compare(str1,str2,StringComparison.OrdinalIgnoreCase) = 0 
+        String.Compare(str1,str2,StringComparison.OrdinalIgnoreCase) = 0
 
     /// Match if the strings are equal ignoring case
     let (|EqualsIC|_|) (str1:string) (str2:String) =
         if equalsIgnoreCase str1 str2 then Some () else None
-    
+
     /// Check if 'text' includes the 'target' string case insensitive
-    let inline containsIgnoreCase (target:string) (text:string) = 
+    let inline containsIgnoreCase (target:string) (text:string) =
         text.IndexOf(target, StringComparison.OrdinalIgnoreCase) >= 0
-    
+
     /// Match if 'text' includes the 'target' string case insensitive
     let (|ContainsIC|_|) (target:string) (str2:String) =
         if containsIgnoreCase target str2 then Some () else None
@@ -1024,21 +545,21 @@ module String =
     /// Check if 'text' starts with the 'prefix' string case insensitive
     let inline startsWithIgnoreCase (prefix:string) (text:string) =
         text.IndexOf(prefix, StringComparison.OrdinalIgnoreCase) = 0
-    
+
     /// Match if 'text' starts with the 'prefix' string case insensitive
     let (|StartsWithIC|_|) (prefix:string) (text:String) =
         if startsWithIgnoreCase prefix text then Some () else None
-    
+
     /// Check if 'text' ends with the 'suffix' string case insensitive
     let inline endsWithIgnoreCase (suffix:string) (text:string) =
         suffix.Length <= text.Length &&
         text.LastIndexOf(suffix, StringComparison.OrdinalIgnoreCase) >= text.Length - suffix.Length
-    
+
     /// Match if 'text' ends with the 'suffix' string case insensitive
     let (|EndsWithIC|_|) (suffix:string) (text:String) =
         if endsWithIgnoreCase suffix text then  Some () else None
 
-    let quoted (text:string) = (if text.Contains(" ") then "\"" + text + "\"" else text) 
+    let quoted (text:string) = (if text.Contains(" ") then "\"" + text + "\"" else text)
 
     let inline trim (text:string) = text.Trim()
     let inline trimChars chs (text:string) = text.Trim chs
@@ -1060,7 +581,7 @@ let parseKeyValuePairs (s:string) : Dictionary<string,string> =
                 let x = key,value
                 l.Add x |> ignore
 
-        
+
         let current = Text.StringBuilder()
         let quoted = ref false
         let lastKey = ref ""
@@ -1068,12 +589,12 @@ let parseKeyValuePairs (s:string) : Dictionary<string,string> =
         let isKey = ref true
         for pos in 0..s.Length - 1 do
             let x = s.[pos]
-            let restHasKey() =             
+            let restHasKey() =
                 let rest = s.Substring(pos + 1)
                 if String.IsNullOrEmpty(rest.Trim()) then true else
                 match rest.IndexOf ',' with
                 | -1 -> rest.Contains(":")
-                | p -> 
+                | p ->
                     let s = rest.Substring(0,p)
                     s.Contains(":")
 
@@ -1093,7 +614,7 @@ let parseKeyValuePairs (s:string) : Dictionary<string,string> =
                     lastKey := !lastKey + x.ToString()
                 else
                     lastValue := !lastValue + x.ToString()
-                
+
         add !lastKey !lastValue
 
         let d = Dictionary<_,_>()
@@ -1101,25 +622,12 @@ let parseKeyValuePairs (s:string) : Dictionary<string,string> =
             d.Add(k.Trim().ToLower(),v.Trim())
         d
     with
-    | exn -> 
+    | exn ->
         raise (Exception(sprintf "Could not parse '%s' as key/value pairs." s, exn))
-
-let downloadStringSync (url : string) (client : HttpClient) = 
-    try 
-        client.DownloadString url |> ok
-    with _ ->
-        DownloadError url |> fail 
-
-let downloadFileSync (url : string) (fileName : string) (client : HttpClient) = 
-    tracefn "Downloading file from %s to %s" url fileName
-    try 
-        client.DownloadFile(url, fileName) |> ok
-    with _ ->
-        DownloadError url |> fail 
 
 let saveFile (fileName : string) (contents : string) =
     tracefn "Saving file %s" fileName
-    try 
+    try
         File.WriteAllText (fileName, contents) |> ok
     with _ ->
         FileSaveError fileName |> fail
@@ -1133,7 +641,7 @@ let removeFile (fileName : string) =
             FileDeleteError fileName |> fail
     else ok ()
 
-let normalizeLineEndings (text : string) = 
+let normalizeLineEndings (text : string) =
     text.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", Environment.NewLine)
 
 let removeComment (text:string) =
@@ -1144,7 +652,7 @@ let removeComment (text:string) =
         match text.IndexOf( "//", startAt ), text.IndexOf( "#", startAt ) with
         | -1 , -1 -> text
         | -1, p | p , -1 -> stripComment p
-        | p1, p2 -> stripComment (min p1 p2) 
+        | p1, p2 -> stripComment (min p1 p2)
     remove 0
 
 let getSha512Stream (stream:Stream) =
@@ -1160,19 +668,19 @@ let getSha512File (filePath:string) =
 [<AutoOpen>]
 module ObservableExtensions =
 
-    let private synchronize f = 
-        let ctx = System.Threading.SynchronizationContext.Current 
+    let private synchronize f =
+        let ctx = System.Threading.SynchronizationContext.Current
         f (fun g arg ->
-            let nctx = System.Threading.SynchronizationContext.Current 
-            if ctx <> null && ctx <> nctx then 
+            let nctx = System.Threading.SynchronizationContext.Current
+            if ctx <> null && ctx <> nctx then
                 ctx.Post((fun _ -> g arg), null)
-            else 
+            else
                 g arg)
 
-    type Microsoft.FSharp.Control.Async with 
+    type Microsoft.FSharp.Control.Async with
       static member AwaitObservable(ev1:IObservable<'a>) =
         synchronize (fun f ->
-          Async.FromContinuations((fun (cont,_econt,_ccont) -> 
+          Async.FromContinuations((fun (cont,_econt,_ccont) ->
             let rec callback = (fun value ->
               remover.Dispose()
               f cont value )
@@ -1189,7 +697,7 @@ module ObservableExtensions =
         let guard f (e:IObservable<'Args>) =
           { new IObservable<'Args> with
               member __.Subscribe observer =
-                let rm = e.Subscribe observer in f(); rm } 
+                let rm = e.Subscribe observer in f(); rm }
 
         let sample milliseconds source =
             let relay (observer:IObserver<'T>) =
@@ -1197,7 +705,7 @@ module ObservableExtensions =
                     let! value = Async.AwaitObservable source
                     observer.OnNext value
                     do! Async.Sleep milliseconds
-                    return! loop() 
+                    return! loop()
                 }
                 loop ()
 
@@ -1205,34 +713,34 @@ module ObservableExtensions =
                 member __.Subscribe(observer:IObserver<'T>) =
                     let cts = new System.Threading.CancellationTokenSource()
                     Async.Start (relay observer, cts.Token)
-                    { new IDisposable with 
-                        member __.Dispose() = cts.Cancel() 
+                    { new IDisposable with
+                        member __.Dispose() = cts.Cancel()
                     }
             }
 
-        let ofSeq s = 
+        let ofSeq s =
             let evt = new Event<_>()
             evt.Publish |> guard (fun _ ->
                 for n in s do evt.Trigger(n))
 
         let private oneAndDone (obs : IObserver<_>) value =
             obs.OnNext value
-            obs.OnCompleted() 
+            obs.OnCompleted()
 
-        let ofAsync a : IObservable<'a> = 
+        let ofAsync a : IObservable<'a> =
             { new IObservable<'a> with
-                member __.Subscribe obs = 
+                member __.Subscribe obs =
                     let oneAndDone' = oneAndDone obs
                     let token = new CancellationTokenSource()
                     Async.StartWithContinuations (a,oneAndDone',obs.OnError,obs.OnError,token.Token)
                     { new IDisposable with
-                        member __.Dispose() = 
+                        member __.Dispose() =
                             token.Cancel |> ignore
                             token.Dispose() } }
-        
-        let ofAsyncWithToken (token : CancellationToken) a : IObservable<'a> = 
+
+        let ofAsyncWithToken (token : CancellationToken) a : IObservable<'a> =
             { new IObservable<'a> with
-                  member __.Subscribe obs = 
+                  member __.Subscribe obs =
                       let oneAndDone' = oneAndDone obs
                       Async.StartWithContinuations (a,oneAndDone',obs.OnError,obs.OnError,token)
                       { new IDisposable with
@@ -1242,19 +750,19 @@ module ObservableExtensions =
             { new IObservable<'a> with
                 member __.Subscribe obs =
                     let cts = new CancellationTokenSource()
-                    let sub = 
+                    let sub =
                         input.Subscribe
                           ({ new IObserver<#seq<'a>> with
                               member __.OnNext values = values |> Seq.iter obs.OnNext
-                              member __.OnCompleted() = 
+                              member __.OnCompleted() =
                                 cts.Cancel()
                                 obs.OnCompleted()
-                              member __.OnError e = 
+                              member __.OnError e =
                                 cts.Cancel()
                                 obs.OnError e })
 
-                    { new IDisposable with 
-                        member __.Dispose() = 
+                    { new IDisposable with
+                        member __.Dispose() =
                             sub.Dispose()
                             cts.Cancel() }}
 
@@ -1281,19 +789,19 @@ module Seq =
         if i = 1 then Some first
         else None
 
-    /// Unzip a seq by mapping the elements that satisfy the predicate 
+    /// Unzip a seq by mapping the elements that satisfy the predicate
     /// into the first seq and mapping the elements that fail to satisfy the predicate
     /// into the second seq
-    let partitionAndChoose predicate choosefn1 choosefn2 sqs =   
+    let partitionAndChoose predicate choosefn1 choosefn2 sqs =
         (([],[]),sqs)
         ||> Seq.fold (fun (xs,ys) elem ->
-            if predicate elem then 
-                match choosefn1 elem with 
-                | Some x ->  (x::xs,ys) 
+            if predicate elem then
+                match choosefn1 elem with
+                | Some x ->  (x::xs,ys)
                 | None -> xs,ys
-            else 
+            else
                 match choosefn2 elem with
-                | Some y -> xs,y::ys 
+                | Some y -> xs,y::ys
                 | None -> xs,ys
         ) |> fun (xs,ys) ->
             List.rev xs :> seq<_>, List.rev ys :> seq<_>
@@ -1318,7 +826,7 @@ module List =
             let v = values.[i]
             Some v, (values.[0 .. i - 1 ] @ values.[i + 1 .. ])
         | None -> None, values
-        
+
 [<RequireQualifiedAccess>]
 module Task =
 

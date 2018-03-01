@@ -1,4 +1,4 @@
-[![Travis build status](https://api.travis-ci.org/fsprojects/Paket.svg)](https://travis-ci.org/fsprojects/Paket)
+[![Travis build status](https://api.travis-ci.org/fsprojects/Paket.svg?branch=master)](https://travis-ci.org/fsprojects/Paket?branch=master)
 [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/f77ejdp6mtkris2u/branch/master?svg=true)](https://ci.appveyor.com/project/paket/paket/branch/master)
 [![NuGet Status](https://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
 [![Join the chat at https://gitter.im/fsprojects/Paket](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/fsprojects/Paket?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
@@ -54,8 +54,12 @@ For more reasons see the [FAQ][10].
 
  - Fork and clone locally.
  - Build the solution with Visual Studio, `build.cmd` or `build.sh`.
- - Create a topic specific branch in git. Add a nice feature in the code. Do not forget to add tests and/or docs.
- - Run `build.cmd` (`build.sh` on Mono) to make sure all tests are still passing.
+ - Create a topic specific branch in git. Add a nice feature in the code. Do not
+   forget to add tests and/or docs.
+ - Run `build.cmd` (`build.sh` on Mono) to make sure all tests are still
+   passing.
+ - When built, you'll find the binaries in `./bin` which you can then test
+   with locally, to ensure the bug or feature has been successfully implemented.
  - Send a Pull Request.
 
 If you want to contribute to the [docs][2] then please modify the markdown files in `/docs/content` and send a pull request.

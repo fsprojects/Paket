@@ -184,6 +184,21 @@ type Dependencies(dependenciesFileName: string) =
                                      InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None),
                                      interactive, installAfter, runResolver, packageKind))
 
+    /// Adds the given github repository to the dependencies file.
+    member this.AddGithub(groupName, repository, file) =
+        this.AddGithub(groupName, repository, file, "")
+
+    /// Adds the given github repository to the dependencies file.
+    member this.AddGithub(groupName, repository, file, version) =
+        this.AddGithub(groupName, repository, file, version, InstallerOptions.Default)
+
+    /// Adds the given github repository to the dependencies file.
+    member this.AddGithub(groupName, repository, file, version, options) =
+        RunInLockedAccessMode(
+            this.RootPath,
+            fun () ->
+                AddProcess.AddGithub(dependenciesFileName, groupName, repository, file, version, options))
+
    /// Adds the given package with the given version to the dependencies file.
     member this.AddToProject(groupName, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, projectName: string, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
         this.AddToProject(groupName, package,version,force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, projectName, installAfter, semVerUpdateMode, touchAffectedRefs, true)
@@ -694,7 +709,7 @@ type Dependencies(dependenciesFileName: string) =
         |> this.Process
 
     // Packs all paket.template files.
-    member this.Pack(outputPath, ?buildConfig, ?buildPlatform, ?version, ?specificVersions, ?releaseNotes, ?templateFile, ?workingDir, ?excludedTemplates, ?lockDependencies, ?minimumFromLockFile, ?pinProjectReferences, ?symbols, ?includeReferencedProjects, ?projectUrl) =
+    member __.Pack(outputPath, ?buildConfig, ?buildPlatform, ?version, ?specificVersions, ?releaseNotes, ?templateFile, ?workingDir, ?excludedTemplates, ?lockDependencies, ?minimumFromLockFile, ?pinProjectReferences, ?symbols, ?includeReferencedProjects, ?projectUrl) =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         let specificVersions = defaultArg specificVersions Seq.empty
         let workingDir = defaultArg workingDir (dependenciesFile.FileName |> Path.GetDirectoryName)
@@ -703,7 +718,7 @@ type Dependencies(dependenciesFileName: string) =
         let pinProjectReferences = defaultArg pinProjectReferences false
         let symbols = defaultArg symbols false
         let includeReferencedProjects = defaultArg includeReferencedProjects false
-        let projectUrl = defaultArg (Some(projectUrl)) None
+        let projectUrl = defaultArg (Some projectUrl) None
         PackageProcess.Pack(workingDir, dependenciesFile, outputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, minimumFromLockFile, pinProjectReferences, symbols, includeReferencedProjects, projectUrl)
 
     /// Pushes a nupkg file.
@@ -722,7 +737,9 @@ type Dependencies(dependenciesFileName: string) =
 
         let configKey =
             let url = defaultArg url "https://nuget.org"
-            ConfigFile.GetAuthentication url |> Option.bind (fun a -> match a with Token t -> Some t | _ -> None )
+            AuthService.GetGlobalAuthenticationProvider url
+            |> AuthProvider.retrieve false
+            |> Option.bind (fun a -> match a with Token t -> Some t | _ -> None )
 
         let firstPresentKey =
             [apiKey; envKey; configKey]
