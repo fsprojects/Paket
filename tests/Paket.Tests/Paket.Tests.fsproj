@@ -199,6 +199,7 @@
     <Compile Include="DependenciesFile\RemovePackageSpecs.fs" />
     <Compile Include="DependenciesFile\DependencyChangesSpecs.fs" />
     <Compile Include="DependenciesFile\GroupNameSpecs.fs" />
+    <Compile Include="DependenciesFile\AddGithubFilesSpecs.fs" />
     <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
     <Compile Include="Resolver\DependencyGraphSpecs.fs" />
     <Compile Include="Resolver\SimpleDependenciesSpecs.fs" />

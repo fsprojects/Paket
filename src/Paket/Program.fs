@@ -220,6 +220,26 @@ let add (results : ParseResults<_>) =
             .Locate()
             .Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
 
+let github (results : ParseResults<_>) =
+    match results.GetResult <@ GithubArgs.Add @> with
+    | add -> 
+        let group =
+            add.TryGetResult <@ AddGithubArgs.Group @>
+        let repository =
+            add.GetResult <@ AddGithubArgs.Repository @>
+        let file =
+            match add.TryGetResult <@ AddGithubArgs.File @> with
+            | Some f -> f
+            | None -> ""
+        let version =
+            match add.TryGetResult <@ AddGithubArgs.Version @> with
+            | Some v -> v
+            | None -> ""
+    
+        Dependencies
+            .Locate()
+            .AddGithub(group, repository, file, version)
+    
 let validateConfig (results : ParseResults<_>) =
     let credential = results.Contains <@ ConfigArgs.AddCredentials @>
     let token = results.Contains <@ ConfigArgs.AddToken @>
@@ -766,6 +786,7 @@ let waitForDebugger () =
 let handleCommand silent command =
     match command with
     | Add r -> processCommand silent add r
+    | Github r -> processCommand silent github r
     | ClearCache r -> processCommand silent clearCache r
     | Config r -> processWithValidation silent validateConfig config r
     | ConvertFromNuget r -> processCommand silent convert r

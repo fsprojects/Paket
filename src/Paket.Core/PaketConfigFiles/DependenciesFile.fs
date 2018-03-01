@@ -44,6 +44,9 @@ module DependenciesFileSerializer =
             | PackageRequirementKind.Package -> "nuget"
         sprintf "%s %O%s%s" kindString packageName (if version <> "" then " " + version else "") (if s <> "" then " " + s else s)
 
+    let githubString repository file version =
+        sprintf "github %s%s%s" repository (if version <> "" then ":" + version else "") (if file <> "" then " " + file else "")
+
 open Domain
 open System
 open Requirements
@@ -62,10 +65,10 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
     let isPackageLine name line = tryMatchPackageLine ((=) name) line |> Option.isSome
 
-    let findGroupBorders groupName = 
+    let findGroupBorders groupName (textRepresentation:System.Collections.Generic.List<string>) = 
         let _,_,firstLine,lastLine =
             textRepresentation
-            |> Array.fold (fun (i,currentGroup,firstLine,lastLine) line -> 
+            |> Seq.fold (fun (i,currentGroup,firstLine,lastLine) line -> 
                     if line.TrimStart().StartsWith "group " then
                         let group = line.Replace("group","").Trim()
                         if currentGroup = groupName then
@@ -77,7 +80,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                                 i+1,GroupName group,firstLine,lastLine
                     else
                         i+1,currentGroup,firstLine,lastLine)
-                (0,Constants.MainDependencyGroup,0,textRepresentation.Length)
+                (0,Constants.MainDependencyGroup,0,textRepresentation.Count)
         firstLine,lastLine
 
     let tryFindPackageLine groupName (packageName:PackageName) =
@@ -389,7 +392,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         match groups |> Map.tryFind groupName with 
         | None -> list.Add(restrictionString)
         | Some group ->
-            let firstGroupLine,_ = findGroupBorders groupName
+            let firstGroupLine,_ = findGroupBorders groupName list
             let pos = ref firstGroupLine
             while list.Count > !pos && list.[!pos].TrimStart().StartsWith "source" do
                 pos := !pos + 1
@@ -413,7 +416,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         match groups |> Map.tryFind groupName with
         | None -> list.Add(strategyString)
         | Some group ->
-            let firstGroupLine,_ = findGroupBorders groupName
+            let firstGroupLine,_ = findGroupBorders groupName list
             let pos = ref firstGroupLine
             while list.Count > !pos && list.[!pos].TrimStart().StartsWith "source" do
                 pos := !pos + 1
@@ -437,7 +440,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         match groups |> Map.tryFind groupName with
         | None -> list.Add(strategyString)
         | Some _ ->
-            let firstGroupLine,_ = findGroupBorders groupName
+            let firstGroupLine,_ = findGroupBorders groupName list
             let pos = ref firstGroupLine
             while list.Count > !pos && list.[!pos].TrimStart().StartsWith "source" do
                 pos := !pos + 1
@@ -449,7 +452,18 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             |> Seq.toArray
             |> DependenciesFileParser.parseDependenciesFile fileName false)
 
-    member __.AddAdditionalPackage(groupName, packageName:PackageName,versionRequirement,resolverStrategy,settings,kind,?pinDown) =
+    member private __.InsertGroup(groupName, list:System.Collections.Generic.List<_>) =
+        match groups |> Map.tryFind groupName with
+            | None -> 
+                if list.Count > 0 then
+                    list.Add("")
+                list.Add(sprintf "group %O" groupName)
+                list.Add(DependenciesFileSerializer.sourceString Constants.DefaultNuGetStream)
+                list.Add("")
+                true
+            | _ -> false
+
+    member this.AddAdditionalPackage(groupName, packageName:PackageName,versionRequirement,resolverStrategy,settings,kind,?pinDown) =
         let pinDown = defaultArg pinDown false
 
         let packageString = DependenciesFileSerializer.packageString kind packageName versionRequirement resolverStrategy settings
@@ -481,15 +495,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         let list = new System.Collections.Generic.List<_>()
         list.AddRange textRepresentation
         let newGroupInserted =
-            match groups |> Map.tryFind groupName with
-            | None -> 
-                if list.Count > 0 then
-                    list.Add("")
-                list.Add(sprintf "group %O" groupName)
-                list.Add(DependenciesFileSerializer.sourceString Constants.DefaultNuGetStream)
-                list.Add("")
-                true
-            | _ -> false
+            this.InsertGroup(groupName, list)
 
         match tryFindPackageLine groupName packageName with
         | Some pos -> 
@@ -500,7 +506,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             else
                 list.Insert(pos + 1, packageString)
         | None -> 
-            let firstGroupLine,lastGroupLine = findGroupBorders groupName
+            let firstGroupLine,lastGroupLine = findGroupBorders groupName list
             if pinDown || sourceCount > 1 then
                 if newGroupInserted then
                     list.Add(packageString)
@@ -638,6 +644,33 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             else
                 tracefn "Adding %O %s to %s into group %O" packageName version fileName groupName
             this.AddAdditionalPackage(groupName, packageName,version,installSettings,kind)
+    
+    member this.AddGithub(groupName, repository) = 
+        this.AddGithub(groupName, repository, "", "")
+
+    member this.AddGithub(groupName, repository, file, version) =
+        tracefn "Adding %s into group %O" (repository + (if version <> "" then ":" + version else "") + (if file <> "" then "/" + file else "")) groupName
+        let packageString = DependenciesFileSerializer.githubString repository file version
+
+        let list = new System.Collections.Generic.List<_>()
+        list.AddRange textRepresentation
+
+        this.InsertGroup(groupName,list) |> ignore
+
+        let firstGroupLine,lastGroupLine = findGroupBorders groupName list
+
+        let repoExists = 
+            Seq.mapi (fun i x -> (i,x)) list
+            |> Seq.filter(fun (i,_) -> i >= firstGroupLine && i <= lastGroupLine)
+            |> Seq.exists (fun (_,x) -> x = packageString)
+
+        if not repoExists then
+            list.Insert(lastGroupLine, packageString);
+
+        DependenciesFile(
+            list 
+            |> Seq.toArray
+            |> DependenciesFileParser.parseDependenciesFile fileName false)
 
     member this.Remove(groupName, packageName) =
         if this.HasPackage(groupName, packageName) then
