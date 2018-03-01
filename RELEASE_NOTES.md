@@ -1,3 +1,6 @@
+#### 5.148.0 - 2018-03-01
+* New command to add GitHub sources in PublicAPI and CLI - https://github.com/fsprojects/Paket/pull/3023
+
 #### 5.147.0 - 2018-03-01
 * Added .NETCoreApp2.1 and UAP10.0.16300 TFMs - https://github.com/fsprojects/Paket/pull/3094
 
