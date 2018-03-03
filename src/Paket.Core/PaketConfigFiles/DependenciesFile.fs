@@ -672,6 +672,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             |> Seq.toArray
             |> DependenciesFileParser.parseDependenciesFile fileName false)
 
+    member this.AddGit(groupName, repository, version) =
+        tracefn "Adding %s into group %O" (repository + (if version <> "" then ":" + version else "")) groupName
+        
+        DependenciesFile(textRepresentation |> DependenciesFileParser.parseDependenciesFile fileName false)
+
     member this.Remove(groupName, packageName) =
         if this.HasPackage(groupName, packageName) then
             tracefn "Removing %O from %s (group %O)" packageName fileName groupName
