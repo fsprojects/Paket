@@ -1254,7 +1254,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                      && flags.HasUnlisted 
                      && not flags.UnlistedSearch
                      && not currentConflict.Status.IsDone 
-                     then
+                    then
                         // if it's been determined that an unlisted package must be used, ready must be set to false
                         if verbose then
                             verbosefn "\nSearching for compatible unlisted package\n"
@@ -1264,10 +1264,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                             UnlistedSearch = true
                         }
                     else
-                        { flags with 
-                            Ready = true 
-                            UnlistedSearch = true 
-                        }
+                        flags
                 step (Outer((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions  flags 
             else
                 let flags = { flags with FirstTrial = false }

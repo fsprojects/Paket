@@ -32,7 +32,7 @@ nuget delphi-tf-latest-convert
 
 
 [<Test>]
-let ``should resolve config``() = 
+let ``should resolve latets version for #3103``() = 
     let cfg = DependenciesFile.FromSource(config)
     let resolved = ResolveWithGraph(cfg,noSha1, VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "delphi-tf-latest-convert"] |> shouldEqual "0.0.75"
