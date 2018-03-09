@@ -6,13 +6,22 @@ open FsUnit
 open TestHelpers
 open Paket.Domain
 
+let exactVersion s =
+    let info = SemVer.Parse s |> VersionRange.Specific
+    VersionRequirement(info, PreReleaseStatus.No)
+
+let anyVersion = VersionRequirement(VersionRange.AtLeast "0",PreReleaseStatus.No)
+
 let graph = 
   OfSimpleGraph [
-    "delphi-tf-latest-convert ","0.0.75",["delphi-TaxDoc", VersionRequirement(VersionRange.AtLeast "0",PreReleaseStatus.No)]
-    "delphi-tf-latest-convert ","0.0.74",["delphi-TaxDoc", VersionRequirement(VersionRange.AtLeast "0",PreReleaseStatus.No)]
-    "delphi-TaxDoc","17.4.0.16",[]
-    "delphi-TaxDoc","17.3.0.41",[]
-    "delphi-tf-latest-calc,","1.0.127",[]
+    "delphi-tf-latest-convert ","0.0.75",[("delphi-TaxDoc", anyVersion); ("delphi-tf-latest-calc", anyVersion)]
+    "delphi-tf-latest-convert ","0.0.74",[("delphi-TaxDoc", anyVersion); ("delphi-tf-latest-calc", anyVersion)]
+    "delphi-TaxDoc","17.4.0.16",["dummy", (exactVersion "17.4.0.16")]
+    "delphi-TaxDoc","17.3.0.41",["dummy", (exactVersion "17.3.0.41")]
+    "delphi-tf-latest-calc","1.0.127",["delphi-CchData", (exactVersion "17.3.0.41")]
+    "delphi-CchData","17.3.0.41",["dummy", (exactVersion "17.3.0.41")]
+    "dummy","17.4.0.16",[]
+    "dummy","17.3.0.41",[]
   ]
 
 let config = """
