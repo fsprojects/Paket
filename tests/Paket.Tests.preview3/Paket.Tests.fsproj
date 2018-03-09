@@ -103,6 +103,7 @@
     <Compile Include="$(PaketTestsSourcesDir)\Resolver\PropertyTests.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\Resolver\DependencyGroupsAndRestrictions.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\Resolver\ResolverErrorSituationTests.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Resolver\DowngradeIssue3103.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\Resolver\PrereleaseSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\Lockfile\GeneratorSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\Lockfile\GenerateWithOptionsSpecs.fs" />
