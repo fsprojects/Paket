@@ -784,7 +784,13 @@ module InstallModel =
 
     let filterReferences (references:string Set) (this:InstallModel) =
         this
-        |> mapCompileLibReferences (Set.filter (fun reference -> Set.contains reference.Name references |> not))
+        // HACK: workaround for https://github.com/fsprojects/Paket/issues/2811
+        //  * DO remove FW-References which are already referenced by the user
+        //  * DO NOT remove package references, where the user already has a reference
+        // Example where this is relevant:
+        // 1) Pre-existing reference to the FW-Assembly System.IO.Compression
+        // 2) user adds nuget package https://www.nuget.org/packages/System.IO.Compression/
+        //|> mapCompileLibReferences (Set.filter (fun reference -> Set.contains reference.Name references |> not))
         |> mapCompileLibFrameworkReferences (Set.filter (fun reference -> Set.contains reference.Name references |> not))
 
     let addLicense url (model: InstallModel) =
