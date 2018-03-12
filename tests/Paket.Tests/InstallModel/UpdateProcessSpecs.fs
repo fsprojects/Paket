@@ -544,7 +544,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
          ("Ninject.Extensions.Interception","2.2.1.2")
          ("Ninject", "2.2.1.4")
          ("log4f", "0.4.0")
-         ("log4net", "1.2.10")]
+         ("log4net", "1.2.11")]
         |> Seq.sortBy snd
 
     result
