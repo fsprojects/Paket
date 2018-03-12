@@ -188,6 +188,7 @@
     <Compile Include="$(PaketTestsSourcesDir)\Packaging\TemplateFileParsing.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\Packaging\RemotePushUrlSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\ScriptGeneration\LoadingScriptTests.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\CommandsCheck.fs" />
     <Content Include="$(PaketTestsSourcesDir)\App.config" />
   </ItemGroup>
 
@@ -197,7 +198,7 @@
 
   <Target Name="AddTestAssetAsNoneItems" BeforeTargets="PrepareForBuild">
     <ItemGroup>
-      <!-- MSBUILD BLACK MAGIC!!! .... 
+      <!-- MSBUILD BLACK MAGIC!!! ....
           is just a `TestAsset list -> None list`, like `List.map`, dont be scared -->
 
       <None Include="$(PaketTestsSourcesDir)\%(TestAsset.Identity)">
@@ -214,6 +215,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Paket.preview3\Paket.fsproj" />
     <ProjectReference Include="..\..\src\Paket.Core.preview3\Paket.Core.fsproj" />
   </ItemGroup>
 </Project>
