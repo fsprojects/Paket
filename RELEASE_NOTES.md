@@ -1,3 +1,6 @@
+#### 5.149.0 - 2018-03-12
+* BUGFIX: Edge case in resolver fixed where Paket downgraded a direct dependency - https://github.com/fsprojects/Paket/issues/3103
+
 #### 5.148.0 - 2018-03-01
 * New command to add GitHub sources in PublicAPI and CLI - https://github.com/fsprojects/Paket/pull/3023
 
