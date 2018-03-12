@@ -854,6 +854,13 @@ let main() =
             false
             (fun _ -> true)
             (fun _ -> Dependencies.Locate().Restore(false, None, project, false, false, false, None)) ()
+    | [| _; "install" |] | [| _; "--from-bootstrapper"; "install" |] ->
+        // Global restore fast route, see https://github.com/fsprojects/Argu/issues/90
+        processWithValidationEx
+            ignore
+            false
+            (fun _ -> true)
+            (fun _ -> Dependencies.Locate().Install(false, false, false, false, false, SemVerUpdateMode.NoRestriction, false, false, [], [], None)) ()
     | _ ->
         let parser = ArgumentParser.Create<Command>(programName = "paket",
                                                     helpTextMessage = sprintf "Paket version %s%sHelp was requested:" paketVersion Environment.NewLine,
