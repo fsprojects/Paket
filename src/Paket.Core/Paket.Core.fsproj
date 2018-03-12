@@ -60,14 +60,14 @@
   -->
   <Import Project="$(SolutionDir)\.paket\paket.targets" />
   <ItemGroup>
-    <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.SDK\src\AssemblyReader.fs">
-      <Paket>True</Paket>
-      <Link>Common/AssemblyReader.fs</Link>
-    </Compile>
     <None Include="paket.references" />
     <EmbeddedResource Include="embedded\Paket.Restore.targets" />
     <Compile Include="Common\AssemblyInfo.fs" />
     <Compile Include="Common\CustomAssemblyInfo.fs" />
+    <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.SDK\src\AssemblyReader.fs">
+      <Paket>True</Paket>
+      <Link>Common/AssemblyReader.fs</Link>
+    </Compile>
     <Compile Include="..\..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
       <Paket>True</Paket>
       <Link>Common/Globbing.fs</Link>
