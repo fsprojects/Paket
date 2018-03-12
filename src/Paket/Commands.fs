@@ -721,9 +721,9 @@ let markdown (subParser : ArgumentParser) (width : int) (additionalText : string
 
     System.Text.StringBuilder()
         .Append("# paket ")
-        .AppendLine(parentMetadata.Name)
+        .AppendLine(parentMetadata.Name.Value)
         .AppendLine()
-        .AppendLine(parentMetadata.Description |> makeSentence)
+        .AppendLine(parentMetadata.Description.Value |> makeSentence)
         .AppendLine()
         .AppendLine("```sh")
         .AppendLine(syntax)

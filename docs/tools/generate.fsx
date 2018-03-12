@@ -10,7 +10,7 @@ let MaxCodeWidth = 100
 Paket.Commands.getAllCommands()
 |> List.iter (fun command ->
     let metadata = command.ParentInfo |> Option.get
-    let additionalText = 
+    let additionalText =
         let verboseOption = """
 
 If you add the `--verbose` flag Paket will run in verbose mode and show detailed information.
@@ -18,12 +18,12 @@ If you add the `--verbose` flag Paket will run in verbose mode and show detailed
 With `--log-file [path]` you can trace the logged information into a file.
 
 """
-        let optFile = sprintf "../content/commands/%s.md" metadata.Name
+        let optFile = sprintf "../content/commands/%s.md" metadata.Name.Value
         if File.Exists optFile
         then verboseOption + File.ReadAllText optFile
         else verboseOption
 
-    File.WriteAllText(sprintf "../content/paket-%s.md" metadata.Name, Paket.Commands.markdown command MaxCodeWidth additionalText))
+    File.WriteAllText(sprintf "../content/paket-%s.md" metadata.Name.Value, Paket.Commands.markdown command MaxCodeWidth additionalText))
 #endif
 
 
@@ -87,7 +87,7 @@ subDirectories (directoryInfo templates)
 let copyFiles () =
   CopyRecursive files output true |> Log "Copying file: "
   ensureDirectory (output @@ "content")
-  CopyRecursive (formatting @@ "styles") (output @@ "content") true 
+  CopyRecursive (formatting @@ "styles") (output @@ "content") true
     |> Log "Copying styles and scripts: "
 
 // Build API reference from XML comments
