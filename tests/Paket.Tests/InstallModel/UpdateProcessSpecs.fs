@@ -539,16 +539,16 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
         |> Seq.map (fun (_,r) -> (string r.Name, string r.Version))
 
     let expected = 
-        [("Ninject.Extensions.Logging.Log4net","2.2.0.5")
-         ("Ninject.Extensions.Logging","2.2.0.4")
-         ("Ninject.Extensions.Interception","2.2.1.2")
-         ("Ninject", "2.2.1.4")
+        [("Ninject.Extensions.Logging.Log4net","3.2.3")
+         ("Ninject.Extensions.Logging","3.2.3")
+         ("Ninject.Extensions.Interception","3.2.0")
+         ("Ninject", "3.2.0")
          ("log4f", "0.4.0")
          ("log4net", "1.2.11")]
-        |> Seq.sortBy snd
+        |> Seq.sortBy fst
 
     result
-    |> Seq.sortBy snd
+    |> Seq.sortBy fst
     |> shouldEqual expected
     
 [<Test>]
