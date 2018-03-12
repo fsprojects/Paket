@@ -700,7 +700,7 @@ with
             | Version -> "show Paket version"
             | From_Bootstrapper -> "call coming from the '--run' feature of the bootstrapper"
 
-let commandParser = ArgumentParser.Create<Command>(programName = "paket", errorHandler = new ProcessExiter())
+let commandParser = ArgumentParser.Create<Command>(programName = "paket", errorHandler = new ProcessExiter(), checkStructure = false)
 
 let markdown (subParser : ArgumentParser) (width : int) (additionalText : string) =
     let ensureLineBreak (text : string) = if String.IsNullOrEmpty(text) then text else text + Environment.NewLine + Environment.NewLine
