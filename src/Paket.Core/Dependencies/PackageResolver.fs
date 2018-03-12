@@ -1089,19 +1089,23 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
         |> Set.ofSeq
 
 
-    if Set.isEmpty rootDependencies then Resolution.ofRaw [] (ResolutionRaw.OkRaw Map.empty)
-    else
+    if Set.isEmpty rootDependencies then Resolution.ofRaw [] (ResolutionRaw.OkRaw Map.empty) else
 
     let loopTime = DateTime.UtcNow
-    /// Evaluates whethere the innermost step-looping stage should continue or not
-    let keepLooping (flags:StepFlags) (conflictState:ConflictState) (currentRequirement:PackageRequirement) =
-        if flags.ForceBreak then false else
-        if conflictState.Status.IsDone then false else
-        if Seq.isEmpty conflictState.VersionsToExplore then
-            false else
-        flags.FirstTrial || Set.isEmpty conflictState.Conflicts
 
-    let rec step (stage:Stage) (stackpack:StackPack) compatibleVersions (flags:StepFlags) =
+    let rec fuseConflicts stackpack currentRequirement filteredVersions currentConflict priorConflictSteps =
+        let currentConflict,stackpack = boostConflicts filteredVersions currentRequirement stackpack currentConflict
+
+        match priorConflictSteps with
+        | head :: priorConflictSteps ->
+            let (lastConflict, lastStep, lastRequirement, lastCompatibleVersions, lastFlags) = head
+            let continueConflict = 
+                { currentConflict with VersionsToExplore = lastConflict.VersionsToExplore }
+            step (Inner((continueConflict,lastStep,lastRequirement), priorConflictSteps)) stackpack lastCompatibleVersions lastFlags
+        | [] ->
+            currentConflict
+
+    and step (stage:Stage) (stackpack:StackPack) compatibleVersions (flags:StepFlags) =
     
         let resolverTimeout (conflictState:ConflictState) (currentStep:ResolverStep) =
             if (loopTimeout > TimeSpan.Zero) && (loopTimeout < DateTime.UtcNow - loopTime) then
@@ -1111,18 +1115,6 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                 conflictState.AddError(raise(TimeoutException(message)))
             else conflictState
     
-        let fuseConflicts currentRequirement filteredVersions currentConflict priorConflictSteps =
-            let currentConflict,stackpack = boostConflicts filteredVersions currentRequirement stackpack currentConflict
-
-            match priorConflictSteps with
-            | head :: priorConflictSteps ->
-                let (lastConflict, lastStep, lastRequirement, lastCompatibleVersions, lastFlags) = head
-                let continueConflict = 
-                    { currentConflict with VersionsToExplore = lastConflict.VersionsToExplore }        
-                step (Inner((continueConflict,lastStep,lastRequirement), priorConflictSteps)) stackpack lastCompatibleVersions lastFlags
-            | [] ->
-                currentConflict
-                        
         match stage with            
         | Step((conflictState,currentStep,_currentRequirement), priorConflictSteps)  ->
             let currentConflict = resolverTimeout conflictState currentStep
@@ -1187,7 +1179,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                 GetPackageVersions = getVersionsF }}
 
                 if not (Seq.isEmpty conflicts) then
-                    fuseConflicts currentRequirement currentStep.FilteredVersions currentConflict priorConflictSteps
+                    fuseConflicts stackpack currentRequirement currentStep.FilteredVersions currentConflict priorConflictSteps
                 else
                     let getCurrentVersionBlock = fun strategy args -> getVersionsBlock strategy args currentStep
                     let compatibleVersions,globalOverride,tryRelaxed =
@@ -1218,7 +1210,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
         | Outer ((conflictState,currentStep,currentRequirement), priorConflictSteps) ->
             let currentConflict = resolverTimeout conflictState currentStep
             if flags.Ready then
-                fuseConflicts currentRequirement currentStep.FilteredVersions currentConflict priorConflictSteps
+                fuseConflicts stackpack currentRequirement currentStep.FilteredVersions currentConflict priorConflictSteps
             else
                 let flags = {
                   flags with
@@ -1230,7 +1222,16 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
 
         | Inner ((conflictState,currentStep,currentRequirement), priorConflictSteps)->
             let currentConflict = resolverTimeout conflictState currentStep
-            if not (keepLooping flags currentConflict currentRequirement) then
+
+            let keepLooping =
+                if flags.ForceBreak then false else
+                if conflictState.Status.IsDone then false else
+                if Seq.isEmpty conflictState.VersionsToExplore then
+                    false 
+                else
+                    flags.FirstTrial || Set.isEmpty conflictState.Conflicts
+
+            if not keepLooping then
                 let flags =
                     if  not flags.UseUnlisted 
                      && flags.HasUnlisted 
