@@ -204,7 +204,7 @@ let add (results : ParseResults<_>) =
         (results.TryGetResult <@ AddArgs.Project @>,
          results.TryGetResult <@ AddArgs.Project_Legacy @>)
         |> legacyOption results (ReplaceArgument("--project", "project"))
-    let packageKind = 
+    let packageKind =
         match results.GetResult (<@ AddArgs.Type @>, defaultValue = AddArgsDependencyType.Nuget) with
         | AddArgsDependencyType.Nuget -> Requirements.PackageRequirementKind.Package
         | AddArgsDependencyType.Clitool -> Requirements.PackageRequirementKind.DotnetCliTool
@@ -222,7 +222,7 @@ let add (results : ParseResults<_>) =
 
 let github (results : ParseResults<_>) =
     match results.GetResult <@ GithubArgs.Add @> with
-    | add -> 
+    | add ->
         let group =
             add.TryGetResult <@ AddGithubArgs.Group @>
         let repository =
@@ -235,11 +235,11 @@ let github (results : ParseResults<_>) =
             match add.TryGetResult <@ AddGithubArgs.Version @> with
             | Some v -> v
             | None -> ""
-    
+
         Dependencies
             .Locate()
             .AddGithub(group, repository, file, version)
-    
+
 let validateConfig (results : ParseResults<_>) =
     let credential = results.Contains <@ ConfigArgs.AddCredentials @>
     let token = results.Contains <@ ConfigArgs.AddToken @>
@@ -766,10 +766,10 @@ let why (results: ParseResults<WhyArgs>) =
 let restriction (results: ParseResults<RestrictionArgs>) =
     let restrictionRaw = results.GetResult <@ RestrictionArgs.Restriction @>
     let restriction, parseProblems = Requirements.parseRestrictions restrictionRaw
-    
+
     for problem in parseProblems |> Seq.map (fun x -> x.AsMessage) do
         Logging.traceWarnfn "Problem: %s" problem
-        
+
     Logging.tracefn "Restriction: %s" restrictionRaw
     Logging.tracefn "Simplified: %s" (restriction.ToString())
     Logging.tracefn "Frameworks: [ "
@@ -846,7 +846,8 @@ let main() =
     | _ ->
         let parser = ArgumentParser.Create<Command>(programName = "paket",
                                                     helpTextMessage = sprintf "Paket version %s%sHelp was requested:" paketVersion Environment.NewLine,
-                                                    errorHandler = new PaketExiter())
+                                                    errorHandler = new PaketExiter(),
+                                                    checkStructure = false)
 
         let results = parser.ParseCommandLine(raiseOnUsage = true)
         let silent = results.Contains <@ Silent @>
