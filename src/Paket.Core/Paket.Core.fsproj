@@ -62,7 +62,7 @@
   <ItemGroup>
     <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.SDK\src\AssemblyReader.fs">
       <Paket>True</Paket>
-      <Link>Common//AssemblyReader.fs</Link>
+      <Link>Common/AssemblyReader.fs</Link>
     </Compile>
     <None Include="paket.references" />
     <EmbeddedResource Include="embedded\Paket.Restore.targets" />
@@ -70,7 +70,7 @@
     <Compile Include="Common\CustomAssemblyInfo.fs" />
     <Compile Include="..\..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
       <Paket>True</Paket>
-      <Link>Common//Globbing.fs</Link>
+      <Link>Common/Globbing.fs</Link>
     </Compile>
     <Compile Include="Common\Async.fs" />
     <Compile Include="Common\Logging.fsi" />
