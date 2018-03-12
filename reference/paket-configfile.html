@@ -77,33 +77,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '23', 23)" onmouseover="showTip(event, '23', 23)">
+          <code onmouseout="hideTip(event, '24', 24)" onmouseover="showTip(event, '24', 24)">
             AddCredentials (...)
           </code>
-          <div class="tip" id="23">
+          <div class="tip" id="24">
             <strong>Signature:</strong> (source:string * username:string * password:string * authType:string) -&gt; Result&lt;unit,DomainMessage&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/ConfigFile.fs#L176-176" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '24', 24)" onmouseover="showTip(event, '24', 24)">
-            AddToken (source, token)
-          </code>
-          <div class="tip" id="24">
-            <strong>Signature:</strong> (source:string * token:string) -&gt; Result&lt;unit,DomainMessage&gt;<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/ConfigFile.fs#L194-194" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/ConfigFile.fs#L170-170" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -114,14 +96,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '25', 25)" onmouseover="showTip(event, '25', 25)">
-            askAndAddAuth (...)
+            AddToken (source, token)
           </code>
           <div class="tip" id="25">
-            <strong>Signature:</strong> source:string -&gt; passedUserName:string -&gt; passedPassword:string -&gt; authType:string -&gt; verify:bool -&gt; Result&lt;unit,DomainMessage&gt;<br />
+            <strong>Signature:</strong> (source:string * token:string) -&gt; Result&lt;unit,DomainMessage&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/ConfigFile.fs#L212-212" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/ConfigFile.fs#L188-188" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -132,9 +114,27 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '26', 26)" onmouseover="showTip(event, '26', 26)">
-            checkCredentials (url, cred)
+            askAndAddAuth (...)
           </code>
           <div class="tip" id="26">
+            <strong>Signature:</strong> source:string -&gt; passedUserName:string -&gt; passedPassword:string -&gt; authType:string -&gt; verify:bool -&gt; Result&lt;unit,DomainMessage&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/ConfigFile.fs#L206-206" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '27', 27)" onmouseover="showTip(event, '27', 27)">
+            checkCredentials (url, cred)
+          </code>
+          <div class="tip" id="27">
             <strong>Signature:</strong> (url:string * cred:Auth option) -&gt; bool<br />
                       </div>
         </td>
@@ -151,10 +151,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '27', 27)" onmouseover="showTip(event, '27', 27)">
+          <code onmouseout="hideTip(event, '28', 28)" onmouseover="showTip(event, '28', 28)">
             Decrypt salt encrypted
           </code>
-          <div class="tip" id="27">
+          <div class="tip" id="28">
             <strong>Signature:</strong> salt:string -&gt; encrypted:string -&gt; string<br />
                       </div>
         </td>
@@ -171,10 +171,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '28', 28)" onmouseover="showTip(event, '28', 28)">
+          <code onmouseout="hideTip(event, '29', 29)" onmouseover="showTip(event, '29', 29)">
             DecryptNuget encrypted
           </code>
-          <div class="tip" id="28">
+          <div class="tip" id="29">
             <strong>Signature:</strong> encrypted:string -&gt; string<br />
                       </div>
         </td>
@@ -189,10 +189,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '29', 29)" onmouseover="showTip(event, '29', 29)">
+          <code onmouseout="hideTip(event, '30', 30)" onmouseover="showTip(event, '30', 30)">
             Encrypt password
           </code>
-          <div class="tip" id="29">
+          <div class="tip" id="30">
             <strong>Signature:</strong> password:string -&gt; string * string<br />
                       </div>
         </td>
@@ -209,10 +209,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '30', 30)" onmouseover="showTip(event, '30', 30)">
+          <code onmouseout="hideTip(event, '31', 31)" onmouseover="showTip(event, '31', 31)">
             GetAuthenticationForUrl 
           </code>
-          <div class="tip" id="30">
+          <div class="tip" id="31">
             <strong>Signature:</strong> string * string -&gt; Auth option<br />
                       </div>
         </td>
@@ -229,15 +229,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '31', 31)" onmouseover="showTip(event, '31', 31)">
+          <code onmouseout="hideTip(event, '32', 32)" onmouseover="showTip(event, '32', 32)">
             GetAuthenticationProvider source
           </code>
-          <div class="tip" id="31">
+          <div class="tip" id="32">
             <strong>Signature:</strong> source:string -&gt; AuthProvider<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/ConfigFile.fs#L173-173" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/ConfigFile.fs#L167-167" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -249,10 +249,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '32', 32)" onmouseover="showTip(event, '32', 32)">
+          <code onmouseout="hideTip(event, '33', 33)" onmouseover="showTip(event, '33', 33)">
             getAuthFromNode node
           </code>
-          <div class="tip" id="32">
+          <div class="tip" id="33">
             <strong>Signature:</strong> node:XmlNode -&gt; Auth<br />
                       </div>
         </td>
@@ -267,10 +267,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '33', 33)" onmouseover="showTip(event, '33', 33)">
+          <code onmouseout="hideTip(event, '34', 34)" onmouseover="showTip(event, '34', 34)">
             getSourceNodes (...)
           </code>
-          <div class="tip" id="33">
+          <div class="tip" id="34">
             <strong>Signature:</strong> credentialsNode:XmlNode -&gt; source:string -&gt; nodeType:string -&gt; XmlElement list<br />
                       </div>
         </td>
@@ -358,6 +358,7 @@
             <li><a href="..//paket-show-installed-packages.html">paket show-installed-packages</a></li>
             <li><a href="..//paket-update.html">paket update</a></li>
             <li><a href="..//paket-why.html">paket why</a></li>
+            <li><a href="..//paket-restriction.html">paket restriction</a></li>
           </ul>
         </div>
       </div>

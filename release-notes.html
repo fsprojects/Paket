@@ -56,6 +56,28 @@
       <div class="row">
         <div class="span9" id="main">
           
+<h4><a name="5-148-0-2018-03-01" class="anchor" href="#5-148-0-2018-03-01">5.148.0 - 2018-03-01</a></h4>
+<ul>
+<li>New command to add GitHub sources in PublicAPI and CLI - <a href="https://github.com/fsprojects/Paket/pull/3023">https://github.com/fsprojects/Paket/pull/3023</a></li>
+</ul>
+<h4><a name="5-147-0-2018-03-01" class="anchor" href="#5-147-0-2018-03-01">5.147.0 - 2018-03-01</a></h4>
+<ul>
+<li>Added .NETCoreApp2.1 and UAP10.0.16300 TFMs - <a href="https://github.com/fsprojects/Paket/pull/3094">https://github.com/fsprojects/Paket/pull/3094</a></li>
+</ul>
+<h4><a name="5-146-0-2018-02-28" class="anchor" href="#5-146-0-2018-02-28">5.146.0 - 2018-02-28</a></h4>
+<ul>
+<li>BUGFIX: Fixed UriFormatException for gist references with GitHubApi token - <a href="https://github.com/fsprojects/Paket/issues/3086">https://github.com/fsprojects/Paket/issues/3086</a></li>
+<li>BUGFIX: convert-from-nuget fails with ArgumentException - <a href="https://github.com/fsprojects/Paket/issues/3089">https://github.com/fsprojects/Paket/issues/3089</a></li>
+<li>BUGFIX: Normalize Home directory (~) everywhere - <a href="https://github.com/fsprojects/Paket/pull/3096">https://github.com/fsprojects/Paket/pull/3096</a></li>
+<li>BUGFIX: Safer loading of assemblies during load script generation - <a href="https://github.com/fsprojects/Paket/pull/3098">https://github.com/fsprojects/Paket/pull/3098</a></li>
+<li>BUGFIX: Fixed inconsistent pinned version of referenced projects with include-referenced-projects enabled - <a href="https://github.com/fsprojects/Paket/issues/3076">https://github.com/fsprojects/Paket/issues/3076</a></li>
+<li>BUGFIX: Fixed repeated conflict detection and introduced optional resolver timeout - <a href="https://github.com/fsprojects/Paket/pull/3084">https://github.com/fsprojects/Paket/pull/3084</a></li>
+<li>BUGFIX: Paket pack was putting entire directory into package lib folder when files block contained an empty line - <a href="https://github.com/fsprojects/Paket/issues/2949">https://github.com/fsprojects/Paket/issues/2949</a></li>
+<li>BUGFIX: Better error message when a HTTP request fails - <a href="https://github.com/fsprojects/Paket/pull/3078">https://github.com/fsprojects/Paket/pull/3078</a></li>
+<li>BUGFIX: generate-load-script was broken - <a href="https://github.com/fsprojects/Paket/issues/3080">https://github.com/fsprojects/Paket/issues/3080</a></li>
+<li>PERFORMANCE: Faster "hot" restore - <a href="https://github.com/fsprojects/Paket/pull/3092">https://github.com/fsprojects/Paket/pull/3092</a></li>
+<li>USABILITY: Retry HTTP downloads - <a href="https://github.com/fsprojects/Paket/issues/3088">https://github.com/fsprojects/Paket/issues/3088</a></li>
+</ul>
 <h4><a name="5-145-0-2018-02-26" class="anchor" href="#5-145-0-2018-02-26">5.145.0 - 2018-02-26</a></h4>
 <ul>
 <li>Added support for credential managers - <a href="https://github.com/fsprojects/Paket/pull/3069">https://github.com/fsprojects/Paket/pull/3069</a></li>
@@ -73,7 +95,6 @@
 <h4><a name="5-142-0-2018-02-24" class="anchor" href="#5-142-0-2018-02-24">5.142.0 - 2018-02-24</a></h4>
 <ul>
 <li>BUGFIX: Fixed bootstrapper to handle Github TLS issue</li>
-<li>BUGFIX: Fixed unhandled exception when running 'paket config add-credentials' in Jenkins pipeline - <a href="https://github.com/fsprojects/Paket/issues/2884">https://github.com/fsprojects/Paket/issues/2884</a></li>
 <li>BUGFIX: Fixed unhandled exception when running 'paket config add-credentials' in Jenkins pipeline - <a href="https://github.com/fsprojects/Paket/issues/2884">https://github.com/fsprojects/Paket/issues/2884</a></li>
 <li>BUGFIX: Some NuGet v2 queries fail with normalized filter syntax and are now skipped/blacklisted - <a href="https://github.com/fsprojects/Paket/pull/3059">https://github.com/fsprojects/Paket/pull/3059</a></li>
 <li>BUGFIX: Be more robust with custom namespaces in app.config - <a href="https://github.com/fsprojects/Paket/issues/1607">https://github.com/fsprojects/Paket/issues/1607</a></li>
@@ -2394,6 +2415,7 @@ BREAKING CHANGE: Removed --hard parameter from all commands.
             <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
+            <li><a href="./paket-restriction.html">paket restriction</a></li>
           </ul>
         </div>
       </div>

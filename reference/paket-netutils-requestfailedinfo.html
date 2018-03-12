@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>UserPassword - Paket</title>
+    <title>RequestFailedInfo - Paket</title>
     <link rel="icon" type="image/png" href="..//img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
@@ -59,10 +59,10 @@
 
 
 
-<h1>UserPassword</h1>
+<h1>RequestFailedInfo</h1>
 <p>
   <span>Namespace: Paket</span><br />
-  <span>Parent Module: <a href="paket-utils.html">Utils</a></span>
+  <span>Parent Module: <a href="paket-netutils.html">NetUtils</a></span>
 </p>
 <div class="xmldoc">
 </div>
@@ -75,15 +75,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1344', 1344)" onmouseover="showTip(event, '1344', 1344)">
-            Password
+          <code onmouseout="hideTip(event, '924', 924)" onmouseover="showTip(event, '924', 924)">
+            Content
           </code>
-          <div class="tip" id="1344">
-            <strong>Signature:</strong> string<br />
+          <div class="tip" id="924">
+            <strong>Signature:</strong> Stream<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Utils.fs#L108-108" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L159-159" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -93,15 +93,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1345', 1345)" onmouseover="showTip(event, '1345', 1345)">
-            Type
+          <code onmouseout="hideTip(event, '925', 925)" onmouseover="showTip(event, '925', 925)">
+            MediaType
           </code>
-          <div class="tip" id="1345">
-            <strong>Signature:</strong> AuthType<br />
+          <div class="tip" id="925">
+            <strong>Signature:</strong> string option<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Utils.fs#L108-108" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L160-160" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -111,15 +111,59 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1346', 1346)" onmouseover="showTip(event, '1346', 1346)">
-            Username
+          <code onmouseout="hideTip(event, '926', 926)" onmouseover="showTip(event, '926', 926)">
+            StatusCode
           </code>
-          <div class="tip" id="1346">
+          <div class="tip" id="926">
+            <strong>Signature:</strong> HttpStatusCode<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L158-158" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '927', 927)" onmouseover="showTip(event, '927', 927)">
+            Url
+          </code>
+          <div class="tip" id="927">
             <strong>Signature:</strong> string<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Utils.fs#L108-108" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L161-161" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <h3>Static members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Static member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '928', 928)" onmouseover="showTip(event, '928', 928)">
+            ofResponse(resp)
+          </code>
+          <div class="tip" id="928">
+            <strong>Signature:</strong> resp:HttpResponseMessage -&gt; Async&lt;RequestFailedInfo&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L162-162" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -202,6 +246,7 @@
             <li><a href="..//paket-show-installed-packages.html">paket show-installed-packages</a></li>
             <li><a href="..//paket-update.html">paket update</a></li>
             <li><a href="..//paket-why.html">paket why</a></li>
+            <li><a href="..//paket-restriction.html">paket restriction</a></li>
           </ul>
         </div>
       </div>

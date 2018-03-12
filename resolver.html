@@ -307,72 +307,72 @@ by D. King and J. Launchbury (<a href="http://galois.com/wp-content/uploads/2014
 </li>
 </ul>
 
-<div class="tip" id="fs1">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string</div>
-<div class="tip" id="fs2">type PackageName = string<br /><br />Full name: Resolver.PackageName</div>
-<div class="tip" id="fs3">type SemVerInfo = string<br /><br />Full name: Resolver.SemVerInfo</div>
-<div class="tip" id="fs4">type FrameworkRestrictions = FrameworkRestriction list<br /><br />Full name: Resolver.FrameworkRestrictions</div>
-<div class="tip" id="fs5">type FrameworkRestriction = string<br /><br />Full name: Resolver.FrameworkRestriction</div>
-<div class="tip" id="fs6">type &#39;T list = List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.list&lt;_&gt;</div>
-<div class="tip" id="fs7">type VersionRequirement = string<br /><br />Full name: Resolver.VersionRequirement</div>
-<div class="tip" id="fs8">type PackageSource = string<br /><br />Full name: Resolver.PackageSource</div>
-<div class="tip" id="fs9">type ResolvedPackage = PackageName * SemVerInfo<br /><br />Full name: Resolver.ResolvedPackage</div>
-<div class="tip" id="fs10">type PackageRequirementSource =<br />&#160;&#160;| DependenciesFile of string<br />&#160;&#160;| Package of PackageName * SemVerInfo<br /><br />Full name: Resolver.PackageRequirementSource</div>
+<div class="tip" id="fs1">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />--------------------<br />type string = System.String</div>
+<div class="tip" id="fs2">type PackageName = string</div>
+<div class="tip" id="fs3">type SemVerInfo = string</div>
+<div class="tip" id="fs4">type FrameworkRestrictions = FrameworkRestriction list</div>
+<div class="tip" id="fs5">type FrameworkRestriction = string</div>
+<div class="tip" id="fs6">type &#39;T list = List&lt;&#39;T&gt;</div>
+<div class="tip" id="fs7">type VersionRequirement = string</div>
+<div class="tip" id="fs8">type PackageSource = string</div>
+<div class="tip" id="fs9">type ResolvedPackage = PackageName * SemVerInfo</div>
+<div class="tip" id="fs10">type PackageRequirementSource =<br />&#160;&#160;| DependenciesFile of string<br />&#160;&#160;| Package of PackageName * SemVerInfo</div>
 <div class="tip" id="fs11">union case PackageRequirementSource.DependenciesFile: string -&gt; PackageRequirementSource</div>
 <div class="tip" id="fs12">union case PackageRequirementSource.Package: PackageName * SemVerInfo -&gt; PackageRequirementSource</div>
-<div class="tip" id="fs13">type ResolverStrategy =<br />&#160;&#160;| Max<br />&#160;&#160;| Min<br /><br />Full name: Resolver.ResolverStrategy</div>
+<div class="tip" id="fs13">type ResolverStrategy =<br />&#160;&#160;| Max<br />&#160;&#160;| Min</div>
 <div class="tip" id="fs14">union case ResolverStrategy.Max: ResolverStrategy</div>
 <div class="tip" id="fs15">union case ResolverStrategy.Min: ResolverStrategy</div>
-<div class="tip" id="fs16">type PackageRequirement =<br />&#160;&#160;{Name: PackageName;<br />&#160;&#160;&#160;VersionRequirement: VersionRequirement;<br />&#160;&#160;&#160;ResolverStrategy: ResolverStrategy;<br />&#160;&#160;&#160;Parent: PackageRequirementSource;<br />&#160;&#160;&#160;Sources: PackageSource list;}<br /><br />Full name: Resolver.PackageRequirement</div>
+<div class="tip" id="fs16">type PackageRequirement =<br />&#160;&#160;{Name: PackageName;<br />&#160;&#160;&#160;VersionRequirement: VersionRequirement;<br />&#160;&#160;&#160;ResolverStrategy: ResolverStrategy;<br />&#160;&#160;&#160;Parent: PackageRequirementSource;<br />&#160;&#160;&#160;Sources: PackageSource list;}</div>
 <div class="tip" id="fs17">PackageRequirement.Name: PackageName</div>
-<div class="tip" id="fs18">Multiple items<br />PackageRequirement.VersionRequirement: VersionRequirement<br /><br />--------------------<br />type VersionRequirement = string<br /><br />Full name: Resolver.VersionRequirement</div>
-<div class="tip" id="fs19">Multiple items<br />PackageRequirement.ResolverStrategy: ResolverStrategy<br /><br />--------------------<br />type ResolverStrategy =<br />&#160;&#160;| Max<br />&#160;&#160;| Min<br /><br />Full name: Resolver.ResolverStrategy</div>
+<div class="tip" id="fs18">Multiple items<br />PackageRequirement.VersionRequirement: VersionRequirement<br /><br />--------------------<br />type VersionRequirement = string</div>
+<div class="tip" id="fs19">Multiple items<br />PackageRequirement.ResolverStrategy: ResolverStrategy<br /><br />--------------------<br />type ResolverStrategy =<br />&#160;&#160;| Max<br />&#160;&#160;| Min</div>
 <div class="tip" id="fs20">PackageRequirement.Parent: PackageRequirementSource</div>
 <div class="tip" id="fs21">PackageRequirement.Sources: PackageSource list</div>
-<div class="tip" id="fs22">val selectNextRequirement : xs:Set&lt;PackageRequirement&gt; -&gt; (PackageRequirement * Set&lt;PackageRequirement&gt;) option<br /><br />Full name: Resolver.selectNextRequirement<br /><em><br /><br />&#160;Orders the requirement set with a heuristic and selects the next requirement</em></div>
+<div class="tip" id="fs22">val selectNextRequirement : xs:Set&lt;PackageRequirement&gt; -&gt; (PackageRequirement * Set&lt;PackageRequirement&gt;) option<br /><em><br /><br />&#160;Orders the requirement set with a heuristic and selects the next requirement</em></div>
 <div class="tip" id="fs23">val xs : Set&lt;PackageRequirement&gt;</div>
-<div class="tip" id="fs24">Multiple items<br />module Set<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type Set&lt;&#39;T (requires comparison)&gt; =<br />&#160;&#160;interface IComparable<br />&#160;&#160;interface IEnumerable<br />&#160;&#160;interface IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;interface ICollection&lt;&#39;T&gt;<br />&#160;&#160;new : elements:seq&lt;&#39;T&gt; -&gt; Set&lt;&#39;T&gt;<br />&#160;&#160;member Add : value:&#39;T -&gt; Set&lt;&#39;T&gt;<br />&#160;&#160;member Contains : value:&#39;T -&gt; bool<br />&#160;&#160;override Equals : obj -&gt; bool<br />&#160;&#160;member IsProperSubsetOf : otherSet:Set&lt;&#39;T&gt; -&gt; bool<br />&#160;&#160;member IsProperSupersetOf : otherSet:Set&lt;&#39;T&gt; -&gt; bool<br />&#160;&#160;...<br /><br />Full name: Microsoft.FSharp.Collections.Set&lt;_&gt;<br /><br />--------------------<br />new : elements:seq&lt;&#39;T&gt; -&gt; Set&lt;&#39;T&gt;</div>
+<div class="tip" id="fs24">Multiple items<br />module Set<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type Set&lt;&#39;T (requires comparison)&gt; =<br />&#160;&#160;interface IComparable<br />&#160;&#160;interface IEnumerable<br />&#160;&#160;interface IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;interface ICollection&lt;&#39;T&gt;<br />&#160;&#160;new : elements:seq&lt;&#39;T&gt; -&gt; Set&lt;&#39;T&gt;<br />&#160;&#160;member Add : value:&#39;T -&gt; Set&lt;&#39;T&gt;<br />&#160;&#160;member Contains : value:&#39;T -&gt; bool<br />&#160;&#160;override Equals : obj -&gt; bool<br />&#160;&#160;member IsProperSubsetOf : otherSet:Set&lt;&#39;T&gt; -&gt; bool<br />&#160;&#160;member IsProperSupersetOf : otherSet:Set&lt;&#39;T&gt; -&gt; bool<br />&#160;&#160;...<br /><br />--------------------<br />new : elements:seq&lt;&#39;T&gt; -&gt; Set&lt;&#39;T&gt;</div>
 <div class="tip" id="fs25">union case Option.Some: Value: &#39;T -&gt; Option&lt;&#39;T&gt;</div>
 <div class="tip" id="fs26">module Seq<br /><br />from Microsoft.FSharp.Collections</div>
-<div class="tip" id="fs27">val head : source:seq&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Collections.Seq.head</div>
-<div class="tip" id="fs28">val getAllVersionsFromNuget : x:PackageName -&gt; SemVerInfo list<br /><br />Full name: Resolver.getAllVersionsFromNuget<br /><em><br /><br />&#160;Calls the NuGet API and retrieves all versions for a package</em></div>
+<div class="tip" id="fs27">val head : source:seq&lt;&#39;T&gt; -&gt; &#39;T</div>
+<div class="tip" id="fs28">val getAllVersionsFromNuget : x:PackageName -&gt; SemVerInfo list<br /><em><br /><br />&#160;Calls the NuGet API and retrieves all versions for a package</em></div>
 <div class="tip" id="fs29">val x : PackageName</div>
-<div class="tip" id="fs30">val isInRange : vr:VersionRequirement -&gt; v:SemVerInfo -&gt; bool<br /><br />Full name: Resolver.isInRange<br /><em><br /><br />&#160;Checks if the given version is in the specified version range</em></div>
+<div class="tip" id="fs30">val isInRange : vr:VersionRequirement -&gt; v:SemVerInfo -&gt; bool<br /><em><br /><br />&#160;Checks if the given version is in the specified version range</em></div>
 <div class="tip" id="fs31">val vr : VersionRequirement</div>
 <div class="tip" id="fs32">val v : SemVerInfo</div>
-<div class="tip" id="fs33">type bool = System.Boolean<br /><br />Full name: Microsoft.FSharp.Core.bool</div>
-<div class="tip" id="fs34">val getPackageDetails : name:PackageName * version:SemVerInfo -&gt; ResolvedPackage<br /><br />Full name: Resolver.getPackageDetails</div>
+<div class="tip" id="fs33">type bool = System.Boolean</div>
+<div class="tip" id="fs34">val getPackageDetails : name:PackageName * version:SemVerInfo -&gt; ResolvedPackage</div>
 <div class="tip" id="fs35">val name : PackageName</div>
 <div class="tip" id="fs36">val version : SemVerInfo</div>
 <div class="tip" id="fs37">module Unchecked<br /><br />from Microsoft.FSharp.Core.Operators</div>
-<div class="tip" id="fs38">val defaultof&lt;&#39;T&gt; : &#39;T<br /><br />Full name: Microsoft.FSharp.Core.Operators.Unchecked.defaultof</div>
-<div class="tip" id="fs39">val getSelectedPackageVersion : name:PackageName -&gt; selectedPackageVersions:Set&lt;ResolvedPackage&gt; -&gt; SemVerInfo option<br /><br />Full name: Resolver.getSelectedPackageVersion<br /><em><br /><br />&#160;Looks into the cache if the algorithm already selected that package</em></div>
+<div class="tip" id="fs38">val defaultof&lt;&#39;T&gt; : &#39;T</div>
+<div class="tip" id="fs39">val getSelectedPackageVersion : name:PackageName -&gt; selectedPackageVersions:Set&lt;ResolvedPackage&gt; -&gt; SemVerInfo option<br /><em><br /><br />&#160;Looks into the cache if the algorithm already selected that package</em></div>
 <div class="tip" id="fs40">val selectedPackageVersions : Set&lt;ResolvedPackage&gt;</div>
-<div class="tip" id="fs41">type &#39;T option = Option&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Core.option&lt;_&gt;</div>
+<div class="tip" id="fs41">type &#39;T option = Option&lt;&#39;T&gt;</div>
 <div class="tip" id="fs42">union case Option.None: Option&lt;&#39;T&gt;</div>
-<div class="tip" id="fs43">val addDependenciesToOpenSet : packageDetails:ResolvedPackage * closed:Set&lt;PackageRequirement&gt; * stillOpen:Set&lt;PackageRequirement&gt; -&gt; Set&lt;PackageRequirement&gt;<br /><br />Full name: Resolver.addDependenciesToOpenSet<br /><em><br /><br />&#160;Puts all dependencies of the package into the open set</em></div>
+<div class="tip" id="fs43">val addDependenciesToOpenSet : packageDetails:ResolvedPackage * closed:Set&lt;PackageRequirement&gt; * stillOpen:Set&lt;PackageRequirement&gt; -&gt; Set&lt;PackageRequirement&gt;<br /><em><br /><br />&#160;Puts all dependencies of the package into the open set</em></div>
 <div class="tip" id="fs44">val packageDetails : ResolvedPackage</div>
 <div class="tip" id="fs45">val closed : Set&lt;PackageRequirement&gt;</div>
 <div class="tip" id="fs46">val stillOpen : Set&lt;PackageRequirement&gt;</div>
-<div class="tip" id="fs47">val empty&lt;&#39;T (requires comparison)&gt; : Set&lt;&#39;T&gt; (requires comparison)<br /><br />Full name: Microsoft.FSharp.Collections.Set.empty</div>
-<div class="tip" id="fs48">type Resolution =<br />&#160;&#160;| Ok of Set&lt;ResolvedPackage&gt;<br />&#160;&#160;| Conflict of Set&lt;PackageRequirement&gt;<br /><br />Full name: Resolver.Resolution</div>
+<div class="tip" id="fs47">val empty&lt;&#39;T (requires comparison)&gt; : Set&lt;&#39;T&gt; (requires comparison)</div>
+<div class="tip" id="fs48">type Resolution =<br />&#160;&#160;| Ok of Set&lt;ResolvedPackage&gt;<br />&#160;&#160;| Conflict of Set&lt;PackageRequirement&gt;</div>
 <div class="tip" id="fs49">union case Resolution.Ok: Set&lt;ResolvedPackage&gt; -&gt; Resolution</div>
 <div class="tip" id="fs50">union case Resolution.Conflict: Set&lt;PackageRequirement&gt; -&gt; Resolution</div>
-<div class="tip" id="fs51">val step : selectedPackageVersions:Set&lt;ResolvedPackage&gt; * closedRequirements:Set&lt;PackageRequirement&gt; * openRequirements:Set&lt;PackageRequirement&gt; -&gt; Resolution<br /><br />Full name: Resolver.step</div>
+<div class="tip" id="fs51">val step : selectedPackageVersions:Set&lt;ResolvedPackage&gt; * closedRequirements:Set&lt;PackageRequirement&gt; * openRequirements:Set&lt;PackageRequirement&gt; -&gt; Resolution</div>
 <div class="tip" id="fs52">val closedRequirements : Set&lt;PackageRequirement&gt;</div>
 <div class="tip" id="fs53">val openRequirements : Set&lt;PackageRequirement&gt;</div>
 <div class="tip" id="fs54">val currentRequirement : PackageRequirement</div>
 <div class="tip" id="fs55">val availableVersions : SemVerInfo list</div>
 <div class="tip" id="fs56">val compatibleVersions : SemVerInfo list</div>
-<div class="tip" id="fs57">Multiple items<br />module List<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type List&lt;&#39;T&gt; =<br />&#160;&#160;| ( [] )<br />&#160;&#160;| ( :: ) of Head: &#39;T * Tail: &#39;T list<br />&#160;&#160;&#160;&#160;interface IEnumerable<br />&#160;&#160;&#160;&#160;interface IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;member GetSlice : startIndex:int option * endIndex:int option -&gt; &#39;T list<br />&#160;&#160;&#160;&#160;member Head : &#39;T<br />&#160;&#160;&#160;&#160;member IsEmpty : bool<br />&#160;&#160;&#160;&#160;member Item : index:int -&gt; &#39;T with get<br />&#160;&#160;&#160;&#160;member Length : int<br />&#160;&#160;&#160;&#160;member Tail : &#39;T list<br />&#160;&#160;&#160;&#160;static member Cons : head:&#39;T * tail:&#39;T list -&gt; &#39;T list<br />&#160;&#160;&#160;&#160;static member Empty : &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List&lt;_&gt;</div>
-<div class="tip" id="fs58">val filter : predicate:(&#39;T -&gt; bool) -&gt; list:&#39;T list -&gt; &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List.filter</div>
+<div class="tip" id="fs57">Multiple items<br />module List<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type List&lt;&#39;T&gt; =<br />&#160;&#160;| ( [] )<br />&#160;&#160;| ( :: ) of Head: &#39;T * Tail: &#39;T list<br />&#160;&#160;&#160;&#160;interface IEnumerable<br />&#160;&#160;&#160;&#160;interface IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;member GetSlice : startIndex:int option * endIndex:int option -&gt; &#39;T list<br />&#160;&#160;&#160;&#160;member Head : &#39;T<br />&#160;&#160;&#160;&#160;member IsEmpty : bool<br />&#160;&#160;&#160;&#160;member Item : index:int -&gt; &#39;T with get<br />&#160;&#160;&#160;&#160;member Length : int<br />&#160;&#160;&#160;&#160;member Tail : &#39;T list<br />&#160;&#160;&#160;&#160;static member Cons : head:&#39;T * tail:&#39;T list -&gt; &#39;T list<br />&#160;&#160;&#160;&#160;static member Empty : &#39;T list</div>
+<div class="tip" id="fs58">val filter : predicate:(&#39;T -&gt; bool) -&gt; list:&#39;T list -&gt; &#39;T list</div>
 <div class="tip" id="fs59">PackageRequirement.VersionRequirement: VersionRequirement</div>
 <div class="tip" id="fs60">val sortedVersions : SemVerInfo list</div>
 <div class="tip" id="fs61">PackageRequirement.ResolverStrategy: ResolverStrategy</div>
-<div class="tip" id="fs62">val sort : list:&#39;T list -&gt; &#39;T list (requires comparison)<br /><br />Full name: Microsoft.FSharp.Collections.List.sort</div>
-<div class="tip" id="fs63">val rev : list:&#39;T list -&gt; &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List.rev</div>
+<div class="tip" id="fs62">val sort : list:&#39;T list -&gt; &#39;T list (requires comparison)</div>
+<div class="tip" id="fs63">val rev : list:&#39;T list -&gt; &#39;T list</div>
 <div class="tip" id="fs64">val mutable conflictState : Resolution</div>
 <div class="tip" id="fs65">val versionToExplore : SemVerInfo</div>
-<div class="tip" id="fs66">val add : value:&#39;T -&gt; set:Set&lt;&#39;T&gt; -&gt; Set&lt;&#39;T&gt; (requires comparison)<br /><br />Full name: Microsoft.FSharp.Collections.Set.add</div>
+<div class="tip" id="fs66">val add : value:&#39;T -&gt; set:Set&lt;&#39;T&gt; -&gt; Set&lt;&#39;T&gt; (requires comparison)</div>
 
         </div>
         <div class="span3">
@@ -447,6 +447,7 @@ by D. King and J. Launchbury (<a href="http://galois.com/wp-content/uploads/2014
             <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
+            <li><a href="./paket-restriction.html">paket restriction</a></li>
           </ul>
         </div>
       </div>

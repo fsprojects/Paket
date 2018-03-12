@@ -240,7 +240,7 @@ project output to the package for inter-project dependencies that don't have a
 <ol>
 <li>
 It recursively iterates referenced projects and adds their project output to
-the package
+the package (as long as the working directory contains the other projects).
 </li>
 <li>
 When combined with the <a href="#Symbol-Packages">symbols switch</a>, it
@@ -351,6 +351,7 @@ localized satellite assemblies are included in the package created.</p>
             <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
+            <li><a href="./paket-restriction.html">paket restriction</a></li>
           </ul>
         </div>
       </div>
