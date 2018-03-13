@@ -864,7 +864,8 @@ let main() =
     | _ ->
         let parser = ArgumentParser.Create<Command>(programName = "paket",
                                                     helpTextMessage = sprintf "Paket version %s%sHelp was requested:" paketVersion Environment.NewLine,
-                                                    errorHandler = new PaketExiter())
+                                                    errorHandler = new PaketExiter(),
+                                                    checkStructure = false)
 
         let results = parser.ParseCommandLine(raiseOnUsage = true)
         let silent = results.Contains <@ Silent @>
