@@ -1,3 +1,7 @@
+#### 5.150.0 - 2018-03-13
+* PERFORMANCE: Using latest optimized Argu - https://github.com/fsprojects/Paket/pull/3112
+* PERFORMANCE: Fixed the optimization that bypasses Argu - https://github.com/fsprojects/Paket/pull/3113
+
 #### 5.149.0 - 2018-03-12
 * BUGFIX: Edge case in resolver fixed where Paket downgraded a direct dependency - https://github.com/fsprojects/Paket/issues/3103
 
