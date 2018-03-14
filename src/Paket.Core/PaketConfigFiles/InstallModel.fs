@@ -781,16 +781,13 @@ module InstallModel =
         { this with TargetsFileFolders = targetsFileFolders }
             |> addItem targetsFiles getMsbuildFile (addTargetsFile) (fun i -> i.TargetsFileFolders)
 
-
-    let filterReferences (references:string Set) (this:InstallModel) =
+            
+    let filterNonFrameworkReferences (references:string Set) (this:InstallModel) =
         this
-        // HACK: workaround for https://github.com/fsprojects/Paket/issues/2811
-        //  * DO remove FW-References which are already referenced by the user
-        //  * DO NOT remove package references, where the user already has a reference
-        // Example where this is relevant:
-        // 1) Pre-existing reference to the FW-Assembly System.IO.Compression
-        // 2) user adds nuget package https://www.nuget.org/packages/System.IO.Compression/
-        //|> mapCompileLibReferences (Set.filter (fun reference -> Set.contains reference.Name references |> not))
+        |> mapCompileLibReferences (Set.filter (fun reference -> Set.contains reference.Name references |> not))
+
+    let filterFrameworkReferences (references:string Set) (this:InstallModel) =
+        this
         |> mapCompileLibFrameworkReferences (Set.filter (fun reference -> Set.contains reference.Name references |> not))
 
     let addLicense url (model: InstallModel) =
@@ -926,7 +923,9 @@ type InstallModel with
 
     member this.FilterExcludes excludes = InstallModel.filterExcludes excludes this
 
-    member this.FilterReferences(references) = InstallModel.filterReferences references this
+    member this.FilterNonFrameworkReferences(references) = InstallModel.filterNonFrameworkReferences references this
+
+    member this.FilterFrameworkReferences(references) = InstallModel.filterFrameworkReferences references this
 
     member this.ApplyFrameworkRestrictions restrictions = InstallModel.applyFrameworkRestrictions restrictions this
 
