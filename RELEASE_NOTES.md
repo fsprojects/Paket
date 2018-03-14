@@ -1,4 +1,5 @@
-#### 5.150.1 - 2018-03-14
+#### 5.151.0 - 2018-03-14
+* USABILITY: Add duplicated references and let compiler warn about it - https://github.com/fsprojects/Paket/pull/3107
 * BUGFIX: Working around parallel restore issues with dotnet sdk 2.1.100-preview - https://github.com/fsprojects/Paket/pull/3115
 
 #### 5.150.0 - 2018-03-13
