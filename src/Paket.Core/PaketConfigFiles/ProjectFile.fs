@@ -728,8 +728,14 @@ module ProjectFile =
             getCustomReferenceAndFrameworkNodes project
             |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
             |> Set.ofList
+            
+        // workaround for https://github.com/fsprojects/Paket/issues/2811
+        //  * DO remove FW-References which are already referenced by the user
+        //  * DO NOT remove package references, where the user already has a reference
 
-        let model = model.FilterReferences references
+        //let model = model.FilterNonFrameworkReferences references
+        let model = model.FilterFrameworkReferences references
+
         let createItemGroup (targets:TargetProfile Set) (frameworkReferences:FrameworkReference list) (libraries:Library list) = 
             let itemGroup = createNode "ItemGroup" project
 

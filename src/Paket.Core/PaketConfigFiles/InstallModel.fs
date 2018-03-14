@@ -781,10 +781,13 @@ module InstallModel =
         { this with TargetsFileFolders = targetsFileFolders }
             |> addItem targetsFiles getMsbuildFile (addTargetsFile) (fun i -> i.TargetsFileFolders)
 
-
-    let filterReferences (references:string Set) (this:InstallModel) =
+            
+    let filterNonFrameworkReferences (references:string Set) (this:InstallModel) =
         this
         |> mapCompileLibReferences (Set.filter (fun reference -> Set.contains reference.Name references |> not))
+
+    let filterFrameworkReferences (references:string Set) (this:InstallModel) =
+        this
         |> mapCompileLibFrameworkReferences (Set.filter (fun reference -> Set.contains reference.Name references |> not))
 
     let addLicense url (model: InstallModel) =
@@ -920,7 +923,9 @@ type InstallModel with
 
     member this.FilterExcludes excludes = InstallModel.filterExcludes excludes this
 
-    member this.FilterReferences(references) = InstallModel.filterReferences references this
+    member this.FilterNonFrameworkReferences(references) = InstallModel.filterNonFrameworkReferences references this
+
+    member this.FilterFrameworkReferences(references) = InstallModel.filterFrameworkReferences references this
 
     member this.ApplyFrameworkRestrictions restrictions = InstallModel.applyFrameworkRestrictions restrictions this
 
