@@ -17,7 +17,7 @@ This will use the bootstrapper in [magic mode](https://fsprojects.github.io/Pake
 ### Windows
 
 1) Open powershell and navigate to your project directory.
-2) Execute ``[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri "https://get-paket.azurewebsites.net/api/bootstrapper" -OutFile ".\paket.exe"`` (the first part is required because github disabled support for older ssl versions)
+2) Execute ``[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri "https://get-paket.azurewebsites.net/api/bootstrapper" -OutFile ".\paket.exe"`` (the first part is required because [github disabled support for older ssl versions](https://blog.github.com/2018-02-23-weak-cryptographic-standards-removed/))
 3) Run either ``.\paket init`` or ``.\paket convert-from-nuget``, depending on whether you already have an existing project.
 
 ### Linux
