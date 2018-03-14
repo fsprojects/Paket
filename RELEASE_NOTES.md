@@ -1,3 +1,14 @@
+#### 5.151.1 - 2018-03-14
+* USABILITY: Add duplicated references and let compiler warn about it - https://github.com/fsprojects/Paket/pull/3107
+* BUGFIX: Working around parallel restore issues with dotnet sdk 2.1.100-preview - https://github.com/fsprojects/Paket/pull/3115
+
+#### 5.150.0 - 2018-03-13
+* PERFORMANCE: Using latest optimized Argu - https://github.com/fsprojects/Paket/pull/3112
+* PERFORMANCE: Fixed the optimization that bypasses Argu - https://github.com/fsprojects/Paket/pull/3113
+
+#### 5.149.0 - 2018-03-12
+* BUGFIX: Edge case in resolver fixed where Paket downgraded a direct dependency - https://github.com/fsprojects/Paket/issues/3103
+
 #### 5.148.0 - 2018-03-01
 * New command to add GitHub sources in PublicAPI and CLI - https://github.com/fsprojects/Paket/pull/3023
 

@@ -667,7 +667,7 @@ with
         member this.Usage =
             match this with
             | Add _ -> "add a new dependency"
-            | Github _ -> "commands to manipulate gihub repository references"
+            | Github _ -> "commands to manipulate GitHub repository references"
             | ClearCache _ -> "clear the NuGet and git cache directories"
             | Config _ -> "store global configuration values like NuGet credentials"
             | ConvertFromNuget _ -> "convert projects from NuGet to Paket"
@@ -700,7 +700,7 @@ with
             | Version -> "show Paket version"
             | From_Bootstrapper -> "call coming from the '--run' feature of the bootstrapper"
 
-let commandParser = ArgumentParser.Create<Command>(programName = "paket", errorHandler = new ProcessExiter())
+let commandParser = ArgumentParser.Create<Command>(programName = "paket", errorHandler = new ProcessExiter(), checkStructure = false)
 
 let markdown (subParser : ArgumentParser) (width : int) (additionalText : string) =
     let ensureLineBreak (text : string) = if String.IsNullOrEmpty(text) then text else text + Environment.NewLine + Environment.NewLine
@@ -721,9 +721,9 @@ let markdown (subParser : ArgumentParser) (width : int) (additionalText : string
 
     System.Text.StringBuilder()
         .Append("# paket ")
-        .AppendLine(parentMetadata.Name)
+        .AppendLine(parentMetadata.Name.Value)
         .AppendLine()
-        .AppendLine(parentMetadata.Description |> makeSentence)
+        .AppendLine(parentMetadata.Description.Value |> makeSentence)
         .AppendLine()
         .AppendLine("```sh")
         .AppendLine(syntax)

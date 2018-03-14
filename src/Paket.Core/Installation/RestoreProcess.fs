@@ -167,6 +167,35 @@ let findAllReferencesFiles root =
 let copiedElements = ref false
 
 type private MyAssemblyFinder () = class end
+
+let saveToFile newContent (targetFile:FileInfo) =
+    let rec loop trials =
+        try
+            let oldContent = 
+                if targetFile.Exists then
+                    File.ReadAllText targetFile.FullName
+                else
+                    ""
+            if newContent <> oldContent then
+                if verbose then
+                    tracefn " - %s created" targetFile.FullName
+
+                File.WriteAllText(targetFile.FullName,newContent)
+            else
+                if verbose then
+                    tracefn " - %s already up-to-date" targetFile.FullName
+            targetFile.FullName
+        with
+        | _ when trials > 0 ->
+            System.Threading.Thread.Sleep(100)
+            loop (trials - 1)
+    
+    if not targetFile.Directory.Exists then
+        targetFile.Directory.Create()
+
+    loop 4
+
+
 let extractElement root name =
     let a = typeof<MyAssemblyFinder>.GetTypeInfo().Assembly
     let s = a.GetManifestResourceStream name
@@ -180,14 +209,7 @@ let extractElement root name =
     s.Seek(int64 0, SeekOrigin.Begin) |> ignore
     s.Flush()
     let newContent = sr.ReadToEnd()
-    let oldContent = 
-        if targetFile.Exists then
-            File.ReadAllText targetFile.FullName
-        else
-            ""
-    if newContent <> oldContent then
-        File.WriteAllText(targetFile.FullName,newContent)
-    targetFile.FullName
+    saveToFile newContent targetFile
 
 let extractRestoreTargets root =
     if !copiedElements then
@@ -229,10 +251,7 @@ let createAlternativeNuGetConfig (projectFile:FileInfo) =
   </disabledPackageSources>
 </configuration>"""
 
-    if not alternativeConfigFileInfo.Exists || File.ReadAllText(alternativeConfigFileInfo.FullName) <> config then 
-        File.WriteAllText(alternativeConfigFileInfo.FullName,config) 
-        if verbose then
-            tracefn " - %s created" alternativeConfigFileInfo.FullName
+    saveToFile config alternativeConfigFileInfo |> ignore
 
 let createPaketPropsFile (cliTools:ResolvedPackage seq) restoreSuccess (fileInfo:FileInfo) =
     let cliParts =
@@ -259,14 +278,8 @@ let createPaketPropsFile (cliTools:ResolvedPackage seq) restoreSuccess (fileInfo
              else 
                 "<RestoreSuccess>False</RestoreSuccess>")
             cliParts
-
-    if not fileInfo.Exists || File.ReadAllText(fileInfo.FullName) <> content then 
-        File.WriteAllText(fileInfo.FullName,content)
-        if verbose then
-            tracefn " - %s created" fileInfo.FullName
-    else
-        if verbose then
-            tracefn " - %s already up-to-date" fileInfo.FullName
+    
+    saveToFile content fileInfo |> ignore
 
 let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
     if Seq.isEmpty cliTools then
@@ -281,13 +294,7 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
             
         let content = String.Join(Environment.NewLine,cliParts)
 
-        if not fileInfo.Exists || File.ReadAllText(fileInfo.FullName) <> content then 
-            File.WriteAllText(fileInfo.FullName,content)
-            if verbose then
-                tracefn " - %s created" fileInfo.FullName
-        else
-            if verbose then
-                tracefn " - %s already up-to-date" fileInfo.FullName
+        saveToFile content fileInfo |> ignore
 
 let ImplicitPackages = [PackageName "NETStandard.Library"]  |> Set.ofList
 
@@ -359,19 +366,10 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
 
         let output = String.Join(Environment.NewLine,list)
         let newFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + "." + originalTargetProfileString + ".paket.resolved"))
-        if not newFileName.Directory.Exists then
-            newFileName.Directory.Create()
-
-        elif not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
-            if not (File.Exists(oldReferencesFile.FullName)) || targetProfile = TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6) then
-                // compat with old targets and fable - always write but prefer netstandard16.
-                File.WriteAllText(oldReferencesFile.FullName,output)
-            File.WriteAllText(newFileName.FullName,output)
-            if verbose then
-                tracefn " - %s created" newFileName.FullName
-        else
-            if verbose then
-                tracefn " - %s already up-to-date" newFileName.FullName
+        saveToFile output newFileName |> ignore
+        
+        if not (File.Exists(oldReferencesFile.FullName)) || targetProfile = TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6) then
+            saveToFile output oldReferencesFile |> ignore // compat with old targets and fable - always write but prefer netstandard16.
 
     let cliTools = System.Collections.Generic.List<_>()
     for kv in groups do
