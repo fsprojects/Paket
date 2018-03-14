@@ -1,3 +1,6 @@
+#### 5.151.3 - 2018-03-14
+* REVERT: Add duplicated references and let compiler warn about it - https://github.com/fsprojects/Paket/pull/3107
+
 #### 5.151.2 - 2018-03-14
 * REVERT: Working around parallel restore issues with dotnet sdk 2.1.100-preview - https://github.com/fsprojects/Paket/pull/3115
 
