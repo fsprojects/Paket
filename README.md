@@ -8,6 +8,29 @@
 
 A dependency manager for .NET with support for NuGet packages and git repositories.
 
+## Getting started
+
+Detailed "Getting started" guide: https://fsprojects.github.io/Paket/getting-started.html
+
+This will use the bootstrapper in [magic mode](https://fsprojects.github.io/Paket/bootstrapper.html#Magic-mode):
+
+### Windows
+
+1) Open powershell and navigate to your project directory.
+2) Execute ``[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri "https://get-paket.azurewebsites.net/api/bootstrapper" -OutFile ".\paket.exe"`` (the first part is required because github disabled support for older ssl versions)
+3) Run either ``.\paket init`` or ``.\paket convert-from-nuget``, depending on whether you already have an existing project.
+
+### Linux
+
+1) Open a terminal and navigate to your project directory.
+2) Execute ``wget ‐‐output-document=paket.exe https://get-paket.azurewebsites.net/api/bootstrapper``
+3) Run either ``mono paket init`` or ``mono paket convert-from-nuget``, depending on whether you already have an existing project.
+
+### Manual
+
+The latest paket.exe can be downloaded from https://get-paket.azurewebsites.net/api/paket.  
+The latest paket.bootstrapper.exe can be downloaded from https://get-paket.azurewebsites.net/api/bootstrapper.
+
 ## Why Paket?
 
 NuGet does not separate out the concept of transitive dependencies.
