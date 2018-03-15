@@ -463,8 +463,8 @@ let RunInLockedAccessMode(rootFolder,action) =
                             if startTime + timeOut <= DateTime.Now then
                                 failwith "timeout"
                             else
-                                if counter % 50 = 0 then
-                                    tracefn "packages folder is locked by paket.exe (PID = %s). Waiting..." content
+                                if counter % 100 = 0 then
+                                    tracefn "%s is locked by paket.exe (PID = %s). Waiting..." fileName content
                                 Thread.Sleep 100
                                 waitForUnlocked (counter + 1)
 

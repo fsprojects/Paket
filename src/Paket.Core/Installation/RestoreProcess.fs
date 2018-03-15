@@ -167,6 +167,38 @@ let findAllReferencesFiles root =
 let copiedElements = ref false
 
 type private MyAssemblyFinder () = class end
+
+let saveToFile newContent (targetFile:FileInfo) =
+    let rec loop trials =
+        try
+            if not targetFile.Directory.Exists then
+                targetFile.Directory.Create()
+
+            let oldContent =
+                if targetFile.Exists then
+                    File.ReadAllText targetFile.FullName
+                else
+                    ""
+
+            if newContent <> oldContent then
+                if verbose then
+                    tracefn " - %s created" targetFile.FullName
+
+                File.WriteAllText(targetFile.FullName,newContent)
+            else
+                if verbose then
+                    tracefn " - %s already up-to-date" targetFile.FullName
+
+            targetFile.FullName
+        with
+        | exn when trials > 0 ->
+            if verbose then
+                tracefn "Failed to save file %s. Retry. Message: %s" targetFile.FullName exn.Message
+            System.Threading.Thread.Sleep(100)
+            loop (trials - 1)
+    
+    loop 5
+
 let extractElement root name =
     let a = typeof<MyAssemblyFinder>.GetTypeInfo().Assembly
     let s = a.GetManifestResourceStream name
@@ -180,14 +212,8 @@ let extractElement root name =
     s.Seek(int64 0, SeekOrigin.Begin) |> ignore
     s.Flush()
     let newContent = sr.ReadToEnd()
-    let oldContent = 
-        if targetFile.Exists then
-            File.ReadAllText targetFile.FullName
-        else
-            ""
-    if newContent <> oldContent then
-        File.WriteAllText(targetFile.FullName,newContent)
-    targetFile.FullName
+
+    saveToFile newContent targetFile
 
 let extractRestoreTargets root =
     if !copiedElements then
@@ -216,8 +242,6 @@ let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches,
 
 let createAlternativeNuGetConfig (projectFile:FileInfo) =
     let alternativeConfigFileInfo = FileInfo(Path.Combine(projectFile.Directory.FullName,"obj",projectFile.Name + ".NuGet.Config"))
-    if not alternativeConfigFileInfo.Directory.Exists then
-        alternativeConfigFileInfo.Directory.Create()
     
     let config = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
@@ -229,10 +253,7 @@ let createAlternativeNuGetConfig (projectFile:FileInfo) =
   </disabledPackageSources>
 </configuration>"""
 
-    if not alternativeConfigFileInfo.Exists || File.ReadAllText(alternativeConfigFileInfo.FullName) <> config then 
-        File.WriteAllText(alternativeConfigFileInfo.FullName,config) 
-        if verbose then
-            tracefn " - %s created" alternativeConfigFileInfo.FullName
+    saveToFile config alternativeConfigFileInfo |> ignore
 
 let createPaketPropsFile (cliTools:ResolvedPackage seq) restoreSuccess (fileInfo:FileInfo) =
     let cliParts =
@@ -260,13 +281,7 @@ let createPaketPropsFile (cliTools:ResolvedPackage seq) restoreSuccess (fileInfo
                 "<RestoreSuccess>False</RestoreSuccess>")
             cliParts
 
-    if not fileInfo.Exists || File.ReadAllText(fileInfo.FullName) <> content then 
-        File.WriteAllText(fileInfo.FullName,content)
-        if verbose then
-            tracefn " - %s created" fileInfo.FullName
-    else
-        if verbose then
-            tracefn " - %s already up-to-date" fileInfo.FullName
+    saveToFile content fileInfo |> ignore
 
 let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
     if Seq.isEmpty cliTools then
@@ -281,13 +296,7 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
             
         let content = String.Join(Environment.NewLine,cliParts)
 
-        if not fileInfo.Exists || File.ReadAllText(fileInfo.FullName) <> content then 
-            File.WriteAllText(fileInfo.FullName,content)
-            if verbose then
-                tracefn " - %s created" fileInfo.FullName
-        else
-            if verbose then
-                tracefn " - %s already up-to-date" fileInfo.FullName
+        saveToFile content fileInfo |> ignore
 
 let ImplicitPackages = [PackageName "NETStandard.Library"]  |> Set.ofList
 
@@ -320,7 +329,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
 
     // fable 1.0 compat
     let oldReferencesFile = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".references"))
-    if oldReferencesFile.Exists then oldReferencesFile.Delete()
+    if oldReferencesFile.Exists then try oldReferencesFile.Delete() with | _ -> ()
 
     for originalTargetProfileString, targetProfile in targets do
         let list = System.Collections.Generic.List<_>()
@@ -359,19 +368,29 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
 
         let output = String.Join(Environment.NewLine,list)
         let newFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + "." + originalTargetProfileString + ".paket.resolved"))
-        if not newFileName.Directory.Exists then
-            newFileName.Directory.Create()
+        let rec loop trials = 
+            try
+                if not newFileName.Directory.Exists then
+                    newFileName.Directory.Create()
 
-        elif not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
-            if not (File.Exists(oldReferencesFile.FullName)) || targetProfile = TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6) then
-                // compat with old targets and fable - always write but prefer netstandard16.
-                File.WriteAllText(oldReferencesFile.FullName,output)
-            File.WriteAllText(newFileName.FullName,output)
-            if verbose then
-                tracefn " - %s created" newFileName.FullName
-        else
-            if verbose then
-                tracefn " - %s already up-to-date" newFileName.FullName
+                if not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
+                    if not (File.Exists(oldReferencesFile.FullName)) || targetProfile = TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6) then
+                        // compat with old targets and fable - always write but prefer netstandard16.
+                        File.WriteAllText(oldReferencesFile.FullName,output)
+                    File.WriteAllText(newFileName.FullName,output)
+                    if verbose then
+                        tracefn " - %s created" newFileName.FullName
+                else
+                    if verbose then
+                        tracefn " - %s already up-to-date" newFileName.FullName
+            with
+            | exn ->
+                if verbose then
+                    tracefn "Failed to save resolved file %s. Retry. Message: %s" newFileName.FullName exn.Message
+                System.Threading.Thread.Sleep(100)
+                loop (trials - 1)
+
+        loop 5
 
     let cliTools = System.Collections.Generic.List<_>()
     for kv in groups do
@@ -385,11 +404,21 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
 
     // Write "cached" file, this way msbuild can check if the references file has changed.
     let paketCachedReferencesFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.references.cached"))
-    if File.Exists (referencesFile.FileName) then
-        File.Copy(referencesFile.FileName, paketCachedReferencesFileName.FullName, true)
-    else
-        // it can happen that the references file doesn't exist if paket doesn't find one in that case we update the cache by deleting it.
-        if paketCachedReferencesFileName.Exists then paketCachedReferencesFileName.Delete()
+    let rec loop trials =
+        try
+            if File.Exists (referencesFile.FileName) then
+                File.Copy(referencesFile.FileName, paketCachedReferencesFileName.FullName, true)
+            else
+                // it can happen that the references file doesn't exist if paket doesn't find one in that case we update the cache by deleting it.
+                if paketCachedReferencesFileName.Exists then paketCachedReferencesFileName.Delete()
+        with
+        | exn ->
+            if verbose then
+                tracefn "Failed to save cached file %s. Retry. Message: %s" paketCachedReferencesFileName.FullName exn.Message
+            System.Threading.Thread.Sleep(100)
+            loop (trials - 1)
+
+    loop 5
 
 let CreateScriptsForGroups (lockFile:LockFile) (groups:Map<GroupName,LockFileGroup>) =
     let groupsToGenerate =
@@ -497,73 +526,72 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
         let resolved = lazy (lockFile.GetGroupedResolution())
 
-        let referencesFileNames =
-            match projectFile with
-            | Some projectFileName ->
-                let projectFile = ProjectFile.LoadFromFile projectFileName
-
-                let referencesFile = RestoreNewSdkProject lockFile resolved groups projectFile
-
-                [referencesFile.FileName]
-            | None ->
-                if referencesFileNames = [] && group = None then
-                    // Restore all projects
-                    let allProjects =
-                        ProjectFile.FindAllProjects root
-                        |> Seq.filter (fun proj -> proj.GetToolsVersion() >= 15.0)
-
-                    for proj in allProjects do
-                        RestoreNewSdkProject lockFile resolved groups proj |> ignore
-
-                referencesFileNames
-
-        let tasks =
-            groups
-            |> Seq.map (fun kv ->
-                let allPackages = 
-                    if List.isEmpty referencesFileNames then 
-                        kv.Value.Resolution
-                        |> Seq.map (fun kv -> kv.Key) 
-                    else
-                        referencesFileNames
-                        |> List.toSeq
-                        |> computePackageHull kv.Key lockFile
-
-                let packages =
-                    allPackages
-                    |> Seq.filter (fun p ->
-                        match targetFilter with
-                        | None -> true
-                        | Some targets ->
-                            let key = kv.Key,p
-                            let resolvedPackage = resolved.Force().[key]
-
-                            match resolvedPackage.Settings.FrameworkRestrictions with
-                            | Requirements.ExplicitRestriction restrictions ->
-                                targets
-                                |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, TargetProfile.SinglePlatform target))
-                            | _ -> true)
- 
-
-                match dependenciesFile.Groups |> Map.tryFind kv.Value.Name with
-                | None ->
-                    failwithf 
-                        "The group %O was found in the %s file but not in the %s file. Please run \"paket install\" again." 
-                        kv.Value
-                        Constants.LockFileName
-                        Constants.DependenciesFileName
-                | Some depFileGroup ->
-                    let packages = Set.ofSeq packages
-                    let overriden = 
-                        packages
-                        |> Set.filter (fun p -> LocalFile.overrides localFile (p,depFileGroup.Name))
-
-                    restore(alternativeProjectRoot, root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages, overriden))
-            |> Seq.toArray
- 
         RunInLockedAccessMode(
             root,
             (fun () ->
+                let referencesFileNames =
+                    match projectFile with
+                    | Some projectFileName ->
+                        let projectFile = ProjectFile.LoadFromFile projectFileName
+                        let referencesFile = RestoreNewSdkProject lockFile resolved groups projectFile
+
+                        [referencesFile.FileName]
+                    | None ->
+                        if referencesFileNames = [] && group = None then
+                            // Restore all projects
+                            let allSDKProjects =
+                                ProjectFile.FindAllProjects root
+                                |> Seq.filter (fun proj -> proj.GetToolsVersion() >= 15.0)
+
+                            for proj in allSDKProjects do
+                                RestoreNewSdkProject lockFile resolved groups proj |> ignore
+
+                        referencesFileNames
+
+                let tasks =
+                    groups
+                    |> Seq.map (fun kv ->
+                        let allPackages = 
+                            if List.isEmpty referencesFileNames then 
+                                kv.Value.Resolution
+                                |> Seq.map (fun kv -> kv.Key) 
+                            else
+                                referencesFileNames
+                                |> List.toSeq
+                                |> computePackageHull kv.Key lockFile
+
+                        let packages =
+                            allPackages
+                            |> Seq.filter (fun p ->
+                                match targetFilter with
+                                | None -> true
+                                | Some targets ->
+                                    let key = kv.Key,p
+                                    let resolvedPackage = resolved.Force().[key]
+
+                                    match resolvedPackage.Settings.FrameworkRestrictions with
+                                    | Requirements.ExplicitRestriction restrictions ->
+                                        targets
+                                        |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, TargetProfile.SinglePlatform target))
+                                    | _ -> true)
+ 
+
+                        match dependenciesFile.Groups |> Map.tryFind kv.Value.Name with
+                        | None ->
+                            failwithf 
+                                "The group %O was found in the %s file but not in the %s file. Please run \"paket install\" again." 
+                                kv.Value
+                                Constants.LockFileName
+                                Constants.DependenciesFileName
+                        | Some depFileGroup ->
+                            let packages = Set.ofSeq packages
+                            let overriden = 
+                                packages
+                                |> Set.filter (fun p -> LocalFile.overrides localFile (p,depFileGroup.Name))
+
+                            restore(alternativeProjectRoot, root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages, overriden))
+                    |> Seq.toArray
+ 
                 for task in tasks do
                     task
                     |> Async.RunSynchronously
