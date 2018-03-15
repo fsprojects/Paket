@@ -1678,11 +1678,12 @@ module ProjectFile =
             |> getDescendants "AutoGenerateBindingRedirects"
             |> List.iter(fun x -> x.InnerText <- "true")
         else
-            project.Document
-            |> getDescendants "PropertyGroup"
-            |> List.head
-            |> fun x -> x.AppendChild (createNodeSet "AutoGenerateBindingRedirects" "true" project)
-            |> ignore
+            let propertyGroups = project.Document |> getDescendants "PropertyGroup"
+            if propertyGroups.IsEmpty |> not then
+                propertyGroups
+                |> List.head
+                |> fun x -> x.AppendChild (createNodeSet "AutoGenerateBindingRedirects" "true" project)
+                |> ignore
 
         save false project
 
