@@ -438,13 +438,12 @@ type PackagesFolderGroupConfig =
     static member Default = DefaultPackagesFolder
 
 
-let RunInLockedAccessMode(rootFolder,action) =
-    let paketFilesFolder = Path.Combine(rootFolder,Constants.PaketFilesFolderName)
-    if Directory.Exists paketFilesFolder |> not then
-        Directory.CreateDirectory paketFilesFolder |> ignore
+let RunInLockedAccessMode(lockedFolder,action) =
+    if Directory.Exists lockedFolder |> not then
+        Directory.CreateDirectory lockedFolder |> ignore
 
     let p = System.Diagnostics.Process.GetCurrentProcess()
-    let fileName = Path.Combine(paketFilesFolder,Constants.AccessLockFileName)
+    let fileName = Path.Combine(lockedFolder,Constants.AccessLockFileName)
 
     // Checks the packagesFolder for a paket.locked file or waits until it get access to it.
     let rec acquireLock (startTime:DateTime) (timeOut:TimeSpan) trials =

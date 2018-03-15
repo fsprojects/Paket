@@ -453,10 +453,16 @@ let FindOrCreateReferencesFile (projectFile:ProjectFile) =
 let RestoreNewSdkProject lockFile resolved groups (projectFile:ProjectFile) =
     let referencesFile = FindOrCreateReferencesFile projectFile
     let projectFileInfo = FileInfo projectFile.FileName
-
-    createAlternativeNuGetConfig projectFileInfo
-    createProjectReferencesFiles lockFile projectFile referencesFile resolved groups
-    referencesFile
+    let objFolder = DirectoryInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj"))
+    
+    RunInLockedAccessMode(
+        objFolder.FullName,
+        (fun () ->
+            createAlternativeNuGetConfig projectFileInfo
+            createProjectReferencesFiles lockFile projectFile referencesFile resolved groups
+            referencesFile
+        )
+   )
 
 let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
@@ -526,28 +532,27 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
         let resolved = lazy (lockFile.GetGroupedResolution())
 
+        let referencesFileNames =
+            match projectFile with
+            | Some projectFileName ->
+                let projectFile = ProjectFile.LoadFromFile projectFileName
+                let referencesFile = RestoreNewSdkProject lockFile resolved groups projectFile
+
+                [referencesFile.FileName]
+            | None ->
+                if referencesFileNames = [] && group = None then
+                    // Restore all projects
+                    let allSDKProjects =
+                        ProjectFile.FindAllProjects root
+                        |> Seq.filter (fun proj -> proj.GetToolsVersion() >= 15.0)
+
+                    for proj in allSDKProjects do
+                        RestoreNewSdkProject lockFile resolved groups proj |> ignore
+                referencesFileNames
+
         RunInLockedAccessMode(
-            root,
+            Path.Combine(root,Constants.PaketFilesFolderName),
             (fun () ->
-                let referencesFileNames =
-                    match projectFile with
-                    | Some projectFileName ->
-                        let projectFile = ProjectFile.LoadFromFile projectFileName
-                        let referencesFile = RestoreNewSdkProject lockFile resolved groups projectFile
-
-                        [referencesFile.FileName]
-                    | None ->
-                        if referencesFileNames = [] && group = None then
-                            // Restore all projects
-                            let allSDKProjects =
-                                ProjectFile.FindAllProjects root
-                                |> Seq.filter (fun proj -> proj.GetToolsVersion() >= 15.0)
-
-                            for proj in allSDKProjects do
-                                RestoreNewSdkProject lockFile resolved groups proj |> ignore
-
-                        referencesFileNames
-
                 let tasks =
                     groups
                     |> Seq.map (fun kv ->
@@ -599,4 +604,5 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
                 CreateScriptsForGroups lockFile groups
                 if isFullRestore then
-                    File.WriteAllText(restoreCacheFile, newContents)))
+                    File.WriteAllText(restoreCacheFile, newContents))
+            )
