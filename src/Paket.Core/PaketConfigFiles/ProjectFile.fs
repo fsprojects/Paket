@@ -1671,6 +1671,21 @@ module ProjectFile =
               Kind = NugetPackageKind.DotnetCliTool
               TargetFramework = None })
 
+    let getAutoGenerateBindingRedirects (project:ProjectFile) = getProperty "AutoGenerateBindingRedirects" project
+    let setOrCreateAutoGenerateBindingRedirects (project:ProjectFile) =
+        if (getAutoGenerateBindingRedirects project).IsSome then
+            project.Document
+            |> getDescendants "AutoGenerateBindingRedirects"
+            |> List.iter(fun x -> x.InnerText <- "true")
+        else
+            project.Document
+            |> getDescendants "PropertyGroup"
+            |> List.head
+            |> fun x -> x.AppendChild (createNodeSet "AutoGenerateBindingRedirects" "true" project)
+            |> ignore
+
+        save false project
+
 type ProjectFile with
 
     member this.GetPropertyWithDefaults propertyName defaultProperties = ProjectFile.getPropertyWithDefaults propertyName defaultProperties this
@@ -1753,7 +1768,11 @@ type ProjectFile with
 
     member this.GetAssemblyName () = ProjectFile.getAssemblyName this
 
-    static member LoadFromStream(fullName:string, stream:Stream) = ProjectFile.loadFromStream fullName stream 
+    member this.GetAutoGenerateBindingRedirects() = ProjectFile.getAutoGenerateBindingRedirects this
+
+    member this.SetOrCreateAutoGenerateBindingRedirects() = ProjectFile.setOrCreateAutoGenerateBindingRedirects this
+
+    static member LoadFromStream(fullName:string, stream:Stream) = ProjectFile.loadFromStream fullName stream
 
     static member LoadFromFile(fileName:string) =  ProjectFile.loadFromFile fileName
 

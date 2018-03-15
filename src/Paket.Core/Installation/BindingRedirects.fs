@@ -123,8 +123,8 @@ let private addConfigFileToProject project =
         project.Save(false))
 
 /// Applies a set of binding redirects to a single configuration file.
-let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLibNames:string seq) bindingRedirects (configFilePath:string) =
-    let config = 
+let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLibNames:string seq) bindingRedirects (projectFile:ProjectFile) (configFilePath:string) =
+    let config =
         try
             XDocument.Load(configFilePath, LoadOptions.PreserveWhitespace)
         with
@@ -166,6 +166,10 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLi
         use f = File.Open(configFilePath, FileMode.Create)
         config.Save(f, SaveOptions.DisableFormatting)
 
+    match projectFile.GetAutoGenerateBindingRedirects() with
+    | Some x when x.ToLower() = "true" -> ignore()
+    | _ -> projectFile.SetOrCreateAutoGenerateBindingRedirects()
+
 /// Applies a set of binding redirects to all .config files in a specific folder.
 let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects rootPath allKnownLibNames bindingRedirects =
     let applyBindingRedirects projectFile =
@@ -180,9 +184,9 @@ let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindin
                 addConfigFileToProject projectFile
                 Some config
             | _ -> None
-        |> Option.iter (applyBindingRedirects isFirstGroup cleanBindingRedirects allKnownLibNames bindingRedirects)
-    
-    let projects = 
+        |> Option.iter (applyBindingRedirects isFirstGroup cleanBindingRedirects allKnownLibNames bindingRedirects projectFile)
+
+    let projects =
         rootPath
         |> getProjectFilesWithPaketReferences Directory.GetFiles
         |> Seq.map ProjectFile.TryLoad
