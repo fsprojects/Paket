@@ -1093,17 +1093,38 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
 
     let loopTime = DateTime.UtcNow
 
-    let rec fuseConflicts stackpack currentRequirement filteredVersions currentConflict priorConflictSteps =
+    let rec fuseConflicts stackpack currentRequirement filteredVersions currentConflict priorConflictSteps conflicts =
         let currentConflict,stackpack = boostConflicts filteredVersions currentRequirement stackpack currentConflict
 
-        match priorConflictSteps with
-        | head :: priorConflictSteps ->
+        let priorConflictSteps = priorConflictSteps |> List.indexed
+
+        let matchingStep =
+            let currentNames =
+                conflicts
+                |> Seq.map (fun c ->
+                    c.Graph
+                    |> Set.map (fun (pr:PackageRequirement) -> pr.Name) 
+                    |> Set.add c.Name)
+                |> Set.unionMany
+
+            priorConflictSteps            
+            |> List.tryExtractOne (fun (_,(_,_,lastRequirement:PackageRequirement,_,_)) ->
+                currentNames |> Set.contains lastRequirement.Name)
+
+        match matchingStep with
+        | None, [] -> currentConflict
+        | (Some (pos,head)), rest ->
+            let priorConflictSteps = priorConflictSteps |> List.takeWhile (fun (i,_) -> i < pos) |> List.map snd
             let (lastConflict, lastStep, lastRequirement, lastCompatibleVersions, lastFlags) = head
             let continueConflict = 
                 { currentConflict with VersionsToExplore = lastConflict.VersionsToExplore }
             step (Inner((continueConflict,lastStep,lastRequirement), priorConflictSteps)) stackpack lastCompatibleVersions lastFlags
-        | [] ->
-            currentConflict
+         // could not find a specific package - go back one step
+        | None, head :: rest ->
+            let (_,(lastConflict, lastStep, lastRequirement, lastCompatibleVersions, lastFlags)) = head
+            let continueConflict = 
+                { currentConflict with VersionsToExplore = lastConflict.VersionsToExplore }        
+            step (Inner((continueConflict,lastStep,lastRequirement), rest |> List.map snd)) stackpack lastCompatibleVersions lastFlags
 
     and step (stage:Stage) (stackpack:StackPack) compatibleVersions (flags:StepFlags) =
     
@@ -1179,7 +1200,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                 GetPackageVersions = getVersionsF }}
 
                 if not (Seq.isEmpty conflicts) then
-                    fuseConflicts stackpack currentRequirement currentStep.FilteredVersions currentConflict priorConflictSteps
+                    fuseConflicts stackpack currentRequirement currentStep.FilteredVersions currentConflict priorConflictSteps conflicts
                 else
                     let getCurrentVersionBlock = fun strategy args -> getVersionsBlock strategy args currentStep
                     let compatibleVersions,globalOverride,tryRelaxed =
@@ -1210,7 +1231,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
         | Outer ((conflictState,currentStep,currentRequirement), priorConflictSteps) ->
             let currentConflict = resolverTimeout conflictState currentStep
             if flags.Ready then
-                fuseConflicts stackpack currentRequirement currentStep.FilteredVersions currentConflict priorConflictSteps
+                fuseConflicts stackpack currentRequirement currentStep.FilteredVersions currentConflict priorConflictSteps (HashSet [ currentRequirement ])
             else
                 let flags = {
                   flags with
