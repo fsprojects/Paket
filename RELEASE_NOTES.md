@@ -1,6 +1,9 @@
 #### 5.152.0-alpha003 - 2018-03-15
 * BUGFIX: Working around parallel restore issues with dotnet sdk 2.1.100-preview  - https://github.com/fsprojects/Paket/pull/3118
 
+#### 5.151.4 - 2018-03-15
+* EMERGENCY: Zero-Diff release to work around defender issue - https://github.com/fsprojects/Paket/issues/3121
+
 #### 5.151.3 - 2018-03-14
 * REVERT: Add duplicated references and let compiler warn about it - https://github.com/fsprojects/Paket/pull/3107
 

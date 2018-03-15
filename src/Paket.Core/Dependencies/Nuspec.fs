@@ -23,7 +23,7 @@ module internal NuSpecParserHelper =
         let name = 
             match node |> getAttribute "id" with
             | Some name -> PackageName name
-            | None -> failwithf "unable to find dependency id in %s" fileName
+            | None -> failwithf "unable to find the dependency id in %s" fileName
         let version = 
             match node |> getAttribute "version" with
             | Some version -> VersionRequirement.Parse version
