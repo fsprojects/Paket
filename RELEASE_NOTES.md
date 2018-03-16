@@ -1,4 +1,4 @@
-#### 5.152.0-alpha003 - 2018-03-15
+#### 5.152.0 - 2018-03-16
 * BUGFIX: Working around parallel restore issues with dotnet sdk 2.1.100-preview  - https://github.com/fsprojects/Paket/pull/3118
 
 #### 5.151.4 - 2018-03-15
