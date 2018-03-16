@@ -1673,17 +1673,13 @@ module ProjectFile =
 
     let getAutoGenerateBindingRedirects (project:ProjectFile) = getProperty "AutoGenerateBindingRedirects" project
     let setOrCreateAutoGenerateBindingRedirects (project:ProjectFile) =
-        if (getAutoGenerateBindingRedirects project).IsSome then
-            project.Document
-            |> getDescendants "AutoGenerateBindingRedirects"
-            |> List.iter(fun x -> x.InnerText <- "true")
-        else
-            let propertyGroups = project.Document |> getDescendants "PropertyGroup"
-            if propertyGroups.IsEmpty |> not then
-                propertyGroups
-                |> List.head
-                |> fun x -> x.AppendChild (createNodeSet "AutoGenerateBindingRedirects" "true" project)
-                |> ignore
+        match getAutoGenerateBindingRedirects project with
+        | Some _ -> project.Document
+                    |> getDescendants "AutoGenerateBindingRedirects"
+                    |> List.iter(fun x -> x.InnerText <- "true")
+        | _ -> match project.Document |> getDescendants "PropertyGroup" with
+               | x :: _ -> x.AppendChild (createNodeSet "AutoGenerateBindingRedirects" "true" project) |> ignore
+               | _ -> ()
 
         save false project
 
