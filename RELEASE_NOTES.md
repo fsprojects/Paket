@@ -1,3 +1,6 @@
+#### 5.153.0 - 2018-03-16
+* Adding AutoGenerateBindingRedirects automatically to project file when BindingRedirects are added to a config - https://github.com/fsprojects/Paket/pull/3120
+
 #### 5.152.0 - 2018-03-16
 * BUGFIX: Working around parallel restore issues with dotnet sdk 2.1.100-preview  - https://github.com/fsprojects/Paket/pull/3118
 
