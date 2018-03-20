@@ -671,6 +671,9 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             list 
             |> Seq.toArray
             |> DependenciesFileParser.parseDependenciesFile fileName false)
+    
+    member this.AddGit(groupName, repository) =
+        this.AddGit(groupName, repository, "")
 
     member this.AddGit(groupName, repository, version) =
         tracefn "Adding %s into group %O" (repository + (if version <> "" then ":" + version else "")) groupName
