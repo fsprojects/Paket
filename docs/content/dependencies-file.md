@@ -203,6 +203,16 @@ nuget jQuery
 The storage option may be overriden by packages. 
 However, the behavior is undefined and may change (please open an issue if you depend on the current behavior or we break you).
 
+```paket
+// make a symlink instead copy the packages.
+storage: symlink
+source https://nuget.org/api/v2
+
+nuget jQuery
+```
+In this mode, paket will use a directory symbolic link (soft) between nuget cache and packages folder.
+Symlink option can save a disk space on CI server.
+
 ### Controlling whether content files should be copied to the project
 
 The `content` option controls the installation of any content files:

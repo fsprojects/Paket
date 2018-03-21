@@ -881,6 +881,7 @@ type InstallSettings =
               | None -> ()
               match this.StorageConfig with
               | Some (PackagesFolderGroupConfig.NoPackagesFolder) -> yield "storage: none"
+              | Some (PackagesFolderGroupConfig.SymbolicLink) -> yield "storage: symlink"
               | Some (PackagesFolderGroupConfig.GivenPackagesFolder s) -> failwithf "Not implemented yet."
               | Some (PackagesFolderGroupConfig.DefaultPackagesFolder) -> yield "storage: packages"
               | None -> ()
@@ -961,6 +962,7 @@ type InstallSettings =
               StorageConfig =
                 match getPair "storage" with
                 | Some "packages" -> Some (PackagesFolderGroupConfig.DefaultPackagesFolder)
+                | Some "symlink" -> Some (PackagesFolderGroupConfig.SymbolicLink)
                 | Some "none" -> Some (PackagesFolderGroupConfig.NoPackagesFolder)
                 | _ -> None
               FrameworkRestrictions =

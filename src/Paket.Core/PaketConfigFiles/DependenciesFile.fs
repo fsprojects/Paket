@@ -217,6 +217,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
     member this.Resolve(force, getSha1, getVersionF, getPreferredVersionF, getPackageDetailsF, getPackageRuntimeGraph, groupsToResolve:Map<GroupName,_>, updateMode) =
         let resolveGroup groupName _ =
             let group = this.GetGroup groupName
+            let storageConfig = group.Options.Settings.StorageConfig
 
             let resolveSourceFile (file:ResolvedSourceFile) : (PackageRequirement list * UnresolvedSource list) =
                 let remoteDependenciesFile =
@@ -272,7 +273,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     let runtimeGraph =
                         resolved
                         |> Map.toSeq |> Seq.map snd
-                        |> Seq.choose (getPackageRuntimeGraph groupName)
+                        |> Seq.choose (getPackageRuntimeGraph storageConfig groupName)
                         |> RuntimeGraph.mergeSeq
                     // now we need to get the runtime deps and add them to the resolution
                     let rids = RuntimeGraph.getKnownRids runtimeGraph
