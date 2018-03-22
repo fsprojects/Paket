@@ -61,20 +61,10 @@ let ``#3127 symlink disabled -> enabled on all dependencies on existing paket.lo
     clearPackageAtVersion "NUnit" "2.6.3"
     
     let scenario = "i003127-storage-symlink"
+    prepare scenario
     let workingDir = scenarioTempPath scenario
-    
     let packagesDir = workingDir </> "packages"
     
-    let paketDependenciesPath = workingDir </> "paket.dependencies"
-
-    paketEx true "install" scenario |> ignore
-
-    paketDependenciesPath |> Paket.DependenciesFile.ReadFromFile |> storageConfig |> shouldEqual (Some PackagesFolderGroupConfig.SymbolicLink)
-    
-    packagesDir </> "NUnit" 
-    |> SymlinkUtils.isDirectoryLink 
-    |> shouldEqual true
-
     let paketDependenciesWithoutConfig = """source https://www.nuget.org/api/v2
 nuget NUnit < 3.0.0"""
     
@@ -83,8 +73,23 @@ nuget NUnit < 3.0.0"""
     |> storageConfig
     |> shouldEqual None
 
-    directPaketEx "update" scenario |> ignore
+    directPaketEx "install" scenario |> ignore
 
     packagesDir </> "NUnit" 
     |> SymlinkUtils.isDirectoryLink 
     |> shouldEqual false
+
+    let paketDependenciesWithConfig = """source https://www.nuget.org/api/v2
+storage: symlink
+nuget NUnit < 3.0.0"""
+    
+    paketDependenciesWithConfig 
+    |> paketDependencies workingDir
+    |> storageConfig
+    |> shouldEqual (Some PackagesFolderGroupConfig.SymbolicLink)
+
+    directPaketEx "update" scenario |> ignore
+
+    packagesDir </> "NUnit" 
+    |> SymlinkUtils.isDirectoryLink 
+    |> shouldEqual true

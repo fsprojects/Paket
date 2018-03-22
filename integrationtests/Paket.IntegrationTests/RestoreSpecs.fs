@@ -40,7 +40,9 @@ let ``#2812 Lowercase package names in package cache: old csproj, packages folde
         |> Directory.GetDirectories 
         |> Array.map Path.GetFileName
         |> shouldEqual [| packageName |]
-    MSBuildRelease "" "Build" [ csprojFile ] |> ignore
+    
+    Fake.MSBuildHelper.MSBuildLoggers <- [] //There is a fsharp.core binding redirect issue on the FakeLib.dll logger
+    MSBuildRelease workingDir "Build" [ csprojFile ] |> ignore
 
 [<Test>]
 let ``#2812 Lowercase package names in package cache: new csproj, packages folder enabled``() =
