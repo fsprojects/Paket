@@ -1,4 +1,4 @@
-#### 5.153.1 - 2018-03-26
+#### 5.153.2 - 2018-03-26
 * BUGFIX: "exclude" now works with new csproj format - https://github.com/fsprojects/Paket/issues/3133
 
 #### 5.153.0 - 2018-03-16
