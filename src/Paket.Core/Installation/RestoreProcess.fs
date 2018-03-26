@@ -335,14 +335,17 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
         let list = System.Collections.Generic.List<_>()
         for kv in groups do
             let hull,_ = hulls.[kv.Key]
-            let allDirectPackages =
+            let excludes,allDirectPackages =
                 match referencesFile.Groups |> Map.tryFind kv.Key with
-                | Some g -> g.NugetPackages |> List.map (fun p -> p.Name) |> Set.ofList
-                | None -> Set.empty
+                | Some g ->
+                    g.NugetPackages |> List.map (fun p -> p.Settings.Excludes) |> Seq.concat |> Seq.map PackageName |> Set.ofSeq,
+                    g.NugetPackages |> List.map (fun p -> p.Name) |> Set.ofList
+                | None -> Set.empty,Set.empty
 
             for (key,_,_) in hull do
                 let resolvedPackage = resolved.Force().[key]
                 let restore =
+                    not (excludes.Contains resolvedPackage.Name) &&
                     not (ImplicitPackages.Contains resolvedPackage.Name) &&
                         match resolvedPackage.Settings.FrameworkRestrictions with
                         | Requirements.ExplicitRestriction restrictions ->

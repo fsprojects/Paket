@@ -1,3 +1,6 @@
+#### 5.153.1 - 2018-03-26
+* BUGFIX: "exclude" now works with new csproj format - https://github.com/fsprojects/Paket/issues/3133
+
 #### 5.153.0 - 2018-03-16
 * Adding AutoGenerateBindingRedirects automatically to project file when BindingRedirects are added to a config - https://github.com/fsprojects/Paket/pull/3120
 
