@@ -211,7 +211,18 @@ source https://nuget.org/api/v2
 nuget jQuery
 ```
 In this mode, paket will use a directory symbolic link (soft) between nuget cache and packages folder.
-Symlink option can save a disk space on CI server.
+Symlink option can save a disk space on CI server. 
+Before setting this option, configure the user rights assignment / create symbolic links and check your security prerequisites : https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/create-symbolic-links
+
+Known issue : "You do not have sufficient privilege to perform this operation"
+- Remove account from Administrators group
+- Configure the create symbolic links (SeCreateSymbolicLinkPrivilege)
+- Check symlink behavior
+
+```bat
+fsutil behavior query SymlinkEvaluation
+```
+Symlink behavior should be set to at least "Local to local symbolic links are enabled" (L2L enabled)
 
 ### Controlling whether content files should be copied to the project
 
