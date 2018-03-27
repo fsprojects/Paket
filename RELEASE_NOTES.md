@@ -1,3 +1,6 @@
+#### 5.153.3 - 2018-03-27
+* BUGFIX: Conditional references in paket.references now work with .NET SDK-style projects - https://github.com/fsprojects/Paket/issues/3091
+
 #### 5.153.2 - 2018-03-26
 * BUGFIX: "exclude" now works with new csproj format - https://github.com/fsprojects/Paket/issues/3133
 

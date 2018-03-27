@@ -870,7 +870,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
             for p,_ in lockRemote.Dependencies do
                 yield PackageInstallSettings.Default(p.ToString())]
 
-    member this.GetOrderedPackageHull(groupName,referencesFile:ReferencesFile) =
+    member this.GetOrderedPackageHull(groupName,referencesFile:ReferencesFile,targetProfileOpt) =
         let usedPackageKeys = HashSet<_>()
         let toVisit = ref Set.empty
         let visited = ref Set.empty
@@ -893,6 +893,16 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                 | ResolvedPackageKind.DotnetCliTool ->
                     cliTools := Set.add package !cliTools
                 | ResolvedPackageKind.Package ->
+                    let restore =
+                        match targetProfileOpt with
+                        | None -> true
+                        | Some targetProfile ->
+                            match p.Settings.FrameworkRestrictions with
+                            | Requirements.ExplicitRestriction restrictions ->
+                                Requirements.isTargetMatchingRestrictions(restrictions, targetProfile)
+                            | _ -> true
+
+                    if not restore then () else
                     if usedPackageKeys.Contains k then
                         failwithf "Package %O is referenced more than once in %s within group %O." p.Name referencesFile.FileName groupName
                 
@@ -927,6 +937,8 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                 |> Set.remove ((groupName,packageName),p,deps)
                 |> Set.map (fun ((g,p),b,c) -> if g = groupName then (g,p),b,Set.filter ((<>) packageName) c else (g,p),b,c)],!cliTools
 
+    member this.GetOrderedPackageHull(groupName,referencesFile:ReferencesFile) =
+        this.GetOrderedPackageHull(groupName,referencesFile,None)
 
     member this.GetPackageHull(groupName,referencesFile:ReferencesFile) =
         let usedPackages = Dictionary<_,_>()

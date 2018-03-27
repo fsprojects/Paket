@@ -302,12 +302,6 @@ let ImplicitPackages = [PackageName "NETStandard.Library"]  |> Set.ofList
 
 let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) (groups:Map<GroupName,LockFileGroup>) =
     let projectFileInfo = FileInfo projectFile.FileName
-    let hulls =
-        groups
-        |> Seq.map (fun kv ->
-            let hull,cliToolsInGroup = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
-            kv.Key, (hull, cliToolsInGroup))
-        |> dict
 
     let targets =
         let monikers =
@@ -334,12 +328,22 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
     for originalTargetProfileString, targetProfile in targets do
         let list = System.Collections.Generic.List<_>()
         for kv in groups do
-            let hull,_ = hulls.[kv.Key]
+            let hull,_ = lockFile.GetOrderedPackageHull(kv.Key,referencesFile,Some targetProfile)
+
             let excludes,allDirectPackages =
                 match referencesFile.Groups |> Map.tryFind kv.Key with
                 | Some g ->
-                    g.NugetPackages |> List.map (fun p -> p.Settings.Excludes) |> Seq.concat |> Seq.map PackageName |> Set.ofSeq,
-                    g.NugetPackages |> List.map (fun p -> p.Name) |> Set.ofList
+                    let excludes = 
+                        g.NugetPackages 
+                        |> List.collect (fun p -> p.Settings.Excludes)
+                        |> Seq.map PackageName 
+                        |> Set.ofSeq
+
+                    let packages = 
+                        g.NugetPackages 
+                        |> List.map (fun p -> p.Name) 
+                        |> Set.ofList
+                    excludes,packages
                 | None -> Set.empty,Set.empty
 
             for (key,_,_) in hull do
@@ -397,7 +401,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
 
     let cliTools = System.Collections.Generic.List<_>()
     for kv in groups do
-        let _,cliToolsInGroup = hulls.[kv.Key]
+        let _,cliToolsInGroup = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
         cliTools.AddRange cliToolsInGroup
 
     let paketCLIToolsFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.clitools"))

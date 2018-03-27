@@ -1115,7 +1115,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                 conflictState.AddError(raise(TimeoutException(message)))
             else conflictState
     
-        match stage with            
+        match stage with
         | Step((conflictState,currentStep,_currentRequirement), priorConflictSteps)  ->
             let currentConflict = resolverTimeout conflictState currentStep
             if Set.isEmpty currentStep.OpenRequirements then

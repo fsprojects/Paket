@@ -730,8 +730,8 @@ type Dependencies(dependenciesFileName: string) =
         let urlWithEndpoint = RemoteUpload.GetUrlWithEndpoint url endPoint
         let envKey =
             match Environment.GetEnvironmentVariable("NUGET_KEY") |> Option.ofObj with
-            | Some(key) ->
-                Some(key)
+            | Some key ->
+                Some key
             | None ->
                 match Environment.GetEnvironmentVariable("nugetkey") |> Option.ofObj with
                 | Some(key) ->
