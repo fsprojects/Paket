@@ -689,7 +689,6 @@ with
             | Add _ -> "add a new dependency"
             | Github _ -> "commands to manipulate GitHub repository references"
             | Git _ -> "commands to manipulate git repository references"
-            | Github _ -> "commands to manipulate GitHub repository references"
             | ClearCache _ -> "clear the NuGet and git cache directories"
             | Config _ -> "store global configuration values like NuGet credentials"
             | ConvertFromNuget _ -> "convert projects from NuGet to Paket"
