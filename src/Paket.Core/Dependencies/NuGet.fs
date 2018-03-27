@@ -806,21 +806,36 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                 | exn -> raise (Exception(sprintf "Could not download %O %O from %s." packageName version !downloadUrl, exn)) }
 
     async {
+        configResolved.Path |> Option.iter SymlinkUtils.delete
+
         do! download true 0
-        if not isLocalOverride then
+
+        match isLocalOverride, configResolved with
+        | true, ResolvedPackagesFolder.NoPackagesFolder -> return failwithf "paket.local in combination with storage:none is not supported (use storage: symlink instead)"
+        | true, ResolvedPackagesFolder.SymbolicLink directory
+        | true, ResolvedPackagesFolder.ResolvedFolder directory ->
+            let! folder = ExtractPackage(targetFile.FullName, directory, packageName, version, detailed)
+            return targetFileName,folder
+        | false, ResolvedPackagesFolder.SymbolicLink folder -> 
+            folder |> Utils.DirectoryInfo |> Utils.deleteDir 
+            ensureDir folder
+
             let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, kind)
-            let! files = NuGetCache.CopyFromCache(configResolved, targetFile.FullName, licenseFileName, packageName, version, force, detailed)
+            
+            SymlinkUtils.makeDirectoryLink folder extractedUserFolder
+
+            let packageFilePath = Path.Combine(extractedUserFolder, NuGetCache.GetPackageFileName packageName version)
+            return packageFilePath, folder
+        | false, otherConfig ->
+            otherConfig.Path |> Option.iter SymlinkUtils.delete
+
+            let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, kind)
+            let! files = NuGetCache.CopyFromCache(otherConfig, targetFile.FullName, licenseFileName, packageName, version, force, detailed)
             let finalFolder =
                 match files with
                 | Some f -> f
                 | None -> extractedUserFolder
             return targetFileName,finalFolder
-        else
-            match configResolved.Path with
-            | None -> return failwithf "paket.local in combination with storage:none is not supported"
-            | Some directory ->
-                let! folder = ExtractPackage(targetFile.FullName, directory, packageName, version, detailed)
-                return targetFileName,folder
     }
     
 

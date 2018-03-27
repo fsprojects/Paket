@@ -203,14 +203,13 @@ module RuntimeGraph =
 
     open System.IO
     /// Downloads the given package into the nuget cache and read its runtime.json.
-    let getRuntimeGraphFromNugetCache root groupName (package:ResolvedPackage) =
-        let config = PackagesFolderGroupConfig.NoPackagesFolder
+    let getRuntimeGraphFromNugetCache root config groupName (package:ResolvedPackage) =
+        let defaultedConfig = config |> Option.defaultValue PackagesFolderGroupConfig.NoPackagesFolder
         // 1. downloading packages into cache
-        let targetFileName, _ =
-            NuGet.DownloadAndExtractPackage (None, root, false, config, package.Source, [], groupName, package.Name, package.Version, package.Kind, false, defaultArg package.Settings.LicenseDownload false, false, false)
+        let _, extractedDir =
+            NuGet.DownloadAndExtractPackage (None, root, false, defaultedConfig, package.Source, [], groupName, package.Name, package.Version, package.Kind, false, defaultArg package.Settings.LicenseDownload false, false, false)
             |> Async.RunSynchronously
 
-        let extractedDir = NuGetCache.ExtractPackageToUserFolder (targetFileName, package.Name, package.Version, package.Kind) |> Async.RunSynchronously
         // 2. Get runtime graph
         try
             let runtime = Path.Combine(extractedDir, "runtime.json")

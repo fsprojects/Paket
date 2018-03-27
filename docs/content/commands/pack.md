@@ -78,7 +78,7 @@ project output to the package for inter-project dependencies that don't have a
 [`paket.template` file][templatefile].
 
 1. It recursively iterates referenced projects and adds their project output to
-   the package
+   the package (as long as the working directory contains the other projects).
 1. When combined with the [symbols switch](#Symbol-Packages), it
    will also include the source code of the referenced projects.  Also
    recursively.

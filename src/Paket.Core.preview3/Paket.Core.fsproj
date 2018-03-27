@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -5,15 +6,15 @@
     <DefineConstants>NO_BOOTSTRAPPER;NO_CONFIGURATIONMANAGER;CUSTOM_WEBPROXY;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.SDK\src\AssemblyReader.fs">
+      <Paket>True</Paket>
+      <Link>AssemblyReader.fs</Link>
+    </Compile>
     <EmbeddedResource Include="$(PaketCoreSourcesDir)\embedded\Paket.Restore.targets">
       <LogicalName>Paket.Restore.targets</LogicalName>
     </EmbeddedResource>
     <Compile Include="$(PaketCoreSourcesDir)\Common\AssemblyInfo.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\CustomAssemblyInfo.fs" />
-    <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.StarterPack\src\AssemblyReader.fs">
-      <Paket>True</Paket>
-      <Link>AssemblyReader.fs</Link>
-    </Compile>
     <Compile Include="..\..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
       <Paket>True</Paket>
       <Link>Globbing.fs</Link>
@@ -27,6 +28,7 @@
     <Compile Include="$(PaketCoreSourcesDir)\Common\Utils.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\Xml.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\ProcessHelper.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Common\SymlinkUtils.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\NetUtils.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\SemVer.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\VersionRange.fs" />
