@@ -39,6 +39,7 @@ module LockFileSerializer =
         | None -> ()
         match options.Settings.StorageConfig with
         | Some (PackagesFolderGroupConfig.NoPackagesFolder) -> yield "STORAGE: NONE"
+        | Some (PackagesFolderGroupConfig.SymbolicLink) -> yield "STORAGE: SYMLINK"
         | Some (PackagesFolderGroupConfig.DefaultPackagesFolder) -> yield "STORAGE: PACKAGES"
         | Some (PackagesFolderGroupConfig.GivenPackagesFolder f) -> failwithf "Not implemented yet."
         | None -> ()
@@ -297,6 +298,7 @@ module LockFileParser =
             let setting =
                 match trimmed.Trim() with
                 | String.EqualsIC "NONE" -> Some PackagesFolderGroupConfig.NoPackagesFolder
+                | String.EqualsIC "SYMLINK" -> Some PackagesFolderGroupConfig.SymbolicLink
                 | String.EqualsIC "PACKAGES" -> Some PackagesFolderGroupConfig.DefaultPackagesFolder
                 | _ -> None
 

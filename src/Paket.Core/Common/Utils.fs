@@ -401,15 +401,18 @@ type ResolvedPackagesFolder =
     /// No "packages" folder for the current package
     | NoPackagesFolder
     /// the /packages/group/ExtractedPackage.X.Y.Z folder
+    | SymbolicLink of string
     | ResolvedFolder of string
     member x.Path =
         match x with
         | NoPackagesFolder -> None
+        | SymbolicLink f
         | ResolvedFolder f -> Some f
 
 type PackagesFolderGroupConfig =
     | NoPackagesFolder
     | GivenPackagesFolder of string
+    | SymbolicLink
     | DefaultPackagesFolder
     member x.ResolveGroupDir root groupName =
         match x with
@@ -417,6 +420,7 @@ type PackagesFolderGroupConfig =
         | GivenPackagesFolder p ->
             // relative to root
             Some p
+        | SymbolicLink
         | DefaultPackagesFolder ->
             let groupDir =
                 if groupName = Constants.MainDependencyGroup then
@@ -425,16 +429,20 @@ type PackagesFolderGroupConfig =
                     Path.Combine(root, Constants.DefaultPackagesFolderName, groupName.CompareString)
             Some groupDir
     member x.Resolve root groupName (packageName:PackageName) version includeVersionInPath  =
+        let parentPath () = 
+            let groupDir = x.ResolveGroupDir root groupName |> Option.get
+            let packageFolder = string packageName + (if includeVersionInPath then "." + string version else "")
+            Path.Combine(groupDir, packageFolder)
+
         match x with
         | NoPackagesFolder -> ResolvedPackagesFolder.NoPackagesFolder
         | GivenPackagesFolder p ->
             // relative to root
             ResolvedPackagesFolder.ResolvedFolder p
+        | SymbolicLink ->
+            parentPath () |> ResolvedPackagesFolder.SymbolicLink
         | DefaultPackagesFolder ->
-            let groupDir = x.ResolveGroupDir root groupName |> Option.get
-            let packageFolder = string packageName + (if includeVersionInPath then "." + string version else "")
-            let parent = Path.Combine(groupDir, packageFolder)
-            ResolvedPackagesFolder.ResolvedFolder parent
+            parentPath () |> ResolvedPackagesFolder.ResolvedFolder
     static member Default = DefaultPackagesFolder
 
 

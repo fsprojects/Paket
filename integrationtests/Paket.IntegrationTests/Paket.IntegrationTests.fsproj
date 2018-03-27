@@ -123,6 +123,7 @@
     <Compile Include="LoadingScriptGenerationTests.fs" />
     <Compile Include="LocalOverrideSpecs.fs" />
     <Compile Include="SimplifierSpecs.fs" />
+    <Compile Include="SymbolicLinkSpecs.fs" />
     <None Include="paket.references" />
     <Content Include="App.config" />
     <Compile Include="AddGithubSpecs.fs" />

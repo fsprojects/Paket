@@ -73,7 +73,7 @@ let VersionsFromGraph (graph : DependencyGraph) (parameters:GetPackageVersionsPa
     versions
     |> async.Return
 
-let GetRuntimeGraphFromGraph (graph : DependencyGraph) groupName (package:ResolvedPackage) =
+let GetRuntimeGraphFromGraph (graph : DependencyGraph) _ _groupName (package:ResolvedPackage) =
     graph
     |> Seq.filter (fun (p, v, _, r) -> (PackageName p) = package.Name && SemVer.Parse v = package.Version)
     |> Seq.map (fun (_, _, _, r) -> r)
@@ -112,7 +112,7 @@ let ResolveWithGraphR(dependenciesFile:DependenciesFile,getSha1,getVersionsF, ge
     dependenciesFile.Resolve(true,getSha1,getVersionsF,(fun _ _ -> []),getPackageDetailsF,getRuntimeGraph,groups,UpdateMode.UpdateAll)
 
 let ResolveWithGraph(dependenciesFile:DependenciesFile,getSha1,getVersionsF, getPackageDetailsF) =
-    ResolveWithGraphR(dependenciesFile,getSha1,getVersionsF, getPackageDetailsF, (fun _ _ -> None))
+    ResolveWithGraphR(dependenciesFile,getSha1,getVersionsF, getPackageDetailsF, (fun _ _ _ -> None))
 
 let getVersion (resolved:ResolvedPackage) = resolved.Version.ToString()
 
