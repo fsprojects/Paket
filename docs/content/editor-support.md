@@ -52,25 +52,6 @@
        width="500">
 </a>
 
-## [Xamarin Studio](https://www.xamarin.com/download)
-
-* [Project site](https://github.com/mrward/monodevelop-paket-addin)
-* Status: In Development
-* Installation: Available via
-  [MonoDevelop Add-In repository](http://addins.monodevelop.com/)
-* Features:
-  * View dependencies and referenced NuGet packages in the Solution window
-  * Execute Paket commands from the Solution window
-  * Syntax highlighting for all Paket files
-  * Code completion whilst editing the [`paket.dependencies` file](dependencies-file.html)
-  * Integrates with Xamarin Studio's unified search
-
-<a href="img/paket-xamarin-studio.png">
-  <img src="img/paket-xamarin-studio.png"
-       alt="Paket in Xamarin Studio"
-       title="Paket in Xamarin Studio"
-       width="500">
-</a>
 
 ## [Visual Studio Code](https://code.visualstudio.com/)
 

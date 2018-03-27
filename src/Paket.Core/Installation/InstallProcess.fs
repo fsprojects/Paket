@@ -39,6 +39,7 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
     let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
     let storageOption = defaultArg settings.StorageConfig PackagesFolderGroupConfig.Default
     match storageOption.Resolve root groupName packageName version includeVersionInPath with
+    | ResolvedPackagesFolder.SymbolicLink targetFolder 
     | ResolvedPackagesFolder.ResolvedFolder targetFolder ->
         let direct = DirectoryInfo targetFolder
         if direct.Exists then

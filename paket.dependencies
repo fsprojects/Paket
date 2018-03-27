@@ -2,12 +2,12 @@ source https://nuget.org/api/v2
 content: none
 
 nuget Newtonsoft.Json redirects: force
-nuget Argu prerelease
+nuget Argu >= 5.1.0
 nuget FSharp.Core redirects: force
 nuget Chessie >= 0.6
 nuget Mono.Cecil prerelease
 
-nuget System.Security.Cryptography.ProtectedData 
+nuget System.Security.Cryptography.ProtectedData
 
 nuget FSharp.Compiler.Tools
 
@@ -23,7 +23,7 @@ nuget NUnit.Console
 nuget NUnit3TestAdapter version_in_path: true
 clitool dotnet-mergenupkg
 
-github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
+github fsharp/FAKE:0341a2e614eb2a7f34607cec914eb0ed83ce9add src/app/FakeLib/Globbing/Globbing.fs
 github fsprojects/FSharp.TypeProviders.SDK:dc5ac01a1ac288eceb1fd6f12a5d388236f4f8e5 src/AssemblyReader.fs
 github forki/FsUnit FsUnit.fs
 
@@ -39,18 +39,18 @@ group Build
   framework >= net461
   source https://nuget.org/api/v2
   source https://ci.appveyor.com/nuget/fsharp-formatting
-  
+
   nuget FAKE
   nuget FSharp.Formatting prerelease
   nuget System.ValueTuple
   nuget Microsoft.AspNet.Razor
   nuget ILRepack
-  
+
   github fsharp/FAKE modules/Octokit/Octokit.fsx
-  
+
   # Note: this package was produced using https://github.com/jaredpar/xcopy-msbuild and contains the two directories ".NETFramework\v4.5" and ".NETPortable\v4.5"
   nuget 0x53A.ReferenceAssemblies.Paket 0.2.0
-  
+
   source https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json
   nuget RoslynTools.MSBuild prerelease
   # Note: RoslynTools.ReferenceAssemblies does not contain the required reference assemblies for net45, so I created 0x53A.ReferenceAssemblies.Paket. It is much smaller, anyway.

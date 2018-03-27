@@ -401,15 +401,18 @@ type ResolvedPackagesFolder =
     /// No "packages" folder for the current package
     | NoPackagesFolder
     /// the /packages/group/ExtractedPackage.X.Y.Z folder
+    | SymbolicLink of string
     | ResolvedFolder of string
     member x.Path =
         match x with
         | NoPackagesFolder -> None
+        | SymbolicLink f
         | ResolvedFolder f -> Some f
 
 type PackagesFolderGroupConfig =
     | NoPackagesFolder
     | GivenPackagesFolder of string
+    | SymbolicLink
     | DefaultPackagesFolder
     member x.ResolveGroupDir root groupName =
         match x with
@@ -417,6 +420,7 @@ type PackagesFolderGroupConfig =
         | GivenPackagesFolder p ->
             // relative to root
             Some p
+        | SymbolicLink
         | DefaultPackagesFolder ->
             let groupDir =
                 if groupName = Constants.MainDependencyGroup then
@@ -425,26 +429,29 @@ type PackagesFolderGroupConfig =
                     Path.Combine(root, Constants.DefaultPackagesFolderName, groupName.CompareString)
             Some groupDir
     member x.Resolve root groupName (packageName:PackageName) version includeVersionInPath  =
+        let parentPath () = 
+            let groupDir = x.ResolveGroupDir root groupName |> Option.get
+            let packageFolder = string packageName + (if includeVersionInPath then "." + string version else "")
+            Path.Combine(groupDir, packageFolder)
+
         match x with
         | NoPackagesFolder -> ResolvedPackagesFolder.NoPackagesFolder
         | GivenPackagesFolder p ->
             // relative to root
             ResolvedPackagesFolder.ResolvedFolder p
+        | SymbolicLink ->
+            parentPath () |> ResolvedPackagesFolder.SymbolicLink
         | DefaultPackagesFolder ->
-            let groupDir = x.ResolveGroupDir root groupName |> Option.get
-            let packageFolder = string packageName + (if includeVersionInPath then "." + string version else "")
-            let parent = Path.Combine(groupDir, packageFolder)
-            ResolvedPackagesFolder.ResolvedFolder parent
+            parentPath () |> ResolvedPackagesFolder.ResolvedFolder
     static member Default = DefaultPackagesFolder
 
 
-let RunInLockedAccessMode(rootFolder,action) =
-    let paketFilesFolder = Path.Combine(rootFolder,Constants.PaketFilesFolderName)
-    if Directory.Exists paketFilesFolder |> not then
-        Directory.CreateDirectory paketFilesFolder |> ignore
+let RunInLockedAccessMode(lockedFolder,action) =
+    if Directory.Exists lockedFolder |> not then
+        Directory.CreateDirectory lockedFolder |> ignore
 
     let p = System.Diagnostics.Process.GetCurrentProcess()
-    let fileName = Path.Combine(paketFilesFolder,Constants.AccessLockFileName)
+    let fileName = Path.Combine(lockedFolder,Constants.AccessLockFileName)
 
     // Checks the packagesFolder for a paket.locked file or waits until it get access to it.
     let rec acquireLock (startTime:DateTime) (timeOut:TimeSpan) trials =
@@ -463,8 +470,8 @@ let RunInLockedAccessMode(rootFolder,action) =
                             if startTime + timeOut <= DateTime.Now then
                                 failwith "timeout"
                             else
-                                if counter % 50 = 0 then
-                                    tracefn "packages folder is locked by paket.exe (PID = %s). Waiting..." content
+                                if counter % 100 = 0 then
+                                    tracefn "%s is locked by paket.exe (PID = %s). Waiting..." fileName content
                                 Thread.Sleep 100
                                 waitForUnlocked (counter + 1)
 

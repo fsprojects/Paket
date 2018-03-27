@@ -295,6 +295,7 @@ module DependenciesFileParser =
             let setting =
                 match trimmed.Replace(":","").Trim() with
                 | String.EqualsIC "none" -> Some PackagesFolderGroupConfig.NoPackagesFolder
+                | String.EqualsIC "symlink" -> Some PackagesFolderGroupConfig.SymbolicLink
                 | String.EqualsIC "packages" -> Some PackagesFolderGroupConfig.DefaultPackagesFolder
                 | _ -> None
 
