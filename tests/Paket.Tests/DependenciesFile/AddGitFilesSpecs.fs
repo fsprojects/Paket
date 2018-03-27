@@ -28,9 +28,19 @@ git git@github.com:fsprojects/FsUnit.git"""
 [<Test>]
 let ``should add git repository with version``() =
 
-    let cfg = DependenciesFile.FromSource("").AddGit(Constants.MainDependencyGroup, "tpetricek/FSharp.Formatting", "2.13.5")
+    let cfg = DependenciesFile.FromSource("").AddGit(Constants.MainDependencyGroup, "file:///C:\Users\Steffen\AskMe", "2.13.5")
 
-    let expected = """git git@github.com:tpetricek/FSharp.Formatting.git 2.13.5"""
+    let expected = """git file:///C:\Users\Steffen\AskMe 2.13.5"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should add git repository with branch``() =
+
+    let cfg = DependenciesFile.FromSource("").AddGit(Constants.MainDependencyGroup, "file:///C:\Users\Steffen\AskMe", "master")
+
+    let expected = """git file:///C:\Users\Steffen\AskMe master"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
@@ -73,7 +83,7 @@ git git@github.com:fsprojects/FAKE.git
 group Test2
 git git@github.com:fsprojects/SQLProvider.git"""
 
-    let cfg = DependenciesFile.FromSource(config).AddGit(GroupName "Test", "fsprojects/FsUnit")
+    let cfg = DependenciesFile.FromSource(config).AddGit(GroupName "Test", "git@github.com:fsprojects/FsUnit.git")
     
     let expected = """source http://www.nuget.org/api/v2
 
@@ -99,12 +109,12 @@ git git@github.com:fsprojects/SQLProvider.git"""
     let expected = """source http://www.nuget.org/api/v2
 
 group Test
-git fsprojects/SQLProvider
+git git@github.com:fsprojects/SQLProvider.git
 
 group Test2
 source https://www.nuget.org/api/v2
 
-git fsprojects/FsUnit"""
+git git@github.com:fsprojects/FsUnit.git"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
