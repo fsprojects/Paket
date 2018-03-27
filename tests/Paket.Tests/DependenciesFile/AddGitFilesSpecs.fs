@@ -28,9 +28,9 @@ git git@github.com:fsprojects/FsUnit.git"""
 [<Test>]
 let ``should add git repository with version``() =
 
-    let cfg = DependenciesFile.FromSource("").AddGit(Constants.MainDependencyGroup, "file:///C:\Users\Steffen\AskMe", "2.13.5")
+    let cfg = DependenciesFile.FromSource("").AddGit(Constants.MainDependencyGroup, "C:\Users\Steffen\AskMe", "2.13.5")
 
-    let expected = """git file:///C:\Users\Steffen\AskMe 2.13.5"""
+    let expected = """git C:\Users\Steffen\AskMe 2.13.5"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
@@ -38,9 +38,9 @@ let ``should add git repository with version``() =
 [<Test>]
 let ``should add git repository with branch``() =
 
-    let cfg = DependenciesFile.FromSource("").AddGit(Constants.MainDependencyGroup, "file:///C:\Users\Steffen\AskMe", "master")
+    let cfg = DependenciesFile.FromSource("").AddGit(Constants.MainDependencyGroup, "C:\Users\Steffen\AskMe", "master")
 
-    let expected = """git file:///C:\Users\Steffen\AskMe master"""
+    let expected = """git C:\Users\Steffen\AskMe master"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
