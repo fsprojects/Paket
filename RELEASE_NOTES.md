@@ -1,3 +1,6 @@
+#### 5.155.0 - 2018-03-28
+* New external_lock file parser to mitigate Azure Functions dependency trouble - https://fsprojects.github.io/Paket/dependencies-file.html#External-lock-files
+
 #### 5.154.0 - 2018-03-27
 * New storage option: symlink - https://github.com/fsprojects/Paket/pull/3128
 * BUGFIX: Conditional references in paket.references now work with .NET SDK-style projects - https://github.com/fsprojects/Paket/issues/3091
