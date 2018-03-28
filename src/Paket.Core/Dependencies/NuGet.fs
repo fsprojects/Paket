@@ -148,7 +148,7 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
 #endif
 
                 request.UseDefaultCredentials <- true
-                request.Proxy <- Utils.getDefaultProxyFor licenseUrl
+                request.Proxy <- NetUtils.getDefaultProxyFor licenseUrl
                 use _ = Profile.startCategory Profile.Category.NuGetRequest
                 use! httpResponse = request.AsyncGetResponse()
 
@@ -370,7 +370,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
               DownloadLink = encodeURL nugetObject.DownloadUrl
               Unlisted = nugetObject.Unlisted
               LicenseUrl = nugetObject.LicenseUrl
-              DirectDependencies = NuGetPackageCache.getDependencies nugetObject |> Set.ofList } }
+              DirectDependencies = nugetObject.GetDependencies() } }
 
 let rec GetPackageDetails alternativeProjectRoot root force (parameters:GetPackageDetailsParameters): Async<PackageResolver.PackageDetails> =
     async {
@@ -457,7 +457,7 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
                        if (not force) && errorFileExists then return [] else
                        match nugetSource with
                        | NuGetV2 source ->
-                            let auth = source.Authentication |> Option.map toCredentials
+                            let auth = source.Authentication
                             if String.containsIgnoreCase "artifactory" source.Url then
                                 return [getVersionsCached "ODataNewestFirst" NuGetV2.tryGetAllVersionsFromNugetODataFindByIdNewestFirst (nugetSource, auth, source.Url, packageName) ]
                             else
@@ -468,8 +468,7 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
                                 return v2Feeds
                        | NuGetV3 source ->
                             let! versionsAPI = NuGetV3.getNuGetV3Resource source NuGetV3.AllVersionsAPI
-                            let auth = source.Authentication |> Option.map toCredentials
-                            return [ getVersionsCached "V3" tryNuGetV3 (nugetSource, auth, versionsAPI, packageName) ]
+                            return [ getVersionsCached "V3" tryNuGetV3 (nugetSource, source.Authentication, versionsAPI, packageName) ]
                        | LocalNuGet(path,Some _) ->
                             return [ NuGetLocal.getAllVersionsFromLocalPath (true, path, packageName, alternativeProjectRoot, root) ]
                        | LocalNuGet(path,None) ->
@@ -746,9 +745,9 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
 #endif
                     if authenticated then
-                        match source.Auth |> Option.map toCredentials with
+                        match source.Auth.Retrieve (attempt <> 0) with
                         | None | Some(Token _) -> request.UseDefaultCredentials <- true
-                        | Some(Credentials(username, password, AuthType.Basic)) ->
+                        | Some(Credentials({Username = username; Password = password; Type = AuthType.Basic})) ->
                             // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
                             //this works ONLY if the server returns 401 first
                             //client DOES NOT send credentials on first request
@@ -758,13 +757,13 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                             //so use THIS instead to send credentials RIGHT AWAY
                             let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
                             request.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
-                        | Some(Credentials(username, password, AuthType.NTLM)) ->
+                        | Some(Credentials({Username = username; Password = password; Type = AuthType.NTLM})) ->
                             let cred = NetworkCredential(username,password)
                             request.Credentials <- cred.GetCredential(downloadUri, "NTLM")
                     else
                         request.UseDefaultCredentials <- true
 
-                    request.Proxy <- Utils.getDefaultProxyFor source.Url
+                    request.Proxy <- NetUtils.getDefaultProxyFor source.Url
                     use! httpResponse = request.AsyncGetResponse()
 
                     use httpResponseStream = httpResponse.GetResponseStream()
@@ -797,7 +796,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                 | :? System.Net.WebException as exn when
                     attempt < 5 &&
                     exn.Status = WebExceptionStatus.ProtocolError &&
-                     (match source.Auth |> Option.map toCredentials with
+                     (match source.Auth.Retrieve (attempt <> 0) with
                       | Some(Credentials(_)) -> true
                       | _ -> false)
                         ->  traceWarnfn "Could not download %O %O.%s    %s.%sRetry." packageName version Environment.NewLine exn.Message Environment.NewLine
@@ -807,21 +806,36 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                 | exn -> raise (Exception(sprintf "Could not download %O %O from %s." packageName version !downloadUrl, exn)) }
 
     async {
+        configResolved.Path |> Option.iter SymlinkUtils.delete
+
         do! download true 0
-        if not isLocalOverride then
+
+        match isLocalOverride, configResolved with
+        | true, ResolvedPackagesFolder.NoPackagesFolder -> return failwithf "paket.local in combination with storage:none is not supported (use storage: symlink instead)"
+        | true, ResolvedPackagesFolder.SymbolicLink directory
+        | true, ResolvedPackagesFolder.ResolvedFolder directory ->
+            let! folder = ExtractPackage(targetFile.FullName, directory, packageName, version, detailed)
+            return targetFileName,folder
+        | false, ResolvedPackagesFolder.SymbolicLink folder -> 
+            folder |> Utils.DirectoryInfo |> Utils.deleteDir 
+            ensureDir folder
+
             let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, kind)
-            let! files = NuGetCache.CopyFromCache(configResolved, targetFile.FullName, licenseFileName, packageName, version, force, detailed)
+            
+            SymlinkUtils.makeDirectoryLink folder extractedUserFolder
+
+            let packageFilePath = Path.Combine(extractedUserFolder, NuGetCache.GetPackageFileName packageName version)
+            return packageFilePath, folder
+        | false, otherConfig ->
+            otherConfig.Path |> Option.iter SymlinkUtils.delete
+
+            let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, kind)
+            let! files = NuGetCache.CopyFromCache(otherConfig, targetFile.FullName, licenseFileName, packageName, version, force, detailed)
             let finalFolder =
                 match files with
                 | Some f -> f
                 | None -> extractedUserFolder
             return targetFileName,finalFolder
-        else
-            match configResolved.Path with
-            | None -> return failwithf "paket.local in combination with storage:none is not supported"
-            | Some directory ->
-                let! folder = ExtractPackage(targetFile.FullName, directory, packageName, version, detailed)
-                return targetFileName,folder
     }
     
 

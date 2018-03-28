@@ -49,7 +49,6 @@ type NugetV3ResourceType =
     member this.AsString =
         match this with
         | AutoComplete -> "SearchAutoCompleteService"
-        //| Registration -> "RegistrationsBaseUrl"
         | AllVersionsAPI -> "PackageBaseAddress/3.0.0"
         | PackageIndex -> "PackageDisplayMetadataUriTemplate"
         | Catalog -> "Catalog"
@@ -62,10 +61,12 @@ let getNuGetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceT
     let key = source
     let getResourcesRaw () =
         async {
-            let basicAuth = source.Authentication |> Option.map toCredentials
+            let basicAuth = source.Authentication
             let! rawData = safeGetFromUrl(basicAuth, source.Url, acceptJson)
             let rawData =
                 match rawData with
+                | Unauthorized ->
+                    raise (new Exception(sprintf "Could not load resources from '%s': Unauthorized (401)" source.Url))
                 | NotFound ->
                     raise (new Exception(sprintf "Could not load resources (404) from '%s'" source.Url))
                 | UnknownError e ->
@@ -261,15 +262,15 @@ type NugetV3CatalogIndex =
     
 /// [omit]
 let private getCatalogIndex auth nugetUrl cancel =
-    let apiAuth = auth |> Option.map toCredentials
     let catalogApi = getCatalogAPI auth nugetUrl
     let indexResponse =
         async {
-            return! safeGetFromUrl (apiAuth, catalogApi, acceptJson)
+            return! safeGetFromUrl (auth, catalogApi, acceptJson)
         } |> (fun future -> 
             Async.StartAsTaskProperCancel(future,TaskCreationOptions.None,cancel))
     match indexResponse.Result with
     | NotFound -> failwith "Catalog/3.0 Index NotFound/404"; ""
+    | Unauthorized -> failwith "Catalog/3.0 Index Unauthorized/401"; ""
     | UnknownError e -> failwithf "Catalog/3.0 Index N/A %A" e; ""
     | SuccessResponse s -> s 
     |> JsonConvert.DeserializeObject<NugetV3CatalogIndex>
@@ -339,14 +340,14 @@ let private getCatalogPage auth (item:NugetV3CatalogIndexItem)(basePath:String) 
             CancellationTokenSource.CreateLinkedTokenSource(localCancel.Token,cancel)
         let pageResponse =
             async {
-                let apiAuth = auth |> Option.map toCredentials        
-                return! safeGetFromUrl (apiAuth,item.Id,acceptJson)
+                return! safeGetFromUrl (auth,item.Id,acceptJson)
             } |> 
             (fun future -> 
                 Async.StartAsTaskProperCancel(future,TaskCreationOptions.None,cancel))
         let responseData = 
             match pageResponse.Result with
             | NotFound -> failwith "Catalog/3.0 Page NotFound/404"; ""
+            | Unauthorized -> failwith "Catalog/3.0 Page Unauthorized/401"; ""
             | UnknownError e -> failwithf "Catalog/3.0 Page N/A %A" e; ""
             | SuccessResponse s -> s
         let pageContents = 
@@ -624,7 +625,7 @@ let private getPackages(auth, nugetURL, packageNamePrefix, maxResults) = async {
     match apiRes with
     | Some url ->
         let query = sprintf "%s?q=%s&take=%d" url packageNamePrefix maxResults
-        let! response = safeGetFromUrl(auth |> Option.map toCredentials,query,acceptJson)
+        let! response = safeGetFromUrl(auth,query,acceptJson)
         match SafeWebResult.asResult response with
         | Result.Ok text -> return  Result.Ok (extractPackages text)
         | Result.Error err -> return Result.Error err
@@ -695,9 +696,10 @@ let private getPackageIndexRaw (source : NugetV3Source) (packageName:PackageName
     async {
         let! registrationUrl = getNuGetV3Resource source PackageIndex
         let url = registrationUrl.Replace("{id-lower}", packageName.ToString().ToLower())
-        let! rawData = safeGetFromUrl (source.Authentication |> Option.map toCredentials, url, acceptJson)
+        let! rawData = safeGetFromUrl (source.Authentication, url, acceptJson)
         return
             match rawData with
+            | Unauthorized -> raise (System.Exception(sprintf "could not get registration data (401) from '%s'" url))
             | NotFound -> None
             | UnknownError err ->
                 raise (System.Exception(sprintf "could not get registration data from %s" url, err.SourceException))
@@ -711,9 +713,10 @@ let getPackageIndex source packageName = getPackageIndexMemoized (source, packag
 
 let private getPackageIndexPageRaw (source:NugetV3Source) (url:string) =
     async {
-        let! rawData = safeGetFromUrl (source.Authentication |> Option.map toCredentials, url, acceptJson)
+        let! rawData = safeGetFromUrl (source.Authentication, url, acceptJson)
         return
             match rawData with
+            | Unauthorized -> raise (System.Exception(sprintf "could not get registration data (401) from '%s'" url))
             | NotFound -> raise (System.Exception(sprintf "could not get registration data (404) from '%s'" url))
             | UnknownError err ->
                 raise (System.Exception(sprintf "could not get registration data from %s" url, err.SourceException))
@@ -840,7 +843,7 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
               LicenseUrl = catalogData.LicenseUrl
               Version = version.Normalize()
               CacheVersion = NuGetPackageCache.CurrentCacheVersion }
-            |> NuGetPackageCache.withDependencies optimized
+                .WithDependencies optimized
             |> ODataSearchResult.Match
     }
 

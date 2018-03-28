@@ -75,6 +75,9 @@ let buildMergedDir = buildDir @@ "merged"
 let paketFile = buildMergedDir @@ "paket.exe"
 
 Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
+
+System.Net.ServicePointManager.SecurityProtocol <- unbox 192 ||| unbox 768 ||| unbox 3072 ||| unbox 48
+
 // Read additional information from the release notes document
 let releaseNotesData = 
     File.ReadAllLines "RELEASE_NOTES.md"
@@ -446,9 +449,9 @@ Target "PublishNuGet" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Generate the documentation
 
-let disableDocs = true // https://github.com/fsprojects/FSharp.Formatting/issues/461
+let disableDocs = false // https://github.com/fsprojects/FSharp.Formatting/issues/461
 
-let fakePath = "packages" @@ "build" @@ "FAKE" @@ "tools" @@ "FAKE.exe"
+let fakePath = __SOURCE_DIRECTORY__ @@ "packages" @@ "build" @@ "FAKE" @@ "tools" @@ "FAKE.exe"
 let fakeStartInfo fsiargs script workingDirectory args environmentVars =
     (fun (info: System.Diagnostics.ProcessStartInfo) ->
         info.FileName <- fakePath

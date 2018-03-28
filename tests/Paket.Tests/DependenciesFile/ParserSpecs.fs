@@ -28,8 +28,9 @@ let ``should read config which only contains a source``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Length |> shouldEqual 1
-    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head  |> shouldEqual (NuGetV2({ Url = "http://www.nuget.org/api/v2"; Authentication = None }))
-
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head  |> shouldEqual (NuGetV2({ Url = "http://www.nuget.org/api/v2"; Authentication = AuthProvider.empty }))
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth.Retrieve true
+        |> shouldEqual None
 let config1 = """
 source "http://www.nuget.org/api/v2"
 
@@ -704,11 +705,13 @@ nuget Rx-Main
 let ``should read config with encapsulated password source with no auth type specified``() = 
     let cfg = DependenciesFile.FromSource(configWithPasswordNoAuthType)
     
-    cfg.Groups.[Constants.MainDependencyGroup].Sources 
+    cfg.Groups.[Constants.MainDependencyGroup].Sources
     |> shouldEqual [ 
         PackageSource.NuGetV2 { 
             Url = "http://www.nuget.org/api/v2"
-            Authentication = Some (PlainTextAuthentication("tatü tata", "you got hacked!", Utils.AuthType.Basic)) } ]
+            Authentication = AuthProvider.empty } ]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth.Retrieve true
+        |> shouldEqual (Some (Credentials{ Username = "tatü tata"; Password = "you got hacked!"; Type = NetUtils.AuthType.Basic}))
 
 let configWithPasswordWithAuthType = """
 source http://www.nuget.org/api/v2 username: "tatü tata" password: "you got hacked!" authtype: "ntlm"
@@ -723,7 +726,7 @@ let ``should read config with encapsulated password source and auth type specifi
     |> shouldEqual [ 
         PackageSource.NuGetV2 { 
             Url = "http://www.nuget.org/api/v2"
-            Authentication = Some (PlainTextAuthentication("tatü tata", "you got hacked!", Utils.AuthType.NTLM)) } ]
+            Authentication = AuthProvider.ofUserPassword { Username = "tatü tata"; Password = "you got hacked!"; Type = NetUtils.AuthType.NTLM} } ]
 
 let configWithPasswordInSingleQuotes = """
 source http://www.nuget.org/api/v2 username: 'tatü tata' password: 'you got hacked!'
@@ -753,10 +756,9 @@ let ``should read config with password in env variable``() =
     |> shouldEqual [ 
         PackageSource.NuGetV2 { 
             Url = "http://www.nuget.org/api/v2"
-            Authentication = Some (EnvVarAuthentication
-                                    ({Variable = "%FEED_USERNAME%"; Value = "user XYZ"},
-                                     {Variable = "%FEED_PASSWORD%"; Value = "pw Love"},
-                                     Utils.AuthType.Basic))} ]
+            Authentication = AuthProvider.empty} ]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth.Retrieve true
+        |> shouldEqual (Some (Credentials{ Username = "user XYZ"; Password = "pw Love"; Type = NetUtils.AuthType.Basic}))
 
 let configWithPasswordInEnvVariableAndAuthType = """
 source http://www.nuget.org/api/v2 username: "%FEED_USERNAME%" password: "%FEED_PASSWORD%" authtype: "nTlM"
@@ -773,10 +775,9 @@ let ``should read config with password in env variable and auth type specified``
     |> shouldEqual [ 
         PackageSource.NuGetV2 { 
             Url = "http://www.nuget.org/api/v2"
-            Authentication = Some (EnvVarAuthentication
-                                    ({Variable = "%FEED_USERNAME%"; Value = "user XYZ"},
-                                     {Variable = "%FEED_PASSWORD%"; Value = "pw Love"},
-                                     Utils.AuthType.NTLM))} ]
+            Authentication = AuthProvider.empty } ]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth.Retrieve true
+        |> shouldEqual (Some (Credentials{ Username = "user XYZ"; Password = "pw Love"; Type = NetUtils.AuthType.NTLM}))
 
 let configWithExplicitVersions = """
 source "http://www.nuget.org/api/v2"
@@ -1167,10 +1168,19 @@ nuget FsReveal
 let ``should read config with very similar feeds``() = 
     let cfg = DependenciesFile.FromSource(configWithVerySimilarFeeds)
 
-    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth |> shouldEqual None
+    try
+        cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth.Retrieve true |> shouldEqual None
+    with e ->
+        System.Console.Error.WriteLine("Credential Provider failed: " + e.Message)
+        () // Might throw when we have a global authentication provider
+    
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Url |> shouldEqual "http://nexus1:8081/nexus/service/local/nuget/nuget-repo"
 
-    cfg.Groups.[Constants.MainDependencyGroup].Sources.Tail.Head.Auth |> shouldNotEqual None
+    try
+        cfg.Groups.[Constants.MainDependencyGroup].Sources.Tail.Head.Auth.Retrieve false |> shouldNotEqual None
+    with e -> 
+        System.Console.Error.WriteLine("Credential Provider failed: " + e.Message)
+        () // Might throw when we have a global authentication provider
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Tail.Head.Url |> shouldEqual "http://nexus2:8081/nexus/service/local/nuget/nuget-repo"
 
 let configTargetFramework = """source https://www.nuget.org/api/v2
@@ -1603,3 +1613,20 @@ let ``should read config with cli tool``() =
     let nuget = cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Head
     tool.Kind |> shouldEqual PackageRequirementKind.DotnetCliTool
     nuget.Kind |> shouldEqual PackageRequirementKind.Package
+
+let paketCacheTestPath = System.IO.Path.Combine("~", ".paket-cache")
+let configWithHomePathInCache = String.Concat("""
+source https://www.nuget.org/api/v2
+
+cache """, paketCacheTestPath)
+
+[<Test>]
+let ``should normalize home path``() =
+    let expected = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".paket-cache")
+    paketCacheTestPath |> Paket.Utils.normalizeHomeDirectory |> shouldEqual expected
+
+[<Test>]
+let ``should parse config with home path in cache``() =
+    let cfg = DependenciesFile.FromSource(configWithHomePathInCache)
+    let expected = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".paket-cache")
+    cfg.Groups.[Constants.MainDependencyGroup].Caches.[0].Location |> shouldEqual expected

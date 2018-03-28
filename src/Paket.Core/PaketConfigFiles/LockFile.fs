@@ -39,6 +39,7 @@ module LockFileSerializer =
         | None -> ()
         match options.Settings.StorageConfig with
         | Some (PackagesFolderGroupConfig.NoPackagesFolder) -> yield "STORAGE: NONE"
+        | Some (PackagesFolderGroupConfig.SymbolicLink) -> yield "STORAGE: SYMLINK"
         | Some (PackagesFolderGroupConfig.DefaultPackagesFolder) -> yield "STORAGE: PACKAGES"
         | Some (PackagesFolderGroupConfig.GivenPackagesFolder f) -> failwithf "Not implemented yet."
         | None -> ()
@@ -93,15 +94,16 @@ module LockFileSerializer =
                     match package.Source with
                     | NuGetV2 source -> source.Url,source.Authentication,package
                     | NuGetV3 source -> source.Url,source.Authentication,package
-                    | LocalNuGet(path,_) -> path,None,package
+                    // TODO: Add credentials provider...
+                    | LocalNuGet(path,_) -> path,AuthService.GetGlobalAuthenticationProvider path,package
                 )
-            |> Seq.groupBy (fun (a,b,_) -> a,b)
+            |> Seq.groupBy (fun (a,b,_) -> a)
 
         let all = 
             let hasReported = ref false
             [ yield! serializeOptionsAsLines options
 
-              for (source, _), packages in sources do
+              for (source), packages in sources do
                   if not !hasReported then
                     yield "NUGET"
                     hasReported := true
@@ -296,6 +298,7 @@ module LockFileParser =
             let setting =
                 match trimmed.Trim() with
                 | String.EqualsIC "NONE" -> Some PackagesFolderGroupConfig.NoPackagesFolder
+                | String.EqualsIC "SYMLINK" -> Some PackagesFolderGroupConfig.SymbolicLink
                 | String.EqualsIC "PACKAGES" -> Some PackagesFolderGroupConfig.DefaultPackagesFolder
                 | _ -> None
 
@@ -477,7 +480,7 @@ module LockFileParser =
                         { currentGroup with 
                             LastWasPackage = true
                             Packages = 
-                                    { Source = PackageSource.Parse(remote, None)
+                                    { Source = PackageSource.Parse(remote, AuthService.GetGlobalAuthenticationProvider remote)
                                       Name = PackageName parts'.[0]
                                       Dependencies = Set.empty
                                       Unlisted = false
@@ -869,7 +872,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
             for p,_ in lockRemote.Dependencies do
                 yield PackageInstallSettings.Default(p.ToString())]
 
-    member this.GetOrderedPackageHull(groupName,referencesFile:ReferencesFile) =
+    member this.GetOrderedPackageHull(groupName,referencesFile:ReferencesFile,targetProfileOpt) =
         let usedPackageKeys = HashSet<_>()
         let toVisit = ref Set.empty
         let visited = ref Set.empty
@@ -892,6 +895,16 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                 | ResolvedPackageKind.DotnetCliTool ->
                     cliTools := Set.add package !cliTools
                 | ResolvedPackageKind.Package ->
+                    let restore =
+                        match targetProfileOpt with
+                        | None -> true
+                        | Some targetProfile ->
+                            match p.Settings.FrameworkRestrictions with
+                            | Requirements.ExplicitRestriction restrictions ->
+                                Requirements.isTargetMatchingRestrictions(restrictions, targetProfile)
+                            | _ -> true
+
+                    if not restore then () else
                     if usedPackageKeys.Contains k then
                         failwithf "Package %O is referenced more than once in %s within group %O." p.Name referencesFile.FileName groupName
                 
@@ -926,6 +939,8 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                 |> Set.remove ((groupName,packageName),p,deps)
                 |> Set.map (fun ((g,p),b,c) -> if g = groupName then (g,p),b,Set.filter ((<>) packageName) c else (g,p),b,c)],!cliTools
 
+    member this.GetOrderedPackageHull(groupName,referencesFile:ReferencesFile) =
+        this.GetOrderedPackageHull(groupName,referencesFile,None)
 
     member this.GetPackageHull(groupName,referencesFile:ReferencesFile) =
         let usedPackages = Dictionary<_,_>()

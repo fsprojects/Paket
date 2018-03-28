@@ -1,4 +1,4 @@
-﻿/// Contains NuGet support.
+﻿/// Contains NuGet cache support.
 module Paket.NuGetCache
 
 open System
@@ -19,34 +19,39 @@ open System.Runtime.ExceptionServices
 open System.Net
 open System.Threading.Tasks
 
-
 // show the path that was too long
-let FileInfo(str) =
+let FileInfo str =
     try
-        FileInfo(str)
+        FileInfo str 
     with
       :? PathTooLongException as exn -> raise (PathTooLongException("Path too long: " + str, exn))
 
 type NuGetResponseGetVersionsSuccess = string []
+
 type NuGetResponseGetVersionsFailure =
     { Url : string; Error : ExceptionDispatchInfo }
     static member ofTuple (url,err) =
         { Url = url; Error = err }
+
 type NuGetResponseGetVersions =
     | SuccessVersionResponse of NuGetResponseGetVersionsSuccess
     | ProtocolNotCached
     | FailedVersionRequest of NuGetResponseGetVersionsFailure
+
     member x.Versions =
         match x with
         | SuccessVersionResponse l -> l
-        | ProtocolNotCached -> [||]
+        | ProtocolNotCached
         | FailedVersionRequest _ -> [||]
+
     member x.IsSuccess =
         match x with
         | SuccessVersionResponse _ -> true
-        | ProtocolNotCached -> false
+        | ProtocolNotCached
         | FailedVersionRequest _ -> false
+
 type NuGetResponseGetVersionsSimple = SafeWebResult<NuGetResponseGetVersionsSuccess>
+
 type NuGetRequestGetVersions =
     { DoRequest : unit -> Async<NuGetResponseGetVersions>
       Url : string }
@@ -60,6 +65,7 @@ type NuGetRequestGetVersions =
                     match res with
                     | SuccessResponse r -> SuccessVersionResponse r
                     | NotFound -> SuccessVersionResponse [||]
+                    | Unauthorized -> FailedVersionRequest { Url = url; Error = ExceptionDispatchInfo.Capture(exn("Not authorized (401)")) }
                     | UnknownError err -> FailedVersionRequest { Url = url; Error = err }
             })
     static member run (r:NuGetRequestGetVersions) : Async<NuGetResponseGetVersions> =
@@ -79,7 +85,6 @@ type UnparsedPackageFile =
         x.FullPath.Substring(0, x.FullPath.Length - (x.PathWithinPackage.Length + 1))
 
 module NuGetConfig =
-    open System.Text
 
     let writeNuGetConfig directory sources =
         let start = """<?xml version="1.0" encoding="utf-8"?>
@@ -117,14 +122,12 @@ type NuGetPackageCache =
       Version: string
       CacheVersion: string }
 
-    static member CurrentCacheVersion = "5.114"
+    static member CurrentCacheVersion = "5.147"
 
-// TODO: is there a better way? for now we use static member because that works with type abbreviations...
-//module NuGetPackageCache =
-    static member withDependencies (l:(PackageName * VersionRequirement * FrameworkRestrictions) list) d =
-        { d with
+    member this.WithDependencies (dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) list) =
+        { this with
             SerializedDependencies =
-                l
+                dependencies
                 |> List.map (fun (n,v, restrictions) ->
                     let restrictionString =
                         match restrictions with
@@ -132,8 +135,8 @@ type NuGetPackageCache =
                         | FrameworkRestrictions.ExplicitRestriction re -> re.ToString()
                     n, v, restrictionString) }
 
-    static member getDependencies (x:NuGetPackageCache) : (PackageName * VersionRequirement * FrameworkRestrictions) list  =
-        x.SerializedDependencies
+    member this.GetDependencies() : (PackageName * VersionRequirement * FrameworkRestrictions) Set =
+        this.SerializedDependencies
         |> List.map (fun (n,v,restrictionString) ->
             let restrictions =
                 if restrictionString = "AUTO" then
@@ -142,6 +145,7 @@ type NuGetPackageCache =
                     let restrictions = Requirements.parseRestrictions restrictionString |> fst
                     FrameworkRestrictions.ExplicitRestriction restrictions
             n, v, restrictions)
+        |> Set.ofList
 
 let inline normalizeUrl(url:string) = url.Replace("https://","http://").Replace("www.","")
 
@@ -158,7 +162,7 @@ let getCacheFiles force cacheVersion nugetURL (packageName:PackageName) (version
                 |> Seq.toList
             for f in oldFiles do
                 File.Delete f
-        with 
+        with
         | ex -> traceErrorfn "Cannot cleanup '%s': %O" (sprintf "%s*.json" prefix) ex
     FileInfo(newFile)
 
@@ -222,9 +226,9 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
                             use cacheReader = cacheFile.OpenText()
                             cacheReader.ReadToEnd()
                         else ""
-                    with 
+                    with
                     | ex ->
-                        traceWarnfn "Can't read cache file %O:%s Message: %O" cacheFile Environment.NewLine ex 
+                        traceWarnfn "Can't read cache file %O:%s Message: %O" cacheFile Environment.NewLine ex
                         ""
                 if String.CompareOrdinal(serialized, cachedData) <> 0 then
                     File.WriteAllText(cacheFile.FullName, serialized)
@@ -516,7 +520,7 @@ let private tryUrlOrBlacklist (f: _ -> Async<'a>) (isOk : 'a -> bool) (source:Nu
 
 type QueryResult = Choice<ODataSearchResult,System.Exception>
 
-let tryAndBlacklistUrl doBlackList doWarn (source:NugetSource) 
+let tryAndBlacklistUrl doBlackList doWarn (source:NugetSource)
     (tryAgain : QueryResult -> bool) (f : string -> Async<QueryResult>) (urls: UrlToTry list) : Async<QueryResult>=
     async {
         let! tasks, resultIndex =
@@ -553,12 +557,12 @@ let tryAndBlacklistUrl doBlackList doWarn (source:NugetSource)
                     | Choice1Of3 result ->
                         match result with       // as per NuGetV2.fs ...
                         | Choice1Of2 _ -> true  // this is the only valid result ...
-                        | Choice2Of2 except ->  
+                        | Choice2Of2 except ->
                             match except with  // but NotFound/404 should allow other query to succeed
                             | RequestStatus HttpStatusCode.NotFound -> false
                                                // repos may not support full filter syntax (Artifactory)
                             | RequestStatus HttpStatusCode.MethodNotAllowed -> false
-                            | _ -> true        // for any other exceptions, cancel the rest and return                         
+                            | _ -> true        // for any other exceptions, cancel the rest and return
                     | _ -> false )
 
         match resultIndex with

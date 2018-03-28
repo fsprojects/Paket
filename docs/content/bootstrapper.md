@@ -90,7 +90,7 @@ Example:
 `PAKET_VERSION`: The requested version can also be set using this environment
 variable.
 
-* powershell   
+* powershell
     ```
     $env:PAKET_VERSION = "5.119.7"
     ```
@@ -102,7 +102,7 @@ variable.
     ```
     export PAKET_VERSION="5.119.7"
     ```
-    
+
 
 ### In paket.dependencies
 
@@ -156,6 +156,12 @@ While bootstrapper command line options can't be used, the other sources
 be used to configure the bootstrapper. The only difference is that the
 application settings file should be named `paket.exe.config` rather than
 `paket.bootstrapper.exe.config`.
+
+To self update the bootstrapper in magic mode you can run:
+
+```sh
+paket.exe --self --run --version
+```
 
 A few default settings are applied:
 

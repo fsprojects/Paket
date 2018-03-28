@@ -41,18 +41,18 @@ let Push maxTrials url apiKey clientVersion packageFileName =
         tracefn "Pushing package %s to %s - trial %d" packageFileName url trial
 
         try
-            let authOpt = ConfigFile.GetAuthentication(url)
+            let authOpt = AuthService.GetGlobalAuthenticationProvider(url).Retrieve (1 = trial)
             match authOpt with
-            | Some (Auth.Credentials (u,_,_)) -> 
+            | Some (Auth.Credentials {Username = u}) ->
                 tracefnVerbose "Authorizing using credentials for user %s" u
             | Some (Auth.Token _) -> 
                 tracefnVerbose "Authorizing using token"
             | None ->
                 tracefnVerbose "No authorization found in config file."
             let uploadWithHttpClient () =
-                let client = Utils.createHttpClient(url, authOpt)
-                Utils.addHeader client "X-NuGet-ApiKey" apiKey
-                Utils.addHeader client "X-NuGet-Client-Version" clientVersion // see https://github.com/NuGet/NuGetGallery/issues/4315
+                let client = NetUtils.createHttpClient(url, authOpt)
+                NetUtils.addHeader client "X-NuGet-ApiKey" apiKey
+                NetUtils.addHeader client "X-NuGet-Client-Version" clientVersion // see https://github.com/NuGet/NuGetGallery/issues/4315
 
                 client.UploadFileAsMultipart (new Uri(url)) packageFileName
                     |> ignore
@@ -63,7 +63,7 @@ let Push maxTrials url apiKey clientVersion packageFileName =
             if useHttpClient then
                 uploadWithHttpClient()
             else
-                let client = Utils.createWebClient(url, authOpt)
+                let client = NetUtils.createWebClient(url, authOpt)
                 client.Headers.Add ("X-NuGet-ApiKey", apiKey)
                 client.Headers.Add ("X-NuGet-Protocol-Version", Constants.NuGetProtocolVersion) // see https://github.com/NuGet/Announcements/issues/10
 

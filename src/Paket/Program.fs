@@ -204,7 +204,7 @@ let add (results : ParseResults<_>) =
         (results.TryGetResult <@ AddArgs.Project @>,
          results.TryGetResult <@ AddArgs.Project_Legacy @>)
         |> legacyOption results (ReplaceArgument("--project", "project"))
-    let packageKind = 
+    let packageKind =
         match results.GetResult (<@ AddArgs.Type @>, defaultValue = AddArgsDependencyType.Nuget) with
         | AddArgsDependencyType.Nuget -> Requirements.PackageRequirementKind.Package
         | AddArgsDependencyType.Clitool -> Requirements.PackageRequirementKind.DotnetCliTool
@@ -219,6 +219,26 @@ let add (results : ParseResults<_>) =
         Dependencies
             .Locate()
             .Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
+
+let github (results : ParseResults<_>) =
+    match results.GetResult <@ GithubArgs.Add @> with
+    | add ->
+        let group =
+            add.TryGetResult <@ AddGithubArgs.Group @>
+        let repository =
+            add.GetResult <@ AddGithubArgs.Repository @>
+        let file =
+            match add.TryGetResult <@ AddGithubArgs.File @> with
+            | Some f -> f
+            | None -> ""
+        let version =
+            match add.TryGetResult <@ AddGithubArgs.Version @> with
+            | Some v -> v
+            | None -> ""
+
+        Dependencies
+            .Locate()
+            .AddGithub(group, repository, file, version)
 
 let validateConfig (results : ParseResults<_>) =
     let credential = results.Contains <@ ConfigArgs.AddCredentials @>
@@ -569,6 +589,8 @@ let findPackages silent (results : ParseResults<_>) =
 
 #nowarn "44" // because FixNuspecs is deprecated and we have warnaserror
 
+open Paket.Requirements
+
 let fixNuspecs silent (results : ParseResults<_>) =
     let nuspecFiles =
         results.GetResult <@ FixNuspecsArgs.Files @>
@@ -741,6 +763,22 @@ let why (results: ParseResults<WhyArgs>) =
 
     Why.ohWhy(packageName, directDeps, lockFile, groupName, results.Parser.PrintUsage(), options)
 
+let restriction (results: ParseResults<RestrictionArgs>) =
+    let restrictionRaw = results.GetResult <@ RestrictionArgs.Restriction @>
+    let restriction, parseProblems = Requirements.parseRestrictions restrictionRaw
+
+    for problem in parseProblems |> Seq.map (fun x -> x.AsMessage) do
+        Logging.traceWarnfn "Problem: %s" problem
+
+    Logging.tracefn "Restriction: %s" restrictionRaw
+    Logging.tracefn "Simplified: %s" (restriction.ToString())
+    Logging.tracefn "Frameworks: [ "
+    for framework in restriction.RepresentedFrameworks do
+        Logging.tracefn "   %s" framework.CompareString
+    Logging.tracefn "]"
+
+
+
 let waitForDebugger () =
     while not(System.Diagnostics.Debugger.IsAttached) do
         System.Threading.Thread.Sleep(100)
@@ -748,6 +786,7 @@ let waitForDebugger () =
 let handleCommand silent command =
     match command with
     | Add r -> processCommand silent add r
+    | Github r -> processCommand silent github r
     | ClearCache r -> processCommand silent clearCache r
     | Config r -> processWithValidation silent validateConfig config r
     | ConvertFromNuget r -> processCommand silent convert r
@@ -776,6 +815,7 @@ let handleCommand silent command =
     | GenerateLoadScripts r -> processCommand silent generateLoadScripts r
     | GenerateNuspec r -> processCommand silent generateNuspec r
     | Why r -> processCommand silent why r
+    | Restriction r -> processCommand silent restriction r
     | Info r -> processCommand silent info r
     // global options; list here in order to maintain compiler warnings
     // in case of new subcommands added
@@ -800,13 +840,32 @@ let main() =
     try
     let args = Environment.GetCommandLineArgs()
     match args with
-    | [| "restore" |] | [| "--from-bootstrapper"; "restore" |] ->
-        // fast restore route, see https://github.com/fsprojects/Argu/issues/90
-        processWithValidationEx ignore false (fun _ -> true) (fun _ -> Dependencies.Locate().Restore()) ()
+    | [| _; "restore" |] | [| _; "--from-bootstrapper"; "restore" |] ->
+        // Global restore fast route, see https://github.com/fsprojects/Argu/issues/90
+        processWithValidationEx
+            ignore
+            false
+            (fun _ -> true)
+            (fun _ -> Dependencies.Locate().Restore()) ()
+    | [| _; "restore"; "--project"; project |] | [| _; "--from-bootstrapper"; "restore"; "--project"; project |] ->
+        // Project restore fast route, see https://github.com/fsprojects/Argu/issues/90
+        processWithValidationEx
+            ignore
+            false
+            (fun _ -> true)
+            (fun _ -> Dependencies.Locate().Restore(false, None, project, false, false, false, None)) ()
+    | [| _; "install" |] | [| _; "--from-bootstrapper"; "install" |] ->
+        // Global restore fast route, see https://github.com/fsprojects/Argu/issues/90
+        processWithValidationEx
+            ignore
+            false
+            (fun _ -> true)
+            (fun _ -> Dependencies.Locate().Install(false, false, false, false, false, SemVerUpdateMode.NoRestriction, false, false, [], [], None)) ()
     | _ ->
         let parser = ArgumentParser.Create<Command>(programName = "paket",
                                                     helpTextMessage = sprintf "Paket version %s%sHelp was requested:" paketVersion Environment.NewLine,
-                                                    errorHandler = new PaketExiter())
+                                                    errorHandler = new PaketExiter(),
+                                                    checkStructure = false)
 
         let results = parser.ParseCommandLine(raiseOnUsage = true)
         let silent = results.Contains <@ Silent @>

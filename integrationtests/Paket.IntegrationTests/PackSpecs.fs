@@ -4,15 +4,13 @@ open Fake
 open System
 open NUnit.Framework
 open FsUnit
-open System
 open System.IO
-open System.Diagnostics
 open System.IO.Compression
 open Paket.Domain
 open Paket
 open Paket.NuGetCache
 
-let getDependencies = Paket.NuGet.NuGetPackageCache.getDependencies
+let getDependencies(x:Paket.NuGet.NuGetPackageCache) = x.GetDependencies()
 
 [<Test>]
 let ``#1234 empty assembly name``() = 
@@ -100,9 +98,9 @@ let ``#1429 pack deps from template``() =
         |> Async.RunSynchronously
         |> ODataSearchResult.get
 
-    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug2") // it's not packed in same round
-    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug")
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug2") // it's not packed in same round
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug")
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps","PaketBug","paket.template"))
 
@@ -117,9 +115,9 @@ let ``#1429 pack deps``() =
         |> Async.RunSynchronously
         |> ODataSearchResult.get
 
-    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "PaketBug2")
-    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug")
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldContain (PackageName "PaketBug2")
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug")
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps","PaketBug","paket.template"))
 
@@ -134,8 +132,8 @@ let ``#1429 pack deps using minimum-from-lock-file``() =
         |> Async.RunSynchronously
         |> ODataSearchResult.get
 
-    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    let packageName, versionRequirement, restrictions = details |> getDependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    let packageName, versionRequirement, restrictions = details |> getDependencies |> Seq.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> Seq.head 
     versionRequirement |> shouldNotEqual (VersionRequirement.AllReleases)
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","PaketBug","paket.template"))
@@ -151,8 +149,8 @@ let ``#1429 pack deps without minimum-from-lock-file uses dependencies file rang
         |> Async.RunSynchronously
         |> ODataSearchResult.get
 
-    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    let packageName, versionRequirement, restrictions = details |> getDependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    let packageName, versionRequirement, restrictions = details |> getDependencies |> Seq.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> Seq.head 
     versionRequirement |> shouldEqual (VersionRequirement.Parse "1.2.3")
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","PaketBug","paket.template"))
@@ -168,8 +166,8 @@ let ``#1429 pack deps without minimum-from-lock-file uses specifc dependencies f
         |> Async.RunSynchronously
         |> ODataSearchResult.get
 
-    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    let packageName, versionRequirement, restrictions = details |> getDependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    let packageName, versionRequirement, restrictions = details |> getDependencies |> Seq.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> Seq.head 
     versionRequirement |> shouldEqual (VersionRequirement.Parse "[2.3.4]")
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps-specific","PaketBug","paket.template"))
@@ -185,8 +183,8 @@ let ``#1429 pack deps with minimum-from-lock-file uses specifc dependencies file
         |> Async.RunSynchronously
         |> ODataSearchResult.get
 
-    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    let packageName, versionRequirement, restrictions = details |> getDependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    let packageName, versionRequirement, restrictions = details |> getDependencies |> Seq.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> Seq.head 
     versionRequirement |> shouldEqual (VersionRequirement.Parse "[2.3.4]")
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps-specific","PaketBug","paket.template"))
@@ -423,7 +421,7 @@ let ``#1848 single template with include-referenced-projects`` () =
     |> Async.RunSynchronously
     |> ODataSearchResult.get
     |> getDependencies 
-    |> List.tryFind (fun (name,version,_) -> name = PackageName "projectB" && version = VersionRequirement.Parse "1.0.0.0") 
+    |> Seq.tryFind (fun (name,version,_) -> name = PackageName "projectB" && version = VersionRequirement.Parse "1.0.0.0") 
     |> shouldNotEqual None
 
     ZipFile.ExtractToDirectory(Path.Combine(outPath, "projectA.1.0.0.0.nupkg"), outPath)
@@ -444,14 +442,14 @@ let ``#1848 all templates without include-referenced-projects`` () =
     |> Async.RunSynchronously
     |> ODataSearchResult.get
     |> getDependencies 
-    |> List.tryFind (fun (name,version,_) -> name = PackageName "projectB" && version = VersionRequirement.Parse "1.0.0.0") 
+    |> Seq.tryFind (fun (name,version,_) -> name = PackageName "projectB" && version = VersionRequirement.Parse "1.0.0.0") 
     |> shouldNotEqual None
 
     NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "projectB") (SemVer.Parse "1.0.0.0")
     |> Async.RunSynchronously
     |> ODataSearchResult.get
     |> getDependencies 
-    |> List.tryFind (fun (name,version,_) -> name = PackageName "nunit" && version = VersionRequirement.Parse "[3.8.1]") 
+    |> Seq.tryFind (fun (name,version,_) -> name = PackageName "nunit" && version = VersionRequirement.Parse "[3.8.1]") 
     |> shouldNotEqual None
 
     ZipFile.ExtractToDirectory(Path.Combine(outPath, "projectA.1.0.0.0.nupkg"), outPath)
@@ -471,14 +469,14 @@ let ``#1848 all templates with include-referenced-projects`` () =
     |> Async.RunSynchronously
     |> ODataSearchResult.get
     |> getDependencies 
-    |> List.tryFind (fun (name,version,_) -> name = PackageName "projectB" && version = VersionRequirement.Parse "1.0.0.0") 
+    |> Seq.tryFind (fun (name,version,_) -> name = PackageName "projectB" && version = VersionRequirement.Parse "1.0.0.0") 
     |> shouldNotEqual None
 
     NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "projectB") (SemVer.Parse "1.0.0.0")
     |> Async.RunSynchronously
     |> ODataSearchResult.get
     |> getDependencies 
-    |> List.tryFind (fun (name,version,_) -> name = PackageName "nunit" && version = VersionRequirement.Parse "[3.8.1]") 
+    |> Seq.tryFind (fun (name,version,_) -> name = PackageName "nunit" && version = VersionRequirement.Parse "[3.8.1]") 
     |> shouldNotEqual None
 
     ZipFile.ExtractToDirectory(Path.Combine(outPath, "projectA.1.0.0.0.nupkg"), outPath)
@@ -498,7 +496,7 @@ let ``#1848 include-referenced-projects with non-packed project dependencies`` (
     |> Async.RunSynchronously
     |> ODataSearchResult.get
     |> getDependencies 
-    |> List.tryFind (fun (name,version,_) -> name = PackageName "nunit" && version = VersionRequirement.Parse "[3.8.1]") 
+    |> Seq.tryFind (fun (name,version,_) -> name = PackageName "nunit" && version = VersionRequirement.Parse "[3.8.1]") 
     |> shouldNotEqual None    
     
     ZipFile.ExtractToDirectory(Path.Combine(outPath, "projectA.1.0.0.0.nupkg"), outPath)

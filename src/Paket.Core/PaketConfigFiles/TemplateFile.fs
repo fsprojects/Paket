@@ -381,8 +381,6 @@ module internal TemplateFile =
             |> Array.toList
 
 
-    let private fromReg = Regex("from (?<from>.*)", RegexOptions.Compiled)
-    let private toReg = Regex("to (?<to>.*)", RegexOptions.Compiled)
     let private isExclude = Regex("\s*!\S", RegexOptions.Compiled)
     let private isComment = Regex(@"^\s*(#|(\/\/))", RegexOptions.Compiled)
     let private getFiles (map : Map<string, string>) =
@@ -390,7 +388,7 @@ module internal TemplateFile =
         | None -> []
         | Some d -> 
             d.Split '\n'
-            |> Array.filter (fun s -> (isExclude.IsMatch>>not) s && (isComment.IsMatch>>not) s)
+            |> Array.filter (fun s -> not (String.IsNullOrWhiteSpace s || isExclude.IsMatch s || isComment.IsMatch s))
             |> Seq.map (fun (line:string) ->
                 let splitted = 
                     line.Split([|"==>"|],StringSplitOptions.None)
@@ -405,9 +403,10 @@ module internal TemplateFile =
         | None -> []
         | Some d -> 
             d.Split '\n'
+            |> Array.filter (fun s -> not (String.IsNullOrWhiteSpace s))
             |> Array.filter isExclude.IsMatch
             |> Array.filter (isComment.IsMatch >> not)
-            |> Seq.map  (String.trim >> String.trimStart [|'!'|])
+            |> Seq.map (String.trim >> String.trimStart [|'!'|])
             |> List.ofSeq
 
     let private getReferences (map : Map<string, string>) =
@@ -438,7 +437,9 @@ module internal TemplateFile =
             match get "tags" with
             | None -> []
             | Some t ->
-                t.Split ' ' |> Array.map (String.trim >>String.trimChars [|','|])
+                t.Split ' ' 
+                |> Array.filter (fun s -> not (String.IsNullOrWhiteSpace s))
+                |> Array.map (String.trim >> String.trimChars [|','|])
                 |> Array.toList
 
         let developmentDependency =

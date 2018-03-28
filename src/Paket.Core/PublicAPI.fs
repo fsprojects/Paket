@@ -30,9 +30,11 @@ type Dependencies(dependenciesFileName: string) =
             match Dependencies.TryLocate() with
             | None -> ()
             | Some dependencies ->
-                RunInLockedAccessMode(dependencies.RootPath, fun () -> 
-                    emptyDir (Path.Combine(dependencies.RootPath,Constants.DefaultPackagesFolderName))
-                    emptyDir (Path.Combine(dependencies.RootPath,Constants.PaketFilesFolderName))
+                RunInLockedAccessMode(
+                    Path.Combine(dependencies.RootPath,Constants.PaketFilesFolderName), 
+                    fun () -> 
+                        emptyDir (Path.Combine(dependencies.RootPath,Constants.DefaultPackagesFolderName))
+                        emptyDir (Path.Combine(dependencies.RootPath,Constants.PaketFilesFolderName))
                 )
 
         emptyDir Constants.UserNuGetPackagesFolder
@@ -84,7 +86,7 @@ type Dependencies(dependenciesFileName: string) =
         let directory = DirectoryInfo(directory)
 
         RunInLockedAccessMode(
-            directory.FullName,
+            Path.Combine(directory.FullName,Constants.PaketFilesFolderName),
             fun () ->
                 PaketEnv.init directory
                 |> returnOrFail
@@ -100,7 +102,7 @@ type Dependencies(dependenciesFileName: string) =
         let directory = DirectoryInfo(directory)
 
         RunInLockedAccessMode(
-            directory.FullName,
+            Path.Combine(directory.FullName,Constants.PaketFilesFolderName),
             fun () ->
                 PaketEnv.initWithContent sources additional directory
                 |> returnOrFail
@@ -120,7 +122,7 @@ type Dependencies(dependenciesFileName: string) =
         let rootDirectory = dir
 
         RunInLockedAccessMode(
-            rootDirectory.FullName,
+            Path.Combine(rootDirectory.FullName,Constants.PaketFilesFolderName),
             fun () ->
                 NuGetConvert.convertR rootDirectory force credsMigrationMode
                 |> returnOrFail
@@ -130,7 +132,7 @@ type Dependencies(dependenciesFileName: string) =
     /// Converts the current package dependency graph to the simplest dependency graph.
     member this.Simplify(interactive : bool) =
         RunInLockedAccessMode(
-            this.RootPath,
+            Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
             fun () ->
                 PaketEnv.fromRootDirectory this.RootDirectory
                 >>= PaketEnv.ensureNotInStrictMode
@@ -178,11 +180,26 @@ type Dependencies(dependenciesFileName: string) =
     member this.Add(groupName: string option, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool,  createNewBindingFiles:bool, interactive: bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs, runResolver:bool, packageKind:Requirements.PackageRequirementKind): unit =
         let withBindingRedirects = if withBindingRedirects then BindingRedirectsSettings.On else BindingRedirectsSettings.Off
         RunInLockedAccessMode(
-            this.RootPath,
+            Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
             fun () -> 
                     AddProcess.Add(dependenciesFileName, groupName, PackageName(package.Trim()), version,
                                      InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None),
                                      interactive, installAfter, runResolver, packageKind))
+
+    /// Adds the given github repository to the dependencies file.
+    member this.AddGithub(groupName, repository, file) =
+        this.AddGithub(groupName, repository, file, "")
+
+    /// Adds the given github repository to the dependencies file.
+    member this.AddGithub(groupName, repository, file, version) =
+        this.AddGithub(groupName, repository, file, version, InstallerOptions.Default)
+
+    /// Adds the given github repository to the dependencies file.
+    member this.AddGithub(groupName, repository, file, version, options) =
+        RunInLockedAccessMode(
+            Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
+            fun () ->
+                AddProcess.AddGithub(dependenciesFileName, groupName, repository, file, version, options))
 
    /// Adds the given package with the given version to the dependencies file.
     member this.AddToProject(groupName, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, projectName: string, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
@@ -196,7 +213,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.AddToProject(groupName, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, projectName: string, installAfter: bool, semVerUpdateMode, touchAffectedRefs, runResolver:bool, packageKind:Requirements.PackageRequirementKind): unit =
         let withBindingRedirects = if withBindingRedirects then BindingRedirectsSettings.On else BindingRedirectsSettings.Off
         RunInLockedAccessMode(
-            this.RootPath,
+            Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
             fun () -> AddProcess.AddToProject(dependenciesFileName, groupName, PackageName package, version,
                                               InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None),
                                               projectName, installAfter, runResolver, packageKind))
@@ -204,18 +221,20 @@ type Dependencies(dependenciesFileName: string) =
     /// Adds credentials for a Nuget feed
     member this.AddCredentials(source: string, username: string, password : string, authType : string) : unit =
         RunInLockedAccessMode(
-            this.RootPath,
+            Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
             fun () -> ConfigFile.askAndAddAuth source username password authType false |> returnOrFail )
 
      /// Adds credentials for a Nuget feed
     member this.AddCredentials(source: string, username: string, password : string, authType : string, verify : bool) : unit =
         RunInLockedAccessMode(
-            this.RootPath,
+            Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
             fun () -> ConfigFile.askAndAddAuth source username password authType verify |> returnOrFail )
 
     /// Adds a token for a source
     member this.AddToken(source : string, token : string) : unit =
-        RunInLockedAccessMode(this.RootPath, fun () -> ConfigFile.AddToken(source, token) |> returnOrFail)
+        RunInLockedAccessMode(
+            Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
+            fun () -> ConfigFile.AddToken(source, token) |> returnOrFail)
 
     /// Installs all dependencies.
     member this.Install(force: bool) = this.Install(force, false, false, false, false, SemVerUpdateMode.NoRestriction, false, false, [], [], None)
@@ -228,7 +247,7 @@ type Dependencies(dependenciesFileName: string) =
     /// Installs all dependencies.
     member private this.Install(options: InstallerOptions): unit =
         RunInLockedAccessMode(
-            this.RootPath,
+            Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
             fun () -> UpdateProcess.SmartInstall(
                             DependenciesFile.ReadFromFile(dependenciesFileName), 
                             PackageResolver.UpdateMode.Install,
@@ -284,7 +303,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.Update(force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
         let withBindingRedirects = if withBindingRedirects then BindingRedirectsSettings.On else BindingRedirectsSettings.Off
         RunInLockedAccessMode(
-            this.RootPath,
+            Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
             fun () -> 
             UpdateProcess.Update(
                 dependenciesFileName,
@@ -299,7 +318,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.UpdateGroup(groupName, force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode:SemVerUpdateMode, touchAffectedRefs): unit =
         let withBindingRedirects = if withBindingRedirects then BindingRedirectsSettings.On else BindingRedirectsSettings.Off
         RunInLockedAccessMode(
-            this.RootPath,
+            Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
             fun () -> UpdateProcess.UpdateGroup(
                             dependenciesFileName,
                             GroupName groupName,
@@ -316,7 +335,7 @@ type Dependencies(dependenciesFileName: string) =
         let withBindingRedirects = if withBindingRedirects then BindingRedirectsSettings.On else BindingRedirectsSettings.Off
 
         RunInLockedAccessMode(
-            this.RootPath,
+            Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
             fun () -> UpdateProcess.UpdateFilteredPackages(dependenciesFileName, groupName, package, version,
                                                   { UpdaterOptions.Default with
                                                       Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None)
@@ -335,7 +354,7 @@ type Dependencies(dependenciesFileName: string) =
         let withBindingRedirects = if withBindingRedirects then BindingRedirectsSettings.On else BindingRedirectsSettings.Off
 
         RunInLockedAccessMode(
-            this.RootPath,
+            Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
             fun () -> UpdateProcess.UpdatePackage(dependenciesFileName, groupName, PackageName package, version,
                                                   { UpdaterOptions.Default with
                                                       Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None)
@@ -402,7 +421,7 @@ type Dependencies(dependenciesFileName: string) =
     /// Downloads the latest paket.bootstrapper into the .paket folder and try to rename it to paket.exe in order to activate magic mode.
     member this.DownloadLatestBootstrapper() : unit =
         RunInLockedAccessMode(
-            this.RootPath,
+            Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
             fun () -> 
                 this.Process Releases.downloadLatestBootstrapperAndTargets
                 let bootStrapperFileName = Path.Combine(this.RootPath,Constants.PaketFolderName, Constants.BootstrapperFileName)
@@ -417,13 +436,13 @@ type Dependencies(dependenciesFileName: string) =
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
     member this.TurnOnAutoRestore(): unit =
         RunInLockedAccessMode(
-            this.RootPath,
+            Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
             fun () -> VSIntegration.TurnOnAutoRestore |> this.Process)
 
     /// Removes paket.targets file and Import section from project files.
     member this.TurnOffAutoRestore(): unit =
         RunInLockedAccessMode(
-            this.RootPath,
+            Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
             fun () -> VSIntegration.TurnOffAutoRestore |> this.Process)
 
     /// Returns the installed version of the given package.
@@ -571,13 +590,13 @@ type Dependencies(dependenciesFileName: string) =
     /// Removes the given package from dependencies file.
     member this.Remove(groupName, package: string, force: bool, interactive: bool,installAfter: bool): unit =
         RunInLockedAccessMode(
-            this.RootPath,
+            Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
             fun () -> RemoveProcess.Remove(dependenciesFileName, groupName, PackageName package, force, interactive, installAfter))
 
     /// Removes the given package from the specified project
     member this.RemoveFromProject(groupName,package: string,force: bool, projectName: string,installAfter: bool): unit =
         RunInLockedAccessMode(
-            this.RootPath,
+            Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
             fun () -> RemoveProcess.RemoveFromProject(dependenciesFileName, groupName, PackageName package, force, projectName, installAfter))
 
     /// Shows all references files where the given package is referenced.
@@ -694,7 +713,7 @@ type Dependencies(dependenciesFileName: string) =
         |> this.Process
 
     // Packs all paket.template files.
-    member this.Pack(outputPath, ?buildConfig, ?buildPlatform, ?version, ?specificVersions, ?releaseNotes, ?templateFile, ?workingDir, ?excludedTemplates, ?lockDependencies, ?minimumFromLockFile, ?pinProjectReferences, ?symbols, ?includeReferencedProjects, ?projectUrl) =
+    member __.Pack(outputPath, ?buildConfig, ?buildPlatform, ?version, ?specificVersions, ?releaseNotes, ?templateFile, ?workingDir, ?excludedTemplates, ?lockDependencies, ?minimumFromLockFile, ?pinProjectReferences, ?symbols, ?includeReferencedProjects, ?projectUrl) =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         let specificVersions = defaultArg specificVersions Seq.empty
         let workingDir = defaultArg workingDir (dependenciesFile.FileName |> Path.GetDirectoryName)
@@ -703,7 +722,7 @@ type Dependencies(dependenciesFileName: string) =
         let pinProjectReferences = defaultArg pinProjectReferences false
         let symbols = defaultArg symbols false
         let includeReferencedProjects = defaultArg includeReferencedProjects false
-        let projectUrl = defaultArg (Some(projectUrl)) None
+        let projectUrl = defaultArg (Some projectUrl) None
         PackageProcess.Pack(workingDir, dependenciesFile, outputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, minimumFromLockFile, pinProjectReferences, symbols, includeReferencedProjects, projectUrl)
 
     /// Pushes a nupkg file.
@@ -711,8 +730,8 @@ type Dependencies(dependenciesFileName: string) =
         let urlWithEndpoint = RemoteUpload.GetUrlWithEndpoint url endPoint
         let envKey =
             match Environment.GetEnvironmentVariable("NUGET_KEY") |> Option.ofObj with
-            | Some(key) ->
-                Some(key)
+            | Some key ->
+                Some key
             | None ->
                 match Environment.GetEnvironmentVariable("nugetkey") |> Option.ofObj with
                 | Some(key) ->
@@ -722,7 +741,9 @@ type Dependencies(dependenciesFileName: string) =
 
         let configKey =
             let url = defaultArg url "https://nuget.org"
-            ConfigFile.GetAuthentication url |> Option.bind (fun a -> match a with Token t -> Some t | _ -> None )
+            AuthService.GetGlobalAuthenticationProvider url
+            |> AuthProvider.retrieve false
+            |> Option.bind (fun a -> match a with Token t -> Some t | _ -> None )
 
         let firstPresentKey =
             [apiKey; envKey; configKey]

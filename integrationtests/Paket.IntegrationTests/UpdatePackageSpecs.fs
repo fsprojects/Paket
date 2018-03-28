@@ -148,7 +148,7 @@ let ``#1635 should tell about auth issue``() =
         failwith "error expected"
     with
     | exn when exn.Message.Contains("Unable to retrieve package versions for 'Argu'") -> 
-        exn.Message.Contains "Request to 'https://www.myget.org/F/paket-test/api/v3/index.json' failed with: 'Unauthorized'"
+        exn.Message.Contains "Could not load resources from 'https://www.myget.org/F/paket-test/api/v3/index.json': Unauthorized (401)"
             |> shouldEqual true
         ()
 

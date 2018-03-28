@@ -9,7 +9,7 @@ open Logging
 /// The .NET Standard version.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 [<RequireQualifiedAccess>]
-type DotNetStandardVersion = 
+type DotNetStandardVersion =
     | V1_0
     | V1_1
     | V1_2
@@ -52,7 +52,7 @@ type DotNetStandardVersion =
 [<RequireQualifiedAccess>]
 /// The Framework version.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
-type FrameworkVersion = 
+type FrameworkVersion =
     | V1
     | V1_1
     | V2
@@ -141,17 +141,20 @@ type FrameworkVersion =
 type UAPVersion =
     | V10
     | V10_0_15138
+    | V10_0_16300
     | V10_1
     override this.ToString() =
         match this with
         | V10 -> "10.0"
         | V10_0_15138 -> "10.0.15138"
+        | V10_0_16300 -> "10.0.16300"
         | V10_1 -> "10.1"
 
     member this.ShortString() =
         match this with
         | UAPVersion.V10 -> "10.0"
         | UAPVersion.V10_0_15138 -> "10.0.15138"
+        | UAPVersion.V10_0_16300 -> "10.0.16300"
         | UAPVersion.V10_1 -> "10.1"
 
     member this.NetCoreVersion =
@@ -159,7 +162,8 @@ type UAPVersion =
         match this with
         // Assumed from C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETCore
         | UAPVersion.V10
-        | UAPVersion.V10_0_15138 -> "v5.0"
+        | UAPVersion.V10_0_15138
+        | UAPVersion.V10_0_16300 -> "v5.0"
         // No idea, for now use 5.0 to keep project files constant
         // If someone starts complaining fix this and update the baselines.
         | UAPVersion.V10_1 -> "v5.0"
@@ -168,6 +172,7 @@ type UAPVersion =
         match s with
         | "" | "1" | "10" -> Some UAPVersion.V10
         | "10.0.15138" -> Some UAPVersion.V10_1
+        | "10.0.16300" -> Some UAPVersion.V10_1
         | "10.1" -> Some UAPVersion.V10_1
         | _ -> None
 
@@ -178,16 +183,19 @@ type DotNetCoreAppVersion =
     | V1_0
     | V1_1
     | V2_0
+    | V2_1
     member private this.NumKey =
         match this with
         | V1_0 -> 0
         | V1_1 -> 1
         | V2_0 -> 2
+        | V2_1 -> 3
     static member private FromNum num =
         match num with
         | 0 -> V1_0
         | 1 -> V1_1
         | 2 -> V2_0
+        | 3 -> V2_1
         | _   -> failwithf "'%i' has no corresponding framework version" num
     static member (<->) (lower:DotNetCoreAppVersion,upper:DotNetCoreAppVersion) =
         if lower.NumKey < upper.NumKey then
@@ -199,16 +207,19 @@ type DotNetCoreAppVersion =
         | V1_0 -> "v1.0"
         | V1_1 -> "v1.1"
         | V2_0 -> "v2.0"
+        | V2_1 -> "v2.1"
     member this.ShortString() =
         match this with
         | DotNetCoreAppVersion.V1_0 -> "1.0"
         | DotNetCoreAppVersion.V1_1 -> "1.1"
         | DotNetCoreAppVersion.V2_0 -> "2.0"
+        | DotNetCoreAppVersion.V2_1 -> "2.1"
     static member TryParse s =
         match s with
         | "" | "1" -> Some (DotNetCoreAppVersion.V1_0)
         | "1.1" -> Some (DotNetCoreAppVersion.V1_1)
         | "2" -> Some (DotNetCoreAppVersion.V2_0)
+        | "2.1" -> Some (DotNetCoreAppVersion.V2_1)
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -458,7 +469,7 @@ type TizenVersion =
         | _ -> None
 /// Framework Identifier type.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
-type FrameworkIdentifier = 
+type FrameworkIdentifier =
     | DotNetFramework of FrameworkVersion
     | UAP of UAPVersion
     | DNX of FrameworkVersion
@@ -480,7 +491,7 @@ type FrameworkIdentifier =
     | Silverlight of SilverlightVersion
     | Tizen of TizenVersion
 
-    override x.ToString() = 
+    override x.ToString() =
         match x with
         | DotNetFramework v -> "net" + v.ShortString()
         | DNX v -> "dnx" + v.ShortString()
@@ -552,6 +563,7 @@ type FrameworkIdentifier =
         | XamarinWatch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | UAP UAPVersion.V10 -> [ Windows WindowsVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1; DotNetStandard DotNetStandardVersion.V1_4  ]
         | UAP UAPVersion.V10_0_15138 -> [ UAP UAPVersion.V10 ]
+        | UAP UAPVersion.V10_0_16300 -> [ UAP UAPVersion.V10; DotNetStandard DotNetStandardVersion.V2_0 ]
         | UAP UAPVersion.V10_1 -> [ UAP UAPVersion.V10_0_15138 ]
         | DotNetFramework FrameworkVersion.V1 -> [ ]
         | DotNetFramework FrameworkVersion.V1_1 -> [ DotNetFramework FrameworkVersion.V1 ]
@@ -584,6 +596,7 @@ type FrameworkIdentifier =
         | DotNetCoreApp DotNetCoreAppVersion.V1_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | DotNetCoreApp DotNetCoreAppVersion.V1_1 -> [ DotNetCoreApp DotNetCoreAppVersion.V1_0 ]
         | DotNetCoreApp DotNetCoreAppVersion.V2_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V1_1;  DotNetStandard DotNetStandardVersion.V2_0 ]
+        | DotNetCoreApp DotNetCoreAppVersion.V2_1 -> [ DotNetCoreApp DotNetCoreAppVersion.V1_1;  DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetUnity DotNetUnityVersion.V3_5_Full -> [ ]
         | DotNetUnity DotNetUnityVersion.V3_5_Subset -> [ ]
         | DotNetUnity DotNetUnityVersion.V3_5_Micro -> [ ]
@@ -753,13 +766,13 @@ module FrameworkDetection =
     let DetectFromPath(path : string) : FrameworkIdentifier option =
         let path = path.Replace("\\", "/").ToLower()
         let fi = new FileInfo(path)
-        
+
         if String.containsIgnoreCase ("lib/" + fi.Name) path then Some(DotNetFramework(FrameworkVersion.V1))
-        else 
+        else
             let startPos = path.LastIndexOf("lib/")
             let endPos = path.LastIndexOf(fi.Name,StringComparison.OrdinalIgnoreCase)
             if startPos < 0 || endPos < 0 then None
-            else 
+            else
                 Extract(path.Substring(startPos + 4, endPos - startPos - 5))
 
 
@@ -905,7 +918,7 @@ type PortableProfileType =
         | Profile328 -> "Profile328"
         | Profile336 -> "Profile336"
         | Profile344 -> "Profile344"
-        
+
     member x.Frameworks =
         // http://nugettoolsdev.azurewebsites.net/4.0.0/parse-framework?framework=.NETPortable%2CVersion%3Dv0.0%2CProfile%3DProfile3
         match x with
@@ -977,7 +990,7 @@ type TargetProfile =
     { RawTargetProfile : TargetProfileRaw; CompareString : string }
     override x.ToString() = x.CompareString
     member x.IsUnsupportedPortable = x.RawTargetProfile.IsUnsupportedPortable
-    
+
     override x.Equals(y) =
         match y with
         | :? TargetProfile as r -> x.CompareString.Equals(r.CompareString)
@@ -985,7 +998,7 @@ type TargetProfile =
     override x.GetHashCode() = x.CompareString.GetHashCode()
     interface System.IComparable with
         member x.CompareTo(y) =
-            match y with 
+            match y with
             | :? TargetProfile as r -> x.CompareString.CompareTo(r.CompareString)
             | _ -> failwith "wrong type"
 
@@ -1052,6 +1065,7 @@ module KnownTargetProfiles =
         DotNetCoreAppVersion.V1_0
         DotNetCoreAppVersion.V1_1
         DotNetCoreAppVersion.V2_0
+        DotNetCoreAppVersion.V2_1
     ]
 
     let DotNetUnityVersions = [
@@ -1113,6 +1127,7 @@ module KnownTargetProfiles =
     let UAPVersons = [
         UAPVersion.V10
         UAPVersion.V10_0_15138
+        UAPVersion.V10_0_16300
         UAPVersion.V10_1
     ]
 
@@ -1185,11 +1200,11 @@ module KnownTargetProfiles =
         PortableProfileType.Profile259
         PortableProfileType.Profile328
         PortableProfileType.Profile336
-        PortableProfileType.Profile344 ] 
+        PortableProfileType.Profile344 ]
 
     let AllDotNetProfiles =
-       DotNetFrameworkProfiles @ 
-       DotNetUnityProfiles @ 
+       DotNetFrameworkProfiles @
+       DotNetUnityProfiles @
        WindowsProfiles @
        WindowsPhoneAppProfiles @
        UAPProfiles @
@@ -1223,8 +1238,8 @@ module KnownTargetProfiles =
           Native(Release,X64)
           Native(Release,Arm)]
 
-    let AllProfiles = 
-        (AllNativeProfiles |> List.map TargetProfile.SinglePlatform) @ 
+    let AllProfiles =
+        (AllNativeProfiles |> List.map TargetProfile.SinglePlatform) @
           AllDotNetStandardAndCoreProfiles @
           AllDotNetProfiles
         |> Set.ofList
@@ -1252,7 +1267,7 @@ module KnownTargetProfiles =
 module SupportCalculation =
     let isSupportedNotEqual (portable:PortableProfileType) (other:PortableProfileType) =
         let name, tfs = portable.ProfileName, portable.Frameworks
-        
+
         let otherName, otherfws = other.ProfileName, other.Frameworks
         let weSupport =
             tfs
@@ -1264,7 +1279,7 @@ module SupportCalculation =
                 weSupport |> List.exists ((=) fw))
             |> Seq.length
         relevantFrameworks >= tfs.Length && portable <> other
-        
+
     let getSupported (portable:PortableProfileType) =
         let name, tfs = portable.ProfileName, portable.Frameworks
         KnownTargetProfiles.AllPortableProfiles
@@ -1278,7 +1293,7 @@ module SupportCalculation =
         let directMap = supportMap.[p]
         directMap
         |> List.append (directMap |> List.collect (buildSupportMap supportMap))
-        
+
     let filterMap pos (supportMap:SupportMap) : SupportMap =
         supportMap
         |> toSeq
@@ -1295,7 +1310,7 @@ module SupportCalculation =
                 (supported
                  |> List.skip (pos + 1)
                  |> List.filter (fun s -> supportList |> List.contains s |> not))
-            ) 
+            )
         |> ofSeq
 
     // Optimize support map, ie remove entries which are not needed
@@ -1315,31 +1330,39 @@ module SupportCalculation =
     let private getSupportedPortables p =
         getSupported p
         |> List.choose (function TargetProfile.PortableProfile p -> Some p | _ -> failwithf "Expected portable")
-        
+
     let createInitialSupportMap () =
         KnownTargetProfiles.AllPortableProfiles
         |> List.map (fun p -> p, getSupportedPortables p)
         |> ofSeq
 
-    let mutable private supportMap = optimizeSupportMap (createInitialSupportMap())
+    let mutable private supportMap: SupportMap option = None
+
+    let private getSupportMap () =
+        match supportMap with
+        | Some supportMap ->
+            supportMap
+        | None ->
+            supportMap <- Some (optimizeSupportMap (createInitialSupportMap()))
+            supportMap.Value
 
     let getSupportedPreCalculated (p:PortableProfileType) =
-        match supportMap.TryGetValue p with
+        match getSupportMap().TryGetValue p with
         | true, v -> v
         | _ ->
             match p with
             | UnsupportedProfile tfs ->
-                match supportMap.TryGetValue p with
+                match getSupportMap().TryGetValue p with
                 | true, v -> v
                 | _ ->
-                    let clone = supportMap |> toSeq |> ofSeq
+                    let clone = getSupportMap() |> toSeq |> ofSeq
                     clone.[p] <- getSupportedPortables p
                     let opt = optimizeSupportMap clone
                     let result = opt.[p]
-                    supportMap <- opt
+                    supportMap <- Some opt
                     result
             | _ -> failwithf "Expected that default profiles are already created."
-    
+
     let private findPortablePriv =
         memoize (fun (fws: _ list) ->
             if fws.Length = 0 then failwithf "can not find portable for an empty list (Details: Empty lists need to be handled earlier with a warning)!"
@@ -1350,7 +1373,7 @@ module SupportCalculation =
                     | MonoTouch
                     | DNXCore _
                     | UAP _
-                    | MonoAndroid _ 
+                    | MonoAndroid _
                     | XamariniOS
                     | XamarinTV
                     | XamarinWatch
@@ -1393,7 +1416,7 @@ module SupportCalculation =
                 // portable projects...
                 match tf with
                 | DotNetStandard DotNetStandardVersion.V1_0 ->
-                    [ Profile31 
+                    [ Profile31
                       Profile49
                       Profile78
                       Profile84
@@ -1404,7 +1427,7 @@ module SupportCalculation =
                       Profile111 ]
                 | DotNetStandard DotNetStandardVersion.V1_2 ->
                     [ Profile32
-                      Profile44 
+                      Profile44
                       Profile151 ]
                 | MonoTouch
                 | MonoAndroid _
@@ -1415,7 +1438,7 @@ module SupportCalculation =
                     // http://danrigby.com/2014/05/14/supported-pcl-profiles-xamarin-for-visual-studio-2/
                     [ Profile5
                       Profile6
-                      Profile7 
+                      Profile7
                       Profile14
                       Profile19
                       Profile24
@@ -1518,14 +1541,14 @@ type TargetProfile with
     /// Get all platforms y for which x >= y holds
     member inline x.SupportedPlatformsTransitive =
         SupportCalculation.getSupportedPlatformsTransitive x
-        
+
     member inline x.SupportedPlatforms : TargetProfile Set =
         SupportCalculation.getSupportedPlatforms x
 
     /// x < y, see y >= x && x <> y
     member inline x.IsSmallerThan y =
         x.IsSupportedBy y && x <> y
-        
+
     member inline x.IsSmallerThanOrEqual y =
         x.IsSupportedBy y
 

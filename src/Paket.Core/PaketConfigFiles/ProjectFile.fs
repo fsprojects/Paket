@@ -278,6 +278,15 @@ module ProjectFile =
     let private appendMap first second =
         Map.fold (fun state key value -> Map.add key value state) first second
 
+    let inline getPackageIdAttribute (pf:ProjectFile) (node:XmlNode) =
+        let maybePackageId =
+            node
+            |> getAttribute "Include"
+            |> Option.orElseWith (fun _ -> node |> getAttribute "Update")
+        match maybePackageId with
+        | Some id -> id
+        | None -> failwithf "project file '%s' contains a reference without 'Include' or 'Update' attribute" pf.FileName
+
     let private calculatePropertyMap (projectFile:ProjectFile) defaultProperties =
         let defaultProperties = appendMap defaultProperties (getReservedProperties projectFile)
 
@@ -1047,6 +1056,13 @@ module ProjectFile =
     let getTargetFrameworkVersion (project:ProjectFile) = getProperty "TargetFrameworkVersion" project
     let getTargetFramework (project:ProjectFile) = getProperty "TargetFramework" project
     let getTargetFrameworks (project:ProjectFile) = getProperty "TargetFrameworks" project
+    let getTargetFrameworksParsed (project:ProjectFile) = 
+        getTargetFrameworks project 
+        |> Option.map (fun x -> x.Split([|';'|],StringSplitOptions.RemoveEmptyEntries))
+        |> Option.toArray
+        |> Array.concat
+        |> Array.map (fun x -> x.Trim())
+        |> Array.toList
 
     let getToolsVersion (project:ProjectFile) =
         let adjustIfWeHaveSDK v =
@@ -1080,13 +1096,7 @@ module ProjectFile =
             let frameworks = 
                 match getTargetFrameworkVersion project with
                 | None -> 
-                    let xs = 
-                        getTargetFrameworks project 
-                        |> Option.map (fun x -> x.Split([|';'|],StringSplitOptions.RemoveEmptyEntries))
-                        |> Option.toArray
-                        |> Array.concat
-                        |> Array.map (fun x -> x.Trim())
-                        |> Seq.toList
+                    let xs = getTargetFrameworksParsed project 
                     (getTargetFramework project |> Option.toList) @ xs
                     
                 | Some x -> [prefix() + (x.Replace("v",""))]
@@ -1459,10 +1469,10 @@ module ProjectFile =
         |> List.filter (getDescendants "PrivateAssets" >>
                         List.exists (fun x -> x.InnerText = "All") >>
                         not)
-        
+
     let getPackageReferences project =
         packageReferencesNoPrivateAssets project
-        |> List.map (getAttribute "Include" >> Option.get)
+        |> List.map (getPackageIdAttribute project)
 
     let getCliReferences project =
         cliToolsNoPrivateAssets project
@@ -1578,7 +1588,10 @@ module ProjectFile =
         let targetFramework = 
             match getTargetFramework project with
             | Some x -> x
-            | None -> ""
+            | None ->
+                match getTargetFrameworksParsed project with
+                | fwk :: _ -> fwk
+                | [] -> ""
 
         let platforms =
             if not (String.IsNullOrWhiteSpace buildPlatform) then 
@@ -1631,8 +1644,7 @@ module ProjectFile =
                     VersionRange.AtLeast (v.Replace("*","0"))
                 else
                     VersionRange.Exactly v
-
-            { NugetPackage.Id = node |> getAttribute "Include" |> Option.get
+            { NugetPackage.Id = getPackageIdAttribute projectFile node
               VersionRange = versionRange
               Kind = NugetPackageKind.Package
               TargetFramework = None })
@@ -1658,6 +1670,18 @@ module ProjectFile =
               VersionRange = versionRange
               Kind = NugetPackageKind.DotnetCliTool
               TargetFramework = None })
+
+    let getAutoGenerateBindingRedirects (project:ProjectFile) = getProperty "AutoGenerateBindingRedirects" project
+    let setOrCreateAutoGenerateBindingRedirects (project:ProjectFile) =
+        match getAutoGenerateBindingRedirects project with
+        | Some _ -> project.Document
+                    |> getDescendants "AutoGenerateBindingRedirects"
+                    |> List.iter(fun x -> x.InnerText <- "true")
+        | _ -> match project.Document |> getDescendants "PropertyGroup" with
+               | x :: _ -> x.AppendChild (createNodeSet "AutoGenerateBindingRedirects" "true" project) |> ignore
+               | _ -> ()
+
+        save false project
 
 type ProjectFile with
 
@@ -1741,7 +1765,11 @@ type ProjectFile with
 
     member this.GetAssemblyName () = ProjectFile.getAssemblyName this
 
-    static member LoadFromStream(fullName:string, stream:Stream) = ProjectFile.loadFromStream fullName stream 
+    member this.GetAutoGenerateBindingRedirects() = ProjectFile.getAutoGenerateBindingRedirects this
+
+    member this.SetOrCreateAutoGenerateBindingRedirects() = ProjectFile.setOrCreateAutoGenerateBindingRedirects this
+
+    static member LoadFromStream(fullName:string, stream:Stream) = ProjectFile.loadFromStream fullName stream
 
     static member LoadFromFile(fileName:string) =  ProjectFile.loadFromFile fileName
 
@@ -1896,13 +1924,12 @@ type ProjectFile with
 
     member this.ProjectsWithTemplates projects =
         projects
-        |> Seq.filter(fun proj ->
-            if proj = this then true
-            else
-                let templateFilename = proj.FindTemplatesFile()
-                match templateFilename with
-                | Some tfn -> TemplateFile.IsProjectType tfn
-                | None -> false
+        |> Seq.filter (fun proj ->
+            if proj = this then true else
+            let templateFilename = proj.FindTemplatesFile()
+            match templateFilename with
+            | Some tfn -> TemplateFile.IsProjectType tfn
+            | None -> false
         )
 
     member this.GetAllReferencedProjects (onlyWithOutput,cache:Dictionary<int,(ProjectFile)>*Dictionary<string,int list>) =

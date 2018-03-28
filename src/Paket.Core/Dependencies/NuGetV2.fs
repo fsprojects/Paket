@@ -228,9 +228,7 @@ let private handleODataEntry nugetURL packageName version entry =
       LicenseUrl = licenseUrl
       Version = (SemVer.Parse v).Normalize()
       Unlisted = publishDate = Constants.MagicUnlistingDate }
-    |> NuGetPackageCache.withDependencies dependencies
-
-
+        .WithDependencies dependencies
 
 // parse search results.
 let parseODataListDetails (url,nugetURL,packageName:PackageName,version:SemVerInfo,doc) : ODataSearchResult =
@@ -340,7 +338,7 @@ let getDetailsFromNuGetViaODataFast isVersionAssumed nugetSource (packageName:Pa
         let handleEntryUrl url =
             async {
                 try
-                    let! raw = getFromUrl(nugetSource.BasicAuth,url,acceptXml)
+                    let! raw = getFromUrl(nugetSource.Authentication,url,acceptXml)
                     if verbose then
                         tracefn "Response from %s:" url
                         tracefn ""
@@ -354,7 +352,7 @@ let getDetailsFromNuGetViaODataFast isVersionAssumed nugetSource (packageName:Pa
         let handleListUrl url =
             async {
                 try
-                    let! raw = getFromUrl(nugetSource.BasicAuth,url,acceptXml)
+                    let! raw = getFromUrl(nugetSource.Authentication,url,acceptXml)
                     if verbose then
                         tracefn "Response from %s:" url
                         tracefn ""
@@ -401,7 +399,7 @@ let FindPackages(auth, nugetURL, packageNamePrefix, maxResults) =
     let url = sprintf "%s/Packages()?$filter=IsLatestVersion and IsAbsoluteLatestVersion and substringof('%s',tolower(Id))" nugetURL ((packageNamePrefix:string).ToLowerInvariant())
     async {
         try
-            let! raw = getFromUrl(auth |> Option.map toCredentials,url,acceptXml)
+            let! raw = getFromUrl(auth,url,acceptXml)
             let doc = XmlDocument()
             doc.LoadXml raw
             return

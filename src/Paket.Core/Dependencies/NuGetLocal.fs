@@ -98,6 +98,6 @@ let getDetailsFromLocalNuGetPackage isCache alternativeProjectRoot root localNuG
               LicenseUrl = nuspec.LicenseUrl
               Version = version.Normalize()
               Unlisted = isCache }
-            |> NuGetPackageCache.withDependencies nuspec.Dependencies.Value
+               .WithDependencies nuspec.Dependencies.Value
             |> ODataSearchResult.Match
     }

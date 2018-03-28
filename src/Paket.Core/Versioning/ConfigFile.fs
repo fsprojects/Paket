@@ -105,10 +105,10 @@ let getAuthFromNode (node : XmlNode) =
         let authType =                         
             match node.Attributes.["authType"] with
             | null -> AuthType.Basic
-            | n -> n.Value |> Utils.parseAuthTypeString
+            | n -> n.Value |> NetUtils.parseAuthTypeString
 
         let salt = node.Attributes.["salt"].Value
-        Credentials (username, Decrypt salt password, authType)
+        Credentials ({Username = username; Password = Decrypt salt password; Type = authType})
     | "token" -> Token node.Attributes.["value"].Value
     | _ -> failwith "unknown node"
 
@@ -132,7 +132,7 @@ let private setToken (token : string) (node : XmlElement) =
 
 /// Check if the provided credentials for a specific source are correct
 let checkCredentials(url, cred) = 
-    let client = Utils.createHttpClient(url,cred)
+    let client = NetUtils.createHttpClient(url,cred)
     try 
         client.DownloadData (Uri url) |> ignore
         true
@@ -160,18 +160,12 @@ let GetAuthenticationForUrl =
         getSourceNodes credentialsNode source "credential" @ getSourceNodes credentialsNode source "token"
 
     match sourceNodes with
-    | sourceNode :: _ ->
-        let auth = getAuthFromNode sourceNode
-        if checkCredentials (url, Some auth) then 
-            Some auth
-        else 
-            failwithf "Credentials from authentication store for %s are invalid" source
-            None
+    | sourceNode :: _ -> Some (getAuthFromNode sourceNode)
     | _ -> None)
 
 /// Get the authentication from the authentication store for a specific source
-let GetAuthentication (source : string) =
-    GetAuthenticationForUrl(source,source)
+let GetAuthenticationProvider (source : string) =
+    AuthProvider.ofFunction (fun _ -> GetAuthenticationForUrl(source,source))
 
 let AddCredentials (source, username, password, authType) = 
     trial { 
@@ -181,7 +175,7 @@ let AddCredentials (source, username, password, authType) =
             | None -> createSourceNode credentialsNode source "credential" |> Some
             | Some existingNode -> 
                 match getAuthFromNode existingNode with
-                | Credentials (_, existingPassword, _) ->
+                | Credentials ({Password = existingPassword}) ->
                     if existingPassword <> password then existingNode |> Some
                     else None
                 | _ -> None
@@ -237,7 +231,7 @@ let askAndAddAuth (source : string) (passedUserName : string) (passedPassword : 
     let authResult = 
         if verify then 
             tracef "Verifying the source URL and credentials...\n"
-            let cred = Credentials(username, password, parseAuthTypeString authType)
+            let cred = Credentials({Username = username; Password = password; Type = parseAuthTypeString authType})
             checkCredentials(source, Some cred) 
         else 
             true
