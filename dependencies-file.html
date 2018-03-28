@@ -265,19 +265,17 @@ the installation to these. You can control this in the
 <a href="paket-install.html"><code>paket install</code></a> again.</p>
 <h4><a name="External-lock-files" class="anchor" href="#External-lock-files">External lock files</a></h4>
 <p>Paket is able to consume external <a href="lock-file.html"><code>paket.lock</code> files</a>.
-External lock files allow to pin dependencies to the dependencies of a runtime platform like <a href="https://azure.microsoft.com/en-us/services/functions/">Azure Functions</a>.</p>
+External lock files allow to pin dependencies to the versions that are used on a target runtime platform like <a href="https://azure.microsoft.com/en-us/services/functions/">Azure Functions</a>.</p>
 <p>In the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> you can use <code>external_lock</code> and point to a http resource or a local file:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 <span class="l">4: </span>
 <span class="l">5: </span>
-<span class="l">6: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="c">// Only the target frameworks that are used in projects.</span>
-<span class="k">source</span> https://nuget.org/api/v2
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
 
-external_lock https://myUrl/azurefunctions-v1-packet.lock
+external_lock https://myUrl/azurefunctions-v1-paket.lock
 
 <span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">2.0</span>
 </code></pre></td></tr></table>
