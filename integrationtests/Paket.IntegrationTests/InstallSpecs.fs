@@ -518,6 +518,13 @@ let ``#3062 install should use external lock file``() =
     newLockFile.Groups.[GroupName "main"].Resolution.ContainsKey (PackageName "FAKE") |> shouldEqual true
     newLockFile.Groups.[GroupName "main"].Resolution.[PackageName "Machine.Specifications"].Version |> shouldEqual (SemVer.Parse "0.12")
 
+[<Test>]
+let ``#3062 install should use external azure functions v1 lock file from http``() =
+    let newLockFile = install "i003062-azurefunctions"
+    newLockFile.Groups.[GroupName "main"].Resolution.ContainsKey (PackageName "FAKE") |> shouldEqual true
+    newLockFile.Groups.[GroupName "main"].Resolution.[PackageName "Newtonsoft.Json"].Version |> shouldEqual (SemVer.Parse "9.0.1")
+    newLockFile.Groups.[GroupName "main"].Resolution.[PackageName "Microsoft.Azure.WebJobs.Core"].Version |> shouldEqual (SemVer.Parse "2.2.0")
+
 
 #if INTERACTIVE
 ;;
