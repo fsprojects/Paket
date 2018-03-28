@@ -180,15 +180,14 @@ If you change the target framework of the projects then you need to run
 #### External lock files
 
 Paket is able to consume external [`paket.lock` files](lock-file.html). 
-External lock files allow to pin dependencies to the dependencies of a runtime platform like [Azure Functions](https://azure.microsoft.com/en-us/services/functions/).
+External lock files allow to pin dependencies to the versions that are used on a target runtime platform like [Azure Functions](https://azure.microsoft.com/en-us/services/functions/).
 
 In the [`paket.dependencies` file](dependencies-file.html) you can use `external_lock` and point to a http resource or a local file:
 
 ```paket
-// Only the target frameworks that are used in projects.
 source https://nuget.org/api/v2
 
-external_lock https://myUrl/azurefunctions-v1-packet.lock
+external_lock https://myUrl/azurefunctions-v1-paket.lock
 
 nuget Example >= 2.0
 ```
