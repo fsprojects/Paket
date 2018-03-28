@@ -250,11 +250,20 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
             let externalLockDependencies = 
                 group.ExternalLocks
-                |> List.map (fun x -> 
-                    let fi = FileInfo x
-                    if not (File.Exists fi.FullName) then
-                        failwithf "The external lock file %s that was referenced in group %O does not exist." fi.FullName group.Name
-                    LockFile.LoadFrom fi.FullName)
+                |> List.map (fun x ->
+                    if x.StartsWith("http://") || x.StartsWith("https://") then
+                        use client = createHttpClient(x, None)
+                        let folder = DirectoryInfo(Path.Combine(Path.GetTempPath(),"external_paket",(hash x).ToString()))
+                        if not folder.Exists then
+                            folder.Create()
+                        let fileName = Path.Combine(folder.FullName,"paket.lock")
+                        client.DownloadFile(x,fileName)
+                        LockFile.LoadFrom fileName
+                    else
+                        let fi = try FileInfo x with | exn -> failwithf "The external lock file %s that was referenced in group %O has invalid path. Message: %s" x group.Name exn.Message
+                        if not (File.Exists fi.FullName) then
+                            failwithf "The external lock file %s that was referenced in group %O does not exist." fi.FullName group.Name
+                        LockFile.LoadFrom fi.FullName)
                 |> Seq.collect (fun lockFile ->
                     match lockFile.Groups |> Map.tryFind group.Name with
                     | None -> Seq.empty
