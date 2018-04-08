@@ -25,12 +25,8 @@ This guide will show you
 
 ### Downloading Paket's Bootstrapper
 
-1. Create a `.paket` directory in the root of your solution.
-1. Download the latest
-   [`paket.bootstrapper.exe`](https://github.com/fsprojects/Paket/releases/latest)
-   into that directory.
-1. Rename `.paket/paket.bootstrapper.exe` to `.paket/paket.exe`.
-   [Read more about "magic mode"](bootstrapper.html#Magic-mode).
+1. In the root directory of your solution, execute `curl -fsSL https://raw.githubusercontent.com/fsprojects/Paket/web-install/install/web-install.fsx | fsharpi --quiet --readline-`
+   * This will execute a script that downloads the latest `paket.bootstrapper.exe` and save it to `.paket/paket.exe`. [Read more about "magic mode"](bootstrapper.html#magic-mode).
 1. Commit `.paket/paket.exe` to your repository.
 1. After the first `.paket/paket.exe` invocation Paket will create a couple of
    files in `.paket` — commit those as well.
