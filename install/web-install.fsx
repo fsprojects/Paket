@@ -1,4 +1,5 @@
-// This script downloades and saves the latest paket bootstrapper (in magic mode) into ./.paket/ . 
+// This script downloades and saves the latest paket bootstrapper (in magic mode) into ./.paket/ .
+// curl -fsSL https://raw.githubusercontent.com/fsprojects/Paket/web-install/install/web-install.fsx | fsharpi --quiet --readline-
 
 open System
 open System.IO
