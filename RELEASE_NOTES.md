@@ -1,3 +1,6 @@
+#### 5.156.0 - 2018-04-12
+* Support monoandroid version 8.1 - https://github.com/fsprojects/Paket/pull/3146
+
 #### 5.155.0 - 2018-03-28
 * New external_lock file parser to mitigate Azure Functions dependency trouble - https://fsprojects.github.io/Paket/dependencies-file.html#External-lock-files
 
