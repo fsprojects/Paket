@@ -138,6 +138,9 @@
     <Content Include="PackagesConfig\xunit.visualstudio.packages.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="PackagesConfig\xunit.visualstudio.packages2.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="PackagesConfig\asp.net.packages.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

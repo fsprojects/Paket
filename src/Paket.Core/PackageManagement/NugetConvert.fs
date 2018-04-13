@@ -217,9 +217,9 @@ module ConvertResultR =
           PaketEnv = paketEnv
           SolutionFiles = solutionFiles }
 
-let createPackageRequirement sources (packageName, versionRange, restrictions) dependenciesFileName = 
+let createPackageRequirement sources (packageName, versionRequirement, restrictions) dependenciesFileName = 
      { Name = PackageName packageName
-       VersionRequirement = VersionRequirement(versionRange, PreReleaseStatus.No)
+       VersionRequirement = versionRequirement
        ResolverStrategyForDirectDependencies = None
        ResolverStrategyForTransitives = None
        Settings = { InstallSettings.Default with FrameworkRestrictions = restrictions }
@@ -240,7 +240,7 @@ let private addFSharpCoreToDependenciesIfRequired nugetEnv packages =
         packages
         |> Seq.exists (fun (n,_,_,_) -> "fsharp.core".Equals(n, StringComparison.OrdinalIgnoreCase))
     if hasFSharpProject && not hasFSharpCorePackage then
-        let fsCore = ("FSharp.Core", VersionRange.AtLeast "0",FrameworkRestriction.NoRestriction, NugetPackageKind.Package)
+        let fsCore = ("FSharp.Core", VersionRequirement.AllReleases,FrameworkRestriction.NoRestriction, NugetPackageKind.Package)
         fsCore :: packages
     else
         packages
@@ -252,12 +252,12 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     let allVersionsGroupped =
         nugetEnv.NuGetProjectFiles
         |> List.collect (fun (pf,c) -> 
-                             c 
-                             |> Option.map (fun x -> x.Packages) 
-                             |> Option.toList 
-                             |> List.concat 
-                             |> List.append (ProjectFile.dotNetCorePackages pf)
-                             |> List.append (ProjectFile.cliTools pf))
+            c 
+            |> Option.map (fun x -> x.Packages) 
+            |> Option.toList
+            |> List.concat
+            |> List.append (ProjectFile.dotNetCorePackages pf)
+            |> List.append (ProjectFile.cliTools pf))
         |> List.groupBy (fun p -> p.Id)
 
     let findDistinctPackages selector =
@@ -270,13 +270,13 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             if List.length versions > 1 then 
               traceWarnfn message name versions
 
-    findWarnings (List.choose (fun p -> match p.VersionRange with Specific v -> Some v | _ -> None) >> List.distinct >> List.map string) 
+    findWarnings (List.choose (fun p -> match p.VersionRequirement.Range with Specific v -> Some v | _ -> None) >> List.distinct >> List.map string) 
         "Package %s is referenced multiple times in different versions: %A. Paket will choose the latest one." 
     findWarnings (List.map (fun p -> p.TargetFramework) >> List.distinct >> List.choose id >> List.map string) 
         "Package %s is referenced multiple times with different target frameworks : %A. Paket may disregard target framework."
 
     let latestVersions = 
-        findDistinctPackages (List.map (fun p -> p.VersionRange, p.TargetFramework, p.Kind) >> List.distinct)
+        findDistinctPackages (List.map (fun p -> p.VersionRequirement, p.TargetFramework, p.Kind) >> List.distinct)
         |> List.map (fun (name, versions) ->
             let latestVersion, _, _ = versions |> List.maxBy (fun (x,_,_) -> x)
             let kind =
@@ -303,7 +303,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
 
     let packages = 
         match nugetEnv.NuGetExe with 
-        | Some _ -> ("NuGet.CommandLine",VersionRange.AtLeast "0",FrameworkRestriction.NoRestriction, NugetPackageKind.Package) :: latestVersions
+        | Some _ -> ("NuGet.CommandLine",VersionRequirement.AllReleases,FrameworkRestriction.NoRestriction, NugetPackageKind.Package) :: latestVersions
         | _ -> latestVersions
         |> addFSharpCoreToDependenciesIfRequired nugetEnv
 
@@ -312,12 +312,12 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             packages
             |> List.map (fun (name, vr, restrictions, kind) ->
                 Constants.MainDependencyGroup, PackageName name, vr, { InstallSettings.Default with FrameworkRestrictions = ExplicitRestriction restrictions}, kind)
-            |> List.fold (fun (dependenciesFile:DependenciesFile) (groupName, packageName,versionRange,installSettings,kind) -> 
+            |> List.fold (fun (dependenciesFile:DependenciesFile) (groupName, packageName,versionRequirement,installSettings,kind) -> 
                 let reqKind =
                     match kind with
                     | NugetPackageKind.Package -> PackageRequirementKind.Package
                     | NugetPackageKind.DotnetCliTool -> PackageRequirementKind.DotnetCliTool
-                dependenciesFile.Add(groupName, packageName,versionRange,installSettings, reqKind)) dependenciesFile
+                dependenciesFile.Add(groupName, packageName,versionRequirement.Range,installSettings, reqKind)) dependenciesFile
         try 
             DependenciesFile.ReadFromFile dependenciesFileName
             |> ok
@@ -397,7 +397,7 @@ let convertProjects nugetEnv =
             |> Option.toList 
             |> List.concat 
             |> List.choose (fun p -> 
-                match p.VersionRange with
+                match p.VersionRequirement.Range with
                 | VersionRange.Specific v -> Some(p.Id, v)
                 | _ -> None )
 

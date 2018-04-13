@@ -1,3 +1,6 @@
+#### 5.156.1 - 2018-04-13
+* BUGFIX: Paket convert-from-nuget doesn't crash on NuGet v2 syntax - https://github.com/fsprojects/Paket/issues/3151
+
 #### 5.156.0 - 2018-04-12
 * Support monoandroid version 8.1 - https://github.com/fsprojects/Paket/pull/3146
 

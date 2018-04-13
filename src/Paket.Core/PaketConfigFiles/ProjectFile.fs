@@ -1628,46 +1628,37 @@ module ProjectFile =
 
         tryNextPlat platforms []
 
+    let versionRequirement node =
+        let v =
+            match node |> getAttribute "Version" with
+            | Some version -> version
+            | None ->
+                match node |> getNode "Version" with
+                | Some n -> n.InnerText
+                | None -> "*"
+
+        if v.Contains "[" || v.Contains "(" then
+            VersionRequirement.Parse v
+        else
+            let prerelease = if v.Contains "-" then PreReleaseStatus.All else PreReleaseStatus.No
+            if v.Contains "*" then
+                VersionRequirement.VersionRequirement(VersionRange.AtLeast (v.Replace("*","0")),prerelease)
+            else
+                VersionRequirement.VersionRequirement(VersionRange.Exactly v,prerelease)
+
     let dotNetCorePackages (projectFile: ProjectFile) =
         packageReferencesNoPrivateAssets projectFile
         |> List.map (fun node ->
-            let versionRange =
-                let v = 
-                    match node |> getAttribute "Version" with
-                    | Some version -> version
-                    | None ->
-                        match node |> getNode "Version" with
-                        | Some n -> n.InnerText
-                        | None -> "*"
-                
-                if v.Contains "*" then
-                    VersionRange.AtLeast (v.Replace("*","0"))
-                else
-                    VersionRange.Exactly v
             { NugetPackage.Id = getPackageIdAttribute projectFile node
-              VersionRange = versionRange
+              VersionRequirement = versionRequirement node
               Kind = NugetPackageKind.Package
               TargetFramework = None })
 
     let cliTools (projectFile: ProjectFile) =
         cliToolsNoPrivateAssets projectFile
         |> List.map (fun node ->
-            let versionRange =
-                let v = 
-                    match node |> getAttribute "Version" with
-                    | Some version -> version
-                    | None ->
-                        match node |> getNode "Version" with
-                        | Some n -> n.InnerText
-                        | None -> "*"
-                
-                if v.Contains "*" then
-                    VersionRange.AtLeast (v.Replace("*","0"))
-                else
-                    VersionRange.Exactly v
-
             { NugetPackage.Id = node |> getAttribute "Include" |> Option.get
-              VersionRange = versionRange
+              VersionRequirement = versionRequirement node
               Kind = NugetPackageKind.DotnetCliTool
               TargetFramework = None })
 
