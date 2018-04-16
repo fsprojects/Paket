@@ -15,8 +15,9 @@ let Read fileName =
       doc.Load f)
     
     [for node in doc.SelectNodes("//package") ->
+        let v = node.Attributes.["version"].Value
         { NugetPackage.Id = node.Attributes.["id"].Value
-          VersionRange = VersionRange.Specific (SemVer.Parse node.Attributes.["version"].Value)
+          VersionRequirement = VersionRequirement.Parse v
           Kind = NugetPackageKind.Package
           TargetFramework = 
             node 
@@ -28,8 +29,15 @@ let Serialize (packages: NugetPackage seq) =
     let packages = 
         packages 
         |> Seq.choose (fun p -> 
-            match p.VersionRange with
+            match p.VersionRequirement.Range with
             | VersionRange.Specific v ->
+                let framework = 
+                    match p.TargetFramework with
+                    | Some tf -> sprintf "targetFramework=\"%s\" " (tf.Replace(">= ",""))
+                    | _ -> ""
+
+                Some (sprintf """  <package id="%s" version="[%O]" %s/>""" p.Id v framework)
+            | VersionRange.Minimum v ->
                 let framework = 
                     match p.TargetFramework with
                     | Some tf -> sprintf "targetFramework=\"%s\" " (tf.Replace(">= ",""))

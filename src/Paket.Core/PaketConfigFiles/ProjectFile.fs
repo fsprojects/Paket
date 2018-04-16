@@ -728,14 +728,8 @@ module ProjectFile =
             getCustomReferenceAndFrameworkNodes project
             |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
             |> Set.ofList
-            
-        // workaround for https://github.com/fsprojects/Paket/issues/2811
-        //  * DO remove FW-References which are already referenced by the user
-        //  * DO NOT remove package references, where the user already has a reference
 
-        //let model = model.FilterNonFrameworkReferences references
-        let model = model.FilterFrameworkReferences references
-
+        let model = model.FilterReferences references
         let createItemGroup (targets:TargetProfile Set) (frameworkReferences:FrameworkReference list) (libraries:Library list) = 
             let itemGroup = createNode "ItemGroup" project
 
@@ -1634,48 +1628,51 @@ module ProjectFile =
 
         tryNextPlat platforms []
 
+    let versionRequirement node =
+        let v =
+            match node |> getAttribute "Version" with
+            | Some version -> version
+            | None ->
+                match node |> getNode "Version" with
+                | Some n -> n.InnerText
+                | None -> "*"
+
+        if v.Contains "[" || v.Contains "(" then
+            VersionRequirement.Parse v
+        else
+            let prerelease = if v.Contains "-" then PreReleaseStatus.All else PreReleaseStatus.No
+            if v.Contains "*" then
+                VersionRequirement.VersionRequirement(VersionRange.AtLeast (v.Replace("*","0")),prerelease)
+            else
+                VersionRequirement.VersionRequirement(VersionRange.Exactly v,prerelease)
+
     let dotNetCorePackages (projectFile: ProjectFile) =
         packageReferencesNoPrivateAssets projectFile
         |> List.map (fun node ->
-            let versionRange =
-                let v = 
-                    match node |> getAttribute "Version" with
-                    | Some version -> version
-                    | None ->
-                        match node |> getNode "Version" with
-                        | Some n -> n.InnerText
-                        | None -> "*"
-                
-                if v.Contains "*" then
-                    VersionRange.AtLeast (v.Replace("*","0"))
-                else
-                    VersionRange.Exactly v
             { NugetPackage.Id = getPackageIdAttribute projectFile node
-              VersionRange = versionRange
+              VersionRequirement = versionRequirement node
               Kind = NugetPackageKind.Package
               TargetFramework = None })
 
     let cliTools (projectFile: ProjectFile) =
         cliToolsNoPrivateAssets projectFile
         |> List.map (fun node ->
-            let versionRange =
-                let v = 
-                    match node |> getAttribute "Version" with
-                    | Some version -> version
-                    | None ->
-                        match node |> getNode "Version" with
-                        | Some n -> n.InnerText
-                        | None -> "*"
-                
-                if v.Contains "*" then
-                    VersionRange.AtLeast (v.Replace("*","0"))
-                else
-                    VersionRange.Exactly v
-
             { NugetPackage.Id = node |> getAttribute "Include" |> Option.get
-              VersionRange = versionRange
+              VersionRequirement = versionRequirement node
               Kind = NugetPackageKind.DotnetCliTool
               TargetFramework = None })
+
+    let getAutoGenerateBindingRedirects (project:ProjectFile) = getProperty "AutoGenerateBindingRedirects" project
+    let setOrCreateAutoGenerateBindingRedirects (project:ProjectFile) =
+        match getAutoGenerateBindingRedirects project with
+        | Some _ -> project.Document
+                    |> getDescendants "AutoGenerateBindingRedirects"
+                    |> List.iter(fun x -> x.InnerText <- "true")
+        | _ -> match project.Document |> getDescendants "PropertyGroup" with
+               | x :: _ -> x.AppendChild (createNodeSet "AutoGenerateBindingRedirects" "true" project) |> ignore
+               | _ -> ()
+
+        save false project
 
 type ProjectFile with
 
@@ -1759,7 +1756,11 @@ type ProjectFile with
 
     member this.GetAssemblyName () = ProjectFile.getAssemblyName this
 
-    static member LoadFromStream(fullName:string, stream:Stream) = ProjectFile.loadFromStream fullName stream 
+    member this.GetAutoGenerateBindingRedirects() = ProjectFile.getAutoGenerateBindingRedirects this
+
+    member this.SetOrCreateAutoGenerateBindingRedirects() = ProjectFile.setOrCreateAutoGenerateBindingRedirects this
+
+    static member LoadFromStream(fullName:string, stream:Stream) = ProjectFile.loadFromStream fullName stream
 
     static member LoadFromFile(fileName:string) =  ProjectFile.loadFromFile fileName
 

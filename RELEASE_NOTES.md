@@ -1,3 +1,32 @@
+#### 5.156.1 - 2018-04-13
+* BUGFIX: Paket convert-from-nuget doesn't crash on NuGet v2 syntax - https://github.com/fsprojects/Paket/issues/3151
+
+#### 5.156.0 - 2018-04-12
+* Support monoandroid version 8.1 - https://github.com/fsprojects/Paket/pull/3146
+
+#### 5.155.0 - 2018-03-28
+* New external_lock file parser to mitigate Azure Functions dependency trouble - https://fsprojects.github.io/Paket/dependencies-file.html#External-lock-files
+
+#### 5.154.0 - 2018-03-27
+* New storage option: symlink - https://github.com/fsprojects/Paket/pull/3128
+* BUGFIX: Conditional references in paket.references now work with .NET SDK-style projects - https://github.com/fsprojects/Paket/issues/3091
+* BUGFIX: "exclude" now works with new csproj format - https://github.com/fsprojects/Paket/issues/3133
+
+#### 5.153.0 - 2018-03-16
+* Adding AutoGenerateBindingRedirects automatically to project file when BindingRedirects are added to a config - https://github.com/fsprojects/Paket/pull/3120
+
+#### 5.152.0 - 2018-03-16
+* BUGFIX: Working around parallel restore issues with dotnet sdk 2.1.100-preview  - https://github.com/fsprojects/Paket/pull/3118
+
+#### 5.151.4 - 2018-03-15
+* EMERGENCY: Zero-Diff release to work around defender issue - https://github.com/fsprojects/Paket/issues/3121
+
+#### 5.151.3 - 2018-03-14
+* REVERT: Add duplicated references and let compiler warn about it - https://github.com/fsprojects/Paket/pull/3107
+
+#### 5.151.2 - 2018-03-14
+* REVERT: Working around parallel restore issues with dotnet sdk 2.1.100-preview - https://github.com/fsprojects/Paket/pull/3115
+
 #### 5.151.1 - 2018-03-14
 * USABILITY: Add duplicated references and let compiler warn about it - https://github.com/fsprojects/Paket/pull/3107
 * BUGFIX: Working around parallel restore issues with dotnet sdk 2.1.100-preview - https://github.com/fsprojects/Paket/pull/3115

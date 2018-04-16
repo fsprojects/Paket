@@ -202,7 +202,7 @@ module ResolutionRaw =
 
             errorReport.AddLine (sprintf "  Conflict detected:")
 
-            let getConflictMessage req =
+            let getConflictMessage (req:PackageRequirement) =
                 let vr = formatVR req.VersionRequirement
                 let pr = formatPR req.VersionRequirement
                 let tp = if req.TransitivePrereleases then "*" else ""
@@ -555,7 +555,7 @@ let private getCompatibleVersions
             | true, p -> 
                 allRequirementsOfCurrentPackage
                 |> Set.forall (fun r -> 
-                    let mapped = mapF r
+                    let mapped : PackageRequirement = mapF r
                     mapped.VersionRequirement.IsInRange cache.Version ||
                     mapped.IncludingPrereleases(p.VersionRequirement.PreReleases).VersionRequirement.IsInRange cache.Version)
             | _ ->
@@ -1115,7 +1115,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                 conflictState.AddError(raise(TimeoutException(message)))
             else conflictState
     
-        match stage with            
+        match stage with
         | Step((conflictState,currentStep,_currentRequirement), priorConflictSteps)  ->
             let currentConflict = resolverTimeout conflictState currentStep
             if Set.isEmpty currentStep.OpenRequirements then

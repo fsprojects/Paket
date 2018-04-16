@@ -217,6 +217,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
     member this.Resolve(force, getSha1, getVersionF, getPreferredVersionF, getPackageDetailsF, getPackageRuntimeGraph, groupsToResolve:Map<GroupName,_>, updateMode) =
         let resolveGroup groupName _ =
             let group = this.GetGroup groupName
+            let storageConfig = group.Options.Settings.StorageConfig
 
             let resolveSourceFile (file:ResolvedSourceFile) : (PackageRequirement list * UnresolvedSource list) =
                 let remoteDependenciesFile =
@@ -246,11 +247,47 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                           Settings = group.Options.Settings })
                 |> Seq.toList
 
+
+            let externalLockDependencies = 
+                group.ExternalLocks
+                |> List.map (fun x ->
+                    if x.StartsWith("http://") || x.StartsWith("https://") then
+                        use client = createHttpClient(x, None)
+                        let folder = DirectoryInfo(Path.Combine(Path.GetTempPath(),"external_paket",(hash x).ToString()))
+                        if not folder.Exists then
+                            folder.Create()
+                        let fileName = Path.Combine(folder.FullName,"paket.lock")
+                        client.DownloadFile(x,fileName)
+                        LockFile.LoadFrom fileName
+                    else
+                        let fi = try FileInfo x with | exn -> failwithf "The external lock file %s that was referenced in group %O has invalid path. Message: %s" x group.Name exn.Message
+                        if not (File.Exists fi.FullName) then
+                            failwithf "The external lock file %s that was referenced in group %O does not exist." fi.FullName group.Name
+                        LockFile.LoadFrom fi.FullName)
+                |> Seq.collect (fun lockFile ->
+                    match lockFile.Groups |> Map.tryFind group.Name with
+                    | None -> Seq.empty
+                    | Some externalGroup ->
+                        externalGroup.Resolution
+                        |> Seq.map (fun kv ->
+                            let p = kv.Value
+                            { Name = p.Name
+                              VersionRequirement = VersionRequirement.VersionRequirement(VersionRange.Specific p.Version,if p.Version.PreRelease = None then PreReleaseStatus.No else PreReleaseStatus.All)
+                              ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max
+                              ResolverStrategyForTransitives = Some ResolverStrategy.Max
+                              Parent = PackageRequirementSource.DependenciesFile(fileName,0)
+                              Graph = Set.empty
+                              Sources = group.Sources
+                              Kind = PackageRequirementKind.Package
+                              TransitivePrereleases = p.Version.PreRelease <> None
+                              Settings = group.Options.Settings }))
+                |> Seq.toList
+
             if String.IsNullOrWhiteSpace fileName |> not then
                 RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName fileName, groupName, force, remoteFiles)
 
             // 1. Package resolution
-            let step1Deps = remoteDependencies @ group.Packages |> Set.ofList
+            let step1Deps = remoteDependencies @ externalLockDependencies @ group.Packages |> Set.ofList
             let resolution =
                 PackageResolver.Resolve(
                     getVersionF, 
@@ -272,7 +309,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     let runtimeGraph =
                         resolved
                         |> Map.toSeq |> Seq.map snd
-                        |> Seq.choose (getPackageRuntimeGraph groupName)
+                        |> Seq.choose (getPackageRuntimeGraph storageConfig groupName)
                         |> RuntimeGraph.mergeSeq
                     // now we need to get the runtime deps and add them to the resolution
                     let rids = RuntimeGraph.getKnownRids runtimeGraph

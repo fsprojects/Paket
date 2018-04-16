@@ -138,6 +138,9 @@
     <Content Include="PackagesConfig\xunit.visualstudio.packages.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="PackagesConfig\xunit.visualstudio.packages2.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="PackagesConfig\asp.net.packages.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -191,6 +194,7 @@
     <Content Include="NuGetConfig\ConfigWithDisabledFeedFromUpstream.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Compile Include="DependenciesFile\StorageSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRangeSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRequirementSpecs.fs" />
     <Compile Include="DependenciesFile\ParserSpecs.fs" />

@@ -100,6 +100,7 @@ module PaketEnv =
                   Options = InstallOptions.Default
                   Sources = sources
                   Caches = []
+                  ExternalLocks = []
                   Packages = []
                   RemoteFiles = [] }
             let groups = [Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq

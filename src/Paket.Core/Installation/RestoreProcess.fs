@@ -171,11 +171,15 @@ type private MyAssemblyFinder () = class end
 let saveToFile newContent (targetFile:FileInfo) =
     let rec loop trials =
         try
-            let oldContent = 
+            if not targetFile.Directory.Exists then
+                targetFile.Directory.Create()
+
+            let oldContent =
                 if targetFile.Exists then
                     File.ReadAllText targetFile.FullName
                 else
                     ""
+
             if newContent <> oldContent then
                 if verbose then
                     tracefn " - %s created" targetFile.FullName
@@ -184,17 +188,16 @@ let saveToFile newContent (targetFile:FileInfo) =
             else
                 if verbose then
                     tracefn " - %s already up-to-date" targetFile.FullName
+
             targetFile.FullName
         with
-        | _ when trials > 0 ->
+        | exn when trials > 0 ->
+            if verbose then
+                tracefn "Failed to save file %s. Retry. Message: %s" targetFile.FullName exn.Message
             System.Threading.Thread.Sleep(100)
             loop (trials - 1)
     
-    if not targetFile.Directory.Exists then
-        targetFile.Directory.Create()
-
-    loop 4
-
+    loop 5
 
 let extractElement root name =
     let a = typeof<MyAssemblyFinder>.GetTypeInfo().Assembly
@@ -209,6 +212,7 @@ let extractElement root name =
     s.Seek(int64 0, SeekOrigin.Begin) |> ignore
     s.Flush()
     let newContent = sr.ReadToEnd()
+
     saveToFile newContent targetFile
 
 let extractRestoreTargets root =
@@ -238,8 +242,6 @@ let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches,
 
 let createAlternativeNuGetConfig (projectFile:FileInfo) =
     let alternativeConfigFileInfo = FileInfo(Path.Combine(projectFile.Directory.FullName,"obj",projectFile.Name + ".NuGet.Config"))
-    if not alternativeConfigFileInfo.Directory.Exists then
-        alternativeConfigFileInfo.Directory.Create()
     
     let config = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
@@ -278,7 +280,7 @@ let createPaketPropsFile (cliTools:ResolvedPackage seq) restoreSuccess (fileInfo
              else 
                 "<RestoreSuccess>False</RestoreSuccess>")
             cliParts
-    
+
     saveToFile content fileInfo |> ignore
 
 let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
@@ -300,12 +302,6 @@ let ImplicitPackages = [PackageName "NETStandard.Library"]  |> Set.ofList
 
 let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) (groups:Map<GroupName,LockFileGroup>) =
     let projectFileInfo = FileInfo projectFile.FileName
-    let hulls =
-        groups
-        |> Seq.map (fun kv ->
-            let hull,cliToolsInGroup = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
-            kv.Key, (hull, cliToolsInGroup))
-        |> dict
 
     let targets =
         let monikers =
@@ -327,20 +323,33 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
 
     // fable 1.0 compat
     let oldReferencesFile = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".references"))
-    if oldReferencesFile.Exists then oldReferencesFile.Delete()
+    if oldReferencesFile.Exists then try oldReferencesFile.Delete() with | _ -> ()
 
     for originalTargetProfileString, targetProfile in targets do
         let list = System.Collections.Generic.List<_>()
         for kv in groups do
-            let hull,_ = hulls.[kv.Key]
-            let allDirectPackages =
+            let hull,_ = lockFile.GetOrderedPackageHull(kv.Key,referencesFile,Some targetProfile)
+
+            let excludes,allDirectPackages =
                 match referencesFile.Groups |> Map.tryFind kv.Key with
-                | Some g -> g.NugetPackages |> List.map (fun p -> p.Name) |> Set.ofList
-                | None -> Set.empty
+                | Some g ->
+                    let excludes = 
+                        g.NugetPackages 
+                        |> List.collect (fun p -> p.Settings.Excludes)
+                        |> Seq.map PackageName 
+                        |> Set.ofSeq
+
+                    let packages = 
+                        g.NugetPackages 
+                        |> List.map (fun p -> p.Name) 
+                        |> Set.ofList
+                    excludes,packages
+                | None -> Set.empty,Set.empty
 
             for (key,_,_) in hull do
                 let resolvedPackage = resolved.Force().[key]
                 let restore =
+                    not (excludes.Contains resolvedPackage.Name) &&
                     not (ImplicitPackages.Contains resolvedPackage.Name) &&
                         match resolvedPackage.Settings.FrameworkRestrictions with
                         | Requirements.ExplicitRestriction restrictions ->
@@ -366,14 +375,33 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
 
         let output = String.Join(Environment.NewLine,list)
         let newFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + "." + originalTargetProfileString + ".paket.resolved"))
-        saveToFile output newFileName |> ignore
-        
-        if not (File.Exists(oldReferencesFile.FullName)) || targetProfile = TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6) then
-            saveToFile output oldReferencesFile |> ignore // compat with old targets and fable - always write but prefer netstandard16.
+        let rec loop trials = 
+            try
+                if not newFileName.Directory.Exists then
+                    newFileName.Directory.Create()
+
+                if not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
+                    if not (File.Exists(oldReferencesFile.FullName)) || targetProfile = TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6) then
+                        // compat with old targets and fable - always write but prefer netstandard16.
+                        File.WriteAllText(oldReferencesFile.FullName,output)
+                    File.WriteAllText(newFileName.FullName,output)
+                    if verbose then
+                        tracefn " - %s created" newFileName.FullName
+                else
+                    if verbose then
+                        tracefn " - %s already up-to-date" newFileName.FullName
+            with
+            | exn ->
+                if verbose then
+                    tracefn "Failed to save resolved file %s. Retry. Message: %s" newFileName.FullName exn.Message
+                System.Threading.Thread.Sleep(100)
+                loop (trials - 1)
+
+        loop 5
 
     let cliTools = System.Collections.Generic.List<_>()
     for kv in groups do
-        let _,cliToolsInGroup = hulls.[kv.Key]
+        let _,cliToolsInGroup = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
         cliTools.AddRange cliToolsInGroup
 
     let paketCLIToolsFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.clitools"))
@@ -383,11 +411,21 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
 
     // Write "cached" file, this way msbuild can check if the references file has changed.
     let paketCachedReferencesFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.references.cached"))
-    if File.Exists (referencesFile.FileName) then
-        File.Copy(referencesFile.FileName, paketCachedReferencesFileName.FullName, true)
-    else
-        // it can happen that the references file doesn't exist if paket doesn't find one in that case we update the cache by deleting it.
-        if paketCachedReferencesFileName.Exists then paketCachedReferencesFileName.Delete()
+    let rec loop trials =
+        try
+            if File.Exists (referencesFile.FileName) then
+                File.Copy(referencesFile.FileName, paketCachedReferencesFileName.FullName, true)
+            else
+                // it can happen that the references file doesn't exist if paket doesn't find one in that case we update the cache by deleting it.
+                if paketCachedReferencesFileName.Exists then paketCachedReferencesFileName.Delete()
+        with
+        | exn ->
+            if verbose then
+                tracefn "Failed to save cached file %s. Retry. Message: %s" paketCachedReferencesFileName.FullName exn.Message
+            System.Threading.Thread.Sleep(100)
+            loop (trials - 1)
+
+    loop 5
 
 let CreateScriptsForGroups (lockFile:LockFile) (groups:Map<GroupName,LockFileGroup>) =
     let groupsToGenerate =
@@ -422,10 +460,16 @@ let FindOrCreateReferencesFile (projectFile:ProjectFile) =
 let RestoreNewSdkProject lockFile resolved groups (projectFile:ProjectFile) =
     let referencesFile = FindOrCreateReferencesFile projectFile
     let projectFileInfo = FileInfo projectFile.FileName
-
-    createAlternativeNuGetConfig projectFileInfo
-    createProjectReferencesFiles lockFile projectFile referencesFile resolved groups
-    referencesFile
+    let objFolder = DirectoryInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj"))
+    
+    RunInLockedAccessMode(
+        objFolder.FullName,
+        (fun () ->
+            createAlternativeNuGetConfig projectFileInfo
+            createProjectReferencesFiles lockFile projectFile referencesFile resolved groups
+            referencesFile
+        )
+   )
 
 let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
@@ -499,21 +543,20 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             match projectFile with
             | Some projectFileName ->
                 let projectFile = ProjectFile.LoadFromFile projectFileName
-
                 let referencesFile = RestoreNewSdkProject lockFile resolved groups projectFile
 
                 [referencesFile.FileName]
             | None ->
                 if referencesFileNames = [] && group = None then
                     // Restore all projects
-                    let allProjects =
+                    let allSDKProjects =
                         ProjectFile.FindAllProjects root
                         |> Seq.filter (fun proj -> proj.GetToolsVersion() >= 15.0)
 
-                    for proj in allProjects do
+                    for proj in allSDKProjects do
                         RestoreNewSdkProject lockFile resolved groups proj |> ignore
-
                 referencesFileNames
+
 
         let tasks =
             groups
@@ -560,7 +603,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             |> Seq.toArray
  
         RunInLockedAccessMode(
-            root,
+            Path.Combine(root,Constants.PaketFilesFolderName),
             (fun () ->
                 for task in tasks do
                     task
@@ -569,4 +612,5 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
                 CreateScriptsForGroups lockFile groups
                 if isFullRestore then
-                    File.WriteAllText(restoreCacheFile, newContents)))
+                    File.WriteAllText(restoreCacheFile, newContents))
+            )

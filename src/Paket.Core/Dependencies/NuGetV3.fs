@@ -49,7 +49,6 @@ type NugetV3ResourceType =
     member this.AsString =
         match this with
         | AutoComplete -> "SearchAutoCompleteService"
-        //| Registration -> "RegistrationsBaseUrl"
         | AllVersionsAPI -> "PackageBaseAddress/3.0.0"
         | PackageIndex -> "PackageDisplayMetadataUriTemplate"
         | Catalog -> "Catalog"

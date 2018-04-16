@@ -199,7 +199,7 @@ let DefaultNuGetSource = PackageSource.NuGetV2Source Constants.DefaultNuGetStrea
 
 type NugetPackage = {
     Id : string
-    VersionRange : VersionRange
+    VersionRequirement : VersionRequirement
     Kind : NugetPackageKind
     TargetFramework : string option
 }

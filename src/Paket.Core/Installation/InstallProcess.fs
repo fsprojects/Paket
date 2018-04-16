@@ -6,14 +6,10 @@ open Chessie.ErrorHandling
 open Paket.Domain
 open Paket.Logging
 open Paket.BindingRedirects
-open Paket.ModuleResolver
-open Paket.PackageResolver
 open System.IO
 open Paket.PackageSources
-open Paket.PackagesConfigFile
 open Paket.Requirements
 open System.Collections.Generic
-open Paket.ProjectFile
 open System
 
 let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*InstallSettings>) packagesConfigFileName =
@@ -23,8 +19,9 @@ let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*Instal
         model
         |> Seq.filter (fun kv -> defaultArg (snd kv.Value).IncludeVersionInPath false)
         |> Seq.map (fun kv ->
+            let v = fst kv.Value
             { NugetPackage.Id = (snd kv.Key).ToString()
-              VersionRange = VersionRange.Specific (fst kv.Value)
+              VersionRequirement = VersionRequirement(VersionRange.Specific v,PreReleaseStatus.No)
               Kind = NugetPackageKind.Package
               TargetFramework = None })
         |> Seq.toList
@@ -39,6 +36,7 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
     let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
     let storageOption = defaultArg settings.StorageConfig PackagesFolderGroupConfig.Default
     match storageOption.Resolve root groupName packageName version includeVersionInPath with
+    | ResolvedPackagesFolder.SymbolicLink targetFolder 
     | ResolvedPackagesFolder.ResolvedFolder targetFolder ->
         let direct = DirectoryInfo targetFolder
         if direct.Exists then

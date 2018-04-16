@@ -58,6 +58,7 @@
     <TestAsset Include="NuGetLocal\case2\package.name.1.2.0.0.nupkg" />
     <TestAsset Include="NuGetLocal\case3\netstedFolder\package.in.nested.folder.1.0.0.nupkg" />
     <TestAsset Include="PackagesConfig\xunit.visualstudio.packages.config" />
+    <TestAsset Include="PackagesConfig\xunit.visualstudio.packages2.config" />
     <TestAsset Include="PackagesConfig\asp.net.packages.config" />
     <Compile Include="$(PaketTestsSourcesDir)\PackagesConfig\ReadConfig.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\PackagesConfig\WriteConfig.fs" />
