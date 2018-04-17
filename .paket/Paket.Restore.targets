@@ -127,8 +127,7 @@
       <PackageReference Include="%(PaketReferencesFileLinesInfo.PackageName)">
         <Version>%(PaketReferencesFileLinesInfo.PackageVersion)</Version>
         <PrivateAssets Condition="%(PaketReferencesFileLinesInfo.AllPrivateAssets) == 'true'">All</PrivateAssets>
-        <ExcludeAssets Condition="%(PaketReferencesFileLinesInfo.AllPrivateAssets) == 'false'">runtime</ExcludeAssets>
-    </PackageReference>
+      </PackageReference>
     </ItemGroup>
 
     <PropertyGroup>
