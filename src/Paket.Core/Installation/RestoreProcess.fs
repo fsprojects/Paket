@@ -362,6 +362,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                     let package = resolved.Force().[key]
                     let copy_local =
                         match resolvedPackage.Settings.CopyLocal with
+                        | Some false -> "exclude"
                         | Some x -> x.ToString()
                         | None -> "false"
                     let line =
