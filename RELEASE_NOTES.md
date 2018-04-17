@@ -1,3 +1,6 @@
+#### 5.156.2 - 2018-04-17
+* BUGFIX: Work around NuGet v3 SemVer2 issues - https://github.com/fsprojects/Paket/issues/3156
+
 #### 5.156.1 - 2018-04-13
 * BUGFIX: Paket convert-from-nuget doesn't crash on NuGet v2 syntax - https://github.com/fsprojects/Paket/issues/3151
 

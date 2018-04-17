@@ -244,7 +244,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
                 |> Option.map (fun details -> source, details))
             |> Seq.tryHead
 
-        let tryV2 (nugetSource:NugetSource) force =
+        let tryV2 (nugetSource:NuGetSource) force =
             NuGetV2.getDetailsFromNuGet
                 force
                 parameters.VersionIsAssumed
@@ -253,8 +253,38 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
                 version
 
 
-        let tryV3 (nugetSource:NugetV3Source) force =
+        let tryV3 (nugetSource:NuGetV3Source) force =
             NuGetV3.GetPackageDetails force nugetSource packageName version
+
+        let v3AndFallBack (nugetSource:NuGetV3Source) force = async {
+            try
+                let! result = tryV3 nugetSource force
+                match result with
+                | ODataSearchResult.EmptyResult -> 
+                    match NuGetV3.calculateNuGet2Path nugetSource.Url with
+                    | Some url ->
+                        let nugetSource : NuGetSource =
+                            { Url = url
+                              Authentication = nugetSource.Authentication }
+                        return! tryV2 nugetSource force
+                    | _ -> return result
+                | _ -> return result
+            with
+            | exn ->
+                traceWarnfn "Possible Performance degradation, V3 was not working: %s" exn.Message
+                if verbose then
+                    printfn "Error while using V3 API: %O" exn
+
+                match NuGetV3.calculateNuGet2Path nugetSource.Url with
+                | Some url ->
+                    let nugetSource : NuGetSource =
+                        { Url = url
+                          Authentication = nugetSource.Authentication }
+                    return! tryV2 nugetSource force
+                | _ ->
+                    raise exn
+                    return! tryV3 nugetSource force
+        }
 
         let getPackageDetails force =
             // helper to work through the list sequentially
@@ -308,24 +338,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
                     | NuGetV2 nugetSource ->
                         return! tryV2 nugetSource force
                     | NuGetV3 nugetSource ->
-                        try
-                            return! tryV3 nugetSource force
-                        with
-                        | exn ->
-                            traceWarnfn "Possible Performance degradation, V3 was not working: %s" exn.Message
-                            if verbose then
-                                printfn "Error while using V3 API: %O" exn
-
-                            match NuGetV3.calculateNuGet2Path nugetSource.Url with
-                            | Some url ->
-                                let nugetSource : NugetSource =
-                                    { Url = url
-                                      Authentication = nugetSource.Authentication }
-                                return! tryV2 nugetSource force
-                            | _ ->
-                                raise exn
-                                return! tryV3 nugetSource force
-
+                        return! v3AndFallBack nugetSource force
                     | LocalNuGet(path,hasCache) ->
                         return! NuGetLocal.getDetailsFromLocalNuGetPackage hasCache.IsSome alternativeProjectRoot root path packageName version
                 })
@@ -340,6 +353,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
                         | [e] -> e
                         | [] -> null
                         | l -> AggregateException(l) :> exn
+
                     match sources |> List.map (fun (s:PackageSource) -> s.ToString()) with
                     | [source] ->
                         rethrowf exn inner "Couldn't get package details for package %O %O on %O." packageName version source

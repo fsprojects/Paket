@@ -212,13 +212,13 @@ let tryGetDetailsFromCache force nugetURL (packageName:PackageName) (version:Sem
     else
         None
 
-let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (get : unit -> ODataSearchResult Async) : ODataSearchResult Async =
-    let cacheFile = getCacheFiles force NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
+let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (get : unit -> ODataSearchResult Async) : ODataSearchResult Async =    
     let get() =
         async {
             let! result = get()
             match result with
             | ODataSearchResult.Match result ->
+                let cacheFile = getCacheFiles force NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
                 let serialized = JsonConvert.SerializeObject(result)
                 let cachedData =
                     try
@@ -507,7 +507,7 @@ let private tryUrlOrBlacklistI =
     fun f isOk cacheKey ->
             memoizedBlackList (f, isOk) (cacheKey)
 
-let private tryUrlOrBlacklist (f: _ -> Async<'a>) (isOk : 'a -> bool) (source:NugetSource, id:UrlId) =
+let private tryUrlOrBlacklist (f: _ -> Async<'a>) (isOk : 'a -> bool) (source:NuGetSource, id:UrlId) =
     let res =
         tryUrlOrBlacklistI
             (fun s -> async { let! r = f s in return box r })
@@ -520,7 +520,7 @@ let private tryUrlOrBlacklist (f: _ -> Async<'a>) (isOk : 'a -> bool) (source:Nu
 
 type QueryResult = Choice<ODataSearchResult,System.Exception>
 
-let tryAndBlacklistUrl doBlackList doWarn (source:NugetSource)
+let tryAndBlacklistUrl doBlackList doWarn (source:NuGetSource)
     (tryAgain : QueryResult -> bool) (f : string -> Async<QueryResult>) (urls: UrlToTry list) : Async<QueryResult>=
     async {
         let! tasks, resultIndex =

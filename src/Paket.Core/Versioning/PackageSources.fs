@@ -54,24 +54,24 @@ type KnownNuGetSources =
     | UnknownNuGetServer
 
 [<CustomComparison;CustomEquality>]
-type NugetSource = 
+type NuGetSource = 
     { Url : string
       Authentication : AuthProvider }
     member x.BasicAuth isRetry =
         x.Authentication.Retrieve isRetry
     override x.Equals(yobj) =
         match yobj with
-        | :? NugetSource as y -> (x.Url = y.Url)
+        | :? NuGetSource as y -> (x.Url = y.Url)
 
         | _ -> false
     override x.GetHashCode() = hash x.Url
     interface System.IComparable with
       member x.CompareTo yobj =
           match yobj with
-          | :? NugetSource as y -> compare x.Url y.Url
+          | :? NuGetSource as y -> compare x.Url y.Url
           | _ -> invalidArg "yobj" "cannot compare values of different types"
 
-type NugetV3Source = NugetSource
+type NuGetV3Source = NuGetSource
 
 let userNameRegex = Regex("username[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 let passwordRegex = Regex("password[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
@@ -111,8 +111,8 @@ let internal parseAuth(text:string, source) =
 
 /// Represents the package source type.
 type PackageSource =
-| NuGetV2 of NugetSource
-| NuGetV3 of NugetV3Source
+| NuGetV2 of NuGetSource
+| NuGetV3 of NuGetV3Source
 | LocalNuGet of string * Cache option
     override this.ToString() =
         match this with
