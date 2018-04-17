@@ -1,4 +1,7 @@
 #### 5.156.3 - 2018-04-17
+* BUGFIX: `copy_local: false` now works with .NET SDK - https://github.com/fsprojects/Paket/issues/3154
+
+#### 5.156.2 - 2018-04-17
 * BUGFIX: Work around NuGet v3 SemVer2 issues - https://github.com/fsprojects/Paket/issues/3156
 
 #### 5.156.1 - 2018-04-13
