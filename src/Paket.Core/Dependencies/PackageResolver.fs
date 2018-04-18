@@ -209,6 +209,9 @@ module ResolutionRaw =
                 match req.Parent with
                 | DependenciesFile _ ->
                     sprintf "   - Dependencies file requested package %O: %s%s%s" req.Name vr pr tp
+                | DependenciesLock(_,path) ->
+                    let lock = try IO.Path.GetFileName(path) with | ex -> path 
+                    sprintf "   - External \"%s\" requested package %O: %s%s%s" lock req.Name vr pr tp
                 | Package (parentName,version,_) ->
                     sprintf "   - %O %O requested package %O: %s%s%s" parentName version req.Name vr pr tp
             
@@ -479,7 +482,7 @@ let private explorePackageConfig (getPackageDetailsBlock:PackageDetailsSyncFunc)
 
         let settings =
             match dependency.Parent with
-            | DependenciesFile _ -> dependency.Settings
+            | DependenciesFile _ | DependenciesLock _ -> dependency.Settings
             | Package _ ->
                 match pkgConfig.RootDependencies.TryGetValue packageDetails.Name with
                 | true, r -> r.Settings + dependency.Settings
@@ -938,8 +941,9 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
         rootDependencies
         |> Seq.choose (fun r ->
             match r.Parent with
-            | PackageRequirementSource.DependenciesFile _ when (r.Kind = PackageRequirementKind.DotnetCliTool) ->
-                Some r.Name
+            | PackageRequirementSource.DependenciesFile _ | PackageRequirementSource.DependenciesLock _ 
+                when (r.Kind = PackageRequirementKind.DotnetCliTool) ->
+                    Some r.Name
             | _ -> None)
         |> Set.ofSeq
 

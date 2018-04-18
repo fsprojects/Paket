@@ -1,3 +1,6 @@
+#### 5.156.5 - 2018-04-18
+* Keeping direct dependencies distinct from external locks- https://github.com/fsprojects/Paket/pull/3159
+
 #### 5.156.4 - 2018-04-17
 * BUGFIX: `copy_local: false` now works with .NET SDK - https://github.com/fsprojects/Paket/issues/3154
 

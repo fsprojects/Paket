@@ -1071,15 +1071,17 @@ type RemoteFileInstallSettings =
 
 type PackageRequirementSource =
 | DependenciesFile of string * int
+| DependenciesLock of string * string
 | Package of PackageName * SemVerInfo * PackageSource
     member this.IsRootRequirement() =
         match this with
-        | DependenciesFile _ -> true
+        | DependenciesFile _ | DependenciesLock _ -> true
         | _ -> false
 
     override this.ToString() =
         match this with
         | DependenciesFile(x,_) -> x
+        | DependenciesLock(_,x) -> x
         | Package(name,version,_) ->
           sprintf "%O %O" name version
 
