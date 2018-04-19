@@ -314,13 +314,13 @@ The global option may be
 
 ### License download
 
-If you want paket to download licenses automatically you can use the `download_license` modifier. It is disabled by default.
+If you want paket to download licenses automatically you can use the `license_download` modifier. It is disabled by default.
 
 ```paket
 source https://nuget.org/api/v2
-download_license: true
+license_download: true
 
-nuget suave 
+nuget suave
 ```
 
 The global option may be

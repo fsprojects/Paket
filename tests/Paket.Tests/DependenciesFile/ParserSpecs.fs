@@ -269,7 +269,7 @@ nuget "Microsoft.SqlServer.Types"
 """
 
 [<Test>]
-let ``should read download_license config``() = 
+let ``should read license_download config``() =
     let cfg = DependenciesFile.FromSource(downloadLicenseConfig)
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.LicenseDownload |> shouldEqual (Some true)
 
