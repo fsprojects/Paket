@@ -367,14 +367,14 @@ can disable it via the <code>import_targets</code> modifier:</p>
 <span class="k">nuget</span> Microsoft.Bcl.Build <span class="k">import_targets</span>: false <span class="c">// Do not import *.targets and *.props.</span>
 </code></pre></td></tr></table>
 <h3><a name="License-download" class="anchor" href="#License-download">License download</a></h3>
-<p>If you want paket to download licenses automatically you can use the <code>download_license</code> modifier. It is disabled by default.</p>
+<p>If you want paket to download licenses automatically you can use the <code>license_download</code> modifier. It is disabled by default.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
 
-<span class="k">nuget</span> suave download_license: true
+<span class="k">nuget</span> suave license_download: true
 </code></pre></td></tr></table>
 <h3><a name="Controlling-assembly-binding-redirects" class="anchor" href="#Controlling-assembly-binding-redirects">Controlling assembly binding redirects</a></h3>
 <p>You can instruct Paket to create
