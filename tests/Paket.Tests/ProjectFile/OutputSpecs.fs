@@ -27,6 +27,18 @@ let ``should detect exe output type for Project3 proj file``() =
     |> shouldEqual ProjectOutputType.Exe
 
 [<Test>]
+let ``should detect BuildOutputTargetFolder none for Project3 proj file``() =
+    ensureDir ()
+    ProjectFile.TryLoad("./ProjectFile/TestData/Project3.fsprojtest").Value.BuildOutputTargetFolder
+    |> shouldEqual None
+    
+[<Test>]
+let ``should detect BuildOutputTargetFolder for AnalyzerProject proj file``() =
+    ensureDir ()
+    ProjectFile.TryLoad("./ProjectFile/TestData/AnalyzerProject.csprojtest").Value.BuildOutputTargetFolder
+    |> shouldEqual (Some "analyzers\dotnet\cs")
+    
+[<Test>]
 let ``should detect target framework for Project1 proj file``() =
     ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project1.fsprojtest").Value.GetTargetProfiles()

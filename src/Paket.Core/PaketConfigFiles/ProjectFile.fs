@@ -1524,6 +1524,11 @@ module ProjectFile =
         |> Seq.tryHead
         |> function None -> ProjectOutputType.Library | Some x -> x
     
+    let buildOutputTargetFolder (project:ProjectFile) =
+        match project.Document |> getDescendants "BuildOutputTargetFolder" |> Seq.tryHead with
+        | Some e -> Some(e.InnerText)
+        | None -> None 
+    
     let addImportForPaketTargets relativeTargetsPath (project:ProjectFile) =
         match project.Document 
               |> getDescendants "Import" 
@@ -1738,6 +1743,8 @@ type ProjectFile with
 
     member this.OutputType =  ProjectFile.outputType this
 
+    member this.BuildOutputTargetFolder =  ProjectFile.buildOutputTargetFolder this
+    
     member this.GetTargetFrameworkIdentifier () =  ProjectFile.getTargetFrameworkIdentifier this
 
     member this.GetTargetFrameworkProfile () = ProjectFile.getTargetFrameworkProfile this
