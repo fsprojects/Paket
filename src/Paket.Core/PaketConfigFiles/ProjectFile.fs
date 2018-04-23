@@ -1618,7 +1618,9 @@ module ProjectFile =
         let rec tryNextPlat platforms attempted =
             match platforms with
             | [] ->
-                if not (String.IsNullOrEmpty targetFramework) then
+                if not (appendTargetFrameworkToOutputPath project) then
+                    Path.Combine("bin", buildConfiguration)
+                elif not (String.IsNullOrEmpty targetFramework) then
                     Path.Combine("bin", buildConfiguration, targetFramework)
                 elif String.IsNullOrWhiteSpace buildPlatform then
                     failwithf "Unable to find %s output path node in file %s for any known platforms" buildConfiguration project.FileName
