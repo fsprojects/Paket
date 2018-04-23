@@ -1529,6 +1529,11 @@ module ProjectFile =
         | Some e -> Some(e.InnerText)
         | None -> None 
     
+    let appendTargetFrameworkToOutputPath (project:ProjectFile) =
+        match project.Document |> getDescendants "AppendTargetFrameworkToOutputPath" |> Seq.tryHead with
+        | Some e -> not (String.Equals(e.InnerText, "false", StringComparison.OrdinalIgnoreCase))
+        | None -> true 
+            
     let addImportForPaketTargets relativeTargetsPath (project:ProjectFile) =
         match project.Document 
               |> getDescendants "Import" 
@@ -1745,6 +1750,8 @@ type ProjectFile with
 
     member this.BuildOutputTargetFolder =  ProjectFile.buildOutputTargetFolder this
     
+    member this.AppendTargetFrameworkToOutputPath =  ProjectFile.appendTargetFrameworkToOutputPath this
+        
     member this.GetTargetFrameworkIdentifier () =  ProjectFile.getTargetFrameworkIdentifier this
 
     member this.GetTargetFrameworkProfile () = ProjectFile.getTargetFrameworkProfile this

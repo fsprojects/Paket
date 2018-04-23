@@ -37,7 +37,19 @@ let ``should detect BuildOutputTargetFolder for AnalyzerProject proj file``() =
     ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/AnalyzerProject.csprojtest").Value.BuildOutputTargetFolder
     |> shouldEqual (Some "analyzers\dotnet\cs")
+
+[<Test>]
+let ``should detect AppendTargetFrameworkToOutputPath for MicrosoftNetSdkWithTargetFrameworkAndOutputPath proj file``() =
+    ensureDir ()
+    ProjectFile.TryLoad("./ProjectFile/TestData/MicrosoftNetSdkWithTargetFrameworkAndOutputPath.csprojtest").Value.AppendTargetFrameworkToOutputPath
+    |> shouldEqual true
     
+[<Test>]
+let ``should detect AppendTargetFrameworkToOutputPath for AnalyzerProject proj file``() =
+    ensureDir ()
+    ProjectFile.TryLoad("./ProjectFile/TestData/AnalyzerProject.csprojtest").Value.AppendTargetFrameworkToOutputPath
+    |> shouldEqual false
+
 [<Test>]
 let ``should detect target framework for Project1 proj file``() =
     ensureDir ()
