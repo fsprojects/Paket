@@ -309,7 +309,6 @@ let ``#1538 symbols src folder structure`` () =
 
     CleanDir rootPath
 
-
 [<Test>]
 [<Ignore("ignore until we hear back")>]
 let ``#1504 unpacking should override``() =
@@ -553,3 +552,16 @@ let ``#2788 with include-pdbs true`` () =
     Path.Combine(outPath, "lib", "net45", "BuiltWithSymbols.pdb") |> checkFileExists
 
     CleanDir rootPath
+    
+[<Test>]
+let ``#3164 pack analyzer`` () = 
+    let scenario = "i003164-pack-analyzer"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    paket ("pack \"" + outPath + "\"") scenario |> ignore
+
+    let package = Path.Combine(outPath, "Analyzer.0.2.0.3-dev.nupkg")
+    ZipFile.ExtractToDirectory(package, outPath)
+    Path.Combine(outPath, "analyzers", "dotnet", "cs", "Analyzer.dll") |> checkFileExists
+
+    CleanDir rootPath    

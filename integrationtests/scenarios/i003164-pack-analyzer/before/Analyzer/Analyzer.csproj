@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <BuildOutputTargetFolder>analyzers\dotnet\cs</BuildOutputTargetFolder>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Description>Roslyn analyzers for Gu.Localization.</Description>
+    <Authors>Johan Larsson</Authors>
+    <Version>0.2.0.3-dev</Version>
+    <NeutralLanguage>en</NeutralLanguage>
+    <PackageLicenseUrl>http://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/GuOrg/Gu.Localization</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/GuOrg/Gu.Localization</RepositoryUrl>
+    <PackageTags>roslyn analyzer</PackageTags>
+    <PackageReleaseNotes>Initial</PackageReleaseNotes>
+  </PropertyGroup>
+</Project>
