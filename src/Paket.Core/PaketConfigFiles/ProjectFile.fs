@@ -1525,9 +1525,10 @@ module ProjectFile =
         |> function None -> ProjectOutputType.Library | Some x -> x
     
     let buildOutputTargetFolder (project:ProjectFile) =
-        match project.Document |> getDescendants "BuildOutputTargetFolder" |> Seq.tryHead with
-        | Some e -> Some(e.InnerText)
-        | None -> None 
+        project.Document 
+        |> getDescendants "BuildOutputTargetFolder" 
+        |> Seq.tryHead
+        |> Option.map (fun e -> e.InnerText)
     
     let appendTargetFrameworkToOutputPath (project:ProjectFile) =
         match project.Document |> getDescendants "AppendTargetFrameworkToOutputPath" |> Seq.tryHead with
