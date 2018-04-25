@@ -1,3 +1,6 @@
+#### 5.156.6 - 2018-04-25
+* Paket pack works with BuildOutputTargetFolder and AppendTargetFrameworkToOutputPath - https://github.com/fsprojects/Paket/pull/3165
+
 #### 5.156.5 - 2018-04-18
 * Keeping direct dependencies distinct from external locks- https://github.com/fsprojects/Paket/pull/3159
 
