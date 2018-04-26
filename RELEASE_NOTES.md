@@ -1,3 +1,6 @@
+#### 5.156.7 - 2018-04-26
+* shasum now works when the path has spaces - https://github.com/fsprojects/Paket/pull/3169
+
 #### 5.156.6 - 2018-04-25
 * Paket pack works with BuildOutputTargetFolder and AppendTargetFrameworkToOutputPath - https://github.com/fsprojects/Paket/pull/3165
 
