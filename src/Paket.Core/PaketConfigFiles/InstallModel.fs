@@ -227,6 +227,7 @@ module FolderScanner =
         let formatStr = pf.Value.Replace("%%", "%")
         let constants = formatStr.Split(separators, StringSplitOptions.None)
         let regexString = "^" + String.Join("(.*?)", constants |> Array.map Regex.Escape) + "$"
+        // TODO: cache regex instance across calls.
         let regex = Regex(regexString, if opts.IgnoreCase then RegexOptions.IgnoreCase else RegexOptions.None)
         let formatters = pf.Value.ToCharArray() // need original string here (possibly with "%%"s)
                         |> Array.toList |> getFormatters

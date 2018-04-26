@@ -38,16 +38,16 @@ let rec ofDirectory targetFolder =
     let dir = DirectoryInfo(targetFolder)
     let subDirs =
         if dir.Exists then
-            dir.GetDirectories()
-            |> Array.map (fun di -> ofDirectory di.FullName)
-            |> Array.toList
+            dir.EnumerateDirectories()
+            |> Seq.map (fun di -> ofDirectory di.FullName)
+            |> Seq.toList
         else []
 
     let files =
         if dir.Exists then
-            dir.GetFiles()
-            |> Array.map (fun fi -> NuGetFile(fi.Name))
-            |> Array.toList
+            dir.EnumerateFiles()
+            |> Seq.map (fun fi -> NuGetFile(fi.Name))
+            |> Seq.toList
         else []
 
     NuGetDirectory(dir.Name, subDirs @ files)
