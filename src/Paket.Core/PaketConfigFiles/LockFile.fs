@@ -369,7 +369,10 @@ module LockFileParser =
                     try
                         InstallSettings.Parse(true, settingsPart)
                     with
-                    | _ -> InstallSettings.Parse(true, "framework: " + settingsPart) // backwards compatible
+                    | e ->
+                        try InstallSettings.Parse(true, "framework: " + settingsPart) // backwards compatible
+                        with e2 ->
+                            raise <| AggregateException(sprintf "failed to parse line '%s'" line, e, e2)
                 else
                     InstallSettings.Default
             if namePart.Contains "(" then

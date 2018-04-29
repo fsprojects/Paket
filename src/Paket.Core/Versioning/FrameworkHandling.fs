@@ -973,11 +973,57 @@ type PortableProfileType =
         | Profile336 -> [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
         | Profile344 -> [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
     member x.FolderName =
-        "portable-" +
-        String.Join ("+",
-            x.Frameworks
-            |> List.sort
-            |> List.map (fun fw -> fw.ToString()))
+       match x with 
+        | Profile2 -> "portable-net40+sl4+win8+wp7"
+        | Profile3 -> "portable-net40+sl4"
+        | Profile4 -> "portable-net45+sl4+win8+wp7"
+        | Profile5 -> "portable-net40+win8"
+        | Profile6 -> "portable-net403+win8"
+        | Profile7 -> "portable-net45+win8"
+        | Profile14 -> "portable-net40+sl5"
+        | Profile18 -> "portable-net403+sl4"
+        | Profile19 -> "portable-net403+sl5"
+        | Profile23 -> "portable-net45+sl4"
+        | Profile24 -> "portable-net45+sl5"
+        | Profile31 -> "portable-win81+wp81"
+        | Profile32 -> "portable-win81+wpa81"
+        | Profile36 -> "portable-net40+sl4+win8+wp8"
+        | Profile37 -> "portable-net40+sl5+win8"
+        | Profile41 -> "portable-net403+sl4+win8"
+        | Profile42 -> "portable-net403+sl5+win8"
+        | Profile44 -> "portable-net451+win81"
+        | Profile46 -> "portable-net45+sl4+win8"
+        | Profile47 -> "portable-net45+sl5+win8"
+        | Profile49 -> "portable-net45+wp8"
+        | Profile78 -> "portable-net45+win8+wp8"
+        | Profile84 -> "portable-wp81+wpa81"
+        | Profile88 -> "portable-net40+sl4+win8+wp75"
+        | Profile92 -> "portable-net40+win8+wpa81"
+        | Profile95 -> "portable-net403+sl4+win8+wp7"
+        | Profile96 -> "portable-net403+sl4+win8+wp75"
+        | Profile102 -> "portable-net403+win8+wpa81"
+        | Profile104 -> "portable-net45+sl4+win8+wp75"
+        | Profile111 -> "portable-net45+win8+wpa81"
+        | Profile136 -> "portable-net40+sl5+win8+wp8"
+        | Profile143 -> "portable-net403+sl4+win8+wp8"
+        | Profile147 -> "portable-net403+sl5+win8+wp8"
+        | Profile151 -> "portable-net451+win81+wpa81"
+        | Profile154 -> "portable-net45+sl4+win8+wp8"
+        | Profile157 -> "portable-win81+wp81+wpa81"
+        | Profile158 -> "portable-net45+sl5+win8+wp8"
+        | Profile225 -> "portable-net40+sl5+win8+wpa81"
+        | Profile240 -> "portable-net403+sl5+win8+wpa81"
+        | Profile255 -> "portable-net45+sl5+win8+wpa81"
+        | Profile259 -> "portable-net45+win8+wp8+wpa81"
+        | Profile328 -> "portable-net40+sl5+win8+wp8+wpa81"
+        | Profile336 -> "portable-net403+sl5+win8+wp8+wpa81"
+        | Profile344 -> "portable-net45+sl5+win8+wp8+wpa81"
+        | UnsupportedProfile fws ->
+            "portable-" +
+            String.Join ("+",
+                x.Frameworks
+                |> List.sort
+                |> List.map (fun fw -> fw.ToString()))
 type TargetProfileRaw =
     | SinglePlatformP of FrameworkIdentifier
     | PortableProfileP of PortableProfileType
