@@ -451,7 +451,6 @@ let private updateRestrictions (pkgConfig:PackageConfig) (package:ResolvedPackag
             // We assume the user knows what he is doing
             FrameworkRestriction.And [ globalPackageSettings;isRequired ]
 
-
     { package with
         Settings = { package.Settings with FrameworkRestrictions = ExplicitRestriction newRestrictions }
     }
@@ -1283,17 +1282,18 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                     let flags = { flags with HasUnlisted = hasUnlisted }
 
                     // Start pre-loading infos about dependencies.
-                    for (pack,verReq,restr) in exploredPackage.Dependencies do
-                        async {
-                            let requestVersions = startRequestGetVersions (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName pack)
-                            requestVersions.Work.TryReprioritize true WorkPriority.LikelyRequired
-                            let! versions = (requestVersions).Work.Task |> Async.AwaitTask
-                            // Preload the first version in range of this requirement
-                            for ((verToPreload, sources), prio) in selectVersionsToPreload verReq fst versions do
-                                let w = startRequestGetPackageDetails (GetPackageDetailsParameters.ofParams sources groupName pack verToPreload)
-                                w.Work.TryReprioritize true prio
-                            return ()
-                        } |> Async.Start
+                    if not alreadyExplored then
+                        for (pack,verReq,restr) in exploredPackage.Dependencies do
+                            async {
+                                let requestVersions = startRequestGetVersions (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName pack)
+                                requestVersions.Work.TryReprioritize true WorkPriority.LikelyRequired
+                                let! versions = (requestVersions).Work.Task |> Async.AwaitTask
+                                // Preload the first version in range of this requirement
+                                for ((verToPreload, sources), prio) in selectVersionsToPreload verReq fst versions do
+                                    let w = startRequestGetPackageDetails (GetPackageDetailsParameters.ofParams sources groupName pack verToPreload)
+                                    w.Work.TryReprioritize true prio
+                                return ()
+                            } |> Async.Start
 
                     if exploredPackage.Unlisted && not flags.UseUnlisted then
                         if not alreadyExplored then
@@ -1341,7 +1341,8 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                 | Some _x ->
                                     { Relax              = currentStep.Relax
                                       FilteredVersions   = Map.add currentRequirement.Name ([versionToExplore],currentConflict.GlobalOverride) currentStep.FilteredVersions
-                                      CurrentResolution  = currentStep.CurrentResolution
+                                      // Replace existing package in the resolved set, because the new instance might have additional information (like framework restrictions)
+                                      CurrentResolution  = Map.add exploredPackage.Name exploredPackage currentStep.CurrentResolution
                                       ClosedRequirements = Set.add currentRequirement currentStep.ClosedRequirements
                                       OpenRequirements   = Set.remove currentRequirement currentStep.OpenRequirements }
                                 | _ ->

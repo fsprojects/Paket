@@ -541,3 +541,69 @@ nuget MathNet.Numerics.FSharp ~> 3.2.1"""
       (Requirements.getExplicitRestriction tpl.Settings.FrameworkRestrictions,
        (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4)))
       |> shouldEqual false
+
+
+      
+let graph9 =
+  GraphOfNuspecs [
+    """<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>A</id>
+    <version>1.0.0</version>
+    <dependencies>
+      <group targetFramework=".NETFramework4.5">
+        <dependency id="C" version="1.0.0" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>
+    """
+    """<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>B</id>
+    <version>1.0.0</version>
+    <dependencies>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="C" version="1.0.0" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>
+    """
+    """<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>C</id>
+    <version>1.0.0</version>
+  </metadata>
+</package>
+    """
+  ]
+
+[<Test>]
+let ``resolver should return then correct framework restrictions for transitive dependencies``() = 
+    let config = """
+source https://nuget.org/api/v2
+
+nuget A
+nuget B"""
+    let resolved =
+        DependenciesFile.FromSource(config)
+        |> resolve graph9 UpdateMode.UpdateAll
+    let c = resolved.[PackageName "C"]
+
+    getVersion c |> shouldEqual "1.0.0"
+        
+    // Install C in net45
+    Requirements.isTargetMatchingRestrictions 
+      (Requirements.getExplicitRestriction c.Settings.FrameworkRestrictions,
+       (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_5)))
+      |> shouldEqual true
+
+    // Install C in netstandard2.0
+    Requirements.isTargetMatchingRestrictions 
+      (Requirements.getExplicitRestriction c.Settings.FrameworkRestrictions,
+       (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V2_0)))
+      |> shouldEqual true
