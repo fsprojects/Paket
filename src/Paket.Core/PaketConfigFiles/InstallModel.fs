@@ -223,12 +223,13 @@ module FolderScanner =
     } with
         static member Default = { IgnoreCase = false }
 
+    let private getRegex = memoize (fun (regexString, ignoreCase) -> Regex(regexString, if ignoreCase then RegexOptions.IgnoreCase else RegexOptions.None))
+
     let private sscanfHelper (opts:ScanOptions) (pf:PrintfFormat<_,_,_,_,'t>) s : ScanResult =
         let formatStr = pf.Value.Replace("%%", "%")
         let constants = formatStr.Split(separators, StringSplitOptions.None)
         let regexString = "^" + String.Join("(.*?)", constants |> Array.map Regex.Escape) + "$"
-        // TODO: cache regex instance across calls.
-        let regex = Regex(regexString, if opts.IgnoreCase then RegexOptions.IgnoreCase else RegexOptions.None)
+        let regex = getRegex (regexString, opts.IgnoreCase)
         let formatters = pf.Value.ToCharArray() // need original string here (possibly with "%%"s)
                         |> Array.toList |> getFormatters
         let matchres = regex.Match(s)
