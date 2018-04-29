@@ -482,7 +482,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
     // Shortcut if we already restored before
     let newContents = File.ReadAllText(lockFileName.FullName)
-    let restoreCacheFile = Path.Combine(root, Constants.PaketFilesFolderName, Constants.RestoreHashFile)
+    let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
     let isFullRestore = targetFrameworks = None && projectFile = None && group = None && referencesFileNames = []
     let inline isEarlyExit () =
         // We ignore our check when we do a partial restore, this way we can
