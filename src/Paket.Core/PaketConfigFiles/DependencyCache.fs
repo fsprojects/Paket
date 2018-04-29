@@ -209,7 +209,7 @@ type DependencyCache (lockFile:LockFile) =
                         let folder = package.Folder lockFile.RootPath groupName
 
                         if Directory.Exists folder |> not then
-                            return failwithf "Folder %s doesn't exist. Did you restore groups %O? You can try to delete paket-files/paket-restore" folder groupName
+                            return failwithf "Folder %s doesn't exist. Did you restore group %O? Try to delete %s and trying again." folder groupName Constants.PaketRestoreHashFilePath
 
                         let nuspecShort = Path.Combine(folder, sprintf "%O.nuspec" package.Name)
                         if verbose then
