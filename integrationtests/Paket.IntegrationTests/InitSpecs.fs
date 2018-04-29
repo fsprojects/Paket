@@ -63,7 +63,7 @@ let ``#1041 init api``() =
     let url = "http://my.test/api"
     let source = Paket.PackageSources.PackageSource.NuGetV2Source(url)
 
-    Paket.Dependencies.Init(tempScenarioDir, [source], [ "download_license: true" ], false)
+    Paket.Dependencies.Init(tempScenarioDir, [source], [ "license_download: true" ], false)
 
     let depsPath = tempScenarioDir </> "paket.dependencies"
     File.Exists(depsPath) |> shouldEqual true
@@ -71,4 +71,4 @@ let ``#1041 init api``() =
     let lines = File.ReadAllText(depsPath)
 
     StringAssert.Contains(url, lines);
-    StringAssert.Contains("download_license: true", lines);
+    StringAssert.Contains("license_download: true", lines);

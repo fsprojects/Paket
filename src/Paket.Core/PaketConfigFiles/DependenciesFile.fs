@@ -258,13 +258,13 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                             folder.Create()
                         let fileName = Path.Combine(folder.FullName,"paket.lock")
                         client.DownloadFile(x,fileName)
-                        LockFile.LoadFrom fileName
+                        x, LockFile.LoadFrom fileName
                     else
                         let fi = try FileInfo x with | exn -> failwithf "The external lock file %s that was referenced in group %O has invalid path. Message: %s" x group.Name exn.Message
                         if not (File.Exists fi.FullName) then
                             failwithf "The external lock file %s that was referenced in group %O does not exist." fi.FullName group.Name
-                        LockFile.LoadFrom fi.FullName)
-                |> Seq.collect (fun lockFile ->
+                        x, LockFile.LoadFrom fi.FullName)
+                |> Seq.collect (fun (lockName, lockFile) ->
                     match lockFile.Groups |> Map.tryFind group.Name with
                     | None -> Seq.empty
                     | Some externalGroup ->
@@ -272,10 +272,15 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                         |> Seq.map (fun kv ->
                             let p = kv.Value
                             { Name = p.Name
-                              VersionRequirement = VersionRequirement.VersionRequirement(VersionRange.Specific p.Version,if p.Version.PreRelease = None then PreReleaseStatus.No else PreReleaseStatus.All)
+                              VersionRequirement = 
+                                 VersionRequirement.VersionRequirement(
+                                    VersionRange.Specific p.Version,
+                                    match p.Version.PreRelease with 
+                                    | Some pre -> PreReleaseStatus.All // common dependencies must be present in the same paket.lock anyway
+                                    | None -> PreReleaseStatus.No )                              
                               ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max
                               ResolverStrategyForTransitives = Some ResolverStrategy.Max
-                              Parent = PackageRequirementSource.DependenciesFile(fileName,0)
+                              Parent = PackageRequirementSource.DependenciesLock(fileName,lockName)
                               Graph = Set.empty
                               Sources = group.Sources
                               Kind = PackageRequirementKind.Package

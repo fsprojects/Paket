@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\FSharp.Compiler.Tools\build\FSharp.Compiler.Tools.props" Condition="Exists('..\..\packages\FSharp.Compiler.Tools\build\FSharp.Compiler.Tools.props')" Label="Paket" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -232,6 +232,9 @@
     <Compile Include="ReferencesFile\ReferencesFileSpecs.fs" />
     <Compile Include="LocalFile\LocalFileSpecs.fs" />
     <Compile Include="Simplifier\BasicScenarioSpecs.fs" />
+    <None Include="ProjectFile\TestData\AnalyzerProject.csprojtest">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>	
     <None Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFrameworkAndOutputPath.csprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

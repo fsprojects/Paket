@@ -1524,6 +1524,17 @@ module ProjectFile =
         |> Seq.tryHead
         |> function None -> ProjectOutputType.Library | Some x -> x
     
+    let buildOutputTargetFolder (project:ProjectFile) =
+        project.Document 
+        |> getDescendants "BuildOutputTargetFolder" 
+        |> Seq.tryHead
+        |> Option.map (fun e -> e.InnerText)
+    
+    let appendTargetFrameworkToOutputPath (project:ProjectFile) =
+        match project.Document |> getDescendants "AppendTargetFrameworkToOutputPath" |> Seq.tryHead with
+        | Some e -> not (String.Equals(e.InnerText, "false", StringComparison.OrdinalIgnoreCase))
+        | None -> true 
+            
     let addImportForPaketTargets relativeTargetsPath (project:ProjectFile) =
         match project.Document 
               |> getDescendants "Import" 
@@ -1608,7 +1619,9 @@ module ProjectFile =
         let rec tryNextPlat platforms attempted =
             match platforms with
             | [] ->
-                if not (String.IsNullOrEmpty targetFramework) then
+                if not (appendTargetFrameworkToOutputPath project) then
+                    Path.Combine("bin", buildConfiguration)
+                elif not (String.IsNullOrEmpty targetFramework) then
                     Path.Combine("bin", buildConfiguration, targetFramework)
                 elif String.IsNullOrWhiteSpace buildPlatform then
                     failwithf "Unable to find %s output path node in file %s for any known platforms" buildConfiguration project.FileName
@@ -1738,6 +1751,10 @@ type ProjectFile with
 
     member this.OutputType =  ProjectFile.outputType this
 
+    member this.BuildOutputTargetFolder =  ProjectFile.buildOutputTargetFolder this
+    
+    member this.AppendTargetFrameworkToOutputPath =  ProjectFile.appendTargetFrameworkToOutputPath this
+        
     member this.GetTargetFrameworkIdentifier () =  ProjectFile.getTargetFrameworkIdentifier this
 
     member this.GetTargetFrameworkProfile () = ProjectFile.getTargetFrameworkProfile this
