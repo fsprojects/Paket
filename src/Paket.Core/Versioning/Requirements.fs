@@ -727,16 +727,40 @@ let private parseRestrictionsRaw skipSimplify (text:string) =
         problems.Add p
 
     let rec parseOperator (text:string) =
-        match text.Trim() with
+        let h = text.Trim()
+        let mutable found = false
+        let isGreatherEquals = h.StartsWith ">="
+        found <- isGreatherEquals
+        let isEqualsEquals = not found && h.StartsWith "=="
+        found <- found || isEqualsEquals
+        let isSmaller = not found && h.StartsWith "<"
+        found <- found || isSmaller
+        let isAndAnd = not found && h.StartsWith "&&"
+        found <- found || isAndAnd
+        let isOrOr = not found && h.StartsWith "||"
+        found <- found || isOrOr
+        let isNot = not found && h.StartsWith "NOT"
+        found <- found || isNot
+        let isTrue = not found && h.StartsWith "true"
+        found <- found || isTrue
+        let isFalse = not found && h.StartsWith "false"
+        found <- found || isFalse
+        match h with
         | t when String.IsNullOrEmpty t -> failwithf "trying to parse an operator but got no content"
-        | h when h.StartsWith ">=" || h.StartsWith "==" || h.StartsWith "<" ->
+        | h when isGreatherEquals || isEqualsEquals || isSmaller ->
             // parse >=
-            let smallerThan = h.StartsWith "<"
-            let isEquals = h.StartsWith "=="
             let rest = h.Substring 2
-            let splitted = rest.Split([|' '|], StringSplitOptions.RemoveEmptyEntries)
-            if splitted.Length < 1 then failwithf "No parameter after >= or < in '%s'" text
-            let rawOperator = splitted.[0]
+            let restTrimmed = rest.TrimStart()
+            let idx = restTrimmed.IndexOf(' ')
+            //let splitted = rest.Split([|' '|], StringSplitOptions.RemoveEmptyEntries)
+            //if splitted.Length < 1 then failwithf "No parameter after >= or < in '%s'" text
+            //let rawOperator = splitted.[0]
+            let endOperator = 
+                if idx < 0 then 
+                    if restTrimmed.Length = 0 then failwithf "No parameter after >= or < in '%s'" text
+                    else restTrimmed.Length
+                else idx
+            let rawOperator = restTrimmed.Substring(0, endOperator)
             let operator = rawOperator.TrimEnd([|')'|])
             match PlatformMatching.extractPlatforms false operator |> Option.bind (fun (pp:PlatformMatching.ParsedPlatformPath) ->
                 let prof = pp.ToTargetProfile false
@@ -746,13 +770,12 @@ let private parseRestrictionsRaw skipSimplify (text:string) =
             | None -> failwithf "invalid parameter '%s' after >= or < in '%s'" operator text
             | Some plat ->
                 let f =
-                    if smallerThan then FrameworkRestriction.NotAtLeastPlatform
-                    elif isEquals then FrameworkRestriction.ExactlyPlatform
+                    if isSmaller then FrameworkRestriction.NotAtLeastPlatform
+                    elif isEqualsEquals then FrameworkRestriction.ExactlyPlatform
                     else FrameworkRestriction.AtLeastPlatform
                 let operatorIndex = text.IndexOf operator
                 f plat, text.Substring(operatorIndex + operator.Length)
-        | h when h.StartsWith "&&" || h.StartsWith "||" ->
-            let isAnd = h.StartsWith "&&"
+        | h when isAndAnd || isOrOr ->
             let next = h.Substring 2
             let rec parseOperand cur (next:string) =
                 let trimmed = next.TrimStart()
@@ -767,13 +790,13 @@ let private parseRestrictionsRaw skipSimplify (text:string) =
             let operands, next = parseOperand [] next
             if operands.Length = 0 then failwithf "Operand '%s' without argument is invalid in '%s'" (h.Substring (0, 2)) text
             let f = 
-                match isAnd, skipSimplify with
+                match isAndAnd, skipSimplify with
                 | true, true -> FrameworkRestriction.AndAlreadySimplified
                 | true, false -> FrameworkRestriction.And
                 | false, true -> FrameworkRestriction.OrAlreadySimplified
                 | false, false -> FrameworkRestriction.Or
             operands |> List.rev |> f, next
-        | h when h.StartsWith "NOT" ->
+        | h when isNot ->
             let next = h.Substring 2
             if next.TrimStart().StartsWith "(" then
                 let operand, remaining = parseOperator (next.Substring 1)
@@ -790,10 +813,10 @@ let private parseRestrictionsRaw skipSimplify (text:string) =
                 negated, next
             else
                 failwithf "Expected operand after NOT, '%s'" text
-        | h when h.StartsWith "true" ->
+        | h when isTrue ->
             let rest = (h.Substring 4).TrimStart()
             FrameworkRestriction.NoRestriction, rest
-        | h when h.StartsWith "false" ->
+        | h when isFalse ->
             let rest = (h.Substring 5).TrimStart()
             FrameworkRestriction.EmptySet, rest
         | _ ->
