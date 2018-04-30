@@ -565,8 +565,11 @@ module FrameworkRestriction =
         //let isSimple, result = Or2 x y
         //if isSimple then result else simplify result
 
-    let (|HasNoRestriction|_|) x =
-        if x = NoRestriction then Some () else None
+    let (|HasNoRestriction|_|) (x:FrameworkRestriction) =
+        // fast check.
+        if x.OrFormulas.Length = 1 && x.OrFormulas.Head.Literals.Length = 0
+        then Some () else None
+        //if x = NoRestriction then Some () else None
 
     let combineRestrictionsWithAnd (x : FrameworkRestriction) y =
         And [ x; y ]
