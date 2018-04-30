@@ -5,6 +5,7 @@ type UnparsedPackageFile = Paket.NuGetCache.UnparsedPackageFile
 type NuGetPackageCache = Paket.NuGetCache.NuGetPackageCache
 
 open System
+open System.Diagnostics
 open System.IO
 open Paket.Logging
 open Paket.Utils
@@ -13,6 +14,7 @@ open Paket.PackageSources
 open System.Net
 open System.Runtime.ExceptionServices
 open System.Text
+open System.Threading.Tasks
 open FSharp.Polyfill
 open Paket.NuGetCache
 open Paket.PackageResolver
@@ -29,17 +31,75 @@ type NuGetContent =
         | NuGetDirectory(n, _)
         | NuGetFile n -> n
 
+module NuGetContent =
+    let toSeq ignoreRoot x =
+        let rec toSeqImpl prefix x = seq {
+            yield prefix, x
+            match x with
+            | NuGetDirectory (name, contents) ->
+                let newPrefix = sprintf "%s/%s" prefix name
+                yield! contents |> Seq.collect (toSeqImpl newPrefix)
+            | NuGetFile name -> () }
+        if not ignoreRoot then toSeqImpl "" x
+        else
+            match x with 
+            | NuGetFile name -> ["", x] :> _
+            | NuGetDirectory (name, contents) ->
+                contents |> Seq.collect (toSeqImpl "")
+
+    let rec iter f x =
+        f x
+        match x with
+        | NuGetDirectory (name, contents) -> contents |> Seq.iter f
+        | NuGetFile _ -> ()
+
+    let mapName f x =
+        match x with
+        | NuGetDirectory (name, contents) -> NuGetDirectory(f name, contents)
+        | NuGetFile name -> NuGetFile (f name)
+
+let inline ofGivenList rootName directories files =
+    let folders = System.Collections.Generic.Dictionary<_,NuGetContent list>()
+    let l = obj()
+    let inline getCurrent n = match folders.TryGetValue n with | true, l -> l | _ -> []
+    let inline append n item =
+        lock l (fun () -> folders.[n] <- item :: getCurrent n)
+
+    directories
+    |> Seq.iter (fun di ->
+        let parent = Path.GetDirectoryName di
+        let name = Path.GetFileName di
+        append parent (NuGetDirectory (name, [])))
+        
+    files
+    |> Seq.iter (fun fi ->
+        let parent = Path.GetDirectoryName fi
+        let name = Path.GetFileName fi
+        append parent (NuGetFile name))
+
+    let rec fixContent path (c:NuGetContent) =
+        match c with 
+        | NuGetFile _ -> c
+        | NuGetDirectory (n, _) ->
+            let newPath = Path.Combine(path, n)
+            NuGetDirectory(n, getCurrent newPath |> List.map (fixContent newPath) |> List.rev)
+
+    NuGetDirectory("", [])
+    |> fixContent ""
+    |> NuGetContent.mapName (fun _ -> rootName)
+
 type NuGetPackageContent =
     { Content : NuGetContent list
       Path : string
       Spec : Nuspec }
+      
 
-let rec ofDirectory targetFolder =
+let rec private ofDirectorySlow targetFolder =
     let dir = DirectoryInfo(targetFolder)
     let subDirs =
         if dir.Exists then
             dir.EnumerateDirectories()
-            |> Seq.map (fun di -> ofDirectory di.FullName)
+            |> Seq.map (fun di -> ofDirectorySlow di.FullName)
             |> Seq.toList
         else []
 
@@ -51,6 +111,66 @@ let rec ofDirectory targetFolder =
         else []
 
     NuGetDirectory(dir.Name, subDirs @ files)
+    
+   
+let ofDirectory targetFolder =
+    let spec = Path.Combine(targetFolder, "paket-installmodel.cache")
+    if File.Exists (spec) then
+        let rootDirName = Path.GetFileName(targetFolder)
+        let spec = File.ReadAllText(spec)
+        let readLines =
+            spec.Split('\n')
+            |> Seq.map (fun line ->
+                if line.StartsWith "D: " then 
+                  Some (line.Substring 4), None
+                elif line.StartsWith "F: " then 
+                  None, Some (line.Substring 4)
+                else None, None)
+            |> Seq.toList
+        let directories = readLines |> Seq.choose fst
+        let files = readLines |> Seq.choose snd
+        ofGivenList rootDirName directories files
+    else
+        let result = ofDirectorySlow targetFolder
+        let text =
+            result
+            |> NuGetContent.toSeq true
+            |> Seq.map (function 
+                | prefix, NuGetDirectory (name, _) -> sprintf "D: %s/%s" prefix name
+                | prefix, NuGetFile (name) -> sprintf "F: %s/%s" prefix name)
+            |> fun s -> String.Join("\n", s)
+        try File.WriteAllText(spec, text)
+        with e -> eprintf "Error: %O" e
+        result
+
+(*
+let perfCompare f1 f2 =
+    let baseDir = @"C:\Users\matth\.nuget\packages"
+    let packages =
+        Directory.EnumerateDirectories(baseDir)
+        |> Seq.collect (fun dir -> Directory.EnumerateDirectories(dir))
+        |> Seq.toList
+    let inline time f =
+        packages |> List.map (fun dir -> 
+            let w = Stopwatch.StartNew()
+            let result = f dir
+            w.Stop()
+            w.Elapsed, result)
+    let lines =
+        [1..3]
+        |> Seq.map (fun _ -> time f1, time f2)
+        |> Seq.toList
+    let times1 = lines |> List.map fst
+    let times2 = lines |> List.map snd
+    
+    Seq.zip times1.Head times2.Head
+    |> Seq.iter (fun ((_, left), (_, right)) ->
+        if left <> right then eprintf "%A <> %A" left right)
+    
+    printfn "f1: %A" (times1 |> Seq.map (fun tl -> tl |> Seq.fold (fun (t1:TimeSpan) t2 -> t1.Add(fst t2)) (new TimeSpan(0L))))
+    printfn "f2: %A" (times2 |> Seq.map (fun tl -> tl |> Seq.fold (fun (t1:TimeSpan) t2 -> t1.Add(fst t2)) (new TimeSpan(0L))))
+
+do perfCompare ofDirectory ofDirectoryWithCache*)
 
 let rec createEntry (content:string) =
     let dirName, rest =
@@ -85,6 +205,11 @@ let ofFiles filesList =
     filesList
     |> Seq.fold (fun state file -> addContent file state) []
 
+let GetContentWithNuSpec spec dir = lazy (
+    { Content = (ofDirectory dir).Contents
+      Path = dir
+      Spec = spec })
+
 let GetContent dir = lazy (
     let di = DirectoryInfo(dir)
     if not di.Exists then
@@ -94,11 +219,9 @@ let GetContent dir = lazy (
         di.EnumerateFiles("*.nuspec", SearchOption.TopDirectoryOnly)
         |> Seq.tryExactlyOne
         |> Option.map (fun f -> Nuspec.Load(f.FullName))
+    
     match spec with
-    | Some spec ->
-        { Content = (ofDirectory dir).Contents
-          Path = dir
-          Spec = spec }
+    | Some spec -> (GetContentWithNuSpec spec dir).Force()
     | None -> failwithf "Could not find nuspec in '%s', try deleting the directory and restoring again." dir)
 
 let tryFindFolder folder (content:NuGetPackageContent) =

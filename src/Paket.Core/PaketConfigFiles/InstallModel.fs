@@ -141,6 +141,7 @@ and [<RequireQualifiedAccess>] InstallModelKind =
 
 module FolderScanner =
     // Stolen and modifed to our needs from http://www.fssnip.net/4I/title/sscanf-parsing-with-format-strings
+    open System.Collections.Generic
     open System.Text.RegularExpressions
     open Microsoft.FSharp.Reflection
 
@@ -223,31 +224,38 @@ module FolderScanner =
     } with
         static member Default = { IgnoreCase = false }
 
-    let private getRegex = memoize (fun (regexString, ignoreCase) -> Regex(regexString, if ignoreCase then RegexOptions.IgnoreCase else RegexOptions.None))
-
-    let private sscanfHelper (opts:ScanOptions) (pf:PrintfFormat<_,_,_,_,'t>) s : ScanResult =
-        let formatStr = pf.Value.Replace("%%", "%")
+    let private getRegex = memoize (fun (regexString) -> Regex(regexString, RegexOptions.None))
+    let private getRegexIgnoreCase = memoize (fun (regexString) -> Regex(regexString, RegexOptions.IgnoreCase))
+    let private getRegexString = memoize (fun (formatString:string) ->
+        let formatStr = formatString.Replace("%%", "%")
         let constants = formatStr.Split(separators, StringSplitOptions.None)
         let regexString = "^" + String.Join("(.*?)", constants |> Array.map Regex.Escape) + "$"
-        let regex = getRegex (regexString, opts.IgnoreCase)
-        let formatters = pf.Value.ToCharArray() // need original string here (possibly with "%%"s)
-                        |> Array.toList |> getFormatters
-        let matchres = regex.Match(s)
-        if not matchres.Success then ScanRegexFailure(s, regexString)
+        let formatters = formatString.ToCharArray() // need original string here (possibly with "%%"s)
+                         |> Array.toList |> getFormatters
+        regexString, formatters)
+
+    let private sscanfHelper (opts:ScanOptions) (pf:PrintfFormat<_,_,_,_,'t>) s : ScanResult =
+        let regexString, formatters = getRegexString pf.Value
+        let regex = if opts.IgnoreCase then getRegexIgnoreCase regexString else getRegex regexString
+        let matches = regex.Match(s)
+        if not matches.Success then ScanRegexFailure(s, regexString)
         else
             let groups =
-                matchres.Groups
+                matches.Groups
                 |> Seq.cast<Group>
                 |> Seq.skip 1
+                |> Seq.toList
             let results =
                 (groups, formatters)
-                ||> Seq.map2 (fun g f -> g.Value |> parsers.[f])
-                |> Seq.toArray
+                ||> List.map2 (fun g f -> g.Value |> parsers.[f])
             match results |> Seq.choose (fun r -> match r with ParseError error -> Some error | _ -> None) |> Seq.tryHead with
             | Some error ->
                 ScanParserFailure error
             | None ->
-                ScanSuccess (results |> Array.map (function ParseSucceeded res -> res | ParseError _ -> failwithf "Should not happen here"))
+                ScanSuccess
+                    (results
+                     |> List.map (function ParseSucceeded res -> res | ParseError _ -> failwithf "Should not happen here")
+                     |> List.toArray)
 
     let inline toGenericTuple<'t> (matches:obj[]) =
         if matches.Length = 1 then matches.[0] :?> 't
@@ -269,23 +277,51 @@ module FolderScanner =
         sscanfHelper opts pf s
         |> handleErrors s
 
-    let private findSpecifiers = Regex(@"%(?<formatSpec>.)({(?<inside>.*?)})?")
+    
+
+    let private retrieveReplacedFormatString =
+        let findSpecifiers = Regex(@"%(?<formatSpec>.)({(?<inside>.*?)})?")
+        memoize (fun (formatString) ->
+            let matches =
+                findSpecifiers.Matches(formatString)
+                |> Seq.cast<Match>
+                |> Seq.map (fun m ->
+                    let formatSpec = m.Groups.["formatSpec"].Value
+                    let scannerName = m.Groups.["inside"].Value
+                    formatSpec, scannerName, m.Value, m.Index)
+                |> Seq.toList
+            
+            (*
+            let replacedFormatString =
+                matches
+                |> List.rev // start replacing on the back, this way indices are correct
+                |> Seq.fold (fun (currentFormatterString:string) (formatSpec, scannerName, originalValue, index) ->
+                    let replacement =
+                        match formatSpec with
+                        | "A" -> "%A"
+                        | _ -> originalValue
+                    currentFormatterString.Substring(0, index) + replacement + currentFormatterString.Substring(index + originalValue.Length)) pf.Value*)
+            let replacedFormatString =
+                let replacedFormatStringBuilder = System.Text.StringBuilder(formatString.Length)
+                let mutable lastIdx = 0
+                for formatSpec, scannerName, originalValue, index in matches do
+                    let replacement =
+                        match formatSpec with
+                        | "A" -> "%A"
+                        | _ -> originalValue
+                    let pre = formatString.Substring(lastIdx, index - lastIdx)
+                    replacedFormatStringBuilder.Append(pre) |> ignore
+                    replacedFormatStringBuilder.Append(replacement) |> ignore
+                    lastIdx <- lastIdx + pre.Length + originalValue.Length
+                replacedFormatStringBuilder.Append(formatString.Substring(lastIdx)) |> ignore
+                replacedFormatStringBuilder.ToString()
+            replacedFormatString, matches
+        )
 
     // Extends the syntax of the format string with %A{scanner}, and uses the corresponding named scanner from the advancedScanners parameter.
-    let private sscanfExtHelper context (advancedScanners:AdvancedScanner<'Context> seq) opts (pf:PrintfFormat<_,_,_,_,'t>) s : ScanResult =
-        let scannerMap =
-            advancedScanners
-            |> Seq.map (fun s -> s.Name, s)
-            |> dict
+    let private sscanfExtHelper context (scannerMap:IDictionary<string,AdvancedScanner<'Context>>) opts (pf:PrintfFormat<_,_,_,_,'t>) s : ScanResult =
         // replace advanced scanning formatters "%A{name}"
-        let matches =
-            findSpecifiers.Matches(pf.Value)
-            |> Seq.cast<Match>
-            |> Seq.map (fun m ->
-                let formatSpec = m.Groups.["formatSpec"].Value
-                let scannerName = m.Groups.["inside"].Value
-                formatSpec, scannerName, m.Value, m.Index)
-            |> Seq.toList
+        let replacedFormatString, matches = retrieveReplacedFormatString pf.Value
         let advancedFormatters =
             matches
             |> Seq.filter (fun (formatSpec, scannerName, _, _) ->
@@ -296,16 +332,6 @@ module FolderScanner =
                         None
                     else Some scannerMap.[scannerName]
                 else None)
-
-        let replacedFormatString =
-            matches
-            |> List.rev // start replacing on the back, this way indices are correct
-            |> Seq.fold (fun (currentFormatterString:string) (formatSpec, scannerName, originalValue, index) ->
-                let replacement =
-                    match formatSpec with
-                    | "A" -> "%A"
-                    | _ -> originalValue
-                currentFormatterString.Substring(0, index) + replacement + currentFormatterString.Substring(index + originalValue.Length)) pf.Value
 
         match sscanfHelper opts (PrintfFormat<_,_,_,_,'t> replacedFormatString) s with
         | ScanSuccess objResults ->
@@ -346,6 +372,7 @@ open FolderScanner
 module InstallModel =
     // A lot of insights can be gained from https://github.com/NuGet/NuGet.Client/blob/85731166154d0818d79a19a6d2417de6aa851f39/src/NuGet.Core/NuGet.Packaging/ContentModel/ManagedCodeConventions.cs#L385-L505
     // if you read this update the hash ;)
+    open System.Collections.Generic
     open Logging
     open PlatformMatching
     open NuGet
@@ -365,10 +392,10 @@ module InstallModel =
 
     type Tfm = PlatformMatching.ParsedPlatformPath
     type Rid = Paket.Rid
-    let scanners : list<AdvancedScanner<UnparsedPackageFile>> =
+    let scanners : IDictionary<string, AdvancedScanner<UnparsedPackageFile>> =
         [ { FolderScanner.AdvancedScanner.Name = "noSeperator";
             FolderScanner.AdvancedScanner.Parser =
-                fun upf -> FolderScanner.check "seperator not allowed" (fun s -> not (s.Contains "/" || s.Contains "\\")) >> FolderScanner.ParseResult.box }
+                fun (upf:UnparsedPackageFile) -> FolderScanner.check "seperator not allowed" (fun s -> not (s.Contains "/" || s.Contains "\\")) >> FolderScanner.ParseResult.box }
           { FolderScanner.AdvancedScanner.Name = "tfm";
             FolderScanner.AdvancedScanner.Parser =
                 (fun upf ->
@@ -380,6 +407,8 @@ module InstallModel =
           { FolderScanner.AdvancedScanner.Name = "rid";
             FolderScanner.AdvancedScanner.Parser =
                 fun upl -> (fun rid -> { Rid = rid }) >> FolderScanner.ParseResult.ParseSucceeded >> FolderScanner.ParseResult.box }]
+        |> Seq.map (fun s -> s.Name, s)
+        |> dict
     let trySscanf pf ctx =
         FolderScanner.trySscanfExt ctx scanners { FolderScanner.ScanOptions.Default with IgnoreCase = true } pf ctx.PathWithinPackage
 

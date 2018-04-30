@@ -27,10 +27,11 @@ type ReferenceType =
 
 type DependencyCache (lockFile:LockFile) =
     let loadedGroups = HashSet<GroupName>()
-    let mutable nuspecCache = ConcurrentDictionary<PackageName*SemVerInfo, Nuspec>()
+    let mutable nuspecCache = ConcurrentDictionary<PackageName*SemVerInfo, System.Threading.Tasks.Task<Nuspec>>()
     let mutable installModelCache = ConcurrentDictionary<GroupName * PackageName,System.Threading.Tasks.Task<InstallModel>>()
     let mutable orderedGroupCache = ConcurrentDictionary<GroupName,PackageInfo list>()
     let mutable orderedGroupReferences = ConcurrentDictionary<(GroupName * FrameworkIdentifier),ReferenceType list>()
+    let mutable finishedSetup = false
 
 
     let getLeafPackagesGeneric getPackageName getDependencies (knownPackages:Set<_>) openList =
@@ -191,7 +192,13 @@ type DependencyCache (lockFile:LockFile) =
     member __.InstallModels () = 
         installModelCache |> Seq.map (fun x -> x.Value.Result) |> List.ofSeq
     
+    member __.InstallModelTasks () = 
+        installModelCache |> Seq.map (fun x -> x.Value) |> List.ofSeq
+    
     member __.Nuspecs () = 
+        nuspecCache |> Seq.map (fun x -> x.Value.Result) |> List.ofSeq
+        
+    member __.NuspecsTasks () = 
         nuspecCache |> Seq.map (fun x -> x.Value) |> List.ofSeq
 
     member __.StartSetupGroup (groupName:GroupName) : bool =
@@ -212,11 +219,14 @@ type DependencyCache (lockFile:LockFile) =
                     if Directory.Exists folder |> not then
                         failwithf "Folder %s doesn't exist. Did you restore group %O? Try to delete %s and trying again." folder groupName Constants.PaketRestoreHashFilePath
 
-                    let nuspecShort = Path.Combine(folder, sprintf "%O.nuspec" package.Name)
-                    if verbose then
-                        verbosefn " -- %s" nuspecShort
-                    let nuspec = FileInfo(Path.Combine (lockFile.RootPath,nuspecShort))
-                    let nuspec = Nuspec.Load nuspec.FullName
+                    let nuspec =
+                        async {
+                            let nuspecShort = Path.Combine(folder, sprintf "%O.nuspec" package.Name)
+                            if verbose then
+                                verbosefn " -- %s" nuspecShort
+                            let nuspec = FileInfo(Path.Combine (lockFile.RootPath,nuspecShort))
+                            return Nuspec.Load nuspec.FullName
+                        } |> Async.StartAsTask
                     nuspecCache.TryAdd((package.Name,package.Version),nuspec) |>ignore
                     let kind =
                         match package.Kind with
@@ -224,19 +234,30 @@ type DependencyCache (lockFile:LockFile) =
                         | ResolvedPackageKind.DotnetCliTool -> InstallModelKind.DotnetCliTool
                     let model =
                         async {
+                            let! spec = nuspec |> Async.AwaitTask
                             return InstallModel.CreateFromContent(
                                 package.Name, 
                                 package.Version, 
                                 kind,
                                 Paket.Requirements.FrameworkRestriction.NoRestriction, 
-                                NuGet.GetContent(folder).Force())
+                                (NuGet.GetContentWithNuSpec spec folder).Force())
                         } 
                         |> Async.StartAsTask
                     installModelCache.TryAdd((groupName,package.Name) , model) |> ignore)
 
                 loadedGroups.Add groupName |> ignore
                 true
-                
+    
+    member self.AwaitFinishSetup() =
+        async {
+            if not finishedSetup then
+                for t in self.InstallModelTasks() do
+                    do! t |> Async.AwaitTask |> Async.Ignore
+                for t in self.NuspecsTasks() do
+                    do! t |> Async.AwaitTask |> Async.Ignore
+            finishedSetup <- true
+        }
+    
     member self.SetupGroup (groupName:GroupName) : bool =
         match tryGet groupName orderedGroupCache with
         | None -> false
@@ -264,6 +285,10 @@ type DependencyCache (lockFile:LockFile) =
 
  
     member __.InstallModel groupName packageName = 
-        let model = tryGet (groupName, packageName)  installModelCache
+        let model = tryGet (groupName, packageName) installModelCache
         model |> Option.map (fun r -> r.Result)
+        
+    member __.InstallModelTask groupName packageName = 
+        let model = tryGet (groupName, packageName) installModelCache
+        model |> Option.map (fun r -> r)
     
