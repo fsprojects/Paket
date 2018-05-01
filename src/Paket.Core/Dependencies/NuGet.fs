@@ -381,23 +381,13 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
 
         let v3AndFallBack (nugetSource:NuGetV3Source) force = async {
             try
-                let! result = tryV3 nugetSource force
-                match result with
-                | ODataSearchResult.EmptyResult -> 
-                    match NuGetV3.calculateNuGet2Path nugetSource.Url with
-                    | Some url ->
-                        let nugetSource : NuGetSource =
-                            { Url = url
-                              Authentication = nugetSource.Authentication }
-                        return! tryV2 nugetSource force
-                    | _ -> return result
-                | _ -> return result
+                return! tryV3 nugetSource force
             with
             | exn ->
                 traceWarnfn "Possible Performance degradation, V3 was not working: %s" exn.Message
                 if verbose then
                     printfn "Error while using V3 API: %O" exn
-
+   
                 match NuGetV3.calculateNuGet2Path nugetSource.Url with
                 | Some url ->
                     let nugetSource : NuGetSource =
@@ -407,6 +397,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
                 | _ ->
                     raise exn
                     return! tryV3 nugetSource force
+   
         }
 
         let getPackageDetails force =
