@@ -1,3 +1,6 @@
+#### 5.157.0-alpha003 - 2018-05-01
+* Bugfix after last release
+
 #### 5.157.0-alpha002 - 2018-05-01
 * Some performance improvements - https://github.com/fsprojects/Paket/pull/3173
 * fix incorrect framework restrictions in lockfile -  https://github.com/fsprojects/Paket/pull/3176
