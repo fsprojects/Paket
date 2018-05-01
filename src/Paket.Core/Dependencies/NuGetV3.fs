@@ -93,11 +93,17 @@ let getNuGetV3Resource (source : NuGetV3Source) (resourceType : NugetV3ResourceT
                         match spl.Length with 
                         | 0 -> None
                         | 1 -> Some (res, None)
-                        | 2 -> 
-                            try Some (spl.[0], Some (SemVer.Parse spl.[1]))
-                            with e -> 
-                                eprintfn "Failed to parse @type '%s' in nuget v3: %O" res e
+                        | 2 ->
+                            if spl.[1] = "versioned"
+                            then
+                                // TODO: Add support for this style.
+                                // I think basically the version is in another field
                                 None
+                            else
+                                try Some (spl.[0], Some (SemVer.Parse spl.[1]))
+                                with e -> 
+                                    eprintfn "Failed to parse @type '%s' in nuget v3: %O" res e
+                                    None
                         | _ ->
                             if verbose then
                                 eprintfn "Unable to parse @type in nuget v3: '%s'" res
