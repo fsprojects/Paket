@@ -345,6 +345,7 @@ let createHttpClient (url,auth:Auth option) =
         new HttpClientHandler(
             UseProxy = true,
             Proxy = getDefaultProxyFor url)
+    handler.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
 
     let client = new HttpClient(handler)
     match auth with
