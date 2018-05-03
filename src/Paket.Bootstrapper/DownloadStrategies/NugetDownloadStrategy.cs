@@ -25,7 +25,11 @@ namespace Paket.Bootstrapper.DownloadStrategies
             public NugetApiHelper(string packageName, string nugetSource)
             {
                 this.packageName = packageName;
+#if NO_APPSETTINGS
+                this.nugetSource = nugetSource ?? DefaultNugetSource;
+#else
                 this.nugetSource = nugetSource ?? ConfigurationManager.AppSettings[NugetSourceAppSettingsKey] ?? DefaultNugetSource;
+#endif
             }
 
             internal string GetAllPackageVersions(bool includePrerelease)
@@ -163,10 +167,57 @@ namespace Paket.Bootstrapper.DownloadStrategies
                 }
             }
 
+#if PAKET_BOOTSTRAP_AS_TOOL
+            string toolWorkDir = Path.Combine(FileSystemProxy.GetCurrentDirectory());
+            // 1 - generate custom nuget.config
+            string bootstrapperNugetConfig = CreateNugetConfigForBootstrapper(randomFullPath, FileSystemProxy);
+            // 2 - install as tool
+            int exitCode = Dotnet(String.Format(@"tool install paket --version {2} --tool-path ""{0}"" --configfile ""{1}""", toolWorkDir, bootstrapperNugetConfig, latestVersion));
+            if (exitCode != 0) {
+                Environment.Exit(exitCode);
+            }
+#else
             FileSystemProxy.ExtractToDirectory(paketPackageFile, randomFullPath);
             var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.exe");
             FileSystemProxy.CopyFile(paketSourceFile, target, true);
+#endif
             FileSystemProxy.DeleteDirectory(randomFullPath, true);
+        }
+
+        public static string CreateNugetConfigForBootstrapper(string paketToolNupkgDir, IFileSystemProxy fileSystem)
+        {
+            string path = Path.GetTempFileName();
+            var text = new[]
+                {
+"<?xml version=\"1.0\" encoding=\"utf-8\"?>",
+"<configuration>",
+"<packageSources>",
+"    <!--To inherit the global NuGet package sources remove the <clear/> line below -->",
+"    <clear />",
+string.Format("    <add key=\"download_paket_tool\" value=\"{0}\" />", paketToolNupkgDir),
+"</packageSources>",
+"</configuration>"
+                };
+            File.WriteAllText(path, string.Join(System.Environment.NewLine, text));
+            return path;
+        }
+
+        public static int Dotnet(string argString)
+        {
+            ConsoleImpl.WriteInfo("Running dotnet {0}", argString);
+            var process = new System.Diagnostics.Process
+            {
+                StartInfo =
+                {
+                    FileName = "dotnet",
+                    Arguments = argString,
+                    CreateNoWindow = true,
+                    UseShellExecute = false
+                }
+            };
+            process.Start();
+            process.WaitForExit();
+            return process.ExitCode;
         }
 
         protected override void SelfUpdateCore(string latestVersion)

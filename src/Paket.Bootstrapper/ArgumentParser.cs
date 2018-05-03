@@ -52,6 +52,15 @@ namespace Paket.Bootstrapper
             downloadArguments.Folder = Path.GetDirectoryName(target);
         }
 
+        private static void FillTargetToRelativeDir(DownloadArguments downloadArguments, IFileSystemProxy fileSystem)
+        {
+            var folder = fileSystem.GetCurrentDirectory();
+            var target = Path.Combine(folder, "paket.exe");
+
+            downloadArguments.Target = target;
+            downloadArguments.Folder = Path.GetDirectoryName(target);
+        }
+
         public static BootstrapperOptions ParseArgumentsAndConfigurations(IEnumerable<string> arguments, NameValueCollection appSettings, IDictionary envVariables, IFileSystemProxy fileSystem, IEnumerable<string> argumentsInDependenciesFile)
         {
             var options = new BootstrapperOptions();
@@ -59,7 +68,11 @@ namespace Paket.Bootstrapper
             var magicMode = GetIsMagicMode(fileSystem);
             var transparentMagicMode = magicMode && commandArgs.IndexOf(CommandArgs.Run) == -1;
 
+#if PAKET_BOOTSTRAP_TO_DIR
+            FillTargetToRelativeDir(options.DownloadArguments, fileSystem);
+#else
             FillTarget(options.DownloadArguments, magicMode, fileSystem);
+#endif
 
             // 1 - AppSettings
             FillOptionsFromAppSettings(options, appSettings);

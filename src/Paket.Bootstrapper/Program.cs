@@ -23,19 +23,32 @@ namespace Paket.Bootstrapper
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                          | SecurityProtocolType.Tls11
                                          | SecurityProtocolType.Tls
+#if NO_SSL3
+                                         ;
+#else
                                          | SecurityProtocolType.Ssl3;
+#endif
+
             executionWatch.Start();
             Console.CancelKeyPress += CancelKeyPressed;
 
             var fileProxy = new FileSystemProxy();
-            var optionsBeforeDependenciesFile = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings,
+
+            var appSettings =
+#if NO_APPSETTINGS
+                new System.Collections.Specialized.NameValueCollection();
+#else
+                ConfigurationManager.AppSettings;
+#endif
+
+            var optionsBeforeDependenciesFile = ArgumentParser.ParseArgumentsAndConfigurations(args, appSettings,
                 Environment.GetEnvironmentVariables(), fileProxy, Enumerable.Empty<string>());
             ConsoleImpl.Verbosity = optionsBeforeDependenciesFile.Verbosity;
 
             var argumentsFromDependenciesFile =
                 WindowsProcessArguments.Parse(
                     PaketDependencies.GetBootstrapperArgsForFolder(fileProxy));
-            var options = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings,
+            var options = ArgumentParser.ParseArgumentsAndConfigurations(args, appSettings,
                 Environment.GetEnvironmentVariables(), fileProxy, argumentsFromDependenciesFile);
             if (options.ShowHelp)
             {

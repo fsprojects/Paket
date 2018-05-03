@@ -94,6 +94,9 @@ Options:
             if (EnvProxy.TryGetProxyFor(uri, out result) && result.GetProxy(uri) != uri)
                 return result;
 
+#if NO_SYSTEMWEBPROXY
+            return null;
+#else
             result = WebRequest.GetSystemWebProxy();
             Uri address = result.GetProxy(uri);
             if (address == uri)
@@ -104,6 +107,7 @@ Options:
                 Credentials = CredentialCache.DefaultCredentials,
                 BypassProxyOnLocal = true
             };
+#endif
         }
 
         internal static void FileMove(string oldPath, string newPath)
