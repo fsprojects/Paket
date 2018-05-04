@@ -127,6 +127,20 @@ namespace Paket.Bootstrapper
                 options.Verbosity = Verbosity.Trace;
             }
 
+#if PAKET_BOOTSTRAP_WORKAROUND_MSBUILD_URLS
+            if (!String.IsNullOrEmpty(options.DownloadArguments.NugetSource)) {
+                string url = options.DownloadArguments.NugetSource;
+                string fixedUrl;
+                if (url.StartsWith("http://") || url.StartsWith("https://")) {
+                    fixedUrl = url;
+                }
+                else {
+                    fixedUrl = url.Replace("http:/", "http://").Replace("https:/", "https://");
+                }
+                options.DownloadArguments.NugetSource = fixedUrl;
+            } 
+#endif
+
             return options;
         }
 

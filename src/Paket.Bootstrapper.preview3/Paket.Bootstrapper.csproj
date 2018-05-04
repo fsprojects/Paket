@@ -13,6 +13,7 @@
       NO_SYSTEMWEBPROXY;
       PAKET_BOOTSTRAP_AS_TOOL;
       PAKET_BOOTSTRAP_TO_DIR;
+      PAKET_BOOTSTRAP_WORKAROUND_MSBUILD_URLS;
       $(DefineConstants)
     </DefineConstants>
   </PropertyGroup>
