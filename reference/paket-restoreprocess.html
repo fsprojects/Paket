@@ -191,7 +191,7 @@
             createProjectReferencesFiles (...)
           </code>
           <div class="tip" id="594">
-            <strong>Signature:</strong> lockFile:LockFile -&gt; projectFile:ProjectFile -&gt; referencesFile:ReferencesFile -&gt; resolved:Lazy&lt;Map&lt;(GroupName * PackageName),PackageInfo&gt;&gt; -&gt; groups:Map&lt;GroupName,LockFileGroup&gt; -&gt; unit<br />
+            <strong>Signature:</strong> lockFile:LockFile -&gt; projectFile:ProjectFile -&gt; referencesFile:ReferencesFile -&gt; resolved:Lazy&lt;Map&lt;(GroupName * PackageName),PackageInfo&gt;&gt; -&gt; groups:Map&lt;GroupName,LockFileGroup&gt; -&gt; targetFrameworks:string option -&gt; unit<br />
                       </div>
         </td>
         <td class="xmldoc">
@@ -213,7 +213,7 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L431-431" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L432-432" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -306,7 +306,7 @@ returns - package, libs files, props files, targets files, analyzers files</p>
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L447-447" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L448-448" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -362,7 +362,7 @@ returns - package, libs files, props files, targets files, analyzers files</p>
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L475-475" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L476-476" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -376,11 +376,11 @@ returns - package, libs files, props files, targets files, analyzers files</p>
             RestoreNewSdkProject (...)
           </code>
           <div class="tip" id="604">
-            <strong>Signature:</strong> lockFile:LockFile -&gt; resolved:Lazy&lt;Map&lt;(GroupName * PackageName),PackageInfo&gt;&gt; -&gt; groups:Map&lt;GroupName,LockFileGroup&gt; -&gt; projectFile:ProjectFile -&gt; ReferencesFile<br />
+            <strong>Signature:</strong> lockFile:LockFile -&gt; resolved:Lazy&lt;Map&lt;(GroupName * PackageName),PackageInfo&gt;&gt; -&gt; groups:Map&lt;GroupName,LockFileGroup&gt; -&gt; projectFile:ProjectFile -&gt; targetFrameworks:string option -&gt; ReferencesFile<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L461-461" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L462-462" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
