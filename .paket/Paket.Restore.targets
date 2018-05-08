@@ -43,7 +43,7 @@
     <!-- Step 1 Check if lockfile is properly restored -->
     <PropertyGroup>
       <PaketRestoreRequired>true</PaketRestoreRequired>
-      <NoWarn>$(NoWarn);NU1603</NoWarn>
+      <NoWarn>$(NoWarn);NU1603;NU1604;NU1605;NU1608</NoWarn>
     </PropertyGroup>
 
     <!-- Because ReadAllText is slow on osx/linux, try to find shasum and awk -->
