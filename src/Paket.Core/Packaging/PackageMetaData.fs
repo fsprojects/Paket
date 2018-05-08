@@ -241,20 +241,19 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                 Directory.GetFiles(path, name + ".*")
                 |> Array.map (fun f -> FileInfo f)
                 |> Array.filter (fun fi -> 
-                                    let isSameFileName = (Path.GetFileNameWithoutExtension fi.Name) = name
-                                    let validExtensions = 
-                                        match template.Contents with
-                                        | CompleteInfo(core, optional) ->
-                                            if core.Symbols || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
-                                            else [".xml"; ".dll"; ".exe";]
-                                        | ProjectInfo(core, optional) ->
-                                            if core.Symbols  || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
-                                            else [".xml"; ".dll"; ".exe";]
-                                    let isValidExtension = 
-                                        validExtensions
-                                        |> List.exists (String.equalsIgnoreCase fi.Extension)
-                                    isSameFileName && isValidExtension)
-                            )
+                    let isSameFileName = (Path.GetFileNameWithoutExtension fi.Name) = name
+                    let validExtensions = 
+                        match template.Contents with
+                        | CompleteInfo(core, optional) ->
+                            if core.Symbols || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
+                            else [".xml"; ".dll"; ".exe";]
+                        | ProjectInfo(core, optional) ->
+                            if core.Symbols  || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
+                            else [".xml"; ".dll"; ".exe";]
+                    let isValidExtension = 
+                        validExtensions
+                        |> List.exists (String.equalsIgnoreCase fi.Extension)
+                    isSameFileName && isValidExtension))
             |> Seq.toArray
 
         additionalFiles
