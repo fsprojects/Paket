@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>paket config
+    <title>paket git
 </title>
     <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -57,8 +57,8 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1><a name="paket-config" class="anchor" href="#paket-config">paket config</a></h1>
-<p>Store global configuration values like NuGet credentials.</p>
+<h1><a name="paket-git" class="anchor" href="#paket-git">paket git</a></h1>
+<p>Commands to manipulate git repository references.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
 <span class="l"> 2: </span>
 <span class="l"> 3: </span>
@@ -73,23 +73,17 @@
 <span class="l">12: </span>
 <span class="l">13: </span>
 <span class="l">14: </span>
-<span class="l">15: </span>
-<span class="l">16: </span>
-<span class="l">17: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket config [--help] [add-credentials &lt;key or URL&gt;] [add-token &lt;key or URL&gt; &lt;token&gt;]
-             [--username &lt;username&gt;] [--password &lt;password&gt;] [--authtype &lt;authType&gt;] [--verify]
+<td class="snippet"><pre class="fssnip"><code lang="sh">paket git [--help] [&lt;subcommand&gt; [&lt;options&gt;]]
+
+SUBCOMMANDS:
+
+    add &lt;options&gt;         add git repository
+
+    Use 'paket &lt;subcommand&gt; --help' for additional information.
 
 OPTIONS:
 
-    add-credentials &lt;key or URL&gt;
-                          add credentials for URL or credential key
-    add-token &lt;key or URL&gt; &lt;token&gt;
-                          add token for URL or credential key
-    --username &lt;username&gt; provide username
-    --password &lt;password&gt; provide password
-    --authtype &lt;authType&gt; specify authentication type: basic|ntlm (default: basic)
-    --verify              specify in case you want to verify the credentials
     --silent, -s          suppress console output
     --verbose, -v         print detailed information to the console
     --log-file &lt;path&gt;     print output to a file
@@ -97,59 +91,6 @@ OPTIONS:
 </code></pre></td></tr></table>
 <p>If you add the <code>--verbose</code> flag Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [path]</code> you can trace the logged information into a file.</p>
-<h2><a name="Adding-credentials" class="anchor" href="#Adding-credentials">Adding credentials</a></h2>
-<h3><a name="URL-credentials" class="anchor" href="#URL-credentials">URL credentials</a></h3>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket config add-credentials &lt;source URL&gt;
-</code></pre></td></tr></table>
-<p>Paket will then ask you for the username, password, and authentication type that
-will be used for the specified <code>&lt;source URL&gt;</code>.</p>
-<p>The credentials you enter here will then be used for <code>source</code>s in the
-<a href="nuget-dependencies.html"><code>paket.dependencies</code> file</a> that match <code>&lt;source URL&gt;</code>
-unless they carry a username and password.</p>
-<h3><a name="Verifying-the-source-URL-and-credentials" class="anchor" href="#Verifying-the-source-URL-and-credentials">Verifying the source URL and credentials</a></h3>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket config add-credentials &lt;source URL&gt; --verify
-</code></pre></td></tr></table>
-<p>Paket will verify that the <code>&lt;source URL&gt;</code> and the credentials entered with the given
-authentication type are valid. This feature is useful if you want to avoid storing
-wrong credentials or URL in the Paket configuration file.</p>
-<h3><a name="GitHub-credentials" class="anchor" href="#GitHub-credentials">GitHub credentials</a></h3>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket config add-credentials &lt;credential key&gt;
-</code></pre></td></tr></table>
-<p>Paket will then ask you for the username and password that will be used for the
-specified <code>&lt;credential key&gt;</code>.</p>
-<p>The credentials you enter here will then be used to access any GitHub files from
-the <a href="github-dependencies.html"><code>paket.dependencies</code> file</a> that carry the
-specified <code>&lt;credential key&gt;</code>.</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket config add-token &lt;credential key&gt; &lt;token&gt;
-</code></pre></td></tr></table>
-<p>The <code>&lt;token&gt;</code> you enter here will then be used to access any GitHub files from
-the <a href="github-dependencies.html"><code>paket.dependencies</code> file</a> that carry the
-specified <code>&lt;credential key&gt;</code>.</p>
-<p>The configuration file can be found at:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span class="id">AppDataFolder</span> <span class="o">=</span> <span class="id">Environment</span><span class="pn">.</span><span class="id">GetFolderPath</span><span class="pn">(</span><span class="id">Environment</span><span class="pn">.</span><span class="id">SpecialFolder</span><span class="pn">.</span><span class="id">ApplicationData</span><span class="pn">)</span>
-<span class="k">let</span> <span class="id">PaketConfigFolder</span> <span class="o">=</span> <span class="id">Path</span><span class="pn">.</span><span class="id">Combine</span><span class="pn">(</span><span class="id">AppDataFolder</span><span class="pn">,</span> <span class="s">&quot;Paket&quot;</span><span class="pn">)</span>
-<span class="k">let</span> <span class="id">PaketConfigFile</span> <span class="o">=</span> <span class="id">Path</span><span class="pn">.</span><span class="id">Combine</span><span class="pn">(</span><span class="id">PaketConfigFolder</span><span class="pn">,</span> <span class="s">&quot;paket.config&quot;</span><span class="pn">)</span>
-</code></pre></td>
-</tr>
-</table>
-<h2><a name="Example" class="anchor" href="#Example">Example</a></h2>
-<h3><a name="Adding-a-NuGet-API-key" class="anchor" href="#Adding-a-NuGet-API-key">Adding a NuGet API key</a></h3>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket config add-token 'https://www.nuget.org' '4003d786-cc37-4004-bfdf-c4f3deadbeef'
-</code></pre></td></tr></table>
 
 
         </div>
