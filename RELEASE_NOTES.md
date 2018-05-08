@@ -1,4 +1,4 @@
-#### 5.161.0 - 2018-05-08
+#### 5.161.1 - 2018-05-08
 * Override versions properly with Update property in ProjectReferences
 
 #### 5.160.0 - 2018-05-08
