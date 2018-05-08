@@ -201,6 +201,21 @@ type Dependencies(dependenciesFileName: string) =
             fun () ->
                 AddProcess.AddGithub(dependenciesFileName, groupName, repository, file, version, options))
 
+    /// Adds the given git repository to the dependencies file
+    member this.AddGit(groupName, repository) =
+        this.AddGit(groupName, repository, "")
+
+    /// Adds the given git repository to the dependencies file    
+    member this.AddGit(groupName, repository, version) =
+        this.AddGit(groupName, repository, version, InstallerOptions.Default);
+
+    /// Adds the given git repository to the dependencies file
+    member this.AddGit(groupName, repository, version, options) =
+        RunInLockedAccessMode(
+            this.RootPath,
+            fun () ->
+                AddProcess.AddGit(dependenciesFileName, groupName, repository, version, options))
+
    /// Adds the given package with the given version to the dependencies file.
     member this.AddToProject(groupName, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, projectName: string, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
         this.AddToProject(groupName, package,version,force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, projectName, installAfter, semVerUpdateMode, touchAffectedRefs, true)
