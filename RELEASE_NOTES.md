@@ -1,3 +1,6 @@
+#### 5.160.0 - 2018-05-08
+* Support for net472 - https://github.com/fsprojects/Paket/issues/3188
+
 #### 5.159.0 - 2018-05-08
 * Allows to add git-repositories to paket.lock and paket.references files via CLI - https://github.com/fsprojects/Paket/pull/3125
 * BUGFIX: Fixed incorrect framework restrictions in the lockfile - https://github.com/fsprojects/Paket/pull/3176
