@@ -1,13 +1,5 @@
-#### 5.157.0-alpha004 - 2018-05-02
-* REVERT: Revert prerelease
-
-#### 5.157.0-alpha003 - 2018-05-01
-* Bugfix after last release
-
-#### 5.157.0-alpha002 - 2018-05-01
-* Some performance improvements - https://github.com/fsprojects/Paket/pull/3173
-* fix incorrect framework restrictions in lockfile -  https://github.com/fsprojects/Paket/pull/3176
-* Fix semver support for v3 - https://github.com/fsprojects/Paket/pull/3179
+#### 5.158.0 - 2018-05-08
+* BUGFIX: Paket restore silently failed when TargetFramework(s) are specified in Directory.Build.props and not csproj - https://github.com/fsprojects/Paket/pull/3013
 
 #### 5.156.7 - 2018-04-26
 * shasum now works when the path has spaces - https://github.com/fsprojects/Paket/pull/3169
