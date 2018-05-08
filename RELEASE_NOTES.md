@@ -1,3 +1,6 @@
+#### 5.161.0 - 2018-05-08
+* Override versions properly with Update property in ProjectReferences
+
 #### 5.160.0 - 2018-05-08
 * Support for net472 - https://github.com/fsprojects/Paket/issues/3188
 * Support for UAP10.0.16299 - https://github.com/fsprojects/Paket/issues/3189
