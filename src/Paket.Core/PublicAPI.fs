@@ -886,3 +886,29 @@ module PublicAPI =
     /// Takes a version string formatted for Semantic Versioning and parses it
     /// into the internal representation used by Paket.
     let ParseSemVer (version:string) = SemVer.Parse version
+
+    let PreCalculateMaps () =
+        async {
+            KnownTargetProfiles.AllProfiles
+            |> Seq.iter (fun profile -> 
+                SupportCalculation.getPlatformsSupporting profile |> ignore
+                let fws =
+                    profile.Frameworks
+                    |> List.filter (function
+                        | MonoTouch
+                        | DNXCore _
+                        | UAP _
+                        | MonoAndroid _
+                        | XamariniOS
+                        | XamarinTV
+                        | XamarinWatch
+                        | XamarinMac 
+                        | DotNetCoreApp _
+                        | DotNetStandard _
+                        | Tizen _ -> false
+                        | _ -> true)
+                if fws.Length > 0 then SupportCalculation.findPortable false fws |> ignore)
+            // calculated as part of the above...
+            SupportCalculation.getSupportedPreCalculated (PortableProfileType.Profile259) |> ignore
+        }
+        |> Async.StartAsTask
