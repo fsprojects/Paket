@@ -4,7 +4,6 @@ open System.IO
 open Paket.Domain
 open System.Collections.Concurrent
 open PackageResolver
-open Mono.Cecil
 open System.Collections.Generic
 open Logging
 open ProviderImplementation.AssemblyReader.Utils.SHA1

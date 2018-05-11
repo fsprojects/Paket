@@ -1,5 +1,5 @@
 Newtonsoft.Json
-Mono.Cecil
+System.Reflection.Metadata
 Chessie
 System.Security.Cryptography.ProtectedData
 
