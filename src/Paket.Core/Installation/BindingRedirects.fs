@@ -7,7 +7,6 @@ open System.Xml.Linq
 open System.IO
 open Paket.Xml.Linq
 open System.Xml.XPath
-open System.Reflection
 
 /// Represents a binding redirection
 type BindingRedirect = 
@@ -195,10 +194,3 @@ let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindin
 
     for p in projects do
         applyBindingRedirects p
-
-/// Calculates the short form of the public key token for use with binding redirects, if it exists.
-let getPublicKeyToken (assembly:AssemblyName) =
-    assembly.GetPublicKeyToken()
-    |> Option.ofObj
-    |> Option.map (Array.fold(fun state b -> state + b.ToString("X2")) "")
-    |> Option.bind (function | "" -> None | token -> Some (token.ToLower()))

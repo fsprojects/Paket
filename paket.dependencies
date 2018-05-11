@@ -5,7 +5,7 @@ nuget Newtonsoft.Json redirects: force
 nuget Argu >= 5.1.0
 nuget FSharp.Core redirects: force
 nuget Chessie >= 0.6
-nuget Mono.Cecil prerelease
+nuget System.Reflection.Metadata ~> 1.6.0
 
 nuget System.Security.Cryptography.ProtectedData
 
