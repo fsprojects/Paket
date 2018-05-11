@@ -277,7 +277,7 @@ namespace Paket.Bootstrapper
             var assemblyLocation = fileSystemProxy.GetExecutingAssemblyPath();
             var targetName = String.Format("paket_{0}.exe",GetHash(assemblyLocation));
             var targetFolder = Path.Combine(fileSystemProxy.GetTempPath(), "paket");            
-            Directory.Create(targetFolder);
+            Directory.CreateDirectory(targetFolder);
             return Path.Combine(targetFolder, targetName);
         }
 
