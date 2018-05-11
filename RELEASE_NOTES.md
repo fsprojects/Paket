@@ -1,3 +1,17 @@
+#### 5.161.3 - 2018-05-08
+* Override versions properly with Update property in ProjectReferences
+
+#### 5.160.0 - 2018-05-08
+* Support for net472 - https://github.com/fsprojects/Paket/issues/3188
+* Support for UAP10.0.16299 - https://github.com/fsprojects/Paket/issues/3189
+
+#### 5.159.0 - 2018-05-08
+* Allows to add git-repositories to paket.lock and paket.references files via CLI - https://github.com/fsprojects/Paket/pull/3125
+* BUGFIX: Fixed incorrect framework restrictions in the lockfile - https://github.com/fsprojects/Paket/pull/3176
+
+#### 5.158.0 - 2018-05-08
+* BUGFIX: Paket restore silently failed when TargetFramework(s) are specified in Directory.Build.props and not csproj - https://github.com/fsprojects/Paket/pull/3013
+
 #### 5.156.7 - 2018-04-26
 * shasum now works when the path has spaces - https://github.com/fsprojects/Paket/pull/3169
 
