@@ -62,6 +62,7 @@
   <ItemGroup>
     <None Include="paket.references" />
     <EmbeddedResource Include="embedded\Paket.Restore.targets" />
+    <Compile Include="Common\AssemblyMetadata.fs" />
     <Compile Include="Common\AssemblyInfo.fs" />
     <Compile Include="Common\CustomAssemblyInfo.fs" />
     <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.SDK\src\AssemblyReader.fs">

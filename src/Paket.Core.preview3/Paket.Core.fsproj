@@ -19,6 +19,7 @@
       <Paket>True</Paket>
       <Link>Globbing.fs</Link>
     </Compile>
+    <Compile Include="$(PaketCoreSourcesDir)\Common\AssemblyMetadata.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\Async.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\Domain.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\Logging.fsi" />

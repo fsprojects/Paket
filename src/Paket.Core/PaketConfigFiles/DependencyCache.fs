@@ -7,7 +7,9 @@ open PackageResolver
 open System.Collections.Generic
 open Logging
 open ProviderImplementation.AssemblyReader.Utils.SHA1
+open Requirements
 open System
+open System.Reflection
 
 // Needs an update so that all work is not done at once
 // computation should be done on a per group/per framework basis
@@ -83,14 +85,14 @@ type DependencyCache (lockFile:LockFile) =
     
     do loadPackages ()
 
-    let getDllOrder (dllFiles : AssemblyDefinition list) =
+    let getDllOrder (dllFiles : AssemblyName list) =
         // this check saves looking at assembly metadata when we know this is not needed
         if List.length dllFiles = 1 then dllFiles else
         // we ignore all unknown references as they are most likely resolved on package level
         let known = dllFiles |> Seq.map (fun a -> a.FullName) |> Set.ofSeq
         getPackageOrderGeneric
-            (fun (p:AssemblyDefinition) -> p.FullName)
-            (fun p -> p.MainModule.AssemblyReferences |> Seq.map (fun r -> r.FullName) |> Seq.filter (known.Contains))
+            (fun (p:AssemblyName) -> p.FullName)
+            (fun p -> AssemblyMetadata.getAssemblyReferences p |> Seq.map (fun r -> r.FullName) |> Seq.filter (known.Contains))
             dllFiles
 
 
@@ -101,7 +103,7 @@ type DependencyCache (lockFile:LockFile) =
             |> Seq.map (fun l -> l.Path)
             |> Seq.choose (fun path -> 
                 try 
-                    (AssemblyDefinition.ReadAssembly path, FileInfo(path)) |> Some
+                    (AssemblyName.GetAssemblyName(path), FileInfo(path)) |> Some
                 with
                 | :? BadImageFormatException -> None
             )
@@ -129,7 +131,7 @@ type DependencyCache (lockFile:LockFile) =
             let assemblyFilePerAssemblyDef = 
                 libs |> Seq.choose (fun (f:FileInfo) -> 
                     try
-                        (AssemblyDefinition.ReadAssembly (f.FullName:string), f) |> Some
+                        (AssemblyName.GetAssemblyName(f.FullName:string), f) |> Some
                     with
                     | :? BadImageFormatException -> None)
                 |> dict
