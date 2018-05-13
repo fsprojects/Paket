@@ -499,7 +499,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
     // Shortcut if we already restored before
     let newContents = File.ReadAllText(lockFileName.FullName)
     let isFullRestore = targetFrameworks = None && projectFile = None && group = None && referencesFileNames = []
-    let inline isEarlyExit () = isRestoreUpDoDate lockFileName newContents
+    let inline isEarlyExit () = isFullRestore && isRestoreUpDoDate lockFileName newContents
 
     let lockFile,localFile,hasLocalFile =
         // Do not parse the lockfile when we have an early exit scenario.
