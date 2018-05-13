@@ -17,6 +17,7 @@ nuget Microsoft.NETCore.App >= 2.0 prerelease
 nuget Moq
 nuget FSCheck
 
+// Because see https://github.com/nunit/nunit3-vs-adapter/issues/366
 nuget NUnit redirects: force
 nuget NUnit.Console
 // current workaround for https://github.com/nunit/nunit3-vs-adapter/issues/366
