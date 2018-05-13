@@ -37,7 +37,7 @@ the [`paket.dependencies` file](github-dependencies.html) that carry the
 specified `<credential key>`.
 
 ```sh
-paket config addtoken <credential key> <token>
+paket config add-token <credential key> <token>
 ```
 
 The `<token>` you enter here will then be used to access any GitHub files from

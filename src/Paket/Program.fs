@@ -240,6 +240,22 @@ let github (results : ParseResults<_>) =
             .Locate()
             .AddGithub(group, repository, file, version)
 
+let git (results : ParseResults<_>) =
+    match results.GetResult <@ GitArgs.Add @> with
+    | add ->
+        let group =
+            add.TryGetResult <@ AddGitArgs.Group @>
+        let repository =
+            add.GetResult <@ AddGitArgs.Repository @>
+        let version =
+            match add.TryGetResult <@ AddGitArgs.Version @> with
+            | Some v -> v
+            | None -> ""
+
+        Dependencies
+            .Locate()
+            .AddGit(group, repository, version)
+
 let validateConfig (results : ParseResults<_>) =
     let credential = results.Contains <@ ConfigArgs.AddCredentials @>
     let token = results.Contains <@ ConfigArgs.AddToken @>
@@ -787,6 +803,7 @@ let handleCommand silent command =
     match command with
     | Add r -> processCommand silent add r
     | Github r -> processCommand silent github r
+    | Git r -> processCommand silent git r
     | ClearCache r -> processCommand silent clearCache r
     | Config r -> processWithValidation silent validateConfig config r
     | ConvertFromNuget r -> processCommand silent convert r

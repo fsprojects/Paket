@@ -22,7 +22,6 @@
     <Compile Include="$(PaketTestsSourcesDir)\InfoSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\OutdatedSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\FullGitSpecs.fs" />
-    <Compile Include="$(PaketTestsSourcesDir)\FrameworkRestrictionsSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\NuGetV3Specs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\UpdatePackageSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\UpdateGroupsSpecs.fs" />
