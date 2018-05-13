@@ -307,7 +307,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
         let monikers =
             ProjectFile.getTargetFramework projectFile
             |> Option.toList
-            |> List.append (ProjectFile.getTargetFrameworks projectFile |> Option.toList)
+            |> List.append (ProjectFile.getTargetFrameworksParsed projectFile)
             |> List.append (targetFrameworks |> Option.toList)
        
         monikers
