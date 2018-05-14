@@ -1,5 +1,5 @@
-#### 5.163.0 - 2018-05-14
-* PERFORMANVE: Some performance improvements in targets file - https://github.com/fsprojects/Paket/pull/3200
+#### 5.163.1 - 2018-05-14
+* REVERT: Some performance improvements in targets file - https://github.com/fsprojects/Paket/pull/3200
 
 #### 5.162.0 - 2018-05-14
 * PERFORMANVE: Some performance improvements - https://github.com/fsprojects/Paket/pull/3173
