@@ -1,13 +1,10 @@
-#### 5.162.0-alpha002 - 2018-05-13
-* Bugfix
-
-#### 5.162.0-alpha001 - 2018-05-13
-* Some performance improvements - https://github.com/fsprojects/Paket/pull/3173
-* fix incorrect framework restrictions in lockfile -  https://github.com/fsprojects/Paket/pull/3176
-* Fix semver support for v3 - https://github.com/fsprojects/Paket/pull/3179
+#### 5.162.0 - 2018-05-14
+* PERFORMANVE: Some performance improvements - https://github.com/fsprojects/Paket/pull/3173
+* BUGFIX: Fixed incorrect framework restrictions in lockfile -  https://github.com/fsprojects/Paket/pull/3176
+* BUGFIX: Fixed semver support for v3 - https://github.com/fsprojects/Paket/pull/3179
 
 #### 5.161.3 - 2018-05-08
-* Override versions properly with Update property in ProjectReferences
+* BUGFIX: Override versions properly with Update property in ProjectReferences
 
 #### 5.160.0 - 2018-05-08
 * Support for net472 - https://github.com/fsprojects/Paket/issues/3188
