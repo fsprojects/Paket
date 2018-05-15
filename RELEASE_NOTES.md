@@ -1,8 +1,8 @@
-#### 5.163.1 - 2018-05-14
-* REVERT: Some performance improvements in targets file - https://github.com/fsprojects/Paket/pull/3200
+#### 5.163.2 - 2018-05-15
+* PERFORMANCE: Some performance improvements in targets file - https://github.com/fsprojects/Paket/pull/3200
 
 #### 5.162.0 - 2018-05-14
-* PERFORMANVE: Some performance improvements - https://github.com/fsprojects/Paket/pull/3173
+* PERFORMANCE: Some performance improvements - https://github.com/fsprojects/Paket/pull/3173
 * BUGFIX: Fixed incorrect framework restrictions in lockfile -  https://github.com/fsprojects/Paket/pull/3176
 * BUGFIX: Fixed semver support for v3 - https://github.com/fsprojects/Paket/pull/3179
 
