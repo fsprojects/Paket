@@ -616,7 +616,7 @@ let ``#4003 dotnet pack of a global tool with p2p``() =
     directPaket ("restore") scenario
     |> ignore
 
-    directDotnet true (sprintf "pack tool1 -o \"%s\" /p:PackAsTool=true /bl" outPath) rootPath
+    directDotnet true (sprintf "pack tool1 -o \"%s\" /bl" outPath) rootPath
     |> ignore
 
     let nupkgPath = Path.Combine(outPath, project + ".1.0.0.nupkg")
