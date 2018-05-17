@@ -568,6 +568,7 @@ let ``#3164 pack analyzer`` () =
 
 
 [<Test>]
+[<Ignore("disabled for now, because require .net core 2.1.300")>]
 let ``#4002 dotnet pack of a global tool shouldnt contain references``() = 
     let project = "tool1"
     let scenario = "i004002-pack-global-tools"
@@ -579,7 +580,7 @@ let ``#4002 dotnet pack of a global tool shouldnt contain references``() =
     directPaket ("restore") scenario
     |> ignore
 
-    directDotnet true (sprintf "pack -o \"%s\" /p:PackAsTool=true" outPath) rootPath
+    directDotnet true (sprintf "pack -o \"%s\" /p:PackAsTool=true /bl" outPath) rootPath
     |> ignore
 
     let nupkgPath = Path.Combine(outPath, project + ".1.0.0.nupkg")
