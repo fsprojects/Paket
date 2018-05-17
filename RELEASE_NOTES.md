@@ -1,3 +1,6 @@
+#### 5.165.0 - 2018-05-17
+* PERFORMANCE: Do only one global restore in dotnet restore - https://github.com/fsprojects/Paket/pull/3206
+
 #### 5.164.0 - 2018-05-17
 * BOOTSTRAPPER: Update magic mode file location - https://github.com/fsprojects/Paket/pull/3197
 
