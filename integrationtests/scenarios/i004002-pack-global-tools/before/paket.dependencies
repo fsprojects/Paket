@@ -1,0 +1,5 @@
+source https://api.nuget.org/v3/index.json
+
+framework: netstandard20, netcoreapp2.1
+
+nuget Argu == 5.1.0

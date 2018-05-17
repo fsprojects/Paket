@@ -565,3 +565,38 @@ let ``#3164 pack analyzer`` () =
     Path.Combine(outPath, "analyzers", "dotnet", "cs", "Analyzer.dll") |> checkFileExists
 
     CleanDir rootPath    
+
+
+[<Test>]
+let ``#4002 dotnet pack of a global tool shouldnt contain references``() = 
+    let project = "tool1"
+    let scenario = "i004002-pack-global-tools"
+    prepareSdk scenario
+
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+
+    directPaket ("restore") scenario
+    |> ignore
+
+    directDotnet true (sprintf "pack -o \"%s\" /p:PackAsTool=true" outPath) rootPath
+    |> ignore
+
+    let nupkgPath = Path.Combine(outPath, project + ".1.0.0.nupkg")
+    if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
+    let nuspec = NuGetLocal.getNuSpecFromNupgk nupkgPath
+
+    printfn "%A" nuspec
+
+    match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "FSharp.Core") with
+    | Some s -> Assert.Fail(sprintf "Expected package to still contain the FSharp.Core reference! %A" s)
+    | None -> ()
+
+    match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "Argu") with
+    | Some s -> Assert.Fail(sprintf "Expected package to still contain the Argu reference! %A" s)
+    | None -> ()
+
+    // Should we remove Microsoft.NETCore.App?
+    // Problably not as "packaged" console applications have this dependency by default, see https://www.nuget.org/packages/dotnet-mergenupkg
+    nuspec.Dependencies.Value.Length
+    |> shouldEqual 0
