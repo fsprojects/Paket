@@ -1,3 +1,6 @@
+#### 5.164.0 - 2018-05-17
+* BOOTSTRAPPER: Update magic mode file location - https://github.com/fsprojects/Paket/pull/3197
+
 #### 5.163.2 - 2018-05-15
 * PERFORMANCE: Some performance improvements in targets file - https://github.com/fsprojects/Paket/pull/3200
 
