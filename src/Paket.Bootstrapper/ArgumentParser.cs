@@ -276,8 +276,9 @@ namespace Paket.Bootstrapper
             //    accessing the same file as their path depends on the bootstrapper path.
             var assemblyLocation = fileSystemProxy.GetExecutingAssemblyPath();
             var targetName = String.Format("paket_{0}.exe",GetHash(assemblyLocation));
-
-            return Path.Combine(fileSystemProxy.GetTempPath(), targetName);
+            var targetFolder = Path.Combine(fileSystemProxy.GetTempPath(), "paket");            
+            fileSystemProxy.CreateDirectory(targetFolder);
+            return Path.Combine(targetFolder, targetName);
         }
 
         private static bool IsTrue(this NameValueCollection appSettings, string key)
