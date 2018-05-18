@@ -3,6 +3,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <AssemblyName>paket</AssemblyName>
+    <PackAsTool>true</PackAsTool>
   </PropertyGroup>
   <!--<Win32Resource>paket.res</Win32Resource>-->
   <ItemGroup>
