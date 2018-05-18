@@ -163,6 +163,8 @@ LANGUAGE
     en-gb
 tags
     rop, fsharp F#
+packageTypes
+    DotnetTool, Template
 summary
     Railway-oriented programming for .NET
 dependencies
@@ -203,6 +205,7 @@ let ``Optional fields are read`` (fileContent : string) =
     sut.RequireLicenseAcceptance |> shouldEqual false
     sut.DevelopmentDependency |> shouldEqual false
     sut.Language |> shouldEqual (Some "en-gb")
+    sut.PackageTypes |> shouldEqual ["DotnetTool"; "Template"]
     sut.DependencyGroups |> shouldContain ({ Framework = None;
                                              Dependencies =
                                                 [PackageName "FSharp.Core",VersionRequirement.Parse("[4.3.1]")
