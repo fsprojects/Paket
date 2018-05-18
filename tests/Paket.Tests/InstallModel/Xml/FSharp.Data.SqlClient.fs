@@ -28,7 +28,7 @@ let expected = """
 </Choose>"""
 
 [<Test>]
-#if NETCOREAPP2_0
+#if TESTSUITE_RUNS_ON_DOTNETCORE
 [<Flaky>]
 #endif
 let ``should generate Xml for FSharp.Data.SqlClient 1.4.4``() = 

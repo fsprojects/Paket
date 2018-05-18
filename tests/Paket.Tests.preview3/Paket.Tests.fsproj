@@ -2,7 +2,11 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <PaketTestsSourcesDir>..\Paket.Tests</PaketTestsSourcesDir>
-    <DefineConstants>WEBPROXY_NETSTANDARD;$(DefineConstants)</DefineConstants>
+    <DefineConstants>
+      WEBPROXY_NETSTANDARD;
+      TESTSUITE_RUNS_ON_DOTNETCORE;
+      @(DefineConstants)
+    </DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
