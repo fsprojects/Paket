@@ -157,6 +157,7 @@ type OptionalPackagingInfo =
       /// (src * target) list
       Files : (string * string) list
       FilesExcluded : string list 
+      PackageTypes : string list
       IncludePdbs : bool 
       IncludeReferencedProjects : bool
       }
@@ -180,6 +181,7 @@ type OptionalPackagingInfo =
           FrameworkAssemblyReferences = []
           Files = []
           FilesExcluded = [] 
+          PackageTypes = []
           IncludeReferencedProjects = false
           IncludePdbs = false }
 
@@ -451,6 +453,9 @@ module internal TemplateFile =
 
         let excludedDependencies = map |> getExcludedDependencies
         let excludedGroups = map |> getExcludedGroups
+
+        let packageTypes =
+            []
         
         let includePdbs = 
             match get "include-pdbs" with
@@ -481,6 +486,7 @@ module internal TemplateFile =
           FrameworkAssemblyReferences = getFrameworkReferences map
           Files = getFiles map
           FilesExcluded = getFileExcludes map
+          PackageTypes = packageTypes
           IncludeReferencedProjects = includeReferencedProjects 
           IncludePdbs = includePdbs }
 

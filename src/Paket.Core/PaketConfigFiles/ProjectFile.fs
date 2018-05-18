@@ -2096,6 +2096,7 @@ type ProjectFile with
             FrameworkAssemblyReferences = [] //propOr "FrameworkAssemblyReferences" []
             Files = [] //propMap "Files" [] splitString
             FilesExcluded = [] //propMap  "FilesExcluded" [] splitString
+            PackageTypes = []
             IncludePdbs = propMap "IncludePdbs" true tryBool
             IncludeReferencedProjects = propMap "IncludeReferencedProjects" true tryBool
         }

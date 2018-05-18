@@ -322,6 +322,38 @@ let ``should not serialize files``() =
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings result)
 
+
+[<Test>]
+let ``should serialize packageTypes``() = 
+    let result = """<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>Paket.Core</id>
+    <version>4.2</version>
+    <authors>Michael, Steffen</authors>
+    <description>A description</description>
+    <packageTypes>
+      <packageType name="DotnetTool" />
+      <packageType name="DotnetCliTool" />
+    </packageTypes>
+  </metadata>
+</package>"""
+
+    let core : CompleteCoreInfo =
+        { Id = "Paket.Core"
+          Version = SemVer.Parse "4.2" |> Some
+          Authors = [ "Michael"; "Steffen" ]
+          Description = "A description"
+          Symbols = false }
+    
+    let optional = 
+        { OptionalPackagingInfo.Empty with 
+            PackageTypes = [ "DotnetTool"; "DotnetCliTool" ]  }
+                       
+    let doc = NupkgWriter.nuspecDoc (core, optional)
+    doc.ToString()
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings result)
+
 [<Test>]
 let ``should not serialize all properties``() = 
     let result = """<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
