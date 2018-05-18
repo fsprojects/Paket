@@ -3,6 +3,17 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <PaketTestsSourcesDir>..\Paket.Tests</PaketTestsSourcesDir>
     <DefineConstants>WEBPROXY_NETSTANDARD;$(DefineConstants)</DefineConstants>
+    <DefineConstants>
+      WEBPROXY_NETSTANDARD;
+      TESTSUITE_RUNS_ON_DOTNETCORE;
+      NO_UNIT_PLATFORMATTRIBUTE;
+      NO_UNIT_TIMEOUTATTRIBUTE;
+      @(DefineConstants)
+    </DefineConstants>
+
+    <!-- disable generation of assembly info because the test "Packaging/PackageProcessSpecs.`Loading assembly metadata works``"
+         use as test case the metadata of this built Paket.Tests assembly -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>
