@@ -12,7 +12,7 @@ open System
 open System.Threading
 open FSharp.Polyfill
 
-let rec findExnWhichContains msg (exn:exn) =
+let rec findExnWhichContains (msg: string) (exn:exn) =
     match exn with
     | _ when  exn.Message.Contains msg -> Some exn
     | :? AggregateException as a ->
