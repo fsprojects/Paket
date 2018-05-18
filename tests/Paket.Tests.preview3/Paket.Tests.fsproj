@@ -151,6 +151,7 @@
     <TestAsset Include="ProjectFile\TestData\Unity.csprojtest" />
     <TestAsset Include="ProjectFile\TestData\EmptyCsharpGuid.csprojtest" />
     <TestAsset Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFramework.csprojtest" />
+    <TestAsset Include="ProjectFile\TestData\AnalyzerProject.csprojtest" />
     <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\ConditionSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\TargetFrameworkSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\FileBuildActionSpecs.fs" />
