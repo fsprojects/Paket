@@ -14,6 +14,10 @@
       NO_UNIT_TIMEOUTATTRIBUTE;
       @(DefineConstants)
     </DefineConstants>
+
+    <!-- disable generation of assembly info because the test "Packaging/PackageProcessSpecs.`Loading assembly metadata works``"
+         use as test case the metadata of this built Paket.Tests assembly -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>
