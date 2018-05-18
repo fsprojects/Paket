@@ -15,7 +15,7 @@ let ``#183 outdated without params``() =
     msg |> shouldContainText "FSharp.Formatting 2.4 ->"
 
 [<Test>]
-#if NETCOREAPP2_0
+#if NO_UNIT_PLATFORMATTRIBUTE
 [<Ignore "PlatformAttribute not supported by netstandard NUnit">]
 #else
 [<Platform "Mono">] // PATH TOO LONG on Windows...
@@ -26,7 +26,7 @@ let ``#183 outdated --ignore-constraint``() =
 
 
 [<Test>]
-#if NETCOREAPP2_0
+#if NO_UNIT_PLATFORMATTRIBUTE
 [<Ignore "PlatformAttribute not supported by netstandard NUnit">]
 #else
 [<Platform "Mono">] // PATH TOO LONG on Windows...
