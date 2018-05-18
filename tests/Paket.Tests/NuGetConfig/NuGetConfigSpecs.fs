@@ -13,7 +13,7 @@ open Chessie.ErrorHandling
 open System.Xml
 open TestHelpers
 
-#if NETCOREAPP2_0
+#if TESTSUITE_RUNS_ON_DOTNETCORE
 open System.Runtime.InteropServices
 #endif
 
@@ -26,7 +26,7 @@ let parse fileName =
 [<Test>]
 let ``can detect encrypted passwords in nuget.config``() = 
 
-#if NETCOREAPP2_0
+#if TESTSUITE_RUNS_ON_DOTNETCORE
     if not(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) then
         //TODO not create a secrect, just check the parse fails with an error
         Assert.Ignore("ProtectedData.Protect is supported only on windows")

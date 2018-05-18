@@ -6,7 +6,7 @@ open NUnit.Framework
 open System.Xml
 open FsUnit
 
-#if NETCOREAPP2_0
+#if TESTSUITE_RUNS_ON_DOTNETCORE
 open System.Runtime.InteropServices
 #endif
 
@@ -23,7 +23,7 @@ let sampleDoc() =
 [<Test>]
 let ``get username, password, and auth type from node``() = 
 
-#if NETCOREAPP2_0
+#if TESTSUITE_RUNS_ON_DOTNETCORE
     if not(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) then
         Assert.Ignore("Encrypt use ProtectedData.Protect that is supported only on windows")
 #endif
@@ -45,7 +45,7 @@ let ``get username, password, and auth type from node``() =
 [<Test>]
 let ``get username and password from node without auth type``() = 
 
-#if NETCOREAPP2_0
+#if TESTSUITE_RUNS_ON_DOTNETCORE
     if not(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) then
         Assert.Ignore("Encrypt use ProtectedData.Protect that is supported only on windows")
 #endif
