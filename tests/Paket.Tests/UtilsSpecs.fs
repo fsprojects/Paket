@@ -68,7 +68,7 @@ let ``relative path with local identifier on unxoid systems``() =
     |> shouldEqual (RelativePath "./Store")
 
 [<Test>]
-#if NETCOREAPP2_0
+#if NO_UNIT_PLATFORMATTRIBUTE
 [<Ignore "PlatformAttribute not supported by netstandard NUnit">]
 #else
 [<Platform "Mono">]
@@ -78,7 +78,7 @@ let ``mono runtime reported on mono platform``() =
     shouldEqual true
 
 [<Test>]
-#if NETCOREAPP2_0
+#if NO_UNIT_PLATFORMATTRIBUTE
 [<Ignore "PlatformAttribute not supported by netstandard NUnit">]
 #else
 [<Platform "Net">]
