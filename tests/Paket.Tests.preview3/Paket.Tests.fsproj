@@ -10,6 +10,7 @@
     <DefineConstants>
       WEBPROXY_NETSTANDARD;
       TESTSUITE_RUNS_ON_DOTNETCORE;
+      NO_UNIT_PLATFORMATTRIBUTE;
       NO_UNIT_TIMEOUTATTRIBUTE;
       @(DefineConstants)
     </DefineConstants>
