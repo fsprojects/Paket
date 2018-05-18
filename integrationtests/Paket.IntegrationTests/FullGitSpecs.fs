@@ -47,7 +47,7 @@ let ``#1353 should use NuGet source from git repo``() =
     |> shouldEqual (SemVer.Parse "1.1.3")
 
 [<Test>]
-#if NETCOREAPP2_0
+#if TESTSUITE_KNOWN_FAILURE_DOTNETCORE_3005
 [<Ignore("Known failure on netcore: ref https://github.com/fsprojects/Paket/issues/3005")>]
 #endif
 let ``#1353 should use git tag as NuGet source``() = 
@@ -61,7 +61,7 @@ let ``#1353 should use git tag as NuGet source``() =
     |> shouldEqual (SemVer.Parse "2.0.0")
 
 [<Test>]
-#if NETCOREAPP2_0
+#if TESTSUITE_KNOWN_FAILURE_DOTNETCORE_3005
 [<Ignore("Known failure on netcore: ref https://github.com/fsprojects/Paket/issues/3005")>]
 #endif
 let ``#1353 should use git tag with operatore as NuGet source``() = 
@@ -75,7 +75,7 @@ let ``#1353 should use git tag with operatore as NuGet source``() =
     |> shouldEqual (SemVer.Parse "2.0.0")
 
 [<Test>]
-#if NETCOREAPP2_0
+#if TESTSUITE_KNOWN_FAILURE_DOTNETCORE_3005
 [<Ignore("Known failure on netcore: ref https://github.com/fsprojects/Paket/issues/3005")>]
 #endif
 let ``#1353 should restore NuGet source from built git repo``() = 
@@ -88,7 +88,7 @@ let ``#1353 should restore NuGet source from built git repo``() =
     Directory.Exists arguPackagesDir |> shouldEqual true
 
 [<Test>]
-#if NETCOREAPP2_0
+#if TESTSUITE_KNOWN_FAILURE_DOTNETCORE_3005
 [<Ignore("Known failure on netcore: ref https://github.com/fsprojects/Paket/issues/3005")>]
 #endif
 let ``#1353 should build NuGet source from git repo``() = 

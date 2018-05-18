@@ -6,6 +6,7 @@
     <DefineConstants>
       PAKET_NETCORE;
       NO_UNIT_PLATFORMATTRIBUTE;
+      TESTSUITE_KNOWN_FAILURE_DOTNETCORE_3005;
       @(DefineConstants)
     </DefineConstants>
   </PropertyGroup>
