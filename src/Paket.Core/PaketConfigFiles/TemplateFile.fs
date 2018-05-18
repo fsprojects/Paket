@@ -455,7 +455,10 @@ module internal TemplateFile =
         let excludedGroups = map |> getExcludedGroups
 
         let packageTypes =
-            []
+            match Map.tryFind "packagetypes" map with
+            | None -> []
+            | Some o ->
+                o.Split ',' |> Array.map String.trim |> Array.toList
         
         let includePdbs = 
             match get "include-pdbs" with
