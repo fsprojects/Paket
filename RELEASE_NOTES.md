@@ -1,3 +1,9 @@
+#### 5.166.0 - 2018-05-19
+* PERFORMANCE: Do only one global restore in dotnet restore - https://github.com/fsprojects/Paket/pull/3211
+* ENHANCEMENT: Paket template packagetypes - https://github.com/fsprojects/Paket/pull/3212
+* EHANCEMENT: PAKET_DETAILED_ERRORS to print inner stack traces - https://github.com/fsprojects/Paket/pull/3192
+* ENHANCEMENT: Support pack of global tooks `PackAsTool` - https://github.com/fsprojects/Paket/pull/3208
+
 #### 5.165.0 - 2018-05-17
 * PERFORMANCE: Do only one global restore in dotnet restore - https://github.com/fsprojects/Paket/pull/3206
 
