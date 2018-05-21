@@ -136,19 +136,25 @@ module DependenciesFileParser =
         |> List.toArray
 
 
-    let private parseGitSource trimmed origin originTxt = 
+    let private parseGitSource trimmed origin originTxt =
         let parts = parseDependencyLine trimmed
-        
-        let getParts (projectSpec : string) = 
-            match projectSpec.Split [| ':'; '/' |] with
-            | [| owner; project |] -> owner, project, None
-            | [| owner; project; commit |] -> owner, project, Some commit
-            | _ -> failwithf "invalid %s specification:%s     %s" originTxt Environment.NewLine trimmed
+
+        let getRepoOwner (repoOwner : string) (commit : string option) =
+                match repoOwner.Split [| '/' |] with
+                | [| owner; project |] -> owner, project, commit
+                | _ -> failwithf "invalid %s specification (getRepoOwner):%s     %s" originTxt Environment.NewLine trimmed
+
+        let getRepoCommit (projectSpec : string) =
+            match projectSpec.Split [| ':' |] with
+            | [| repoOwner |] -> getRepoOwner repoOwner None
+            | [| repoOwner; commit |] -> getRepoOwner repoOwner (Some commit)
+            | _ -> failwithf "invalid %s specification (getRepoCommit):%s     %s" originTxt Environment.NewLine trimmed
+
         match parts with
-        | [| _; projectSpec; fileSpec; authKey |] -> origin, getParts projectSpec, fileSpec, (Some authKey)
-        | [| _; projectSpec; fileSpec |] -> origin, getParts projectSpec, fileSpec, None
-        | [| _; projectSpec |] -> origin, getParts projectSpec, Constants.FullProjectSourceFileName, None
-        | _ -> failwithf "invalid %s specification:%s     %s" originTxt Environment.NewLine trimmed
+        | [| _; projectSpec; fileSpec; authKey |] -> origin, getRepoCommit projectSpec, fileSpec, (Some authKey)
+        | [| _; projectSpec; fileSpec |] -> origin, getRepoCommit projectSpec, fileSpec, None
+        | [| _; projectSpec |] -> origin, getRepoCommit projectSpec, Constants.FullProjectSourceFileName, None
+        | _ -> failwithf "invalid %s specification (parseGitSource):%s     %s" originTxt Environment.NewLine trimmed
 
 
     let private parseHttpSource trimmed = 
