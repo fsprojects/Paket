@@ -180,30 +180,42 @@ let ``should generate lock file with disabled content for packages``() =
 [<Test>]
 let ``should generate lock file for github source files``() =
     let expectedWithGitHub = "GITHUB
-  remote: owner/project1
-    \"folder/file 2.fs\" (commit1)
+  remote: owner/project0
+    \"folder/file 9.fs\" (feature/branch)
     folder/file.fs (master)
-    folder/file1.fs (commit1)
     folder/file3.fs (feature/branch)
     folder/file4.fs (feature/branch)
     folder/file5.fs (feature/branch)
     folder/file6.fs (feature/branch)
     folder/file7.fs (feature/branch)
+    folder/file8.fs (feature/branch)
+  remote: owner/project1
+    \"folder/file 2.fs\" (commit1)
+    folder/file.fs (master)
+    folder/file1.fs (commit1)
+    folder/file3.fs (commit0)
+    folder/file4.fs (commit1)
+    folder/file5.fs (commit1)
   remote: owner/project2
     folder/file.fs (commit2)
     folder/file3.fs (commit3) githubAuth
   remote: owner/project3
     FULLPROJECT (master)"
 
-
-    let config = "github \"owner:project1:master\" \"folder/file.fs\"
-github \"owner:project1:feature/branch\" \"folder/file3.fs\"
-github \"owner/project1:feature:branch\" \"folder/file4.fs\"
-github \"owner:project1:feature:branch\" \"folder/file5.fs\"
-github owner:project1:feature:branch folder/file6.fs
-github owner:project1:feature:branch \"folder/file7.fs\"
+    let config = "github \"owner:project0:master\" \"folder/file.fs\"
+github \"owner:project0:feature/branch\" \"folder/file3.fs\"
+github \"owner/project0:feature/branch\" \"folder/file4.fs\"
+github owner:project0:feature/branch \"folder/file5.fs\"
+github owner/project0:feature/branch \"folder/file6.fs\"
+github owner:project0:feature/branch folder/file7.fs
+github owner/project0:feature/branch folder/file8.fs
+github owner/project0:feature/branch \"folder/file 9.fs\"
+github \"owner:project1:master\" \"folder/file.fs\"
 github \"owner/project1:commit1\" \"folder/file1.fs\"
 github \"owner/project1:commit1\" \"folder/file 2.fs\"
+github \"owner/project1:commit0\" folder/file3.fs
+github owner/project1:commit1 folder/file4.fs
+github owner/project1:commit1 \"folder/file5.fs\"
 github \"owner:project2:commit2\" \"folder/file.fs\"
 github \"owner:project2:commit3\" \"folder/file3.fs\" githubAuth
 github \"owner:project3:master\""
