@@ -1,3 +1,6 @@
+#### 5.167.0 - 2018-05-23
+* Support slash in GitHub branch name - https://github.com/fsprojects/Paket/pull/3215
+
 #### 5.166.0 - 2018-05-19
 * PERFORMANCE: Do only one global restore in dotnet restore - https://github.com/fsprojects/Paket/pull/3211
 * ENHANCEMENT: Paket template packagetypes - https://github.com/fsprojects/Paket/pull/3212
