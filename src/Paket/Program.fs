@@ -10,7 +10,6 @@ open Paket.Commands
 
 open Argu
 open PackageSources
-open Paket.Domain
 
 let sw = Stopwatch.StartNew()
 
@@ -22,7 +21,13 @@ type PaketExiter() =
                 tracen msg ; exit 0
             else traceError msg ; exit 1
 
+let paketVersion = AssemblyVersionInformation.AssemblyInformationalVersion
+
+let tracePaketVersion silent =
+    if not silent then tracefn "Paket version %s" paketVersion
+
 let processWithValidationEx printUsage silent validateF commandF result =
+    tracePaketVersion silent
     if not (validateF result) then
         traceError "Command was:"
         traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
@@ -825,7 +830,7 @@ let handleCommand silent command =
     | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
     | ShowGroups r -> processCommand silent showGroups r
     | Pack r -> processCommand silent pack r
-    | Push r -> processCommand silent (push AssemblyVersionInformation.AssemblyInformationalVersion) r
+    | Push r -> processCommand silent (push paketVersion) r
     | GenerateIncludeScripts r ->
         warnObsolete (ReplaceArgument("generate-load-scripts", "generate-include-scripts"))
         processCommand silent generateLoadScripts r
@@ -852,7 +857,6 @@ let main() =
     if System.String.IsNullOrEmpty resolution then
         Environment.SetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
-    let paketVersion = AssemblyVersionInformation.AssemblyInformationalVersion
 
     try
     let args = Environment.GetCommandLineArgs()
@@ -886,8 +890,7 @@ let main() =
 
         let results = parser.ParseCommandLine(raiseOnUsage = true)
         let silent = results.Contains <@ Silent @>
-
-        if not silent then tracefn "Paket version %s" paketVersion
+        tracePaketVersion silent
 
         if results.Contains <@ Verbose @> then
             Logging.verbose <- true

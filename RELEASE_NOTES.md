@@ -1,3 +1,6 @@
+#### 5.167.2 - 2018-05-24
+* BUGFIX: Trace paket version in shortcut routes
+
 #### 5.167.1 - 2018-05-23
 * BUGFIX: No longer search for CredentialProviders on an empty path - https://github.com/fsprojects/Paket/pull/3214
 
