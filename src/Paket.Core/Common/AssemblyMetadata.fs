@@ -1,5 +1,6 @@
 module Paket.AssemblyMetadata
 
+open Chessie.ErrorHandling
 open System
 open System.IO
 open System.Globalization
@@ -16,7 +17,10 @@ let getPublicKeyToken (assembly:AssemblyName) =
     | "" -> None
     | token -> Some (token.ToLower())
 
-let getAssemblyName (reader:MetadataReader) (reference:AssemblyReference) = 
+/// Creates AssemblyName of AssemblyReference opened on the MetadataReader; 
+/// expected to be part of next release of the Metadata support, so we can remove this. 
+/// Can throw AccessViolation if used incorrectly, with unrelated or disposed reader. 
+let private getAssemblyName (reader:MetadataReader) (reference:AssemblyReference) = 
     let assemblyName = reader.GetString(reference.Name)
     let cultureInfo = 
         if reference.Culture.IsNil then null 
@@ -39,12 +43,32 @@ let getAssemblyName (reader:MetadataReader) (reference:AssemblyReference) =
         assemblyName.SetPublicKeyToken(keyOrToken)
     assemblyName;
 
-let getAssemblyReferences (assemblyName:AssemblyName) =
-    let code = Uri(assemblyName.CodeBase).LocalPath
-    use reader = new PEReader(File.OpenRead(code))
-    let metadataReader = reader.GetMetadataReader()
-    metadataReader.AssemblyReferences 
-    |> Seq.map (fun r -> 
-        let reference = metadataReader.GetAssemblyReference(r) 
-        getAssemblyName metadataReader reference)
-    |> Seq.toList
+type AssemblyDefinition =
+    | AssemblyFile of String
+    | AssemblyInfo of FileInfo
+    | AssemblyName of AssemblyName
+
+/// Uses the assembly file metadata from the provided source, 
+/// to return AssemblyName list of its referenced assemblies.
+let getAssemblyReferences (assembly:AssemblyDefinition) =
+    try
+        let assemblyFilePath = 
+            match assembly with 
+            | AssemblyFile file -> file
+            | AssemblyInfo info -> info.FullName
+            | AssemblyName name -> Uri(name.CodeBase).LocalPath
+        use file = File.OpenRead(assemblyFilePath)
+        use reader = new PEReader(file, PEStreamOptions.PrefetchMetadata)
+        let metadataReader = reader.GetMetadataReader()
+        metadataReader.AssemblyReferences 
+        |> Seq.map (fun aref -> 
+            try
+                let reference = metadataReader.GetAssemblyReference(aref) 
+                pass(getAssemblyName metadataReader reference)
+            with
+            | ex -> fail ex)
+        |> collect
+    with
+    | ex -> fail ex
+        
+

@@ -4,6 +4,7 @@ module Paket.InstallProcess
 open Paket
 open System
 open Chessie.ErrorHandling
+open Paket
 open Paket.Domain
 open Paket.Logging
 open Paket.BindingRedirects
@@ -13,9 +14,6 @@ open Paket.Requirements
 open ProviderImplementation.AssemblyReader
 open System.Collections.Generic
 open System.Reflection
-open System.Reflection
-open System.Reflection.Metadata
-open System.Reflection.PortableExecutable
 
 let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*InstallSettings>) packagesConfigFileName =
     let packagesInConfigFile = PackagesConfigFile.Read packagesConfigFileName
@@ -298,16 +296,18 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
                 librariesForPackage
                 |> Seq.choose(fun (library,redirects,profile) ->
                     try
-                        use reader = new PEReader(File.OpenRead(library.Path))
                         let assemblyName = AssemblyName.GetAssemblyName(library.Path)
                         let publicKeyToken = AssemblyMetadata.getPublicKeyToken assemblyName
-                        let metadataReader = reader.GetMetadataReader()
+                        let metadataName = AssemblyMetadata.AssemblyName assemblyName
                         let references = 
-                            metadataReader.AssemblyReferences 
-                            |> Seq.map (fun r -> 
-                                let reference = metadataReader.GetAssemblyReference(r) 
-                                AssemblyMetadata.getAssemblyName metadataReader reference)
-                            |> Seq.toList
+                            match AssemblyMetadata.getAssemblyReferences metadataName with
+                            | Trial.Pass list -> list
+                            | Trial.Warn(list, warn) -> 
+                                warn |> List.iter (fun ex -> ex |> string |> traceWarn)
+                                list
+                            | Trial.Fail exns ->
+                                exns |> List.iter (fun ex -> ex |> string |> traceError)
+                                List.empty
                         Some (assemblyName, publicKeyToken, references, redirects, profile)
                     with _ -> None)
                 |> Seq.sortBy(fun (assembly,_,_,_,_) -> assembly.Version)

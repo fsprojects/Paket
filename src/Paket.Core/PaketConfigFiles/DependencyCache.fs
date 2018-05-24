@@ -1,5 +1,6 @@
 ﻿namespace Paket
 
+open Chessie.ErrorHandling
 open System.IO
 open Paket.Domain
 open System.Collections.Concurrent
@@ -92,7 +93,18 @@ type DependencyCache (lockFile:LockFile) =
         let known = dllFiles |> Seq.map (fun a -> a.FullName) |> Set.ofSeq
         getPackageOrderGeneric
             (fun (p:AssemblyName) -> p.FullName)
-            (fun p -> AssemblyMetadata.getAssemblyReferences p |> Seq.map (fun r -> r.FullName) |> Seq.filter (known.Contains))
+            (fun p ->
+                let assemblyName = AssemblyMetadata.AssemblyName p
+                match AssemblyMetadata.getAssemblyReferences assemblyName with
+                | Trial.Pass list -> list
+                | Trial.Warn(list, warn) -> 
+                    warn |> List.iter (fun ex -> ex |> string |> traceWarn)
+                    list
+                | Trial.Fail exns ->
+                    exns |> List.iter (fun ex -> ex |> string |> traceError)
+                    List.empty
+                |> Seq.map (fun r -> r.FullName) 
+                |> Seq.filter (known.Contains))
             dllFiles
 
 
