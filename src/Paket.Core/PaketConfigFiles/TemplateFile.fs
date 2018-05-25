@@ -204,6 +204,7 @@ type TemplateFile =
 [<CompilationRepresentationAttribute(CompilationRepresentationFlags.ModuleSuffix)>]
 module internal TemplateFile =
     open Logging
+    open Utils
 
     let tryGetId (templateFile : TemplateFile) =
         match templateFile.Contents with
@@ -288,49 +289,87 @@ module internal TemplateFile =
         | _ -> None
    
     let private getDependencyByLine (fileName, lockFile:LockFile,currentVersion:SemVerInfo option, specificVersions:Map<string, SemVerInfo>, line:string, framework:FrameworkIdentifier option) =
-        let reg = Regex(@"(?<id>\S+)(?<version>.*)").Match line
-        let name = PackageName reg.Groups.["id"].Value
-        let versionRequirement =
-            let versionString =
-                let s = reg.Groups.["version"].Value.Trim()
-                if s.Contains "CURRENTVERSION" then
-                    match specificVersions.TryFind (string name) with
-                    | Some v -> s.Replace("CURRENTVERSION", string v)
-                    | None ->
-                        match currentVersion with
-                        | Some v -> s.Replace("CURRENTVERSION", string v)
-                        | None -> failwithf "The template file %s contains the placeholder CURRENTVERSION, but no version was given." fileName
-
-                elif s.Contains "LOCKEDVERSION" then
-                    let groupRegex = Regex("LOCKEDVERSION-(?<group>\w+)")
-                    let replaceGroup (m : Match) =
-                        let groupName = GroupName m.Groups.["group"].Value
-                        match lockFile.Groups |> Map.tryFind groupName with
-                        | None -> failwithf "The template file %s contains the placeholder LOCKEDVERSION-%O, but no group %O was found in paket.lock" fileName groupName groupName
-                        | Some gp ->
-                            match gp.Resolution |> Map.tryFind name with
-                            | None -> failwithf "The template file %s contains the placeholder LOCKEDVERSION-%O, but no version was given for package %O in group %O in paket.lock" fileName groupName name groupName
-                            | Some p -> string p.Version
-
-                    let s = groupRegex.Replace(s, replaceGroup)
-
-                    match lockFile.Groups.[Constants.MainDependencyGroup].Resolution |> Map.tryFind name with
-                    | Some p -> s.Replace("LOCKEDVERSION", string p.Version)
-                    | None ->
-                        let packages = 
-                            lockFile.GetGroupedResolution()
-                            |> Seq.filter (fun kv -> snd kv.Key = name)
-                            |> Seq.toList
-
-                        match packages with
-                        | [] -> failwithf "The template file %s contains the placeholder LOCKEDVERSION, but no version was given for package %O in paket.lock." fileName name
-                        | [kv] -> s.Replace("LOCKEDVERSION", string kv.Value.Version)
-                        | _ -> failwithf "The template file %s contains the placeholder LOCKEDVERSION, but more than one group contains package %O in paket.lock." fileName name
-
-                else s
-                                
-            DependenciesFileParser.parseVersionRequirement versionString
-        name, versionRequirement
+        let item = line.Split([|"//"; "#"|], 2, StringSplitOptions.None).[0].Trim()
+        if item |> String.IsNullOrWhiteSpace then
+            None // skip comment lines, allowing paket.dependencies-like formatting
+        else
+        
+        let reg = Regex(@"(?in)^(?<id>[^\s@!~>\<\=]+)(?<version>.*)?").Match item
+        let packageName = PackageName reg.Groups.["id"].Value
+        
+        let rawRequirement = reg.Groups.["version"].Value.Trim()
+        let regVersion = Regex(@"(?in)(?<repl>(?<what>(LOCKED|CURRENT))((?<=\k<what>)VERSION|:(?<spec>(Major|Minor|Patch|Build|\[-?[1-4]\]))|-(?<group>[\w-]+)){1,3})")
+        
+        let rec versionReplace requireText =
+            match regVersion.Match requireText with
+            | m when m.Success ->
+                let sourceVersion : SemVerInfo =
+                    match m.Groups.["what"].Value with
+                    | String.EqualsIC "LOCKED" ->
+                        match m.Groups.["group"] with
+                        | g when g.Success -> // this may as well include Main
+                        
+                            let groupName = GroupName g.Value
+                            match lockFile.Groups |> Map.tryFind groupName with
+                            | Some group -> 
+                                match group.Resolution |> Map.tryFind packageName with
+                                | Some resolvedPackage -> resolvedPackage.Version
+                                | None -> failwithf "The template file %s contains the placeholder %A, but no version was given for package %O in group %O in paket.lock" fileName requireText packageName groupName
+                            | None -> failwithf "The template file %s contains the placeholder %A, but group %O was not found in paket.lock" fileName requireText groupName
+                                      
+                        | _ -> // default to Main, _or_ any other group with warning
+                            let mainGroup = lockFile.Groups.[Constants.MainDependencyGroup] 
+                            match mainGroup.TryFind packageName with
+                            | Some resolvedPackage -> resolvedPackage.Resolved.Version
+                            | None ->
+                                let packages = lockFile.GetGroupedResolution() |> Seq.filter (fun kv -> snd kv.Key = packageName) |> Seq.toList                
+                                match packages with
+                                | [] -> failwithf "The template file %s contains the placeholder %A, but no version was given for package %O in paket.lock." fileName requireText packageName
+                                | [groupAndPackage] ->
+                                    traceWarnfn "The template file %s contains the placeholder %A, but version for package %O was found in group %A." fileName requireText packageName (fst groupAndPackage.Key)
+                                    groupAndPackage.Value.Version
+                                | _ -> failwithf "The template file %s contains the placeholder %A, but more than one group contains package %O in paket.lock." fileName requireText packageName                                
+                        
+                    | String.EqualsIC "CURRENT" -> 
+                        match specificVersions.TryFind (string packageName) with
+                        | Some excplicitVersion -> excplicitVersion
+                        | None ->
+                            match currentVersion with
+                            | Some thisVersion -> thisVersion
+                            | None -> failwithf "The template file %s contains the placeholder %A, but no version was given." fileName requireText
+                                                    
+                    | _ -> failwithf "The template file %s contains invalid placeholder %A" fileName line
+            
+                let versionParts = (sourceVersion.AsString |> String.split [|'-'; '+'|]).[0] |> String.split [|'.'|]
+                let segmentCount = 
+                    match m.Groups.["spec"] with
+                    | spec when spec.Success ->
+                        match spec.Value with
+                        | "[1]" | "Major" -> 1
+                        | "[2]" | "Minor" -> 2
+                        | "[3]" | "Patch" -> 3 
+                        | "[4]" | "Build" -> 4 // do not normalize zero builds away, if explicitly requested
+                        | "[-1]" | "[-2]" | "[-3]" ->
+                            let versionLength = 
+                                versionParts |> Seq.rev // count non-zero segments, from original, NOT-normalized source 
+                                |> Seq.takeWhile (fun i -> match bigint.TryParse i with | true, n -> n > 0I | _ -> false) 
+                                |> Seq.length
+                            versionLength + (int (spec.Value.Trim([|'['; ']'|])))
+                        | _ -> failwithf "The template file %s contains invalid specification %s" fileName line
+                    | _ -> 0
+                    
+                let targetVersion = 
+                    match segmentCount with
+                    | 1 | 2 | 3 | 4 -> String.Join(".", versionParts, 0, Math.Min(versionParts.Length, Math.Max(0, segmentCount)))
+                    | _ -> sourceVersion.AsString
+                
+                versionReplace (m.Result(targetVersion)) 
+                 
+            | _ -> requireText
+                
+        let versionString = versionReplace rawRequirement                
+        let versionRequirement = DependenciesFileParser.parseVersionRequirement versionString
+        Some (packageName, versionRequirement)
 
     let private getDependenciesByTargetFramework fileName lockFile currentVersion  specificVersions (lineNo, state: OptionalDependencyGroup list) line =
         let lineNo = lineNo + 1
@@ -342,15 +381,17 @@ module internal TemplateFile =
                 lineNo, groups
             | Empty  _ -> lineNo, current::other
             | _ -> 
-                let dependency = getDependencyByLine(fileName, lockFile, currentVersion, specificVersions, line, current.Framework)
-                lineNo, { current with Dependencies = current.Dependencies @ [dependency] }::other
+                match getDependencyByLine(fileName, lockFile, currentVersion, specificVersions, line, current.Framework) with
+                | Some dependency -> lineNo, { current with Dependencies = current.Dependencies @ [dependency] }::other
+                | None -> lineNo, current::other
         | [] ->
             match line with
             | Framework framework -> lineNo, [OptionalDependencyGroup.ForFramework framework]
             | Empty  _ -> lineNo, []
             | _ ->
-                let dependency = getDependencyByLine(fileName, lockFile, currentVersion, specificVersions, line, None)
-                lineNo, [{ Framework = None; Dependencies = [dependency] }]
+                match getDependencyByLine(fileName, lockFile, currentVersion, specificVersions, line, None) with
+                | Some dependency -> lineNo, [{ Framework = None; Dependencies = [dependency] }]
+                | None -> lineNo, []
             
    
     let private getDependencyGroups (fileName, lockFile:LockFile, info : Map<string, string>,currentVersion:SemVerInfo option, specificVersions:Map<string, SemVerInfo>) =
