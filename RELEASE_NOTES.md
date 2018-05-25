@@ -1,4 +1,5 @@
-#### 5.167.2 - 2018-05-24
+#### 5.168.0 - 2018-05-25
+* Extended semver2 support in paket.template files - https://github.com/fsprojects/Paket/pull/3184
 * BUGFIX: Trace paket version in shortcut routes
 
 #### 5.167.1 - 2018-05-23
