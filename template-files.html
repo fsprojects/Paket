@@ -320,6 +320,39 @@ the placeholder with the particular group name.</p>
 <td class="snippet"><pre class="fssnip"><code lang="text">dependencies
   FSharp.Core &gt;= LOCKEDVERSION-NetStandard
 </code></pre></td></tr></table>
+<p><code>LOCKEDVERSION</code> and <code>CURRENTVERSION</code> support using partial constraints,
+to allow transitive dependencies on specific SemVer compatibility level.
+This allows to create permissive pessimistic constraints automatically.</p>
+<p>Use only <code>LOCKED</code> or <code>CURRENT</code> and semicolon-delimited name of the latest
+SemVer segment (<code>Major</code>, <code>Minor</code>, <code>Patch</code> or <code>Build</code>), or bracketed number
+of segments from the original constraint to be used.
+Negative numbers denote count down from the last non-zero segment.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="text">dependencies
+  FSharp.Core ~&gt; LOCKED:Minor
+  My.Own.Package ~&gt; CURRENT:[2]
+</code></pre></td></tr></table>
+<p>Using <code>0</code> or <code>-4</code> is not supported; <code>[4]</code> or <code>Build</code> will result in the original
+version but with any prerelease specifiers and metedata cut off.</p>
+<p>Combining with group-binding syntax is supported, in either order;
+assuming group "NetStandard" and 4-segment version, these constraints are equal:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="text">  LOCKED-NetStandard:Patch
+  LOCKED-NetStandard:[3]
+  LOCKED-NetStandard:[-1]
+  LOCKED:Patch-NetStandard
+  LOCKED:[3]-NetStandard
+  LOCKED:[-1]-NetStandard
+</code></pre></td></tr></table>
 <p>It's possible to add a line to constrain the target framework:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
@@ -382,7 +415,8 @@ the <code>excludedgroups</code> block:</p>
 <p>This only works for <code>paket.template</code> files of type <code>project</code>.</p>
 <h2><a name="Comments" class="anchor" href="#Comments">Comments</a></h2>
 <p>A line starting with a <code>#</code> or <code>//</code> is considered a comment and will be ignored
-by the parser.</p>
+by the parser.
+Endline comments are only allowed in dependency constraint lines.</p>
 
 
         </div>
