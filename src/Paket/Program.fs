@@ -23,8 +23,12 @@ type PaketExiter() =
 
 let paketVersion = AssemblyVersionInformation.AssemblyInformationalVersion
 
+let mutable tracedVersion = false
+
 let tracePaketVersion silent =
-    if not silent then tracefn "Paket version %s" paketVersion
+    if not silent && not tracedVersion then 
+        tracedVersion <- true
+        tracefn "Paket version %s" paketVersion
 
 let processWithValidationEx printUsage silent validateF commandF result =
     tracePaketVersion silent
