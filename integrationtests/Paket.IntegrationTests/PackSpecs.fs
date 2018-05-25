@@ -309,7 +309,6 @@ let ``#1538 symbols src folder structure`` () =
 
     CleanDir rootPath
 
-
 [<Test>]
 [<Ignore("ignore until we hear back")>]
 let ``#1504 unpacking should override``() =
@@ -553,3 +552,92 @@ let ``#2788 with include-pdbs true`` () =
     Path.Combine(outPath, "lib", "net45", "BuiltWithSymbols.pdb") |> checkFileExists
 
     CleanDir rootPath
+    
+[<Test>]
+let ``#3164 pack analyzer`` () = 
+    let scenario = "i003164-pack-analyzer"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    paket ("pack \"" + outPath + "\"") scenario |> ignore
+
+    let package = Path.Combine(outPath, "Analyzer.0.2.0.3-dev.nupkg")
+    ZipFile.ExtractToDirectory(package, outPath)
+    Path.Combine(outPath, "analyzers", "dotnet", "cs", "Analyzer.dll") |> checkFileExists
+
+    CleanDir rootPath    
+
+
+[<Test>]
+[<Ignore("disabled for now, because require .net core 2.1.300")>]
+let ``#4002 dotnet pack of a global tool shouldnt contain references``() = 
+    let project = "tool1"
+    let scenario = "i004002-pack-global-tools"
+    prepareSdk scenario
+
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+
+    directPaket ("restore") scenario
+    |> ignore
+
+    directDotnet true (sprintf "pack -o \"%s\" /p:PackAsTool=true /bl" outPath) rootPath
+    |> ignore
+
+    let nupkgPath = Path.Combine(outPath, project + ".1.0.0.nupkg")
+    if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
+    let nuspec = NuGetLocal.getNuSpecFromNupgk nupkgPath
+
+    printfn "%A" nuspec
+
+    match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "FSharp.Core") with
+    | Some s -> Assert.Fail(sprintf "Expected package to still contain the FSharp.Core reference! %A" s)
+    | None -> ()
+
+    match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "Argu") with
+    | Some s -> Assert.Fail(sprintf "Expected package to still contain the Argu reference! %A" s)
+    | None -> ()
+
+    // Should we remove Microsoft.NETCore.App?
+    // Problably not as "packaged" console applications have this dependency by default, see https://www.nuget.org/packages/dotnet-mergenupkg
+    nuspec.Dependencies.Value.Length
+    |> shouldEqual 0
+
+    
+[<Test>]
+[<Ignore("disabled for now, because require .net core 2.1.300")>]
+let ``#4003 dotnet pack of a global tool with p2p``() = 
+    let project = "tool1"
+    let scenario = "i004003-pack-global-tools-p2p"
+    prepareSdk scenario
+
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+
+    directPaket ("restore") scenario
+    |> ignore
+
+    directDotnet true (sprintf "pack tool1 -o \"%s\" /bl" outPath) rootPath
+    |> ignore
+
+    let nupkgPath = Path.Combine(outPath, project + ".1.0.0.nupkg")
+    if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
+    let nuspec = NuGetLocal.getNuSpecFromNupgk nupkgPath
+
+    printfn "%A" nuspec
+
+    match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "FSharp.Core") with
+    | Some s -> Assert.Fail(sprintf "Expected package to still contain the FSharp.Core reference! %A" s)
+    | None -> ()
+
+    match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "Argu") with
+    | Some s -> Assert.Fail(sprintf "Expected package to still contain the Argu reference! %A" s)
+    | None -> ()
+
+    match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "Suave") with
+    | Some s -> Assert.Fail(sprintf "Expected package to still contain the Suave reference! %A" s)
+    | None -> ()
+
+    // Should we remove Microsoft.NETCore.App?
+    // Problably not as "packaged" console applications have this dependency by default, see https://www.nuget.org/packages/dotnet-mergenupkg
+    nuspec.Dependencies.Value.Length
+    |> shouldEqual 0

@@ -322,12 +322,12 @@ nuget Microsoft.Bcl.Build import_targets: false // Do not import *.targets and *
 
 ### License download
 
-If you want paket to download licenses automatically you can use the `download_license` modifier. It is disabled by default.
+If you want paket to download licenses automatically you can use the `license_download` modifier. It is disabled by default.
 
 ```paket
 source https://nuget.org/api/v2
 
-nuget suave download_license: true
+nuget suave license_download: true
 ```
 
 

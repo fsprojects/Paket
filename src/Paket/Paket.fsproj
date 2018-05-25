@@ -34,14 +34,14 @@
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\temp\Gu.Reactive</StartWorkingDirectory>
     <StartArguments>update</StartArguments>
-    <StartArguments>install</StartArguments>
+    <StartArguments>restore</StartArguments>
     <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
     <StartWorkingDirectory>D:\temp\PaketTargetFrameworkRepro\</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\bookstore</StartWorkingDirectory>
     <StartWorkingDirectory>C:\temp\paket-conflict\paket.conflict.app</StartWorkingDirectory>
     <StartWorkingDirectory>D:\temp\i3032</StartWorkingDirectory>
     <StartWorkingDirectory>C:\code\Paket\integrationtests\scenarios\i003062-external-lock\before</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\temp\i3076</StartWorkingDirectory>
+    <StartWorkingDirectory>E:\Projects\Fulma</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -51,8 +51,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>C:\temp\conflict</StartWorkingDirectory>
+    <StartArguments>restore</StartArguments>
+    <StartWorkingDirectory>E:\Projects\Fulma\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">14.0</VisualStudioVersion>

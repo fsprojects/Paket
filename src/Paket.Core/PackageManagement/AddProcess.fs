@@ -118,3 +118,20 @@ let AddGithub(dependenciesFileName, groupName, repository, file, version, option
     
     InstallProcess.Install(options, false, dependenciesFile, lockFile, Map.empty)
     GarbageCollection.CleanUp(dependenciesFile, lockFile)
+
+let AddGit(dependenciesFileName, groupName, repository, version, options) =
+    let group = matchGroupName(groupName)
+    
+    let existingDependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
+    
+    let dependenciesFile = 
+        existingDependenciesFile.AddGit(group, repository, version)
+
+    dependenciesFile.Save()
+    
+    let updateMode = PackageResolver.UpdateMode.Install
+    let alternativeProjectRoot = None
+    let lockFile,_,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, updateMode, options.SemVerUpdateMode, options.Force)
+    
+    InstallProcess.Install(options, false, dependenciesFile, lockFile, Map.empty)
+    GarbageCollection.CleanUp(dependenciesFile, lockFile)

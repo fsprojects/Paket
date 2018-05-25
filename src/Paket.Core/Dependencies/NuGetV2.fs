@@ -265,7 +265,7 @@ let getDetailsFromNuGetViaODataFast isVersionAssumed nugetSource (packageName:Pa
     async {
         let normalizedVersion = version.Normalize()
         let urls =
-            [ // Nuget feeds should support this.
+            [ // NuGet feeds should support this.
               // By ID needs to be first because TFS/VSTS https://github.com/fsprojects/Paket/issues/2213
               UrlToTry.From
                 (UrlId.GetVersion_ById { LoweredPackageId = true; NormalizedVersion = false })

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\FSharp.Compiler.Tools\build\FSharp.Compiler.Tools.props" Condition="Exists('..\..\packages\FSharp.Compiler.Tools\build\FSharp.Compiler.Tools.props')" Label="Paket" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -204,6 +204,7 @@
     <Compile Include="DependenciesFile\DependencyChangesSpecs.fs" />
     <Compile Include="DependenciesFile\GroupNameSpecs.fs" />
     <Compile Include="DependenciesFile\AddGithubFilesSpecs.fs" />
+    <Compile Include="DependenciesFile\AddGitFilesSpecs.fs" />
     <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
     <Compile Include="Resolver\DependencyGraphSpecs.fs" />
     <Compile Include="Resolver\SimpleDependenciesSpecs.fs" />
@@ -232,6 +233,9 @@
     <Compile Include="ReferencesFile\ReferencesFileSpecs.fs" />
     <Compile Include="LocalFile\LocalFileSpecs.fs" />
     <Compile Include="Simplifier\BasicScenarioSpecs.fs" />
+    <None Include="ProjectFile\TestData\AnalyzerProject.csprojtest">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFrameworkAndOutputPath.csprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -357,6 +361,7 @@
     <Compile Include="Packaging\RemotePushUrlSpecs.fs" />
     <Compile Include="ScriptGeneration\LoadingScriptTests.fs" />
     <Compile Include="Performance\EventBoundarySpecs.fs" />
+    <Compile Include="Performance\BackgroundMapBuilder.fs" />
     <Compile Include="CommandsCheck.fs" />
     <Content Include="App.config" />
   </ItemGroup>

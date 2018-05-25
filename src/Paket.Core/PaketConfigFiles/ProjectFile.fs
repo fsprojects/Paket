@@ -179,7 +179,7 @@ type ProjectFile =
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module ProjectFile =
-    let supportedEndings = [ ".csproj"; ".fsproj"; ".vbproj"; ".wixproj"; ".nproj"; ".vcxproj"; ".pyproj"; ".sfproj"]
+    let supportedEndings = [ ".csproj"; ".fsproj"; ".vbproj"; ".wixproj"; ".nproj"; ".vcxproj"; ".pyproj"; ".sfproj"; ".proj" ]
 
     let isSupportedFile (fi:FileInfo) =
         supportedEndings
@@ -1069,7 +1069,15 @@ module ProjectFile =
             try
                 let sdkAttr = project.ProjectNode.Attributes.["Sdk"]
                 if isNull sdkAttr || String.IsNullOrWhiteSpace sdkAttr.Value
-                then v   // adjustment so paket still installs to old style msbuild projects that are using MSBuild15 but not the new format
+                then
+                    // search for Sdk.props / Sdk.targets
+                    let hasSdkImports =
+                        project.ProjectNode.ChildNodes
+                            |> Seq.cast<XmlNode>
+                            |> Seq.tryFind (fun node -> node.LocalName = "Import" && let attr = node.Attributes.["Sdk"] in not (isNull attr) && attr.Value = "Microsoft.NET.Sdk")
+                            |> Option.isSome
+                    if hasSdkImports then 15.0
+                    else v   // adjustment so paket still installs to old style msbuild projects that are using MSBuild15 but not the new format
                 else 15.0
             with
             | _ -> v
@@ -1524,6 +1532,17 @@ module ProjectFile =
         |> Seq.tryHead
         |> function None -> ProjectOutputType.Library | Some x -> x
     
+    let buildOutputTargetFolder (project:ProjectFile) =
+        project.Document 
+        |> getDescendants "BuildOutputTargetFolder" 
+        |> Seq.tryHead
+        |> Option.map (fun e -> e.InnerText)
+    
+    let appendTargetFrameworkToOutputPath (project:ProjectFile) =
+        match project.Document |> getDescendants "AppendTargetFrameworkToOutputPath" |> Seq.tryHead with
+        | Some e -> not (String.Equals(e.InnerText, "false", StringComparison.OrdinalIgnoreCase))
+        | None -> true 
+            
     let addImportForPaketTargets relativeTargetsPath (project:ProjectFile) =
         match project.Document 
               |> getDescendants "Import" 
@@ -1608,7 +1627,9 @@ module ProjectFile =
         let rec tryNextPlat platforms attempted =
             match platforms with
             | [] ->
-                if not (String.IsNullOrEmpty targetFramework) then
+                if not (appendTargetFrameworkToOutputPath project) then
+                    Path.Combine("bin", buildConfiguration)
+                elif not (String.IsNullOrEmpty targetFramework) then
                     Path.Combine("bin", buildConfiguration, targetFramework)
                 elif String.IsNullOrWhiteSpace buildPlatform then
                     failwithf "Unable to find %s output path node in file %s for any known platforms" buildConfiguration project.FileName
@@ -1738,6 +1759,10 @@ type ProjectFile with
 
     member this.OutputType =  ProjectFile.outputType this
 
+    member this.BuildOutputTargetFolder =  ProjectFile.buildOutputTargetFolder this
+    
+    member this.AppendTargetFrameworkToOutputPath =  ProjectFile.appendTargetFrameworkToOutputPath this
+        
     member this.GetTargetFrameworkIdentifier () =  ProjectFile.getTargetFrameworkIdentifier this
 
     member this.GetTargetFrameworkProfile () = ProjectFile.getTargetFrameworkProfile this
@@ -2071,6 +2096,7 @@ type ProjectFile with
             FrameworkAssemblyReferences = [] //propOr "FrameworkAssemblyReferences" []
             Files = [] //propMap "Files" [] splitString
             FilesExcluded = [] //propMap  "FilesExcluded" [] splitString
+            PackageTypes = []
             IncludePdbs = propMap "IncludePdbs" true tryBool
             IncludeReferencedProjects = propMap "IncludeReferencedProjects" true tryBool
         }

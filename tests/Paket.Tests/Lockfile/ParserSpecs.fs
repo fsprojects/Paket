@@ -470,7 +470,7 @@ let ``should parse portable lockfile``() =
     
     packages.[1].Name |> shouldEqual (PackageName "Zlib.Portable")
     packages.[1].Version |> shouldEqual (SemVer.Parse "1.10.0")
-    (packages.[1].Settings.FrameworkRestrictions |> getExplicitRestriction).ToString() |> shouldEqual ">= portable-net40+win8+wp8+sl5"
+    (packages.[1].Settings.FrameworkRestrictions |> getExplicitRestriction).ToString() |> shouldEqual ">= portable-net40+sl5+win8+wp8"
 
 let reactiveuiLockFile = """NUGET
   remote: https://www.nuget.org/api/v2

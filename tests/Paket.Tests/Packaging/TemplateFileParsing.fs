@@ -1,6 +1,7 @@
 ﻿module Paket.TemplateFile.Test
 
 open System.IO
+open System.IO
 open Paket
 open Chessie.ErrorHandling
 open FsUnit
@@ -163,6 +164,8 @@ LANGUAGE
     en-gb
 tags
     rop, fsharp F#
+packageTypes
+    DotnetTool, Template
 summary
     Railway-oriented programming for .NET
 dependencies
@@ -203,6 +206,7 @@ let ``Optional fields are read`` (fileContent : string) =
     sut.RequireLicenseAcceptance |> shouldEqual false
     sut.DevelopmentDependency |> shouldEqual false
     sut.Language |> shouldEqual (Some "en-gb")
+    sut.PackageTypes |> shouldEqual ["DotnetTool"; "Template"]
     sut.DependencyGroups |> shouldContain ({ Framework = None;
                                              Dependencies =
                                                 [PackageName "FSharp.Core",VersionRequirement.Parse("[4.3.1]")
@@ -320,8 +324,37 @@ dependencies
         |> ignore
     )
 
-[<Test>]
-let ``Detect dependencies with CURRENTVERSION correctly`` () =
+[<TestCase("CURRENTVERSION", "2.1", "2.1")>]
+[<TestCase("CURRENTVERSION", "2.1.0", "2.1.0")>]
+[<TestCase("CURRENTVERSION", "2.1.0.0", "2.1.0.0")>]
+[<TestCase("CURRENTVERSION", "2.1.0.1", "2.1.0.1")>]
+[<TestCase("CURRENTVERSION", "2.1.0-pre.3", "2.1.0-pre.3")>]
+[<TestCase("CURRENTVERSION", "2.1.0.1-pre.3", "2.1.0.1-pre.3")>]
+[<TestCase("CURRENT:Major", "2.1", "2")>]
+[<TestCase("CURRENT:Major", "2.1.0", "2")>]
+[<TestCase("CURRENT:Major", "2.1.0.0", "2")>]
+[<TestCase("CURRENT:Major", "2.1.0.1", "2")>]
+[<TestCase("CURRENT:Major", "2.1.0-pre.3", "2")>]
+[<TestCase("CURRENT:Major", "2.1.0.1-pre.3", "2")>]
+[<TestCase("CURRENT:Minor", "2.1", "2.1")>]
+[<TestCase("CURRENT:Minor", "2.1.0", "2.1")>]
+[<TestCase("CURRENT:Minor", "2.1.0.0", "2.1")>]
+[<TestCase("CURRENT:Minor", "2.1.0.1", "2.1")>]
+[<TestCase("CURRENT:Minor", "2.1.0-pre.3", "2.1")>]
+[<TestCase("CURRENT:Minor", "2.1.0.1-pre.3", "2.1")>]
+[<TestCase("CURRENT:Patch", "2.1", "2.1")>]
+[<TestCase("CURRENT:Patch", "2.1.0", "2.1.0")>]
+[<TestCase("CURRENT:Patch", "2.1.0.0", "2.1.0")>]
+[<TestCase("CURRENT:Patch", "2.1.0.1", "2.1.0")>]
+[<TestCase("CURRENT:Patch", "2.1.0-pre.3", "2.1.0")>]
+[<TestCase("CURRENT:Patch", "2.1.0.1-pre.3", "2.1.0")>]
+[<TestCase("CURRENT:Build", "2.1", "2.1")>]
+[<TestCase("CURRENT:Build", "2.1.0", "2.1.0")>]
+[<TestCase("CURRENT:Build", "2.1.0.0", "2.1.0.0")>]
+[<TestCase("CURRENT:Build", "2.1.0.1", "2.1.0.1")>]
+[<TestCase("CURRENT:Build", "2.1.0-pre.3", "2.1.0")>]
+[<TestCase("CURRENT:Build", "2.1.0.1-pre.3", "2.1.0.1")>]
+let ``Detect dependencies with CURRENTVERSION correctly`` placeholder source target =
     let fileContent = """type file
 id My.Thing
 authors Bob McBob
@@ -333,10 +366,10 @@ version
 dependencies
      FSharp.Core 4.3.1
      My.OtherThing CURRENTVERSION
-"""
-
+""" 
+    let content = fileContent.Replace("CURRENTVERSION", placeholder)
     let sut =
-        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), Some(SemVer.Parse "2.1"), Map.empty, strToStream fileContent)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), Some(SemVer.Parse source), Map.empty, strToStream content)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -346,7 +379,7 @@ dependencies
         name1 |> shouldEqual (PackageName "FSharp.Core")
         range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
         name2 |> shouldEqual (PackageName "My.OtherThing")
-        range2.Range |> shouldEqual (Specific (SemVer.Parse "2.1"))
+        range2.Range |> shouldEqual (Specific (SemVer.Parse target))
     | _ -> Assert.Fail()
 
 [<Test>]
@@ -387,8 +420,38 @@ dependencies
         range3.Range |> shouldEqual (Specific specificVersion)
     | _ -> Assert.Fail()
 
-[<Test>]
-let ``Detect dependencies with LOCKEDVERSION correctly`` () =
+/// source replaces locked version of My.OtherThing (1.2.3.0)
+[<TestCase("LOCKEDVERSION", "1.2", "1.2.0")>]
+[<TestCase("LOCKEDVERSION", "1.2.3", "1.2.3")>]
+[<TestCase("LOCKEDVERSION", "1.2.3.0", "1.2.3.0")>]
+[<TestCase("LOCKEDVERSION", "1.2.3.1", "1.2.3.1")>]
+[<TestCase("LOCKEDVERSION", "1.2.3-pre.3", "1.2.3-pre.3")>]
+[<TestCase("LOCKEDVERSION", "1.2.3.1-pre.3", "1.2.3.1-pre.3")>]
+[<TestCase("LOCKED:Major", "1.2", "1.0.0")>]
+[<TestCase("LOCKED:Major", "1.2.3", "1.0.0")>]
+[<TestCase("LOCKED:Major", "1.2.3.0", "1.0.0")>]
+[<TestCase("LOCKED:Major", "1.2.3.1", "1.0.0")>]
+[<TestCase("LOCKED:Major", "1.2.3-pre.3", "1.0.0")>]
+[<TestCase("LOCKED:Major", "1.2.3.1-pre.3", "1.0.0")>]
+[<TestCase("LOCKED:Minor", "1.2", "1.2.0")>]
+[<TestCase("LOCKED:Minor", "1.2.3", "1.2.0")>]
+[<TestCase("LOCKED:Minor", "1.2.3.0", "1.2.0")>]
+[<TestCase("LOCKED:Minor", "1.2.3.1", "1.2.0")>]
+[<TestCase("LOCKED:Minor", "1.2.3-pre.3", "1.2.0")>]
+[<TestCase("LOCKED:Minor", "1.2.3.1-pre.3", "1.2.0")>]
+[<TestCase("LOCKED:Patch", "1.2", "1.2.0")>]
+[<TestCase("LOCKED:Patch", "1.2.3", "1.2.3")>]
+[<TestCase("LOCKED:Patch", "1.2.3.0", "1.2.3")>]
+[<TestCase("LOCKED:Patch", "1.2.3.1", "1.2.3")>]
+[<TestCase("LOCKED:Patch", "1.2.3-pre.3", "1.2.3")>]
+[<TestCase("LOCKED:Patch", "1.2.3.1-pre.3", "1.2.3")>]
+[<TestCase("LOCKED:Build", "1.2", "1.2.0")>]
+[<TestCase("LOCKED:Build", "1.2.3", "1.2.3")>]
+[<TestCase("LOCKED:Build", "1.2.3.0", "1.2.3.0")>]
+[<TestCase("LOCKED:Build", "1.2.3.1", "1.2.3.1")>]
+[<TestCase("LOCKED:Build", "1.2.3-pre.3", "1.2.3")>]
+[<TestCase("LOCKED:Build", "1.2.3.1-pre.3", "1.2.3.1")>]
+let ``Detect dependencies with LOCKEDVERSION correctly`` placeholder source target =
     let fileContent = """type file
 id My.Thing
 authors Bob McBob
@@ -401,7 +464,8 @@ dependencies
      FSharp.Core 4.3.1
      My.OtherThing LOCKEDVERSION
 """
-
+    let content = fileContent.Replace("LOCKEDVERSION", placeholder)
+    
     let lockFile = """NUGET
   remote: https://www.nuget.org/api/v2
   specs:
@@ -441,9 +505,11 @@ GITHUB
   specs:
     modules/Octokit/Octokit.fsx (494c549c61dc15ab798b7b92cb4ac6e981267f49)
       Octokit"""
+      
+    let lockLines = lockFile.Replace("My.OtherThing (1.2.3.0) - redirects: on", sprintf "My.OtherThing (%s) - redirects: on" source)
 
     let sut =
-        TemplateFile.Parse("file1.template", LockFile.Parse("",toLines lockFile), Some(SemVer.Parse "2.1"), Map.empty, strToStream fileContent)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",toLines lockLines), Some(SemVer.Parse "2.1"), Map.empty, strToStream content)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -453,14 +519,19 @@ GITHUB
         name1 |> shouldEqual (PackageName "FSharp.Core")
         range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
         name2 |> shouldEqual (PackageName "My.OtherThing")
-        range2.Range.ToString() |> shouldEqual "1.2.3"
-        range2.FormatInNuGetSyntax() |> shouldEqual "[1.2.3.0]"
+        let semVerTarget = SemVer.Parse target
+        range2.Range.ToString() |> shouldEqual (semVerTarget.NormalizeToShorter())
+        range2.FormatInNuGetSyntax() |> shouldEqual (sprintf "[%s]" target)
 
     | _ -> Assert.Fail()
 
 
-[<Test>]
-let ``Detect Group-bound LOCKEDVERSION declarations correctly`` () =
+[<TestCase("LOCKEDVERSION-Build")>]
+[<TestCase("LOCKEDVERSION-Build:Build")>]
+[<TestCase("LOCKEDVERSION:Build-Build")>]
+[<TestCase("LOCKEDVERSION-Build:[4]")>]
+[<TestCase("LOCKEDVERSION:[4]-Build")>]
+let ``Detect Group-bound LOCKEDVERSION declarations correctly`` placeholder =
     let fileContent = """type file
 id My.Thing
 authors Bob McBob
@@ -474,7 +545,9 @@ dependencies
      My.OtherThing LOCKEDVERSION
      My.OtherThing LOCKEDVERSION-Build
 """
-
+    
+    let content = fileContent.Replace("LOCKEDVERSION-Build", placeholder)
+    
     let lockFile = """NUGET
   remote: https://www.nuget.org/api/v2
   specs:
@@ -517,7 +590,7 @@ GITHUB
       Octokit"""
 
     let sut =
-        TemplateFile.Parse("file1.template", LockFile.Parse("",toLines lockFile), Some(SemVer.Parse "2.1"), Map.empty, strToStream fileContent)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",toLines lockFile), Some(SemVer.Parse "2.1"), Map.empty, strToStream content)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -874,7 +947,7 @@ files
 
 [<Test>]
 let ``parse real world template``() =
-    let text = """﻿
+    let text = """
 type project
 title Gu.SiemensCommunication
 

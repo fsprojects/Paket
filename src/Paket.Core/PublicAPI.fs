@@ -201,6 +201,21 @@ type Dependencies(dependenciesFileName: string) =
             fun () ->
                 AddProcess.AddGithub(dependenciesFileName, groupName, repository, file, version, options))
 
+    /// Adds the given git repository to the dependencies file
+    member this.AddGit(groupName, repository) =
+        this.AddGit(groupName, repository, "")
+
+    /// Adds the given git repository to the dependencies file    
+    member this.AddGit(groupName, repository, version) =
+        this.AddGit(groupName, repository, version, InstallerOptions.Default);
+
+    /// Adds the given git repository to the dependencies file
+    member this.AddGit(groupName, repository, version, options) =
+        RunInLockedAccessMode(
+            this.RootPath,
+            fun () ->
+                AddProcess.AddGit(dependenciesFileName, groupName, repository, version, options))
+
    /// Adds the given package with the given version to the dependencies file.
     member this.AddToProject(groupName, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, projectName: string, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
         this.AddToProject(groupName, package,version,force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, projectName, installAfter, semVerUpdateMode, touchAffectedRefs, true)
@@ -871,3 +886,29 @@ module PublicAPI =
     /// Takes a version string formatted for Semantic Versioning and parses it
     /// into the internal representation used by Paket.
     let ParseSemVer (version:string) = SemVer.Parse version
+
+    let PreCalculateMaps () =
+        async {
+            KnownTargetProfiles.AllProfiles
+            |> Seq.iter (fun profile -> 
+                SupportCalculation.getPlatformsSupporting profile |> ignore
+                let fws =
+                    profile.Frameworks
+                    |> List.filter (function
+                        | MonoTouch
+                        | DNXCore _
+                        | UAP _
+                        | MonoAndroid _
+                        | XamariniOS
+                        | XamarinTV
+                        | XamarinWatch
+                        | XamarinMac 
+                        | DotNetCoreApp _
+                        | DotNetStandard _
+                        | Tizen _ -> false
+                        | _ -> true)
+                if fws.Length > 0 then SupportCalculation.findPortable false fws |> ignore)
+            // calculated as part of the above...
+            SupportCalculation.getSupportedPreCalculated (PortableProfileType.Profile259) |> ignore
+        }
+        |> Async.StartAsTask

@@ -238,6 +238,36 @@ dependencies
   FSharp.Core >= LOCKEDVERSION-NetStandard
 ```
 
+`LOCKEDVERSION` and `CURRENTVERSION` support using partial constraints,
+to allow transitive dependencies on specific SemVer compatibility level.
+This allows to create permissive pessimistic constraints automatically.
+
+Use only `LOCKED` or `CURRENT` and semicolon-delimited name of the latest
+SemVer segment (`Major`, `Minor`, `Patch` or `Build`), or bracketed number
+of segments from the original constraint to be used.
+Negative numbers denote count down from the last non-zero segment.
+
+```text
+dependencies
+  FSharp.Core ~> LOCKED:Minor
+  My.Own.Package ~> CURRENT:[2]
+```
+
+Using `0` or `-4` is not supported; `[4]` or `Build` will result in the original
+version but with any prerelease specifiers and metedata cut off.
+
+Combining with group-binding syntax is supported, in either order;
+assuming group "NetStandard" and 4-segment version, these constraints are equal:
+
+```text
+  LOCKED-NetStandard:Patch
+  LOCKED-NetStandard:[3]
+  LOCKED-NetStandard:[-1]
+  LOCKED:Patch-NetStandard
+  LOCKED:[3]-NetStandard
+  LOCKED:[-1]-NetStandard
+```
+
 It's possible to add a line to constrain the target framework:
 
 ```text
@@ -293,4 +323,5 @@ This only works for `paket.template` files of type `project`.
 ## Comments
 
 A line starting with a `#` or `//` is considered a comment and will be ignored
-by the parser.
+by the parser. 
+Endline comments are only allowed in dependency constraint lines.

@@ -300,14 +300,15 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
 
 let ImplicitPackages = [PackageName "NETStandard.Library"]  |> Set.ofList
 
-let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) (groups:Map<GroupName,LockFileGroup>) =
+let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) (groups:Map<GroupName,LockFileGroup>) (targetFrameworks: string option) =
     let projectFileInfo = FileInfo projectFile.FileName
 
     let targets =
         let monikers =
             ProjectFile.getTargetFramework projectFile
             |> Option.toList
-            |> List.append (ProjectFile.getTargetFrameworks projectFile |> Option.toList)
+            |> List.append (ProjectFile.getTargetFrameworksParsed projectFile)
+            |> List.append (targetFrameworks |> Option.toList)
        
         monikers
         |> List.collect (fun item -> item.Split([|';'|],StringSplitOptions.RemoveEmptyEntries) |> Array.map (fun x -> x.Trim()) |> List.ofArray)
@@ -362,6 +363,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                     let package = resolved.Force().[key]
                     let copy_local =
                         match resolvedPackage.Settings.CopyLocal with
+                        | Some false -> "exclude"
                         | Some x -> x.ToString()
                         | None -> "false"
                     let line =
@@ -457,7 +459,7 @@ let FindOrCreateReferencesFile (projectFile:ProjectFile) =
 
         ReferencesFile.New fileName
 
-let RestoreNewSdkProject lockFile resolved groups (projectFile:ProjectFile) =
+let RestoreNewSdkProject lockFile resolved groups (projectFile:ProjectFile) targetFrameworks =
     let referencesFile = FindOrCreateReferencesFile projectFile
     let projectFileInfo = FileInfo projectFile.FileName
     let objFolder = DirectoryInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj"))
@@ -466,10 +468,25 @@ let RestoreNewSdkProject lockFile resolved groups (projectFile:ProjectFile) =
         objFolder.FullName,
         (fun () ->
             createAlternativeNuGetConfig projectFileInfo
-            createProjectReferencesFiles lockFile projectFile referencesFile resolved groups
+            createProjectReferencesFiles lockFile projectFile referencesFile resolved groups targetFrameworks
             referencesFile
         )
    )
+
+let inline private isRestoreUpDoDate (lockFileName:FileInfo) (lockFileContents:string) =
+    let root = lockFileName.Directory.FullName
+    let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
+    // We ignore our check when we do a partial restore, this way we can
+    // fixup project specific changes (like an additional target framework or a changed references file)
+    // We could still skip the actual "restore" work, but that is left as an exercise for the interesting reader.
+    if File.Exists restoreCacheFile then
+        let oldContents = File.ReadAllText(restoreCacheFile)
+        oldContents = lockFileContents
+    else false
+
+let IsRestoreUpToDate(lockFileName:FileInfo) =
+    let newContents = File.ReadAllText(lockFileName.FullName)
+    isRestoreUpDoDate lockFileName newContents
 
 let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
@@ -481,26 +498,19 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
     // Shortcut if we already restored before
     let newContents = File.ReadAllText(lockFileName.FullName)
-    let restoreCacheFile = Path.Combine(root, Constants.PaketFilesFolderName, Constants.RestoreHashFile)
     let isFullRestore = targetFrameworks = None && projectFile = None && group = None && referencesFileNames = []
-    let inline isEarlyExit () =
-        // We ignore our check when we do a partial restore, this way we can
-        // fixup project specific changes (like an additional target framework or a changed references file)
-        // We could still skip the actual "restore" work, but that is left as an exercise for the interesting reader.
-        if isFullRestore && File.Exists restoreCacheFile then
-            let oldContents = File.ReadAllText(restoreCacheFile)
-            oldContents = newContents
-        else false
+    let inline isEarlyExit () = isFullRestore && isRestoreUpDoDate lockFileName newContents
 
     let lockFile,localFile,hasLocalFile =
-        let lockFile = LockFile.LoadFrom(lockFileName.FullName)
+        // Do not parse the lockfile when we have an early exit scenario.
+        let lockFile = lazy LockFile.LoadFrom(lockFileName.FullName)
         if not localFileName.Exists then
-            lockFile,LocalFile.empty,false
+            lockFile,lazy LocalFile.empty,false
         else
             let localFile =
-                LocalFile.readFile localFileName.FullName
-                |> returnOrFail
-            LocalFile.overrideLockFile localFile lockFile,localFile,true
+                lazy (LocalFile.readFile localFileName.FullName
+                      |> returnOrFail)
+            lazy LocalFile.overrideLockFile localFile.Value lockFile.Value,localFile,true
 
     if not (hasLocalFile || force) && isEarlyExit () then
         if verbose then
@@ -520,7 +530,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
         if not hasLocalFile && not ignoreChecks then
-            let hasAnyChanges,nugetChanges,remoteFilechanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
+            let hasAnyChanges,nugetChanges,remoteFilechanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile.Value,false)
             let checkResponse = if failOnChecks then failwithf else traceWarnfn
             if hasAnyChanges then 
                 checkResponse "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
@@ -531,19 +541,19 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
         let groups =
             match group with
-            | None -> lockFile.Groups 
+            | None -> lockFile.Value.Groups 
             | Some groupName -> 
-                match lockFile.Groups |> Map.tryFind groupName with
+                match lockFile.Value.Groups |> Map.tryFind groupName with
                 | None -> failwithf "The group %O was not found in the paket.lock file." groupName
                 | Some group -> [groupName,group] |> Map.ofList
 
-        let resolved = lazy (lockFile.GetGroupedResolution())
+        let resolved = lazy (lockFile.Value.GetGroupedResolution())
 
         let referencesFileNames =
             match projectFile with
             | Some projectFileName ->
                 let projectFile = ProjectFile.LoadFromFile projectFileName
-                let referencesFile = RestoreNewSdkProject lockFile resolved groups projectFile
+                let referencesFile = RestoreNewSdkProject lockFile.Value resolved groups projectFile targetFrameworks
 
                 [referencesFile.FileName]
             | None ->
@@ -554,7 +564,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                         |> Seq.filter (fun proj -> proj.GetToolsVersion() >= 15.0)
 
                     for proj in allSDKProjects do
-                        RestoreNewSdkProject lockFile resolved groups proj |> ignore
+                        RestoreNewSdkProject lockFile.Value resolved groups proj targetFrameworks |> ignore
                 referencesFileNames
 
 
@@ -568,7 +578,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     else
                         referencesFileNames
                         |> List.toSeq
-                        |> computePackageHull kv.Key lockFile
+                        |> computePackageHull kv.Key lockFile.Value
 
                 let packages =
                     allPackages
@@ -597,9 +607,9 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     let packages = Set.ofSeq packages
                     let overriden = 
                         packages
-                        |> Set.filter (fun p -> LocalFile.overrides localFile (p,depFileGroup.Name))
+                        |> Set.filter (fun p -> LocalFile.overrides localFile.Value (p,depFileGroup.Name))
 
-                    restore(alternativeProjectRoot, root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages, overriden))
+                    restore(alternativeProjectRoot, root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile.Value, packages, overriden))
             |> Seq.toArray
  
         RunInLockedAccessMode(
@@ -610,7 +620,8 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     |> Async.RunSynchronously
                     |> ignore
 
-                CreateScriptsForGroups lockFile groups
+                CreateScriptsForGroups lockFile.Value groups
                 if isFullRestore then
+                    let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
                     File.WriteAllText(restoreCacheFile, newContents))
             )

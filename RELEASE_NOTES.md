@@ -1,3 +1,62 @@
+#### 5.168.0 - 2018-05-25
+* Extended semver2 support in paket.template files - https://github.com/fsprojects/Paket/pull/3184
+* BUGFIX: Trace paket version in shortcut routes
+
+#### 5.167.1 - 2018-05-23
+* BUGFIX: No longer search for CredentialProviders on an empty path - https://github.com/fsprojects/Paket/pull/3214
+
+#### 5.167.0 - 2018-05-23
+* Support slash in GitHub branch name - https://github.com/fsprojects/Paket/pull/3215
+
+#### 5.166.0 - 2018-05-19
+* Paket template packagetypes - https://github.com/fsprojects/Paket/pull/3212
+* PAKET_DETAILED_ERRORS to print inner stack traces - https://github.com/fsprojects/Paket/pull/3192
+* Support pack of global tooks `PackAsTool` - https://github.com/fsprojects/Paket/pull/3208
+* PERFORMANCE: Do only one global restore in dotnet restore - https://github.com/fsprojects/Paket/pull/3211
+
+#### 5.165.0 - 2018-05-17
+* PERFORMANCE: Do only one global restore in dotnet restore - https://github.com/fsprojects/Paket/pull/3206
+
+#### 5.164.0 - 2018-05-17
+* BOOTSTRAPPER: Update magic mode file location - https://github.com/fsprojects/Paket/pull/3197
+
+#### 5.163.2 - 2018-05-15
+* PERFORMANCE: Some performance improvements in targets file - https://github.com/fsprojects/Paket/pull/3200
+
+#### 5.162.0 - 2018-05-14
+* PERFORMANCE: Some performance improvements - https://github.com/fsprojects/Paket/pull/3173
+* BUGFIX: Fixed incorrect framework restrictions in lockfile -  https://github.com/fsprojects/Paket/pull/3176
+* BUGFIX: Fixed semver support for v3 - https://github.com/fsprojects/Paket/pull/3179
+
+#### 5.161.3 - 2018-05-08
+* BUGFIX: Override versions properly with Update property in ProjectReferences
+
+#### 5.160.0 - 2018-05-08
+* Support for net472 - https://github.com/fsprojects/Paket/issues/3188
+* Support for UAP10.0.16299 - https://github.com/fsprojects/Paket/issues/3189
+
+#### 5.159.0 - 2018-05-08
+* Allows to add git-repositories to paket.lock and paket.references files via CLI - https://github.com/fsprojects/Paket/pull/3125
+* BUGFIX: Fixed incorrect framework restrictions in the lockfile - https://github.com/fsprojects/Paket/pull/3176
+
+#### 5.158.0 - 2018-05-08
+* BUGFIX: Paket restore silently failed when TargetFramework(s) are specified in Directory.Build.props and not csproj - https://github.com/fsprojects/Paket/pull/3013
+
+#### 5.156.7 - 2018-04-26
+* shasum now works when the path has spaces - https://github.com/fsprojects/Paket/pull/3169
+
+#### 5.156.6 - 2018-04-25
+* Paket pack works with BuildOutputTargetFolder and AppendTargetFrameworkToOutputPath - https://github.com/fsprojects/Paket/pull/3165
+
+#### 5.156.5 - 2018-04-18
+* Keeping direct dependencies distinct from external locks- https://github.com/fsprojects/Paket/pull/3159
+
+#### 5.156.4 - 2018-04-17
+* BUGFIX: `copy_local: false` now works with .NET SDK - https://github.com/fsprojects/Paket/issues/3154
+
+#### 5.156.2 - 2018-04-17
+* BUGFIX: Work around NuGet v3 SemVer2 issues - https://github.com/fsprojects/Paket/issues/3156
+
 #### 5.156.1 - 2018-04-13
 * BUGFIX: Paket convert-from-nuget doesn't crash on NuGet v2 syntax - https://github.com/fsprojects/Paket/issues/3151
 

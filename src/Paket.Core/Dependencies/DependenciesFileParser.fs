@@ -136,19 +136,21 @@ module DependenciesFileParser =
         |> List.toArray
 
 
-    let private parseGitSource trimmed origin originTxt = 
+    let private parseGitSource trimmed origin originTxt =
         let parts = parseDependencyLine trimmed
-        
-        let getParts (projectSpec : string) = 
+
+        let getParts (projectSpec : string) =
             match projectSpec.Split [| ':'; '/' |] with
             | [| owner; project |] -> owner, project, None
             | [| owner; project; commit |] -> owner, project, Some commit
-            | _ -> failwithf "invalid %s specification:%s     %s" originTxt Environment.NewLine trimmed
+            | [| owner; project; commit; commit2 |] when projectSpec.Contains (sprintf "%s/%s" commit commit2) -> owner, project, Some (sprintf "%s/%s" commit commit2)
+            | _ -> failwithf "invalid %s specification (getParts):%s     %s (full:%s)" originTxt Environment.NewLine projectSpec trimmed
+
         match parts with
         | [| _; projectSpec; fileSpec; authKey |] -> origin, getParts projectSpec, fileSpec, (Some authKey)
         | [| _; projectSpec; fileSpec |] -> origin, getParts projectSpec, fileSpec, None
         | [| _; projectSpec |] -> origin, getParts projectSpec, Constants.FullProjectSourceFileName, None
-        | _ -> failwithf "invalid %s specification:%s     %s" originTxt Environment.NewLine trimmed
+        | _ -> failwithf "invalid %s specification (parseGitSource):%s     %s" originTxt Environment.NewLine trimmed
 
 
     let private parseHttpSource trimmed = 

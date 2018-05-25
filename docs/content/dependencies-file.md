@@ -52,6 +52,7 @@ dependencies](faq.html#transitive).
 Paket supports the following source types:
 
 * [NuGet](nuget-dependencies.html)
+* [.NET CLI Tools](nuget-dependencies.html#Special-case-CLI-tools)
 * [Git](git-dependencies.html)
 * [GitHub and Gist](github-dependencies.html)
 * [HTTP](http-dependencies.html) (any single file from any site without version
@@ -314,13 +315,13 @@ The global option may be
 
 ### License download
 
-If you want paket to download licenses automatically you can use the `download_license` modifier. It is disabled by default.
+If you want paket to download licenses automatically you can use the `license_download` modifier. It is disabled by default.
 
 ```paket
 source https://nuget.org/api/v2
-download_license: true
+license_download: true
 
-nuget suave 
+nuget suave
 ```
 
 The global option may be

@@ -163,9 +163,12 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
 let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (projectWithTemplates : Map<string, (Lazy<'TemplateFile>) * ProjectFile * bool>) includeReferencedProjects (version :SemVerInfo option) projDeps =
     let includeReferencedProjects = template.IncludeReferencedProjects || includeReferencedProjects
     let targetDir = 
-        match project.OutputType with
-        | ProjectOutputType.Exe -> "tools/"
-        | ProjectOutputType.Library -> project.GetTargetProfiles() |> List.map (sprintf "lib/%O/") |> List.head // TODO: multi target pack
+        match project.BuildOutputTargetFolder with
+        | Some x -> x
+        | None ->
+            match project.OutputType with
+            | ProjectOutputType.Exe -> "tools/"
+            | ProjectOutputType.Library -> project.GetTargetProfiles() |> List.map (sprintf "lib/%O/") |> List.head // TODO: multi target pack
     
     let projectDir = Path.GetDirectoryName project.FileName
 
@@ -238,20 +241,19 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                 Directory.GetFiles(path, name + ".*")
                 |> Array.map (fun f -> FileInfo f)
                 |> Array.filter (fun fi -> 
-                                    let isSameFileName = (Path.GetFileNameWithoutExtension fi.Name) = name
-                                    let validExtensions = 
-                                        match template.Contents with
-                                        | CompleteInfo(core, optional) ->
-                                            if core.Symbols || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
-                                            else [".xml"; ".dll"; ".exe";]
-                                        | ProjectInfo(core, optional) ->
-                                            if core.Symbols  || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
-                                            else [".xml"; ".dll"; ".exe";]
-                                    let isValidExtension = 
-                                        validExtensions
-                                        |> List.exists (String.equalsIgnoreCase fi.Extension)
-                                    isSameFileName && isValidExtension)
-                            )
+                    let isSameFileName = (Path.GetFileNameWithoutExtension fi.Name) = name
+                    let validExtensions = 
+                        match template.Contents with
+                        | CompleteInfo(core, optional) ->
+                            if core.Symbols || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
+                            else [".xml"; ".dll"; ".exe";]
+                        | ProjectInfo(core, optional) ->
+                            if core.Symbols  || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
+                            else [".xml"; ".dll"; ".exe";]
+                    let isValidExtension = 
+                        validExtensions
+                        |> List.exists (String.equalsIgnoreCase fi.Extension)
+                    isSameFileName && isValidExtension))
             |> Seq.toArray
 
         additionalFiles
