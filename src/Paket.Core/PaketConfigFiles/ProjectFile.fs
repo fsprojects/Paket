@@ -179,7 +179,7 @@ type ProjectFile =
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module ProjectFile =
-    let supportedEndings = [ ".csproj"; ".fsproj"; ".vbproj"; ".wixproj"; ".nproj"; ".vcxproj"; ".pyproj"; ".sfproj"]
+    let supportedEndings = [ ".csproj"; ".fsproj"; ".vbproj"; ".wixproj"; ".nproj"; ".vcxproj"; ".pyproj"; ".sfproj"; ".proj" ]
 
     let isSupportedFile (fi:FileInfo) =
         supportedEndings
@@ -1069,7 +1069,15 @@ module ProjectFile =
             try
                 let sdkAttr = project.ProjectNode.Attributes.["Sdk"]
                 if isNull sdkAttr || String.IsNullOrWhiteSpace sdkAttr.Value
-                then v   // adjustment so paket still installs to old style msbuild projects that are using MSBuild15 but not the new format
+                then
+                    // search for Sdk.props / Sdk.targets
+                    let hasSdkImports =
+                        project.ProjectNode.ChildNodes
+                            |> Seq.cast<XmlNode>
+                            |> Seq.tryFind (fun node -> node.LocalName = "Import" && let attr = node.Attributes.["Sdk"] in not (isNull attr) && attr.Value = "Microsoft.NET.Sdk")
+                            |> Option.isSome
+                    if hasSdkImports then 15.0
+                    else v   // adjustment so paket still installs to old style msbuild projects that are using MSBuild15 but not the new format
                 else 15.0
             with
             | _ -> v
@@ -2090,6 +2098,7 @@ type ProjectFile with
             FrameworkAssemblyReferences = [] //propOr "FrameworkAssemblyReferences" []
             Files = [] //propMap "Files" [] splitString
             FilesExcluded = [] //propMap  "FilesExcluded" [] splitString
+            PackageTypes = []
             IncludePdbs = propMap "IncludePdbs" true tryBool
             IncludeReferencedProjects = propMap "IncludeReferencedProjects" true tryBool
         }

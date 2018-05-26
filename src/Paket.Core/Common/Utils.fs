@@ -588,11 +588,9 @@ let parseKeyValuePairs (s:string) : Dictionary<string,string> =
                 let x = key,value
                 l.Add x |> ignore
 
-
-        let current = Text.StringBuilder()
         let quoted = ref false
-        let lastKey = ref ""
-        let lastValue = ref ""
+        let lastKey = Text.StringBuilder(50)
+        let lastValue = Text.StringBuilder(50)
         let isKey = ref true
         for pos in 0..s.Length - 1 do
             let x = s.[pos]
@@ -608,9 +606,9 @@ let parseKeyValuePairs (s:string) : Dictionary<string,string> =
             if x = '"' then
                 quoted := not !quoted
             elif x = ',' && not !quoted && restHasKey() then
-                add !lastKey !lastValue
-                lastKey := ""
-                lastValue := ""
+                add (lastKey.ToString()) (lastValue.ToString())
+                lastKey.Clear() |> ignore
+                lastValue.Clear() |> ignore
                 isKey := true
             elif x = ':' && not !quoted then
                 if not !isKey then
@@ -618,11 +616,11 @@ let parseKeyValuePairs (s:string) : Dictionary<string,string> =
                 isKey := false
             else
                 if !isKey then
-                    lastKey := !lastKey + x.ToString()
+                    lastKey.Append(x) |> ignore
                 else
-                    lastValue := !lastValue + x.ToString()
+                    lastValue.Append(x) |> ignore
 
-        add !lastKey !lastValue
+        add (lastKey.ToString()) (lastValue.ToString())
 
         let d = Dictionary<_,_>()
         for k,v in l do

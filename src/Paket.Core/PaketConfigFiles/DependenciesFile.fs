@@ -47,6 +47,9 @@ module DependenciesFileSerializer =
     let githubString repository file version =
         sprintf "github %s%s%s" repository (if version <> "" then ":" + version else "") (if file <> "" then " " + file else "")
 
+    let gitString repository version =
+        sprintf "git %s%s" repository (if version <> "" then " " + version else "")
+
 open Domain
 open System
 open Requirements
@@ -713,6 +716,34 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             list 
             |> Seq.toArray
             |> DependenciesFileParser.parseDependenciesFile fileName false)
+    
+    member this.AddGit(groupName, repository) =
+        this.AddGit(groupName, repository, "")
+
+    member this.AddGit(groupName, repository, version) =
+        tracefn "Adding %s into group %O" (repository + (if version <> "" then ":" + version else "")) groupName
+        let packageString = DependenciesFileSerializer.gitString repository version
+
+        let list = new System.Collections.Generic.List<_>()
+        list.AddRange textRepresentation
+
+        this.InsertGroup(groupName,list) |> ignore
+
+        let firstGroupLine,lastGroupLine = findGroupBorders groupName list
+
+        let repoExists = 
+            Seq.mapi (fun i x -> (i,x)) list
+            |> Seq.filter(fun (i,_) -> i >= firstGroupLine && i <= lastGroupLine)
+            |> Seq.exists (fun (_,x) -> x = packageString)
+
+        if not repoExists then
+            list.Insert(lastGroupLine, packageString);
+
+        DependenciesFile(
+            list
+            |> Seq.toArray
+            |> DependenciesFileParser.parseDependenciesFile fileName false)
+
 
     member this.Remove(groupName, packageName) =
         if this.HasPackage(groupName, packageName) then

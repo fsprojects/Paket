@@ -27,10 +27,11 @@ type ReferenceType =
 
 type DependencyCache (lockFile:LockFile) =
     let loadedGroups = HashSet<GroupName>()
-    let mutable nuspecCache = ConcurrentDictionary<PackageName*SemVerInfo, Nuspec>()
-    let mutable installModelCache = ConcurrentDictionary<GroupName * PackageName,InstallModel>()
+    let mutable nuspecCache = ConcurrentDictionary<PackageName*SemVerInfo, System.Threading.Tasks.Task<Nuspec>>()
+    let mutable installModelCache = ConcurrentDictionary<GroupName * PackageName,System.Threading.Tasks.Task<InstallModel>>()
     let mutable orderedGroupCache = ConcurrentDictionary<GroupName,PackageInfo list>()
     let mutable orderedGroupReferences = ConcurrentDictionary<(GroupName * FrameworkIdentifier),ReferenceType list>()
+    let mutable finishedSetup = false
 
 
     let getLeafPackagesGeneric getPackageName getDependencies (knownPackages:Set<_>) openList =
@@ -120,6 +121,7 @@ type DependencyCache (lockFile:LockFile) =
                 match tryGet (group,pack.Name) installModelCache with
                 | None -> ()
                 | Some model ->
+                    let model = model.Result
                     for lib in model.GetLibReferenceFiles (TargetProfile.SinglePlatform framework) do
                         libs.Add lib |> ignore
                     for sysLib in model.GetAllLegacyFrameworkReferences() do
@@ -151,9 +153,8 @@ type DependencyCache (lockFile:LockFile) =
     member self.GetOrderedReferences groupName framework =
         match tryGet (groupName,framework) orderedGroupReferences with
         | Some refs -> refs 
-        | None -> 
-            
-            self.SetupGroup groupName |> ignore
+        | None ->
+            self.StartSetupGroup groupName |> ignore
             let refs = referencesForGroup groupName framework 
             orderedGroupReferences.TryAdd((groupName,framework),refs)|> ignore
             refs 
@@ -162,14 +163,16 @@ type DependencyCache (lockFile:LockFile) =
     member __.GetOrderedPackageReferences groupName packageName framework =
         match tryGet (groupName,packageName) installModelCache with
         | None -> []
-        | Some model -> 
+        | Some model ->
+            let model = model.Result
             getDllsWithinPackage framework model 
     
     
     member self.GetOrderedFrameworkReferences  groupName packageName (framework: FrameworkIdentifier) =
         match tryGet (groupName,packageName) installModelCache with
         | None -> []
-        | Some installModel -> 
+        | Some model ->
+            let model = model.Result
             let shouldExcludeFrameworkAssemblies =
                 // NOTE: apparently for .netcore / .netstandard we should skip framework dependencies
                 // https://github.com/fsprojects/Paket/issues/2156
@@ -179,7 +182,7 @@ type DependencyCache (lockFile:LockFile) =
                 | _ -> false
 
             if shouldExcludeFrameworkAssemblies framework then List.empty else
-            installModel
+            model
             |> InstallModel.getAllLegacyFrameworkReferences
             |> Seq.toList
 
@@ -187,63 +190,90 @@ type DependencyCache (lockFile:LockFile) =
     member __.LockFile = lockFile
     
     member __.InstallModels () = 
+        installModelCache |> Seq.map (fun x -> x.Value.Result) |> List.ofSeq
+    
+    member __.InstallModelTasks () = 
         installModelCache |> Seq.map (fun x -> x.Value) |> List.ofSeq
     
     member __.Nuspecs () = 
+        nuspecCache |> Seq.map (fun x -> x.Value.Result) |> List.ofSeq
+        
+    member __.NuspecsTasks () = 
         nuspecCache |> Seq.map (fun x -> x.Value) |> List.ofSeq
 
-    member __.SetupGroup (groupName:GroupName) : bool =
+    member __.StartSetupGroup (groupName:GroupName) : bool =
         if loadedGroups.Contains groupName then 
             true 
         else
             match tryGet groupName orderedGroupCache with
             | None -> false
             | Some resolvedPackageList ->
-                let exprs =
-                    if resolvedPackageList <> [] then
-                        if verbose then
-                            verbosefn "[Loading packages from group - %O]" groupName
+                if resolvedPackageList <> [] then
+                    if verbose then
+                        verbosefn "[Loading packages from group - %O]" groupName
 
-                    resolvedPackageList 
-                    |> List.map (fun package -> async {
-                        let folder = package.Folder lockFile.RootPath groupName
+                resolvedPackageList 
+                |> List.iter (fun package ->
+                    let folder = package.Folder lockFile.RootPath groupName
 
-                        if Directory.Exists folder |> not then
-                            return failwithf "Folder %s doesn't exist. Did you restore groups %O?" folder groupName
+                    if Directory.Exists folder |> not then
+                        failwithf "Folder %s doesn't exist. Did you restore group %O? Try to delete %s and trying again." folder groupName Constants.PaketRestoreHashFilePath
 
-                        let nuspecShort = Path.Combine(folder, sprintf "%O.nuspec" package.Name)
-                        if verbose then
-                            verbosefn " -- %s" nuspecShort
-                        let nuspec = FileInfo(Path.Combine (lockFile.RootPath,nuspecShort))
-                        let nuspec = Nuspec.Load nuspec.FullName
-                        nuspecCache.TryAdd((package.Name,package.Version),nuspec) |>ignore
-                        let kind =
-                            match package.Kind with
-                            | ResolvedPackageKind.Package -> InstallModelKind.Package
-                            | ResolvedPackageKind.DotnetCliTool -> InstallModelKind.DotnetCliTool
-                        let model = 
-                            InstallModel.CreateFromContent(
+                    let nuspec =
+                        async {
+                            let nuspecShort = Path.Combine(folder, sprintf "%O.nuspec" package.Name)
+                            if verbose then
+                                verbosefn " -- %s" nuspecShort
+                            let nuspec = FileInfo(Path.Combine (lockFile.RootPath,nuspecShort))
+                            return Nuspec.Load nuspec.FullName
+                        } |> Async.StartAsTask
+                    nuspecCache.TryAdd((package.Name,package.Version),nuspec) |>ignore
+                    let kind =
+                        match package.Kind with
+                        | ResolvedPackageKind.Package -> InstallModelKind.Package
+                        | ResolvedPackageKind.DotnetCliTool -> InstallModelKind.DotnetCliTool
+                    let model =
+                        async {
+                            let! spec = nuspec |> Async.AwaitTask
+                            return InstallModel.CreateFromContent(
                                 package.Name, 
                                 package.Version, 
                                 kind,
                                 Paket.Requirements.FrameworkRestriction.NoRestriction, 
-                                NuGet.GetContent(folder).Force())
-                        installModelCache.TryAdd((groupName,package.Name) , model) |> ignore }) 
-                    |> Array.ofSeq
+                                (NuGet.GetContentWithNuSpec spec folder).Force())
+                        } 
+                        |> Async.StartAsTask
+                    installModelCache.TryAdd((groupName,package.Name) , model) |> ignore)
 
-                Async.Parallel exprs
-                |> Async.RunSynchronously |> ignore
                 loadedGroups.Add groupName |> ignore
                 true
+    
+    member self.AwaitFinishSetup() =
+        async {
+            if not finishedSetup then
+                for t in self.InstallModelTasks() do
+                    do! t |> Async.AwaitTask |> Async.Ignore
+                for t in self.NuspecsTasks() do
+                    do! t |> Async.AwaitTask |> Async.Ignore
+            finishedSetup <- true
+        }
+    
+    member self.SetupGroup (groupName:GroupName) : bool =
+        match tryGet groupName orderedGroupCache with
+        | None -> false
+        | Some _ ->
+            let res = self.StartSetupGroup groupName
+            installModelCache |> Seq.iter (fun (kv) -> kv.Value.Wait())
+            res
 
     member self.OrderedGroups () =
         orderedGroupCache |> Seq.map (fun x -> 
-            self.SetupGroup x.Key |> ignore
+            self.StartSetupGroup x.Key |> ignore
             x.Key, x.Value
         )|> Map.ofSeq
     
     member self.OrderedGroups (groupName:GroupName) = 
-        self.SetupGroup groupName |> ignore
+        self.StartSetupGroup groupName |> ignore
         tryGet groupName orderedGroupCache |> Option.defaultValue []
         
     member self.ClearLoaded () = loadedGroups.Clear ()
@@ -254,5 +284,11 @@ type DependencyCache (lockFile:LockFile) =
         DependencyCache (lockFile)
 
  
-    member __.InstallModel groupName packageName = tryGet (groupName, packageName)  installModelCache
+    member __.InstallModel groupName packageName = 
+        let model = tryGet (groupName, packageName) installModelCache
+        model |> Option.map (fun r -> r.Result)
+        
+    member __.InstallModelTask groupName packageName = 
+        let model = tryGet (groupName, packageName) installModelCache
+        model |> Option.map (fun r -> r)
     

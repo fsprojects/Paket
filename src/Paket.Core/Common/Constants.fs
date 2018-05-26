@@ -92,8 +92,11 @@ let AppDataFolder =
             Directory.CreateDirectory fallback |> ignore
         fallback)
 
+
 let PaketConfigFolder   = Path.Combine(AppDataFolder, "Paket")
 let PaketConfigFile     = Path.Combine(PaketConfigFolder, "paket.config")
+
+let PaketRestoreHashFilePath = Path.Combine(PaketFilesFolderName, RestoreHashFile)
 
 let LocalRootForTempData =
     getEnvDir Environment.SpecialFolder.UserProfile 

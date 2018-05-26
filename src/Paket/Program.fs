@@ -10,7 +10,6 @@ open Paket.Commands
 
 open Argu
 open PackageSources
-open Paket.Domain
 
 let sw = Stopwatch.StartNew()
 
@@ -22,7 +21,17 @@ type PaketExiter() =
                 tracen msg ; exit 0
             else traceError msg ; exit 1
 
+let paketVersion = AssemblyVersionInformation.AssemblyInformationalVersion
+
+let mutable tracedVersion = false
+
+let tracePaketVersion silent =
+    if not silent && not tracedVersion then 
+        tracedVersion <- true
+        tracefn "Paket version %s" paketVersion
+
 let processWithValidationEx printUsage silent validateF commandF result =
+    tracePaketVersion silent
     if not (validateF result) then
         traceError "Command was:"
         traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
@@ -239,6 +248,22 @@ let github (results : ParseResults<_>) =
         Dependencies
             .Locate()
             .AddGithub(group, repository, file, version)
+
+let git (results : ParseResults<_>) =
+    match results.GetResult <@ GitArgs.Add @> with
+    | add ->
+        let group =
+            add.TryGetResult <@ AddGitArgs.Group @>
+        let repository =
+            add.GetResult <@ AddGitArgs.Repository @>
+        let version =
+            match add.TryGetResult <@ AddGitArgs.Version @> with
+            | Some v -> v
+            | None -> ""
+
+        Dependencies
+            .Locate()
+            .AddGit(group, repository, version)
 
 let validateConfig (results : ParseResults<_>) =
     let credential = results.Contains <@ ConfigArgs.AddCredentials @>
@@ -787,6 +812,7 @@ let handleCommand silent command =
     match command with
     | Add r -> processCommand silent add r
     | Github r -> processCommand silent github r
+    | Git r -> processCommand silent git r
     | ClearCache r -> processCommand silent clearCache r
     | Config r -> processWithValidation silent validateConfig config r
     | ConvertFromNuget r -> processCommand silent convert r
@@ -808,7 +834,7 @@ let handleCommand silent command =
     | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
     | ShowGroups r -> processCommand silent showGroups r
     | Pack r -> processCommand silent pack r
-    | Push r -> processCommand silent (push AssemblyVersionInformation.AssemblyInformationalVersion) r
+    | Push r -> processCommand silent (push paketVersion) r
     | GenerateIncludeScripts r ->
         warnObsolete (ReplaceArgument("generate-load-scripts", "generate-include-scripts"))
         processCommand silent generateLoadScripts r
@@ -835,7 +861,6 @@ let main() =
     if System.String.IsNullOrEmpty resolution then
         Environment.SetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
-    let paketVersion = AssemblyVersionInformation.AssemblyInformationalVersion
 
     try
     let args = Environment.GetCommandLineArgs()
@@ -869,8 +894,7 @@ let main() =
 
         let results = parser.ParseCommandLine(raiseOnUsage = true)
         let silent = results.Contains <@ Silent @>
-
-        if not silent then tracefn "Paket version %s" paketVersion
+        tracePaketVersion silent
 
         if results.Contains <@ Verbose @> then
             Logging.verbose <- true
@@ -890,7 +914,7 @@ let main() =
         Environment.ExitCode <- 1
         traceErrorfn "Paket failed with"
         if Environment.GetEnvironmentVariable "PAKET_DETAILED_ERRORS" = "true" then
-            printErrorExt true true false exn
+            printErrorExt true true true exn
         else printError exn
 
 main()

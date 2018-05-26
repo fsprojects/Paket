@@ -99,3 +99,17 @@ let ``#3000-a dotnet restore``() =
     prepareSdk scenario
     directDotnet false "restore" projectDir |> ignore
     directDotnet false "build --no-restore" projectDir |> ignore
+
+[<Test>]
+let ``#3012 Paket restore silently fails when TargetFramework(s) are specified in Directory.Build.props and not csproj`` () =
+    let scenario = "i003012"
+    let projectName = "dotnet"
+    let packageName = "AutoMapper"
+    let workingDir = scenarioTempPath scenario
+    let projectDir = workingDir @@ projectName
+
+    [ packageName; (packageName.ToLower()) ] |> Seq.iter clearPackage
+    
+    prepareSdk scenario
+    directPaket "install" scenario |> ignore
+    directDotnet false "build" projectDir |> ignore

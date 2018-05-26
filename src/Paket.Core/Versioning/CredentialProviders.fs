@@ -73,7 +73,7 @@ module CredentialProviders =
             |> Seq.filter Directory.Exists
             |> Seq.collect (fun d -> Directory.EnumerateFiles(d, assemblyPattern, SearchOption.AllDirectories))
           let paketDirectory = Path.GetDirectoryName(typeof<CredentialProviderUnknownStatusException>.Assembly.Location)
-          if not (isNull paketDirectory) then
+          if not (String.IsNullOrEmpty paketDirectory) then
             yield! Directory.EnumerateFiles(paketDirectory, paketDirectoryAssemblyPattern)
         ]
     let findPathsFromEnvVar key =

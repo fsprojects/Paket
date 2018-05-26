@@ -45,18 +45,25 @@ type NugetV3ResourceType =
     //| Registration
     | PackageIndex
     | Catalog
-
+    static member All = [ AutoComplete; AllVersionsAPI; PackageIndex; Catalog ]
     member this.AsString =
         match this with
         | AutoComplete -> "SearchAutoCompleteService"
-        | AllVersionsAPI -> "PackageBaseAddress/3.0.0"
-        | PackageIndex -> "PackageDisplayMetadataUriTemplate"
+        | AllVersionsAPI -> "PackageBaseAddress"
+        | PackageIndex -> "RegistrationsBaseUrl"
         | Catalog -> "Catalog"
+    member this.AcceptedVersions =
+        match this with
+        | AutoComplete -> ([ "3.0.0-rc"; "3.0.0-beta" ] |> List.map (SemVer.Parse >> Some)) @ [ None ]
+        | AllVersionsAPI -> [ Some (SemVer.Parse "3.0.0"); None ]
+        // prefer 3.6.0 as it includes semver packages.
+        | PackageIndex -> ([ "3.6.0"; "3.4.0"; "3.0.0-rc"; "3.0.0-beta" ] |> List.map (SemVer.Parse >> Some)) @ [ None ]
+        | Catalog -> [ Some (SemVer.Parse "3.0.0"); None ]
 
 // Cache for nuget indices of sources
 type ResourceIndex = Map<NugetV3ResourceType,string>
 let private nugetV3Resources = System.Collections.Concurrent.ConcurrentDictionary<NuGetV3Source,Task<ResourceIndex>>()
-
+let private rnd = new Random()
 let getNuGetV3Resource (source : NuGetV3Source) (resourceType : NugetV3ResourceType) : Async<string> =
     let key = source
     let getResourcesRaw () =
@@ -78,23 +85,58 @@ let getNuGetV3Resource (source : NuGetV3Source) (resourceType : NugetV3ResourceT
                 json.Resources
                 |> Seq.distinctBy(fun x -> x.Type.ToLower())
                 |> Seq.map(fun x -> x.Type.ToLower(), x.ID)
-            let map =
+            let rawMap =
                 resources
                 |> Seq.choose (fun (res, value) ->
-                    let resType =
-                        match res.ToLower() with
-                        | "searchautocompleteservice" -> Some AutoComplete
-                        //| "registrationsbaseurl" -> Some Registration
-                        | s when s.StartsWith "packagedisplaymetadatauritemplate" -> Some PackageIndex
-                        | "packagebaseaddress/3.0.0" -> Some AllVersionsAPI
-                        | s when s.StartsWith "catalog/3.0" -> Some Catalog
-                        | _ -> None
-                    match resType with
+                    let spl = res.Split('/')
+                    let name_version =
+                        match spl.Length with 
+                        | 0 -> None
+                        | 1 -> Some (res, None)
+                        | 2 ->
+                            if spl.[1] = "versioned"
+                            then
+                                // TODO: Add support for this style.
+                                // I think basically the version is in another field
+                                None
+                            else
+                                try Some (spl.[0], Some (SemVer.Parse spl.[1]))
+                                with e -> 
+                                    eprintfn "Failed to parse @type '%s' in nuget v3: %O" res e
+                                    None
+                        | _ ->
+                            if verbose then
+                                eprintfn "Unable to parse @type in nuget v3: '%s'" res
+                            None
+                    match name_version with 
                     | None -> None
-                    | Some k ->
-                        Some (k, value))
-                |> Seq.distinctBy fst
+                    | Some (name, version) ->
+                        let resType =
+                            NugetV3ResourceType.All
+                            |> Seq.tryFind (fun t -> t.AsString.ToLower() = name.ToLower())
+                        match resType with
+                        | None -> None
+                        | Some k ->
+                            Some ((k, version), value))
+                |> Seq.groupBy fst
+                |> Seq.map (fun (f, g) -> f, g |> Seq.map snd |> Seq.toList)
                 |> Map.ofSeq
+
+            // when multiple items are given for load-balancing select a random one
+            let pickRandom (l:_ list) =
+                let idx = rnd.Next(l.Length)
+                l |> List.item idx
+                
+            // Select the "best" version
+            let map =
+                NugetV3ResourceType.All
+                |> Seq.choose (fun t ->
+                    match t.AcceptedVersions
+                          |> Seq.tryPick (fun v -> (rawMap.TryFind (t, v))) with
+                    | Some s -> Some (t, pickRandom s)
+                    | None -> None)
+                |> Map.ofSeq
+            
             return map
         } |> Async.StartAsTask
 
@@ -695,7 +737,7 @@ type PackageIndex =
 let private getPackageIndexRaw (source : NuGetV3Source) (packageName:PackageName) =
     async {
         let! registrationUrl = getNuGetV3Resource source PackageIndex
-        let url = registrationUrl.Replace("{id-lower}", packageName.ToString().ToLower())
+        let url = registrationUrl.TrimEnd('/') + "/" + packageName.ToString().ToLower() + "/index.json"
         let! rawData = safeGetFromUrl (source.Authentication, url, acceptJson)
         return
             match rawData with

@@ -52,6 +52,7 @@ dependencies](faq.html#transitive).
 Paket supports the following source types:
 
 * [NuGet](nuget-dependencies.html)
+* [.NET CLI Tools](nuget-dependencies.html#Special-case-CLI-tools)
 * [Git](git-dependencies.html)
 * [GitHub and Gist](github-dependencies.html)
 * [HTTP](http-dependencies.html) (any single file from any site without version

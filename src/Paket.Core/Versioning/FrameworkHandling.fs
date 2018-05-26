@@ -70,6 +70,7 @@ type FrameworkVersion =
     | V4_6_3
     | V4_7
     | V4_7_1
+    | V4_7_2
     | V5_0
     override this.ToString() =
         match this with
@@ -90,6 +91,7 @@ type FrameworkVersion =
         | V4_6_3    -> "v4.6.3"
         | V4_7      -> "v4.7"
         | V4_7_1    -> "v4.7.1"
+        | V4_7_2    -> "v4.7.2"
         | V5_0      -> "v5.0"
 
     member this.ShortString() =
@@ -111,6 +113,7 @@ type FrameworkVersion =
         | FrameworkVersion.V4_6_3 -> "463"
         | FrameworkVersion.V4_7 -> "47"
         | FrameworkVersion.V4_7_1 -> "471"
+        | FrameworkVersion.V4_7_2 -> "472"
         | FrameworkVersion.V5_0 -> "50"
 
     static member TryParse s =
@@ -132,6 +135,7 @@ type FrameworkVersion =
         | "4.6.3" -> Some FrameworkVersion.V4_6_3
         | "4.7" -> Some FrameworkVersion.V4_7
         | "4.7.1" -> Some FrameworkVersion.V4_7_1
+        | "4.7.2" -> Some FrameworkVersion.V4_7_2
         | "5" -> Some FrameworkVersion.V5_0
         | _ -> None
 
@@ -141,12 +145,14 @@ type FrameworkVersion =
 type UAPVersion =
     | V10
     | V10_0_15138
+    | V10_0_16299
     | V10_0_16300
     | V10_1
     override this.ToString() =
         match this with
         | V10 -> "10.0"
         | V10_0_15138 -> "10.0.15138"
+        | V10_0_16299 -> "10.0.16299"
         | V10_0_16300 -> "10.0.16300"
         | V10_1 -> "10.1"
 
@@ -154,6 +160,7 @@ type UAPVersion =
         match this with
         | UAPVersion.V10 -> "10.0"
         | UAPVersion.V10_0_15138 -> "10.0.15138"
+        | UAPVersion.V10_0_16299 -> "10.0.16299"
         | UAPVersion.V10_0_16300 -> "10.0.16300"
         | UAPVersion.V10_1 -> "10.1"
 
@@ -163,6 +170,7 @@ type UAPVersion =
         // Assumed from C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETCore
         | UAPVersion.V10
         | UAPVersion.V10_0_15138
+        | UAPVersion.V10_0_16299
         | UAPVersion.V10_0_16300 -> "v5.0"
         // No idea, for now use 5.0 to keep project files constant
         // If someone starts complaining fix this and update the baselines.
@@ -172,6 +180,7 @@ type UAPVersion =
         match s with
         | "" | "1" | "10" -> Some UAPVersion.V10
         | "10.0.15138" -> Some UAPVersion.V10_1
+        | "10.0.16299" -> Some UAPVersion.V10_1
         | "10.0.16300" -> Some UAPVersion.V10_1
         | "10.1" -> Some UAPVersion.V10_1
         | _ -> None
@@ -568,6 +577,7 @@ type FrameworkIdentifier =
         | XamarinWatch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | UAP UAPVersion.V10 -> [ Windows WindowsVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1; DotNetStandard DotNetStandardVersion.V1_4  ]
         | UAP UAPVersion.V10_0_15138 -> [ UAP UAPVersion.V10 ]
+        | UAP UAPVersion.V10_0_16299 -> [ UAP UAPVersion.V10; DotNetStandard DotNetStandardVersion.V2_0 ]
         | UAP UAPVersion.V10_0_16300 -> [ UAP UAPVersion.V10; DotNetStandard DotNetStandardVersion.V2_0 ]
         | UAP UAPVersion.V10_1 -> [ UAP UAPVersion.V10_0_15138 ]
         | DotNetFramework FrameworkVersion.V1 -> [ ]
@@ -587,7 +597,8 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_6_3 -> [ DotNetFramework FrameworkVersion.V4_6_2 ]
         | DotNetFramework FrameworkVersion.V4_7 -> [ DotNetFramework FrameworkVersion.V4_6_3]
         | DotNetFramework FrameworkVersion.V4_7_1 -> [ DotNetFramework FrameworkVersion.V4_7; DotNetStandard DotNetStandardVersion.V2_0 ]
-        | DotNetFramework FrameworkVersion.V5_0 -> [ DotNetFramework FrameworkVersion.V4_7_1 ]
+        | DotNetFramework FrameworkVersion.V4_7_2 -> [ DotNetFramework FrameworkVersion.V4_7_1 ]
+        | DotNetFramework FrameworkVersion.V5_0 -> [ DotNetFramework FrameworkVersion.V4_7_2 ]
         | DNX _ -> [ ]
         | DNXCore _ -> [ ]
         | DotNetStandard DotNetStandardVersion.V1_0 -> [  ]
@@ -973,11 +984,57 @@ type PortableProfileType =
         | Profile336 -> [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
         | Profile344 -> [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
     member x.FolderName =
-        "portable-" +
-        String.Join ("+",
-            x.Frameworks
-            |> List.sort
-            |> List.map (fun fw -> fw.ToString()))
+       match x with 
+        | Profile2 -> "portable-net40+sl4+win8+wp7"
+        | Profile3 -> "portable-net40+sl4"
+        | Profile4 -> "portable-net45+sl4+win8+wp7"
+        | Profile5 -> "portable-net40+win8"
+        | Profile6 -> "portable-net403+win8"
+        | Profile7 -> "portable-net45+win8"
+        | Profile14 -> "portable-net40+sl5"
+        | Profile18 -> "portable-net403+sl4"
+        | Profile19 -> "portable-net403+sl5"
+        | Profile23 -> "portable-net45+sl4"
+        | Profile24 -> "portable-net45+sl5"
+        | Profile31 -> "portable-win81+wp81"
+        | Profile32 -> "portable-win81+wpa81"
+        | Profile36 -> "portable-net40+sl4+win8+wp8"
+        | Profile37 -> "portable-net40+sl5+win8"
+        | Profile41 -> "portable-net403+sl4+win8"
+        | Profile42 -> "portable-net403+sl5+win8"
+        | Profile44 -> "portable-net451+win81"
+        | Profile46 -> "portable-net45+sl4+win8"
+        | Profile47 -> "portable-net45+sl5+win8"
+        | Profile49 -> "portable-net45+wp8"
+        | Profile78 -> "portable-net45+win8+wp8"
+        | Profile84 -> "portable-wp81+wpa81"
+        | Profile88 -> "portable-net40+sl4+win8+wp75"
+        | Profile92 -> "portable-net40+win8+wpa81"
+        | Profile95 -> "portable-net403+sl4+win8+wp7"
+        | Profile96 -> "portable-net403+sl4+win8+wp75"
+        | Profile102 -> "portable-net403+win8+wpa81"
+        | Profile104 -> "portable-net45+sl4+win8+wp75"
+        | Profile111 -> "portable-net45+win8+wpa81"
+        | Profile136 -> "portable-net40+sl5+win8+wp8"
+        | Profile143 -> "portable-net403+sl4+win8+wp8"
+        | Profile147 -> "portable-net403+sl5+win8+wp8"
+        | Profile151 -> "portable-net451+win81+wpa81"
+        | Profile154 -> "portable-net45+sl4+win8+wp8"
+        | Profile157 -> "portable-win81+wp81+wpa81"
+        | Profile158 -> "portable-net45+sl5+win8+wp8"
+        | Profile225 -> "portable-net40+sl5+win8+wpa81"
+        | Profile240 -> "portable-net403+sl5+win8+wpa81"
+        | Profile255 -> "portable-net45+sl5+win8+wpa81"
+        | Profile259 -> "portable-net45+win8+wp8+wpa81"
+        | Profile328 -> "portable-net40+sl5+win8+wp8+wpa81"
+        | Profile336 -> "portable-net403+sl5+win8+wp8+wpa81"
+        | Profile344 -> "portable-net45+sl5+win8+wp8+wpa81"
+        | UnsupportedProfile fws ->
+            "portable-" +
+            String.Join ("+",
+                x.Frameworks
+                |> List.sort
+                |> List.map (fun fw -> fw.ToString()))
 type TargetProfileRaw =
     | SinglePlatformP of FrameworkIdentifier
     | PortableProfileP of PortableProfileType
@@ -1041,6 +1098,7 @@ module KnownTargetProfiles =
         FrameworkVersion.V4_6_3
         FrameworkVersion.V4_7
         FrameworkVersion.V4_7_1
+        FrameworkVersion.V4_7_2
     ]
 
     let DotNetFrameworkIdentifiers =
@@ -1133,6 +1191,7 @@ module KnownTargetProfiles =
     let UAPVersons = [
         UAPVersion.V10
         UAPVersion.V10_0_15138
+        UAPVersion.V10_0_16299
         UAPVersion.V10_0_16300
         UAPVersion.V10_1
     ]

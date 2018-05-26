@@ -142,6 +142,18 @@ module internal NupkgWriter =
                 d.Add(buildReferenceNode r)
             metadataNode.Add d
 
+        let buildPackageTypesNode (name) =
+            let dep = XElement(ns + "packageType")
+            dep.SetAttributeValue(XName.Get "name", name)
+            dep
+
+        let buildPackageTypesNode packageTypesList =
+            if List.isEmpty packageTypesList then () else
+            let d = XElement(ns + "packageTypes")
+            for r in packageTypesList do
+                d.Add(buildPackageTypesNode r)
+            metadataNode.Add d
+
         !! "id" core.Id
         match core.Version with
         | Some v -> !! "version" (v.ToString())
@@ -163,6 +175,7 @@ module internal NupkgWriter =
         if optional.DevelopmentDependency  then
             !! "developmentDependency" "true"
 
+        optional.PackageTypes |> buildPackageTypesNode
         optional.References |> buildReferencesNode
         optional.FrameworkAssemblyReferences |> buildFrameworkReferencesNode
         optional.DependencyGroups |> buildDependenciesNode optional.ExcludedDependencies

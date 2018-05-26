@@ -1,0 +1,10 @@
+RESTRICTION: || (== netcoreapp2.1) (== netstandard2.0)
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    Argu (5.1)
+      FSharp.Core (>= 4.3.2)
+      System.Configuration.ConfigurationManager (>= 4.4)
+    FSharp.Core (4.3.4)
+    System.Configuration.ConfigurationManager (4.4.1)
+      System.Security.Cryptography.ProtectedData (>= 4.4)
+    System.Security.Cryptography.ProtectedData (4.4)
