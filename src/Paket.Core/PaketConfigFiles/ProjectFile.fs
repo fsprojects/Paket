@@ -1873,6 +1873,8 @@ type ProjectFile with
                         try 
                             let path = normalizePath di.FullName
                             if di.Name = Constants.DefaultPackagesFolderName then false else
+                            if di.Name = ".git" then false else
+                            if di.Name = ".fable" then false else
                             if di.Name = "node_modules" then false else
                             if path = paketPath then false else
                             Path.Combine(path, Constants.DependenciesFileName) 
