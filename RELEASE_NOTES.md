@@ -1,3 +1,6 @@
+#### 5.169.1 - 2018-05-27
+* USABILITY: Always trace on early restore exit
+
 #### 5.169.0 - 2018-05-26
 * Ignore .git and .fable folder when scanning for projects - https://github.com/fsprojects/Paket/issues/3225
 
