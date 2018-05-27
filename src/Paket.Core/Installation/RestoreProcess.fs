@@ -614,9 +614,10 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         RunInLockedAccessMode(
             Path.Combine(root,Constants.PaketFilesFolderName),
             (fun () ->
-                if not (hasLocalFile || force) && isEarlyExit () && isFullRestore then
+                if not (hasLocalFile || force) && isEarlyExit () then
                     tracefn "The last restore was successful. Nothing left to do."
                 else
+                    tracefn "Starting restore process."
                     for task in tasks do
                         task
                         |> Async.RunSynchronously
