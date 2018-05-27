@@ -614,13 +614,16 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         RunInLockedAccessMode(
             Path.Combine(root,Constants.PaketFilesFolderName),
             (fun () ->
-                for task in tasks do
-                    task
-                    |> Async.RunSynchronously
-                    |> ignore
+                if not (hasLocalFile || force) && isEarlyExit () && isFullRestore then
+                    tracefn "The last restore was successful. Nothing left to do."
+                else
+                    for task in tasks do
+                        task
+                        |> Async.RunSynchronously
+                        |> ignore
 
-                CreateScriptsForGroups lockFile.Value groups
-                if isFullRestore then
-                    let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
-                    File.WriteAllText(restoreCacheFile, newContents))
+                    CreateScriptsForGroups lockFile.Value groups
+                    if isFullRestore then
+                        let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
+                        File.WriteAllText(restoreCacheFile, newContents))
             )

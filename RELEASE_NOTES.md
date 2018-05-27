@@ -1,4 +1,5 @@
-#### 5.169.1 - 2018-05-27
+#### 5.169.2 - 2018-05-27
+* PERFORMANCE: Check if everything is up-to-date after aquiring lock
 * USABILITY: Always trace on early restore exit
 
 #### 5.169.0 - 2018-05-26
