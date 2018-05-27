@@ -513,8 +513,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             lazy LocalFile.overrideLockFile localFile.Value lockFile.Value,localFile,true
 
     if not (hasLocalFile || force) && isEarlyExit () then
-        if verbose then
-            tracefn "Last restore is still up to date."
+        tracefn "The last restore is still up to date. Nothing left to do."
     else
         if projectFile = None then
             extractRestoreTargets root |> ignore
