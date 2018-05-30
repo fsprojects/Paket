@@ -76,6 +76,14 @@ module DependenciesFileParser =
                 let v1 = SemVer.Parse(twiddle (SemVer.Parse v1))
                 let v2 = SemVer.Parse v2
                 VersionRequirement(VersionRange.Range(VersionRangeBound.Excluding,v2,v1,VersionRangeBound.Excluding),parsePrerelease [v1; v2] rest)
+            |  "~>" :: v1 :: "<=" :: v2 :: rest -> 
+                let v1 = SemVer.Parse v1
+                let v2 = List.min [SemVer.Parse (twiddle v1); SemVer.Parse v2]
+                VersionRequirement(VersionRange.Range(VersionRangeBound.Including,v1,v2,VersionRangeBound.Including),parsePrerelease [v1; v2] rest)
+            |  "~>" :: v1 :: "<" :: v2 :: rest ->
+                let v1 = SemVer.Parse v1
+                let v2 = List.min [SemVer.Parse (twiddle v1); SemVer.Parse v2]
+                VersionRequirement(VersionRange.Range(VersionRangeBound.Including,v1,v2,VersionRangeBound.Excluding),parsePrerelease [v1; v2] rest)
             |  ">" :: v1 :: "<" :: v2 :: rest -> 
                 let v1 = SemVer.Parse v1
                 let v2 = SemVer.Parse v2

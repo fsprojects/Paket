@@ -528,6 +528,14 @@ GITHUB
 
 [<TestCase("!~> LOCKED:Major", "1.2.3-pre.3", "[1.0.0,2.0.0)")>]
 [<TestCase("@~> LOCKED:Build", "1.2.3.1-pre.3", "[1.2.3.1,1.2.4)")>]
+[<TestCase("~> LOCKED:Major >= LOCKED:Build", "1.2.3.1-pre.3", "[1.2.3.1,2.0.0)")>]
+[<TestCase("~> LOCKED:Major >= LOCKEDVERSION", "1.2.3.1-pre.3", "[1.2.3.1-pre.3,2.0.0)")>]
+[<TestCase("~> 1 >= LOCKEDVERSION", "1.2.3.1-pre.3", "[1.2.3.1-pre.3,2.0.0)")>]
+[<TestCase("~> LOCKED:Major >= 1.2.3.4", "1.2.3.1-pre.3", "[1.2.3.4,2.0.0)")>]
+[<TestCase("~> LOCKEDVERSION >= LOCKEDVERSION", "1.2.3.1-pre.3", "[1.2.3.1-pre.3,1.2.4)")>]
+[<TestCase("~> LOCKEDVERSION < LOCKED:Build", "1.2.3.1-pre.3", "[1.2.3.1-pre.3,1.2.3.1)")>]
+[<TestCase("~> LOCKEDVERSION <= LOCKED:Build", "1.2.3.1-pre.3", "[1.2.3.1-pre.3,1.2.3.1]")>]
+[<TestCase("~> LOCKEDVERSION <= 1.2.3.4", "1.2.3.1-pre.3", "[1.2.3.1-pre.3,1.2.3.4]")>]
 let ``Detect dependencies with LOCKEDVERSION range correctly`` placeholder source target =
     let fileContent = """type file
 id My.Thing
