@@ -363,7 +363,8 @@ module internal TemplateFile =
                     | 1 | 2 | 3 | 4 -> String.Join(".", versionParts, 0, Math.Min(versionParts.Length, Math.Max(0, segmentCount)))
                     | _ -> sourceVersion.AsString
                 
-                versionReplace (m.Result(targetVersion)) 
+                let targetReplaced = m.Result(sprintf "$`%s" targetVersion).Trim("@!".ToCharArray())
+                versionReplace targetReplaced
                  
             | _ -> requireText
                 
