@@ -473,7 +473,7 @@ let RestoreNewSdkProject lockFile resolved groups (projectFile:ProjectFile) targ
         )
    )
 
-let inline private isRestoreUpDoDate (lockFileName:FileInfo) (lockFileContents:string) =
+let private isRestoreUpDoDate (lockFileName:FileInfo) (lockFileContents:string) =
     let root = lockFileName.Directory.FullName
     let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
     // We ignore our check when we do a partial restore, this way we can
@@ -497,9 +497,8 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         failwithf "%s doesn't exist." lockFileName.FullName
 
     // Shortcut if we already restored before
-    let newContents = File.ReadAllText(lockFileName.FullName)
     let isFullRestore = targetFrameworks = None && projectFile = None && group = None && referencesFileNames = []
-    let inline isEarlyExit () = isFullRestore && isRestoreUpDoDate lockFileName newContents
+    let isEarlyExit newContents = isFullRestore && isRestoreUpDoDate lockFileName newContents
 
     let lockFile,localFile,hasLocalFile =
         // Do not parse the lockfile when we have an early exit scenario.
@@ -512,9 +511,8 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                       |> returnOrFail)
             lazy LocalFile.overrideLockFile localFile.Value lockFile.Value,localFile,true
 
-    if not (hasLocalFile || force) && isEarlyExit () then
-        if verbose then
-            tracefn "Last restore is still up to date."
+    if not (hasLocalFile || force) && isEarlyExit (File.ReadAllText lockFileName.FullName) then
+        tracefn "The last restore is still up to date. Nothing left to do."
     else
         if projectFile = None then
             extractRestoreTargets root |> ignore
@@ -615,13 +613,18 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         RunInLockedAccessMode(
             Path.Combine(root,Constants.PaketFilesFolderName),
             (fun () ->
-                for task in tasks do
-                    task
-                    |> Async.RunSynchronously
-                    |> ignore
+                let newContents = File.ReadAllText lockFileName.FullName
+                if not (hasLocalFile || force) && isEarlyExit newContents then
+                    tracefn "The last restore was successful. Nothing left to do."
+                else
+                    tracefn "Starting %srestore process." (if isFullRestore then "full " else "")
+                    for task in tasks do
+                        task
+                        |> Async.RunSynchronously
+                        |> ignore
 
-                CreateScriptsForGroups lockFile.Value groups
-                if isFullRestore then
-                    let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
-                    File.WriteAllText(restoreCacheFile, newContents))
+                    CreateScriptsForGroups lockFile.Value groups
+                    if isFullRestore then
+                        let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
+                        File.WriteAllText(restoreCacheFile, newContents))
             )

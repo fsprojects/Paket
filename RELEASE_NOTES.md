@@ -1,3 +1,10 @@
+#### 5.169.5 - 2018-05-27
+* PERFORMANCE: Check if everything is up-to-date after aquiring lock
+* USABILITY: Always trace on early restore exit
+
+#### 5.169.0 - 2018-05-26
+* Ignore .git and .fable folder when scanning for projects - https://github.com/fsprojects/Paket/issues/3225
+
 #### 5.168.0 - 2018-05-25
 * Extended semver2 support in paket.template files - https://github.com/fsprojects/Paket/pull/3184
 * BUGFIX: Trace paket version in shortcut routes
