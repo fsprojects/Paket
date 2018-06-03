@@ -892,6 +892,10 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                         request.UseDefaultCredentials <- true
 
                     request.Proxy <- NetUtils.getDefaultProxyFor source.Url
+
+                    let lastSpeedMeasure = Stopwatch.StartNew()
+                    let mutable readSinceLastMeasure = 0L
+
                     use! httpResponse = request.AsyncGetResponse()
 
                     use httpResponseStream = httpResponse.GetResponseStream()
@@ -901,17 +905,34 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     let bytesRead = ref -1
 
                     use fileStream = File.Create(targetFileName)
+                    let printProgress = not Console.IsOutputRedirected
+                    let mutable pos = 0L
 
+                    let length = try Some httpResponseStream.Length with :? System.NotSupportedException -> None
                     while !bytesRead <> 0 do
+                        if printProgress && lastSpeedMeasure.Elapsed > TimeSpan.FromSeconds(10.) then
+                            // report speed and progress
+                            let speed = int (float readSinceLastMeasure * 8. / float lastSpeedMeasure.ElapsedMilliseconds)
+                            let percent =
+                                match length with
+                                | Some l -> sprintf "%d" (int (pos * 100L / l))
+                                | None -> "Unknown"
+                            tracefn "Still downloading from %O to %s (%d kbit/s, %s %%)" !downloadUrl targetFileName speed percent
+                            readSinceLastMeasure <- 0L
+                            lastSpeedMeasure.Restart()
                         let! bytes = httpResponseStream.AsyncRead(buffer, 0, bufferSize)
                         bytesRead := bytes
                         do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
+                        readSinceLastMeasure <- readSinceLastMeasure + int64 bytes
+                        pos <- pos + int64 bytes
 
                     match (httpResponse :?> HttpWebResponse).StatusCode with
                     | HttpStatusCode.OK -> ()
                     | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode
-                    
-                    tracefn "Download of %O %O%s done in %s." packageName version groupString (Utils.TimeSpanToReadableString sw.Elapsed)
+
+                    let speed = int (float pos * 8. / float lastSpeedMeasure.ElapsedMilliseconds)
+                    let size = pos / (1024L * 1024L)
+                    tracefn "Download of %O %O%s done in %s. (%d kbit/s, %d MB)" packageName version groupString (Utils.TimeSpanToReadableString sw.Elapsed) speed size
 
                     try
                         if downloadLicense && not (String.IsNullOrWhiteSpace nugetPackage.LicenseUrl) then
