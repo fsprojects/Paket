@@ -896,11 +896,11 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     let lastSpeedMeasure = Stopwatch.StartNew()
                     let mutable readSinceLastMeasure = 0L
 
-                    use! httpResponse = request.AsyncGetResponse()
-
+                    let! child = Async.StartChild(request.AsyncGetResponse(), 60000)
+                    use! httpResponse = child
                     use httpResponseStream = httpResponse.GetResponseStream()
 
-                    let bufferSize = 4096
+                    let bufferSize = 1024 * 10
                     let buffer : byte [] = Array.zeroCreate bufferSize
                     let bytesRead = ref -1
 
@@ -909,6 +909,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     let mutable pos = 0L
 
                     let length = try Some httpResponseStream.Length with :? System.NotSupportedException -> None
+                    let! tok = Async.CancellationToken
                     while !bytesRead <> 0 do
                         if printProgress && lastSpeedMeasure.Elapsed > TimeSpan.FromSeconds(10.) then
                             // report speed and progress
@@ -920,9 +921,14 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                             tracefn "Still downloading from %O to %s (%d kbit/s, %s %%)" !downloadUrl targetFileName speed percent
                             readSinceLastMeasure <- 0L
                             lastSpeedMeasure.Restart()
-                        let! bytes = httpResponseStream.AsyncRead(buffer, 0, bufferSize)
+                        // if there is no response for a minute -> abort
+
+                        let s = System.Threading.CancellationTokenSource.CreateLinkedTokenSource(tok)
+                        s.CancelAfter (60000)
+                        let! bytes = httpResponseStream.ReadAsync(buffer, 0, bufferSize, s.Token) |> Async.AwaitTaskWithoutAggregate
+                        //let! bytes = httpResponseStream.AsyncRead(buffer, 0, bufferSize)
                         bytesRead := bytes
-                        do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
+                        do! fileStream.WriteAsync(buffer, 0, !bytesRead, tok) |> Async.AwaitTaskWithoutAggregate
                         readSinceLastMeasure <- readSinceLastMeasure + int64 bytes
                         pos <- pos + int64 bytes
 
