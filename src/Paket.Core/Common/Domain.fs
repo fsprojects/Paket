@@ -97,7 +97,7 @@ type QualifiedPackageName =
         QualifiedPackageName (groupName, packageName)
 
 type PackageMatch(ex:String) =
-    member this.Expression = Regex("^" + ex + "$", RegexOptions.CultureInvariant ||| RegexOptions.IgnoreCase) 
+    member val Expression = Regex("^" + ex + "$", RegexOptions.CultureInvariant ||| RegexOptions.IgnoreCase) 
 
 // Represents a filter of normalized package names
 [<System.Diagnostics.DebuggerDisplay("{ToString()}")>]
