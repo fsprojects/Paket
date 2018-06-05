@@ -1,3 +1,6 @@
+#### 5.170.1 - 2018-06-05
+* BUGFIX: Improved restore behavior - https://github.com/fsprojects/Paket/pull/3237
+
 #### 5.170.0 - 2018-06-05
 * PERFORMANCE: Fixed filtered update performance - https://github.com/fsprojects/Paket/pull/3233
 * PERFORMANCE: Check if everything is up-to-date after aquiring lock
