@@ -1,3 +1,6 @@
+#### 5.170.2 - 2018-06-05
+* BUGFIX: paket template semver support fixes - https://github.com/fsprojects/Paket/pull/3230
+
 #### 5.170.1 - 2018-06-05
 * BUGFIX: Improved restore behavior - https://github.com/fsprojects/Paket/pull/3237
 
