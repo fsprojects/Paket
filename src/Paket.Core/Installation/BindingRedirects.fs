@@ -194,11 +194,3 @@ let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindin
 
     for p in projects do
         applyBindingRedirects p
-
-/// Calculates the short form of the public key token for use with binding redirects, if it exists.
-let getPublicKeyToken (assembly:Mono.Cecil.AssemblyDefinition) =
-    ("", assembly.Name.PublicKeyToken)
-    ||> Array.fold(fun state b -> state + b.ToString("X2"))
-    |> function
-    | "" -> None
-    | token -> Some (token.ToLower())
