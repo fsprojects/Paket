@@ -1,4 +1,5 @@
-#### 5.169.6 - 2018-05-27
+#### 5.170.0 - 2018-06-05
+* PERFORMANCE: Fixed filtered update performance - https://github.com/fsprojects/Paket/pull/3233
 * PERFORMANCE: Check if everything is up-to-date after aquiring lock
 * BUGFIX: Regression from semver2 support in paket tempates - https://github.com/fsprojects/Paket/pull/3229 
 * USABILITY: Always trace on early restore exit
