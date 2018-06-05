@@ -892,26 +892,53 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                         request.UseDefaultCredentials <- true
 
                     request.Proxy <- NetUtils.getDefaultProxyFor source.Url
-                    use! httpResponse = request.AsyncGetResponse()
 
+                    let lastSpeedMeasure = Stopwatch.StartNew()
+                    let mutable readSinceLastMeasure = 0L
+
+                    let! child = Async.StartChild(request.AsyncGetResponse(), 60000)
+                    use! httpResponse = child
                     use httpResponseStream = httpResponse.GetResponseStream()
 
-                    let bufferSize = 4096
+                    let bufferSize = 1024 * 10
                     let buffer : byte [] = Array.zeroCreate bufferSize
                     let bytesRead = ref -1
 
                     use fileStream = File.Create(targetFileName)
+                    let printProgress = not Console.IsOutputRedirected
+                    let mutable pos = 0L
 
+                    let length = try Some httpResponseStream.Length with :? System.NotSupportedException -> None
+                    let! tok = Async.CancellationToken
                     while !bytesRead <> 0 do
-                        let! bytes = httpResponseStream.AsyncRead(buffer, 0, bufferSize)
+                        if printProgress && lastSpeedMeasure.Elapsed > TimeSpan.FromSeconds(10.) then
+                            // report speed and progress
+                            let speed = int (float readSinceLastMeasure * 8. / float lastSpeedMeasure.ElapsedMilliseconds)
+                            let percent =
+                                match length with
+                                | Some l -> sprintf "%d" (int (pos * 100L / l))
+                                | None -> "Unknown"
+                            tracefn "Still downloading from %O to %s (%d kbit/s, %s %%)" !downloadUrl targetFileName speed percent
+                            readSinceLastMeasure <- 0L
+                            lastSpeedMeasure.Restart()
+                        // if there is no response for a minute -> abort
+
+                        let s = System.Threading.CancellationTokenSource.CreateLinkedTokenSource(tok)
+                        s.CancelAfter (60000)
+                        let! bytes = httpResponseStream.ReadAsync(buffer, 0, bufferSize, s.Token) |> Async.AwaitTaskWithoutAggregate
+                        //let! bytes = httpResponseStream.AsyncRead(buffer, 0, bufferSize)
                         bytesRead := bytes
-                        do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
+                        do! fileStream.WriteAsync(buffer, 0, !bytesRead, tok) |> Async.AwaitTaskWithoutAggregate
+                        readSinceLastMeasure <- readSinceLastMeasure + int64 bytes
+                        pos <- pos + int64 bytes
 
                     match (httpResponse :?> HttpWebResponse).StatusCode with
                     | HttpStatusCode.OK -> ()
                     | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode
-                    
-                    tracefn "Download of %O %O%s done in %s." packageName version groupString (Utils.TimeSpanToReadableString sw.Elapsed)
+
+                    let speed = int (float pos * 8. / float lastSpeedMeasure.ElapsedMilliseconds)
+                    let size = pos / (1024L * 1024L)
+                    tracefn "Download of %O %O%s done in %s. (%d kbit/s, %d MB)" packageName version groupString (Utils.TimeSpanToReadableString sw.Elapsed) speed size
 
                     try
                         if downloadLicense && not (String.IsNullOrWhiteSpace nugetPackage.LicenseUrl) then
