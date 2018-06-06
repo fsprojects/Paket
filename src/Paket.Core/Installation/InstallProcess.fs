@@ -11,6 +11,7 @@ open Paket.PackageSources
 open Paket.Requirements
 open System.Collections.Generic
 open System
+open ProviderImplementation.AssemblyReader
 
 let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*InstallSettings>) packagesConfigFileName =
     let packagesInConfigFile = PackagesConfigFile.Read packagesConfigFileName
@@ -293,22 +294,25 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
                 librariesForPackage
                 |> Seq.choose(fun (library,redirects,profile) ->
                     try
-                        let assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly(library.Path)
-                        Some (assembly, BindingRedirects.getPublicKeyToken assembly, assembly.MainModule.AssemblyReferences, redirects, profile)
+                        let assemblyReader =
+                            ILModuleReaderAfterReadingAllBytes(library.Path, mkILGlobals EcmaMscorlibScopeRef)
+                        let assembly = assemblyReader.ILModuleDef.ManifestOfAssembly
+                        let assemblyName = assembly.GetName()
+                        Some (assembly, BindingRedirects.getPublicKeyToken assemblyName, assemblyReader.ILAssemblyRefs, redirects, profile)
                     with _ -> None)
-                |> Seq.sortBy(fun (assembly,_,_,_,_) -> assembly.Name.Version)
+                |> Seq.sortBy(fun (assembly,_,_,_,_) -> assembly.Version)
                 |> Seq.toList
                 |> List.rev
                 |> function | head :: _ -> Some head | _ -> None)
             |> Seq.cache
 
-        let referencesDifferentProfiles (assemblyName : Mono.Cecil.AssemblyNameDefinition) profile =
+        let referencesDifferentProfiles assemblyName assemblyVersion profile =
             (targetProfiles |> Seq.exists ((=) profile))
             && assemblies
             |> Seq.filter (fun (_,_,_,_,p) -> p <> profile)
-            |> Seq.map (fun (a,_,_,_,_) -> a.Name)
-            |> Seq.filter (fun a -> a.Name = assemblyName.Name)
-            |> Seq.exists (fun a -> a.Version <> assemblyName.Version)
+            |> Seq.map (fun (a,_,_,_,_) -> a)
+            |> Seq.filter (fun a -> a.Name = assemblyName)
+            |> Seq.exists (fun a -> a.Version <> assemblyVersion)
 
         assemblies
         |> Seq.choose (fun (assembly,token,refs,redirects,profile) -> 
@@ -320,16 +324,15 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
             | Some BindingRedirectsSettings.Off -> false
             | _ -> false)
         |> Seq.filter (fun (assembly,_,_,redirects,profile) ->
-            let assemblyName = assembly.Name
             redirects = Some BindingRedirectsSettings.Force
-            || referencesDifferentProfiles assemblyName profile
+            || referencesDifferentProfiles assembly.Name assembly.Version profile
             || assemblies
             |> Seq.collect (fun (_,_,refs,_,_) -> refs)
-            |> Seq.filter (fun a -> assemblyName.Name = a.Name)
-            |> Seq.exists (fun a -> assemblyName.Version > a.Version))
+            |> Seq.filter (fun a -> assembly.Name = a.Name)
+            |> Seq.exists (fun a -> assembly.Version > a.Version))
         |> Seq.map(fun (assembly, token,_,_,_) ->
-            { BindingRedirect.AssemblyName = assembly.Name.Name
-              Version = assembly.Name.Version.ToString()
+            { BindingRedirect.AssemblyName = assembly.Name
+              Version = Option.fold (fun _ x -> x.ToString()) "0.0.0.0" assembly.Version
               PublicKeyToken = token
               Culture = None })
         |> Seq.sort
