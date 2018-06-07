@@ -539,6 +539,8 @@ let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : s
             let uri = Uri url
             use client = createHttpClient (url,auth)
             let! tok = Async.CancellationToken
+            let tokSource = System.Threading.CancellationTokenSource.CreateLinkedTokenSource(tok)
+            tokSource.CancelAfter(60000)
 
             if notNullOrEmpty contentType then
                 addAcceptHeader client contentType
@@ -546,7 +548,7 @@ let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : s
             if verbose then
                 verbosefn "Starting request to '%O'" uri
             use _ = Profile.startCategory Profile.Category.NuGetRequest
-            let! raw = client.DownloadStringTaskAsync(uri, tok) |> Async.AwaitTaskWithoutAggregate
+            let! raw = client.DownloadStringTaskAsync(uri, tokSource.Token) |> Async.AwaitTaskWithoutAggregate
             return SuccessResponse raw
         with
 

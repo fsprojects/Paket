@@ -1,4 +1,10 @@
-#### 5.169.6 - 2018-05-27
+#### 5.171.0 - 2018-06-07
+* PERFORMANCE: Improved binding redirects performance by removing mono.cecil - https://github.com/fsprojects/Paket/pull/3239
+* BUGFIX: paket template semver support fixes - https://github.com/fsprojects/Paket/pull/3230
+* BUGFIX: Improved restore behavior - https://github.com/fsprojects/Paket/pull/3237
+
+#### 5.170.0 - 2018-06-05
+* PERFORMANCE: Fixed filtered update performance - https://github.com/fsprojects/Paket/pull/3233
 * PERFORMANCE: Check if everything is up-to-date after aquiring lock
 * BUGFIX: Regression from semver2 support in paket tempates - https://github.com/fsprojects/Paket/pull/3229 
 * USABILITY: Always trace on early restore exit

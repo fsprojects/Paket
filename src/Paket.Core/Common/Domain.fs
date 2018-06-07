@@ -96,31 +96,26 @@ type QualifiedPackageName =
         let packageName = PackageName packageName
         QualifiedPackageName (groupName, packageName)
 
+type PackageMatch(ex:String) =
+    member val Expression = Regex("^" + ex + "$", RegexOptions.CultureInvariant ||| RegexOptions.IgnoreCase) 
 
 // Represents a filter of normalized package names
 [<System.Diagnostics.DebuggerDisplay("{ToString()}")>]
 type PackageFilter =
 | PackageName of PackageName
-| PackageFilter of string
+| PackageFilter of PackageMatch
 
     member this.Match (packageName : PackageName) =
         match this with
         | PackageName name -> name = packageName
-        | PackageFilter f ->
-            let regex =
-                Regex("^" + f + "$",
-                    RegexOptions.Compiled 
-                    ||| RegexOptions.CultureInvariant 
-                    ||| RegexOptions.IgnoreCase)
-
-            regex.IsMatch (packageName.CompareString)
+        | PackageFilter f -> f.Expression.IsMatch(packageName.CompareString)
 
     static member ofName name = PackageFilter.PackageName name
 
     override this.ToString() =
         match this with
         | PackageName name -> name.ToString()
-        | PackageFilter filter -> filter
+        | PackageFilter filter -> filter.Expression.ToString()
 
 
 type DomainMessage = 

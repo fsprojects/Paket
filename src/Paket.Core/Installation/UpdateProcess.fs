@@ -272,7 +272,7 @@ let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, ne
 let UpdateFilteredPackages(dependenciesFileName, groupName, packageName : string, newVersion, options : UpdaterOptions) =
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
-    let filter = PackageFilter.PackageFilter(packageName.ToString())
+    let filter = PackageFilter.PackageFilter(PackageMatch packageName)
 
     let dependenciesFile =
         match newVersion with
