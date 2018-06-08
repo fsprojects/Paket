@@ -760,12 +760,14 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
     let normalizedNupkgName = NuGetCache.GetPackageFileName packageName version
     let configResolved = config.Resolve root groupName packageName version includeVersionInPath
-    let targetFileName =
+    let targetFileName, isTargetInFallbackFolder =
         if not isLocalOverride then
-            NuGetCache.GetTargetUserNupkg packageName version
+            match NuGetCache.TryGetFallbackNupkg None packageName version with
+            | Some fileName -> fileName, true
+            | None -> NuGetCache.GetTargetUserNupkg packageName version, false
         else
             match configResolved.Path with
-            | Some p -> Path.Combine(p, nupkgName)
+            | Some p -> Path.Combine(p, nupkgName), false
             | None -> failwithf "paket.local in combination with storage:none is not supported"
 
     if isLocalOverride && not force then
@@ -984,12 +986,17 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
         | false, otherConfig ->
             otherConfig.Path |> Option.iter SymlinkUtils.delete
 
-            let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, kind)
+            let! extractedFolder = async {
+                if isTargetInFallbackFolder then return Path.GetDirectoryName targetFileName
+                else return! ExtractPackageToUserFolder(targetFile.FullName, packageName, version, kind) }
+
             let! files = NuGetCache.CopyFromCache(otherConfig, targetFile.FullName, licenseFileName, packageName, version, force, detailed)
+
             let finalFolder =
                 match files with
                 | Some f -> f
-                | None -> extractedUserFolder
+                | None -> extractedFolder
+
             return targetFileName,finalFolder
     }
     
