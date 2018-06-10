@@ -760,14 +760,12 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
     let normalizedNupkgName = NuGetCache.GetPackageFileName packageName version
     let configResolved = config.Resolve root groupName packageName version includeVersionInPath
-    let targetFileName, isTargetInFallbackFolder =
+    let targetFileName =
         if not isLocalOverride then
-            match NuGetCache.TryGetFallbackNupkg None packageName version with
-            | Some fileName -> fileName, true
-            | None -> NuGetCache.GetTargetUserNupkg packageName version, false
+            NuGetCache.GetTargetUserNupkg packageName version
         else
             match configResolved.Path with
-            | Some p -> Path.Combine(p, nupkgName), false
+            | Some p -> Path.Combine(p, nupkgName)
             | None -> failwithf "paket.local in combination with storage:none is not supported"
 
     if isLocalOverride && not force then
@@ -811,12 +809,22 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
             | _ -> getFromCache rest
         | [] -> false
 
+    let getFromFallbackFolder () =
+        match NuGetCache.TryGetFallbackNupkg packageName version with
+        | Some fileName ->
+            verbosefn "Copying %O %O from SDK cache" packageName version
+            use __ = Profile.startCategory Profile.Category.FileIO
+            ensureDir targetFileName
+            File.Copy(fileName,targetFileName,true)
+            true
+        | None -> false
+
     let rec download authenticated attempt =
         async {
             if not force && targetFile.Exists && targetFile.Length > 0L then
                 if verbose then
                     verbosefn "%O %O already downloaded." packageName version
-            elif not force && getFromCache caches then
+            elif getFromFallbackFolder () || (not force && getFromCache caches) then
                 ()
             else
                 match source with
@@ -986,16 +994,14 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
         | false, otherConfig ->
             otherConfig.Path |> Option.iter SymlinkUtils.delete
 
-            let! extractedFolder = async {
-                if isTargetInFallbackFolder then return Path.GetDirectoryName targetFileName
-                else return! ExtractPackageToUserFolder(targetFile.FullName, packageName, version, kind) }
+            let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, kind)
 
             let! files = NuGetCache.CopyFromCache(otherConfig, targetFile.FullName, licenseFileName, packageName, version, force, detailed)
 
             let finalFolder =
                 match files with
                 | Some f -> f
-                | None -> extractedFolder
+                | None -> extractedUserFolder
 
             return targetFileName,finalFolder
     }

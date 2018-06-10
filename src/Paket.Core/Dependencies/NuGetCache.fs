@@ -338,8 +338,8 @@ let TryGetFallbackFolder () =
         let fallbackDir = Path.Combine (dotnetDir, "sdk", "NuGetFallbackFolder")
         if Directory.Exists fallbackDir then Some fallbackDir else None)
 
-let TryGetFallbackNupkg (fallbackFolderOverride:string option) (packageName:PackageName) (version:SemVerInfo) =
-    match fallbackFolderOverride |> Option.orElseWith TryGetFallbackFolder with
+let TryGetFallbackNupkg (packageName:PackageName) (version:SemVerInfo) =
+    match TryGetFallbackFolder() with
     | Some folder ->
         let normalizedNupkgName = GetPackageFileName packageName version
         let fallbackFile = Path.Combine(folder, packageName.CompareString, version.Normalize(), normalizedNupkgName) |> FileInfo
