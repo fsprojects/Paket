@@ -1,4 +1,4 @@
-#### 5.172.0 - 2018-06-08
+#### 5.172.1 - 2018-06-10
 * PERFORMANCE: Add support for dotnet SDK fallback folder - https://github.com/fsprojects/Paket/pull/3242
 
 #### 5.171.0 - 2018-06-07
