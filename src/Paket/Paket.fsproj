@@ -41,7 +41,7 @@
     <StartWorkingDirectory>C:\temp\paket-conflict\paket.conflict.app</StartWorkingDirectory>
     <StartWorkingDirectory>D:\temp\i3032</StartWorkingDirectory>
     <StartWorkingDirectory>C:\code\Paket\integrationtests\scenarios\i003062-external-lock\before</StartWorkingDirectory>
-    <StartWorkingDirectory>E:\Projects\Fulma</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\code\logary</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
