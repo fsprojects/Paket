@@ -6,7 +6,7 @@ open Paket.PackageResolver
 type DependencyChangeType =
     /// The restrictions changed
     | RestrictionsChanged
-    /// The settigns of the package changed
+    /// The settings of the package changed
     | SettingsChanged
     /// The Version in the LockFile doesn't match the spec in the dependencies file.
     | VersionNotValid
@@ -24,12 +24,16 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
             if newRequirement.Settings <> originalPackage.Settings then
                 if newRequirement.Settings = { originalPackage.Resolved.Settings with FrameworkRestrictions = AutoDetectFramework } then
                     []
-                elif newRequirement.Settings.FrameworkRestrictions <> originalPackage.Settings.FrameworkRestrictions then
+                else 
                     let isTransitive = transitives |> Seq.contains originalPackage.Name
-                    if not isTransitive then
-                        [RestrictionsChanged]
-                    else []
-                else [SettingsChanged]
+                    if isTransitive then
+                        []
+                    else
+                        if newRequirement.Settings.FrameworkRestrictions <> originalPackage.Settings.FrameworkRestrictions then
+                            [RestrictionsChanged]
+                        else
+                            [SettingsChanged]
+                
             else []
 
         let requirementOk =
