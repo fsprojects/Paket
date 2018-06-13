@@ -393,7 +393,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                     if verbose then
                         tracefn " - %s already up-to-date" newFileName.FullName
             with
-            | exn ->
+            | exn when trials > 0 ->
                 if verbose then
                     tracefn "Failed to save resolved file %s. Retry. Message: %s" newFileName.FullName exn.Message
                 System.Threading.Thread.Sleep(100)
@@ -421,7 +421,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                 // it can happen that the references file doesn't exist if paket doesn't find one in that case we update the cache by deleting it.
                 if paketCachedReferencesFileName.Exists then paketCachedReferencesFileName.Delete()
         with
-        | exn ->
+        | exn when trials > 0 ->
             if verbose then
                 tracefn "Failed to save cached file %s. Retry. Message: %s" paketCachedReferencesFileName.FullName exn.Message
             System.Threading.Thread.Sleep(100)
