@@ -36,13 +36,6 @@ let Serialize (packages: NugetPackage seq) =
                     | Some tf -> sprintf "targetFramework=\"%s\" " (tf.Replace(">= ",""))
                     | _ -> ""
 
-                Some (sprintf """  <package id="%s" version="[%O]" %s/>""" p.Id v framework)
-            | VersionRange.Minimum v ->
-                let framework = 
-                    match p.TargetFramework with
-                    | Some tf -> sprintf "targetFramework=\"%s\" " (tf.Replace(">= ",""))
-                    | _ -> ""
-
                 Some (sprintf """  <package id="%s" version="%O" %s/>""" p.Id v framework)
             | _ -> None)
 
