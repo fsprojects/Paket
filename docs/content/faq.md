@@ -130,7 +130,7 @@ committed to source control:
   a [`paket.references` file](references-files.html) that specifies which of the
   dependencies are installed in the project. Each of these files should be
   committed to source control.
-* All [`paket.template`](template-files.html). Tf a project is supposed to be
+* All [`paket.template`](template-files.html). If a project is supposed to be
   deployed as a NuGet project it will have a
   [`paket.template` file](template-files.html) that specifies package metadata.
   Each of these files should be committed to source control.

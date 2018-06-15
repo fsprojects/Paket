@@ -331,6 +331,21 @@ let GetTargetUserNupkg (packageName:PackageName) (version:SemVerInfo) =
 let GetTargetUserToolsFolder (packageName:PackageName) (version:SemVerInfo) =
     DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,".tools",packageName.CompareString,version.Normalize())).FullName
 
+let TryGetFallbackFolder () =
+    let dotnet = if isUnix then "dotnet" else "dotnet.exe"
+    ProcessHelper.tryFindFileOnPath dotnet |> Option.bind (fun fileName ->
+        let dotnetDir = Path.GetDirectoryName fileName
+        let fallbackDir = Path.Combine (dotnetDir, "sdk", "NuGetFallbackFolder")
+        if Directory.Exists fallbackDir then Some fallbackDir else None)
+
+let TryGetFallbackNupkg (packageName:PackageName) (version:SemVerInfo) =
+    match TryGetFallbackFolder() with
+    | Some folder ->
+        let normalizedNupkgName = GetPackageFileName packageName version
+        let fallbackFile = Path.Combine(folder, packageName.CompareString, version.Normalize(), normalizedNupkgName) |> FileInfo
+        if fallbackFile.Exists && fallbackFile.Length > 0L then Some fallbackFile.FullName else None
+    | None -> None
+
 /// Extracts the given package to the user folder
 let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, kind:PackageResolver.ResolvedPackageKind) =
     async {

@@ -1,3 +1,9 @@
+#### 5.172.2 - 2018-06-11
+* BUGFIX: Report only transitive settings changes - https://github.com/fsprojects/Paket/issues/3218
+
+#### 5.172.1 - 2018-06-10
+* PERFORMANCE: Add support for dotnet SDK fallback folder - https://github.com/fsprojects/Paket/pull/3242
+
 #### 5.171.0 - 2018-06-07
 * PERFORMANCE: Improved binding redirects performance by removing mono.cecil - https://github.com/fsprojects/Paket/pull/3239
 * BUGFIX: paket template semver support fixes - https://github.com/fsprojects/Paket/pull/3230
