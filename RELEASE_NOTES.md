@@ -1,5 +1,8 @@
+#### 5.172.4 - 2018-06-18
+* BUGFIX: Fixed invalid syntax in packages config  - https://github.com/fsprojects/Paket/pull/3253
+
 #### 5.172.3 - 2018-06-18
-* BUGFIX: Fix infinite recursion when handling errors - https://github.com/fsprojects/Paket/pull/3251
+* BUGFIX: Fixed infinite recursion when handling errors - https://github.com/fsprojects/Paket/pull/3251
 
 #### 5.172.2 - 2018-06-11
 * BUGFIX: Report only transitive settings changes - https://github.com/fsprojects/Paket/issues/3218
