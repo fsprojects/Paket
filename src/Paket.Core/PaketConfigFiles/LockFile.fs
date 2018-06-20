@@ -130,7 +130,7 @@ module LockFileSerializer =
 
                       let s =
                         // add "clitool"
-                        match package.Kind, settings.ToString().ToLower()  with
+                        match package.Kind, settings.ToString(options.Settings,false).ToLower()  with
                         | ResolvedPackageKind.DotnetCliTool, "" -> "clitool: true"
                         | ResolvedPackageKind.DotnetCliTool, s -> s + ", clitool: true"
                         | ResolvedPackageKind.Package, s -> s

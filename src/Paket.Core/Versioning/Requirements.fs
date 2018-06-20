@@ -897,60 +897,61 @@ type InstallSettings =
           OmitContent = None 
           GenerateLoadScripts = None }
 
-    member this.ToString(asLines) =
+    member this.ToString(groupSettings:InstallSettings,asLines) =
         let options =
             [ match this.CopyLocal with
-              | Some x -> yield "copy_local: " + x.ToString().ToLower()
-              | None -> ()
+              | Some x when groupSettings.CopyLocal <> this.CopyLocal -> yield "copy_local: " + x.ToString().ToLower()
+              | _ -> ()
               match this.SpecificVersion with
-              | Some x -> yield "specific_version: " + x.ToString().ToLower()
-              | None -> ()
+              | Some x when groupSettings.SpecificVersion <> this.SpecificVersion -> yield "specific_version: " + x.ToString().ToLower()
+              | _ -> ()
               match this.StorageConfig with
-              | Some (PackagesFolderGroupConfig.NoPackagesFolder) -> yield "storage: none"
-              | Some (PackagesFolderGroupConfig.SymbolicLink) -> yield "storage: symlink"
-              | Some (PackagesFolderGroupConfig.GivenPackagesFolder s) -> failwithf "Not implemented yet."
-              | Some (PackagesFolderGroupConfig.DefaultPackagesFolder) -> yield "storage: packages"
-              | None -> ()
+              | Some (PackagesFolderGroupConfig.NoPackagesFolder) when groupSettings.StorageConfig <> this.StorageConfig -> yield "storage: none"
+              | Some (PackagesFolderGroupConfig.SymbolicLink) when groupSettings.StorageConfig <> this.StorageConfig -> yield "storage: symlink"
+              | Some (PackagesFolderGroupConfig.GivenPackagesFolder s) when groupSettings.StorageConfig <> this.StorageConfig -> failwithf "Not implemented yet."
+              | Some (PackagesFolderGroupConfig.DefaultPackagesFolder) when groupSettings.StorageConfig <> this.StorageConfig -> yield "storage: packages"
+              | _ -> ()
               match this.CopyContentToOutputDirectory with
-              | Some CopyToOutputDirectorySettings.Never -> yield "copy_content_to_output_dir: never"
-              | Some CopyToOutputDirectorySettings.Always -> yield "copy_content_to_output_dir: always"
-              | Some CopyToOutputDirectorySettings.PreserveNewest -> yield "copy_content_to_output_dir: preserve_newest"
-              | None -> ()
+              | Some CopyToOutputDirectorySettings.Never when groupSettings.CopyContentToOutputDirectory <> this.CopyContentToOutputDirectory -> yield "copy_content_to_output_dir: never"
+              | Some CopyToOutputDirectorySettings.Always when groupSettings.CopyContentToOutputDirectory <> this.CopyContentToOutputDirectory -> yield "copy_content_to_output_dir: always"
+              | Some CopyToOutputDirectorySettings.PreserveNewest when groupSettings.CopyContentToOutputDirectory <> this.CopyContentToOutputDirectory -> yield "copy_content_to_output_dir: preserve_newest"
+              | _ -> ()
               match this.ImportTargets with
-              | Some x -> yield "import_targets: " + x.ToString().ToLower()
-              | None -> ()
+              | Some x when groupSettings.ImportTargets <> this.ImportTargets -> yield "import_targets: " + x.ToString().ToLower()
+              | _ -> ()
               match this.OmitContent with
-              | Some ContentCopySettings.Omit -> yield "content: none"
-              | Some ContentCopySettings.Overwrite -> yield "content: true"
-              | Some ContentCopySettings.OmitIfExisting -> yield "content: once"
-              | None -> ()
+              | Some ContentCopySettings.Omit when groupSettings.OmitContent <> this.OmitContent -> yield "content: none"
+              | Some ContentCopySettings.Overwrite when groupSettings.OmitContent <> this.OmitContent -> yield "content: true"
+              | Some ContentCopySettings.OmitIfExisting when groupSettings.OmitContent <> this.OmitContent -> yield "content: once"
+              | _ -> ()
               match this.IncludeVersionInPath with
-              | Some x -> yield "version_in_path: " + x.ToString().ToLower()
-              | None -> ()
+              | Some x when groupSettings.IncludeVersionInPath <> this.IncludeVersionInPath -> yield "version_in_path: " + x.ToString().ToLower()
+              | _ -> ()
               match this.LicenseDownload with
-              | Some x -> yield "license_download: " + x.ToString().ToLower()
-              | None -> ()
+              | Some x when groupSettings.LicenseDownload <> this.LicenseDownload -> yield "license_download: " + x.ToString().ToLower()
+              | _ -> ()
               match this.ReferenceCondition with
-              | Some x -> yield "condition: " + x.ToUpper()
-              | None -> ()
+              | Some x when groupSettings.ReferenceCondition <> this.ReferenceCondition -> yield "condition: " + x.ToUpper()
+              | _ -> ()
               match this.CreateBindingRedirects with
-              | Some BindingRedirectsSettings.On -> yield "redirects: on"
-              | Some BindingRedirectsSettings.Off -> yield "redirects: off"
-              | Some BindingRedirectsSettings.Force -> yield "redirects: force"
-              | None -> ()
+              | Some BindingRedirectsSettings.On when groupSettings.CreateBindingRedirects <> this.CreateBindingRedirects -> yield "redirects: on"
+              | Some BindingRedirectsSettings.Off when groupSettings.CreateBindingRedirects <> this.CreateBindingRedirects -> yield "redirects: off"
+              | Some BindingRedirectsSettings.Force when groupSettings.CreateBindingRedirects <> this.CreateBindingRedirects -> yield "redirects: force"
+              | _ -> ()
               match this.FrameworkRestrictions with
-              | ExplicitRestriction FrameworkRestriction.HasNoRestriction -> ()
+              | ExplicitRestriction FrameworkRestriction.HasNoRestriction when groupSettings.FrameworkRestrictions <> this.FrameworkRestrictions -> ()
               | AutoDetectFramework -> ()
-              | ExplicitRestriction fr -> yield "restriction: " + (fr.ToString())
+              | ExplicitRestriction fr when groupSettings.FrameworkRestrictions <> this.FrameworkRestrictions -> yield "restriction: " + (fr.ToString())
+              | _ -> ()
               match this.GenerateLoadScripts with
-              | Some true -> yield "generate_load_scripts: true"
-              | Some false -> yield "generate_load_scripts: false"
-              | None -> () ]
+              | Some true when groupSettings.GenerateLoadScripts <> this.GenerateLoadScripts -> yield "generate_load_scripts: true"
+              | Some false when groupSettings.GenerateLoadScripts <> this.GenerateLoadScripts  -> yield "generate_load_scripts: false"
+              | _ -> () ]
 
         let separator = if asLines then Environment.NewLine else ", "
         String.Join(separator,options)
 
-    override this.ToString() = this.ToString(false)
+    override this.ToString() = this.ToString(InstallSettings.Default,false)
 
     static member (+)(self, other : InstallSettings) =
         {

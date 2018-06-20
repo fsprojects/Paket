@@ -1,3 +1,6 @@
+#### 5.173.0 - 2018-06-20
+* BUGFIX: Don't serialize individual settings that match group settings in lock file - https://github.com/fsprojects/Paket/issues/3257
+
 #### 5.172.4 - 2018-06-18
 * BUGFIX: Fixed invalid syntax in packages config  - https://github.com/fsprojects/Paket/pull/3253
 
