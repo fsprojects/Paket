@@ -78,6 +78,23 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
                     |> Map.filter (fun k _ -> k = groupName || changes |> Seq.exists (fun (g,_) -> g = k))
 
                 changes,groups
+            | InstallGroup groupName ->
+                let hasAnyChanges,nuGetChanges,remoteFileChanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,true)
+
+                let hasChanges groupName x = 
+                    let hasChanges = hasChanges groupName x
+                    if not hasChanges then
+                        tracefn "Skipping resolver for group %O since it is already up-to-date" groupName
+                    hasChanges
+
+                let groups =
+                    dependenciesFile.Groups
+                    |> Map.filter (fun k _ -> k = groupName)
+                    |> Map.filter hasChanges
+
+                nuGetChanges
+                |> Set.map (fun (f,s,_) -> f,s)
+                |> Set.filter (fun (g,_) -> g = groupName), groups
             | Install ->
                 let hasAnyChanges,nuGetChanges,remoteFileChanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,true)
 
@@ -91,7 +108,8 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
                     dependenciesFile.Groups
                     |> Map.filter hasChanges
 
-                nuGetChanges |> Set.map (fun (f,s,_) -> f,s), groups
+                nuGetChanges
+                |> Set.map (fun (f,s,_) -> f,s), groups
 
         let preferredVersions =
             match updateMode with
@@ -103,6 +121,9 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
             | UpdateFiltered (groupName, filter) ->
                 DependencyChangeDetection.GetPreferredNuGetVersions(dependenciesFile,lockFile)
                 |> Map.filter (fun (g, p) _ -> g <> groupName || not (filter.Match p))
+            | InstallGroup groupName ->
+                DependencyChangeDetection.GetPreferredNuGetVersions(dependenciesFile,lockFile)
+                |> Map.filter (fun (g, p) _ -> g <> groupName)
             | Install ->
                 DependencyChangeDetection.GetPreferredNuGetVersions(dependenciesFile,lockFile)
             |> Map.map (fun (groupName,_packageName) (v,s) -> 
