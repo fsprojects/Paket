@@ -1,3 +1,6 @@
+#### 5.173.1 - 2018-06-21
+* BUGFIX: Paket add only runs update on the touched group - https://github.com/fsprojects/Paket/issues/3259
+
 #### 5.173.0 - 2018-06-20
 * BUGFIX: Don't serialize individual settings that match group settings in lock file - https://github.com/fsprojects/Paket/issues/3257
 
