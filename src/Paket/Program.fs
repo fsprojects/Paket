@@ -358,6 +358,10 @@ let install (results : ParseResults<_>) =
         if results.Contains <@ InstallArgs.Keep_Major @> then SemVerUpdateMode.KeepMajor else
         SemVerUpdateMode.NoRestriction
     let touchAffectedRefs = results.Contains <@ InstallArgs.Touch_Affected_Refs @>
+    let group =
+        (results.TryGetResult <@ InstallArgs.Group @>,
+         results.TryGetResult <@ InstallArgs.Group_Legacy @>)
+        |> legacyOption results (ReplaceArgument("--group", "group"))
 
     Dependencies.Locate().Install(
         force,
