@@ -76,6 +76,7 @@
       <Paket>True</Paket>
       <Link>FsUnit.fs</Link>
     </Compile>
+    <Compile Include="Versioning\PackageSourceSpecs.fs" />
     <None Include="paket.references" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="TestHelpers.fs" />
