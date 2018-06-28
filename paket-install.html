@@ -90,10 +90,9 @@
 <span class="l">29: </span>
 <span class="l">30: </span>
 <span class="l">31: </span>
-<span class="l">32: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket install [--help] [--force] [--redirects] [--group &lt;name&gt;] [--create-new-binding-files]
-              [--clean-redirects] [--keep-major] [--keep-minor] [--keep-patch] [--only-referenced]
+<td class="snippet"><pre class="fssnip"><code lang="sh">paket install [--help] [--force] [--redirects] [--create-new-binding-files] [--clean-redirects]
+              [--keep-major] [--keep-minor] [--keep-patch] [--only-referenced]
               [--touch-affected-refs] [--generate-load-scripts]
               [--load-script-framework &lt;framework&gt;] [--load-script-type &lt;csx|fsx&gt;]
 
@@ -101,7 +100,6 @@ OPTIONS:
 
     --force, -f           force download and reinstallation of all dependencies
     --redirects           create binding redirects
-    --group, -g &lt;name&gt;    specify dependency group to update (default: all groups)
     --create-new-binding-files
                           create binding redirect files if needed
     --clean-redirects     remove binding redirects that were not created by Paket
