@@ -179,9 +179,6 @@ type InstallArgs =
     | [<Unique;AltCommandLine("-f")>] Force
     | [<Unique>] Redirects
 
-    | [<Unique;AltCommandLine("-g")>] Group of name:string
-    | [<Hidden;Unique;CustomCommandLine("group")>] Group_Legacy of name:string
-
     | [<Unique>] Create_New_Binding_Files
     | [<Hidden;Unique;CustomCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files_Legacy
 
@@ -205,9 +202,6 @@ with
             match this with
             | Force -> "force download and reinstallation of all dependencies"
             | Redirects -> "create binding redirects"
-
-            | Group(_) -> "specify dependency group to update (default: all groups)"
-            | Group_Legacy(_) -> "[obsolete]"
 
             | Create_New_Binding_Files -> "create binding redirect files if needed"
             | Create_New_Binding_Files_Legacy -> "[obsolete]"
