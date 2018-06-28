@@ -1,4 +1,4 @@
-#### 5.173.2 - 2018-06-28
+#### 5.173.3 - 2018-06-28
 * BUGFIX: Extended NuGetV3 source detection with Artifactory feed format - https://github.com/fsprojects/Paket/pull/3267
 
 #### 5.173.1 - 2018-06-21
