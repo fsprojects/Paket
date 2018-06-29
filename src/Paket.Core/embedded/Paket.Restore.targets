@@ -132,11 +132,11 @@
     <Error Condition=" '$(DoAllResolvedFilesExist)' != 'true' AND '$(ResolveNuGetPackages)' != 'False' " Text="One Paket file '@(PaketResolvedFilePaths)' is missing while restoring $(MSBuildProjectFile). Please delete 'paket-files/paket.restore.cached' and call 'paket restore'." />
 
     <!-- Step 4 forward all msbuild properties (PackageReference, DotNetCliToolReference) to msbuild -->
-    <ReadLinesFromFile Condition="'@(PaketResolvedFilePaths)' != ''" File="%(PaketResolvedFilePaths.Identity)" ><!--Condition="Exists('%(PaketResolvedFilePaths.Identity)')"-->
+    <ReadLinesFromFile Condition="$(DesignTimeBuild) != true AND '@(PaketResolvedFilePaths)' != ''" File="%(PaketResolvedFilePaths.Identity)" >
       <Output TaskParameter="Lines" ItemName="PaketReferencesFileLines"/>
     </ReadLinesFromFile>
 
-    <ItemGroup Condition=" '@(PaketReferencesFileLines)' != '' " >
+    <ItemGroup Condition="$(DesignTimeBuild) != true AND '@(PaketReferencesFileLines)' != '' " >
       <PaketReferencesFileLinesInfo Include="@(PaketReferencesFileLines)" >
         <PackageName>$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[0])</PackageName>
         <PackageVersion>$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[1])</PackageVersion>

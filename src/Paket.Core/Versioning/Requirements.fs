@@ -52,7 +52,7 @@ type FrameworkRestrictionP =
             | [] -> "true"
             | [single] -> sprintf "%O" single
             | _ -> sprintf "&& %s" (System.String.Join(" ", frl |> Seq.map (sprintf "(%O)")))
-
+    
     /// The list represented by this restriction (ie the included set of frameworks)
     // NOTE: All critical paths test only if this set is empty, so we use lazy seq here
     member x.RepresentedFrameworks =
@@ -297,6 +297,13 @@ type FrameworkRestriction =
             set
     member x.IsMatch tp =
         x.RawFormular.IsMatch tp
+
+    member x.ToMSBuildCondition() =
+            let formulas = 
+                [for fr in x.RepresentedFrameworks -> 
+                    sprintf "('$(TargetFramework)' == '%O')" fr]
+            String.Join(" OR ",formulas)
+
     override x.Equals(y) =
         match y with 
         | :? FrameworkRestriction as r ->
