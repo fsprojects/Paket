@@ -373,6 +373,23 @@ let ``#1816 pack localized happy path`` () =
     CleanDir rootPath
 
 [<Test>]
+let ``#1816 pack localized when satellite dll is missing`` () =
+    let scenario = "i001816-pack-localized-missing-dll"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let package = Path.Combine(outPath, "LocalizedLib.1.0.0.0.nupkg")
+    
+    let result = paket ("pack -v output \"" + outPath + "\"") scenario
+    let expectedMessage = "Did not find satellite assembly for (sv) try building and running pack again."
+    StringAssert.Contains(expectedMessage, result)
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    Path.Combine(outPath, "lib", "net45", "LocalizedLib.dll") |> checkFileExists
+    Path.Combine(outPath, "lib", "net45", "sv-FI", "LocalizedLib.resources.dll") |> checkFileExists
+
+    CleanDir rootPath
+
+[<Test>]
 let ``#3275 netstandard pack localized happy path`` () =
     let scenario = "i003275-pack-localized-netstandard"
     let rootPath = scenarioTempPath scenario

@@ -214,10 +214,23 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                     let projectDir = Path.GetDirectoryName(Path.GetFullPath(project.FileName))
                     let outputDir = Path.Combine(projectDir, project.GetOutputDirectory config platform)
 
-                    yield!
+                    let satelliteWithFolders =
                         Directory.GetFiles(outputDir, satelliteAssemblyName, SearchOption.AllDirectories)
                         |> Array.map (fun sa -> (sa, Directory.GetParent(sa)))
                         |> Array.filter (fun (sa, dirInfo) -> Cultures.isLanguageName (dirInfo.Name))
+
+                    let existedSatelliteLanguages =
+                        satelliteWithFolders
+                        |> Array.map (fun (_, dirInfo) -> dirInfo.Name)
+                        |> Set.ofArray
+
+                    project.FindLocalizedLanguageNames()
+                    |> List.filter (existedSatelliteLanguages.Contains >> not)
+                    |> List.iter (fun lang ->
+                        traceWarnfn "Did not find satellite assembly for (%s) try building and running pack again." lang)
+
+                    yield!
+                        satelliteWithFolders
                         |> Array.map (fun (sa, dirInfo) -> (FileInfo sa, Path.Combine(targetDir, dirInfo.Name)))
             }
 
