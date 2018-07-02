@@ -1,4 +1,4 @@
-#### 5.174.0-alpha002 - 2018-06-29
+#### 5.174.0-alpha003 - 2018-07-02
 * NEW FEATURE: Improved Visual Studio integration - https://github.com/fsprojects/Paket/pull/3273
 * BUGFIX: Extended NuGetV3 source detection with Artifactory feed format - https://github.com/fsprojects/Paket/pull/3267
 * BUGFIX: Paket add only runs update on the touched group - https://github.com/fsprojects/Paket/issues/3259
