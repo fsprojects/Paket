@@ -71,7 +71,10 @@
       <PaketRestoreRequired Condition=" '$(PaketRestoreLockFileHash)' == '$(PaketRestoreCachedHash)' ">false</PaketRestoreRequired>
       <PaketRestoreRequired Condition=" '$(PaketRestoreLockFileHash)' == '' ">true</PaketRestoreRequired>
     </PropertyGroup>
-
+    
+    <PropertyGroup Condition="'$(PaketPropsLoaded)' != 'true' ">
+      <PaketRestoreRequired>true</PaketRestoreRequired>
+    </PropertyGroup>
 
     <!-- Do a global restore if required -->
     <Exec Command='$(PaketBootStrapperCommand)' Condition="Exists('$(PaketBootStrapperExePath)') AND !(Exists('$(PaketExePath)'))" ContinueOnError="false" />
