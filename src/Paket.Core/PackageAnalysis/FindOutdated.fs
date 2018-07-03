@@ -41,10 +41,10 @@ let FindOutdated strict force includingPrereleases groupNameFilter environment =
         return versions |> List.toSeq }
     let getPreferredVersionsF resolverStrategy parameters = []
     let dependenciesFile = UpdateProcess.detectProjectFrameworksForDependenciesFile dependenciesFile
-    let checkedDepsGroups = 
+    let checkedDepsGroups =
         match groupNameFilter with
         | None -> dependenciesFile.Groups
-        | Some gname -> dependenciesFile.Groups |> Map.filter(fun k g -> k.ToString() = gname)
+        | Some gname -> dependenciesFile.Groups |> Map.filter(fun k _ -> k = GroupName gname)
 
     let newResolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPreferredVersionsF, NuGet.GetPackageDetails alternativeProjectRoot root true, RuntimeGraph.getRuntimeGraphFromNugetCache root, checkedDepsGroups, PackageResolver.UpdateMode.UpdateAll)
 
