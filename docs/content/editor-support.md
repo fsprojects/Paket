@@ -38,7 +38,7 @@
 * [Project site](https://github.com/fsprojects/Paket.VisualStudio)
 * Status: In Development
 * Installation: Available via
-  [Visual Studio Gallery](https://visualstudiogallery.msdn.microsoft.com/ce104917-e8b3-4365-9490-8432c6e75c36)
+  [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=SteffenForkmann.PaketforVisualStudio)
 * Features:
   * Solution Explorer Extensions for Paket files
   * Paket commands in Solution Explorer menu
