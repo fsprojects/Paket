@@ -390,6 +390,23 @@ let ``#1816 pack localized when satellite dll is missing`` () =
     CleanDir rootPath
 
 [<Test>]
+let ``#3275 netstandard pack localized happy path`` () =
+    let scenario = "i003275-pack-localized-netstandard"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let package = Path.Combine(outPath, "LibForTest.1.0.0.nupkg")
+
+    paket ("pack -v output \"" + outPath + "\"") scenario |> ignore
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    Path.Combine(outPath, "lib", "netstandard2.0", "LibForTest.dll") |> checkFileExists
+    Path.Combine(outPath, "lib", "netstandard2.0", "de", "LibForTest.resources.dll") |> checkFileExists
+    Path.Combine(outPath, "lib", "netstandard2.0", "ru", "LibForTest.resources.dll") |> checkFileExists
+    Path.Combine(outPath, "lib", "netstandard2.0", "en-US", "LibForTest.resources.dll") |> checkFileExists
+
+    CleanDir rootPath
+
+[<Test>]
 let ``#1848 single template without include-referenced-projects`` () = 
     let scenario = "i001848-pack-single-template-wo-incl-flag"
     let rootPath = scenarioTempPath scenario
