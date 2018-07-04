@@ -1132,7 +1132,6 @@ module ProjectFile =
         | _ -> fallback()
 
     let updateReferences
-            rootPath
             (completeModel: Map<GroupName*PackageName,_*InstallModel>) 
             (directPackages : Map<GroupName*PackageName,_*InstallSettings>) 
             (usedPackages : Map<GroupName*PackageName,_*InstallSettings>)  
@@ -1731,7 +1730,7 @@ type ProjectFile with
 
     member this.RemovePaketNodes () = ProjectFile.removePaketNodes this 
 
-    member this.UpdateReferences (root, completeModel, directDependencies, usedPackages) = ProjectFile.updateReferences root completeModel directDependencies usedPackages this
+    member this.UpdateReferences (completeModel, directDependencies, usedPackages) = ProjectFile.updateReferences completeModel directDependencies usedPackages this
 
     member this.Save(forceTouch) = ProjectFile.save forceTouch this
 

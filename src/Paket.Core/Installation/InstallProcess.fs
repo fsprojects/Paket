@@ -379,8 +379,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
     
     let prefix = dependenciesFile.Directory.Length + 1
     let norm (s:string) = (s.Substring prefix).Replace('\\', '/')
-    
-    let groupSettings = lockFile.Groups |> Map.map (fun k v -> v.Options.Settings)
+        
     for project, referenceFile in projectsAndReferences do
         tracefn " - %s -> %s" (norm referenceFile.FileName) (norm project.FileName)
         let toolsVersion = project.GetToolsVersion()
@@ -427,15 +426,13 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 directDependencies
                 |> Seq.collect (fun u -> lookup.[u.Key] |> Seq.map (fun i -> fst u.Key, u.Value, i))
                 |> Seq.partitionAndChoose
-                    (fun (groupName,(_,parentSettings), dep) ->
-                        lockFile.Groups |> Map.containsKey groupName)
+                    (fun (groupName,_, _) -> lockFile.Groups |> Map.containsKey groupName)
                     (fun (groupName,(_,parentSettings), dep) ->
                         let group = lockFile.Groups.[groupName]
                         match group.TryFind dep with
                         | None -> None
-                        | Some p ->
-                            Some ((groupName,p.Name), (p.Version,parentSettings + p.Settings)) )
-                    (fun (groupName,(_,parentSettings), dep) ->
+                        | Some p -> Some ((groupName,p.Name), (p.Version,parentSettings + p.Settings)) )
+                    (fun (groupName,_, _) ->
                         Some (sprintf " - %s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName groupName)
                     )
             for key,settings in usedPackageDependencies do
@@ -514,7 +511,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             if toolsVersion >= 15.0 then
                 installForDotnetSDK root project
             else
-                project.UpdateReferences(root, model, directDependencies, usedPackages)
+                project.UpdateReferences(model, directDependencies, usedPackages)
 
                 Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)
                 |> updatePackagesConfigFile usedPackages
