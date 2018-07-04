@@ -1,5 +1,6 @@
-#### 5.174.0-alpha003 - 2018-07-02
+#### 5.174.0-alpha004 - 2018-07-04
 * NEW FEATURE: Improved Visual Studio integration - https://github.com/fsprojects/Paket/pull/3273
+* BUGFIX: Paket doesn't add Compile tags for packages when new project format ius used - https://github.com/fsprojects/Paket/issues/3269
 * BUGFIX: Extended NuGetV3 source detection with Artifactory feed format - https://github.com/fsprojects/Paket/pull/3267
 * BUGFIX: Paket add only runs update on the touched group - https://github.com/fsprojects/Paket/issues/3259
 

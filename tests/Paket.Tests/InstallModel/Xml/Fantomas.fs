@@ -71,7 +71,7 @@ let ``should generate full Xml for Fantomas 1.5``() =
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model)] |> Map.ofSeq
     let used = [(Constants.MainDependencyGroup, (PackageName "fantoMas")), (InstallSettings.Default,InstallSettings.Default)] |> Map.ofSeq
-    project.UpdateReferences(".",completeModel,used,used)
+    project.UpdateReferences(completeModel,used,used)
     
     project.Document.OuterXml
     |> normalizeXml
@@ -93,7 +93,7 @@ let ``should not generate full Xml for Fantomas 1.5 if not referenced``() =
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model)] |> Map.ofSeq
     let used = [(Constants.MainDependencyGroup, (PackageName "blub")), (InstallSettings.Default,InstallSettings.Default) ] |> Map.ofSeq
-    project.UpdateReferences(".",completeModel,used,used)
+    project.UpdateReferences(completeModel,used,used)
     
     project.Document.OuterXml
     |> normalizeXml
@@ -133,7 +133,7 @@ let ``should generate full Xml with reference condition for Fantomas 1.5``() =
         { InstallSettings.Default 
             with ReferenceCondition = Some "LEGACY" }
     let used = [(Constants.MainDependencyGroup, (PackageName "fantoMas")), (InstallSettings.Default,settings)] |> Map.ofSeq
-    project.UpdateReferences(".",completeModel,used,used)
+    project.UpdateReferences(completeModel,used,used)
     
     project.Document.OuterXml
     |> normalizeXml
@@ -175,7 +175,7 @@ let ``should generate full Xml with reference condition and framework restrictio
         { InstallSettings.Default
             with ReferenceCondition = Some "LEGACY" }
     let used = [(Constants.MainDependencyGroup, (PackageName "fantoMas")), (InstallSettings.Default,settings)] |> Map.ofSeq
-    project.UpdateReferences(".",completeModel,used,used)
+    project.UpdateReferences(completeModel,used,used)
 
     project.Document.OuterXml
     |> normalizeXml
