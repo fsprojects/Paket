@@ -526,29 +526,27 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     let linked = defaultArg file.Settings.Link true
                     let buildAction = project.DetermineBuildActionForRemoteItems file.Name
                     if buildAction <> BuildAction.Reference && linked then
-                        {   BuildAction = buildAction
-                            Include = createRelativePath project.FileName remoteFilePath
-                            WithPaketSubNode = true
-                            CopyToOutputDirectory = None
-                            Link = Some link
-                        }
+                        { BuildAction = buildAction
+                          Include = createRelativePath project.FileName remoteFilePath
+                          WithPaketSubNode = true
+                          CopyToOutputDirectory = None
+                          Link = Some link }
                     else
-                        {   BuildAction = buildAction
-                            WithPaketSubNode = true
-                            CopyToOutputDirectory = None
-                            Include =
-                                if buildAction = BuildAction.Reference then
-                                    createRelativePath project.FileName remoteFilePath
-                                else
-                                    let toDir = Path.GetDirectoryName(project.FileName)
-                                    let targetFile = FileInfo(Path.Combine(toDir,link))
-                                    if targetFile.Directory.Exists |> not then
-                                        targetFile.Directory.Create()
+                        { BuildAction = buildAction
+                          WithPaketSubNode = true
+                          CopyToOutputDirectory = None
+                          Include =
+                            if buildAction = BuildAction.Reference then
+                                createRelativePath project.FileName remoteFilePath
+                            else
+                                let toDir = Path.GetDirectoryName(project.FileName)
+                                let targetFile = FileInfo(Path.Combine(toDir,link))
+                                if targetFile.Directory.Exists |> not then
+                                    targetFile.Directory.Create()
 
-                                    File.Copy(remoteFilePath,targetFile.FullName,true)
-                                    createRelativePath project.FileName targetFile.FullName
-                            Link = None
-                        }
+                                File.Copy(remoteFilePath,targetFile.FullName,true)
+                                createRelativePath project.FileName targetFile.FullName
+                          Link = None }
                 ) |> Seq.toList
 
             processContentFiles root project usedPackages gitRemoteItems options
