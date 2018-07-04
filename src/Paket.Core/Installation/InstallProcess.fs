@@ -547,8 +547,12 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                                 createRelativePath project.FileName targetFile.FullName
                           Link = None }
                 ) |> Seq.toList
-
-            processContentFiles root project usedPackages gitRemoteItems options
+           
+            if toolsVersion >= 15.0 then
+                processContentFiles root project Map.empty gitRemoteItems options
+            else
+                processContentFiles root project usedPackages gitRemoteItems options
+            
             project.Save forceTouch
             projectCache.[project.FileName] <- Some project
 
