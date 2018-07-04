@@ -446,11 +446,10 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             usedPackages
             |> Map.filter (fun (_groupName,packageName) (v,settings) ->
                 let hasCondition = settings.ReferenceCondition.IsSome
-                //settings.FrameworkRestrictions
                 match dict.TryGetValue packageName with
-                | true,(v',true,_) when hasCondition ->
+                | true,(_,true,_) when hasCondition ->
                     true
-                | true,(v',hasCondition',restrictions') ->
+                | true,(v',_,restrictions') ->
                     let filtered = filterRestrictions settings.FrameworkRestrictions restrictions'
                     dict.[packageName] <- (v,hasCondition,filtered)
                     if v' = v then
