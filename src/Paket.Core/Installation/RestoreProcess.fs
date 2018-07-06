@@ -287,9 +287,6 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
                     |> Seq.collect (fun (p,_) ->
                         [sprintf """        <PackageReference Include="%O">""" p.Name
                          sprintf """            <Version>%O</Version>""" p.Version
-                        //"""            <PrivateAssets Condition=" ('%(PaketReferencesFileLinesInfo.AllPrivateAssets)' == 'true') Or ('$(PackAsTool)' == 'true') ">All</PrivateAssets>""" +
-                        //"""            <ExcludeAssets Condition="%(PaketReferencesFileLinesInfo.AllPrivateAssets) == 'exclude'">runtime</ExcludeAssets>""" +
-                        //"""            <Publish Condition=" '$(PackAsTool)' == 'true' ">true</Publish>""" +
                          """        </PackageReference>"""])
 
                 [yield sprintf "    <ItemGroup Condition=\"($(DesignTimeBuild) == true)%s\">" condition

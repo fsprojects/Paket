@@ -299,10 +299,13 @@ type FrameworkRestriction =
         x.RawFormular.IsMatch tp
 
     member x.ToMSBuildCondition() =
-            let formulas = 
-                [for fr in x.RepresentedFrameworks -> 
-                    sprintf "('$(TargetFramework)' == '%O')" fr]
-            String.Join(" OR ",formulas)
+        let formulas = 
+            [for fr in x.RepresentedFrameworks do 
+                let fr = fr.ToString()
+                yield sprintf "('$(TargetFramework)' == '%s')" fr
+                if fr.Contains "." then
+                    yield sprintf "('$(TargetFramework)' == '%s')" (fr.Replace(".",""))]
+        String.Join(" OR ",formulas)
 
     override x.Equals(y) =
         match y with 
