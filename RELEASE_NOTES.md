@@ -1,4 +1,4 @@
-#### 5.174.1 - 2018-07-06
+#### 5.174.2 - 2018-07-06
 * BUGFIX: Accept netstandard20 in Visual Studion integration - https://github.com/fsprojects/Paket/issues/3284
 
 #### 5.174.0 - 2018-07-06
