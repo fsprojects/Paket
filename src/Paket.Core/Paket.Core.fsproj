@@ -23,12 +23,12 @@
     <OutputPath>..\..\bin</OutputPath>
     <DefineConstants>TRACE;DEBUG;USE_WEB_CLIENT_FOR_UPLOAD</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <StartArguments>update</StartArguments>
+    <StartArguments>install</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>
     </StartWorkingDirectory>
-    <StartWorkingDirectory>C:\proj\testing\testpaketfailure\</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\Development\Staging\Paket\3008_prerelease_resolution_message\Paket3008\.paket\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

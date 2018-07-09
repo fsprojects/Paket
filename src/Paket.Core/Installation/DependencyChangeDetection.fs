@@ -218,6 +218,9 @@ let GetPreferredNuGetVersions (dependenciesFile:DependenciesFile,lockFile:LockFi
             | None -> kv.Key, (kv.Value.Version, kv.Value.Source))
     |> Map.ofSeq
 
+type ResolutionTriggeringChange =
+    | Change
+
 let GetChanges(dependenciesFile,lockFile,strict) =
     let nuGetChanges = findNuGetChangesInDependenciesFile(dependenciesFile,lockFile,strict)
     let nuGetChangesPerGroup =
@@ -231,37 +234,41 @@ let GetChanges(dependenciesFile,lockFile,strict) =
         |> Seq.groupBy fst
         |> Map.ofSeq
 
-    let hasNuGetChanges groupName =
+    let getNuGetChanges groupName =
         match nuGetChangesPerGroup |> Map.tryFind groupName with
-        | None -> false
-        | Some x -> Seq.isEmpty x |> not
+        | None -> []
+        | Some x -> x |> Seq.map (fun _ -> Change) |> Seq.toList
 
-    let hasRemoteFileChanges groupName =
+    let getRemoteFileChanges groupName =
         match remoteFileChangesPerGroup |> Map.tryFind groupName with
-        | None -> false
-        | Some x -> Seq.isEmpty x |> not
+        | None -> []
+        | Some x -> x |> Seq.map (fun _ -> Change) |> Seq.toList
 
-    let hasChangedSettings groupName =
+    let getChangedSettings groupName =
         match dependenciesFile.Groups |> Map.tryFind groupName with
-        | None -> true
+        | None -> [ Change ]
         | Some dependenciesFileGroup -> 
             match lockFile.Groups |> Map.tryFind groupName with
-            | None -> true
+            | None -> [ Change ]
             | Some lockFileGroup ->
                 let lockFileGroupOptions =
                     if dependenciesFileGroup.Options.Settings.FrameworkRestrictions = AutoDetectFramework then
                         { lockFileGroup.Options with Settings = { lockFileGroup.Options.Settings with FrameworkRestrictions = AutoDetectFramework } }
                     else
                         lockFileGroup.Options
-                dependenciesFileGroup.Options <> lockFileGroupOptions
+                
+                if dependenciesFileGroup.Options <> lockFileGroupOptions then
+                    [ Change ]
+                else []
 
-    let hasChanges groupName _ = 
-        hasChangedSettings groupName || hasNuGetChanges groupName || hasRemoteFileChanges groupName
+    let getChanges groupName _ = 
+        [ getChangedSettings groupName; getNuGetChanges groupName; getRemoteFileChanges groupName ]
+        |> List.concat
         
     let hasAnyChanges =
         dependenciesFile.Groups
-        |> Map.filter hasChanges
+        |> Map.filter (fun groupName group -> getChanges groupName group |> List.isEmpty |> not)
         |> Map.isEmpty
         |> not
 
-    hasAnyChanges,nuGetChanges,remoteFileChanges,hasChanges
+    hasAnyChanges,nuGetChanges,remoteFileChanges,getChanges

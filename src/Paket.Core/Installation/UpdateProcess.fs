@@ -79,13 +79,16 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
 
                 changes,groups
             | InstallGroup groupName ->
-                let hasAnyChanges,nuGetChanges,remoteFileChanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,true)
+                let hasAnyChanges,nuGetChanges,remoteFileChanges,getChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,true)
 
                 let hasChanges groupName x = 
-                    let hasChanges = hasChanges groupName x
-                    if not hasChanges then
+                    match getChanges groupName x with
+                    | [] ->
                         tracefn "Skipping resolver for group %O since it is already up-to-date" groupName
-                    hasChanges
+                        false
+                    | changes ->
+                        tracefn "Resolving group %O because of changes" groupName
+                        true
 
                 let groups =
                     dependenciesFile.Groups
@@ -96,13 +99,16 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
                 |> Set.map (fun (f,s,_) -> f,s)
                 |> Set.filter (fun (g,_) -> g = groupName), groups
             | Install ->
-                let hasAnyChanges,nuGetChanges,remoteFileChanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,true)
+                let hasAnyChanges,nuGetChanges,remoteFileChanges,getChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,true)
 
                 let hasChanges groupName x = 
-                    let hasChanges = hasChanges groupName x
-                    if not hasChanges then
+                    match getChanges groupName x with
+                    | [] ->
                         tracefn "Skipping resolver for group %O since it is already up-to-date" groupName
-                    hasChanges
+                        false
+                    | changes ->
+                        tracefn "Resolving group %O because of changes" groupName
+                        true
 
                 let groups =
                     dependenciesFile.Groups
