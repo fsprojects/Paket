@@ -6,6 +6,15 @@ open System.Diagnostics
 open Logging
 
 
+type HandlingMode = NativeSupport | ToolingSupport
+
+module private DotnetTooling =
+    let mode =
+        if Environment.GetEnvironmentVariable("PAKET_SUPER_DUPER_SECRET_SWITCH_ENABLE_TOOLING_2") = "1" then
+            ToolingSupport
+        else
+            NativeSupport
+
 /// The .NET Standard version.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 [<RequireQualifiedAccess>]
@@ -592,7 +601,11 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_5_2 -> [ DotNetFramework FrameworkVersion.V4_5_1; DotNetStandard DotNetStandardVersion.V1_2 ]
         | DotNetFramework FrameworkVersion.V4_5_3 -> [ DotNetFramework FrameworkVersion.V4_5_2; DotNetStandard DotNetStandardVersion.V1_2 ]
         | DotNetFramework FrameworkVersion.V4_6 -> [ DotNetFramework FrameworkVersion.V4_5_3; DotNetStandard DotNetStandardVersion.V1_3 ]
-        | DotNetFramework FrameworkVersion.V4_6_1 -> [ DotNetFramework FrameworkVersion.V4_6; DotNetStandard DotNetStandardVersion.V1_4 ]
+        | DotNetFramework FrameworkVersion.V4_6_1 ->
+            match DotnetTooling.mode with
+            | NativeSupport -> [ DotNetFramework FrameworkVersion.V4_6; DotNetStandard DotNetStandardVersion.V1_4 ]
+            // .NET Standard 2.0 will propagate "down", so we don't need any switches on the subsequent frameworks
+            | ToolingSupport -> [ DotNetFramework FrameworkVersion.V4_6; DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetFramework FrameworkVersion.V4_6_2 -> [ DotNetFramework FrameworkVersion.V4_6_1; DotNetStandard DotNetStandardVersion.V1_5 ]
         | DotNetFramework FrameworkVersion.V4_6_3 -> [ DotNetFramework FrameworkVersion.V4_6_2 ]
         | DotNetFramework FrameworkVersion.V4_7 -> [ DotNetFramework FrameworkVersion.V4_6_3]
