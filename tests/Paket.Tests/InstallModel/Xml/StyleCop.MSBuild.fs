@@ -14,7 +14,7 @@ let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
 <Import Project="..\..\..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets')" Label="Paket" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 [<Test>]
-#if NETCOREAPP2_0
+#if TESTSUITE_RUNS_ON_DOTNETCORE
 [<Flaky>]
 #endif
 let ``should generate Xml for StyleCop.MSBuild``() = 

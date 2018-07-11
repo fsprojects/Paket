@@ -25,7 +25,7 @@ let ``#1182 framework restrictions overwrite each other``() =
     lockFile.Contains("framework: winv4.5") |> shouldEqual false
 
 [<Test>]
-#if NETCOREAPP2_0
+#if NO_UNIT_PLATFORMATTRIBUTE
 [<Ignore "PlatformAttribute not supported by netstandard NUnit">]
 #else
 [<Platform("Mono")>] // PATH TOO LONG on Windows...
