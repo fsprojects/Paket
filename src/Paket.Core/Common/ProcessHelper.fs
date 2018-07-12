@@ -15,6 +15,7 @@ let tryFindFile dirs file =
     let files =
         dirs
         |> Seq.map (fun (path : string) ->
+            try
                let dir =
                  DirectoryInfo(
                    path
@@ -26,7 +27,13 @@ let tryFindFile dirs file =
                else
                    let fi = FileInfo(Path.Combine(dir.FullName,file))
                    if fi.Exists then fi.FullName
-                   else "")
+                   else ""
+            with
+            | exn ->
+                Logging.verbosefn "Exception while searching %s in %s:" file path
+                Logging.verbosefn "%O" exn
+
+                "")
         |> Seq.filter ((<>) "")
         |> Seq.cache
     if not (Seq.isEmpty files) then Some(Seq.head files)
