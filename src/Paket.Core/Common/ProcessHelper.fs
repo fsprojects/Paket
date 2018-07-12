@@ -41,7 +41,10 @@ let findFile dirs file =
 
 /// Retrieves the environment variable or None
 let environVarOrNone name =
-    let var = Environment.GetEnvironmentVariable name
+    let var = name
+              |> Environment.GetEnvironmentVariable
+              |> Environment.ExpandEnvironmentVariables
+
     if String.IsNullOrEmpty var then None
     else Some var
 
