@@ -4,28 +4,32 @@ open System
 open Paket
 open System.Diagnostics
 
-let isDirectoryLink directory = 
+let isDirectoryLink directory =
     let di = IO.DirectoryInfo(directory)
     di.Exists && di.Attributes.HasFlag(IO.FileAttributes.ReparsePoint)
 
 /// delete the symlink only (do not remove files before)
 let delete directory = if isDirectoryLink directory then IO.Directory.Delete directory
 
-let makeDirectoryLink target source = 
-    let mklink (p:ProcessStartInfo) = 
+let makeDirectoryLink target source =
+    let mklink (p:ProcessStartInfo) =
         p.FileName <- "cmd.exe"
         p.Arguments <- sprintf @"/c ""mklink /D ""%s"" ""%s""""" target source
 
-    let ln (p:ProcessStartInfo) = 
+    let ln (p:ProcessStartInfo) =
         p.FileName <- "ln"
         p.Arguments <- sprintf @"-sT ""%s"" ""%s""" target source
 
-    let xLn = if isUnix then ln else mklink
-    
+    let ln_onMacOS (p:ProcessStartInfo) =
+        p.FileName <- "ln"
+        p.Arguments <- sprintf @"-s ""%s"" ""%s""" target source
+
+    let xLn = if isMacOS then ln_onMacOS elif isUnix then ln else mklink
+
     let r = ProcessHelper.ExecProcessAndReturnMessages xLn (TimeSpan.FromSeconds(10.))
-    
+
     match r.OK, Logging.verbose with
-    | true, true -> 
+    | true, true ->
         let m = ProcessHelper.toLines r.Messages
         sprintf "symlink used %s -> %s (%s)" source target m |> Logging.traceVerbose
     | true, false -> ()
