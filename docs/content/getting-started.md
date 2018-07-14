@@ -34,6 +34,8 @@ This guide will show you
 1. Commit `.paket/paket.exe` to your repository.
 1. After the first `.paket/paket.exe` invocation Paket will create a couple of
    files in `.paket` — commit those as well.
+1. Configure your source control system to ignore the `paket-files` folder, for example
+   in Git add a line to the `.gitignore` file containing `paket-files`.
 
 ### Specifying dependencies
 
@@ -154,3 +156,22 @@ This command will analyze your
 
 If you are already using NuGet and want to learn how to use the automatic NuGet
 conversion, then read the next [tutorial](convert-from-nuget-tutorial.html).
+
+### Working with Paket
+
+The most frequently used Paket commands are:
+
+* `paket install` which you should run after modifying the `paket.dependencies` file. 
+  This command will update the `paket.lock` file, then update all of your Visual Studio
+  projects to the new versions.
+
+* `paket restore` which you should run after cloning the repository or switching branches.
+  This command will take the current `paket.lock` file and update your Visual Studio projects
+  so that they are referencing the correct versions of NuGet packages. If you are using a
+  continuous integration system like TeamCity or Jenkins then you should also run this
+  command after getting the source code and before compiling it.
+  
+* `paket update` which you can run to update your project to the latest versions of all
+  dependent packages. This command will update the `paket.lock` file to reference the most
+  recent versions permitted by the restrictions in `paket.dependencies`, then apply these
+  changes to your Visual Studio projects.
