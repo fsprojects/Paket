@@ -10,6 +10,8 @@ open Chessie.ErrorHandling
 open Paket.Logging
 open InstallProcess
 
+type RTC = DependencyChangeDetection.ResolutionTriggeringChange
+
 let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGraphFromPackage (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode semVerUpdateMode =
     let dependenciesFile =
         let processFile createRequirementF =
@@ -42,6 +44,42 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
 
     let getPreferredVersionsF,getPackageDetailsF,groupsToUpdate =
         let changes,groups =
+            let install groupName =
+                let hasAnyChanges,nuGetChanges,remoteFileChanges,getChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,true)
+
+                let hasChanges groupName x = 
+                    match getChanges groupName x with
+                    | [] ->
+                        tracefn "Skipping resolver for group %O since it is already up-to-date" groupName
+                        false
+                    | changes ->
+                        tracefn "Resolving group %O because of changes:" groupName
+
+                        changes
+                        |> List.map (function
+                            | RTC.NuGetChange (packageName, change) ->
+                                sprintf "Package %O: %O" packageName change
+                            | RTC.RemoteChange (project, file) ->
+                                sprintf "Remote file %s changed in project %s" file project
+                            | RTC.SettingsChange -> "Group has settings changes")
+                        |> List.iter (tracefn "- %s")
+
+                        true
+
+                let groupFilter =
+                    match groupName with
+                    | Some groupName -> fun g -> g = groupName
+                    | None -> fun _ -> true
+
+                let groups =
+                    dependenciesFile.Groups
+                    |> Map.filter (fun g _ -> groupFilter g)
+                    |> Map.filter hasChanges
+
+                nuGetChanges
+                |> Set.map (fun (f,s,_) -> f,s)
+                |> Set.filter (fst >> groupFilter), groups
+
             match updateMode with
             | UpdateAll ->
                 let changes =
@@ -78,38 +116,8 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
                     |> Map.filter (fun k _ -> k = groupName || changes |> Seq.exists (fun (g,_) -> g = k))
 
                 changes,groups
-            | InstallGroup groupName ->
-                let hasAnyChanges,nuGetChanges,remoteFileChanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,true)
-
-                let hasChanges groupName x = 
-                    let hasChanges = hasChanges groupName x
-                    if not hasChanges then
-                        tracefn "Skipping resolver for group %O since it is already up-to-date" groupName
-                    hasChanges
-
-                let groups =
-                    dependenciesFile.Groups
-                    |> Map.filter (fun k _ -> k = groupName)
-                    |> Map.filter hasChanges
-
-                nuGetChanges
-                |> Set.map (fun (f,s,_) -> f,s)
-                |> Set.filter (fun (g,_) -> g = groupName), groups
-            | Install ->
-                let hasAnyChanges,nuGetChanges,remoteFileChanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,true)
-
-                let hasChanges groupName x = 
-                    let hasChanges = hasChanges groupName x
-                    if not hasChanges then
-                        tracefn "Skipping resolver for group %O since it is already up-to-date" groupName
-                    hasChanges
-
-                let groups =
-                    dependenciesFile.Groups
-                    |> Map.filter hasChanges
-
-                nuGetChanges
-                |> Set.map (fun (f,s,_) -> f,s), groups
+            | InstallGroup groupName -> install (Some groupName)
+            | Install -> install None
 
         let preferredVersions =
             match updateMode with
