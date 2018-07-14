@@ -1,5 +1,6 @@
 ﻿module Paket.DependencyChangeDetection
 
+open Paket.Domain
 open Paket.Requirements
 open Paket.PackageResolver
 
@@ -10,12 +11,24 @@ type DependencyChangeType =
     | SettingsChanged
     /// The Version in the LockFile doesn't match the spec in the dependencies file.
     | VersionNotValid
+    /// The Version in the LockFile is a prerelease, but the dependencies file does not allow prereleases for this package.
+    | PrereleaseVersionNotAllowed
     /// Package from dependencies file was not found in lockfile
     | PackageNotFoundInLockFile
     /// Group from dependencies file was not found in lockfile
     | GroupNotFoundInLockFile
     /// Package from lock file was not found in dependencies file
     | PackageNotFoundInDependenciesFile
+
+    override this.ToString() =
+        match this with
+        | RestrictionsChanged -> "Framework restrictions have changed"
+        | SettingsChanged -> "Settings have changed"
+        | VersionNotValid -> "Installed version is not valid"
+        | PrereleaseVersionNotAllowed -> "Prerelease version installed, but not allowed"
+        | PackageNotFoundInLockFile -> "Package was not found in lock file"
+        | GroupNotFoundInLockFile -> "Group was not found in lock file"
+        | PackageNotFoundInDependenciesFile -> "Package was not found in dependencies file"
 
 let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile,strict) =
     let allTransitives groupName = lockFile.GetTransitiveDependencies groupName
@@ -37,13 +50,19 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
             else []
 
         let requirementOk =
-            let isInRange =
+            let requirement =
                 if strict then
-                    newRequirement.VersionRequirement.IsInRange originalPackage.Version
+                    newRequirement.VersionRequirement
                 else
-                    newRequirement.IncludingPrereleases().VersionRequirement.IsInRange originalPackage.Version
+                    newRequirement.IncludingPrereleases().VersionRequirement
+
+            let isInRange = requirement.IsInRange originalPackage.Version
+
             if not isInRange then
-                [VersionNotValid]
+                if originalPackage.Version.PreRelease.IsSome && requirement.PreReleases = No then
+                    [PrereleaseVersionNotAllowed]
+                else 
+                    [VersionNotValid]
             else []
 
         requirementOk @ settingsChanged()
@@ -219,7 +238,9 @@ let GetPreferredNuGetVersions (dependenciesFile:DependenciesFile,lockFile:LockFi
     |> Map.ofSeq
 
 type ResolutionTriggeringChange =
-    | Change
+    | NuGetChange of PackageName * DependencyChangeType
+    | RemoteChange of projectName:string * fileName:string
+    | SettingsChange
 
 let GetChanges(dependenciesFile,lockFile,strict) =
     let nuGetChanges = findNuGetChangesInDependenciesFile(dependenciesFile,lockFile,strict)
@@ -237,19 +258,27 @@ let GetChanges(dependenciesFile,lockFile,strict) =
     let getNuGetChanges groupName =
         match nuGetChangesPerGroup |> Map.tryFind groupName with
         | None -> []
-        | Some x -> x |> Seq.map (fun _ -> Change) |> Seq.toList
+        | Some x ->
+            x
+            |> Seq.collect (fun (_, package, changes) ->
+                changes
+                |> List.map (fun change -> NuGetChange (package, change)))
+                |> Seq.toList
 
     let getRemoteFileChanges groupName =
         match remoteFileChangesPerGroup |> Map.tryFind groupName with
         | None -> []
-        | Some x -> x |> Seq.map (fun _ -> Change) |> Seq.toList
+        | Some x ->
+            x
+            |> Seq.map (fun (_, change) -> RemoteChange (change.Project, change.Name))
+            |> Seq.toList
 
     let getChangedSettings groupName =
         match dependenciesFile.Groups |> Map.tryFind groupName with
-        | None -> [ Change ]
+        | None -> [ SettingsChange ]
         | Some dependenciesFileGroup -> 
             match lockFile.Groups |> Map.tryFind groupName with
-            | None -> [ Change ]
+            | None -> [ SettingsChange ]
             | Some lockFileGroup ->
                 let lockFileGroupOptions =
                     if dependenciesFileGroup.Options.Settings.FrameworkRestrictions = AutoDetectFramework then
@@ -258,7 +287,7 @@ let GetChanges(dependenciesFile,lockFile,strict) =
                         lockFileGroup.Options
                 
                 if dependenciesFileGroup.Options <> lockFileGroupOptions then
-                    [ Change ]
+                    [ SettingsChange ]
                 else []
 
     let getChanges groupName _ = 

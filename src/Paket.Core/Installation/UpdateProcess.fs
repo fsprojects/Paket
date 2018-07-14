@@ -10,6 +10,8 @@ open Chessie.ErrorHandling
 open Paket.Logging
 open InstallProcess
 
+type RTC = DependencyChangeDetection.ResolutionTriggeringChange
+
 let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGraphFromPackage (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode semVerUpdateMode =
     let dependenciesFile =
         let processFile createRequirementF =
@@ -107,7 +109,17 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
                         tracefn "Skipping resolver for group %O since it is already up-to-date" groupName
                         false
                     | changes ->
-                        tracefn "Resolving group %O because of changes" groupName
+                        tracefn "Resolving group %O because of changes:" groupName
+
+                        changes
+                        |> List.map (function
+                            | RTC.NuGetChange (packageName, change) ->
+                                sprintf "Package %O: %O" packageName change
+                            | RTC.RemoteChange (project, file) ->
+                                sprintf "Remote file %s changed in project %s" file project
+                            | RTC.SettingsChange -> "Group has settings changes")
+                        |> List.iter (tracefn "- %s")
+
                         true
 
                 let groups =
