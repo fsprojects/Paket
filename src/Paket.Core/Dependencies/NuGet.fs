@@ -946,7 +946,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     | HttpStatusCode.OK -> ()
                     | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode
 
-                    let speed = int (float pos * 8. / float lastSpeedMeasure.ElapsedMilliseconds)
+                    let speed = int (float pos * 8. / float sw.ElapsedMilliseconds)
                     let size = pos / (1024L * 1024L)
                     tracefn "Download of %O %O%s done in %s. (%d kbit/s, %d MB)" packageName version groupString (Utils.TimeSpanToReadableString sw.Elapsed) speed size
 
