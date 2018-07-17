@@ -1,3 +1,6 @@
+#### 5.174.5 - 2018-07-17
+* BUGFIX: "-T" switch removed when isMacOS, because it is not valid on OSX - https://github.com/fsprojects/Paket/pull/3298
+
 #### 5.174.4 - 2018-07-17
 * BUGFIX: Fixed exception during restore when accessing missing folders - https://github.com/fsprojects/Paket/pull/3293
 
