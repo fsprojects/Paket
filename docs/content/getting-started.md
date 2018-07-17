@@ -161,17 +161,17 @@ conversion, then read the next [tutorial](convert-from-nuget-tutorial.html).
 
 The most frequently used Paket commands are:
 
-* `paket install` which you should run after modifying the `paket.dependencies` file. 
+* [`paket install` command](paket-install.html) which you should run after modifying the `paket.dependencies` file. 
   This command will update the `paket.lock` file, then update all of your Visual Studio
   projects to the new versions.
 
-* `paket restore` which you should run after cloning the repository or switching branches.
+* [`paket restore` command](paket-restore.html) which you should run after cloning the repository or switching branches.
   This command will take the current `paket.lock` file and update your Visual Studio projects
   so that they are referencing the correct versions of NuGet packages. If you are using a
   continuous integration system like TeamCity or Jenkins then you should also run this
   command after getting the source code and before compiling it.
   
-* `paket update` which you can run to update your project to the latest versions of all
+* [`paket update` command](paket-update.html) which you can run to update your project to the latest versions of all
   dependent packages. This command will update the `paket.lock` file to reference the most
   recent versions permitted by the restrictions in `paket.dependencies`, then apply these
   changes to your Visual Studio projects.
