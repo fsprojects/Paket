@@ -1,3 +1,6 @@
+#### 5.174.3 - 2018-07-17
+* BUGFIX: Reports NuGet download time correctly - https://github.com/fsprojects/Paket/pull/3304
+
 #### 5.174.2 - 2018-07-06
 * BUGFIX: Accept netstandard20 in Visual Studion integration - https://github.com/fsprojects/Paket/issues/3284
 
