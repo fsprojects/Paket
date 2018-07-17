@@ -1,3 +1,6 @@
+#### 5.174.4 - 2018-07-17
+* BUGFIX: Fixed exception during restore when accessing missing folders - https://github.com/fsprojects/Paket/pull/3293
+
 #### 5.174.3 - 2018-07-17
 * BUGFIX: Reports NuGet download time correctly - https://github.com/fsprojects/Paket/pull/3304
 
