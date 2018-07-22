@@ -342,6 +342,7 @@ let internal addHeader (client:HttpClient) (headerKey:string) (headerVal:string)
     client.DefaultRequestHeaders.Add(headerKey, headerVal)
 
 let createHttpClient (url,auth:Auth option) =
+#if !NO_WINCLIENTHANDLER
     if isWindows then
         // See https://github.com/dotnet/corefx/issues/31098
         let proxy = getDefaultProxyFor url
@@ -370,6 +371,7 @@ let createHttpClient (url,auth:Auth option) =
             handler.WindowsProxyUsePolicy <- WindowsProxyUsePolicy.UseCustomProxy
         client
     else
+#endif
         let handler =
             new HttpClientHandler(
                 UseProxy = true,
