@@ -4,6 +4,7 @@ Mono.Cecil
 Chessie
 FSharp.Compiler.Tools
 System.Net.Http
+System.Net.Http.WinHttpHandler
 
 File:Globbing.fs Common\
 File:AssemblyReader.fs Common\

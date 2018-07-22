@@ -13,6 +13,7 @@ nuget FSharp.Compiler.Tools
 
 nuget NETStandard.Library >= 2.0 prerelease
 nuget Microsoft.NETCore.App >= 2.0 prerelease
+nuget System.Net.Http.WinHttpHandler
 
 nuget Moq
 nuget FSCheck
