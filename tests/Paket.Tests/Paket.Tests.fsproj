@@ -76,11 +76,11 @@
       <Paket>True</Paket>
       <Link>FsUnit.fs</Link>
     </Compile>
-    <Compile Include="Versioning\PackageSourceSpecs.fs" />
     <None Include="paket.references" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="TestHelpers.fs" />
     <Compile Include="UtilsSpecs.fs" />
+    <Compile Include="Versioning\PackageSourceSpecs.fs" />
     <Compile Include="Versioning\PlatformMatchingSpecs.fs" />
     <Compile Include="Versioning\SemVerSpecs.fs" />
     <Compile Include="Versioning\FrameworkCompatibilitySpecs.fs" />
