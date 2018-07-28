@@ -17,7 +17,7 @@ let Read fileName =
     [for node in doc.SelectNodes("//package") ->
         let v = node.Attributes.["version"].Value
         { NugetPackage.Id = node.Attributes.["id"].Value
-          VersionRequirement = VersionRequirement.Parse v
+          VersionRequirement = VersionRequirement.VersionRequirement (VersionRange.Specific (SemVer.Parse v), PreReleaseStatus.All)
           Kind = NugetPackageKind.Package
           TargetFramework = 
             node 
