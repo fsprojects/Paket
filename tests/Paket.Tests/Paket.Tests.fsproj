@@ -77,11 +77,11 @@
       <Paket>True</Paket>
       <Link>FsUnit.fs</Link>
     </Compile>
-    <Compile Include="Versioning\PackageSourceSpecs.fs" />
     <None Include="paket.references" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="TestHelpers.fs" />
     <Compile Include="UtilsSpecs.fs" />
+    <Compile Include="Versioning\PackageSourceSpecs.fs" />
     <Compile Include="Versioning\PlatformMatchingSpecs.fs" />
     <Compile Include="Versioning\SemVerSpecs.fs" />
     <Compile Include="Versioning\FrameworkCompatibilitySpecs.fs" />
@@ -229,8 +229,8 @@
     <Compile Include="Lockfile\ParserSpecs.fs" />
     <Compile Include="Lockfile\QuerySpecs.fs" />
     <Compile Include="Lockfile\ParserWithMultipleSourcesSpecs.fs" />
-    <Compile Include="ReferencesFile\ReferencesFileSpecs.fs" />
     <Compile Include="LocalFile\LocalFileSpecs.fs" />
+    <Compile Include="ReferencesFile\ReferencesFileSpecs.fs" />
     <Compile Include="Simplifier\BasicScenarioSpecs.fs" />
     <None Include="ProjectFile\TestData\AnalyzerProject.csprojtest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
