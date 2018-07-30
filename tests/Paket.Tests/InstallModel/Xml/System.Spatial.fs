@@ -45,7 +45,7 @@ let ``should generate Xml for System.Spatial``() =
               @"..\System.Spatial\lib\sl4\zh-Hans\System.Spatial.resources.dll" 
             ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\System.Spatial\",[],[],Nuspec.All)
     
-    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
     let currentXML = ctx.ChooseNodes.Head.OuterXml |> normalizeXml
     currentXML
     |> shouldEqual (normalizeXml expected)
