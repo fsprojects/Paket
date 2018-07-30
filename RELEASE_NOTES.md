@@ -1,13 +1,8 @@
-#### 5.174.5 - 2018-07-17
+#### 5.175.0 - 2018-07-30
+* Allow addition of <EmbedInteropTypes> for NuGet packages - https://github.com/fsprojects/Paket/pull/3314
 * BUGFIX: "-T" switch removed when isMacOS, because it is not valid on OSX - https://github.com/fsprojects/Paket/pull/3298
-
-#### 5.174.4 - 2018-07-17
 * BUGFIX: Fixed exception during restore when accessing missing folders - https://github.com/fsprojects/Paket/pull/3293
-
-#### 5.174.3 - 2018-07-17
 * BUGFIX: Reports NuGet download time correctly - https://github.com/fsprojects/Paket/pull/3304
-
-#### 5.174.2 - 2018-07-06
 * BUGFIX: Accept netstandard20 in Visual Studion integration - https://github.com/fsprojects/Paket/issues/3284
 
 #### 5.174.0 - 2018-07-06
