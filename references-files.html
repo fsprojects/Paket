@@ -142,6 +142,10 @@ Fody <span class="k">content</span>: once
 DotNetZip <span class="k">framework</span>: <span class="o">&gt;=</span> net45
 FSharp.Core <span class="k">redirects</span>: on
 </code></pre></td></tr></table>
+<h2><a name="Adding-support-for-COM-interop-DLL" class="anchor" href="#Adding-support-for-COM-interop-DLL">Adding support for COM interop DLL</a></h2>
+<p>Follows the same syntax as the previous one:
+<code>PkgName embed_interop_types: true</code>
+In case it is not enabled, the default behavior is to drop <code>&lt;EmbedInteropTypes&gt;</code> from the project file.</p>
 <h2><a name="Excluding-libraries" class="anchor" href="#Excluding-libraries">Excluding libraries</a></h2>
 <p>This option allows you to exclude libraries from being referenced in project files:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>

@@ -101,6 +101,10 @@ Rename <code>.paket/paket.bootstrapper.exe</code> to <code>.paket/paket.exe</cod
 After the first <code>.paket/paket.exe</code> invocation Paket will create a couple of
 files in <code>.paket</code> — commit those as well.
 </li>
+<li>
+Configure your source control system to ignore the <code>paket-files</code> folder, for example
+in Git add a line to the <code>.gitignore</code> file containing <code>paket-files</code>.
+</li>
 </ol>
 <h3><a name="Specifying-dependencies" class="anchor" href="#Specifying-dependencies">Specifying dependencies</a></h3>
 <p>Create a <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> in your project's
@@ -230,6 +234,28 @@ reference the dependencies in your projects:</p>
 <h3><a name="Converting-from-NuGet" class="anchor" href="#Converting-from-NuGet">Converting from NuGet</a></h3>
 <p>If you are already using NuGet and want to learn how to use the automatic NuGet
 conversion, then read the next <a href="convert-from-nuget-tutorial.html">tutorial</a>.</p>
+<h3><a name="Working-with-Paket" class="anchor" href="#Working-with-Paket">Working with Paket</a></h3>
+<p>The most frequently used Paket commands are:</p>
+<ul>
+<li>
+<p><a href="paket-install.html"><code>paket install</code> command</a> which you should run after modifying the <code>paket.dependencies</code> file.
+This command will update the <code>paket.lock</code> file, then update all of your Visual Studio
+projects to the new versions.</p>
+</li>
+<li>
+<p><a href="paket-restore.html"><code>paket restore</code> command</a> which you should run after cloning the repository or switching branches.
+This command will take the current <code>paket.lock</code> file and update your Visual Studio projects
+so that they are referencing the correct versions of NuGet packages. If you are using a
+continuous integration system like TeamCity or Jenkins then you should also run this
+command after getting the source code and before compiling it.</p>
+</li>
+<li>
+<p><a href="paket-update.html"><code>paket update</code> command</a> which you can run to update your project to the latest versions of all
+dependent packages. This command will update the <code>paket.lock</code> file to reference the most
+recent versions permitted by the restrictions in <code>paket.dependencies</code>, then apply these
+changes to your Visual Studio projects.</p>
+</li>
+</ul>
 
 
         </div>
