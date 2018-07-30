@@ -131,8 +131,14 @@ let addDependency (templateFile : TemplateFile) (dependency : PackageName * Vers
                 |> Option.isSome)
             |> function
             | Some _ -> opt.DependencyGroups
-            | None -> dependency |> addDependencyToFrameworkGroup None opt.DependencyGroups
-
+            | None ->
+                match opt.DependencyGroups |> List.map (fun { Framework = tfm } -> tfm) with
+                | [] ->
+                    dependency |> addDependencyToFrameworkGroup None opt.DependencyGroups
+                | tfms ->
+                    // add to all dependency groups
+                    (opt.DependencyGroups, tfms)
+                    ||> List.fold (fun groups tfm -> dependency |> addDependencyToFrameworkGroup tfm groups)
 
         { FileName = templateFile.FileName
           Contents = CompleteInfo(core, { opt with DependencyGroups = newDeps }) }
