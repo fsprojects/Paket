@@ -1,3 +1,6 @@
+#### 5.175.1 - 2018-07-30
+* BUGFIX: Revert impact of https://github.com/dotnet/corefx/issues/31098 by using WinHttpHandler - https://github.com/fsprojects/Paket/pull/3307
+
 #### 5.175.0 - 2018-07-30
 * Allow addition of <EmbedInteropTypes> for NuGet packages - https://github.com/fsprojects/Paket/pull/3314
 * BUGFIX: "-T" switch removed when isMacOS, because it is not valid on OSX - https://github.com/fsprojects/Paket/pull/3298
