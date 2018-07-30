@@ -1,4 +1,4 @@
-#### 5.175.1 - 2018-07-30
+#### 5.175.2 - 2018-07-30
 * BUGFIX: Revert impact of https://github.com/dotnet/corefx/issues/31098 by using WinHttpHandler - https://github.com/fsprojects/Paket/pull/3307
 
 #### 5.175.0 - 2018-07-30
