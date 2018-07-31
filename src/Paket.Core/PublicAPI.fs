@@ -300,8 +300,6 @@ type Dependencies(dependenciesFileName: string) =
             let scriptPath = Path.Combine (rootDir.FullName , sd.PartialPath)
             if verbose then
                 verbosefn "scriptpath - %s" scriptPath
-            let scriptDir = Path.GetDirectoryName scriptPath |> Path.GetFullPath |> DirectoryInfo
-            scriptDir.Create()
             if verbose then
                 verbosefn "created - '%s'" (Path.Combine(rootDir.FullName , sd.PartialPath))
             sd.Save rootDir
