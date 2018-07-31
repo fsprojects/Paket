@@ -5,23 +5,52 @@ open NUnit.Framework
 open FsUnit
 open System.Xml
 
-let createProject name = 
+let createProjectNode v =
+    let doc = XmlDocument()
+    let projectNode = doc.CreateNode("element", "Project", "")
+    let versionAttribute =
+        let attr = doc.CreateAttribute("ToolsVersion")
+        attr.Value <- v
+        attr
+
+    projectNode.Attributes.Append versionAttribute |> ignore
+    projectNode
+
+let createProject name =
     { FileName = name
       OriginalText = ""
       Document = XmlDocument()
-      ProjectNode = null
+      ProjectNode = createProjectNode "4.0"
+      Language = ProjectLanguage.Unknown
+      DefaultProperties = None
+      CalculatedProperties = new System.Collections.Concurrent.ConcurrentDictionary<_,_>() }
+
+let createProjectv15 name =
+    { FileName = name
+      OriginalText = ""
+      Document = XmlDocument()
+      ProjectNode = createProjectNode "15"
       Language = ProjectLanguage.Unknown
       DefaultProperties = None
       CalculatedProperties = new System.Collections.Concurrent.ConcurrentDictionary<_,_>() }
 
 [<Test>]
-let ``should recognize compilable files``() =
+let ``should recognize compilable files as compile items in the old project system``() =
     (createProject "A.csproj").DetermineBuildAction "Class.cs" |> shouldEqual BuildAction.Compile
     (createProject "B.fsproj").DetermineBuildAction "Module.fs" |> shouldEqual BuildAction.Compile
     (createProject "B.fsproj").DetermineBuildAction "Module.fsi" |> shouldEqual BuildAction.Compile
     (createProject "C.vbproj").DetermineBuildAction "Whatever.vb" |> shouldEqual BuildAction.Compile
     (createProject "D.nproj").DetermineBuildAction "Main.n" |> shouldEqual BuildAction.Compile
     (createProject "E.pyproj").DetermineBuildAction "Class.py" |> shouldEqual BuildAction.Compile
+
+[<Test>]
+let ``should recognize compilable files as content items in the new project system``() =
+    (createProjectv15 "A.csproj").DetermineBuildAction "Class.cs" |> shouldEqual BuildAction.Content
+    (createProjectv15 "B.fsproj").DetermineBuildAction "Module.fs" |> shouldEqual BuildAction.Content
+    (createProjectv15 "B.fsproj").DetermineBuildAction "Module.fsi" |> shouldEqual BuildAction.Compile // .fsi seems hardcoded to Compile in DetermineBuildAction
+    (createProjectv15 "C.vbproj").DetermineBuildAction "Whatever.vb" |> shouldEqual BuildAction.Content
+    (createProjectv15 "D.nproj").DetermineBuildAction "Main.n" |> shouldEqual BuildAction.Content
+    (createProjectv15 "E.pyproj").DetermineBuildAction "Class.py" |> shouldEqual BuildAction.Content
 
 [<Test>]
 let ``should recognize content files``() =
