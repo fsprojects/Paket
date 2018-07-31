@@ -5,22 +5,27 @@ open NUnit.Framework
 open FsUnit
 open System.Xml
 
-let createProjectNode v =
+let createProjectNode toolsVersion sdkVersion =
     let doc = XmlDocument()
     let projectNode = doc.CreateNode("element", "Project", "")
     let versionAttribute =
         let attr = doc.CreateAttribute("ToolsVersion")
-        attr.Value <- v
+        attr.Value <- toolsVersion
+        attr
+    let sdkAttribute =
+        let attr = doc.CreateAttribute("Sdk")
+        attr.Value <- sdkVersion
         attr
 
     projectNode.Attributes.Append versionAttribute |> ignore
+    projectNode.Attributes.Append sdkAttribute |> ignore
     projectNode
 
 let createProject name =
     { FileName = name
       OriginalText = ""
       Document = XmlDocument()
-      ProjectNode = createProjectNode "4.0"
+      ProjectNode = createProjectNode "4.0" ""
       Language = ProjectLanguage.Unknown
       DefaultProperties = None
       CalculatedProperties = new System.Collections.Concurrent.ConcurrentDictionary<_,_>() }
@@ -29,7 +34,7 @@ let createProjectv15 name =
     { FileName = name
       OriginalText = ""
       Document = XmlDocument()
-      ProjectNode = createProjectNode "15"
+      ProjectNode = createProjectNode "15.0" "Microsoft.NET.Sdk"
       Language = ProjectLanguage.Unknown
       DefaultProperties = None
       CalculatedProperties = new System.Collections.Concurrent.ConcurrentDictionary<_,_>() }
