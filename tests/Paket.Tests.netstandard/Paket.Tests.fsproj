@@ -209,13 +209,14 @@
   </Target>
 
   <ItemGroup>
+    <PackageReference Include="Argu" Version="5.1" />
     <PackageReference Include="FsCheck" Version="2.10.4" />
     <PackageReference Include="nunit" Version="3.9.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Paket.preview3\Paket.fsproj" />
-    <ProjectReference Include="..\..\src\Paket.Core.preview3\Paket.Core.fsproj" />
+    <ProjectReference Include="..\..\src\paket-cli\paket-cli.fsproj" />
+    <ProjectReference Include="..\..\src\Paket.Core.netstandard\Paket.Core.fsproj" />
   </ItemGroup>
 </Project>

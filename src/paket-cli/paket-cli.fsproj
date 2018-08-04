@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <PackAsTool>true</PackAsTool>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <AssemblyName>paket</AssemblyName>
+    <ToolCommandName>paket</ToolCommandName>
   </PropertyGroup>
   <!--<Win32Resource>paket.res</Win32Resource>-->
   <ItemGroup>
@@ -13,7 +14,7 @@
     <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Paket.Core.preview3\Paket.Core.fsproj" />
+    <ProjectReference Include="..\Paket.Core.netstandard\Paket.Core.fsproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
