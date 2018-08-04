@@ -11,7 +11,6 @@ open Paket.BindingRedirects
 open System.IO
 open Paket.PackageSources
 open Paket.Requirements
-open ProviderImplementation.AssemblyReader
 open System.Collections.Generic
 open System.Reflection
 

@@ -1,7 +1,6 @@
 ﻿module Paket.PlatformMatching
 
 open System
-open ProviderImplementation.AssemblyReader.Utils.SHA1
 open Logging
 
 [<Literal>]

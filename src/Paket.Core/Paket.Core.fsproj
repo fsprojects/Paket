@@ -29,6 +29,7 @@
     <StartWorkingDirectory>
     </StartWorkingDirectory>
     <StartWorkingDirectory>C:\proj\testing\testpaketfailure\</StartWorkingDirectory>
+    <DebugType>full</DebugType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -62,13 +63,9 @@
   <ItemGroup>
     <None Include="paket.references" />
     <EmbeddedResource Include="embedded\Paket.Restore.targets" />
-    <Compile Include="Common\AssemblyMetadata.fs" />
     <Compile Include="Common\AssemblyInfo.fs" />
+    <Compile Include="Common\AssemblyMetadata.fs" />
     <Compile Include="Common\CustomAssemblyInfo.fs" />
-    <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.SDK\src\AssemblyReader.fs">
-      <Paket>True</Paket>
-      <Link>Common/AssemblyReader.fs</Link>
-    </Compile>
     <Compile Include="..\..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
       <Paket>True</Paket>
       <Link>Common/Globbing.fs</Link>
@@ -129,6 +126,7 @@
     <Compile Include="Installation\RestoreProcess.fs" />
     <Compile Include="Installation\InstallProcess.fs" />
     <Compile Include="Installation\UpdateProcess.fs" />
+    <Compile Include="Installation\DataModel.fs" />
     <Compile Include="PackageAnalysis\Queries.fs" />
     <Compile Include="PackageAnalysis\Environment.fs" />
     <Compile Include="PackageAnalysis\FindOutdated.fs" />

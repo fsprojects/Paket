@@ -7,7 +7,6 @@ open System.Collections.Concurrent
 open PackageResolver
 open System.Collections.Generic
 open Logging
-open ProviderImplementation.AssemblyReader.Utils.SHA1
 open Requirements
 open System
 open System.Reflection

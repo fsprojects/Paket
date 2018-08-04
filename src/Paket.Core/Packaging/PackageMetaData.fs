@@ -6,6 +6,7 @@ open System.IO
 open System.Reflection
 open Paket.Domain
 open Paket.Logging
+open Paket.AssemblyMetadata
 open System.Collections.Generic
 open Paket.Requirements
 open Paket.Xml
@@ -66,15 +67,8 @@ let getDescription attributes =
 let readAssembly fileName =
     if verbose then
         traceVerbose (sprintf "Loading assembly metadata for %s" fileName)
-    let assemblyReader = 
-        ProviderImplementation.AssemblyReader.ILModuleReaderAfterReadingAllBytes(
-            fileName, 
-            ProviderImplementation.AssemblyReader.mkILGlobals ProviderImplementation.AssemblyReader.EcmaMscorlibScopeRef)
-   
-    let versionFromAssembly = assemblyReader.ILModuleDef.ManifestOfAssembly.Version
-    let id = assemblyReader.ILModuleDef.ManifestOfAssembly.Name
-    assemblyReader,id,versionFromAssembly,fileName
-
+    let assemblyReader = new AssemblyMetadataReader(AssemblyFile fileName)   
+    assemblyReader;
 
 let readAssemblyFromProjFile buildConfig buildPlatform (projectFile : ProjectFile) = 
     let root = Path.GetDirectoryName projectFile.FileName
@@ -83,20 +77,8 @@ let readAssemblyFromProjFile buildConfig buildPlatform (projectFile : ProjectFil
     FileInfo(Path.Combine(root, subFolder, assemblyName) |> normalizePath).FullName
     |> readAssembly
 
-let loadAssemblyAttributes (assemblyReader:ProviderImplementation.AssemblyReader.ILModuleReader) = 
-    let getMetaData inp = 
-        try
-            ProviderImplementation.AssemblyReader.decodeILCustomAttribData assemblyReader.ILGlobals inp
-        with
-        | _ -> []
-
-    [for inp in assemblyReader.ILModuleDef.ManifestOfAssembly.CustomAttrs.Elements do
-        match getMetaData inp with
-        | [] -> ()
-        | args -> 
-            let all = args |> Seq.map (fun (_,arg) -> if isNull arg then "" else arg.ToString())
-            yield (inp.Method.EnclosingType.BasicQualifiedName, Seq.head all)]
-
+let loadAssemblyAttributes (assemblyReader:AssemblyMetadataReader) = 
+    assemblyReader.getAssemblyAttributes |> Seq.toList
 
 let (|Valid|Invalid|) md = 
     match md with
