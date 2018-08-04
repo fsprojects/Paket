@@ -79,6 +79,11 @@ DotNetZip framework: >= net45
 FSharp.Core redirects: on
 ```
 
+## Adding support for COM interop DLL
+Follows the same syntax as the previous one:
+`PkgName embed_interop_types: true`
+In case it is not enabled, the default behavior is to drop `<EmbedInteropTypes>` from the project file.
+
 ## Excluding libraries
 
 This option allows you to exclude libraries from being referenced in project files:

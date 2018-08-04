@@ -131,8 +131,14 @@ let addDependency (templateFile : TemplateFile) (dependency : PackageName * Vers
                 |> Option.isSome)
             |> function
             | Some _ -> opt.DependencyGroups
-            | None -> dependency |> addDependencyToFrameworkGroup None opt.DependencyGroups
-
+            | None ->
+                match opt.DependencyGroups |> List.map (fun { Framework = tfm } -> tfm) with
+                | [] ->
+                    dependency |> addDependencyToFrameworkGroup None opt.DependencyGroups
+                | tfms ->
+                    // add to all dependency groups
+                    (opt.DependencyGroups, tfms)
+                    ||> List.fold (fun groups tfm -> dependency |> addDependencyToFrameworkGroup tfm groups)
 
         { FileName = templateFile.FileName
           Contents = CompleteInfo(core, { opt with DependencyGroups = newDeps }) }
@@ -213,13 +219,25 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                     let satelliteAssemblyName = Path.GetFileNameWithoutExtension(project.GetAssemblyName()) + ".resources.dll"
                     let projectDir = Path.GetDirectoryName(Path.GetFullPath(project.FileName))
                     let outputDir = Path.Combine(projectDir, project.GetOutputDirectory config platform)
-                    for language in project.FindLocalizedLanguageNames() do
-                        let fileName = Path.Combine(outputDir, language, satelliteAssemblyName)
-                        if File.Exists fileName then
-                            let satelliteTargetDir = Path.Combine(targetDir, language)
-                            yield (FileInfo fileName, satelliteTargetDir)
-                        else
-                            traceWarnfn "Did not find satellite assembly for (%s) try building and running pack again." language 
+
+                    let satelliteWithFolders =
+                        Directory.GetFiles(outputDir, satelliteAssemblyName, SearchOption.AllDirectories)
+                        |> Array.map (fun sa -> (sa, Directory.GetParent(sa)))
+                        |> Array.filter (fun (sa, dirInfo) -> Cultures.isLanguageName (dirInfo.Name))
+
+                    let existedSatelliteLanguages =
+                        satelliteWithFolders
+                        |> Array.map (fun (_, dirInfo) -> dirInfo.Name)
+                        |> Set.ofArray
+
+                    project.FindLocalizedLanguageNames()
+                    |> List.filter (existedSatelliteLanguages.Contains >> not)
+                    |> List.iter (fun lang ->
+                        traceWarnfn "Did not find satellite assembly for (%s) try building and running pack again." lang)
+
+                    yield!
+                        satelliteWithFolders
+                        |> Array.map (fun (sa, dirInfo) -> (FileInfo sa, Path.Combine(targetDir, dirInfo.Name)))
             }
 
         let template =

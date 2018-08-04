@@ -15,13 +15,6 @@ let ``can write xunit.visualstudio.packages.config``() =
     Serialize config |> normalizeLineEndings |> shouldEqual expected
 
 [<Test>]
-let ``can write xunit.visualstudio.package2s.config``() = 
-    let fileName = "PackagesConfig/xunit.visualstudio.packages2.config"
-    let config = Read fileName
-    let expected = File.ReadAllText fileName |> normalizeLineEndings
-    Serialize config |> normalizeLineEndings |> shouldEqual expected
-
-[<Test>]
 let ``can write asp.net.packages.config``() = 
     let fileName = "PackagesConfig/asp.net.packages.config"
     let config = Read fileName

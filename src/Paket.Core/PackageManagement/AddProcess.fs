@@ -59,10 +59,11 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
                 match !lockFile with
                 | None -> ()
                 | Some lockFile ->
-                    InstallProcess.Install(options, false, dependenciesFile, lockFile, Map.empty)
+                    let touchedGroups = Map.empty.Add(groupName,"")
+                    InstallProcess.Install(options, false, dependenciesFile, lockFile, touchedGroups)
                     GarbageCollection.CleanUp(dependenciesFile, lockFile)
         else
-            let updateMode = PackageResolver.UpdateMode.Install
+            let updateMode = PackageResolver.UpdateMode.InstallGroup groupName
             let alternativeProjectRoot = None
             let lockFile,hasChanged,updatedGroups = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, updateMode, options.SemVerUpdateMode, options.Force)
             
@@ -92,7 +93,7 @@ let AddToProject(dependenciesFileName, groupName, package, version, options : In
 
 // Add a package with the option to interactively add it to multiple projects.
 let Add(dependenciesFileName, groupName, package, version, options : InstallerOptions, interactive, installAfter, runResolver, packageKind) =
-    let groupName = matchGroupName(groupName)
+    let groupName = matchGroupName groupName
 
     let addToProjects (projects : ProjectFile seq) groupName package =
         if interactive then
@@ -103,7 +104,7 @@ let Add(dependenciesFileName, groupName, package, version, options : InstallerOp
     add interactive addToProjects dependenciesFileName groupName package version options installAfter runResolver packageKind
     
 let AddGithub(dependenciesFileName, groupName, repository, file, version, options) =
-    let group = matchGroupName(groupName)
+    let group = matchGroupName groupName
     
     let existingDependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
     
@@ -112,7 +113,7 @@ let AddGithub(dependenciesFileName, groupName, repository, file, version, option
 
     dependenciesFile.Save()
     
-    let updateMode = PackageResolver.UpdateMode.Install
+    let updateMode = PackageResolver.UpdateMode.InstallGroup group
     let alternativeProjectRoot = None
     let lockFile,_,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, updateMode, options.SemVerUpdateMode, options.Force)
     
@@ -129,7 +130,7 @@ let AddGit(dependenciesFileName, groupName, repository, version, options) =
 
     dependenciesFile.Save()
     
-    let updateMode = PackageResolver.UpdateMode.Install
+    let updateMode = PackageResolver.UpdateMode.InstallGroup group
     let alternativeProjectRoot = None
     let lockFile,_,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, updateMode, options.SemVerUpdateMode, options.Force)
     

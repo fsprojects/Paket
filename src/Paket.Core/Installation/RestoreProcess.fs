@@ -10,6 +10,7 @@ open Paket.PackageSources
 open System
 open Chessie.ErrorHandling
 open System.Reflection
+open Requirements
 
 /// Finds packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
 let FindPackagesNotExtractedYet(dependenciesFileName) =
@@ -255,7 +256,7 @@ let createAlternativeNuGetConfig (projectFile:FileInfo) =
 
     saveToFile config alternativeConfigFileInfo |> ignore
 
-let createPaketPropsFile (cliTools:ResolvedPackage seq) restoreSuccess (fileInfo:FileInfo) =
+let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (packages:((GroupName * PackageName) * PackageInstallSettings * _)seq) (fileInfo:FileInfo) =
     let cliParts =
         if Seq.isEmpty cliTools then
             ""
@@ -264,22 +265,48 @@ let createPaketPropsFile (cliTools:ResolvedPackage seq) restoreSuccess (fileInfo
             |> Seq.map (fun cliTool -> sprintf """        <DotNetCliToolReference Include="%O" Version="%O" />""" cliTool.Name cliTool.Version)
             |> fun xs -> String.Join(Environment.NewLine,xs)
             |> fun s -> "    <ItemGroup>" + Environment.NewLine + s + Environment.NewLine + "    </ItemGroup>"
+    
+    let packagesParts =
+        if Seq.isEmpty packages then
+            ""
+        else
+            packages
+            |> Seq.map (fun ((groupName,packageName),_,_) -> 
+                let p = lockFile.Groups.[groupName].Resolution.[packageName]
+                let condition = Paket.Requirements.getExplicitRestriction p.Settings.FrameworkRestrictions      
+                p,condition)
+            |> Seq.groupBy snd
+            |> Seq.collect (fun (condition,packages) -> 
+                let condition = condition.ToMSBuildCondition()
+                let condition =
+                    if condition = "" || condition = "true" then "" else
+                    sprintf " AND (%s)" condition
 
-            
+                let packageReferences =
+                    packages    
+                    |> Seq.collect (fun (p,_) ->
+                        [sprintf """        <PackageReference Include="%O">""" p.Name
+                         sprintf """            <Version>%O</Version>""" p.Version
+                         """        </PackageReference>"""])
+
+                [yield sprintf "    <ItemGroup Condition=\"($(DesignTimeBuild) == true)%s\">" condition
+                 yield! packageReferences
+                 yield "    </ItemGroup>"])
+            |> fun xs -> String.Join(Environment.NewLine,xs)
+                
     let content = 
         sprintf """<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-        %s
+        <PaketPropsVersion>5.174.2</PaketPropsVersion>
+        <PaketPropsLoaded>true</PaketPropsLoaded>
     </PropertyGroup>
 %s
-</Project>""" 
-            (if restoreSuccess then 
-                "<!-- <RestoreSuccess>False</RestoreSuccess> -->" 
-             else 
-                "<RestoreSuccess>False</RestoreSuccess>")
+%s
+</Project>"""
             cliParts
+            packagesParts
 
     saveToFile content fileInfo |> ignore
 
@@ -393,7 +420,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                     if verbose then
                         tracefn " - %s already up-to-date" newFileName.FullName
             with
-            | exn ->
+            | exn when trials > 0 ->
                 if verbose then
                     tracefn "Failed to save resolved file %s. Retry. Message: %s" newFileName.FullName exn.Message
                 System.Threading.Thread.Sleep(100)
@@ -402,14 +429,17 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
         loop 5
 
     let cliTools = System.Collections.Generic.List<_>()
+    let packages = System.Collections.Generic.List<_>()
     for kv in groups do
-        let _,cliToolsInGroup = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
+        let packagesInGroup,cliToolsInGroup = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
         cliTools.AddRange cliToolsInGroup
+        packages.AddRange packagesInGroup
 
     let paketCLIToolsFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.clitools"))
     createPaketCLIToolsFile cliTools paketCLIToolsFileName
     
-    createPaketPropsFile cliTools true (ProjectFile.getPaketPropsFileInfo projectFileInfo)
+    let propsFile = ProjectFile.getPaketPropsFileInfo projectFileInfo
+    createPaketPropsFile lockFile cliTools packages propsFile
 
     // Write "cached" file, this way msbuild can check if the references file has changed.
     let paketCachedReferencesFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.references.cached"))
@@ -421,7 +451,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                 // it can happen that the references file doesn't exist if paket doesn't find one in that case we update the cache by deleting it.
                 if paketCachedReferencesFileName.Exists then paketCachedReferencesFileName.Delete()
         with
-        | exn ->
+        | exn when trials > 0 ->
             if verbose then
                 tracefn "Failed to save cached file %s. Retry. Message: %s" paketCachedReferencesFileName.FullName exn.Message
             System.Threading.Thread.Sleep(100)

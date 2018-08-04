@@ -1,0 +1,11 @@
+type project
+dependencies
+  framework: net45
+    FSharp.Core >= LOCKEDVERSION
+    Suave >= LOCKEDVERSION
+  framework: netstandard2.0
+    FSharp.Core >= LOCKEDVERSION-NetStandard
+    Suave >= LOCKEDVERSION-NetStandard
+files
+    bin/Release/net45/MyProj.Common.dll ==> lib/net45
+    bin/Release/netstandard2.0/MyProj.Common.dll ==> lib/netstandard2.0

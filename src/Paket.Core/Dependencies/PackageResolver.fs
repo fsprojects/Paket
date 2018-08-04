@@ -402,6 +402,7 @@ type UpdateMode =
     | UpdateGroup of GroupName
     | UpdateFiltered of GroupName * PackageFilter
     | Install
+    | InstallGroup of GroupName
     | UpdateAll
 
 type private PackageConfig = {
@@ -463,6 +464,7 @@ let private explorePackageConfig (getPackageDetailsBlock:PackageDetailsSyncFunc)
 
     match pkgConfig.UpdateMode with
     | Install -> tracefn  " - %O %A" dependency.Name version
+    | InstallGroup _ -> tracefn  " - %O %A" dependency.Name version
     | _ ->
         match dependency.VersionRequirement.Range with
         | OverrideAll _ when dependency.Parent.IsRootRequirement() -> 

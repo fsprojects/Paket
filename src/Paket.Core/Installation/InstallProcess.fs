@@ -338,25 +338,13 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
         |> Seq.sort
 
     applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root allKnownLibNames bindingRedirects
-
-let invalidateRestoreCachesForDotnetSdk (projectFileInfo:FileInfo) =
-    let paketPropsFile = ProjectFile.getPaketPropsFileInfo projectFileInfo
-    if paketPropsFile.Exists then
-        let old = File.ReadAllText paketPropsFile.FullName
-        let newContent = old.Replace("<!-- <RestoreSuccess>False</RestoreSuccess> -->","<RestoreSuccess>False</RestoreSuccess>")
-        File.WriteAllText(paketPropsFile.FullName, newContent)
-    let assetsFile = ProjectFile.getAssetsFileInfo projectFileInfo
-    if assetsFile.Exists then
-        try assetsFile.Delete() with | _ -> ()
-
+    
 let installForDotnetSDK root (project:ProjectFile) =
     let paketTargetsPath = RestoreProcess.extractRestoreTargets root
     let relativePath = createRelativePath project.FileName paketTargetsPath
     project.RemoveImportForPaketTargets()
     project.AddImportForPaketTargets(relativePath)
-    let projectFileInfo = FileInfo(project.FileName)
-    invalidateRestoreCachesForDotnetSdk (projectFileInfo)
-
+    
 /// Installs all packages from the lock file.
 let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups) =
     tracefn " - Creating model and downloading packages."
@@ -379,8 +367,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
     
     let prefix = dependenciesFile.Directory.Length + 1
     let norm (s:string) = (s.Substring prefix).Replace('\\', '/')
-    
-    let groupSettings = lockFile.Groups |> Map.map (fun k v -> v.Options.Settings)
+        
     for project, referenceFile in projectsAndReferences do
         tracefn " - %s -> %s" (norm referenceFile.FileName) (norm project.FileName)
         let toolsVersion = project.GetToolsVersion()
@@ -427,15 +414,13 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 directDependencies
                 |> Seq.collect (fun u -> lookup.[u.Key] |> Seq.map (fun i -> fst u.Key, u.Value, i))
                 |> Seq.partitionAndChoose
-                    (fun (groupName,(_,parentSettings), dep) ->
-                        lockFile.Groups |> Map.containsKey groupName)
+                    (fun (groupName,_, _) -> lockFile.Groups |> Map.containsKey groupName)
                     (fun (groupName,(_,parentSettings), dep) ->
                         let group = lockFile.Groups.[groupName]
                         match group.TryFind dep with
                         | None -> None
-                        | Some p ->
-                            Some ((groupName,p.Name), (p.Version,parentSettings + p.Settings)) )
-                    (fun (groupName,(_,parentSettings), dep) ->
+                        | Some p -> Some ((groupName,p.Name), (p.Version,parentSettings + p.Settings)) )
+                    (fun (groupName,_, _) ->
                         Some (sprintf " - %s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName groupName)
                     )
             for key,settings in usedPackageDependencies do
@@ -449,11 +434,10 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             usedPackages
             |> Map.filter (fun (_groupName,packageName) (v,settings) ->
                 let hasCondition = settings.ReferenceCondition.IsSome
-                //settings.FrameworkRestrictions
                 match dict.TryGetValue packageName with
-                | true,(v',true,_) when hasCondition ->
+                | true,(_,true,_) when hasCondition ->
                     true
-                | true,(v',hasCondition',restrictions') ->
+                | true,(v',_,restrictions') ->
                     let filtered = filterRestrictions settings.FrameworkRestrictions restrictions'
                     dict.[packageName] <- (v,hasCondition,filtered)
                     if v' = v then
@@ -514,7 +498,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             if toolsVersion >= 15.0 then
                 installForDotnetSDK root project
             else
-                project.UpdateReferences(root, model, directDependencies, usedPackages)
+                project.UpdateReferences(model, directDependencies, usedPackages)
 
                 Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)
                 |> updatePackagesConfigFile usedPackages
@@ -529,32 +513,34 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     let linked = defaultArg file.Settings.Link true
                     let buildAction = project.DetermineBuildActionForRemoteItems file.Name
                     if buildAction <> BuildAction.Reference && linked then
-                        {   BuildAction = buildAction
-                            Include = createRelativePath project.FileName remoteFilePath
-                            WithPaketSubNode = true
-                            CopyToOutputDirectory = None
-                            Link = Some link
-                        }
+                        { BuildAction = buildAction
+                          Include = createRelativePath project.FileName remoteFilePath
+                          WithPaketSubNode = true
+                          CopyToOutputDirectory = None
+                          Link = Some link }
                     else
-                        {   BuildAction = buildAction
-                            WithPaketSubNode = true
-                            CopyToOutputDirectory = None
-                            Include =
-                                if buildAction = BuildAction.Reference then
-                                    createRelativePath project.FileName remoteFilePath
-                                else
-                                    let toDir = Path.GetDirectoryName(project.FileName)
-                                    let targetFile = FileInfo(Path.Combine(toDir,link))
-                                    if targetFile.Directory.Exists |> not then
-                                        targetFile.Directory.Create()
+                        { BuildAction = buildAction
+                          WithPaketSubNode = true
+                          CopyToOutputDirectory = None
+                          Include =
+                            if buildAction = BuildAction.Reference then
+                                createRelativePath project.FileName remoteFilePath
+                            else
+                                let toDir = Path.GetDirectoryName(project.FileName)
+                                let targetFile = FileInfo(Path.Combine(toDir,link))
+                                if targetFile.Directory.Exists |> not then
+                                    targetFile.Directory.Create()
 
-                                    File.Copy(remoteFilePath,targetFile.FullName,true)
-                                    createRelativePath project.FileName targetFile.FullName
-                            Link = None
-                        }
+                                File.Copy(remoteFilePath,targetFile.FullName,true)
+                                createRelativePath project.FileName targetFile.FullName
+                          Link = None }
                 ) |> Seq.toList
-
-            processContentFiles root project usedPackages gitRemoteItems options
+           
+            if toolsVersion >= 15.0 then
+                processContentFiles root project Map.empty gitRemoteItems options
+            else
+                processContentFiles root project usedPackages gitRemoteItems options
+            
             project.Save forceTouch
             projectCache.[project.FileName] <- Some project
 

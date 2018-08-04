@@ -1,3 +1,34 @@
+#### 5.176.1 - 2018-08-02
+* BUGFIX: Removed faulty creation of directories during `generate-load-scripts` - https://github.com/fsprojects/Paket/pull/3319
+
+#### 5.176.0 - 2018-07-31
+* paket pack with p2p dependencies and multitargeting - https://github.com/fsprojects/Paket/pull/3317
+* BUGFIX: Revert impact of https://github.com/dotnet/corefx/issues/31098 by using WinHttpHandler - https://github.com/fsprojects/Paket/pull/3307
+
+#### 5.175.0 - 2018-07-30
+* Allow addition of <EmbedInteropTypes> for NuGet packages - https://github.com/fsprojects/Paket/pull/3314
+* BUGFIX: "-T" switch removed when isMacOS, because it is not valid on OSX - https://github.com/fsprojects/Paket/pull/3298
+* BUGFIX: Fixed exception during restore when accessing missing folders - https://github.com/fsprojects/Paket/pull/3293
+* BUGFIX: Reports NuGet download time correctly - https://github.com/fsprojects/Paket/pull/3304
+* BUGFIX: Accept netstandard20 in Visual Studion integration - https://github.com/fsprojects/Paket/issues/3284
+
+#### 5.174.0 - 2018-07-06
+* NEW FEATURE: Improved Visual Studio integration - https://github.com/fsprojects/Paket/pull/3273
+* BUGFIX: Paket doesn't add Compile tags for packages when new project format ius used - https://github.com/fsprojects/Paket/issues/3269
+* BUGFIX: Paket packs localized assemblies with new .csproj - https://github.com/fsprojects/Paket/pull/3276
+* BUGFIX: Extended NuGetV3 source detection with Artifactory feed format - https://github.com/fsprojects/Paket/pull/3267
+* BUGFIX: Paket add only runs update on the touched group - https://github.com/fsprojects/Paket/issues/3259
+* COSMETICS: group parameter for outdated works like everywhere else - https://github.com/fsprojects/Paket/pull/3280
+
+#### 5.173.0 - 2018-06-20
+* BUGFIX: Don't serialize individual settings that match group settings in lock file - https://github.com/fsprojects/Paket/issues/3257
+
+#### 5.172.4 - 2018-06-18
+* BUGFIX: Fixed invalid syntax in packages config  - https://github.com/fsprojects/Paket/pull/3253
+
+#### 5.172.3 - 2018-06-18
+* BUGFIX: Fixed infinite recursion when handling errors - https://github.com/fsprojects/Paket/pull/3251
+
 #### 5.172.2 - 2018-06-11
 * BUGFIX: Report only transitive settings changes - https://github.com/fsprojects/Paket/issues/3218
 

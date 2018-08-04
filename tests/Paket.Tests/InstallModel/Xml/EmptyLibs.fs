@@ -24,7 +24,7 @@ let ``should generate Xml for framework references and empty libs``() =
               [],
               Nuspec.Load(__SOURCE_DIRECTORY__ + "/../../Nuspec/EmptyLibs.nuspec"))
     
-    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
     ctx.ChooseNodes.Head.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)

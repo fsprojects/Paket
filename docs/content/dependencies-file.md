@@ -202,12 +202,12 @@ the Paket team noticed a dramatic increase of the well known "packages" folder.
 Historically one way was to tell Paket that you only want to compile for `framework: net45`.
 However, this doesn't prevent netstandard dependencies in all situations.
 On the other side more features are provided by Paket and the packages folder has become more and more redundant:
+
  - Load scripts can reference the files in the global cache
  - csproj/fsproj files can references files in the global cache
  - netcore project files don't require any explicit dll-references
+ 
 Therefore, the paket team decided to make the "packages" folder opt-out.
-
-> This feature is currently considered beta
 
 You can opt-out of generating the `packages` folder by using the `storage` option:
 
@@ -219,8 +219,13 @@ source https://nuget.org/api/v2
 nuget jQuery
 ```
 
-The storage option may be overriden by packages. 
-However, the behavior is undefined and may change (please open an issue if you depend on the current behavior or we break you).
+The option may be overriden by packages. However, the behavior is undefined and may change (please open an issue if you depend on the current behavior or we break you).
+
+The storage option has three values:
+
+- `storage: packages` (the default, relevant for FAKE 5 where the default for inline-dependencies is `storage: none`)
+- `storage: none` disable the packages folder and use the global NuGet cache (default in FAKE 5 inline-dependencies)
+- `storage: symlink` use the packages folder but use symlinks instead of physical files
 
 ```paket
 // make a symlink instead copy the packages.
