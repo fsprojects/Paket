@@ -49,16 +49,13 @@ let info =
 // For typical project, no changes are needed below
 // --------------------------------------------------------------------------------------
 
-#load "../../packages/build/FSharp.Formatting/FSharp.Formatting.fsx"
 #I "../../packages/build/FAKE/tools/"
 #r "NuGet.Core.dll"
 #r "FakeLib.dll"
 open Fake
+open Fake.DotNet
 open System.IO
 open Fake.FileHelper
-open FSharp.Literate
-open FSharp.MetadataFormat
-open FSharp.Formatting.Razor
 
 // Paths with template/source/output locations
 let bin        = __SOURCE_DIRECTORY__ @@ "../../bin"
@@ -68,6 +65,7 @@ let output     = __SOURCE_DIRECTORY__ @@ "../output"
 let files      = __SOURCE_DIRECTORY__ @@ "../files"
 let templates  = __SOURCE_DIRECTORY__ @@ "templates"
 let formatting = __SOURCE_DIRECTORY__ @@ "../../packages/build/FSharp.Formatting/"
+let fsFormattingBin = __SOURCE_DIRECTORY__ @@ "../../packages/build/FSharp.Formatting.CommandTool/tools/fsformatting.exe"
 let docTemplate = formatting @@ "templates/docpage.cshtml"
 
 // Where to look for *.csproj templates (in this order)
@@ -96,12 +94,23 @@ let buildReference () =
   let binaries =
     referenceBinaries
     |> List.map (fun lib-> bin @@ lib)
-  RazorMetadataFormat.Generate
+  binaries
+  |> FSFormatting.createDocsForDlls(fun s ->
+    { s with
+        ToolPath = fsFormattingBin
+        OutputDirectory = output @@ "reference"
+        LayoutRoots = layoutRootsAll.["en"]
+        LibDirs = [bin]
+        ProjectParameters = ("root", "../")::info
+        Source = __SOURCE_DIRECTORY__ @@ ".." @@ ".."
+        SourceRepository = githubLink @@ "tree/master" })  
+  (*RazorMetadataFormat.Generate
     ( binaries, output @@ "reference", layoutRootsAll.["en"],
       parameters = ("root", "../")::info,
       sourceRepo = githubLink @@ "tree/master",
       sourceFolder = __SOURCE_DIRECTORY__ @@ ".." @@ "..",
       publicOnly = true, libDirs = [bin] )
+  *)
 
 // Build documentation from `fsx` and `md` files in `docs/content`
 let buildDocumentation () =
@@ -125,11 +134,21 @@ let buildDocumentation () =
         match key with
         | Some lang -> layoutRootsAll.[lang]
         | None -> layoutRootsAll.["en"] // "en" is the default language
-    RazorLiterate.ProcessDirectory
+    FSFormatting.createDocs (fun s ->
+      { s with
+          ToolPath = fsFormattingBin
+          Source = dir
+          OutputDirectory = output @@ sub
+          Template = docTemplate
+          ProjectParameters = ("root", ".")::info
+          LayoutRoots = layoutRoots
+          })
+    (*RazorLiterate.ProcessDirectory
       ( dir, docTemplate, output @@ sub, replacements = ("root", ".")::info,
         layoutRoots = layoutRoots,
         generateAnchors = true )
-
+    *)
+  
 // Generate
 copyFiles()
 #if HELP
