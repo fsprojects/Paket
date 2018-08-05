@@ -737,7 +737,7 @@ type PackageIndex =
 let private getPackageIndexRaw (source : NuGetV3Source) (packageName:PackageName) =
     async {
         let! registrationUrl = getNuGetV3Resource source PackageIndex
-        let url = registrationUrl.TrimEnd('/') + "/" + packageName.ToString().ToLower() + "/index.json"
+        let url = registrationUrl.TrimEnd('/') + "/" + packageName.ToString().ToLowerInvariant() + "/index.json"
         let! rawData = safeGetFromUrl (source.Authentication, url, acceptJson)
         return
             match rawData with
