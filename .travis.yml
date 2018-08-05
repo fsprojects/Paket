@@ -19,7 +19,9 @@ env:
 dotnet: 2.1.3
 
 mono:
-  - 5.4.1
+  - 5.12.0
+  - 5.10.0
+  - 5.8.1
   - latest
 
 matrix:
