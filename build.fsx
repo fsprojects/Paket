@@ -322,7 +322,7 @@ Target "QuickIntegrationTests" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
 
-let mergeLibs = ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "Argu.dll"; "Chessie.dll"]
+let mergeLibs = ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "Argu.dll"; "Chessie.dll"; "System.Collections.Immutable.dll"; "System.Reflection.Metadata.dll"]
 
 Target "MergePaketTool" (fun _ ->
     CreateDir buildMergedDir
