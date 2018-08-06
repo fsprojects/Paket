@@ -1,3 +1,6 @@
+#### 5.176.2 - 2018-08-06
+* BUGFIX: Paket uses ToLowerInvariant instead of ToLower when forming registrationUrl - https://github.com/fsprojects/Paket/pull/3330
+
 #### 5.176.1 - 2018-08-02
 * BUGFIX: Removed faulty creation of directories during `generate-load-scripts` - https://github.com/fsprojects/Paket/pull/3319
 
