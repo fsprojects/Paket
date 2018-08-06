@@ -1,3 +1,6 @@
+#### 5.176.3 - 2018-08-06
+* BUGFIX: Installs content files again - https://github.com/fsprojects/Paket/pull/3318
+
 #### 5.176.2 - 2018-08-06
 * BUGFIX: Paket uses ToLowerInvariant instead of ToLower when forming registrationUrl - https://github.com/fsprojects/Paket/pull/3330
 
