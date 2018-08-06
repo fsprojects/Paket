@@ -286,14 +286,13 @@ external_lock https://myUrl/azurefunctions-v1-paket.lock
 the Paket team noticed a dramatic increase of the well known "packages" folder.
 Historically one way was to tell Paket that you only want to compile for <code>framework: net45</code>.
 However, this doesn't prevent netstandard dependencies in all situations.
-On the other side more features are provided by Paket and the packages folder has become more and more redundant:
-- Load scripts can reference the files in the global cache
-- csproj/fsproj files can references files in the global cache
-- netcore project files don't require any explicit dll-references
-Therefore, the paket team decided to make the "packages" folder opt-out.</p>
-<blockquote>
-<p>This feature is currently considered beta</p>
-</blockquote>
+On the other side more features are provided by Paket and the packages folder has become more and more redundant:</p>
+<ul>
+<li>Load scripts can reference the files in the global cache</li>
+<li>csproj/fsproj files can references files in the global cache</li>
+<li>netcore project files don't require any explicit dll-references</li>
+</ul>
+<p>Therefore, the paket team decided to make the "packages" folder opt-out.</p>
 <p>You can opt-out of generating the <code>packages</code> folder by using the <code>storage</code> option:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
@@ -307,8 +306,13 @@ Therefore, the paket team decided to make the "packages" folder opt-out.</p>
 
 <span class="k">nuget</span> jQuery
 </code></pre></td></tr></table>
-<p>The storage option may be overriden by packages.
-However, the behavior is undefined and may change (please open an issue if you depend on the current behavior or we break you).</p>
+<p>The option may be overriden by packages. However, the behavior is undefined and may change (please open an issue if you depend on the current behavior or we break you).</p>
+<p>The storage option has three values:</p>
+<ul>
+<li><code>storage: packages</code> (the default, relevant for FAKE 5 where the default for inline-dependencies is <code>storage: none</code>)</li>
+<li><code>storage: none</code> disable the packages folder and use the global NuGet cache (default in FAKE 5 inline-dependencies)</li>
+<li><code>storage: symlink</code> use the packages folder but use symlinks instead of physical files</li>
+</ul>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
