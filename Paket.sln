@@ -85,7 +85,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "commands", "commands", "{44
 		docs\content\commands\find-package-versions.md = docs\content\commands\find-package-versions.md
 		docs\content\commands\find-packages.md = docs\content\commands\find-packages.md
 		docs\content\commands\find-refs.md = docs\content\commands\find-refs.md
-		docs\content\commands\generate-include-scripts.md = docs\content\commands\generate-include-scripts.md
 		docs\content\commands\generate-load-scripts.md = docs\content\commands\generate-load-scripts.md
 		docs\content\commands\install.md = docs\content\commands\install.md
 		docs\content\commands\outdated.md = docs\content\commands\outdated.md

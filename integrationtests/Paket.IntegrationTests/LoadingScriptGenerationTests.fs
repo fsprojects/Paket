@@ -75,6 +75,23 @@ let ``simple dependencies generates expected scripts``() =
         Assert.AreEqual(expectedFiles,actualFiles)
 
 
+[<Test; Category("scriptgen")>]
+let ``fslab generates expected load of package loader script``() = 
+    let scenario = "fslab"
+    let framework = "net4"
+    paket "install" scenario |> ignore
+
+    directPaket (sprintf "generate-load-scripts framework %s" framework) scenario |> ignore
+  
+    let files = getGeneratedScriptFiles framework scenario
+
+    let fslabFsxOpt = files |> Array.tryFind (fun p -> p.Name = "FsLab.fsx")
+
+    Assert.True(fslabFsxOpt.IsSome)
+
+    let lines = File.ReadAllLines(fslabFsxOpt.Value.FullName) 
+    Assert.True(lines |> Seq.exists (fun s -> s.StartsWith("#load \"../../../packages/FsLab/FsLab.fsx\"")))
+
 let assertNhibernateForFramework35IsThere scenario =
     let expectations = [
         "iesi.collections.csx", ["Net35/Iesi.Collections.dll"]

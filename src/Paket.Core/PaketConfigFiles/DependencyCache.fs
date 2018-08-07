@@ -95,6 +95,11 @@ type DependencyCache (lockFile:LockFile) =
             dllFiles
 
 
+    let getPackageLoadScriptsWithinPackage scriptTypeExtension  (installModel :InstallModel) =
+        installModel.PackageLoadScripts
+        |> List.filter (fun s ->  s.Path.EndsWith("." + scriptTypeExtension))
+        |> List.map (fun s -> s.Path)
+    
     let getDllsWithinPackage (framework: FrameworkIdentifier) (installModel :InstallModel) =
         let dllFiles =
             installModel
@@ -166,6 +171,13 @@ type DependencyCache (lockFile:LockFile) =
         | Some model ->
             let model = model.Result
             getDllsWithinPackage framework model 
+    
+    member __.GetPackageLoadScripts groupName packageName _framework scriptTypeExtension =
+        match tryGet (groupName,packageName) installModelCache with
+        | None -> []
+        | Some model ->
+            let model = model.Result
+            getPackageLoadScriptsWithinPackage scriptTypeExtension model 
     
     
     member self.GetOrderedFrameworkReferences  groupName packageName (framework: FrameworkIdentifier) =

@@ -246,6 +246,15 @@ let tryFindFolder folder (content:NuGetPackageContent) =
         item
         |> List.collect (collectItems (Path.Combine(content.Path, name)) name))
 
+let tryFindFile file (content:NuGetPackageContent) =
+    content.Content
+    |> List.tryPick (fun c ->
+        match c with
+        | NuGetFile _ when String.equalsIgnoreCase c.Name file -> 
+            Some {UnparsedPackageFile.FullPath = Path.Combine(content.Path, c.Name)
+                  UnparsedPackageFile.PathWithinPackage = c.Name }
+        | _ -> None)
+
 let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
     async {
         let targetFile = FileInfo targetFileName
