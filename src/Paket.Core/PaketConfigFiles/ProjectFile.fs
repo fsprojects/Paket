@@ -1564,9 +1564,7 @@ module ProjectFile =
     let determineBuildAction fileName (project:ProjectFile) =
         match (Path.GetExtension fileName).ToLowerInvariant() with
         | ext when Path.GetExtension project.FileName = ext + "proj"
-            -> match getToolsVersion project with
-                | 15.0 -> BuildAction.Content
-                | _ -> BuildAction.Compile
+            -> BuildAction.Compile
         | ".fsi" -> BuildAction.Compile
         | ".xaml" -> BuildAction.Page
         | ".ttf" | ".png" | ".ico" | ".jpg" | ".jpeg"| ".bmp" | ".gif"
