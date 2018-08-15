@@ -9,6 +9,14 @@ open System.Xml.Linq
 let ns = "http://schemas.microsoft.com/developer/msbuild/2003"
 let xname name = XName.Get(name, ns)
 
+let checkTargetFrameworkRestriction r (itemGroup: XElement) =
+    match itemGroup.Attribute(XName.Get "Condition") with
+    | null -> Assert.Fail(sprintf "Expected attribute 'Condition' but element was '%A'" itemGroup)
+    | a ->
+        let condition = a.Value
+        let msbuildCond = r |> Paket.Requirements.getExplicitRestriction |> fun c -> c.ToMSBuildCondition()
+        StringAssert.Contains(msbuildCond, condition)
+
 let checkContainsPackageRefs pkgRefs (group: XElement) =
 
     let isPackageReference name (x: XElement) =
@@ -22,8 +30,8 @@ let checkContainsPackageRefs pkgRefs (group: XElement) =
     let hasVersion version (x: XElement) =
         x.Elements(xname "Version")
         |> Seq.tryHead
-        |> Option.map (fun x -> x.ToString() = version)
-        |> function Some true -> true | _ -> false
+        |> Option.map (fun x -> x.Value = version)
+        |> Option.exists id
 
     let packageRefs = group.Elements(xname "PackageReference") |> Seq.toList
     Assert.AreEqual(pkgRefs |> List.length, packageRefs |> Seq.length, (sprintf "%A" group))
@@ -36,7 +44,7 @@ let checkContainsPackageRefs pkgRefs (group: XElement) =
         match pkg with
         | Some p -> ()
         | None ->
-            Assert.Fail("expected package '%s' with version '%s' not found in '%A' group")
+            Assert.Fail(sprintf "expected package '%s' with version '%s' not found in '%A' group" pkgName pkgVersion group)
 
 
 [<Test>]
@@ -55,7 +63,8 @@ NUGET
   remote: https://api.nuget.org/v3/index.json
     FsCheck (2.8.2)
       FSharp.Core (>= 3.1.2.5)
-    FSharp.Core (4.3.4)"""
+    FSharp.Core (4.3.4)
+"""
 
     let refFileContent = """
 FSharp.Core
@@ -68,7 +77,7 @@ group Other1
 
     let lockFile = LockFile.Parse("", toLines lockFile)
 
-    let refFile = ReferencesFile.FromLines(toLines refFileContent) // .Groups.[Constants.MainDependencyGroup]
+    let refFile = ReferencesFile.FromLines(toLines refFileContent)
 
     let packages =
         [ for kv in refFile.Groups do
@@ -85,8 +94,69 @@ group Other1
     match itemGroups with
     | [groupMain; otherGroup] ->
         groupMain
-        |> checkContainsPackageRefs [ "FSharp.Core","1"; "Argu","2" ] 
+        |> checkTargetFrameworkRestriction (lockFile.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions)
+        groupMain
+        |> checkContainsPackageRefs [ "FSharp.Core","3.1.2.5"; "Argu","4.2.1" ] 
         otherGroup
-        |> checkContainsPackageRefs [ "FSharp.Core","1"; "Argu","2" ] 
+        |> checkTargetFrameworkRestriction (lockFile.Groups.[Domain.GroupName "Other1"].Options.Settings.FrameworkRestrictions)
+        otherGroup
+        |> checkContainsPackageRefs [ "FSharp.Core","4.3.4"; "FsCheck","2.8.2" ] 
+    | l ->
+        Assert.Fail(sprintf "expected two ItemGroup but was '%A'" l)
+
+[<Test>]
+let ``should create props file for design mode with single package restriction``() = 
+
+    let lockFile = """RESTRICTION: && (>= net461) (< net47)
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    Argu (4.2.1)
+      FSharp.Core (>= 3.1.2)
+    FSharp.Core (3.1.2.5)
+
+GROUP Other2
+RESTRICTION: >= netcoreapp2.0
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    FsCheck (2.8.2) - restriction: && (== netcoreapp2.1) (>= netcoreapp2.0)
+      FSharp.Core (>= 3.1.2.5)
+    FSharp.Core (4.3.4)
+"""
+
+    let refFileContent = """
+FSharp.Core
+Argu
+
+group Other2
+  FSharp.Core
+  FsCheck
+"""
+
+    let lockFile = LockFile.Parse("", toLines lockFile)
+
+    let refFile = ReferencesFile.FromLines(toLines refFileContent)
+
+    let packages =
+        [ for kv in refFile.Groups do
+            let packagesInGroup,_ = lockFile.GetOrderedPackageHull(kv.Key, refFile)
+            yield! packagesInGroup ]
+
+    let outPath = System.IO.Path.GetTempFileName()
+    Paket.RestoreProcess.createPaketPropsFile lockFile Seq.empty packages (FileInfo outPath)
+
+    let doc = XDocument.Load(outPath, LoadOptions.PreserveWhitespace)
+
+    let itemGroups = doc.Root.Elements (xname "ItemGroup") |> Seq.toList
+            
+    match itemGroups with
+    | [groupMain; otherGroup] ->
+        groupMain
+        |> checkTargetFrameworkRestriction (lockFile.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions)
+        groupMain
+        |> checkContainsPackageRefs [ "FSharp.Core","3.1.2.5"; "Argu","4.2.1" ] 
+        otherGroup
+        |> checkTargetFrameworkRestriction (lockFile.Groups.[Domain.GroupName "Other1"].Options.Settings.FrameworkRestrictions)
+        otherGroup
+        |> checkContainsPackageRefs [ "FSharp.Core","4.3.4"; "FsCheck","2.8.2" ] 
     | l ->
         Assert.Fail(sprintf "expected two ItemGroup but was '%A'" l)
