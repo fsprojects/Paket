@@ -160,7 +160,7 @@ group Other1
         Assert.Fail(sprintf "expected two ItemGroup but was '%A'" l)
 
 [<Test>]
-let ``should create props file for design mode with single package restriction``() = 
+let ``should create props file for design mode with group and package restriction``() = 
 
     let lockFile = """RESTRICTION: && (>= net461) (< net47)
 NUGET
