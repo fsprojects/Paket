@@ -283,7 +283,10 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
                 p,condition)
             |> Seq.groupBy snd
             |> Seq.collect (fun (condition,packages) -> 
-                let condition = condition.ToMSBuildCondition()
+                let condition =
+                    match condition with
+                    | FrameworkRestriction.HasNoRestriction -> ""
+                    | restrictions -> restrictions.ToMSBuildCondition()
                 let condition =
                     if condition = "" || condition = "true" then "" else
                     sprintf " AND (%s)" condition

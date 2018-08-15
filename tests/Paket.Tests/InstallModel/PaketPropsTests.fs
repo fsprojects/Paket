@@ -9,13 +9,19 @@ open System.Xml.Linq
 let ns = "http://schemas.microsoft.com/developer/msbuild/2003"
 let xname name = XName.Get(name, ns)
 
-let checkTargetFrameworkRestriction r (itemGroup: XElement) =
+let checkTargetFrameworkCondition msbuildCondition (itemGroup: XElement) =
     match itemGroup.Attribute(XName.Get "Condition") with
     | null -> Assert.Fail(sprintf "Expected attribute 'Condition' but element was '%A'" itemGroup)
     | a ->
         let condition = a.Value
-        let msbuildCond = r |> Paket.Requirements.getExplicitRestriction |> fun c -> c.ToMSBuildCondition()
-        StringAssert.Contains(msbuildCond, condition)
+        Assert.AreEqual("($(DesignTimeBuild) == true)" + msbuildCondition, condition)
+
+let checkTargetFrameworkNoRestriction itemGroup =
+    checkTargetFrameworkCondition "" itemGroup
+
+let checkTargetFrameworkRestriction r itemGroup =
+    let msbuildCond = r |> Paket.Requirements.getExplicitRestriction |> fun c -> c.ToMSBuildCondition()
+    checkTargetFrameworkCondition (sprintf " AND (%s)" msbuildCond) itemGroup
 
 let checkContainsPackageRefs pkgRefs (group: XElement) =
 
@@ -46,6 +52,55 @@ let checkContainsPackageRefs pkgRefs (group: XElement) =
         | None ->
             Assert.Fail(sprintf "expected package '%s' with version '%s' not found in '%A' group" pkgName pkgVersion group)
 
+
+[<Test>]
+let ``should create props file for design mode``() = 
+
+    let lockFile = """NUGET
+  remote: https://api.nuget.org/v3/index.json
+    Argu (4.2.1)
+      FSharp.Core (>= 3.1.2)
+    FSharp.Core (3.1.2.5)
+
+GROUP Other1
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    FsCheck (2.8.2)
+      FSharp.Core (>= 3.1.2.5)
+"""
+
+    let refFileContent = """
+FSharp.Core
+Argu
+
+group Other1
+  FsCheck
+"""
+
+    let lockFile = LockFile.Parse("", toLines lockFile)
+
+    let refFile = ReferencesFile.FromLines(toLines refFileContent)
+
+    let packages =
+        [ for kv in refFile.Groups do
+            let packagesInGroup,_ = lockFile.GetOrderedPackageHull(kv.Key, refFile)
+            yield! packagesInGroup ]
+
+    let outPath = System.IO.Path.GetTempFileName()
+    Paket.RestoreProcess.createPaketPropsFile lockFile Seq.empty packages (FileInfo outPath)
+
+    let doc = XDocument.Load(outPath, LoadOptions.PreserveWhitespace)
+
+    let itemGroups = doc.Root.Elements (xname "ItemGroup") |> Seq.toList
+            
+    match itemGroups with
+    | [groupMain] ->
+        groupMain
+        |> checkTargetFrameworkNoRestriction
+        groupMain
+        |> checkContainsPackageRefs [ "FSharp.Core","3.1.2.5"; "Argu","4.2.1"; "FsCheck","2.8.2" ] 
+    | l ->
+        Assert.Fail(sprintf "expected one ItemGroup but was '%A'" l)
 
 [<Test>]
 let ``should create props file for design mode with group restrictions``() = 
@@ -165,4 +220,4 @@ group Other2
         otherGroupOnly21
         |> checkContainsPackageRefs [ "FsCheck","2.8.2" ] 
     | l ->
-        Assert.Fail(sprintf "expected two ItemGroup but was '%A'" l)
+        Assert.Fail(sprintf "expected three ItemGroup but was '%A'" l)
