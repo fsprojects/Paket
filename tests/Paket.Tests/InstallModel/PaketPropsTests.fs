@@ -48,7 +48,7 @@ let checkContainsPackageRefs pkgRefs (group: XElement) =
 
 
 [<Test>]
-let ``should create props file for design mode``() = 
+let ``should create props file for design mode with group restrictions``() = 
 
     let lockFile = """RESTRICTION: && (>= net461) (< net47)
 NUGET
