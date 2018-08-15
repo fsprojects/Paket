@@ -39,3 +39,31 @@ let ``net46 should be compatible with netstandard13``() =
     (TargetProfile.SinglePlatform (DotNetStandard DotNetStandardVersion.V1_3)).IsSmallerThan (TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4_6))
     |> shouldEqual true
 
+
+[<Test>]
+let ``net462 should be compatible with net45``() = 
+    let net45 = TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4_5)
+    let net462 = TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4_6_2)
+    
+    net462.IsAtLeast net45
+    |> shouldEqual true
+
+    net45.IsSupportedBy net462
+    |> shouldEqual true
+
+    net45.IsSmallerThan net462
+    |> shouldEqual true
+
+[<Test>]
+let ``netcoreapp2.1 should be compatible with netcoreapp2.0``() = 
+    let ``netcoreapp2.0`` = TargetProfile.SinglePlatform (DotNetCoreApp DotNetCoreAppVersion.V2_0)
+    let ``netcoreapp2.1`` = TargetProfile.SinglePlatform (DotNetCoreApp DotNetCoreAppVersion.V2_1)
+    
+    ``netcoreapp2.1``.IsAtLeast ``netcoreapp2.0``
+    |> shouldEqual true
+
+    ``netcoreapp2.0``.IsSupportedBy ``netcoreapp2.1``
+    |> shouldEqual true
+
+    ``netcoreapp2.0``.IsSmallerThan ``netcoreapp2.1``
+    |> shouldEqual true
