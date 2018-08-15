@@ -272,8 +272,14 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
         else
             packages
             |> Seq.map (fun ((groupName,packageName),_,_) -> 
-                let p = lockFile.Groups.[groupName].Resolution.[packageName]
-                let condition = Paket.Requirements.getExplicitRestriction p.Settings.FrameworkRestrictions      
+                let group = lockFile.Groups.[groupName]
+                let p = group.Resolution.[packageName]
+                let restrictions =
+                    match p.Settings.FrameworkRestrictions with
+                    | FrameworkRestrictions.ExplicitRestriction FrameworkRestriction.HasNoRestriction -> group.Options.Settings.FrameworkRestrictions
+                    | FrameworkRestrictions.ExplicitRestriction fw -> FrameworkRestrictions.ExplicitRestriction fw
+                    | _ -> group.Options.Settings.FrameworkRestrictions
+                let condition = restrictions |> getExplicitRestriction
                 p,condition)
             |> Seq.groupBy snd
             |> Seq.collect (fun (condition,packages) -> 
