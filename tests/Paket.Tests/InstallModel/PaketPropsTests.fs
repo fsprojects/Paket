@@ -221,3 +221,40 @@ group Other2
         |> checkContainsPackageRefs [ "FsCheck","2.8.2" ] 
     | l ->
         Assert.Fail(sprintf "expected three ItemGroup but was '%A'" l)
+
+[<Test>]
+let ``should create props file for design mode package restriction``() = 
+
+    let lockFile = """NUGET
+  remote: https://api.nuget.org/v3/index.json
+    Newtonsoft.Json (11.0.2) - restriction: == netcoreapp2.1
+"""
+
+    let refFileContent = """
+Newtonsoft.Json
+"""
+
+    let lockFile = LockFile.Parse("", toLines lockFile)
+
+    let refFile = ReferencesFile.FromLines(toLines refFileContent)
+
+    let packages =
+        [ for kv in refFile.Groups do
+            let packagesInGroup,_ = lockFile.GetOrderedPackageHull(kv.Key, refFile)
+            yield! packagesInGroup ]
+
+    let outPath = System.IO.Path.GetTempFileName()
+    Paket.RestoreProcess.createPaketPropsFile lockFile Seq.empty packages (FileInfo outPath)
+
+    let doc = XDocument.Load(outPath, LoadOptions.PreserveWhitespace)
+
+    let itemGroups = doc.Root.Elements (xname "ItemGroup") |> Seq.toList
+            
+    match itemGroups with
+    | [groupMain] ->
+        groupMain
+        |> checkTargetFrameworkRestriction (lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[Domain.PackageName "Newtonsoft.Json"].Settings.FrameworkRestrictions)
+        groupMain
+        |> checkContainsPackageRefs [ "Newtonsoft.Json","11.0.2" ] 
+    | l ->
+        Assert.Fail(sprintf "expected one ItemGroup but was '%A'" l)
