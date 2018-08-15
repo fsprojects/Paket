@@ -67,3 +67,17 @@ let ``netcoreapp2.1 should be compatible with netcoreapp2.0``() =
 
     ``netcoreapp2.0``.IsSmallerThan ``netcoreapp2.1``
     |> shouldEqual true
+
+[<Test>]
+let ``netcoreapp2.1 should be compatible with netstandard2.0``() = 
+    let ``netstandard2.0`` = TargetProfile.SinglePlatform (DotNetStandard DotNetStandardVersion.V2_0)
+    let ``netcoreapp2.1`` = TargetProfile.SinglePlatform (DotNetCoreApp DotNetCoreAppVersion.V2_1)
+    
+    ``netcoreapp2.1``.IsAtLeast ``netstandard2.0``
+    |> shouldEqual true
+
+    ``netstandard2.0``.IsSupportedBy ``netcoreapp2.1``
+    |> shouldEqual true
+
+    ``netstandard2.0``.IsSmallerThan ``netcoreapp2.1``
+    |> shouldEqual true
