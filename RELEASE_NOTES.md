@@ -1,3 +1,6 @@
+#### 5.176.5 - 2018-08-16
+* BUGFIX: netcoreapp2.0 packages are compatibile with netcoreapp2.1 - https://github.com/fsprojects/Paket/pull/3336
+
 #### 5.176.4 - 2018-08-07
 * REVERT: Installs content files again - https://github.com/fsprojects/Paket/pull/3318
 
