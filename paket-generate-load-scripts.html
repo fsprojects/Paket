@@ -99,6 +99,9 @@ defined in the <a href="dependencies-file.html"><code>paket.dependencies</code> 
 <p>This will create <code>.csx</code> and <code>.fsx</code> scripts under <code>.paket/load/net45/</code>. Those
 files can now be loaded in your scripts without having to bother with the list
 and order of all dependencies for given package.</p>
+<p>The generated load scripts will reference DLLs from the packages using <code>#r</code>.
+Additionally, all scripts in a <code>loadscripts</code> directory in the package will be referenced by <code>#load</code>,
+as will any script <code>PackageName.fsx</code> or <code>PackageName.csx</code> in the root of the package.</p>
 <p>Notes:</p>
 <ul>
 <li>
