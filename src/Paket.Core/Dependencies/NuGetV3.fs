@@ -762,7 +762,11 @@ let private getPackageIndexPageRaw (source:NuGetV3Source) (url:string) =
             | NotFound -> raise (System.Exception(sprintf "could not get registration data (404) from '%s'" url))
             | UnknownError err ->
                 raise (System.Exception(sprintf "could not get registration data from %s" url, err.SourceException))
-            | SuccessResponse x -> JsonConvert.DeserializeObject<PackageIndexPage>(x)
+            | SuccessResponse x -> 
+                let page = JsonConvert.DeserializeObject<PackageIndexPage>(x)
+                if isNull page.Packages || (page.Count > 0 && page.Packages.Length = 0) then
+                    raise <| exn(sprintf "Failed to parse v3 'catalog:CatalogPage' on url '%s'%s" url (if verbose then sprintf ": \n%s" x else ""))
+                page
     }
 
 let private getPackageIndexPageMemoized =
@@ -772,57 +776,63 @@ let getPackageIndexPage source (page:PackageIndexPage) = getPackageIndexPageMemo
 
 let getRelevantPage (source:NuGetV3Source) (index:PackageIndex) (version:SemVerInfo) =
     async {
-        let normalizedVersion = SemVer.Parse (version.ToString().ToLowerInvariant())
-        let pages =
-            index.Pages
-            |> Seq.filter (fun p -> SemVer.Parse (p.Lower.ToLowerInvariant()) <= normalizedVersion && normalizedVersion <= SemVer.Parse (p.Upper.ToLowerInvariant()))
-            |> Seq.toList
+        try
+            let normalizedVersion = SemVer.Parse (version.ToString().ToLowerInvariant())
+            let pages =
+                index.Pages
+                |> Seq.filter (fun p -> SemVer.Parse (p.Lower.ToLowerInvariant()) <= normalizedVersion && normalizedVersion <= SemVer.Parse (p.Upper.ToLowerInvariant()))
+                |> Seq.toList
 
-        let tryFindOnPage (page:PackageIndexPage) = async {
-            let! page = async {
-                if page.Count > 0 && (isNull page.Packages || page.Packages.Length = 0) then
-                    return! getPackageIndexPage source page
-                else return page }
-            if page.Count > 0 && (isNull page.Packages || page.Packages.Length = 0) then
-                failwithf "Page '%s' should contain packages!" page.Id
+            let tryFindOnPage (page:PackageIndexPage) = async {
+                let! page = async {
+                    if isNull page.Packages || (page.Count > 0 && page.Packages.Length = 0) then
+                        return! getPackageIndexPage source page
+                    else return page }
+                if isNull page.Packages || (page.Count > 0 && page.Packages.Length = 0) then
+                    failwithf "Page '%s' should contain packages!" page.Id
 
-            let packages =
-                page.Packages
-                    // TODO: This might need to be part of SemVer itself?
-                    // This is our favorite package: nlog/5.0.0-beta03-tryoutMutex
-                    |> Seq.filter (fun p -> SemVer.Parse (p.PackageDetails.Version.ToLowerInvariant()) = normalizedVersion)
-                    |> Seq.toList
-            match packages with
-            | [ package ] -> return Some package
-            | [] -> return None
-            | h :: _ ->
-                // Can happen in theory when multiple versions differ only in casing...
-                traceWarnfn "Multiple package versions matched with '%O' on page '%s'" version page.Id
-                return Some h }
-        match pages with
-        | [ page ] ->
-            let! package = tryFindOnPage page
-            match package with
-            | Some package -> return Some package
-            | _ -> return failwithf "Version '%O' should be part of part of page '%s' but wasn't." version page.Id
-        | [] ->
-            return None
-        | multiple ->
-            // This can happen theoretically because of ToLower, if someone is really crasy enough to upload a package
-            // with differently cased build strings and if nuget makes a page split exactly at that point.
-            let mutable result = None
-            for page in multiple do
-                if result.IsNone then
-                    let! package = tryFindOnPage page
-                    match package with
-                    | Some package -> result <- Some package
-                    | None -> ()
-            match result with
-            | Some result ->
-                traceWarnfn "Mulitple pages of V3 index '%s' match with version '%O'" index.Id version
-                return Some result
-            | None ->
-                return failwithf "Mulitple pages of V3 index '%s' match with version '%O'" index.Id version
+                try
+                    let packages =
+                        page.Packages
+                            // TODO: This might need to be part of SemVer itself?
+                            // This is our favorite package: nlog/5.0.0-beta03-tryoutMutex
+                            |> Seq.filter (fun p -> SemVer.Parse (p.PackageDetails.Version.ToLowerInvariant()) = normalizedVersion)
+                            |> Seq.toList
+                    match packages with
+                    | [ package ] -> return Some package
+                    | [] -> return None
+                    | h :: _ ->
+                        // Can happen in theory when multiple versions differ only in casing...
+                        traceWarnfn "Multiple package versions matched with '%O' on page '%s'" version page.Id
+                        return Some h
+                with e ->
+                    return raise <| exn (sprintf "Failed to find version on page '%s'" page.Id, e) }
+            match pages with
+            | [ page ] ->
+                let! package = tryFindOnPage page
+                match package with
+                | Some package -> return Some package
+                | _ -> return failwithf "Version '%O' should be part of part of page '%s' but wasn't." version page.Id
+            | [] ->
+                return None
+            | multiple ->
+                // This can happen theoretically because of ToLower, if someone is really crasy enough to upload a package
+                // with differently cased build strings and if nuget makes a page split exactly at that point.
+                let mutable result = None
+                for page in multiple do
+                    if result.IsNone then
+                        let! package = tryFindOnPage page
+                        match package with
+                        | Some package -> result <- Some package
+                        | None -> ()
+                match result with
+                | Some result ->
+                    traceWarnfn "Mulitple pages of V3 index '%s' match with version '%O'" index.Id version
+                    return Some result
+                | None ->
+                    return failwithf "Mulitple pages of V3 index '%s' match with version '%O'" index.Id version
+        with e ->
+            return raise <| exn (sprintf "Failed to find relevant page in '%s'" index.Id, e)
     }
 
 let getPackageDetails (source:NuGetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<ODataSearchResult> =
