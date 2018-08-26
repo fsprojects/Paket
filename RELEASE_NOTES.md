@@ -1,4 +1,4 @@
-#### 5.176.7 - 2018-08-26
+#### 5.176.9 - 2018-08-26
 * BUGFIX: authentication problem in netcore (fake 5) - https://github.com/fsprojects/Paket/pull/3342
 * BUGFIX: fix 'Value cannot be null' with TFS feed - https://github.com/fsprojects/Paket/pull/3341
 
