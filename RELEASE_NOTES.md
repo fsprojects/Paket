@@ -1,6 +1,6 @@
-#### 5.176.7 - 2018-08-26
-* BUGFIX: authentication problem in netcore (fake 5) - https://github.com/fsprojects/Paket/pull/3342
-* BUGFIX: fix 'Value cannot be null' with TFS feed - https://github.com/fsprojects/Paket/pull/3341
+#### 5.176.8 - 2018-08-26
+* BUGFIX: Fixed authentication problem in netcore (fake 5) - https://github.com/fsprojects/Paket/pull/3342
+* BUGFIX: Fixed 'Value cannot be null' with TFS feed - https://github.com/fsprojects/Paket/pull/3341
 
 #### 5.176.6 - 2018-08-16
 * BUGFIX: fixed design time (VS) when framework restriction exists - https://github.com/fsprojects/Paket/pull/3337
