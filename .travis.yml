@@ -16,7 +16,7 @@ env:
     # just flaky tests
     - PAKET_TESTSUITE_FLAKYTESTS=true
 
-dotnet: 2.1.3
+dotnet: 2.1.401
 
 mono:
   - 5.12.0
