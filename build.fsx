@@ -322,14 +322,17 @@ Target "QuickIntegrationTests" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
 
-let mergeLibs = ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "Argu.dll"; "Chessie.dll"; "System.Collections.Immutable.dll"; "System.Reflection.Metadata.dll"]
-
 Target "MergePaketTool" (fun _ ->
     CreateDir buildMergedDir
     
+    let mergeLibs = [buildDir @@ "paket.exe"]
+    let mergeRefs = 
+        File.ReadLines(buildDir @@ "build.Paket.txt") 
+        |> Seq.filter (fun item -> not(item.EndsWith(".resources.dll")))
+        |> Seq.toList
+
     let toPack =
-        mergeLibs
-        |> List.map (fun l -> buildDir @@ l)
+        mergeLibs @ mergeRefs
         |> separated " "
 
     let result =

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+    <PropertyGroup>
+        <src_targets_defined>true</src_targets_defined>
+    </PropertyGroup>
+    
+    <Target Name="CleanTargetDirOutputs" AfterTargets="Clean">
+        <Delete Files="$(TargetDir)\build.$(MSBuildProjectName).txt" ContinueOnError="true" />
+    </Target>
+    
+    <Target Name="WriteTargetDirOutputs" AfterTargets="Build">
+        <Message Text="TargetDir='$(TargetDir)'" Importance="High" />
+        <Message Text="FileWritesShareable=[@(FileWritesShareable)]" Importance="High" />
+
+        <CreateItem Include="@(FileWritesShareable->'%(FullPath)')" Condition="'%(Extension)'=='.dll'">
+            <Output TaskParameter="Include" ItemName="DllFileWrites" />
+        </CreateItem>
+        
+        <Message Text="DllFileWrites=[@(DllFileWrites)]" Importance="High" />
+        <WriteLinesToFile File="$(TargetDir)\build.$(MSBuildProjectName).txt" Lines="@(DllFileWrites)" Overwrite="true" />
+    </Target>
+</Project>
