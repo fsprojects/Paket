@@ -330,6 +330,8 @@ Target "MergePaketTool" (fun _ ->
         File.ReadLines(buildDir @@ "build.Paket.txt") 
         |> Seq.filter (fun item -> not(item.EndsWith(".resources.dll")))
         |> Seq.toList
+    
+    let framework = "packages" </> "build" </> "0x53A.ReferenceAssemblies.Paket" </> "tools" </> "framework" </> ".NETFramework" </> "v4.5" </> "Facades"
 
     let toPack =
         mergeLibs @ mergeRefs
@@ -338,7 +340,7 @@ Target "MergePaketTool" (fun _ ->
     let result =
         ExecProcess (fun info ->
             info.FileName <- currentDirectory </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
-            info.Arguments <- sprintf "/lib:%s /ver:%s /out:%s %s" buildDir release.AssemblyVersion paketFile toPack
+            info.Arguments <- sprintf "/lib:%s /lib:%s /ver:%s /out:%s %s" buildDir framework release.AssemblyVersion paketFile toPack
             ) (TimeSpan.FromMinutes 5.)
 
     if result <> 0 then failwithf "Error during ILRepack execution."
