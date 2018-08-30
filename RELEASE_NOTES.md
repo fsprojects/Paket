@@ -1,23 +1,10 @@
-#### 5.176.9 - 2018-08-30
+#### 5.177.0 - 2018-08-26
 * TEMPORARY WORKAROUND: Do not reference Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator - https://github.com/fsprojects/Paket/issues/3345
-
-#### 5.176.8 - 2018-08-26
+* BUGFIX: fix 'Value cannot be null' with TFS feed - https://github.com/fsprojects/Paket/pull/3341
 * BUGFIX: Fixed authentication problem in netcore (fake 5) - https://github.com/fsprojects/Paket/pull/3342
 * BUGFIX: Fixed 'Value cannot be null' with TFS feed - https://github.com/fsprojects/Paket/pull/3341
-
-#### 5.176.6 - 2018-08-16
-* BUGFIX: fixed design time (VS) when framework restriction exists - https://github.com/fsprojects/Paket/pull/3337
-
-#### 5.176.5 - 2018-08-16
 * BUGFIX: netcoreapp2.0 packages are compatibile with netcoreapp2.1 - https://github.com/fsprojects/Paket/pull/3336
-
-#### 5.176.4 - 2018-08-07
-* REVERT: Installs content files again - https://github.com/fsprojects/Paket/pull/3318
-
-#### 5.176.2 - 2018-08-06
 * BUGFIX: Paket uses ToLowerInvariant instead of ToLower when forming registrationUrl - https://github.com/fsprojects/Paket/pull/3330
-
-#### 5.176.1 - 2018-08-02
 * BUGFIX: Removed faulty creation of directories during `generate-load-scripts` - https://github.com/fsprojects/Paket/pull/3319
 
 #### 5.176.0 - 2018-07-31
