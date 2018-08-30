@@ -1,3 +1,6 @@
+#### 5.176.9 - 2018-08-30
+* TEMPORARY WORKAROUND: Do not reference Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator - https://github.com/fsprojects/Paket/issues/3345
+
 #### 5.176.8 - 2018-08-26
 * BUGFIX: Fixed authentication problem in netcore (fake 5) - https://github.com/fsprojects/Paket/pull/3342
 * BUGFIX: Fixed 'Value cannot be null' with TFS feed - https://github.com/fsprojects/Paket/pull/3341

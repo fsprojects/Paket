@@ -386,8 +386,9 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
             for (key,_,_) in hull do
                 let resolvedPackage = resolved.Force().[key]
                 let restore =
-                    not (excludes.Contains resolvedPackage.Name) &&
-                    not (ImplicitPackages.Contains resolvedPackage.Name) &&
+                    resolvedPackage.Name <> PackageName "Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" && // #3345 
+                     not (excludes.Contains resolvedPackage.Name) &&
+                     not (ImplicitPackages.Contains resolvedPackage.Name) &&
                         match resolvedPackage.Settings.FrameworkRestrictions with
                         | Requirements.ExplicitRestriction restrictions ->
                             Requirements.isTargetMatchingRestrictions(restrictions, targetProfile)
