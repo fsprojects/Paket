@@ -18,6 +18,7 @@ open System.Threading.Tasks
 open FSharp.Polyfill
 open Paket.NuGetCache
 open Paket.PackageResolver
+open System.Net.Http
 
 type NuGetContent =
     | NuGetDirectory of name:string * contents:NuGetContent list
@@ -245,6 +246,15 @@ let tryFindFolder folder (content:NuGetPackageContent) =
     |> Option.map (fun (name,item) ->
         item
         |> List.collect (collectItems (Path.Combine(content.Path, name)) name))
+
+let tryFindFile file (content:NuGetPackageContent) =
+    content.Content
+    |> List.tryPick (fun c ->
+        match c with
+        | NuGetFile _ when String.equalsIgnoreCase c.Name file -> 
+            Some {UnparsedPackageFile.FullPath = Path.Combine(content.Path, c.Name)
+                  UnparsedPackageFile.PathWithinPackage = c.Name }
+        | _ -> None)
 
 let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
     async {
@@ -869,46 +879,20 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
 
                     ensureDir targetFileName
 
-                    use trackDownload = Profile.startCategory Profile.Category.NuGetDownload
+                    use _trackDownload = Profile.startCategory Profile.Category.NuGetDownload
 
-                    let request = HttpWebRequest.Create(downloadUri) :?> HttpWebRequest
-#if NETSTANDARD1_6 || NETSTANDARD2_0
-                    // Note: this code is not working on regular non-dotnetcore
-                    // "This header must be modified with the appropriate property."
-                    // But we don't have the UserAgent API available.
-                    // We should just switch to HttpClient everywhere.
-                    request.Headers.[HttpRequestHeader.UserAgent] <- "Paket"
-#else
-                    request.UserAgent <- "Paket"
-                    request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
-#endif
-                    if authenticated then
-                        match source.Auth.Retrieve (attempt <> 0) with
-                        | None | Some(Token _) -> request.UseDefaultCredentials <- true
-                        | Some(Credentials({Username = username; Password = password; Type = AuthType.Basic})) ->
-                            // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
-                            //this works ONLY if the server returns 401 first
-                            //client DOES NOT send credentials on first request
-                            //ONLY after a 401
-                            //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
-
-                            //so use THIS instead to send credentials RIGHT AWAY
-                            let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
-                            request.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
-                        | Some(Credentials({Username = username; Password = password; Type = AuthType.NTLM})) ->
-                            let cred = NetworkCredential(username,password)
-                            request.Credentials <- cred.GetCredential(downloadUri, "NTLM")
-                    else
-                        request.UseDefaultCredentials <- true
-
-                    request.Proxy <- NetUtils.getDefaultProxyFor source.Url
+                    let client = NetUtils.createHttpClient(!downloadUrl, source.Auth.Retrieve (attempt <> 0))
 
                     let lastSpeedMeasure = Stopwatch.StartNew()
                     let mutable readSinceLastMeasure = 0L
 
-                    let! child = Async.StartChild(request.AsyncGetResponse(), 60000)
-                    use! httpResponse = child
-                    use httpResponseStream = httpResponse.GetResponseStream()
+                    let requestMsg = new HttpRequestMessage(HttpMethod.Get, downloadUri)
+                    let! responseMsg = client.SendAsync(requestMsg) |> Async.AwaitTask
+                    match responseMsg.StatusCode with
+                    | HttpStatusCode.OK -> ()
+                    | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode
+
+                    let! httpResponseStream = responseMsg.Content.ReadAsStreamAsync() |> Async.AwaitTask
 
                     let bufferSize = 1024 * 10
                     let buffer : byte [] = Array.zeroCreate bufferSize
@@ -942,9 +926,6 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                         readSinceLastMeasure <- readSinceLastMeasure + int64 bytes
                         pos <- pos + int64 bytes
 
-                    match (httpResponse :?> HttpWebResponse).StatusCode with
-                    | HttpStatusCode.OK -> ()
-                    | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode
 
                     let speed = int (float pos * 8. / float sw.ElapsedMilliseconds)
                     let size = pos / (1024L * 1024L)

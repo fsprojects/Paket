@@ -11,6 +11,10 @@ This will create `.csx` and `.fsx` scripts under `.paket/load/net45/`. Those
 files can now be loaded in your scripts without having to bother with the list
 and order of all dependencies for given package.
 
+The generated load scripts will reference DLLs from the packages using `#r`.
+Additionally, all scripts in a `loadscripts` directory in the package will be referenced by `#load`,
+as will any script `PackageName.fsx` or `PackageName.csx` in the root of the package.
+
 Notes:
 
 * This command only works after packages have been restored. Please run

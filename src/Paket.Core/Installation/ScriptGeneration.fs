@@ -42,6 +42,7 @@ module ScriptGeneration =
         DependentScripts         : string list
         FrameworkReferences      : string list
         OrderedDllReferences     : FileInfo list
+        PackageLoadScripts       : string list
     }
 
     type ScriptGenResult = 
@@ -89,7 +90,10 @@ module ScriptGeneration =
         
             let dllLines = input.OrderedDllReferences |> List.map Assembly
         
-            List.concat [scriptRefs; frameworkRefLines; dllLines]
+            let packageLoadScriptRefs =
+                input.PackageLoadScripts |> List.map LoadScript
+
+            List.concat [scriptRefs; frameworkRefLines; dllLines; packageLoadScriptRefs]
             |> filterReferences scriptType
         
         match lines with
@@ -216,6 +220,9 @@ module ScriptGeneration =
                         let dllFiles = 
                             ctx.Cache.GetOrderedPackageReferences groupName package.Name framework
 
+                        let packageLoadScriptFiles = 
+                            ctx.Cache.GetPackageLoadScripts groupName package.Name framework scriptType.Extension
+
                         let frameworkRefs = 
                             ctx.Cache.GetOrderedFrameworkReferences groupName package.Name framework
                             |> List.map (fun ref -> ref.Name)
@@ -225,6 +232,7 @@ module ScriptGeneration =
                             FrameworkReferences          = frameworkRefs
                             OrderedDllReferences         = dllFiles
                             DependentScripts             = dependencies
+                            PackageLoadScripts           = packageLoadScriptFiles
                         }
 
                         match generateScript scriptType scriptInfo with

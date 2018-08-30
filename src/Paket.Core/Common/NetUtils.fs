@@ -341,9 +341,16 @@ let internal addAcceptHeader (client:HttpClient) (contentType:string) =
 let internal addHeader (client:HttpClient) (headerKey:string) (headerVal:string) =
     client.DefaultRequestHeaders.Add(headerKey, headerVal)
 
+let useDefaultHandler = 
+    match Environment.GetEnvironmentVariable("PAKET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER") with
+    | null -> false
+    | env ->
+        let env = env.ToLowerInvariant()
+        env = "true" || env = "yes" || env = "y"
+
 let createHttpClient (url,auth:Auth option) =
 #if !NO_WINCLIENTHANDLER
-    if isWindows then
+    if isWindows && not useDefaultHandler then
         // See https://github.com/dotnet/corefx/issues/31098
         let proxy = getDefaultProxyFor url
         let handler = new WinHttpHandler(Proxy = proxy)

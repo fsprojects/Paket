@@ -122,6 +122,14 @@ type AnalyzerLib = {
         Language = AnalyzerLanguage.FromDirectory(file.Directory)
     }
 
+type PackageLoadScript = {
+    /// Path of the load script
+    Path : string
+} with
+    static member FromFile(file : FileInfo) = {
+        Path = file.FullName
+    }
+
 /// Represents the contents of a particular package at a particular version.  Any install-specific actions like Content files, References, Roslyn Analyzers, MsBuild targets are represented here.
 type InstallModel = {
     PackageName : PackageName
@@ -132,6 +140,7 @@ type InstallModel = {
     RuntimeLibFolders : FrameworkFolder<RuntimeLibrary Set> list
     TargetsFileFolders : FrameworkFolder<MsBuildFile Set> list
     Analyzers: AnalyzerLib list
+    PackageLoadScripts: PackageLoadScript list
     LicenseUrl: string option
     Kind : InstallModelKind
 }
@@ -386,6 +395,7 @@ module InstallModel =
         RuntimeAssemblyFolders = []
         TargetsFileFolders = []
         Analyzers = []
+        PackageLoadScripts = []
         LicenseUrl = None
         Kind = kind
     }
@@ -528,7 +538,7 @@ module InstallModel =
             |> Seq.map (fun c -> c.FolderContents.Libraries |> Set.toSeq, c.FolderContents.FrameworkReferences |> Set.toSeq)
             |> Seq.forall (fun (libs, refs) -> Seq.isEmpty libs && Seq.isEmpty refs)
 
-        if foldersEmpty && List.isEmpty this.Analyzers then
+        if foldersEmpty && List.isEmpty this.Analyzers  && List.isEmpty this.PackageLoadScripts then
             emptyModel this.PackageName this.PackageVersion this.Kind
         else
             this
@@ -615,6 +625,14 @@ module InstallModel =
             |> List.ofSeq
 
         { installModel with Analyzers = installModel.Analyzers @ analyzerLibs}
+
+    let addPackageLoadScriptFiles (packageLoadScriptFiles:NuGet.UnparsedPackageFile seq) (installModel:InstallModel)  : InstallModel =
+        let packageLoadScripts =
+            packageLoadScriptFiles
+            |> Seq.map (fun file -> FileInfo file.FullPath |> PackageLoadScript.FromFile)
+            |> List.ofSeq
+
+        { installModel with PackageLoadScripts = installModel.PackageLoadScripts @ packageLoadScripts}
 
 
     let rec addTargetsFile (path:FrameworkFolder<_>)  (file:FrameworkDependentFile) (installModel:InstallModel) :InstallModel =
@@ -843,6 +861,12 @@ module InstallModel =
     let addNuGetFiles (content:NuGetPackageContent) (model:InstallModel) : InstallModel =
         let asList o = defaultArg o []
         let analyzers = NuGet.tryFindFolder "analyzers" content |> asList
+        let loadscripts = 
+            // Find all files in 'loadscripts'
+            (NuGet.tryFindFolder "loadscripts" content |> asList) @
+            // Also look for 'FsLab.fsx/csx' at the root of 'FsLab'
+            (Option.toList (NuGet.tryFindFile (model.PackageName.Name + ".fsx") content)) @
+            (Option.toList (NuGet.tryFindFile (model.PackageName.Name + ".csx") content))
         let lib = NuGet.tryFindFolder "lib" content |> asList
         let ref = NuGet.tryFindFolder "ref" content |> asList
         let runtimes = NuGet.tryFindFolder "runtimes" content |> asList
@@ -852,6 +876,7 @@ module InstallModel =
         |> addLibReferences (lib @ ref @ runtimes) content.Spec.References
         |> addTargetsFiles build
         |> addAnalyzerFiles analyzers
+        |> addPackageLoadScriptFiles loadscripts
         |> addFrameworkAssemblyReferences content.Spec.FrameworkAssemblyReferences
         |> addLicense content.Spec.LicenseUrl
         |> filterUnknownFiles
@@ -864,11 +889,12 @@ module InstallModel =
         |> removeIfCompletelyEmpty
 
     [<Obsolete "use createFromContent instead">]
-    let createFromLibs packageName packageVersion kind frameworkRestrictions (libs:UnparsedPackageFile seq) targetsFiles analyzerFiles (nuspec:Nuspec) =
+    let createFromLibs packageName packageVersion kind frameworkRestrictions (libs:UnparsedPackageFile seq) targetsFiles analyzerFiles packageLoadScriptFiles (nuspec:Nuspec) =
         emptyModel packageName packageVersion kind
         |> addLibReferences libs nuspec.References
         |> addTargetsFiles targetsFiles
         |> addAnalyzerFiles analyzerFiles
+        |> addPackageLoadScriptFiles packageLoadScriptFiles
         |> addFrameworkAssemblyReferences nuspec.FrameworkAssemblyReferences
         |> filterBlackList
         |> applyFrameworkRestrictions frameworkRestrictions
@@ -939,6 +965,8 @@ type InstallModel with
 
     member this.AddAnalyzerFiles analyzerFiles = InstallModel.addAnalyzerFiles analyzerFiles this
 
+    member this.AddPackageLoadScriptFiles packageLoadScriptFiles = InstallModel.addPackageLoadScriptFiles packageLoadScriptFiles this
+
     member this.AddTargetsFile(path, file) = InstallModel.addTargetsFile path file this
 
     member this.AddTargetsFiles targetsFiles = InstallModel.addTargetsFiles targetsFiles this
@@ -962,4 +990,4 @@ type InstallModel with
 
     [<Obsolete "use CreateFromContent instead">]
     static member CreateFromLibs(packageName, packageVersion, kind, frameworkRestriction:FrameworkRestriction, libs : UnparsedPackageFile seq, targetsFiles, analyzerFiles, nuspec : Nuspec) =
-        InstallModel.createFromLibs packageName packageVersion kind frameworkRestriction libs targetsFiles analyzerFiles nuspec
+        InstallModel.createFromLibs packageName packageVersion kind frameworkRestriction libs targetsFiles analyzerFiles [] nuspec

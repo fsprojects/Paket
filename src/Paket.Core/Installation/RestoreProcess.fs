@@ -272,12 +272,21 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
         else
             packages
             |> Seq.map (fun ((groupName,packageName),_,_) -> 
-                let p = lockFile.Groups.[groupName].Resolution.[packageName]
-                let condition = Paket.Requirements.getExplicitRestriction p.Settings.FrameworkRestrictions      
+                let group = lockFile.Groups.[groupName]
+                let p = group.Resolution.[packageName]
+                let restrictions =
+                    match p.Settings.FrameworkRestrictions with
+                    | FrameworkRestrictions.ExplicitRestriction FrameworkRestriction.HasNoRestriction -> group.Options.Settings.FrameworkRestrictions
+                    | FrameworkRestrictions.ExplicitRestriction fw -> FrameworkRestrictions.ExplicitRestriction fw
+                    | _ -> group.Options.Settings.FrameworkRestrictions
+                let condition = restrictions |> getExplicitRestriction
                 p,condition)
             |> Seq.groupBy snd
             |> Seq.collect (fun (condition,packages) -> 
-                let condition = condition.ToMSBuildCondition()
+                let condition =
+                    match condition with
+                    | FrameworkRestriction.HasNoRestriction -> ""
+                    | restrictions -> restrictions.ToMSBuildCondition()
                 let condition =
                     if condition = "" || condition = "true" then "" else
                     sprintf " AND (%s)" condition
@@ -376,16 +385,17 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
 
             for (key,_,_) in hull do
                 let resolvedPackage = resolved.Force().[key]
+                let _,packageName = key
                 let restore =
-                    not (excludes.Contains resolvedPackage.Name) &&
-                    not (ImplicitPackages.Contains resolvedPackage.Name) &&
+                    packageName <> PackageName "Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" && // #3345 
+                     not (excludes.Contains resolvedPackage.Name) &&
+                     not (ImplicitPackages.Contains resolvedPackage.Name) &&
                         match resolvedPackage.Settings.FrameworkRestrictions with
                         | Requirements.ExplicitRestriction restrictions ->
                             Requirements.isTargetMatchingRestrictions(restrictions, targetProfile)
                         | _ -> true
 
                 if restore then
-                    let _,packageName = key
                     let direct = allDirectPackages.Contains packageName
                     let package = resolved.Force().[key]
                     let copy_local =
