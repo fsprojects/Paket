@@ -385,8 +385,9 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
 
             for (key,_,_) in hull do
                 let resolvedPackage = resolved.Force().[key]
+                let _,packageName = key
                 let restore =
-                    resolvedPackage.Name <> PackageName "Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" && // #3345 
+                    packageName <> PackageName "Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" && // #3345 
                      not (excludes.Contains resolvedPackage.Name) &&
                      not (ImplicitPackages.Contains resolvedPackage.Name) &&
                         match resolvedPackage.Settings.FrameworkRestrictions with
@@ -395,7 +396,6 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                         | _ -> true
 
                 if restore then
-                    let _,packageName = key
                     let direct = allDirectPackages.Contains packageName
                     let package = resolved.Force().[key]
                     let copy_local =
