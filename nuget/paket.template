@@ -17,12 +17,5 @@ projecturl http://fsprojects.github.com/Paket
 iconurl https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png
 tags
     nuget, bundler, F#
-packageTypes
-    DotnetTool
 files
     ../bin/merged/paket.exe ==> tools
-    ../bin/merged/paket.exe ==> tools/net45
-    ../bin_netcore/**/* ==> tools/netcoreapp2.0
-
-dependencies
-  framework: .NETCoreApp2.1
