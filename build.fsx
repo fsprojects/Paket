@@ -237,6 +237,18 @@ Target "DotnetPackage" (fun _ ->
             ToolPath = dotnetExePath
             AdditionalArgs = [(sprintf "-o \"%s\"" outPath); (sprintf "/p:Version=%s" release.NugetVersion)]
         })
+    DotNetCli.Pack (fun c ->
+        { c with
+            Project = "src/Paket.preview3/Paket.fsproj"
+            ToolPath = dotnetExePath
+            AdditionalArgs = [(sprintf "-o \"%s\"" outPath); (sprintf "/p:Version=%s" release.NugetVersion)]
+        })
+    DotNetCli.Pack (fun c ->
+        { c with
+            Project = "src/Paket.Bootstrapper.preview3/Paket.Bootstrapper.csproj"
+            ToolPath = dotnetExePath
+            AdditionalArgs = [(sprintf "-o \"%s\"" outPath); (sprintf "/p:Version=%s" release.NugetVersion)]
+        })
 )
 
 Target "DotnetTest" (fun _ ->
