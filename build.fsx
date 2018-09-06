@@ -247,7 +247,8 @@ Target "DotnetTest" (fun _ ->
             Project = "tests/Paket.Tests.preview3/Paket.Tests.fsproj"
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
-                sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.Tests/TestResult.trx" |> Path.GetFullPath) ]
+                sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.Tests/TestResult.trx" |> Path.GetFullPath) 
+                "-v"; "n"]
             ToolPath = dotnetExePath
         })
 )

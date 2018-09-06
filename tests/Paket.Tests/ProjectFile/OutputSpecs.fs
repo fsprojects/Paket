@@ -36,7 +36,7 @@ let ``should detect BuildOutputTargetFolder none for Project3 proj file``() =
 let ``should detect BuildOutputTargetFolder for AnalyzerProject proj file``() =
     ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/AnalyzerProject.csprojtest").Value.BuildOutputTargetFolder
-    |> shouldEqual (Some "analyzers\dotnet\cs")
+    |> shouldEqual (Some @"analyzers\dotnet\cs")
 
 [<Test>]
 let ``should detect AppendTargetFrameworkToOutputPath for MicrosoftNetSdkWithTargetFrameworkAndOutputPath proj file``() =

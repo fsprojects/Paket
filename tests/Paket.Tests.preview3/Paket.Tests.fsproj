@@ -3,6 +3,10 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <PaketTestsSourcesDir>..\Paket.Tests</PaketTestsSourcesDir>
     <DefineConstants>WEBPROXY_NETSTANDARD;$(DefineConstants)</DefineConstants>
+
+    <!-- disable generation of assembly info because the test "Packaging/PackageProcessSpecs.`Loading assembly metadata works``"
+         use as test case the metadata of this built Paket.Tests assembly -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>
@@ -140,6 +144,7 @@
     <TestAsset Include="ProjectFile\TestData\Unity.csprojtest" />
     <TestAsset Include="ProjectFile\TestData\EmptyCsharpGuid.csprojtest" />
     <TestAsset Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFramework.csprojtest" />
+    <TestAsset Include="ProjectFile\TestData\AnalyzerProject.csprojtest" />
     <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\ConditionSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\TargetFrameworkSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\FileBuildActionSpecs.fs" />

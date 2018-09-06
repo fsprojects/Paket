@@ -621,7 +621,6 @@ let ``#3165 pack multitarget with p2p`` () =
     CleanDir rootPath    
 
 [<Test>]
-[<Ignore("disabled for now, because require .net core 2.1.300")>]
 let ``#4002 dotnet pack of a global tool shouldnt contain references``() = 
     let project = "tool1"
     let scenario = "i004002-pack-global-tools"
@@ -657,7 +656,6 @@ let ``#4002 dotnet pack of a global tool shouldnt contain references``() =
 
     
 [<Test>]
-[<Ignore("disabled for now, because require .net core 2.1.300")>]
 let ``#4003 dotnet pack of a global tool with p2p``() = 
     let project = "tool1"
     let scenario = "i004003-pack-global-tools-p2p"
