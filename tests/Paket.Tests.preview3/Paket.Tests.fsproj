@@ -225,6 +225,7 @@
   </Target>
 
   <ItemGroup>
+    <PackageReference Include="Argu" Version="5.1.0" />
     <PackageReference Include="FsCheck" Version="2.10.4" />
     <PackageReference Include="nunit" Version="3.9.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
