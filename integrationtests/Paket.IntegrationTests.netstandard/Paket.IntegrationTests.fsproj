@@ -57,7 +57,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Paket.Core.preview3\Paket.Core.fsproj" />
+    <ProjectReference Include="..\..\src\Paket.Core.netstandard\Paket.Core.fsproj" />
   </ItemGroup>
 
 </Project>

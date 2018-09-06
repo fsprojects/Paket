@@ -122,8 +122,8 @@ let genCSAssemblyInfo (projectPath) =
 
 // Generate assembly info files with the right version & up-to-date information
 Target "AssemblyInfo" (fun _ ->
-    let fsProjs =  !! "src/**/*.fsproj" |> Seq.filter (fun s -> not <| s.Contains("preview"))
-    let csProjs = !! "src/**/*.csproj" |> Seq.filter (fun s -> not <| s.Contains("preview"))
+    let fsProjs =  !! "src/**/*.fsproj" |> Seq.filter (fun s -> not <| s.Contains("netstandard"))
+    let csProjs = !! "src/**/*.csproj" |> Seq.filter (fun s -> not <| s.Contains("netstandard"))
     fsProjs |> Seq.iter genFSAssemblyInfo
     csProjs |> Seq.iter genCSAssemblyInfo
 )
@@ -203,7 +203,7 @@ Target "DotnetRestore" (fun _ ->
 
     DotNetCli.Restore (fun c ->
         { c with
-            Project = "Paket.preview3.sln"
+            Project = "Paket.netstandard.sln"
             ToolPath = dotnetExePath
         })
 )
@@ -211,7 +211,7 @@ Target "DotnetRestore" (fun _ ->
 Target "DotnetBuild" (fun _ ->
     DotNetCli.Build (fun c ->
         { c with
-            Project = "Paket.preview3.sln"
+            Project = "Paket.netstandard.sln"
             ToolPath = dotnetExePath
             AdditionalArgs = [ "/p:SourceLinkCreate=true" ]
         })
@@ -221,7 +221,7 @@ Target "DotnetBuild" (fun _ ->
 Target "DotnetPublish" (fun _ ->
     DotNetCli.Publish (fun c ->
         { c with
-            Project = "src/Paket.preview3"
+            Project = "src/paket-cli"
             ToolPath = dotnetExePath
             Output = FullName (currentDirectory </> buildDirNetCore)
         })
@@ -233,7 +233,7 @@ Target "DotnetPackage" (fun _ ->
     CleanDir outPath
     DotNetCli.Pack (fun c ->
         { c with
-            Project = "src/Paket.Core.preview3/Paket.Core.fsproj"
+            Project = "src/Paket.Core.netstandard/Paket.Core.fsproj"
             ToolPath = dotnetExePath
             AdditionalArgs = [(sprintf "-o \"%s\"" outPath); (sprintf "/p:Version=%s" release.NugetVersion)]
         })
@@ -244,7 +244,7 @@ Target "DotnetTest" (fun _ ->
 
     DotNetCli.Test (fun c ->
         { c with
-            Project = "tests/Paket.Tests.preview3/Paket.Tests.fsproj"
+            Project = "tests/Paket.Tests.netstandard/Paket.Tests.fsproj"
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
                 sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.Tests/TestResult.trx" |> Path.GetFullPath) ]
@@ -259,7 +259,7 @@ Target "RunIntegrationTestsNetCore" (fun _ ->
     System.Environment.SetEnvironmentVariable("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
     DotNetCli.Test (fun c ->
         { c with
-            Project = "integrationtests/Paket.IntegrationTests.preview3/Paket.IntegrationTests.fsproj"
+            Project = "integrationtests/Paket.IntegrationTests.netstandard/Paket.IntegrationTests.fsproj"
             ToolPath = dotnetExePath
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
@@ -401,7 +401,7 @@ Target "NuGet" (fun _ ->
         testTemplateFiles
         |> Seq.iter (fun (f, d) -> File.Move(f, d))
 
-        let files = !! "src/**/*.preview*" |> Seq.toList
+        let files = !! "src/**/*.netstandard*" |> Seq.toList
         for file in files do
             File.Move(file,file + ".temp")
 

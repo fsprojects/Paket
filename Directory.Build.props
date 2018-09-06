@@ -1,5 +1,4 @@
 <Project>
- <PropertyGroup>
-	<TargetFrameworkRootPath>$(MSBuildThisFileDirectory)packages\build\0x53A.ReferenceAssemblies.Paket\tools\framework</TargetFrameworkRootPath>
- </PropertyGroup>
+ <Import Project="$(MSBuildThisFileDirectory)packages\build\Microsoft.NETFramework.ReferenceAssemblies.net45\build\Microsoft.NETFramework.ReferenceAssemblies.net45.targets" />
+ <Import Project="$(MSBuildThisFileDirectory)packages\build\Microsoft.NETFramework.ReferenceAssemblies.net46\build\Microsoft.NETFramework.ReferenceAssemblies.net46.targets" />
 </Project>

@@ -43,6 +43,7 @@ group Build
 
   nuget FAKE
   nuget FSharp.Formatting prerelease
+  nuget FSharp.Formatting.CommandTool prerelease
   nuget System.ValueTuple
   nuget Microsoft.AspNet.Razor
   nuget ILRepack
@@ -50,9 +51,11 @@ group Build
   github fsharp/FAKE modules/Octokit/Octokit.fsx
 
   # Note: this package was produced using https://github.com/jaredpar/xcopy-msbuild and contains the two directories ".NETFramework\v4.5" and ".NETPortable\v4.5"
-  nuget 0x53A.ReferenceAssemblies.Paket 0.2.0
+  //nuget 0x53A.ReferenceAssemblies.Paket 0.2.0
 
   source https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json
-  nuget RoslynTools.MSBuild prerelease
+  nuget RoslynTools.MSBuild ~> 0.4.0 prerelease
   # Note: RoslynTools.ReferenceAssemblies does not contain the required reference assemblies for net45, so I created 0x53A.ReferenceAssemblies.Paket. It is much smaller, anyway.
   #nuget RoslynTools.ReferenceAssemblies prerelease
+  nuget Microsoft.NETFramework.ReferenceAssemblies.net45
+  nuget Microsoft.NETFramework.ReferenceAssemblies.net46

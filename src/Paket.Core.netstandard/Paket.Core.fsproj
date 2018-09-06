@@ -3,7 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PaketCoreSourcesDir>..\Paket.Core</PaketCoreSourcesDir>
-    <DefineConstants>NO_BOOTSTRAPPER;NO_CONFIGURATIONMANAGER;CUSTOM_WEBPROXY;$(DefineConstants)</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' != 'net45'">NO_BOOTSTRAPPER;NO_CONFIGURATIONMANAGER;CUSTOM_WEBPROXY;$(DefineConstants)</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' == 'net45'">USE_WEB_CLIENT_FOR_UPLOAD;NO_WINCLIENTHANDLER;$(DefineConstants)</DefineConstants>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.SDK\src\AssemblyReader.fs">
