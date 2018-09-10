@@ -576,7 +576,7 @@ type FrameworkIdentifier =
         | MonoTouch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | MonoMac -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Native(_) -> [ ]
-        | XamariniOS -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | XamariniOS -> [ DotNetStandard DotNetStandardVersion.V1_6; DotNetStandard DotNetStandardVersion.V2_0 ]
         | XamarinMac -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | XamarinTV -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | XamarinWatch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
