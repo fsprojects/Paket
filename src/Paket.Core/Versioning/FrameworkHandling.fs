@@ -442,6 +442,7 @@ type MonoAndroidVersion =
         | "8"
         | "8.0" -> Some (MonoAndroidVersion.V8)
         | "8.1" -> Some (MonoAndroidVersion.V8_1)
+        | "9"
         | "9.0" -> Some (MonoAndroidVersion.V9)
         | _ -> None
 
