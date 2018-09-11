@@ -303,15 +303,9 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
                 let packageReferences =
                     packages    
                     |> Seq.collect (fun (p,_,packageSettings) ->
-                        let copy_local =
-                            match CombineCopyLocal p.Settings packageSettings with
-                            | Some false -> false
-                            | Some true
-                            | None -> true
-
                         [yield sprintf """        <PackageReference Include="%O">""" p.Name
                          yield sprintf """            <Version>%O</Version>""" p.Version
-                         if copy_local = false then
+                         if CombineCopyLocal p.Settings packageSettings = Some false then
                             yield """            <ExcludeAssets>runtime</ExcludeAssets>"""
                          yield """        </PackageReference>"""])
 
