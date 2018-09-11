@@ -12,6 +12,15 @@ open Chessie.ErrorHandling
 open System.Reflection
 open Requirements
 
+/// Combines the copy_local settings from the lock file and the references file
+let private CombineCopyLocal (resolvedSettings:InstallSettings) (packageInstallSettings:PackageInstallSettings) =
+    match resolvedSettings.CopyLocal, packageInstallSettings.Settings.CopyLocal with
+    | Some false, None
+    | _, Some false -> Some false
+    | Some true, None
+    | _, Some true -> Some true
+    | None, None -> None
+
 /// Finds packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
 let FindPackagesNotExtractedYet(dependenciesFileName) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
@@ -271,7 +280,7 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
             ""
         else
             packages
-            |> Seq.map (fun ((groupName,packageName),_,_) -> 
+            |> Seq.map (fun ((groupName,packageName),packageSettings,_) -> 
                 let group = lockFile.Groups.[groupName]
                 let p = group.Resolution.[packageName]
                 let restrictions =
@@ -280,8 +289,8 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
                     | FrameworkRestrictions.ExplicitRestriction fw -> FrameworkRestrictions.ExplicitRestriction fw
                     | _ -> group.Options.Settings.FrameworkRestrictions
                 let condition = restrictions |> getExplicitRestriction
-                p,condition)
-            |> Seq.groupBy snd
+                p,condition,packageSettings)
+            |> Seq.groupBy (fun (_,c,__) -> c)
             |> Seq.collect (fun (condition,packages) -> 
                 let condition =
                     match condition with
@@ -293,10 +302,18 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
 
                 let packageReferences =
                     packages    
-                    |> Seq.collect (fun (p,_) ->
-                        [sprintf """        <PackageReference Include="%O">""" p.Name
-                         sprintf """            <Version>%O</Version>""" p.Version
-                         """        </PackageReference>"""])
+                    |> Seq.collect (fun (p,_,packageSettings) ->
+                        let copy_local =
+                            match CombineCopyLocal p.Settings packageSettings with
+                            | Some false -> false
+                            | Some true
+                            | None -> true
+
+                        [yield sprintf """        <PackageReference Include="%O">""" p.Name
+                         yield sprintf """            <Version>%O</Version>""" p.Version
+                         if copy_local = false then
+                            yield """            <ExcludeAssets>runtime</ExcludeAssets>"""
+                         yield """        </PackageReference>"""])
 
                 [yield sprintf "    <ItemGroup Condition=\"($(DesignTimeBuild) == true)%s\">" condition
                  yield! packageReferences
@@ -399,12 +416,10 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                     let direct = allDirectPackages.Contains packageName
                     let package = resolved.Force().[key]
                     let copy_local =
-                        match resolvedPackage.Settings.CopyLocal, packageSettings.Settings.CopyLocal with
-                        | Some false, None
-                        | _, Some false -> "exclude"
-                        | Some true, None
-                        | _, Some true -> "true"
-                        | None, None -> "false"
+                        match CombineCopyLocal resolvedPackage.Settings packageSettings with
+                        | Some false -> "exclude"
+                        | Some true -> "true"
+                        | None -> "false"
                     let line =
                         packageName.ToString() + "," +
                         package.Version.ToString() + "," +
