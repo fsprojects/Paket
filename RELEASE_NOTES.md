@@ -1,3 +1,6 @@
+#### 5.177.2 - 2018-09-11
+* BUGFIX: `copy_local: false` had no effect in paket.references (.NET SDK) - https://github.com/fsprojects/Paket/issues/3186
+
 #### 5.177.1 - 2018-08-30
 * TEMPORARY WORKAROUND: Do not reference Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator - https://github.com/fsprojects/Paket/issues/3345
 

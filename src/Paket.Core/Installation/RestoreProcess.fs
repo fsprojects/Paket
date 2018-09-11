@@ -383,7 +383,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                     excludes,packages
                 | None -> Set.empty,Set.empty
 
-            for (key,pacakgeSettings,_) in hull do
+            for (key,packageSettings,_) in hull do
                 let resolvedPackage = resolved.Force().[key]
                 let _,packageName = key
                 let restore =
@@ -399,7 +399,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                     let direct = allDirectPackages.Contains packageName
                     let package = resolved.Force().[key]
                     let copy_local =
-                        match resolvedPackage.Settings.CopyLocal, pacakgeSettings.Settings.CopyLocal with
+                        match resolvedPackage.Settings.CopyLocal, packageSettings.Settings.CopyLocal with
                         | Some false, None
                         | _, Some false -> "exclude"
                         | Some true, None
