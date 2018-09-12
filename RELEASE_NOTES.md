@@ -1,3 +1,6 @@
+#### 5.179.0 - 2018-09-12
+* Added NuGet packaging output details to paket pack output - https://github.com/fsprojects/Paket/pull/3357
+
 #### 5.178.0 - 2018-09-12
 * Added MonoAndroid9.0 + compatibility between .NET Standard 2.0 and MonoAndroid8.0/XamariniOS - https://github.com/fsprojects/Paket/pull/3354
 * BUGFIX: `copy_local: false` had no effect in paket.references (.NET SDK) - https://github.com/fsprojects/Paket/issues/3186
