@@ -172,9 +172,9 @@ namespace Paket.Bootstrapper.DownloadStrategies
             if (this.AsTool)
             {
                 string toolWorkDir = Path.GetDirectoryName(target);
-                // 1 - generate custom nuget.config
+
                 string bootstrapperNugetConfig = CreateNugetConfigForBootstrapper(randomFullPath, FileSystemProxy);
-                // 2 - install as tool
+
                 int exitCode = Dotnet(String.Format(@"tool install paket --version {2} --tool-path ""{0}"" --configfile ""{1}""", toolWorkDir, bootstrapperNugetConfig, latestVersion));
                 if (exitCode != 0) {
                     Environment.Exit(exitCode);
@@ -192,6 +192,9 @@ namespace Paket.Bootstrapper.DownloadStrategies
         public static string CreateNugetConfigForBootstrapper(string paketToolNupkgDir, IFileSystemProxy fileSystem)
         {
             string path = Path.GetTempFileName();
+            ConsoleImpl.WriteTrace(string.Format("Create nuget config for dotnet install in '{0}'", path));
+            ConsoleImpl.WriteTrace(string.Format("Path of local feed '{0}'", paketToolNupkgDir));
+
             var text = new[]
                 {
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>",
