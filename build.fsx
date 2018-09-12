@@ -436,12 +436,17 @@ Target "NuGet" (fun _ ->
 
 Target "MergeDotnetCoreIntoNuget" (fun _ ->
 
-    let nupkg = tempDir </> sprintf "Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
-    let netcoreNupkg = tempDir </> "dotnetcore" </> sprintf "Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
-
     let runTool = runCmdIn "tools" dotnetExePath
 
-    runTool """mergenupkg --source "%s" --other "%s" --framework netstandard2.0 """ nupkg netcoreNupkg
+    let mergeNupkg packageName args =
+        let nupkg = tempDir </> sprintf "%s.%s.nupkg" packageName (release.NugetVersion) |> Path.GetFullPath
+        let netcoreNupkg = tempDir </> "dotnetcore" </> sprintf "%s.%s.nupkg" packageName (release.NugetVersion) |> Path.GetFullPath
+
+        runTool """mergenupkg --source "%s" --other "%s" %s""" nupkg netcoreNupkg args
+
+    mergeNupkg "Paket.Core" "--framework netstandard2.0"
+    mergeNupkg "Paket" "--tools"
+    mergeNupkg "paket.bootstrapper" "--tools"
 )
 
 Target "PublishNuGet" (fun _ ->
