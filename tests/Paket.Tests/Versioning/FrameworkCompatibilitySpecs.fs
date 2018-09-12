@@ -81,3 +81,17 @@ let ``netcoreapp2.1 should be compatible with netstandard2.0``() =
 
     ``netstandard2.0``.IsSmallerThan ``netcoreapp2.1``
     |> shouldEqual true
+
+[<Test>]
+let ``monoandroid8.0 should be compatible with netstandard2.0``() = 
+    let ``netstandard2.0`` = TargetProfile.SinglePlatform (DotNetStandard DotNetStandardVersion.V2_0)
+    let ``monoandroid8.0`` = TargetProfile.SinglePlatform (MonoAndroid MonoAndroidVersion.V8)
+    
+    ``monoandroid8.0``.IsAtLeast ``netstandard2.0``
+    |> shouldEqual true
+
+    ``netstandard2.0``.IsSupportedBy ``monoandroid8.0``
+    |> shouldEqual true
+
+    ``netstandard2.0``.IsSmallerThan ``monoandroid8.0``
+    |> shouldEqual true
