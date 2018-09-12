@@ -25,6 +25,7 @@ namespace Paket.Bootstrapper
             public const string IgnoreCache = "-f";
             public const string MaxFileAge = "--max-file-age=";
             public const string Run = "--run";
+            public const string OutputDir = "--output-dir=";
         }
         public static class AppSettingKeys
         {
@@ -68,11 +69,20 @@ namespace Paket.Bootstrapper
             var magicMode = GetIsMagicMode(fileSystem);
             var transparentMagicMode = magicMode && commandArgs.IndexOf(CommandArgs.Run) == -1;
 
-#if PAKET_BOOTSTRAP_TO_DIR
-            FillTargetToRelativeDir(options.DownloadArguments, fileSystem);
-#else
-            FillTarget(options.DownloadArguments, magicMode, fileSystem);
-#endif
+            var outputDirArg = commandArgs.SingleOrDefault(x => x.StartsWith(CommandArgs.OutputDir));
+            if (outputDirArg != null)
+            {
+                commandArgs.Remove(outputDirArg);
+                var folder = outputDirArg.Substring(CommandArgs.OutputDir.Length);
+                var target = Path.Combine(folder, "paket.exe");
+
+                options.DownloadArguments.Target = target;
+                options.DownloadArguments.Folder = Path.GetDirectoryName(target);
+            }
+            else
+            {
+                FillTarget(options.DownloadArguments, magicMode, fileSystem);
+            }
 
             // 1 - AppSettings
             FillOptionsFromAppSettings(options, appSettings);
