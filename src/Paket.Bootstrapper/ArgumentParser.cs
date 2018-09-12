@@ -26,6 +26,7 @@ namespace Paket.Bootstrapper
             public const string MaxFileAge = "--max-file-age=";
             public const string Run = "--run";
             public const string OutputDir = "--output-dir=";
+            public const string AsTool = "--as-tool";
         }
         public static class AppSettingKeys
         {
@@ -253,6 +254,11 @@ namespace Paket.Bootstrapper
             {
                 commandArgs.Remove(CommandArgs.IgnoreCache);
                 downloadArguments.IgnoreCache = true;
+            }
+            if (commandArgs.Contains(CommandArgs.AsTool))
+            {
+                commandArgs.Remove(CommandArgs.AsTool);
+                downloadArguments.AsTool = true;
             }
 
             var maxFileAgeArg = commandArgs.SingleOrDefault(x => x.StartsWith(CommandArgs.MaxFileAge, StringComparison.Ordinal));

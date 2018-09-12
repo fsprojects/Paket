@@ -56,15 +56,17 @@ namespace Paket.Bootstrapper.DownloadStrategies
         private IFileSystemProxy FileSystemProxy { get; set; }
         private string Folder { get; set; }
         private string NugetSource { get; set; }
+        private bool AsTool { get; set; }
         private const string PaketNugetPackageName = "Paket";
         private const string PaketBootstrapperNugetPackageName = "Paket.Bootstrapper";
 
-        public NugetDownloadStrategy(IWebRequestProxy webRequestProxy, IFileSystemProxy fileSystemProxy, string folder, string nugetSource)
+        public NugetDownloadStrategy(IWebRequestProxy webRequestProxy, IFileSystemProxy fileSystemProxy, string folder, string nugetSource, bool asTool = false)
         {
             WebRequestProxy = webRequestProxy;
             FileSystemProxy = fileSystemProxy;
             Folder = folder;
             NugetSource = nugetSource;
+            AsTool = asTool;
         }
 
         public override string Name
@@ -167,20 +169,23 @@ namespace Paket.Bootstrapper.DownloadStrategies
                 }
             }
 
-#if PAKET_BOOTSTRAP_AS_TOOL
-            string toolWorkDir = Path.Combine(FileSystemProxy.GetCurrentDirectory());
-            // 1 - generate custom nuget.config
-            string bootstrapperNugetConfig = CreateNugetConfigForBootstrapper(randomFullPath, FileSystemProxy);
-            // 2 - install as tool
-            int exitCode = Dotnet(String.Format(@"tool install paket --version {2} --tool-path ""{0}"" --configfile ""{1}""", toolWorkDir, bootstrapperNugetConfig, latestVersion));
-            if (exitCode != 0) {
-                Environment.Exit(exitCode);
+            if (this.AsTool)
+            {
+                string toolWorkDir = Path.GetDirectoryName(target);
+                // 1 - generate custom nuget.config
+                string bootstrapperNugetConfig = CreateNugetConfigForBootstrapper(randomFullPath, FileSystemProxy);
+                // 2 - install as tool
+                int exitCode = Dotnet(String.Format(@"tool install paket --version {2} --tool-path ""{0}"" --configfile ""{1}""", toolWorkDir, bootstrapperNugetConfig, latestVersion));
+                if (exitCode != 0) {
+                    Environment.Exit(exitCode);
+                }
             }
-#else
-            FileSystemProxy.ExtractToDirectory(paketPackageFile, randomFullPath);
-            var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.exe");
-            FileSystemProxy.CopyFile(paketSourceFile, target, true);
-#endif
+            else
+            {
+                FileSystemProxy.ExtractToDirectory(paketPackageFile, randomFullPath);
+                var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.exe");
+                FileSystemProxy.CopyFile(paketSourceFile, target, true);
+            }
             FileSystemProxy.DeleteDirectory(randomFullPath, true);
         }
 
