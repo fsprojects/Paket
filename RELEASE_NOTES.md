@@ -1,7 +1,6 @@
-#### 5.177.2 - 2018-09-11
+#### 5.178.0 - 2018-09-12
+* Added MonoAndroid9.0 + compatibility between .NET Standard 2.0 and MonoAndroid8.0/XamariniOS - https://github.com/fsprojects/Paket/pull/3354
 * BUGFIX: `copy_local: false` had no effect in paket.references (.NET SDK) - https://github.com/fsprojects/Paket/issues/3186
-
-#### 5.177.1 - 2018-08-30
 * TEMPORARY WORKAROUND: Do not reference Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator - https://github.com/fsprojects/Paket/issues/3345
 
 #### 5.177.0 - 2018-08-30
