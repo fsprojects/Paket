@@ -17,22 +17,25 @@ namespace Paket.Bootstrapper.DownloadStrategies
 #endif
             public const string PaketReleasesLatestUrl = PaketReleasesUrl + "/latest";
             public const string PaketExeDownloadUrlTemplate = PaketReleasesUrl + "/download/{0}/paket.exe";
+            public const string PaketNupkgDownloadUrlTemplate = PaketReleasesUrl + "/download/{0}/Paket.{0}.nupkg";
             public const string PaketCheckSumDownloadUrlTemplate = PaketReleasesUrl + "/download/{0}/paket-sha256.txt";
         }
 
         private IWebRequestProxy WebRequestProxy { get; set; }
         private IFileSystemProxy FileSystemProxy { get; set; }
+        private bool AsTool { get; set; }
         public override string Name { get { return "Github"; } }
 
         public override bool CanDownloadHashFile
         {
-            get { return true; }
+            get { return !this.AsTool; }
         }
 
-        public GitHubDownloadStrategy(IWebRequestProxy webRequestProxy, IFileSystemProxy fileSystemProxy)
+        public GitHubDownloadStrategy(IWebRequestProxy webRequestProxy, IFileSystemProxy fileSystemProxy, bool asTool = false)
         {
             WebRequestProxy = webRequestProxy;
             FileSystemProxy = fileSystemProxy;
+            AsTool = asTool;
         }
 
         protected override string GetLatestVersionCore(bool ignorePrerelease)
@@ -81,7 +84,11 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         protected override void DownloadVersionCore(string latestVersion, string target, PaketHashFile hashfile)
         {
-            var url = String.Format(Constants.PaketExeDownloadUrlTemplate, latestVersion);
+            string url;
+            if (this.AsTool)
+                url = String.Format(Constants.PaketNupkgDownloadUrlTemplate, latestVersion);
+            else
+                url = String.Format(Constants.PaketExeDownloadUrlTemplate, latestVersion);
             ConsoleImpl.WriteInfo("Starting download from {0}", url);
 
             var tmpFile = BootstrapperHelper.GetTempFile("paket");
