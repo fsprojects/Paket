@@ -692,3 +692,10 @@ let ``#4003 dotnet pack of a global tool with p2p``() =
     // Problably not as "packaged" console applications have this dependency by default, see https://www.nuget.org/packages/dotnet-mergenupkg
     nuspec.Dependencies.Value.Length
     |> shouldEqual 0
+
+[<Test>]
+let ``#4010-pack-template-only``() =
+    let scenario = "i004010-pack-template-only"
+    let outPath = Path.Combine(scenarioTempPath scenario, "out")
+    let templatePath = Path.Combine(scenarioTempPath scenario, "PaketBug", "paket.template")
+    paket (sprintf """pack --template "%s" "%s" """ templatePath outPath) scenario |> ignore
