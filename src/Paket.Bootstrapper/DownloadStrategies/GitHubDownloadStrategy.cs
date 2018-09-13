@@ -83,7 +83,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         protected override void DownloadVersionCore(string latestVersion, string target, PaketHashFile hashfile)
         {
-            string url = String.Format(Constants.PaketExeDownloadUrlTemplate, latestVersion);
+            var url = String.Format(Constants.PaketExeDownloadUrlTemplate, latestVersion);
             ConsoleImpl.WriteInfo("Starting download from {0}", url);
 
             var tmpFile = BootstrapperHelper.GetTempFile("paket");
