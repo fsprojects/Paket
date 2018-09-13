@@ -12,14 +12,18 @@ open Chessie.ErrorHandling
 open System.Reflection
 open Requirements
 
-/// Combines the copy_local settings from the lock file and the references file
+// "copy_local: true" is being used to set the "PrivateAssets=All" setting for a package.
+// "copy_local: false" in new SDK format is defined as "ExcludeAssets=runtime".
+/// Combines the copy_local settings from the lock file and a project's references file
 let private CombineCopyLocal (resolvedSettings:InstallSettings) (packageInstallSettings:PackageInstallSettings) =
     match resolvedSettings.CopyLocal, packageInstallSettings.Settings.CopyLocal with
-    | Some false, None
-    | _, Some false -> Some false
-    | Some true, None
-    | _, Some true -> Some true
+    | Some false, Some true // E.g. never copy the dll except for unit-test projects
     | None, None -> None
+    | _, Some false
+    | Some false, None -> Some false // Sets ExcludeAssets=runtime
+    | Some true, Some true
+    | Some true, None
+    | None, Some true -> Some true // Sets PrivateAssets=All
 
 /// Finds packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
 let FindPackagesNotExtractedYet(dependenciesFileName) =
@@ -409,16 +413,23 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                 if restore then
                     let direct = allDirectPackages.Contains packageName
                     let package = resolved.Force().[key]
-                    let copy_local =
-                        match CombineCopyLocal resolvedPackage.Settings packageSettings with
-                        | Some false -> "exclude"
+                    let combinedCopyLocal = CombineCopyLocal resolvedPackage.Settings packageSettings
+                    let privateAssetsAll =
+                        match combinedCopyLocal with
                         | Some true -> "true"
+                        | Some false
                         | None -> "false"
+                    let copy_local =
+                        match combinedCopyLocal with
+                        | Some false -> "false"
+                        | Some true
+                        | None -> "true"
                     let line =
                         packageName.ToString() + "," +
                         package.Version.ToString() + "," +
                         (if direct then "Direct" else "Transitive") + "," +
                         kv.Key.ToString() + "," +
+                        privateAssetsAll  + "," +
                         copy_local
 
                     list.Add line
