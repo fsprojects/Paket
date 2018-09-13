@@ -16,6 +16,10 @@
     </DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(PaketUseLocalGithub)' == 'true' ">
+    <DefineConstants>LOCAL_GITHUB;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="$(PaketBootstrapperSourcesDir)\ArgumentParser.cs" />
     <Compile Include="$(PaketBootstrapperSourcesDir)\BootstrapperHelper.cs" />
