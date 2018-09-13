@@ -25,11 +25,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             public NugetApiHelper(string packageName, string nugetSource)
             {
                 this.packageName = packageName;
-#if NO_APPSETTINGS
-                this.nugetSource = nugetSource ?? DefaultNugetSource;
-#else
                 this.nugetSource = nugetSource ?? ConfigurationManager.AppSettings[NugetSourceAppSettingsKey] ?? DefaultNugetSource;
-#endif
             }
 
             internal string GetAllPackageVersions(bool includePrerelease)

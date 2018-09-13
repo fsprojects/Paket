@@ -35,11 +35,7 @@ namespace Paket.Bootstrapper
             var fileProxy = new FileSystemProxy();
 
             var appSettings =
-#if NO_APPSETTINGS
-                new System.Collections.Specialized.NameValueCollection();
-#else
                 ConfigurationManager.AppSettings;
-#endif
 
             var optionsBeforeDependenciesFile = ArgumentParser.ParseArgumentsAndConfigurations(args, appSettings,
                 Environment.GetEnvironmentVariables(), fileProxy, Enumerable.Empty<string>());

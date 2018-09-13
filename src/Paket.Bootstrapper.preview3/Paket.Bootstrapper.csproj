@@ -8,7 +8,6 @@
 
     <PaketBootstrapperSourcesDir>..\Paket.Bootstrapper</PaketBootstrapperSourcesDir>
     <DefineConstants>
-      NO_APPSETTINGS;
       NO_SSL3;
       NO_SYSTEMWEBPROXY;
       PAKET_BOOTSTRAP_WORKAROUND_MSBUILD_URLS;
@@ -48,6 +47,10 @@
     <Compile Include="$(PaketBootstrapperSourcesDir)\SemVer.cs" />
     <Compile Include="$(PaketBootstrapperSourcesDir)\DownloadStrategies\TemporarilyIgnoreUpdatesDownloadStrategy.cs" />
     <Compile Include="$(PaketBootstrapperSourcesDir)\HelperProxies\DateTimeProxy.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.0" />
   </ItemGroup>
 
 </Project>
