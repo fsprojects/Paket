@@ -26,6 +26,7 @@
     <Compile Include="$(PaketBootstrapperSourcesDir)\BootstrapperOptions.cs" />
     <Compile Include="$(PaketBootstrapperSourcesDir)\DownloadStrategies\IDownloadStrategy.cs" />
     <Compile Include="$(PaketBootstrapperSourcesDir)\DownloadStrategies\IHaveEffectiveStrategy.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\InstallKind\InstallAsTool.cs" />
     <Compile Include="$(PaketBootstrapperSourcesDir)\PaketHashFile.cs" />
     <Compile Include="$(PaketBootstrapperSourcesDir)\Properties\InternalsVisibleTo.cs" />
     <Compile Include="$(PaketBootstrapperSourcesDir)\PaketDependencies.cs" />

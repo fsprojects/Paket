@@ -62,6 +62,7 @@ namespace Paket.Bootstrapper
 
             var effectiveStrategy = GetEffectiveDownloadStrategy(options.DownloadArguments, options.PreferNuget, options.ForceNuget);
             ConsoleImpl.WriteTrace("Using strategy: " + effectiveStrategy.Name);
+            ConsoleImpl.WriteTrace("Using install kind: " + (options.DownloadArguments.AsTool? "tool": "exe"));
 
             StartPaketBootstrapping(effectiveStrategy, options.DownloadArguments, fileProxy, () => OnSuccessfulDownload(options));
         }
@@ -220,7 +221,10 @@ namespace Paket.Bootstrapper
 
         public static DownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget, bool forceNuget)
         {
-            var gitHubDownloadStrategy = new GitHubDownloadStrategy(new WebRequestProxy(), new FileSystemProxy(), dlArgs.AsTool).AsCached(dlArgs.IgnoreCache);
+            var gitHubDownloadStrategy =
+                dlArgs.AsTool
+                ? new GitHubDownloadToolStrategy(new WebRequestProxy(), new FileSystemProxy()).AsCached(dlArgs.IgnoreCache)
+                : new GitHubDownloadStrategy(new WebRequestProxy(), new FileSystemProxy()).AsCached(dlArgs.IgnoreCache);
             var nugetDownloadStrategy = new NugetDownloadStrategy(new WebRequestProxy(), new FileSystemProxy(), dlArgs.Folder, dlArgs.NugetSource, dlArgs.AsTool).AsCached(dlArgs.IgnoreCache);
 
             DownloadStrategy effectiveStrategy;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Paket.Bootstrapper.HelperProxies;
@@ -21,21 +22,19 @@ namespace Paket.Bootstrapper.DownloadStrategies
             public const string PaketCheckSumDownloadUrlTemplate = PaketReleasesUrl + "/download/{0}/paket-sha256.txt";
         }
 
-        private IWebRequestProxy WebRequestProxy { get; set; }
-        private IFileSystemProxy FileSystemProxy { get; set; }
-        private bool AsTool { get; set; }
+        protected IWebRequestProxy WebRequestProxy { get; set; }
+        protected IFileSystemProxy FileSystemProxy { get; set; }
         public override string Name { get { return "Github"; } }
 
         public override bool CanDownloadHashFile
         {
-            get { return !this.AsTool; }
+            get { return true; }
         }
 
-        public GitHubDownloadStrategy(IWebRequestProxy webRequestProxy, IFileSystemProxy fileSystemProxy, bool asTool = false)
+        public GitHubDownloadStrategy(IWebRequestProxy webRequestProxy, IFileSystemProxy fileSystemProxy)
         {
             WebRequestProxy = webRequestProxy;
             FileSystemProxy = fileSystemProxy;
-            AsTool = asTool;
         }
 
         protected override string GetLatestVersionCore(bool ignorePrerelease)
@@ -84,11 +83,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         protected override void DownloadVersionCore(string latestVersion, string target, PaketHashFile hashfile)
         {
-            string url;
-            if (this.AsTool)
-                url = String.Format(Constants.PaketNupkgDownloadUrlTemplate, latestVersion);
-            else
-                url = String.Format(Constants.PaketExeDownloadUrlTemplate, latestVersion);
+            string url = String.Format(Constants.PaketExeDownloadUrlTemplate, latestVersion);
             ConsoleImpl.WriteInfo("Starting download from {0}", url);
 
             var tmpFile = BootstrapperHelper.GetTempFile("paket");
@@ -158,6 +153,41 @@ namespace Paket.Bootstrapper.DownloadStrategies
             var content = WebRequestProxy.DownloadString(url);
 
             return PaketHashFile.FromString(content);
+        }
+    }
+
+    public class GitHubDownloadToolStrategy : GitHubDownloadStrategy
+    {
+        public GitHubDownloadToolStrategy(IWebRequestProxy webRequestProxy, IFileSystemProxy fileSystemProxy) : base(webRequestProxy, fileSystemProxy)
+        {
+        }
+        public override bool CanDownloadHashFile
+        {
+            get { return false; }
+        }
+
+        protected override void DownloadVersionCore(string latestVersion, string target, PaketHashFile hashfile)
+        {
+            string url = String.Format(Constants.PaketNupkgDownloadUrlTemplate, latestVersion);
+            ConsoleImpl.WriteInfo("Starting download from {0}", url);
+
+            var tmpFile = BootstrapperHelper.GetTempFile("paketnupkg");
+            WebRequestProxy.DownloadFile(url, tmpFile);
+
+            string packageName = Path.GetFileName(url);
+
+            var randomFullPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            FileSystemProxy.CreateDirectory(randomFullPath);
+
+            string packagePath = Path.Combine(randomFullPath, packageName);
+
+            FileSystemProxy.CopyFile(tmpFile, packagePath, true);
+            FileSystemProxy.DeleteFile(tmpFile);
+
+            var installAsTool = new InstallKind.InstallAsTool(FileSystemProxy);
+            installAsTool.Run(randomFullPath, target, latestVersion);
+
+            FileSystemProxy.DeleteDirectory(randomFullPath, true);
         }
     }
 }

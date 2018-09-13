@@ -59,6 +59,7 @@
     <Compile Include="BootstrapperOptions.cs" />
     <Compile Include="DownloadStrategies\IDownloadStrategy.cs" />
     <Compile Include="DownloadStrategies\IHaveEffectiveStrategy.cs" />
+    <Compile Include="InstallKind\InstallAsTool.cs" />
     <Compile Include="PaketHashFile.cs" />
     <Compile Include="Properties\InternalsVisibleTo.cs" />
     <Compile Include="PaketDependencies.cs" />
