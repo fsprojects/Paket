@@ -181,6 +181,8 @@ let ExecProcessWithLambdas configProcessStartInfoF (timeOut : TimeSpan) silent e
                     null
                 with exn -> exn
             raise (Exception(sprintf "Process %s %s timed out." proc.StartInfo.FileName proc.StartInfo.Arguments, inner))
+    // See http://stackoverflow.com/a/16095658/1149924 why WaitForExit must be called twice.
+    proc.WaitForExit()
     proc.ExitCode
 
 /// A process result including error code, message log and errors.
