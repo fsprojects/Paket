@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Xml.Linq;
 using System.Text;
 using Paket.Bootstrapper.HelperProxies;
 
@@ -27,6 +28,7 @@ namespace Paket.Bootstrapper
             public const string Run = "--run";
             public const string OutputDir = "--output-dir=";
             public const string AsTool = "--as-tool";
+            public const string ConfigFile = "--config-file=";
         }
         public static class AppSettingKeys
         {
@@ -83,6 +85,15 @@ namespace Paket.Bootstrapper
             else
             {
                 FillTarget(options.DownloadArguments, magicMode, fileSystem);
+            }
+
+            var configFileArg = commandArgs.SingleOrDefault(x => x.StartsWith(CommandArgs.ConfigFile));
+            if (configFileArg != null)
+            {
+                commandArgs.Remove(configFileArg);
+                var configFilePath = configFileArg.Substring(CommandArgs.ConfigFile.Length);
+                var newSettings = ReadSettings(configFilePath);
+                appSettings = newSettings;
             }
 
             // 1 - AppSettings
@@ -153,6 +164,43 @@ namespace Paket.Bootstrapper
 #endif
 
             return options;
+        }
+
+        private static NameValueCollection ReadSettings(string configFilePath)
+        {
+            var doc = XDocument.Load(configFilePath);
+
+            var nv = new NameValueCollection();
+
+            var appSettings = doc.Root.Element("appSettings");
+            if (appSettings == null)
+                throw new Exception(string.Format("appSettings element not found in file '{0}'", configFilePath));
+
+            var dic =
+                appSettings
+                .Elements("add")
+                .Select(x => {
+                    var keyAttr = x.Attribute("key");
+                    var valueAttr = x.Attribute("value");
+                    if (keyAttr == null || valueAttr == null)
+                        return new KeyValuePair<string, string>(); ;
+
+                    string key = keyAttr.Value;
+                    if (key == null)
+                        return new KeyValuePair<string, string>(); ;
+
+                    string value = valueAttr.Value;
+                    return new KeyValuePair<string, string>(key, value);
+                })
+                .Where(kv => kv.Key != null)
+                .ToArray();
+
+            foreach (var kv in dic)
+            {
+                nv.Add(kv.Key, kv.Value);
+            }
+
+            return nv;
         }
 
         private static void FillOptionsFromAppSettings(BootstrapperOptions options, NameValueCollection appSettings)

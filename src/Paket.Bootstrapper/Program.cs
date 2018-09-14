@@ -34,8 +34,23 @@ namespace Paket.Bootstrapper
 
             var fileProxy = new FileSystemProxy();
 
-            var appSettings =
-                ConfigurationManager.AppSettings;
+            var appSettings = ConfigurationManager.AppSettings;
+
+            var appConfigInWorkingDir = Path.Combine(Environment.CurrentDirectory, "paket.bootstrapper.exe.config");
+            if (File.Exists(appConfigInWorkingDir))
+            {
+                var exeInWorkingDir = Path.Combine(Environment.CurrentDirectory, "paket.bootstrapper.exe");
+                var exeConf = ConfigurationManager.OpenExeConfiguration(null);
+                if (exeConf != null)
+                {
+                    var nv = new System.Collections.Specialized.NameValueCollection();
+                    foreach (KeyValueConfigurationElement kv in exeConf.AppSettings.Settings)
+                    {
+                        nv.Add(kv.Key, kv.Value);
+                    }
+                    appSettings = nv;
+                }
+            }
 
             var optionsBeforeDependenciesFile = ArgumentParser.ParseArgumentsAndConfigurations(args, appSettings,
                 Environment.GetEnvironmentVariables(), fileProxy, Enumerable.Empty<string>());
