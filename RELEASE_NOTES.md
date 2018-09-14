@@ -1,3 +1,6 @@
+#### 5.179.1 - 2018-09-14
+* BUGFIX: Fixed potential race condition when redirecting output - https://github.com/fsprojects/Paket/pull/3359
+
 #### 5.179.0 - 2018-09-12
 * Added NuGet packaging output details to paket pack output - https://github.com/fsprojects/Paket/pull/3357
 
