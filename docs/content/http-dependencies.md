@@ -31,6 +31,13 @@ File: test1.fs
 This will reference the linked file directly into your project. By default the
 linked file will be visible under `paket-files` directory in project.
 
+## Referencing a zip file
+
+If you reference a zip file it will be unzipped relative to the downloaded zip file.
+
+* `http file:///c:/projects/library.zip library/library.zip`
+  will write the zip file to `paket-files/localhost/library/library.zip` and unzip the content to `paket-files/localhost/library`
+
 ## Build action conventions
 
 The build action is determined depending on the file extension:
@@ -87,3 +94,5 @@ If you want to update a file you need to use the
 
 Using [groups](groups.html) for HTTP-dependent files can be helpful to reduce
 the number of files that are reinstalled.
+
+## 
