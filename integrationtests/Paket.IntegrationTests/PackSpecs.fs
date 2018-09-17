@@ -698,4 +698,4 @@ let ``#4010-pack-template-only``() =
     let scenario = "i004010-pack-template-only"
     let outPath = Path.Combine(scenarioTempPath scenario, "out")
     let templatePath = Path.Combine(scenarioTempPath scenario, "PaketBug", "paket.template")
-    paket (sprintf """pack --template "%s" "%s" """ templatePath outPath) scenario |> ignore
+    paket (sprintf """pack --template "%s" "%s" --version 1.2.3 """ templatePath outPath) scenario |> ignore
