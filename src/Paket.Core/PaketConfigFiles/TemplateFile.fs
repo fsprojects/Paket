@@ -587,10 +587,14 @@ module internal TemplateFile =
                 return CompleteInfo(core, optionalInfo)
         }
 
-    let Load(fileName,lockFile,currentVersion,specificVersions) =
+    let internal ParseFromFile(fileName,lockFile,currentVersion,specificVersions) =
         let fi = FileInfo fileName
-        let root = fi.Directory.FullName
         let contents = Parse(fi.FullName,lockFile,currentVersion,specificVersions, File.OpenRead fileName) |> returnOrFail
+        fi, contents
+
+    let Load(fileName,lockFile,currentVersion,specificVersions) =
+        let fi, contents = ParseFromFile(fileName,lockFile,currentVersion,specificVersions)
+        let root = fi.Directory.FullName
         let getFiles files =
             [ for source, target in files do
                 match Fake.Globbing.search root source with
