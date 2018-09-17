@@ -11,6 +11,8 @@
     <PaketRootPath>$(MSBuildThisFileDirectory)..\</PaketRootPath>
     <PaketRestoreCacheFile>$(PaketRootPath)paket-files\paket.restore.cached</PaketRestoreCacheFile>
     <PaketLockFilePath>$(PaketRootPath)paket.lock</PaketLockFilePath>
+    <PaketBootstrapperStyle>classic</PaketBootstrapperStyle>
+    <PaketBootstrapperStyle Condition="Exists('$(PaketToolsPath)paket.bootstrapper.proj')">proj</PaketBootstrapperStyle>
     <MonoPath Condition="'$(MonoPath)' == '' And Exists('/Library/Frameworks/Mono.framework/Commands/mono')">/Library/Frameworks/Mono.framework/Commands/mono</MonoPath>
     <MonoPath Condition="'$(MonoPath)' == ''">mono</MonoPath>
     <!-- Paket command -->
@@ -82,7 +84,7 @@
     </PropertyGroup>
 
     <!-- Do a global restore if required -->
-    <Exec Command='$(PaketBootStrapperCommand)' Condition="Exists('$(PaketBootStrapperExePath)') AND !(Exists('$(PaketExePath)'))" ContinueOnError="false" />
+    <Exec Command='$(PaketBootStrapperCommand)' Condition=" '$(PaketBootstrapperStyle)' == 'classic' AND Exists('$(PaketBootStrapperExePath)') AND !(Exists('$(PaketExePath)'))" ContinueOnError="false" />
     <Exec Command='$(PaketCommand) restore' Condition=" '$(PaketRestoreRequired)' == 'true' " ContinueOnError="false" />
 
     <!-- Step 2 Detect project specific changes -->
