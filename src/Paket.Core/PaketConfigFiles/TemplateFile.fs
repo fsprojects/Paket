@@ -594,17 +594,16 @@ module internal TemplateFile =
         { FileName = fileName
           Contents = contents }
 
-    let Load(fileName,lockFile,currentVersion,specificVersions) =
-        let parsed = ParseFromFile(fileName,lockFile,currentVersion,specificVersions)
+    let internal ValidateTemplate(parsed) =
         let root = (FileInfo parsed.FileName).Directory.FullName
         let getFiles files =
             [ for source, target in files do
                 match Fake.Globbing.search root source with
                 | [] ->
                     if source.Contains "*" || source.Contains "?" then
-                        traceWarnfn "The file pattern \"%s\" in %s did not match any files." source fileName
+                        traceWarnfn "The file pattern \"%s\" in %s did not match any files." source parsed.FileName
                     else
-                        failwithf "The file \"%s\" requested in %s does not exist." source fileName
+                        failwithf "The file \"%s\" requested in %s does not exist." source parsed.FileName
                 | searchResult ->
                     for file in searchResult do
                         if source.Contains("**") then
@@ -615,7 +614,7 @@ module internal TemplateFile =
                         else
                             yield file, target ]
 
-        { FileName = fileName
+        { FileName = parsed.FileName
           Contents =
               match parsed.Contents with
               | CompleteInfo(core, optionalInfo) ->
@@ -624,6 +623,10 @@ module internal TemplateFile =
               | ProjectInfo(core, optionalInfo) ->
                   let files = getFiles optionalInfo.Files
                   ProjectInfo(core, { optionalInfo with Files = files }) }
+
+    let Load(fileName,lockFile,currentVersion,specificVersions) =
+        let parsed = ParseFromFile(fileName,lockFile,currentVersion,specificVersions)
+        ValidateTemplate parsed
 
     let IsProjectType (filename: string) : bool =
         match TemplateParser.parse (File.ReadAllText filename) with
