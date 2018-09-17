@@ -35,8 +35,16 @@ linked file will be visible under `paket-files` directory in project.
 
 If you reference a zip file it will be unzipped relative to the downloaded zip file.
 
-* `http file:///c:/projects/library.zip library/library.zip`
-  will write the zip file to `paket-files/localhost/library/library.zip` and unzip the content to `paket-files/localhost/library`
+The reference
+
+```
+http file:///c:/projects/library.zip library/library.zip
+```
+
+will:
+
+- write the zip file to `paket-files/localhost/library/library.zip`
+- unzip the content to `paket-files/localhost/library`
 
 ## Build action conventions
 
