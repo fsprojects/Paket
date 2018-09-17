@@ -1,3 +1,6 @@
+#### 5.180.0 - 2018-09-17
+* Added .NETCoreApp2.2 moniker
+
 #### 5.179.1 - 2018-09-14
 * BUGFIX: Fixed potential race condition when redirecting output - https://github.com/fsprojects/Paket/pull/3359
 
