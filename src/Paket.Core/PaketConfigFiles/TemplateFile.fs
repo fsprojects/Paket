@@ -590,11 +590,13 @@ module internal TemplateFile =
     let internal ParseFromFile(fileName,lockFile,currentVersion,specificVersions) =
         let fi = FileInfo fileName
         let contents = Parse(fi.FullName,lockFile,currentVersion,specificVersions, File.OpenRead fileName) |> returnOrFail
-        fi, contents
+
+        { FileName = fileName
+          Contents = contents }
 
     let Load(fileName,lockFile,currentVersion,specificVersions) =
-        let fi, contents = ParseFromFile(fileName,lockFile,currentVersion,specificVersions)
-        let root = fi.Directory.FullName
+        let parsed = ParseFromFile(fileName,lockFile,currentVersion,specificVersions)
+        let root = (FileInfo parsed.FileName).Directory.FullName
         let getFiles files =
             [ for source, target in files do
                 match Fake.Globbing.search root source with
@@ -615,7 +617,7 @@ module internal TemplateFile =
 
         { FileName = fileName
           Contents =
-              match contents with
+              match parsed.Contents with
               | CompleteInfo(core, optionalInfo) ->
                   let files = getFiles optionalInfo.Files
                   CompleteInfo(core, { optionalInfo with Files = files })
