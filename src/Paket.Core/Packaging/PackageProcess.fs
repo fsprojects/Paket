@@ -152,7 +152,9 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
             | None -> None
             | Some fileName ->
                 match ProjectFile.tryLoad projectFile.FullName with
-                | Some projectFile -> Some(projectFile,TemplateFile.Load(fileName,lockFile,version,specificVersions))
+                | Some projectFile ->
+                    let templateFileParsed = TemplateFile.Load(fileName,lockFile,version,specificVersions)
+                    Some(projectFile,templateFileParsed)
                 | None -> None)
         |> Array.filter (fun (_,templateFile) -> 
             match templateFile with
