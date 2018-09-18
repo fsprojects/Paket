@@ -71,6 +71,11 @@ namespace Paket.Bootstrapper
             if (options.UnprocessedCommandArgs.Any())
                 ConsoleImpl.WriteWarning("Ignoring the following unknown argument(s): {0}", String.Join(", ", options.UnprocessedCommandArgs));
 
+#if PAKET_BOOTSTRAP_NO_CACHE
+            ConsoleImpl.WriteTrace("Force ignore cache, because not implemented.");
+            options.DownloadArguments.IgnoreCache = true;
+#endif
+
             var effectiveStrategy = GetEffectiveDownloadStrategy(options.DownloadArguments, options.PreferNuget, options.ForceNuget);
             ConsoleImpl.WriteTrace("Using strategy: " + effectiveStrategy.Name);
             ConsoleImpl.WriteTrace("Using install kind: " + (options.DownloadArguments.AsTool? "tool": "exe"));
