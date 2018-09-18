@@ -2,7 +2,9 @@
 module Paket.InstallProcess
 
 open Paket
+open System
 open Chessie.ErrorHandling
+open Paket
 open Paket.Domain
 open Paket.Logging
 open Paket.BindingRedirects
@@ -10,8 +12,7 @@ open System.IO
 open Paket.PackageSources
 open Paket.Requirements
 open System.Collections.Generic
-open System
-open ProviderImplementation.AssemblyReader
+open System.Reflection
 
 let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*InstallSettings>) packagesConfigFileName =
     let packagesInConfigFile = PackagesConfigFile.Read packagesConfigFileName
@@ -294,11 +295,19 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
                 librariesForPackage
                 |> Seq.choose(fun (library,redirects,profile) ->
                     try
-                        let assemblyReader =
-                            ILModuleReaderAfterReadingAllBytes(library.Path, mkILGlobals EcmaMscorlibScopeRef)
-                        let assembly = assemblyReader.ILModuleDef.ManifestOfAssembly
-                        let assemblyName = assembly.GetName()
-                        Some (assembly, BindingRedirects.getPublicKeyToken assemblyName, assemblyReader.ILAssemblyRefs, redirects, profile)
+                        let assemblyName = AssemblyName.GetAssemblyName(library.Path)
+                        let publicKeyToken = AssemblyMetadata.getPublicKeyToken assemblyName
+                        let metadataName = AssemblyMetadata.AssemblyName assemblyName
+                        let references = 
+                            match AssemblyMetadata.getAssemblyReferences metadataName with
+                            | Trial.Pass list -> list
+                            | Trial.Warn(list, warn) -> 
+                                warn |> List.iter (fun ex -> ex |> string |> traceWarn)
+                                list
+                            | Trial.Fail exns ->
+                                exns |> List.iter (fun ex -> ex |> string |> traceError)
+                                List.empty
+                        Some (assemblyName, publicKeyToken, references, redirects, profile)
                     with _ -> None)
                 |> Seq.sortBy(fun (assembly,_,_,_,_) -> assembly.Version)
                 |> Seq.toList
@@ -306,13 +315,13 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
                 |> function | head :: _ -> Some head | _ -> None)
             |> Seq.cache
 
-        let referencesDifferentProfiles assemblyName assemblyVersion profile =
+        let referencesDifferentProfiles (assemblyName : AssemblyName) profile =
             (targetProfiles |> Seq.exists ((=) profile))
             && assemblies
             |> Seq.filter (fun (_,_,_,_,p) -> p <> profile)
             |> Seq.map (fun (a,_,_,_,_) -> a)
-            |> Seq.filter (fun a -> a.Name = assemblyName)
-            |> Seq.exists (fun a -> a.Version <> assemblyVersion)
+            |> Seq.filter (fun a -> a.Name = assemblyName.Name)
+            |> Seq.exists (fun a -> a.Version <> assemblyName.Version)
 
         assemblies
         |> Seq.choose (fun (assembly,token,refs,redirects,profile) -> 
@@ -324,27 +333,40 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
             | Some BindingRedirectsSettings.Off -> false
             | _ -> false)
         |> Seq.filter (fun (assembly,_,_,redirects,profile) ->
+            let assemblyName = assembly
             redirects = Some BindingRedirectsSettings.Force
-            || referencesDifferentProfiles assembly.Name assembly.Version profile
+            || referencesDifferentProfiles assemblyName profile
             || assemblies
             |> Seq.collect (fun (_,_,refs,_,_) -> refs)
-            |> Seq.filter (fun a -> assembly.Name = a.Name)
-            |> Seq.exists (fun a -> assembly.Version > a.Version))
+            |> Seq.filter (fun a -> assemblyName.Name = a.Name)
+            |> Seq.exists (fun a -> assemblyName.Version > a.Version))
         |> Seq.map(fun (assembly, token,_,_,_) ->
             { BindingRedirect.AssemblyName = assembly.Name
-              Version = Option.fold (fun _ x -> x.ToString()) "0.0.0.0" assembly.Version
+              Version = assembly.Version.ToString()
               PublicKeyToken = token
               Culture = None })
         |> Seq.sort
 
     applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root allKnownLibNames bindingRedirects
-    
+
+let invalidateRestoreCachesForDotnetSdk (projectFileInfo:FileInfo) =
+    let paketPropsFile = ProjectFile.getPaketPropsFileInfo projectFileInfo
+    if paketPropsFile.Exists then
+        let old = File.ReadAllText paketPropsFile.FullName
+        let newContent = old.Replace("<!-- <RestoreSuccess>False</RestoreSuccess> -->","<RestoreSuccess>False</RestoreSuccess>")
+        File.WriteAllText(paketPropsFile.FullName, newContent)
+    let assetsFile = ProjectFile.getAssetsFileInfo projectFileInfo
+    if assetsFile.Exists then
+        try assetsFile.Delete() with | _ -> ()
+
 let installForDotnetSDK root (project:ProjectFile) =
     let paketTargetsPath = RestoreProcess.extractRestoreTargets root
     let relativePath = createRelativePath project.FileName paketTargetsPath
     project.RemoveImportForPaketTargets()
     project.AddImportForPaketTargets(relativePath)
-    
+    let projectFileInfo = FileInfo(project.FileName)
+    invalidateRestoreCachesForDotnetSdk (projectFileInfo)
+
 /// Installs all packages from the lock file.
 let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups) =
     tracefn " - Creating model and downloading packages."
@@ -367,7 +389,8 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
     
     let prefix = dependenciesFile.Directory.Length + 1
     let norm (s:string) = (s.Substring prefix).Replace('\\', '/')
-        
+    
+    let groupSettings = lockFile.Groups |> Map.map (fun k v -> v.Options.Settings)
     for project, referenceFile in projectsAndReferences do
         tracefn " - %s -> %s" (norm referenceFile.FileName) (norm project.FileName)
         let toolsVersion = project.GetToolsVersion()
@@ -414,13 +437,15 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 directDependencies
                 |> Seq.collect (fun u -> lookup.[u.Key] |> Seq.map (fun i -> fst u.Key, u.Value, i))
                 |> Seq.partitionAndChoose
-                    (fun (groupName,_, _) -> lockFile.Groups |> Map.containsKey groupName)
+                    (fun (groupName,(_,parentSettings), dep) ->
+                        lockFile.Groups |> Map.containsKey groupName)
                     (fun (groupName,(_,parentSettings), dep) ->
                         let group = lockFile.Groups.[groupName]
                         match group.TryFind dep with
                         | None -> None
-                        | Some p -> Some ((groupName,p.Name), (p.Version,parentSettings + p.Settings)) )
-                    (fun (groupName,_, _) ->
+                        | Some p ->
+                            Some ((groupName,p.Name), (p.Version,parentSettings + p.Settings)) )
+                    (fun (groupName,(_,parentSettings), dep) ->
                         Some (sprintf " - %s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName groupName)
                     )
             for key,settings in usedPackageDependencies do
@@ -434,10 +459,11 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             usedPackages
             |> Map.filter (fun (_groupName,packageName) (v,settings) ->
                 let hasCondition = settings.ReferenceCondition.IsSome
+                //settings.FrameworkRestrictions
                 match dict.TryGetValue packageName with
-                | true,(_,true,_) when hasCondition ->
+                | true,(v',true,_) when hasCondition ->
                     true
-                | true,(v',_,restrictions') ->
+                | true,(v',hasCondition',restrictions') ->
                     let filtered = filterRestrictions settings.FrameworkRestrictions restrictions'
                     dict.[packageName] <- (v,hasCondition,filtered)
                     if v' = v then
@@ -513,34 +539,32 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     let linked = defaultArg file.Settings.Link true
                     let buildAction = project.DetermineBuildActionForRemoteItems file.Name
                     if buildAction <> BuildAction.Reference && linked then
-                        { BuildAction = buildAction
-                          Include = createRelativePath project.FileName remoteFilePath
-                          WithPaketSubNode = true
-                          CopyToOutputDirectory = None
-                          Link = Some link }
+                        {   BuildAction = buildAction
+                            Include = createRelativePath project.FileName remoteFilePath
+                            WithPaketSubNode = true
+                            CopyToOutputDirectory = None
+                            Link = Some link
+                        }
                     else
-                        { BuildAction = buildAction
-                          WithPaketSubNode = true
-                          CopyToOutputDirectory = None
-                          Include =
-                            if buildAction = BuildAction.Reference then
-                                createRelativePath project.FileName remoteFilePath
-                            else
-                                let toDir = Path.GetDirectoryName(project.FileName)
-                                let targetFile = FileInfo(Path.Combine(toDir,link))
-                                if targetFile.Directory.Exists |> not then
-                                    targetFile.Directory.Create()
+                        {   BuildAction = buildAction
+                            WithPaketSubNode = true
+                            CopyToOutputDirectory = None
+                            Include =
+                                if buildAction = BuildAction.Reference then
+                                    createRelativePath project.FileName remoteFilePath
+                                else
+                                    let toDir = Path.GetDirectoryName(project.FileName)
+                                    let targetFile = FileInfo(Path.Combine(toDir,link))
+                                    if targetFile.Directory.Exists |> not then
+                                        targetFile.Directory.Create()
 
-                                File.Copy(remoteFilePath,targetFile.FullName,true)
-                                createRelativePath project.FileName targetFile.FullName
-                          Link = None }
+                                    File.Copy(remoteFilePath,targetFile.FullName,true)
+                                    createRelativePath project.FileName targetFile.FullName
+                            Link = None
+                        }
                 ) |> Seq.toList
-           
-            if toolsVersion >= 15.0 then
-                processContentFiles root project Map.empty gitRemoteItems options
-            else
-                processContentFiles root project usedPackages gitRemoteItems options
-            
+
+            processContentFiles root project usedPackages gitRemoteItems options
             project.Save forceTouch
             projectCache.[project.FileName] <- Some project
 

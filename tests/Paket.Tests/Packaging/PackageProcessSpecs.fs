@@ -3,6 +3,7 @@
 open System.IO
 open System.Reflection
 open Paket
+open Paket.AssemblyMetadata
 open FsUnit
 open NUnit.Framework
 
@@ -13,10 +14,13 @@ let ``Loading assembly metadata works``() =
     // When running in CI CurrentDirectory is the bin/Release folder?
     let assemblyLocation = Assembly.GetExecutingAssembly().Location
     let workingDir =
-        let curDir = Path.GetFullPath(".")
-        if curDir.ToLowerInvariant().Contains "system32" then
-            Path.GetDirectoryName (assemblyLocation)
-        else curDir
+        let curDir = 
+            let testDir = TestContext.CurrentContext.TestDirectory
+            if isNotNull testDir then testDir else Path.GetFullPath(".")
+        match curDir with
+        | String.ContainsIC "system32" | String.ContainsIC "JetBrains" ->
+            Path.GetDirectoryName assemblyLocation
+        | _ -> curDir
 
     use _cd = TestHelpers.changeWorkingDir workingDir
 
@@ -43,7 +47,9 @@ let ``Loading assembly metadata works``() =
         elif assemblyLocation.Contains "Debug" then "Debug"
         else "Release"
     
-    let assemblyReader,id,versionFromAssembly,fileName = PackageMetaData.readAssemblyFromProjFile config "" projFile
+    use assemblyReader = PackageMetaData.readAssemblyFromProjFile config "" projFile
+    let id,versionFromAssembly,fileName = assemblyReader.AssemblyDetails
+    
     id |> shouldEqual "Paket.Tests"
     
     let attribs = PackageMetaData.loadAssemblyAttributes assemblyReader

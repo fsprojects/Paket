@@ -5,6 +5,7 @@ open System
 open System.IO
 open Paket.Logging
 open System.Collections.Generic
+open Paket.AssemblyMetadata
 open Paket.PackageMetaData
 open Chessie.ErrorHandling
 
@@ -26,7 +27,8 @@ let private merge buildConfig buildPlatform versionFromAssembly specificVersions
 
     match withVersion with
     | { Contents = ProjectInfo(md, opt) } -> 
-        let assemblyReader,id,versionFromAssembly,assemblyFileName = readAssemblyFromProjFile buildConfig buildPlatform projectFile
+        use assemblyReader = readAssemblyFromProjFile buildConfig buildPlatform projectFile
+        let id, versionFromAssembly, assemblyFileName = assemblyReader.AssemblyDetails
         let attribs = loadAssemblyAttributes assemblyReader
 
         let mergedOpt =
