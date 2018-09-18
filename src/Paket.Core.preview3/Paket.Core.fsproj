@@ -1,9 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PaketCoreSourcesDir>..\Paket.Core</PaketCoreSourcesDir>
     <DefineConstants>NO_BOOTSTRAPPER;NO_CONFIGURATIONMANAGER;CUSTOM_WEBPROXY;$(DefineConstants)</DefineConstants>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.SDK\src\AssemblyReader.fs">
@@ -91,6 +92,8 @@
     <Compile Include="$(PaketCoreSourcesDir)\Packaging\PackageMetaData.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Packaging\PackageProcess.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\PublicAPI.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\CliCommands.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\CliRunner.fs" />
     <Content Include="app.config" />
   </ItemGroup>
   <ItemGroup>
