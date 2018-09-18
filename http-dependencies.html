@@ -85,6 +85,20 @@ to the project's <a href="references-files.html"><code>paket.references</code> f
 </code></pre></td></tr></table>
 <p>This will reference the linked file directly into your project. By default the
 linked file will be visible under <code>paket-files</code> directory in project.</p>
+<h2><a name="Referencing-a-zip-file" class="anchor" href="#Referencing-a-zip-file">Referencing a zip file</a></h2>
+<p>If you reference a zip file it will be unzipped relative to the downloaded zip file.</p>
+<p>The reference</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="id">http</span> <span class="id">file</span><span class="pn">:</span><span class="c">///c:/projects/library.zip library/library.zip</span>
+</code></pre></td>
+</tr>
+</table>
+<p>will:</p>
+<ul>
+<li>write the zip file to <code>paket-files/localhost/library/library.zip</code></li>
+<li>unzip the content to <code>paket-files/localhost/library</code></li>
+</ul>
 <h2><a name="Build-action-conventions" class="anchor" href="#Build-action-conventions">Build action conventions</a></h2>
 <p>The build action is determined depending on the file extension:</p>
 <ul>
@@ -145,6 +159,7 @@ will write the file to <code>paket-files/localhost/library.dll</code></p>
 <a href="paket-update.html"><code>paket update</code> command</a> with <code>--force</code> option.</p>
 <p>Using <a href="groups.html">groups</a> for HTTP-dependent files can be helpful to reduce
 the number of files that are reinstalled.</p>
+<h2><a name="header" class="anchor" href="#header"></a></h2>
 
 
         </div>
