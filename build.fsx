@@ -654,6 +654,7 @@ Target "ReleaseGitHub" (fun _ ->
     |> uploadFile "./bin/paket.bootstrapper.exe"
     |> uploadFile ".paket/paket.targets"
     |> uploadFile ".paket/Paket.Restore.targets"
+    |> uploadFile (tempDir </> sprintf "Paket.%s.nupkg" (release.NugetVersion))
     |> releaseDraft
     |> Async.RunSynchronously
 )
