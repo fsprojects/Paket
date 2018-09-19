@@ -1,0 +1,8 @@
+type file
+id a
+description
+    Silly empty demo project
+authors Paket team
+
+files
+    hello.txt ==> content/docs

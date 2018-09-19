@@ -152,7 +152,9 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
             | None -> None
             | Some fileName ->
                 match ProjectFile.tryLoad projectFile.FullName with
-                | Some projectFile -> Some(projectFile,TemplateFile.Load(fileName,lockFile,version,specificVersions))
+                | Some projectFile ->
+                    let templateFileParsed = TemplateFile.ParseFromFile(fileName,lockFile,version,specificVersions)
+                    Some(projectFile,templateFileParsed)
                 | None -> None)
         |> Array.filter (fun (_,templateFile) -> 
             match templateFile with
@@ -168,7 +170,9 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
             | _ -> true)
         |> Array.map (fun (projectFile,templateFile') ->
             allTemplateFiles.Remove(templateFile'.FileName) |> ignore
-            let merged = lazy (merge buildConfig buildPlatform version specificVersions projectFile templateFile')
+            let merged = lazy (
+                let loadedTemplate = TemplateFile.ValidateTemplate templateFile'
+                merge buildConfig buildPlatform version specificVersions projectFile loadedTemplate)
             let willBePacked = 
                 match templateFile with
                 | Some file -> normalizePath (Path.GetFullPath file) = normalizePath (Path.GetFullPath templateFile'.FileName)

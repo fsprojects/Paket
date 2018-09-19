@@ -1,3 +1,12 @@
+#### 5.180.1 - 2018-09-1
+* BUGFIX: Paket pack with `--template` failed trying to load the dependencies of templates who should be ignored instead - https://github.com/fsprojects/Paket/pull/3363
+
+#### 5.180.0 - 2018-09-17
+* Added .NETCoreApp2.2 moniker
+
+#### 5.179.1 - 2018-09-14
+* BUGFIX: Fixed potential race condition when redirecting output - https://github.com/fsprojects/Paket/pull/3359
+
 #### 5.179.0 - 2018-09-12
 * Added NuGet packaging output details to paket pack output - https://github.com/fsprojects/Paket/pull/3357
 

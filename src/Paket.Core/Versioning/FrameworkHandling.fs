@@ -193,18 +193,21 @@ type DotNetCoreAppVersion =
     | V1_1
     | V2_0
     | V2_1
+    | V2_2
     member private this.NumKey =
         match this with
         | V1_0 -> 0
         | V1_1 -> 1
         | V2_0 -> 2
         | V2_1 -> 3
+        | V2_2 -> 4
     static member private FromNum num =
         match num with
         | 0 -> V1_0
         | 1 -> V1_1
         | 2 -> V2_0
         | 3 -> V2_1
+        | 4 -> V2_2
         | _   -> failwithf "'%i' has no corresponding framework version" num
     static member (<->) (lower:DotNetCoreAppVersion,upper:DotNetCoreAppVersion) =
         if lower.NumKey < upper.NumKey then
@@ -217,18 +220,21 @@ type DotNetCoreAppVersion =
         | V1_1 -> "v1.1"
         | V2_0 -> "v2.0"
         | V2_1 -> "v2.1"
+        | V2_2 -> "v2.2"
     member this.ShortString() =
         match this with
         | DotNetCoreAppVersion.V1_0 -> "1.0"
         | DotNetCoreAppVersion.V1_1 -> "1.1"
         | DotNetCoreAppVersion.V2_0 -> "2.0"
         | DotNetCoreAppVersion.V2_1 -> "2.1"
+        | DotNetCoreAppVersion.V2_2 -> "2.2"
     static member TryParse s =
         match s with
         | "" | "1" -> Some (DotNetCoreAppVersion.V1_0)
         | "1.1" -> Some (DotNetCoreAppVersion.V1_1)
         | "2" -> Some (DotNetCoreAppVersion.V2_0)
         | "2.1" -> Some (DotNetCoreAppVersion.V2_1)
+        | "2.2" -> Some (DotNetCoreAppVersion.V2_2)
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -617,8 +623,9 @@ type FrameworkIdentifier =
         | DotNetStandard DotNetStandardVersion.V2_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | DotNetCoreApp DotNetCoreAppVersion.V1_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | DotNetCoreApp DotNetCoreAppVersion.V1_1 -> [ DotNetCoreApp DotNetCoreAppVersion.V1_0 ]
-        | DotNetCoreApp DotNetCoreAppVersion.V2_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V1_1;  DotNetStandard DotNetStandardVersion.V2_0 ]
+        | DotNetCoreApp DotNetCoreAppVersion.V2_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V1_1; DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetCoreApp DotNetCoreAppVersion.V2_1 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_0 ]
+        | DotNetCoreApp DotNetCoreAppVersion.V2_2 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_1 ]
         | DotNetUnity DotNetUnityVersion.V3_5_Full -> [ ]
         | DotNetUnity DotNetUnityVersion.V3_5_Subset -> [ ]
         | DotNetUnity DotNetUnityVersion.V3_5_Micro -> [ ]
@@ -1135,6 +1142,7 @@ module KnownTargetProfiles =
         DotNetCoreAppVersion.V1_1
         DotNetCoreAppVersion.V2_0
         DotNetCoreAppVersion.V2_1
+        DotNetCoreAppVersion.V2_2
     ]
 
     let DotNetUnityVersions = [
