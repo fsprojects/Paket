@@ -1,3 +1,6 @@
+#### 5.181.1 - 2018-09-20
+* BUGFIX: copy local had no effect when opening project in vs2017 - https://github.com/fsprojects/Paket/pull/3356
+
 #### 5.181.0 - 2018-09-20
 * Support for netcore3.0 moniker - https://github.com/fsprojects/Paket/pull/3367
 * BUGFIX: Paket pack with `--template` failed trying to load the dependencies of templates who should be ignored instead - https://github.com/fsprojects/Paket/pull/3363
