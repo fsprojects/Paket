@@ -1,4 +1,5 @@
-#### 5.180.1 - 2018-09-1
+#### 5.181.0 - 2018-09-20
+* Support for netcore3.0 moniker - https://github.com/fsprojects/Paket/pull/3367
 * BUGFIX: Paket pack with `--template` failed trying to load the dependencies of templates who should be ignored instead - https://github.com/fsprojects/Paket/pull/3363
 
 #### 5.180.0 - 2018-09-17
