@@ -213,3 +213,10 @@ integrationtests/scenarios/*/before/**/obj
 
 # artifacts
 /bin_netcore/
+
+# paket
+/.paket/*
+!/.paket/*.proj
+!/.paket/*.exe.config
+!/.paket/*.props
+!/.paket/*.targets
