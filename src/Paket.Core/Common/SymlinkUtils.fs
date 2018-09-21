@@ -18,11 +18,11 @@ let makeDirectoryLink target source =
 
     let ln (p:ProcessStartInfo) =
         p.FileName <- "ln"
-        p.Arguments <- sprintf @"-sT ""%s"" ""%s""" target source
+        p.Arguments <- sprintf @"-sT ""%s"" ""%s""" source target
 
     let ln_onMacOS (p:ProcessStartInfo) =
         p.FileName <- "ln"
-        p.Arguments <- sprintf @"-s ""%s"" ""%s""" target source
+        p.Arguments <- sprintf @"-s ""%s"" ""%s""" source target
 
     let xLn = if isMacOS then ln_onMacOS elif isUnix then ln else mklink
 
