@@ -1,3 +1,6 @@
+#### 5.182.0-alpha001 - 2018-09-21
+* Full .NET Core support - https://github.com/fsprojects/Paket/pull/3183
+
 #### 5.181.1 - 2018-09-20
 * BUGFIX: copy local had no effect when opening project in vs2017 - https://github.com/fsprojects/Paket/pull/3356
 
