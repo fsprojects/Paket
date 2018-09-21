@@ -180,7 +180,7 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(result.Run, Is.False);
             Assert.That(result.RunArgs, Is.Empty);
 
-            var knownProps = new[] { "DownloadArguments.MaxFileAgeInMinutes", "DownloadArguments.Folder", "DownloadArguments.Target", "DownloadArguments.NugetSource", "DownloadArguments.DoSelfUpdate", "DownloadArguments.LatestVersion", "DownloadArguments.IgnorePrerelease", "DownloadArguments.IgnoreCache", "Verbosity", "ForceNuget", "PreferNuget", "UnprocessedCommandArgs", "ShowHelp", "Run", "RunArgs" };
+            var knownProps = new[] { "DownloadArguments.MaxFileAgeInMinutes", "DownloadArguments.Folder", "DownloadArguments.Target", "DownloadArguments.NugetSource", "DownloadArguments.DoSelfUpdate", "DownloadArguments.LatestVersion", "DownloadArguments.IgnorePrerelease", "DownloadArguments.IgnoreCache", "DownloadArguments.AsTool", "Verbosity", "ForceNuget", "PreferNuget", "UnprocessedCommandArgs", "ShowHelp", "Run", "RunArgs" };
             var allProperties = GetAllProperties(result);
             Assert.That(allProperties, Is.Not.Null.And.Count.EqualTo(knownProps.Length));
             Assert.That(allProperties, Is.EquivalentTo(knownProps));

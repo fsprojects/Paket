@@ -26,6 +26,8 @@ Options:
 -f                             don't use local cache; always downloads
 -s                             silent mode; errors only. Use twice for no output
 -v                             verbose; show more information on console.
+--output-dir=<PATH>            Download paket to the specified directory.
+--as-tool                      Install the package as .net sdk tool.
 --run <other args>             run the downloaded paket.exe with all following arguments";
         const string PaketBootstrapperUserAgent = "Paket.Bootstrapper";
 
@@ -94,6 +96,9 @@ Options:
             if (EnvProxy.TryGetProxyFor(uri, out result) && result.GetProxy(uri) != uri)
                 return result;
 
+#if NO_SYSTEMWEBPROXY
+            return null;
+#else
             result = WebRequest.GetSystemWebProxy();
             Uri address = result.GetProxy(uri);
             if (address == uri)
@@ -104,6 +109,7 @@ Options:
                 Credentials = CredentialCache.DefaultCredentials,
                 BypassProxyOnLocal = true
             };
+#endif
         }
 
         internal static void FileMove(string oldPath, string newPath)

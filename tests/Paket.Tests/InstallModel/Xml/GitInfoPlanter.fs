@@ -17,7 +17,7 @@ let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
 <Import Project="..\..\..\GitInfoPlanter\build\GitInfoPlanter.targets" Condition="Exists('..\..\..\GitInfoPlanter\build\GitInfoPlanter.targets')" Label="Paket" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 [<Test>]
-#if NETCOREAPP2_0
+#if TESTSUITE_RUNS_ON_DOTNETCORE
 [<Flaky>]
 #endif
 let ``should generate Xml for GitInfoPlanter2.0.0``() = 

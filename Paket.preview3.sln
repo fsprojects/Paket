@@ -7,6 +7,8 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Paket.Core", "src/Paket.Cor
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Paket", "src/Paket.preview3/Paket.fsproj", "{6CA5144C-5444-46E8-9B89-86122B5E2D32}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Paket.Bootstrapper", "src/Paket.Bootstrapper.preview3/Paket.Bootstrapper.csproj", "{8CC1605A-307B-4B68-876D-1D38ED48EA4D}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{90759A76-746D-4599-9BCC-E10F8D2E1355}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Paket.Tests", "tests/Paket.Tests.preview3/Paket.Tests.fsproj", "{0156FA92-AF44-4242-B76F-18D0A367A8B2}"
@@ -57,6 +59,18 @@ Global
 		{BCF3D1A7-724E-4E33-AC88-70984B3CC03A}.Release|x64.Build.0 = Release|x64
 		{BCF3D1A7-724E-4E33-AC88-70984B3CC03A}.Release|x86.ActiveCfg = Release|x86
 		{BCF3D1A7-724E-4E33-AC88-70984B3CC03A}.Release|x86.Build.0 = Release|x86
+		{8CC1605A-307B-4B68-876D-1D38ED48EA4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CC1605A-307B-4B68-876D-1D38ED48EA4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CC1605A-307B-4B68-876D-1D38ED48EA4D}.Debug|x64.ActiveCfg = Debug|x64
+		{8CC1605A-307B-4B68-876D-1D38ED48EA4D}.Debug|x64.Build.0 = Debug|x64
+		{8CC1605A-307B-4B68-876D-1D38ED48EA4D}.Debug|x86.ActiveCfg = Debug|x86
+		{8CC1605A-307B-4B68-876D-1D38ED48EA4D}.Debug|x86.Build.0 = Debug|x86
+		{8CC1605A-307B-4B68-876D-1D38ED48EA4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CC1605A-307B-4B68-876D-1D38ED48EA4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8CC1605A-307B-4B68-876D-1D38ED48EA4D}.Release|x64.ActiveCfg = Release|x64
+		{8CC1605A-307B-4B68-876D-1D38ED48EA4D}.Release|x64.Build.0 = Release|x64
+		{8CC1605A-307B-4B68-876D-1D38ED48EA4D}.Release|x86.ActiveCfg = Release|x86
+		{8CC1605A-307B-4B68-876D-1D38ED48EA4D}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

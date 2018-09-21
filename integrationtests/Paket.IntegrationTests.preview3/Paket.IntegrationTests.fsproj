@@ -3,7 +3,13 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <PaketTestsSourcesDir>..\Paket.IntegrationTests</PaketTestsSourcesDir>
-    <DefineConstants>PAKET_NETCORE</DefineConstants>
+    <DefineConstants>
+      PAKET_NETCORE;
+      NO_UNIT_PLATFORMATTRIBUTE;
+      TESTSUITE_KNOWN_FAILURE_DOTNETCORE_3005;
+      FAKE_NETSTANDARD_API;
+      @(DefineConstants)
+    </DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

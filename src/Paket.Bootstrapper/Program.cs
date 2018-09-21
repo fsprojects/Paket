@@ -23,19 +23,43 @@ namespace Paket.Bootstrapper
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
                                          | SecurityProtocolType.Tls11
                                          | SecurityProtocolType.Tls
+#if NO_SSL3
+                                         ;
+#else
                                          | SecurityProtocolType.Ssl3;
+#endif
+
             executionWatch.Start();
             Console.CancelKeyPress += CancelKeyPressed;
 
             var fileProxy = new FileSystemProxy();
-            var optionsBeforeDependenciesFile = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings,
+
+            var appSettings = ConfigurationManager.AppSettings;
+
+            var appConfigInWorkingDir = Path.Combine(Environment.CurrentDirectory, "paket.bootstrapper.exe.config");
+            if (File.Exists(appConfigInWorkingDir))
+            {
+                var exeInWorkingDir = Path.Combine(Environment.CurrentDirectory, "paket.bootstrapper.exe");
+                var exeConf = ConfigurationManager.OpenExeConfiguration(null);
+                if (exeConf != null)
+                {
+                    var nv = new System.Collections.Specialized.NameValueCollection();
+                    foreach (KeyValueConfigurationElement kv in exeConf.AppSettings.Settings)
+                    {
+                        nv.Add(kv.Key, kv.Value);
+                    }
+                    appSettings = nv;
+                }
+            }
+
+            var optionsBeforeDependenciesFile = ArgumentParser.ParseArgumentsAndConfigurations(args, appSettings,
                 Environment.GetEnvironmentVariables(), fileProxy, Enumerable.Empty<string>());
             ConsoleImpl.Verbosity = optionsBeforeDependenciesFile.Verbosity;
 
             var argumentsFromDependenciesFile =
                 WindowsProcessArguments.Parse(
                     PaketDependencies.GetBootstrapperArgsForFolder(fileProxy));
-            var options = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings,
+            var options = ArgumentParser.ParseArgumentsAndConfigurations(args, appSettings,
                 Environment.GetEnvironmentVariables(), fileProxy, argumentsFromDependenciesFile);
             if (options.ShowHelp)
             {
@@ -47,8 +71,14 @@ namespace Paket.Bootstrapper
             if (options.UnprocessedCommandArgs.Any())
                 ConsoleImpl.WriteWarning("Ignoring the following unknown argument(s): {0}", String.Join(", ", options.UnprocessedCommandArgs));
 
+#if PAKET_BOOTSTRAP_NO_CACHE
+            ConsoleImpl.WriteTrace("Force ignore cache, because not implemented.");
+            options.DownloadArguments.IgnoreCache = true;
+#endif
+
             var effectiveStrategy = GetEffectiveDownloadStrategy(options.DownloadArguments, options.PreferNuget, options.ForceNuget);
             ConsoleImpl.WriteTrace("Using strategy: " + effectiveStrategy.Name);
+            ConsoleImpl.WriteTrace("Using install kind: " + (options.DownloadArguments.AsTool? "tool": "exe"));
 
             StartPaketBootstrapping(effectiveStrategy, options.DownloadArguments, fileProxy, () => OnSuccessfulDownload(options));
         }
@@ -207,8 +237,11 @@ namespace Paket.Bootstrapper
 
         public static DownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget, bool forceNuget)
         {
-            var gitHubDownloadStrategy = new GitHubDownloadStrategy(new WebRequestProxy(), new FileSystemProxy()).AsCached(dlArgs.IgnoreCache);
-            var nugetDownloadStrategy = new NugetDownloadStrategy(new WebRequestProxy(), new FileSystemProxy(), dlArgs.Folder, dlArgs.NugetSource).AsCached(dlArgs.IgnoreCache);
+            var gitHubDownloadStrategy =
+                dlArgs.AsTool
+                ? new GitHubDownloadToolStrategy(new WebRequestProxy(), new FileSystemProxy()).AsCached(dlArgs.IgnoreCache)
+                : new GitHubDownloadStrategy(new WebRequestProxy(), new FileSystemProxy()).AsCached(dlArgs.IgnoreCache);
+            var nugetDownloadStrategy = new NugetDownloadStrategy(new WebRequestProxy(), new FileSystemProxy(), dlArgs.Folder, dlArgs.NugetSource, dlArgs.AsTool).AsCached(dlArgs.IgnoreCache);
 
             DownloadStrategy effectiveStrategy;
             if (forceNuget)

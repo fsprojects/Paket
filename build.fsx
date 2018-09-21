@@ -237,6 +237,18 @@ Target "DotnetPackage" (fun _ ->
             ToolPath = dotnetExePath
             AdditionalArgs = [(sprintf "-o \"%s\"" outPath); (sprintf "/p:Version=%s" release.NugetVersion)]
         })
+    DotNetCli.Pack (fun c ->
+        { c with
+            Project = "src/Paket.preview3/Paket.fsproj"
+            ToolPath = dotnetExePath
+            AdditionalArgs = [(sprintf "-o \"%s\"" outPath); (sprintf "/p:Version=%s" release.NugetVersion)]
+        })
+    DotNetCli.Pack (fun c ->
+        { c with
+            Project = "src/Paket.Bootstrapper.preview3/Paket.Bootstrapper.csproj"
+            ToolPath = dotnetExePath
+            AdditionalArgs = [(sprintf "-o \"%s\"" outPath); (sprintf "/p:Version=%s" release.NugetVersion)]
+        })
 )
 
 Target "DotnetTest" (fun _ ->
@@ -424,12 +436,17 @@ Target "NuGet" (fun _ ->
 
 Target "MergeDotnetCoreIntoNuget" (fun _ ->
 
-    let nupkg = tempDir </> sprintf "Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
-    let netcoreNupkg = tempDir </> "dotnetcore" </> sprintf "Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
-
     let runTool = runCmdIn "tools" dotnetExePath
 
-    runTool """mergenupkg --source "%s" --other "%s" --framework netstandard2.0 """ nupkg netcoreNupkg
+    let mergeNupkg packageName args =
+        let nupkg = tempDir </> sprintf "%s.%s.nupkg" packageName (release.NugetVersion) |> Path.GetFullPath
+        let netcoreNupkg = tempDir </> "dotnetcore" </> sprintf "%s.%s.nupkg" packageName (release.NugetVersion) |> Path.GetFullPath
+
+        runTool """mergenupkg --source "%s" --other "%s" %s""" nupkg netcoreNupkg args
+
+    mergeNupkg "Paket.Core" "--framework netstandard2.0"
+    mergeNupkg "Paket" "--tools"
+    mergeNupkg "paket.bootstrapper" "--tools"
 )
 
 Target "PublishNuGet" (fun _ ->
@@ -637,6 +654,7 @@ Target "ReleaseGitHub" (fun _ ->
     |> uploadFile "./bin/paket.bootstrapper.exe"
     |> uploadFile ".paket/paket.targets"
     |> uploadFile ".paket/Paket.Restore.targets"
+    |> uploadFile (tempDir </> sprintf "Paket.%s.nupkg" (release.NugetVersion))
     |> releaseDraft
     |> Async.RunSynchronously
 )

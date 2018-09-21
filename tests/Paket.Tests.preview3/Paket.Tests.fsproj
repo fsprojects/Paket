@@ -1,8 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <PaketTestsSourcesDir>..\Paket.Tests</PaketTestsSourcesDir>
     <DefineConstants>WEBPROXY_NETSTANDARD;$(DefineConstants)</DefineConstants>
+
+    <!-- disable generation of assembly info because the test "Packaging/PackageProcessSpecs.`Loading assembly metadata works``"
+         use as test case the metadata of this built Paket.Tests assembly -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <DefineConstants>
+      WEBPROXY_NETSTANDARD;
+      TESTSUITE_RUNS_ON_DOTNETCORE;
+      NO_UNIT_PLATFORMATTRIBUTE;
+      NO_UNIT_TIMEOUTATTRIBUTE;
+      @(DefineConstants)
+    </DefineConstants>
 
     <!-- disable generation of assembly info because the test "Packaging/PackageProcessSpecs.`Loading assembly metadata works``"
          use as test case the metadata of this built Paket.Tests assembly -->
@@ -214,6 +225,7 @@
   </Target>
 
   <ItemGroup>
+    <PackageReference Include="Argu" Version="5.1.0" />
     <PackageReference Include="FsCheck" Version="2.10.4" />
     <PackageReference Include="nunit" Version="3.9.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
