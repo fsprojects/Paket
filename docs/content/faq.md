@@ -159,10 +159,6 @@ The following files can be committed, but are not essential:
 The following files should *not* be committed to your version control system,
 and should be added to any ignore files:
 
-* `.paket/paket.exe`, the main Paket executable, downloaded by
-  [`.paket/paket.bootstrapper.exe`](bootstrapper.html). It should not be
-  committed, as it is a binary file which can unnecessarily bloat repositories,
-  and because it is likely to be updated on a regular basis.
 * `paket-files` directory, as [`paket install`](paket-install.html) will restore
   this.
 * Same applies to the `packages` directory.
