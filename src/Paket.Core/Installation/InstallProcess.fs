@@ -367,7 +367,23 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
     
     let prefix = dependenciesFile.Directory.Length + 1
     let norm (s:string) = (s.Substring prefix).Replace('\\', '/')
-        
+
+    do
+        let fsharpCoreWithoutRedirects =
+            model
+            |> Map.tryPick (fun (_group, package) (packageInfo, _installModel) ->
+                match package.CompareString, packageInfo.Settings.CreateBindingRedirects with
+                | "fsharp.core", None
+                | "fsharp.core", Some BindingRedirectsSettings.On
+                | "fsharp.core", Some BindingRedirectsSettings.Off ->
+                    Some ()
+                | _, _ ->
+                    None)
+            |> Option.isSome
+
+        if fsharpCoreWithoutRedirects then
+            traceWarn "FSharp.Core should always specify redirects:force in paket.dependencies. For more information, please consult https://fsprojects.github.io/Paket/dependencies-file.html"
+
     for project, referenceFile in projectsAndReferences do
         tracefn " - %s -> %s" (norm referenceFile.FileName) (norm project.FileName)
         let toolsVersion = project.GetToolsVersion()
