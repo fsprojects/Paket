@@ -180,21 +180,35 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
 
 /// Restores the given packages from the lock file.
 let CreateModel(alternativeProjectRoot, root, force, dependenciesFile:DependenciesFile, lockFile : LockFile, packages:Set<GroupName*PackageName>, updatedGroups:Map<_,_>) =
-    for kv in lockFile.Groups do
-         let files = if updatedGroups |> Map.containsKey kv.Key then [] else kv.Value.RemoteFiles
+    for (KeyValue(groupName, lockFileGroup)) in lockFile.Groups do
+         let files = if updatedGroups |> Map.containsKey groupName then [] else lockFileGroup.RemoteFiles
          if List.isEmpty files |> not then
-             RemoteDownload.DownloadSourceFiles(root, kv.Key, force, files)
+             RemoteDownload.DownloadSourceFiles(root, groupName, force, files)
+
+    let mutable foundFsharpCoreWithoutForcedRedirects = false
 
     lockFile.Groups
-    |> Seq.map (fun kv' ->
-        let sources = dependenciesFile.Groups.[kv'.Key].Sources
-        let caches = dependenciesFile.Groups.[kv'.Key].Caches
-        kv'.Value.Resolution
-        |> Map.filter (fun name _ -> packages.Contains(kv'.Key,name))
-        |> Seq.map (fun kv -> RestoreProcess.CreateInstallModel(alternativeProjectRoot, root,kv'.Key,sources,caches,force,kv'.Value.GetPackage kv.Key))
+    |> Seq.map (fun (KeyValue(groupName, lockFileGroup)) ->
+        let sources = dependenciesFile.Groups.[groupName].Sources
+        let caches = dependenciesFile.Groups.[groupName].Caches
+        lockFileGroup.Resolution
+        |> Map.filter (fun name _ -> packages.Contains(groupName, name))
+        |> Seq.map (fun (KeyValue(packageName, _resolvedPackage)) ->
+            let packageInfo = lockFileGroup.GetPackage packageName
+
+            if not foundFsharpCoreWithoutForcedRedirects then
+                match packageName.CompareString, packageInfo.Settings.CreateBindingRedirects with
+                | "fsharp.core", None
+                | "fsharp.core", Some BindingRedirectsSettings.On
+                | "fsharp.core", Some BindingRedirectsSettings.Off ->
+                    foundFsharpCoreWithoutForcedRedirects <- true
+                    do traceWarn "FSharp.Core should always specify redirects:force in paket.dependencies. For more information, please consult https://fsprojects.github.io/Paket/dependencies-file.html"
+                | _, _ -> ()
+
+            RestoreProcess.CreateInstallModel (alternativeProjectRoot, root, groupName, sources, caches, force, packageInfo))
         |> Seq.splitInto 5
         |> Seq.map (fun tasks -> async {
-            let results = new System.Collections.Generic.List<_>()
+            let results = ResizeArray()
             for t in tasks do
                 let! r = t
                 results.Add(r)
@@ -364,25 +378,9 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
     let model = CreateModel(options.AlternativeProjectRoot, root, options.Force, dependenciesFile, lockFile, Set.ofSeq packagesToInstall, updatedGroups) |> Map.ofArray
     let lookup = lockFile.GetDependencyLookupTable()
     let projectCache = Dictionary<string, ProjectFile option>();
-    
+
     let prefix = dependenciesFile.Directory.Length + 1
     let norm (s:string) = (s.Substring prefix).Replace('\\', '/')
-
-    do
-        let fsharpCoreWithoutRedirects =
-            model
-            |> Map.tryPick (fun (_group, package) (packageInfo, _installModel) ->
-                match package.CompareString, packageInfo.Settings.CreateBindingRedirects with
-                | "fsharp.core", None
-                | "fsharp.core", Some BindingRedirectsSettings.On
-                | "fsharp.core", Some BindingRedirectsSettings.Off ->
-                    Some ()
-                | _, _ ->
-                    None)
-            |> Option.isSome
-
-        if fsharpCoreWithoutRedirects then
-            traceWarn "FSharp.Core should always specify redirects:force in paket.dependencies. For more information, please consult https://fsprojects.github.io/Paket/dependencies-file.html"
 
     for project, referenceFile in projectsAndReferences do
         tracefn " - %s -> %s" (norm referenceFile.FileName) (norm project.FileName)
