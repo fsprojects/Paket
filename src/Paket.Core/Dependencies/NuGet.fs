@@ -1,4 +1,4 @@
-﻿module Paket.NuGet
+module Paket.NuGet
 
 // Type forwards, this way we only need to open "Paket.NuGet" thoughout paket code (others are implementation detail)
 type UnparsedPackageFile = Paket.NuGetCache.UnparsedPackageFile
@@ -19,6 +19,7 @@ open FSharp.Polyfill
 open Paket.NuGetCache
 open Paket.PackageResolver
 open System.Net.Http
+open System.Threading
 
 type NuGetContent =
     | NuGetDirectory of name:string * contents:NuGetContent list
@@ -880,6 +881,20 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     ensureDir targetFileName
 
                     use _trackDownload = Profile.startCategory Profile.Category.NuGetDownload
+                    let! tok = Async.CancellationToken
+                    let taskTimeout =
+                        match Environment.GetEnvironmentVariable("PAKET_RESOLVER_TASK_TIMEOUT") with
+                        | a when System.String.IsNullOrWhiteSpace a -> RequestTimeout
+                        | a ->
+                            match System.Int32.TryParse a with
+                            | true, v -> v
+                            | _ -> traceWarnfn "PAKET_RESOLVER_TASK_TIMEOUT is not set to an interval in milliseconds, ignoring the value and defaulting to %d" RequestTimeout
+                                   (TimeSpan.FromMinutes 1.0).Milliseconds
+                    let s = System.Threading.CancellationTokenSource.CreateLinkedTokenSource(tok)
+                    let t = System.Threading.CancellationTokenSource.CreateLinkedTokenSource(tok)
+                    tracefn "taskTimeout set to %d: " taskTimeout
+                    s.CancelAfter taskTimeout//(TimeSpan.FromMinutes 1.0)
+                    t.CancelAfter taskTimeout
 
                     let client = NetUtils.createHttpClient(!downloadUrl, source.Auth.Retrieve (attempt <> 0))
 
@@ -887,12 +902,13 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     let mutable readSinceLastMeasure = 0L
 
                     let requestMsg = new HttpRequestMessage(HttpMethod.Get, downloadUri)
-                    let! responseMsg = client.SendAsync(requestMsg) |> Async.AwaitTask
+                    let! responseMsg = client.SendAsync(requestMsg, HttpCompletionOption.ResponseHeadersRead, t.Token) |> Async.AwaitTask
                     match responseMsg.StatusCode with
                     | HttpStatusCode.OK -> ()
                     | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode
 
                     let! httpResponseStream = responseMsg.Content.ReadAsStreamAsync() |> Async.AwaitTask
+                    httpResponseStream.ReadTimeout <- Timeout.Infinite;
 
                     let bufferSize = 1024 * 10
                     let buffer : byte [] = Array.zeroCreate bufferSize
@@ -903,7 +919,6 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     let mutable pos = 0L
 
                     let length = try Some httpResponseStream.Length with :? System.NotSupportedException -> None
-                    let! tok = Async.CancellationToken
                     while !bytesRead <> 0 do
                         if printProgress && lastSpeedMeasure.Elapsed > TimeSpan.FromSeconds(10.) then
                             // report speed and progress
@@ -917,8 +932,6 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                             lastSpeedMeasure.Restart()
                         // if there is no response for a minute -> abort
 
-                        let s = System.Threading.CancellationTokenSource.CreateLinkedTokenSource(tok)
-                        s.CancelAfter (60000)
                         let! bytes = httpResponseStream.ReadAsync(buffer, 0, bufferSize, s.Token) |> Async.AwaitTaskWithoutAggregate
                         //let! bytes = httpResponseStream.AsyncRead(buffer, 0, bufferSize)
                         bytesRead := bytes
