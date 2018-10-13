@@ -493,7 +493,7 @@ module InstallModel =
         |> Seq.concat
 
     /// Gets only the references required by a nuspec for a certain framework.
-    let private getFilteredFiles (folders:seq<FrameworkFolder<_>>) choosefn framework =
+    let private getFilteredFrameworkReferences (folders:seq<FrameworkFolder<_>>) choosefn framework =
         folders
         |> Seq.filter (fun folder -> folder.Targets |> Set.map(fun t -> List.exists (fun f -> f = framework) t.Frameworks) |> Set.contains true)
         |> Seq.map (fun folder -> choosefn folder.FolderContents)
