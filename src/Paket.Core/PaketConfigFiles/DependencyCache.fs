@@ -195,7 +195,7 @@ type DependencyCache (lockFile:LockFile) =
 
             if shouldExcludeFrameworkAssemblies framework then List.empty else
             model
-            |> InstallModel.getFilteredFrameworkReferences framework
+            |> InstallModel.getLegacyFrameworkReferences (TargetProfile.SinglePlatform framework)
             |> Seq.toList
 
 

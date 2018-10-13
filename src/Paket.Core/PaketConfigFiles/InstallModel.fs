@@ -492,13 +492,6 @@ module InstallModel =
         |> Seq.map (fun folder -> choosefn folder.FolderContents)
         |> Seq.concat
 
-    /// Gets only the references required by a nuspec for a certain framework.
-    let private getFilteredFrameworkReferences (folders:seq<FrameworkFolder<_>>) choosefn framework =
-        folders
-        |> Seq.filter (fun folder -> folder.Targets |> Set.map(fun t -> List.exists (fun f -> f = framework) t.Frameworks) |> Set.contains true)
-        |> Seq.map (fun folder -> choosefn folder.FolderContents)
-        |> Seq.concat
-
     /// This is for library references, which at the same time can be used for references (old world - pre dotnetcore)
     let getLegacyReferences (target : TargetProfile) (installModel:InstallModel) =
         getFileFolders target (installModel.CompileLibFolders) (fun f -> f.Libraries |> Set.toSeq)
@@ -507,7 +500,7 @@ module InstallModel =
     let getLegacyFrameworkReferences (target : TargetProfile) (installModel:InstallModel) =
         getFileFolders target (installModel.CompileLibFolders) (fun f -> f.FrameworkReferences |> Set.toSeq)
         |> Seq.cache
-
+        
     let getAllLegacyFrameworkReferences (installModel:InstallModel) =
         getAllFiles installModel.CompileLibFolders (fun f -> f.FrameworkReferences |> Set.toSeq)
         |> Seq.cache
@@ -955,7 +948,7 @@ type InstallModel with
     member this.GetTargetsFiles target =
         InstallModel.getTargetsFiles target this
 
-    member this.GetFilteredFrameworkReferences (framework) = InstallModel.getFilteredFrameworkReferences framework this
+    member this.getLegacyFrameworkReferences (target) = InstallModel.getLegacyFrameworkReferences target this
     member this.GetAllLegacyFrameworkReferences () = InstallModel.getAllLegacyFrameworkReferences this
     member this.GetAllLegacyReferences () = InstallModel.getAllLegacyReferences this
     member this.GetAllLegacyReferenceAndFrameworkReferenceNames () =
