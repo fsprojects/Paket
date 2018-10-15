@@ -1,5 +1,6 @@
-#### 5.182.0-alpha001 - 2018-09-21
+#### 5.182.0-alpha002 - 2018-10-15
 * Full .NET Core support - https://github.com/fsprojects/Paket/pull/3183
+* BUGFIX: generate-load-scripts ignored targetFramework constraint in frameworkAssembly config (.nuspec file) https://github.com/fsprojects/Paket/pull/3385
 
 #### 5.181.1 - 2018-09-20
 * BUGFIX: copy local had no effect when opening project in vs2017 - https://github.com/fsprojects/Paket/pull/3356
