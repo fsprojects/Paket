@@ -1,0 +1,5 @@
+MBrace.Azure.Management
+MBrace.Flow
+Microsoft.Azure.Management.Compute
+Microsoft.Azure.Management.Sql
+Microsoft.IdentityModel.Clients.ActiveDirectory

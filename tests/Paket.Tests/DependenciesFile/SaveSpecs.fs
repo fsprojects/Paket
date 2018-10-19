@@ -15,7 +15,7 @@ nuget SignalR 3.3.2"""
 
 [<Test>]
 let ``should serialize simple config``() = 
-    let cfg = DependenciesFile.FromCode(config1)
+    let cfg = DependenciesFile.FromSource(config1)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings config1)
@@ -29,7 +29,7 @@ nuget FAKE ~> 3.0"""
 
 [<Test>]
 let ``should serialize strict config``() = 
-    let cfg = DependenciesFile.FromCode(strictConfig)
+    let cfg = DependenciesFile.FromSource(strictConfig)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings strictConfig)
@@ -44,7 +44,7 @@ nuget FAKE ~> 3.0"""
 
 [<Test>]
 let ``should serialize content none config``() = 
-    let cfg = DependenciesFile.FromCode(contentNoneConfig)
+    let cfg = DependenciesFile.FromSource(contentNoneConfig)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings contentNoneConfig)
@@ -58,7 +58,7 @@ nuget FAKE ~> 3.0"""
 
 [<Test>]
 let ``should serialize no targets config``() = 
-    let cfg = DependenciesFile.FromCode(noTargetsConfig)
+    let cfg = DependenciesFile.FromSource(noTargetsConfig)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings noTargetsConfig)
@@ -71,7 +71,20 @@ nuget FAKE ~> 3.0"""
 
 [<Test>]
 let ``should serialize no local copy config``() = 
-    let cfg = DependenciesFile.FromCode(noLocalCopyConfig)
+    let cfg = DependenciesFile.FromSource(noLocalCopyConfig)
+    
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings noLocalCopyConfig)
+
+let noSpecificVersionConfig = """specific_version: false
+source http://www.nuget.org/api/v2
+
+nuget FAKE ~> 3.0"""
+
+
+[<Test>]
+let ``should serialize no specific version config``() = 
+    let cfg = DependenciesFile.FromSource(noLocalCopyConfig)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings noLocalCopyConfig)
@@ -80,7 +93,7 @@ let simplestConfig = """nuget FAKE ~> 3.0"""
 
 [<Test>]
 let ``should serialize simplestConfig``() = 
-    let cfg = DependenciesFile.FromCode(simplestConfig)
+    let cfg = DependenciesFile.FromSource(simplestConfig)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings simplestConfig)
@@ -104,7 +117,7 @@ github forki/FsUnit FsUnit.fs"""
 
 [<Test>]
 let ``should serialize packet's own config``() = 
-    let cfg = DependenciesFile.FromCode(ownConfig)
+    let cfg = DependenciesFile.FromSource(ownConfig)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings ownConfig)
@@ -115,7 +128,7 @@ github fsharp/FAKE:bla123zxc src/app/FAKE/FileWithCommit.fs"""
 
 [<Test>]
 let ``should serialize remote files in config``() = 
-    let cfg = DependenciesFile.FromCode(configWithRemoteFile)
+    let cfg = DependenciesFile.FromSource(configWithRemoteFile)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings configWithRemoteFile)
@@ -130,7 +143,7 @@ nuget Example4 >= 1.2.3 < 1.5"""
 
 [<Test>]
 let ``should serialize config with all kinds of versions``() = 
-    let cfg = DependenciesFile.FromCode(allVersionsConfig)
+    let cfg = DependenciesFile.FromSource(allVersionsConfig)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings allVersionsConfig)
@@ -147,7 +160,7 @@ nuget Example6 >= 1.2.3 < 1.5"""
 
 [<Test>]
 let ``should serialize config with password``() = 
-    let cfg = DependenciesFile.FromCode(configWithPassword)
+    let cfg = DependenciesFile.FromSource(configWithPassword)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings configWithPassword)
@@ -166,7 +179,7 @@ nuget Example6 >= 1.2.3 < 1.5"""
 let ``should serialize config with envrionment variable password``() = 
     Environment.SetEnvironmentVariable("FEED_USERNAME", "user XYZ", EnvironmentVariableTarget.Process)
     Environment.SetEnvironmentVariable("FEED_PASSWORD", "pw Love", EnvironmentVariableTarget.Process)
-    let cfg = DependenciesFile.FromCode(configWithEnvVarPassword)
+    let cfg = DependenciesFile.FromSource(configWithEnvVarPassword)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings configWithEnvVarPassword)
@@ -182,7 +195,7 @@ gist misterx/55555555"""
 
 [<Test>]
 let ``should serialize config with gist``() = 
-    let cfg = DependenciesFile.FromCode(withGist)
+    let cfg = DependenciesFile.FromSource(withGist)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings withGist)
@@ -196,7 +209,7 @@ gist Thorium/1972308 gistfile1.fs"""
 
 [<Test>]
 let ``should serialize config with gist and file``() = 
-    let cfg = DependenciesFile.FromCode(withGistAndFile)
+    let cfg = DependenciesFile.FromSource(withGistAndFile)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings withGistAndFile)
@@ -210,7 +223,7 @@ http http://www.fssnip.net/raw/1M test1.fs"""
 
 [<Test>]
 let ``should serialize config with http link``() = 
-    let cfg = DependenciesFile.FromCode(withHTTPLink)
+    let cfg = DependenciesFile.FromSource(withHTTPLink)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings withHTTPLink)
@@ -228,7 +241,7 @@ http http://www.fssnip.net/raw/1M test1.fs"""
 
 [<Test>]
 let ``should serialize config with framework restrictions``() = 
-    let cfg = DependenciesFile.FromCode(withFrameworkRestrictions)
+    let cfg = DependenciesFile.FromSource(withFrameworkRestrictions)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings withFrameworkRestrictions)
@@ -236,8 +249,8 @@ let ``should serialize config with framework restrictions``() =
 let withNoImportsRestrictions = """source https://www.nuget.org/api/v2
 
 nuget FakeItEasy 1.24.0
-nuget json-ld.net 1.0.3 copy_local: false, import_targets: false, framework: net35, net40
-nuget Example3 !== 2.2.3 alpha beta import_targets: false
+nuget json-ld.net 1.0.3 copy_local: false, import_targets: false, framework: net35, net40, specific_version: true
+nuget Example3 !== 2.2.3 alpha beta import_targets: false, specific_version: false
 nuget Example4 import_targets: false, content: none
 nuget Example5 prerelease import_targets: false
 
@@ -245,7 +258,7 @@ http http://www.fssnip.net/raw/1M test1.fs"""
 
 [<Test>]
 let ``should serialize config with no imports``() = 
-    let cfg = DependenciesFile.FromCode(withNoImportsRestrictions)
+    let cfg = DependenciesFile.FromSource(withNoImportsRestrictions)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings withNoImportsRestrictions)
@@ -265,7 +278,7 @@ http http://www.fssnip.net/raw/1M test1.fs"""
 
 [<Test>]
 let ``should serialize config with comments``() = 
-    let cfg = DependenciesFile.FromCode(withComments)
+    let cfg = DependenciesFile.FromSource(withComments)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings withComments)
@@ -286,7 +299,7 @@ http http://www.fssnip.net/raw/1M test1.fs"""
 
 [<Test>]
 let ``should serialize config with framework restriction``() = 
-    let cfg = DependenciesFile.FromCode(withFrameworkRestriction)
+    let cfg = DependenciesFile.FromSource(withFrameworkRestriction)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings withFrameworkRestriction)
@@ -305,7 +318,7 @@ nuget NUnit condition: LEGACY
 """
 [<Test>]
 let ``should serialize config with additional group``() = 
-    let cfg = DependenciesFile.FromCode(configWithAdditionalGroup)
+    let cfg = DependenciesFile.FromSource(configWithAdditionalGroup)
     
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings configWithAdditionalGroup)

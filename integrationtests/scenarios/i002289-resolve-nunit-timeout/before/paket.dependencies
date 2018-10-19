@@ -1,0 +1,52 @@
+redirects: on
+framework: net46
+
+source https://api.nuget.org/v3/index.json
+
+nuget Akka.Persistence.SqlServer
+nuget SQLProvider
+nuget Microsoft.FSharpLu.Json
+nuget Microsoft.Net.Http
+nuget Microsoft.AspNet.WebApi.Client
+nuget FSharp.Core redirects: force
+nuget FSharp.Configuration
+nuget FSharp.Formatting
+nuget FSharp.Data
+nuget FSharp.Data.TypeProviders
+nuget Newtonsoft.Json
+nuget FAKE
+nuget SourceLink.Fake
+nuget Akka
+nuget Akka.FSharp
+nuget Akka.Persistence
+nuget Akka.Persistence.FSharp
+nuget Akka.Persistence.Sql.Common
+nuget Akka.Persistence.Query
+nuget Akka.Persistence.Query.Sql
+nuget Akka.Logger.Serilog
+nuget Akka.Monitoring
+nuget Akka.Monitoring.StatsD
+nuget Akka.TestKit.NUnit
+nuget Akka.TestKit.Xunit2
+nuget Akka.Serialization.Wire
+nuget FsPickler
+nuget Serilog
+nuget Serilog.Sinks.ElasticSearch
+nuget Nest ~> 5
+nuget RabbitMQ.Client
+nuget SSH.NET
+nuget Topshelf
+nuget Topshelf.Serilog
+nuget NUnit ~> 2
+nuget NUnit.Runners
+nuget NUnitTestAdapter
+nuget TickSpec.NUnit content: none
+nuget FsCheck
+nuget FsCheck.Nunit
+nuget System.Collections.Immutable
+nuget Suave
+nuget OctopusTools
+nuget Suave.Swagger
+nuget Quartz
+nuget Akka.Quartz.Actor
+nuget Oracle.ManagedDataAccess

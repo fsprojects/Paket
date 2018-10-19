@@ -1,5 +1,7 @@
 source http://nuget.org/api/v2
 
+framework: >= net40
+
 nuget FAKE
 nuget FSharp.Compiler.Service
 nuget CommandLineParser 1.9.71

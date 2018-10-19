@@ -15,7 +15,7 @@ let ``#1125 Should keep minor versions``() =
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001125-update-and-keep-minor","paket.lock"))
     let v = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "FSharp.Formatting"].Version
     v.Major |> shouldEqual 2u
-    v.Minor |> shouldEqual 4u
+    v.Minor |> shouldEqual 14u
     v.Patch |> shouldBeGreaterThan 0u
 
 [<Test>]
@@ -32,5 +32,5 @@ let ``#1125 Should keep patch versions``() =
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001125-update-and-keep-minor","paket.lock"))
     let v = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "FSharp.Formatting"].Version
     v.Major |> shouldEqual 2u
-    v.Minor |> shouldEqual 4u
-    v.Patch |> shouldEqual 0u
+    v.Minor |> shouldEqual 14u
+    v.Patch |> shouldEqual 2u

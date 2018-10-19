@@ -11,8 +11,8 @@ let element x =
 
 [<Test>]
 let ``should detect framework version from path``() =
-    FrameworkDetection.DetectFromPath(@"..\RestSharp\lib\net4\RestSharp.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_Client))
-    FrameworkDetection.DetectFromPath(@"..\Rx-Main\lib\net40\Rx.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_Client))
+    FrameworkDetection.DetectFromPath(@"..\RestSharp\lib\net4\RestSharp.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4))
+    FrameworkDetection.DetectFromPath(@"..\Rx-Main\lib\net40\Rx.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4))
     FrameworkDetection.DetectFromPath(@"..\Rx-Main\lib\net45\Rx.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_5))
     FrameworkDetection.DetectFromPath(@"..\Rx-Main\lib\net20\Rx.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V2))
     FrameworkDetection.DetectFromPath(@"..\Rx-Main\lib\net35\Rx.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V3_5))
@@ -28,16 +28,16 @@ let ``should detect CLR version from path``() =
 
 [<Test>]
 let ``should detect client framework version from path``() =
-    FrameworkDetection.DetectFromPath(@"..\packages\Castle.Core\lib\net40-client\Castle.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_Client))
+    FrameworkDetection.DetectFromPath(@"..\packages\Castle.Core\lib\net40-client\Castle.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4))
 
 [<Test>]
 let ``should detect client framework version from Lib path``() =
-    FrameworkDetection.DetectFromPath(@"..\packages\Castle.Core\Lib\net40-client\Castle.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_Client))
+    FrameworkDetection.DetectFromPath(@"..\packages\Castle.Core\Lib\net40-client\Castle.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4))
 
 [<Test>]
 let ``should detect net40-full as net40``() =
     FrameworkDetection.DetectFromPath(@"..\packages\log4net\lib\net40-full\log4net.dll")|> element |> shouldEqual(DotNetFramework(FrameworkVersion.V4))
-    FrameworkDetection.DetectFromPath(@"..\packages\log4net\lib\net40\log4net.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_Client))
+    FrameworkDetection.DetectFromPath(@"..\packages\log4net\lib\net40\log4net.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4))
 
 [<Test>]
 let ``should detect net451``() =
@@ -45,14 +45,15 @@ let ``should detect net451``() =
 
 [<Test>]
 let ``should detect Silverlight version from path``() =
-    FrameworkDetection.DetectFromPath(@"..\..\packages\RestSharp\lib\sl5\RestSharp.Silverlight.dll")|> element |> shouldEqual (Silverlight("v5.0"))
-    FrameworkDetection.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4\RestSharp.Silverlight.dll")|> element |> shouldEqual (Silverlight("v4.0"))
-    FrameworkDetection.DetectFromPath(@"..\..\packages\SpecFlow\lib\sl3\Specflow.Silverlight.dll")|> element |> shouldEqual (Silverlight("v3.0"))
+    FrameworkDetection.DetectFromPath(@"..\..\packages\RestSharp\lib\sl5\RestSharp.Silverlight.dll")|> element |> shouldEqual (Silverlight SilverlightVersion.V5)
+    FrameworkDetection.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4\RestSharp.Silverlight.dll")|> element |> shouldEqual (Silverlight SilverlightVersion.V4)
+    FrameworkDetection.DetectFromPath(@"..\..\packages\SpecFlow\lib\sl3\Specflow.Silverlight.dll")|> element |> shouldEqual (Silverlight SilverlightVersion.V3)
 
 [<Test>]
 let ``should detect WindowsPhone version from path``() =
-    FrameworkDetection.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4-wp71\RestSharp.WindowsPhone.dll")|> element |> shouldEqual (WindowsPhoneSilverlight("v7.1"))
-    FrameworkDetection.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4-wp\TechTalk.SpecFlow.WindowsPhone7.dll")|> element |> shouldEqual (WindowsPhoneSilverlight("v7.1"))
+    FrameworkDetection.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4-wp75\RestSharp.WindowsPhone.dll")|> element |> shouldEqual (WindowsPhone WindowsPhoneVersion.V7_5)
+    FrameworkDetection.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4-wp71\RestSharp.WindowsPhone.dll")|> element |> shouldEqual (WindowsPhone WindowsPhoneVersion.V7_1)
+    FrameworkDetection.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4-wp\TechTalk.SpecFlow.WindowsPhone7.dll")|> element |> shouldEqual (WindowsPhone WindowsPhoneVersion.V7_1)
 
 [<Test>]
 let ``should detect framework version from uppercase path``() =
@@ -64,7 +65,7 @@ let ``should detect net45-full``() =
 
 [<Test>]
 let ``should detect net``() =
-    FrameworkDetection.DetectFromPath(@"..\packages\RhinoMocks\lib\net\Rhino.Mocks.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V2))
+    FrameworkDetection.DetectFromPath(@"..\packages\RhinoMocks\lib\net\Rhino.Mocks.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V1))
 
 [<Test>]
 let ``should detect with spaces``() =
@@ -73,6 +74,6 @@ let ``should detect with spaces``() =
 [<Test>]
 let ``should detect 35, 40 and 45``() =
     FrameworkDetection.DetectFromPath(@"..\packages\FSharpx.Core\lib\35\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V3_5))
-    FrameworkDetection.DetectFromPath(@"..\packages\FSharpx.Core\lib\40\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_Client))
+    FrameworkDetection.DetectFromPath(@"..\packages\FSharpx.Core\lib\40\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4))
     FrameworkDetection.DetectFromPath(@"..\packages\FSharpx.Core\lib\45\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_5))
     

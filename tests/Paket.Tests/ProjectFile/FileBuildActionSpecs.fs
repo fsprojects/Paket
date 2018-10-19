@@ -10,7 +10,9 @@ let createProject name =
       OriginalText = ""
       Document = XmlDocument()
       ProjectNode = null
-      Language = ProjectLanguage.Unknown }
+      Language = ProjectLanguage.Unknown
+      DefaultProperties = None
+      CalculatedProperties = new System.Collections.Concurrent.ConcurrentDictionary<_,_>() }
 
 [<Test>]
 let ``should recognize compilable files``() =
@@ -19,6 +21,7 @@ let ``should recognize compilable files``() =
     (createProject "B.fsproj").DetermineBuildAction "Module.fsi" |> shouldEqual BuildAction.Compile
     (createProject "C.vbproj").DetermineBuildAction "Whatever.vb" |> shouldEqual BuildAction.Compile
     (createProject "D.nproj").DetermineBuildAction "Main.n" |> shouldEqual BuildAction.Compile
+    (createProject "E.pyproj").DetermineBuildAction "Class.py" |> shouldEqual BuildAction.Compile
 
 [<Test>]
 let ``should recognize content files``() =
@@ -26,6 +29,7 @@ let ``should recognize content files``() =
     (createProject "B.fsproj").DetermineBuildAction "config.yml" |> shouldEqual BuildAction.Content
     (createProject "C.vbproj").DetermineBuildAction "noext" |> shouldEqual BuildAction.Content
     (createProject "D.nproj").DetermineBuildAction "App.config" |> shouldEqual BuildAction.Content
+    (createProject "E.pyproj").DetermineBuildAction "Something.xml" |> shouldEqual BuildAction.Content
 
 [<Test>]
 let ``should recognize page files``() =
@@ -33,6 +37,7 @@ let ``should recognize page files``() =
     (createProject "B.fsproj").DetermineBuildAction "Form1.Xaml" |> shouldEqual BuildAction.Page
     (createProject "C.vbproj").DetermineBuildAction "Form1.XAML" |> shouldEqual BuildAction.Page
     (createProject "D.nproj" ).DetermineBuildAction "Form1.XaML" |> shouldEqual BuildAction.Page
+    (createProject "E.pyproj" ).DetermineBuildAction "Form1.xaml" |> shouldEqual BuildAction.Page
 
 [<Test>]
 let ``should recognize resource files``() =
@@ -40,3 +45,4 @@ let ``should recognize resource files``() =
     (createProject "B.fsproj").DetermineBuildAction "Form1.ico" |> shouldEqual BuildAction.Resource
     (createProject "C.vbproj").DetermineBuildAction "Form1.png" |> shouldEqual BuildAction.Resource
     (createProject "D.nproj" ).DetermineBuildAction "Form1.jpg" |> shouldEqual BuildAction.Resource
+    (createProject "E.pyproj" ).DetermineBuildAction "Form1.jpg" |> shouldEqual BuildAction.Resource

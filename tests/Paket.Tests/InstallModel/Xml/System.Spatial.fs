@@ -9,7 +9,7 @@ open Paket.Requirements
 
 let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3')">
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.0.3' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3' Or $(TargetFrameworkVersion) == 'v4.7' Or $(TargetFrameworkVersion) == 'v4.7.1' Or $(TargetFrameworkVersion) == 'v4.7.2')">
     <ItemGroup>
       <Reference Include="System.Spatial">
         <HintPath>..\..\..\System.Spatial\lib\net40\System.Spatial.dll</HintPath>
@@ -33,7 +33,7 @@ let expected = """
 let ``should generate Xml for System.Spatial``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "System.Spatial", SemVer.Parse "5.6.3", [],
+        InstallModel.CreateFromLibs(PackageName "System.Spatial", SemVer.Parse "5.6.3", InstallModelKind.Package, FrameworkRestriction.NoRestriction,
             [ @"..\System.Spatial\lib\net40\System.Spatial.dll"
               @"..\System.Spatial\lib\net40\de\System.Spatial.resources.dll"
               @"..\System.Spatial\lib\net40\es\System.Spatial.resources.dll"
@@ -43,9 +43,9 @@ let ``should generate Xml for System.Spatial``() =
               @"..\System.Spatial\lib\sl4\de\System.Spatial.resources.dll"
               @"..\System.Spatial\lib\sl4\es\System.Spatial.resources.dll"
               @"..\System.Spatial\lib\sl4\zh-Hans\System.Spatial.resources.dll" 
-            ],[],[],Nuspec.All)
+            ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\System.Spatial\",[],[],Nuspec.All)
     
-    let _,targetsNodes,chooseNode,_,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,Map.empty,true,true,None)
-    let currentXML = chooseNode.OuterXml |> normalizeXml
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
+    let currentXML = ctx.ChooseNodes.Head.OuterXml |> normalizeXml
     currentXML
     |> shouldEqual (normalizeXml expected)

@@ -20,15 +20,15 @@ let expected = """
 let ``should generate Xml for Fuchu 0.4``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fuchu", SemVer.Parse "0.4.0", [],
-            [ @"..\Fuchu\lib\Fuchu.dll" 
-              @"..\Fuchu\lib\Fuchu.XML" 
-              @"..\Fuchu\lib\Fuchu.pdb" ],
+        InstallModel.CreateFromLibs(PackageName "Fuchu", SemVer.Parse "0.4.0", InstallModelKind.Package, FrameworkRestriction.NoRestriction,
+            [ @"..\Fuchu\lib\Fuchu.dll"
+              @"..\Fuchu\lib\Fuchu.XML"
+              @"..\Fuchu\lib\Fuchu.pdb" ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\Fuchu\",
               [],
               [],
               Nuspec.All)
     
-    let _,targetsNodes,chooseNode,_,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,Map.empty,true,true,None)
-    chooseNode.OuterXml
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
+    ctx.ChooseNodes.Head.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)

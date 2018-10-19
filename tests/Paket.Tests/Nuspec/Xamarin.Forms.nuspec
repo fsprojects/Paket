@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd">
+  <metadata>
+    <id>Xamarin.Forms</id>
+    <version>2.3.4.247</version>
+    <authors>Xamarin Inc.</authors>
+    <owners>Xamarin Inc.</owners>
+    <licenseUrl>http://aka.ms/xamarin-forms-license</licenseUrl>
+    <projectUrl>http://xamarin.com/forms</projectUrl>
+    <iconUrl>http://xamarin.com/content/images/nuget/xamarin.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Build native UIs for iOS, Android, and Windows Phone from a single, shared C# codebase</description>
+    <copyright>Copyright 2013-2017</copyright>
+    <tags>xamarin forms xamarinforms xamarin.forms</tags>
+    <dependencies>
+      <group targetFramework="WindowsPhone8.0">
+        <dependency id="WPtoolkit" version="4.2013.08.16" />
+      </group>
+      <group targetFramework="MonoAndroid1.0">
+        <dependency id="Xamarin.Android.Support.v4" version="[23.3.0]" />
+        <dependency id="Xamarin.Android.Support.Design" version="[23.3.0]" />
+        <dependency id="Xamarin.Android.Support.v7.AppCompat" version="[23.3.0]" />
+        <dependency id="Xamarin.Android.Support.v7.CardView" version="[23.3.0]" />
+        <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="[23.3.0]" />
+      </group>
+      <group targetFramework="MonoAndroid7.0">
+        <dependency id="Xamarin.Android.Support.v4" version="23.3.0" />
+        <dependency id="Xamarin.Android.Support.Design" version="23.3.0" />
+        <dependency id="Xamarin.Android.Support.v7.AppCompat" version="23.3.0" />
+        <dependency id="Xamarin.Android.Support.v7.CardView" version="23.3.0" />
+        <dependency id="Xamarin.Android.Support.v7.MediaRouter" version="23.3.0" />
+      </group>
+    </dependencies>
+    <references>
+      <group targetFramework=".NETPortable0.0-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10+xamarinmac20">
+        <reference file="Xamarin.Forms.Core.dll" />
+        <reference file="Xamarin.Forms.Platform.dll" />
+        <reference file="Xamarin.Forms.Xaml.dll" />
+      </group>
+      <group targetFramework="Xamarin.iOS1.0">
+        <reference file="Xamarin.Forms.Core.dll" />
+        <reference file="Xamarin.Forms.Platform.dll" />
+        <reference file="Xamarin.Forms.Xaml.dll" />
+        <reference file="Xamarin.Forms.Platform.iOS.dll" />
+      </group>
+      <group targetFramework="MonoAndroid1.0">
+        <reference file="Xamarin.Forms.Core.dll" />
+        <reference file="Xamarin.Forms.Platform.dll" />
+        <reference file="Xamarin.Forms.Xaml.dll" />
+        <reference file="FormsViewGroup.dll" />
+        <reference file="Xamarin.Forms.Platform.Android.dll" />
+      </group>
+      <group targetFramework="Windows8.1">
+        <reference file="Xamarin.Forms.Core.dll" />
+        <reference file="Xamarin.Forms.Platform.dll" />
+        <reference file="Xamarin.Forms.Xaml.dll" />
+        <reference file="Xamarin.Forms.Platform.WinRT.dll" />
+        <reference file="Xamarin.Forms.Platform.WinRT.Tablet.dll" />
+      </group>
+      <group targetFramework="WindowsPhoneApp8.1">
+        <reference file="Xamarin.Forms.Core.dll" />
+        <reference file="Xamarin.Forms.Platform.dll" />
+        <reference file="Xamarin.Forms.Xaml.dll" />
+        <reference file="Xamarin.Forms.Platform.WinRT.dll" />
+        <reference file="Xamarin.Forms.Platform.WinRT.Phone.dll" />
+      </group>
+      <group targetFramework="UAP10.0">
+        <reference file="Xamarin.Forms.Core.dll" />
+        <reference file="Xamarin.Forms.Platform.dll" />
+        <reference file="Xamarin.Forms.Xaml.dll" />
+        <reference file="Xamarin.Forms.Platform.UAP.dll" />
+      </group>
+      <group targetFramework="WindowsPhone8.0">
+        <reference file="Xamarin.Forms.Core.dll" />
+        <reference file="Xamarin.Forms.Platform.dll" />
+        <reference file="Xamarin.Forms.Xaml.dll" />
+        <reference file="Xamarin.Forms.Platform.WP8.dll" />
+      </group>
+    </references>
+    <releaseNotes>Release Notes: https://github.com/xamarin/Xamarin.Forms/releases/tag/release-2.3.4-sr2</releaseNotes>
+  </metadata>
+</package>

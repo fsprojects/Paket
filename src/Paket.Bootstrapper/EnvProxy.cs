@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace Paket.Bootstrapper
 {
@@ -21,7 +23,8 @@ namespace Paket.Bootstrapper
             var noproxy = GetEnvVarValue("NO_PROXY");
             if (string.IsNullOrEmpty(noproxy))
                 return new string[0];
-            return noproxy.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            return noproxy.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                          .Select(s => "^" + Regex.Escape(s).Replace(@"\*", ".*") + "$").ToArray();;
         }
 
         private bool TryGetCredentials(Uri uri, out NetworkCredential credentials)

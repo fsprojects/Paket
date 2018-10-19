@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -12,29 +13,94 @@ using Paket.Bootstrapper.HelperProxies;
 
 namespace Paket.Bootstrapper
 {
+
     static class Program
     {
+        private static readonly Stopwatch executionWatch = new Stopwatch();
 
         static void Main(string[] args)
         {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
+                                         | SecurityProtocolType.Tls11
+                                         | SecurityProtocolType.Tls
+#if NO_SSL3
+                                         ;
+#else
+                                         | SecurityProtocolType.Ssl3;
+#endif
+
+            executionWatch.Start();
             Console.CancelKeyPress += CancelKeyPressed;
 
-            var options = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings, Environment.GetEnvironmentVariables());
+            var fileProxy = new FileSystemProxy();
+
+            var appSettings = ConfigurationManager.AppSettings;
+
+            var appConfigInWorkingDir = Path.Combine(Environment.CurrentDirectory, "paket.bootstrapper.exe.config");
+            if (File.Exists(appConfigInWorkingDir))
+            {
+                var exeInWorkingDir = Path.Combine(Environment.CurrentDirectory, "paket.bootstrapper.exe");
+                var exeConf = ConfigurationManager.OpenExeConfiguration(null);
+                if (exeConf != null)
+                {
+                    var nv = new System.Collections.Specialized.NameValueCollection();
+                    foreach (KeyValueConfigurationElement kv in exeConf.AppSettings.Settings)
+                    {
+                        nv.Add(kv.Key, kv.Value);
+                    }
+                    appSettings = nv;
+                }
+            }
+
+            var optionsBeforeDependenciesFile = ArgumentParser.ParseArgumentsAndConfigurations(args, appSettings,
+                Environment.GetEnvironmentVariables(), fileProxy, Enumerable.Empty<string>());
+            ConsoleImpl.Verbosity = optionsBeforeDependenciesFile.Verbosity;
+
+            var argumentsFromDependenciesFile =
+                WindowsProcessArguments.Parse(
+                    PaketDependencies.GetBootstrapperArgsForFolder(fileProxy));
+            var options = ArgumentParser.ParseArgumentsAndConfigurations(args, appSettings,
+                Environment.GetEnvironmentVariables(), fileProxy, argumentsFromDependenciesFile);
             if (options.ShowHelp)
             {
-                ConsoleImpl.WriteDebug(BootstrapperHelper.HelpText);
+                ConsoleImpl.WriteAlways(BootstrapperHelper.HelpText);
                 return;
             }
-            ConsoleImpl.IsSilent = options.Silent;
+
+            ConsoleImpl.Verbosity = options.Verbosity;
             if (options.UnprocessedCommandArgs.Any())
-                ConsoleImpl.WriteInfo("Ignoring the following unknown argument(s): {0}", String.Join(", ", options.UnprocessedCommandArgs));
+                ConsoleImpl.WriteWarning("Ignoring the following unknown argument(s): {0}", String.Join(", ", options.UnprocessedCommandArgs));
+
+#if PAKET_BOOTSTRAP_NO_CACHE
+            ConsoleImpl.WriteTrace("Force ignore cache, because not implemented.");
+            options.DownloadArguments.IgnoreCache = true;
+#endif
 
             var effectiveStrategy = GetEffectiveDownloadStrategy(options.DownloadArguments, options.PreferNuget, options.ForceNuget);
+            ConsoleImpl.WriteTrace("Using strategy: " + effectiveStrategy.Name);
+            ConsoleImpl.WriteTrace("Using install kind: " + (options.DownloadArguments.AsTool? "tool": "exe"));
 
-            StartPaketBootstrapping(effectiveStrategy, options.DownloadArguments, new FileProxy());
+            StartPaketBootstrapping(effectiveStrategy, options.DownloadArguments, fileProxy, () => OnSuccessfulDownload(options));
         }
 
-        private static void CancelKeyPressed(object sender, ConsoleCancelEventArgs e)
+        private static void OnSuccessfulDownload(BootstrapperOptions options)
+        {
+            if (options.Run && File.Exists(options.DownloadArguments.Target))
+            {
+                Console.CancelKeyPress -= CancelKeyPressed;
+                try
+                {
+                    var exitCode = PaketRunner.Run(options.DownloadArguments.Target, options.RunArgs);
+                    Environment.Exit(exitCode);
+                }
+                catch (Exception e)
+                {
+                    ConsoleImpl.WriteError("Running paket failed with: {0}", e);
+                }
+            }
+        }
+
+        private static void CancelKeyPressed(object o, ConsoleCancelEventArgs eventArgs)
         {
             Console.WriteLine("Bootstrapper cancelled");
             var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -43,20 +109,33 @@ namespace Paket.Bootstrapper
             var exitCode = 1;
             if (File.Exists(target))
             {
-                var localVersion = BootstrapperHelper.GetLocalFileVersion(target);
+                var localVersion = BootstrapperHelper.GetLocalFileVersion(target, new FileSystemProxy());
                 Console.WriteLine("Detected existing paket.exe ({0}). Cancelling normally.", localVersion);
                 exitCode = 0;
             }
             Environment.Exit(exitCode);
         }
 
-        public static void StartPaketBootstrapping(IDownloadStrategy downloadStrategy, DownloadArguments dlArgs, IFileProxy fileProxy)
+        public static void StartPaketBootstrapping(IDownloadStrategy downloadStrategy, DownloadArguments dlArgs, IFileSystemProxy fileSystemProxy, Action onSuccess)
         {
             Action<Exception> handleException = exception =>
             {
-                if (!File.Exists(dlArgs.Target))
-                    Environment.ExitCode = 1;
+#if DEBUG
+                Environment.ExitCode = 1;
+                ConsoleImpl.WriteError(String.Format("{0} ({1})", exception.ToString(), downloadStrategy.Name));
+                return;
+#else
                 ConsoleImpl.WriteError(String.Format("{0} ({1})", exception.Message, downloadStrategy.Name));
+                if (!fileSystemProxy.FileExists(dlArgs.Target))
+                {
+                    Environment.ExitCode = 1;
+                }
+                else
+                {
+                    fileSystemProxy.WaitForFileFinished(dlArgs.Target);
+                    onSuccess();
+                }
+#endif
             };
             try
             {
@@ -68,22 +147,29 @@ namespace Paket.Bootstrapper
                 else
                     versionRequested = string.Format("version {0} requested", dlArgs.LatestVersion);
 
-                ConsoleImpl.WriteDebug("Checking Paket version ({0})...", versionRequested);
-
-                var localVersion = fileProxy.GetLocalFileVersion(dlArgs.Target);
+                ConsoleImpl.WriteInfo("Checking Paket version ({0})...", versionRequested);
+                ConsoleImpl.WriteTrace("Target path is {0}", dlArgs.Target);
+                var localVersion = fileSystemProxy.GetLocalFileVersion(dlArgs.Target);
+                ConsoleImpl.WriteTrace("File in target path version: v{0}", string.IsNullOrEmpty(localVersion) ? "UNKNOWN" : localVersion);
 
                 var specificVersionRequested = true;
                 var latestVersion = dlArgs.LatestVersion;
 
-                if (latestVersion == String.Empty)
+                if (latestVersion == string.Empty)
                 {
+                    ConsoleImpl.WriteTrace("No version specified, checking online...");
+
+                    var getLatestVersionWatch = Stopwatch.StartNew();
                     latestVersion = downloadStrategy.GetLatestVersion(dlArgs.IgnorePrerelease);
+                    getLatestVersionWatch.Stop();
+
+                    ConsoleImpl.WriteTrace("Latest version check found v{0} in {1:0.##} second(s)", latestVersion, getLatestVersionWatch.Elapsed.TotalSeconds);
                     specificVersionRequested = false;
                 }
 
                 if (dlArgs.DoSelfUpdate)
                 {
-                    ConsoleImpl.WriteDebug("Trying self update");
+                    ConsoleImpl.WriteInfo("Trying self update");
                     downloadStrategy.SelfUpdate(latestVersion);
                 }
                 else
@@ -96,26 +182,48 @@ namespace Paket.Bootstrapper
 
                     if ((comparison > 0 && specificVersionRequested) || comparison < 0)
                     {
-                        downloadStrategy.DownloadVersion(latestVersion, dlArgs.Target);
-                        ConsoleImpl.WriteDebug("Done.");
+                        PaketHashFile hashFile = null;
+                        if (downloadStrategy.CanDownloadHashFile)
+                        {
+                            ConsoleImpl.WriteTrace("Downloading hash for v{0} ...", latestVersion);
+                            var downloadHashWatch = Stopwatch.StartNew();
+                            hashFile = downloadStrategy.DownloadHashFile(latestVersion);
+                            downloadHashWatch.Stop();
+
+                            ConsoleImpl.WriteTrace("Hash download took {0:0.##} second(s)", downloadHashWatch.Elapsed.TotalSeconds);
+                        }
+
+                        ConsoleImpl.WriteTrace("Downloading v{0} ...", latestVersion);
+
+                        var downloadWatch = Stopwatch.StartNew();
+                        downloadStrategy.DownloadVersion(latestVersion, dlArgs.Target, hashFile);
+                        downloadWatch.Stop();
+
+                        ConsoleImpl.WriteTrace("Download took {0:0.##} second(s)", downloadWatch.Elapsed.TotalSeconds);
+                        ConsoleImpl.WriteInfo("Done in {0:0.##} second(s).", executionWatch.Elapsed.TotalSeconds);
                     }
                     else
                     {
-                        ConsoleImpl.WriteDebug("Paket.exe {0} is up to date.", localVersion);
+                        ConsoleImpl.WriteInfo("Paket.exe {0} is up to date.", localVersion);
                     }
                 }
+
+                executionWatch.Stop();
+                ConsoleImpl.WriteTrace("Paket Bootstrapping took {0:0.##} second(s)", executionWatch.Elapsed.TotalSeconds);
+
+                onSuccess();
             }
             catch (WebException exn)
             {
                 var shouldHandleException = true;
-                if (!File.Exists(dlArgs.Target))
+                if (!fileSystemProxy.FileExists(dlArgs.Target))
                 {
                     if (downloadStrategy.FallbackStrategy != null)
                     {
                         var fallbackStrategy = downloadStrategy.FallbackStrategy;
-                        ConsoleImpl.WriteDebug("'{0}' download failed. If using Mono, you may need to import trusted certificates using the 'mozroots' tool as none are contained by default. Trying fallback download from '{1}'.", downloadStrategy.Name, fallbackStrategy.Name);
-                        StartPaketBootstrapping(fallbackStrategy, dlArgs, fileProxy);
-                        shouldHandleException = !File.Exists(dlArgs.Target);
+                        ConsoleImpl.WriteInfo("'{0}' download failed. If using Mono, you may need to import trusted certificates using the 'mozroots' tool as none are contained by default. Trying fallback download from '{1}'.", downloadStrategy.Name, fallbackStrategy.Name);
+                        StartPaketBootstrapping(fallbackStrategy, dlArgs, fileSystemProxy, onSuccess);
+                        shouldHandleException = !fileSystemProxy.FileExists(dlArgs.Target);
                     }
                 }
                 if (shouldHandleException)
@@ -127,12 +235,15 @@ namespace Paket.Bootstrapper
             }
         }
 
-        public static IDownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget, bool forceNuget)
+        public static DownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget, bool forceNuget)
         {
-            var gitHubDownloadStrategy = new GitHubDownloadStrategy(new WebRequestProxy(), new FileProxy()).AsCached(dlArgs.IgnoreCache);
-            var nugetDownloadStrategy = new NugetDownloadStrategy(new WebRequestProxy(), new DirectoryProxy(), new FileProxy(), dlArgs.Folder, dlArgs.NugetSource).AsCached(dlArgs.IgnoreCache);
+            var gitHubDownloadStrategy =
+                dlArgs.AsTool
+                ? new GitHubDownloadToolStrategy(new WebRequestProxy(), new FileSystemProxy()).AsCached(dlArgs.IgnoreCache)
+                : new GitHubDownloadStrategy(new WebRequestProxy(), new FileSystemProxy()).AsCached(dlArgs.IgnoreCache);
+            var nugetDownloadStrategy = new NugetDownloadStrategy(new WebRequestProxy(), new FileSystemProxy(), dlArgs.Folder, dlArgs.NugetSource, dlArgs.AsTool).AsCached(dlArgs.IgnoreCache);
 
-            IDownloadStrategy effectiveStrategy;
+            DownloadStrategy effectiveStrategy;
             if (forceNuget)
             {
                 effectiveStrategy = nugetDownloadStrategy;
@@ -152,17 +263,17 @@ namespace Paket.Bootstrapper
             return effectiveStrategy.AsTemporarilyIgnored(dlArgs.MaxFileAgeInMinutes, dlArgs.Target);
         }
 
-        private static IDownloadStrategy AsCached(this IDownloadStrategy effectiveStrategy, bool ignoreCache)
+        private static DownloadStrategy AsCached(this DownloadStrategy effectiveStrategy, bool ignoreCache)
         {
             if (ignoreCache)
                 return effectiveStrategy;
-            return new CacheDownloadStrategy(effectiveStrategy, new DirectoryProxy(), new FileProxy());
+            return new CacheDownloadStrategy(effectiveStrategy, new FileSystemProxy());
         }
 
-        private static IDownloadStrategy AsTemporarilyIgnored(this IDownloadStrategy effectiveStrategy, int? maxFileAgeInMinutes, string target)
+        private static DownloadStrategy AsTemporarilyIgnored(this DownloadStrategy effectiveStrategy, int? maxFileAgeInMinutes, string target)
         {
             if (maxFileAgeInMinutes.HasValue)
-                return new TemporarilyIgnoreUpdatesDownloadStrategy(effectiveStrategy, new FileProxy(), target, maxFileAgeInMinutes.Value);
+                return new TemporarilyIgnoreUpdatesDownloadStrategy(effectiveStrategy, new FileSystemProxy(), target, maxFileAgeInMinutes.Value);
             return effectiveStrategy;
         }
     }

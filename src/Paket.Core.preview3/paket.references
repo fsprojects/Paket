@@ -1,0 +1,8 @@
+Newtonsoft.Json
+Mono.Cecil
+Chessie
+System.Security.Cryptography.ProtectedData
+System.Net.Http.WinHttpHandler
+
+File:Globbing.fs .
+File:AssemblyReader.fs .

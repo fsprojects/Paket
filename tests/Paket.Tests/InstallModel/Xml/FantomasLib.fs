@@ -17,17 +17,18 @@ let expected = """
 </ItemGroup>"""
 
 [<Test>]
-let ``should generate Xml for Fantomas 1.5``() = 
+let ``should generate Xml for Fantomas 1.5``() =
+    ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
-            [ @"..\Fantomas\Lib\FantomasLib.dll" 
-              @"..\Fantomas\Lib\FSharp.Core.dll" 
-              @"..\Fantomas\Lib\Fantomas.exe" ],
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", InstallModelKind.Package, FrameworkRestriction.NoRestriction,
+            [ @"..\Fantomas\Lib\FantomasLib.dll"
+              @"..\Fantomas\Lib\FSharp.Core.dll"
+              @"..\Fantomas\Lib\Fantomas.exe" ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\Fantomas\",
               [],
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
-    
-    let _,targetsNodes,chooseNode,_,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,Map.empty,false,true,None)
-    chooseNode.OuterXml
+
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,Some false,None,true,KnownTargetProfiles.AllProfiles,None)
+    ctx.ChooseNodes.Head.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)

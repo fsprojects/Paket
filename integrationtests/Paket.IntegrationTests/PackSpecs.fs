@@ -4,18 +4,20 @@ open Fake
 open System
 open NUnit.Framework
 open FsUnit
-open System
 open System.IO
-open System.Diagnostics
 open System.IO.Compression
 open Paket.Domain
 open Paket
+open Paket.NuGetCache
+open Paket.Requirements
+
+let getDependencies(x:Paket.NuGet.NuGetPackageCache) = x.GetDependencies()
 
 [<Test>]
 let ``#1234 empty assembly name``() = 
     let outPath = Path.Combine(scenarioTempPath "i001234-missing-assemblyname","out")
     try
-        paket ("pack -v output \"" + outPath + "\"") "i001234-missing-assemblyname" |> ignore
+        paket ("pack output \"" + outPath + "\"") "i001234-missing-assemblyname" |> ignore
         failwith "Expected an exeption"
     with
     | exn when exn.Message.Contains("PaketBug.dll") -> ()
@@ -28,7 +30,7 @@ let ``#1348 npm type folder names`` () =
     let outPath = Path.Combine(rootPath,"out")
     let package = Path.Combine(outPath, "Paket.Integrations.Npm.1.0.0.nupkg")
     
-    paket ("pack -v output \"" + outPath + "\"") "i001348-packaging-npm-type-folders" |> ignore 
+    paket ("pack output \"" + outPath + "\"") "i001348-packaging-npm-type-folders" |> ignore 
     ZipFile.ExtractToDirectory(package, outPath)
 
     let desiredFolderName = "font-awesome@4.5.0"
@@ -46,14 +48,14 @@ let ``#1348 npm type folder names`` () =
 [<Test>]
 let ``#1375 pack specific dependency``() = 
     let outPath = Path.Combine(scenarioTempPath "i001375-pack-specific","out")
-    paket ("pack -v output \"" + outPath + "\"") "i001375-pack-specific" |> ignore
+    paket ("pack output \"" + outPath + "\"") "i001375-pack-specific" |> ignore
 
     File.Delete(Path.Combine(scenarioTempPath "i001375-pack-specific","PaketBug","paket.template"))
 
 [<Test>]
 let ``#1375 pack with projectUrl commandline``() = 
     let outPath = Path.Combine(scenarioTempPath "i001375-pack-specific","out")
-    paket ("pack -v output \"" + outPath + "\" project-url \"http://localhost\"") "i001375-pack-specific" |> ignore
+    paket ("pack output \"" + outPath + "\" project-url \"http://localhost\"") "i001375-pack-specific" |> ignore
 
     File.Delete(Path.Combine(scenarioTempPath "i001375-pack-specific","PaketBug","paket.template"))
 
@@ -61,7 +63,7 @@ let ``#1375 pack with projectUrl commandline``() =
 let ``#1376 fail template``() = 
     let outPath = Path.Combine(scenarioTempPath "i001376-pack-template","out")
     let templatePath = Path.Combine(scenarioTempPath "i001376-pack-template","PaketBug", "paket.template")
-    paket ("pack -v output \"" + outPath + "\" templatefile " + templatePath) "i001376-pack-template" |> ignore
+    paket ("pack output \"" + outPath + "\" templatefile " + templatePath) "i001376-pack-template" |> ignore
     let fileInfo = FileInfo(Path.Combine(outPath, "PaketBug.1.0.0.0.nupkg"))
     let (expectedFileSize: int64) = int64(1542)
     fileInfo.Length |> shouldBeGreaterThan expectedFileSize
@@ -72,7 +74,7 @@ let ``#1376 fail template``() =
 let ``#1376 template with plus``() = 
     let outPath = Path.Combine(scenarioTempPath "i001376-pack-template-plus","out")
     let templatePath = Path.Combine(scenarioTempPath "i001376-pack-template-plus","PaketBug", "paket.template")
-    paket ("pack -v output \"" + outPath + "\" templatefile " + templatePath) "i001376-pack-template-plus" |> ignore
+    paket ("pack output \"" + outPath + "\" templatefile " + templatePath) "i001376-pack-template-plus" |> ignore
     let fileInfo = FileInfo(Path.Combine(outPath, "PaketBug.1.0.0.0.nupkg"))
     let (expectedFileSize: int64) = int64(1542)
     fileInfo.Length |> shouldBeGreaterThan expectedFileSize
@@ -90,15 +92,16 @@ let ``#1376 template with plus``() =
 let ``#1429 pack deps from template``() = 
     let outPath = Path.Combine(scenarioTempPath "i001429-pack-deps","out")
     let templatePath = Path.Combine(scenarioTempPath "i001429-pack-deps","PaketBug", "paket.template")
-    paket ("pack -v output \"" + outPath + "\" templatefile " + templatePath) "i001429-pack-deps" |> ignore
+    paket ("pack output \"" + outPath + "\" templatefile " + templatePath) "i001429-pack-deps" |> ignore
 
     let details = 
-        NuGetV2.getDetailsFromLocalNuGetPackage false outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
+        NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
+        |> ODataSearchResult.get
 
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug2") // it's not packed in same round
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug")
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug2") // it's not packed in same round
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug")
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps","PaketBug","paket.template"))
 
@@ -106,15 +109,16 @@ let ``#1429 pack deps from template``() =
 let ``#1429 pack deps``() = 
     let outPath = Path.Combine(scenarioTempPath "i001429-pack-deps","out")
     let templatePath = Path.Combine(scenarioTempPath "i001429-pack-deps","PaketBug", "paket.template")
-    paket ("pack -v output \"" + outPath + "\"") "i001429-pack-deps" |> ignore
+    paket ("pack output \"" + outPath + "\"") "i001429-pack-deps" |> ignore
 
     let details = 
-        NuGetV2.getDetailsFromLocalNuGetPackage false outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
+        NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
+        |> ODataSearchResult.get
 
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "PaketBug2")
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug")
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldContain (PackageName "PaketBug2")
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug")
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps","PaketBug","paket.template"))
 
@@ -122,14 +126,15 @@ let ``#1429 pack deps``() =
 let ``#1429 pack deps using minimum-from-lock-file``() = 
     let outPath = Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","out")
     let templatePath = Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","PaketBug", "paket.template")
-    paket ("pack -v minimum-from-lock-file output \"" + outPath + "\"") "i001429-pack-deps-minimum-from-lock" |> ignore
+    paket ("pack minimum-from-lock-file output \"" + outPath + "\"") "i001429-pack-deps-minimum-from-lock" |> ignore
 
     let details = 
-        NuGetV2.getDetailsFromLocalNuGetPackage false outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
+        NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
+        |> ODataSearchResult.get
 
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    let packageName, versionRequirement, restrictions = details.Dependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    let packageName, versionRequirement, restrictions = details |> getDependencies |> Seq.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> Seq.head 
     versionRequirement |> shouldNotEqual (VersionRequirement.AllReleases)
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","PaketBug","paket.template"))
@@ -138,14 +143,15 @@ let ``#1429 pack deps using minimum-from-lock-file``() =
 let ``#1429 pack deps without minimum-from-lock-file uses dependencies file range``() = 
     let outPath = Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","out")
     let templatePath = Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","PaketBug", "paket.template")
-    paket ("pack -v output \"" + outPath + "\"") "i001429-pack-deps-minimum-from-lock" |> ignore
+    paket ("pack output \"" + outPath + "\"") "i001429-pack-deps-minimum-from-lock" |> ignore
 
     let details = 
-        NuGetV2.getDetailsFromLocalNuGetPackage false outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
+        NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
+        |> ODataSearchResult.get
 
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    let packageName, versionRequirement, restrictions = details.Dependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    let packageName, versionRequirement, restrictions = details |> getDependencies |> Seq.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> Seq.head 
     versionRequirement |> shouldEqual (VersionRequirement.Parse "1.2.3")
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","PaketBug","paket.template"))
@@ -154,14 +160,15 @@ let ``#1429 pack deps without minimum-from-lock-file uses dependencies file rang
 let ``#1429 pack deps without minimum-from-lock-file uses specifc dependencies file range``() = 
     let outPath = Path.Combine(scenarioTempPath "i001429-pack-deps-specific","out")
     let templatePath = Path.Combine(scenarioTempPath "i001429-pack-deps-specific","PaketBug", "paket.template")
-    paket ("pack -v output \"" + outPath + "\"") "i001429-pack-deps-specific" |> ignore
+    paket ("pack output \"" + outPath + "\"") "i001429-pack-deps-specific" |> ignore
 
     let details = 
-        NuGetV2.getDetailsFromLocalNuGetPackage false outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
+        NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
+        |> ODataSearchResult.get
 
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    let packageName, versionRequirement, restrictions = details.Dependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    let packageName, versionRequirement, restrictions = details |> getDependencies |> Seq.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> Seq.head 
     versionRequirement |> shouldEqual (VersionRequirement.Parse "[2.3.4]")
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps-specific","PaketBug","paket.template"))
@@ -170,14 +177,15 @@ let ``#1429 pack deps without minimum-from-lock-file uses specifc dependencies f
 let ``#1429 pack deps with minimum-from-lock-file uses specifc dependencies file range``() = 
     let outPath = Path.Combine(scenarioTempPath "i001429-pack-deps-specific","out")
     let templatePath = Path.Combine(scenarioTempPath "i001429-pack-deps-specific","PaketBug", "paket.template")
-    paket ("pack -v minimum-from-lock-file  output \"" + outPath + "\"") "i001429-pack-deps-specific" |> ignore
+    paket ("pack minimum-from-lock-file  output \"" + outPath + "\"") "i001429-pack-deps-specific" |> ignore
 
     let details = 
-        NuGetV2.getDetailsFromLocalNuGetPackage false outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
+        NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
+        |> ODataSearchResult.get
 
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    let packageName, versionRequirement, restrictions = details.Dependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
+    details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    let packageName, versionRequirement, restrictions = details |> getDependencies |> Seq.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> Seq.head 
     versionRequirement |> shouldEqual (VersionRequirement.Parse "[2.3.4]")
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps-specific","PaketBug","paket.template"))
@@ -244,7 +252,7 @@ let ``#1472 allows to put stuff in relative folder``() =
 let ``#1483 pack deps with locked version from group``() = 
     let outPath = Path.Combine(scenarioTempPath "i001483-group-lock","out")
     let templatePath = Path.Combine(scenarioTempPath "i001483-group-lock","pack", "paket.template")
-    paket ("pack -v  output \"" + outPath + "\"") "i001483-group-lock" |> ignore
+    paket ("pack output \"" + outPath + "\"") "i001483-group-lock" |> ignore
 
     File.Delete(templatePath)
 
@@ -286,7 +294,7 @@ let ``#1538 symbols src folder structure`` () =
     let outPath = Path.Combine(rootPath, "out")
     let package = Path.Combine(outPath, "PackWithSource.1.0.0.0.symbols.nupkg")
     
-    paket ("pack -v output \"" + outPath + "\" symbols") scenario |> ignore
+    paket ("pack output \"" + outPath + "\" symbols") scenario |> ignore
     ZipFile.ExtractToDirectory(package, outPath)
 
     Path.Combine(outPath, "lib", "net452", "PackWithSource.pdb") |> checkFileExists
@@ -301,7 +309,6 @@ let ``#1538 symbols src folder structure`` () =
     Path.Combine(srcRoot, "Properties", "AssemblyInfo.cs") |> checkFileExists
 
     CleanDir rootPath
-
 
 [<Test>]
 [<Ignore("ignore until we hear back")>]
@@ -382,3 +389,313 @@ let ``#1816 pack localized when satellite dll is missing`` () =
     Path.Combine(outPath, "lib", "net45", "sv-FI", "LocalizedLib.resources.dll") |> checkFileExists
 
     CleanDir rootPath
+
+[<Test>]
+let ``#3275 netstandard pack localized happy path`` () =
+    let scenario = "i003275-pack-localized-netstandard"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let package = Path.Combine(outPath, "LibForTest.1.0.0.nupkg")
+
+    paket ("pack -v output \"" + outPath + "\"") scenario |> ignore
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    Path.Combine(outPath, "lib", "netstandard2.0", "LibForTest.dll") |> checkFileExists
+    Path.Combine(outPath, "lib", "netstandard2.0", "de", "LibForTest.resources.dll") |> checkFileExists
+    Path.Combine(outPath, "lib", "netstandard2.0", "ru", "LibForTest.resources.dll") |> checkFileExists
+    Path.Combine(outPath, "lib", "netstandard2.0", "en-US", "LibForTest.resources.dll") |> checkFileExists
+
+    CleanDir rootPath
+
+[<Test>]
+let ``#1848 single template without include-referenced-projects`` () = 
+    let scenario = "i001848-pack-single-template-wo-incl-flag"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let templatePath = Path.Combine(rootPath, "projectA", "paket.template")
+    paket ("pack --template " + templatePath + " \"" + outPath + "\"") scenario |> ignore
+
+    NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "projectA") (SemVer.Parse "1.0.0.0")
+    |> Async.RunSynchronously
+    |> ODataSearchResult.get
+    |> getDependencies 
+    |> shouldBeEmpty
+
+    ZipFile.ExtractToDirectory(Path.Combine(outPath, "projectA.1.0.0.0.nupkg"), outPath)
+    Path.Combine(outPath, "lib", "net45", "projectB.dll") |> checkFileExists
+
+    CleanDir rootPath
+
+[<Test>]
+let ``#1848 single template with include-referenced-projects`` () = 
+    let scenario = "i001848-pack-single-template-with-incl-flag"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let templatePath = Path.Combine(rootPath, "projectA", "paket.template")
+    paket ("pack --include-referenced-projects --template  " + templatePath + " \"" + outPath + "\"") scenario |> ignore
+
+    NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "projectA") (SemVer.Parse "1.0.0.0")
+    |> Async.RunSynchronously
+    |> ODataSearchResult.get
+    |> getDependencies 
+    |> Seq.tryFind (fun (name,version,_) -> name = PackageName "projectB" && version = VersionRequirement.Parse "1.0.0.0") 
+    |> shouldNotEqual None
+
+    ZipFile.ExtractToDirectory(Path.Combine(outPath, "projectA.1.0.0.0.nupkg"), outPath)
+    let expectedFile = Path.Combine(outPath, "lib", "net45", "projectB.dll")
+
+    File.Exists expectedFile |> shouldEqual false
+
+    CleanDir rootPath
+
+[<Test>]
+let ``#1848 all templates without include-referenced-projects`` () = 
+    let scenario = "i001848-pack-all-templates-wo-incl-flag"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    paket ("pack \"" + outPath + "\"") scenario |> ignore
+
+    NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "projectA") (SemVer.Parse "1.0.0.0")
+    |> Async.RunSynchronously
+    |> ODataSearchResult.get
+    |> getDependencies 
+    |> Seq.tryFind (fun (name,version,_) -> name = PackageName "projectB" && version = VersionRequirement.Parse "1.0.0.0") 
+    |> shouldNotEqual None
+
+    NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "projectB") (SemVer.Parse "1.0.0.0")
+    |> Async.RunSynchronously
+    |> ODataSearchResult.get
+    |> getDependencies 
+    |> Seq.tryFind (fun (name,version,_) -> name = PackageName "nunit" && version = VersionRequirement.Parse "[3.8.1]") 
+    |> shouldNotEqual None
+
+    ZipFile.ExtractToDirectory(Path.Combine(outPath, "projectA.1.0.0.0.nupkg"), outPath)
+    let expectedFile = Path.Combine(outPath, "lib", "net45", "projectB.dll")
+    File.Exists expectedFile |> shouldEqual false
+
+    CleanDir rootPath
+
+[<Test>]
+let ``#1848 all templates with include-referenced-projects`` () = 
+    let scenario = "i001848-pack-all-templates-with-incl-flag"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    paket ("pack --include-referenced-projects \"" + outPath + "\"") scenario |> ignore
+
+    NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "projectA") (SemVer.Parse "1.0.0.0")
+    |> Async.RunSynchronously
+    |> ODataSearchResult.get
+    |> getDependencies 
+    |> Seq.tryFind (fun (name,version,_) -> name = PackageName "projectB" && version = VersionRequirement.Parse "1.0.0.0") 
+    |> shouldNotEqual None
+
+    NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "projectB") (SemVer.Parse "1.0.0.0")
+    |> Async.RunSynchronously
+    |> ODataSearchResult.get
+    |> getDependencies 
+    |> Seq.tryFind (fun (name,version,_) -> name = PackageName "nunit" && version = VersionRequirement.Parse "[3.8.1]") 
+    |> shouldNotEqual None
+
+    ZipFile.ExtractToDirectory(Path.Combine(outPath, "projectA.1.0.0.0.nupkg"), outPath)
+    let expectedFile = Path.Combine(outPath, "lib", "net45", "projectB.dll")
+    File.Exists expectedFile |> shouldEqual false
+
+    CleanDir rootPath
+
+[<Test>]
+let ``#1848 include-referenced-projects with non-packed project dependencies`` () = 
+    let scenario = "i001848-pack-with-non-packed-deps"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    paket ("pack --include-referenced-projects \"" + outPath + "\"") scenario |> ignore
+
+    NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "projectA") (SemVer.Parse "1.0.0.0")
+    |> Async.RunSynchronously
+    |> ODataSearchResult.get
+    |> getDependencies 
+    |> Seq.tryFind (fun (name,version,_) -> name = PackageName "nunit" && version = VersionRequirement.Parse "[3.8.1]") 
+    |> shouldNotEqual None    
+    
+    ZipFile.ExtractToDirectory(Path.Combine(outPath, "projectA.1.0.0.0.nupkg"), outPath)
+    Path.Combine(outPath, "lib", "net45", "projectB.dll") |> checkFileExists
+    
+    CleanDir rootPath
+
+[<Test>]
+let ``#2694 paket fixnuspec should not remove project references``() = 
+    let project = "console"
+    let scenario = "i002694"
+    prepareSdk scenario
+
+    let wd = (scenarioTempPath scenario) @@ project
+
+    directDotnet true (sprintf "pack %s.csproj" project) wd
+        |> ignore
+
+    let nupkgPath = wd @@ "bin" @@ "Debug" @@ project + ".1.0.0.nupkg"
+    if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
+    let nuspec = NuGetLocal.getNuSpecFromNupgk nupkgPath
+    match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "library") with
+    | None -> Assert.Fail("Expected package to still contain the project reference!")
+    | Some s -> ignore s
+    match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "FSharp.Core") with
+    | None -> Assert.Fail("Expected package to still contain the FSharp.Core reference!")
+    | Some s -> ignore s
+
+    // Should we remove Microsoft.NETCore.App?
+    // Problably not as "packaged" console applications have this dependency by default, see https://www.nuget.org/packages/dotnet-mergenupkg
+    nuspec.Dependencies.Value.Length
+    |> shouldEqual 3
+    
+[<Test>]
+let ``#2765 pack single template does not evaluate other template`` () = 
+    let scenario = "i002765-evaluate-only-single-template"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let templatePath = Path.Combine(rootPath, "ProjectA", "paket.template")
+    Assert.DoesNotThrow(fun () -> paket ("pack --template " + templatePath + " \"" + outPath + "\"") scenario |> ignore)
+    CleanDir rootPath    
+
+[<Test>]
+let ``#2788 with include-pdbs true`` () = 
+    let scenario = "i002788-pack-with-include-pdbs-true"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let package = Path.Combine(outPath, "BuiltWithSymbols.1.0.0.0.nupkg")
+    paket ("pack \"" + outPath + "\"") scenario |> ignore
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    Path.Combine(outPath, "lib", "net45", "BuiltWithSymbols.dll") |> checkFileExists
+    Path.Combine(outPath, "lib", "net45", "BuiltWithSymbols.xml") |> checkFileExists
+    Path.Combine(outPath, "lib", "net45", "BuiltWithSymbols.pdb") |> checkFileExists
+
+    CleanDir rootPath
+    
+[<Test>]
+let ``#3164 pack analyzer`` () = 
+    let scenario = "i003164-pack-analyzer"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    paket ("pack \"" + outPath + "\"") scenario |> ignore
+
+    let package = Path.Combine(outPath, "Analyzer.0.2.0.3-dev.nupkg")
+    ZipFile.ExtractToDirectory(package, outPath)
+    Path.Combine(outPath, "analyzers", "dotnet", "cs", "Analyzer.dll") |> checkFileExists
+
+    CleanDir rootPath    
+
+    
+[<Test>]
+let ``#3165 pack multitarget with p2p`` () = 
+    let scenario = "i003165-pack-multitarget-with-p2p"
+    prepareSdk scenario
+    let rootPath = scenarioTempPath scenario
+
+    directDotnet true "build MyProj.Main -c Release" rootPath
+    |> Seq.iter (printfn "%A")
+
+    let outPath = Path.Combine(rootPath, "out")
+    directPaket (sprintf """pack "%s" """ outPath) scenario
+    |> Seq.iter (printfn "%A")
+
+    let nupkgPath = Path.Combine(outPath, "MyProj.Main.1.0.0.nupkg")
+
+    if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
+    let nuspec = NuGetLocal.getNuSpecFromNupgk nupkgPath
+    let depsByTfm byTfm = nuspec.Dependencies.Value |> Seq.choose (fun (pkgName,version,tfm) -> if (tfm.GetExplicitRestriction()) = byTfm then Some (pkgName,version) else None) |> Seq.toList
+    let pkgVer name version = (PackageName name), (VersionRequirement.Parse version)
+
+    let tfmNET45 = FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_5)
+    CollectionAssert.AreEquivalent([ pkgVer "FSharp.Core" "3.1.2.5"; pkgVer "Argu" "4.2.1" ], depsByTfm (FrameworkRestriction.AtLeast(tfmNET45)))
+
+    let tfmNETSTANDARD2_0 = FrameworkIdentifier.DotNetStandard(DotNetStandardVersion.V2_0)
+    CollectionAssert.AreEquivalent([ pkgVer "FSharp.Core" "4.5.1"; pkgVer "Argu" "5.1.0" ], depsByTfm (FrameworkRestriction.And [FrameworkRestriction.NotAtLeast(tfmNET45); FrameworkRestriction.AtLeast(tfmNETSTANDARD2_0)]))
+
+    CollectionAssert.AreEquivalent([ pkgVer "MyProj.Common" "1.0.0" ], depsByTfm (FrameworkRestriction.Or [FrameworkRestriction.AtLeast(tfmNET45); FrameworkRestriction.AtLeast(tfmNETSTANDARD2_0)]))
+
+    let unzippedNupkgPath = Path.Combine(outPath, "MyProj.Main")
+    ZipFile.ExtractToDirectory(nupkgPath, unzippedNupkgPath)
+    Path.Combine(unzippedNupkgPath, "lib", "net45", "MyProj.Main.dll") |> checkFileExists
+    Path.Combine(unzippedNupkgPath, "lib", "netstandard2.0", "MyProj.Main.dll") |> checkFileExists
+
+    CleanDir rootPath    
+
+[<Test>]
+let ``#4002 dotnet pack of a global tool shouldnt contain references``() = 
+    let project = "tool1"
+    let scenario = "i004002-pack-global-tools"
+    prepareSdk scenario
+
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+
+    directPaket ("restore") scenario
+    |> ignore
+
+    directDotnet true (sprintf "pack -o \"%s\" /p:PackAsTool=true /bl" outPath) rootPath
+    |> ignore
+
+    let nupkgPath = Path.Combine(outPath, project + ".1.0.0.nupkg")
+    if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
+    let nuspec = NuGetLocal.getNuSpecFromNupgk nupkgPath
+
+    printfn "%A" nuspec
+
+    match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "FSharp.Core") with
+    | Some s -> Assert.Fail(sprintf "Expected package to still contain the FSharp.Core reference! %A" s)
+    | None -> ()
+
+    match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "Argu") with
+    | Some s -> Assert.Fail(sprintf "Expected package to still contain the Argu reference! %A" s)
+    | None -> ()
+
+    // Should we remove Microsoft.NETCore.App?
+    // Problably not as "packaged" console applications have this dependency by default, see https://www.nuget.org/packages/dotnet-mergenupkg
+    nuspec.Dependencies.Value.Length
+    |> shouldEqual 0
+
+    
+[<Test>]
+let ``#4003 dotnet pack of a global tool with p2p``() = 
+    let project = "tool1"
+    let scenario = "i004003-pack-global-tools-p2p"
+    prepareSdk scenario
+
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+
+    directPaket ("restore") scenario
+    |> ignore
+
+    directDotnet true (sprintf "pack tool1 -o \"%s\" /bl" outPath) rootPath
+    |> ignore
+
+    let nupkgPath = Path.Combine(outPath, project + ".1.0.0.nupkg")
+    if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
+    let nuspec = NuGetLocal.getNuSpecFromNupgk nupkgPath
+
+    printfn "%A" nuspec
+
+    match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "FSharp.Core") with
+    | Some s -> Assert.Fail(sprintf "Expected package to still contain the FSharp.Core reference! %A" s)
+    | None -> ()
+
+    match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "Argu") with
+    | Some s -> Assert.Fail(sprintf "Expected package to still contain the Argu reference! %A" s)
+    | None -> ()
+
+    match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "Suave") with
+    | Some s -> Assert.Fail(sprintf "Expected package to still contain the Suave reference! %A" s)
+    | None -> ()
+
+    // Should we remove Microsoft.NETCore.App?
+    // Problably not as "packaged" console applications have this dependency by default, see https://www.nuget.org/packages/dotnet-mergenupkg
+    nuspec.Dependencies.Value.Length
+    |> shouldEqual 0
+
+[<Test>]
+let ``#4010-pack-template-only``() =
+    let scenario = "i004010-pack-template-only"
+    let outPath = Path.Combine(scenarioTempPath scenario, "out")
+    let templatePath = Path.Combine(scenarioTempPath scenario, "PaketBug", "paket.template")
+    paket (sprintf """pack --template "%s" "%s" --version 1.2.3 """ templatePath outPath) scenario |> ignore

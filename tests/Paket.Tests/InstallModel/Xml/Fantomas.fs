@@ -16,23 +16,27 @@ let expected = """
   </Reference>
 </ItemGroup>"""
 
+let fromLegacyList = Paket.InstallModel.ProcessingSpecs.fromLegacyList
+
 [<Test>]
 let ``should generate Xml for Fantomas 1.5``() = 
+    ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
-            [ @"..\Fantomas\lib\FantomasLib.dll" 
-              @"..\Fantomas\lib\FSharp.Core.dll" 
-              @"..\Fantomas\lib\Fantomas.exe" ],
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", InstallModelKind.Package, FrameworkRestriction.NoRestriction,
+            [ @"..\Fantomas\lib\FantomasLib.dll"
+              @"..\Fantomas\lib\FSharp.Core.dll"
+              @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList @"..\Fantomas\",
               [],
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
-    
-    let propertyNodes,targetsNodes,chooseNode,additionalNode, _ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,Map.empty,true,true,None)
-    chooseNode.OuterXml
+
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
+    ctx.ChooseNodes.Head.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)
     
-    propertyNodes |> Seq.length |> shouldEqual 0
+    ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 0
+    ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 0
 
 
 let emptyDoc = """<?xml version="1.0" encoding="utf-8"?>
@@ -46,7 +50,7 @@ let fullDoc = """<?xml version="1.0" encoding="utf-8"?>
   <ItemGroup>
     <Reference Include="FantomasLib">
       <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
-      <Private>True</Private>
+      <Private>True</Private>      
       <Paket>True</Paket>
     </Reference>
   </ItemGroup>
@@ -54,19 +58,20 @@ let fullDoc = """<?xml version="1.0" encoding="utf-8"?>
 
 [<Test>]
 let ``should generate full Xml for Fantomas 1.5``() = 
+    ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
-            [ @"..\Fantomas\lib\FantomasLib.dll" 
-              @"..\Fantomas\lib\FSharp.Core.dll" 
-              @"..\Fantomas\lib\Fantomas.exe" ],
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", InstallModelKind.Package, FrameworkRestriction.NoRestriction,
+            [ @"..\Fantomas\lib\FantomasLib.dll"
+              @"..\Fantomas\lib\FSharp.Core.dll"
+              @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList @"..\Fantomas\",
               [],
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
-    
+
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model)] |> Map.ofSeq
     let used = [(Constants.MainDependencyGroup, (PackageName "fantoMas")), (InstallSettings.Default,InstallSettings.Default)] |> Map.ofSeq
-    project.UpdateReferences(".",completeModel,used)
+    project.UpdateReferences(completeModel,used,used)
     
     project.Document.OuterXml
     |> normalizeXml
@@ -75,19 +80,20 @@ let ``should generate full Xml for Fantomas 1.5``() =
 
 [<Test>]
 let ``should not generate full Xml for Fantomas 1.5 if not referenced``() = 
+    ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
-            [ @"..\Fantomas\lib\FantomasLib.dll" 
-              @"..\Fantomas\lib\FSharp.Core.dll" 
-              @"..\Fantomas\lib\Fantomas.exe" ],
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", InstallModelKind.Package, FrameworkRestriction.NoRestriction,
+            [ @"..\Fantomas\lib\FantomasLib.dll"
+              @"..\Fantomas\lib\FSharp.Core.dll"
+              @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList @"..\Fantomas\",
               [],
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
-    
+
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model)] |> Map.ofSeq
     let used = [(Constants.MainDependencyGroup, (PackageName "blub")), (InstallSettings.Default,InstallSettings.Default) ] |> Map.ofSeq
-    project.UpdateReferences(".",completeModel,used)
+    project.UpdateReferences(completeModel,used,used)
     
     project.Document.OuterXml
     |> normalizeXml
@@ -111,22 +117,23 @@ let fullDocWithRefernceCondition = """<?xml version="1.0" encoding="utf-8"?>
 
 [<Test>]
 let ``should generate full Xml with reference condition for Fantomas 1.5``() = 
+    ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
-            [ @"..\Fantomas\lib\FantomasLib.dll" 
-              @"..\Fantomas\lib\FSharp.Core.dll" 
-              @"..\Fantomas\lib\Fantomas.exe" ],
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", InstallModelKind.Package, FrameworkRestriction.NoRestriction,
+            [ @"..\Fantomas\lib\FantomasLib.dll"
+              @"..\Fantomas\lib\FSharp.Core.dll"
+              @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList @"..\Fantomas\",
               [],
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
-    
+
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model)] |> Map.ofSeq
     let settings =
         { InstallSettings.Default 
             with ReferenceCondition = Some "LEGACY" }
     let used = [(Constants.MainDependencyGroup, (PackageName "fantoMas")), (InstallSettings.Default,settings)] |> Map.ofSeq
-    project.UpdateReferences(".",completeModel,used)
+    project.UpdateReferences(completeModel,used,used)
     
     project.Document.OuterXml
     |> normalizeXml
@@ -136,7 +143,7 @@ let fullDocWithRefernceConditionAndFrameworkRestriction = """<?xml version="1.0"
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Choose>
-    <When Condition="'$(LEGACY)' == 'True' And (($(TargetFrameworkIdentifier) == 'MonoAndroid') Or ($(TargetFrameworkIdentifier) == 'Xamarin.iOS'))">
+    <When Condition="'$(LEGACY)' == 'True' And (($(TargetFrameworkIdentifier) == 'MonoAndroid' And $(TargetFrameworkVersion) == 'v1.0') Or ($(TargetFrameworkIdentifier) == 'Xamarin.iOS'))">
       <ItemGroup>
         <Reference Include="FantomasLib">
           <HintPath>..\..\..\Fantomas\lib\portable-net45+win8\FantomasLib.dll</HintPath>
@@ -152,11 +159,12 @@ let fullDocWithRefernceConditionAndFrameworkRestriction = """<?xml version="1.0"
 let ``should generate full Xml with reference condition and framework restrictions without msbuild warning``() =
     // msbuild triggers a warning MSB4130 when we leave out the quotes around $(LEGACY) and add the condition at the end
     // It seems like the warning is triggered when there is an "Or" without parentheses somewhere
+    ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0",
+        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", InstallModelKind.Package,
             [ FrameworkRestriction.Exactly (FrameworkIdentifier.XamariniOS)
-              FrameworkRestriction.Exactly (FrameworkIdentifier.MonoAndroid)],
-            [ @"..\Fantomas\lib\portable-net45+win8\FantomasLib.dll" ],
+              FrameworkRestriction.Exactly (FrameworkIdentifier.MonoAndroid MonoAndroidVersion.V1)] |> makeOrList |> getExplicitRestriction,
+            [ @"..\Fantomas\lib\portable-net45+win8\FantomasLib.dll" ] |> fromLegacyList @"..\Fantomas\",
               [],
               [],
               Nuspec.All)
@@ -167,7 +175,7 @@ let ``should generate full Xml with reference condition and framework restrictio
         { InstallSettings.Default
             with ReferenceCondition = Some "LEGACY" }
     let used = [(Constants.MainDependencyGroup, (PackageName "fantoMas")), (InstallSettings.Default,settings)] |> Map.ofSeq
-    project.UpdateReferences(".",completeModel,used)
+    project.UpdateReferences(completeModel,used,used)
 
     project.Document.OuterXml
     |> normalizeXml

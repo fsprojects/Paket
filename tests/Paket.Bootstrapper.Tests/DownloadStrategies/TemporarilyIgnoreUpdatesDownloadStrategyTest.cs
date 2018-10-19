@@ -13,14 +13,14 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         private const string Target = @"C:\Test\paket.exe";
         private TemporarilyIgnoreUpdatesDownloadStrategy _sut;
         private Mock<IDownloadStrategy> _mockEffectiveStrategy;
-        private Mock<IFileProxy> _mockFileProxy;
+        private Mock<IFileSystemProxy> _mockFileProxy;
         private static readonly DateTime Now = new DateTime(2016, 1, 20, 10, 0, 0);
 
         [SetUp]
         public void Setup()
         {
             _mockEffectiveStrategy = new Mock<IDownloadStrategy>();
-            _mockFileProxy = new Mock<IFileProxy>();
+            _mockFileProxy = new Mock<IFileSystemProxy>();
             DateTimeProxy.GetNow = () => Now;
 
             _sut = new TemporarilyIgnoreUpdatesDownloadStrategy(
@@ -162,14 +162,23 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         {
             //arrange
             _mockFileProxy.Setup(fp => fp.Touch(Target)).Verifiable();
-            _mockEffectiveStrategy.Setup(x => x.DownloadVersion("any", Target)).Verifiable();
+            _mockEffectiveStrategy.Setup(x => x.DownloadVersion("any", Target, null)).Verifiable();
 
             //act
-            _sut.DownloadVersion("any", Target);
+            _sut.DownloadVersion("any", Target, null);
 
             //assert
             _mockEffectiveStrategy.Verify();
             _mockFileProxy.Verify();
+        }
+
+        [Test]
+        [TestCase(true)]
+        [TestCase(false)]
+        public void CanDownloadHashFile(bool can)
+        {
+            _mockEffectiveStrategy.SetupGet(x => x.CanDownloadHashFile).Returns(can);
+            Assert.That(_sut.CanDownloadHashFile, Is.EqualTo(can));
         }
     }
 }

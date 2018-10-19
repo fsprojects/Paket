@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using Paket.Bootstrapper.HelperProxies;
 
 namespace Paket.Bootstrapper.DownloadStrategies
 {
-    internal class NugetDownloadStrategy : IDownloadStrategy
+    internal class NugetDownloadStrategy : DownloadStrategy
     {
         internal class NugetApiHelper
         {
@@ -48,36 +49,39 @@ namespace Paket.Bootstrapper.DownloadStrategies
         }
 
         private IWebRequestProxy WebRequestProxy { get; set; }
-        private IDirectoryProxy DirectoryProxy { get; set; }
-        private IFileProxy FileProxy { get; set; }
+        private IFileSystemProxy FileSystemProxy { get; set; }
         private string Folder { get; set; }
         private string NugetSource { get; set; }
+        private bool AsTool { get; set; }
         private const string PaketNugetPackageName = "Paket";
         private const string PaketBootstrapperNugetPackageName = "Paket.Bootstrapper";
 
-        public NugetDownloadStrategy(IWebRequestProxy webRequestProxy, IDirectoryProxy directoryProxy, IFileProxy fileProxy, string folder, string nugetSource)
+        public NugetDownloadStrategy(IWebRequestProxy webRequestProxy, IFileSystemProxy fileSystemProxy, string folder, string nugetSource, bool asTool = false)
         {
             WebRequestProxy = webRequestProxy;
-            DirectoryProxy = directoryProxy;
-            FileProxy = fileProxy;
+            FileSystemProxy = fileSystemProxy;
             Folder = folder;
             NugetSource = nugetSource;
+            AsTool = asTool;
         }
 
-        public string Name
+        public override string Name
         {
             get { return "Nuget"; }
         }
 
-        public IDownloadStrategy FallbackStrategy { get; set; }
+        public override bool CanDownloadHashFile
+        {
+            get { return false; }
+        }
 
-        public string GetLatestVersion(bool ignorePrerelease)
+        protected override string GetLatestVersionCore(bool ignorePrerelease)
         {
             IEnumerable<string> allVersions = null;
-            if (DirectoryProxy.Exists(NugetSource))
+            if (FileSystemProxy.DirectoryExists(NugetSource))
             {
                 var paketPrefix = "paket.";
-                allVersions = DirectoryProxy.
+                allVersions = FileSystemProxy.
                     EnumerateFiles(NugetSource, "paket.*.nupkg", SearchOption.TopDirectoryOnly).
                     Select(x => Path.GetFileNameWithoutExtension(x)).
                     // If the specified character isn't a digit, then the file
@@ -103,7 +107,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             return latestVersion != null ? latestVersion.Original : String.Empty;
         }
 
-        public void DownloadVersion(string latestVersion, string target)
+        protected override void DownloadVersionCore(string latestVersion, string target, PaketHashFile hashfile)
         {
             var apiHelper = new NugetApiHelper(PaketNugetPackageName, NugetSource);
 
@@ -119,38 +123,69 @@ namespace Paket.Bootstrapper.DownloadStrategies
             }
 
             var randomFullPath = Path.Combine(Folder, Path.GetRandomFileName());
-            DirectoryProxy.CreateDirectory(randomFullPath);
+            FileSystemProxy.CreateDirectory(randomFullPath);
             var paketPackageFile = Path.Combine(randomFullPath, paketFile);
 
-            if (DirectoryProxy.Exists(NugetSource))
+            if (FileSystemProxy.DirectoryExists(NugetSource))
             {
                 if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = GetLatestVersion(false);
                 var sourcePath = Path.Combine(NugetSource, String.Format(paketNupkgFileTemplate, latestVersion));
 
-                ConsoleImpl.WriteDebug("Starting download from {0}", sourcePath);
+                ConsoleImpl.WriteInfo("Starting download from {0}", sourcePath);
 
-                FileProxy.Copy(sourcePath, paketPackageFile);
+                FileSystemProxy.CopyFile(sourcePath, paketPackageFile);
             }
             else
             {
-                ConsoleImpl.WriteDebug("Starting download from {0}", paketDownloadUrl);
+                ConsoleImpl.WriteInfo("Starting download from {0}", paketDownloadUrl);
 
-                WebRequestProxy.DownloadFile(paketDownloadUrl, paketPackageFile);
+                try
+                {
+                    WebRequestProxy.DownloadFile(paketDownloadUrl, paketPackageFile);
+                }
+                catch (WebException webException)
+                {
+                    if (webException.Status == WebExceptionStatus.ProtocolError && !string.IsNullOrEmpty(latestVersion))
+                    {
+                        var response = (HttpWebResponse) webException.Response;
+                        if (response.StatusCode == HttpStatusCode.NotFound)
+                        {
+                            throw new WebException(String.Format("Version {0} wasn't found (404)",latestVersion),
+                                webException);
+                        }
+                        if (response.StatusCode == HttpStatusCode.BadRequest)
+                        {
+                            // For cases like "The package version is not a valid semantic version"
+                            throw new WebException(String.Format("Unable to get version '{0}': {1}",latestVersion,response.StatusDescription),
+                                webException);
+                        }
+                    }
+                    Console.WriteLine(webException.ToString());
+                    throw;
+                }
             }
 
-            FileProxy.ExtractToDirectory(paketPackageFile, randomFullPath);
-            var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.exe");
-            FileProxy.Copy(paketSourceFile, target, true);
-            DirectoryProxy.Delete(randomFullPath, true);
+            if (this.AsTool)
+            {
+                var installAsTool = new InstallKind.InstallAsTool(FileSystemProxy);
+                installAsTool.Run(randomFullPath, target, latestVersion);
+            }
+            else
+            {
+                FileSystemProxy.ExtractToDirectory(paketPackageFile, randomFullPath);
+                var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.exe");
+                FileSystemProxy.CopyFile(paketSourceFile, target, true);
+            }
+            FileSystemProxy.DeleteDirectory(randomFullPath, true);
         }
 
-        public void SelfUpdate(string latestVersion)
+        protected override void SelfUpdateCore(string latestVersion)
         {
             string target = Assembly.GetExecutingAssembly().Location;
-            var localVersion = FileProxy.GetLocalFileVersion(target);
+            var localVersion = FileSystemProxy.GetLocalFileVersion(target);
             if (localVersion.StartsWith(latestVersion))
             {
-                ConsoleImpl.WriteDebug("Bootstrapper is up to date. Nothing to do.");
+                ConsoleImpl.WriteInfo("Bootstrapper is up to date. Nothing to do.");
                 return;
             }
             var apiHelper = new NugetApiHelper(PaketBootstrapperNugetPackageName, NugetSource);
@@ -168,42 +203,48 @@ namespace Paket.Bootstrapper.DownloadStrategies
             }
 
             var randomFullPath = Path.Combine(Folder, Path.GetRandomFileName());
-            DirectoryProxy.CreateDirectory(randomFullPath);
+            FileSystemProxy.CreateDirectory(randomFullPath);
             var paketPackageFile = Path.Combine(randomFullPath, paketFile);
 
-            if (DirectoryProxy.Exists(NugetSource))
+            if (FileSystemProxy.DirectoryExists(NugetSource))
             {
                 if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = GetLatestVersion(false);
                 var sourcePath = Path.Combine(NugetSource, String.Format(paketNupkgFileTemplate, latestVersion));
 
-                ConsoleImpl.WriteDebug("Starting download from {0}", sourcePath);
+                ConsoleImpl.WriteInfo("Starting download from {0}", sourcePath);
 
-                FileProxy.Copy(sourcePath, paketPackageFile);
+                FileSystemProxy.CopyFile(sourcePath, paketPackageFile);
             }
             else
             {
-                ConsoleImpl.WriteDebug("Starting download from {0}", paketDownloadUrl);
+                ConsoleImpl.WriteInfo("Starting download from {0}", paketDownloadUrl);
 
                 WebRequestProxy.DownloadFile(paketDownloadUrl, paketPackageFile);
             }
 
-            FileProxy.ExtractToDirectory(paketPackageFile, randomFullPath);
+            FileSystemProxy.ExtractToDirectory(paketPackageFile, randomFullPath);
 
             var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.bootstrapper.exe");
             var renamedPath = BootstrapperHelper.GetTempFile("oldBootstrapper");
             try
             {
-                FileProxy.FileMove(target, renamedPath);
-                FileProxy.FileMove(paketSourceFile, target);
-                ConsoleImpl.WriteDebug("Self update of bootstrapper was successful.");
+                FileSystemProxy.MoveFile(target, renamedPath);
+                FileSystemProxy.MoveFile(paketSourceFile, target);
+                ConsoleImpl.WriteInfo("Self update of bootstrapper was successful.");
             }
             catch (Exception)
             {
-                ConsoleImpl.WriteDebug("Self update failed. Resetting bootstrapper.");
-                FileProxy.FileMove(renamedPath, target);
+                ConsoleImpl.WriteInfo("Self update failed. Resetting bootstrapper.");
+                FileSystemProxy.MoveFile(renamedPath, target);
                 throw;
             }
-            DirectoryProxy.Delete(randomFullPath, true);
+            FileSystemProxy.DeleteDirectory(randomFullPath, true);
+        }
+
+        protected override PaketHashFile DownloadHashFileCore(string latestVersion)
+        {
+            // TODO: implement get hash file
+            return null;
         }
     }
 }

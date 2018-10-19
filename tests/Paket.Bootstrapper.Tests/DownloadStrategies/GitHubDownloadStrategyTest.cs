@@ -1,6 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
-using System.Text;
+using System.Security.Cryptography;
 using Moq;
 using NUnit.Framework;
 using Paket.Bootstrapper.DownloadStrategies;
@@ -13,13 +15,13 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
     {
         private GitHubDownloadStrategy sut;
         private Mock<IWebRequestProxy> mockWebProxy;
-        private Mock<IFileProxy> mockFileProxy;
+        private Mock<IFileSystemProxy> mockFileProxy;
 
         [SetUp]
         public void Setup()
         {
             mockWebProxy = new Mock<IWebRequestProxy>();
-            mockFileProxy = new Mock<IFileProxy>();
+            mockFileProxy = new Mock<IFileSystemProxy>();
             sut = new GitHubDownloadStrategy(mockWebProxy.Object, mockFileProxy.Object);
         }
 
@@ -53,54 +55,110 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         }
 
         [Test]
-        public void DownloadVersion()
+        public void DownloadVersion_NoHash()
         {
             //arrange
-            var byteArray = Encoding.ASCII.GetBytes("paketExeContent");
-            var stream = new MemoryStream(byteArray);
             var tempFileName = BootstrapperHelper.GetTempFile("paket");
 
-            mockWebProxy.Setup(x => x.DownloadFile(It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<int>()))
-                .Callback<string, Stream, int>((url, streamIn, bufferIn) => stream.CopyTo(streamIn)).Verifiable();
-            var buffer = new byte[byteArray.Length];
-            mockFileProxy.Setup(x => x.Create(tempFileName)).Returns(new MemoryStream(buffer));
-
             //act
-            sut.DownloadVersion("2.57.1", "paketExeLocation");
+            sut.DownloadVersion("2.57.1", "paketExeLocation", null);
 
             //assert
-            mockWebProxy.Verify();
-            mockFileProxy.Verify(x => x.Copy(tempFileName, "paketExeLocation", true));
-            mockFileProxy.Verify(x => x.Delete(tempFileName));
-            var text = Encoding.ASCII.GetString(buffer);
-            Assert.That(text, Is.EqualTo("paketExeContent"));
+            mockWebProxy.Verify(x => x.DownloadFile(It.IsAny<string>(), tempFileName), Times.Once);
+            mockFileProxy.Verify(x => x.CopyFile(tempFileName, "paketExeLocation", true), Times.Once);
+            mockFileProxy.Verify(x => x.DeleteFile(tempFileName), Times.Once);
+        }
+
+        [Test]
+        public void DownloadVersion_HashFileNotFound()
+        {
+            //arrange
+            var tempFileName = BootstrapperHelper.GetTempFile("paket");
+
+            //act
+            sut.DownloadVersion("2.57.1", "paketExeLocation", null);
+
+            //assert
+            mockWebProxy.Verify(x => x.DownloadFile(It.IsAny<string>(), tempFileName), Times.Once);
+            mockFileProxy.Verify(x => x.CopyFile(tempFileName, "paketExeLocation", true), Times.Once);
+            mockFileProxy.Verify(x => x.DeleteFile(tempFileName), Times.Once);
+        }
+
+        [Test]
+        public void DownloadVersion_InvalidHashRetryOnce()
+        {
+            //arrange
+            var content = Guid.NewGuid().ToByteArray();
+            var sha = new SHA256Managed();
+            var checksum = sha.ComputeHash(new MemoryStream(content));
+            var hash = BitConverter.ToString(checksum).Replace("-", String.Empty);
+            mockFileProxy.Setup(x => x.OpenRead(It.IsAny<string>())).Returns(() => new MemoryStream(Guid.NewGuid().ToByteArray()));
+            var tempFileName = BootstrapperHelper.GetTempFile("paket");
+
+            //act
+            sut.DownloadVersion("2.57.1", "paketExeLocation", new PaketHashFile(new List<string> { hash + " paket.exe" }));
+
+            //assert
+            mockWebProxy.Verify(x => x.DownloadFile(It.IsAny<string>(), tempFileName), Times.Exactly(2));
+            mockFileProxy.Verify(x => x.CopyFile(tempFileName, "paketExeLocation", true), Times.Once);
+            mockFileProxy.Verify(x => x.DeleteFile(tempFileName), Times.Once);
+        }
+
+        [Test]
+        public void DownloadVersion_ValidHashOk()
+        {
+            //arrange
+            var content = Guid.NewGuid().ToByteArray();
+            var sha = new SHA256Managed();
+            var checksum = sha.ComputeHash(new MemoryStream(content));
+            var hash = BitConverter.ToString(checksum).Replace("-", String.Empty);
+            mockFileProxy.Setup(x => x.OpenRead(It.IsAny<string>())).Returns(new MemoryStream(content));
+            var tempFileName = BootstrapperHelper.GetTempFile("paket");
+
+            //act
+            sut.DownloadVersion("2.57.1", "paketExeLocation", new PaketHashFile(new List<string> { hash + " paket.exe" }));
+
+            //assert
+            mockWebProxy.Verify(x => x.DownloadFile(It.IsAny<string>(), tempFileName), Times.Once);
+            mockFileProxy.Verify(x => x.CopyFile(tempFileName, "paketExeLocation", true), Times.Once);
+            mockFileProxy.Verify(x => x.DeleteFile(tempFileName), Times.Once);
         }
 
         [Test]
         public void SelfUpdate()
         {
             //arrange
-            var byteArray = Encoding.ASCII.GetBytes("paketExeContent");
-            var stream = new MemoryStream(byteArray);
             var tempFileNameNew = BootstrapperHelper.GetTempFile("newBootstrapper");
             var tempFileNameOld = BootstrapperHelper.GetTempFile("oldBootstrapper");
 
-            mockWebProxy.Setup(x => x.DownloadFile(It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<int>()))
-               .Callback<string, Stream, int>((url, streamIn, bufferIn) => stream.CopyTo(streamIn)).Verifiable();
-            var buffer = new byte[byteArray.Length];
-            mockFileProxy.Setup(x => x.Create(tempFileNameNew)).Returns(new MemoryStream(buffer));
+            mockWebProxy.Setup(x => x.DownloadFile(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
             mockFileProxy.Setup(x => x.GetLocalFileVersion(It.IsAny<string>())).Returns("2.52.1");
             
             //act
             sut.SelfUpdate("2.57.1");
 
             //assert
-            mockWebProxy.Verify();
-            mockFileProxy.Verify(x => x.FileMove(Assembly.GetAssembly(typeof(GitHubDownloadStrategy)).Location, tempFileNameOld));
-            mockFileProxy.Verify(x => x.FileMove(tempFileNameNew, Assembly.GetAssembly(typeof(GitHubDownloadStrategy)).Location));
+            mockWebProxy.Verify(x => x.DownloadFile(It.IsAny<string>(), tempFileNameNew));
+            mockFileProxy.Verify(x => x.MoveFile(Assembly.GetAssembly(typeof(GitHubDownloadStrategy)).Location, tempFileNameOld));
+            mockFileProxy.Verify(x => x.MoveFile(tempFileNameNew, Assembly.GetAssembly(typeof(GitHubDownloadStrategy)).Location));
+        }
 
-            var text = Encoding.ASCII.GetString(buffer);
-            Assert.That(text, Is.EqualTo("paketExeContent"));
+        [Test]
+        public void DownloadHashFile()
+        {
+            var expectedUrl = string.Format(GitHubDownloadStrategy.Constants.PaketCheckSumDownloadUrlTemplate, "42.0");
+            mockWebProxy.Setup(x => x.DownloadString(expectedUrl)).Returns("123test");
+
+            var hashFile = sut.DownloadHashFile("42.0");
+
+            Assert.That(hashFile.Content, Is.EquivalentTo(new[] { "123test"}));
+            mockWebProxy.Verify(x => x.DownloadString(expectedUrl), Times.Once);
+        }
+
+        [Test]
+        public void CanDownloadHashFile()
+        {
+            Assert.That(sut.CanDownloadHashFile, Is.True);
         }
     }
 }

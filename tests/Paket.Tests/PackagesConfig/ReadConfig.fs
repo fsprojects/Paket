@@ -4,7 +4,6 @@ open Paket
 open Paket.PackagesConfigFile
 open NUnit.Framework
 open FsUnit
-open Domain
 
 [<Test>]
 let ``can read xunit.visualstudio.packages.config``() = 
@@ -12,4 +11,4 @@ let ``can read xunit.visualstudio.packages.config``() =
 
     config.Id |> shouldEqual "xunit.runner.visualstudio"
     config.TargetFramework |> shouldEqual None
-    config.Version |> shouldEqual (SemVer.Parse "2.0.1")
+    config.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "2.0.1"))

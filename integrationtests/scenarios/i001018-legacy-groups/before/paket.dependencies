@@ -1,9 +1,0 @@
-source https://nuget.org/api/v2
-
-nuget Newtonsoft.Json 7.0.1
-
-group Legacy
-
-source https://nuget.org/api/v2
-
-nuget Newtonsoft.Json 6.0.8

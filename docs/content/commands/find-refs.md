@@ -1,26 +1,32 @@
-## Sample
+## Example
 
-*.src/Paket/paket.references* contains:
+* `src/Paket/paket.references` contains:
 
-    UnionArgParser
-    FSharp.Core
+```text
+UnionArgParser
+FSharp.Core
+```
 
-*.src/Paket.Core/paket.references* contains:
+* `src/Paket.Core/paket.references` contains:
 
-    Newtonsoft.Json
-    DotNetZip
-    FSharp.Core
+```text
+Newtonsoft.Json
+DotNetZip
+FSharp.Core
+```
 
-Now we run
+Now we run:
 
-    [lang=batchfile]
-    paket find-refs DotNetZip FSharp.Core
+```sh
+$ paket find-refs DotNetZip FSharp.Core
+Paket version 5.0.0
+Main DotNetZip
+src/Paket.Core/Paket.Core.fsproj
 
-and paket gives the following output:
+Main FSharp.Core
+src/Paket.Core/Paket.Core.fsproj
+src/Paket/Paket.fsproj
 
-    DotNetZip
-    .src/Paket.Core/Paket.Core.fsproj
-
-    FSharp.Core
-    .src/Paket.Core/Paket.Core.fsproj
-    .src/Paket/Paket.fsproj
+Performance:
+ - Runtime: 1 second
+```

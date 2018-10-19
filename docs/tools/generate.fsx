@@ -5,24 +5,25 @@ open System.IO
 
 
 #if COMMANDS
+let MaxCodeWidth = 100
+
 Paket.Commands.getAllCommands()
 |> List.iter (fun command ->
     let metadata = command.ParentInfo |> Option.get
-    let additionalText = 
+    let additionalText =
         let verboseOption = """
 
-If you add the `-v` flag, then Paket will run in verbose mode and show detailed information.
+If you add the `--verbose` flag Paket will run in verbose mode and show detailed information.
 
-With `--log-file [FileName]` you can trace the logged information into a file.
+With `--log-file [path]` you can trace the logged information into a file.
 
 """
-        let optFile = sprintf "../content/commands/%s.md" metadata.Name
+        let optFile = sprintf "../content/commands/%s.md" metadata.Name.Value
         if File.Exists optFile
         then verboseOption + File.ReadAllText optFile
         else verboseOption
-    // Work around bug tpetricek/FSharp.Formatting#321 (FSharp.Literate does not escape HTML entities in code blocks with unknown language)
-    let cleanText (text : string) = text.Replace("[lang=batchfile]", "[lang=msh]").Replace("```batchfile", "```msh")
-    File.WriteAllText(sprintf "../content/paket-%s.md" metadata.Name, Paket.Commands.markdown command additionalText |> cleanText))
+
+    File.WriteAllText(sprintf "../content/paket-%s.md" metadata.Name.Value, Paket.Commands.markdown command MaxCodeWidth additionalText))
 #endif
 
 
@@ -39,7 +40,7 @@ let githubLink = "http://github.com/fsprojects/Paket"
 // Specify more information about your project
 let info =
   [ "project-name", "Paket"
-    "project-author", "Steffen Forkmann, Alexander Gross"
+    "project-author", "Steffen Forkmann, Alexander Groß"
     "project-summary", "A dependency manager for .NET with support for NuGet packages and git repositories."
     "project-github", githubLink
     "project-nuget", "http://nuget.org/packages/Paket" ]
@@ -57,10 +58,12 @@ open System.IO
 open Fake.FileHelper
 open FSharp.Literate
 open FSharp.MetadataFormat
+open FSharp.Formatting.Razor
 
 // Paths with template/source/output locations
 let bin        = __SOURCE_DIRECTORY__ @@ "../../bin"
 let content    = __SOURCE_DIRECTORY__ @@ "../content"
+let completion = __SOURCE_DIRECTORY__ @@ "../../completion"
 let output     = __SOURCE_DIRECTORY__ @@ "../output"
 let files      = __SOURCE_DIRECTORY__ @@ "../files"
 let templates  = __SOURCE_DIRECTORY__ @@ "templates"
@@ -84,7 +87,7 @@ subDirectories (directoryInfo templates)
 let copyFiles () =
   CopyRecursive files output true |> Log "Copying file: "
   ensureDirectory (output @@ "content")
-  CopyRecursive (formatting @@ "styles") (output @@ "content") true 
+  CopyRecursive (formatting @@ "styles") (output @@ "content") true
     |> Log "Copying styles and scripts: "
 
 // Build API reference from XML comments
@@ -93,7 +96,7 @@ let buildReference () =
   let binaries =
     referenceBinaries
     |> List.map (fun lib-> bin @@ lib)
-  MetadataFormat.Generate
+  RazorMetadataFormat.Generate
     ( binaries, output @@ "reference", layoutRootsAll.["en"],
       parameters = ("root", "../")::info,
       sourceRepo = githubLink @@ "tree/master",
@@ -102,7 +105,16 @@ let buildReference () =
 
 // Build documentation from `fsx` and `md` files in `docs/content`
 let buildDocumentation () =
-  let subdirs = Directory.EnumerateDirectories(content, "*", SearchOption.AllDirectories) 
+  !!(completion @@ "*.*.md")
+  |> Seq.iter (fun f ->
+    let target =
+      let name = filename f
+      name.Replace("README", "shell-completion")
+
+    CopyFile (content @@ target) f
+  )
+
+  let subdirs = Directory.EnumerateDirectories(content, "*", SearchOption.AllDirectories)
   for dir in Seq.append [content] subdirs do
     let sub = if dir.Length > content.Length then dir.Substring(content.Length + 1) else "."
     let langSpecificPath(lang, path:string) =
@@ -113,7 +125,7 @@ let buildDocumentation () =
         match key with
         | Some lang -> layoutRootsAll.[lang]
         | None -> layoutRootsAll.["en"] // "en" is the default language
-    Literate.ProcessDirectory
+    RazorLiterate.ProcessDirectory
       ( dir, docTemplate, output @@ sub, replacements = ("root", ".")::info,
         layoutRoots = layoutRoots,
         generateAnchors = true )

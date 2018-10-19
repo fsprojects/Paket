@@ -1,8 +1,9 @@
-## Removing from a single project
+## Removing from a project
 
-It's also possible to remove a package from a specified project only: 
+It's possible to remove a dependency from a specific project only:
 
-    [lang=batchfile]
-    $ paket remove nuget PACKAGENAME [project PROJECT] [--force]
+```sh
+paket remove <package ID> --project <project>
+```
 
-See also [paket add](paket-add.html).
+See also [`paket add`](paket-add.html).

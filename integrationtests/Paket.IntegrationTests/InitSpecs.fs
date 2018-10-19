@@ -9,15 +9,21 @@ open System.IO
 open System.Diagnostics
 
 [<Test>]
+#if PAKET_NETCORE
+[<Ignore(".net core paket doesnt init the boostrapper")>]
+#endif
 let ``#1040 init should download release version of bootstrapper``() = 
-    paket "init -v" "i001040-init-downloads-bootstrapper" |> ignore
-    let bootstrapperPath = Path.Combine(scenarioTempPath "i001040-init-downloads-bootstrapper",".paket","paket.bootstrapper.exe")
+    paket "init" "i001040-init-downloads-bootstrapper" |> ignore
+    let bootstrapperPath = Path.Combine(scenarioTempPath "i001040-init-downloads-bootstrapper",".paket","paket.exe")
    
     let productVersion = FileVersionInfo.GetVersionInfo(bootstrapperPath).ProductVersion
     String.IsNullOrWhiteSpace productVersion |> shouldEqual false
     productVersion.Contains("-") |> shouldEqual false
 
 [<Test>]
+#if PAKET_NETCORE
+[<Ignore(".net core paket doesnt init the boostrapper")>]
+#endif
 let ``#1743 empty log file``() =
     try
         paket "init --log-file" "i001040-init-downloads-bootstrapper" |> ignore
@@ -26,6 +32,9 @@ let ``#1743 empty log file``() =
     | exn when exn.Message.Split('\n').[0].Contains "--log-file" -> ()
 
 [<Test>]
+#if PAKET_NETCORE
+[<Ignore(".net core paket doesnt init the boostrapper")>]
+#endif
 let ``#1240 current bootstrapper should work``() = 
     CleanDir (scenarioTempPath "i001240-bootstrapper")
     let paketToolPath = FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.bootstrapper.exe")
@@ -46,3 +55,20 @@ let ``#1240 current bootstrapper should work``() =
 
     File.Exists(scenarioTempPath "i001240-bootstrapper" </> "paket.exe")
     |> shouldEqual true
+
+[<Test>]
+let ``#1041 init api``() = 
+    let tempScenarioDir = scenarioTempPath "i001041-init-api"
+
+    let url = "http://my.test/api"
+    let source = Paket.PackageSources.PackageSource.NuGetV2Source(url)
+
+    Paket.Dependencies.Init(tempScenarioDir, [source], [ "license_download: true" ], false)
+
+    let depsPath = tempScenarioDir </> "paket.dependencies"
+    File.Exists(depsPath) |> shouldEqual true
+
+    let lines = File.ReadAllText(depsPath)
+
+    StringAssert.Contains(url, lines);
+    StringAssert.Contains("license_download: true", lines);

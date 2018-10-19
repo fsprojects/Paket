@@ -23,14 +23,17 @@ let graph =
       "D", "1.6", []
       "E", "4.3", []
       "F", "1.2", [] ]
+    |> OfSimpleGraph
 
 let defaultPackage = 
     { Name = PackageName ""
-      Parent = PackageRequirementSource.DependenciesFile ""
-      Graph = []
+      Parent = PackageRequirementSource.DependenciesFile("",0)
+      Graph = Set.empty
       Sources = []
       VersionRequirement = VersionRequirement(VersionRange.Exactly "1.0", PreReleaseStatus.No)
       Settings = InstallSettings.Default
+      Kind = PackageRequirementKind.Package
+      TransitivePrereleases = false
       ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max 
       ResolverStrategyForTransitives = Some ResolverStrategy.Max }
 
@@ -38,10 +41,9 @@ let defaultPackage =
 let ``should analyze graph and report conflict``() = 
     match safeResolve graph [ "A", VersionRange.AtLeast "1.0" ] with
     | Resolution.Ok _ -> failwith "we expected an error"
-    | Resolution.Conflict(step,_,_,_) ->
+    | Resolution.Conflict { ResolveStep = step  } ->
         let conflicting = step.OpenRequirements |> Seq.head 
-        conflicting.Name |> shouldEqual (PackageName "D")
-        conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Exactly "1.6")
+        conflicting.Name |> shouldEqual (PackageName "B")
 
 let graph2 = 
     [ "A", "1.0", 
@@ -51,15 +53,15 @@ let graph2 =
       "C", "2.4", [ "D", VersionRequirement(VersionRange.Between("1.6", "1.7"),PreReleaseStatus.No) ]
       "D", "1.4", []
       "D", "1.6", [] ]
+    |> OfSimpleGraph
 
 [<Test>]
 let ``should analyze graph2 and report conflict``() = 
     match safeResolve graph2 [ "A", VersionRange.AtLeast "1.0" ] with
     | Resolution.Ok _ -> failwith "we expected an error"
-    | Resolution.Conflict(step,_,_,_) ->
+    | Resolution.Conflict { ResolveStep = step } ->
         let conflicting = step.OpenRequirements |> Seq.head 
-        conflicting.Name |> shouldEqual (PackageName "D")
-        conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Between("1.6", "1.7"))
+        conflicting.Name |> shouldEqual (PackageName "B")
 
 [<Test>]
 let ``should override graph2 conflict to first version``() = 
@@ -83,6 +85,7 @@ let graph3 =
       "B", "1.1", []
       "C", "1.0", []
       "C", "2.0", [] ]
+    |> OfSimpleGraph
 
 [<Test>]
 let ``should override graph3 conflict to package C``() = 
@@ -93,10 +96,10 @@ let ``should override graph3 conflict to package C``() =
 
     match resolved with
     | Resolution.Ok _ -> failwith "we expected an error"
-    | Resolution.Conflict(step,_,_,_) ->
+    | Resolution.Conflict { ResolveStep = step } ->
         let conflicting = step.OpenRequirements |> Seq.head 
         conflicting.Name 
-        |> shouldEqual (PackageName "C")
+        |> shouldEqual (PackageName "B")
 
 let configWithServices = """
 source https://www.nuget.org/api/v2
@@ -105,18 +108,19 @@ nuget Service 1.1.31.2
 nuget Service.Contracts 1.1.31.2
 """
 
-let graphWithServices = [
+let graphWithServices = 
+  OfSimpleGraph [
     "Service","1.1.31.2",["Service.Core",VersionRequirement(VersionRange.AtLeast "1.1.31.2",PreReleaseStatus.No)]
     "Service","1.1.47",["Service.Core",VersionRequirement(VersionRange.AtLeast "1.1.47",PreReleaseStatus.No)]
     "Service.Core","1.1.31.2",["Service.Contracts",VersionRequirement(VersionRange.AtLeast "1.1.31.2",PreReleaseStatus.No)]
     "Service.Core","1.1.47",["Service.Contracts",VersionRequirement(VersionRange.AtLeast "1.1.47",PreReleaseStatus.No)]
     "Service.Contracts","1.1.31.2",[]
     "Service.Contracts","1.1.47",[]
-]
+  ]
 
 [<Test>]
 let ``should resolve simple config with services``() = 
-    let cfg = DependenciesFile.FromCode(configWithServices)
+    let cfg = DependenciesFile.FromSource(configWithServices)
     let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServices, PackageDetailsFromGraph graphWithServices).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "Service.Core"] |> shouldEqual "1.1.31.2"
     getVersion resolved.[PackageName "Service.Contracts"] |> shouldEqual "1.1.31.2"
@@ -131,15 +135,16 @@ nuget My.Company.PackageA.Server prerelease
 nuget My.Company.PackageB.Server prerelease
 nuget My.Company.PackageC.Server prerelease"""
 
-let graphWithServers = [
+let graphWithServers =
+  OfSimpleGraph [
     "My.Company.PackageA.Server","1.0.0-pre18038",["My.Company.PackageC.Server",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
     "My.Company.PackageB.Server","1.0.0-pre18038",["My.Company.PackageC.Server",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
     "My.Company.PackageC.Server","1.0.0-pre18038",[]
-]
+  ]
 
 [<Test>]
 let ``should resolve simple config with servers``() = 
-    let cfg = DependenciesFile.FromCode(configWithServers)
+    let cfg = DependenciesFile.FromSource(configWithServers)
     let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServers, PackageDetailsFromGraph graphWithServers).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "My.Company.PackageC.Server"] |> shouldEqual "1.0.0-pre18038"
 
@@ -153,13 +158,13 @@ nuget My.Company.PackageC.Server rc"""
 
 [<Test>]
 let ``should resolve simple config with servers with RC requirement``() = 
-    let cfg = DependenciesFile.FromCode(configWithServersWithRCRequirement)
+    let cfg = DependenciesFile.FromSource(configWithServersWithRCRequirement)
     try
         ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServers, PackageDetailsFromGraph graphWithServers).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
         |> ignore
         failwith "expected exception"
     with
-    | exn when exn.Message.Contains " Could not resolve package My.Company.PackageA.Server" -> ()
+    | exn when exn.Message.Contains " package My.Company.PackageA.Server" -> ()
 
 let configWithServersWithVersionRequirement = """
 source https://www.nuget.org/api/v2
@@ -172,13 +177,13 @@ nuget My.Company.PackageC.Server > 0.1"""
 
 [<Test>]
 let ``should resolve simple config with servers with version requirement``() = 
-    let cfg = DependenciesFile.FromCode(configWithServersWithVersionRequirement)
+    let cfg = DependenciesFile.FromSource(configWithServersWithVersionRequirement)
     try
         ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServers, PackageDetailsFromGraph graphWithServers).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
         |> ignore
         failwith "expected exception"
     with
-    | exn when exn.Message.Contains " Could not resolve package My.Company.PackageA.Server" -> ()
+    | exn when exn.Message.Contains " package My.Company.PackageA.Server" -> ()
 
 
 let configWithServersWithoutVersionRequirement = """
@@ -192,6 +197,6 @@ nuget My.Company.PackageC.Server"""
 
 [<Test>]
 let ``should resolve simple config with servers without version requirement``() = 
-    let cfg = DependenciesFile.FromCode(configWithServersWithoutVersionRequirement)
+    let cfg = DependenciesFile.FromSource(configWithServersWithoutVersionRequirement)
     let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServers, PackageDetailsFromGraph graphWithServers).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "My.Company.PackageC.Server"] |> shouldEqual "1.0.0-pre18038"

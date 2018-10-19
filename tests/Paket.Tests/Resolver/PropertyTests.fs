@@ -1,4 +1,4 @@
-﻿module Resovler.PropertyTests
+﻿module Resolver.PropertyTests
 
 open Paket
 open NUnit.Framework
@@ -31,7 +31,7 @@ let isValid ((g,deps):ResolverPuzzle) resolution =
         match s with
         | Open deps ->
             match resolution |> Map.tryFind d with
-            | Some r -> if not <| vr.IsInRange(r.Version) then Error else s
+            | Some (r:ResolvedPackage) -> if not <| vr.IsInRange(r.Version) then Error else s
             | None -> Open ((d,vr)::deps)
         | _ -> s) (Open [])
     |> fun s -> 
@@ -67,7 +67,9 @@ let bruteForce ((g,deps):ResolverPuzzle) =
                               Dependencies = Set.empty
                               Unlisted = false
                               Settings = InstallSettings.Default
-                              Source = PackageSources.DefaultNuGetSource }
+                              Source = PackageSources.DefaultNuGetSource
+                              Kind = ResolvedPackageKind.Package
+                              IsRuntimeDependency = false }
                                         
                         let deps' = packageDeps @ deps
                         if createsError (g,deps') resolved then None else
@@ -134,7 +136,7 @@ let ``if it resolves then, it should satisfy all deps. if not we have a real con
                     failwithf "brute force found %A" resolution
 
                 let conflicts = conflict.GetConflicts()
-                conflicts |> List.isEmpty |> not
+                conflicts |> Set.isEmpty |> not
         with
         | exn when exn.Message.Contains "brute force" |> not ->
             match bruteForce (g,deps) with

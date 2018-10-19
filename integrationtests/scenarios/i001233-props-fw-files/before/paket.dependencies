@@ -1,5 +1,0 @@
-source https://www.nuget.org/api/v2
-framework: net45
-
-nuget xunit
-nuget xunit.runner.visualstudio version_in_path: true

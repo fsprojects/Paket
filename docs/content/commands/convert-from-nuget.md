@@ -1,1 +1,2 @@
-More details about the conversion process can be found in the ["Convert from NuGet" tutorial](convert-from-nuget-tutorial.html).
+More details about the conversion process can be found in the
+["Converting from NuGet" tutorial](convert-from-nuget-tutorial.html).

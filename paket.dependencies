@@ -1,36 +1,63 @@
 source https://nuget.org/api/v2
-framework: >= net40
-cache ./nupkgs versions:current
+content: none
 
 nuget Newtonsoft.Json redirects: force
-nuget Argu ~> 3.1
-nuget FSharp.Core redirects: force
-nuget Chessie
-nuget Mono.Cecil
+nuget Argu >= 5.1.0
+nuget FSharp.Core < 4.5 redirects: force
+nuget Chessie >= 0.6
+nuget Mono.Cecil prerelease
 
-github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
-github fsprojects/FSharp.TypeProviders.StarterPack src/AssemblyReader.fs
+nuget System.Security.Cryptography.ProtectedData
+
+nuget FSharp.Compiler.Tools
+
+nuget NETStandard.Library ~> 2.0
+nuget Microsoft.NETCore.App ~> 2.1
+nuget System.Net.Http.WinHttpHandler
+
+nuget Moq
+nuget FSCheck
+
+nuget NUnit redirects: force
+nuget NUnit.Console
+// current workaround for https://github.com/nunit/nunit3-vs-adapter/issues/366
+nuget NUnit3TestAdapter version_in_path: true
+
+github fsharp/FAKE:0341a2e614eb2a7f34607cec914eb0ed83ce9add src/app/FakeLib/Globbing/Globbing.fs
+github fsprojects/FSharp.TypeProviders.SDK:dc5ac01a1ac288eceb1fd6f12a5d388236f4f8e5 src/AssemblyReader.fs
+github forki/FsUnit FsUnit.fs
+
+group NetCoreCliTools
+  storage: none
+  source https://nuget.org/api/v2
+
+  clitool dotnet-mergenupkg ~> 2.3
+
+group NetCoreTools
+  storage: none
+  source https://nuget.org/api/v2
+
+  nuget SourceLink.Create.CommandLine 2.1.1
+  nuget SourceLink.Embed.PaketFiles 2.1.1
 
 group Build
-
+  content: none
+  framework >= net461
   source https://nuget.org/api/v2
-  cache ./nupkgs versions:current
-  
-  nuget FAKE prerelease
-  nuget FSharp.Formatting
+  source https://ci.appveyor.com/nuget/fsharp-formatting
+
+  nuget FAKE
+  nuget FSharp.Formatting prerelease
+  nuget System.ValueTuple
+  nuget Microsoft.AspNet.Razor
   nuget ILRepack
 
   github fsharp/FAKE modules/Octokit/Octokit.fsx
 
-group Test
+  # Note: this package was produced using https://github.com/jaredpar/xcopy-msbuild and contains the two directories ".NETFramework\v4.5" and ".NETPortable\v4.5"
+  nuget 0x53A.ReferenceAssemblies.Paket 0.2.0
 
-  source https://nuget.org/api/v2
-  cache ./nupkgs versions:current
-
-  nuget Moq
-  nuget FSCheck
-  
-  nuget NUnit
-  nuget NUnit.Console
-
-  github forki/FsUnit FsUnit.fs
+  source https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json
+  nuget RoslynTools.MSBuild prerelease
+  # Note: RoslynTools.ReferenceAssemblies does not contain the required reference assemblies for net45, so I created 0x53A.ReferenceAssemblies.Paket. It is much smaller, anyway.
+  #nuget RoslynTools.ReferenceAssemblies prerelease

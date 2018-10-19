@@ -3,6 +3,8 @@ using System.IO;
 using System.Net;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using Paket.Bootstrapper.HelperProxies;
 
 namespace Paket.Bootstrapper
 {
@@ -22,21 +24,42 @@ Options:
                                older than <IN MINUTES> all checks will be skipped.
 --self                         downloads and updates paket.bootstrapper
 -f                             don't use local cache; always downloads
--s                             silent mode; no output";
+-s                             silent mode; errors only. Use twice for no output
+-v                             verbose; show more information on console.
+--output-dir=<PATH>            Download paket to the specified directory.
+--as-tool                      Install the package as .net sdk tool.
+--run <other args>             run the downloaded paket.exe with all following arguments";
         const string PaketBootstrapperUserAgent = "Paket.Bootstrapper";
 
-        internal static string GetLocalFileVersion(string target)
+        internal static string GetLocalFileVersion(string target, FileSystemProxy fileSystemProxy)
         {
-            if (!File.Exists(target)) return "";
+            if (!File.Exists(target))
+            {
+                ConsoleImpl.WriteTrace("File doesn't exists, no version information: {0}", target);
+                return "";
+            }
 
             try
             {
-                var bytes = File.ReadAllBytes(target);
-                var attr = Assembly.Load(bytes).GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false).Cast<AssemblyInformationalVersionAttribute>().FirstOrDefault();
-                if (attr == null) return "";
+                var bytes = new MemoryStream();
+                using (var stream = fileSystemProxy.OpenRead(target))
+                {
+                    stream.CopyTo(bytes);
+                }
+                var attr = Assembly.Load(bytes.ToArray()).GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false).Cast<AssemblyInformationalVersionAttribute>().FirstOrDefault();
+                if (attr == null)
+                {
+                    ConsoleImpl.WriteWarning("No assembly version found in {0}", target);
+                    return "";
+                }
+                
                 return attr.InformationalVersion;
             }
-            catch (Exception) { return ""; }
+            catch (Exception exception)
+            {
+                ConsoleImpl.WriteWarning("Unable to get file version from {0}: {1}", target, exception);
+                return "";
+            }
         }
 
         internal static string GetTempFile(string name)
@@ -73,6 +96,9 @@ Options:
             if (EnvProxy.TryGetProxyFor(uri, out result) && result.GetProxy(uri) != uri)
                 return result;
 
+#if NO_SYSTEMWEBPROXY
+            return null;
+#else
             result = WebRequest.GetSystemWebProxy();
             Uri address = result.GetProxy(uri);
             if (address == uri)
@@ -83,6 +109,7 @@ Options:
                 Credentials = CredentialCache.DefaultCredentials,
                 BypassProxyOnLocal = true
             };
+#endif
         }
 
         internal static void FileMove(string oldPath, string newPath)
@@ -100,6 +127,36 @@ Options:
             }
 
             File.Move(oldPath, newPath);
+        }
+
+        public static bool ValidateHash(IFileSystemProxy fileSystem, PaketHashFile hashFile, string version, string paketFile)
+        {
+            if (hashFile == null)
+            {
+                ConsoleImpl.WriteTrace("No hashFile file expected, bypassing check.");
+                return true;
+            }
+        
+            var dict = hashFile.Content
+                .Select(i => i.Split(' '))
+                .ToDictionary(i => i[1], i => i[0]);
+
+            string expectedHash;
+            if (!dict.TryGetValue("paket.exe", out expectedHash))
+            {
+                throw new InvalidDataException("Paket hashFile file is corrupted");
+            }
+
+            using (var stream = fileSystem.OpenRead(paketFile))
+            using (var sha = SHA256.Create())
+            {
+                byte[] checksum = sha.ComputeHash(stream);
+                var hash = BitConverter.ToString(checksum).Replace("-", String.Empty);
+
+                ConsoleImpl.WriteTrace("Expected hash  = {0}", expectedHash);
+                ConsoleImpl.WriteTrace("paket.exe hash = {0} ({1})", hash, paketFile);
+                return string.Equals(expectedHash, hash, StringComparison.OrdinalIgnoreCase);
+            }
         }
     }
 }

@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <AssemblyName>paket.bootstrapper</AssemblyName>
+    <PackAsTool>true</PackAsTool>
+
+    <PaketBootstrapperSourcesDir>..\Paket.Bootstrapper</PaketBootstrapperSourcesDir>
+    <DefineConstants>
+      NO_SSL3;
+      NO_SYSTEMWEBPROXY;
+      PAKET_BOOTSTRAP_NO_CACHE;
+      PAKET_BOOTSTRAP_WORKAROUND_MSBUILD_URLS;
+      $(DefineConstants)
+    </DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(PaketUseLocalGithub)' == 'true' ">
+    <DefineConstants>LOCAL_GITHUB;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(PaketBootstrapperSourcesDir)\ArgumentParser.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\BootstrapperHelper.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\BootstrapperOptions.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\DownloadStrategies\IDownloadStrategy.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\DownloadStrategies\IHaveEffectiveStrategy.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\InstallKind\InstallAsTool.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\PaketHashFile.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\Properties\InternalsVisibleTo.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\PaketDependencies.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\PaketRunner.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\Verbosity.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\WindowsProcessArguments.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\DownloadStrategies\CacheDownloadStrategy.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\HelperProxies\IWebRequestProxy.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\HelperProxies\WebRequestProxy.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\DownloadArguments.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\EnvProxy.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\HelperProxies\FileSystemProxy.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\DownloadStrategies\GitHubDownloadStrategy.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\DownloadStrategies\DownloadStrategy.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\HelperProxies\IFileSystemProxy.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\DownloadStrategies\NugetDownloadStrategy.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\ConsoleImpl.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\Program.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\SemVer.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\DownloadStrategies\TemporarilyIgnoreUpdatesDownloadStrategy.cs" />
+    <Compile Include="$(PaketBootstrapperSourcesDir)\HelperProxies\DateTimeProxy.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.0" />
+  </ItemGroup>
+
+</Project>

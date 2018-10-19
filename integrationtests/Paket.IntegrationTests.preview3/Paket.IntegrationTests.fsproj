@@ -1,0 +1,69 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <PaketTestsSourcesDir>..\Paket.IntegrationTests</PaketTestsSourcesDir>
+    <DefineConstants>
+      PAKET_NETCORE;
+      NO_UNIT_PLATFORMATTRIBUTE;
+      TESTSUITE_KNOWN_FAILURE_DOTNETCORE_3005;
+      FAKE_NETSTANDARD_API;
+      @(DefineConstants)
+    </DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="FakeLib">
+      <HintPath>..\..\packages\build\FAKE\tools\FakeLib.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\paket-files\forki\FsUnit\FsUnit.fs">
+      <Paket>True</Paket>
+      <Link>FsUnit.fs</Link>
+    </Compile>
+    <Compile Include="$(PaketTestsSourcesDir)\AssemblyInfo.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\TestHelper.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InitSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InfoSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\OutdatedSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\FullGitSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\NuGetV3Specs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\UpdatePackageSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\UpdateGroupsSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\AddSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\OutdatedSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\PackSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\RestoreSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\AutoRestoreSpec.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\FrameworkRestrictionsSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\HttpSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\PaketCoreSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\BasicResolverSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\ConvertFromNuGetSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\SemVerUpdateSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\ResolverSkipsConflictsFastSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\AutocompleteSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\BindingRedirect.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\LoadingScriptGenerationTests.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\LocalOverrideSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\SimplifierSpecs.fs" />
+    <None Include="paket.references" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="nunit" Version="3.9.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Paket.Core.preview3\Paket.Core.fsproj" />
+  </ItemGroup>
+
+</Project>

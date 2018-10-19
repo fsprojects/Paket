@@ -27,7 +27,7 @@ NUGET
 
     let after = before
 
-    let cfg = DependenciesFile.FromCode(after)
+    let cfg = DependenciesFile.FromSource(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true)
     changedDependencies.IsEmpty |> shouldEqual true
@@ -58,10 +58,10 @@ nuget Castle.Windsor-log4net"""
 
     let after = """source http://www.nuget.org/api/v2"""
 
-    let cfg = DependenciesFile.FromCode(after)
+    let cfg = DependenciesFile.FromSource(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
    
-    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true)
+    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true) |> Set.map (fun (g,p,_) -> g, p)
     let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions(cfg,lockFile)
     newDependencies
     |> Map.filter (fun k v -> not <| changedDependencies.Contains(k))
@@ -96,9 +96,9 @@ nuget Castle.Windsor-log4net"""
 nuget Castle.Windsor-log4net
 nuget NUnit"""
 
-    let cfg = DependenciesFile.FromCode(after)
+    let cfg = DependenciesFile.FromSource(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
-    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true)
+    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true) |> Set.map (fun (g,p,_) -> g, p)
    
     let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions (cfg,lockFile)
     let expected =
@@ -144,9 +144,9 @@ nuget Castle.Windsor-log4net >= 3.2.0"""
 
 nuget Castle.Windsor-log4net >= 3.3.0"""
 
-    let cfg = DependenciesFile.FromCode(after)
+    let cfg = DependenciesFile.FromSource(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
-    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true)
+    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true) |> Set.map (fun (g,p,_) -> g, p)
    
     let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions (cfg,lockFile)
     let expected =
@@ -191,9 +191,9 @@ nuget Castle.Windsor-log4net >= 3.2.0"""
 
 nuget Castle.Windsor-log4net >= 3.4.0"""
 
-    let cfg = DependenciesFile.FromCode(after)
+    let cfg = DependenciesFile.FromSource(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
-    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true)
+    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true) |> Set.map (fun (g,p,_) -> g, p)
    
     let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions (cfg,lockFile)
     newDependencies
@@ -228,7 +228,7 @@ nuget Castle.Windsor-log4net"""
 
 nuget Castle.Windsor-log4net content:none"""
 
-    let cfg = DependenciesFile.FromCode(after)
+    let cfg = DependenciesFile.FromSource(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true)
     changedDependencies.IsEmpty |> shouldEqual false
@@ -293,11 +293,11 @@ nuget SharpZipLib 0.86.0
 nuget Topshelf ~> 3.1
 nuget Caliburn.Micro !~> 2.0.2"""
 
-    let cfg = DependenciesFile.FromCode(after)
+    let cfg = DependenciesFile.FromSource(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true)
     changedDependencies.Count |> shouldEqual 1
-    (changedDependencies |> Seq.head) |> shouldEqual (Constants.MainDependencyGroup, PackageName "Caliburn.Micro")
+    (changedDependencies |> Seq.head) |> shouldEqual (Constants.MainDependencyGroup, PackageName "Caliburn.Micro",[Paket.DependencyChangeDetection.DependencyChangeType.PackageNotFoundInLockFile])
 
 [<Test>]
 let ``should detect if nothing changes in github dependency``() = 
@@ -326,10 +326,71 @@ nuget FAKE
 github zurb/bower-foundation css/normalize.css
 github zurb/bower-foundation js/foundation.min.js"""
 
-    let cfg = DependenciesFile.FromCode(after)
+    let cfg = DependenciesFile.FromSource(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(cfg,lockFile)
     changedDependencies.Count |> shouldEqual 0
+
+[<Test>]
+let ``should detect no changes if nothing changes in git dependency``() = 
+    let before = """source https://www.nuget.org/api/v2
+
+nuget FAKE
+
+git https://github.com/zurb/bower-foundation.git 5.5.3
+git https://github.com/zurb/tribute.git 2.1.0"""
+
+    let lockFileData = """NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    FAKE (4.4.4)
+GIT
+  remote: https://github.com/zurb/bower-foundation.git
+     (b879716aa268e1f88fe43de98db2db4487af00ca)
+  remote: https://github.com/zurb/tribute.git
+     (94d4f17e1d338c2afdc6bb7cedea98b04d253932)
+"""
+
+    let after = """source https://www.nuget.org/api/v2
+
+nuget FAKE
+
+git https://github.com/zurb/bower-foundation.git 5.5.3
+git https://github.com/zurb/tribute.git 2.1.0"""
+
+    let cfg = DependenciesFile.FromSource(after)
+    let lockFile = LockFile.Parse("",toLines lockFileData)
+    let changedDependencies = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(cfg,lockFile)
+    changedDependencies.Count |> shouldEqual 0
+
+[<Test>]
+let ``should detect new git dependency``() = 
+    let before = """source https://www.nuget.org/api/v2
+
+nuget FAKE
+
+git https://github.com/zurb/bower-foundation.git 5.5.3"""
+
+    let lockFileData = """NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    FAKE (4.4.4)
+GIT
+  remote: https://github.com/zurb/bower-foundation.git
+     (b879716aa268e1f88fe43de98db2db4487af00ca)
+"""
+
+    let after = """source https://www.nuget.org/api/v2
+
+nuget FAKE
+
+git https://github.com/zurb/bower-foundation.git 5.5.3
+git https://github.com/zurb/tribute.git 2.1.0"""
+
+    let cfg = DependenciesFile.FromSource(after)
+    let lockFile = LockFile.Parse("",toLines lockFileData)
+    let changedDependencies = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(cfg,lockFile)
+    changedDependencies.Count |> shouldEqual 1
 
 [<Test>]
 let ``should detect new github dependency``() = 
@@ -359,38 +420,7 @@ github zurb/bower-foundation css/normalize.css
 github zurb/bower-foundation js/foundation.min.js
 github SignalR/bower-signalr jquery.signalR.js"""
 
-    let cfg = DependenciesFile.FromCode(after)
-    let lockFile = LockFile.Parse("",toLines lockFileData)
-    let changedDependencies = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(cfg,lockFile)
-    changedDependencies.Count |> shouldEqual 1
-
-[<Test>]
-let ``should detect removed github dependency``() = 
-    let before = """source https://www.nuget.org/api/v2
-
-nuget FAKE
-
-github zurb/bower-foundation css/normalize.css
-github zurb/bower-foundation js/foundation.min.js"""
-
-    let lockFileData = """NUGET
-  remote: https://www.nuget.org/api/v2
-  specs:
-    FAKE (4.4.4)
-GITHUB
-  remote: zurb/bower-foundation
-  specs:
-    css/normalize.css (eb5e3ed178ef3b678cb520f1366a737a32aafeca)
-    js/foundation.min.js (eb5e3ed178ef3b678cb520f1366a737a32aafeca)
-"""
-
-    let after = """source https://www.nuget.org/api/v2
-
-nuget FAKE
-
-github zurb/bower-foundation js/foundation.min.js"""
-
-    let cfg = DependenciesFile.FromCode(after)
+    let cfg = DependenciesFile.FromSource(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(cfg,lockFile)
     changedDependencies.Count |> shouldEqual 1
@@ -425,7 +455,7 @@ github zurb/bower-foundation js/foundation.min.js
 group Build
 github SignalR/bower-signalr jquery.signalR.js"""
 
-    let cfg = DependenciesFile.FromCode(after)
+    let cfg = DependenciesFile.FromSource(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(cfg,lockFile)
     changedDependencies.Count |> shouldEqual 1
@@ -467,7 +497,7 @@ nuget FAKE
 github zurb/bower-foundation css/normalize.css
 github zurb/bower-foundation js/foundation.min.js"""
 
-    let cfg = DependenciesFile.FromCode(after)
+    let cfg = DependenciesFile.FromSource(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(cfg,lockFile)
     changedDependencies.Count |> shouldEqual 1

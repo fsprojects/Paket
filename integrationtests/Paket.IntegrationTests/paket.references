@@ -1,10 +1,8 @@
 FSharp.Core
 Chessie
 Newtonsoft.Json
+FSharp.Compiler.Tools
+NUnit
 
-group Test
-  NUnit
-  File:FsUnit.fs .
-
-group Build
-  FAKE
+NUnit3TestAdapter
+File:FsUnit.fs .

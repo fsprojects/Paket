@@ -10,3 +10,4 @@ projecturl http://fsprojects.github.com/Paket
 iconurl https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png
 tags
     nuget, bundler, F#
+include-pdbs true

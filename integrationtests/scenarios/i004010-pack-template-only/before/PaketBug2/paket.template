@@ -1,0 +1,8 @@
+type file
+id b
+description
+    Silly empty demo project
+authors Paket team
+
+files
+    a/non_existing.txt ==> content/docs

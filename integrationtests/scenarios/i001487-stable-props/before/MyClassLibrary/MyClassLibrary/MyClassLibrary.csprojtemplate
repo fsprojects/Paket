@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\MultiTarget\build\MultiTarget.props" Condition="Exists('..\..\packages\MultiTarget\build\MultiTarget.props')" Label="Paket" />
   <PropertyGroup>
     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     <ProductVersion>8.0.30703</ProductVersion>
@@ -69,15 +70,6 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.6')">
-      <PropertyGroup>
-        <__paket__MultiTarget_props>MultiTarget</__paket__MultiTarget_props>
-        <__paket__MultiTarget_targets>MultiTarget</__paket__MultiTarget_targets>
-      </PropertyGroup>
-    </When>
-  </Choose>
-  <Import Project="..\..\packages\MultiTarget\build\$(__paket__MultiTarget_props).props" Condition="Exists('..\..\packages\MultiTarget\build\$(__paket__MultiTarget_props).props')" Label="Paket" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -89,12 +81,12 @@
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.0'">
       <ItemGroup>
+        <Reference Include="Microsoft.CSharp">
+          <Paket>True</Paket>
+        </Reference>
         <Reference Include="Dapper">
           <HintPath>..\..\packages\Dapper\lib\net40\Dapper.dll</HintPath>
           <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-        <Reference Include="Microsoft.CSharp">
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -120,5 +112,5 @@
       </ItemGroup>
     </When>
   </Choose>
-  <Import Project="..\..\packages\MultiTarget\build\$(__paket__MultiTarget_targets).targets" Condition="Exists('..\..\packages\MultiTarget\build\$(__paket__MultiTarget_targets).targets')" Label="Paket" />
+  <Import Project="..\..\packages\MultiTarget\build\MultiTarget.targets" Condition="Exists('..\..\packages\MultiTarget\build\MultiTarget.targets')" Label="Paket" />
 </Project>

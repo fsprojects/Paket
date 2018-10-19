@@ -5,13 +5,9 @@ namespace Paket.Bootstrapper.DownloadStrategies
         string Name { get; }
         IDownloadStrategy FallbackStrategy { get; set; }
         string GetLatestVersion(bool ignorePrerelease);
-        void DownloadVersion(string latestVersion, string target);
+        void DownloadVersion(string latestVersion, string target, PaketHashFile hashFile);
         void SelfUpdate(string latestVersion);
+        PaketHashFile DownloadHashFile(string latestVersion);
+        bool CanDownloadHashFile { get; }
     }
-
-    public interface IHaveEffectiveStrategy : IDownloadStrategy
-    {
-        IDownloadStrategy EffectiveStrategy { get; }
-    }
-    
 }

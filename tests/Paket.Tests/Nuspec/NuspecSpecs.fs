@@ -5,193 +5,194 @@ open NUnit.Framework
 open FsUnit
 open Paket.Requirements
 open Domain
+open System.IO
 open TestHelpers
+
 
 [<Test>]
 let ``can detect explicit references``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/FSharp.Data.nuspec").References
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"FSharp.Data.nuspec")).References
     |> shouldEqual (NuspecReferences.Explicit ["FSharp.Data.dll"])
 
 [<Test>]
 let ``can detect explicit in self made nuspec``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/FSharp.Data.Prerelease.nuspec").References
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"FSharp.Data.Prerelease.nuspec")).References
     |> shouldEqual (NuspecReferences.Explicit ["FSharp.Data.dll"])
 
 [<Test>]
 let ``can detect all references``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/Octokit.nuspec").References
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Octokit.nuspec")).References
     |> shouldEqual NuspecReferences.All
 
 [<Test>]
 let ``can detect all references for FsXaml``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/FsXaml.Wpf.nuspec").References
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"FsXaml.Wpf.nuspec")).References
     |> shouldEqual NuspecReferences.All
 
 [<Test>]
 let ``can detect all references for ReadOnlyCollectionExtions``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/ReadOnlyCollectionExtensions.nuspec").References
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"ReadOnlyCollectionExtensions.nuspec")).References
     |> shouldEqual NuspecReferences.All
 
 [<Test>]
 let ``can detect developmentDependency is false for ReadOnlyCollectionExtions``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/ReadOnlyCollectionExtensions.nuspec").IsDevelopmentDependency
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"ReadOnlyCollectionExtensions.nuspec")).IsDevelopmentDependency
     |> shouldEqual false
 
 [<Test>]
 let ``can detect developmentDependency for LiteGuard.Source``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/LiteGuard.Source.nuspec").IsDevelopmentDependency
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"LiteGuard.Source.nuspec")).IsDevelopmentDependency
     |> shouldEqual true
 
 [<Test>]
 let ``can detect all references for log4net``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/log4net.nuspec").References
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"log4net.nuspec")).References
     |> shouldEqual NuspecReferences.All
 
 [<Test>]
 let ``if nuspec is not found we assume all references``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/blablub.nuspec").References
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"blablub.nuspec")).References
     |> shouldEqual NuspecReferences.All
 
 [<Test>]
 let ``can detect explicit references for Fantomas``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/Fantomas.nuspec").References
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Fantomas.nuspec")).References
     |> shouldEqual (NuspecReferences.Explicit ["FantomasLib.dll"])
 
 [<Test>]
 let ``can detect no framework assemblies for Fantomas``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/Fantomas.nuspec").FrameworkAssemblyReferences
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Fantomas.nuspec")).FrameworkAssemblyReferences
     |> shouldEqual []
 
 [<Test>]
 let ``if nuspec is not found we assume no framework references``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/blablub.nuspec").FrameworkAssemblyReferences
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"blablub.nuspec")).FrameworkAssemblyReferences
     |> shouldEqual []
 
 [<Test>]
 let ``can detect framework assemblies for Microsoft.Net.Http``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/Microsoft.Net.Http.nuspec").FrameworkAssemblyReferences
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Microsoft.Net.Http.nuspec")).FrameworkAssemblyReferences
     |> shouldEqual 
         [{ AssemblyName = "System.Net.Http"
            FrameworkRestrictions = 
-            FrameworkRestrictionList
+            makeOrList
              [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))
               FrameworkRestriction.Exactly(MonoTouch)
-              FrameworkRestriction.Exactly(MonoAndroid)] }
+              FrameworkRestriction.Exactly(MonoAndroid MonoAndroidVersion.V1)] }
          { AssemblyName = "System.Net.Http.WebRequest"
            FrameworkRestrictions = 
-             FrameworkRestrictionList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }]
+             makeOrList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }]
 
 [<Test>]
 let ``can detect deps assemblies for RazorEngine``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/RazorEngine.nuspec").Dependencies
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"RazorEngine.nuspec")).Dependencies.Value
     |> shouldEqual 
         [PackageName "Microsoft.AspNet.Razor",DependenciesFileParser.parseVersionRequirement("= 2.0.30506.0"), 
-            FrameworkRestrictionList [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_Client))]
+            makeOrList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4), DotNetFramework(FrameworkVersion.V4_5))]
          PackageName "Microsoft.AspNet.Razor",DependenciesFileParser.parseVersionRequirement(">= 3.0.0"),
-            FrameworkRestrictionList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))]]
+            makeOrList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))]]
 
 [<Test>]
 let ``can detect framework assemblies for FluentAssertions``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/FluentAssertions.nuspec").FrameworkAssemblyReferences
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"FluentAssertions.nuspec")).FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Xml"; FrameworkRestrictions = FrameworkRestrictionList [] }
-         { AssemblyName = "System.Xml.Linq"; FrameworkRestrictions = FrameworkRestrictionList [] } ]
+        [{ AssemblyName = "System.Xml"; FrameworkRestrictions = makeOrList [] }
+         { AssemblyName = "System.Xml.Linq"; FrameworkRestrictions = makeOrList [] } ]
 
 [<Test>]
 let ``can detect framework assemblies for SqlCLient``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec").FrameworkAssemblyReferences
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"FSharp.Data.SqlClient.nuspec")).FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Data"; FrameworkRestrictions = FrameworkRestrictionList [] }
-         { AssemblyName = "System.Xml"; FrameworkRestrictions = FrameworkRestrictionList [] } ]
+        [{ AssemblyName = "System.Data"; FrameworkRestrictions = makeOrList [] }
+         { AssemblyName = "System.Xml"; FrameworkRestrictions = makeOrList [] } ]
 
 [<Test>]
 let ``can detect license for SqlCLient``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec").LicenseUrl
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"FSharp.Data.SqlClient.nuspec")).LicenseUrl
     |> shouldEqual "http://github.com/fsprojects/FSharp.Data.SqlClient/blob/master/LICENSE.md"
 
 [<Test>]
 let ``can detect dependencies for SqlCLient``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec").Dependencies
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"FSharp.Data.SqlClient.nuspec")).Dependencies.Value
     |> shouldEqual 
-        [PackageName "Microsoft.SqlServer.Types",DependenciesFileParser.parseVersionRequirement(">= 11.0.0"), FrameworkRestrictionList []]
+        [PackageName "Microsoft.SqlServer.Types",DependenciesFileParser.parseVersionRequirement(">= 11.0.0"), makeOrList []]
 
 [<Test>]
 let ``can detect reference files for SqlCLient``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec").References
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"FSharp.Data.SqlClient.nuspec")).References
     |> shouldEqual (NuspecReferences.Explicit ["FSharp.Data.SqlClient.dll"])
 
 [<Test>]
 let ``can detect framework assemblies for Octokit``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/Octokit.nuspec").FrameworkAssemblyReferences
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Octokit.nuspec")).FrameworkAssemblyReferences
     |> shouldEqual 
         [{ AssemblyName = "System.Net.Http"
            FrameworkRestrictions = 
-            FrameworkRestrictionList
+            makeOrList
               [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))
-               FrameworkRestriction.Exactly(Windows "v4.5")] }]
+               FrameworkRestriction.Exactly(Windows WindowsVersion.V8)] }]
 
 [<Test>]
 let ``can detect framework assemblies for FSharp.Data.SqlEnumProvider``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/FSharp.Data.SqlEnumProvider.nuspec").FrameworkAssemblyReferences
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"FSharp.Data.SqlEnumProvider.nuspec")).FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Data"; FrameworkRestrictions = FrameworkRestrictionList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))] }
-         { AssemblyName = "System.Xml"; FrameworkRestrictions = FrameworkRestrictionList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))] }]
+        [{ AssemblyName = "System.Data"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4))] }
+         { AssemblyName = "System.Xml"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4))] }]
 
 [<Test>]
 let ``can detect empty framework assemblies for ReadOnlyCollectionExtensions``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/ReadOnlyCollectionExtensions.nuspec").FrameworkAssemblyReferences
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"ReadOnlyCollectionExtensions.nuspec")).FrameworkAssemblyReferences
     |> shouldEqual [ ]
 
 [<Test>]
 let ``can detect empty dependencies for log4net``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/log4net.nuspec").Dependencies
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"log4net.nuspec")).Dependencies.Value
     |> shouldEqual []
 
 [<Test>]
 let ``can detect explicit dependencies for Fantomas``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/Fantomas.nuspec").Dependencies
-    |> shouldEqual [PackageName "FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.57"), FrameworkRestrictionList []]
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Fantomas.nuspec")).Dependencies.Value
+    |> shouldEqual [PackageName "FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.57"), makeOrList []]
 
 [<Test>]
 let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/ReadOnlyCollectionExtensions.nuspec").Dependencies
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"ReadOnlyCollectionExtensions.nuspec")).Dependencies.Value
     |> shouldEqual 
         [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), 
-            FrameworkRestrictionList [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V2))]
+            makeOrList [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V2), DotNetFramework(FrameworkVersion.V3_5))]
          PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"),
-            FrameworkRestrictionList
-             [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))
-              FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V3_5))]]
+            makeOrList
+             [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V2))]]
 
 [<Test>]
 let ``can detect explicit dependencies for Microsoft.AspNetCore.Antiforgery``() = 
-    ensureDir()
-    let deps = Nuspec.Load("Nuspec/Microsoft.AspNetCore.Antiforgery.nuspec").Dependencies
+    //ensureDir()
+    let deps = Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Microsoft.AspNetCore.Antiforgery.nuspec")).Dependencies.Value
 
     let v =
         match DependenciesFileParser.parseVersionRequirement(">= 1.0.0-rc3-20550") with
@@ -199,13 +200,13 @@ let ``can detect explicit dependencies for Microsoft.AspNetCore.Antiforgery``() 
 
     deps.[0]
     |> shouldEqual 
-        (PackageName "Microsoft.AspNetCore.DataProtection", VersionRequirement(v,PreReleaseStatus.All), 
-            FrameworkRestrictionList [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5_1)); FrameworkRestriction.AtLeast (DotNetStandard(DotNetStandardVersion.V1_3))])
+        (PackageName "Microsoft.AspNetCore.DataProtection", VersionRequirement(v, PreReleaseStatus.Concrete ["rc"]), 
+            makeOrList [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5_1)); FrameworkRestriction.AtLeast (DotNetStandard(DotNetStandardVersion.V1_3))])
 
 [<Test>]
 let ``can detect explicit dependencies for Microsoft.AspNetCore.Mvc.ViewFeatures``() = 
-    ensureDir()
-    let deps = Nuspec.Load("Nuspec/Microsoft.AspNetCore.Mvc.ViewFeatures.nuspec").Dependencies
+    //ensureDir()
+    let deps = Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Microsoft.AspNetCore.Mvc.ViewFeatures.nuspec")).Dependencies.Value
 
     let v =
         match DependenciesFileParser.parseVersionRequirement(">= 1.0.0-rc3-20550") with
@@ -213,106 +214,134 @@ let ``can detect explicit dependencies for Microsoft.AspNetCore.Mvc.ViewFeatures
 
     deps.[0]
     |> shouldEqual 
-        (PackageName "Microsoft.AspNetCore.Antiforgery", VersionRequirement(v,PreReleaseStatus.All), 
-            FrameworkRestrictionList [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5_1)); FrameworkRestriction.AtLeast (DotNetStandard(DotNetStandardVersion.V1_5))])
+        (PackageName "Microsoft.AspNetCore.Antiforgery", VersionRequirement(v, PreReleaseStatus.Concrete ["rc"]), 
+            makeOrList [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5_1)); FrameworkRestriction.AtLeast (DotNetStandard(DotNetStandardVersion.V1_5))])
 
 [<Test>]
 let ``can detect framework assemblies for MathNet.Numerics``() =
-    ensureDir() 
-    Nuspec.Load("Nuspec/MathNet.Numerics.nuspec").FrameworkAssemblyReferences
+    //ensureDir() 
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"MathNet.Numerics.nuspec")).FrameworkAssemblyReferences
     |> shouldEqual 
         [{ AssemblyName = "System.Numerics"
            FrameworkRestrictions = 
-             FrameworkRestrictionList
-                [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))
-                 FrameworkRestriction.Exactly(Windows("v4.5"))
-                 FrameworkRestriction.Exactly(Silverlight("v5.0"))
-                 FrameworkRestriction.Exactly(MonoAndroid)
+             makeOrList
+                [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4))
+                 FrameworkRestriction.Exactly(Windows WindowsVersion.V8)
+                 FrameworkRestriction.Exactly(Silverlight SilverlightVersion.V5)
+                 FrameworkRestriction.Exactly(MonoAndroid MonoAndroidVersion.V1)
                  FrameworkRestriction.Exactly(MonoTouch)] }]
 
 
 [<Test>]
 let ``can detect dependencies for MathNet.Numerics``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/MathNet.Numerics.nuspec").Dependencies
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"MathNet.Numerics.nuspec")).Dependencies.Value
     |> shouldEqual 
         [ PackageName "TaskParallelLibrary",
           DependenciesFileParser.parseVersionRequirement(">= 1.0.2856.0"),
-            FrameworkRestrictionList [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5))] ]
+            makeOrList [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4))] ]
 
 [<Test>]
 let ``can detect dependencies for MathNet.Numerics.FSharp``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/MathNet.Numerics.FSharp.nuspec").Dependencies
-    |> Seq.head
+    //ensureDir()
+    let s =
+        Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"MathNet.Numerics.FSharp.nuspec")).Dependencies.Value
+        |> Seq.head
+    s
     |> shouldEqual 
         (PackageName "MathNet.Numerics",
-         DependenciesFileParser.parseVersionRequirement("3.3.0"),FrameworkRestrictionList [])
+         DependenciesFileParser.parseVersionRequirement("3.3.0"),makeOrList [])
 
 [<Test>]
 let ``can detect explicit dependencies for WindowsAzure.Storage``() = 
-    ensureDir()
-    Nuspec.Load("Nuspec/WindowsAzure.Storage.nuspec").Dependencies
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"WindowsAzure.Storage.nuspec")).Dependencies.Value
     |> Seq.skip 1
     |> Seq.head
     |> shouldEqual 
         (PackageName "Newtonsoft.Json",
           DependenciesFileParser.parseVersionRequirement(">= 5.0.8"),
-          FrameworkRestrictionList
-            [FrameworkRestriction.Exactly(WindowsPhoneSilverlight("v8.0"))
-             FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))])
+          makeOrList
+            [FrameworkRestriction.AtLeast(WindowsPhone WindowsPhoneVersion.V8)
+             FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))])
 
 [<Test>]
 let ``can detect framework assemblies for Microsoft.Framework.Logging``() = 
-    ensureDir()
-    let nuspec = Nuspec.Load("Nuspec/Microsoft.Framework.Logging.nuspec")
+    //ensureDir()
+    let nuspec = Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Microsoft.Framework.Logging.nuspec"))
     nuspec.FrameworkAssemblyReferences.[0].AssemblyName |> shouldEqual "System.Collections.Concurrent"
     nuspec.FrameworkAssemblyReferences.[0].FrameworkRestrictions 
         |> shouldEqual
-            (FrameworkRestrictionList
+            (makeOrList
               [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))
                FrameworkRestriction.Exactly(DNX(FrameworkVersion.V4_5_1))])
 
-    let name,_,restrictions = nuspec.Dependencies.[0]
+    let name,_,restrictions = nuspec.Dependencies.Value.[0]
     name  |> shouldEqual (PackageName "Microsoft.Framework.DependencyInjection.Interfaces")
     
-    let name,_,restrictions = nuspec.Dependencies.[2]
+    let name,_,restrictions = nuspec.Dependencies.Value.[2]
     name  |> shouldEqual (PackageName "System.Collections.Concurrent")
-    restrictions |> shouldEqual (FrameworkRestrictionList [FrameworkRestriction.Exactly(DNXCore(FrameworkVersion.V5_0))])
+    restrictions |> shouldEqual (makeOrList [FrameworkRestriction.AtLeast(DNXCore(FrameworkVersion.V5_0))])
 
 [<Test>]
 let ``can detect explicit dependencies for FluentAssertions 4``() = 
-    ensureDir()
-    let deps = Nuspec.Load("Nuspec/FluentAssertions4.nuspec").Dependencies |> List.toArray
+    //ensureDir()
+    let deps = Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"FluentAssertions4.nuspec")).Dependencies.Value |> List.toArray
 
     deps.[0]
     |> shouldEqual 
         (PackageName "System.Collections",
           DependenciesFileParser.parseVersionRequirement(">= 4.0.10"),
-          FrameworkRestrictionList [FrameworkRestriction.Exactly(DNXCore(FrameworkVersion.V5_0))])
+          makeOrList [FrameworkRestriction.AtLeast(DNXCore(FrameworkVersion.V5_0))])
 
 
 
 [<Test>]
 let ``can detect explicit dependencies for EasyNetQ``() = 
-    ensureDir()
-    let deps = Nuspec.Load("Nuspec/EasyNetQ.nuspec").Dependencies |> Seq.toArray
+    //ensureDir()
+    let deps = Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"EasyNetQ.nuspec")).Dependencies.Value |> Seq.toArray
 
     deps.[0]
     |> shouldEqual 
         (PackageName "RabbitMQ.Client",
           DependenciesFileParser.parseVersionRequirement(">= 3.5.7"),
-          FrameworkRestrictionList [])
-
+          makeOrList [])
+   
     deps.[1]
     |> shouldEqual 
         (PackageName "Microsoft.Bcl",
           DependenciesFileParser.parseVersionRequirement(">= 1.1.10"),
-          FrameworkRestrictionList
-            [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V1))
-             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V1_1))
-             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))
-             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3))
-             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5))
-             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))
-             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4)) ])
+          makeOrList
+            [FrameworkRestriction.And[
+                FrameworkRestriction.NoRestriction
+                FrameworkRestriction.NotAtLeast(DotNetFramework(FrameworkVersion.V4_5))]
+            ])
+
+[<Test>]
+let ``can detect deps assemblies for Xamarin.Forms``() = 
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Xamarin.Forms.nuspec")).Dependencies.Value
+    |> shouldEqual 
+        [PackageName "WPtoolkit",DependenciesFileParser.parseVersionRequirement(">= 4.2013.08.16"), 
+            makeOrList [FrameworkRestriction.AtLeast(WindowsPhone(WindowsPhoneVersion.V8))]
+         PackageName "Xamarin.Android.Support.v4",DependenciesFileParser.parseVersionRequirement("= 23.3.0"), 
+            makeOrList [FrameworkRestriction.Between(MonoAndroid(MonoAndroidVersion.V1), MonoAndroid(MonoAndroidVersion.V7))]
+         PackageName "Xamarin.Android.Support.Design",DependenciesFileParser.parseVersionRequirement("= 23.3.0"), 
+            makeOrList [FrameworkRestriction.Between(MonoAndroid(MonoAndroidVersion.V1), MonoAndroid(MonoAndroidVersion.V7))]
+         PackageName "Xamarin.Android.Support.v7.AppCompat",DependenciesFileParser.parseVersionRequirement("= 23.3.0"), 
+            makeOrList [FrameworkRestriction.Between(MonoAndroid(MonoAndroidVersion.V1), MonoAndroid(MonoAndroidVersion.V7))]
+         PackageName "Xamarin.Android.Support.v7.CardView",DependenciesFileParser.parseVersionRequirement("= 23.3.0"), 
+            makeOrList [FrameworkRestriction.Between(MonoAndroid(MonoAndroidVersion.V1), MonoAndroid(MonoAndroidVersion.V7))]
+         PackageName "Xamarin.Android.Support.v7.MediaRouter",DependenciesFileParser.parseVersionRequirement("= 23.3.0"), 
+            makeOrList [FrameworkRestriction.Between(MonoAndroid(MonoAndroidVersion.V1), MonoAndroid(MonoAndroidVersion.V7))]         
+         PackageName "Xamarin.Android.Support.v4",DependenciesFileParser.parseVersionRequirement(">= 23.3.0"), 
+            makeOrList [FrameworkRestriction.AtLeast(MonoAndroid(MonoAndroidVersion.V7))]
+         PackageName "Xamarin.Android.Support.Design",DependenciesFileParser.parseVersionRequirement(">= 23.3.0"), 
+            makeOrList [FrameworkRestriction.AtLeast(MonoAndroid(MonoAndroidVersion.V7))]
+         PackageName "Xamarin.Android.Support.v7.AppCompat",DependenciesFileParser.parseVersionRequirement(">= 23.3.0"), 
+            makeOrList [FrameworkRestriction.AtLeast(MonoAndroid(MonoAndroidVersion.V7))]
+         PackageName "Xamarin.Android.Support.v7.CardView",DependenciesFileParser.parseVersionRequirement(">= 23.3.0"), 
+            makeOrList [FrameworkRestriction.AtLeast(MonoAndroid(MonoAndroidVersion.V7))]
+         PackageName "Xamarin.Android.Support.v7.MediaRouter",DependenciesFileParser.parseVersionRequirement(">= 23.3.0"), 
+            makeOrList [FrameworkRestriction.AtLeast(MonoAndroid(MonoAndroidVersion.V7))]
+        ]

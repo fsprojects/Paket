@@ -10,6 +10,11 @@
 # Xamarin Studio / monodevelop user-specific
 *.userprefs
 
+# Visual Studio and VS Code
+/.vs/
+/.vscode/
+.ionide/
+
 # Build results
 
 [Dd]ebug/
@@ -118,6 +123,8 @@ ClientBin/
 *.[Pp]ublish.xml
 *.pfx
 *.publishsettings
+project.lock.json
+*.binlog
 
 # RIA/Silverlight projects
 Generated_Code/
@@ -177,8 +184,8 @@ release.cmd
 release.sh
 localpackages/
 paket-files
+/.paket/load/
 *.orig
-.paket/paket.exe
 docs/content/license.md
 docs/content/release-notes.md
 _NCrunch_Paket
@@ -190,5 +197,19 @@ System.Management.Automation.dll
 docs/tools/FSharp.Formatting.svclog
 docs/content/paket.exe
 TestResult.xml
+*.trx
 tests/Paket.Tests/NuGetConfig/PasswordConfig.xml
 paket.local
+dotnetcore
+.idea
+
+# For check-doc-links.sh.
+node_modules
+package-lock.json
+
+# Enable scenarios in integration tests
+!integrationtests/scenarios/*/before/**
+integrationtests/scenarios/*/before/**/obj
+
+# artifacts
+/bin_netcore/

@@ -3,36 +3,48 @@
 open Paket
 open NUnit.Framework
 open FsUnit
+open Paket.TestHelpers
 
-let TestData: obj[][] = 
+let portable = TargetProfile.FindPortable true [ DotNetFramework FrameworkVersion.V4_5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
+    
+let TestData: obj[][] =
     [|
         // project file name, 
         //  expected TargetProfile 
         //  expected TargetProfile.ToString
         //  expected TargetFramework
         [|"Project2.fsprojtest";
-            (SinglePlatform(DotNetFramework FrameworkVersion.V4_Client));
+            (TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V4));
             "net40";
-            (Some(DotNetFramework FrameworkVersion.V4_Client))|];
+            (DotNetFramework FrameworkVersion.V4)|];
         [|"Empty.fsprojtest";
-            (SinglePlatform(DotNetFramework FrameworkVersion.V4));
-            "net40-full";
-            (Some(DotNetFramework FrameworkVersion.V4))|];
+            (TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V4));
+            "net40";
+            (DotNetFramework FrameworkVersion.V4)|];
         [|"NewSilverlightClassLibrary.csprojtest";
-            (SinglePlatform(Silverlight("v5.0")));
-            "sl50";
-            (Some(Silverlight "v5.0"))|];
+            (TargetProfile.SinglePlatform(Silverlight SilverlightVersion.V5));
+            "sl5";
+            (Silverlight SilverlightVersion.V5)|];
         [|"FSharp.Core.Fluent-3.1.fsprojtest";
-            (PortableProfile("Profile259", [ DotNetFramework FrameworkVersion.V4_5; Windows "v4.5"; WindowsPhoneSilverlight "v8.0"; WindowsPhoneApp "v8.1" ]));
-            "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1";
-            (Some(DotNetFramework FrameworkVersion.V4_5))|];
+            portable;
+            "portable-net45+win8+wp8+wpa81";
+            (DotNetFramework FrameworkVersion.V4_5)|];
+        [|"MicrosoftNetSdkWithTargetFramework.csprojtest";
+            (TargetProfile.SinglePlatform(DotNetStandard DotNetStandardVersion.V1_4));
+            "netstandard1.4";
+            (DotNetStandard DotNetStandardVersion.V1_4)|];
     |]
-
+    
+[<Test>]
+let ``should detect profile259`` () =
+    portable
+    |> shouldEqual (TargetProfile.PortableProfile PortableProfileType.Profile259)
+    
 [<Test>]
 [<TestCaseSource("TestData")>]
 let ``should detect the correct framework on test projects`` projectFile expectedProfile expectedProfileString expectedTargetFramework =
+    ensureDir()
     let p = ProjectFile.TryLoad("./ProjectFile/TestData/" + projectFile).Value
-    p.GetTargetProfile() |> shouldEqual expectedProfile
-    p.GetTargetProfile().ToString() |> shouldEqual expectedProfileString
-    p.GetTargetFramework() |> shouldEqual expectedTargetFramework
+    p.GetTargetProfiles() |> shouldEqual [expectedProfile]
+    p.GetTargetProfiles().Head.ToString() |> shouldEqual expectedProfileString
 

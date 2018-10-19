@@ -1,2 +1,0 @@
-source https://www.nuget.org/api/v2/
-nuget xunit.runner.visualstudio

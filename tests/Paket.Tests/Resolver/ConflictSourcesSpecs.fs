@@ -23,13 +23,15 @@ let ``should resolve source files with correct sha``() =
       { Name = name
         ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max 
         ResolverStrategyForTransitives = Some ResolverStrategy.Max
-        Graph = []
+        Graph = Set.empty
         Sources = []
-        Parent = Requirements.PackageRequirementSource.DependenciesFile ""
+        TransitivePrereleases = false
+        Parent = Requirements.PackageRequirementSource.DependenciesFile("",0)
         Settings = InstallSettings.Default
+        Kind = PackageRequirementKind.Package
         VersionRequirement = VersionRequirement.NoRestriction }
     let sha = "sha1"
-    let cfg = DependenciesFile.FromCode(config1)
+    let cfg = DependenciesFile.FromSource(config1)
     let resolved = ModuleResolver.Resolve((fun _ -> [dep],[]), (fun _ _ _ _ _ -> sha), cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles)
     resolved
     |> shouldContain
@@ -64,7 +66,7 @@ let expectedError = """Found conflicting source file requirements:
 [<Test>]
 let ``should fail resolving same source files from same repository but different versions``() =
     try
-        let cfg = DependenciesFile.FromCode(config2)
+        let cfg = DependenciesFile.FromSource(config2)
         ModuleResolver.Resolve(noGitHubConfigured, noGitHubConfigured, cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles) |> ignore
     with
     | ex -> ex.Message |> shouldEqual expectedError

@@ -21,9 +21,9 @@ http file:///%s/library.dll library/library.dll""" (root.Replace("\\","/"))
 
 http file://%s/library.dll library/library.dll""" (root.Replace("\\","/"))
 
-    File.WriteAllText(Path.Combine(root,"paket.dependencies"),if isMono then monoDeps else deps)
+    File.WriteAllText(Path.Combine(root,"paket.dependencies"),if isWindows then deps else monoDeps)
 
-    directPaket "update -v" "i001341-http-dlls" |> ignore
+    directPaket "update" "i001341-http-dlls" |> ignore
     
     let newFile = Path.Combine(scenarioTempPath "i001341-http-dlls","HttpDependencyToProjectReference","HttpDependencyToProjectReference.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001341-http-dlls","HttpDependencyToProjectReference","HttpDependencyToProjectReference.csprojtemplate")

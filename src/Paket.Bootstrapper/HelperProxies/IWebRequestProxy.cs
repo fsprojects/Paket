@@ -6,6 +6,5 @@ namespace Paket.Bootstrapper.HelperProxies
     {
         string DownloadString(string address);
         void DownloadFile(string url, string targetLocation);
-        void DownloadFile(string url, Stream stream, int bufferSize);
     }
 }

@@ -1,34 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Paket.Bootstrapper.HelperProxies;
 
 namespace Paket.Bootstrapper.DownloadStrategies
 {
-    public class GitHubDownloadStrategy : IDownloadStrategy
+    public class GitHubDownloadStrategy : DownloadStrategy
     {
-        private const int HttpBufferSize = 4096;
-
         public static class Constants
         {
-            public const string PaketReleasesLatestUrl = "https://github.com/fsprojects/Paket/releases/latest";
+#if DEBUG && LOCAL_GITHUB
+            public const string PaketReleasesUrl = "http://127.0.0.1:8080/fsprojects/Paket/releases";
+#else
             public const string PaketReleasesUrl = "https://github.com/fsprojects/Paket/releases";
-            public const string PaketExeDownloadUrlTemplate = "https://github.com/fsprojects/Paket/releases/download/{0}/paket.exe";
+#endif
+            public const string PaketReleasesLatestUrl = PaketReleasesUrl + "/latest";
+            public const string PaketExeDownloadUrlTemplate = PaketReleasesUrl + "/download/{0}/paket.exe";
+            public const string PaketNupkgDownloadUrlTemplate = PaketReleasesUrl + "/download/{0}/Paket.{0}.nupkg";
+            public const string PaketCheckSumDownloadUrlTemplate = PaketReleasesUrl + "/download/{0}/paket-sha256.txt";
         }
 
-        private IWebRequestProxy WebRequestProxy { get; set; }
-        private IFileProxy FileProxy { get; set; }
-        public string Name { get { return "Github"; } }
-        public IDownloadStrategy FallbackStrategy { get; set; }
+        protected IWebRequestProxy WebRequestProxy { get; set; }
+        protected IFileSystemProxy FileSystemProxy { get; set; }
+        public override string Name { get { return "Github"; } }
 
-        public GitHubDownloadStrategy(IWebRequestProxy webRequestProxy, IFileProxy fileProxy)
+        public override bool CanDownloadHashFile
+        {
+            get { return true; }
+        }
+
+        public GitHubDownloadStrategy(IWebRequestProxy webRequestProxy, IFileSystemProxy fileSystemProxy)
         {
             WebRequestProxy = webRequestProxy;
-            FileProxy = fileProxy;
+            FileSystemProxy = fileSystemProxy;
         }
 
-        public string GetLatestVersion(bool ignorePrerelease)
+        protected override string GetLatestVersionCore(bool ignorePrerelease)
         {
             var latestStable = GetLatestStable();
             if (ignorePrerelease)
@@ -72,55 +81,113 @@ namespace Paket.Bootstrapper.DownloadStrategies
             return versions;
         }
 
-        public void DownloadVersion(string latestVersion, string target)
+        protected override void DownloadVersionCore(string latestVersion, string target, PaketHashFile hashfile)
         {
             var url = String.Format(Constants.PaketExeDownloadUrlTemplate, latestVersion);
-            ConsoleImpl.WriteDebug("Starting download from {0}", url);
+            ConsoleImpl.WriteInfo("Starting download from {0}", url);
 
             var tmpFile = BootstrapperHelper.GetTempFile("paket");
-            using (var fileStream = FileProxy.Create(tmpFile))
+            WebRequestProxy.DownloadFile(url, tmpFile);
+
+            if (!BootstrapperHelper.ValidateHash(FileSystemProxy, hashfile, latestVersion, tmpFile))
             {
-                WebRequestProxy.DownloadFile(url, fileStream, HttpBufferSize);
+                ConsoleImpl.WriteWarning("Hash of downloaded paket.exe is invalid, retrying once");
+
+                WebRequestProxy.DownloadFile(url, tmpFile);
+
+                if (!BootstrapperHelper.ValidateHash(FileSystemProxy, hashfile, latestVersion, tmpFile))
+                {
+                    ConsoleImpl.WriteWarning("Hash of downloaded paket.exe still invalid (Using the file anyway)");
+                }
+                else
+                {
+                    ConsoleImpl.WriteTrace("Hash of downloaded file successfully found in {0}", hashfile);
+                }
+            }
+            else
+            {
+                ConsoleImpl.WriteTrace("Hash of downloaded file successfully found in {0}", hashfile);
             }
 
-            FileProxy.Copy(tmpFile, target, true);
-            FileProxy.Delete(tmpFile);
+            FileSystemProxy.CopyFile(tmpFile, target, true);
+            FileSystemProxy.DeleteFile(tmpFile);
         }
 
-        public void SelfUpdate(string latestVersion)
+        protected override void SelfUpdateCore(string latestVersion)
         {
             var executingAssembly = Assembly.GetExecutingAssembly();
             string exePath = executingAssembly.Location;
-            var localVersion = FileProxy.GetLocalFileVersion(exePath);
+            var localVersion = FileSystemProxy.GetLocalFileVersion(exePath);
             if (localVersion.StartsWith(latestVersion))
             {
-                ConsoleImpl.WriteDebug("Bootstrapper is up to date. Nothing to do.");
+                ConsoleImpl.WriteInfo("Bootstrapper is up to date. Nothing to do.");
                 return;
             }
 
             var url = String.Format("https://github.com/fsprojects/Paket/releases/download/{0}/paket.bootstrapper.exe", latestVersion);
-            ConsoleImpl.WriteDebug("Starting download of bootstrapper from {0}", url);
+            ConsoleImpl.WriteInfo("Starting download of bootstrapper from {0}", url);
 
             string renamedPath = BootstrapperHelper.GetTempFile("oldBootstrapper");
             string tmpDownloadPath = BootstrapperHelper.GetTempFile("newBootstrapper");
+            WebRequestProxy.DownloadFile(url, tmpDownloadPath);
 
-            using (var toStream = FileProxy.Create(tmpDownloadPath))
-            {
-                WebRequestProxy.DownloadFile(url, toStream, HttpBufferSize);
-            }
             try
             {
-                FileProxy.FileMove(exePath, renamedPath);
-                FileProxy.FileMove(tmpDownloadPath, exePath);
-                ConsoleImpl.WriteDebug("Self update of bootstrapper was successful.");
+                FileSystemProxy.MoveFile(exePath, renamedPath);
+                FileSystemProxy.MoveFile(tmpDownloadPath, exePath);
+                ConsoleImpl.WriteInfo("Self update of bootstrapper was successful.");
             }
             catch (Exception)
             {
-                ConsoleImpl.WriteDebug("Self update failed. Resetting bootstrapper.");
-                FileProxy.FileMove(renamedPath, exePath);
+                ConsoleImpl.WriteInfo("Self update failed. Resetting bootstrapper.");
+                FileSystemProxy.MoveFile(renamedPath, exePath);
                 throw;
             }
         }
 
+        protected override PaketHashFile DownloadHashFileCore(string latestVersion)
+        {
+            var url = string.Format(Constants.PaketCheckSumDownloadUrlTemplate, latestVersion);
+            ConsoleImpl.WriteInfo("Starting download from {0}", url);
+
+            var content = WebRequestProxy.DownloadString(url);
+
+            return PaketHashFile.FromString(content);
+        }
+    }
+
+    public class GitHubDownloadToolStrategy : GitHubDownloadStrategy
+    {
+        public GitHubDownloadToolStrategy(IWebRequestProxy webRequestProxy, IFileSystemProxy fileSystemProxy) : base(webRequestProxy, fileSystemProxy)
+        {
+        }
+        public override bool CanDownloadHashFile
+        {
+            get { return false; }
+        }
+
+        protected override void DownloadVersionCore(string latestVersion, string target, PaketHashFile hashfile)
+        {
+            string url = String.Format(Constants.PaketNupkgDownloadUrlTemplate, latestVersion);
+            ConsoleImpl.WriteInfo("Starting download from {0}", url);
+
+            var tmpFile = BootstrapperHelper.GetTempFile("paketnupkg");
+            WebRequestProxy.DownloadFile(url, tmpFile);
+
+            string packageName = Path.GetFileName(url);
+
+            var randomFullPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            FileSystemProxy.CreateDirectory(randomFullPath);
+
+            string packagePath = Path.Combine(randomFullPath, packageName);
+
+            FileSystemProxy.CopyFile(tmpFile, packagePath, true);
+            FileSystemProxy.DeleteFile(tmpFile);
+
+            var installAsTool = new InstallKind.InstallAsTool(FileSystemProxy);
+            installAsTool.Run(randomFullPath, target, latestVersion);
+
+            FileSystemProxy.DeleteDirectory(randomFullPath, true);
+        }
     }
 }

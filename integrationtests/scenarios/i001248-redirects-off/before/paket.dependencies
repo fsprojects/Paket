@@ -1,9 +1,0 @@
-source https://www.nuget.org/api/v2/
-redirects: off
-nuget FSharp.Core redirects: force
-nuget Newtonsoft.Json 7.0.1
-nuget Newtonsoft.Json.Schema 1.0.11
-
-group Second
-source https://www.nuget.org/api/v2/
-nuget AlphaFS redirects: force

@@ -14,24 +14,32 @@ let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
 <Import Project="..\..\..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets')" Label="Paket" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 [<Test>]
+#if TESTSUITE_RUNS_ON_DOTNETCORE
+[<Flaky>]
+#endif
 let ``should generate Xml for StyleCop.MSBuild``() = 
+    ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "StyleCop.MSBuild", SemVer.Parse "4.7.49.1", [],[],
-            [ @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" ],
+        InstallModel.CreateFromLibs(PackageName "StyleCop.MSBuild", SemVer.Parse "4.7.49.1", InstallModelKind.Package, FrameworkRestriction.NoRestriction,[],
+            [ @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\StyleCop.MSBuild\",
             [],
               Nuspec.All)
 
-    model.GetTargetsFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldContain @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" 
+    model.GetTargetsFiles(TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V2))
+        |> Seq.map (fun f -> f.Path) |> shouldContain @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" 
     
-    let propsNodes,targetsNodes,chooseNode,propertyChooseNode,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,Map.empty,true,true,None)
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
     
-    propertyChooseNode.OuterXml
+    ctx.FrameworkSpecificPropertyChooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml emptyPropertyNameNodes)
         
-    propsNodes |> Seq.length |> shouldEqual 0
-    targetsNodes |> Seq.length |> shouldEqual 1
 
-    (targetsNodes |> Seq.head).OuterXml
+    ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 0
+    ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 0
+    ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 0
+    ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 1
+
+    (ctx.GlobalTargetsNodes |> Seq.head).OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedPropertyNodes)

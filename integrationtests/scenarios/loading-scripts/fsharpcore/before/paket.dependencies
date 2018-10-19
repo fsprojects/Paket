@@ -1,0 +1,4 @@
+source http://nuget.org/api/v2
+framework:net45
+
+nuget Suave = 1.1.3

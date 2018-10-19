@@ -10,7 +10,7 @@ namespace Paket.Bootstrapper
             set { _getNow = value;}
         }
 
-        private static Func<DateTime> _getNow = null;
+        private static Func<DateTime> _getNow;
 
         public static DateTime Now { get { return GetNow(); } }
     }

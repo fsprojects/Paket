@@ -1,0 +1,14 @@
+strategy: max
+source https://www.nuget.org/api/v2
+redirects: on
+framework: >= net40
+
+nuget MBrace.Core condition: Azure
+nuget MBrace.Flow condition: Azure
+nuget MBrace.Runtime condition: Azure
+nuget MBrace.Azure condition: Azure
+nuget MBrace.Azure.Management condition: Azure
+nuget Microsoft.Azure.Management.Compute prerelease condition: Azure
+nuget Microsoft.Azure.Management.ResourceManager prerelease condition: Azure
+nuget Microsoft.Azure.Management.Sql prerelease condition: Azure
+nuget Microsoft.IdentityModel.Clients.ActiveDirectory condition: Azure

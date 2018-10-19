@@ -1,0 +1,12 @@
+<Project>
+  <!-- MSBuild only includes the first Directory.Build.props, so we need to manually include the root one -->
+  <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
+  <PropertyGroup>
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.1.1" PrivateAssets="All" />
+    <PackageReference Include="SourceLink.Embed.PaketFiles" Version="2.1.1" PrivateAssets="All" />
+  </ItemGroup>
+</Project>
+

@@ -11,28 +11,26 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
     public class NugetDownloadStrategyTests
     {
         private NugetDownloadStrategy sut;
-        private Mock<IDirectoryProxy> mockDirProxy;
         private Mock<IWebRequestProxy> mockWebRequestProxy;
-        private Mock<IFileProxy> mockFileProxy;
+        private Mock<IFileSystemProxy> mockFileProxy;
 
         [SetUp]
         public void Setup()
         {
-            mockFileProxy = new Mock<IFileProxy>();
-            mockDirProxy = new Mock<IDirectoryProxy>();
+            mockFileProxy = new Mock<IFileSystemProxy>();
             mockWebRequestProxy = new Mock<IWebRequestProxy>();
         }
 
         public void CreateSystemUnderTestWithDefaultApi()
         {
-            sut = new NugetDownloadStrategy(mockWebRequestProxy.Object, mockDirProxy.Object, mockFileProxy.Object, "folder", null);
+            sut = new NugetDownloadStrategy(mockWebRequestProxy.Object, mockFileProxy.Object, "folder", null);
         }
 
         private void CreateSystemUnderTestWithNugetFolder()
         {
-            mockDirProxy.Setup(x => x.Exists("anyNugetFolder")).Returns(true);
+            mockFileProxy.Setup(x => x.DirectoryExists("anyNugetFolder")).Returns(true);
             mockWebRequestProxy = null; //set to null, to ensure no test uses it
-            sut = new NugetDownloadStrategy(null, mockDirProxy.Object, mockFileProxy.Object, "folder", "anyNugetFolder");
+            sut = new NugetDownloadStrategy(null, mockFileProxy.Object, "folder", "anyNugetFolder");
         }
 
         [Test]
@@ -99,13 +97,13 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             CreateSystemUnderTestWithDefaultApi();
 
             //act
-            sut.DownloadVersion(null, "paket");
+            sut.DownloadVersion(null, "paket", null);
 
             //assert
             mockWebRequestProxy.Verify(x => x.DownloadFile("https://www.nuget.org/api/v2/package/Paket", It.IsAny<string>()));
             mockFileProxy.Verify(x => x.ExtractToDirectory(It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.latest.nupkg")), It.IsAny<string>()));
-            mockFileProxy.Verify(x => x.Copy(It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.exe")), "paket", true));
-            mockDirProxy.Verify(x => x.Delete(It.Is<string>(s => s.StartsWith("folder")), true));
+            mockFileProxy.Verify(x => x.CopyFile(It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.exe")), "paket", true));
+            mockFileProxy.Verify(x => x.DeleteDirectory(It.Is<string>(s => s.StartsWith("folder")), true));
         }
 
         [Test]
@@ -115,7 +113,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             CreateSystemUnderTestWithDefaultApi();
 
             //act
-            sut.DownloadVersion("2.57.0", "paket");
+            sut.DownloadVersion("2.57.0", "paket", null);
 
             //assert
             mockWebRequestProxy.Verify(x => x.DownloadFile("https://www.nuget.org/api/v2/package/Paket/2.57.0", It.IsAny<string>()));
@@ -147,11 +145,11 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             sut.SelfUpdate("2.57.1");
 
             //assert
-            mockDirProxy.Verify(x => x.CreateDirectory(It.Is<string>(s => s.StartsWith("folder"))));
+            mockFileProxy.Verify(x => x.CreateDirectory(It.Is<string>(s => s.StartsWith("folder"))));
             mockWebRequestProxy.Verify(x => x.DownloadFile("https://www.nuget.org/api/v2/package/Paket.Bootstrapper/2.57.1", It.IsAny<string>()));
             mockFileProxy.Verify(x => x.ExtractToDirectory(It.Is<string>(s => s.EndsWith("paket.bootstrapper.2.57.1.nupkg")), It.IsAny<string>()));
-            mockFileProxy.Verify(x => x.FileMove(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(2));
-            mockDirProxy.Verify(x => x.Delete(It.IsAny<string>(), It.IsAny<bool>()));
+            mockFileProxy.Verify(x => x.MoveFile(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(2));
+            mockFileProxy.Verify(x => x.DeleteDirectory(It.IsAny<string>(), It.IsAny<bool>()));
         }
 
         [Test]
@@ -173,7 +171,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         {
             //arrange
             CreateSystemUnderTestWithNugetFolder();
-            mockDirProxy.Setup(
+            mockFileProxy.Setup(
                 x => x.EnumerateFiles(It.IsAny<string>(), "paket.*.nupkg", SearchOption.TopDirectoryOnly))
                 .Returns(new[] { "paket.2.57.0.nupkg", "paket.2.57.1.nupkg" });
 
@@ -189,7 +187,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         {
             //arrange
             CreateSystemUnderTestWithNugetFolder();
-            mockDirProxy.Setup(
+            mockFileProxy.Setup(
                 x => x.EnumerateFiles(It.IsAny<string>(), "paket.*.nupkg", SearchOption.TopDirectoryOnly))
                 .Returns(new[] { "paket.2.57.1-pre.nupkg", "paket.2.57.0.nupkg" });
 
@@ -205,7 +203,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         {
             //arrange
             CreateSystemUnderTestWithNugetFolder();
-            mockDirProxy.Setup(
+            mockFileProxy.Setup(
                 x => x.EnumerateFiles(It.IsAny<string>(), "paket.*.nupkg", SearchOption.TopDirectoryOnly))
                 .Returns(new[] { "paket.2.57.1-pre.nupkg", "paket.2.57.0.nupkg" });
 
@@ -222,7 +220,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         {
             //arrange
             CreateSystemUnderTestWithNugetFolder();
-            mockDirProxy.Setup(
+            mockFileProxy.Setup(
                 x => x.EnumerateFiles(It.IsAny<string>(), "paket.*.nupkg", SearchOption.TopDirectoryOnly))
                 .Returns(new[] { "paket.2.57.2.nupkg", "2.57.1-pre.nupkg", "paket.2.57.0.nupkg" });
 
@@ -238,19 +236,19 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         {
             //arrange
             CreateSystemUnderTestWithNugetFolder();
-            mockDirProxy.Setup(
+            mockFileProxy.Setup(
                 x => x.EnumerateFiles(It.IsAny<string>(), "paket.*.nupkg", SearchOption.TopDirectoryOnly))
                 .Returns(new[] { "paket.111.nupkg" });
 
             //act
-            sut.DownloadVersion(null, "paket");
+            sut.DownloadVersion(null, "paket", null);
 
             //assert
-            mockFileProxy.Verify(x => x.Copy(It.Is<string>(s => s.StartsWith("anyNugetFolder") && s.EndsWith("paket.111.nupkg")), It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.latest.nupkg")), false));
+            mockFileProxy.Verify(x => x.CopyFile(It.Is<string>(s => s.StartsWith("anyNugetFolder") && s.EndsWith("paket.111.nupkg")), It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.latest.nupkg")), false));
 
             mockFileProxy.Verify(x => x.ExtractToDirectory(It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.latest.nupkg")), It.IsAny<string>()));
-            mockFileProxy.Verify(x => x.Copy(It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.exe")), "paket", true));
-            mockDirProxy.Verify(x => x.Delete(It.Is<string>(s => s.StartsWith("folder")), true));
+            mockFileProxy.Verify(x => x.CopyFile(It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.exe")), "paket", true));
+            mockFileProxy.Verify(x => x.DeleteDirectory(It.Is<string>(s => s.StartsWith("folder")), true));
         }
 
         [Test]
@@ -260,10 +258,10 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             CreateSystemUnderTestWithNugetFolder();
 
             //act
-            sut.DownloadVersion("2.57.0", "paket");
+            sut.DownloadVersion("2.57.0", "paket", null);
 
             //assert
-            mockFileProxy.Verify(x => x.Copy(It.Is<string>(s => s.StartsWith("anyNugetFolder") && s.EndsWith("paket.2.57.0.nupkg")), It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.2.57.0.nupkg")), false));
+            mockFileProxy.Verify(x => x.CopyFile(It.Is<string>(s => s.StartsWith("anyNugetFolder") && s.EndsWith("paket.2.57.0.nupkg")), It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.2.57.0.nupkg")), false));
             mockFileProxy.Verify(x => x.ExtractToDirectory(It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.2.57.0.nupkg")), It.IsAny<string>()));
         }
 
@@ -278,7 +276,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             sut.SelfUpdate("2.57.1");
 
             //assert
-            mockFileProxy.Verify(x => x.Copy(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+            mockFileProxy.Verify(x => x.CopyFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
         }
 
         [Test]
@@ -292,12 +290,12 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             sut.SelfUpdate("2.57.1");
 
             //assert
-            mockFileProxy.Verify(x => x.Copy(It.Is<string>(s => s.StartsWith("anyNugetFolder") && s.EndsWith("paket.bootstrapper.2.57.1.nupkg")), It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.bootstrapper.2.57.1.nupkg")), false));
+            mockFileProxy.Verify(x => x.CopyFile(It.Is<string>(s => s.StartsWith("anyNugetFolder") && s.EndsWith("paket.bootstrapper.2.57.1.nupkg")), It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.bootstrapper.2.57.1.nupkg")), false));
 
-            mockDirProxy.Verify(x => x.CreateDirectory(It.Is<string>(s => s.StartsWith("folder"))));
+            mockFileProxy.Verify(x => x.CreateDirectory(It.Is<string>(s => s.StartsWith("folder"))));
             mockFileProxy.Verify(x => x.ExtractToDirectory(It.Is<string>(s => s.EndsWith("paket.bootstrapper.2.57.1.nupkg")), It.IsAny<string>()));
-            mockFileProxy.Verify(x => x.FileMove(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(2));
-            mockDirProxy.Verify(x => x.Delete(It.IsAny<string>(), It.IsAny<bool>()));
+            mockFileProxy.Verify(x => x.MoveFile(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(2));
+            mockFileProxy.Verify(x => x.DeleteDirectory(It.IsAny<string>(), It.IsAny<bool>()));
         }
 
         [Test]
@@ -311,8 +309,25 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             Assert.Throws<ArgumentNullException>(() => sut.SelfUpdate(null));
 
             //assert
-            mockFileProxy.Verify(x => x.Copy(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+            mockFileProxy.Verify(x => x.CopyFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
         }
 
+        [Test]
+        public void DownloadHashFile()
+        {
+            CreateSystemUnderTestWithDefaultApi();
+
+            var hashFile = sut.DownloadHashFile("42.0");
+
+            Assert.That(hashFile, Is.Null);
+        }
+
+        [Test]
+        public void CanDownloadHashFile()
+        {
+            CreateSystemUnderTestWithDefaultApi();
+
+            Assert.That(sut.CanDownloadHashFile, Is.False);
+        }
     }
 }

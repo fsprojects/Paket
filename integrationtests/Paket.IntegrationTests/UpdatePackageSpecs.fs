@@ -1,5 +1,15 @@
-﻿module Paket.IntegrationTests.UpdatePackageSpecs
-
+﻿#if INTERACTIVE
+System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
+#r "../../packages/test/NUnit/lib/net45/nunit.framework.dll"
+#r "../../packages/build/FAKE/tools/Fakelib.dll"
+#r "../../packages/Chessie/lib/net40/Chessie.dll"
+#r "../../bin/paket.core.dll"
+#load "../../paket-files/test/forki/FsUnit/FsUnit.fs"
+#load "TestHelper.fs"
+open Paket.IntegrationTests.TestHelpers
+#else
+module Paket.IntegrationTests.UpdatePackageSpecs
+#endif
 open Fake
 open System
 open NUnit.Framework
@@ -10,39 +20,6 @@ open System.Diagnostics
 open Paket
 open Paket.Domain
 open Paket.Requirements
-
-[<Test>]
-let ``#1018 update package in main group``() =
-    paket "update nuget Newtonsoft.json" "i001018-legacy-groups-update" |> ignore
-    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001018-legacy-groups-update","paket.lock"))
-    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Newtonsoft.Json"].Version
-    |> shouldBeGreaterThan (SemVer.Parse "6.0.3")
-    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NUnit"].Version
-    |> shouldEqual (SemVer.Parse "2.6.1")
-    lockFile.Groups.[GroupName "Legacy"].Resolution.[PackageName "Newtonsoft.Json"].Version
-    |> shouldEqual (SemVer.Parse "5.0.2")
-
-[<Test>]
-let ``#1018 update package in explicit main group``() =
-    paket "update nuget Newtonsoft.json group Main" "i001018-legacy-groups-update" |> ignore
-    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001018-legacy-groups-update","paket.lock"))
-    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Newtonsoft.Json"].Version
-    |> shouldBeGreaterThan (SemVer.Parse "6.0.3")
-    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NUnit"].Version
-    |> shouldEqual (SemVer.Parse "2.6.1")
-    lockFile.Groups.[GroupName "Legacy"].Resolution.[PackageName "Newtonsoft.Json"].Version
-    |> shouldEqual (SemVer.Parse "5.0.2")
-
-[<Test>]
-let ``#1018 update package in group``() =
-    paket "update nuget Newtonsoft.json group leGacy" "i001018-legacy-groups-update" |> ignore
-    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001018-legacy-groups-update","paket.lock"))
-    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Newtonsoft.Json"].Version
-    |> shouldEqual (SemVer.Parse "6.0.3")
-    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NUnit"].Version
-    |> shouldEqual (SemVer.Parse "2.6.1")
-    lockFile.Groups.[GroupName "Legacy"].Resolution.[PackageName "Newtonsoft.Json"].Version
-    |> shouldBeGreaterThan (SemVer.Parse "5.0.2")
 
 [<Test>]
 let ``#1178 update specific package``() =
@@ -110,13 +87,18 @@ let ``#1117 can understand portable``() =
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001117-aws","paket.lock"))
     let restrictions = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "PCLStorage"].Settings.FrameworkRestrictions
     match restrictions with
-    | FrameworkRestrictionList l -> l.ToString() |> shouldEqual ("[portable-net45+win8+wp8+wpa81]")
+    | ExplicitRestriction l -> l.ToString() |> shouldEqual ("&& (< net45) (>= portable-net45+win8+wp8+wpa81)")
     | _ -> failwith "wrong"
 
-    let restrictions = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Microsoft.Bcl.Async"].Settings.FrameworkRestrictions
-    match restrictions with
-    | FrameworkRestrictionList l -> l.ToString() |> shouldEqual ("[portable-net45+win8+wp8+wpa81]")
-    | _ -> failwith "wrong"
+    // Our restriction system can follow that this never actually needs to be installed!
+    // if you look at
+    // https://www.nuget.org/packages/AWSSDK.Core/3.1.5.3
+    //   PCLStorage is only required for the portable profile
+    // https://www.nuget.org/packages/PCLStorage/1.0.2
+    //   Microsoft.Bcl.Async is required for all frameworks, but not from the portable from above
+    // -> Microsoft.Bcl.Async is never in any solution.
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.ContainsKey (PackageName "Microsoft.Bcl.Async")
+    |> shouldEqual false
 
 [<Test>]
 let ``#1413 doesn't take symbols``() =
@@ -147,24 +129,12 @@ let ``#1579 update allows unpinned``() =
     directPaket "update" scenario|> ignore
 
 [<Test>]
-let ``#1500 don't detect framework twice``() =
-    update "i001500-auto-detect" |> ignore
-    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001500-auto-detect","paket.lock"))
-    lockFile.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
-    |> shouldEqual (FrameworkRestrictionList [FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_5_2))])
-
-
-[<Test>]
 let ``#1501 download succeeds``() =
     update "i001510-download" |> ignore
 
 [<Test>]
 let ``#1520 update with pinned dependency succeeds``() =
     update "i001520-pinned-error" |> ignore
-
-[<Test>]
-let ``#1534 resolves Selenium.Support``() =
-    update "i001534-selenium" |> ignore
 
 [<Test>]
 let ``#1703 resolves locally``() =
@@ -177,4 +147,27 @@ let ``#1635 should tell about auth issue``() =
         update "i001635-wrong-pw" |> ignore
         failwith "error expected"
     with
-    | exn when exn.Message.Contains("Could not find versions for package Argu") -> ()
+    | exn when exn.Message.Contains("Unable to retrieve package versions for 'Argu'") -> 
+        exn.Message.Contains "Could not load resources from 'https://www.myget.org/F/paket-test/api/v3/index.json': Unauthorized (401)"
+            |> shouldEqual true
+        ()
+
+
+[<Test>]
+let ``#2572 should tell about late resolver issue``() =
+    try
+        update "i002572-pinned-error" |> ignore
+        failwith "error expected"
+    with
+    | exn when exn.Message.Contains("xunit.core 2.3.0-beta3-build3705 requested package xunit.extensibility.core: 2.3.0-beta3-build3705") ->
+        ()
+
+
+#if INTERACTIVE
+;;
+let scenario = "i001579-unlisted"
+
+prepare scenario
+directPaket "pack templatefile paket.A.template version 1.0.0-prerelease output bin" scenario
+directPaket "update" scenario
+#endif

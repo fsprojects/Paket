@@ -3,6 +3,7 @@
 open FsUnit
 open NUnit.Framework
 open Paket
+open Paket.Requirements
 open Paket.Constants
 open Paket.Domain
 open Paket.TestHelpers
@@ -10,7 +11,7 @@ open System.Text
 open System.IO
 
 let model =
-    InstallModel.CreateFromLibs(PackageName "Microsoft.CodeAnalysis.Analyzers", SemVer.Parse "1.0.0", [],
+    InstallModel.CreateFromLibs(PackageName "Microsoft.CodeAnalysis.Analyzers", SemVer.Parse "1.0.0", InstallModelKind.Package, FrameworkRestriction.NoRestriction,
             [],
             [],
             [
@@ -18,7 +19,7 @@ let model =
                 [".."; "Microsoft.CodeAnalysis.Analyzers"; "analyzers"; "dotnet"; "cs"; "Microsoft.CodeAnalysis.CSharp.Analyzers.dll"] |> toPath
                 [".."; "Microsoft.CodeAnalysis.Analyzers"; "analyzers"; "dotnet"; "vb"; "Microsoft.CodeAnalysis.Analyzers.dll"] |> toPath
                 [".."; "Microsoft.CodeAnalysis.Analyzers"; "analyzers"; "dotnet"; "vb"; "Microsoft.CodeAnalysis.VisualBasic.Analyzers.dll"] |> toPath
-            ],
+            ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList ([".."; "Microsoft.CodeAnalysis.Analyzers"; ""] |> toPath),
             Nuspec.All)
 
 let expectedCs = """
@@ -36,8 +37,8 @@ let ``should generate Xml for Microsoft.CodeAnalysis.Analyzers in CSharp project
     ensureDir()
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
     Assert.IsTrue(project.IsSome)
-    let _,_,_,_,analyzerNodes = project.Value.GenerateXml(model,Map.empty,true,true,None)
-    analyzerNodes
+    let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
+    ctx.AnalyzersNode
     |> (fun n -> n.OuterXml)
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedCs)
@@ -57,14 +58,14 @@ let ``should generate Xml for RefactoringEssentials in VisualBasic project``() =
     ensureDir()
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyVbGuid.vbprojtest")
     Assert.IsTrue(project.IsSome)
-    let _,_,_,_,analyzerNodes = project.Value.GenerateXml(model,Map.empty,true,true,None)
-    analyzerNodes
+    let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
+    ctx.AnalyzersNode
     |> (fun n -> n.OuterXml)
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedVb)
 
 let oldModel =
-    InstallModel.CreateFromLibs(PackageName "Microsoft.CodeAnalysis.Analyzers", SemVer.Parse "1.0.0-rc2", [],
+    InstallModel.CreateFromLibs(PackageName "Microsoft.CodeAnalysis.Analyzers", SemVer.Parse "1.0.0-rc2", InstallModelKind.Package, FrameworkRestriction.NoRestriction,
             [],
             [],
             [], // Analyzers weren't in the correct folder and won't be found for this version
@@ -77,8 +78,8 @@ let ``should generate Xml for Microsoft.CodeAnalysis.Analyzers 1.0.0-rc2``() =
     ensureDir()
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
     Assert.IsTrue(project.IsSome)
-    let _,_,_,_,analyzerNodes = project.Value.GenerateXml(oldModel,Map.empty,true,true,None)
-    analyzerNodes
+    let ctx = project.Value.GenerateXml(oldModel, System.Collections.Generic.HashSet<_>(),Map.empty,None,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
+    ctx.AnalyzersNode
     |> (fun n -> n.OuterXml)
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedEmpty)

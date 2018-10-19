@@ -2,25 +2,16 @@
 if test "$OS" = "Windows_NT"
 then
   # use .Net
-
-  .paket/paket.bootstrapper.exe prerelease
-  exit_code=$?
-  if [ $exit_code -ne 0 ]; then
-  	exit $exit_code
-  fi
-
   .paket/paket.exe restore
   exit_code=$?
   if [ $exit_code -ne 0 ]; then
   	exit $exit_code
   fi
-
-  packages/build/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx 
+  MSBuild=`pwd -W`/packages/build/RoslynTools.MSBuild/tools/msbuild/MSBuild.exe packages/build/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx 
 else
-  # use mono
-  mono .paket/paket.bootstrapper.exe prerelease
+  mono .paket/paket.exe restore
   exit_code=$?
-  if [ $exit_code -ne 0 ]; then
+  if [ $exit_code -ne 0 ]; then  
     certificate_count=$(certmgr -list -c Trust | grep X.509 | wc -l)
     if [ $certificate_count -le 1 ]; then
       echo "Couldn't download Paket. This might be because your Mono installation"
@@ -33,13 +24,10 @@ else
       echo "This will import over 100 SSL root certificates into your Mono"
       echo "certificate repository. Then try running the build script again."
     fi
-  	exit $exit_code
+    exit $exit_code
   fi
-
-  mono .paket/paket.exe restore
-  exit_code=$?
-  if [ $exit_code -ne 0 ]; then
-  	exit $exit_code
-  fi
+  # Note: the bundled MSBuild crashes hard on linux, so we still rely on the system-installed version
+  #export MSBuild=packages/build/RoslynTools.MSBuild/tools/msbuild/MSBuild.exe
   mono packages/build/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx 
 fi
+

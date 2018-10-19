@@ -10,6 +10,8 @@ Please provide the steps required to reproduce the problem
 
 2. Step B
 
+If possible then please create a git repository with a repro sample or attach a zip to the issue.
+
 ### Expected behavior
 
 Please provide a description of the behavior you expect.
@@ -21,10 +23,3 @@ Please provide a description of the actual behavior you observe.
 ### Known workarounds
 
 Please provide a description of any known workarounds.
-
-### Related information 
-
-* Operating system
-* Branch
-* .NET Runtime, CoreCLR or Mono Version
-* Performance information, links to performance testing scripts
