@@ -161,6 +161,7 @@ Target "Build" (fun _ ->
         |> MSBuildReleaseExt "" [
                 "VisualStudioVersion", "14.0"
                 "ToolsVersion"       , "14.0"
+                "FscToolPath"        , "$(MSBuildThisFileDirectory)"
         ] "Rebuild"
         |> ignore
     else
