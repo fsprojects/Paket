@@ -288,3 +288,13 @@ let ``ignore assemblies that are not expected by the specified framework`` () =
         "nlog.csx", ["Java.Interop"; "Mono.Android"; "System.Xml.Linq"; "System.Net"; "System.Windows"; "System.Windows.Browser"; "Xamarin.iOS" ]
         "nlog.fsx", ["Java.Interop"; "Mono.Android"; "System.Xml.Linq"; "System.Net"; "System.Windows"; "System.Windows.Browser"; "Xamarin.iOS" ]
     ] |> assertExpectations scenario ExpectationType.ShouldNotContain
+
+[<Test; Category("scriptgen")>]
+let ``scripts should contain the paket namespace`` () =
+    let scenario = "add-namespace"
+    paket "install" scenario |> ignore
+    
+    [
+        "nlog.csx", ["namespace PaketLoadScripts" ]
+        "nlog.fsx", ["namespace PaketLoadScripts" ]
+    ] |> assertExpectations scenario ExpectationType.ShouldContain
