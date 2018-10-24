@@ -1,4 +1,5 @@
-#### 5.182.0-alpha002 - 2018-10-15
+#### 5.182.0-alpha003 - 2018-10-24
+* Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383
 * Full .NET Core support - https://github.com/fsprojects/Paket/pull/3183
 * BUGFIX: generate-load-scripts ignored targetFramework constraint in frameworkAssembly config (.nuspec file) https://github.com/fsprojects/Paket/pull/3385
 
