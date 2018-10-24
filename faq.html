@@ -306,6 +306,12 @@ set NO_PROXY=.company.com,localhost
 <p>Short answer: Yes. For information about Paket with .NET SDK, .NET Core and the
 <code>dotnet</code> CLI see the
 <a href="paket-and-dotnet-cli.html">"Paket and the .NET SDK / .NET Core CLI tools" guide</a>.</p>
+<h2><a name="The-download-of-packages-times-out-is-there-a-way-to-prevent-this" class="anchor" href="#The-download-of-packages-times-out-is-there-a-way-to-prevent-this">The download of packages times out, is there a way to prevent this?</a></h2>
+<p>There are three environment variables you can set to try to prevent this.
+<em> <code>PAKET_REQUEST_TIMEOUT</code>: Timeout for the request
+</em> <code>PAKET_RESPONSE_STREAM_TIMEOUT</code>: Timeout for the response of the request
+* <code>PAKET_STREAMREADWRITE_TIMEOUT</code>: Timeout for streaming the read and write operations
+If set to -1 the timeout is infinite.</p>
 
 
         </div>
