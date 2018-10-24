@@ -1,4 +1,4 @@
-﻿module Paket.NuGet
+module Paket.NuGet
 
 // Type forwards, this way we only need to open "Paket.NuGet" thoughout paket code (others are implementation detail)
 type UnparsedPackageFile = Paket.NuGetCache.UnparsedPackageFile
@@ -19,6 +19,7 @@ open FSharp.Polyfill
 open Paket.NuGetCache
 open Paket.PackageResolver
 open System.Net.Http
+open System.Threading
 
 type NuGetContent =
     | NuGetDirectory of name:string * contents:NuGetContent list
@@ -880,6 +881,34 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     ensureDir targetFileName
 
                     use _trackDownload = Profile.startCategory Profile.Category.NuGetDownload
+                    let! cancellationToken = Async.CancellationToken
+
+                    // default of three minute timeout
+                    let defaultTimeout = 180000
+                    let getTimeoutOrDefaultValue registryEntry defaultValue =
+                        match Environment.GetEnvironmentVariable registryEntry with
+                        | a when System.String.IsNullOrWhiteSpace a -> defaultValue
+                        | a ->
+                            match System.Int32.TryParse a with
+                            | true, v -> v
+                            | _ -> traceWarnfn "%s is not set to an interval in milliseconds, ignoring the value and defaulting to %d" registryEntry defaultValue
+                                   defaultValue
+
+                    // timeout for the request of the package to be downloaded
+                    let requestTimeout =
+                        getTimeoutOrDefaultValue "PAKET_REQUEST_TIMEOUT" defaultTimeout
+                    // timeout for response of the stream for the package to be downloaded
+                    let responseStreamTimeout =                    
+                        getTimeoutOrDefaultValue "PAKET_RESPONSE_STREAM_TIMEOUT" defaultTimeout
+                    // timeout for the read and write stream operations on the package to be downloaded
+                    let streamReadWriteTimeout =
+                        getTimeoutOrDefaultValue "PAKET_STREAMREADWRITE_TIMEOUT" defaultTimeout
+
+                    let requestTokenSource = System.Threading.CancellationTokenSource.CreateLinkedTokenSource cancellationToken
+                    let streamReadWriteTokenSource = System.Threading.CancellationTokenSource.CreateLinkedTokenSource cancellationToken
+
+                    streamReadWriteTokenSource.CancelAfter streamReadWriteTimeout
+                    requestTokenSource.CancelAfter requestTimeout
 
                     let client = NetUtils.createHttpClient(!downloadUrl, source.Auth.Retrieve (attempt <> 0))
 
@@ -887,12 +916,13 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     let mutable readSinceLastMeasure = 0L
 
                     let requestMsg = new HttpRequestMessage(HttpMethod.Get, downloadUri)
-                    let! responseMsg = client.SendAsync(requestMsg) |> Async.AwaitTask
+                    let! responseMsg = client.SendAsync(requestMsg, HttpCompletionOption.ResponseHeadersRead, requestTokenSource.Token) |> Async.AwaitTask
                     match responseMsg.StatusCode with
                     | HttpStatusCode.OK -> ()
                     | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode
 
                     let! httpResponseStream = responseMsg.Content.ReadAsStreamAsync() |> Async.AwaitTask
+                    httpResponseStream.ReadTimeout <- responseStreamTimeout;
 
                     let bufferSize = 1024 * 10
                     let buffer : byte [] = Array.zeroCreate bufferSize
@@ -903,7 +933,6 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     let mutable pos = 0L
 
                     let length = try Some httpResponseStream.Length with :? System.NotSupportedException -> None
-                    let! tok = Async.CancellationToken
                     while !bytesRead <> 0 do
                         if printProgress && lastSpeedMeasure.Elapsed > TimeSpan.FromSeconds(10.) then
                             // report speed and progress
@@ -915,14 +944,11 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                             tracefn "Still downloading from %O to %s (%d kbit/s, %s %%)" !downloadUrl targetFileName speed percent
                             readSinceLastMeasure <- 0L
                             lastSpeedMeasure.Restart()
-                        // if there is no response for a minute -> abort
 
-                        let s = System.Threading.CancellationTokenSource.CreateLinkedTokenSource(tok)
-                        s.CancelAfter (60000)
-                        let! bytes = httpResponseStream.ReadAsync(buffer, 0, bufferSize, s.Token) |> Async.AwaitTaskWithoutAggregate
-                        //let! bytes = httpResponseStream.AsyncRead(buffer, 0, bufferSize)
+                        // if there is no response for streamReadWriteTimeout milliseconds -> abort
+                        let! bytes = httpResponseStream.ReadAsync(buffer, 0, bufferSize, streamReadWriteTokenSource.Token) |> Async.AwaitTaskWithoutAggregate
                         bytesRead := bytes
-                        do! fileStream.WriteAsync(buffer, 0, !bytesRead, tok) |> Async.AwaitTaskWithoutAggregate
+                        do! fileStream.WriteAsync(buffer, 0, !bytesRead, streamReadWriteTokenSource.Token) |> Async.AwaitTaskWithoutAggregate
                         readSinceLastMeasure <- readSinceLastMeasure + int64 bytes
                         pos <- pos + int64 bytes
 
