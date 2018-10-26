@@ -248,7 +248,7 @@ module ``General Penalty checks`` =
     [<Test>]
     let ``best match for net463``()=
         Paket.PlatformMatching.findBestMatch
-          (["netstandard10"; "netstandard11"; "netstandard12"; "netstandard13"; "netstandard14"; "netstandard15"; "netstandard16"]|> List.map forceExtractPlatforms,
+          (["netstandard10"; "netstandard11"; "netstandard12"; "netstandard13"; "netstandard14"; "netstandard15"; "netstandard16"; "netstandard20"]|> List.map forceExtractPlatforms,
            TargetProfile.SinglePlatform(DotNetFramework(FrameworkVersion.V4_6_3)))
-        |> shouldEqual (Some (forceExtractPlatforms "netstandard15"))
+        |> shouldEqual (Some (forceExtractPlatforms "netstandard20"))
 
