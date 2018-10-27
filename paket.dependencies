@@ -3,7 +3,7 @@ content: none
 
 nuget Newtonsoft.Json redirects: force
 nuget Argu >= 5.1.0
-nuget FSharp.Core redirects: force
+nuget FSharp.Core < 4.5 redirects: force
 nuget Chessie >= 0.6
 nuget Mono.Cecil prerelease
 
@@ -11,8 +11,8 @@ nuget System.Security.Cryptography.ProtectedData
 
 nuget FSharp.Compiler.Tools
 
-nuget NETStandard.Library >= 2.0 prerelease
-nuget Microsoft.NETCore.App >= 2.0 prerelease
+nuget NETStandard.Library ~> 2.0
+nuget Microsoft.NETCore.App ~> 2.1
 nuget System.Net.Http.WinHttpHandler
 
 nuget Moq
@@ -22,11 +22,16 @@ nuget NUnit redirects: force
 nuget NUnit.Console
 // current workaround for https://github.com/nunit/nunit3-vs-adapter/issues/366
 nuget NUnit3TestAdapter version_in_path: true
-clitool dotnet-mergenupkg
 
 github fsharp/FAKE:0341a2e614eb2a7f34607cec914eb0ed83ce9add src/app/FakeLib/Globbing/Globbing.fs
 github fsprojects/FSharp.TypeProviders.SDK:dc5ac01a1ac288eceb1fd6f12a5d388236f4f8e5 src/AssemblyReader.fs
 github forki/FsUnit FsUnit.fs
+
+group NetCoreCliTools
+  storage: none
+  source https://nuget.org/api/v2
+
+  clitool dotnet-mergenupkg ~> 2.3
 
 group NetCoreTools
   storage: none

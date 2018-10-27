@@ -12,6 +12,19 @@ open Chessie.ErrorHandling
 open System.Reflection
 open Requirements
 
+// "copy_local: true" is being used to set the "PrivateAssets=All" setting for a package.
+// "copy_local: false" in new SDK format is defined as "ExcludeAssets=runtime".
+/// Combines the copy_local settings from the lock file and a project's references file
+let private CombineCopyLocal (resolvedSettings:InstallSettings) (packageInstallSettings:PackageInstallSettings) =
+    match resolvedSettings.CopyLocal, packageInstallSettings.Settings.CopyLocal with
+    | Some false, Some true // E.g. never copy the dll except for unit-test projects
+    | None, None -> None
+    | _, Some false
+    | Some false, None -> Some false // Sets ExcludeAssets=runtime
+    | Some true, Some true
+    | Some true, None
+    | None, Some true -> Some true // Sets PrivateAssets=All
+
 /// Finds packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
 let FindPackagesNotExtractedYet(dependenciesFileName) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
@@ -271,7 +284,7 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
             ""
         else
             packages
-            |> Seq.map (fun ((groupName,packageName),_,_) -> 
+            |> Seq.map (fun ((groupName,packageName),packageSettings,_) -> 
                 let group = lockFile.Groups.[groupName]
                 let p = group.Resolution.[packageName]
                 let restrictions =
@@ -280,8 +293,8 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
                     | FrameworkRestrictions.ExplicitRestriction fw -> FrameworkRestrictions.ExplicitRestriction fw
                     | _ -> group.Options.Settings.FrameworkRestrictions
                 let condition = restrictions |> getExplicitRestriction
-                p,condition)
-            |> Seq.groupBy snd
+                p,condition,packageSettings)
+            |> Seq.groupBy (fun (_,c,__) -> c)
             |> Seq.collect (fun (condition,packages) -> 
                 let condition =
                     match condition with
@@ -293,10 +306,12 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
 
                 let packageReferences =
                     packages    
-                    |> Seq.collect (fun (p,_) ->
-                        [sprintf """        <PackageReference Include="%O">""" p.Name
-                         sprintf """            <Version>%O</Version>""" p.Version
-                         """        </PackageReference>"""])
+                    |> Seq.collect (fun (p,_,packageSettings) ->
+                        [yield sprintf """        <PackageReference Include="%O">""" p.Name
+                         yield sprintf """            <Version>%O</Version>""" p.Version
+                         if CombineCopyLocal p.Settings packageSettings = Some false then
+                            yield """            <ExcludeAssets>runtime</ExcludeAssets>"""
+                         yield """        </PackageReference>"""])
 
                 [yield sprintf "    <ItemGroup Condition=\"($(DesignTimeBuild) == true)%s\">" condition
                  yield! packageReferences
@@ -383,7 +398,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                     excludes,packages
                 | None -> Set.empty,Set.empty
 
-            for (key,_,_) in hull do
+            for (key,packageSettings,_) in hull do
                 let resolvedPackage = resolved.Force().[key]
                 let _,packageName = key
                 let restore =
@@ -398,16 +413,23 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                 if restore then
                     let direct = allDirectPackages.Contains packageName
                     let package = resolved.Force().[key]
-                    let copy_local =
-                        match resolvedPackage.Settings.CopyLocal with
-                        | Some false -> "exclude"
-                        | Some x -> x.ToString()
+                    let combinedCopyLocal = CombineCopyLocal resolvedPackage.Settings packageSettings
+                    let privateAssetsAll =
+                        match combinedCopyLocal with
+                        | Some true -> "true"
+                        | Some false
                         | None -> "false"
+                    let copy_local =
+                        match combinedCopyLocal with
+                        | Some false -> "false"
+                        | Some true
+                        | None -> "true"
                     let line =
                         packageName.ToString() + "," +
                         package.Version.ToString() + "," +
                         (if direct then "Direct" else "Transitive") + "," +
                         kv.Key.ToString() + "," +
+                        privateAssetsAll  + "," +
                         copy_local
 
                     list.Add line

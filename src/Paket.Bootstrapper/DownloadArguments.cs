@@ -12,12 +12,14 @@ namespace Paket.Bootstrapper
         public bool IgnorePrerelease { get; set; }
         public bool IgnoreCache { get; set; }
         public int? MaxFileAgeInMinutes { get; set; }
+        public bool AsTool { get; set; }
 
         public DownloadArguments()
         {
             IgnorePrerelease = true;
             LatestVersion = String.Empty;
             MaxFileAgeInMinutes = null;
+            AsTool = false;
         }
 
         public DownloadArguments(string latestVersion, bool ignorePrerelease, string folder, string target, bool doSelfUpdate, string nugetSource, bool ignoreCache, int? maxFileAgeInMinutes)

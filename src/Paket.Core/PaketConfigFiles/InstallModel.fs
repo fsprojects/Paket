@@ -500,7 +500,7 @@ module InstallModel =
     let getLegacyFrameworkReferences (target : TargetProfile) (installModel:InstallModel) =
         getFileFolders target (installModel.CompileLibFolders) (fun f -> f.FrameworkReferences |> Set.toSeq)
         |> Seq.cache
-
+        
     let getAllLegacyFrameworkReferences (installModel:InstallModel) =
         getAllFiles installModel.CompileLibFolders (fun f -> f.FrameworkReferences |> Set.toSeq)
         |> Seq.cache
@@ -948,6 +948,7 @@ type InstallModel with
     member this.GetTargetsFiles target =
         InstallModel.getTargetsFiles target this
 
+    member this.getLegacyFrameworkReferences (target) = InstallModel.getLegacyFrameworkReferences target this
     member this.GetAllLegacyFrameworkReferences () = InstallModel.getAllLegacyFrameworkReferences this
     member this.GetAllLegacyReferences () = InstallModel.getAllLegacyReferences this
     member this.GetAllLegacyReferenceAndFrameworkReferenceNames () =

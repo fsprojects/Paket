@@ -1,4 +1,27 @@
-#### 5.177.1 - 2018-08-30
+#### 5.182.0-alpha003 - 2018-10-24
+* Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383
+* Full .NET Core support - https://github.com/fsprojects/Paket/pull/3183
+* BUGFIX: generate-load-scripts ignored targetFramework constraint in frameworkAssembly config (.nuspec file) https://github.com/fsprojects/Paket/pull/3385
+
+#### 5.181.1 - 2018-09-20
+* BUGFIX: copy local had no effect when opening project in vs2017 - https://github.com/fsprojects/Paket/pull/3356
+
+#### 5.181.0 - 2018-09-20
+* Support for netcore3.0 moniker - https://github.com/fsprojects/Paket/pull/3367
+* BUGFIX: Paket pack with `--template` failed trying to load the dependencies of templates who should be ignored instead - https://github.com/fsprojects/Paket/pull/3363
+
+#### 5.180.0 - 2018-09-17
+* Added .NETCoreApp2.2 moniker
+
+#### 5.179.1 - 2018-09-14
+* BUGFIX: Fixed potential race condition when redirecting output - https://github.com/fsprojects/Paket/pull/3359
+
+#### 5.179.0 - 2018-09-12
+* Added NuGet packaging output details to paket pack output - https://github.com/fsprojects/Paket/pull/3357
+
+#### 5.178.0 - 2018-09-12
+* Added MonoAndroid9.0 + compatibility between .NET Standard 2.0 and MonoAndroid8.0/XamariniOS - https://github.com/fsprojects/Paket/pull/3354
+* BUGFIX: `copy_local: false` had no effect in paket.references (.NET SDK) - https://github.com/fsprojects/Paket/issues/3186
 * TEMPORARY WORKAROUND: Do not reference Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator - https://github.com/fsprojects/Paket/issues/3345
 
 #### 5.177.0 - 2018-08-30

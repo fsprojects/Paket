@@ -621,7 +621,6 @@ let ``#3165 pack multitarget with p2p`` () =
     CleanDir rootPath    
 
 [<Test>]
-[<Ignore("disabled for now, because require .net core 2.1.300")>]
 let ``#4002 dotnet pack of a global tool shouldnt contain references``() = 
     let project = "tool1"
     let scenario = "i004002-pack-global-tools"
@@ -657,7 +656,6 @@ let ``#4002 dotnet pack of a global tool shouldnt contain references``() =
 
     
 [<Test>]
-[<Ignore("disabled for now, because require .net core 2.1.300")>]
 let ``#4003 dotnet pack of a global tool with p2p``() = 
     let project = "tool1"
     let scenario = "i004003-pack-global-tools-p2p"
@@ -694,3 +692,10 @@ let ``#4003 dotnet pack of a global tool with p2p``() =
     // Problably not as "packaged" console applications have this dependency by default, see https://www.nuget.org/packages/dotnet-mergenupkg
     nuspec.Dependencies.Value.Length
     |> shouldEqual 0
+
+[<Test>]
+let ``#4010-pack-template-only``() =
+    let scenario = "i004010-pack-template-only"
+    let outPath = Path.Combine(scenarioTempPath scenario, "out")
+    let templatePath = Path.Combine(scenarioTempPath scenario, "PaketBug", "paket.template")
+    paket (sprintf """pack --template "%s" "%s" --version 1.2.3 """ templatePath outPath) scenario |> ignore

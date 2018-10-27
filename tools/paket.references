@@ -1,1 +1,2 @@
-dotnet-mergenupkg
+group NetCoreCliTools
+  dotnet-mergenupkg

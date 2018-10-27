@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Paket.Bootstrapper.HelperProxies;
@@ -17,11 +18,12 @@ namespace Paket.Bootstrapper.DownloadStrategies
 #endif
             public const string PaketReleasesLatestUrl = PaketReleasesUrl + "/latest";
             public const string PaketExeDownloadUrlTemplate = PaketReleasesUrl + "/download/{0}/paket.exe";
+            public const string PaketNupkgDownloadUrlTemplate = PaketReleasesUrl + "/download/{0}/Paket.{0}.nupkg";
             public const string PaketCheckSumDownloadUrlTemplate = PaketReleasesUrl + "/download/{0}/paket-sha256.txt";
         }
 
-        private IWebRequestProxy WebRequestProxy { get; set; }
-        private IFileSystemProxy FileSystemProxy { get; set; }
+        protected IWebRequestProxy WebRequestProxy { get; set; }
+        protected IFileSystemProxy FileSystemProxy { get; set; }
         public override string Name { get { return "Github"; } }
 
         public override bool CanDownloadHashFile
@@ -151,6 +153,41 @@ namespace Paket.Bootstrapper.DownloadStrategies
             var content = WebRequestProxy.DownloadString(url);
 
             return PaketHashFile.FromString(content);
+        }
+    }
+
+    public class GitHubDownloadToolStrategy : GitHubDownloadStrategy
+    {
+        public GitHubDownloadToolStrategy(IWebRequestProxy webRequestProxy, IFileSystemProxy fileSystemProxy) : base(webRequestProxy, fileSystemProxy)
+        {
+        }
+        public override bool CanDownloadHashFile
+        {
+            get { return false; }
+        }
+
+        protected override void DownloadVersionCore(string latestVersion, string target, PaketHashFile hashfile)
+        {
+            string url = String.Format(Constants.PaketNupkgDownloadUrlTemplate, latestVersion);
+            ConsoleImpl.WriteInfo("Starting download from {0}", url);
+
+            var tmpFile = BootstrapperHelper.GetTempFile("paketnupkg");
+            WebRequestProxy.DownloadFile(url, tmpFile);
+
+            string packageName = Path.GetFileName(url);
+
+            var randomFullPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            FileSystemProxy.CreateDirectory(randomFullPath);
+
+            string packagePath = Path.Combine(randomFullPath, packageName);
+
+            FileSystemProxy.CopyFile(tmpFile, packagePath, true);
+            FileSystemProxy.DeleteFile(tmpFile);
+
+            var installAsTool = new InstallKind.InstallAsTool(FileSystemProxy);
+            installAsTool.Run(randomFullPath, target, latestVersion);
+
+            FileSystemProxy.DeleteDirectory(randomFullPath, true);
         }
     }
 }

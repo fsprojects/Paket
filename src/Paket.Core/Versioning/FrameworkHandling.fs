@@ -193,42 +193,61 @@ type DotNetCoreAppVersion =
     | V1_1
     | V2_0
     | V2_1
+    | V2_2
+    | V3_0
+
     member private this.NumKey =
         match this with
         | V1_0 -> 0
         | V1_1 -> 1
         | V2_0 -> 2
         | V2_1 -> 3
+        | V2_2 -> 4
+        | V3_0 -> 5
+
     static member private FromNum num =
         match num with
         | 0 -> V1_0
         | 1 -> V1_1
         | 2 -> V2_0
         | 3 -> V2_1
+        | 4 -> V2_2
+        | 5 -> V3_0
         | _   -> failwithf "'%i' has no corresponding framework version" num
+
     static member (<->) (lower:DotNetCoreAppVersion,upper:DotNetCoreAppVersion) =
         if lower.NumKey < upper.NumKey then
-            [ lower.NumKey .. upper.NumKey ] |> List.map DotNetCoreAppVersion.FromNum
+            [ lower.NumKey .. upper.NumKey ]
         else
-            [ lower.NumKey .. -1 .. upper.NumKey ] |> List.map DotNetCoreAppVersion.FromNum
+            [ lower.NumKey .. -1 .. upper.NumKey ] 
+        |> List.map DotNetCoreAppVersion.FromNum
+
     override this.ToString() =
         match this with
         | V1_0 -> "v1.0"
         | V1_1 -> "v1.1"
         | V2_0 -> "v2.0"
         | V2_1 -> "v2.1"
+        | V2_2 -> "v2.2"
+        | V3_0 -> "v3.0"
+
     member this.ShortString() =
         match this with
         | DotNetCoreAppVersion.V1_0 -> "1.0"
         | DotNetCoreAppVersion.V1_1 -> "1.1"
         | DotNetCoreAppVersion.V2_0 -> "2.0"
         | DotNetCoreAppVersion.V2_1 -> "2.1"
+        | DotNetCoreAppVersion.V2_2 -> "2.2"
+        | DotNetCoreAppVersion.V3_0 -> "3.0"
+
     static member TryParse s =
         match s with
         | "" | "1" -> Some (DotNetCoreAppVersion.V1_0)
         | "1.1" -> Some (DotNetCoreAppVersion.V1_1)
         | "2" -> Some (DotNetCoreAppVersion.V2_0)
         | "2.1" -> Some (DotNetCoreAppVersion.V2_1)
+        | "2.2" -> Some (DotNetCoreAppVersion.V2_2)
+        | "3.0" -> Some (DotNetCoreAppVersion.V3_0)
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -385,6 +404,7 @@ type MonoAndroidVersion =
     | V7_1
     | V8
     | V8_1
+    | V9
     member this.ShortString() =
         match this with
         | MonoAndroidVersion.V1    -> ""
@@ -402,6 +422,7 @@ type MonoAndroidVersion =
         | MonoAndroidVersion.V7_1   -> "7.1"
         | MonoAndroidVersion.V8   -> "8.0"
         | MonoAndroidVersion.V8_1   -> "8.1"
+        | MonoAndroidVersion.V9   -> "9.0"
     override this.ToString() =
         match this with
         | MonoAndroidVersion.V1    -> "v1.0"
@@ -419,6 +440,7 @@ type MonoAndroidVersion =
         | MonoAndroidVersion.V7_1   -> "v7.1"
         | MonoAndroidVersion.V8   -> "v8.0"
         | MonoAndroidVersion.V8_1   -> "v8.1"
+        | MonoAndroidVersion.V9   -> "v9.0"
 
     static member TryParse s =
         match s with
@@ -439,6 +461,8 @@ type MonoAndroidVersion =
         | "8"
         | "8.0" -> Some (MonoAndroidVersion.V8)
         | "8.1" -> Some (MonoAndroidVersion.V8_1)
+        | "9"
+        | "9.0" -> Some (MonoAndroidVersion.V9)
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -566,12 +590,13 @@ type FrameworkIdentifier =
         | MonoAndroid MonoAndroidVersion.V6 -> [ MonoAndroid MonoAndroidVersion.V5_1 ]
         | MonoAndroid MonoAndroidVersion.V7 -> [ MonoAndroid MonoAndroidVersion.V6; DotNetStandard DotNetStandardVersion.V1_6 ]
         | MonoAndroid MonoAndroidVersion.V7_1 -> [ MonoAndroid MonoAndroidVersion.V7 ]
-        | MonoAndroid MonoAndroidVersion.V8 -> [ MonoAndroid MonoAndroidVersion.V7_1 ]
+        | MonoAndroid MonoAndroidVersion.V8 -> [ MonoAndroid MonoAndroidVersion.V7_1; DotNetStandard DotNetStandardVersion.V2_0 ]
         | MonoAndroid MonoAndroidVersion.V8_1 -> [ MonoAndroid MonoAndroidVersion.V8 ]
+        | MonoAndroid MonoAndroidVersion.V9 -> [ MonoAndroid MonoAndroidVersion.V8_1 ]
         | MonoTouch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | MonoMac -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Native(_) -> [ ]
-        | XamariniOS -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | XamariniOS -> [ DotNetStandard DotNetStandardVersion.V1_6; DotNetStandard DotNetStandardVersion.V2_0 ]
         | XamarinMac -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | XamarinTV -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | XamarinWatch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
@@ -611,8 +636,10 @@ type FrameworkIdentifier =
         | DotNetStandard DotNetStandardVersion.V2_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | DotNetCoreApp DotNetCoreAppVersion.V1_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | DotNetCoreApp DotNetCoreAppVersion.V1_1 -> [ DotNetCoreApp DotNetCoreAppVersion.V1_0 ]
-        | DotNetCoreApp DotNetCoreAppVersion.V2_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V1_1;  DotNetStandard DotNetStandardVersion.V2_0 ]
+        | DotNetCoreApp DotNetCoreAppVersion.V2_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V1_1; DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetCoreApp DotNetCoreAppVersion.V2_1 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_0 ]
+        | DotNetCoreApp DotNetCoreAppVersion.V2_2 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_1 ]
+        | DotNetCoreApp DotNetCoreAppVersion.V3_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_2 ]
         | DotNetUnity DotNetUnityVersion.V3_5_Full -> [ ]
         | DotNetUnity DotNetUnityVersion.V3_5_Subset -> [ ]
         | DotNetUnity DotNetUnityVersion.V3_5_Micro -> [ ]
@@ -1129,6 +1156,8 @@ module KnownTargetProfiles =
         DotNetCoreAppVersion.V1_1
         DotNetCoreAppVersion.V2_0
         DotNetCoreAppVersion.V2_1
+        DotNetCoreAppVersion.V2_2
+        DotNetCoreAppVersion.V3_0
     ]
 
     let DotNetUnityVersions = [
@@ -1182,6 +1211,7 @@ module KnownTargetProfiles =
         MonoAndroidVersion.V7_1
         MonoAndroidVersion.V8
         MonoAndroidVersion.V8_1
+        MonoAndroidVersion.V9
     ]
 
     let MonoAndroidProfiles =

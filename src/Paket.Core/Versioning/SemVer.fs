@@ -52,7 +52,7 @@ type PreRelease =
                 | _::AlphaNumeric(a)::_ -> a // fallback to 2nd
                 | _ -> ""
                 
-            let parse segment =
+            let parse (segment:string) =
                 match bigint.TryParse segment with
                 | true, number when number >= 0I -> Numeric number
                 | _ -> AlphaNumeric segment
@@ -198,13 +198,13 @@ module SemVer =
     open System.Numerics
   
     /// Matches if str is convertible to Int and not less than zero, and returns the value as UInt.
-    let inline private (|Int|_|) str =
+    let inline private (|Int|_|) (str:string) =
         match Int32.TryParse (str, NumberStyles.Integer, null) with
         | true, num -> Some num // ALLOW negative as we need to fail
         | _ -> None
         
     /// Matches if str is convertible to big int and not less than zero, and returns the bigint value.
-    let inline private (|Big|_|) str =
+    let inline private (|Big|_|) (str:string) =
         match BigInteger.TryParse (str, NumberStyles.Integer, null) with
         | true, big when big > -1I -> Some big // positive, or fallback as prerelease
         | _ -> None

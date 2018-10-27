@@ -43,12 +43,16 @@
     <ApplicationIcon>
     </ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(PaketUseLocalGithub)' == 'true' ">
+    <DefineConstants>LOCAL_GITHUB;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArgumentParser.cs" />
@@ -56,6 +60,7 @@
     <Compile Include="BootstrapperOptions.cs" />
     <Compile Include="DownloadStrategies\IDownloadStrategy.cs" />
     <Compile Include="DownloadStrategies\IHaveEffectiveStrategy.cs" />
+    <Compile Include="InstallKind\InstallAsTool.cs" />
     <Compile Include="PaketHashFile.cs" />
     <Compile Include="Properties\InternalsVisibleTo.cs" />
     <Compile Include="PaketDependencies.cs" />
