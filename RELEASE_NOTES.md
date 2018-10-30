@@ -1,3 +1,6 @@
+#### 5.183.0 - 2018-10-30
+* Add namespace to load scripts - https://github.com/fsprojects/Paket/pull/3396
+
 #### 5.182.1 - 2018-10-30
 * Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383
 * Full .NET Core support - https://github.com/fsprojects/Paket/pull/3183
