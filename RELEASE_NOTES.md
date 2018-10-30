@@ -1,3 +1,6 @@
+#### 5.184.0 - 2018-10-30
+* REVERT: Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383
+
 #### 5.183.0 - 2018-10-30
 * Add namespace to load scripts - https://github.com/fsprojects/Paket/pull/3396
 
