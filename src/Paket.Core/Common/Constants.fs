@@ -16,7 +16,6 @@ let [<Literal>] LockFileName              = "paket.lock"
 let [<Literal>] LocalFileName             = "paket.local"
 /// 'paket.restore.sha512'
 let [<Literal>] RestoreHashFile           = "paket.restore.cached"
-let [<Literal>] RestoreVersionFile        = "paket.restore.version"
 /// 'paket.dependencies'
 let [<Literal>] DependenciesFileName      = "paket.dependencies"
 /// '.paket'
@@ -98,7 +97,6 @@ let PaketConfigFolder   = Path.Combine(AppDataFolder, "Paket")
 let PaketConfigFile     = Path.Combine(PaketConfigFolder, "paket.config")
 
 let PaketRestoreHashFilePath = Path.Combine(PaketFilesFolderName, RestoreHashFile)
-let PaketRestoreVersionFilePath = Path.Combine(PaketFilesFolderName, RestoreVersionFile)
 
 let LocalRootForTempData =
     getEnvDir Environment.SpecialFolder.UserProfile 
