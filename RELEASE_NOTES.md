@@ -1,3 +1,6 @@
+#### 5.185.0 - 2018-11-07
+* Write paket version to /paket-files during restore
+
 #### 5.184.0 - 2018-10-30
 * REVERT: Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383
 

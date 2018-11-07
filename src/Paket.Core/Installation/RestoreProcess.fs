@@ -538,10 +538,12 @@ let RestoreNewSdkProject lockFile resolved groups (projectFile:ProjectFile) targ
 let private isRestoreUpDoDate (lockFileName:FileInfo) (lockFileContents:string) =
     let root = lockFileName.Directory.FullName
     let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
+    let restoreVersionFile = Path.Combine(root, Constants.PaketRestoreVersionFilePath)
+
     // We ignore our check when we do a partial restore, this way we can
     // fixup project specific changes (like an additional target framework or a changed references file)
     // We could still skip the actual "restore" work, but that is left as an exercise for the interesting reader.
-    if File.Exists restoreCacheFile then
+    if File.Exists restoreCacheFile && File.Exists restoreVersionFile then
         let oldContents = File.ReadAllText(restoreCacheFile)
         oldContents = lockFileContents
     else false
@@ -687,6 +689,9 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
                     CreateScriptsForGroups lockFile.Value groups
                     if isFullRestore then
+                        let restoreVersionFile = Path.Combine(root, Constants.PaketRestoreVersionFilePath)
+                        let paketVersion = AssemblyVersionInformation.AssemblyInformationalVersion
+                        File.WriteAllText(restoreVersionFile, paketVersion)
                         let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
                         File.WriteAllText(restoreCacheFile, newContents))
             )
