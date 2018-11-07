@@ -546,6 +546,18 @@ let private isRestoreUpDoDate (lockFileName:FileInfo) (lockFileContents:string) 
         oldContents = lockFileContents
     else false
 
+let private WriteGitignore restoreCacheFile =
+    let folder = FileInfo(restoreCacheFile).Directory
+    let rec isGitManaged (folder:DirectoryInfo) =
+        if File.Exists(Path.Combine(folder.FullName, ".gitignore")) then true else
+        if isNull folder.Parent then false else
+        isGitManaged folder.Parent
+   
+    if isGitManaged folder.Parent then
+        let restoreCacheGitIgnoreFile = Path.Combine(folder.FullName, ".gitignore")
+        let contents = [".gitignore"; "paket.restore.cached"]
+        File.WriteAllLines(restoreCacheGitIgnoreFile, contents)
+
 let IsRestoreUpToDate(lockFileName:FileInfo) =
     let newContents = File.ReadAllText(lockFileName.FullName)
     isRestoreUpDoDate lockFileName newContents
@@ -688,5 +700,6 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     CreateScriptsForGroups lockFile.Value groups
                     if isFullRestore then
                         let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
-                        File.WriteAllText(restoreCacheFile, newContents))
+                        File.WriteAllText(restoreCacheFile, newContents)
+                        WriteGitignore restoreCacheFile)
             )

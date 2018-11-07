@@ -1,3 +1,6 @@
+#### 5.186.0 - 2018-11-07
+* Create a gitignore around paket's .cached file - https://github.com/fsprojects/Paket/issues/3060 
+
 #### 5.185.3 - 2018-11-07
 * Paket template checks if restored with 5.185.3 or later - https://github.com/fsprojects/Paket/issues/3404
 
