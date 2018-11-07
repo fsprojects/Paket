@@ -1,5 +1,5 @@
-#### 5.185.2 - 2018-11-07
-* Write paket version to /paket-files during restore
+#### 5.185.3 - 2018-11-07
+* Paket template checks if restored with 5.185.3 or later - https://github.com/fsprojects/Paket/issues/3404
 
 #### 5.184.0 - 2018-10-30
 * REVERT: Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383

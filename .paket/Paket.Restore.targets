@@ -82,7 +82,7 @@
       <PaketRestoreRequired Condition=" '$(PaketRestoreLockFileHash)' == '' ">true</PaketRestoreRequired>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(PaketPropsVersion)' != '5.174.2' ">
+    <PropertyGroup Condition="'$(PaketPropsVersion)' != '5.185.3' ">
       <PaketRestoreRequired>true</PaketRestoreRequired>
     </PropertyGroup>
 
