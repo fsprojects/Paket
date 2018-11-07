@@ -1,4 +1,4 @@
-#### 5.185.0 - 2018-11-07
+#### 5.185.1 - 2018-11-07
 * Write paket version to /paket-files during restore
 
 #### 5.184.0 - 2018-10-30
