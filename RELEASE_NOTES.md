@@ -1,3 +1,6 @@
+#### 5.186.1 - 2018-11-07
+* BUGFIX: Remove ReadOnly flag before writing to files - https://github.com/fsprojects/Paket/issues/3410 
+
 #### 5.186.0 - 2018-11-07
 * Create a gitignore around paket's .cached file - https://github.com/fsprojects/Paket/issues/3060 
 

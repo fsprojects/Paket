@@ -198,6 +198,8 @@ let saveToFile newContent (targetFile:FileInfo) =
                 if verbose then
                     tracefn " - %s created" targetFile.FullName
 
+                if targetFile.Exists then
+                    File.SetAttributes(targetFile.FullName,IO.FileAttributes.Normal)
                 File.WriteAllText(targetFile.FullName,newContent)
             else
                 if verbose then
@@ -555,8 +557,10 @@ let private WriteGitignore restoreCacheFile =
    
     if isGitManaged folder.Parent then
         let restoreCacheGitIgnoreFile = Path.Combine(folder.FullName, ".gitignore")
-        let contents = [".gitignore"; "paket.restore.cached"]
-        File.WriteAllLines(restoreCacheGitIgnoreFile, contents)
+        let contents = 
+            ".gitignore\npaket.restore.cached"
+            |> normalizeLineEndings
+        saveToFile contents (FileInfo restoreCacheGitIgnoreFile) |> ignore
 
 let IsRestoreUpToDate(lockFileName:FileInfo) =
     let newContents = File.ReadAllText(lockFileName.FullName)
@@ -700,6 +704,6 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     CreateScriptsForGroups lockFile.Value groups
                     if isFullRestore then
                         let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
-                        File.WriteAllText(restoreCacheFile, newContents)
+                        saveToFile newContents (FileInfo restoreCacheFile) |> ignore
                         WriteGitignore restoreCacheFile)
             )
