@@ -1,4 +1,4 @@
-#### 5.186.1 - 2018-11-07
+#### 5.186.3 - 2018-11-09
 * BUGFIX: Remove ReadOnly flag before writing to files - https://github.com/fsprojects/Paket/issues/3410 
 
 #### 5.186.0 - 2018-11-07
