@@ -566,19 +566,28 @@ let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : s
     let rec getExceptionNames (exn:Exception) = [
         if exn <> null then
             yield exn.GetType().Name
-            if exn.InnerException <> null then
-                yield! getExceptionNames exn.InnerException
+        match exn with
+        | :? System.AggregateException as agg ->
+            for ei in agg.InnerExceptions do
+                yield! getExceptionNames ei
+        | _ when exn.InnerException <> null ->
+            yield! getExceptionNames exn.InnerException
+        | _ -> ()        
     ]
 
-    let shouldRetry exn = isMonoRuntime && iTry < nTries && (getExceptionNames exn |> List.contains "MonoBtlsException")
+    use timeoutTok = new System.Threading.CancellationTokenSource()
+    timeoutTok.CancelAfter(60000)
+    let shouldRetryTimeout exn =
+        let exnNames = getExceptionNames exn
+        iTry < nTries &&
+            (timeoutTok.IsCancellationRequested && (exnNames |> List.contains "OperationCanceledException" ))
 
     async {
         try
             let uri = Uri url
             use client = createHttpClient (url,auth)
             let! tok = Async.CancellationToken
-            let tokSource = System.Threading.CancellationTokenSource.CreateLinkedTokenSource(tok)
-            tokSource.CancelAfter(60000)
+            let tokSource = System.Threading.CancellationTokenSource.CreateLinkedTokenSource(tok, timeoutTok)
 
             if notNullOrEmpty contentType then
                 addAcceptHeader client contentType
@@ -589,13 +598,11 @@ let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : s
             let! raw = client.DownloadStringTaskAsync(uri, tokSource.Token) |> Async.AwaitTaskWithoutAggregate
             return SuccessResponse raw
         with
-
-        | exn when shouldRetry exn ->
-            raise (Exception("Hello from _safeGetFromUrl.shouldRetry", exn))
-            // there are issues with mono, try again :\
-            Logging.traceWarnfn "Request failed, this is likely due to a mono issue. Trying again, this was try %i/%i" iTry nTries
+        | exn when shouldRetryTimeout exn ->
+            Logging.traceWarnfn "Request to '%O' didn't respond after 60 seconds, trying again %i/%i" uri iTry nTries
             return! _safeGetFromUrl(auth, url, contentType, iTry + 1, nTries)
-
+        | :? OperationCanceledException as cancel when timeoutTok.IsCancellationRequested ->
+            raise (Exception(sprintf "Request to '%O' finally timed out after 60 seconds after several retries" uri, exn))
         | :? RequestFailedException as w ->
             match w.Info with
             | Some { StatusCode = HttpStatusCode.NotFound } -> return NotFound
