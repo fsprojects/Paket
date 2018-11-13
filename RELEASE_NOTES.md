@@ -1,3 +1,6 @@
+#### 5.187.1 - 2018-11-13
+* REVERT: Retry automatically when a request times out - https://github.com/fsprojects/Paket/pull/3420
+
 #### 5.187.0 - 2018-11-13
 * Create a gitignore around paket's .cached file - https://github.com/fsprojects/Paket/issues/3060 
 * Paket template checks if restored with 5.185.3 or later - https://github.com/fsprojects/Paket/issues/3404
