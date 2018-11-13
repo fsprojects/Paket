@@ -1,11 +1,9 @@
-#### 5.186.3 - 2018-11-09
-* BUGFIX: Remove ReadOnly flag before writing to files - https://github.com/fsprojects/Paket/issues/3410 
-
-#### 5.186.0 - 2018-11-07
+#### 5.187.0 - 2018-11-13
 * Create a gitignore around paket's .cached file - https://github.com/fsprojects/Paket/issues/3060 
-
-#### 5.185.3 - 2018-11-07
 * Paket template checks if restored with 5.185.3 or later - https://github.com/fsprojects/Paket/issues/3404
+* BUGFIX: Remove ReadOnly flag before writing to files - https://github.com/fsprojects/Paket/issues/3410 
+* BUGFIX: Added compat fallback in case of older cache files - https://github.com/fsprojects/Paket/pull/3417
+* BUGFIX: Used lowest_matching for paket's own FSharp.Core dependency - https://github.com/fsprojects/Paket/pull/3415
 
 #### 5.184.0 - 2018-10-30
 * REVERT: Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383
