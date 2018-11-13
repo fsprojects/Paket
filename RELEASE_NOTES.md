@@ -4,6 +4,7 @@
 * BUGFIX: Remove ReadOnly flag before writing to files - https://github.com/fsprojects/Paket/issues/3410 
 * BUGFIX: Added compat fallback in case of older cache files - https://github.com/fsprojects/Paket/pull/3417
 * BUGFIX: Used lowest_matching for paket's own FSharp.Core dependency - https://github.com/fsprojects/Paket/pull/3415
+* BUGFIX: Retry automatically when a request times out - https://github.com/fsprojects/Paket/pull/3420
 
 #### 5.184.0 - 2018-10-30
 * REVERT: Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383
