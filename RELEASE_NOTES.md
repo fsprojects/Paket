@@ -1,5 +1,6 @@
-#### 5.187.1 - 2018-11-13
-* REVERT: Retry automatically when a request times out - https://github.com/fsprojects/Paket/pull/3420
+#### 5.188.0 - 2018-10-14
+* REVERT: Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383
+* REVERT: Retry automatically when a request times out - https://github.com/fsprojects/Paket/pull/3424
 
 #### 5.187.0 - 2018-11-13
 * Create a gitignore around paket's .cached file - https://github.com/fsprojects/Paket/issues/3060 
