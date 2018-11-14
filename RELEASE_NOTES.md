@@ -1,4 +1,4 @@
-#### 5.188.0 - 2018-10-14
+#### 5.188.1 - 2018-10-14
 * REVERT: Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383
 * REVERT: Retry automatically when a request times out - https://github.com/fsprojects/Paket/pull/3424
 
