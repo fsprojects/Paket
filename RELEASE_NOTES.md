@@ -1,5 +1,6 @@
-#### 5.188.1 - 2018-10-14
-* REVERT: Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383
+#### 5.189.0 - 2018-10-16
+* NuGet pack compat for SDK 2.1.500 - https://github.com/fsprojects/Paket/issues/3427
+* Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383
 * REVERT: Retry automatically when a request times out - https://github.com/fsprojects/Paket/pull/3424
 
 #### 5.187.0 - 2018-11-13
