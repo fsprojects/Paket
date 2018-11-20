@@ -396,7 +396,7 @@ let createHttpClient (url,auth:Auth option) =
             //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
 
             //so use THIS instead to send credentials RIGHT AWAY
-            let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
+            let credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(username + ":" + password))
             client.DefaultRequestHeaders.Authorization <-
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials)
         | Some(Credentials({Username = username; Password = password; Type = AuthType.NTLM})) ->
@@ -433,7 +433,7 @@ let createWebClient (url,auth:Auth option) =
         //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
 
         //so use THIS instead to send credentials RIGHT AWAY
-        let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
+        let credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(username + ":" + password))
         client.Headers.[HttpRequestHeader.Authorization] <- sprintf "Basic %s" credentials
         client.Credentials <- new NetworkCredential(username,password)
     | Some (Credentials{Username = username; Password = password; Type = AuthType.NTLM}) ->
