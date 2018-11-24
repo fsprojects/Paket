@@ -247,7 +247,7 @@ type DotNetCoreAppVersion =
         | "2" -> Some (DotNetCoreAppVersion.V2_0)
         | "2.1" -> Some (DotNetCoreAppVersion.V2_1)
         | "2.2" -> Some (DotNetCoreAppVersion.V2_2)
-        | "3.0" -> Some (DotNetCoreAppVersion.V3_0)
+        | "3" -> Some (DotNetCoreAppVersion.V3_0)
         | _ -> None
 
 [<RequireQualifiedAccess>]
