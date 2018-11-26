@@ -194,17 +194,16 @@
   <Target Name="PaketDisableDirectPack" AfterTargets="_IntermediatePack" BeforeTargets="GenerateNuspec" Condition="('$(IsPackable)' == '' Or '$(IsPackable)' == 'true') And Exists('$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).references')" >
     <PropertyGroup>
       <ContinuePackingAfterGeneratingNuspec>false</ContinuePackingAfterGeneratingNuspec>
+      <DetectedMSBuildVersion>$(MSBuildVersion)</DetectedMSBuildVersion>
+      <DetectedMSBuildVersion Condition="$(MSBuildVersion) == ''">15.8.0</DetectedMSBuildVersion>
     </PropertyGroup>
   </Target>
 
   <Target Name="PaketOverrideNuspec" AfterTargets="GenerateNuspec" Condition="('$(IsPackable)' == '' Or '$(IsPackable)' == 'true') And Exists('$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).references')" >
     <ItemGroup>
       <_NuspecFilesNewLocation Include="$(BaseIntermediateOutputPath)$(Configuration)\*.nuspec"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <MSBuildMajorVersion Include="$(MSBuildVersion.Replace(`-`, `.`).Split(`.`)[0])" />
-        <MSBuildMinorVersion Include="$(MSBuildVersion.Replace(`-`, `.`).Split(`.`)[1])" />
+      <MSBuildMajorVersion Include="$(DetectedMSBuildVersion.Replace(`-`, `.`).Split(`.`)[0])" />
+      <MSBuildMinorVersion Include="$(DetectedMSBuildVersion.Replace(`-`, `.`).Split(`.`)[1])" />
     </ItemGroup>
 
     <PropertyGroup>
