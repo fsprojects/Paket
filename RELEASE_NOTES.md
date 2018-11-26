@@ -1,7 +1,7 @@
-#### 5.189.2 - 2018-11-26
+#### 5.190.0 - 2018-11-26
+* BUGFIX: Allow Username/password to be UTF8 - https://github.com/fsprojects/Paket/pull/3431
 * BUGFIX: Fixed handling of DotNetCoreAppVersion.V3_0 - https://github.com/fsprojects/Paket/pull/3437
-
-#### 5.189.1 - 2018-11-17
+ - 2018-11-17
 * NuGet pack compat for SDK 2.1.500 - https://github.com/fsprojects/Paket/issues/3427
 * Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383
 * REVERT: Retry automatically when a request times out - https://github.com/fsprojects/Paket/pull/3424
