@@ -883,6 +883,20 @@ _paket-restore() {
   return ret
 }
 
+(( $+functions[_paket-restriction] )) ||
+_paket-restriction() {
+  local curcontext=$curcontext context state state_descr ret=1
+  typeset -A opt_args
+  local -a line
+
+  _arguments -C \
+    $global_options \
+    '1:Paket formula representing a restriction' \
+  && ret=0
+
+  return ret
+}
+
 (( $+functions[_paket-show-groups] )) ||
 _paket-show-groups() {
   _arguments $global_options
@@ -1021,6 +1035,7 @@ _paket_commands() {
     find-packages:'search for NuGet packages'
     find-package-versions:'search for dependency versions'
     find-refs:'find all project files that have a dependency installed'
+    restriction:'resolve a framework restriction and show details'
     show-groups:'show groups'
     show-installed-packages:'show installed dependencies'
     why:'determine why a dependency is required'
