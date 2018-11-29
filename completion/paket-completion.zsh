@@ -567,7 +567,7 @@ _paket-find-refs() {
     (package-id)
       local group=${(v)opt_args[(i)--group|-g]:-Main}
 
-      _paket_installed_packages $group \
+      _paket_installed_packages $group --all \
       && ret=0
       ;;
   esac
@@ -871,7 +871,7 @@ _paket-show-groups() {
 
 (( $+functions[_paket-show-installed-packages] )) ||
 _paket-show-installed-packages() {
-    local curcontext=$curcontext context state state_descr line ret=1
+  local curcontext=$curcontext context state state_descr line ret=1
   typeset -A opt_args
 
   local -a args
@@ -966,7 +966,7 @@ _paket-why() {
     (package-id)
       local group=${(v)opt_args[(i)--group|-g]:-Main}
 
-      _paket_installed_packages $group \
+      _paket_installed_packages $group --all \
       && ret=0
       ;;
   esac
@@ -1189,6 +1189,7 @@ _paket_groups() {
 (( $+functions[_paket_installed_packages] )) ||
 _paket_installed_packages() {
   local group="$1"
+  local args=$*
   local cmd=show-installed-packages
 
   local what='NuGet package ID'
@@ -1206,7 +1207,7 @@ _paket_installed_packages() {
     local -a output
     output=(
       ${(f)"$(_call_program $cmd \
-              "$(_paket_executable) $cmd --silent --all 2> /dev/null")"}
+              "$(_paket_executable) $cmd $args --silent 2> /dev/null")"}
       )
     _paket_command_successful $? || return 1
 
