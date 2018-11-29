@@ -664,6 +664,25 @@ _paket-init() {
   _arguments $global_options
 }
 
+(( $+functions[_paket-info] )) ||
+_paket-info() {
+  local curcontext=$curcontext context state state_descr ret=1
+  typeset -A opt_args
+  local -a line
+
+  local -a args
+  args=(
+    $global_options
+    '(--paket-dependencies-dir)'--paket-dependencies-dir'[shows the absolute path of the directory containing paket.dependencies, if it exists]'
+  )
+
+  _arguments -C \
+    $args \
+  && ret=0
+
+  return ret
+}
+
 (( $+functions[_paket-install] )) ||
 _paket-install() {
   local curcontext=$curcontext context state state_descr line ret=1
@@ -1019,6 +1038,7 @@ _paket_commands() {
     config:'store global configuration values like NuGet credentials'
     generate-load-scripts:'generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS'
     init:'create an empty paket.dependencies file in the current working directory'
+    info:'show information about the current project'
   )
 
   for type in $types; do
