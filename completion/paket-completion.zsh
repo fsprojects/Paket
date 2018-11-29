@@ -488,8 +488,10 @@ _paket-config() {
         (add-credentials)
           _arguments -C \
             $args \
+            '(--authtype)'--authtype'[authentication type (default: basic)]:authentication type:(basic ntlm)' \
             '(--username)'--username'[provide username]:user name: ' \
             '(--password)'--password'[provide password]:password: ' \
+            '(--verify)'--verify'[verify credentials]' \
             '1: :->source-url-or-credential-key' \
           && ret=0
 
