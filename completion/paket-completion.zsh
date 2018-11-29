@@ -375,7 +375,11 @@ _paket-add() {
     $download_options
     '(--interactive -i)'{--interactive,-i}"[ask for every project whether to add the dependency]"
     '(--no-install)'--no-install'[do not modify projects]'
+    '(--no-resolve)'--no-resolve'[do not resolve]'
     '(--project -p)'{--project,-p}'[add the dependency to a single project only]:project:_path_files -g "**/*.??proj"'
+    '(--type -t)'{--type,-t}"[type of the dependency (default: nuget)]:dependency type:((\
+      nuget\:'add NuGet dependency' \
+      clitool\:'add .NET Core CLI tool'))"
     '(--version -V)'{--version,-V}'[dependency version constraint]: :->version'
     "${(f)$(_paket_group_option 'add the dependency to a group (default: Main group)')}"
   )
