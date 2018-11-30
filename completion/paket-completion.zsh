@@ -442,7 +442,7 @@ _paket-clear-cache() {
   local -a args
   args=(
     $global_options
-    '(--clear-local --clear-local)'{--clear-local,--clearlocal}"[clear local packages folder and paket-files]"
+    '(--clear-local)'{--clear-local}"[also clear local packages and paket-files directory]"
   )
 
   _arguments -C \
@@ -1056,7 +1056,7 @@ _paket_commands() {
 
   misc=(
     auto-restore:'manage automatic package restore during the build process inside Visual Studio'
-    clear-cache:'clear the NuGet and git cache directories'
+    clear-cache:'clear the global and optionally local NuGet and cache directories'
     config:'store global configuration values like NuGet credentials'
     generate-load-scripts:'generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS'
     init:'create an empty paket.dependencies file in the current working directory'
