@@ -1904,7 +1904,7 @@ type ProjectFile with
         findAllFiles(folder, "*proj*")
         |> Array.filter ProjectFile.isSupportedFile
     
-                /// Finds all project files
+    /// Finds all project files
     static member FindAllProjects folder : ProjectFile [] =
         ProjectFile.FindAllProjectFiles folder
         |> Array.choose (fun f -> ProjectFile.tryLoad f.FullName)
