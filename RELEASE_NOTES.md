@@ -1,4 +1,4 @@
-#### 5.192.0 - 2018-12-02
+#### 5.193.0 - 2018-12-02
 * Zsh completion update - https://github.com/fsprojects/Paket/pull/3440
 
 #### 5.192.0 - 2018-12-02
