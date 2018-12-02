@@ -375,7 +375,11 @@ _paket-add() {
     $download_options
     '(--interactive -i)'{--interactive,-i}"[ask for every project whether to add the dependency]"
     '(--no-install)'--no-install'[do not modify projects]'
+    '(--no-resolve)'--no-resolve'[do not resolve]'
     '(--project -p)'{--project,-p}'[add the dependency to a single project only]:project:_path_files -g "**/*.??proj"'
+    '(--type -t)'{--type,-t}"[type of the dependency (default: nuget)]:dependency type:((\
+      nuget\:'add NuGet dependency' \
+      clitool\:'add .NET Core CLI tool'))"
     '(--version -V)'{--version,-V}'[dependency version constraint]: :->version'
     "${(f)$(_paket_group_option 'add the dependency to a group (default: Main group)')}"
   )
@@ -438,6 +442,7 @@ _paket-clear-cache() {
   local -a args
   args=(
     $global_options
+    '(--clear-local)'{--clear-local}"[also clear local packages and paket-files directory]"
   )
 
   _arguments -C \
@@ -483,8 +488,10 @@ _paket-config() {
         (add-credentials)
           _arguments -C \
             $args \
+            '(--authtype)'--authtype'[authentication type (default: basic)]:authentication type:(basic ntlm)' \
             '(--username)'--username'[provide username]:user name: ' \
             '(--password)'--password'[provide password]:password: ' \
+            '(--verify)'--verify'[verify credentials]' \
             '1: :->source-url-or-credential-key' \
           && ret=0
 
@@ -567,7 +574,7 @@ _paket-find-refs() {
     (package-id)
       local group=${(v)opt_args[(i)--group|-g]:-Main}
 
-      _paket_installed_packages $group \
+      _paket_installed_packages $group --all \
       && ret=0
       ;;
   esac
@@ -662,6 +669,25 @@ _paket-generate-load-scripts() {
 (( $+functions[_paket-init] )) ||
 _paket-init() {
   _arguments $global_options
+}
+
+(( $+functions[_paket-info] )) ||
+_paket-info() {
+  local curcontext=$curcontext context state state_descr ret=1
+  typeset -A opt_args
+  local -a line
+
+  local -a args
+  args=(
+    $global_options
+    '(--paket-dependencies-dir)'--paket-dependencies-dir'[shows the absolute path of the directory containing paket.dependencies, if it exists]'
+  )
+
+  _arguments -C \
+    $args \
+  && ret=0
+
+  return ret
 }
 
 (( $+functions[_paket-install] )) ||
@@ -864,6 +890,20 @@ _paket-restore() {
   return ret
 }
 
+(( $+functions[_paket-restriction] )) ||
+_paket-restriction() {
+  local curcontext=$curcontext context state state_descr ret=1
+  typeset -A opt_args
+  local -a line
+
+  _arguments -C \
+    $global_options \
+    '1:Paket formula representing a restriction' \
+  && ret=0
+
+  return ret
+}
+
 (( $+functions[_paket-show-groups] )) ||
 _paket-show-groups() {
   _arguments $global_options
@@ -871,7 +911,7 @@ _paket-show-groups() {
 
 (( $+functions[_paket-show-installed-packages] )) ||
 _paket-show-installed-packages() {
-    local curcontext=$curcontext context state state_descr line ret=1
+  local curcontext=$curcontext context state state_descr line ret=1
   typeset -A opt_args
 
   local -a args
@@ -966,7 +1006,7 @@ _paket-why() {
     (package-id)
       local group=${(v)opt_args[(i)--group|-g]:-Main}
 
-      _paket_installed_packages $group \
+      _paket_installed_packages $group --all \
       && ret=0
       ;;
   esac
@@ -1002,6 +1042,7 @@ _paket_commands() {
     find-packages:'search for NuGet packages'
     find-package-versions:'search for dependency versions'
     find-refs:'find all project files that have a dependency installed'
+    restriction:'resolve a framework restriction and show details'
     show-groups:'show groups'
     show-installed-packages:'show installed dependencies'
     why:'determine why a dependency is required'
@@ -1015,10 +1056,11 @@ _paket_commands() {
 
   misc=(
     auto-restore:'manage automatic package restore during the build process inside Visual Studio'
-    clear-cache:'clear the NuGet and git cache directories'
+    clear-cache:'clear the global and optionally local NuGet and cache directories'
     config:'store global configuration values like NuGet credentials'
     generate-load-scripts:'generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS'
     init:'create an empty paket.dependencies file in the current working directory'
+    info:'show information about the current project'
   )
 
   for type in $types; do
@@ -1189,6 +1231,7 @@ _paket_groups() {
 (( $+functions[_paket_installed_packages] )) ||
 _paket_installed_packages() {
   local group="$1"
+  local args=$*
   local cmd=show-installed-packages
 
   local what='NuGet package ID'
@@ -1206,7 +1249,7 @@ _paket_installed_packages() {
     local -a output
     output=(
       ${(f)"$(_call_program $cmd \
-              "$(_paket_executable) $cmd --silent --all 2> /dev/null")"}
+              "$(_paket_executable) $cmd $args --silent 2> /dev/null")"}
       )
     _paket_command_successful $? || return 1
 
