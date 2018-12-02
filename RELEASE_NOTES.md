@@ -1,3 +1,6 @@
+#### 5.192.0 - 2018-12-02
+* Making Paket.Restore.targets work with Paket as a global tool - https://github.com/fsprojects/Paket/pull/3445
+
 #### 5.191.0 - 2018-12-01
 * BUGFIX: Fix bindingredirects - https://github.com/fsprojects/Paket/issues/3444
 
