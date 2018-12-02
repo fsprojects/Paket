@@ -58,24 +58,22 @@
         <div class="span9" id="main">
           
 <h1><a name="paket-clear-cache" class="anchor" href="#paket-clear-cache">paket clear-cache</a></h1>
-<p>Clear the NuGet and git cache directories.</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
+<p>Clear the global and optionally local NuGet and cache directories.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket clear-cache [--help] [--clearlocal]
+<td class="snippet"><pre class="fssnip"><code lang="sh">paket clear-cache [--help] [--clear-local]
 
 OPTIONS:
 
-    --clearlocal, --clear-local
-                          Clears local packages folder and paket-files.
+    --clear-local         also clear local packages and paket-files directory
     --silent, -s          suppress console output
     --verbose, -v         print detailed information to the console
     --log-file &lt;path&gt;     print output to a file
