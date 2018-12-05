@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Xml.Linq;
 using System.Text;
 using Paket.Bootstrapper.HelperProxies;
 
@@ -25,6 +26,9 @@ namespace Paket.Bootstrapper
             public const string IgnoreCache = "-f";
             public const string MaxFileAge = "--max-file-age=";
             public const string Run = "--run";
+            public const string OutputDir = "--output-dir=";
+            public const string AsTool = "--as-tool";
+            public const string ConfigFile = "--config-file=";
         }
         public static class AppSettingKeys
         {
@@ -52,6 +56,15 @@ namespace Paket.Bootstrapper
             downloadArguments.Folder = Path.GetDirectoryName(target);
         }
 
+        private static void FillTargetToRelativeDir(DownloadArguments downloadArguments, IFileSystemProxy fileSystem)
+        {
+            var folder = fileSystem.GetCurrentDirectory();
+            var target = Path.Combine(folder, "paket.exe");
+
+            downloadArguments.Target = target;
+            downloadArguments.Folder = Path.GetDirectoryName(target);
+        }
+
         public static BootstrapperOptions ParseArgumentsAndConfigurations(IEnumerable<string> arguments, NameValueCollection appSettings, IDictionary envVariables, IFileSystemProxy fileSystem, IEnumerable<string> argumentsInDependenciesFile)
         {
             var options = new BootstrapperOptions();
@@ -59,7 +72,29 @@ namespace Paket.Bootstrapper
             var magicMode = GetIsMagicMode(fileSystem);
             var transparentMagicMode = magicMode && commandArgs.IndexOf(CommandArgs.Run) == -1;
 
-            FillTarget(options.DownloadArguments, magicMode, fileSystem);
+            var outputDirArg = commandArgs.SingleOrDefault(x => x.StartsWith(CommandArgs.OutputDir));
+            if (outputDirArg != null)
+            {
+                commandArgs.Remove(outputDirArg);
+                var folder = outputDirArg.Substring(CommandArgs.OutputDir.Length);
+                var target = Path.Combine(folder, "paket.exe");
+
+                options.DownloadArguments.Target = target;
+                options.DownloadArguments.Folder = Path.GetDirectoryName(target);
+            }
+            else
+            {
+                FillTarget(options.DownloadArguments, magicMode, fileSystem);
+            }
+
+            var configFileArg = commandArgs.SingleOrDefault(x => x.StartsWith(CommandArgs.ConfigFile));
+            if (configFileArg != null)
+            {
+                commandArgs.Remove(configFileArg);
+                var configFilePath = configFileArg.Substring(CommandArgs.ConfigFile.Length);
+                var newSettings = ReadSettings(configFilePath);
+                appSettings = newSettings;
+            }
 
             // 1 - AppSettings
             FillOptionsFromAppSettings(options, appSettings);
@@ -114,7 +149,58 @@ namespace Paket.Bootstrapper
                 options.Verbosity = Verbosity.Trace;
             }
 
+#if PAKET_BOOTSTRAP_WORKAROUND_MSBUILD_URLS
+            if (!String.IsNullOrEmpty(options.DownloadArguments.NugetSource)) {
+                string url = options.DownloadArguments.NugetSource;
+                string fixedUrl;
+                if (url.StartsWith("http://") || url.StartsWith("https://")) {
+                    fixedUrl = url;
+                }
+                else {
+                    fixedUrl = url.Replace("http:/", "http://").Replace("https:/", "https://");
+                }
+                options.DownloadArguments.NugetSource = fixedUrl;
+            } 
+#endif
+
             return options;
+        }
+
+        private static NameValueCollection ReadSettings(string configFilePath)
+        {
+            var doc = XDocument.Load(configFilePath);
+
+            var nv = new NameValueCollection();
+
+            var appSettings = doc.Root.Element("appSettings");
+            if (appSettings == null)
+                throw new Exception(string.Format("appSettings element not found in file '{0}'", configFilePath));
+
+            var dic =
+                appSettings
+                .Elements("add")
+                .Select(x => {
+                    var keyAttr = x.Attribute("key");
+                    var valueAttr = x.Attribute("value");
+                    if (keyAttr == null || valueAttr == null)
+                        return new KeyValuePair<string, string>(); ;
+
+                    string key = keyAttr.Value;
+                    if (key == null)
+                        return new KeyValuePair<string, string>(); ;
+
+                    string value = valueAttr.Value;
+                    return new KeyValuePair<string, string>(key, value);
+                })
+                .Where(kv => kv.Key != null)
+                .ToArray();
+
+            foreach (var kv in dic)
+            {
+                nv.Add(kv.Key, kv.Value);
+            }
+
+            return nv;
         }
 
         private static void FillOptionsFromAppSettings(BootstrapperOptions options, NameValueCollection appSettings)
@@ -216,6 +302,11 @@ namespace Paket.Bootstrapper
             {
                 commandArgs.Remove(CommandArgs.IgnoreCache);
                 downloadArguments.IgnoreCache = true;
+            }
+            if (commandArgs.Contains(CommandArgs.AsTool))
+            {
+                commandArgs.Remove(CommandArgs.AsTool);
+                downloadArguments.AsTool = true;
             }
 
             var maxFileAgeArg = commandArgs.SingleOrDefault(x => x.StartsWith(CommandArgs.MaxFileAge, StringComparison.Ordinal));

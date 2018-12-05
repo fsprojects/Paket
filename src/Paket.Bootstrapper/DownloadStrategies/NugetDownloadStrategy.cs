@@ -52,15 +52,17 @@ namespace Paket.Bootstrapper.DownloadStrategies
         private IFileSystemProxy FileSystemProxy { get; set; }
         private string Folder { get; set; }
         private string NugetSource { get; set; }
+        private bool AsTool { get; set; }
         private const string PaketNugetPackageName = "Paket";
         private const string PaketBootstrapperNugetPackageName = "Paket.Bootstrapper";
 
-        public NugetDownloadStrategy(IWebRequestProxy webRequestProxy, IFileSystemProxy fileSystemProxy, string folder, string nugetSource)
+        public NugetDownloadStrategy(IWebRequestProxy webRequestProxy, IFileSystemProxy fileSystemProxy, string folder, string nugetSource, bool asTool = false)
         {
             WebRequestProxy = webRequestProxy;
             FileSystemProxy = fileSystemProxy;
             Folder = folder;
             NugetSource = nugetSource;
+            AsTool = asTool;
         }
 
         public override string Name
@@ -163,9 +165,17 @@ namespace Paket.Bootstrapper.DownloadStrategies
                 }
             }
 
-            FileSystemProxy.ExtractToDirectory(paketPackageFile, randomFullPath);
-            var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.exe");
-            FileSystemProxy.CopyFile(paketSourceFile, target, true);
+            if (this.AsTool)
+            {
+                var installAsTool = new InstallKind.InstallAsTool(FileSystemProxy);
+                installAsTool.Run(randomFullPath, target, latestVersion);
+            }
+            else
+            {
+                FileSystemProxy.ExtractToDirectory(paketPackageFile, randomFullPath);
+                var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.exe");
+                FileSystemProxy.CopyFile(paketSourceFile, target, true);
+            }
             FileSystemProxy.DeleteDirectory(randomFullPath, true);
         }
 

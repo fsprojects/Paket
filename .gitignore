@@ -13,6 +13,7 @@
 # Visual Studio and VS Code
 /.vs/
 /.vscode/
+.ionide/
 
 # Build results
 

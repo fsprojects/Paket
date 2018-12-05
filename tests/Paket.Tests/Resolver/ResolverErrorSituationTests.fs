@@ -12,7 +12,7 @@ open System
 open System.Threading
 open FSharp.Polyfill
 
-let rec findExnWhichContains msg (exn:exn) =
+let rec findExnWhichContains (msg: string) (exn:exn) =
     match exn with
     | _ when  exn.Message.Contains msg -> Some exn
     | :? AggregateException as a ->
@@ -68,7 +68,7 @@ let graph1 =
   ]
 
 [<Test>]
-#if NETCOREAPP2_0
+#if NO_UNIT_TIMEOUTATTRIBUTE
 [<Ignore "TimeoutAttribute not supported by netstandard NUnit">]
 #else
 [<Timeout 5000>]
@@ -263,7 +263,7 @@ let ``task priorization works``() =
     cts.Cancel()
 
 [<Test>]
-#if NETCOREAPP2_0
+#if NO_UNIT_TIMEOUTATTRIBUTE
 [<Ignore "TimeoutAttribute not supported by netstandard NUnit">]
 #else
 [<Timeout 5000>]
@@ -322,7 +322,7 @@ let ``cancellation fsharp.core``() =
     with :? AggregateException as agg -> ()
 
 [<Test>]
-#if NETCOREAPP2_0
+#if NO_UNIT_TIMEOUTATTRIBUTE
 [<Ignore "TimeoutAttribute not supported by netstandard NUnit">]
 #else
 [<Timeout 5000>]

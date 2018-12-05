@@ -1,0 +1,14 @@
+source https://www.nuget.org/api/v2
+framework: >= net45
+
+nuget FSharp.Core >= 3.1.2.5 lowest_matching: true
+nuget Suave
+nuget Argu
+
+group NetStandard
+source https://www.nuget.org/api/v2
+framework: netstandard2.0
+
+nuget Suave
+nuget FSharp.Core
+nuget Argu

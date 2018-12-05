@@ -19,6 +19,3 @@ tags
     nuget, bundler, F#
 files
     ../bin/merged/paket.exe ==> tools
-    ../bin/merged/paket.exe ==> tools/net45
-    ../bin_netcore/**/* ==> tools/netcoreapp2.0
-

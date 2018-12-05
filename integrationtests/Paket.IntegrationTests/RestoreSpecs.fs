@@ -19,7 +19,7 @@ let ``#2496 Paket fails on projects that target multiple frameworks``() =
         |> ignore
 
 [<Test>]
-#if NETCOREAPP2_0
+#if FAKE_NETSTANDARD_API
 [<Ignore("use an api of FakeLib (net40) unsupported on .net core")>]
 #endif
 let ``#2812 Lowercase package names in package cache: old csproj, packages folder enabled``() =

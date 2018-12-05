@@ -128,11 +128,12 @@ type ReferencesFile =
             { ReferencesFile.FromLines lines with FileName = fileName }
         with e -> raise (new Exception(sprintf "Could not parse reference file '%s': %s" fileName e.Message, e))
 
-    member this.AddNuGetReference(groupName, packageName : PackageName, copyLocal: bool, specificVersion: bool, importTargets: bool, frameworkRestrictions, includeVersionInPath, downloadLicense, omitContent : bool, createBindingRedirects, referenceCondition) =
+    member this.AddNuGetReference(groupName, packageName : PackageName, embedInteropTypes: bool, copyLocal: bool, specificVersion: bool, importTargets: bool, frameworkRestrictions, includeVersionInPath, downloadLicense, omitContent : bool, createBindingRedirects, referenceCondition) =
         let package: PackageInstallSettings =
             { Name = packageName
               Settings = 
-                  { CopyLocal = if not copyLocal then Some copyLocal else None
+                  { EmbedInteropTypes = if embedInteropTypes then Some embedInteropTypes else None
+                    CopyLocal = if not copyLocal then Some copyLocal else None
                     SpecificVersion = if not specificVersion then Some specificVersion else None
                     CopyContentToOutputDirectory = None
                     StorageConfig = None
@@ -172,7 +173,7 @@ type ReferencesFile =
                 { this with Groups = newGroups }
 
     member this.AddNuGetReference(groupName, packageName : PackageName) = 
-        this.AddNuGetReference(groupName, packageName, true, true, true, ExplicitRestriction FrameworkRestriction.NoRestriction, false, false, false, None, null)
+        this.AddNuGetReference(groupName, packageName, false, true, true, true, ExplicitRestriction FrameworkRestriction.NoRestriction, false, false, false, None, null)
 
     member this.RemoveNuGetReference(groupName, packageName : PackageName) =
         let group = this.Groups.[groupName]

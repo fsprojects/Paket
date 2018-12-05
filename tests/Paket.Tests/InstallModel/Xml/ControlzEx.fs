@@ -175,7 +175,7 @@ let ``should generate Xml without specific version for ControlzEx in CSharp proj
 
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
     Assert.IsTrue(project.IsSome)
-    let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,None,true,KnownTargetProfiles.AllProfiles,None)
+    let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,None,None,true,KnownTargetProfiles.AllProfiles,None)
     let result =
       ctx.ChooseNodes
       |> (fun n -> n.Head.OuterXml)
@@ -201,7 +201,7 @@ let ``should generate Xml with specific version set to true for ControlzEx in CS
 
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
     Assert.IsTrue(project.IsSome)
-    let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,None,Some true,true,KnownTargetProfiles.AllProfiles,None)
     let result =
       ctx.ChooseNodes
       |> (fun n -> n.Head.OuterXml)
@@ -227,7 +227,7 @@ let ``should generate Xml with specific version set to false for ControlzEx in C
 
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
     Assert.IsTrue(project.IsSome)
-    let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,Some false,true,KnownTargetProfiles.AllProfiles,None)
+    let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,None,Some false,true,KnownTargetProfiles.AllProfiles,None)
     let result =
       ctx.ChooseNodes
       |> (fun n -> n.Head.OuterXml)

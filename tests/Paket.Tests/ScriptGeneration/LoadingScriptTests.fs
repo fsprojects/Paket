@@ -11,51 +11,12 @@ open TestHelpers
 open Paket
 open Paket.Domain
 
-let testData =
-    [ { PackageResolver.ResolvedPackage.Name = PackageName "Test1"
-        PackageResolver.ResolvedPackage.Version = SemVer.Parse "1.0.0"
-        PackageResolver.ResolvedPackage.Dependencies =
-          Set.empty
-          |> Set.add(
-              PackageName "other", 
-              VersionRequirement(VersionRange.Specific (SemVer.Parse "1.0.0"), PreReleaseStatus.No),
-              Paket.Requirements.FrameworkRestrictions.AutoDetectFramework)
-        PackageResolver.ResolvedPackage.Unlisted = false
-        PackageResolver.ResolvedPackage.Kind = PackageResolver.ResolvedPackageKind.Package
-        PackageResolver.ResolvedPackage.Settings = Requirements.InstallSettings.Default
-        PackageResolver.ResolvedPackage.Source = PackageSources.PackageSource.NuGetV2 { Url = ""; Authentication = AuthProvider.empty }
-        PackageResolver.IsRuntimeDependency = false }
-      { Name = PackageName "other"
-        Version = SemVer.Parse "1.0.0"
-        Dependencies = Set.empty
-        Unlisted = false
-        Settings = Requirements.InstallSettings.Default
-        Kind = PackageResolver.ResolvedPackageKind.Package
-        Source = PackageSources.PackageSource.NuGetV2 { Url = ""; Authentication = AuthProvider.empty }
-        IsRuntimeDependency = false }
-    ]
-    
-//[<Test>]
-//let ``can re-order simple dependency``() = 
-//    PackageAndAssemblyResolution.getPackageOrderResolvedPackage testData
-//    |> List.map (fun p -> p.Name)
-//    |> shouldEqual
-//        [ PackageName "other"
-//          PackageName "Test1" ]
-
-//[<Test>]
-//let ``can keep order simple dependency``() = 
-//    PackageAndAssemblyResolution.getPackageOrderResolvedPackage (testData |> List.rev)
-//    |> List.map (fun p -> p.Name)
-//    |> shouldEqual
-//        [ PackageName "other"
-//          PackageName "Test1" ]
-
 let scriptGenInputWithNoDendency = {
     PackageName                  = Paket.Domain.PackageName "foo"
     DependentScripts             = List.empty
     FrameworkReferences          = List.empty
     OrderedDllReferences         = List.empty
+    PackageLoadScripts           = List.empty
 }
 
 [<Test>]
@@ -73,6 +34,23 @@ let ``generateCSharpScript returns DoNotGenerate given empty dependency set``() 
     match output with
     | Generate _ -> Assert.Fail("C# script with no dependency was supposed to return DoNotGenerate")
     | DoNotGenerate -> ()
+
+let scriptGenInputWithLoadScript = {
+    PackageName                  = Paket.Domain.PackageName "foo"
+    DependentScripts             = List.empty
+    FrameworkReferences          = List.empty
+    OrderedDllReferences         = List.empty
+    PackageLoadScripts           = ["foo.fsx"]
+}
+
+[<Test>]
+let ``generateFSharpScript generates load script``() =
+    let output = ScriptGeneration.generateScript ScriptType.FSharp scriptGenInputWithLoadScript
+
+    match output with
+    | Generate [ ReferenceType.LoadScript _ ] -> ()
+    | _ -> Assert.Fail("generated script was expected to be a single load script")
+
 
 
 let lockFileData = """NUGET

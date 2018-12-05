@@ -78,7 +78,7 @@ let ``#2922-1 paket can timeout out of loop of doom``() =
     | exn when exn.Message.Contains("TimeoutException") -> ()
 
 [<Test>]
-#if NETCOREAPP2_0
+#if NO_UNIT_PLATFORMATTRIBUTE
 [<Ignore "PlatformAttribute not supported by netstandard NUnit">]
 #else
 [<Platform("Net")>]

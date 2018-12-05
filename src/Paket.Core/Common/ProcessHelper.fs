@@ -15,6 +15,7 @@ let tryFindFile dirs file =
     let files =
         dirs
         |> Seq.map (fun (path : string) ->
+            try
                let dir =
                  DirectoryInfo(
                    path
@@ -26,7 +27,13 @@ let tryFindFile dirs file =
                else
                    let fi = FileInfo(Path.Combine(dir.FullName,file))
                    if fi.Exists then fi.FullName
-                   else "")
+                   else ""
+            with
+            | exn ->
+                Logging.verbosefn "Exception while searching %s in %s:" file path
+                Logging.verbosefn "%O" exn
+
+                "")
         |> Seq.filter ((<>) "")
         |> Seq.cache
     if not (Seq.isEmpty files) then Some(Seq.head files)
@@ -41,7 +48,10 @@ let findFile dirs file =
 
 /// Retrieves the environment variable or None
 let environVarOrNone name =
-    let var = Environment.GetEnvironmentVariable name
+    let var = name
+              |> Environment.GetEnvironmentVariable
+              |> Environment.ExpandEnvironmentVariables
+
     if String.IsNullOrEmpty var then None
     else Some var
 
@@ -171,6 +181,8 @@ let ExecProcessWithLambdas configProcessStartInfoF (timeOut : TimeSpan) silent e
                     null
                 with exn -> exn
             raise (Exception(sprintf "Process %s %s timed out." proc.StartInfo.FileName proc.StartInfo.Arguments, inner))
+    // See http://stackoverflow.com/a/16095658/1149924 why WaitForExit must be called twice.
+    proc.WaitForExit()
     proc.ExitCode
 
 /// A process result including error code, message log and errors.

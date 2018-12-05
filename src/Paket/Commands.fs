@@ -272,12 +272,12 @@ with
             | No_Install -> "do not modify projects"
 
 type ClearCacheArgs =
-    | [<Unique;AltCommandLine("--clear-local")>] ClearLocal
+    | [<Unique;CustomCommandLine("--clear-local")>] ClearLocal
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | ClearLocal -> "Clears local packages folder and paket-files."
+            | ClearLocal -> "also clear local packages and paket-files directory"
 
 type RestoreArgs =
     | [<Unique;AltCommandLine("-f")>] Force
@@ -689,7 +689,7 @@ with
             | Add _ -> "add a new dependency"
             | Github _ -> "commands to manipulate GitHub repository references"
             | Git _ -> "commands to manipulate git repository references"
-            | ClearCache _ -> "clear the NuGet and git cache directories"
+            | ClearCache _ -> "clear the global and optionally local NuGet and cache directories"
             | Config _ -> "store global configuration values like NuGet credentials"
             | ConvertFromNuget _ -> "convert projects from NuGet to Paket"
             | FindRefs _ -> "find all project files that have a dependency installed"

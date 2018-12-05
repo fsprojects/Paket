@@ -1,4 +1,77 @@
-#### 5.174.2 - 2018-07-06
+#### 5.193.0 - 2018-12-02
+* Zsh completion update - https://github.com/fsprojects/Paket/pull/3440
+
+#### 5.192.0 - 2018-12-02
+* Making Paket.Restore.targets work with Paket as a global tool - https://github.com/fsprojects/Paket/pull/3445
+
+#### 5.191.0 - 2018-12-01
+* BUGFIX: Fix bindingredirects - https://github.com/fsprojects/Paket/issues/3444
+
+#### 5.190.0 - 2018-11-26
+* BUGFIX: Allow Username/password to be UTF8 - https://github.com/fsprojects/Paket/pull/3431
+* BUGFIX: Fixed handling of DotNetCoreAppVersion.V3_0 - https://github.com/fsprojects/Paket/pull/3437
+ - 2018-11-17
+* NuGet pack compat for SDK 2.1.500 - https://github.com/fsprojects/Paket/issues/3427
+* Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383
+* REVERT: Retry automatically when a request times out - https://github.com/fsprojects/Paket/pull/3424
+
+#### 5.187.0 - 2018-11-13
+* Create a gitignore around paket's .cached file - https://github.com/fsprojects/Paket/issues/3060 
+* Paket template checks if restored with 5.185.3 or later - https://github.com/fsprojects/Paket/issues/3404
+* BUGFIX: Remove ReadOnly flag before writing to files - https://github.com/fsprojects/Paket/issues/3410 
+* BUGFIX: Added compat fallback in case of older cache files - https://github.com/fsprojects/Paket/pull/3417
+* BUGFIX: Used lowest_matching for paket's own FSharp.Core dependency - https://github.com/fsprojects/Paket/pull/3415
+* BUGFIX: Retry automatically when a request times out - https://github.com/fsprojects/Paket/pull/3420
+
+#### 5.184.0 - 2018-10-30
+* REVERT: Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383
+
+#### 5.183.0 - 2018-10-30
+* Add namespace to load scripts - https://github.com/fsprojects/Paket/pull/3396
+
+#### 5.182.1 - 2018-10-30
+* Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383
+* Full .NET Core support - https://github.com/fsprojects/Paket/pull/3183
+* BUGFIX: generate-load-scripts ignored targetFramework constraint in frameworkAssembly config (.nuspec file) https://github.com/fsprojects/Paket/pull/3385
+
+#### 5.181.1 - 2018-09-20
+* BUGFIX: copy local had no effect when opening project in vs2017 - https://github.com/fsprojects/Paket/pull/3356
+
+#### 5.181.0 - 2018-09-20
+* Support for netcore3.0 moniker - https://github.com/fsprojects/Paket/pull/3367
+* BUGFIX: Paket pack with `--template` failed trying to load the dependencies of templates who should be ignored instead - https://github.com/fsprojects/Paket/pull/3363
+
+#### 5.180.0 - 2018-09-17
+* Added .NETCoreApp2.2 moniker
+
+#### 5.179.1 - 2018-09-14
+* BUGFIX: Fixed potential race condition when redirecting output - https://github.com/fsprojects/Paket/pull/3359
+
+#### 5.179.0 - 2018-09-12
+* Added NuGet packaging output details to paket pack output - https://github.com/fsprojects/Paket/pull/3357
+
+#### 5.178.0 - 2018-09-12
+* Added MonoAndroid9.0 + compatibility between .NET Standard 2.0 and MonoAndroid8.0/XamariniOS - https://github.com/fsprojects/Paket/pull/3354
+* BUGFIX: `copy_local: false` had no effect in paket.references (.NET SDK) - https://github.com/fsprojects/Paket/issues/3186
+* TEMPORARY WORKAROUND: Do not reference Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator - https://github.com/fsprojects/Paket/issues/3345
+
+#### 5.177.0 - 2018-08-30
+* BUGFIX: fix 'Value cannot be null' with TFS feed - https://github.com/fsprojects/Paket/pull/3341
+* BUGFIX: Fixed authentication problem in netcore (fake 5) - https://github.com/fsprojects/Paket/pull/3342
+* BUGFIX: Fixed 'Value cannot be null' with TFS feed - https://github.com/fsprojects/Paket/pull/3341
+* BUGFIX: netcoreapp2.0 packages are compatibile with netcoreapp2.1 - https://github.com/fsprojects/Paket/pull/3336
+* BUGFIX: Paket uses ToLowerInvariant instead of ToLower when forming registrationUrl - https://github.com/fsprojects/Paket/pull/3330
+* BUGFIX: Removed faulty creation of directories during `generate-load-scripts` - https://github.com/fsprojects/Paket/pull/3319
+
+#### 5.176.0 - 2018-07-31
+* paket pack with p2p dependencies and multitargeting - https://github.com/fsprojects/Paket/pull/3317
+* BUGFIX: Revert impact of https://github.com/dotnet/corefx/issues/31098 by using WinHttpHandler - https://github.com/fsprojects/Paket/pull/3307
+
+#### 5.175.0 - 2018-07-30
+* Allow addition of <EmbedInteropTypes> for NuGet packages - https://github.com/fsprojects/Paket/pull/3314
+* BUGFIX: "-T" switch removed when isMacOS, because it is not valid on OSX - https://github.com/fsprojects/Paket/pull/3298
+* BUGFIX: Fixed exception during restore when accessing missing folders - https://github.com/fsprojects/Paket/pull/3293
+* BUGFIX: Reports NuGet download time correctly - https://github.com/fsprojects/Paket/pull/3304
 * BUGFIX: Accept netstandard20 in Visual Studion integration - https://github.com/fsprojects/Paket/issues/3284
 
 #### 5.174.0 - 2018-07-06

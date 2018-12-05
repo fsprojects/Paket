@@ -26,7 +26,11 @@ let getGeneratedScriptFilesDefaultFolder scenario =
         printfn "%s" f.FullName
         f.FullName)
 
-let getScriptContentsFailedExpectations (scriptFolder: DirectoryInfo) (expectations: #seq<string * #seq<string>>) =
+type ExpectationType =
+    | ShouldContain
+    | ShouldNotContain
+
+let getScriptContentsFailedExpectations (scriptFolder: DirectoryInfo) (expectations: #seq<string * #seq<string>>) expectationType =
     let files =
         scriptFolder.GetFiles()
         |> Seq.map (fun f -> 
@@ -41,9 +45,21 @@ let getScriptContentsFailedExpectations (scriptFolder: DirectoryInfo) (expectati
                 let text = (file.FullName |> File.ReadAllText).ToLower()
                 for expectedText in contains do
                     let expect = expectedText.ToLower()
-                    if not (text.Contains expect) then
-                        yield sprintf "file %s didn't contain %s" file.FullName expectedText
+                    match expectationType with
+                    | ShouldContain -> 
+                        if not (text.Contains expect) then
+                            yield sprintf "file %s didn't contain %s" file.Name expectedText
+                    | ShouldNotContain ->
+                        if text.Contains expect then
+                            yield sprintf "file %s contains %s but it shouldn't" file.Name expectedText
     }
+
+let assertExpectations scenario expectationType expectations =
+    let folder = getLoadScriptDefaultFolder scenario
+    let failures = getScriptContentsFailedExpectations folder expectations expectationType
+
+    if not (Seq.isEmpty failures) then
+        Assert.Fail (failures |> String.concat Environment.NewLine)
 
 
 [<Test; Category("scriptgen")>]
@@ -75,19 +91,31 @@ let ``simple dependencies generates expected scripts``() =
         Assert.AreEqual(expectedFiles,actualFiles)
 
 
-let assertNhibernateForFramework35IsThere scenario =
-    let expectations = [
+[<Test; Category("scriptgen")>]
+let ``fslab generates expected load of package loader script``() = 
+    let scenario = "fslab"
+    let framework = "net4"
+    paket "install" scenario |> ignore
+
+    directPaket (sprintf "generate-load-scripts framework %s" framework) scenario |> ignore
+  
+    let files = getGeneratedScriptFiles framework scenario
+
+    let fslabFsxOpt = files |> Array.tryFind (fun p -> p.Name = "FsLab.fsx")
+
+    Assert.True(fslabFsxOpt.IsSome)
+
+    let lines = File.ReadAllLines(fslabFsxOpt.Value.FullName) 
+    Assert.True(lines |> Seq.exists (fun s -> s.StartsWith("#load \"../../../packages/FsLab/FsLab.fsx\"")))
+
+
+let nHibernate35Expectations =
+    [
         "iesi.collections.csx", ["Net35/Iesi.Collections.dll"]
         "iesi.collections.fsx", ["Net35/Iesi.Collections.dll"]
         "nhibernate.csx", ["Net35/NHibernate.dll";"#load \"iesi.collections.csx\""]
         "nhibernate.fsx", ["Net35/NHibernate.dll";"#load \"iesi.collections.fsx\""]
     ]
-    let folder = getLoadScriptDefaultFolder scenario
-    let failures = getScriptContentsFailedExpectations folder expectations
-
-    if not (Seq.isEmpty failures) then
-        Assert.Fail (failures |> String.concat Environment.NewLine)
-
 
 [<Test;Category("scriptgen")>]
 let ``framework specified``() = 
@@ -95,8 +123,8 @@ let ``framework specified``() =
     paket "install" scenario |> ignore
 
     directPaket "generate-load-scripts" scenario |> ignore
-
-    assertNhibernateForFramework35IsThere scenario
+    
+    nHibernate35Expectations |> assertExpectations scenario ExpectationType.ShouldContain
 
 
 [<Test; Category("scriptgen"); Ignore("group script is always generated")>]
@@ -177,7 +205,7 @@ let ``issue 1676 casing`` () =
     ]
     let folder = getLoadScriptFolder "net46" scenario
     printfn "folder - %s" folder.FullName
-    let failures = getScriptContentsFailedExpectations folder expectations
+    let failures = getScriptContentsFailedExpectations folder expectations ExpectationType.ShouldContain
 
     if not (Seq.isEmpty failures) then
         Assert.Fail (failures |> String.concat Environment.NewLine)
@@ -229,8 +257,8 @@ let ``fsharp.core excluded from f# script`` () =
 let ``generates script on install`` () =
     let scenario = "dependencies-file-flag"
     paket "install" scenario |> ignore
-
-    assertNhibernateForFramework35IsThere scenario
+    
+    nHibernate35Expectations |> assertExpectations scenario ExpectationType.ShouldContain
 
 [<Test; Category("scriptgen dependencies")>]
 let ``issue 2156 netstandard`` () =
@@ -249,3 +277,24 @@ let ``don't touch file if contents are same`` () =
     directPaket "install" scenario |> ignore
     newtonsoftScript.Refresh()
     Assert.AreEqual(modificationDate, newtonsoftScript.LastWriteTimeUtc)
+
+    
+[<Test; Category("scriptgen")>]
+let ``ignore assemblies that are not expected by the specified framework`` () =
+    let scenario = "issue-3381"
+    paket "install" scenario |> ignore
+    
+    [
+        "nlog.csx", ["Java.Interop"; "Mono.Android"; "System.Xml.Linq"; "System.Net"; "System.Windows"; "System.Windows.Browser"; "Xamarin.iOS" ]
+        "nlog.fsx", ["Java.Interop"; "Mono.Android"; "System.Xml.Linq"; "System.Net"; "System.Windows"; "System.Windows.Browser"; "Xamarin.iOS" ]
+    ] |> assertExpectations scenario ExpectationType.ShouldNotContain
+
+[<Test; Category("scriptgen")>]
+let ``scripts should contain the paket namespace`` () =
+    let scenario = "add-namespace"
+    paket "install" scenario |> ignore
+    
+    [
+        "nlog.csx", ["namespace PaketLoadScripts" ]
+        "nlog.fsx", ["namespace PaketLoadScripts" ]
+    ] |> assertExpectations scenario ExpectationType.ShouldContain

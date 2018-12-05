@@ -12,6 +12,19 @@ open Chessie.ErrorHandling
 open System.Reflection
 open Requirements
 
+// "copy_local: true" is being used to set the "PrivateAssets=All" setting for a package.
+// "copy_local: false" in new SDK format is defined as "ExcludeAssets=runtime".
+/// Combines the copy_local settings from the lock file and a project's references file
+let private CombineCopyLocal (resolvedSettings:InstallSettings) (packageInstallSettings:PackageInstallSettings) =
+    match resolvedSettings.CopyLocal, packageInstallSettings.Settings.CopyLocal with
+    | Some false, Some true // E.g. never copy the dll except for unit-test projects
+    | None, None -> None
+    | _, Some false
+    | Some false, None -> Some false // Sets ExcludeAssets=runtime
+    | Some true, Some true
+    | Some true, None
+    | None, Some true -> Some true // Sets PrivateAssets=All
+
 /// Finds packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
 let FindPackagesNotExtractedYet(dependenciesFileName) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
@@ -185,6 +198,8 @@ let saveToFile newContent (targetFile:FileInfo) =
                 if verbose then
                     tracefn " - %s created" targetFile.FullName
 
+                if targetFile.Exists then
+                    File.SetAttributes(targetFile.FullName,IO.FileAttributes.Normal)
                 File.WriteAllText(targetFile.FullName,newContent)
             else
                 if verbose then
@@ -271,23 +286,34 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
             ""
         else
             packages
-            |> Seq.map (fun ((groupName,packageName),_,_) -> 
-                let p = lockFile.Groups.[groupName].Resolution.[packageName]
-                let condition = Paket.Requirements.getExplicitRestriction p.Settings.FrameworkRestrictions      
-                p,condition)
-            |> Seq.groupBy snd
+            |> Seq.map (fun ((groupName,packageName),packageSettings,_) -> 
+                let group = lockFile.Groups.[groupName]
+                let p = group.Resolution.[packageName]
+                let restrictions =
+                    match p.Settings.FrameworkRestrictions with
+                    | FrameworkRestrictions.ExplicitRestriction FrameworkRestriction.HasNoRestriction -> group.Options.Settings.FrameworkRestrictions
+                    | FrameworkRestrictions.ExplicitRestriction fw -> FrameworkRestrictions.ExplicitRestriction fw
+                    | _ -> group.Options.Settings.FrameworkRestrictions
+                let condition = restrictions |> getExplicitRestriction
+                p,condition,packageSettings)
+            |> Seq.groupBy (fun (_,c,__) -> c)
             |> Seq.collect (fun (condition,packages) -> 
-                let condition = condition.ToMSBuildCondition()
+                let condition =
+                    match condition with
+                    | FrameworkRestriction.HasNoRestriction -> ""
+                    | restrictions -> restrictions.ToMSBuildCondition()
                 let condition =
                     if condition = "" || condition = "true" then "" else
                     sprintf " AND (%s)" condition
 
                 let packageReferences =
                     packages    
-                    |> Seq.collect (fun (p,_) ->
-                        [sprintf """        <PackageReference Include="%O">""" p.Name
-                         sprintf """            <Version>%O</Version>""" p.Version
-                         """        </PackageReference>"""])
+                    |> Seq.collect (fun (p,_,packageSettings) ->
+                        [yield sprintf """        <PackageReference Include="%O">""" p.Name
+                         yield sprintf """            <Version>%O</Version>""" p.Version
+                         if CombineCopyLocal p.Settings packageSettings = Some false then
+                            yield """            <ExcludeAssets>runtime</ExcludeAssets>"""
+                         yield """        </PackageReference>"""])
 
                 [yield sprintf "    <ItemGroup Condition=\"($(DesignTimeBuild) == true)%s\">" condition
                  yield! packageReferences
@@ -299,7 +325,7 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-        <PaketPropsVersion>5.174.2</PaketPropsVersion>
+        <PaketPropsVersion>5.185.3</PaketPropsVersion>
         <PaketPropsLoaded>true</PaketPropsLoaded>
     </PropertyGroup>
 %s
@@ -374,30 +400,38 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                     excludes,packages
                 | None -> Set.empty,Set.empty
 
-            for (key,_,_) in hull do
+            for (key,packageSettings,_) in hull do
                 let resolvedPackage = resolved.Force().[key]
+                let _,packageName = key
                 let restore =
-                    not (excludes.Contains resolvedPackage.Name) &&
-                    not (ImplicitPackages.Contains resolvedPackage.Name) &&
+                    packageName <> PackageName "Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" && // #3345 
+                     not (excludes.Contains resolvedPackage.Name) &&
+                     not (ImplicitPackages.Contains resolvedPackage.Name) &&
                         match resolvedPackage.Settings.FrameworkRestrictions with
                         | Requirements.ExplicitRestriction restrictions ->
                             Requirements.isTargetMatchingRestrictions(restrictions, targetProfile)
                         | _ -> true
 
                 if restore then
-                    let _,packageName = key
                     let direct = allDirectPackages.Contains packageName
                     let package = resolved.Force().[key]
-                    let copy_local =
-                        match resolvedPackage.Settings.CopyLocal with
-                        | Some false -> "exclude"
-                        | Some x -> x.ToString()
+                    let combinedCopyLocal = CombineCopyLocal resolvedPackage.Settings packageSettings
+                    let privateAssetsAll =
+                        match combinedCopyLocal with
+                        | Some true -> "true"
+                        | Some false
                         | None -> "false"
+                    let copy_local =
+                        match combinedCopyLocal with
+                        | Some false -> "false"
+                        | Some true
+                        | None -> "true"
                     let line =
                         packageName.ToString() + "," +
                         package.Version.ToString() + "," +
                         (if direct then "Direct" else "Transitive") + "," +
                         kv.Key.ToString() + "," +
+                        privateAssetsAll  + "," +
                         copy_local
 
                     list.Add line
@@ -513,6 +547,20 @@ let private isRestoreUpDoDate (lockFileName:FileInfo) (lockFileContents:string) 
         let oldContents = File.ReadAllText(restoreCacheFile)
         oldContents = lockFileContents
     else false
+
+let private WriteGitignore restoreCacheFile =
+    let folder = FileInfo(restoreCacheFile).Directory
+    let rec isGitManaged (folder:DirectoryInfo) =
+        if File.Exists(Path.Combine(folder.FullName, ".gitignore")) then true else
+        if isNull folder.Parent then false else
+        isGitManaged folder.Parent
+   
+    if isGitManaged folder.Parent then
+        let restoreCacheGitIgnoreFile = Path.Combine(folder.FullName, ".gitignore")
+        let contents = 
+            ".gitignore\npaket.restore.cached"
+            |> normalizeLineEndings
+        saveToFile contents (FileInfo restoreCacheGitIgnoreFile) |> ignore
 
 let IsRestoreUpToDate(lockFileName:FileInfo) =
     let newContents = File.ReadAllText(lockFileName.FullName)
@@ -656,5 +704,6 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     CreateScriptsForGroups lockFile.Value groups
                     if isFullRestore then
                         let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
-                        File.WriteAllText(restoreCacheFile, newContents))
+                        saveToFile newContents (FileInfo restoreCacheFile) |> ignore
+                        WriteGitignore restoreCacheFile)
             )

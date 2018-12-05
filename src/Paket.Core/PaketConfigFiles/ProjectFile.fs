@@ -723,7 +723,7 @@ module ProjectFile =
         AnalyzersNode : XmlElement
     }
 
-    let generateXml (model:InstallModel) (usedFrameworkLibs:HashSet<TargetProfile*string>) (aliases:Map<string,string>) (copyLocal:bool option) (specificVersion:bool option) (importTargets:bool) (referenceCondition:string option) (allTargetProfiles:Set<TargetProfile>) (project:ProjectFile) : XmlContext =
+    let generateXml (model:InstallModel) (usedFrameworkLibs:HashSet<TargetProfile*string>) (aliases:Map<string,string>) (embedInteropTypes:bool option) (copyLocal:bool option) (specificVersion:bool option) (importTargets:bool) (referenceCondition:string option) (allTargetProfiles:Set<TargetProfile>) (project:ProjectFile) : XmlContext =
         let references = 
             getCustomReferenceAndFrameworkNodes project
             |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
@@ -767,6 +767,10 @@ module ProjectFile =
                     | None -> n
                     | Some(bool) -> addChild (createNodeSet "SpecificVersion" specificVersionSettings project) n
                 |> addChild (createNodeSet "Paket" "True" project)
+                |> fun n ->
+                    match embedInteropTypes with
+                    | None -> n
+                    | _ -> addChild (createNodeSet "EmbedInteropTypes" "True" project) n
                 |> fun n ->
                     match aliases with
                     | None -> n
@@ -1237,7 +1241,7 @@ module ProjectFile =
                 let importTargets = defaultArg installSettings.ImportTargets true
             
                 let allFrameworks = applyRestrictionsToTargets restrictionList KnownTargetProfiles.AllProfiles
-                generateXml projectModel usedFrameworkLibs installSettings.Aliases installSettings.CopyLocal installSettings.SpecificVersion importTargets installSettings.ReferenceCondition (set allFrameworks) project)
+                generateXml projectModel usedFrameworkLibs installSettings.Aliases installSettings.EmbedInteropTypes installSettings.CopyLocal installSettings.SpecificVersion importTargets installSettings.ReferenceCondition (set allFrameworks) project)
 
         for ctx in contexts do
             for chooseNode in ctx.ChooseNodes do
@@ -1726,7 +1730,7 @@ type ProjectFile with
 
     member this.DeleteCustomModelNodes(model:InstallModel) = ProjectFile.deleteCustomModelNodes model this
 
-    member this.GenerateXml(model, usedFrameworkLibs:HashSet<TargetProfile*string>, aliases, copyLocal, specificVersion, importTargets, allTargetProfiles:#seq<TargetProfile>, referenceCondition) = ProjectFile.generateXml model usedFrameworkLibs aliases copyLocal specificVersion importTargets referenceCondition (set allTargetProfiles) this
+    member this.GenerateXml(model, usedFrameworkLibs:HashSet<TargetProfile*string>, aliases, embedInteropTypes, copyLocal, specificVersion, importTargets, allTargetProfiles:#seq<TargetProfile>, referenceCondition) = ProjectFile.generateXml model usedFrameworkLibs aliases embedInteropTypes copyLocal specificVersion importTargets referenceCondition (set allTargetProfiles) this
 
     member this.RemovePaketNodes () = ProjectFile.removePaketNodes this 
 
@@ -1900,7 +1904,7 @@ type ProjectFile with
         findAllFiles(folder, "*proj*")
         |> Array.filter ProjectFile.isSupportedFile
     
-                /// Finds all project files
+    /// Finds all project files
     static member FindAllProjects folder : ProjectFile [] =
         ProjectFile.FindAllProjectFiles folder
         |> Array.choose (fun f -> ProjectFile.tryLoad f.FullName)

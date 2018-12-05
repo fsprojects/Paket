@@ -883,6 +883,7 @@ type InstallSettings =
       LicenseDownload: bool option
       ReferenceCondition : string option
       CreateBindingRedirects : BindingRedirectsSettings option
+      EmbedInteropTypes : bool option
       CopyLocal : bool option
       SpecificVersion : bool option
       StorageConfig : PackagesFolderGroupConfig option
@@ -892,7 +893,8 @@ type InstallSettings =
       GenerateLoadScripts : bool option }
 
     static member Default =
-        { CopyLocal = None
+        { EmbedInteropTypes = None
+          CopyLocal = None
           SpecificVersion = None
           StorageConfig = None
           ImportTargets = None
@@ -1046,6 +1048,10 @@ type InstallSettings =
                 | x -> failwithf "Unknown copy_content_to_output_dir settings: %A" x
               Excludes = []
               Aliases = Map.empty
+              EmbedInteropTypes =
+                match getPair "embed_interop_types" with
+                | Some "true" -> Some true
+                | _ -> None
               CopyLocal =
                 match getPair "copy_local" with
                 | Some "false" -> Some false 

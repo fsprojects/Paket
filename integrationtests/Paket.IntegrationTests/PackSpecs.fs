@@ -9,6 +9,7 @@ open System.IO.Compression
 open Paket.Domain
 open Paket
 open Paket.NuGetCache
+open Paket.Requirements
 
 let getDependencies(x:Paket.NuGet.NuGetPackageCache) = x.GetDependencies()
 
@@ -583,9 +584,43 @@ let ``#3164 pack analyzer`` () =
 
     CleanDir rootPath    
 
+    
+[<Test>]
+let ``#3165 pack multitarget with p2p`` () = 
+    let scenario = "i003165-pack-multitarget-with-p2p"
+    prepareSdk scenario
+    let rootPath = scenarioTempPath scenario
+
+    directDotnet true "build MyProj.Main -c Release" rootPath
+    |> Seq.iter (printfn "%A")
+
+    let outPath = Path.Combine(rootPath, "out")
+    directPaket (sprintf """pack "%s" """ outPath) scenario
+    |> Seq.iter (printfn "%A")
+
+    let nupkgPath = Path.Combine(outPath, "MyProj.Main.1.0.0.nupkg")
+
+    if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
+    let nuspec = NuGetLocal.getNuSpecFromNupgk nupkgPath
+    let depsByTfm byTfm = nuspec.Dependencies.Value |> Seq.choose (fun (pkgName,version,tfm) -> if (tfm.GetExplicitRestriction()) = byTfm then Some (pkgName,version) else None) |> Seq.toList
+    let pkgVer name version = (PackageName name), (VersionRequirement.Parse version)
+
+    let tfmNET45 = FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_5)
+    CollectionAssert.AreEquivalent([ pkgVer "FSharp.Core" "3.1.2.5"; pkgVer "Argu" "4.2.1" ], depsByTfm (FrameworkRestriction.AtLeast(tfmNET45)))
+
+    let tfmNETSTANDARD2_0 = FrameworkIdentifier.DotNetStandard(DotNetStandardVersion.V2_0)
+    CollectionAssert.AreEquivalent([ pkgVer "FSharp.Core" "4.5.1"; pkgVer "Argu" "5.1.0" ], depsByTfm (FrameworkRestriction.And [FrameworkRestriction.NotAtLeast(tfmNET45); FrameworkRestriction.AtLeast(tfmNETSTANDARD2_0)]))
+
+    CollectionAssert.AreEquivalent([ pkgVer "MyProj.Common" "1.0.0" ], depsByTfm (FrameworkRestriction.Or [FrameworkRestriction.AtLeast(tfmNET45); FrameworkRestriction.AtLeast(tfmNETSTANDARD2_0)]))
+
+    let unzippedNupkgPath = Path.Combine(outPath, "MyProj.Main")
+    ZipFile.ExtractToDirectory(nupkgPath, unzippedNupkgPath)
+    Path.Combine(unzippedNupkgPath, "lib", "net45", "MyProj.Main.dll") |> checkFileExists
+    Path.Combine(unzippedNupkgPath, "lib", "netstandard2.0", "MyProj.Main.dll") |> checkFileExists
+
+    CleanDir rootPath    
 
 [<Test>]
-[<Ignore("disabled for now, because require .net core 2.1.300")>]
 let ``#4002 dotnet pack of a global tool shouldnt contain references``() = 
     let project = "tool1"
     let scenario = "i004002-pack-global-tools"
@@ -621,7 +656,6 @@ let ``#4002 dotnet pack of a global tool shouldnt contain references``() =
 
     
 [<Test>]
-[<Ignore("disabled for now, because require .net core 2.1.300")>]
 let ``#4003 dotnet pack of a global tool with p2p``() = 
     let project = "tool1"
     let scenario = "i004003-pack-global-tools-p2p"
@@ -658,3 +692,10 @@ let ``#4003 dotnet pack of a global tool with p2p``() =
     // Problably not as "packaged" console applications have this dependency by default, see https://www.nuget.org/packages/dotnet-mergenupkg
     nuspec.Dependencies.Value.Length
     |> shouldEqual 0
+
+[<Test>]
+let ``#4010-pack-template-only``() =
+    let scenario = "i004010-pack-template-only"
+    let outPath = Path.Combine(scenarioTempPath scenario, "out")
+    let templatePath = Path.Combine(scenarioTempPath scenario, "PaketBug", "paket.template")
+    paket (sprintf """pack --template "%s" "%s" --version 1.2.3 """ templatePath outPath) scenario |> ignore

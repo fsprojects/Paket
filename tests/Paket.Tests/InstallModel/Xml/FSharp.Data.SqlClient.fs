@@ -28,7 +28,7 @@ let expected = """
 </Choose>"""
 
 [<Test>]
-#if NETCOREAPP2_0
+#if TESTSUITE_RUNS_ON_DOTNETCORE
 [<Flaky>]
 #endif
 let ``should generate Xml for FSharp.Data.SqlClient 1.4.4``() = 
@@ -46,7 +46,7 @@ let ``should generate Xml for FSharp.Data.SqlClient 1.4.4``() =
                   [],
                   Nuspec.Load(__SOURCE_DIRECTORY__ + @"\..\..\Nuspec\FSharp.Data.SqlClient.nuspec"))
 
-        let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
+        let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
         let currentXML = ctx.ChooseNodes.Head.OuterXml |> normalizeXml
         currentXML
         |> shouldEqual (normalizeXml expected)

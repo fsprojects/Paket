@@ -19,6 +19,7 @@ repository.
    [`paket.bootstrapper.exe`](https://github.com/fsprojects/Paket/releases/latest)
    into that directory.
 1. Run `.paket/paket.bootstrapper.exe`. It will download the latest `paket.exe`.
+   > linux/osx: Run `mono .paket/paket.bootstrapper.exe`
 1. Commit `.paket/paket.bootstrapper.exe` into your repository and add
    `.paket/paket.exe` to your `.gitignore` file.
 
