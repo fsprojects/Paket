@@ -13,6 +13,16 @@ open PackageSources
 
 let sw = Stopwatch.StartNew()
 
+type System.Collections.Specialized.NameValueCollection with
+    member this.GetKey(key:string) =
+        if this <> null && this.AllKeys |> Array.contains key then
+            this.Get(key)
+        else
+            null
+    member this.IsTrue(key:string) =
+        let v = this.GetKey(key)
+        String.equalsIgnoreCase v "true"
+
 type PaketExiter() =
     interface IExiter with
         member __.Name = "paket exiter"
@@ -848,6 +858,7 @@ let handleCommand silent command =
     | Verbose
     | Silent
     | From_Bootstrapper
+    | EnableNetFx461NetStandard2Support
     | Version
     | Log_File _ -> failwithf "internal error: this code should never be reached."
 
@@ -864,7 +875,12 @@ let main() =
 
     try
     let args = Environment.GetCommandLineArgs()
+    let appSettings = System.Configuration.ConfigurationManager.AppSettings
+    if appSettings.IsTrue("EnableNetFx461NetStandard2Support") ||
+       args |> Array.contains "--enablenetfx461netstandard2support" then
+        DotnetToolingSupport.mode <- ToolingSupportMode.ToolingSupportNetSDK2
     match args with
+    | [| _; "restore" |] | [| _; "--from-bootstrapper"; "--enablenetfx461netstandard2support"; "restore" |]
     | [| _; "restore" |] | [| _; "--from-bootstrapper"; "restore" |] ->
         // Global restore fast route, see https://github.com/fsprojects/Argu/issues/90
         processWithValidationEx
@@ -872,6 +888,7 @@ let main() =
             false
             (fun _ -> true)
             (fun _ -> Dependencies.Locate().Restore()) ()
+    | [| _; "restore"; "--project"; project |] | [| _; "--from-bootstrapper"; "--enablenetfx461netstandard2support"; "restore"; "--project"; project |]
     | [| _; "restore"; "--project"; project |] | [| _; "--from-bootstrapper"; "restore"; "--project"; project |] ->
         // Project restore fast route, see https://github.com/fsprojects/Argu/issues/90
         processWithValidationEx
@@ -879,6 +896,7 @@ let main() =
             false
             (fun _ -> true)
             (fun _ -> Dependencies.Locate().Restore(false, None, project, false, false, false, None)) ()
+    | [| _; "install" |] | [| _; "--from-bootstrapper"; "--enablenetfx461netstandard2support"; "install" |]
     | [| _; "install" |] | [| _; "--from-bootstrapper"; "install" |] ->
         // Global restore fast route, see https://github.com/fsprojects/Argu/issues/90
         processWithValidationEx

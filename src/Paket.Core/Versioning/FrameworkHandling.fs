@@ -6,14 +6,25 @@ open System.Diagnostics
 open Logging
 
 
-type HandlingMode = NativeSupport | ToolingSupport
+/// how to handle compatibility between .NET-FX <-> .NET
+[<RequireQualifiedAccess>]
+type ToolingSupportMode =
 
-module private DotnetTooling =
-    let mode =
-        if Environment.GetEnvironmentVariable("PAKET_SUPER_DUPER_SECRET_SWITCH_ENABLE_TOOLING_2") = "1" then
-            ToolingSupport
-        else
-            NativeSupport
+/// only support framework mappings which are in-box.
+/// This means .NET Standard 2 is only supported from 4.7.1 onwards.
+| NativeSupport
+
+/// support .NET Standard 2 from .NET Framework 4.6.1 onwards.
+/// This requires a supported SDK during compilation, otherwise you may get successfull compilations, but errors at runtime. Use at your own risk.
+| ToolingSupportNetSDK2
+
+
+module DotnetToolingSupport =
+    /// Change how paket handles the .NET-FX <-> .NET Standard compatibility tables.
+    /// Changing this flag influences resolution and lockfile generation.
+    /// You should only ever change it in MAIN then not touch it at runtime.
+    let mutable mode = ToolingSupportMode.NativeSupport
+
 
 /// The .NET Standard version.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
@@ -627,10 +638,10 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_5_3 -> [ DotNetFramework FrameworkVersion.V4_5_2; DotNetStandard DotNetStandardVersion.V1_2 ]
         | DotNetFramework FrameworkVersion.V4_6 -> [ DotNetFramework FrameworkVersion.V4_5_3; DotNetStandard DotNetStandardVersion.V1_3 ]
         | DotNetFramework FrameworkVersion.V4_6_1 ->
-            match DotnetTooling.mode with
-            | NativeSupport -> [ DotNetFramework FrameworkVersion.V4_6; DotNetStandard DotNetStandardVersion.V1_4 ]
+            match DotnetToolingSupport.mode with
+            | ToolingSupportMode.NativeSupport -> [ DotNetFramework FrameworkVersion.V4_6; DotNetStandard DotNetStandardVersion.V1_4 ]
             // .NET Standard 2.0 will propagate "down", so we don't need any switches on the subsequent frameworks
-            | ToolingSupport -> [ DotNetFramework FrameworkVersion.V4_6; DotNetStandard DotNetStandardVersion.V2_0 ]
+            | ToolingSupportMode.ToolingSupportNetSDK2 -> [ DotNetFramework FrameworkVersion.V4_6; DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetFramework FrameworkVersion.V4_6_2 -> [ DotNetFramework FrameworkVersion.V4_6_1; DotNetStandard DotNetStandardVersion.V1_5 ]
         | DotNetFramework FrameworkVersion.V4_6_3 -> [ DotNetFramework FrameworkVersion.V4_6_2 ]
         | DotNetFramework FrameworkVersion.V4_7 -> [ DotNetFramework FrameworkVersion.V4_6_3]

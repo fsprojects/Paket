@@ -32,6 +32,7 @@ namespace Paket.Bootstrapper
         }
         public static class AppSettingKeys
         {
+            public const string EnableNetFx461NetStandard2Support = "EnableNetFx461NetStandard2Support";
             public const string PreferNuget = "PreferNuget";
             public const string ForceNuget = "ForceNuget";
             public const string NugetSource = "NugetSource";
@@ -115,7 +116,7 @@ namespace Paket.Bootstrapper
                 
                 // Assume --run and that all arguments are for the real paket binary
                 options.Run = true;
-                options.RunArgs = new List<string>(commandArgs);
+                options.RunArgs.AddRange(new List<string>(commandArgs));
                 commandArgs.Clear();
 
                 // Don't check more than twice a day
@@ -205,6 +206,10 @@ namespace Paket.Bootstrapper
 
         private static void FillOptionsFromAppSettings(BootstrapperOptions options, NameValueCollection appSettings)
         {
+            if (appSettings.IsTrue(AppSettingKeys.EnableNetFx461NetStandard2Support))
+            {
+                options.RunArgs.Add("--enablenetfx461netstandard2support");
+            }
             if (appSettings.IsTrue(AppSettingKeys.PreferNuget))
             {
                 options.PreferNuget = true;
@@ -249,7 +254,7 @@ namespace Paket.Bootstrapper
             if (runIndex != -1)
             {
                 options.Run = true;
-                options.RunArgs = commandArgs.GetRange(runIndex + 1, commandArgs.Count - runIndex - 1);
+                options.RunArgs.AddRange(commandArgs.GetRange(runIndex + 1, commandArgs.Count - runIndex - 1));
                 commandArgs.RemoveRange(runIndex, commandArgs.Count - runIndex);
             }
         }
