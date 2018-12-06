@@ -23,7 +23,7 @@
 
     <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' == 'Windows_NT' AND Exists('$(PaketToolsPath)paket.exe')">$(PaketToolsPath)paket.exe</PaketExePath>
     <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' != 'Windows_NT' AND '$(PaketExeImage)' == 'assembly' AND Exists('$(PaketToolsPath)paket.exe') ">$(PaketToolsPath)paket.exe</PaketExePath>
-    <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' != 'Windows_NT' AND '$(PaketExeImage)' == 'native' AND Exists('$(PaketToolsPath)paket')  ">$(PaketToolsPath)paket</PaketExePath>
+    <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' != 'Windows_NT' AND '$(PaketExeImage)' == 'native' AND Exists('$(PaketToolsPath)paket.bootstrapper.proj')  ">$(PaketToolsPath)paket</PaketExePath>
     <PaketExePath Condition=" '$(PaketExePath)' == '' ">paket</PaketExePath>
 
     <!-- Paket command -->
