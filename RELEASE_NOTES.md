@@ -1,3 +1,6 @@
+#### 5.194.0 - 2018-12-08
+* BUGFIX: Fixed conflict between native local-path style with global install style - https://github.com/fsprojects/Paket/pull/3451
+
 #### 5.193.0 - 2018-12-02
 * Zsh completion update - https://github.com/fsprojects/Paket/pull/3440
 
