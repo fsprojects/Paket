@@ -307,12 +307,33 @@ set NO_PROXY=.company.com,localhost
 <code>dotnet</code> CLI see the
 <a href="paket-and-dotnet-cli.html">"Paket and the .NET SDK / .NET Core CLI tools" guide</a>.</p>
 <h2><a name="The-download-of-packages-times-out-is-there-a-way-to-prevent-this" class="anchor" href="#The-download-of-packages-times-out-is-there-a-way-to-prevent-this">The download of packages times out, is there a way to prevent this?</a></h2>
-<p>There are three environment variables you can set to try to prevent this:</p>
+<p>Since version 5.190.0 there are three environment variables you can set to try to prevent this:</p>
 <ul>
 <li><code>PAKET_REQUEST_TIMEOUT</code>: Timeout for the request</li>
 <li><code>PAKET_RESPONSE_STREAM_TIMEOUT</code>: Timeout for the response of the request</li>
 <li><code>PAKET_STREAMREADWRITE_TIMEOUT</code>: Timeout for streaming the read and write operations</li>
 </ul>
+<p>Note that values should be specified in milliseconds.</p>
+<p>The default timeout value for all three settings is 3 minutes (180 seconds).</p>
+<p>The following example will set all three values to 10 minutes (600 seconds) on Windows</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">set PAKET_REQUEST_TIMEOUT=600000
+set PAKET_RESPONSE_STREAM_TIMEOUT=600000
+set PAKET_STREAMREADWRITE_TIMEOUT=600000
+</code></pre></td></tr></table>
+<p>Use 'export' instead of 'set' for bash and similar shells</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">export PAKET_REQUEST_TIMEOUT=600000
+export PAKET_RESPONSE_STREAM_TIMEOUT=600000
+export PAKET_STREAMREADWRITE_TIMEOUT=600000
+</code></pre></td></tr></table>
+<p>If set to -1 the timeout is infinite.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -321,7 +342,6 @@ set NO_PROXY=.company.com,localhost
 set PAKET_RESPONSE_STREAM_TIMEOUT=-1
 set PAKET_STREAMREADWRITE_TIMEOUT=-1
 </code></pre></td></tr></table>
-<p>If set to -1 the timeout is infinite.</p>
 
 
         </div>
