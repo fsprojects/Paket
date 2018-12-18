@@ -1,3 +1,6 @@
+#### 5.194.1 - 2018-12-18
+* BUGFIX: Use github token environment variable with HttpClient - https://github.com/fsprojects/Paket/pull/3460
+
 #### 5.194.0 - 2018-12-08
 * BUGFIX: Fixed conflict between native local-path style with global install style - https://github.com/fsprojects/Paket/pull/3451
 
