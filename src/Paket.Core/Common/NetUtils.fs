@@ -341,7 +341,7 @@ let internal addAcceptHeader (client:HttpClient) (contentType:string) =
 let internal addHeader (client:HttpClient) (headerKey:string) (headerVal:string) =
     client.DefaultRequestHeaders.Add(headerKey, headerVal)
 
-let useDefaultHandler = 
+let useDefaultHandler =
     match Environment.GetEnvironmentVariable("PAKET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER") with
     | null -> false
     | env ->
@@ -349,6 +349,7 @@ let useDefaultHandler =
         env = "true" || env = "yes" || env = "y"
 
 let createHttpClient (url,auth:Auth option) =
+        let githubToken = Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN"
 #if !NO_WINCLIENTHANDLER
     if isWindows && not useDefaultHandler then
         // See https://github.com/dotnet/corefx/issues/31098
@@ -358,6 +359,9 @@ let createHttpClient (url,auth:Auth option) =
 
         let client = new HttpClient(handler)
         match auth with
+        | None when not (isNull githubToken) ->
+            client.DefaultRequestHeaders.Authorization <-
+                new System.Net.Http.Headers.AuthenticationHeaderValue("token", githubToken)
         | None -> handler.ServerCredentials <- CredentialCache.DefaultCredentials
         | Some(Credentials({Username = username; Password = password; Type = AuthType.Basic})) ->
             // see lengthy comment below.
@@ -387,6 +391,9 @@ let createHttpClient (url,auth:Auth option) =
 
         let client = new HttpClient(handler)
         match auth with
+        | None when not (isNull githubToken) ->
+            client.DefaultRequestHeaders.Authorization <-
+                new System.Net.Http.Headers.AuthenticationHeaderValue("token", githubToken)
         | None -> handler.UseDefaultCredentials <- true
         | Some(Credentials({Username = username; Password = password; Type = AuthType.Basic})) ->
             // http://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
