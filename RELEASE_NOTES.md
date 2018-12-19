@@ -1,3 +1,6 @@
+#### 5.194.2 - 2018-12-19
+* BUGFIX: Fixed zsh completer for clear-cache - https://github.com/fsprojects/Paket/pull/3457
+
 #### 5.194.1 - 2018-12-18
 * BUGFIX: Use github token environment variable with HttpClient - https://github.com/fsprojects/Paket/pull/3460
 
