@@ -442,7 +442,7 @@ _paket-clear-cache() {
   local -a args
   args=(
     $global_options
-    '(--clear-local)'{--clear-local}"[also clear local packages and paket-files directory]"
+    '(--clear-local)'--clear-local"[also clear local packages and paket-files directory]"
   )
 
   _arguments -C \
