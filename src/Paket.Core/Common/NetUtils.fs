@@ -348,8 +348,10 @@ let useDefaultHandler =
         let env = env.ToLowerInvariant()
         env = "true" || env = "yes" || env = "y"
 
+let private getGithubToken () =
+    Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN"
+
 let createHttpClient (url,auth:Auth option) =
-        let githubToken = Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN"
 #if !NO_WINCLIENTHANDLER
     if isWindows && not useDefaultHandler then
         // See https://github.com/dotnet/corefx/issues/31098
@@ -358,6 +360,8 @@ let createHttpClient (url,auth:Auth option) =
         handler.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
 
         let client = new HttpClient(handler)
+        let githubToken = getGithubToken()
+
         match auth with
         | None when not (isNull githubToken) ->
             client.DefaultRequestHeaders.Authorization <-
@@ -390,6 +394,8 @@ let createHttpClient (url,auth:Auth option) =
         handler.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
 
         let client = new HttpClient(handler)
+        let githubToken = getGithubToken()
+
         match auth with
         | None when not (isNull githubToken) ->
             client.DefaultRequestHeaders.Authorization <-
@@ -429,7 +435,7 @@ let createWebClient (url,auth:Auth option) =
     client.Headers.Add("User-Agent", "Paket")
     client.Proxy <- getDefaultProxyFor url
 
-    let githubToken = Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN"
+    let githubToken = getGithubToken()
 
     match auth with
     | Some (Credentials({Username = username; Password = password; Type = AuthType.Basic})) ->
