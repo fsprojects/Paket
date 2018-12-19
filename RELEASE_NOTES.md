@@ -1,3 +1,6 @@
+#### 5.194.3 - 2018-12-19
+* REVERT: Use github token environment variable with HttpClient - https://github.com/fsprojects/Paket/pull/3460
+
 #### 5.194.2 - 2018-12-19
 * BUGFIX: Fixed zsh completer for clear-cache - https://github.com/fsprojects/Paket/pull/3457
 
