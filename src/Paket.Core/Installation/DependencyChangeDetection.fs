@@ -22,7 +22,7 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
     let getChanges groupName transitives (newRequirement:PackageRequirement) (originalPackage:PackageInfo) =
         let settingsChanged() =
             if newRequirement.Settings <> originalPackage.Settings then
-                if newRequirement.Settings = { originalPackage.Resolved.Settings with FrameworkRestrictions = AutoDetectFramework } then
+                if newRequirement.Settings = { originalPackage.Settings with FrameworkRestrictions = AutoDetectFramework } then
                     []
                 else 
                     let isTransitive = transitives |> Seq.contains originalPackage.Name
