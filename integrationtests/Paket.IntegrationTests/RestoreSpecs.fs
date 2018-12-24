@@ -113,3 +113,11 @@ let ``#3012 Paket restore silently fails when TargetFramework(s) are specified i
     prepareSdk scenario
     directPaket "install" scenario |> ignore
     directDotnet false "build" projectDir |> ignore
+
+[<Test>]
+let ``#3464 Paket restore (not full restore) should not warn RestrictionsChanged when using auto-detect with storage none`` () =
+    let scenario = "i003464"
+
+    prepare scenario
+    directPaket "install" scenario |> ignore
+    directPaket "restore --target-framework netcoreapp2.2" scenario |> shouldNotContainText "RestrictionsChanged"
