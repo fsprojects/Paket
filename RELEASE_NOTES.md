@@ -1,3 +1,6 @@
+#### 5.194.4 - 2019-01-02
+* BUGFIX: Use the correct request header for paket push - https://github.com/fsprojects/Paket/pull/3466
+
 #### 5.194.3 - 2018-12-19
 * REVERT: Use github token environment variable with HttpClient - https://github.com/fsprojects/Paket/pull/3460
 
