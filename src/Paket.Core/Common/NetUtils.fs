@@ -322,7 +322,6 @@ type HttpClient with
             |> Encoding.UTF8.GetBytes
         let newlineBytes = Environment.NewLine |> Encoding.UTF8.GetBytes
         let trailerbytes = String.Format(System.Globalization.CultureInfo.InvariantCulture, "--{0}--", boundary) |> Encoding.UTF8.GetBytes
-        x.DefaultRequestHeaders.Add("Content-Type", "multipart/form-data; boundary=" + boundary)
         use stream = new MemoryStream() // x.OpenWrite(url, "PUT")
         stream.Write(fileHeaderBytes, 0, fileHeaderBytes.Length)
         use fileStream = File.OpenRead fileInfo.FullName
@@ -331,7 +330,9 @@ type HttpClient with
         stream.Write(trailerbytes, 0, trailerbytes.Length)
         stream.Write(newlineBytes, 0, newlineBytes.Length)
         stream.Position <- 0L
-        let result = x.PutAsync(url, new StreamContent(stream)).GetAwaiter().GetResult()
+        use content = new StreamContent(stream)
+        content.Headers.Add("Content-Type", "multipart/form-data; boundary=" + boundary)
+        let result = x.PutAsync(url, content).GetAwaiter().GetResult()
         failIfNoSuccess result |> Async.RunSynchronously
         result
 
