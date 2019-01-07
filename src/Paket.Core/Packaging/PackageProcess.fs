@@ -93,13 +93,13 @@ let private convertToNormal (symbols : bool) templateFile =
         let includePdbs = optional.IncludePdbs
         { templateFile with Contents = ProjectInfo(core, { optional with IncludePdbs = (if symbols then false else includePdbs) }) }
 
-let private convertToSymbols (projectFile : ProjectFile) (includeReferencedProjects : bool) (projDeps) (templateFile:TemplateFile) =
+let private convertToSymbols (projectFile:ProjectFile) includeReferencedProjects cache (templateFile:TemplateFile) =
     let sourceFiles =
         let getTarget compileItem =
             let projectName = Path.GetFileName(compileItem.BaseDir)
             Path.Combine("src", projectName, compileItem.DestinationPath)
 
-        projectFile.GetCompileItems (includeReferencedProjects || templateFile.IncludeReferencedProjects) projDeps
+        projectFile.GetCompileItems (includeReferencedProjects || templateFile.IncludeReferencedProjects) cache
         |> Seq.map (fun c -> c.SourceFile, getTarget c)
         |> Seq.toList
 
@@ -142,7 +142,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
     
         hashSet
 
-    let projDeps = (Dictionary<int,ProjectFile>(),Dictionary<string,int list>())
+    let cache = PackProcessCache.empty
 
     // load up project files and grab meta data
     let projectTemplates  =
@@ -186,8 +186,8 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
         let optWithSymbols (projectFile:ProjectFile) templateFile =
             seq { 
                 yield (templateFile |> convertToNormal symbols)
-                if symbols then 
-                    yield templateFile |> convertToSymbols projectFile includeReferencedProjects projDeps }
+                if symbols then
+                    yield templateFile |> convertToSymbols projectFile includeReferencedProjects cache }
 
         let convertRemainingTemplate fileName =
             let templateFile = TemplateFile.Load(fileName,lockFile,version,specificVersions)
@@ -214,7 +214,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
                     yield template, p
                 }
             )
-         |> Seq.map (fun (t, p) -> findDependencies dependenciesFile buildConfig buildPlatform t p lockDependencies minimumFromLockFile pinProjectReferences projectTemplates includeReferencedProjects version projDeps)
+         |> Seq.map (fun (t, p) -> findDependencies dependenciesFile buildConfig buildPlatform t p lockDependencies minimumFromLockFile pinProjectReferences projectTemplates includeReferencedProjects version cache)
          |> Seq.append remaining
          |> Seq.toList
 
