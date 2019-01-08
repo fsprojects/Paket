@@ -504,11 +504,11 @@ github zurb/bower-foundation js/foundation.min.js"""
     changedDependencies |> Set.filter (fun (g,_) -> g = GroupName "Build") |> Set.count |> shouldEqual 1
 
 [<Test>]
-let ``should detect no changes with storage: none``() =
+let ``should detect no changes with storage: none and auto-detect``() =
     let dependencyFileData = """
 source https://api.nuget.org/v3/index.json
 storage: none
-framework: netcoreapp2.1
+framework:  auto-detect
 
 nuget FSharp.Core
 """
