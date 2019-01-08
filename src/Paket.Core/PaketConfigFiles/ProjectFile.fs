@@ -461,11 +461,12 @@ module ProjectFile =
 
         let addData data (node:XmlNode) =
             let text = processPlaceholders data node.InnerText
+            let unescapedString = Uri.UnescapeDataString text
             // Note that using Map.add overrides the value assigned
             // to this key if it already exists in the map; so long
             // as we process nodes top-to-bottom, this matches the
             // behavior of MSBuild.
-            Map.add node.Name text data
+            Map.add node.Name unescapedString data
 
 
         let rec handleElement (data : Map<string, string>) (node : XmlNode) =
