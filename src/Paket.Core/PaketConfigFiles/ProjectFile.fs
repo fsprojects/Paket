@@ -60,7 +60,7 @@ type ProjectOutputType =
 | Library
 
 [<RequireQualifiedAccess>]
-type ProjectLanguage = Unknown | CSharp | FSharp | VisualBasic | WiX | Nemerle | CPP | IronPython | ServiceFabric
+type ProjectLanguage = Unknown | CSharp | FSharp | VisualBasic | WiX | Nemerle | CPP | IronPython | ServiceFabric | Sql
 
 module LanguageEvaluation =
     let private extractProjectTypeGuids (projectDocument:XmlDocument) =
@@ -141,6 +141,7 @@ module LanguageEvaluation =
         | ".nproj"  -> Some ProjectLanguage.Nemerle
         | ".pyproj"  -> Some ProjectLanguage.IronPython
         | ".sfproj"  -> Some ProjectLanguage.ServiceFabric
+        | ".sqlproj"  -> Some ProjectLanguage.Sql
         | _ -> None
 
     let private getLanguageFromFileName (fileName : string) =
@@ -179,7 +180,7 @@ type ProjectFile =
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module ProjectFile =
-    let supportedEndings = [ ".csproj"; ".fsproj"; ".vbproj"; ".wixproj"; ".nproj"; ".vcxproj"; ".pyproj"; ".sfproj"; ".proj" ]
+    let supportedEndings = [ ".csproj"; ".fsproj"; ".vbproj"; ".wixproj"; ".nproj"; ".vcxproj"; ".pyproj"; ".sfproj"; ".proj"; ".sqlproj" ]
 
     let isSupportedFile (fi:FileInfo) =
         supportedEndings
