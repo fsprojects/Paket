@@ -1,4 +1,7 @@
-#### 5.194.4 - 2019-01-02
+#### 5.194.5 - 2019-01-10
+* BUGFIX: Fixed RestrictionsChanged Detection - https://github.com/fsprojects/Paket/pull/3464
+
+##### 5.194.4 - 2019-01-02
 * BUGFIX: Use the correct request header for paket push - https://github.com/fsprojects/Paket/pull/3466
 
 #### 5.194.3 - 2018-12-19
