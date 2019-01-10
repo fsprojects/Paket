@@ -1,17 +1,8 @@
-#### 5.194.5 - 2019-01-10
+#### 5.195.0 - 2019-01-10
+* SQL project support - https://github.com/fsprojects/Paket/pull/3474
 * BUGFIX: Fixed RestrictionsChanged Detection - https://github.com/fsprojects/Paket/pull/3464
-
-##### 5.194.4 - 2019-01-02
 * BUGFIX: Use the correct request header for paket push - https://github.com/fsprojects/Paket/pull/3466
-
-#### 5.194.3 - 2018-12-19
-* REVERT: Use github token environment variable with HttpClient - https://github.com/fsprojects/Paket/pull/3460
-
-#### 5.194.2 - 2018-12-19
 * BUGFIX: Fixed zsh completer for clear-cache - https://github.com/fsprojects/Paket/pull/3457
-
-#### 5.194.1 - 2018-12-18
-* BUGFIX: Use github token environment variable with HttpClient - https://github.com/fsprojects/Paket/pull/3460
 
 #### 5.194.0 - 2018-12-08
 * BUGFIX: Fixed conflict between native local-path style with global install style - https://github.com/fsprojects/Paket/pull/3451
