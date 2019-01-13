@@ -1,3 +1,6 @@
+#### 5.195.1 - 2019-01-13
+* BUGFIX: Do not change the AutoGenerateBindingRedirects for exe output type - https://github.com/fsprojects/Paket/pull/3471
+
 #### 5.195.0 - 2019-01-10
 * SQL project support - https://github.com/fsprojects/Paket/pull/3474
 * BUGFIX: Fixed RestrictionsChanged Detection - https://github.com/fsprojects/Paket/pull/3464
