@@ -39,7 +39,7 @@ This guide will show you
 
 ### Specifying dependencies
 
-Create a [`paket.dependencies` file](dependencies-file.html) in your project's
+Create a [`paket.dependencies` file](dependencies-file.html) in your solution's
 root and specify all your dependencies in it. You can use
 [NuGet packages](nuget-dependencies.html),
 [Git repos](git-dependencies.html),
