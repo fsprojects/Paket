@@ -159,9 +159,9 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLi
         config.Save(f, SaveOptions.DisableFormatting)
 
     match projectFile.OutputType, projectFile.GetAutoGenerateBindingRedirects() with
-    | ProjectOutputType.Exe, _ -> ignore()
-    | _, Some x when x.ToLower() = "true" -> ignore()
-    | _, _ -> projectFile.SetOrCreateAutoGenerateBindingRedirects()
+    | ProjectOutputType.Library, Some x when x.ToLower() = "true" -> ignore()
+    | ProjectOutputType.Library, _ -> projectFile.SetAutoGenerateBindingRedirects(true)
+    | _, _ -> projectFile.SetAutoGenerateBindingRedirects(false)
 
 let findAllReferencesFiles root =
     let findRefFile (p:ProjectFile) =

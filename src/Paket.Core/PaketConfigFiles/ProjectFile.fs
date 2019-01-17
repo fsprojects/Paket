@@ -1688,14 +1688,19 @@ module ProjectFile =
               TargetFramework = None })
 
     let getAutoGenerateBindingRedirects (project:ProjectFile) = getProperty "AutoGenerateBindingRedirects" project
-    let setOrCreateAutoGenerateBindingRedirects (project:ProjectFile) =
-        match getAutoGenerateBindingRedirects project with
-        | Some _ -> project.Document
-                    |> getDescendants "AutoGenerateBindingRedirects"
-                    |> List.iter(fun x -> x.InnerText <- "true")
-        | _ -> match project.Document |> getDescendants "PropertyGroup" with
-               | x :: _ -> x.AppendChild (createNodeSet "AutoGenerateBindingRedirects" "true" project) |> ignore
-               | _ -> ()
+
+    let setOrCreateAutoGenerateBindingRedirects (newValue:bool) (project:ProjectFile) =
+        match newValue, getAutoGenerateBindingRedirects project with
+        | true, Some _ -> project.Document
+                          |> getDescendants "AutoGenerateBindingRedirects"
+                          |> List.iter(fun x -> x.InnerText <- "true")
+        | true, _ -> match project.Document |> getDescendants "PropertyGroup" with
+                     | x :: _ -> x.AppendChild (createNodeSet "AutoGenerateBindingRedirects" "true" project) |> ignore
+                     | _ -> ()
+        | false, Some _ -> match project.Document |> getDescendants "AutoGenerateBindingRedirects" with
+                           | x :: _ -> x.ParentNode.RemoveChild(x) |> ignore
+                           | _ -> ()
+        | _, _ -> ignore();
 
         save false project
 
@@ -1787,7 +1792,7 @@ type ProjectFile with
 
     member this.GetAutoGenerateBindingRedirects() = ProjectFile.getAutoGenerateBindingRedirects this
 
-    member this.SetOrCreateAutoGenerateBindingRedirects() = ProjectFile.setOrCreateAutoGenerateBindingRedirects this
+    member this.SetAutoGenerateBindingRedirects(newValue:bool) = ProjectFile.setAutoGenerateBindingRedirects newValue this
 
     static member LoadFromStream(fullName:string, stream:Stream) = ProjectFile.loadFromStream fullName stream
 
