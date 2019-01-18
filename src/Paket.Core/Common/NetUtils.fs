@@ -423,8 +423,6 @@ let createWebClient (url,auth:Auth option) =
     client.Headers.Add("User-Agent", "Paket")
     client.Proxy <- getDefaultProxyFor url
 
-    let githubToken = Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN"
-
     match auth with
     | Some (Credentials({Username = username; Password = password; Type = AuthType.Basic})) ->
         // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
@@ -442,8 +440,6 @@ let createWebClient (url,auth:Auth option) =
         client.Credentials <- cred.GetCredential(new Uri(url), "NTLM")
     | Some (Token token) ->
         client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" token
-    | None when not (isNull githubToken) ->
-        client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" githubToken
     | None ->
         client.UseDefaultCredentials <- true
     client
