@@ -1,3 +1,6 @@
+#### 5.195.4 - 2019-01-18
+* BUGFIX: dotnet --no-restore was still doing a restore  - https://github.com/fsprojects/Paket/pull/3486
+
 #### 5.195.3 - 2019-01-18
 * BUGFIX: Set AllowExplicitVersion to true for PackageReference in Paket.Restore.targets - https://github.com/fsprojects/Paket/pull/3482
 
