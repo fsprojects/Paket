@@ -1,3 +1,6 @@
+#### 5.195.3 - 2019-01-18
+* BUGFIX: Set AllowExplicitVersion to true for PackageReference in Paket.Restore.targets - https://github.com/fsprojects/Paket/pull/3482
+
 #### 5.195.2 - 2019-01-18
 * BUGFIX: Apply paket github api token on github requests - https://github.com/fsprojects/Paket/pull/3484
 
