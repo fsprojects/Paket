@@ -183,6 +183,7 @@
         <ExcludeAssets Condition=" '%(PaketReferencesFileLinesInfo.Splits)' == '6' And %(PaketReferencesFileLinesInfo.CopyLocal) == 'false'">runtime</ExcludeAssets>
         <ExcludeAssets Condition=" '%(PaketReferencesFileLinesInfo.Splits)' != '6' And %(PaketReferencesFileLinesInfo.AllPrivateAssets) == 'exclude'">runtime</ExcludeAssets>
         <Publish Condition=" '$(PackAsTool)' == 'true' ">true</Publish>
+        <AllowExplicitVersion>true</AllowExplicitVersion>
       </PackageReference>
     </ItemGroup>
 
