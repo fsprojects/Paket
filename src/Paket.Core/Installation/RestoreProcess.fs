@@ -319,7 +319,8 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
                  yield! packageReferences
                  yield "    </ItemGroup>"])
             |> fun xs -> String.Join(Environment.NewLine,xs)
-                
+ 
+	//When updating the PaketPropsVersion be sure to update the Paket.Restore.targets which checks this value
     let content = 
         sprintf """<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
