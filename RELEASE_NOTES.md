@@ -1,3 +1,6 @@
+#### 5.195.2 - 2019-01-18
+* BUGFIX: Apply paket github api token on github requests - https://github.com/fsprojects/Paket/pull/3484
+
 #### 5.195.1 - 2019-01-13
 * BUGFIX: Do not change the AutoGenerateBindingRedirects for exe output type - https://github.com/fsprojects/Paket/pull/3471
 
