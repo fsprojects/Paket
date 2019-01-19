@@ -62,6 +62,9 @@
     <!-- see https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1032-fsharp-in-dotnet-sdk.md -->
     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
     <DisableImplicitSystemValueTupleReference>true</DisableImplicitSystemValueTupleReference>
+
+    <!-- Disable Paket restore under NCrunch build -->
+    <PaketRestoreDisabled Condition="'$(NCrunch)' == '1'">True</PaketRestoreDisabled>
   </PropertyGroup>
 
   <Target Name="PaketBootstrapping" Condition="Exists('$(PaketToolsPath)paket.bootstrapper.proj')">
