@@ -1,3 +1,7 @@
+
+#### 5.195.6 - 2019-01-21
+* BUGFIX: uri unescape when read project property - https://github.com/fsprojects/Paket/pull/3470
+
 #### 5.195.5 - 2019-01-19
 * BUGFIX: Added PaketRestoreDisabled when NCrunch enabled in targets - https://github.com/fsprojects/Paket/pull/3479
 
