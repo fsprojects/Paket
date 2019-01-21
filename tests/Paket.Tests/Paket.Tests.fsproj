@@ -319,6 +319,7 @@
     <Compile Include="ProjectFile\ProjectLanguageSpecs.fs" />
     <Compile Include="ProjectFile\LocalizationSpecs.fs" />
     <Compile Include="ProjectFile\UpdateFromNugetSpecs.fs" />
+    <Compile Include="ProjectFile\ReadPropertySpecs.fs" />
     <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
     <Compile Include="InstallModel\Xml\ControlzEx.fs" />
