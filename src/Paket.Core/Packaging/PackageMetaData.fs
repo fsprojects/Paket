@@ -166,7 +166,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith (sprintf "You should only try and add files to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
-let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (projectWithTemplates : Map<string, (Lazy<'TemplateFile>) * ProjectFile * bool>) includeReferencedProjects (version :SemVerInfo option) projDeps =
+let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (projectWithTemplates : Map<string, (Lazy<'TemplateFile>) * ProjectFile * bool>) includeReferencedProjects (version :SemVerInfo option) cache =
     let includeReferencedProjects = template.IncludeReferencedProjects || includeReferencedProjects
     let targetDir = 
         match project.BuildOutputTargetFolder with
@@ -183,12 +183,12 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
         | None -> PreReleaseStatus.No
         | _ -> PreReleaseStatus.All
 
-    let deps, files = 
-        let interProjectDeps = 
-            if includeReferencedProjects then 
-                project.GetAllInterProjectDependenciesWithoutProjectTemplates projDeps
-            else 
-                project.GetAllInterProjectDependenciesWithProjectTemplates projDeps
+    let deps, files =
+        let interProjectDeps =
+            if includeReferencedProjects then
+                project.GetAllInterProjectDependenciesWithoutProjectTemplates cache
+            else
+                project.GetAllInterProjectDependenciesWithProjectTemplates cache
             |> Seq.toList
 
         interProjectDeps
@@ -206,11 +206,11 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
     
     // Add the assembly + {.dll, .pdb, .xml, /*/.resources.dll} from this project
     let templateWithOutput =
-        let projects =                 
-            if includeReferencedProjects then 
-                project.GetAllInterProjectDependenciesWithoutProjectTemplates projDeps 
-                |> Seq.toList 
-            else 
+        let projects =
+            if includeReferencedProjects then
+                project.GetAllInterProjectDependenciesWithoutProjectTemplates cache
+                |> Seq.toList
+            else
                 [ project ]
 
         let satelliteDlls =
@@ -320,7 +320,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
             | None -> []
 
         [if includeReferencedProjects then
-            for proj in project.GetAllReferencedProjects(false,projDeps) |> Seq.filter ((<>) project) do
+            for proj in project.GetAllReferencedProjects(false, cache) |> Seq.filter ((<>) project) do
                 match Map.tryFind proj.FileName projectWithTemplates with
                 | Some (template, _, _) ->
                     match template.Force() with

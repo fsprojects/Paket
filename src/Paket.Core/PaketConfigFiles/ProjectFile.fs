@@ -4,6 +4,7 @@ open Paket
 open Paket.Domain
 open Paket.Logging
 open System
+open System.Collections.Concurrent
 open System.Collections.Generic
 open System.IO
 open System.Text
@@ -176,7 +177,6 @@ type ProjectFile =
       mutable DefaultProperties : Map<string,string> option
       // CalculatedMaps for optimizations
       mutable CalculatedProperties : System.Collections.Concurrent.ConcurrentDictionary<Map<string,string>, Map<string,string>> }
-
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module ProjectFile =
@@ -1700,6 +1700,14 @@ module ProjectFile =
 
         save false project
 
+type PackProcessCache =
+    { ReferencesByProjectFilePath : ConcurrentDictionary<string, ProjectFile list>
+      ProjectFileByPath : ConcurrentDictionary<string, ProjectFile option> }
+
+module PackProcessCache =
+    let empty = { ReferencesByProjectFilePath = ConcurrentDictionary<string, ProjectFile list>()
+                  ProjectFileByPath = ConcurrentDictionary<string, ProjectFile option>() }
+
 type ProjectFile with
 
     member this.GetPropertyWithDefaults propertyName defaultProperties = ProjectFile.getPropertyWithDefaults propertyName defaultProperties this
@@ -1930,91 +1938,51 @@ type ProjectFile with
             with
             | _ -> None
 
-    member this.GetAllInterProjectDependenciesWithoutProjectTemplates cache = this.ProjectsWithoutTemplates(this.GetAllReferencedProjects(false, cache))
+    member this.GetAllInterProjectDependenciesWithoutProjectTemplates cache =
+        this.ProjectsWithoutTemplates(this.GetAllReferencedProjects(false, cache))
 
-    member this.GetAllInterProjectDependenciesWithProjectTemplates cache = this.ProjectsWithTemplates(this.GetAllReferencedProjects(false, cache))
+    member this.GetAllInterProjectDependenciesWithProjectTemplates cache =
+        this.ProjectsWithTemplates(this.GetAllReferencedProjects(false, cache))
+
+    member this.HasTemplateFile =
+        let templateFilename = this.FindTemplatesFile()
+        match templateFilename with
+        | Some tfn -> TemplateFile.IsProjectType tfn
+        | None -> false
 
     member this.ProjectsWithoutTemplates projects =
         projects
-        |> Seq.filter(fun proj ->
-            if proj = this then true
-            else
-                let templateFilename = proj.FindTemplatesFile()
-                match templateFilename with
-                | Some tfn -> TemplateFile.IsProjectType tfn |> not
-                | None -> true
-        )
+        |> List.filter (fun proj -> proj = this || not proj.HasTemplateFile)
 
     member this.ProjectsWithTemplates projects =
         projects
-        |> Seq.filter (fun proj ->
-            if proj = this then true else
-            let templateFilename = proj.FindTemplatesFile()
-            match templateFilename with
-            | Some tfn -> TemplateFile.IsProjectType tfn
-            | None -> false
-        )
+        |> List.filter (fun proj -> proj = this || proj.HasTemplateFile)
 
-    member this.GetAllReferencedProjects (onlyWithOutput,cache:Dictionary<int,(ProjectFile)>*Dictionary<string,int list>) =
-        let progFileCache , depRefs = cache
-        let delivered = HashSet<_>()
-        
-        let rec getProjects (project:ProjectFile) = 
-            seq {
-                let projects = seq {
-                    let pFiles =
-                        match depRefs.TryGetValue project.FileName with
-                        | true, rids ->
-                            rids |> List.fold (fun acc rid ->
-                                if not (delivered.Contains rid) then
-                                    match progFileCache.TryGetValue rid with
-                                    | true, v -> 
-                                        delivered.Add rid |> ignore
-                                        v :: acc
-                                    | false,_ -> acc
-                                else acc ) []
-                        | false, _ ->
-                            let projs = project.GetInterProjectDependencies()
-                            let projs = if onlyWithOutput then projs |> List.filter (fun x -> x.ReferenceOutputAssembly) else projs
-                            let rids = projs |> List.map (fun proj -> proj.Path.GetHashCode())
-                            if not (depRefs.ContainsKey project.Name) then 
-                                depRefs.Add(project.Name,rids)
-                             
-                            projs |> List.fold (fun acc proj ->
-                            let rid = proj.Path.GetHashCode()
-                            if not (delivered.Contains rid) then
-                                match progFileCache.TryGetValue rid with
-                                | true, cproj -> 
-                                    delivered.Add rid |> ignore
-                                    cproj :: acc                    
-                                | false, _ ->
-                                    match ProjectFile.tryLoad(proj.Path) with
-                                    | Some cproj -> 
-                                        if not (progFileCache.ContainsKey rid) then 
-                                            progFileCache.Add(rid,cproj)   
-                                        delivered.Add rid |> ignore
-                                        cproj :: acc
-                                    | None -> acc
-                            else acc                                
-                            ) []
-                    yield! pFiles |> Seq.ofList                                                              
-                        }
-                yield! projects
-                for proj in projects do
-                    yield! (getProjects proj)
-            }
-        seq { 
-            yield this
-            yield! getProjects this
-        }
+    member this.GetAllReferencedProjects (onlyWithOutput, cache) =
+
+        let getDirectlyReferencedProjectFiles (project:ProjectFile) =
+            let referencedProjectFiles = lazy (
+                project.GetInterProjectDependencies()
+                |> List.filter (fun dep -> dep.ReferenceOutputAssembly || (not onlyWithOutput))
+                |> List.choose (fun dep -> cache.ProjectFileByPath.GetOrAdd(dep.Path, ProjectFile.tryLoad)))
+            cache.ReferencesByProjectFilePath.GetOrAdd (project.FileName, (fun _ -> referencedProjectFiles.Force()))
+
+        let seenProjects = new HashSet<string>()
+        let rec getSelfAndAllReferencedProjects project = [
+            if seenProjects.Add project.FileName then
+                yield project
+                if project = this || not project.HasTemplateFile then
+                    let referencedProjects = getDirectlyReferencedProjectFiles project
+                    yield! List.collect getSelfAndAllReferencedProjects referencedProjects
+        ]
+
+        getSelfAndAllReferencedProjects this
 
     member this.GetProjects includeReferencedProjects cache =
-        seq {
-            if includeReferencedProjects then
-                yield! this.GetAllReferencedProjects(true,cache)
-            else
-                yield this
-        }
+        if includeReferencedProjects then
+            this.GetAllReferencedProjects(true, cache)
+        else
+            [this]
 
     member this.GetCompileItems (includeReferencedProjects : bool) cache = 
         let getCompileRefs projectFile =
