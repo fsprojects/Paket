@@ -1,3 +1,5 @@
+#### 5.195.7 - 2019-01-22
+* BUGFIX: Fixedpack transitive dependencies with --include-referenced-projects - https://github.com/fsprojects/Paket/pull/3469
 
 #### 5.195.6 - 2019-01-21
 * BUGFIX: uri unescape when read project property - https://github.com/fsprojects/Paket/pull/3470
