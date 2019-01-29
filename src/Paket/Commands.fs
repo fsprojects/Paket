@@ -479,6 +479,13 @@ with
             match this with
             | Paket_Dependencies_Dir -> "absolute path of paket.dependencies directory, if exists"
 
+type InterprojectReferencesConstraintArgs =
+    | Min
+    | Fix
+    | Keep_Major
+    | Keep_Minor
+    | Keep_Patch
+
 type PackArgs =
     | [<ExactlyOnce;MainCommand>] Output of path:string
     | [<Hidden;ExactlyOnce;CustomCommandLine("output")>] Output_Legacy of path:string
@@ -512,6 +519,8 @@ type PackArgs =
 
     | [<Unique>] Pin_Project_References
     | [<Hidden;Unique;CustomCommandLine("pin-project-references")>] Pin_Project_References_Legacy
+
+    | [<Unique>] Interproject_References of InterprojectReferencesConstraintArgs
 
     | [<Unique>] Symbols
     | [<Hidden;Unique;CustomCommandLine("symbols")>] Symbols_Legacy
@@ -557,6 +566,8 @@ with
 
             | Pin_Project_References -> "pin dependencies generated from project references to exact versions (=) instead of using minimum versions (>=); with --lock-dependencies project references will be pinned even if this option is not specified"
             | Pin_Project_References_Legacy(_) -> "[obsolete]"
+
+            | Interproject_References(_) -> "set constraints for referenced project versions"
 
             | Symbols -> "create symbol and source packages in addition to library and content packages"
             | Symbols_Legacy(_) -> "[obsolete]"

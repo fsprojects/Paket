@@ -93,6 +93,7 @@
     <Compile Include="Versioning\Cache.fs" />
     <Compile Include="Versioning\PackageSources.fs" />
     <Compile Include="Versioning\Requirements.fs" />
+    <Compile Include="Versioning\InterprojectReferencesConstraint.fs" />
     <Compile Include="Dependencies\GitCommandHelper.fs" />
     <Compile Include="Dependencies\GitHandling.fs" />
     <Compile Include="Dependencies\ModuleResolver.fs" />

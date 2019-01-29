@@ -93,6 +93,7 @@
     <Compile Include="Versioning\RestrictionApplicationSpecs.fs" />
     <Compile Include="Versioning\DependencySetSpecs.fs" />
     <Compile Include="Versioning\FrameworkRestrictionTests.fs" />
+    <Compile Include="Versioning\InterprojectReferencesConstraintSpecs.fs" />
     <None Include="Nuspec\EmptyLibs.nuspec" />
     <None Include="Nuspec\Fantomas.nuspec" />
     <None Include="Nuspec\FluentAssertions.nuspec" />

@@ -3,6 +3,7 @@ namespace Paket
 open Paket
 open Paket.Domain
 open Paket.Logging
+open Paket.InterprojectReferencesConstraint
 open System
 open System.Collections.Concurrent
 open System.Collections.Generic
@@ -2054,7 +2055,7 @@ type ProjectFile with
         let optionalInfo =  {
             Title = prop "Title"
             Owners = propMap "Owners" [] splitString
-            ReleaseNotes = prop "ReleaseNores"
+            ReleaseNotes = prop "ReleaseNotes"
             Summary = prop "Summary"
             Language = prop "Langauge"
             ProjectUrl = prop "ProjectUrl"
@@ -2074,6 +2075,7 @@ type ProjectFile with
             PackageTypes = []
             IncludePdbs = propMap "IncludePdbs" true tryBool
             IncludeReferencedProjects = propMap "IncludeReferencedProjects" true tryBool
+            InterprojectReferencesConstraint = propMap "InterprojectReferencesConstraint" None InterprojectReferencesConstraint.Parse
         }
         
         (coreInfo, optionalInfo)

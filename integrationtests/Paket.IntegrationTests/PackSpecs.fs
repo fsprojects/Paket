@@ -522,6 +522,52 @@ let ``#1848 include-referenced-projects with non-packed project dependencies`` (
     CleanDir rootPath
 
 [<Test>]
+let ``#2520 interproject-references parameter overide --pin-project-references`` () =
+    let scenario = "i002520-interproject-references-constraint"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let package = Path.Combine(outPath, "A.1.0.0.nupkg")
+
+    paket ("pack --pin-project-references \"" + outPath + "\"") scenario |> ignore
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    let nuspec = NuGetLocal.getNuSpecFromNupgk package
+    let dependency =
+        match nuspec.Dependencies.Value with
+        | [d] -> d
+        | _ -> failwith "single dependency expected"
+
+    let name, versionRequirement, _ = dependency
+
+    name |> shouldEqual (PackageName "B")
+    versionRequirement |> shouldEqual (VersionRequirement.Parse "[1.2.3,2.0.0)")
+
+    CleanDir rootPath
+
+[<Test>]
+let ``#2520 --interproject-references cli parameter overide interproject-references template file option`` () =
+    let scenario = "i002520-interproject-references-constraint"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let package = Path.Combine(outPath, "A.1.0.0.nupkg")
+
+    paket ("pack --interproject-references keep-minor \"" + outPath + "\"") scenario |> ignore
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    let nuspec = NuGetLocal.getNuSpecFromNupgk package
+    let dependency =
+        match nuspec.Dependencies.Value with
+        | [d] -> d
+        | _ -> failwith "single dependency expected"
+
+    let name, versionRequirement, _ = dependency
+
+    name |> shouldEqual (PackageName "B")
+    versionRequirement |> shouldEqual (VersionRequirement.Parse "[1.2.3,1.3.0)")
+
+    CleanDir rootPath
+
+[<Test>]
 let ``#2694 paket fixnuspec should not remove project references``() = 
     let project = "console"
     let scenario = "i002694"

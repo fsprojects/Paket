@@ -6,6 +6,7 @@ open System.IO
 open System.Text.RegularExpressions
 open Chessie.ErrorHandling
 open Paket.Domain
+open Paket.InterprojectReferencesConstraint
 open Paket.Requirements
 
 module private TemplateParser =
@@ -160,6 +161,7 @@ type OptionalPackagingInfo =
       PackageTypes : string list
       IncludePdbs : bool 
       IncludeReferencedProjects : bool
+      InterprojectReferencesConstraint: InterprojectReferencesConstraint option
       }
     static member Empty : OptionalPackagingInfo =
         { Title = None
@@ -183,7 +185,8 @@ type OptionalPackagingInfo =
           FilesExcluded = [] 
           PackageTypes = []
           IncludeReferencedProjects = false
-          IncludePdbs = false }
+          IncludePdbs = false
+          InterprojectReferencesConstraint = None}
 
 type CompleteInfo = CompleteCoreInfo * OptionalPackagingInfo
 
@@ -200,6 +203,10 @@ type TemplateFile =
             match x.Contents with
             | CompleteInfo(_,c) -> c.IncludeReferencedProjects
             | ProjectInfo (_,c) ->  c.IncludeReferencedProjects
+        member x.InterprojectReferencesConstraint =
+            match x.Contents with
+            | CompleteInfo(_,c) -> c.InterprojectReferencesConstraint
+            | ProjectInfo (_,c) ->  c.InterprojectReferencesConstraint
 
 [<CompilationRepresentationAttribute(CompilationRepresentationFlags.ModuleSuffix)>]
 module internal TemplateFile =
@@ -463,6 +470,11 @@ module internal TemplateFile =
         | None -> []
         | Some  d -> d.Split '\n' |> List.ofArray
 
+    let private getInterprojectReferencesConstraint (map: Map<string, string>) =
+        match Map.tryFind "interproject-references" map with
+        | None -> None
+        | Some c -> InterprojectReferencesConstraint.Parse c
+
     let private getOptionalInfo (fileName,lockFile:LockFile, map : Map<string, string>, currentVersion, specificVersions) =
         let get (n : string) = Map.tryFind (n.ToLowerInvariant()) map
 
@@ -533,7 +545,8 @@ module internal TemplateFile =
           FilesExcluded = getFileExcludes map
           PackageTypes = packageTypes
           IncludeReferencedProjects = includeReferencedProjects 
-          IncludePdbs = includePdbs }
+          IncludePdbs = includePdbs
+          InterprojectReferencesConstraint = getInterprojectReferencesConstraint map}
 
     let Parse(file,lockFile,currentVersion,specificVersions,contentStream : Stream) =
         trial {

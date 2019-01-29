@@ -33,6 +33,7 @@
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\SemVer.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\VersionRange.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\FrameworkHandling.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Versioning\InterprojectReferencesConstraint.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\PlatformMatching.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\ConfigFile.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\CredentialProviders.fs" />

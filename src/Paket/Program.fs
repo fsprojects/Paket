@@ -529,9 +529,18 @@ let pack (results : ParseResults<_>) =
          results.Contains <@ PackArgs.Lock_Dependencies_To_Minimum_Legacy @>)
         |> legacyBool results (ReplaceArgument("--minimum-from-lock-file", "minimum-from-lock-file"))
     let pinProjectReferences =
+        warnObsolete (ReplaceArgument("--interproject-references", "--pin-project-references"))
         (results.Contains <@ PackArgs.Pin_Project_References @>,
          results.Contains <@ PackArgs.Pin_Project_References_Legacy @>)
         |> legacyBool results (ReplaceArgument("--pin-project-references", "pin-project-references"))
+    let interprojectReferencesConstraint =
+        match results.TryGetResult <@ PackArgs.Interproject_References @> with
+        | Some Min -> Some InterprojectReferencesConstraint.Min
+        | Some Fix -> Some InterprojectReferencesConstraint.Fix
+        | Some Keep_Major -> Some InterprojectReferencesConstraint.KeepMajor
+        | Some Keep_Minor -> Some InterprojectReferencesConstraint.KeepMinor
+        | Some Keep_Patch -> Some InterprojectReferencesConstraint.KeepPatch
+        | None -> None
     let symbols =
         (results.Contains <@ PackArgs.Symbols @>,
          results.Contains <@ PackArgs.Symbols_Legacy @>)
@@ -558,6 +567,7 @@ let pack (results : ParseResults<_>) =
                       lockDependencies = lockDependencies,
                       minimumFromLockFile = minimumFromLockFile,
                       pinProjectReferences = pinProjectReferences,
+                      interprojectReferencesConstraint = interprojectReferencesConstraint,
                       symbols = symbols,
                       includeReferencedProjects = includeReferencedProjects,
                       ?projectUrl = projectUrl)
