@@ -1,22 +1,11 @@
-#### 5.195.7 - 2019-01-22
+#### 5.196.0 - 2019-02-03
+* New option to control interproject references version constraint - https://github.com/fsprojects/Paket/pull/3473
 * BUGFIX: Fixedpack transitive dependencies with --include-referenced-projects - https://github.com/fsprojects/Paket/pull/3469
-
-#### 5.195.6 - 2019-01-21
 * BUGFIX: uri unescape when read project property - https://github.com/fsprojects/Paket/pull/3470
-
-#### 5.195.5 - 2019-01-19
 * BUGFIX: Added PaketRestoreDisabled when NCrunch enabled in targets - https://github.com/fsprojects/Paket/pull/3479
-
-#### 5.195.4 - 2019-01-18
 * BUGFIX: dotnet --no-restore was still doing a restore - https://github.com/fsprojects/Paket/pull/3486
-
-#### 5.195.3 - 2019-01-18
 * BUGFIX: Set AllowExplicitVersion to true for PackageReference in Paket.Restore.targets - https://github.com/fsprojects/Paket/pull/3482
-
-#### 5.195.2 - 2019-01-18
 * BUGFIX: Apply paket github api token on github requests - https://github.com/fsprojects/Paket/pull/3484
-
-#### 5.195.1 - 2019-01-13
 * BUGFIX: Do not change the AutoGenerateBindingRedirects for exe output type - https://github.com/fsprojects/Paket/pull/3471
 
 #### 5.195.0 - 2019-01-10
