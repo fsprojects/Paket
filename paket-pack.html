@@ -101,11 +101,15 @@
 <span class="l">40: </span>
 <span class="l">41: </span>
 <span class="l">42: </span>
+<span class="l">43: </span>
+<span class="l">44: </span>
+<span class="l">45: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="sh">paket pack [--help] [--build-config &lt;configuration&gt;] [--build-platform &lt;platform&gt;]
            [--version &lt;version&gt;] [--template &lt;path&gt;] [--exclude &lt;package ID&gt;]
            [--specific-version &lt;package ID&gt; &lt;version&gt;] [--release-notes &lt;text&gt;]
-           [--lock-dependencies] [--minimum-from-lock-file] [--pin-project-references] [--symbols]
+           [--lock-dependencies] [--minimum-from-lock-file] [--pin-project-references]
+           [--interproject-references &lt;min|fix|keep-major|keep-minor|keep-patch&gt;] [--symbols]
            [--include-referenced-projects] [--project-url &lt;URL&gt;] &lt;path&gt;
 
 OUTPUT:
@@ -135,6 +139,8 @@ OPTIONS:
                           pin dependencies generated from project references to exact versions (=)
                           instead of using minimum versions (&gt;=); with --lock-dependencies project
                           references will be pinned even if this option is not specified
+    --interproject-references &lt;min|fix|keep-major|keep-minor|keep-patch&gt;
+                          set constraints for referenced project versions
     --symbols             create symbol and source packages in addition to library and content
                           packages
     --include-referenced-projects
@@ -231,9 +237,11 @@ parameter:</p>
 </code></pre></td></tr></table>
 <h3><a name="Including-referenced-projects" class="anchor" href="#Including-referenced-projects">Including referenced projects</a></h3>
 <p>Paket automatically replaces inter-project dependencies with NuGet dependencies
-if the dependency has it's own <a href="template-files.html"><code>paket.template</code></a>. In addition to
-this the parameter <code>--include-referenced-projects</code> instructs Paket to add
-project output to the package for inter-project dependencies that don't have a
+if the dependency has its own <a href="template-files.html"><code>paket.template</code></a>. Version constraints
+for these dependencies can be controlled with the <code>--interproject-references</code>
+parameter or the <code>interproject-references</code> option in <a href="template-files.html"><code>paket.template</code></a>.</p>
+<p>In addition to this the parameter <code>--include-referenced-projects</code> instructs Paket to
+add project output to the package for inter-project dependencies that don't have a
 <a href="template-files.html"><code>paket.template</code> file</a>.</p>
 <ol>
 <li>

@@ -254,6 +254,52 @@ referenced projects into the package.</p>
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="text">include-referenced-projects true
 </code></pre></td></tr></table>
+<p>If the referenced project has its own template file then it will be added to the package
+as NuGet dependency. You can control the version constraint for such dependencies with
+the <code>interproject-references</code> option.<br />
+There are several possible values for this options. Consider them with an example.</p>
+<p><code>ProjectA</code> references <code>ProjectB</code>. Both projects have template files.
+<code>ProjectB</code>'s version is <code>1.2.3</code>.</p>
+<p>(The first column is a line from <code>ProjectA</code>'s template file,
+the second column is a version constraint for the <code>ProjectB</code> dependency in <code>ProjectA.nupkg</code>.)</p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><p><code>interproject-references min</code></p></td>
+<td><p><code>1.2.3</code></p></td>
+</tr>
+<tr class="even">
+<td><p><code>interproject-references fix</code></p></td>
+<td><p><code>[1.2.3]</code></p></td>
+</tr>
+<tr class="odd">
+<td><p><code>interproject-references keep-major</code></p></td>
+<td><p><code>[1.2.3,2.0.0)</code></p></td>
+</tr>
+<tr class="even">
+<td><p><code>interproject-references keep-minor</code></p></td>
+<td><p><code>[1.2.3,1.3.0)</code></p></td>
+</tr>
+<tr class="odd">
+<td><p><code>interproject-references keep-patch</code></p></td>
+<td><p><code>[1.2.3,1.2.4)</code></p></td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<p>The default value is <code>interproject-references min</code>.</p>
+<p>You can override the template file option with the CLI parameter
+<code>--interproject-references</code> which supports the same values.</p>
 <h4><a name="References" class="anchor" href="#References">References</a></h4>
 <p>A references block looks like this:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
