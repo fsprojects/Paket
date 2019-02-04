@@ -1,4 +1,7 @@
-#### 5.196.0 - 2019-02-03
+#### 5.196.2 - 2019-02-04
+* BUGFIX: Fixed constant warn about new syntax - https://github.com/fsprojects/Paket/pull/3497
+
+#### 5.196.1 - 2019-02-03
 * New option to control interproject references version constraint - https://github.com/fsprojects/Paket/pull/3473
 * BUGFIX: Fixedpack transitive dependencies with --include-referenced-projects - https://github.com/fsprojects/Paket/pull/3469
 * BUGFIX: uri unescape when read project property - https://github.com/fsprojects/Paket/pull/3470
