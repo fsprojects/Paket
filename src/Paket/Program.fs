@@ -529,10 +529,14 @@ let pack (results : ParseResults<_>) =
          results.Contains <@ PackArgs.Lock_Dependencies_To_Minimum_Legacy @>)
         |> legacyBool results (ReplaceArgument("--minimum-from-lock-file", "minimum-from-lock-file"))
     let pinProjectReferences =
-        warnObsolete (ReplaceArgument("--interproject-references", "--pin-project-references"))
-        (results.Contains <@ PackArgs.Pin_Project_References @>,
-         results.Contains <@ PackArgs.Pin_Project_References_Legacy @>)
-        |> legacyBool results (ReplaceArgument("--pin-project-references", "pin-project-references"))
+        let (newSyntax, oldSyntax) =
+         (results.Contains <@ PackArgs.Pin_Project_References @>,
+          results.Contains <@ PackArgs.Pin_Project_References_Legacy @>)
+
+        if newSyntax || oldSyntax then
+            warnObsolete (ReplaceArgument("--interproject-references", "--pin-project-references"))
+
+        newSyntax || oldSyntax
     let interprojectReferencesConstraint =
         match results.TryGetResult <@ PackArgs.Interproject_References @> with
         | Some Min -> Some InterprojectReferencesConstraint.Min
