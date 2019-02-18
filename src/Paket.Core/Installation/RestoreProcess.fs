@@ -193,19 +193,22 @@ let saveToFile newContent (targetFile:FileInfo) =
                     File.ReadAllText targetFile.FullName
                 else
                     ""
+            
+            let written =
+                if newContent <> oldContent then
+                    if verbose then
+                        tracefn " - %s created" targetFile.FullName
 
-            if newContent <> oldContent then
-                if verbose then
-                    tracefn " - %s created" targetFile.FullName
+                    if targetFile.Exists then
+                        File.SetAttributes(targetFile.FullName,IO.FileAttributes.Normal)
+                    File.WriteAllText(targetFile.FullName,newContent)
+                    true
+                else
+                    if verbose then
+                        tracefn " - %s already up-to-date" targetFile.FullName
+                    false
 
-                if targetFile.Exists then
-                    File.SetAttributes(targetFile.FullName,IO.FileAttributes.Normal)
-                File.WriteAllText(targetFile.FullName,newContent)
-            else
-                if verbose then
-                    tracefn " - %s already up-to-date" targetFile.FullName
-
-            targetFile.FullName
+            written,targetFile.FullName
         with
         | exn when trials > 0 ->
             if verbose then
@@ -237,7 +240,7 @@ let extractRestoreTargets root =
     else
         let result = extractElement root "Paket.Restore.targets"
         copiedElements := true
-        result
+        result |> snd
 
 let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package) =
     async {
@@ -335,7 +338,7 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
             cliParts
             packagesParts
 
-    saveToFile content fileInfo |> ignore
+    saveToFile content fileInfo
 
 let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
     if Seq.isEmpty cliTools then
@@ -474,7 +477,13 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
     createPaketCLIToolsFile cliTools paketCLIToolsFileName
     
     let propsFile = ProjectFile.getPaketPropsFileInfo projectFileInfo
-    createPaketPropsFile lockFile cliTools packages propsFile
+    let written,_ = createPaketPropsFile lockFile cliTools packages propsFile
+    if written then
+        try
+            let fi = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj","project.assets.json"))
+            fi.Delete()
+        with 
+        | _ -> ()
 
     // Write "cached" file, this way msbuild can check if the references file has changed.
     let paketCachedReferencesFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.references.cached"))
