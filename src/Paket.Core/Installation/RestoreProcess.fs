@@ -481,7 +481,8 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
     if written then
         try
             let fi = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj","project.assets.json"))
-            fi.Delete()
+            if fi.Exists then
+                fi.Delete()
         with 
         | _ -> ()
 

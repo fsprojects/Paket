@@ -1,3 +1,6 @@
+#### 5.197.0 - 2019-02-18
+* BUGFIX: Restore SDK projects during paket install - https://github.com/fsprojects/Paket/pull/3503
+
 #### 5.196.2 - 2019-02-04
 * BUGFIX: Fixed constant warn about new syntax - https://github.com/fsprojects/Paket/pull/3497
 
