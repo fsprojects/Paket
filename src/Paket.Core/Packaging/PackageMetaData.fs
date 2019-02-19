@@ -166,9 +166,22 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith (sprintf "You should only try and add files to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
-let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (projectWithTemplates : Map<string, (Lazy<'TemplateFile>) * ProjectFile * bool>) includeReferencedProjects (version :SemVerInfo option) projDeps =
+let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences interprojectReferencesConstraint (projectWithTemplates : Map<string, (Lazy<'TemplateFile>) * ProjectFile * bool>) includeReferencedProjects (version :SemVerInfo option) cache =
     let includeReferencedProjects = template.IncludeReferencedProjects || includeReferencedProjects
-    let targetDir = 
+
+    let interprojectReferencesConstraint =
+        match interprojectReferencesConstraint with
+        | Some c -> c
+        | None ->
+            match template.InterprojectReferencesConstraint with
+            | Some c -> c
+            | None ->
+                if pinProjectReferences || lockDependencies then
+                    InterprojectReferencesConstraint.Fix
+                else
+                    InterprojectReferencesConstraint.Min
+
+    let targetDir =
         match project.BuildOutputTargetFolder with
         | Some x -> x
         | None ->
@@ -183,12 +196,12 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
         | None -> PreReleaseStatus.No
         | _ -> PreReleaseStatus.All
 
-    let deps, files = 
-        let interProjectDeps = 
-            if includeReferencedProjects then 
-                project.GetAllInterProjectDependenciesWithoutProjectTemplates projDeps
-            else 
-                project.GetAllInterProjectDependenciesWithProjectTemplates projDeps
+    let deps, files =
+        let interProjectDeps =
+            if includeReferencedProjects then
+                project.GetAllInterProjectDependenciesWithoutProjectTemplates cache
+            else
+                project.GetAllInterProjectDependenciesWithProjectTemplates cache
             |> Seq.toList
 
         interProjectDeps
@@ -206,11 +219,11 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
     
     // Add the assembly + {.dll, .pdb, .xml, /*/.resources.dll} from this project
     let templateWithOutput =
-        let projects =                 
-            if includeReferencedProjects then 
-                project.GetAllInterProjectDependenciesWithoutProjectTemplates projDeps 
-                |> Seq.toList 
-            else 
+        let projects =
+            if includeReferencedProjects then
+                project.GetAllInterProjectDependenciesWithoutProjectTemplates cache
+                |> Seq.toList
+            else
                 [ project ]
 
         let satelliteDlls =
@@ -293,7 +306,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                | CompleteTemplate(core, _) -> 
                    match core.Version with
                    | Some v -> 
-                       let versionConstraint = if lockDependencies || pinProjectReferences then Specific v else Minimum v
+                       let versionConstraint = interprojectReferencesConstraint.CreateVersionRequirements v
                        PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v)
                    | None -> failwithf "There was no version given for %s." evaluatedTemplate.FileName
                | IncompleteTemplate -> 
@@ -320,7 +333,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
             | None -> []
 
         [if includeReferencedProjects then
-            for proj in project.GetAllReferencedProjects(false,projDeps) |> Seq.filter ((<>) project) do
+            for proj in project.GetAllReferencedProjects(false, cache) |> Seq.filter ((<>) project) do
                 match Map.tryFind proj.FileName projectWithTemplates with
                 | Some (template, _, _) ->
                     match template.Force() with
@@ -328,7 +341,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                         let versionConstraint = 
                             match core.Version with
                             | Some v -> 
-                                let vr = if lockDependencies || pinProjectReferences then Specific v else Minimum v
+                                let vr = interprojectReferencesConstraint.CreateVersionRequirements v
                                 VersionRequirement(vr, getPreReleaseStatus v)
                             | None -> VersionRequirement.AllReleases
     
@@ -393,7 +406,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                 | None ->
                     match version with
                     | Some v -> 
-                        let vr = if lockDependencies || pinProjectReferences then Specific v else Minimum v
+                        let vr = interprojectReferencesConstraint.CreateVersionRequirements v
                         np.Name,VersionRequirement(vr, getPreReleaseStatus v)
                     | None -> 
                         if minimumFromLockFile then

@@ -27,7 +27,10 @@ let private doesNotExistsOrIsNewer (file : FileInfo) latest =
 
 /// Downloads the latest version of the given files to the destination dir
 let private downloadLatestVersionOf files destDir =
-    use client = createHttpClient(Constants.GitHubUrl, None)
+    let auth = Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN"
+               |> fun x -> if isNull(x) then None else Some(Token(x))
+
+    use client = createHttpClient(Constants.GitHubUrl, auth)
 
     trial {
         let latest = "https://github.com/fsprojects/Paket/releases/latest";

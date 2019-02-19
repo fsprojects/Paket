@@ -254,8 +254,12 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             let externalLockDependencies = 
                 group.ExternalLocks
                 |> List.map (fun x ->
-                    if x.StartsWith("http://") || x.StartsWith("https://") then
-                        use client = createHttpClient(x, None)
+                    if x.ToLower().StartsWith("http://") || x.ToLower().StartsWith("https://") then
+                        let auth = if x.ToLower().Contains("://github.com") then
+                                    Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN" |> fun x -> if isNull(x) then None else Some(Token(x))
+                                   else
+                                    None
+                        use client = createHttpClient(x, auth)
                         let folder = DirectoryInfo(Path.Combine(Path.GetTempPath(),"external_paket",(hash x).ToString()))
                         if not folder.Exists then
                             folder.Create()

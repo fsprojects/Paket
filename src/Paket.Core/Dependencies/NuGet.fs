@@ -922,7 +922,9 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode
 
                     let! httpResponseStream = responseMsg.Content.ReadAsStreamAsync() |> Async.AwaitTask
-                    httpResponseStream.ReadTimeout <- responseStreamTimeout;
+    
+                    if httpResponseStream.CanTimeout
+                    then httpResponseStream.ReadTimeout <- responseStreamTimeout;
 
                     let bufferSize = 1024 * 10
                     let buffer : byte [] = Array.zeroCreate bufferSize

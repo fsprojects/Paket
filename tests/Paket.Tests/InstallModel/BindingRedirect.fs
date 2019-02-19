@@ -255,27 +255,6 @@ let buildMockGetFiles outcomes =
 let rootPath = @"C:/rootpath/" |> toSafePath
 
 [<Test>]
-let ``project file containing paket.references is marked for binding redirect``() =
-    let mockGetFiles =
-        buildMockGetFiles
-            [ (@"C:/rootpath/", "*.references"), [ @"C:/rootpath/source/paket.references" ]
-              (@"C:/rootpath/source", "*proj"), [ @"C:/rootpath/source/Project.fsproj" ]
-            ]
-
-    getProjectFilesWithPaketReferences mockGetFiles rootPath
-    |> shouldEqual [ @"C:/rootpath/source/Project.fsproj" |> toSafePath ]
-
-[<Test>]
-let ``project file not containing paket.references is not marked for binding redirect``() =
-    let mockGetFiles =
-        buildMockGetFiles
-            [ (@"C:/rootpath/", "paket.references"), [] 
-              (@"C:/rootpath/source", "*proj"), [ @"C:/rootpath/source/Project.fsproj" ]
-            ]
-    getProjectFilesWithPaketReferences mockGetFiles rootPath
-    |> shouldEqual []
-
-[<Test>]
 let ``adds paket's node if one does not exist``() = 
     let doc = emptySampleDoc()
     setRedirect doc defaultRedirect |> ignore

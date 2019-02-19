@@ -522,6 +522,52 @@ let ``#1848 include-referenced-projects with non-packed project dependencies`` (
     CleanDir rootPath
 
 [<Test>]
+let ``#2520 interproject-references parameter overide --pin-project-references`` () =
+    let scenario = "i002520-interproject-references-constraint"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let package = Path.Combine(outPath, "A.1.0.0.nupkg")
+
+    paket ("pack --pin-project-references \"" + outPath + "\"") scenario |> ignore
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    let nuspec = NuGetLocal.getNuSpecFromNupgk package
+    let dependency =
+        match nuspec.Dependencies.Value with
+        | [d] -> d
+        | _ -> failwith "single dependency expected"
+
+    let name, versionRequirement, _ = dependency
+
+    name |> shouldEqual (PackageName "B")
+    versionRequirement |> shouldEqual (VersionRequirement.Parse "[1.2.3,2.0.0)")
+
+    CleanDir rootPath
+
+[<Test>]
+let ``#2520 --interproject-references cli parameter overide interproject-references template file option`` () =
+    let scenario = "i002520-interproject-references-constraint"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let package = Path.Combine(outPath, "A.1.0.0.nupkg")
+
+    paket ("pack --interproject-references keep-minor \"" + outPath + "\"") scenario |> ignore
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    let nuspec = NuGetLocal.getNuSpecFromNupgk package
+    let dependency =
+        match nuspec.Dependencies.Value with
+        | [d] -> d
+        | _ -> failwith "single dependency expected"
+
+    let name, versionRequirement, _ = dependency
+
+    name |> shouldEqual (PackageName "B")
+    versionRequirement |> shouldEqual (VersionRequirement.Parse "[1.2.3,1.3.0)")
+
+    CleanDir rootPath
+
+[<Test>]
 let ``#2694 paket fixnuspec should not remove project references``() = 
     let project = "console"
     let scenario = "i002694"
@@ -699,3 +745,47 @@ let ``#4010-pack-template-only``() =
     let outPath = Path.Combine(scenarioTempPath scenario, "out")
     let templatePath = Path.Combine(scenarioTempPath scenario, "PaketBug", "paket.template")
     paket (sprintf """pack --template "%s" "%s" --version 1.2.3 """ templatePath outPath) scenario |> ignore
+
+[<Test>]
+let ``#2776 transitive project references included`` () =
+    let scenario = "i002776-pack-transitive-project-refs"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let package = Path.Combine(outPath, "A.1.0.0.nupkg")
+
+    paket ("pack --include-referenced-projects \"" + outPath + "\"") scenario |> ignore
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    Path.Combine(outPath, "lib", "netstandard2.0", "A.dll") |> checkFileExists
+    Path.Combine(outPath, "lib", "netstandard2.0", "B.dll") |> checkFileExists
+    Path.Combine(outPath, "lib", "netstandard2.0", "C.dll") |> checkFileExists
+    Path.Combine(outPath, "lib", "netstandard2.0", "D.dll") |> checkFileExists
+
+    let nuspec = NuGetLocal.getNuSpecFromNupgk package
+    let dependencies = nuspec.Dependencies.Value |> Seq.map (fun (x,_,_) -> x)
+    dependencies |> shouldContain (PackageName "nlog")
+
+    CleanDir rootPath
+
+[<Test>]
+let ``#2776 transitive references stops on project with template`` () =
+    let scenario = "i002776-pack-transitive-with-template"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let package = Path.Combine(outPath, "A.1.0.0.nupkg")
+
+    paket ("pack --include-referenced-projects \"" + outPath + "\"") scenario |> ignore
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    Path.Combine(outPath, "lib", "netstandard2.0", "A.dll") |> checkFileExists
+    Path.Combine(outPath, "lib", "netstandard2.0", "B.dll") |> checkFileExists
+    File.Exists(Path.Combine(outPath, "lib", "netstandard2.0", "C.dll")) |> shouldEqual false
+    File.Exists(Path.Combine(outPath, "lib", "netstandard2.0", "D.dll")) |> shouldEqual false
+
+    let nuspec = NuGetLocal.getNuSpecFromNupgk package
+    let dependencies = nuspec.Dependencies.Value |> Seq.map (fun (x,_,_) -> x)
+
+    dependencies |> shouldContain (PackageName "C")
+    dependencies |> shouldNotContain (PackageName "nlog")
+
+    CleanDir rootPath

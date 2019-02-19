@@ -114,6 +114,8 @@ module ScriptGeneration =
                     (Uri scriptFile.FullName).MakeRelativeUri(Uri libFile.FullName).ToString()
                 else libFile.FullName
 
+            let paketNamespace = "namespace PaketLoadScripts\n"
+
             // create the approiate load string for the target resource
             let refString (reference:ReferenceType)  =
                 let escapeString (s:string) =
@@ -126,7 +128,7 @@ module ScriptGeneration =
                 | Framework name,_ ->
                      sprintf """#r "%s" """ (escapeString name)
         
-            self.Input |> Seq.map refString |> Seq.distinct |> String.concat "\n"
+            self.Input |> Seq.map refString |> Seq.append [paketNamespace] |> Seq.distinct |> String.concat "\n"
         
         /// use the provided directory to compute the relative paths for the script's contents
         /// and construct the 
