@@ -71,7 +71,7 @@
     <MSBuild Projects="$(PaketToolsPath)paket.bootstrapper.proj" Targets="Restore" />
   </Target>
 
-  <Target Name="PaketRestore" Condition="'$(PaketRestoreDisabled)' != 'True' AND '$(ResolveNugetPackages)' != 'false'" BeforeTargets="_GenerateDotnetCliToolReferenceSpecs;_GenerateProjectRestoreGraphPerFramework;_GenerateRestoreGraphWalkPerFramework;CollectPackageReferences" DependsOnTargets="PaketBootstrapping">
+  <Target Name="PaketRestore" Condition="'$(PaketRestoreDisabled)' != 'True'" BeforeTargets="_GenerateDotnetCliToolReferenceSpecs;_GenerateProjectRestoreGraphPerFramework;_GenerateRestoreGraphWalkPerFramework;CollectPackageReferences" DependsOnTargets="PaketBootstrapping">
 
     <!-- Step 1 Check if lockfile is properly restored -->
     <PropertyGroup>
