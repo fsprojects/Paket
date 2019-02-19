@@ -1,3 +1,6 @@
+#### 5.197.1 - 2019-02-19
+* BUGFIX: Don't restore SDK projects during paket install when --no-restore is set -https://github.com/fsprojects/Paket/issues/3505
+
 #### 5.197.0 - 2019-02-18
 * BUGFIX: Restore SDK projects during paket install - https://github.com/fsprojects/Paket/pull/3503
 
