@@ -559,7 +559,7 @@ let private isRestoreUpDoDate (lockFileName:FileInfo) (lockFileContents:string) 
         oldContents = lockFileContents
     else false
 
-let private WriteGitignore restoreCacheFile =
+let internal WriteGitignore restoreCacheFile =
     let folder = FileInfo(restoreCacheFile).Directory
     let rec isGitManaged (folder:DirectoryInfo) =
         if File.Exists(Path.Combine(folder.FullName, ".gitignore")) then true else

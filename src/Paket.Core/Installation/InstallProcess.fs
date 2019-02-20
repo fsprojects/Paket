@@ -584,6 +584,10 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     projectCache
                 first := false
 
+    let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
+    Paket.RestoreProcess.saveToFile (lockFile.ToString()) (FileInfo restoreCacheFile) |> ignore
+    Paket.RestoreProcess.WriteGitignore restoreCacheFile
+
 /// Installs all packages from the lock file.
 let Install(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, updatedGroups) =
     let root = FileInfo(lockFile.FileName).Directory.FullName
