@@ -488,16 +488,18 @@ let RunInLockedAccessMode(lockedFolder,action) =
             else
                 failwithf "Could not acquire lock to '%s'. No more trials left" fileName
 
-    let rec releaseLock keepTrying =
+    let rec releaseLock trials =
         try
             if File.Exists fileName then
                 let content = File.ReadAllText fileName
                 if content = string p.Id then
                     File.Delete fileName
         with
-        | _ when keepTrying ->
+        | exn when trials > 0 ->
             Thread.Sleep 100
-            releaseLock false
+            let trials = trials - 1
+            tracefn "Could not release lock to %s.%s%s%sTrials left: %d." fileName Environment.NewLine exn.Message Environment.NewLine trials
+            releaseLock trials
         | _ ->
             ()
 
@@ -506,11 +508,11 @@ let RunInLockedAccessMode(lockedFolder,action) =
 
         let result = action()
 
-        releaseLock true
+        releaseLock 5
         result
     with
     | _ ->
-        releaseLock true
+        releaseLock 5
         reraise()
 
 
