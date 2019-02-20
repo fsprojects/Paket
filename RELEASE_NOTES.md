@@ -1,3 +1,6 @@
+#### 5.197.3 - 2019-02-20
+* BUGFIX: Paket install writed restore cache file -https://github.com/fsprojects/Paket/issues/3508
+
 #### 5.197.2 - 2019-02-19
 * REVERT: Don't restore SDK projects during paket install when --no-restore is set -https://github.com/fsprojects/Paket/issues/3505
 
