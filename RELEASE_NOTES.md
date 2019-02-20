@@ -1,3 +1,6 @@
+#### 5.197.4 - 2019-02-20
+* BUGFIX: Do not run in StackOverflow during ReleaseLock
+
 #### 5.197.3 - 2019-02-20
 * BUGFIX: Paket install writed restore cache file -https://github.com/fsprojects/Paket/issues/3508
 
