@@ -1,11 +1,7 @@
-#### 5.197.5 - 2019-02-20
+#### 5.198.0 - 2019-02-22
+* PERFORMANCE: Speedup for paket restore - https://github.com/fsprojects/Paket/pull/3512
 * BUGFIX: Do not run in StackOverflow during ReleaseLock
-
-#### 5.197.3 - 2019-02-20
 * BUGFIX: Paket install writed restore cache file -https://github.com/fsprojects/Paket/issues/3508
-
-#### 5.197.2 - 2019-02-19
-* REVERT: Don't restore SDK projects during paket install when --no-restore is set -https://github.com/fsprojects/Paket/issues/3505
 
 #### 5.197.0 - 2019-02-18
 * BUGFIX: Restore SDK projects during paket install - https://github.com/fsprojects/Paket/pull/3503
