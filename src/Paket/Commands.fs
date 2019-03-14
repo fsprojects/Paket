@@ -416,7 +416,7 @@ with
             match this with
             | Files _ -> ".nuspec files to fix transitive dependencies within"
             | ReferencesFile _ -> "paket.references to use"
-            | ProjectFile _ -> "the proejct file to use"
+            | ProjectFile _ -> "the project file to use"
 
 type GenerateNuspecArgs =
     | [<ExactlyOnce;CustomCommandLine "project">] Project of project:string
