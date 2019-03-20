@@ -115,18 +115,18 @@
 
     <!-- Do a global restore if required -->
     <Exec Command='$(PaketBootStrapperCommand)' Condition=" '$(PaketBootstrapperStyle)' == 'classic' AND Exists('$(PaketBootStrapperExePath)') AND !(Exists('$(PaketExePath)'))" ContinueOnError="false" />
-    <Exec Command='$(PaketCommand) restore' Condition=" '$(PaketRestoreRequired)' == 'true' " ContinueOnError="false" />
-
+    <Exec Command='$(PaketCommand) restore' Condition=" '$(PaketRestoreRequired)' == 'true' AND '$(PaketDisableGlobalRestore)' != 'true' " ContinueOnError="false" />
+    
     <!-- Step 2 Detect project specific changes -->
     <ItemGroup>
       <MyTargetFrameworks Condition="'$(TargetFramework)' != '' " Include="$(TargetFramework)"></MyTargetFrameworks>
       <!-- Don't include all frameworks when msbuild explicitly asks for a single one -->
       <MyTargetFrameworks Condition="'$(TargetFrameworks)' != '' AND '$(TargetFramework)' == '' " Include="$(TargetFrameworks)"></MyTargetFrameworks>
-      <PaketResolvedFilePaths Include="@(MyTargetFrameworks -> '$(MSBuildProjectDirectory)\obj\$(MSBuildProjectFile).%(Identity).paket.resolved')"></PaketResolvedFilePaths>
+      <PaketResolvedFilePaths Include="@(MyTargetFrameworks -> '$(BaseIntermediateOutputPath)\$(MSBuildProjectFile).%(Identity).paket.resolved')"></PaketResolvedFilePaths>
     </ItemGroup>
     <Message Importance="low" Text="MyTargetFrameworks=@(MyTargetFrameworks) PaketResolvedFilePaths=@(PaketResolvedFilePaths)" />
     <PropertyGroup>
-      <PaketReferencesCachedFilePath>$(MSBuildProjectDirectory)\obj\$(MSBuildProjectFile).paket.references.cached</PaketReferencesCachedFilePath>
+      <PaketReferencesCachedFilePath>$(BaseIntermediateOutputPath)\$(MSBuildProjectFile).paket.references.cached</PaketReferencesCachedFilePath>
       <!-- MyProject.fsproj.paket.references has the highest precedence -->
       <PaketOriginalReferencesFilePath>$(MSBuildProjectFullPath).paket.references</PaketOriginalReferencesFilePath>
       <!-- MyProject.paket.references -->
@@ -161,8 +161,8 @@
 
     <!-- Step 3 Restore project specific stuff if required -->
     <Message Condition=" '$(PaketRestoreRequired)' == 'true' " Importance="low" Text="Detected a change ('$(PaketRestoreRequiredReason)') in the project file '$(MSBuildProjectFullPath)', calling paket restore" />
-    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --target-framework "$(TargetFrameworks)"' Condition=" '$(PaketRestoreRequired)' == 'true' AND '$(TargetFramework)' == '' " ContinueOnError="false" />
-    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --target-framework "$(TargetFramework)"' Condition=" '$(PaketRestoreRequired)' == 'true' AND '$(TargetFramework)' != '' " ContinueOnError="false" />
+    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --output-path "$(BaseIntermediateOutputPath)" --target-framework "$(TargetFrameworks)"' Condition=" '$(PaketRestoreRequired)' == 'true' AND '$(TargetFramework)' == '' " ContinueOnError="false" />
+    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --output-path "$(BaseIntermediateOutputPath)" --target-framework "$(TargetFramework)"' Condition=" '$(PaketRestoreRequired)' == 'true' AND '$(TargetFramework)' != '' " ContinueOnError="false" />
 
     <!-- This shouldn't actually happen, but just to be sure. -->
     <PropertyGroup>
@@ -195,7 +195,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <PaketCliToolFilePath>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).paket.clitools</PaketCliToolFilePath>
+      <PaketCliToolFilePath>$(BaseIntermediateOutputPath)/$(MSBuildProjectFile).paket.clitools</PaketCliToolFilePath>
     </PropertyGroup>
 
     <ReadLinesFromFile File="$(PaketCliToolFilePath)" >
@@ -214,12 +214,12 @@
 
     <!-- Disabled for now until we know what to do with runtime deps - https://github.com/fsprojects/Paket/issues/2964
     <PropertyGroup>
-      <RestoreConfigFile>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).NuGet.Config</RestoreConfigFile>
+      <RestoreConfigFile>$(BaseIntermediateOutputPath)/$(MSBuildProjectFile).NuGet.Config</RestoreConfigFile>
     </PropertyGroup> -->
 
   </Target>
 
-  <Target Name="PaketDisableDirectPack" AfterTargets="_IntermediatePack" BeforeTargets="GenerateNuspec" Condition="('$(IsPackable)' == '' Or '$(IsPackable)' == 'true') And Exists('$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).references')" >
+  <Target Name="PaketDisableDirectPack" AfterTargets="_IntermediatePack" BeforeTargets="GenerateNuspec" Condition="('$(IsPackable)' == '' Or '$(IsPackable)' == 'true') And Exists('$(BaseIntermediateOutputPath)/$(MSBuildProjectFile).references')" >
     <PropertyGroup>
       <ContinuePackingAfterGeneratingNuspec>false</ContinuePackingAfterGeneratingNuspec>
       <DetectedMSBuildVersion>$(MSBuildVersion)</DetectedMSBuildVersion>
@@ -227,8 +227,7 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="PaketOverrideNuspec" AfterTargets="GenerateNuspec" Condition="('$(IsPackable)' == '' Or '$(IsPackable)' == 'true') And Exists('$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).references')" >
-
+  <Target Name="PaketOverrideNuspec" AfterTargets="GenerateNuspec" Condition="('$(IsPackable)' == '' Or '$(IsPackable)' == 'true') And Exists('$(BaseIntermediateOutputPath)/$(MSBuildProjectFile).references')" >
     <ItemGroup>
       <_NuspecFilesNewLocation Include="$(BaseIntermediateOutputPath)$(Configuration)\*.nuspec"/>
       <MSBuildMajorVersion Include="$(DetectedMSBuildVersion.Replace(`-`, `.`).Split(`.`)[0])" />

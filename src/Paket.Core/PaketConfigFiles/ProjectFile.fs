@@ -1602,12 +1602,6 @@ module ProjectFile =
 
         let ending = outputType project |> function ProjectOutputType.Library -> "dll" | ProjectOutputType.Exe -> "exe"
         sprintf "%s.%s" assemblyName ending
-    
-    let getPaketPropsFileInfo (projectFileInfo:FileInfo) =
-        FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.props"))
-
-    let getAssetsFileInfo (projectFileInfo:FileInfo) =
-        FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj","project.assets.json"))
 
     let getOutputDirectory buildConfiguration buildPlatform (targetProfile : TargetProfile option) (project:ProjectFile) =
         let targetFramework =
@@ -2090,4 +2084,3 @@ type ProjectFile with
         }
         
         (coreInfo, optionalInfo)
-        
