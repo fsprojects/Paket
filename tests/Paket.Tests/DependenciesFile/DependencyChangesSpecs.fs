@@ -8,7 +8,7 @@ open Paket.Domain
 
 
 [<Test>]
-let ``should detect no changes with global framework``() = 
+let ``should detect no changes with global framework``() =
     let before = """framework: >= net40
 
 source https://www.nuget.org/api/v2
@@ -33,7 +33,7 @@ NUGET
     changedDependencies.IsEmpty |> shouldEqual true
 
 [<Test>]
-let ``should detect remove of single nuget package``() = 
+let ``should detect remove of single nuget package``() =
     let before = """source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net"""
@@ -60,7 +60,7 @@ nuget Castle.Windsor-log4net"""
 
     let cfg = DependenciesFile.FromSource(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
-   
+
     let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true) |> Set.map (fun (g,p,_) -> g, p)
     let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions(cfg,lockFile)
     newDependencies
@@ -68,7 +68,7 @@ nuget Castle.Windsor-log4net"""
     |> shouldEqual Map.empty
 
 [<Test>]
-let ``should detect addition of single nuget package``() = 
+let ``should detect addition of single nuget package``() =
     let before = """source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net"""
@@ -99,7 +99,7 @@ nuget NUnit"""
     let cfg = DependenciesFile.FromSource(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true) |> Set.map (fun (g,p,_) -> g, p)
-   
+
     let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions (cfg,lockFile)
     let expected =
         Map.ofList
@@ -110,14 +110,14 @@ nuget NUnit"""
               (Constants.MainDependencyGroup,PackageName "Castle.Windsor-log4net"), (SemVer.Parse "3.3.0");
               (Constants.MainDependencyGroup,PackageName "log4net"), (SemVer.Parse "1.2.10")]
 
-    
+
     newDependencies
     |> Map.filter (fun k v -> not <| changedDependencies.Contains(k))
     |> Map.map (fun k (v,_) -> v)
     |> shouldEqual expected
 
 [<Test>]
-let ``should ignore compatible version requirement change for nuget package``() = 
+let ``should ignore compatible version requirement change for nuget package``() =
     let before = """source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net >= 3.2.0"""
@@ -147,7 +147,7 @@ nuget Castle.Windsor-log4net >= 3.3.0"""
     let cfg = DependenciesFile.FromSource(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true) |> Set.map (fun (g,p,_) -> g, p)
-   
+
     let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions (cfg,lockFile)
     let expected =
         Map.ofList
@@ -157,14 +157,14 @@ nuget Castle.Windsor-log4net >= 3.3.0"""
               (Constants.MainDependencyGroup,PackageName "Castle.Windsor"), (SemVer.Parse "3.3.0");
               (Constants.MainDependencyGroup,PackageName "Castle.Windsor-log4net"), (SemVer.Parse "3.3.0");
               (Constants.MainDependencyGroup,PackageName "log4net"),  (SemVer.Parse "1.2.10")])
-    
+
     newDependencies
     |> Map.filter (fun k v -> not <| changedDependencies.Contains(k))
     |> Map.map (fun k (v,_) -> v)
     |> shouldEqual expected
 
 [<Test>]
-let ``should detect incompatible version requirement change for nuget package``() = 
+let ``should detect incompatible version requirement change for nuget package``() =
     let before = """source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net >= 3.2.0"""
@@ -194,14 +194,14 @@ nuget Castle.Windsor-log4net >= 3.4.0"""
     let cfg = DependenciesFile.FromSource(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true) |> Set.map (fun (g,p,_) -> g, p)
-   
+
     let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions (cfg,lockFile)
     newDependencies
     |> Map.filter (fun k v -> not <| changedDependencies.Contains(k))
     |> shouldEqual Map.empty
 
 [<Test>]
-let ``should detect addition content:none of single nuget package``() = 
+let ``should detect addition content:none of single nuget package``() =
     let before = """source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net"""
@@ -234,7 +234,7 @@ nuget Castle.Windsor-log4net content:none"""
     changedDependencies.IsEmpty |> shouldEqual false
 
 [<Test>]
-let ``should repase detailed lock file``() = 
+let ``should repase detailed lock file``() =
     let before = """source https://www.nuget.org/api/v2
 
 nuget AutoMapper ~> 3.2
@@ -300,7 +300,7 @@ nuget Caliburn.Micro !~> 2.0.2"""
     (changedDependencies |> Seq.head) |> shouldEqual (Constants.MainDependencyGroup, PackageName "Caliburn.Micro",[Paket.DependencyChangeDetection.DependencyChangeType.PackageNotFoundInLockFile])
 
 [<Test>]
-let ``should detect if nothing changes in github dependency``() = 
+let ``should detect if nothing changes in github dependency``() =
     let before = """source https://www.nuget.org/api/v2
 
 nuget FAKE
@@ -332,7 +332,7 @@ github zurb/bower-foundation js/foundation.min.js"""
     changedDependencies.Count |> shouldEqual 0
 
 [<Test>]
-let ``should detect no changes if nothing changes in git dependency``() = 
+let ``should detect no changes if nothing changes in git dependency``() =
     let before = """source https://www.nuget.org/api/v2
 
 nuget FAKE
@@ -364,7 +364,7 @@ git https://github.com/zurb/tribute.git 2.1.0"""
     changedDependencies.Count |> shouldEqual 0
 
 [<Test>]
-let ``should detect new git dependency``() = 
+let ``should detect new git dependency``() =
     let before = """source https://www.nuget.org/api/v2
 
 nuget FAKE
@@ -393,7 +393,7 @@ git https://github.com/zurb/tribute.git 2.1.0"""
     changedDependencies.Count |> shouldEqual 1
 
 [<Test>]
-let ``should detect new github dependency``() = 
+let ``should detect new github dependency``() =
     let before = """source https://www.nuget.org/api/v2
 
 nuget FAKE
@@ -426,7 +426,7 @@ github SignalR/bower-signalr jquery.signalR.js"""
     changedDependencies.Count |> shouldEqual 1
 
 [<Test>]
-let ``should detect new github dependency in new group``() = 
+let ``should detect new github dependency in new group``() =
     let before = """source https://www.nuget.org/api/v2
 
 nuget FAKE
@@ -462,7 +462,7 @@ github SignalR/bower-signalr jquery.signalR.js"""
     changedDependencies |> Set.filter (fun (g,_) -> g = GroupName "Build") |> Set.count |> shouldEqual 1
 
 [<Test>]
-let ``should detect removal of group``() = 
+let ``should detect removal of group``() =
     let before = """source https://www.nuget.org/api/v2
 
 nuget FAKE
@@ -502,3 +502,26 @@ github zurb/bower-foundation js/foundation.min.js"""
     let changedDependencies = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(cfg,lockFile)
     changedDependencies.Count |> shouldEqual 1
     changedDependencies |> Set.filter (fun (g,_) -> g = GroupName "Build") |> Set.count |> shouldEqual 1
+
+[<Test>]
+let ``should detect no changes with storage: none and auto-detect``() =
+    let dependencyFileData = """
+source https://api.nuget.org/v3/index.json
+storage: none
+framework:  auto-detect
+
+nuget FSharp.Core
+"""
+
+    let lockFileData = """
+STORAGE: NONE
+RESTRICTION: == netcoreapp2.1
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    FSharp.Core (4.5.4)
+"""
+
+    let dependencyFile = DependenciesFile.FromSource(dependencyFileData)
+    let lockFile = LockFile.Parse("",toLines lockFileData)
+    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(dependencyFile,lockFile,false)
+    changedDependencies.IsEmpty |> shouldEqual true

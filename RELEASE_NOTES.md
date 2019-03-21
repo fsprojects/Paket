@@ -1,4 +1,66 @@
-#### 5.182.0-alpha002 - 2018-10-15
+#### 5.198.0 - 2019-02-22
+* PERFORMANCE: Speedup for paket restore - https://github.com/fsprojects/Paket/pull/3512
+* BUGFIX: Do not run in StackOverflow during ReleaseLock
+* BUGFIX: Paket install writed restore cache file -https://github.com/fsprojects/Paket/issues/3508
+
+#### 5.197.0 - 2019-02-18
+* BUGFIX: Restore SDK projects during paket install - https://github.com/fsprojects/Paket/pull/3503
+
+#### 5.196.2 - 2019-02-04
+* BUGFIX: Fixed constant warn about new syntax - https://github.com/fsprojects/Paket/pull/3497
+
+#### 5.196.1 - 2019-02-03
+* New option to control interproject references version constraint - https://github.com/fsprojects/Paket/pull/3473
+* BUGFIX: Fixedpack transitive dependencies with --include-referenced-projects - https://github.com/fsprojects/Paket/pull/3469
+* BUGFIX: uri unescape when read project property - https://github.com/fsprojects/Paket/pull/3470
+* BUGFIX: Added PaketRestoreDisabled when NCrunch enabled in targets - https://github.com/fsprojects/Paket/pull/3479
+* BUGFIX: dotnet --no-restore was still doing a restore - https://github.com/fsprojects/Paket/pull/3486
+* BUGFIX: Set AllowExplicitVersion to true for PackageReference in Paket.Restore.targets - https://github.com/fsprojects/Paket/pull/3482
+* BUGFIX: Apply paket github api token on github requests - https://github.com/fsprojects/Paket/pull/3484
+* BUGFIX: Do not change the AutoGenerateBindingRedirects for exe output type - https://github.com/fsprojects/Paket/pull/3471
+
+#### 5.195.0 - 2019-01-10
+* SQL project support - https://github.com/fsprojects/Paket/pull/3474
+* BUGFIX: Fixed RestrictionsChanged Detection - https://github.com/fsprojects/Paket/pull/3464
+* BUGFIX: Use the correct request header for paket push - https://github.com/fsprojects/Paket/pull/3466
+* BUGFIX: Fixed zsh completer for clear-cache - https://github.com/fsprojects/Paket/pull/3457
+
+#### 5.194.0 - 2018-12-08
+* BUGFIX: Fixed conflict between native local-path style with global install style - https://github.com/fsprojects/Paket/pull/3451
+
+#### 5.193.0 - 2018-12-02
+* Zsh completion update - https://github.com/fsprojects/Paket/pull/3440
+
+#### 5.192.0 - 2018-12-02
+* Making Paket.Restore.targets work with Paket as a global tool - https://github.com/fsprojects/Paket/pull/3445
+
+#### 5.191.0 - 2018-12-01
+* BUGFIX: Fix bindingredirects - https://github.com/fsprojects/Paket/issues/3444
+
+#### 5.190.0 - 2018-11-26
+* BUGFIX: Allow Username/password to be UTF8 - https://github.com/fsprojects/Paket/pull/3431
+* BUGFIX: Fixed handling of DotNetCoreAppVersion.V3_0 - https://github.com/fsprojects/Paket/pull/3437
+ - 2018-11-17
+* NuGet pack compat for SDK 2.1.500 - https://github.com/fsprojects/Paket/issues/3427
+* Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383
+* REVERT: Retry automatically when a request times out - https://github.com/fsprojects/Paket/pull/3424
+
+#### 5.187.0 - 2018-11-13
+* Create a gitignore around paket's .cached file - https://github.com/fsprojects/Paket/issues/3060 
+* Paket template checks if restored with 5.185.3 or later - https://github.com/fsprojects/Paket/issues/3404
+* BUGFIX: Remove ReadOnly flag before writing to files - https://github.com/fsprojects/Paket/issues/3410 
+* BUGFIX: Added compat fallback in case of older cache files - https://github.com/fsprojects/Paket/pull/3417
+* BUGFIX: Used lowest_matching for paket's own FSharp.Core dependency - https://github.com/fsprojects/Paket/pull/3415
+* BUGFIX: Retry automatically when a request times out - https://github.com/fsprojects/Paket/pull/3420
+
+#### 5.184.0 - 2018-10-30
+* REVERT: Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383
+
+#### 5.183.0 - 2018-10-30
+* Add namespace to load scripts - https://github.com/fsprojects/Paket/pull/3396
+
+#### 5.182.1 - 2018-10-30
+* Adjustable timeouts for NuGet - https://github.com/fsprojects/Paket/pull/3383
 * Full .NET Core support - https://github.com/fsprojects/Paket/pull/3183
 * BUGFIX: generate-load-scripts ignored targetFramework constraint in frameworkAssembly config (.nuspec file) https://github.com/fsprojects/Paket/pull/3385
 

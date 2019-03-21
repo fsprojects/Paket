@@ -84,23 +84,14 @@ let internal indentAssemblyBindings config =
             parent.Remove()
 
 let private configFiles = [ "app"; "web" ] |> Set.ofList
-let private projectFiles = [ ".csproj"; ".vbproj"; ".fsproj"; ".wixproj"; ".nproj"; ".vcxproj"; ".pyproj"; ".sfproj" ] |> Set.ofList
+let private projectFiles = [ ".csproj"; ".vbproj"; ".fsproj"; ".wixproj"; ".nproj"; ".vcxproj"; ".pyproj"; ".sfproj"; ".sqlproj" ] |> Set.ofList
 let private toLower (s:string) = s.ToLower()
 let private isAppOrWebConfig = configFiles.Contains << (Path.GetFileNameWithoutExtension >> toLower)
-let private isDotNetProject = projectFiles.Contains << (Path.GetExtension >> toLower)
 
 let internal getConfig getFiles directory  =
     getFiles(directory, "*.config", SearchOption.AllDirectories)
     |> Seq.tryFind isAppOrWebConfig
-
-let internal getProjectFilesWithPaketReferences getFiles rootPath  =
-    getFiles(rootPath, "*.references", SearchOption.AllDirectories)
-    |> Seq.choose (fun f -> 
-        let fi = FileInfo(f)
-        if fi.Name.EndsWith Constants.ReferencesFile then Some fi.Directory.FullName else None)
-    |> Seq.choose(fun directory -> getFiles(directory, "*proj", SearchOption.TopDirectoryOnly) |> Seq.tryFind (Path.GetExtension >> isDotNetProject))
-    |> Seq.toList
-
+   
 
 let private baseConfig = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
@@ -167,9 +158,25 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLi
         use f = File.Open(configFilePath, FileMode.Create)
         config.Save(f, SaveOptions.DisableFormatting)
 
-    match projectFile.GetAutoGenerateBindingRedirects() with
-    | Some x when x.ToLower() = "true" -> ignore()
-    | _ -> projectFile.SetOrCreateAutoGenerateBindingRedirects()
+    match projectFile.OutputType, projectFile.GetAutoGenerateBindingRedirects() with
+    | ProjectOutputType.Exe, _ -> ignore()
+    | _, Some x when x.ToLower() = "true" -> ignore()
+    | _, _ -> projectFile.SetOrCreateAutoGenerateBindingRedirects()
+
+let findAllReferencesFiles root =
+    let findRefFile (p:ProjectFile) =
+        match p.FindReferencesFile() with
+        | Some fileName -> 
+            try
+                Some(p)
+            with e ->
+                None
+        | None ->
+            None
+            
+    ProjectFile.FindAllProjects root
+    |> Array.choose findRefFile
+
 
 /// Applies a set of binding redirects to all .config files in a specific folder.
 let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects rootPath allKnownLibNames bindingRedirects =
@@ -187,13 +194,7 @@ let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindin
             | _ -> None
         |> Option.iter (applyBindingRedirects isFirstGroup cleanBindingRedirects allKnownLibNames bindingRedirects projectFile)
 
-    let projects =
-        rootPath
-        |> getProjectFilesWithPaketReferences Directory.GetFiles
-        |> Seq.map ProjectFile.TryLoad
-        |> Seq.choose id
-
-    for p in projects do
+    for p in findAllReferencesFiles rootPath do
         applyBindingRedirects p
 
 /// Calculates the short form of the public key token for use with binding redirects, if it exists.

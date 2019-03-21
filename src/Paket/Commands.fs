@@ -272,12 +272,12 @@ with
             | No_Install -> "do not modify projects"
 
 type ClearCacheArgs =
-    | [<Unique;AltCommandLine("--clear-local")>] ClearLocal
+    | [<Unique;CustomCommandLine("--clear-local")>] ClearLocal
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | ClearLocal -> "Clears local packages folder and paket-files."
+            | ClearLocal -> "also clear local packages and paket-files directory"
 
 type RestoreArgs =
     | [<Unique;AltCommandLine("-f")>] Force
@@ -416,7 +416,7 @@ with
             match this with
             | Files _ -> ".nuspec files to fix transitive dependencies within"
             | ReferencesFile _ -> "paket.references to use"
-            | ProjectFile _ -> "the proejct file to use"
+            | ProjectFile _ -> "the project file to use"
 
 type GenerateNuspecArgs =
     | [<ExactlyOnce;CustomCommandLine "project">] Project of project:string
@@ -479,6 +479,13 @@ with
             match this with
             | Paket_Dependencies_Dir -> "absolute path of paket.dependencies directory, if exists"
 
+type InterprojectReferencesConstraintArgs =
+    | Min
+    | Fix
+    | Keep_Major
+    | Keep_Minor
+    | Keep_Patch
+
 type PackArgs =
     | [<ExactlyOnce;MainCommand>] Output of path:string
     | [<Hidden;ExactlyOnce;CustomCommandLine("output")>] Output_Legacy of path:string
@@ -512,6 +519,8 @@ type PackArgs =
 
     | [<Unique>] Pin_Project_References
     | [<Hidden;Unique;CustomCommandLine("pin-project-references")>] Pin_Project_References_Legacy
+
+    | [<Unique>] Interproject_References of InterprojectReferencesConstraintArgs
 
     | [<Unique>] Symbols
     | [<Hidden;Unique;CustomCommandLine("symbols")>] Symbols_Legacy
@@ -557,6 +566,8 @@ with
 
             | Pin_Project_References -> "pin dependencies generated from project references to exact versions (=) instead of using minimum versions (>=); with --lock-dependencies project references will be pinned even if this option is not specified"
             | Pin_Project_References_Legacy(_) -> "[obsolete]"
+
+            | Interproject_References(_) -> "set constraints for referenced project versions"
 
             | Symbols -> "create symbol and source packages in addition to library and content packages"
             | Symbols_Legacy(_) -> "[obsolete]"
@@ -689,7 +700,7 @@ with
             | Add _ -> "add a new dependency"
             | Github _ -> "commands to manipulate GitHub repository references"
             | Git _ -> "commands to manipulate git repository references"
-            | ClearCache _ -> "clear the NuGet and git cache directories"
+            | ClearCache _ -> "clear the global and optionally local NuGet and cache directories"
             | Config _ -> "store global configuration values like NuGet credentials"
             | ConvertFromNuget _ -> "convert projects from NuGet to Paket"
             | FindRefs _ -> "find all project files that have a dependency installed"

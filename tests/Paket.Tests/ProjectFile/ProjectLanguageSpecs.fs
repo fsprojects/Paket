@@ -19,6 +19,7 @@ let ``Language is detected from filename``() =
     evaluate ".vbproj" |> shouldEqual ProjectLanguage.VisualBasic
     evaluate ".sfproj" |> shouldEqual ProjectLanguage.ServiceFabric
     evaluate ".nproj" |> shouldEqual ProjectLanguage.Nemerle
+    evaluate ".sqlproj" |> shouldEqual ProjectLanguage.Sql
 
 let createProjectXml (projectTypeGuids : string option) : XmlDocument =
     let ns = XNamespace.Get "http://schemas.microsoft.com/developer/msbuild/2003"

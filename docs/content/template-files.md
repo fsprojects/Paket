@@ -172,6 +172,31 @@ referenced projects into the package.
 include-referenced-projects true
 ```
 
+If the referenced project has its own template file then it will be added to the package 
+as NuGet dependency. You can control the version constraint for such dependencies with 
+the `interproject-references` option.  
+There are several possible values for this options. Consider them with an example.
+
+`ProjectA` references `ProjectB`. Both projects have template files. 
+`ProjectB`'s version is `1.2.3`.   
+
+(The first column is a line from `ProjectA`'s template file, 
+the second column is a version constraint for the `ProjectB` dependency in `ProjectA.nupkg`.)  
+
+|||
+| --- | --- |
+| `interproject-references min` | `1.2.3` |
+| `interproject-references fix` | `[1.2.3]` |
+| `interproject-references keep-major` | `[1.2.3,2.0.0)` |
+| `interproject-references keep-minor` | `[1.2.3,1.3.0)` |
+| `interproject-references keep-patch` | `[1.2.3,1.2.4)` |
+|||
+
+The default value is `interproject-references min`.
+
+You can override the template file option with the CLI parameter 
+`--interproject-references` which supports the same values.
+
 #### References
 
 A references block looks like this:

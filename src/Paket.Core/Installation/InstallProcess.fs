@@ -367,9 +367,10 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
     
     let prefix = dependenciesFile.Directory.Length + 1
     let norm (s:string) = (s.Substring prefix).Replace('\\', '/')
-        
+
+    tracefn " - Installing for projects"        
     for project, referenceFile in projectsAndReferences do
-        tracefn " - %s -> %s" (norm referenceFile.FileName) (norm project.FileName)
+        tracefn "   - %s -> %s" (norm referenceFile.FileName) (norm project.FileName)
         let toolsVersion = project.GetToolsVersion()
         if verbose then
             verbosefn "Installing to %s with ToolsVersion %O" project.FileName toolsVersion
@@ -537,6 +538,8 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 ) |> Seq.toList
            
             if toolsVersion >= 15.0 then
+                let resolved = lazy(model |> Map.map (fun k v -> fst v))
+                let _referencesFile = Paket.RestoreProcess.RestoreNewSdkProject lockFile resolved lockFile.Groups project None
                 processContentFiles root project Map.empty gitRemoteItems options
             else
                 processContentFiles root project usedPackages gitRemoteItems options
@@ -580,6 +583,10 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     allKnownLibNames
                     projectCache
                 first := false
+
+    let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
+    Paket.RestoreProcess.saveToFile (lockFile.ToString()) (FileInfo restoreCacheFile) |> ignore
+    Paket.RestoreProcess.WriteGitignore restoreCacheFile
 
 /// Installs all packages from the lock file.
 let Install(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, updatedGroups) =

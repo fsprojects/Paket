@@ -93,6 +93,7 @@
     <Compile Include="Versioning\RestrictionApplicationSpecs.fs" />
     <Compile Include="Versioning\DependencySetSpecs.fs" />
     <Compile Include="Versioning\FrameworkRestrictionTests.fs" />
+    <Compile Include="Versioning\InterprojectReferencesConstraintSpecs.fs" />
     <None Include="Nuspec\EmptyLibs.nuspec" />
     <None Include="Nuspec\Fantomas.nuspec" />
     <None Include="Nuspec\FluentAssertions.nuspec" />
@@ -319,6 +320,7 @@
     <Compile Include="ProjectFile\ProjectLanguageSpecs.fs" />
     <Compile Include="ProjectFile\LocalizationSpecs.fs" />
     <Compile Include="ProjectFile\UpdateFromNugetSpecs.fs" />
+    <Compile Include="ProjectFile\ReadPropertySpecs.fs" />
     <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
     <Compile Include="InstallModel\Xml\ControlzEx.fs" />

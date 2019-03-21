@@ -486,27 +486,33 @@ let RunInLockedAccessMode(lockedFolder,action) =
                 tracefn "Could not acquire lock to %s.%s%s%sTrials left: %d." fileName Environment.NewLine exn.Message Environment.NewLine trials
                 acquireLock startTime timeOut trials
             else
-                raise (Exception(sprintf "Could not acquire lock to '%s'." fileName, exn))
+                failwithf "Could not acquire lock to '%s'. No more trials left" fileName
 
-    let rec releaseLock() =
+    let rec releaseLock trials =
         try
             if File.Exists fileName then
                 let content = File.ReadAllText fileName
                 if content = string p.Id then
                     File.Delete fileName
         with
-        | _ -> releaseLock()
+        | exn when trials > 0 ->
+            Thread.Sleep 100
+            let trials = trials - 1
+            tracefn "Could not release lock to %s.%s%s%sTrials left: %d." fileName Environment.NewLine exn.Message Environment.NewLine trials
+            releaseLock trials
+        | _ ->
+            ()
 
     try
         acquireLock DateTime.Now (TimeSpan.FromMinutes 10.) 100
 
         let result = action()
 
-        releaseLock()
+        releaseLock 5
         result
     with
     | _ ->
-        releaseLock()
+        releaseLock 5
         reraise()
 
 

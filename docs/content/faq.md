@@ -264,3 +264,41 @@ set NO_PROXY=.company.com,localhost
 Short answer: Yes. For information about Paket with .NET SDK, .NET Core and the
 `dotnet` CLI see the
 ["Paket and the .NET SDK / .NET Core CLI tools" guide](paket-and-dotnet-cli.html).
+
+## The download of packages times out, is there a way to prevent this?
+
+Since version 5.190.0 there are three environment variables you can set to try to prevent this:
+
+* `PAKET_REQUEST_TIMEOUT`: Timeout for the request
+* `PAKET_RESPONSE_STREAM_TIMEOUT`: Timeout for the response of the request
+* `PAKET_STREAMREADWRITE_TIMEOUT`: Timeout for streaming the read and write operations
+
+Note that values should be specified in milliseconds.
+
+The default timeout value for all three settings is 3 minutes (180 seconds).
+
+The following example will set all three values to 10 minutes (600 seconds) on Windows
+
+```sh
+set PAKET_REQUEST_TIMEOUT=600000
+set PAKET_RESPONSE_STREAM_TIMEOUT=600000
+set PAKET_STREAMREADWRITE_TIMEOUT=600000
+```
+
+Use 'export' instead of 'set' for bash and similar shells
+
+```sh
+export PAKET_REQUEST_TIMEOUT=600000
+export PAKET_RESPONSE_STREAM_TIMEOUT=600000
+export PAKET_STREAMREADWRITE_TIMEOUT=600000
+```
+
+If set to -1 the timeout is infinite.
+
+```sh
+set PAKET_REQUEST_TIMEOUT=-1
+set PAKET_RESPONSE_STREAM_TIMEOUT=-1
+set PAKET_STREAMREADWRITE_TIMEOUT=-1
+```
+
+
