@@ -78,7 +78,7 @@ Paket supports the source directory to be specified relative to the
 
 ```paket
 source directory/relative/to/paket.dependencies
-source .  // To use a package in the root of the repository
+source .    // To use a package in the root of the repository
 ```
 
 ## Dependencies
