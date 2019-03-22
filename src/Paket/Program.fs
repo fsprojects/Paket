@@ -426,16 +426,15 @@ let restore (results : ParseResults<_>) =
     let ignoreChecks = results.Contains <@ RestoreArgs.Ignore_Checks @>
     let failOnChecks = results.Contains <@ RestoreArgs.Fail_On_Checks @>
     let targetFramework = results.TryGetResult <@ RestoreArgs.Target_Framework @>
-    let outputPath = results.TryGetResult <@ RestoreArgs.Output_Path @>
 
     match project with
     | Some project ->
-        Dependencies.Locate().Restore(force, group, project, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework, outputPath)
+        Dependencies.Locate().Restore(force, group, project, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework, None)
     | None ->
         if List.isEmpty files then
-            Dependencies.Locate().Restore(force, group, installOnlyReferenced, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework, outputPath)
+            Dependencies.Locate().Restore(force, group, installOnlyReferenced, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework, None)
         else
-            Dependencies.Locate().Restore(force, group, files, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework, outputPath)
+            Dependencies.Locate().Restore(force, group, files, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework, None)
 
 let simplify (results : ParseResults<_>) =
     let interactive = results.Contains <@ SimplifyArgs.Interactive @>
@@ -894,6 +893,14 @@ let main() =
             false
             (fun _ -> true)
             (fun _ -> Dependencies.Locate().Restore(false, None, project, false, false, false, None, None)) ()
+    | [| _; "restore"; "--project"; project; "--output-path"; outputPath; "--target-framework"; targetFramework |]
+    | [| _; "--from-bootstrapper"; "restore"; "--project"; project; "--output-path"; outputPath; "--target-framework"; targetFramework |] ->
+        // Project restore fast route, see https://github.com/fsprojects/Argu/issues/90
+        processWithValidationEx
+            ignore
+            false
+            (fun _ -> true)
+            (fun _ -> Dependencies.Locate().Restore(false, None, project, false, false, false, Some targetFramework, Some outputPath)) ()
     | [| _; "install" |] | [| _; "--from-bootstrapper"; "install" |] ->
         // Global restore fast route, see https://github.com/fsprojects/Argu/issues/90
         processWithValidationEx
