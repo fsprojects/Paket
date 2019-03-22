@@ -115,6 +115,20 @@ enabled. For example, if you open a Paket-enabled solution in Visual Studio 2017
 then Visual Studio's background build will restore Paket dependencies
 automatically.
 
+#### Global restore
+
+For performance reasons, Paket by default will call initial restore for all projects (global).
+Because global restore doesn't work in context of a single project, it's not possible to distinguish project-specific MSBuild variables, like [BaseIntermediateOutputPath](https://docs.microsoft.com/pl-pl/visualstudio/msbuild/common-msbuild-project-properties?view=vs-2017).
+If you want to use such variables, (e.g. specified in `Directory.Build.props`), you might want consider disabling global restore by adding following to either `Directory.Build.props`, or project file:
+
+```xml
+    <PropertyGroup>
+        <PaketDisableGlobalRestore>true</PaketDisableGlobalRestore>
+    </PropertyGroup>
+```
+
+Be aware though that this might slow Paket restore process for solutions with many projects.
+
 ### Updating packages
 
 If you want to update packages you can use the
