@@ -128,6 +128,7 @@ If you want to use such variables, (e.g. specified in `Directory.Build.props`), 
 ```
 
 Be aware though that this might slow Paket restore process for solutions with many projects.
+To find out more check out [this issue](https://github.com/fsprojects/Paket/pull/3527).
 
 ### Updating packages
 
