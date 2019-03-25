@@ -36,7 +36,6 @@
     <Compile Include="$(PaketTestsSourcesDir)\PackSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\InstallSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\RestoreSpecs.fs" />
-    <Compile Include="$(PaketTestsSourcesDir)\AutoRestoreSpec.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\FrameworkRestrictionsSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\HttpSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\PaketCoreSpecs.fs" />
