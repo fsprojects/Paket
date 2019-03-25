@@ -134,7 +134,7 @@
         </Reference>
       </ItemGroup>
     </When>
-    <When Condition="($(TargetFrameworkIdentifier) == 'MonoAndroid' And ($(TargetFrameworkVersion) == 'v7.0' Or $(TargetFrameworkVersion) == 'v7.1' Or $(TargetFrameworkVersion) == 'v8.0' Or $(TargetFrameworkVersion) == 'v8.1' Or $(TargetFrameworkVersion) == 'v9.0')) Or ($(TargetFrameworkIdentifier) == 'MonoTouch') Or ($(TargetFrameworkIdentifier) == '.NETCoreApp' And ($(TargetFrameworkVersion) == 'v1.0' Or $(TargetFrameworkVersion) == 'v1.1' Or $(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v2.1' Or $(TargetFrameworkVersion) == 'v2.2' Or $(TargetFrameworkVersion) == 'v3.0')) Or ($(TargetFrameworkIdentifier) == '.NETStandard' And ($(TargetFrameworkVersion) == 'v1.6' Or $(TargetFrameworkVersion) == 'v2.0')) Or ($(TargetFrameworkIdentifier) == '.NETCore' And $(TargetFrameworkVersion) == 'v5.0') Or ($(TargetFrameworkIdentifier) == 'Xamarin.iOS') Or ($(TargetFrameworkIdentifier) == 'Xamarin.Mac') Or ($(TargetFrameworkIdentifier) == 'Xamarin.tvOS') Or ($(TargetFrameworkIdentifier) == 'Xamarin.watchOS')">
+    <When Condition="($(TargetFrameworkIdentifier) == 'MonoAndroid' And ($(TargetFrameworkVersion) == 'v7.0' Or $(TargetFrameworkVersion) == 'v7.1' Or $(TargetFrameworkVersion) == 'v8.0' Or $(TargetFrameworkVersion) == 'v8.1' Or $(TargetFrameworkVersion) == 'v9.0')) Or ($(TargetFrameworkIdentifier) == 'MonoTouch') Or ($(TargetFrameworkIdentifier) == '.NETCoreApp' And ($(TargetFrameworkVersion) == 'v1.0' Or $(TargetFrameworkVersion) == 'v1.1' Or $(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v2.1' Or $(TargetFrameworkVersion) == 'v2.2' Or $(TargetFrameworkVersion) == 'v3.0')) Or ($(TargetFrameworkIdentifier) == '.NETStandard' And ($(TargetFrameworkVersion) == 'v1.6' Or $(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v2.1')) Or ($(TargetFrameworkIdentifier) == '.NETCore' And $(TargetFrameworkVersion) == 'v5.0') Or ($(TargetFrameworkIdentifier) == 'Xamarin.iOS') Or ($(TargetFrameworkIdentifier) == 'Xamarin.Mac') Or ($(TargetFrameworkIdentifier) == 'Xamarin.tvOS') Or ($(TargetFrameworkIdentifier) == 'Xamarin.watchOS')">
       <ItemGroup>
         <Reference Include="Chessie">
           <HintPath>..\..\packages\Chessie\lib\netstandard1.6\Chessie.dll</HintPath>
@@ -154,7 +154,7 @@
         </Reference>
       </ItemGroup>
     </When>
-    <When Condition="($(TargetFrameworkIdentifier) == 'MonoAndroid' And ($(TargetFrameworkVersion) == 'v7.0' Or $(TargetFrameworkVersion) == 'v7.1' Or $(TargetFrameworkVersion) == 'v8.0' Or $(TargetFrameworkVersion) == 'v8.1' Or $(TargetFrameworkVersion) == 'v9.0')) Or ($(TargetFrameworkIdentifier) == 'MonoTouch') Or ($(TargetFrameworkIdentifier) == '.NETCoreApp' And ($(TargetFrameworkVersion) == 'v1.0' Or $(TargetFrameworkVersion) == 'v1.1' Or $(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v2.1' Or $(TargetFrameworkVersion) == 'v2.2' Or $(TargetFrameworkVersion) == 'v3.0')) Or ($(TargetFrameworkIdentifier) == '.NETStandard' And ($(TargetFrameworkVersion) == 'v1.6' Or $(TargetFrameworkVersion) == 'v2.0')) Or ($(TargetFrameworkIdentifier) == '.NETCore' And $(TargetFrameworkVersion) == 'v5.0') Or ($(TargetFrameworkIdentifier) == 'Xamarin.iOS') Or ($(TargetFrameworkIdentifier) == 'Xamarin.Mac') Or ($(TargetFrameworkIdentifier) == 'Xamarin.tvOS') Or ($(TargetFrameworkIdentifier) == 'Xamarin.watchOS')">
+    <When Condition="($(TargetFrameworkIdentifier) == 'MonoAndroid' And ($(TargetFrameworkVersion) == 'v7.0' Or $(TargetFrameworkVersion) == 'v7.1' Or $(TargetFrameworkVersion) == 'v8.0' Or $(TargetFrameworkVersion) == 'v8.1' Or $(TargetFrameworkVersion) == 'v9.0')) Or ($(TargetFrameworkIdentifier) == 'MonoTouch') Or ($(TargetFrameworkIdentifier) == '.NETCoreApp' And ($(TargetFrameworkVersion) == 'v1.0' Or $(TargetFrameworkVersion) == 'v1.1' Or $(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v2.1' Or $(TargetFrameworkVersion) == 'v2.2' Or $(TargetFrameworkVersion) == 'v3.0')) Or ($(TargetFrameworkIdentifier) == '.NETStandard' And ($(TargetFrameworkVersion) == 'v1.6' Or $(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v2.1')) Or ($(TargetFrameworkIdentifier) == '.NETCore' And $(TargetFrameworkVersion) == 'v5.0') Or ($(TargetFrameworkIdentifier) == 'Xamarin.iOS') Or ($(TargetFrameworkIdentifier) == 'Xamarin.Mac') Or ($(TargetFrameworkIdentifier) == 'Xamarin.tvOS') Or ($(TargetFrameworkIdentifier) == 'Xamarin.watchOS')">
       <ItemGroup>
         <Reference Include="FSharp.Core">
           <HintPath>..\..\packages\FSharp.Core\lib\netstandard1.6\FSharp.Core.dll</HintPath>
@@ -626,7 +626,7 @@
         </Reference>
       </ItemGroup>
     </When>
-    <When Condition="($(TargetFrameworkIdentifier) == '.NETCoreApp' And ($(TargetFrameworkVersion) == 'v1.0' Or $(TargetFrameworkVersion) == 'v1.1' Or $(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v2.1' Or $(TargetFrameworkVersion) == 'v2.2' Or $(TargetFrameworkVersion) == 'v3.0')) Or ($(TargetFrameworkIdentifier) == '.NETStandard' And ($(TargetFrameworkVersion) == 'v1.6' Or $(TargetFrameworkVersion) == 'v2.0'))">
+    <When Condition="($(TargetFrameworkIdentifier) == '.NETCoreApp' And ($(TargetFrameworkVersion) == 'v1.0' Or $(TargetFrameworkVersion) == 'v1.1' Or $(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v2.1' Or $(TargetFrameworkVersion) == 'v2.2' Or $(TargetFrameworkVersion) == 'v3.0')) Or ($(TargetFrameworkIdentifier) == '.NETStandard' And ($(TargetFrameworkVersion) == 'v1.6' Or $(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v2.1'))">
       <ItemGroup>
         <Reference Include="System.Linq">
           <HintPath>..\..\packages\System.Linq\lib\netstandard1.6\System.Linq.dll</HintPath>
@@ -635,7 +635,7 @@
         </Reference>
       </ItemGroup>
     </When>
-    <When Condition="($(TargetFrameworkIdentifier) == '.NETCoreApp' And ($(TargetFrameworkVersion) == 'v1.0' Or $(TargetFrameworkVersion) == 'v1.1' Or $(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v2.1' Or $(TargetFrameworkVersion) == 'v2.2' Or $(TargetFrameworkVersion) == 'v3.0')) Or ($(TargetFrameworkIdentifier) == '.NETStandard' And ($(TargetFrameworkVersion) == 'v1.6' Or $(TargetFrameworkVersion) == 'v2.0'))">
+    <When Condition="($(TargetFrameworkIdentifier) == '.NETCoreApp' And ($(TargetFrameworkVersion) == 'v1.0' Or $(TargetFrameworkVersion) == 'v1.1' Or $(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v2.1' Or $(TargetFrameworkVersion) == 'v2.2' Or $(TargetFrameworkVersion) == 'v3.0')) Or ($(TargetFrameworkIdentifier) == '.NETStandard' And ($(TargetFrameworkVersion) == 'v1.6' Or $(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v2.1'))">
       <ItemGroup>
         <Reference Include="System.Linq">
           <HintPath>..\..\packages\System.Linq\ref\netstandard1.6\System.Linq.dll</HintPath>
@@ -1239,7 +1239,7 @@
         </Reference>
       </ItemGroup>
     </When>
-    <When Condition="($(TargetFrameworkIdentifier) == '.NETCoreApp' And ($(TargetFrameworkVersion) == 'v1.0' Or $(TargetFrameworkVersion) == 'v1.1' Or $(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v2.1' Or $(TargetFrameworkVersion) == 'v2.2' Or $(TargetFrameworkVersion) == 'v3.0')) Or ($(TargetFrameworkIdentifier) == '.NETStandard' And ($(TargetFrameworkVersion) == 'v1.6' Or $(TargetFrameworkVersion) == 'v2.0'))">
+    <When Condition="($(TargetFrameworkIdentifier) == '.NETCoreApp' And ($(TargetFrameworkVersion) == 'v1.0' Or $(TargetFrameworkVersion) == 'v1.1' Or $(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v2.1' Or $(TargetFrameworkVersion) == 'v2.2' Or $(TargetFrameworkVersion) == 'v3.0')) Or ($(TargetFrameworkIdentifier) == '.NETStandard' And ($(TargetFrameworkVersion) == 'v1.6' Or $(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v2.1'))">
       <ItemGroup>
         <Reference Include="System.Security.Cryptography.Algorithms">
           <HintPath>..\..\packages\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll</HintPath>
