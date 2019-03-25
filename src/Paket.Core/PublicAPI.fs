@@ -896,7 +896,6 @@ module PublicAPI =
                     profile.Frameworks
                     |> List.filter (function
                         | MonoTouch
-                        | DNXCore _
                         | UAP _
                         | MonoAndroid _
                         | XamariniOS
