@@ -113,20 +113,6 @@ let ``#1189 should allow # in path``() =
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "FAKE"].Version
     |> shouldBeGreaterThan (SemVer.Parse "4.7.2")
 
-
-[<Test>]
-let ``#1247 shouldn't load lockfile in full update``() =
-    updateEx true "i001247-lockfile-error" |> ignore
-
-[<Test>]
-let ``#1247 should report lockfile in parse errror``() =
-    try
-        paket "update --keep-minor" "i001247-lockfile-error" |> ignore
-
-        failwith "error was expected"
-    with
-    | exn when exn.Message.Contains "paket.lock" -> ()
-
 [<Test>]
 let ``#1254 should install unlisted transitive dependencies``() =
     let lockFile = update "i001254-unlisted"
