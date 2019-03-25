@@ -109,7 +109,6 @@
     <Compile Include="PackSpecs.fs" />
     <Compile Include="InstallSpecs.fs" />
     <Compile Include="RestoreSpecs.fs" />
-    <Compile Include="AutoRestoreSpec.fs" />
     <Compile Include="FrameworkRestrictionsSpecs.fs" />
     <Compile Include="HttpSpecs.fs" />
     <Compile Include="PaketCoreSpecs.fs" />
