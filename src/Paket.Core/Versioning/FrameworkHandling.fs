@@ -18,6 +18,7 @@ type DotNetStandardVersion =
     | V1_5
     | V1_6
     | V2_0
+    | V2_1
     override this.ToString() =
         match this with
         | V1_0 -> "v1.0"
@@ -28,6 +29,7 @@ type DotNetStandardVersion =
         | V1_5 -> "v1.5"
         | V1_6 -> "v1.6"
         | V2_0 -> "v2.0"
+        | V2_1 -> "v2.1"
     member this.ShortString() =
         match this with
         | DotNetStandardVersion.V1_0 -> "1.0"
@@ -38,17 +40,21 @@ type DotNetStandardVersion =
         | DotNetStandardVersion.V1_5 -> "1.5"
         | DotNetStandardVersion.V1_6 -> "1.6"
         | DotNetStandardVersion.V2_0 -> "2.0"
+        | DotNetStandardVersion.V2_1 -> "2.1"
     static member TryParse s =
         match s with
-        | "" | "1" -> Some(DotNetStandardVersion.V1_0)
+        | "" 
+        | "1"   -> Some(DotNetStandardVersion.V1_0)
         | "1.1" -> Some(DotNetStandardVersion.V1_1)
         | "1.2" -> Some(DotNetStandardVersion.V1_2)
         | "1.3" -> Some(DotNetStandardVersion.V1_3)
         | "1.4" -> Some(DotNetStandardVersion.V1_4)
         | "1.5" -> Some(DotNetStandardVersion.V1_5)
         | "1.6" -> Some(DotNetStandardVersion.V1_6)
-        | "2" -> Some(DotNetStandardVersion.V2_0)
+        | "2"   -> Some(DotNetStandardVersion.V2_0)
+        | "2.1" -> Some(DotNetStandardVersion.V2_1)
         | _ -> None
+
 [<RequireQualifiedAccess>]
 /// The Framework version.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
@@ -634,12 +640,13 @@ type FrameworkIdentifier =
         | DotNetStandard DotNetStandardVersion.V1_5 -> [ DotNetStandard DotNetStandardVersion.V1_4 ]
         | DotNetStandard DotNetStandardVersion.V1_6 -> [ DotNetStandard DotNetStandardVersion.V1_5 ]
         | DotNetStandard DotNetStandardVersion.V2_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | DotNetStandard DotNetStandardVersion.V2_1 -> [ DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetCoreApp DotNetCoreAppVersion.V1_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | DotNetCoreApp DotNetCoreAppVersion.V1_1 -> [ DotNetCoreApp DotNetCoreAppVersion.V1_0 ]
         | DotNetCoreApp DotNetCoreAppVersion.V2_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V1_1; DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetCoreApp DotNetCoreAppVersion.V2_1 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_0 ]
         | DotNetCoreApp DotNetCoreAppVersion.V2_2 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_1 ]
-        | DotNetCoreApp DotNetCoreAppVersion.V3_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_2 ]
+        | DotNetCoreApp DotNetCoreAppVersion.V3_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_2; DotNetStandard DotNetStandardVersion.V2_1 ]
         | DotNetUnity DotNetUnityVersion.V3_5_Full -> [ ]
         | DotNetUnity DotNetUnityVersion.V3_5_Subset -> [ ]
         | DotNetUnity DotNetUnityVersion.V3_5_Micro -> [ ]
@@ -1145,6 +1152,7 @@ module KnownTargetProfiles =
         DotNetStandardVersion.V1_5
         DotNetStandardVersion.V1_6
         DotNetStandardVersion.V2_0
+        DotNetStandardVersion.V2_1
     ]
 
     let DotNetStandardProfiles =
