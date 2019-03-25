@@ -142,18 +142,6 @@ let ``#1703 resolves locally``() =
 
 
 [<Test>]
-let ``#1635 should tell about auth issue``() =
-    try
-        update "i001635-wrong-pw" |> ignore
-        failwith "error expected"
-    with
-    | exn when exn.Message.Contains("Unable to retrieve package versions for 'Argu'") -> 
-        exn.Message.Contains "Could not load resources from 'https://www.myget.org/F/paket-test/api/v3/index.json': Unauthorized (401)"
-            |> shouldEqual true
-        ()
-
-
-[<Test>]
 let ``#2572 should tell about late resolver issue``() =
     try
         update "i002572-pinned-error" |> ignore
