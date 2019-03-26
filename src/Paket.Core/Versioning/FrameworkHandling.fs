@@ -797,6 +797,11 @@ module FrameworkDetection =
                 | MatchTfm "netstandard" DotNetStandardVersion.TryParse fm -> Some (DotNetStandard fm)
                 // "netcore" is for backwards compat (2017-08-20), we wrote this incorrectly into the lockfile.
                 | MatchTfms ["netcoreapp";"netcore"] (Bind DotNetCoreAppVersion.TryParse) fm -> Some (DotNetCoreApp fm)
+                // "dnxcore" and "dotnet" is for backwards compat (2019-03-26), we wrote this into the lockfile.
+                | MatchTfm "dnx" (allowVersions ["";"4.5.1"]) () -> Some (DotNetCoreApp DotNetCoreAppVersion.V1_0)
+                | MatchTfms ["dnxcore";"netplatform";"netcore";"aspnetcore";"aspnet";"dotnet"] (Bind (allowVersions ["";"5"]))
+                    () -> Some (DotNetCoreApp DotNetCoreAppVersion.V1_0)
+                | v when v.StartsWith "dotnet" -> Some (DotNetCoreApp DotNetCoreAppVersion.V1_0)
                 | MatchTfm "tizen" TizenVersion.TryParse fm -> Some (Tizen fm)
                 // Default is full framework, for example "35"
                 | MatchTfm "" FrameworkVersion.TryParse fm -> Some (DotNetFramework fm)
