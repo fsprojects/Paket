@@ -375,14 +375,6 @@ let ``#1507 allows to download remote dependencies``() =
     File.Exists (Path.Combine(scenarioTempPath scenario, "paket-files", "forki", "PrivateEye", "privateeye.fsx")) |> shouldEqual true
     File.Exists (Path.Combine(scenarioTempPath scenario, "paket-files", "forki", "PrivateEye", "bin", "PrivateEye.Bridge.dll")) |> shouldEqual true
 
-[<Test>]
-[<Ignore("very slow test")>]
-let ``#1589 http dep restore in parallel``() =
-    let scenarioName = "i001589-http-dep-restore-in-parallel"
-    let scenarioPath = scenarioTempPath scenarioName
-    prepare scenarioName
-    directPaketInPath "restore" scenarioPath |> ignore
-    directPaketInPath "restore --force" scenarioPath |> ignore
 
 [<Test>]
 let ``#1663 should import build targets``() =
