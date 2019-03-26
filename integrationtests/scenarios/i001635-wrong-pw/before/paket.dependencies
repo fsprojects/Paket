@@ -1,0 +1,3 @@
+source https://www.myget.org/F/paket-test/api/v3/index.json
+
+nuget Argu
