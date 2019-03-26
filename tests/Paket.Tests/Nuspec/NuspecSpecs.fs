@@ -273,7 +273,8 @@ let ``can detect framework assemblies for Microsoft.Framework.Logging``() =
     nuspec.FrameworkAssemblyReferences.[0].FrameworkRestrictions 
         |> shouldEqual
             (makeOrList
-              [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))])
+              [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))
+               FrameworkRestriction.Exactly(DotNetCoreApp(DotNetCoreAppVersion.V1_0))])
 
     let name,_,_restrictions = nuspec.Dependencies.Value.[0]
     name  |> shouldEqual (PackageName "Microsoft.Framework.DependencyInjection.Interfaces")

@@ -1468,9 +1468,9 @@ module SupportCalculation =
                     | XamariniOS
                     | XamarinTV
                     | XamarinWatch
-                    | XamarinMac -> false
                     | DotNetCoreApp _
                     | DotNetStandard _
+                    | XamarinMac -> false
                     | Tizen _ -> failwithf "Unexpected framework while trying to resolve PCL Profile"
                     | _ -> true)
             if minimal.Length > 0 then
