@@ -18,6 +18,21 @@ let ``#2496 Paket fails on projects that target multiple frameworks``() =
     directDotnet true (sprintf "restore %s.csproj" project) wd
         |> ignore
 
+[<Test>]
+let ``#3527 BaseIntermediateOutputPath``() =
+    let project = "project"
+    let scenario = "i003527"
+    prepareSdk scenario
+
+    let wd = (scenarioTempPath scenario) @@ project
+    directDotnet true (sprintf "restore %s.fsproj" project) wd
+        |> ignore
+
+    let defaultObjDir = DirectoryInfo (Path.Combine (scenarioTempPath scenario, project, "obj"))
+    let customObjDir = DirectoryInfo (Path.Combine (scenarioTempPath scenario, project, "obj", "custom"))
+
+    defaultObjDir.GetFiles() |> shouldBeEmpty
+    customObjDir.GetFiles().Length |> shouldBeGreaterThan 0
 
 [<Test>]
 let ``#3000-a dotnet restore``() =
