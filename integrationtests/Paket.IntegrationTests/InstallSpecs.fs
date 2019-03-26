@@ -302,44 +302,10 @@ let ``#1466 install package with dll in name``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1467 install package into vcxproj``() =
-    let newLockFile = install "i001467-cpp"
-    let newFile = Path.Combine(scenarioTempPath "i001467-cpp","MyClassLibrary","ConsoleApplication1","ConsoleApplication1.vcxproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001467-cpp","MyClassLibrary","ConsoleApplication1","ConsoleApplication1.vcxprojtemplate")
-    if updateBaselines then
-        File.Copy (newFile, oldFile, overwrite=true)
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
-
-[<Test>]
-let ``#1467 install native package into vcxproj``() =
-    let newLockFile = install "i001467-cpp-native"
-    let newFile = Path.Combine(scenarioTempPath "i001467-cpp-native","MyClassLibrary","PaketTest.vcxproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001467-cpp-native","MyClassLibrary","PaketTest.vcxprojtemplate")
-    if updateBaselines then
-        File.Copy (newFile, oldFile, overwrite=true)
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
-
-[<Test>]
 let ``#1505 should install conditionals``() =
     install "i001505-conditionals" |> ignore
     let newFile = Path.Combine(scenarioTempPath "i001505-conditionals","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001505-conditionals","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj.expected")
-    if updateBaselines then
-        File.Copy (newFile, oldFile, overwrite=true)
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
-
-[<Test>]
-let ``#1578 should reference transitive dep from ref``() =
-    let scenario = "i001578-transitive-ref"
-    install scenario |> ignore
-    let newFile = Path.Combine(scenarioTempPath scenario,"TestPaketDotNet","TestPaketDotNet.csproj")
-    let oldFile = Path.Combine(originalScenarioPath scenario,"TestPaketDotNet","TestPaketDotNet.csprojtemplate")
     if updateBaselines then
         File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
