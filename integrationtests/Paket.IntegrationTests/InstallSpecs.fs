@@ -354,21 +354,6 @@ let ``#1458 should not install conflicting deps from different groups``() =
     with
     | exn when exn.Message.Contains "Package Nancy is referenced in different versions" -> ()
 
-[<Test;Flaky>]
-let ``#2335 should install deps from different groups when using conditions``() =
-    let scenario = "i002335-razorengine"
-    install scenario |> ignore
-    let newFile = Path.Combine(scenarioTempPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
-    let oldFile = Path.Combine(originalScenarioPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
-    if updateBaselines then
-        File.Copy (newFile, oldFile, overwrite=true)
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
-
-    //lots of downloaded files => big disk size, better cleanup if test pass
-    System.IO.Directory.Delete(scenarioTempPath scenario, true)
-
 [<Test>]
 let ``#1442 should not warn on SonarLint``() =
     let result = paket "install" "i001442-dont-warn"
@@ -506,13 +491,6 @@ let ``#3062 install should use external lock file``() =
     let newLockFile = install "i003062-external-lock"
     newLockFile.Groups.[GroupName "main"].Resolution.ContainsKey (PackageName "FAKE") |> shouldEqual true
     newLockFile.Groups.[GroupName "main"].Resolution.[PackageName "Machine.Specifications"].Version |> shouldEqual (SemVer.Parse "0.12")
-
-[<Test;Flaky>]
-let ``#3062 install should use external azure functions v1 lock file from http``() =
-    let newLockFile = install "i003062-azurefunctions"
-    newLockFile.Groups.[GroupName "main"].Resolution.ContainsKey (PackageName "FAKE") |> shouldEqual true
-    newLockFile.Groups.[GroupName "main"].Resolution.[PackageName "Newtonsoft.Json"].Version |> shouldEqual (SemVer.Parse "9.0.1")
-    newLockFile.Groups.[GroupName "main"].Resolution.[PackageName "Microsoft.Azure.WebJobs.Core"].Version |> shouldEqual (SemVer.Parse "2.2.0")
 
 
 #if INTERACTIVE

@@ -1443,7 +1443,7 @@ module SupportCalculation =
         | true, v -> v
         | _ ->
             match p with
-            | UnsupportedProfile tfs ->
+            | UnsupportedProfile _ ->
                 match getSupportMap().TryGetValue p with
                 | true, v -> v
                 | _ ->
