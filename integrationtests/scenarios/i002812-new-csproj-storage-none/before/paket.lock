@@ -1,6 +1,0 @@
-REFERENCES: STRICT
-STORAGE: NONE
-RESTRICTION: == net45
-NUGET
-  remote: https://api.nuget.org/v3/index.json
-    AutoMapper (6.1.1)
