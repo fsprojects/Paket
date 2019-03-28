@@ -8,12 +8,12 @@ open Paket.Logging
 open Paket.PackageResolver
 open Chessie.ErrorHandling
 
-let private findTransitive (groupName,packages, flatLookup, failureF) = 
+let private findTransitive (groupName, packages, flatLookup, nameF, failureF) =
     packages
-    |> List.map (fun packageName -> 
-        flatLookup 
-        |> Map.tryFind (groupName, packageName)
-        |> failIfNone (failureF packageName))
+    |> List.map (fun package ->
+        flatLookup
+        |> Map.tryFind (groupName, (nameF package))
+        |> failIfNone (failureF (nameF package)))
     |> collect
     |> lift Seq.distinct
     |> lift Seq.concat
@@ -28,12 +28,12 @@ let private removePackage(packageName, packageSettings, transitivePackages, file
     else
         false
 
-let simplifyDependenciesFile (dependenciesFile : DependenciesFile, groupName, flatLookup, interactive) = trial {
-    let packages = dependenciesFile.Groups.[groupName].Packages |> List.filter(fun p -> p.Kind = Requirements.PackageRequirementKind.Package) |> List.map (fun p -> p.Name)
-    let! transitive = findTransitive(groupName, packages, flatLookup, DependencyNotFoundInLockFile)
+let simplifyDependenciesFile (dependenciesFile : DependenciesFile, groupName, flatLookup, resolution, interactive) = trial {
+    let packages = dependenciesFile.Groups.[groupName].Packages
+    let! transitive = findTransitive(groupName, packages, flatLookup, (fun p -> p.Name), DependencyNotFoundInLockFile)
 
     return
-        dependenciesFile.Groups.[groupName].Packages
+        packages |> List.filter(fun p -> p.Kind = Requirements.PackageRequirementKind.Package)
         |> List.fold  (fun (d:DependenciesFile) package ->
                 if removePackage(package.Name, (sprintf "%O %O" package.Settings package.VersionRequirement), transitive, dependenciesFile.FileName, interactive) then
                     d.Remove(groupName,package.Name)
@@ -43,9 +43,9 @@ let simplifyDependenciesFile (dependenciesFile : DependenciesFile, groupName, fl
 let simplifyReferencesFile (refFile:ReferencesFile, groupName, flatLookup, interactive) = trial {
     match refFile.Groups |> Map.tryFind groupName with
     | None -> return refFile
-    | Some g -> 
-        let! transitive = findTransitive(groupName, g.NugetPackages |> List.map (fun p -> p.Name), 
-                                flatLookup, 
+    | Some g ->
+        let! transitive = findTransitive(groupName, g.NugetPackages,
+                                flatLookup, (fun p -> p.Name),
                                 (fun p -> ReferenceNotFoundInLockFile(refFile.FileName, groupName.ToString(),p)))
 
         let newPackages =
