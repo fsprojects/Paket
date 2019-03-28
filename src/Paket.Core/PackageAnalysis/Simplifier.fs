@@ -15,6 +15,7 @@ let private findTransitive (groupName,packages, flatLookup, failureF) =
         |> Map.tryFind (groupName, packageName)
         |> failIfNone (failureF packageName))
     |> collect
+    |> lift Seq.distinct
     |> lift Seq.concat
 
 let private removePackage(packageName, packageSettings, transitivePackages, fileName, interactive) =
@@ -28,7 +29,7 @@ let private removePackage(packageName, packageSettings, transitivePackages, file
         false
 
 let simplifyDependenciesFile (dependenciesFile : DependenciesFile, groupName, flatLookup, interactive) = trial {
-    let packages = dependenciesFile.Groups.[groupName].Packages |> List.map (fun p -> p.Name)
+    let packages = dependenciesFile.Groups.[groupName].Packages |> List.filter(fun p -> p.Kind = Requirements.PackageRequirementKind.Package) |> List.map (fun p -> p.Name)
     let! transitive = findTransitive(groupName, packages, flatLookup, DependencyNotFoundInLockFile)
 
     return
