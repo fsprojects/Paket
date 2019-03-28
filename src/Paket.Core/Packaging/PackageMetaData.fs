@@ -195,11 +195,6 @@ let getTargetDir (project : ProjectFile) targetProfile =
             | Some targetProfile -> sprintf "lib/%O/" targetProfile
             | None -> "lib/"
 
-let getTargetProfiles (project : ProjectFile) =
-    match project.GetTargetProfiles() with
-    | [] -> [None]
-    | x -> List.map Some x
-
 let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences interprojectReferencesConstraint (projectWithTemplates : Map<string, (Lazy<'TemplateFile>) * ProjectFile * bool>) includeReferencedProjects (version :SemVerInfo option) cache =
     let includeReferencedProjects = template.IncludeReferencedProjects || includeReferencedProjects
 
@@ -215,7 +210,10 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                 else
                     InterprojectReferencesConstraint.Min
 
-    let targetProfiles = getTargetProfiles project
+    let targetProfiles =
+        match project.GetTargetProfiles() with
+        | [] -> [None]
+        | x -> List.map Some x
     
     let projectDir = Path.GetDirectoryName project.FileName
 
