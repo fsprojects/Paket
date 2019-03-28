@@ -27,16 +27,6 @@ let ``#284 should use git.exe to restore``() =
     Git.Handling.getCurrentHash fsUnitDir |> shouldEqual (Some "96a9c7bda5a84e225450d83ab8fd58fdeced7f6d")
 
 [<Test>]
-let ``#1353 should restore NuGet source from git repo``() = 
-    let lockFile = restore "i001353-git-as-source-restore"
-    let paketFilesRoot = Path.Combine(scenarioTempPath "i001353-git-as-source-restore","paket-files")
-    let repoDir = Path.Combine(paketFilesRoot,"github.com", "forki","nupkgtest")
-    Git.Handling.getCurrentHash repoDir |> shouldEqual (Some "05366e390e7552a569f3f328a0f3094249f3b93b")
-
-    let arguPackagesDir = Path.Combine(scenarioTempPath "i001353-git-as-source-restore","packages","Argu")
-    Directory.Exists arguPackagesDir |> shouldEqual true
-
-[<Test>]
 let ``#1353 should use NuGet source from git repo``() = 
     let lockFile = update "i001353-git-as-source"
     let paketFilesRoot = Path.Combine(FileInfo(lockFile.FileName).Directory.FullName,"paket-files")
