@@ -1612,7 +1612,15 @@ module ProjectFile =
     let getOutputDirectory buildConfiguration buildPlatform (targetProfile : TargetProfile option) (project:ProjectFile) =
         let targetFramework =
             match targetProfile with
-            | Some x -> x.ToString()
+            | Some targetProfile ->
+                let targetProfile = targetProfile.ToString()
+                match getTargetFramework project with
+                | Some x -> if x = targetProfile then x else ""
+                | None ->
+                    let parsedTargetFrameworks = getTargetFrameworksParsed project
+                    match List.tryFind ((=) targetProfile) parsedTargetFrameworks with
+                    | Some x -> x
+                    | None -> ""
             | None ->
                 match getTargetFramework project with
                 | Some x -> x
