@@ -470,6 +470,21 @@ Generated load scripts can be loaded like this:
 #load @".paket/load/net45/suave.fsx"
 ```
 
+### Simplify prevention
+
+This option gives paket a hint around your itention for the paket [simplify](commands/simplify.html).
+The paket simplify is a heuristic simplification & can sometimes think a dependency is not required in your dependencies file.
+By adding this option, you can prevent the simplify command from removing the dependency.
+
+
+The `simplify` option can be either `never` or `false`.  If it's not present, no simplify preference has been set
+
+```paket
+source https://nuget.org/api/v2
+
+nuget Suave simplify: never
+```
+
 ## Comments
 
 All lines starting with with `//` or `#` are considered comments.
