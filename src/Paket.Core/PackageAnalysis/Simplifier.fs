@@ -28,7 +28,7 @@ let private removePackage(packageName, packageSettings, transitivePackages, file
     else
         false
 
-let simplifyDependenciesFile (dependenciesFile : DependenciesFile, groupName, flatLookup, resolution, interactive) = trial {
+let simplifyDependenciesFile (dependenciesFile : DependenciesFile, groupName, flatLookup, interactive) = trial {
     let packages = dependenciesFile.Groups.[groupName].Packages
     let! transitive = findTransitive(groupName, packages, flatLookup, (fun p -> p.Name), DependencyNotFoundInLockFile)
 
