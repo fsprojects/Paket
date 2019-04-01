@@ -46,12 +46,6 @@ let ``#71 should ignore trailing zero during resolve``() =
     |> shouldEqual (SemVer.Parse "6.0.5.0")
 
 [<Test>]
-let ``#83 should resolve jquery``() =
-    let lockFile = update "i000083-resolve-jquery"
-    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "jQuery"].Version
-    |> shouldBeGreaterThan (SemVer.Parse "1.9")
-
-[<Test>]
 let ``#108 should resolve jquery case-insensitive``() =
     let lockFile = update "i000108-case-insensitive-nuget-packages"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "jQuery"].Version
