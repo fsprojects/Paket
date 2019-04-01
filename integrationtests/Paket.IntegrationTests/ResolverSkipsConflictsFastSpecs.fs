@@ -39,27 +39,6 @@ let ``#2289 Paket 4.x install command takes hours to complete``() =
     |> shouldBeSmallerThan (SemVer.Parse "3.0")
 
 [<Test>]
-let ``#2922 paket can jump out of loop of doom``() =
-    try
-        install "i002922-loopofdoom" |> ignore
-        failwith "error expected"
-    with
-    | exn when exn.Message.Contains("Dependencies file requested package MySqlConnector: < 0.30") -> ()
-    
-[<Test>]
-let ``#2922-1 paket can timeout out of loop of doom``() =
-    try
-        let timeout = Environment.GetEnvironmentVariable("PAKET_RESOLVER_TIMEOUT")
-        Environment.SetEnvironmentVariable("PAKET_RESOLVER_TIMEOUT", "1000")
-        try
-            install "i002922-loopofdoom" |> ignore
-            failwith "timeout expected"
-        finally
-            Environment.SetEnvironmentVariable("PAKET_RESOLVER_TIMEOUT", timeout)
-    with
-    | exn when exn.Message.Contains("TimeoutException") -> ()
-
-[<Test>]
 #if NO_UNIT_PLATFORMATTRIBUTE
 [<Ignore "PlatformAttribute not supported by netstandard NUnit">]
 #else
