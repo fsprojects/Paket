@@ -1,3 +1,6 @@
+#### 5.200.2 - 2019-04-02
+* New setting that shields packages from simplifier - https://github.com/fsprojects/Paket/pull/3523
+
 #### 5.200.1 - 2019-04-02
 * BUGFIX: Fixed symlinks on linux - https://github.com/fsprojects/Paket/pull/3372
 
