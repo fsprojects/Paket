@@ -49,7 +49,7 @@ root and specify all your dependencies in it. You can use
 The file might look like this:
 
 ```paket
-source https://nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 
 nuget Castle.Windsor-log4net >= 3.2
 nuget NUnit
