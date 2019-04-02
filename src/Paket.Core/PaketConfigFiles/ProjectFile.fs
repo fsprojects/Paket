@@ -1609,14 +1609,25 @@ module ProjectFile =
     let getAssetsFileInfo (projectFileInfo:FileInfo) =
         FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj","project.assets.json"))
 
-    let getOutputDirectory buildConfiguration buildPlatform (project:ProjectFile) =
-        let targetFramework = 
-            match getTargetFramework project with
-            | Some x -> x
+    let getOutputDirectory buildConfiguration buildPlatform (targetProfile : TargetProfile option) (project:ProjectFile) =
+        let targetFramework =
+            match targetProfile with
+            | Some targetProfile ->
+                let targetProfile = targetProfile.ToString()
+                match getTargetFramework project with
+                | Some x -> if x = targetProfile then x else ""
+                | None ->
+                    let parsedTargetFrameworks = getTargetFrameworksParsed project
+                    match List.tryFind ((=) targetProfile) parsedTargetFrameworks with
+                    | Some x -> x
+                    | None -> ""
             | None ->
-                match getTargetFrameworksParsed project with
-                | fwk :: _ -> fwk
-                | [] -> ""
+                match getTargetFramework project with
+                | Some x -> x
+                | None ->
+                    match getTargetFrameworksParsed project with
+                    | fwk :: _ -> fwk
+                    | [] -> ""
 
         let platforms =
             if not (String.IsNullOrWhiteSpace buildPlatform) then 
@@ -1791,7 +1802,7 @@ type ProjectFile with
 
     member this.DetermineBuildActionForRemoteItems fileName = ProjectFile.determineBuildActionForRemoteItems fileName this
 
-    member this.GetOutputDirectory buildConfiguration buildPlatform =  ProjectFile.getOutputDirectory buildConfiguration buildPlatform this
+    member this.GetOutputDirectory buildConfiguration buildPlatform targetFramework =  ProjectFile.getOutputDirectory buildConfiguration buildPlatform targetFramework this
 
     member this.GetAssemblyName () = ProjectFile.getAssemblyName this
 
