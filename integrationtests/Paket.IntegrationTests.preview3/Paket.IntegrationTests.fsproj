@@ -27,7 +27,6 @@
     <Compile Include="$(PaketTestsSourcesDir)\InitSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\InfoSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\OutdatedSpecs.fs" />
-    <Compile Include="$(PaketTestsSourcesDir)\FullGitSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\NuGetV3Specs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\UpdatePackageSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\UpdateGroupsSpecs.fs" />
@@ -36,7 +35,6 @@
     <Compile Include="$(PaketTestsSourcesDir)\PackSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\InstallSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\RestoreSpecs.fs" />
-    <Compile Include="$(PaketTestsSourcesDir)\AutoRestoreSpec.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\FrameworkRestrictionsSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\HttpSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\PaketCoreSpecs.fs" />

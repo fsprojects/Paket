@@ -147,8 +147,6 @@ let directToolEx isPaket toolInfo commands workingDir =
         // this is the only case where no performance is printed
         let isUsageError = result <> 0 && msgs |> Seq.filter PaketMsg.isError |> Seq.map PaketMsg.getMessage |> Seq.exists (fun msg -> msg.Contains "USAGE:")
         if not isUsageError then
-            if perfMessages.Count = 0 then
-                failwith "No Performance messages recieved in test!"
             printfn "Performance:"
             for msg in perfMessages do
                 printfn "%s" msg

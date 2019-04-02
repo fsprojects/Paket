@@ -1,5 +1,0 @@
-source http://www.nuget.org/api/v2
-
-external_lock https://gist.githubusercontent.com/fabiocav/8fcccd4d54ec298e3b120cbc1230c02a/raw/76c88167984fc0f8827a333cfb6c08c422b8eadc/azurefunctions-v1-packet.lock
-
-nuget FAKE
