@@ -1,3 +1,6 @@
+#### 5.200.3 - 2019-04-02
+* adding support for multiple target frameworks to the pack command - https://github.com/fsprojects/Paket/pull/3534
+
 #### 5.200.2 - 2019-04-02
 * New setting that shields packages from simplifier - https://github.com/fsprojects/Paket/pull/3523
 
