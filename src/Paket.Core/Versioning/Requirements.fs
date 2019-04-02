@@ -889,8 +889,9 @@ type InstallSettings =
       StorageConfig : PackagesFolderGroupConfig option
       Excludes : string list
       Aliases : Map<string,string>
-      CopyContentToOutputDirectory : CopyToOutputDirectorySettings option 
-      GenerateLoadScripts : bool option }
+      CopyContentToOutputDirectory : CopyToOutputDirectorySettings option
+      GenerateLoadScripts : bool option
+      Simplify : bool option }
 
     static member Default =
         { EmbedInteropTypes = None
@@ -906,8 +907,9 @@ type InstallSettings =
           Excludes = []
           Aliases = Map.empty
           CopyContentToOutputDirectory = None
-          OmitContent = None 
-          GenerateLoadScripts = None }
+          OmitContent = None
+          GenerateLoadScripts = None
+          Simplify = None }
 
     member this.ToString(groupSettings:InstallSettings,asLines) =
         let options =
@@ -958,6 +960,9 @@ type InstallSettings =
               match this.GenerateLoadScripts with
               | Some true when groupSettings.GenerateLoadScripts <> this.GenerateLoadScripts -> yield "generate_load_scripts: true"
               | Some false when groupSettings.GenerateLoadScripts <> this.GenerateLoadScripts  -> yield "generate_load_scripts: false"
+              | _ -> ()
+              match this.Simplify with
+              | Some false -> yield "simplify: false"
               | _ -> () ]
 
         let separator = if asLines then Environment.NewLine else ", "
@@ -1066,6 +1071,10 @@ type InstallSettings =
                 match getPair "generate_load_scripts" with
                 | Some "on"  | Some "true" -> Some true
                 | Some "off" | Some "false" -> Some true
+                | _ -> None
+              Simplify =
+                match getPair "simplify" with
+                | Some "never" | Some "false" -> Some false
                 | _ -> None }
 
         // ignore resolver settings here

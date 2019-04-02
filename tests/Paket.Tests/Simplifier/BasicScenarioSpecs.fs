@@ -19,6 +19,44 @@ let dummyProjectFile () =
       DefaultProperties = None
       CalculatedProperties = new System.Collections.Concurrent.ConcurrentDictionary<_,_>() }
 
+let lockFile0 = """
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    A (1.0)
+      B (1.0)
+      C (1.0)
+    B (1.0)
+    C (1.0)
+    D (1.0)
+      B (1.0)
+      C (1.0)""" |> (fun x -> LockFile.Parse("", toLines x)) |> Some
+
+let depFile0 = """
+source http://www.nuget.org/api/v2
+
+nuget A 1.0
+nuget B
+nuget C 1.0
+nuget D 1.0""" |> DependenciesFile.FromSource
+
+let projects0 = [
+    ReferencesFile.FromLines [|"A";"B";"C";"D"|]
+    ReferencesFile.FromLines [|"B";"C copy_local: true"; "D" |] ] |> List.zip [dummyProjectFile(); dummyProjectFile()]
+
+[<Test>]
+let ``should not remove dependencies with settings or version restrictions``() =
+    let before = PaketEnv.create dummyDir depFile0 lockFile0 projects0
+
+    match Simplifier.simplify false before with
+    | Chessie.ErrorHandling.Bad(msgs) ->
+        failwith (String.concat Environment.NewLine (msgs |> List.map string))
+    | Chessie.ErrorHandling.Ok((_,after),_) ->
+        let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
+        depFile.Groups.[Constants.MainDependencyGroup].Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"C";PackageName"D"]
+        refFiles.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |> shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("D")]
+        refFiles.Tail.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |> shouldEqual [{ PackageInstallSettings.Default("C") with Settings = {PackageInstallSettings.Default("C").Settings with CopyLocal = Some true}}; PackageInstallSettings.Default("D")]
+
 let lockFile1 = """
 NUGET
   remote: https://www.nuget.org/api/v2
@@ -35,10 +73,10 @@ NUGET
 let depFile1 = """
 source http://www.nuget.org/api/v2
 
-nuget A 3.3.0
-nuget B 3.3.1
-nuget C 1.0
-nuget D 2.1""" |> DependenciesFile.FromSource
+nuget A
+nuget B
+nuget C
+nuget D """ |> DependenciesFile.FromSource
 
 let projects1 = [
     ReferencesFile.FromLines [|"A";"B";"C";"D"|]
@@ -76,12 +114,12 @@ NUGET
 let depFile2 = """
 source http://www.nuget.org/api/v2
 
-nuget A 1.0
-nuget B 1.0
-nuget C 1.0
-nuget D 1.0
-nuget E 1.0
-nuget F 1.0""" |> DependenciesFile.FromSource
+nuget A
+nuget B
+nuget C
+nuget D
+nuget E
+nuget F """ |> DependenciesFile.FromSource
 
 let projects2 = [
     ReferencesFile.FromLines [|"A";"B";"C";"D";"F"|]
@@ -102,8 +140,8 @@ let ``should remove all transitive dependencies from dep file recursively``() =
 
         let expected = """source http://www.nuget.org/api/v2
 
-nuget A 1.0
-nuget C 1.0"""
+nuget A
+nuget C"""
 
         depFile.ToString()
         |> shouldEqual (normalizeLineEndings expected)
@@ -144,22 +182,22 @@ NUGET
 let depFile3 = """
 source http://www.nuget.org/api/v2
 
-nuget A 1.0
-nuget B 1.0
-nuget C 1.0
-nuget D 1.0
-nuget E 1.0
-nuget F 1.0
+nuget A
+nuget B
+nuget C
+nuget D
+nuget E
+nuget F
 
 group Deps2
 source http://www.nuget.org/api/v2
 
-nuget A 1.0
-nuget B 1.0
-nuget C 1.0
-nuget D 1.0
-nuget E 1.0
-nuget F 1.0""" |> DependenciesFile.FromSource
+nuget A
+nuget B
+nuget C
+nuget D
+nuget E
+nuget F """ |> DependenciesFile.FromSource
 
 let projects3 = [
     ReferencesFile.FromLines [|"A";"B";"C";"D";"F"|]
@@ -180,14 +218,14 @@ let ``should remove all transitive dependencies from dep file with multiple grou
 
         let expected = """source http://www.nuget.org/api/v2
 
-nuget A 1.0
-nuget C 1.0
+nuget A
+nuget C
 
 group Deps2
 source http://www.nuget.org/api/v2
 
-nuget A 1.0
-nuget C 1.0"""
+nuget A
+nuget C"""
 
         depFile.ToString()
         |> shouldEqual (normalizeLineEndings expected)
@@ -217,12 +255,12 @@ source http://www.nuget.org/api/v2
 group Foo
 source http://www.nuget.org/api/v2
 
-nuget A 1.0
-nuget B 1.0
-nuget C 1.0
-nuget D 1.0
-nuget E 1.0
-nuget F 1.0""" |> DependenciesFile.FromSource
+nuget A
+nuget B
+nuget C
+nuget D
+nuget E
+nuget F """ |> DependenciesFile.FromSource
 
 let projects4 = [
     ReferencesFile.FromLines [|"group Foo";"A";"B";"C";"D";"F"|]
@@ -247,8 +285,8 @@ let ``should remove all transitive dependencies from dep file and ref file with 
 group Foo
 source http://www.nuget.org/api/v2
 
-nuget A 1.0
-nuget C 1.0"""
+nuget A
+nuget C"""
 
         depFile.ToString()
         |> shouldEqual (normalizeLineEndings expected)
