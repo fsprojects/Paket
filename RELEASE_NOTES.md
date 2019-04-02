@@ -1,3 +1,6 @@
+#### 5.200.1 - 2019-04-02
+* BUGFIX: Fixed symlinks on linux - https://github.com/fsprojects/Paket/pull/3372
+
 #### 5.200.0 - 2019-04-02
 * Support for .NET Standard 2.1 and .NET 4.8
 * Removed .NET 5.0 moniker because it was never released
