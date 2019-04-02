@@ -120,8 +120,10 @@ shares:</p>
 <p>Paket supports the source directory to be specified relative to the
 <code>paket.dependencies</code> file as well:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> directory/relative/to/paket.dependencies
+<span class="k">source</span> .    <span class="c">// To use a package in the root of the repository</span>
 </code></pre></td></tr></table>
 <h2><a name="Dependencies" class="anchor" href="#Dependencies">Dependencies</a></h2>
 <p>The dependencies of your project are defined by the <code>nuget &lt;package ID&gt; &lt;version

@@ -94,15 +94,33 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '643', 643)" onmouseover="showTip(event, '643', 643)">
+          <code onmouseout="hideTip(event, '642', 642)" onmouseover="showTip(event, '642', 642)">
             buildSupportMap supportMap p
           </code>
-          <div class="tip" id="643">
+          <div class="tip" id="642">
             <strong>Signature:</strong> supportMap:SupportMap -&gt; p:PortableProfileType -&gt; PortableProfileType list<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1387-1387" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1384-1384" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '643', 643)" onmouseover="showTip(event, '643', 643)">
+            createInitialSupportMap ()
+          </code>
+          <div class="tip" id="643">
+            <strong>Signature:</strong> unit -&gt; ConcurrentDictionary&lt;PortableProfileType,PortableProfileType list&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1426-1426" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -113,14 +131,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '644', 644)" onmouseover="showTip(event, '644', 644)">
-            createInitialSupportMap ()
+            filterMap pos supportMap
           </code>
           <div class="tip" id="644">
-            <strong>Signature:</strong> unit -&gt; ConcurrentDictionary&lt;PortableProfileType,PortableProfileType list&gt;<br />
+            <strong>Signature:</strong> pos:int -&gt; supportMap:SupportMap -&gt; SupportMap<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1429-1429" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1389-1389" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -131,14 +149,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '645', 645)" onmouseover="showTip(event, '645', 645)">
-            filterMap pos supportMap
+            findPortable warn fws
           </code>
           <div class="tip" id="645">
-            <strong>Signature:</strong> pos:int -&gt; supportMap:SupportMap -&gt; SupportMap<br />
+            <strong>Signature:</strong> warn:bool -&gt; fws:FrameworkIdentifier list -&gt; TargetProfile<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1392-1392" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1491-1491" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -149,14 +167,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '646', 646)" onmouseover="showTip(event, '646', 646)">
-            findPortable warn fws
+            getPlatformsSupporting 
           </code>
           <div class="tip" id="646">
-            <strong>Signature:</strong> warn:bool -&gt; fws:FrameworkIdentifier list -&gt; TargetProfile<br />
+            <strong>Signature:</strong> TargetProfile -&gt; Set&lt;TargetProfile&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1495-1495" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1607-1607" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -167,14 +185,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '647', 647)" onmouseover="showTip(event, '647', 647)">
-            getPlatformsSupporting 
+            getSupported portable
           </code>
           <div class="tip" id="647">
-            <strong>Signature:</strong> TargetProfile -&gt; Set&lt;TargetProfile&gt;<br />
+            <strong>Signature:</strong> portable:PortableProfileType -&gt; TargetProfile list<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1611-1611" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1375-1375" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -185,14 +203,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '648', 648)" onmouseover="showTip(event, '648', 648)">
-            getSupported portable
+            getSupportedPlatforms x
           </code>
           <div class="tip" id="648">
-            <strong>Signature:</strong> portable:PortableProfileType -&gt; TargetProfile list<br />
+            <strong>Signature:</strong> x:TargetProfile -&gt; Set&lt;TargetProfile&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1378-1378" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1497-1497" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -203,14 +221,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '649', 649)" onmouseover="showTip(event, '649', 649)">
-            getSupportedPlatforms x
+            getSupportedPlatformsTransitive 
           </code>
           <div class="tip" id="649">
-            <strong>Signature:</strong> x:TargetProfile -&gt; Set&lt;TargetProfile&gt;<br />
+            <strong>Signature:</strong> TargetProfile -&gt; Set&lt;TargetProfile&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1501-1501" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1570-1570" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -221,14 +239,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '650', 650)" onmouseover="showTip(event, '650', 650)">
-            getSupportedPlatformsTransitive 
+            getSupportedPreCalculated p
           </code>
           <div class="tip" id="650">
-            <strong>Signature:</strong> TargetProfile -&gt; Set&lt;TargetProfile&gt;<br />
+            <strong>Signature:</strong> p:PortableProfileType -&gt; PortableProfileType list<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1574-1574" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1441-1441" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -239,32 +257,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '651', 651)" onmouseover="showTip(event, '651', 651)">
-            getSupportedPreCalculated p
-          </code>
-          <div class="tip" id="651">
-            <strong>Signature:</strong> p:PortableProfileType -&gt; PortableProfileType list<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1444-1444" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '652', 652)" onmouseover="showTip(event, '652', 652)">
             isSupportedBy x y
           </code>
-          <div class="tip" id="652">
+          <div class="tip" id="651">
             <strong>Signature:</strong> x:TargetProfile -&gt; y:TargetProfile -&gt; bool<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1596-1596" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1592-1592" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -276,15 +276,33 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '653', 653)" onmouseover="showTip(event, '653', 653)">
+          <code onmouseout="hideTip(event, '652', 652)" onmouseover="showTip(event, '652', 652)">
             isSupportedNotEqual portable other
           </code>
-          <div class="tip" id="653">
+          <div class="tip" id="652">
             <strong>Signature:</strong> portable:PortableProfileType -&gt; other:PortableProfileType -&gt; bool<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1363-1363" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1360-1360" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '653', 653)" onmouseover="showTip(event, '653', 653)">
+            ofSeq s
+          </code>
+          <div class="tip" id="653">
+            <strong>Signature:</strong> s:seq&lt;&#39;?11344 * &#39;?11345&gt; -&gt; ConcurrentDictionary&lt;&#39;?11344,&#39;?11345&gt;<br />
+                          <strong>Type parameters:</strong> '?11344, '?11345          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1382-1382" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -295,14 +313,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '654', 654)" onmouseover="showTip(event, '654', 654)">
-            ofSeq s
+            optimizeSupportMap supportMap
           </code>
           <div class="tip" id="654">
-            <strong>Signature:</strong> s:seq&lt;&#39;?11345 * &#39;?11346&gt; -&gt; ConcurrentDictionary&lt;&#39;?11345,&#39;?11346&gt;<br />
-                          <strong>Type parameters:</strong> '?11345, '?11346          </div>
+            <strong>Signature:</strong> supportMap:SupportMap -&gt; SupportMap<br />
+                      </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1385-1385" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1409-1409" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -313,32 +331,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '655', 655)" onmouseover="showTip(event, '655', 655)">
-            optimizeSupportMap supportMap
-          </code>
-          <div class="tip" id="655">
-            <strong>Signature:</strong> supportMap:SupportMap -&gt; SupportMap<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1412-1412" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '656', 656)" onmouseover="showTip(event, '656', 656)">
             toSeq s
           </code>
-          <div class="tip" id="656">
-            <strong>Signature:</strong> s:seq&lt;KeyValuePair&lt;&#39;?11348,&#39;?11349&gt;&gt; -&gt; seq&lt;&#39;?11348 * &#39;?11349&gt;<br />
-                          <strong>Type parameters:</strong> '?11348, '?11349          </div>
+          <div class="tip" id="655">
+            <strong>Signature:</strong> s:seq&lt;KeyValuePair&lt;&#39;?11347,&#39;?11348&gt;&gt; -&gt; seq&lt;&#39;?11347 * &#39;?11348&gt;<br />
+                          <strong>Type parameters:</strong> '?11347, '?11348          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1386-1386" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1383-1383" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
