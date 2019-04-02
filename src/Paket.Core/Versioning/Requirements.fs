@@ -1257,10 +1257,6 @@ let addFrameworkRestrictionsToDependencies rawDependencies (frameworkGroups:Pars
                             handleProblem (UnknownPortableProfile v)
                         | _ -> ()
                         prof)
-                    |> Seq.filter (fun frameworkGroup -> 
-                        match frameworkGroup with
-                        | TargetProfile.SinglePlatform sp -> KnownTargetProfiles.isSupportedProfile sp
-                        | _ -> true)
                     // TODO: Check if this is needed (I think the logic below is a general version of this subset logic)
                     |> Seq.filter (fun frameworkGroup ->
                         // filter all restrictions which would render this group to nothing (ie smaller restrictions)

@@ -36,4 +36,7 @@ let makeDirectoryLink target source =
     | false, _ ->
         let m = ProcessHelper.toLines r.Messages
         let e = ProcessHelper.toLines r.Errors
-        failwithf "symlink %s -> %s failed with error : [%i] with output : %s%s and error : %s" source target r.ExitCode m Environment.NewLine e
+        if e.Contains "File exists" then
+            sprintf "symlink already there" |> Logging.traceVerbose
+        else
+            failwithf "symlink %s -> %s failed with error : [%i] with output : %s%s and error : %s" source target r.ExitCode m Environment.NewLine e

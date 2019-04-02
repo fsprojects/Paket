@@ -274,26 +274,10 @@ let ``can detect framework assemblies for Microsoft.Framework.Logging``() =
         |> shouldEqual
             (makeOrList
               [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))
-               FrameworkRestriction.Exactly(DNX(FrameworkVersion.V4_5_1))])
+               FrameworkRestriction.Exactly(DotNetCoreApp(DotNetCoreAppVersion.V1_0))])
 
-    let name,_,restrictions = nuspec.Dependencies.Value.[0]
+    let name,_,_restrictions = nuspec.Dependencies.Value.[0]
     name  |> shouldEqual (PackageName "Microsoft.Framework.DependencyInjection.Interfaces")
-    
-    let name,_,restrictions = nuspec.Dependencies.Value.[2]
-    name  |> shouldEqual (PackageName "System.Collections.Concurrent")
-    restrictions |> shouldEqual (makeOrList [FrameworkRestriction.AtLeast(DNXCore(FrameworkVersion.V5_0))])
-
-[<Test>]
-let ``can detect explicit dependencies for FluentAssertions 4``() = 
-    //ensureDir()
-    let deps = Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"FluentAssertions4.nuspec")).Dependencies.Value |> List.toArray
-
-    deps.[0]
-    |> shouldEqual 
-        (PackageName "System.Collections",
-          DependenciesFileParser.parseVersionRequirement(">= 4.0.10"),
-          makeOrList [FrameworkRestriction.AtLeast(DNXCore(FrameworkVersion.V5_0))])
-
 
 
 [<Test>]

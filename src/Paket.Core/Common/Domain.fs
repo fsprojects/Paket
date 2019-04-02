@@ -42,7 +42,7 @@ let PackageName(name:string) =
 
 
 /// Represents a normalized group name
-[<System.Diagnostics.DebuggerDisplay("{Item2}")>]
+[<System.Diagnostics.DebuggerDisplay("{compareString}")>]
 [<CustomEquality; CustomComparison>]
 type GroupName =
    | GroupName of name:string * compareString:string

@@ -46,12 +46,6 @@ let ``#71 should ignore trailing zero during resolve``() =
     |> shouldEqual (SemVer.Parse "6.0.5.0")
 
 [<Test>]
-let ``#83 should resolve jquery``() =
-    let lockFile = update "i000083-resolve-jquery"
-    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "jQuery"].Version
-    |> shouldBeGreaterThan (SemVer.Parse "1.9")
-
-[<Test>]
 let ``#108 should resolve jquery case-insensitive``() =
     let lockFile = update "i000108-case-insensitive-nuget-packages"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "jQuery"].Version
@@ -112,20 +106,6 @@ let ``#1189 should allow # in path``() =
     let lockFile = update "i001189-allow-#-in-path"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "FAKE"].Version
     |> shouldBeGreaterThan (SemVer.Parse "4.7.2")
-
-
-[<Test>]
-let ``#1247 shouldn't load lockfile in full update``() =
-    updateEx true "i001247-lockfile-error" |> ignore
-
-[<Test>]
-let ``#1247 should report lockfile in parse errror``() =
-    try
-        paket "update --keep-minor" "i001247-lockfile-error" |> ignore
-
-        failwith "error was expected"
-    with
-    | exn when exn.Message.Contains "paket.lock" -> ()
 
 [<Test>]
 let ``#1254 should install unlisted transitive dependencies``() =

@@ -223,6 +223,10 @@ repository. People should know about the project's dependencies.
 That said: if you don't agree with that (but please take some time and think
 about it) you can use batch file to change the working directory.
 
+## Can I use a NuGet package stored as a local file?
+
+[Yes](nuget-dependencies.html#Path-sources), either from a local directory, a UNC share or relative to the location of the [`paket.dependencies` file](dependencies-file.html).
+
 ## Can I use Paket to manage npm/bower/whatever dependencies?
 
 [No.](https://github.com/fsprojects/Paket/issues/61) We don't believe in
