@@ -1,9 +1,0 @@
-storage: none
-source ./deps
-source https://www.nuget.org/api/v2
-framework: auto-detect
-
-nuget Hangfire.MySql.Core
-nuget MySqlConnector < 0.30
-nuget paket.conflict.lib
-nuget Moq

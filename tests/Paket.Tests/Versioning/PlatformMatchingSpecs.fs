@@ -29,7 +29,7 @@ let ``Check that lists are updated``() =
         let cases = FSharp.Reflection.FSharpType.GetUnionCases(typeof<'t>)
         checkListEx tagReader cases l
     
-    checkList (FrameworkVersion.V5_0 :: KnownTargetProfiles.DotNetFrameworkVersions) // v5 was unlisted
+    checkList KnownTargetProfiles.DotNetFrameworkVersions
     checkList KnownTargetProfiles.DotNetCoreAppVersions
     checkList KnownTargetProfiles.DotNetStandardVersions
     checkList KnownTargetProfiles.DotNetUnityVersions
@@ -103,11 +103,6 @@ let ``Can detect uap101``() =
     let p = PlatformMatching.forceExtractPlatforms "uap101"
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (UAP UAPVersion.V10_1)))
 
-[<Test>]
-let ``Can detect .NETPlatform5.4``() =
-    let p = PlatformMatching.forceExtractPlatforms ".NETPlatform5.4"
-    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (DNXCore FrameworkVersion.V5_0)))
-
 
 [<Test>]
 let ``Can detect MonoTouch0.00``() =
@@ -143,7 +138,6 @@ let ``Can detect MonoAndroid0.0``() =
 let ``Can detect net3.5``() =
     let p = PlatformMatching.forceExtractPlatforms "net3.5"
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V3_5)))
-
 
 [<Test>]
 let ``Can detect 35``() =

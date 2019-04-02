@@ -18,6 +18,7 @@ type DotNetStandardVersion =
     | V1_5
     | V1_6
     | V2_0
+    | V2_1
     override this.ToString() =
         match this with
         | V1_0 -> "v1.0"
@@ -28,6 +29,7 @@ type DotNetStandardVersion =
         | V1_5 -> "v1.5"
         | V1_6 -> "v1.6"
         | V2_0 -> "v2.0"
+        | V2_1 -> "v2.1"
     member this.ShortString() =
         match this with
         | DotNetStandardVersion.V1_0 -> "1.0"
@@ -38,17 +40,21 @@ type DotNetStandardVersion =
         | DotNetStandardVersion.V1_5 -> "1.5"
         | DotNetStandardVersion.V1_6 -> "1.6"
         | DotNetStandardVersion.V2_0 -> "2.0"
+        | DotNetStandardVersion.V2_1 -> "2.1"
     static member TryParse s =
         match s with
-        | "" | "1" -> Some(DotNetStandardVersion.V1_0)
+        | "" 
+        | "1"   -> Some(DotNetStandardVersion.V1_0)
         | "1.1" -> Some(DotNetStandardVersion.V1_1)
         | "1.2" -> Some(DotNetStandardVersion.V1_2)
         | "1.3" -> Some(DotNetStandardVersion.V1_3)
         | "1.4" -> Some(DotNetStandardVersion.V1_4)
         | "1.5" -> Some(DotNetStandardVersion.V1_5)
         | "1.6" -> Some(DotNetStandardVersion.V1_6)
-        | "2" -> Some(DotNetStandardVersion.V2_0)
+        | "2"   -> Some(DotNetStandardVersion.V2_0)
+        | "2.1" -> Some(DotNetStandardVersion.V2_1)
         | _ -> None
+
 [<RequireQualifiedAccess>]
 /// The Framework version.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
@@ -71,7 +77,7 @@ type FrameworkVersion =
     | V4_7
     | V4_7_1
     | V4_7_2
-    | V5_0
+    | V4_8
     override this.ToString() =
         match this with
         | V1        -> "v1.0"
@@ -92,7 +98,7 @@ type FrameworkVersion =
         | V4_7      -> "v4.7"
         | V4_7_1    -> "v4.7.1"
         | V4_7_2    -> "v4.7.2"
-        | V5_0      -> "v5.0"
+        | V4_8      -> "v4.8"
 
     member this.ShortString() =
         match this with
@@ -114,7 +120,7 @@ type FrameworkVersion =
         | FrameworkVersion.V4_7 -> "47"
         | FrameworkVersion.V4_7_1 -> "471"
         | FrameworkVersion.V4_7_2 -> "472"
-        | FrameworkVersion.V5_0 -> "50"
+        | FrameworkVersion.V4_8 -> "48"
 
     static member TryParse s =
         match s with
@@ -136,7 +142,7 @@ type FrameworkVersion =
         | "4.7" -> Some FrameworkVersion.V4_7
         | "4.7.1" -> Some FrameworkVersion.V4_7_1
         | "4.7.2" -> Some FrameworkVersion.V4_7_2
-        | "5" -> Some FrameworkVersion.V5_0
+        | "4.8" -> Some FrameworkVersion.V4_8
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -509,8 +515,6 @@ type TizenVersion =
 type FrameworkIdentifier =
     | DotNetFramework of FrameworkVersion
     | UAP of UAPVersion
-    | DNX of FrameworkVersion
-    | DNXCore of FrameworkVersion
     | DotNetStandard of DotNetStandardVersion
     | DotNetCoreApp of DotNetCoreAppVersion
     | DotNetUnity of DotNetUnityVersion
@@ -531,8 +535,6 @@ type FrameworkIdentifier =
     override x.ToString() =
         match x with
         | DotNetFramework v -> "net" + v.ShortString()
-        | DNX v -> "dnx" + v.ShortString()
-        | DNXCore v -> "dnxcore" + v.ShortString()
         | DotNetStandard v -> "netstandard" + v.ShortString()
         | DotNetCoreApp v -> "netcoreapp" + v.ShortString()
         | DotNetUnity v -> "net" + v.ShortString()
@@ -623,9 +625,7 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_7 -> [ DotNetFramework FrameworkVersion.V4_6_3]
         | DotNetFramework FrameworkVersion.V4_7_1 -> [ DotNetFramework FrameworkVersion.V4_7; DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetFramework FrameworkVersion.V4_7_2 -> [ DotNetFramework FrameworkVersion.V4_7_1 ]
-        | DotNetFramework FrameworkVersion.V5_0 -> [ DotNetFramework FrameworkVersion.V4_7_2 ]
-        | DNX _ -> [ ]
-        | DNXCore _ -> [ ]
+        | DotNetFramework FrameworkVersion.V4_8 -> [ DotNetFramework FrameworkVersion.V4_7_2 ]
         | DotNetStandard DotNetStandardVersion.V1_0 -> [  ]
         | DotNetStandard DotNetStandardVersion.V1_1 -> [ DotNetStandard DotNetStandardVersion.V1_0 ]
         | DotNetStandard DotNetStandardVersion.V1_2 -> [ DotNetStandard DotNetStandardVersion.V1_1 ]
@@ -634,12 +634,13 @@ type FrameworkIdentifier =
         | DotNetStandard DotNetStandardVersion.V1_5 -> [ DotNetStandard DotNetStandardVersion.V1_4 ]
         | DotNetStandard DotNetStandardVersion.V1_6 -> [ DotNetStandard DotNetStandardVersion.V1_5 ]
         | DotNetStandard DotNetStandardVersion.V2_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | DotNetStandard DotNetStandardVersion.V2_1 -> [ DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetCoreApp DotNetCoreAppVersion.V1_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | DotNetCoreApp DotNetCoreAppVersion.V1_1 -> [ DotNetCoreApp DotNetCoreAppVersion.V1_0 ]
         | DotNetCoreApp DotNetCoreAppVersion.V2_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V1_1; DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetCoreApp DotNetCoreAppVersion.V2_1 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_0 ]
         | DotNetCoreApp DotNetCoreAppVersion.V2_2 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_1 ]
-        | DotNetCoreApp DotNetCoreAppVersion.V3_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_2 ]
+        | DotNetCoreApp DotNetCoreAppVersion.V3_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_2; DotNetStandard DotNetStandardVersion.V2_1 ]
         | DotNetUnity DotNetUnityVersion.V3_5_Full -> [ ]
         | DotNetUnity DotNetUnityVersion.V3_5_Subset -> [ ]
         | DotNetUnity DotNetUnityVersion.V3_5_Micro -> [ ]
@@ -793,13 +794,14 @@ module FrameworkDetection =
                 | "sl4-wp75" | "sl4-wp7.5" -> Some (WindowsPhone WindowsPhoneVersion.V7_5)
                 | MatchTfms ["wp";"wpv"] (Bind WindowsPhoneVersion.TryParse) fm -> Some (WindowsPhone fm)
                 | MatchTfms ["wpa";"wpav";"wpapp"] (Bind WindowsPhoneAppVersion.TryParse) fm -> Some (WindowsPhoneApp fm)
-                | MatchTfm "dnx" (allowVersions ["";"4.5.1"]) () -> Some(DNX FrameworkVersion.V4_5_1)
-                | MatchTfms ["dnxcore";"netplatform";"netcore";"aspnetcore";"aspnet";"dotnet"] (Bind (allowVersions ["";"5"]))
-                    () -> Some(DNXCore FrameworkVersion.V5_0)
-                | v when v.StartsWith "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
                 | MatchTfm "netstandard" DotNetStandardVersion.TryParse fm -> Some (DotNetStandard fm)
                 // "netcore" is for backwards compat (2017-08-20), we wrote this incorrectly into the lockfile.
                 | MatchTfms ["netcoreapp";"netcore"] (Bind DotNetCoreAppVersion.TryParse) fm -> Some (DotNetCoreApp fm)
+                // "dnxcore" and "dotnet" is for backwards compat (2019-03-26), we wrote this into the lockfile.
+                | MatchTfm "dnx" (allowVersions ["";"4.5.1"]) () -> Some (DotNetCoreApp DotNetCoreAppVersion.V1_0)
+                | MatchTfms ["dnxcore";"netplatform";"netcore";"aspnetcore";"aspnet";"dotnet"] (Bind (allowVersions ["";"5"]))
+                    () -> Some (DotNetCoreApp DotNetCoreAppVersion.V1_0)
+                | v when v.StartsWith "dotnet" -> Some (DotNetCoreApp DotNetCoreAppVersion.V1_0)
                 | MatchTfm "tizen" TizenVersion.TryParse fm -> Some (Tizen fm)
                 // Default is full framework, for example "35"
                 | MatchTfm "" FrameworkVersion.TryParse fm -> Some (DotNetFramework fm)
@@ -1126,6 +1128,7 @@ module KnownTargetProfiles =
         FrameworkVersion.V4_7
         FrameworkVersion.V4_7_1
         FrameworkVersion.V4_7_2
+        FrameworkVersion.V4_8
     ]
 
     let DotNetFrameworkIdentifiers =
@@ -1145,6 +1148,7 @@ module KnownTargetProfiles =
         DotNetStandardVersion.V1_5
         DotNetStandardVersion.V1_6
         DotNetStandardVersion.V2_0
+        DotNetStandardVersion.V2_1
     ]
 
     let DotNetStandardProfiles =
@@ -1339,13 +1343,6 @@ module KnownTargetProfiles =
           AllDotNetProfiles
         |> Set.ofList
 
-    let isSupportedProfile profile =
-        match profile with
-        | FrameworkIdentifier.DNX _
-        | FrameworkIdentifier.DNXCore _
-        | FrameworkIdentifier.DotNetFramework (FrameworkVersion.V5_0) -> false
-        | _ -> true
-
     let TryFindPortableProfile (name:string) =
         let lowerName = name.ToLowerInvariant()
         AllProfiles
@@ -1446,7 +1443,7 @@ module SupportCalculation =
         | true, v -> v
         | _ ->
             match p with
-            | UnsupportedProfile tfs ->
+            | UnsupportedProfile _ ->
                 match getSupportMap().TryGetValue p with
                 | true, v -> v
                 | _ ->
@@ -1466,15 +1463,14 @@ module SupportCalculation =
                 fws
                 |> List.filter (function
                     | MonoTouch
-                    | DNXCore _
                     | UAP _
                     | MonoAndroid _
                     | XamariniOS
                     | XamarinTV
                     | XamarinWatch
-                    | XamarinMac -> false
                     | DotNetCoreApp _
                     | DotNetStandard _
+                    | XamarinMac -> false
                     | Tizen _ -> failwithf "Unexpected framework while trying to resolve PCL Profile"
                     | _ -> true)
             if minimal.Length > 0 then

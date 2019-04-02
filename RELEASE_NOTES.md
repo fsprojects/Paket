@@ -1,3 +1,8 @@
+#### 5.200.0 - 2019-04-02
+* Support for .NET Standard 2.1 and .NET 4.8
+* Removed .NET 5.0 moniker because it was never released
+* Removed the old temporary monikers for dnxcore and dnx
+
 #### 5.198.0 - 2019-02-22
 * PERFORMANCE: Speedup for paket restore - https://github.com/fsprojects/Paket/pull/3512
 * BUGFIX: Do not run in StackOverflow during ReleaseLock
