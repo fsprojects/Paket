@@ -19,7 +19,9 @@ type PackageInstallSettings =
         { Name = PackageName name
           Settings = InstallSettings.Default }
 
-type InstallGroup = 
+    member this.HasPackageSettings = String.IsNullOrWhiteSpace (sprintf "%O" this.Settings) |> not
+
+type InstallGroup =
     { Name : GroupName
       NugetPackages : PackageInstallSettings list
       RemoteFiles : RemoteFileReference list }

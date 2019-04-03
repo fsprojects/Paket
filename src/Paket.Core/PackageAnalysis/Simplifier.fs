@@ -18,8 +18,8 @@ let private findTransitive (groupName, packages, flatLookup, nameF, failureF) =
     |> lift Seq.distinct
     |> lift Seq.concat
 
-let private removePackage(packageName, packageSettings, transitivePackages, fileName, interactive) =
-    if transitivePackages |> Seq.exists (fun p -> p = packageName) && String.IsNullOrWhiteSpace packageSettings then
+let private removePackage(packageName, hasPackageSettings, transitivePackages, fileName, interactive) =
+    if transitivePackages |> Seq.exists (fun p -> p = packageName) && not(hasPackageSettings) then
         if interactive then
             let message = sprintf "Do you want to remove transitive dependency %O from file %s?" packageName fileName 
             Utils.askYesNo(message)
@@ -35,7 +35,7 @@ let simplifyDependenciesFile (dependenciesFile : DependenciesFile, groupName, fl
     return
         packages |> List.filter(fun p -> p.Kind = Requirements.PackageRequirementKind.Package)
         |> List.fold  (fun (d:DependenciesFile) package ->
-                if removePackage(package.Name, (sprintf "%O %O" package.Settings package.VersionRequirement), transitive, dependenciesFile.FileName, interactive) then
+                if removePackage(package.Name, package.HasPackageSettings, transitive, dependenciesFile.FileName, interactive) then
                     d.Remove(groupName,package.Name)
                 else d) dependenciesFile
 }
@@ -50,7 +50,7 @@ let simplifyReferencesFile (refFile:ReferencesFile, groupName, flatLookup, inter
 
         let newPackages =
             g.NugetPackages
-            |> List.filter (fun p -> not (removePackage(p.Name, (sprintf "%O" p.Settings), transitive, refFile.FileName, interactive)))
+            |> List.filter (fun p -> not (removePackage(p.Name, p.HasPackageSettings, transitive, refFile.FileName, interactive)))
 
         let newGroups = refFile.Groups |> Map.add groupName {g with NugetPackages = newPackages }
 

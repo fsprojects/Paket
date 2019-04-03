@@ -1176,7 +1176,11 @@ type PackageRequirement =
 
     member this.Depth = this.Graph.Count
 
-    static member Compare(x,y,startWithPackage:PackageFilter option,boostX,boostY) =        
+    member this.SettingString = (sprintf "%O %s %s %O %s" this.VersionRequirement (if this.ResolverStrategyForTransitives.IsSome then (sprintf "%O" this.ResolverStrategyForTransitives) else "") (if this.ResolverStrategyForDirectDependencies.IsSome then (sprintf "%O" this.ResolverStrategyForDirectDependencies) else "") this.Settings (if this.TransitivePrereleases then "TransitivePrereleases-true" else ""))
+
+    member this.HasPackageSettings = String.IsNullOrWhiteSpace this.SettingString |> not
+
+    static member Compare(x,y,startWithPackage:PackageFilter option,boostX,boostY) =
         if obj.ReferenceEquals(x, y) then 0 else
         let c = compare
                   (not x.VersionRequirement.Range.IsGlobalOverride,x.Depth)
