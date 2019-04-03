@@ -1,5 +1,8 @@
+#### 5.200.4 - 2019-04-03
+* BUGFIX: Always try and extract Paket.Restore.targets even if up to date - https://github.com/fsprojects/Paket/pull/3524
+
 #### 5.200.3 - 2019-04-02
-* adding support for multiple target frameworks to the pack command - https://github.com/fsprojects/Paket/pull/3534
+* Adding support for multiple target frameworks to the pack command - https://github.com/fsprojects/Paket/pull/3534
 
 #### 5.200.2 - 2019-04-02
 * New setting that shields packages from simplifier - https://github.com/fsprojects/Paket/pull/3523
