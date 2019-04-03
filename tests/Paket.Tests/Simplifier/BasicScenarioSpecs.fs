@@ -26,11 +26,15 @@ NUGET
     A (1.0)
       B (1.0)
       C (1.0)
+      E (1.0)
+      F (1.0)
     B (1.0)
     C (1.0)
     D (1.0)
       B (1.0)
-      C (1.0)""" |> (fun x -> LockFile.Parse("", toLines x)) |> Some
+      C (1.0)
+    E (1.0)
+    F (1.0)""" |> (fun x -> LockFile.Parse("", toLines x)) |> Some
 
 let depFile0 = """
 source http://www.nuget.org/api/v2
@@ -38,10 +42,12 @@ source http://www.nuget.org/api/v2
 nuget A 1.0
 nuget B
 nuget C 1.0
-nuget D 1.0""" |> DependenciesFile.FromSource
+nuget D 1.0
+nuget E prerelease
+nuget F simplify:never""" |> DependenciesFile.FromSource
 
 let projects0 = [
-    ReferencesFile.FromLines [|"A";"B";"C";"D"|]
+    ReferencesFile.FromLines [|"A";"B";"C";"D";"E";"F"|]
     ReferencesFile.FromLines [|"B";"C copy_local: true"; "D" |] ] |> List.zip [dummyProjectFile(); dummyProjectFile()]
 
 [<Test>]
@@ -53,7 +59,7 @@ let ``should not remove dependencies with settings or version restrictions``() =
         failwith (String.concat Environment.NewLine (msgs |> List.map string))
     | Chessie.ErrorHandling.Ok((_,after),_) ->
         let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
-        depFile.Groups.[Constants.MainDependencyGroup].Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"C";PackageName"D"]
+        depFile.Groups.[Constants.MainDependencyGroup].Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"C";PackageName"D";PackageName"E";PackageName"F"]
         refFiles.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |> shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("D")]
         refFiles.Tail.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |> shouldEqual [{ PackageInstallSettings.Default("C") with Settings = {PackageInstallSettings.Default("C").Settings with CopyLocal = Some true}}; PackageInstallSettings.Default("D")]
 
