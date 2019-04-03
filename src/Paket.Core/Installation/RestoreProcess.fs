@@ -238,9 +238,10 @@ let extractRestoreTargets root =
     if !copiedElements then
         Path.Combine(root,".paket","Paket.Restore.targets")
     else
-        let result = extractElement root "Paket.Restore.targets"
+        let (fileWritten, path) = extractElement root "Paket.Restore.targets"
         copiedElements := true
-        result |> snd
+        if fileWritten then tracefn "Extracted Paket.Restore.targets to: %s" path
+        path
 
 let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package) =
     async {
@@ -600,12 +601,12 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                       |> returnOrFail)
             lazy LocalFile.overrideLockFile localFile.Value lockFile.Value,localFile,true
 
+    if projectFile = None then
+        extractRestoreTargets root |> ignore
+
     if not (hasLocalFile || force) && isEarlyExit (File.ReadAllText lockFileName.FullName) then
         tracefn "The last restore is still up to date. Nothing left to do."
     else
-        if projectFile = None then
-            extractRestoreTargets root |> ignore
-
         let targetFilter = 
             targetFrameworks
             |> Option.map (fun s -> 
