@@ -1,16 +1,9 @@
-#### 5.200.5 - 2019-04-08
+#### 5.201.0 - 2019-04-08
+* Adapt PackTask to breaking changes in MSBuild 16 - https://github.com/fsprojects/Paket/pull/3542
 * BUGFIX: Simplify Fix Extra Settings - https://github.com/fsprojects/Paket/pull/3538
-
-#### 5.200.4 - 2019-04-03
 * BUGFIX: Always try and extract Paket.Restore.targets even if up to date - https://github.com/fsprojects/Paket/pull/3524
-
-#### 5.200.3 - 2019-04-02
 * Adding support for multiple target frameworks to the pack command - https://github.com/fsprojects/Paket/pull/3534
-
-#### 5.200.2 - 2019-04-02
 * New setting that shields packages from simplifier - https://github.com/fsprojects/Paket/pull/3523
-
-#### 5.200.1 - 2019-04-02
 * BUGFIX: Fixed symlinks on linux - https://github.com/fsprojects/Paket/pull/3372
 
 #### 5.200.0 - 2019-04-02
