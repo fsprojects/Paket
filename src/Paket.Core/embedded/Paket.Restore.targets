@@ -245,7 +245,7 @@
       <UseMSBuild15_8_Pack>false</UseMSBuild15_8_Pack>
       <UseMSBuild15_8_Pack Condition=" '$(NuGetToolVersion)' != '4.0.0' AND (! $(UseMSBuild15_9_Pack)) AND (! $(UseMSBuild16_0_Pack)) ">true</UseMSBuild15_8_Pack>
       <UseNuGet4_Pack>false</UseNuGet4_Pack>
-      <UseNuGet4_Pack Condition=" (! $(UseMSBuild15_8_Pack)) AND (! $(UseMSBuild15_9_Pack)) ">true</UseNuGet4_Pack>
+      <UseNuGet4_Pack Condition=" (! $(UseMSBuild15_8_Pack)) AND (! $(UseMSBuild15_9_Pack)) AND (! $(UseMSBuild16_0_Pack)) ">true</UseNuGet4_Pack>
       <AdjustedNuspecOutputPath>$(BaseIntermediateOutputPath)$(Configuration)</AdjustedNuspecOutputPath>
       <AdjustedNuspecOutputPath Condition="@(_NuspecFilesNewLocation) == ''">$(BaseIntermediateOutputPath)</AdjustedNuspecOutputPath>
     </PropertyGroup>
