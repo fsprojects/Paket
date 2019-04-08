@@ -1,3 +1,6 @@
+#### 5.200.5 - 2019-04-08
+* BUGFIX: Simplify Fix Extra Settings - https://github.com/fsprojects/Paket/pull/3538
+
 #### 5.200.4 - 2019-04-03
 * BUGFIX: Always try and extract Paket.Restore.targets even if up to date - https://github.com/fsprojects/Paket/pull/3524
 
