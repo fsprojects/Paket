@@ -210,12 +210,14 @@ let private handleODataEntry nugetURL packageName version entry =
         |> Seq.map (fun (_,_,pp) -> pp)
         |> Seq.distinctBy (fun pp -> pp.Platforms |> List.sort)
         |> Seq.toList
+
     let cleanedPackages =
         rawPackages
         |> Seq.filter (fun (n,_,_) -> System.String.IsNullOrEmpty (n.ToString()) |> not)
         |> Seq.toList
-    let dependencies, warnings =
-        addFrameworkRestrictionsToDependencies cleanedPackages frameworks
+
+    let dependencies, warnings = addFrameworkRestrictionsToDependencies cleanedPackages frameworks
+
     for warning in warnings do
         let message = warning.Format officialName version
         Logging.traceWarnIfNotBefore message "%s" message
