@@ -1,4 +1,7 @@
-#### 5.201.4 - 2019-04-10
+#### 5.202.0-alpha001 - 2019-04-10
+* EMERGENCY-RELEASE
+
+#### 5.201.1 - 2019-04-10
 * Adapt PackTask to breaking changes in MSBuild 16 - https://github.com/fsprojects/Paket/pull/3542
 * BUGFIX: Simplify Fix Extra Settings - https://github.com/fsprojects/Paket/pull/3538
 * BUGFIX: Always try and extract Paket.Restore.targets even if up to date - https://github.com/fsprojects/Paket/pull/3524
