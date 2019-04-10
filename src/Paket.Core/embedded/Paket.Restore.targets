@@ -66,7 +66,7 @@
     <!-- Disable Paket restore under NCrunch build -->
     <PaketRestoreDisabled Condition="'$(NCrunch)' == '1'">True</PaketRestoreDisabled>
 
-    <PaketIntermediateOutputPath Condition=" '$(PaketIntermediateOutputPath)' == '' ">"$(BaseIntermediateOutputPath.TrimEnd('\').TrimEnd('\/'))"</PaketIntermediateOutputPath>
+    <PaketIntermediateOutputPath Condition=" '$(PaketIntermediateOutputPath)' == '' ">$(BaseIntermediateOutputPath.TrimEnd('\').TrimEnd('\/'))</PaketIntermediateOutputPath>
   </PropertyGroup>
 
   <Target Name="PaketBootstrapping" Condition="Exists('$(PaketToolsPath)paket.bootstrapper.proj')">
