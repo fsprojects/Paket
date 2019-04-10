@@ -249,7 +249,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
 
         public string ItHasFilename(string filename)
         {
-            return It.IsRegex(string.Format(@"\w*[\\/]{0}",filename));
+            return It.IsRegex($@"\w*[\\/]{filename}");
         }
 
         [Test]
