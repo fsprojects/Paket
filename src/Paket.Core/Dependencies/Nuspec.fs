@@ -52,7 +52,6 @@ module internal NuSpecParserHelper =
         | Some name, Some targetFrameworks ->
             targetFrameworks.Split([|','; ' '|],System.StringSplitOptions.RemoveEmptyEntries)
             |> Array.choose FrameworkDetection.Extract
-            |> Array.filter (fun x -> match x with Unsupported _ -> false | _ -> true)
             |> Array.map (fun fw -> 
                 { AssemblyName = name
                   FrameworkRestrictions = ExplicitRestriction (FrameworkRestriction.Exactly fw) })
@@ -75,7 +74,7 @@ type Nuspec =
     static member private Load(fileName:string, doc:XmlDocument) =
         let frameworks =
             doc 
-            |> getDescendants "group"
+            |> getDescendants "group" 
             |> List.choose (fun node ->
                 match node |> getAttribute "targetFramework" with
                 | Some framework ->

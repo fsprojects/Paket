@@ -637,6 +637,8 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
         else
             problems.Add p
 
+    let extractFw = FrameworkDetection.Extract
+
     let extractProfile framework =
         PlatformMatching.extractPlatforms false framework |> Option.bind (fun pp ->
             let prof = pp.ToTargetProfile false
@@ -681,13 +683,13 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
                     match fw2 with
                     | None ->
                         let handlers =
-                            [ FrameworkDetection.Extract >> Option.map FrameworkRestriction.AtLeast
+                            [ extractFw >> Option.map FrameworkRestriction.AtLeast
                               extractProfile >> Option.map FrameworkRestriction.AtLeastPlatform ]
 
                         tryParseFramework handlers fw1
 
                     | Some fw2 ->
-                        let tryParse = tryParseFramework [FrameworkDetection.Extract]
+                        let tryParse = tryParseFramework [extractFw]
 
                         match tryParse fw1, tryParse fw2 with
                         | Some x, Some y -> Some (FrameworkRestriction.Between (x, y))
@@ -699,7 +701,7 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
                 let fw, remaining = frameworkToken (x.Substring 1)
 
                 let handlers =
-                    [ FrameworkDetection.Extract >> Option.map FrameworkRestriction.Exactly ]
+                    [ extractFw >> Option.map FrameworkRestriction.Exactly ]
 
                 tryParseFramework handlers fw, remaining
 
@@ -708,7 +710,7 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
                 let fw, remaining = frameworkToken (x.Substring 2)
 
                 let handlers =
-                    [ FrameworkDetection.Extract >> Option.map FrameworkRestriction.Exactly ]
+                    [ extractFw >> Option.map FrameworkRestriction.Exactly ]
 
                 tryParseFramework handlers fw, remaining
 
@@ -716,7 +718,7 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
                 let fw, remaining = frameworkToken x
 
                 let handlers =
-                    [ FrameworkDetection.Extract >> Option.map FrameworkRestriction.Exactly
+                    [ extractFw >> Option.map FrameworkRestriction.Exactly
                       extractProfile >> Option.map FrameworkRestriction.AtLeastPlatform ]
 
                 tryParseFramework handlers fw, remaining
@@ -773,24 +775,12 @@ let private parseRestrictionsRaw skipSimplify (text:string) =
                 else idx
             let rawOperator = restTrimmed.Substring(0, endOperator)
             let operator = rawOperator.TrimEnd([|')'|])
-
-            let extractedPlatform = PlatformMatching.extractPlatforms false operator
-            let platFormPath =
-                extractedPlatform
-                |> Option.bind (fun (pp:PlatformMatching.ParsedPlatformPath) ->
-                    let prof = pp.ToTargetProfile false
-                    if prof.IsSome && prof.Value.IsUnsupportedPortable then
-                        handleError (RestrictionParseProblem.UnsupportedPortable operator)
-                    prof)
-
-            match platFormPath with
-            | None -> 
-                match extractedPlatform with
-                | Some pp when pp.Platforms = [] ->
-                    let operatorIndex = text.IndexOf operator
-                    FrameworkRestriction.NoRestriction, text.Substring(operatorIndex + operator.Length)
-                | _ ->
-                    failwithf "invalid parameter '%s' after >= or < in '%s'" operator text
+            match PlatformMatching.extractPlatforms false operator |> Option.bind (fun (pp:PlatformMatching.ParsedPlatformPath) ->
+                let prof = pp.ToTargetProfile false
+                if prof.IsSome && prof.Value.IsUnsupportedPortable then
+                    handleError (RestrictionParseProblem.UnsupportedPortable operator)
+                prof) with
+            | None -> failwithf "invalid parameter '%s' after >= or < in '%s'" operator text
             | Some plat ->
                 let f =
                     if isSmaller then FrameworkRestriction.NotAtLeastPlatform
@@ -1271,10 +1261,6 @@ let addFrameworkRestrictionsToDependencies rawDependencies (frameworkGroups:Pars
                             handleProblem (UnknownPortableProfile v)
                         | _ -> ()
                         prof)
-                    |> Seq.filter (fun frameworkGroup -> 
-                        match frameworkGroup with
-                        | TargetProfile.SinglePlatform sp -> KnownTargetProfiles.isSupportedProfile sp
-                        | _ -> true)
                     // TODO: Check if this is needed (I think the logic below is a general version of this subset logic)
                     |> Seq.filter (fun frameworkGroup ->
                         // filter all restrictions which would render this group to nothing (ie smaller restrictions)

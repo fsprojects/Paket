@@ -612,8 +612,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             |> Option.map (fun s -> 
                 s.Split([|';'|], StringSplitOptions.RemoveEmptyEntries)
                 |> Array.map (fun s -> s.Trim())
-                |> Array.choose FrameworkDetection.Extract
-                |> Array.filter (fun x -> match x with Unsupported _ -> false | _ -> true))
+                |> Array.choose FrameworkDetection.Extract)
         
         
         let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)

@@ -883,8 +883,8 @@ let getPackageDetails (source:NuGetV3Source) (packageName:PackageName) (version:
             else
                 false
 
-        let optimized, warnings = addFrameworkRestrictionsToDependencies dependencies dependencyGroups
-
+        let optimized, warnings =
+            addFrameworkRestrictionsToDependencies dependencies dependencyGroups
         for warning in warnings do
             let message = warning.Format packageName version
             Logging.traceWarnIfNotBefore message "%s" message
