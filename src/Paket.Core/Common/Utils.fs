@@ -521,11 +521,11 @@ let RunInLockedAccessMode(lockedFolder,action) =
 module String =
 
     /// Match if 'text' starts with the 'prefix' string case
-    let (|StartsWith|_|) prefix (input: string) =
+    let (|StartsWith|_|) (prefix: string) (input: string) =
         if input.StartsWith prefix then Some () else None
 
     /// Match if 'text' starts with the 'prefix' and return the text with the prefix removed
-    let (|RemovePrefix|_|) prefix (input: string) =
+    let (|RemovePrefix|_|) (prefix: string) (input: string) =
         if input.StartsWith prefix then Some (input.Substring prefix.Length)
         else None
 
@@ -575,8 +575,8 @@ module String =
     let quoted (text:string) = (if text.Contains(" ") then "\"" + text + "\"" else text)
 
     let inline trim (text:string) = text.Trim()
-    let inline trimChars chs (text:string) = text.Trim chs
-    let inline trimStart pre (text:string) = text.TrimStart pre
+    let inline trimChars (chs: char[]) (text:string) = text.Trim chs
+    let inline trimStart (pre: char[]) (text:string) = text.TrimStart pre
     let inline split sep (text:string) = text.Split sep
 
 // MonadPlus - "or else"

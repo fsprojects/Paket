@@ -628,7 +628,7 @@ module LockFileParser =
 type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
     let fileName = if isNull fileName then String.Empty else fileName
     
-    let tryFindRemoteFile (remoteFiles:ResolvedSourceFile list) name =
+    let tryFindRemoteFile (remoteFiles:ResolvedSourceFile list) (name: string) =
         remoteFiles |> List.tryFind (fun x -> x.Name.EndsWith(name))
     let findRemoteFile referencesFile remoteFiles name =
         match tryFindRemoteFile remoteFiles name with

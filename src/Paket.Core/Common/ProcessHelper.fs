@@ -208,7 +208,7 @@ let ExecProcessAndReturnMessages configProcessStartInfoF timeOut =
     ProcessResult.New exitCode messages errors
 
 /// Converts a sequence of strings to a string with delimiters
-let inline separated delimiter (items : string seq) = String.Join(delimiter, Array.ofSeq items)
+let inline separated (delimiter: string) (items : string seq) = String.Join(delimiter, Array.ofSeq items)
 
 /// Converts a sequence of strings into a string separated with line ends
 let inline toLines text = separated Environment.NewLine text

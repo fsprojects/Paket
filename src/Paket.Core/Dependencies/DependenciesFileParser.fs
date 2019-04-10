@@ -27,7 +27,7 @@ module DependenciesFileParser =
         | NoStrategy -> None
 
     let twiddle (minimum:SemVerInfo) =
-        let inline isNumeric item = 
+        let inline isNumeric (item: string) =
             match BigInteger.TryParse item with
             | true, number -> Some(number)
             | false, _ -> None

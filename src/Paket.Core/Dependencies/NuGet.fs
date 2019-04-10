@@ -60,7 +60,7 @@ module NuGetContent =
         | NuGetDirectory (name, contents) -> NuGetDirectory(f name, contents)
         | NuGetFile name -> NuGetFile (f name)
 
-let inline ofGivenList rootName directories files =
+let inline ofGivenList rootName (directories: string seq) (files: string seq) =
     let folders = System.Collections.Generic.Dictionary<_,NuGetContent list>()
     let l = obj()
     let inline getCurrent n = match folders.TryGetValue n with | true, l -> l | _ -> []
@@ -792,7 +792,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
             CleanDir p
         | _ -> ()
 
-    let ensureDir fileName =
+    let ensureDir (fileName: string) =
         let parent = Path.GetDirectoryName fileName
         if not (Directory.Exists parent) then Directory.CreateDirectory parent |> ignore
 

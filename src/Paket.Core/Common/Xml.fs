@@ -36,7 +36,7 @@ let inline withAttributeValue attributeName valueText node =
 
 
 /// [omit]
-let inline withAttributeValueEndsWith attributeName valueText node =
+let inline withAttributeValueEndsWith attributeName (valueText: string) node =
     match getAttribute attributeName node with
     | Some text when text.EndsWith valueText -> true
     | _ -> false
