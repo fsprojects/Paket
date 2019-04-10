@@ -1,3 +1,6 @@
+#### 5.201.3 - 2019-04-10
+* REVERT: DNXCore "fixes"
+
 #### 5.201.2 - 2019-04-10
 * Adapt PackTask to breaking changes in MSBuild 16 - https://github.com/fsprojects/Paket/pull/3542
 * BUGFIX: Simplify Fix Extra Settings - https://github.com/fsprojects/Paket/pull/3538
