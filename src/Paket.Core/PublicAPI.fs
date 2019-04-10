@@ -904,6 +904,7 @@ module PublicAPI =
                         | XamarinMac 
                         | DotNetCoreApp _
                         | DotNetStandard _
+                        | Unsupported _
                         | Tizen _ -> false
                         | _ -> true)
                 if fws.Length > 0 then SupportCalculation.findPortable false fws |> ignore)

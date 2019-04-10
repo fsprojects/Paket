@@ -304,7 +304,8 @@ module ScriptGeneration =
             // specified frameworks are never considered default
             let targetFrameworkList = 
                 providedFrameworks 
-                |> List.choose FrameworkDetection.Extract 
+                |> List.choose FrameworkDetection.Extract
+                |> List.filter (fun x -> match x with Unsupported _ -> false | _ -> true)
                 |> List.map (fun f -> f, false)
 
             failOnMismatch providedFrameworks targetFrameworkList FrameworkDetection.Extract "Unrecognized Framework(s)"

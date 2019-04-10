@@ -531,6 +531,7 @@ type FrameworkIdentifier =
     | WindowsPhoneApp of WindowsPhoneAppVersion
     | Silverlight of SilverlightVersion
     | Tizen of TizenVersion
+    | Unsupported of string
 
     override x.ToString() =
         match x with
@@ -553,6 +554,7 @@ type FrameworkIdentifier =
         | WindowsPhoneApp v -> "wpa" + v.ShortString()
         | Silverlight v -> "sl" + v.ShortString()
         | Tizen v -> "tizen" + v.ShortString()
+        | Unsupported s -> failwithf "Framework \"%s\" is unsupported" s
 
 
     member internal x.RawSupportedPlatformsTransitive =
@@ -659,6 +661,7 @@ type FrameworkIdentifier =
         | WindowsPhone WindowsPhoneVersion.V8_1 -> [ WindowsPhone WindowsPhoneVersion.V8 ]
         | Tizen TizenVersion.V3 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Tizen TizenVersion.V4 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | Unsupported _ -> []
 
 module FrameworkDetection =
 
@@ -798,10 +801,10 @@ module FrameworkDetection =
                 // "netcore" is for backwards compat (2017-08-20), we wrote this incorrectly into the lockfile.
                 | MatchTfms ["netcoreapp";"netcore"] (Bind DotNetCoreAppVersion.TryParse) fm -> Some (DotNetCoreApp fm)
                 // "dnxcore" and "dotnet" is for backwards compat (2019-03-26), we wrote this into the lockfile.
-                | MatchTfm "dnx" (allowVersions ["";"4.5.1"]) () -> Some (DotNetCoreApp DotNetCoreAppVersion.V1_0)
+                | MatchTfm "dnx" (allowVersions ["";"4.5.1"]) () -> Some (Unsupported path)
                 | MatchTfms ["dnxcore";"netplatform";"netcore";"aspnetcore";"aspnet";"dotnet"] (Bind (allowVersions ["";"5"]))
-                    () -> Some (DotNetCoreApp DotNetCoreAppVersion.V1_0)
-                | v when v.StartsWith "dotnet" -> Some (DotNetCoreApp DotNetCoreAppVersion.V1_0)
+                    () -> Some (Unsupported path)
+                | v when v.StartsWith "dotnet" -> Some (Unsupported path)
                 | MatchTfm "tizen" TizenVersion.TryParse fm -> Some (Tizen fm)
                 // Default is full framework, for example "35"
                 | MatchTfm "" FrameworkVersion.TryParse fm -> Some (DotNetFramework fm)
@@ -1058,21 +1061,25 @@ type PortableProfileType =
         | Profile328 -> "portable-net40+sl5+win8+wp8+wpa81"
         | Profile336 -> "portable-net403+sl5+win8+wp8+wpa81"
         | Profile344 -> "portable-net45+sl5+win8+wp8+wpa81"
-        | UnsupportedProfile fws ->
+        | UnsupportedProfile _ ->
             "portable-" +
             String.Join ("+",
                 x.Frameworks
                 |> List.sort
                 |> List.map (fun fw -> fw.ToString()))
+
 type TargetProfileRaw =
     | SinglePlatformP of FrameworkIdentifier
     | PortableProfileP of PortableProfileType
+
     override this.ToString() =
         match this with
         | SinglePlatformP x -> x.ToString()
         | PortableProfileP p -> p.FolderName
+
     member x.IsUnsupportedPortable =
         match x with
+        | SinglePlatformP (Unsupported _ ) -> true
         | PortableProfileP p -> p.IsUnsupprted
         | _ -> false
 
@@ -1337,6 +1344,11 @@ module KnownTargetProfiles =
           Native(Release,X64)
           Native(Release,Arm)]
 
+    let isSupportedProfile profile =
+        match profile with
+        | FrameworkIdentifier.Unsupported _ -> false
+        | _ -> true
+
     let AllProfiles =
         (AllNativeProfiles |> List.map TargetProfile.SinglePlatform) @
           AllDotNetStandardAndCoreProfiles @
@@ -1470,6 +1482,7 @@ module SupportCalculation =
                     | XamarinWatch
                     | DotNetCoreApp _
                     | DotNetStandard _
+                    | Unsupported _
                     | XamarinMac -> false
                     | Tizen _ -> failwithf "Unexpected framework while trying to resolve PCL Profile"
                     | _ -> true)
