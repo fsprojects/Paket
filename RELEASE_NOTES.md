@@ -1,4 +1,4 @@
-#### 5.203.0-alpha001 - 2019-04-11
+#### 5.203.0 - 2019-04-11
 * Support for BaseIntermediateOutputPath - https://github.com/fsprojects/Paket/pull/3527
 
 #### 5.202.0 - 2019-04-10
