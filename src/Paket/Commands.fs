@@ -296,6 +296,7 @@ type RestoreArgs =
     | [<Hidden;CustomCommandLine("--references-files")>] References_File_Legacy of path:string list
 
     | [<Unique>] Target_Framework of framework:string
+    | [<Unique>] Output_Path of path:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -317,6 +318,7 @@ with
             | References_File_Legacy(_) -> "[obsolete]"
 
             | Target_Framework(_) -> "restore only for the specified target framework"
+            | Output_Path(_) -> "Output path directory of MSBuild. When used in combination with the new dotnet cli based sdk, paket will write supporting files (nuget.config, paket.resolved) there"
 
 type SimplifyArgs =
     | [<Unique;AltCommandLine("-i")>] Interactive

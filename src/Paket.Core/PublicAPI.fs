@@ -375,36 +375,36 @@ type Dependencies(dependenciesFileName: string) =
                                                       NoInstall = installAfter |> not }))
 
     /// Restores all dependencies.
-    member this.Restore(ignoreChecks): unit = this.Restore(false,None,[],false,ignoreChecks,false,None)
+    member this.Restore(ignoreChecks): unit = this.Restore(false,None,[],false,ignoreChecks,false,None,None)
 
     /// Restores all dependencies.
-    member this.Restore(): unit = this.Restore(false,None,[],false,false,false,None)
+    member this.Restore(): unit = this.Restore(false,None,[],false,false,false,None,None)
 
     /// Restores the given paket.references files.
-    member this.Restore(group: string option, files: string list, ignoreChecks): unit = this.Restore(false, group, files, false, ignoreChecks,false,None)
+    member this.Restore(group: string option, files: string list, ignoreChecks): unit = this.Restore(false, group, files, false, ignoreChecks,false,None,None)
 
     /// Restores the given paket.references files.
-    member this.Restore(group: string option, files: string list): unit = this.Restore(false, group, files, false, false,false,None)
+    member this.Restore(group: string option, files: string list): unit = this.Restore(false, group, files, false, false,false,None,None)
 
     /// Restores the given paket.references files.
-    member this.Restore(force: bool, group: string option, files: string list, touchAffectedRefs: bool, ignoreChecks, failOnChecks, targetFramework) : unit =
+    member this.Restore(force: bool, group: string option, files: string list, touchAffectedRefs: bool, ignoreChecks, failOnChecks, targetFramework, outputPath) : unit =
         if touchAffectedRefs then
             let packagesToTouch = RestoreProcess.FindPackagesNotExtractedYet(dependenciesFileName)
             this.Process (FindReferences.TouchReferencesOfPackages packagesToTouch)
-        RestoreProcess.Restore(dependenciesFileName,None,force,Option.map GroupName group,files,ignoreChecks, failOnChecks, targetFramework)
+        RestoreProcess.Restore(dependenciesFileName,None,force,Option.map GroupName group,files,ignoreChecks, failOnChecks, targetFramework, outputPath)
 
     /// Restores the given paket.references files.
-    member this.Restore(force: bool, group: string option, project: string, touchAffectedRefs: bool, ignoreChecks, failOnChecks, targetFramework) : unit =
+    member this.Restore(force: bool, group: string option, project: string, touchAffectedRefs: bool, ignoreChecks, failOnChecks, targetFramework, outputPath) : unit =
         if touchAffectedRefs then
             let packagesToTouch = RestoreProcess.FindPackagesNotExtractedYet(dependenciesFileName)
             this.Process (FindReferences.TouchReferencesOfPackages packagesToTouch)
-        RestoreProcess.Restore(dependenciesFileName,Some project,force,Option.map GroupName group,[],ignoreChecks, failOnChecks, targetFramework)
+        RestoreProcess.Restore(dependenciesFileName,Some project,force,Option.map GroupName group,[],ignoreChecks, failOnChecks, targetFramework, outputPath)
 
     /// Restores packages for all available paket.references files
     /// (or all packages if onlyReferenced is false)
-    member this.Restore(force: bool, group: string option, onlyReferenced: bool, touchAffectedRefs: bool, ignoreChecks, failOnFailedChecks, targetFramework): unit =
+    member this.Restore(force: bool, group: string option, onlyReferenced: bool, touchAffectedRefs: bool, ignoreChecks, failOnFailedChecks, targetFramework, outputPath): unit =
         if not onlyReferenced then 
-            this.Restore(force,group,[],touchAffectedRefs,ignoreChecks,failOnFailedChecks,targetFramework) 
+            this.Restore(force,group,[],touchAffectedRefs,ignoreChecks,failOnFailedChecks,targetFramework, outputPath) 
         else
             let referencesFiles =
                 ProjectFile.FindAllProjects this.RootPath
@@ -412,7 +412,7 @@ type Dependencies(dependenciesFileName: string) =
             if Array.isEmpty referencesFiles then
                 traceWarnfn "No paket.references files found for which packages could be installed."
             else
-                this.Restore(force, group, Array.toList referencesFiles, touchAffectedRefs, ignoreChecks,  failOnFailedChecks, targetFramework)
+                this.Restore(force, group, Array.toList referencesFiles, touchAffectedRefs, ignoreChecks,  failOnFailedChecks, targetFramework, outputPath)
 
     /// Lists outdated packages.
     [<Obsolete("Use ShowOutdated with the force parameter set to true to get the old behavior")>]
