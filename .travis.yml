@@ -21,7 +21,7 @@ dotnet: 2.1.500
 mono:
   - 5.18.1
   - 5.16.1
-  - stable
+  - latest
 
 matrix:
   allow_failures:
