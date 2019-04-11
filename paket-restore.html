@@ -81,10 +81,13 @@
 <span class="l">20: </span>
 <span class="l">21: </span>
 <span class="l">22: </span>
+<span class="l">23: </span>
+<span class="l">24: </span>
+<span class="l">25: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="sh">paket restore [--help] [--force] [--only-referenced] [--touch-affected-refs] [--ignore-checks]
               [--fail-on-checks] [--group &lt;name&gt;] [--project &lt;path&gt;] [--references-file &lt;path&gt;]
-              [--target-framework &lt;framework&gt;]
+              [--target-framework &lt;framework&gt;] [--output-path &lt;path&gt;]
 
 OPTIONS:
 
@@ -100,6 +103,9 @@ OPTIONS:
                           restore packages from a paket.references file; may be repeated
     --target-framework &lt;framework&gt;
                           restore only for the specified target framework
+    --output-path &lt;path&gt;  Output path directory of MSBuild. When used in combination with the new
+                          dotnet cli based sdk, paket will write supporting files (nuget.config,
+                          paket.resolved) there
     --silent, -s          suppress console output
     --verbose, -v         print detailed information to the console
     --log-file &lt;path&gt;     print output to a file
