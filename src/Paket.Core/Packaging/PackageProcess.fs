@@ -111,7 +111,7 @@ let private convertToSymbols (projectFile:ProjectFile) includeReferencedProjects
         let augmentedFiles = optional.Files |> List.append sourceFiles
         { templateFile with Contents = ProjectInfo({ core with Symbols = true }, { optional with Files = augmentedFiles }) }
 
-let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, minimumFromLockFile, pinProjectReferences, interprojectReferencesConstraint, symbols, includeReferencedProjects, projectUrl) =
+let Pack(workingDir: string, dependenciesFile : DependenciesFile, packageOutputPath: string, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile: string option, excludedTemplates, lockDependencies, minimumFromLockFile, pinProjectReferences, interprojectReferencesConstraint, symbols, includeReferencedProjects, projectUrl) =
     let buildConfig = defaultArg buildConfig "Release"
     let buildPlatform = defaultArg buildPlatform ""
     let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(workingDir,packageOutputPath)

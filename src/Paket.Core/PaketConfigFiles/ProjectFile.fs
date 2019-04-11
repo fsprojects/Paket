@@ -1377,7 +1377,7 @@ module ProjectFile =
                 | Some n -> n.InnerText.ToLower() = "true"
                 | None -> true
 
-            let makePathNode path =
+            let makePathNode (path: string) =
                 { Path =
                     if Path.IsPathRooted path then Path.GetFullPath path else 
                     let di = FileInfo(normalizePath project.FileName).Directory
@@ -2052,7 +2052,7 @@ type ProjectFile with
         let propMap name value fn =
             defaultArg (self.GetProperty name|>Option.map fn) value
         
-        let tryBool = Boolean.TryParse>>function true, value-> value| _ -> false
+        let tryBool (s: string) = Boolean.TryParse s |> function true, value -> value | _ -> false
         
         let splitString = String.split[|';'|] >> Array.map (fun x -> x.Trim()) >> List.ofArray
 

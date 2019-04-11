@@ -180,26 +180,26 @@ module FolderScanner =
         | Some y -> ParseSucceeded y
         | None -> ParseError (errorMsg)
 
-    let parseDecimal x = Decimal.TryParse(x, Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture)
+    let parseDecimal (x: string) = Decimal.TryParse(x, Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture)
 
     let parsers = dict [
-                     'b', Boolean.TryParse >> toParseResult "Could not parse bool (b)" >> ParseResult.box
-                     'd', Int32.TryParse >> toParseResult "Could not parse int (d)" >> ParseResult.box
-                     'i', Int32.TryParse >> toParseResult "Could not parse int (i)" >> ParseResult.box
-                     's', (fun s -> ParseSucceeded s) >> ParseResult.box
-                     'u', UInt32.TryParse >> toParseResult "could not parse uint (u)" >> ParseResult.map int >> ParseResult.box
+                     'b', string >> Boolean.TryParse >> toParseResult "Could not parse bool (b)" >> ParseResult.box
+                     'd', string >> Int32.TryParse >> toParseResult "Could not parse int (d)" >> ParseResult.box
+                     'i', string >>  Int32.TryParse >> toParseResult "Could not parse int (i)" >> ParseResult.box
+                     's', ParseSucceeded >> ParseResult.box
+                     'u', string >> UInt32.TryParse >> toParseResult "could not parse uint (u)" >> ParseResult.map int >> ParseResult.box
                      'x', check "could not parse int (x)" (String.forall Char.IsLower) >> ParseResult.map ((+) "0x") >> ParseResult.bind (Int32.TryParse >> toParseResult "Could not parse int (0x via x)") >> ParseResult.box
                      'X', check "could not parse int (X)" (String.forall Char.IsUpper) >> ParseResult.map ((+) "0x") >> ParseResult.bind (Int32.TryParse >> toParseResult "Could not parse int (0x via X)") >> ParseResult.box
                      'o', ((+) "0o") >> Int32.TryParse >> toParseResult "Could not parse int (0o)" >> ParseResult.box
-                     'e', Double.TryParse >> toParseResult "Could not parse float (e)" >> ParseResult.box // no check for correct format for floats
-                     'E', Double.TryParse >> toParseResult "Could not parse float (e)" >> ParseResult.box
-                     'f', Double.TryParse >> toParseResult "Could not parse float (e)" >> ParseResult.box
-                     'F', Double.TryParse >> toParseResult "Could not parse float (e)" >> ParseResult.box
-                     'g', Double.TryParse >> toParseResult "Could not parse float (e)" >> ParseResult.box
-                     'G', Double.TryParse >> toParseResult "Could not parse float (e)" >> ParseResult.box
+                     'e', string >> Double.TryParse >> toParseResult "Could not parse float (e)" >> ParseResult.box // no check for correct format for floats
+                     'E', string >> Double.TryParse >> toParseResult "Could not parse float (e)" >> ParseResult.box
+                     'f', string >> Double.TryParse >> toParseResult "Could not parse float (e)" >> ParseResult.box
+                     'F', string >> Double.TryParse >> toParseResult "Could not parse float (e)" >> ParseResult.box
+                     'g', string >> Double.TryParse >> toParseResult "Could not parse float (e)" >> ParseResult.box
+                     'G', string >> Double.TryParse >> toParseResult "Could not parse float (e)" >> ParseResult.box
                      'M', parseDecimal >> toParseResult "Could not parse decimal (m)" >> ParseResult.box
                      'c', check "Could not parse character (c)" (String.length >> (=) 1) >> ParseResult.map char >> ParseResult.box
-                     'A', (fun s -> ParseSucceeded s) >> ParseResult.box
+                     'A', ParseSucceeded >> ParseResult.box
                     ]
 
     type AdvancedScanner<'Context> = {
@@ -565,11 +565,14 @@ module InstallModel =
             if p.Path <> path.Path then p else
             { p with FolderContents = addfn file p.FolderContents })
 
+    let private fileEndsWith (f: FrameworkDependentFile) (endsWith: string) =
+        f.File.FullPath.EndsWith endsWith
+
     let private addPackageLegacyLibFile references (path:FrameworkFolder<ReferenceOrLibraryFolder>) (file:FrameworkDependentFile) (this:InstallModel) : InstallModel =
         let install =
             match references with
             | NuspecReferences.All -> true
-            | NuspecReferences.Explicit list -> List.exists file.File.FullPath.EndsWith list
+            | NuspecReferences.Explicit list -> List.exists (fileEndsWith file) list
 
         if not install then 
             this 
@@ -582,7 +585,7 @@ module InstallModel =
         let install =
             match references with
             | NuspecReferences.All -> true
-            | NuspecReferences.Explicit list -> List.exists file.File.FullPath.EndsWith list
+            | NuspecReferences.Explicit list -> List.exists (fileEndsWith file) list
 
         if not install then this else
         { this with
@@ -592,7 +595,7 @@ module InstallModel =
         let install =
             match references with
             | NuspecReferences.All -> true
-            | NuspecReferences.Explicit list -> List.exists file.File.FullPath.EndsWith list
+            | NuspecReferences.Explicit list -> List.exists (fileEndsWith file) list
 
         if not install then this else
         { this with
@@ -602,7 +605,7 @@ module InstallModel =
         let install =
             match references with
             | NuspecReferences.All -> true
-            | NuspecReferences.Explicit list -> List.exists file.File.FullPath.EndsWith list
+            | NuspecReferences.Explicit list -> List.exists (fileEndsWith file) list
 
         if not install then this else
         { this with
@@ -764,9 +767,8 @@ module InstallModel =
         references |> Seq.fold addFrameworkAssemblyReference (installModel:InstallModel)
 
 
-
     let filterExcludes (excludes:string list) (installModel:InstallModel) =
-        let excluded e (pathOrName:string) =
+        let excluded (e: string) (pathOrName:string) =
             pathOrName.Contains e
 
         excludes

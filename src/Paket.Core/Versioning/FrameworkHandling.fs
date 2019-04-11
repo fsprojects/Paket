@@ -723,14 +723,14 @@ module FrameworkDetection =
                         Some (v.ToString() |> simplify)
                 else None
 
-            let (|MatchTfm|_|) tfmStart tryParseVersion (s:string) =
+            let (|MatchTfm|_|) (tfmStart: string) tryParseVersion (s:string) =
                 if s.StartsWith tfmStart then
                     let versionPart = s.Substring (tfmStart.Length)
                     tryNormalizeVersion versionPart
                     |> Option.bind tryParseVersion
                 else
                     None
-            let (|MatchTfms|_|) tfmStarts tryParseVersion (s:string) =
+            let (|MatchTfms|_|) (tfmStarts: string seq) tryParseVersion (s:string) =
                 tfmStarts
                 |> Seq.tryPick (fun tfmStart ->
                     match s with
