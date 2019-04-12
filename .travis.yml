@@ -19,14 +19,12 @@ env:
 dotnet: 2.1.500
 
 mono:
-  - 5.12.0
-  - 5.10.0
+  - 5.18.1
+  - 5.16.0
   - latest
 
 matrix:
   allow_failures:
-    # travis failure to install mono (ref https://github.com/travis-ci/travis-ci/issues/9171)
-    - mono: latest
     # flaky test are expected to fail from time to time
     - env: PAKET_TESTSUITE_FLAKYTESTS=true
     # sporadic MonoBtlsException: Ssl error:1000007d:SSL routines:OPENSSL_internal:CERTIFICATE_VERIFY_FAILED
