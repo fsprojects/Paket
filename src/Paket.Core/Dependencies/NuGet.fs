@@ -905,9 +905,6 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                         getTimeoutOrDefaultValue "PAKET_STREAMREADWRITE_TIMEOUT" defaultTimeout
 
                     let requestTokenSource = System.Threading.CancellationTokenSource.CreateLinkedTokenSource cancellationToken
-                    let streamReadWriteTokenSource = System.Threading.CancellationTokenSource.CreateLinkedTokenSource cancellationToken
-
-                    streamReadWriteTokenSource.CancelAfter streamReadWriteTimeout
                     requestTokenSource.CancelAfter requestTimeout
 
                     let client = NetUtils.createHttpClient(!downloadUrl, source.Auth.Retrieve (attempt <> 0))
@@ -924,40 +921,60 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     let! httpResponseStream = responseMsg.Content.ReadAsStreamAsync() |> Async.AwaitTask
     
                     if httpResponseStream.CanTimeout
-                    then httpResponseStream.ReadTimeout <- responseStreamTimeout;
+                    then httpResponseStream.ReadTimeout <- responseStreamTimeout
 
                     let bufferSize = 1024 * 10
                     let buffer : byte [] = Array.zeroCreate bufferSize
                     let bytesRead = ref -1
 
-                    use fileStream = File.Create(targetFileName)
-                    let printProgress = not Console.IsOutputRedirected
-                    let mutable pos = 0L
+                    let tmpFile = Path.GetDirectoryName targetFileName + Path.GetRandomFileName() + ".paket_tmp"
+                    try
+                        let mutable pos = 0L
+                        do! async {
+                            use fileStream = File.Create(tmpFile)
+                            let printProgress = not Console.IsOutputRedirected
 
-                    let length = try Some httpResponseStream.Length with :? System.NotSupportedException -> None
-                    while !bytesRead <> 0 do
-                        if printProgress && lastSpeedMeasure.Elapsed > TimeSpan.FromSeconds(10.) then
-                            // report speed and progress
-                            let speed = int (float readSinceLastMeasure * 8. / float lastSpeedMeasure.ElapsedMilliseconds)
-                            let percent =
-                                match length with
-                                | Some l -> sprintf "%d" (int (pos * 100L / l))
-                                | None -> "Unknown"
-                            tracefn "Still downloading from %O to %s (%d kbit/s, %s %%)" !downloadUrl targetFileName speed percent
-                            readSinceLastMeasure <- 0L
-                            lastSpeedMeasure.Restart()
+                            let length = try Some httpResponseStream.Length with :? System.NotSupportedException -> None
+                            while !bytesRead <> 0 do
+                                if printProgress && lastSpeedMeasure.Elapsed > TimeSpan.FromSeconds(10.) then
+                                    // report speed and progress
+                                    let speed = int (float readSinceLastMeasure * 8. / float lastSpeedMeasure.ElapsedMilliseconds)
+                                    let percent =
+                                        match length with
+                                        | Some l -> sprintf "%d" (int (pos * 100L / l))
+                                        | None -> "Unknown"
+                                    tracefn "Still downloading from %O to %s (%d kbit/s, %s %%)" !downloadUrl tmpFile speed percent
+                                    readSinceLastMeasure <- 0L
+                                    lastSpeedMeasure.Restart()
 
-                        // if there is no response for streamReadWriteTimeout milliseconds -> abort
-                        let! bytes = httpResponseStream.ReadAsync(buffer, 0, bufferSize, streamReadWriteTokenSource.Token) |> Async.AwaitTaskWithoutAggregate
-                        bytesRead := bytes
-                        do! fileStream.WriteAsync(buffer, 0, !bytesRead, streamReadWriteTokenSource.Token) |> Async.AwaitTaskWithoutAggregate
-                        readSinceLastMeasure <- readSinceLastMeasure + int64 bytes
-                        pos <- pos + int64 bytes
+                                // recreate token every time to continue as long as there is progress...
+                                let streamReadWriteTokenSource = System.Threading.CancellationTokenSource.CreateLinkedTokenSource cancellationToken
+                                streamReadWriteTokenSource.CancelAfter streamReadWriteTimeout
+                                // if there is no response for streamReadWriteTimeout milliseconds -> abort
+                                let! bytes = httpResponseStream.ReadAsync(buffer, 0, bufferSize, streamReadWriteTokenSource.Token) |> Async.AwaitTaskWithoutAggregate
+                                bytesRead := bytes
+                                do! fileStream.WriteAsync(buffer, 0, !bytesRead, streamReadWriteTokenSource.Token) |> Async.AwaitTaskWithoutAggregate
+                                readSinceLastMeasure <- readSinceLastMeasure + int64 bytes
+                                pos <- pos + int64 bytes }
+                        // close/dispose filestream such that we can move                            
 
+                        if not (File.Exists targetFileName) then
+                            try File.Move(tmpFile, targetFileName)
+                            with | :? System.IO.IOException as e ->
+                                traceWarnfn "Error while moving temp file as '%s' already exists (maybe some other instance downloaded it as well): %O" targetFileName e
+                                ()
+                        else
+                            tracefn "Not moving as '%s' already exists (maybe some other instance downloaded it as well)" targetFileName                             
 
-                    let speed = int (float pos * 8. / float sw.ElapsedMilliseconds)
-                    let size = pos / (1024L * 1024L)
-                    tracefn "Download of %O %O%s done in %s. (%d kbit/s, %d MB)" packageName version groupString (Utils.TimeSpanToReadableString sw.Elapsed) speed size
+                        let speed = int (float pos * 8. / float sw.ElapsedMilliseconds)
+                        let size = pos / (1024L * 1024L)
+                        tracefn "Download of %O %O%s done in %s. (%d kbit/s, %d MB)" packageName version groupString (Utils.TimeSpanToReadableString sw.Elapsed) speed size
+                    finally
+                        if File.Exists tmpFile then
+                            try File.Delete(tmpFile)
+                            with | :? System.IO.IOException ->
+                                traceWarnfn "Error while removing temp file '%s'" tmpFile
+                                ()
 
                     try
                         if downloadLicense && not (String.IsNullOrWhiteSpace nugetPackage.LicenseUrl) then
