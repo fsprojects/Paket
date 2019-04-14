@@ -117,22 +117,7 @@ let rec private ofDirectorySlow targetFolder =
    
 let ofDirectory targetFolder =
     let spec = Path.Combine(targetFolder, "paket-installmodel.cache")
-    if File.Exists (spec) then
-        let rootDirName = Path.GetFileName(targetFolder)
-        let spec = File.ReadAllText(spec)
-        let readLines =
-            spec.Split('\n')
-            |> Seq.map (fun line ->
-                if line.StartsWith "D: " then 
-                  Some (line.Substring 4), None
-                elif line.StartsWith "F: " then 
-                  None, Some (line.Substring 4)
-                else None, None)
-            |> Seq.toList
-        let directories = readLines |> Seq.choose fst
-        let files = readLines |> Seq.choose snd
-        ofGivenList rootDirName directories files
-    else
+    let readFromDisk () =
         let result = ofDirectorySlow targetFolder
         let text =
             result
@@ -142,8 +127,37 @@ let ofDirectory targetFolder =
                 | prefix, NuGetFile (name) -> sprintf "F: %s/%s" prefix name)
             |> fun s -> String.Join("\n", s)
         try File.WriteAllText(spec, text)
-        with e -> eprintf "Error: %O" e
+        with e -> eprintf "Error writing '%s': %O" spec e
         result
+    if File.Exists (spec) then
+        // read from file if possible
+        try
+            let rootDirName = Path.GetFileName(targetFolder)
+            let spec = 
+                try File.ReadAllText(spec)
+                with
+                | :? System.IO.FileNotFoundException -> reraise()
+                | :? System.IO.IOException ->
+                    // maybe not yet completely written, wait and try again
+                    Thread.Sleep 300
+                    File.ReadAllText(spec)
+            let readLines =
+                spec.Split('\n')
+                |> Seq.map (fun line ->
+                    if line.StartsWith "D: " then 
+                      Some (line.Substring 4), None
+                    elif line.StartsWith "F: " then 
+                      None, Some (line.Substring 4)
+                    else None, None)
+                |> Seq.toList
+            let directories = readLines |> Seq.choose fst
+            let files = readLines |> Seq.choose snd
+            ofGivenList rootDirName directories files
+        with :? System.IO.IOException as e ->
+            eprintf "Error reading '%s', falling back to slow mode. Error was: %O" spec e
+            readFromDisk()
+    else
+        readFromDisk()
 
 (*
 let perfCompare f1 f2 =
