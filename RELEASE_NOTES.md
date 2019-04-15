@@ -1,3 +1,6 @@
+#### 5.203.2 - 2019-04-15
+* BUGFIX: Fixed #3459, #3418 and #3375 - https://github.com/fsprojects/Paket/pull/3554
+
 #### 5.203.1 - 2019-04-15
 * BUGFIX: Xamarin.Mac supports .Net Standard 2.0 - https://github.com/fsprojects/Paket/pull/3555
 
