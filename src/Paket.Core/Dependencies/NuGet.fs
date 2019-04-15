@@ -117,22 +117,7 @@ let rec private ofDirectorySlow targetFolder =
    
 let ofDirectory targetFolder =
     let spec = Path.Combine(targetFolder, "paket-installmodel.cache")
-    if File.Exists (spec) then
-        let rootDirName = Path.GetFileName(targetFolder)
-        let spec = File.ReadAllText(spec)
-        let readLines =
-            spec.Split('\n')
-            |> Seq.map (fun line ->
-                if line.StartsWith "D: " then 
-                  Some (line.Substring 4), None
-                elif line.StartsWith "F: " then 
-                  None, Some (line.Substring 4)
-                else None, None)
-            |> Seq.toList
-        let directories = readLines |> Seq.choose fst
-        let files = readLines |> Seq.choose snd
-        ofGivenList rootDirName directories files
-    else
+    let readFromDisk () =
         let result = ofDirectorySlow targetFolder
         let text =
             result
@@ -142,8 +127,37 @@ let ofDirectory targetFolder =
                 | prefix, NuGetFile (name) -> sprintf "F: %s/%s" prefix name)
             |> fun s -> String.Join("\n", s)
         try File.WriteAllText(spec, text)
-        with e -> eprintf "Error: %O" e
+        with e -> eprintf "Error writing '%s': %O" spec e
         result
+    if File.Exists (spec) then
+        // read from file if possible
+        try
+            let rootDirName = Path.GetFileName(targetFolder)
+            let spec = 
+                try File.ReadAllText(spec)
+                with
+                | :? System.IO.FileNotFoundException -> reraise()
+                | :? System.IO.IOException ->
+                    // maybe not yet completely written, wait and try again
+                    Thread.Sleep 300
+                    File.ReadAllText(spec)
+            let readLines =
+                spec.Split('\n')
+                |> Seq.map (fun line ->
+                    if line.StartsWith "D: " then 
+                      Some (line.Substring 4), None
+                    elif line.StartsWith "F: " then 
+                      None, Some (line.Substring 4)
+                    else None, None)
+                |> Seq.toList
+            let directories = readLines |> Seq.choose fst
+            let files = readLines |> Seq.choose snd
+            ofGivenList rootDirName directories files
+        with :? System.IO.IOException as e ->
+            eprintf "Error reading '%s', falling back to slow mode. Error was: %O" spec e
+            readFromDisk()
+    else
+        readFromDisk()
 
 (*
 let perfCompare f1 f2 =
@@ -905,9 +919,6 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                         getTimeoutOrDefaultValue "PAKET_STREAMREADWRITE_TIMEOUT" defaultTimeout
 
                     let requestTokenSource = System.Threading.CancellationTokenSource.CreateLinkedTokenSource cancellationToken
-                    let streamReadWriteTokenSource = System.Threading.CancellationTokenSource.CreateLinkedTokenSource cancellationToken
-
-                    streamReadWriteTokenSource.CancelAfter streamReadWriteTimeout
                     requestTokenSource.CancelAfter requestTimeout
 
                     let client = NetUtils.createHttpClient(!downloadUrl, source.Auth.Retrieve (attempt <> 0))
@@ -924,40 +935,60 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     let! httpResponseStream = responseMsg.Content.ReadAsStreamAsync() |> Async.AwaitTask
     
                     if httpResponseStream.CanTimeout
-                    then httpResponseStream.ReadTimeout <- responseStreamTimeout;
+                    then httpResponseStream.ReadTimeout <- responseStreamTimeout
 
                     let bufferSize = 1024 * 10
                     let buffer : byte [] = Array.zeroCreate bufferSize
                     let bytesRead = ref -1
 
-                    use fileStream = File.Create(targetFileName)
-                    let printProgress = not Console.IsOutputRedirected
-                    let mutable pos = 0L
+                    let tmpFile = Path.GetDirectoryName targetFileName + Path.GetRandomFileName() + ".paket_tmp"
+                    try
+                        let mutable pos = 0L
+                        do! async {
+                            use fileStream = File.Create(tmpFile)
+                            let printProgress = not Console.IsOutputRedirected
 
-                    let length = try Some httpResponseStream.Length with :? System.NotSupportedException -> None
-                    while !bytesRead <> 0 do
-                        if printProgress && lastSpeedMeasure.Elapsed > TimeSpan.FromSeconds(10.) then
-                            // report speed and progress
-                            let speed = int (float readSinceLastMeasure * 8. / float lastSpeedMeasure.ElapsedMilliseconds)
-                            let percent =
-                                match length with
-                                | Some l -> sprintf "%d" (int (pos * 100L / l))
-                                | None -> "Unknown"
-                            tracefn "Still downloading from %O to %s (%d kbit/s, %s %%)" !downloadUrl targetFileName speed percent
-                            readSinceLastMeasure <- 0L
-                            lastSpeedMeasure.Restart()
+                            let length = try Some httpResponseStream.Length with :? System.NotSupportedException -> None
+                            while !bytesRead <> 0 do
+                                if printProgress && lastSpeedMeasure.Elapsed > TimeSpan.FromSeconds(10.) then
+                                    // report speed and progress
+                                    let speed = int (float readSinceLastMeasure * 8. / float lastSpeedMeasure.ElapsedMilliseconds)
+                                    let percent =
+                                        match length with
+                                        | Some l -> sprintf "%d" (int (pos * 100L / l))
+                                        | None -> "Unknown"
+                                    tracefn "Still downloading from %O to %s (%d kbit/s, %s %%)" !downloadUrl tmpFile speed percent
+                                    readSinceLastMeasure <- 0L
+                                    lastSpeedMeasure.Restart()
 
-                        // if there is no response for streamReadWriteTimeout milliseconds -> abort
-                        let! bytes = httpResponseStream.ReadAsync(buffer, 0, bufferSize, streamReadWriteTokenSource.Token) |> Async.AwaitTaskWithoutAggregate
-                        bytesRead := bytes
-                        do! fileStream.WriteAsync(buffer, 0, !bytesRead, streamReadWriteTokenSource.Token) |> Async.AwaitTaskWithoutAggregate
-                        readSinceLastMeasure <- readSinceLastMeasure + int64 bytes
-                        pos <- pos + int64 bytes
+                                // recreate token every time to continue as long as there is progress...
+                                let streamReadWriteTokenSource = System.Threading.CancellationTokenSource.CreateLinkedTokenSource cancellationToken
+                                streamReadWriteTokenSource.CancelAfter streamReadWriteTimeout
+                                // if there is no response for streamReadWriteTimeout milliseconds -> abort
+                                let! bytes = httpResponseStream.ReadAsync(buffer, 0, bufferSize, streamReadWriteTokenSource.Token) |> Async.AwaitTaskWithoutAggregate
+                                bytesRead := bytes
+                                do! fileStream.WriteAsync(buffer, 0, !bytesRead, streamReadWriteTokenSource.Token) |> Async.AwaitTaskWithoutAggregate
+                                readSinceLastMeasure <- readSinceLastMeasure + int64 bytes
+                                pos <- pos + int64 bytes }
+                        // close/dispose filestream such that we can move                            
 
+                        if not (File.Exists targetFileName) then
+                            try File.Move(tmpFile, targetFileName)
+                            with | :? System.IO.IOException as e ->
+                                traceWarnfn "Error while moving temp file as '%s' already exists (maybe some other instance downloaded it as well): %O" targetFileName e
+                                ()
+                        else
+                            tracefn "Not moving as '%s' already exists (maybe some other instance downloaded it as well)" targetFileName                             
 
-                    let speed = int (float pos * 8. / float sw.ElapsedMilliseconds)
-                    let size = pos / (1024L * 1024L)
-                    tracefn "Download of %O %O%s done in %s. (%d kbit/s, %d MB)" packageName version groupString (Utils.TimeSpanToReadableString sw.Elapsed) speed size
+                        let speed = int (float pos * 8. / float sw.ElapsedMilliseconds)
+                        let size = pos / (1024L * 1024L)
+                        tracefn "Download of %O %O%s done in %s. (%d kbit/s, %d MB)" packageName version groupString (Utils.TimeSpanToReadableString sw.Elapsed) speed size
+                    finally
+                        if File.Exists tmpFile then
+                            try File.Delete(tmpFile)
+                            with | :? System.IO.IOException ->
+                                traceWarnfn "Error while removing temp file '%s'" tmpFile
+                                ()
 
                     try
                         if downloadLicense && not (String.IsNullOrWhiteSpace nugetPackage.LicenseUrl) then
