@@ -941,3 +941,5 @@ let main() =
         else printError exn
 
 main()
+
+ignore ()
