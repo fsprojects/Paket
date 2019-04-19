@@ -10,6 +10,10 @@ open System
 open System.IO
 open Paket.Logging
 
+// global timeout for single tests, in ms
+[<assembly: NUnit.Framework.Timeout(20_000)>]
+do ()
+
 let scenarios = System.Collections.Generic.List<_>()
 let isLiveUnitTesting = AppDomain.CurrentDomain.GetAssemblies() |> Seq.exists (fun a -> a.GetName().Name = "Microsoft.CodeAnalysis.LiveUnitTesting.Runtime")
 
