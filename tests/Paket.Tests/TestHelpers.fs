@@ -9,9 +9,12 @@ open System.Xml
 open System.IO
 open Paket.Domain
 
+#if NO_UNIT_TIMEOUTATTRIBUTE
+#else
 // global timeout for single tests, in ms
 [<assembly: NUnit.Framework.Timeout(2_000)>]
 do ()
+#endif
 
 let makeOrList (l:_ list) =
     if l.IsEmpty then FrameworkRestriction.NoRestriction
