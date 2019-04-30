@@ -997,6 +997,8 @@ files
   !../../build/bin/Angebot.Contracts.xml
     # another comment here
 
+interproject-references keep-minor
+
 """
     let sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
@@ -1016,6 +1018,7 @@ files
     sut.RequireLicenseAcceptance |> shouldEqual false
     sut.DevelopmentDependency |> shouldEqual false
     sut.Language |> shouldEqual None
+    sut.InterprojectReferencesConstraint |> shouldEqual (Some InterprojectReferencesConstraint.KeepMinor)
 
     match sut.Files with
     | [from1,to1;from2,to2] ->

@@ -193,19 +193,22 @@ let saveToFile newContent (targetFile:FileInfo) =
                     File.ReadAllText targetFile.FullName
                 else
                     ""
+            
+            let written =
+                if newContent <> oldContent then
+                    if verbose then
+                        tracefn " - %s created" targetFile.FullName
 
-            if newContent <> oldContent then
-                if verbose then
-                    tracefn " - %s created" targetFile.FullName
+                    if targetFile.Exists then
+                        File.SetAttributes(targetFile.FullName,IO.FileAttributes.Normal)
+                    File.WriteAllText(targetFile.FullName,newContent)
+                    true
+                else
+                    if verbose then
+                        tracefn " - %s already up-to-date" targetFile.FullName
+                    false
 
-                if targetFile.Exists then
-                    File.SetAttributes(targetFile.FullName,IO.FileAttributes.Normal)
-                File.WriteAllText(targetFile.FullName,newContent)
-            else
-                if verbose then
-                    tracefn " - %s already up-to-date" targetFile.FullName
-
-            targetFile.FullName
+            written,targetFile.FullName
         with
         | exn when trials > 0 ->
             if verbose then
@@ -235,9 +238,10 @@ let extractRestoreTargets root =
     if !copiedElements then
         Path.Combine(root,".paket","Paket.Restore.targets")
     else
-        let result = extractElement root "Paket.Restore.targets"
+        let (fileWritten, path) = extractElement root "Paket.Restore.targets"
         copiedElements := true
-        result
+        if fileWritten then tracefn "Extracted Paket.Restore.targets to: %s" path
+        path
 
 let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package) =
     async {
@@ -256,8 +260,13 @@ let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches,
         return (groupName,package.Name), (package,model)
     }
 
-let createAlternativeNuGetConfig (projectFile:FileInfo) =
-    let alternativeConfigFileInfo = FileInfo(Path.Combine(projectFile.Directory.FullName,"obj",projectFile.Name + ".NuGet.Config"))
+let objDirectory (projectFileInfo:FileInfo, outputPath:DirectoryInfo option) : DirectoryInfo =
+    match outputPath with
+    | Some outputPath -> outputPath
+    | None -> DirectoryInfo(Path.Combine(projectFileInfo.Directory.FullName, "obj"))
+
+let createAlternativeNuGetConfig (projectFile:FileInfo, objDirectory:DirectoryInfo) =
+    let alternativeConfigFileInfo = FileInfo(Path.Combine(objDirectory.FullName,projectFile.Name + ".NuGet.Config"))
     
     let config = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
@@ -319,7 +328,8 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
                  yield! packageReferences
                  yield "    </ItemGroup>"])
             |> fun xs -> String.Join(Environment.NewLine,xs)
-                
+ 
+    // When updating the PaketPropsVersion be sure to update the Paket.Restore.targets which checks this value
     let content = 
         sprintf """<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -334,7 +344,7 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
             cliParts
             packagesParts
 
-    saveToFile content fileInfo |> ignore
+    saveToFile content fileInfo
 
 let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
     if Seq.isEmpty cliTools then
@@ -353,7 +363,7 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
 
 let ImplicitPackages = [PackageName "NETStandard.Library"]  |> Set.ofList
 
-let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) (groups:Map<GroupName,LockFileGroup>) (targetFrameworks: string option) =
+let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) (groups:Map<GroupName,LockFileGroup>) (targetFrameworks: string option) (objDir: DirectoryInfo) =
     let projectFileInfo = FileInfo projectFile.FileName
 
     let targets =
@@ -368,15 +378,16 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
         |> List.map (fun s -> s, (PlatformMatching.forceExtractPlatforms s |> fun p -> p.ToTargetProfile true))
         |> List.choose (fun (s, c) -> c |> Option.map (fun d -> s, d))
 
+    let objDirFullName = objDir.FullName
+
     // delete stale entries (otherwise we might not recognize stale data on a change later)
     // scenario: remove a target framework -> change references -> add back target framework
     // -> We reached an invalid state
-    let objDir = DirectoryInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj"))
     for f in objDir.GetFiles(sprintf "%s*.paket.resolved" projectFileInfo.Name) do
         try f.Delete() with | _ -> ()
 
     // fable 1.0 compat
-    let oldReferencesFile = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".references"))
+    let oldReferencesFile = FileInfo(Path.Combine(objDirFullName,projectFileInfo.Name + ".references"))
     if oldReferencesFile.Exists then try oldReferencesFile.Delete() with | _ -> ()
 
     for originalTargetProfileString, targetProfile in targets do
@@ -437,7 +448,8 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                     list.Add line
 
         let output = String.Join(Environment.NewLine,list)
-        let newFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + "." + originalTargetProfileString + ".paket.resolved"))
+
+        let newFileName = FileInfo(Path.Combine(objDirFullName,projectFileInfo.Name + "." + originalTargetProfileString + ".paket.resolved"))
         let rec loop trials = 
             try
                 if not newFileName.Directory.Exists then
@@ -469,14 +481,21 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
         cliTools.AddRange cliToolsInGroup
         packages.AddRange packagesInGroup
 
-    let paketCLIToolsFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.clitools"))
+    let paketCLIToolsFileName = FileInfo(Path.Combine(objDirFullName,projectFileInfo.Name + ".paket.clitools"))
     createPaketCLIToolsFile cliTools paketCLIToolsFileName
     
-    let propsFile = ProjectFile.getPaketPropsFileInfo projectFileInfo
-    createPaketPropsFile lockFile cliTools packages propsFile
+    let propsFile = FileInfo(Path.Combine(objDirFullName, projectFileInfo.Name + ".paket.props"))
+    let written,_ = createPaketPropsFile lockFile cliTools packages propsFile
+    if written then
+        try
+            let fi = FileInfo(Path.Combine(objDirFullName,"project.assets.json"))
+            if fi.Exists then
+                fi.Delete()
+        with 
+        | _ -> ()
 
     // Write "cached" file, this way msbuild can check if the references file has changed.
-    let paketCachedReferencesFileName = FileInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj",projectFileInfo.Name + ".paket.references.cached"))
+    let paketCachedReferencesFileName = FileInfo(Path.Combine(objDirFullName,projectFileInfo.Name + ".paket.references.cached"))
     let rec loop trials =
         try
             if File.Exists (referencesFile.FileName) then
@@ -523,16 +542,16 @@ let FindOrCreateReferencesFile (projectFile:ProjectFile) =
 
         ReferencesFile.New fileName
 
-let RestoreNewSdkProject lockFile resolved groups (projectFile:ProjectFile) targetFrameworks =
+let RestoreNewSdkProject lockFile resolved groups (projectFile:ProjectFile) targetFrameworks (outputPath:DirectoryInfo option) =
     let referencesFile = FindOrCreateReferencesFile projectFile
     let projectFileInfo = FileInfo projectFile.FileName
-    let objFolder = DirectoryInfo(Path.Combine(projectFileInfo.Directory.FullName,"obj"))
-    
+    let objDirectory = objDirectory(projectFileInfo, outputPath)
+
     RunInLockedAccessMode(
-        objFolder.FullName,
+        objDirectory.FullName,
         (fun () ->
-            createAlternativeNuGetConfig projectFileInfo
-            createProjectReferencesFiles lockFile projectFile referencesFile resolved groups targetFrameworks
+            createAlternativeNuGetConfig (projectFileInfo, objDirectory)
+            createProjectReferencesFiles lockFile projectFile referencesFile resolved groups targetFrameworks objDirectory
             referencesFile
         )
    )
@@ -548,7 +567,7 @@ let private isRestoreUpDoDate (lockFileName:FileInfo) (lockFileContents:string) 
         oldContents = lockFileContents
     else false
 
-let private WriteGitignore restoreCacheFile =
+let internal WriteGitignore restoreCacheFile =
     let folder = FileInfo(restoreCacheFile).Directory
     let rec isGitManaged (folder:DirectoryInfo) =
         if File.Exists(Path.Combine(folder.FullName, ".gitignore")) then true else
@@ -566,7 +585,7 @@ let IsRestoreUpToDate(lockFileName:FileInfo) =
     let newContents = File.ReadAllText(lockFileName.FullName)
     isRestoreUpDoDate lockFileName newContents
 
-let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option) = 
+let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option,outputPath:string option) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
     let root = lockFileName.Directory.FullName
@@ -589,18 +608,19 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                       |> returnOrFail)
             lazy LocalFile.overrideLockFile localFile.Value lockFile.Value,localFile,true
 
+    if projectFile = None then
+        extractRestoreTargets root |> ignore
+
     if not (hasLocalFile || force) && isEarlyExit (File.ReadAllText lockFileName.FullName) then
         tracefn "The last restore is still up to date. Nothing left to do."
     else
-        if projectFile = None then
-            extractRestoreTargets root |> ignore
-
         let targetFilter = 
             targetFrameworks
             |> Option.map (fun s -> 
                 s.Split([|';'|], StringSplitOptions.RemoveEmptyEntries)
                 |> Array.map (fun s -> s.Trim())
-                |> Array.choose FrameworkDetection.Extract)
+                |> Array.choose FrameworkDetection.Extract
+                |> Array.filter (fun x -> match x with Unsupported _ -> false | _ -> true))
         
         
         let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
@@ -625,11 +645,12 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
         let resolved = lazy (lockFile.Value.GetGroupedResolution())
 
+        let outputPath = outputPath |> Option.map DirectoryInfo
         let referencesFileNames =
             match projectFile with
             | Some projectFileName ->
                 let projectFile = ProjectFile.LoadFromFile projectFileName
-                let referencesFile = RestoreNewSdkProject lockFile.Value resolved groups projectFile targetFrameworks
+                let referencesFile = RestoreNewSdkProject lockFile.Value resolved groups projectFile targetFrameworks outputPath
 
                 [referencesFile.FileName]
             | None ->
@@ -640,7 +661,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                         |> Seq.filter (fun proj -> proj.GetToolsVersion() >= 15.0)
 
                     for proj in allSDKProjects do
-                        RestoreNewSdkProject lockFile.Value resolved groups proj targetFrameworks |> ignore
+                        RestoreNewSdkProject lockFile.Value resolved groups proj targetFrameworks outputPath |> ignore
                 referencesFileNames
 
 

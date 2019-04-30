@@ -1,0 +1,4 @@
+RESTRICTION: == netstandard2.0
+NUGET
+  remote: https://www.nuget.org/api/v2
+    NLog (4.5.11)

@@ -46,7 +46,7 @@ group Build
   source https://nuget.org/api/v2
   source https://ci.appveyor.com/nuget/fsharp-formatting
 
-  nuget FAKE
+  nuget FAKE < 5
   nuget FSharp.Formatting prerelease
   nuget System.ValueTuple
   nuget Microsoft.AspNet.Razor

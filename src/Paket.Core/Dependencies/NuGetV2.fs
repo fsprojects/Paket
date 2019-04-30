@@ -193,7 +193,7 @@ let private handleODataEntry nugetURL packageName version entry =
                 let restriction = a.[2]
                 match PlatformMatching.extractPlatforms false restriction with
                 | Some p ->
-                    Some { p with Platforms = p.Platforms |> List.filter KnownTargetProfiles.isSupportedProfile }
+                    Some { p with Platforms = p.Platforms }
                 | None ->
                     if not (restriction.StartsWith "_") then 
                         Logging.traceWarnIfNotBefore ("Package", restriction, packageName, version) "Could not detect any platforms from '%s' in package %O %O, please tell the package authors" restriction packageName version
@@ -210,12 +210,14 @@ let private handleODataEntry nugetURL packageName version entry =
         |> Seq.map (fun (_,_,pp) -> pp)
         |> Seq.distinctBy (fun pp -> pp.Platforms |> List.sort)
         |> Seq.toList
+
     let cleanedPackages =
         rawPackages
         |> Seq.filter (fun (n,_,_) -> System.String.IsNullOrEmpty (n.ToString()) |> not)
         |> Seq.toList
-    let dependencies, warnings =
-        addFrameworkRestrictionsToDependencies cleanedPackages frameworks
+
+    let dependencies, warnings = addFrameworkRestrictionsToDependencies cleanedPackages frameworks
+
     for warning in warnings do
         let message = warning.Format officialName version
         Logging.traceWarnIfNotBefore message "%s" message

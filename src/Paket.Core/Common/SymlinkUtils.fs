@@ -18,11 +18,11 @@ let makeDirectoryLink target source =
 
     let ln (p:ProcessStartInfo) =
         p.FileName <- "ln"
-        p.Arguments <- sprintf @"-sT ""%s"" ""%s""" target source
+        p.Arguments <- sprintf @"-sT ""%s"" ""%s""" source target
 
     let ln_onMacOS (p:ProcessStartInfo) =
         p.FileName <- "ln"
-        p.Arguments <- sprintf @"-s ""%s"" ""%s""" target source
+        p.Arguments <- sprintf @"-s ""%s"" ""%s""" source target
 
     let xLn = if isMacOS then ln_onMacOS elif isUnix then ln else mklink
 
@@ -36,4 +36,7 @@ let makeDirectoryLink target source =
     | false, _ ->
         let m = ProcessHelper.toLines r.Messages
         let e = ProcessHelper.toLines r.Errors
-        failwithf "symlink %s -> %s failed with error : [%i] with output : %s%s and error : %s" source target r.ExitCode m Environment.NewLine e
+        if e.Contains "File exists" then
+            sprintf "symlink already there" |> Logging.traceVerbose
+        else
+            failwithf "symlink %s -> %s failed with error : [%i] with output : %s%s and error : %s" source target r.ExitCode m Environment.NewLine e

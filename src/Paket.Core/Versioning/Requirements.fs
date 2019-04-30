@@ -637,8 +637,6 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
         else
             problems.Add p
 
-    let extractFw = FrameworkDetection.Extract
-
     let extractProfile framework =
         PlatformMatching.extractPlatforms false framework |> Option.bind (fun pp ->
             let prof = pp.ToTargetProfile false
@@ -683,13 +681,13 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
                     match fw2 with
                     | None ->
                         let handlers =
-                            [ extractFw >> Option.map FrameworkRestriction.AtLeast
+                            [ FrameworkDetection.Extract >> Option.map FrameworkRestriction.AtLeast
                               extractProfile >> Option.map FrameworkRestriction.AtLeastPlatform ]
 
                         tryParseFramework handlers fw1
 
                     | Some fw2 ->
-                        let tryParse = tryParseFramework [extractFw]
+                        let tryParse = tryParseFramework [FrameworkDetection.Extract]
 
                         match tryParse fw1, tryParse fw2 with
                         | Some x, Some y -> Some (FrameworkRestriction.Between (x, y))
@@ -701,7 +699,7 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
                 let fw, remaining = frameworkToken (x.Substring 1)
 
                 let handlers =
-                    [ extractFw >> Option.map FrameworkRestriction.Exactly ]
+                    [ FrameworkDetection.Extract >> Option.map FrameworkRestriction.Exactly ]
 
                 tryParseFramework handlers fw, remaining
 
@@ -710,7 +708,7 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
                 let fw, remaining = frameworkToken (x.Substring 2)
 
                 let handlers =
-                    [ extractFw >> Option.map FrameworkRestriction.Exactly ]
+                    [ FrameworkDetection.Extract >> Option.map FrameworkRestriction.Exactly ]
 
                 tryParseFramework handlers fw, remaining
 
@@ -718,7 +716,7 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
                 let fw, remaining = frameworkToken x
 
                 let handlers =
-                    [ extractFw >> Option.map FrameworkRestriction.Exactly
+                    [ FrameworkDetection.Extract >> Option.map FrameworkRestriction.Exactly
                       extractProfile >> Option.map FrameworkRestriction.AtLeastPlatform ]
 
                 tryParseFramework handlers fw, remaining
@@ -775,12 +773,24 @@ let private parseRestrictionsRaw skipSimplify (text:string) =
                 else idx
             let rawOperator = restTrimmed.Substring(0, endOperator)
             let operator = rawOperator.TrimEnd([|')'|])
-            match PlatformMatching.extractPlatforms false operator |> Option.bind (fun (pp:PlatformMatching.ParsedPlatformPath) ->
-                let prof = pp.ToTargetProfile false
-                if prof.IsSome && prof.Value.IsUnsupportedPortable then
-                    handleError (RestrictionParseProblem.UnsupportedPortable operator)
-                prof) with
-            | None -> failwithf "invalid parameter '%s' after >= or < in '%s'" operator text
+
+            let extractedPlatform = PlatformMatching.extractPlatforms false operator
+            let platFormPath =
+                extractedPlatform
+                |> Option.bind (fun (pp:PlatformMatching.ParsedPlatformPath) ->
+                    let prof = pp.ToTargetProfile false
+                    if prof.IsSome && prof.Value.IsUnsupportedPortable then
+                        handleError (RestrictionParseProblem.UnsupportedPortable operator)
+                    prof)
+
+            match platFormPath with
+            | None -> 
+                match extractedPlatform with
+                | Some pp when pp.Platforms = [] ->
+                    let operatorIndex = text.IndexOf operator
+                    FrameworkRestriction.NoRestriction, text.Substring(operatorIndex + operator.Length)
+                | _ ->
+                    failwithf "invalid parameter '%s' after >= or < in '%s'" operator text
             | Some plat ->
                 let f =
                     if isSmaller then FrameworkRestriction.NotAtLeastPlatform
@@ -889,8 +899,9 @@ type InstallSettings =
       StorageConfig : PackagesFolderGroupConfig option
       Excludes : string list
       Aliases : Map<string,string>
-      CopyContentToOutputDirectory : CopyToOutputDirectorySettings option 
-      GenerateLoadScripts : bool option }
+      CopyContentToOutputDirectory : CopyToOutputDirectorySettings option
+      GenerateLoadScripts : bool option
+      Simplify : bool option }
 
     static member Default =
         { EmbedInteropTypes = None
@@ -906,8 +917,9 @@ type InstallSettings =
           Excludes = []
           Aliases = Map.empty
           CopyContentToOutputDirectory = None
-          OmitContent = None 
-          GenerateLoadScripts = None }
+          OmitContent = None
+          GenerateLoadScripts = None
+          Simplify = None }
 
     member this.ToString(groupSettings:InstallSettings,asLines) =
         let options =
@@ -958,6 +970,9 @@ type InstallSettings =
               match this.GenerateLoadScripts with
               | Some true when groupSettings.GenerateLoadScripts <> this.GenerateLoadScripts -> yield "generate_load_scripts: true"
               | Some false when groupSettings.GenerateLoadScripts <> this.GenerateLoadScripts  -> yield "generate_load_scripts: false"
+              | _ -> ()
+              match this.Simplify with
+              | Some false -> yield "simplify: false"
               | _ -> () ]
 
         let separator = if asLines then Environment.NewLine else ", "
@@ -1066,6 +1081,10 @@ type InstallSettings =
                 match getPair "generate_load_scripts" with
                 | Some "on"  | Some "true" -> Some true
                 | Some "off" | Some "false" -> Some true
+                | _ -> None
+              Simplify =
+                match getPair "simplify" with
+                | Some "never" | Some "false" -> Some false
                 | _ -> None }
 
         // ignore resolver settings here
@@ -1167,7 +1186,11 @@ type PackageRequirement =
 
     member this.Depth = this.Graph.Count
 
-    static member Compare(x,y,startWithPackage:PackageFilter option,boostX,boostY) =        
+    member this.SettingString = (sprintf "%O %s %s %O %s" this.VersionRequirement (if this.ResolverStrategyForTransitives.IsSome then (sprintf "%O" this.ResolverStrategyForTransitives) else "") (if this.ResolverStrategyForDirectDependencies.IsSome then (sprintf "%O" this.ResolverStrategyForDirectDependencies) else "") this.Settings (if this.TransitivePrereleases then "TransitivePrereleases-true" else ""))
+
+    member this.HasPackageSettings = String.IsNullOrWhiteSpace this.SettingString |> not
+
+    static member Compare(x,y,startWithPackage:PackageFilter option,boostX,boostY) =
         if obj.ReferenceEquals(x, y) then 0 else
         let c = compare
                   (not x.VersionRequirement.Range.IsGlobalOverride,x.Depth)

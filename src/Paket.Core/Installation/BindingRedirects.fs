@@ -84,7 +84,7 @@ let internal indentAssemblyBindings config =
             parent.Remove()
 
 let private configFiles = [ "app"; "web" ] |> Set.ofList
-let private projectFiles = [ ".csproj"; ".vbproj"; ".fsproj"; ".wixproj"; ".nproj"; ".vcxproj"; ".pyproj"; ".sfproj" ] |> Set.ofList
+let private projectFiles = [ ".csproj"; ".vbproj"; ".fsproj"; ".wixproj"; ".nproj"; ".vcxproj"; ".pyproj"; ".sfproj"; ".sqlproj" ] |> Set.ofList
 let private toLower (s:string) = s.ToLower()
 let private isAppOrWebConfig = configFiles.Contains << (Path.GetFileNameWithoutExtension >> toLower)
 
@@ -158,9 +158,10 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLi
         use f = File.Open(configFilePath, FileMode.Create)
         config.Save(f, SaveOptions.DisableFormatting)
 
-    match projectFile.GetAutoGenerateBindingRedirects() with
-    | Some x when x.ToLower() = "true" -> ignore()
-    | _ -> projectFile.SetOrCreateAutoGenerateBindingRedirects()
+    match projectFile.OutputType, projectFile.GetAutoGenerateBindingRedirects() with
+    | ProjectOutputType.Exe, _ -> ignore()
+    | _, Some x when x.ToLower() = "true" -> ignore()
+    | _, _ -> projectFile.SetOrCreateAutoGenerateBindingRedirects()
 
 let findAllReferencesFiles root =
     let findRefFile (p:ProjectFile) =

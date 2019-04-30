@@ -19,72 +19,20 @@ let ``#2496 Paket fails on projects that target multiple frameworks``() =
         |> ignore
 
 [<Test>]
-#if FAKE_NETSTANDARD_API
-[<Ignore("use an api of FakeLib (net40) unsupported on .net core")>]
-#endif
-let ``#2812 Lowercase package names in package cache: old csproj, packages folder enabled``() =
-    let scenario = "i002812-old-csproj-storage-default"
-    let projectName = "project"
-    let packageName = "AutoMapper"
-    let packageNameLowercase = packageName.ToLower()
-    let workingDir = scenarioTempPath scenario
-    let csprojFile = workingDir @@ projectName @@ sprintf "%s.csproj" projectName
-    let packagesDir = workingDir @@ "packages" 
-
-    [ packageName; packageNameLowercase ] |> Seq.iter clearPackage
-    
+let ``#3527 BaseIntermediateOutputPath``() =
+    let project = "project"
+    let scenario = "i003527"
     prepareSdk scenario
-    directPaket "restore" scenario |> ignore
-    isPackageCachedWithOnlyLowercaseNames packageName |> shouldEqual true
-    packagesDir
-        |> Directory.GetDirectories 
-        |> Array.map Path.GetFileName
-        |> shouldEqual [| packageName |]
-    
-    Fake.MSBuildHelper.MSBuildLoggers <- [] //There is a fsharp.core binding redirect issue on the FakeLib.dll logger
-    MSBuildRelease workingDir "Build" [ csprojFile ] |> ignore
 
-[<Test>]
-let ``#2812 Lowercase package names in package cache: new csproj, packages folder enabled``() =
-    let scenario = "i002812-new-csproj-storage-default"
-    let projectName = "project"
-    let packageName = "AutoMapper"
-    let packageNameLowercase = packageName.ToLower()
-    let workingDir = scenarioTempPath scenario
-    let projectDir = workingDir @@ projectName
-    let emptyFeedPath = workingDir @@ "emptyFeed"
-    let packagesDir = workingDir @@ "packages" 
+    let wd = (scenarioTempPath scenario) @@ project
+    directDotnet true (sprintf "restore %s.fsproj" project) wd
+        |> ignore
 
-    [ packageName; packageNameLowercase ] |> Seq.iter clearPackage
-    
-    prepareSdk scenario
-    directPaket "restore" scenario |> ignore
-    isPackageCachedWithOnlyLowercaseNames packageName |> shouldEqual true
-    packagesDir
-        |> Directory.GetDirectories 
-        |> Array.map Path.GetFileName
-        |> shouldEqual [| packageName |]
-    directDotnet false (sprintf "restore --source \"%s\"" emptyFeedPath) projectDir |> ignore
-    directDotnet false "build --no-restore" projectDir |> ignore
+    let defaultObjDir = DirectoryInfo (Path.Combine (scenarioTempPath scenario, project, "obj"))
+    let customObjDir = DirectoryInfo (Path.Combine (scenarioTempPath scenario, project, "obj", "custom"))
 
-[<Test>]
-let ``#2812 Lowercase package names in package cache: new csproj, packages folder disabled``() =
-    let scenario = "i002812-new-csproj-storage-default"
-    let projectName = "project"
-    let packageName = "AutoMapper"
-    let packageNameLowercase = packageName.ToLower()
-    let workingDir = scenarioTempPath scenario
-    let projectDir = workingDir @@ projectName
-    let emptyFeedPath = workingDir @@ "emptyFeed"
-
-    [ packageName; packageNameLowercase ] |> Seq.iter clearPackage
-    
-    prepareSdk scenario
-    directPaket "restore" scenario |> ignore
-    isPackageCachedWithOnlyLowercaseNames packageName |> shouldEqual true
-    directDotnet false (sprintf "restore --source \"%s\"" emptyFeedPath) projectDir |> ignore
-    directDotnet false "build --no-restore" projectDir |> ignore
-
+    defaultObjDir.GetFiles() |> shouldBeEmpty
+    customObjDir.GetFiles().Length |> shouldBeGreaterThan 0
 
 [<Test>]
 let ``#3000-a dotnet restore``() =

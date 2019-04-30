@@ -296,6 +296,7 @@ type RestoreArgs =
     | [<Hidden;CustomCommandLine("--references-files")>] References_File_Legacy of path:string list
 
     | [<Unique>] Target_Framework of framework:string
+    | [<Unique>] Output_Path of path:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -317,6 +318,7 @@ with
             | References_File_Legacy(_) -> "[obsolete]"
 
             | Target_Framework(_) -> "restore only for the specified target framework"
+            | Output_Path(_) -> "Output path directory of MSBuild. When used in combination with the new dotnet cli based sdk, paket will write supporting files (nuget.config, paket.resolved) there"
 
 type SimplifyArgs =
     | [<Unique;AltCommandLine("-i")>] Interactive
@@ -416,7 +418,7 @@ with
             match this with
             | Files _ -> ".nuspec files to fix transitive dependencies within"
             | ReferencesFile _ -> "paket.references to use"
-            | ProjectFile _ -> "the proejct file to use"
+            | ProjectFile _ -> "the project file to use"
 
 type GenerateNuspecArgs =
     | [<ExactlyOnce;CustomCommandLine "project">] Project of project:string
@@ -479,6 +481,13 @@ with
             match this with
             | Paket_Dependencies_Dir -> "absolute path of paket.dependencies directory, if exists"
 
+type InterprojectReferencesConstraintArgs =
+    | Min
+    | Fix
+    | Keep_Major
+    | Keep_Minor
+    | Keep_Patch
+
 type PackArgs =
     | [<ExactlyOnce;MainCommand>] Output of path:string
     | [<Hidden;ExactlyOnce;CustomCommandLine("output")>] Output_Legacy of path:string
@@ -512,6 +521,8 @@ type PackArgs =
 
     | [<Unique>] Pin_Project_References
     | [<Hidden;Unique;CustomCommandLine("pin-project-references")>] Pin_Project_References_Legacy
+
+    | [<Unique>] Interproject_References of InterprojectReferencesConstraintArgs
 
     | [<Unique>] Symbols
     | [<Hidden;Unique;CustomCommandLine("symbols")>] Symbols_Legacy
@@ -557,6 +568,8 @@ with
 
             | Pin_Project_References -> "pin dependencies generated from project references to exact versions (=) instead of using minimum versions (>=); with --lock-dependencies project references will be pinned even if this option is not specified"
             | Pin_Project_References_Legacy(_) -> "[obsolete]"
+
+            | Interproject_References(_) -> "set constraints for referenced project versions"
 
             | Symbols -> "create symbol and source packages in addition to library and content packages"
             | Symbols_Legacy(_) -> "[obsolete]"

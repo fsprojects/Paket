@@ -436,15 +436,16 @@ let restore (results : ParseResults<_>) =
     let ignoreChecks = results.Contains <@ RestoreArgs.Ignore_Checks @>
     let failOnChecks = results.Contains <@ RestoreArgs.Fail_On_Checks @>
     let targetFramework = results.TryGetResult <@ RestoreArgs.Target_Framework @>
+    let outputPath = results.TryGetResult <@ RestoreArgs.Output_Path @>
 
     match project with
     | Some project ->
-        Dependencies.Locate().Restore(force, group, project, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)
+        Dependencies.Locate().Restore(force, group, project, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework, outputPath)
     | None ->
         if List.isEmpty files then
-            Dependencies.Locate().Restore(force, group, installOnlyReferenced, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)
+            Dependencies.Locate().Restore(force, group, installOnlyReferenced, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework, outputPath)
         else
-            Dependencies.Locate().Restore(force, group, files, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)
+            Dependencies.Locate().Restore(force, group, files, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework, outputPath)
 
 let simplify (results : ParseResults<_>) =
     let interactive = results.Contains <@ SimplifyArgs.Interactive @>
@@ -539,9 +540,22 @@ let pack (results : ParseResults<_>) =
          results.Contains <@ PackArgs.Lock_Dependencies_To_Minimum_Legacy @>)
         |> legacyBool results (ReplaceArgument("--minimum-from-lock-file", "minimum-from-lock-file"))
     let pinProjectReferences =
-        (results.Contains <@ PackArgs.Pin_Project_References @>,
-         results.Contains <@ PackArgs.Pin_Project_References_Legacy @>)
-        |> legacyBool results (ReplaceArgument("--pin-project-references", "pin-project-references"))
+        let (newSyntax, oldSyntax) =
+         (results.Contains <@ PackArgs.Pin_Project_References @>,
+          results.Contains <@ PackArgs.Pin_Project_References_Legacy @>)
+
+        if newSyntax || oldSyntax then
+            warnObsolete (ReplaceArgument("--interproject-references", "--pin-project-references"))
+
+        newSyntax || oldSyntax
+    let interprojectReferencesConstraint =
+        match results.TryGetResult <@ PackArgs.Interproject_References @> with
+        | Some Min -> Some InterprojectReferencesConstraint.Min
+        | Some Fix -> Some InterprojectReferencesConstraint.Fix
+        | Some Keep_Major -> Some InterprojectReferencesConstraint.KeepMajor
+        | Some Keep_Minor -> Some InterprojectReferencesConstraint.KeepMinor
+        | Some Keep_Patch -> Some InterprojectReferencesConstraint.KeepPatch
+        | None -> None
     let symbols =
         (results.Contains <@ PackArgs.Symbols @>,
          results.Contains <@ PackArgs.Symbols_Legacy @>)
@@ -568,6 +582,7 @@ let pack (results : ParseResults<_>) =
                       lockDependencies = lockDependencies,
                       minimumFromLockFile = minimumFromLockFile,
                       pinProjectReferences = pinProjectReferences,
+                      interprojectReferencesConstraint = interprojectReferencesConstraint,
                       symbols = symbols,
                       includeReferencedProjects = includeReferencedProjects,
                       ?projectUrl = projectUrl)
@@ -895,7 +910,15 @@ let main() =
             ignore
             false
             (fun _ -> true)
-            (fun _ -> Dependencies.Locate().Restore(false, None, project, false, false, false, None)) ()
+            (fun _ -> Dependencies.Locate().Restore(false, None, project, false, false, false, None, None)) ()
+    | [| _; "restore"; "--project"; project; "--output-path"; outputPath; "--target-framework"; targetFramework |]
+    | [| _; "--from-bootstrapper"; "restore"; "--project"; project; "--output-path"; outputPath; "--target-framework"; targetFramework |] ->
+        // Project restore fast route, see https://github.com/fsprojects/Argu/issues/90
+        processWithValidationEx
+            ignore
+            false
+            (fun _ -> true)
+            (fun _ -> Dependencies.Locate().Restore(false, None, project, false, false, false, Some targetFramework, Some outputPath)) ()
     | [| _; "install" |] | [| _; "--from-bootstrapper"; "--enablenetfx461netstandard2support"; "install" |]
     | [| _; "install" |] | [| _; "--from-bootstrapper"; "install" |] ->
         // Global restore fast route, see https://github.com/fsprojects/Argu/issues/90

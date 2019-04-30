@@ -1,3 +1,58 @@
+#### 5.203.2 - 2019-04-15
+* BUGFIX: Fixed #3459, #3418 and #3375 - https://github.com/fsprojects/Paket/pull/3554
+
+#### 5.203.1 - 2019-04-15
+* BUGFIX: Xamarin.Mac supports .Net Standard 2.0 - https://github.com/fsprojects/Paket/pull/3555
+
+#### 5.203.0 - 2019-04-11
+* Support for BaseIntermediateOutputPath - https://github.com/fsprojects/Paket/pull/3527
+
+#### 5.202.0 - 2019-04-10
+* EMERGENCY-RELEASE
+
+#### 5.201.1 - 2019-04-10
+* Adapt PackTask to breaking changes in MSBuild 16 - https://github.com/fsprojects/Paket/pull/3542
+* BUGFIX: Simplify Fix Extra Settings - https://github.com/fsprojects/Paket/pull/3538
+* BUGFIX: Always try and extract Paket.Restore.targets even if up to date - https://github.com/fsprojects/Paket/pull/3524
+* Adding support for multiple target frameworks to the pack command - https://github.com/fsprojects/Paket/pull/3534
+* New setting that shields packages from simplifier - https://github.com/fsprojects/Paket/pull/3523
+* BUGFIX: Fixed symlinks on linux - https://github.com/fsprojects/Paket/pull/3372
+
+#### 5.200.0 - 2019-04-02
+* Support for .NET Standard 2.1 and .NET 4.8
+* Removed .NET 5.0 moniker because it was never released
+* Removed the old temporary monikers for dnxcore and dnx
+
+#### 5.198.0 - 2019-02-22
+* PERFORMANCE: Speedup for paket restore - https://github.com/fsprojects/Paket/pull/3512
+* BUGFIX: Do not run in StackOverflow during ReleaseLock
+* BUGFIX: Paket install writed restore cache file -https://github.com/fsprojects/Paket/issues/3508
+
+#### 5.197.0 - 2019-02-18
+* BUGFIX: Restore SDK projects during paket install - https://github.com/fsprojects/Paket/pull/3503
+
+#### 5.196.2 - 2019-02-04
+* BUGFIX: Fixed constant warn about new syntax - https://github.com/fsprojects/Paket/pull/3497
+
+#### 5.196.1 - 2019-02-03
+* New option to control interproject references version constraint - https://github.com/fsprojects/Paket/pull/3473
+* BUGFIX: Fixedpack transitive dependencies with --include-referenced-projects - https://github.com/fsprojects/Paket/pull/3469
+* BUGFIX: uri unescape when read project property - https://github.com/fsprojects/Paket/pull/3470
+* BUGFIX: Added PaketRestoreDisabled when NCrunch enabled in targets - https://github.com/fsprojects/Paket/pull/3479
+* BUGFIX: dotnet --no-restore was still doing a restore - https://github.com/fsprojects/Paket/pull/3486
+* BUGFIX: Set AllowExplicitVersion to true for PackageReference in Paket.Restore.targets - https://github.com/fsprojects/Paket/pull/3482
+* BUGFIX: Apply paket github api token on github requests - https://github.com/fsprojects/Paket/pull/3484
+* BUGFIX: Do not change the AutoGenerateBindingRedirects for exe output type - https://github.com/fsprojects/Paket/pull/3471
+
+#### 5.195.0 - 2019-01-10
+* SQL project support - https://github.com/fsprojects/Paket/pull/3474
+* BUGFIX: Fixed RestrictionsChanged Detection - https://github.com/fsprojects/Paket/pull/3464
+* BUGFIX: Use the correct request header for paket push - https://github.com/fsprojects/Paket/pull/3466
+* BUGFIX: Fixed zsh completer for clear-cache - https://github.com/fsprojects/Paket/pull/3457
+
+#### 5.194.0 - 2018-12-08
+* BUGFIX: Fixed conflict between native local-path style with global install style - https://github.com/fsprojects/Paket/pull/3451
+
 #### 5.193.0 - 2018-12-02
 * Zsh completion update - https://github.com/fsprojects/Paket/pull/3440
 

@@ -39,7 +39,7 @@ This guide will show you
 
 ### Specifying dependencies
 
-Create a [`paket.dependencies` file](dependencies-file.html) in your project's
+Create a [`paket.dependencies` file](dependencies-file.html) in your solution's
 root and specify all your dependencies in it. You can use
 [NuGet packages](nuget-dependencies.html),
 [Git repos](git-dependencies.html),
@@ -49,7 +49,7 @@ root and specify all your dependencies in it. You can use
 The file might look like this:
 
 ```paket
-source https://nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 
 nuget Castle.Windsor-log4net >= 3.2
 nuget NUnit

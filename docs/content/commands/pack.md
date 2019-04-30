@@ -72,9 +72,12 @@ paket pack nugets --symbols
 ### Including referenced projects
 
 Paket automatically replaces inter-project dependencies with NuGet dependencies
-if the dependency has it's own [`paket.template`][templatefile]. In addition to
-this the parameter `--include-referenced-projects` instructs Paket to add
-project output to the package for inter-project dependencies that don't have a
+if the dependency has its own [`paket.template`][templatefile]. Version constraints 
+for these dependencies can be controlled with the `--interproject-references` 
+parameter or the `interproject-references` option in [`paket.template`][templatefile].  
+
+In addition to this the parameter `--include-referenced-projects` instructs Paket to 
+add project output to the package for inter-project dependencies that don't have a
 [`paket.template` file][templatefile].
 
 1. It recursively iterates referenced projects and adds their project output to

@@ -51,7 +51,7 @@ let extractPlatforms warn path =
             if warn && not (path.StartsWith("_")) then
                 Logging.traceWarnIfNotBefore ("extractPlatforms", path) "Could not detect any platforms from '%s', please tell the package authors" path
             None
-        | Some s -> Some s
+        | Some s -> Some { s with Platforms = s.Platforms |> List.filter (fun fw -> match fw with Unsupported _ -> false | _ -> true) }
 
 let forceExtractPlatforms path =
     match extractPlatforms false path with
@@ -119,6 +119,7 @@ let getPathPenalty =
         match path.Platforms with
         | _ when String.IsNullOrWhiteSpace path.Name -> handleEmpty()
         | [] -> MaxPenalty // Ignore this path as it contains no platforms, but the folder apparently has a name -> we failed to detect the framework and ignore it
+        | [ Unsupported _ ] -> MaxPenalty // Ignore this path as it contains no platforms, but the folder apparently has a name -> we failed to detect the framework and ignore it
         | [ h ] ->
             let additionalPen = if path.Name.EndsWith "-client" then Penalty_Client else 0
             additionalPen + getPlatformPenalty(platform,TargetProfile.SinglePlatform h)
@@ -183,8 +184,9 @@ let platformsSupport =
 
 
 let findBestMatch = 
-    let rec findBestMatch (paths : ParsedPlatformPath list, targetProfile : TargetProfile) = 
+    let rec findBestMatch (paths : ParsedPlatformPath list, targetProfile : TargetProfile) =
         paths
+        |> List.map (fun path -> { path with Platforms = path.Platforms |> List.filter (fun x -> match x with Unsupported _ -> false | _ -> true)})
         |> List.map (fun path -> path, (getPathPenalty (path, targetProfile)))
         |> List.filter (fun (_, penalty) -> penalty < MaxPenalty)
         |> List.sortWith comparePaths
@@ -213,8 +215,6 @@ let getTargetCondition (target:TargetProfile) =
     | TargetProfile.SinglePlatform(platform) ->
         match platform with
         | DotNetFramework(version) ->"$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "$(TargetFrameworkVersion) == '%O'" version
-        | DNX(version) ->"$(TargetFrameworkIdentifier) == 'DNX'", sprintf "$(TargetFrameworkVersion) == '%O'" version
-        | DNXCore(version) ->"$(TargetFrameworkIdentifier) == 'DNXCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DotNetStandard(version) ->"$(TargetFrameworkIdentifier) == '.NETStandard'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DotNetCoreApp(version) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DotNetUnity(DotNetUnityVersion.V3_5_Full as version) ->
@@ -241,6 +241,7 @@ let getTargetCondition (target:TargetProfile) =
         | Native(NoBuildMode,bits) -> (sprintf "'$(Platform)'=='%s'" bits.AsString), ""
         | Native(profile,bits) -> (sprintf "'$(Configuration)|$(Platform)'=='%s|%s'" profile.AsString bits.AsString), ""
         | Tizen version ->"$(TargetFrameworkIdentifier) == 'Tizen'", sprintf "$(TargetFrameworkVersion) == '%O'" version
+        | Unsupported s -> "", ""
     | TargetProfile.PortableProfile p -> sprintf "$(TargetFrameworkProfile) == '%O'" p.ProfileName,""
 
 let getCondition (referenceCondition:string option) (allTargets: TargetProfile Set list) (targets : TargetProfile Set) =

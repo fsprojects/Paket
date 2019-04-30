@@ -19,7 +19,9 @@ type PackageInstallSettings =
         { Name = PackageName name
           Settings = InstallSettings.Default }
 
-type InstallGroup = 
+    member this.HasPackageSettings = String.IsNullOrWhiteSpace (sprintf "%O" this.Settings) |> not
+
+type InstallGroup =
     { Name : GroupName
       NugetPackages : PackageInstallSettings list
       RemoteFiles : RemoteFileReference list }
@@ -145,9 +147,9 @@ type ReferencesFile =
                     CreateBindingRedirects = createBindingRedirects
                     Excludes = []
                     Aliases = Map.empty
-                    OmitContent = if omitContent then Some ContentCopySettings.Omit else None 
-                    GenerateLoadScripts = None } }
-
+                    OmitContent = if omitContent then Some ContentCopySettings.Omit else None
+                    GenerateLoadScripts = None
+                    Simplify = None } }
 
         match this.Groups |> Map.tryFind groupName with
         | None -> 

@@ -78,7 +78,7 @@ let readAssembly fileName =
 
 let readAssemblyFromProjFile buildConfig buildPlatform (projectFile : ProjectFile) = 
     let root = Path.GetDirectoryName projectFile.FileName
-    let subFolder = projectFile.GetOutputDirectory buildConfig buildPlatform
+    let subFolder = projectFile.GetOutputDirectory buildConfig buildPlatform None
     let assemblyName = projectFile.GetAssemblyName()
     FileInfo(Path.Combine(root, subFolder, assemblyName) |> normalizePath).FullName
     |> readAssembly
@@ -155,8 +155,11 @@ let excludeDependency (templateFile : TemplateFile) (exclude : PackageName) =
     | IncompleteTemplate -> 
         failwith (sprintf "You should only try to exclude dependencies to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
-let toFile config platform (p : ProjectFile) = 
-    Path.Combine(Path.GetDirectoryName p.FileName, p.GetOutputDirectory config platform, p.GetAssemblyName())
+let toFileWithOutputDirectory (p : ProjectFile) outputDirectory = 
+    Path.Combine(Path.GetDirectoryName p.FileName, outputDirectory, p.GetAssemblyName())
+
+let toFile config platform (p : ProjectFile) targetProfile = 
+    p.GetOutputDirectory config platform targetProfile |> toFileWithOutputDirectory p
 
 let addFile (source : string) (target : string) (templateFile : TemplateFile) = 
     match templateFile with
@@ -166,15 +169,51 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith (sprintf "You should only try and add files to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
-let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (projectWithTemplates : Map<string, (Lazy<'TemplateFile>) * ProjectFile * bool>) includeReferencedProjects (version :SemVerInfo option) projDeps =
-    let includeReferencedProjects = template.IncludeReferencedProjects || includeReferencedProjects
-    let targetDir = 
-        match project.BuildOutputTargetFolder with
-        | Some x -> x
+let findBestDependencyTargetProfile dependencyTargetProfiles (targetProfile : TargetProfile option) =
+    match targetProfile with
+    | None -> None
+    | Some targetProfile ->
+        let exactMatch =
+             dependencyTargetProfiles
+             |> List.tryFind ((=) targetProfile) 
+        match exactMatch with
+        | Some x -> Some x
         | None ->
-            match project.OutputType with
-            | ProjectOutputType.Exe -> "tools/"
-            | ProjectOutputType.Library -> project.GetTargetProfiles() |> List.map (sprintf "lib/%O/") |> List.head // TODO: multi target pack
+            dependencyTargetProfiles
+            |> List.filter targetProfile.IsAtLeast
+            |> List.sortDescending
+            |> List.tryHead
+
+let getTargetDir (project : ProjectFile) targetProfile =
+    match project.BuildOutputTargetFolder with
+    | Some x -> x
+    | None ->
+        match project.OutputType with
+        | ProjectOutputType.Exe -> "tools/"
+        | ProjectOutputType.Library ->
+            match targetProfile with
+            | Some targetProfile -> sprintf "lib/%O/" targetProfile
+            | None -> "lib/"
+
+let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences interprojectReferencesConstraint (projectWithTemplates : Map<string, (Lazy<'TemplateFile>) * ProjectFile * bool>) includeReferencedProjects (version :SemVerInfo option) cache =
+    let includeReferencedProjects = template.IncludeReferencedProjects || includeReferencedProjects
+
+    let interprojectReferencesConstraint =
+        match interprojectReferencesConstraint with
+        | Some c -> c
+        | None ->
+            match template.InterprojectReferencesConstraint with
+            | Some c -> c
+            | None ->
+                if pinProjectReferences || lockDependencies then
+                    InterprojectReferencesConstraint.Fix
+                else
+                    InterprojectReferencesConstraint.Min
+
+    let targetProfiles =
+        match project.GetTargetProfiles() with
+        | [] -> [None]
+        | x -> List.map Some x
     
     let projectDir = Path.GetDirectoryName project.FileName
 
@@ -183,12 +222,12 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
         | None -> PreReleaseStatus.No
         | _ -> PreReleaseStatus.All
 
-    let deps, files = 
-        let interProjectDeps = 
-            if includeReferencedProjects then 
-                project.GetAllInterProjectDependenciesWithoutProjectTemplates projDeps
-            else 
-                project.GetAllInterProjectDependenciesWithProjectTemplates projDeps
+    let deps, files =
+        let interProjectDeps =
+            if includeReferencedProjects then
+                project.GetAllInterProjectDependenciesWithoutProjectTemplates cache
+            else
+                project.GetAllInterProjectDependenciesWithProjectTemplates cache
             |> Seq.toList
 
         interProjectDeps
@@ -206,38 +245,42 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
     
     // Add the assembly + {.dll, .pdb, .xml, /*/.resources.dll} from this project
     let templateWithOutput =
-        let projects =                 
-            if includeReferencedProjects then 
-                project.GetAllInterProjectDependenciesWithoutProjectTemplates projDeps 
-                |> Seq.toList 
-            else 
+        let projects =
+            if includeReferencedProjects then
+                project.GetAllInterProjectDependenciesWithoutProjectTemplates cache
+                |> Seq.toList
+            else
                 [ project ]
 
         let satelliteDlls =
             seq {
-                for project in projects do
-                    let satelliteAssemblyName = Path.GetFileNameWithoutExtension(project.GetAssemblyName()) + ".resources.dll"
-                    let projectDir = Path.GetDirectoryName(Path.GetFullPath(project.FileName))
-                    let outputDir = Path.Combine(projectDir, project.GetOutputDirectory config platform)
-
-                    let satelliteWithFolders =
-                        Directory.GetFiles(outputDir, satelliteAssemblyName, SearchOption.AllDirectories)
-                        |> Array.map (fun sa -> (sa, Directory.GetParent(sa)))
-                        |> Array.filter (fun (sa, dirInfo) -> Cultures.isLanguageName (dirInfo.Name))
-
-                    let existedSatelliteLanguages =
-                        satelliteWithFolders
-                        |> Array.map (fun (_, dirInfo) -> dirInfo.Name)
-                        |> Set.ofArray
-
-                    project.FindLocalizedLanguageNames()
-                    |> List.filter (existedSatelliteLanguages.Contains >> not)
-                    |> List.iter (fun lang ->
-                        traceWarnfn "Did not find satellite assembly for (%s) try building and running pack again." lang)
-
-                    yield!
-                        satelliteWithFolders
-                        |> Array.map (fun (sa, dirInfo) -> (FileInfo sa, Path.Combine(targetDir, dirInfo.Name)))
+                for targetProfile in targetProfiles do
+                    let targetDir = getTargetDir project targetProfile
+                    for project in projects do
+                        let dependencyTargetProfiles = project.GetTargetProfiles()
+                        let dependencyTargetProfile = findBestDependencyTargetProfile dependencyTargetProfiles targetProfile
+                        let satelliteAssemblyName = Path.GetFileNameWithoutExtension(project.GetAssemblyName()) + ".resources.dll"
+                        let projectDir = Path.GetDirectoryName(Path.GetFullPath(project.FileName))
+                        let outputDir = Path.Combine(projectDir, project.GetOutputDirectory config platform dependencyTargetProfile)
+    
+                        let satelliteWithFolders =
+                            Directory.GetFiles(outputDir, satelliteAssemblyName, SearchOption.AllDirectories)
+                            |> Array.map (fun sa -> (sa, Directory.GetParent(sa)))
+                            |> Array.filter (fun (sa, dirInfo) -> Cultures.isLanguageName (dirInfo.Name))
+    
+                        let existedSatelliteLanguages =
+                            satelliteWithFolders
+                            |> Array.map (fun (_, dirInfo) -> dirInfo.Name)
+                            |> Set.ofArray
+    
+                        project.FindLocalizedLanguageNames()
+                        |> List.filter (existedSatelliteLanguages.Contains >> not)
+                        |> List.iter (fun lang ->
+                            traceWarnfn "Did not find satellite assembly for (%s) try building and running pack again." lang)
+    
+                        yield!
+                            satelliteWithFolders
+                            |> Array.map (fun (sa, dirInfo) -> (FileInfo sa, Path.Combine(targetDir, dirInfo.Name)))
             }
 
         let template =
@@ -248,34 +291,37 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
             projects
             |> List.map (fun proj -> proj.GetAssemblyName())
 
-        let additionalFiles = 
-            assemblyNames
-            |> Seq.collect (fun assemblyFileName -> 
-                let assemblyfi = FileInfo(assemblyFileName)
-                let name = Path.GetFileNameWithoutExtension assemblyfi.Name
-
-                let path = Path.Combine(projectDir, project.GetOutputDirectory config platform)
-
-                Directory.GetFiles(path, name + ".*")
-                |> Array.map (fun f -> FileInfo f)
-                |> Array.filter (fun fi -> 
-                    let isSameFileName = (Path.GetFileNameWithoutExtension fi.Name) = name
-                    let validExtensions = 
-                        match template.Contents with
-                        | CompleteInfo(core, optional) ->
-                            if core.Symbols || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
-                            else [".xml"; ".dll"; ".exe";]
-                        | ProjectInfo(core, optional) ->
-                            if core.Symbols  || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
-                            else [".xml"; ".dll"; ".exe";]
-                    let isValidExtension = 
-                        validExtensions
-                        |> List.exists (String.equalsIgnoreCase fi.Extension)
-                    isSameFileName && isValidExtension))
+        let additionalFiles =
+            targetProfiles
+            |> Seq.collect (fun targetProfile ->
+                let targetDir = getTargetDir project targetProfile
+                let outputDir = project.GetOutputDirectory config platform targetProfile
+                let path = Path.Combine(projectDir, outputDir)
+                assemblyNames
+                |> Seq.collect (fun assemblyFileName -> 
+                    let assemblyfi = FileInfo(assemblyFileName)
+                    let name = Path.GetFileNameWithoutExtension assemblyfi.Name
+    
+                    Directory.GetFiles(path, name + ".*")
+                    |> Array.map (fun f -> (targetDir, FileInfo f))
+                    |> Array.filter (fun (_, fi) -> 
+                        let isSameFileName = (Path.GetFileNameWithoutExtension fi.Name) = name
+                        let validExtensions = 
+                            match template.Contents with
+                            | CompleteInfo(core, optional) ->
+                                if core.Symbols || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
+                                else [".xml"; ".dll"; ".exe";]
+                            | ProjectInfo(core, optional) ->
+                                if core.Symbols  || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
+                                else [".xml"; ".dll"; ".exe";]
+                        let isValidExtension = 
+                            validExtensions
+                            |> List.exists (String.equalsIgnoreCase fi.Extension)
+                        isSameFileName && isValidExtension)))
             |> Seq.toArray
 
         additionalFiles
-        |> Array.fold (fun template file -> addFile file.FullName targetDir template) template
+        |> Array.fold (fun template (targetDir, file) -> addFile file.FullName targetDir template) template
 
     let templateWithOutputAndExcludes =
         match template.Contents with
@@ -293,7 +339,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                | CompleteTemplate(core, _) -> 
                    match core.Version with
                    | Some v -> 
-                       let versionConstraint = if lockDependencies || pinProjectReferences then Specific v else Minimum v
+                       let versionConstraint = interprojectReferencesConstraint.CreateVersionRequirements v
                        PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v)
                    | None -> failwithf "There was no version given for %s." evaluatedTemplate.FileName
                | IncompleteTemplate -> 
@@ -301,9 +347,16 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
         |> List.fold addDependency templateWithOutputAndExcludes
     
     // If project refs will not be packaged, add the assembly to the package
-    let withDepsAndIncluded = 
-        files
-        |> List.fold (fun templatefile file -> addFile (toFile config platform file) targetDir templatefile) withDeps
+    let withDepsAndIncluded =
+        targetProfiles
+        |> List.collect (fun targetProfile ->
+                let targetDir = getTargetDir project targetProfile
+                files |>
+                List.map (fun file ->
+                        let dependencyTargetProfiles = file.GetTargetProfiles()
+                        let dependencyTargetProfile = findBestDependencyTargetProfile dependencyTargetProfiles targetProfile
+                        (targetProfile, targetDir, file.GetOutputDirectory config platform dependencyTargetProfile, file)))
+        |> List.fold (fun templatefile (targetProfile, targetDir, outputDir, file) -> addFile (toFileWithOutputDirectory file outputDir) targetDir templatefile) withDeps
 
     let lockFile = 
         dependenciesFile.FindLockFile().FullName
@@ -320,7 +373,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
             | None -> []
 
         [if includeReferencedProjects then
-            for proj in project.GetAllReferencedProjects(false,projDeps) |> Seq.filter ((<>) project) do
+            for proj in project.GetAllReferencedProjects(false, cache) |> Seq.filter ((<>) project) do
                 match Map.tryFind proj.FileName projectWithTemplates with
                 | Some (template, _, _) ->
                     match template.Force() with
@@ -328,7 +381,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                         let versionConstraint = 
                             match core.Version with
                             | Some v -> 
-                                let vr = if lockDependencies || pinProjectReferences then Specific v else Minimum v
+                                let vr = interprojectReferencesConstraint.CreateVersionRequirements v
                                 VersionRequirement(vr, getPreReleaseStatus v)
                             | None -> VersionRequirement.AllReleases
     
@@ -393,7 +446,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                 | None ->
                     match version with
                     | Some v -> 
-                        let vr = if lockDependencies || pinProjectReferences then Specific v else Minimum v
+                        let vr = interprojectReferencesConstraint.CreateVersionRequirements v
                         np.Name,VersionRequirement(vr, getPreReleaseStatus v)
                     | None -> 
                         if minimumFromLockFile then
