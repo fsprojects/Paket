@@ -214,7 +214,17 @@ let installEx checkZeroWarn scenario =
     #endif
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
+let installExWithNfx461compat checkZeroWarn scenario =
+    #if INTERACTIVE
+    paket "install --verbose" scenario |> printfn "%s"
+    #else
+    paketEx checkZeroWarn  "--enablenetfx461netstandard2support install" scenario |> ignore
+    #endif
+    LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
+    
 let install scenario = installEx false scenario
+
+let installWithNfx461compat scenario = installExWithNfx461compat false scenario
 
 let restore scenario = paketEx false "restore" scenario |> ignore
 

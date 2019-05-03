@@ -450,6 +450,15 @@ let ``#3062 install should use external lock file``() =
     newLockFile.Groups.[GroupName "main"].Resolution.ContainsKey (PackageName "FAKE") |> shouldEqual true
     newLockFile.Groups.[GroupName "main"].Resolution.[PackageName "Machine.Specifications"].Version |> shouldEqual (SemVer.Parse "0.12")
 
+[<Test>]
+let ``#3447 netfx461 should support netstandard20 if the appconfig flag is set``() =
+    let newLockFile = installWithNfx461compat "i003447-netfx461-ns20"
+    // the dependencies file contains a restriction "framework: net461". So without the flag, the lock file contains only the one package because the dependencies for ns20 have been ignored.
+    // If the flag works correctly, then the lock file should contain all the microsoft asp.net core packages.
+    // The strategy is min, so the resolution should be stable regarding the versions.
+    newLockFile.Groups.[GroupName "main"].Resolution.ContainsKey (PackageName "Microsoft.AspNetCore.Server.Kestrel.Core") |> shouldEqual true
+    newLockFile.Groups.[GroupName "main"].Resolution.[PackageName "Microsoft.AspNetCore.Server.Kestrel.Core"].Version |> shouldEqual (SemVer.Parse "2.1.2")
+
 
 #if INTERACTIVE
 ;;

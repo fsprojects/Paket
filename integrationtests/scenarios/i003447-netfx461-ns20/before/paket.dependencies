@@ -1,0 +1,5 @@
+source https://api.nuget.org/v3/index.json
+storage: none
+framework: net461
+
+nuget Microsoft.AspNetCore 2.1.2 strategy:min
