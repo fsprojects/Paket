@@ -9,8 +9,6 @@ nuget Mono.Cecil prerelease
 
 nuget System.Security.Cryptography.ProtectedData
 
-nuget FSharp.Compiler.Tools
-
 nuget NETStandard.Library ~> 2.0
 nuget Microsoft.NETCore.App ~> 2.1
 nuget System.Net.Http.WinHttpHandler

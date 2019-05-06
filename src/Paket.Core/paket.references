@@ -2,7 +2,6 @@ Newtonsoft.Json
 FSharp.Core
 Mono.Cecil
 Chessie
-FSharp.Compiler.Tools
 System.Net.Http
 
 File:Globbing.fs Common\
