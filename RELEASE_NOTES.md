@@ -1,3 +1,6 @@
+#### 5.205.0 - 2019-05-07
+* BUGFIX: Fix issues with lock file simplification - https://github.com/fsprojects/Paket/pull/3570
+
 #### 5.204.3 - 2019-05-07
 * Allow to parse DNXCore in lock file and be backwards compatible again
 
