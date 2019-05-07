@@ -630,6 +630,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
     
     let tryFindRemoteFile (remoteFiles:ResolvedSourceFile list) (name: string) =
         remoteFiles |> List.tryFind (fun x -> x.Name.EndsWith(name))
+
     let findRemoteFile referencesFile remoteFiles name =
         match tryFindRemoteFile remoteFiles name with
         | None -> failwithf "Remote file %O was referenced in %s, but not found in paket.lock." name referencesFile
