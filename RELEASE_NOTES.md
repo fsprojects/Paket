@@ -1,4 +1,4 @@
-#### 5.204.1 - 2019-05-07
+#### 5.204.3 - 2019-05-07
 * Allow to parse DNXCore in lock file and be backwards compatible again
 
 #### 5.203.2 - 2019-04-15
