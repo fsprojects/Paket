@@ -186,7 +186,6 @@ let platformsSupport =
 let findBestMatch = 
     let rec findBestMatch (paths : ParsedPlatformPath list, targetProfile : TargetProfile) =
         paths
-        |> List.map (fun path -> { path with Platforms = path.Platforms |> List.filter (fun x -> match x with Unsupported _ -> false | _ -> true)})
         |> List.map (fun path -> path, (getPathPenalty (path, targetProfile)))
         |> List.filter (fun (_, penalty) -> penalty < MaxPenalty)
         |> List.sortWith comparePaths
