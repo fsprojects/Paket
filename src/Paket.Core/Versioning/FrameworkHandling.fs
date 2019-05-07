@@ -1079,7 +1079,6 @@ type TargetProfileRaw =
 
     member x.IsUnsupportedPortable =
         match x with
-        | SinglePlatformP (Unsupported _ ) -> true
         | PortableProfileP p -> p.IsUnsupprted
         | _ -> false
 

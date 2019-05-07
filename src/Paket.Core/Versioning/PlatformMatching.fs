@@ -51,7 +51,7 @@ let extractPlatforms warn path =
             if warn && not (path.StartsWith("_")) then
                 Logging.traceWarnIfNotBefore ("extractPlatforms", path) "Could not detect any platforms from '%s', please tell the package authors" path
             None
-        | Some s -> Some { s with Platforms = s.Platforms |> List.filter (fun fw -> match fw with Unsupported _ -> false | _ -> true) }
+        | Some s -> Some s
 
 let forceExtractPlatforms path =
     match extractPlatforms false path with
