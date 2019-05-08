@@ -763,9 +763,6 @@ let private parseRestrictionsRaw skipSimplify (text:string) =
             let rest = h.Substring 2
             let restTrimmed = rest.TrimStart()
             let idx = restTrimmed.IndexOf(' ')
-            //let splitted = rest.Split([|' '|], StringSplitOptions.RemoveEmptyEntries)
-            //if splitted.Length < 1 then failwithf "No parameter after >= or < in '%s'" text
-            //let rawOperator = splitted.[0]
             let endOperator = 
                 if idx < 0 then 
                     if restTrimmed.Length = 0 then failwithf "No parameter after >= or < in '%s'" text

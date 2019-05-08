@@ -1,8 +1,8 @@
-#### 5.204.0-alpha001 - 2019-05-06
-* Remove FSharp.Compiler.Tools so that we can build inside of VS 2019
+#### 5.205.0 - 2019-05-07
+* BUGFIX: Fix issues with lock file simplification - https://github.com/fsprojects/Paket/pull/3570
 
-#### 5.204.0-alpha001 - 2019-05-06
-* REVERT: Reverted lockfile parse error - https://github.com/fsprojects/Paket/pull/3568
+#### 5.204.3 - 2019-05-07
+* Allow to parse DNXCore in lock file and be backwards compatible again
 
 #### 5.203.2 - 2019-04-15
 * BUGFIX: Fixed #3459, #3418 and #3375 - https://github.com/fsprojects/Paket/pull/3554

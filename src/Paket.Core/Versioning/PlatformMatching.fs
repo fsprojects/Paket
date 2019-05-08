@@ -51,7 +51,7 @@ let extractPlatforms warn path =
             if warn && not (path.StartsWith("_")) then
                 Logging.traceWarnIfNotBefore ("extractPlatforms", path) "Could not detect any platforms from '%s', please tell the package authors" path
             None
-        | Some s -> Some { s with Platforms = s.Platforms |> List.filter (fun fw -> match fw with Unsupported _ -> false | _ -> true) }
+        | Some s -> Some s
 
 let forceExtractPlatforms path =
     match extractPlatforms false path with
@@ -186,7 +186,6 @@ let platformsSupport =
 let findBestMatch = 
     let rec findBestMatch (paths : ParsedPlatformPath list, targetProfile : TargetProfile) =
         paths
-        |> List.map (fun path -> { path with Platforms = path.Platforms |> List.filter (fun x -> match x with Unsupported _ -> false | _ -> true)})
         |> List.map (fun path -> path, (getPathPenalty (path, targetProfile)))
         |> List.filter (fun (_, penalty) -> penalty < MaxPenalty)
         |> List.sortWith comparePaths

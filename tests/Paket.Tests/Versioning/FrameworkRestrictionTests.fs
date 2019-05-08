@@ -6,6 +6,16 @@ open NUnit.Framework
 open Paket.Requirements
 
 [<Test>]
+let ``Should simplify DNXCode`` () =
+    let restrictions = "|| (&& (>= dnxcore50) (>= net46)) (&& (>= dnxcore50) (>= netstandard1.1)) (&& (>= dnxcore50) (>= netstandard1.2)) (&& (>= dnxcore50) (>= netstandard1.3)) (&& (>= dnxcore50) (>= netstandard1.4)) (&& (>= dnxcore50) (>= netstandard1.5)) (&& (>= dnxcore50) (>= netstandard1.6)) (&& (>= dnxcore50) (>= uap10.0)) (&& (< monoandroid) (< net45) (< netstandard1.2) (>= netstandard1.3) (< win8)) (&& (< monoandroid) (< net45) (< netstandard1.2) (>= netstandard1.6) (< win8)) (&& (< monoandroid) (< net45) (< netstandard1.3) (>= netstandard1.6) (< win8) (< wpa81)) (&& (< monoandroid) (< net45) (< netstandard1.4) (>= netstandard1.6) (< win8) (< wpa81)) (&& (< monoandroid) (< net45) (< netstandard1.5) (>= netstandard1.6) (< win8) (< wpa81)) (&& (< monoandroid) (< net452) (< netstandard1.6) (>= netstandard2.0)) (&& (< monoandroid) (< net452) (>= netstandard2.0) (< xamarinios)) (&& (< net45) (>= net46) (< netstandard1.2)) (&& (< net45) (>= net46) (< netstandard1.3)) (&& (< net45) (>= net46) (>= netstandard1.4) (< netstandard1.5)) (&& (< net45) (>= net46) (< netstandard1.4)) (&& (< net45) (>= net46) (>= netstandard1.5) (< netstandard1.6)) (&& (< net45) (>= net46) (>= netstandard1.6) (< netstandard2.0)) (&& (< net45) (>= netstandard1.3) (< netstandard1.4) (< win8) (< wpa81)) (&& (< net45) (>= netstandard1.4) (< netstandard1.5) (< win8) (< wpa81)) (&& (< net45) (>= netstandard1.5) (< netstandard1.6) (< win8) (< wpa81)) (&& (< net45) (>= netstandard1.6) (< netstandard2.0) (< win8) (< wpa81)) (&& (< net452) (>= net46) (>= netstandard2.0)) (&& (>= net46) (>= uap10.0)) (&& (>= netstandard1.6) (>= uap10.0)) (&& (< netstandard1.6) (>= uap10.0) (< win8) (< wpa81)) (&& (>= uap10.0) (< uap10.1))"
+
+    let restriction, parseProblems = Requirements.parseRestrictions restrictions
+
+    parseProblems |> Seq.toList |> shouldEqual []
+
+    restriction.RepresentedFrameworks |> Seq.map (fun x -> x.CompareString) |> shouldNotContain "net45"
+
+[<Test>]
 let ``Simplify && (false) (< net45)`` () =
     let toSimplify =
         (FrameworkRestriction.And[
