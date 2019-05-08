@@ -108,21 +108,43 @@ let (|Valid|Invalid|) md =
                 Symbols = s }
     | _ -> Invalid
 
-let addDependencyToFrameworkGroup framework dependencyGroups dependency =
+let addDependencyToFrameworkGroup framework dependencyGroups dependencyWithFwRestriction =
+    let dependency, (fwRestriction: FrameworkRestrictions) =
+        let pkgName, version, fwRestriction = dependencyWithFwRestriction
+        (pkgName, version), fwRestriction
+
+    let isCompatibleWith (fwOption: FrameworkIdentifier option) =
+        match fwOption with
+        | None -> true
+        | Some fw ->
+            if fwRestriction.IsSupersetOf (FrameworkRestriction.Exactly fw) then
+                true
+            else
+                false
+
     dependencyGroups
     |> List.tryFind (fun g -> g.Framework = framework)
     |> function
-    | None -> { Dependencies = [dependency]; Framework = framework } :: dependencyGroups
+    | None ->
+        if isCompatibleWith framework then
+            let newGroup = OptionalDependencyGroup.For framework [dependency]
+            newGroup :: dependencyGroups
+        else
+            dependencyGroups
     | _ ->
         dependencyGroups
         |> List.map (fun g ->
             if g.Framework <> framework then g
-            else { g with Dependencies = dependency :: g.Dependencies })
+            else
+                if isCompatibleWith g.Framework then
+                    { g with Dependencies = dependency :: g.Dependencies }
+                else
+                    g)
 
-let addDependency (templateFile : TemplateFile) (dependency : PackageName * VersionRequirement) =
+let addDependency (templateFile : TemplateFile) (dependency : PackageName * VersionRequirement * FrameworkRestrictions) =
     match templateFile with
     | CompleteTemplate(core, opt) -> 
-        let packageName = dependency |> (fun (n,_) -> n)
+        let packageName = dependency |> (fun (n,_,_) -> n)
         let newDeps =
             opt.DependencyGroups
             |> List.tryFind (fun g ->
@@ -340,7 +362,8 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                    match core.Version with
                    | Some v -> 
                        let versionConstraint = interprojectReferencesConstraint.CreateVersionRequirements v
-                       PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v)
+                       let anyFw = FrameworkRestrictions.ExplicitRestriction (FrameworkRestriction.NoRestriction)
+                       PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v), anyFw
                    | None -> failwithf "There was no version given for %s." evaluatedTemplate.FileName
                | IncompleteTemplate -> 
                    failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." evaluatedTemplate.FileName)
@@ -442,12 +465,13 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                     | _ -> true)
             |> List.map (fun (group, np, specificVersionRequirement) ->
                 let specificVersionRequirement = defaultArg specificVersionRequirement VersionRequirement.AllReleases
+                let noFrameworkRestriction = FrameworkRestrictions.ExplicitRestriction (FrameworkRestriction.NoRestriction)
                 match group with
                 | None ->
                     match version with
                     | Some v -> 
                         let vr = interprojectReferencesConstraint.CreateVersionRequirements v
-                        np.Name,VersionRequirement(vr, getPreReleaseStatus v)
+                        np,VersionRequirement(vr, getPreReleaseStatus v),noFrameworkRestriction
                     | None -> 
                         if minimumFromLockFile then
                             let groupName =
@@ -458,18 +482,18 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                                 |> Option.map fst
 
                             match groupName with
-                            | None -> np.Name,specificVersionRequirement
+                            | None -> np,specificVersionRequirement,noFrameworkRestriction
                             | Some groupName -> 
                                 let group = lockFile.GetGroup groupName
 
-                                let lockedVersion = 
+                                let lockedVersion, fwRestriction = 
                                     match Map.tryFind np.Name group.Resolution with
-                                    | Some resolvedPackage -> VersionRequirement(GreaterThan resolvedPackage.Version, getPreReleaseStatus resolvedPackage.Version)
-                                    | None -> specificVersionRequirement
+                                    | Some resolvedPackage -> VersionRequirement(GreaterThan resolvedPackage.Version, getPreReleaseStatus resolvedPackage.Version), resolvedPackage.Settings.FrameworkRestrictions
+                                    | None -> specificVersionRequirement, noFrameworkRestriction
 
-                                np.Name,lockedVersion
+                                np,lockedVersion,fwRestriction
                         else
-                            np.Name,specificVersionRequirement
+                            np,specificVersionRequirement,noFrameworkRestriction
                 | Some groupName ->
                     let dependencyVersionRequirement =
                         if not lockDependencies then
@@ -481,7 +505,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                                     
                                     if minimumFromLockFile || requirement.VersionRequirement = VersionRequirement.NoRestriction then
                                         match lockFile.Groups |> Map.tryFind groupName with
-                                        | None -> Some requirement.VersionRequirement
+                                        | None -> Some (requirement.VersionRequirement, requirement.Settings.FrameworkRestrictions)
                                         | Some group ->
                                             match Map.tryFind np.Name group.Resolution with
                                             | Some resolvedPackage -> 
@@ -490,22 +514,22 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                                                 | OverrideAll v -> 
                                                     if v <> resolvedPackage.Version then
                                                         failwithf "Versions in %s and %s are not identical for package %O." lockFile.FileName dependenciesFile.FileName np.Name
-                                                    Some(VersionRequirement(Specific resolvedPackage.Version,pre))
+                                                    Some(VersionRequirement(Specific resolvedPackage.Version,pre), resolvedPackage.Settings.FrameworkRestrictions)
                                                 | Specific v -> 
                                                     if v <> resolvedPackage.Version then
                                                         failwithf "Versions in %s and %s are not identical for package %O." lockFile.FileName dependenciesFile.FileName np.Name
-                                                    Some(VersionRequirement(Specific resolvedPackage.Version,pre))
+                                                    Some(VersionRequirement(Specific resolvedPackage.Version,pre), resolvedPackage.Settings.FrameworkRestrictions)
                                                 | Maximum v ->
                                                     if v = resolvedPackage.Version then
-                                                        Some(VersionRequirement(Specific resolvedPackage.Version,pre))
+                                                        Some(VersionRequirement(Specific resolvedPackage.Version,pre), resolvedPackage.Settings.FrameworkRestrictions)
                                                     else
-                                                        Some(VersionRequirement(VersionRange.Range(VersionRangeBound.Including,resolvedPackage.Version,v,VersionRangeBound.Including),pre))
+                                                        Some(VersionRequirement(VersionRange.Range(VersionRangeBound.Including,resolvedPackage.Version,v,VersionRangeBound.Including),pre), resolvedPackage.Settings.FrameworkRestrictions)
                                                 | Range(_,_,v2,ub) ->
-                                                    Some(VersionRequirement(VersionRange.Range(VersionRangeBound.Including,resolvedPackage.Version,v2,ub),pre))
-                                                | _ -> Some(VersionRequirement(Minimum resolvedPackage.Version,pre))
-                                            | None -> Some requirement.VersionRequirement
+                                                    Some(VersionRequirement(VersionRange.Range(VersionRangeBound.Including,resolvedPackage.Version,v2,ub),pre), resolvedPackage.Settings.FrameworkRestrictions)
+                                                | _ -> Some(VersionRequirement(Minimum resolvedPackage.Version,pre), resolvedPackage.Settings.FrameworkRestrictions)
+                                            | None -> Some (requirement.VersionRequirement, requirement.Settings.FrameworkRestrictions)
                                     else
-                                        Some requirement.VersionRequirement
+                                        Some (requirement.VersionRequirement, requirement.Settings.FrameworkRestrictions)
                                 | None ->
                                     match lockFile.Groups |> Map.tryFind groupName with
                                     | None -> None
@@ -515,20 +539,28 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                                         // to current locked version
                                         group.Resolution
                                         |> Map.tryFind np.Name
-                                        |> Option.map (fun transitive -> VersionRequirement(Minimum transitive.Version, getPreReleaseStatus transitive.Version))
+                                        |> Option.map (fun transitive -> VersionRequirement(Minimum transitive.Version, getPreReleaseStatus transitive.Version), transitive.Settings.FrameworkRestrictions)
                             else
                                 match lockFile.Groups |> Map.tryFind groupName with
                                 | None -> None
                                 | Some group ->
                                     Map.tryFind np.Name group.Resolution
-                                    |> Option.map (fun resolvedPackage -> resolvedPackage.Version)
-                                    |> Option.map (fun version -> VersionRequirement(Specific version, getPreReleaseStatus version))
-                    let dep =
+                                    |> Option.map (fun resolvedPackage ->
+                                        let version = resolvedPackage.Version
+                                        VersionRequirement(Specific version, getPreReleaseStatus version), resolvedPackage.Settings.FrameworkRestrictions)
+                    let dep, depFwRestriction =
                         match dependencyVersionRequirement with
                         | Some installed -> installed
                         | None -> failwithf "No package with id '%O' installed in group %O." np.Name groupName
-                     
-                    np.Name, dep)
-
+             
+                    np, dep, depFwRestriction)
+            |> List.map (fun (np, dep, depFwRestriction) -> 
+                let fwRestriction =
+                    match depFwRestriction, np.Settings.FrameworkRestrictions with
+                    | AutoDetectFramework, AutoDetectFramework -> ExplicitRestriction(FrameworkRestriction.NoRestriction)
+                    | AutoDetectFramework, ExplicitRestriction fr -> ExplicitRestriction fr
+                    | ExplicitRestriction fr, AutoDetectFramework -> ExplicitRestriction fr
+                    | ExplicitRestriction fr1, ExplicitRestriction fr2 -> ExplicitRestriction (FrameworkRestriction.combineRestrictionsWithAnd fr1 fr2)
+                np.Name, dep, fwRestriction)
         deps
         |> List.fold addDependency withDepsAndIncluded
