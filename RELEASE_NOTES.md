@@ -1,3 +1,6 @@
+#### 5.206.0 - 2019-05-08
+* BUGFIX: Paket considers dependencies target framework restrictions in paket pack - https://github.com/fsprojects/Paket/pull/3558
+
 #### 5.205.0 - 2019-05-07
 * BUGFIX: Fix issues with lock file simplification - https://github.com/fsprojects/Paket/pull/3570
 
