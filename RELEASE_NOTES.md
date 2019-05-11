@@ -1,3 +1,6 @@
+#### 5.207.0 - 2019-05-11
+* Simplifier removes unsupported frameworks - https://github.com/fsprojects/Paket/pull/3574
+
 #### 5.206.0 - 2019-05-08
 * BUGFIX: Paket considers dependencies target framework restrictions in paket pack - https://github.com/fsprojects/Paket/pull/3558
 
