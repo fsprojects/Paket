@@ -455,7 +455,6 @@ module FrameworkRestriction =
                 FrameworkRestriction.WithOrListInternal newOrList fr
             else fr
 
-
         /// When we optmized a clause away completely we can replace the hole formula with "NoRestriction"
         /// This happens for example with ( <net45 || >=net45) and the removeNegatedLiteralsWhichOccurSinglePositive
         /// optimization
@@ -464,7 +463,35 @@ module FrameworkRestriction =
                 fr.OrFormulas
                 |> Seq.exists (fun andFormular -> andFormular.Literals |> Seq.isEmpty)
             if containsEmptyAnd then NoRestriction else fr
-        
+
+        /// Remove unsupported frameworks:
+        /// Unsupported frameworks are expected to never exist,
+        /// therefore `= unsupported1.0` and `>= unsupported1.0` are the empty set (isNegated = false)
+        /// while `<> unsupported1.0` and `<unsupported1.0` are just all frameworks (isNegated = true)
+        let removeUnsupportedFrameworks (fr:FrameworkRestriction) =
+            let newOrList, workDone =
+                let mutable workDone = false
+                fr.OrFormulas
+                |> List.choose (fun andFormula ->
+                    let filteredList, removeAndClause =
+                        let mutable removeAndClause = false
+                        andFormula.Literals
+                        |> List.filter (function
+                            | { LiteraL = FrameworkRestrictionLiteralI.ExactlyL (TargetProfile.SinglePlatform (FrameworkIdentifier.Unsupported _)); IsNegated = false }
+                            | { LiteraL = FrameworkRestrictionLiteralI.AtLeastL (TargetProfile.SinglePlatform (FrameworkIdentifier.Unsupported _)); IsNegated = false } ->
+                                // `>= unsupported` or `= unsupported` -> remove the clause as && with empty set is the empty set
+                                removeAndClause <- true // we could break here.
+                                workDone <- true
+                                false
+                            | { LiteraL = FrameworkRestrictionLiteralI.ExactlyL (TargetProfile.SinglePlatform (FrameworkIdentifier.Unsupported _)); IsNegated = true }
+                            | { LiteraL = FrameworkRestrictionLiteralI.AtLeastL (TargetProfile.SinglePlatform (FrameworkIdentifier.Unsupported _)); IsNegated = true } ->
+                                // `< unsupported` or `<> unsupported` -> remove the literal as any set && with all frameworks is the given set
+                                workDone <- true
+                                false
+                            | _ -> true), removeAndClause
+                    if removeAndClause then None else Some { Literals = filteredList }), workDone
+            if workDone then FrameworkRestriction.WithOrListInternal newOrList fr else fr
+
         let sortClauses (fr:FrameworkRestriction) =
             fr.OrFormulas
             |> List.map (fun andFormula -> { Literals = andFormula.Literals |> List.distinct |> List.sort })
@@ -475,6 +502,7 @@ module FrameworkRestriction =
                 else fr
         let optimize fr =
             fr
+            |> removeUnsupportedFrameworks
             |> removeNegatedLiteralsWhichOccurSinglePositive
             |> removeSubsetLiteralsInAndClause
             |> removeSubsetLiteralsInOrClause
@@ -495,7 +523,7 @@ module FrameworkRestriction =
     // (ie not only a different formula describing the same set, but the same exact formula)        
     let private simplify'', cacheSimple = memoizeByExt (fun (fr:FrameworkRestriction) -> fr.ToString()) simplify'
 
-    let private simplify (fr:FrameworkRestriction) =
+    let internal simplify (fr:FrameworkRestriction) =
         if fr.IsSimple then fr
         else 
             let simpleFormula = simplify'' fr
@@ -848,6 +876,7 @@ let private parseRestrictionsRaw skipSimplify (text:string) =
     result, problems.ToArray()
     
 let parseRestrictions = memoize (parseRestrictionsRaw false)
+// skips simplify
 let internal parseRestrictionsSimplified = parseRestrictionsRaw true
 
 let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestrictions) =

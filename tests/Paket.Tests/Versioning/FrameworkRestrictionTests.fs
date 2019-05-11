@@ -6,14 +6,48 @@ open NUnit.Framework
 open Paket.Requirements
 
 [<Test>]
+let ``Should replace old frameworks in framework restrictions < dnxcore50`` () =
+    // There are no frameworks actually represented by this
+    let restrictions = "< dnxcore50"
+
+    let restriction, parseProblems = Requirements.parseRestrictionsSimplified restrictions
+    parseProblems |> Seq.toList |> shouldEqual []
+    restriction.RepresentedFrameworks |> shouldEqual Requirements.FrameworkRestriction.NoRestriction.RepresentedFrameworks
+    restriction.RawFormular.ToString() |> shouldEqual "< dnxcore50"
+
+    let simplified = Paket.Requirements.FrameworkRestriction.simplify restriction
+    simplified |> shouldEqual Paket.Requirements.FrameworkRestriction.NoRestriction
+    simplified.RepresentedFrameworks |> shouldEqual Requirements.FrameworkRestriction.NoRestriction.RepresentedFrameworks
+    simplified.RawFormular.ToString() |> shouldEqual "true"
+
+[<Test>]
+let ``Should replace old frameworks in framework restrictions >= dnxcore50`` () =
+    // There are no frameworks actually represented by this
+    let restrictions = ">= dnxcore50"
+
+    let restriction, parseProblems = Requirements.parseRestrictionsSimplified restrictions
+    parseProblems |> Seq.toList |> shouldEqual []
+    restriction.RepresentedFrameworks |> shouldEqual Set.empty
+    restriction.RawFormular.ToString() |> shouldEqual ">= dnxcore50"
+
+    let simplified = Paket.Requirements.FrameworkRestriction.simplify restriction
+    simplified |> shouldEqual Paket.Requirements.FrameworkRestriction.EmptySet
+    simplified.RepresentedFrameworks |> shouldEqual Set.empty
+    simplified.RawFormular.ToString() |> shouldEqual "false"
+
+[<Test>]
 let ``Should simplify DNXCode`` () =
     let restrictions = "|| (&& (>= dnxcore50) (>= net46)) (&& (>= dnxcore50) (>= netstandard1.1)) (&& (>= dnxcore50) (>= netstandard1.2)) (&& (>= dnxcore50) (>= netstandard1.3)) (&& (>= dnxcore50) (>= netstandard1.4)) (&& (>= dnxcore50) (>= netstandard1.5)) (&& (>= dnxcore50) (>= netstandard1.6)) (&& (>= dnxcore50) (>= uap10.0)) (&& (< monoandroid) (< net45) (< netstandard1.2) (>= netstandard1.3) (< win8)) (&& (< monoandroid) (< net45) (< netstandard1.2) (>= netstandard1.6) (< win8)) (&& (< monoandroid) (< net45) (< netstandard1.3) (>= netstandard1.6) (< win8) (< wpa81)) (&& (< monoandroid) (< net45) (< netstandard1.4) (>= netstandard1.6) (< win8) (< wpa81)) (&& (< monoandroid) (< net45) (< netstandard1.5) (>= netstandard1.6) (< win8) (< wpa81)) (&& (< monoandroid) (< net452) (< netstandard1.6) (>= netstandard2.0)) (&& (< monoandroid) (< net452) (>= netstandard2.0) (< xamarinios)) (&& (< net45) (>= net46) (< netstandard1.2)) (&& (< net45) (>= net46) (< netstandard1.3)) (&& (< net45) (>= net46) (>= netstandard1.4) (< netstandard1.5)) (&& (< net45) (>= net46) (< netstandard1.4)) (&& (< net45) (>= net46) (>= netstandard1.5) (< netstandard1.6)) (&& (< net45) (>= net46) (>= netstandard1.6) (< netstandard2.0)) (&& (< net45) (>= netstandard1.3) (< netstandard1.4) (< win8) (< wpa81)) (&& (< net45) (>= netstandard1.4) (< netstandard1.5) (< win8) (< wpa81)) (&& (< net45) (>= netstandard1.5) (< netstandard1.6) (< win8) (< wpa81)) (&& (< net45) (>= netstandard1.6) (< netstandard2.0) (< win8) (< wpa81)) (&& (< net452) (>= net46) (>= netstandard2.0)) (&& (>= net46) (>= uap10.0)) (&& (>= netstandard1.6) (>= uap10.0)) (&& (< netstandard1.6) (>= uap10.0) (< win8) (< wpa81)) (&& (>= uap10.0) (< uap10.1))"
 
-    let restriction, parseProblems = Requirements.parseRestrictions restrictions
+    let restriction, parseProblems = Requirements.parseRestrictionsSimplified restrictions
 
     parseProblems |> Seq.toList |> shouldEqual []
 
     restriction.RepresentedFrameworks |> Seq.map (fun x -> x.CompareString) |> shouldNotContain "net45"
+
+    let simplified = Paket.Requirements.FrameworkRestriction.simplify restriction
+    simplified.RepresentedFrameworks |> Seq.map (fun x -> x.CompareString) |> shouldNotContain "net45"
+    simplified.RawFormular.ToString() |> shouldEqual "|| (&& (< monoandroid) (< net45) (< netstandard1.2) (>= netstandard1.3) (< win8)) (&& (< monoandroid) (< net45) (< netstandard1.2) (>= netstandard1.6) (< win8)) (&& (< monoandroid) (< net45) (< netstandard1.3) (>= netstandard1.6) (< win8) (< wpa81)) (&& (< monoandroid) (< net45) (< netstandard1.4) (>= netstandard1.6) (< win8) (< wpa81)) (&& (< monoandroid) (< net45) (< netstandard1.5) (>= netstandard1.6) (< win8) (< wpa81)) (&& (< monoandroid) (< net452) (< netstandard1.6) (>= netstandard2.0)) (&& (< monoandroid) (< net452) (>= netstandard2.0) (< xamarinios)) (&& (< net45) (>= net46) (< netstandard1.2)) (&& (< net45) (>= net46) (< netstandard1.3)) (&& (< net45) (>= net46) (>= netstandard1.4) (< netstandard1.5)) (&& (< net45) (>= net46) (< netstandard1.4)) (&& (< net45) (>= net46) (>= netstandard1.5) (< netstandard1.6)) (&& (< net45) (>= net46) (>= netstandard1.6) (< netstandard2.0)) (&& (< net45) (>= netstandard1.3) (< netstandard1.4) (< win8) (< wpa81)) (&& (< net45) (>= netstandard1.4) (< netstandard1.5) (< win8) (< wpa81)) (&& (< net45) (>= netstandard1.5) (< netstandard1.6) (< win8) (< wpa81)) (&& (< net45) (>= netstandard1.6) (< netstandard2.0) (< win8) (< wpa81)) (&& (< net452) (>= net46) (>= netstandard2.0)) (&& (>= net46) (>= uap10.0)) (&& (>= netstandard1.6) (>= uap10.0)) (&& (< netstandard1.6) (>= uap10.0) (< win8) (< wpa81)) (&& (>= uap10.0) (< uap10.1))"
 
 [<Test>]
 let ``Simplify && (false) (< net45)`` () =
