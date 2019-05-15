@@ -789,3 +789,67 @@ let ``#2776 transitive references stops on project with template`` () =
     dependencies |> shouldNotContain (PackageName "nlog")
 
     CleanDir rootPath
+
+[<Test>]
+let ``#3166 pack multitarget with p2p by tfm`` () =
+    let scenario = "i003166-pack-multitarget-with-p2p-by-tfm"
+    prepareSdk scenario
+    let rootPath = scenarioTempPath scenario
+
+    directDotnet true "build MyProj.Main -c Release" rootPath
+    |> Seq.iter (printfn "%A")
+
+    let outPath = Path.Combine(rootPath, "out")
+    directPaket (sprintf """pack "%s" """ outPath) scenario
+    |> printfn "%s"
+
+    let tfmNET45 = FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_5)
+    let ``>= net45`` = FrameworkRestriction.AtLeast(tfmNET45)
+    let tfmNETSTANDARD2_0 = FrameworkIdentifier.DotNetStandard(DotNetStandardVersion.V2_0)
+    let ``>= netstandard2.0`` = FrameworkRestriction.And [FrameworkRestriction.NotAtLeast(tfmNET45); FrameworkRestriction.AtLeast(tfmNETSTANDARD2_0)]
+
+    let _checkNupkgCommon =
+
+        let nupkgPath = Path.Combine(outPath, "MyProj.Common.1.0.0.nupkg")
+
+        if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
+        let nuspec = NuGetLocal.getNuSpecFromNupgk nupkgPath
+        printfn "%A" nuspec
+        printfn "%A" nuspec.Dependencies.Value
+        let depsByTfm byTfm = nuspec.Dependencies.Value |> Seq.choose (fun (pkgName,version,tfm) -> if (tfm.GetExplicitRestriction()) = byTfm then Some (pkgName,version) else None) |> Seq.toList
+        let pkgVer name version = (PackageName name), (VersionRequirement.Parse version)
+
+        CollectionAssert.AreEquivalent([ pkgVer "Suave" "[1.1.3]" ], depsByTfm (``>= net45``))
+
+        CollectionAssert.AreEquivalent([ pkgVer "Argu" "[5.2.0]" ], depsByTfm (``>= netstandard2.0``))
+
+        CollectionAssert.AreEquivalent([ pkgVer "FSharp.Core" "3.1.2.5" ], depsByTfm (FrameworkRestriction.Or [``>= net45``; ``>= netstandard2.0``]))
+
+        let unzippedNupkgPath = Path.Combine(outPath, "MyProj.Common")
+        ZipFile.ExtractToDirectory(nupkgPath, unzippedNupkgPath)
+        Path.Combine(unzippedNupkgPath, "lib", "net45", "MyProj.Common.dll") |> checkFileExists
+        Path.Combine(unzippedNupkgPath, "lib", "netstandard2.0", "MyProj.Common.dll") |> checkFileExists
+
+    let _checkNupkgMain =
+
+        let nupkgPath = Path.Combine(outPath, "MyProj.Main.1.0.0.nupkg")
+
+        if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
+        let nuspec = NuGetLocal.getNuSpecFromNupgk nupkgPath
+        printfn "%A" nuspec
+        printfn "%A" nuspec.Dependencies.Value
+        let depsByTfm byTfm = nuspec.Dependencies.Value |> Seq.choose (fun (pkgName,version,tfm) -> if (tfm.GetExplicitRestriction()) = byTfm then Some (pkgName,version) else None) |> Seq.toList
+        let pkgVer name version = (PackageName name), (VersionRequirement.Parse version)
+
+        CollectionAssert.AreEquivalent([ pkgVer "Suave" "[1.1.3]" ], depsByTfm (``>= net45``))
+
+        CollectionAssert.AreEquivalent([ pkgVer "Argu" "[5.2.0]" ], depsByTfm (``>= netstandard2.0``))
+
+        CollectionAssert.AreEquivalent([ pkgVer "FSharp.Core" "3.1.2.5"; pkgVer "MyProj.Common" "1.0.0" ], depsByTfm (FrameworkRestriction.Or [``>= net45``; ``>= netstandard2.0``]))
+
+        let unzippedNupkgPath = Path.Combine(outPath, "MyProj.Main")
+        ZipFile.ExtractToDirectory(nupkgPath, unzippedNupkgPath)
+        Path.Combine(unzippedNupkgPath, "lib", "net45", "MyProj.Main.dll") |> checkFileExists
+        Path.Combine(unzippedNupkgPath, "lib", "netstandard2.0", "MyProj.Main.dll") |> checkFileExists
+
+    CleanDir rootPath    

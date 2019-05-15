@@ -697,7 +697,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                 | None ->
                     failwithf 
                         "The group %O was found in the %s file but not in the %s file. Please run \"paket install\" again." 
-                        kv.Value
+                        kv.Value.Name
                         Constants.LockFileName
                         Constants.DependenciesFileName
                 | Some depFileGroup ->

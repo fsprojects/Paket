@@ -574,7 +574,7 @@ type FrameworkIdentifier =
         | WindowsPhoneApp v -> "wpa" + v.ShortString()
         | Silverlight v -> "sl" + v.ShortString()
         | Tizen v -> "tizen" + v.ShortString()
-        | Unsupported s -> failwithf "Framework \"%s\" is unsupported" s
+        | Unsupported s -> s
 
 
     member internal x.RawSupportedPlatformsTransitive =
@@ -1103,7 +1103,6 @@ type TargetProfileRaw =
 
     member x.IsUnsupportedPortable =
         match x with
-        | SinglePlatformP (Unsupported _ ) -> true
         | PortableProfileP p -> p.IsUnsupprted
         | _ -> false
 

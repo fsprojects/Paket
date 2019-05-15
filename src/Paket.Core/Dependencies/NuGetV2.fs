@@ -193,7 +193,7 @@ let private handleODataEntry nugetURL packageName version entry =
                 let restriction = a.[2]
                 match PlatformMatching.extractPlatforms false restriction with
                 | Some p ->
-                    Some { p with Platforms = p.Platforms }
+                    Some p
                 | None ->
                     if not (restriction.StartsWith "_") then 
                         Logging.traceWarnIfNotBefore ("Package", restriction, packageName, version) "Could not detect any platforms from '%s' in package %O %O, please tell the package authors" restriction packageName version
