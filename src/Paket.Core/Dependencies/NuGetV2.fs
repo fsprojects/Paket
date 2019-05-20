@@ -92,7 +92,7 @@ let private followODataLink auth url =
 let private tryGetAllVersionsFromNugetODataWithFilterWarnings = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
 let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageName) =
-    let url = sprintf "%s/Packages?semVerLevel=2.0.0&$filter=Id eq '%O'" nugetURL package
+    let url = sprintf "%s/Packages()?semVerLevel=2.0.0&$filter=Id eq '%O'" nugetURL package
     NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
         async {
             try
@@ -106,7 +106,7 @@ let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageNa
                     tryGetAllVersionsFromNugetODataWithFilterWarnings.TryAdd(nugetURL, true) |> ignore
                 if verbose then
                     printfn "Error while retrieving data from '%s': %O" url exn
-                let url = sprintf "%s/Packages?semVerLevel=2.0.0&$filter=tolower(Id) eq '%s'" nugetURL (package.CompareString)
+                let url = sprintf "%s/Packages()?semVerLevel=2.0.0&$filter=tolower(Id) eq '%s'" nugetURL (package.CompareString)
                 try
                     let! result = followODataLink auth url
                     return SuccessResponse result
@@ -301,7 +301,7 @@ let getDetailsFromNuGetViaODataFast isVersionAssumed nugetSource (packageName:Pa
                 (UrlId.GetVersion_Filter
                     ({ LoweredPackageId = false; NormalizedVersion = true },
                      { ToLower = false; NormalizedVersion = true }))
-                "2_%s/Packages?$filter=(Id eq '%s') and (NormalizedVersion eq '%s')"
+                "2_%s/Packages()?$filter=(Id eq '%s') and (NormalizedVersion eq '%s')"
                 nugetSource.Url
                 (packageName.ToString())
                 normalizedVersion
@@ -310,7 +310,7 @@ let getDetailsFromNuGetViaODataFast isVersionAssumed nugetSource (packageName:Pa
                 (UrlId.GetVersion_Filter
                     ({ LoweredPackageId = true; NormalizedVersion = true },
                      { ToLower = true; NormalizedVersion = true }))
-                "2_%s/Packages?$filter=(tolower(Id) eq '%s') and (NormalizedVersion eq '%s')"
+                "2_%s/Packages()?$filter=(tolower(Id) eq '%s') and (NormalizedVersion eq '%s')"
                 nugetSource.Url
                 (packageName.CompareString)
                 normalizedVersion
@@ -318,21 +318,21 @@ let getDetailsFromNuGetViaODataFast isVersionAssumed nugetSource (packageName:Pa
               // and https://github.com/fsprojects/Paket/issues/2320
               UrlToTry.From
                 (UrlId.GetVersion_Filter({ LoweredPackageId = false; NormalizedVersion = true }, { ToLower = false; NormalizedVersion = false }))
-                "2_%s/Packages?$filter=(Id eq '%s') and (Version eq '%s')"
+                "2_%s/Packages()?$filter=(Id eq '%s') and (Version eq '%s')"
                 nugetSource.Url
                 (packageName.ToString())
                 normalizedVersion
               // Not sure
               UrlToTry.From
                 (UrlId.GetVersion_Filter({ LoweredPackageId = true; NormalizedVersion = false }, { ToLower = true; NormalizedVersion = false }))
-                "2_%s/Packages?$filter=(tolower(Id) eq '%s') and (Version eq '%O')"
+                "2_%s/Packages()?$filter=(tolower(Id) eq '%s') and (Version eq '%O')"
                 nugetSource.Url
                 (packageName.CompareString)
                 version
               // Not sure
               UrlToTry.From
                 (UrlId.GetVersion_Filter({ LoweredPackageId = true; NormalizedVersion = true }, { ToLower = true; NormalizedVersion = false }))
-                "2_%s/Packages?$filter=(tolower(Id) eq '%s') and (Version eq '%O')"
+                "2_%s/Packages()?$filter=(tolower(Id) eq '%s') and (Version eq '%O')"
                 nugetSource.Url
                 (packageName.CompareString)
                 normalizedVersion
