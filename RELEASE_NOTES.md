@@ -1,3 +1,6 @@
+#### 5.207.1 - 2019-05-21
+* BUGFIX: Keep casing of packages stable in paket.lock - https://github.com/fsprojects/Paket/issues/3340
+
 #### 5.207.0 - 2019-05-11
 * Simplifier removes unsupported frameworks - https://github.com/fsprojects/Paket/pull/3574
 
