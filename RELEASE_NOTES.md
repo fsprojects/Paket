@@ -1,4 +1,4 @@
-#### 5.207.1 - 2019-05-21
+#### 5.207.2 - 2019-05-21
 * BUGFIX: Nuke project.assets.json files after paket install - https://github.com/fsprojects/Paket/issues/3577
 
 #### 5.207.1 - 2019-05-21
