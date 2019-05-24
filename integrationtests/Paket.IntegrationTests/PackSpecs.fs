@@ -739,6 +739,36 @@ let ``#4003 dotnet pack of a global tool with p2p``() =
     nuspec.Dependencies.Value.Length
     |> shouldEqual 0
 
+
+[<Test>]
+let ``#4004 dotnet pack using different versions``() = 
+    let project = "lib1"
+    let scenario = "i004004-pack-version"
+    prepareSdk scenario
+
+    let rootPath = scenarioTempPath scenario
+
+    directPaket ("restore") scenario
+    |> ignore
+
+    let pack outDir additionalArgs expectedVersion =
+        let outPath = Path.Combine(rootPath, outDir)
+
+        directDotnet true (sprintf "pack -o \"%s\" %s" outPath additionalArgs) rootPath
+        |> ignore
+
+        let nupkgPath = Path.Combine(outPath, sprintf "%s.%s.nupkg" project expectedVersion)
+        if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
+
+    pack "out1" "" "1.0.0"
+    pack "out1" "/p:Version=1.2.3" "1.2.3"
+    pack "out2" "/p:Version=2.3.4" "2.3.4"
+
+
+
+
+
+
 [<Test>]
 let ``#4010-pack-template-only``() =
     let scenario = "i004010-pack-template-only"
