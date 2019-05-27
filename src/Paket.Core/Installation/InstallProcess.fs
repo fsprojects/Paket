@@ -588,6 +588,14 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
     Paket.RestoreProcess.saveToFile (lockFile.ToString()) (FileInfo restoreCacheFile) |> ignore
     Paket.RestoreProcess.WriteGitignore restoreCacheFile
 
+    for project, _ in projectsAndReferences do
+        let di = (FileInfo project.FileName).Directory
+        for file in Directory.EnumerateFiles(di.FullName,"project.assets.json", SearchOption.AllDirectories) do
+            try
+                File.Delete file
+            with
+            | _ -> ()
+
 /// Installs all packages from the lock file.
 let Install(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, updatedGroups) =
     let root = FileInfo(lockFile.FileName).Directory.FullName

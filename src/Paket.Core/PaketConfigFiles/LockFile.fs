@@ -24,7 +24,15 @@ type LockFileGroup =
         | Some r ->
             Some (PackageInfo.from r x.Options.Settings)
         | None -> None
+
 module LockFileSerializer =
+    let packageNames = System.Collections.Concurrent.ConcurrentDictionary<string,string>()
+    let writePackageName (name:PackageName) =
+        let packageName = name.ToString()
+        match packageNames.TryGetValue(packageName.ToLower()) with
+        | true, x -> x
+        | _ -> packageName
+
     /// [omit]
     let serializeOptionsAsLines options = [
         if options.Strict then yield "REFERENCES: STRICT"
@@ -144,9 +152,9 @@ module LockFileSerializer =
 
 
                       if s = "" then 
-                          yield sprintf "    %O %s" package.Name versionStr 
+                          yield sprintf "    %s %s" (writePackageName package.Name) versionStr 
                       else
-                          yield sprintf "    %O %s - %s" package.Name versionStr s
+                          yield sprintf "    %s %s - %s" (writePackageName package.Name) versionStr s
 
                       for name,v,restrictions in package.Dependencies do
                           let versionStr = 
@@ -155,9 +163,9 @@ module LockFileSerializer =
 
                           let restrictions = filterRestrictions options.Settings.FrameworkRestrictions restrictions |> getExplicitRestriction
                           if FrameworkRestriction.NoRestriction = restrictions || restrictions = getExplicitRestriction options.Settings.FrameworkRestrictions then
-                            yield sprintf "      %O %s" name versionStr
+                            yield sprintf "      %s %s" (writePackageName name) versionStr
                           else
-                            yield sprintf "      %O %s - restriction: %O" name versionStr restrictions]
+                            yield sprintf "      %s %s - restriction: %O" (writePackageName name) versionStr restrictions]
     
         String.Join(Environment.NewLine, all |> List.map (fun s -> s.TrimEnd()))
 
@@ -244,7 +252,6 @@ module LockFileSerializer =
         String.Join(Environment.NewLine, all |> List.map (fun s -> s.TrimEnd()))
 
 module LockFileParser =
-
     type ParseState = { 
         GroupName : GroupName
         RepositoryType : string option
@@ -480,11 +487,13 @@ module LockFileParser =
                                 failwithf "No version specified for package %O in group %O." package currentGroup.GroupName
                             parts'.[1] |> removeBrackets
 
+                        let lockFilePackageName = parts'.[0]
+                        let packageName = LockFileSerializer.packageNames.GetOrAdd(lockFilePackageName.ToLower(), fun _ -> lockFilePackageName)
                         { currentGroup with 
                             LastWasPackage = true
                             Packages = 
                                     { Source = PackageSource.Parse(remote, AuthService.GetGlobalAuthenticationProvider remote)
-                                      Name = PackageName parts'.[0]
+                                      Name = PackageName packageName
                                       Dependencies = Set.empty
                                       Unlisted = false
                                       Settings = settings

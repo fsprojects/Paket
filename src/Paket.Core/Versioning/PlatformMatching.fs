@@ -56,7 +56,7 @@ let extractPlatforms warn path =
 let forceExtractPlatforms path =
     match extractPlatforms false path with
     | Some s -> s
-    | None -> failwithf "Extracting platforms from path '%s' failed" path
+    | None -> failwithf "Extracting platforms from path '%s' failed, a newer Paket version might support it, otherwise please open an issue for a missing platform handler." path
 
 // TODO: In future work this stuff should be rewritten. This penalty stuff is more random than a proper implementation.
 // Penalty: 000000
