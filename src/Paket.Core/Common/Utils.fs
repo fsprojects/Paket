@@ -453,7 +453,7 @@ let RunInLockedAccessMode(lockedFolder,action) =
     let p = System.Diagnostics.Process.GetCurrentProcess()
     let fileName = Path.Combine(lockedFolder,Constants.AccessLockFileName)
 
-    // Checks the packagesFolder for a paket.locked file or waits until it get access to it.
+    // Checks the packagesFolder for a .processlock file or waits until it get access to it.
     let rec acquireLock (startTime:DateTime) (timeOut:TimeSpan) trials =
         try
             let rec waitForUnlocked counter =
