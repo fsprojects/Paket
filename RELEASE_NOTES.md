@@ -1,3 +1,6 @@
+#### 5.207.4 - 2019-05-28
+* BUGFIX: Fixed multiple dotnet pack invocations with different Version property - https://github.com/fsprojects/Paket/pull/3585
+
 #### 5.207.3 - 2019-05-23
 * COSMETICS: Improved error message for missing monikers - https://github.com/fsprojects/Paket/pull/3583
 
