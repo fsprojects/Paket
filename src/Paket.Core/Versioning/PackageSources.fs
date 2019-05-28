@@ -150,7 +150,7 @@ type PackageSource =
 #endif
                     LocalNuGet(source,None)
                 else 
-                    if Regex("/v3(?:/[-\w]+)?/index.json$").IsMatch source then
+                    if source.Contains("/v3/") then
                         NuGetV3 { Url = source; Authentication = auth }
                     else
                         NuGetV2 { Url = source; Authentication = auth }
