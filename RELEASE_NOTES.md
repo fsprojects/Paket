@@ -1,3 +1,6 @@
+#### 5.209.0 - 2019-05-29
+* Relaxed NuGet v3 check. Allows URLs that does not end with /index.json - https://github.com/fsprojects/Paket/pull/3590
+
 #### 5.208.0 - 2019-05-28
 * BUGFIX: Rename paket.locked file to paket.processlock to avoid McAfee scanner to evaluate the file as threat - https://github.com/fsprojects/Paket/pull/3586
 * BUGFIX: Fixed multiple dotnet pack invocations with different Version property - https://github.com/fsprojects/Paket/pull/3585
