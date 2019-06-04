@@ -1388,7 +1388,7 @@ module ProjectFile =
                   ReferenceOutputAssembly = referenceOutputAssembly
                   GUID =
                     match forceGetInnerText node "Project" with
-                    | Some projectGuid when String.IsNullOrWhitespace projectGuid |> not -> Some (Guid.Parse projectGuid)
+                    | Some projectGuid when String.IsNullOrWhiteSpace projectGuid |> not -> Some (Guid.Parse projectGuid)
                     | _ -> None }
 
             match optPath with
