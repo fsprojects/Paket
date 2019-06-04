@@ -1386,7 +1386,10 @@ module ProjectFile =
                   RelativePath = path.Replace("/","\\")
                   Name = forceGetName node "Name"
                   ReferenceOutputAssembly = referenceOutputAssembly
-                  GUID = (forceGetInnerText node "Project") |> Option.map Guid.Parse }
+                  GUID =
+                    match forceGetInnerText node "Project" with
+                    | Some projectGuid when String.IsNullOrWhitespace projectGuid |> not -> Some (Guid.Parse projectGuid)
+                    | _ -> None }
 
             match optPath with
             | Some path -> yield makePathNode path

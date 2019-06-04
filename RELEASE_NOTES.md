@@ -1,3 +1,6 @@
+#### 5.209.1 - 2019-06-04
+* BUGFIX: Allow projects without Guids - https://github.com/fsprojects/Paket/issues/3528
+
 #### 5.209.0 - 2019-05-29
 * Relaxed NuGet v3 check. Allows URLs that does not end with /index.json - https://github.com/fsprojects/Paket/pull/3590
 
