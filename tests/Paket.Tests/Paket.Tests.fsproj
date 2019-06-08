@@ -323,6 +323,8 @@
     <Compile Include="ProjectFile\UpdateFromNugetSpecs.fs" />
     <Compile Include="ProjectFile\ReadPropertySpecs.fs" />
     <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
+    <None Include="InstallModel\runtimeJsonMsNetCorePlatforms2_2_1.json" />
+    <None Include="InstallModel\runtimeJsonMsNetCoreTargets2_1_0.json" />
     <Compile Include="InstallModel\RuntimeGraphTests.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
     <Compile Include="InstallModel\Xml\ControlzEx.fs" />

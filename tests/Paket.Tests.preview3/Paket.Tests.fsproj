@@ -167,6 +167,8 @@
     <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\LocalizationSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\UpdateFromNugetSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\InstallModel\FrameworkIdentifierSpecs.fs" />
+    <None Include="$(PaketTestsSourcesDir)\InstallModel\runtimeJsonMsNetCorePlatforms2_2_1.json" />
+    <None Include="$(PaketTestsSourcesDir)\InstallModel\runtimeJsonMsNetCoreTargets2_1_0.json" />
     <Compile Include="$(PaketTestsSourcesDir)\InstallModel\RuntimeGraphTests.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\InstallModel\ProcessingSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\ControlzEx.fs" />
