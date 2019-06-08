@@ -62,6 +62,27 @@ let ``should understand libuv in runtimes``() =
        |> Seq.map (fun (r:RuntimeLibrary) -> r.Library.Path) |> shouldContain @"..\Microsoft.AspNetCore.Server.Kestrel\runtimes\win7-x64\native\libuv.dll"
 
 [<Test>]
+let ``should understand incorrect SQLite packaging``() = 
+    let model =
+      emptymodel.AddReferences
+        ([ @"..\System.Data.SQLite.Core\runtimes\linux-x64\native\netstandard2.0\SQLite.Interop.dll"
+           @"..\System.Data.SQLite.Core\runtimes\os-x64\native\netstandard2.0\SQLite.Interop.dll"
+           @"..\System.Data.SQLite.Core\runtimes\win-x64\native\netstandard2.0\SQLite.Interop.dll"
+           @"..\System.Data.SQLite.Core\runtimes\win-x86\native\netstandard2.0\SQLite.Interop.dll"
+         ] |> fromLegacyList @"..\System.Data.SQLite.Core\")
+
+    // Not sure, for now undefined -> and contained, lets see
+    //model.GetRuntimeLibraries RuntimeGraph.Empty (Rid.Of "win-x64") (TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4))
+    //   |> Seq.map (fun (r:RuntimeLibrary) -> r.Library.Path) |> shouldNotContain @"..\System.Data.SQLite.Core\runtimes\win-x64\native\netstandard2.0\SQLite.Interop.dll"
+    
+    model.GetRuntimeLibraries RuntimeGraph.Empty (Rid.Of "win-x64") (TargetProfile.SinglePlatform (DotNetStandard DotNetStandardVersion.V2_0))
+       |> Seq.map (fun (r:RuntimeLibrary) -> r.Library.Path) |> shouldContain @"..\System.Data.SQLite.Core\runtimes\win-x64\native\netstandard2.0\SQLite.Interop.dll"
+    model.GetRuntimeLibraries RuntimeGraph.Empty (Rid.Of "win-x86") (TargetProfile.SinglePlatform (DotNetCoreApp DotNetCoreAppVersion.V2_2))
+       |> Seq.map (fun (r:RuntimeLibrary) -> r.Library.Path) |> shouldContain @"..\System.Data.SQLite.Core\runtimes\win-x86\native\netstandard2.0\SQLite.Interop.dll"
+    model.GetRuntimeLibraries RuntimeGraph.Empty (Rid.Of "os-x64") (TargetProfile.SinglePlatform (DotNetCoreApp DotNetCoreAppVersion.V2_2))
+       |> Seq.map (fun (r:RuntimeLibrary) -> r.Library.Path) |> shouldContain @"..\System.Data.SQLite.Core\runtimes\os-x64\native\netstandard2.0\SQLite.Interop.dll"
+
+[<Test>]
 let ``should understand reference folder``() =
     let model =
       emptymodel.AddReferences

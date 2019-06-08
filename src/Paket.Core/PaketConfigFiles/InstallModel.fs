@@ -467,6 +467,12 @@ module InstallModel =
         |> Option.orElseWith (fun _ ->
             (trySscanf "runtimes/%A{rid}/native/%A{noSeperator}" p : (Rid * string) option)
             |> Option.map (fun (rid, _) -> { Path = Tfm.Empty; File = p; Runtime = Some rid }))
+        |> Option.orElseWith (fun _ ->
+            // fallback for some incorrect packages, like https://www.nuget.org/packages/System.Data.SQLite.Core/
+            (trySscanf "runtimes/%A{rid}/native/%A{tfm}/%A{noSeperator}" p : (Rid * Tfm * string) option)
+            |> Option.map (fun (rid, l,_) ->
+                traceWarnIfNotBefore ("File", p.BasePath) "Could detect native library in '%s' which is incorrectly packaged because it should be directly under 'native' or in the 'nativeassets' folder, please tell the package authors" p.FullPath
+                { Path = l; File = p; Runtime = Some rid }))
 
     let getMsbuildFile (p:UnparsedPackageFile) =
         (trySscanf "build/%A{tfm}/%A{noSeperator}" p : (Tfm * string) option)
