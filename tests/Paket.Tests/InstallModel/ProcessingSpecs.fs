@@ -16,6 +16,19 @@ let fromLegacyList (prefix:string) l =
             { Paket.NuGet.UnparsedPackageFile.FullPath = i; Paket.NuGet.UnparsedPackageFile.PathWithinPackage = i.Substring(prefix.Length).Replace("\\", "/") }
         else failwithf "Expected '%s' to start with '%s'" i prefix)
 
+// for testing you can temporarily replace fromLegacyList to get the "real" deal.
+let fromNuGetFolder (f:string) =
+    let nuspecFile = Directory.EnumerateFiles(f, "*.nuspec") |> Seq.exactlyOne
+    let packageName = Path.GetFileName nuspecFile
+    let nuspec = Nuspec.Load nuspecFile
+    let content = (NuGet.GetContentWithNuSpec nuspec f).Force()
+    InstallModel.CreateFromContent(
+        PackageName packageName, 
+        SemVer.Parse nuspec.Version, 
+        InstallModelKind.Package,
+        Paket.Requirements.FrameworkRestriction.NoRestriction, 
+        content)
+
 [<Test>]
 let ``Library.ofFile should not crash on files without extension``() =
     let frameworkDepFile = {
@@ -81,6 +94,26 @@ let ``should understand incorrect SQLite packaging``() =
        |> Seq.map (fun (r:RuntimeLibrary) -> r.Library.Path) |> shouldContain @"..\System.Data.SQLite.Core\runtimes\win-x86\native\netstandard2.0\SQLite.Interop.dll"
     model.GetRuntimeLibraries RuntimeGraph.Empty (Rid.Of "os-x64") (TargetProfile.SinglePlatform (DotNetCoreApp DotNetCoreAppVersion.V2_2))
        |> Seq.map (fun (r:RuntimeLibrary) -> r.Library.Path) |> shouldContain @"..\System.Data.SQLite.Core\runtimes\os-x64\native\netstandard2.0\SQLite.Interop.dll"
+
+[<Test>]
+let ``should understand sni packaging``() =
+    let graph = 
+        RuntimeGraph.merge RuntimeGraphTests.runtimeGraphMsNetCorePlatforms2_2_1 RuntimeGraphTests.runtimeGraphMsNetCoreTargets2_1_0
+    let rs, _ = Requirements.parseRestrictions "== netstandard2.0"
+    let model = 
+      //(fromNuGetFolder @"C:\Users\matth\.nuget\packages\runtime.win-x64.runtime.native.system.data.sqlclient.sni\4.4.0")
+      emptymodel.AddReferences(
+         [ @"..\runtime.win-x64.runtime.native.system.data.sqlclient.sni\runtimes\win-x64\native\sni.dll"
+         ] |> fromLegacyList @"..\runtime.win-x64.runtime.native.system.data.sqlclient.sni\")
+        .RemoveIfCompletelyEmpty()
+    model.GetRuntimeLibraries graph (Rid.Of "os-x64") (TargetProfile.SinglePlatform (DotNetCoreApp DotNetCoreAppVersion.V2_2))
+       |> Seq.map (fun (r:RuntimeLibrary) -> r.Library.Path) |> shouldNotContain @"..\runtime.win-x64.runtime.native.system.data.sqlclient.sni\runtimes\win-x64\native\sni.dll"
+    model.GetRuntimeLibraries graph (Rid.Of "win10-x64") (TargetProfile.SinglePlatform (DotNetStandard (DotNetStandardVersion.V2_0)))
+       |> Seq.map (fun (r:RuntimeLibrary) -> r.Library.Path) |> shouldContain @"..\runtime.win-x64.runtime.native.system.data.sqlclient.sni\runtimes\win-x64\native\sni.dll"
+    model.GetRuntimeLibraries graph (Rid.Of "win-x64") (TargetProfile.SinglePlatform (DotNetStandard (DotNetStandardVersion.V2_0)))
+       |> Seq.map (fun (r:RuntimeLibrary) -> r.Library.Path) |> shouldContain @"..\runtime.win-x64.runtime.native.system.data.sqlclient.sni\runtimes\win-x64\native\sni.dll"
+    model.GetRuntimeLibraries graph (Rid.Of "win") (TargetProfile.SinglePlatform (DotNetStandard (DotNetStandardVersion.V2_0)))
+       |> Seq.map (fun (r:RuntimeLibrary) -> r.Library.Path) |> shouldNotContain @"..\runtime.win-x64.runtime.native.system.data.sqlclient.sni\runtimes\win-x64\native\sni.dll"
 
 [<Test>]
 let ``should understand reference folder``() =

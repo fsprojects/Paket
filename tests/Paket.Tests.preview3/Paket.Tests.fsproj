@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <PaketTestsSourcesDir>..\Paket.Tests</PaketTestsSourcesDir>
@@ -167,6 +167,7 @@
     <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\LocalizationSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\ProjectFile\UpdateFromNugetSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\InstallModel\FrameworkIdentifierSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\RuntimeGraphTests.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\InstallModel\ProcessingSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\ControlzEx.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\InstallModel\Xml\Fantomas.fs" />
@@ -198,7 +199,6 @@
     <Compile Include="$(PaketTestsSourcesDir)\InstallModel\AnalyzerSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\InstallModel\UpdateProcessSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\InstallModel\BindingRedirect.fs" />
-    <Compile Include="$(PaketTestsSourcesDir)\InstallModel\RuntimeGraphTests.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\InstallModel\InstallNuGetContentsTests.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\Packaging\PackageProcessSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\Packaging\NuspecWriterSpecs.fs" />

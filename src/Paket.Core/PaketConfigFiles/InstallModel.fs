@@ -539,7 +539,7 @@ module InstallModel =
 
     let removeIfCompletelyEmpty (this:InstallModel) =
         let foldersEmpty =
-            isEmpty this.CompileRefFolders && isEmpty this.TargetsFileFolders && isEmpty this.RuntimeAssemblyFolders &&
+            isEmpty this.CompileRefFolders && isEmpty this.TargetsFileFolders && isEmpty this.RuntimeAssemblyFolders && isEmpty this.RuntimeLibFolders &&
             this.CompileLibFolders
             |> Seq.map (fun c -> c.FolderContents.Libraries |> Set.toSeq, c.FolderContents.FrameworkReferences |> Set.toSeq)
             |> Seq.forall (fun (libs, refs) -> Seq.isEmpty libs && Seq.isEmpty refs)

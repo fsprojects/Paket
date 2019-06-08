@@ -323,6 +323,7 @@
     <Compile Include="ProjectFile\UpdateFromNugetSpecs.fs" />
     <Compile Include="ProjectFile\ReadPropertySpecs.fs" />
     <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
+    <Compile Include="InstallModel\RuntimeGraphTests.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
     <Compile Include="InstallModel\Xml\ControlzEx.fs" />
     <Compile Include="InstallModel\Xml\Fantomas.fs" />
@@ -354,7 +355,6 @@
     <Compile Include="InstallModel\AnalyzerSpecs.fs" />
     <Compile Include="InstallModel\UpdateProcessSpecs.fs" />
     <Compile Include="InstallModel\BindingRedirect.fs" />
-    <Compile Include="InstallModel\RuntimeGraphTests.fs" />
     <Compile Include="InstallModel\InstallNuGetContentsTests.fs" />
     <Compile Include="InstallModel\PaketPropsTests.fs" />
     <Compile Include="Packaging\PackageProcessSpecs.fs" />
