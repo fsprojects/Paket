@@ -1,3 +1,6 @@
+#### 5.209.2-alpha.1 - 2019-06-09
+* BUGFIX: Fix native library detection - https://github.com/fsprojects/Paket/pull/3593
+
 #### 5.209.1 - 2019-06-04
 * BUGFIX: Allow projects without Guids - https://github.com/fsprojects/Paket/issues/3528
 
