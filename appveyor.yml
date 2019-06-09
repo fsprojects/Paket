@@ -15,7 +15,8 @@ artifacts:
   - path: 'temp\*.nupkg'
     type: NuGetPackage
   - path: 'tests_result\**\*.trx'
-    name: TestResults 
+    name: TestResults
+    type: zip
 nuget:
   account_feed: false
   project_feed: true
