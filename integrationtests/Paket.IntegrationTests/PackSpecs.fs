@@ -632,8 +632,8 @@ let ``#3164 pack analyzer`` () =
 
     
 [<Test>]
-let ``#3165 pack multitarget with p2p`` () = 
-    let scenario = "i003165-pack-multitarget-with-p2p"
+let ``#3317 pack multitarget with p2p`` () =
+    let scenario = "i003317-pack-multitarget-with-p2p"
     prepareSdk scenario
     let rootPath = scenarioTempPath scenario
 
@@ -642,7 +642,7 @@ let ``#3165 pack multitarget with p2p`` () =
 
     let outPath = Path.Combine(rootPath, "out")
     directPaket (sprintf """pack "%s" """ outPath) scenario
-    |> Seq.iter (printfn "%A")
+    |> printfn "%s"
 
     let nupkgPath = Path.Combine(outPath, "MyProj.Main.1.0.0.nupkg")
 
@@ -815,8 +815,8 @@ let ``#2776 transitive references stops on project with template`` () =
     CleanDir rootPath
 
 [<Test>]
-let ``#3166 pack multitarget with p2p by tfm`` () =
-    let scenario = "i003166-pack-multitarget-with-p2p-by-tfm"
+let ``#3558 pack multitarget with p2p by tfm`` () =
+    let scenario = "i003558-pack-multitarget-with-p2p-by-tfm"
     prepareSdk scenario
     let rootPath = scenarioTempPath scenario
 
