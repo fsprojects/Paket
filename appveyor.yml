@@ -14,8 +14,8 @@ artifacts:
     name: bin_netcore
   - path: 'temp\*.nupkg'
     type: NuGetPackage
-  - path: 'paket\tests_result\netcore\Paket.IntegrationTests\TestResult.trx'
-    name: IntegrationTestResults 
+  - path: 'tests_result\**\*.trx'
+    name: TestResults 
 nuget:
   account_feed: false
   project_feed: true
