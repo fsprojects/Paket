@@ -1,4 +1,5 @@
-#### 5.209.1 - 2019-06-04
+#### 5.210.0 - 2019-06-11
+* BUGFIX: Fixed native library detection - enables FAKE native library support - https://github.com/fsprojects/Paket/pull/3593
 * BUGFIX: Allow projects without Guids - https://github.com/fsprojects/Paket/issues/3528
 
 #### 5.209.0 - 2019-05-29
