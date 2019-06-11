@@ -128,7 +128,7 @@ let ``#1579 update allows unpinned``() =
     directPaket "pack templatefile paket.A.template version 1.0.0-prerelease output bin" scenario |> ignore
     directPaket "update" scenario|> ignore
 
-[<Test>]
+[<Test;Ignore "slow test">]
 let ``#1501 download succeeds``() =
     update "i001510-download" |> ignore
 

@@ -17,7 +17,7 @@ let ``#140 windsor should resolve framework dependent dependencies``() =
     |> getExplicitRestriction
     |> shouldEqual (FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V3_5), DotNetFramework(FrameworkVersion.V4)))
 
-[<Test>]
+[<Test; Ignore "slow test">]
 let ``#1182 framework restrictions overwrite each other``() =
     let lockFile = update "i001182-framework-restrictions"
     let lockFile = lockFile.ToString()
