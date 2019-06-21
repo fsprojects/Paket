@@ -379,6 +379,11 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Restores all dependencies.
     member this.Restore(): unit = this.Restore(false,None,[],false,false,false,None,None)
+    /// Simple packages restore: 
+    /// - Doesn't restore projects
+    /// - Doesn't write targets file
+    member this.SimplePackagesRestore(): unit = 
+        RestoreProcess.Restore(dependenciesFileName,RestoreProcess.RestoreProjectOptions.NoProjects,false,None,true,false,None,None,true)
 
     /// Restores the given paket.references files.
     member this.Restore(group: string option, files: string list, ignoreChecks): unit = this.Restore(false, group, files, false, ignoreChecks,false,None,None)
@@ -391,14 +396,16 @@ type Dependencies(dependenciesFileName: string) =
         if touchAffectedRefs then
             let packagesToTouch = RestoreProcess.FindPackagesNotExtractedYet(dependenciesFileName)
             this.Process (FindReferences.TouchReferencesOfPackages packagesToTouch)
-        RestoreProcess.Restore(dependenciesFileName,None,force,Option.map GroupName group,files,ignoreChecks, failOnChecks, targetFramework, outputPath)
+        let restoreOpts =
+            if files = [] then RestoreProcess.RestoreProjectOptions.AllProjects else RestoreProcess.RestoreProjectOptions.ReferenceFileList files
+        RestoreProcess.Restore(dependenciesFileName,restoreOpts,force,Option.map GroupName group,ignoreChecks, failOnChecks, targetFramework, outputPath, false)
 
     /// Restores the given paket.references files.
     member this.Restore(force: bool, group: string option, project: string, touchAffectedRefs: bool, ignoreChecks, failOnChecks, targetFramework, outputPath) : unit =
         if touchAffectedRefs then
             let packagesToTouch = RestoreProcess.FindPackagesNotExtractedYet(dependenciesFileName)
             this.Process (FindReferences.TouchReferencesOfPackages packagesToTouch)
-        RestoreProcess.Restore(dependenciesFileName,Some project,force,Option.map GroupName group,[],ignoreChecks, failOnChecks, targetFramework, outputPath)
+        RestoreProcess.Restore(dependenciesFileName,RestoreProcess.RestoreProjectOptions.SingleProject project,force,Option.map GroupName group,ignoreChecks, failOnChecks, targetFramework, outputPath, false)
 
     /// Restores packages for all available paket.references files
     /// (or all packages if onlyReferenced is false)

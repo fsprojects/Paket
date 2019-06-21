@@ -555,17 +555,61 @@ let RestoreNewSdkProject lockFile resolved groups (projectFile:ProjectFile) targ
             referencesFile
         )
    )
+   
+let internal getStringHash (s:string) =
+    use sha256 = System.Security.Cryptography.SHA256.Create()
+    s
+    |> System.Text.Encoding.UTF8.GetBytes
+    |> sha256.ComputeHash
+    |> BitConverter.ToString
+    |> fun s -> s.Replace("-", "")
 
-let private isRestoreUpDoDate (lockFileName:FileInfo) (lockFileContents:string) =
+type internal Hash =
+    | Hash of string
+    member x.HashString =
+        match x with
+        | Hash s -> s
+    member x.IsEmpty =
+        match x with
+        | Hash s -> String.IsNullOrEmpty s
+    static member OfString s = Hash (getStringHash s)
+        
+
+type internal RestoreCache =
+    { PackagesDownloadedHash : Hash
+      ProjectsRestoredHash : Hash }
+    member x.IsPackagesDownloadUpToDate (lockfileHash) =
+        if x.PackagesDownloadedHash.IsEmpty then false
+        else x.PackagesDownloadedHash = lockfileHash
+    member x.IsProjectRestoreUpToDate (lockfileHash) =
+        if x.ProjectsRestoredHash.IsEmpty then false
+        else x.ProjectsRestoredHash = lockfileHash
+    static member Empty =
+        { PackagesDownloadedHash = Hash ""
+          ProjectsRestoredHash = Hash "" }
+
+let private writeRestoreCache (file:string) { PackagesDownloadedHash = Hash packagesDownloadedHash; ProjectsRestoredHash = Hash projectsRestoredHash} =
+    let jobj = new Newtonsoft.Json.Linq.JObject()
+    jobj.["packagesDownloadedHash"] <- Newtonsoft.Json.Linq.JToken.op_Implicit packagesDownloadedHash
+    jobj.["projectsRestoredHash"] <- Newtonsoft.Json.Linq.JToken.op_Implicit projectsRestoredHash
+    let s = jobj.ToString()
+    saveToFile (s) (FileInfo file) |> ignore<_*_>
+    //File.WriteAllText(file, s)
+
+let private tryReadRestoreCache (file:string) =
+    if File.Exists file then
+        let f = File.ReadAllText(file)
+        try
+            let jobj = Newtonsoft.Json.Linq.JObject.Parse(f)
+            { PackagesDownloadedHash = Hash (string jobj.["packagesDownloadedHash"]); ProjectsRestoredHash = Hash(string jobj.["projectsRestoredHash"]) }
+        with
+        | :? Newtonsoft.Json.JsonReaderException as e -> RestoreCache.Empty
+    else RestoreCache.Empty
+
+let private readRestoreCache (lockFileName:FileInfo) =
     let root = lockFileName.Directory.FullName
     let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
-    // We ignore our check when we do a partial restore, this way we can
-    // fixup project specific changes (like an additional target framework or a changed references file)
-    // We could still skip the actual "restore" work, but that is left as an exercise for the interesting reader.
-    if File.Exists restoreCacheFile then
-        let oldContents = File.ReadAllText(restoreCacheFile)
-        oldContents = lockFileContents
-    else false
+    tryReadRestoreCache restoreCacheFile
 
 let internal WriteGitignore restoreCacheFile =
     let folder = FileInfo(restoreCacheFile).Directory
@@ -581,21 +625,19 @@ let internal WriteGitignore restoreCacheFile =
             |> normalizeLineEndings
         saveToFile contents (FileInfo restoreCacheGitIgnoreFile) |> ignore
 
-let IsRestoreUpToDate(lockFileName:FileInfo) =
-    let newContents = File.ReadAllText(lockFileName.FullName)
-    isRestoreUpDoDate lockFileName newContents
+type RestoreProjectOptions =
+    | AllProjects
+    | ReferenceFileList of referencesFileNames:string list
+    | NoProjects
+    | SingleProject of projectFile:string
 
-let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option,outputPath:string option) =
+let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,ignoreChecks,failOnChecks,targetFrameworks: string option,outputPath:string option,skipRestoreTargetsExtraction:bool) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
     let root = lockFileName.Directory.FullName
     let alternativeProjectRoot = None
     if not lockFileName.Exists then 
         failwithf "%s doesn't exist." lockFileName.FullName
-
-    // Shortcut if we already restored before
-    let isFullRestore = targetFrameworks = None && projectFile = None && group = None && referencesFileNames = []
-    let isEarlyExit newContents = isFullRestore && isRestoreUpDoDate lockFileName newContents
 
     let lockFile,localFile,hasLocalFile =
         // Do not parse the lockfile when we have an early exit scenario.
@@ -608,21 +650,34 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                       |> returnOrFail)
             lazy LocalFile.overrideLockFile localFile.Value lockFile.Value,localFile,true
 
-    if projectFile = None then
+    // Shortcut if we already restored before
+    // We ignore our check when we do a partial restore, this way we can
+    // fixup project specific changes (like an additional target framework or a changed references file)
+
+    // Check if caching makes sense (even if we only can cache parts of it)
+    let canCacheRestore = not (hasLocalFile || force) && targetFrameworks = None && (projectFile = AllProjects || projectFile = NoProjects) && group = None
+    
+    if not skipRestoreTargetsExtraction && (projectFile = AllProjects || projectFile = NoProjects) then
         extractRestoreTargets root |> ignore
 
-    if not (hasLocalFile || force) && isEarlyExit (File.ReadAllText lockFileName.FullName) then
+    let readCache () =
+        if not canCacheRestore then
+            None, RestoreCache.Empty, Hash "", false
+        else
+            let cache = readRestoreCache(lockFileName)
+            let lockFileHash = Hash.OfString (File.ReadAllText lockFileName.FullName)
+            let updatedCache =
+                { PackagesDownloadedHash = lockFileHash // we always download all packages in that situation
+                  ProjectsRestoredHash = if projectFile = AllProjects then lockFileHash else cache.ProjectsRestoredHash }
+            let isPackagesDownloadUpToDate = cache.IsPackagesDownloadUpToDate lockFileHash
+            let isProjectRestoreUpToDate = cache.IsProjectRestoreUpToDate lockFileHash
+            Some updatedCache, cache, lockFileHash, (isPackagesDownloadUpToDate && isProjectRestoreUpToDate) || (projectFile = NoProjects && isPackagesDownloadUpToDate)
+
+    let _,_,_, canEarlyExit = readCache()
+
+    if canEarlyExit then
         tracefn "The last restore is still up to date. Nothing left to do."
     else
-        let targetFilter = 
-            targetFrameworks
-            |> Option.map (fun s -> 
-                s.Split([|';'|], StringSplitOptions.RemoveEmptyEntries)
-                |> Array.map (fun s -> s.Trim())
-                |> Array.choose FrameworkDetection.Extract
-                |> Array.filter (fun x -> match x with Unsupported _ -> false | _ -> true))
-        
-        
         let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
         if not hasLocalFile && not ignoreChecks then
@@ -648,13 +703,15 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         let outputPath = outputPath |> Option.map DirectoryInfo
         let referencesFileNames =
             match projectFile with
-            | Some projectFileName ->
+            | SingleProject projectFileName ->
                 let projectFile = ProjectFile.LoadFromFile projectFileName
                 let referencesFile = RestoreNewSdkProject lockFile.Value resolved groups projectFile targetFrameworks outputPath
 
                 [referencesFile.FileName]
-            | None ->
-                if referencesFileNames = [] && group = None then
+            | ReferenceFileList l -> l
+            | NoProjects -> []
+            | AllProjects ->
+                if group = None then
                     // Restore all projects
                     let allSDKProjects =
                         ProjectFile.FindAllProjects root
@@ -662,8 +719,15 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
                     for proj in allSDKProjects do
                         RestoreNewSdkProject lockFile.Value resolved groups proj targetFrameworks outputPath |> ignore
-                referencesFileNames
+                []
 
+        let targetFilter = 
+            targetFrameworks
+            |> Option.map (fun s -> 
+                s.Split([|';'|], StringSplitOptions.RemoveEmptyEntries)
+                |> Array.map (fun s -> s.Trim())
+                |> Array.choose FrameworkDetection.Extract
+                |> Array.filter (fun x -> match x with Unsupported _ -> false | _ -> true))
 
         let tasks =
             groups
@@ -712,19 +776,25 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         RunInLockedAccessMode(
             Path.Combine(root,Constants.PaketFilesFolderName),
             (fun () ->
-                let newContents = File.ReadAllText lockFileName.FullName
-                if not (hasLocalFile || force) && isEarlyExit newContents then
+                let updatedCache, cache, lockFileHash, canEarlyExit = readCache()
+                if canEarlyExit then
                     tracefn "The last restore was successful. Nothing left to do."
                 else
-                    tracefn "Starting %srestore process." (if isFullRestore then "full " else "")
-                    for task in tasks do
-                        task
-                        |> Async.RunSynchronously
-                        |> ignore
+                    if not (cache.IsPackagesDownloadUpToDate lockFileHash) then
+                        tracefn "Starting %srestore process." (if canCacheRestore then "full " else "")
+                        for task in tasks do
+                            task
+                            |> Async.RunSynchronously
+                            |> ignore
 
-                    CreateScriptsForGroups lockFile.Value groups
-                    if isFullRestore then
+                        CreateScriptsForGroups lockFile.Value groups
+                    else
+                        tracefn "Finished restoring projects."
+                        
+                    match updatedCache with
+                    | Some updatedCache ->
                         let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
-                        saveToFile newContents (FileInfo restoreCacheFile) |> ignore
-                        WriteGitignore restoreCacheFile)
+                        writeRestoreCache restoreCacheFile updatedCache
+                        WriteGitignore restoreCacheFile
+                    | None -> ())
             )
