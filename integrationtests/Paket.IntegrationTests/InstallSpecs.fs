@@ -35,7 +35,8 @@ let ``updateBaselines should be false``() =
 
 [<Test>]
 let ``#1135 should keep lockfile stable when using framework restrictions``() =
-    let newLockFile = install "i001135-stable-install-on-framework-restrictions"
+    let cleanup, newLockFile = install "i001135-stable-install-on-framework-restrictions"
+    use __ = cleanup
     let oldLockFile = LockFile.LoadFrom(Path.Combine(originalScenarioPath "i001135-stable-install-on-framework-restrictions","paket.lock"))
     newLockFile.ToString()
     |> shouldEqual (oldLockFile.ToString())
