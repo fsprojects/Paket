@@ -235,13 +235,16 @@ let extractElement root name =
     saveToFile newContent targetFile
 
 let extractRestoreTargets root =
-    if !copiedElements then
-        Path.Combine(root,".paket","Paket.Restore.targets")
-    else
-        let (fileWritten, path) = extractElement root "Paket.Restore.targets"
-        copiedElements := true
-        if fileWritten then tracefn "Extracted Paket.Restore.targets to: %s" path
-        path
+    let path = Path.Combine(root,".paket","Paket.Restore.targets")
+    if Environment.GetEnvironmentVariable "PAKET_SKIP_RESTORE_TARGETS" <> "true" then
+        // allow to be more clever than paket
+        if !copiedElements then path
+        else
+            let (fileWritten, path) = extractElement root "Paket.Restore.targets"
+            copiedElements := true
+            if fileWritten then tracefn "Extracted Paket.Restore.targets to: %s (Can be disabled with PAKET_SKIP_RESTORE_TARGETS=true)" path
+            path
+    else path
 
 let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package) =
     async {
