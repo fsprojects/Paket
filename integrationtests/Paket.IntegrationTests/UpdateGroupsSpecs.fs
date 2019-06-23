@@ -12,7 +12,7 @@ open Paket.Domain
 
 [<Test>]
 let ``#1711 update main group with correct source``() =
-    update "i001711-wrong-source" |> ignore
+    use __ = update "i001711-wrong-source" |> fst
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001711-wrong-source","paket.lock"))
     let p1 = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Test"]
     p1.Version |> shouldEqual (SemVer.Parse "0.0.1")
@@ -20,7 +20,7 @@ let ``#1711 update main group with correct source``() =
 
 [<Test>]
 let ``#1711 update main group with correct source with multiple groups``() =
-    update "i001711-wrong-groupsource" |> ignore
+    use __ = update "i001711-wrong-groupsource" |> fst
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001711-wrong-groupsource","paket.lock"))
     let p1 = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Test"]
     p1.Version |> shouldEqual (SemVer.Parse "0.0.1")

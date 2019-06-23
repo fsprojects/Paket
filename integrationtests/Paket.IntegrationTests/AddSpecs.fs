@@ -13,7 +13,7 @@ open Paket.Domain
 [<Test>]
 let ``#320 paket add clitool``() =
     let scenario = "i000320-add-clitool"
-    paket "add dotnet-fable --version 1.3.7 -t clitool --no-resolve" scenario |> ignore
+    use __ = paket "add dotnet-fable --version 1.3.7 -t clitool --no-resolve" scenario |> fst
 
     let depsFile = DependenciesFile.ReadFromFile(Path.Combine(scenarioTempPath scenario,"paket.dependencies"))
     let requirement = depsFile.GetGroup(Constants.MainDependencyGroup).Packages |> List.exactlyOne
@@ -24,7 +24,7 @@ let ``#320 paket add clitool``() =
 [<Test>]
 let ``#321 paket add nuget is the default``() =
     let scenario = "i000321-add-nuget"
-    paket "add Argu --version 1.2.3 --no-resolve" scenario |> ignore
+    use __ = paket "add Argu --version 1.2.3 --no-resolve" scenario |> fst
 
     let depsFile = DependenciesFile.ReadFromFile(Path.Combine(scenarioTempPath scenario,"paket.dependencies"))
     let requirement = depsFile.GetGroup(Constants.MainDependencyGroup).Packages |> List.exactlyOne
@@ -35,7 +35,7 @@ let ``#321 paket add nuget is the default``() =
 [<Test>]
 let ``#310 paket add nuget should not resolve inconsistent dependency graph``() = 
     try
-        paket "add nuget Castle.Windsor version 3.3.0" "i000310-add-should-not-create-invalid-resolution" |> ignore
+        use __ = paket "add nuget Castle.Windsor version 3.3.0" "i000310-add-should-not-create-invalid-resolution" |> fst
         failwith "resolver error expected"
     with
     | exn when exn.Message.Contains("There was a version conflict during package resolution") -> ()

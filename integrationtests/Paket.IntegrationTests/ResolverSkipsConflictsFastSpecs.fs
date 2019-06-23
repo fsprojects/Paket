@@ -23,13 +23,15 @@ open System
 
 [<Test>]
 let ``#1166 Should resolve Nancy without timeout``() =
-    let lockFile = update "i001166-resolve-nancy-fast"
+    let cleanup, lockFile = update "i001166-resolve-nancy-fast"
+    use __ = cleanup
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Nancy"].Version
     |> shouldBeGreaterThan (SemVer.Parse "1.1")
 
 [<Test>]
 let ``#2289 Paket 4.x install command takes hours to complete``() =
-    let lockFile = install "i002289-resolve-nunit-timeout"
+    let cleanup, lockFile = install "i002289-resolve-nunit-timeout"
+    use __ = cleanup
     let nunitVersion =
         lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NUnit"].Version
 

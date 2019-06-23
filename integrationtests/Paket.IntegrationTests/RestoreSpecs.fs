@@ -12,7 +12,7 @@ open Paket.Utils
 let ``#2496 Paket fails on projects that target multiple frameworks``() = 
     let project = "EmptyTarget"
     let scenario = "i002496"
-    prepareSdk scenario
+    use __ = prepareSdk scenario
 
     let wd = (scenarioTempPath scenario) @@ project
     directDotnet true (sprintf "restore %s.csproj" project) wd
@@ -22,7 +22,7 @@ let ``#2496 Paket fails on projects that target multiple frameworks``() =
 let ``#3527 BaseIntermediateOutputPath``() =
     let project = "project"
     let scenario = "i003527"
-    prepareSdk scenario
+    use __ = prepareSdk scenario
 
     let wd = (scenarioTempPath scenario) @@ project
     directDotnet true (sprintf "restore %s.fsproj" project) wd
@@ -44,7 +44,7 @@ let ``#3000-a dotnet restore``() =
 
     [ packageName; (packageName.ToLower()) ] |> Seq.iter clearPackage
     
-    prepareSdk scenario
+    use __ = prepareSdk scenario
     directDotnet false "restore" projectDir |> ignore
     directDotnet false "build --no-restore" projectDir |> ignore
 
@@ -58,6 +58,6 @@ let ``#3012 Paket restore silently fails when TargetFramework(s) are specified i
 
     [ packageName; (packageName.ToLower()) ] |> Seq.iter clearPackage
     
-    prepareSdk scenario
+    use __ = prepareSdk scenario
     directPaket "install" scenario |> ignore
     directDotnet false "build" projectDir |> ignore

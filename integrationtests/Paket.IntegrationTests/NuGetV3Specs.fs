@@ -16,14 +16,14 @@ open Paket.NuGetV3
 
 [<Test>]
 let ``#1387 update package in v3``() =
-    update "i001387-nugetv3" |> ignore
+    use __ = update "i001387-nugetv3" |> fst
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001387-nugetv3","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Bender"].Version
     |> shouldEqual (SemVer.Parse "3.0.29.0")
 
 [<Test>]
 let ``#2700-1 v3 works properly``() =
-    paketEx true "update" "i002700-1" |> ignore
+    use __ = paketEx true "update" "i002700-1" |> fst
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i002700-1","paket.lock"))
     let mainGroup = lockFile.Groups.[Constants.MainDependencyGroup]
     mainGroup.Resolution.[PackageName "Microsoft.CSharp"].Source.Url

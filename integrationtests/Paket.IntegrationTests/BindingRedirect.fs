@@ -9,7 +9,7 @@ open Paket
 
 [<Test>]
 let ``install should redirect required assemblies only``() = 
-    paket "install --redirects --createnewbindingfiles" "i001187-binding-redirect" |> ignore
+    use __ = paket "install --redirects --createnewbindingfiles" "i001187-binding-redirect" |> fst
 
     let path = Path.Combine(scenarioTempPath "i001187-binding-redirect")
     let config1Path = Path.Combine(path, "Project1", "app.config")
@@ -74,7 +74,7 @@ let ``install should redirect required assemblies only``() =
 [<Test>]
 let ``#1195 should report broken app.config``() =
     try
-        paket "install --redirects" "i001195-broken-appconfig" |> ignore
+        use __ = paket "install --redirects" "i001195-broken-appconfig" |> fst
         failwith "paket should fail"
     with
     | exn when exn.Message.Contains("Project1") && exn.Message.Contains("app.config") -> ()
@@ -82,14 +82,14 @@ let ``#1195 should report broken app.config``() =
 [<Test>]
 let ``#2408 should report wrong app.config parsing``() =
     try
-        paket "install --redirects" "i002408-indenting-appconfig" |> ignore
+        use __ = paket "install --redirects" "i002408-indenting-appconfig" |> fst
         failwith "paket should fail"
     with
     | exn when exn.Message.Contains("Project1") && exn.Message.Contains("app.config") -> ()
     
 [<Test>]
 let ``#1218 install should replace paket's binding redirects with required only``() = 
-    paket "install --redirects --createnewbindingfiles" "i001218-binding-redirect" |> ignore
+    use __ = paket "install --redirects --createnewbindingfiles" "i001218-binding-redirect" |> fst
 
     let path = Path.Combine(scenarioTempPath "i001218-binding-redirect")
     let config1Path = Path.Combine(path, "Project1", "app.config")
@@ -167,7 +167,7 @@ let ``#1218 install should replace paket's binding redirects with required only`
 
 [<Test>]
 let ``#1270 force redirects``() = 
-    paket "install --createnewbindingfiles" "i001270-force-redirects" |> ignore
+    use __ = paket "install --createnewbindingfiles" "i001270-force-redirects" |> fst
     let path = Path.Combine(scenarioTempPath "i001270-force-redirects")
     let configPath = Path.Combine(path, "MyClassLibrary", "MyClassLibrary", "app.config")
 
@@ -185,7 +185,7 @@ let ``#1270 force redirects``() =
 
 [<Test>]
 let ``#1270 redirects from references``() = 
-    paket "install --createnewbindingfiles" "i001270-force-redirects" |> ignore
+    use __ = paket "install --createnewbindingfiles" "i001270-force-redirects" |> fst
     let path = Path.Combine(scenarioTempPath "i001270-force-redirects")
     let configPath = Path.Combine(path, "MyClassLibrary", "MyClassLibrary2", "app.config")
 
@@ -203,7 +203,7 @@ let ``#1270 redirects from references``() =
 
 [<Test>]
 let ``#1574 redirects GAC``() = 
-    paket "install --clean-redirects"  "i001574-redirect-gac" |> ignore
+    use __ = paket "install --clean-redirects"  "i001574-redirect-gac" |> fst
     let path = Path.Combine(scenarioTempPath "i001574-redirect-gac")
     let configPath = Path.Combine(path, "BindingRedirectPaketBug", "App.config")
     let originalConfigPath = Path.Combine(path, "BindingRedirectPaketBug", "App.config.expected")
@@ -217,7 +217,7 @@ let ``#1574 redirects GAC``() =
 [<Test>]
 let ``#1621 generates binding redirect when references project with another target profile``() =
     let scenario = "i001621-different-framework"
-    install scenario |> ignore
+    use __ = install scenario |> fst
     let ``NUnit`` = """<assemblyIdentity name="nunit.framework" publicKeyToken="2638cd05610744eb" culture="neutral" />"""
     let ``NUnit correct version`` = "newVersion=\"3.0.5813.39031\""
     
@@ -232,7 +232,7 @@ let ``#1621 generates binding redirect when references project with another targ
 [<Test>]
 let ``#1783 generates binding redirect when assembly with different version of main group``() =
     let scenario = "i001783-different-versions"
-    install scenario |> ignore
+    use __ = install scenario |> fst
     let ``FSharp.Core`` = """<assemblyIdentity name="FSharp.Core" publicKeyToken="b03f5f7f11d50a3a" culture="neutral" />"""
     let ``Newtonsoft.Json`` = """<assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />"""
     

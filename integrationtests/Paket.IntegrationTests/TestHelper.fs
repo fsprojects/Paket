@@ -10,7 +10,8 @@ open System
 open System.IO
 open Paket.Logging
 
-let scenarios = System.Collections.Generic.List<_>()
+let disableScenarioCleanup = false // change to true to debug a single test temporarily.
+
 let isLiveUnitTesting = AppDomain.CurrentDomain.GetAssemblies() |> Seq.exists (fun a -> a.GetName().Name = "Microsoft.CodeAnalysis.LiveUnitTesting.Runtime")
 
 let dotnetToolPath =
@@ -37,10 +38,13 @@ let cleanup scenario =
         traceWarnfn "Failed to clean dir '%s', trying again: %O" scenarioPath e
         CleanDir scenarioPath
 
-let cleanupAllScenarios() =
-    for scenario in scenarios do
-        cleanup scenario
-    scenarios.Clear()
+//let cleanupAllScenarios() =
+//    for scenario in scenarios |> Seq.toList do
+//        try 
+//            cleanup scenario
+//            scenarios.Remove(scenario) |> ignore<bool>
+//        with e ->
+//            traceWarnfn "Failed to cleanup a particular scenario %s, %O" scenario e
 
 let createScenarioDir scenario =
     let scenarioPath = scenarioTempPath scenario
@@ -49,17 +53,31 @@ let createScenarioDir scenario =
 
 let prepare scenario =
     if isLiveUnitTesting then Assert.Inconclusive("Integration tests are disabled when in a Live-Unit-Session")
-    if scenarios.Count > 10 then
-        cleanupAllScenarios()
+    //if scenarios.Count > 10 then
+    //    cleanupAllScenarios()
 
-    scenarios.Add scenario
-    let originalScenarioPath = originalScenarioPath scenario
-    let scenarioPath = createScenarioDir scenario
-    CopyDir scenarioPath originalScenarioPath (fun _ -> true)
+    //scenarios.Add scenario
+    let cleanup =
+        { new System.IDisposable with
+            member x.Dispose() =
+                if not disableScenarioCleanup then
+                    try
+                        cleanup scenario
+                    with e -> eprintfn "Error in test cleanup (Dispose): %O" e }
+    let mutable shouldDispose = cleanup
+    try
+        let originalScenarioPath = originalScenarioPath scenario
+        let scenarioPath = createScenarioDir scenario
+        CopyDir scenarioPath originalScenarioPath (fun _ -> true)
 
-    for ext in ["fsproj";"csproj";"vcxproj";"template";"json"] do
-        for file in Directory.GetFiles(scenarioPath, (sprintf "*.%stemplate" ext), SearchOption.AllDirectories) do
-            File.Move(file, Path.ChangeExtension(file, ext))
+        for ext in ["fsproj";"csproj";"vcxproj";"template";"json"] do
+            for file in Directory.GetFiles(scenarioPath, (sprintf "*.%stemplate" ext), SearchOption.AllDirectories) do
+                File.Move(file, Path.ChangeExtension(file, ext))
+        shouldDispose <- null
+        cleanup
+    finally
+        if not (isNull shouldDispose) then shouldDispose.Dispose()
+
 
 let prepareSdk scenario =
     let tmpPaketFolder = (scenarioTempPath scenario) @@ ".paket"
@@ -67,12 +85,12 @@ let prepareSdk scenario =
     let paketExe = snd paketToolPath
 
     setEnvironVar "PaketExePath" paketExe
-    prepare scenario
+    let cleanup = prepare scenario
     if (not (Directory.Exists tmpPaketFolder)) then
         Directory.CreateDirectory tmpPaketFolder |> ignore
 
     FileHelper.CopyFile tmpPaketFolder targetsFile
-
+    cleanup
 
 type PaketMsg =
   { IsError : bool; Message : string }
@@ -186,22 +204,37 @@ let directPaketEx command scenario =
 let directPaket command scenario = directPaketEx command scenario |> fromMessages
 
 let paketEx checkZeroWarn command scenario =
-    prepare scenario
-
-    let msgs = directPaketEx command scenario
-    if checkZeroWarn then checkResults msgs
-    msgs
+    let cleanup = prepare scenario
+    let mutable shouldDispose = cleanup
+    try
+        let msgs = directPaketEx command scenario
+        if checkZeroWarn then checkResults msgs
+        shouldDispose <- null
+        cleanup, msgs
+    finally
+        if not (isNull shouldDispose) then shouldDispose.Dispose()
 
 let paket command scenario =
-    paketEx false command scenario |> fromMessages
+    let mutable shouldDispose = null
+    try
+        let cleanup, msgs = paketEx false command scenario
+        shouldDispose <- cleanup
+        let newMsgs = msgs |> fromMessages
+        shouldDispose <- null
+        cleanup, newMsgs
+    finally
+        if not (isNull shouldDispose) then shouldDispose.Dispose()
 
 let updateEx checkZeroWarn scenario =
-    #if INTERACTIVE
-    paket "update --verbose" scenario |> printfn "%s"
-    #else
-    paketEx checkZeroWarn "update" scenario |> ignore
-    #endif
-    LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
+    let mutable shouldDispose = null
+    try
+        let cleanup = paketEx checkZeroWarn "update" scenario |> fst
+        shouldDispose <- cleanup
+        let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
+        shouldDispose <- null
+        cleanup, lockFile
+    finally
+        if not (isNull shouldDispose) then shouldDispose.Dispose()
 
 let update scenario =
     updateEx false scenario
@@ -210,17 +243,17 @@ let installEx checkZeroWarn scenario =
     #if INTERACTIVE
     paket "install --verbose" scenario |> printfn "%s"
     #else
-    paketEx checkZeroWarn  "install" scenario |> ignore
+    paketEx checkZeroWarn  "install" scenario |> fst,
     #endif
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
 let install scenario = installEx false scenario
 
-let restore scenario = paketEx false "restore" scenario |> ignore
+let restore scenario = paketEx false "restore" scenario |> fst
 
 let updateShouldFindPackageConflict packageName scenario =
     try
-        update scenario |> ignore
+        use __ = update scenario |> fst
         failwith "No conflict was found."
     with
     | exn when exn.Message.Contains("Conflict detected") && exn.Message.Contains(sprintf "requested package %s" packageName) -> 

@@ -197,7 +197,7 @@ let CleanDir path =
         try
             emptyDir di
         with
-        | exn -> failwithf "Error during cleaning of %s%s  - %s" di.FullName Environment.NewLine exn.Message
+        | e -> raise <| exn(sprintf "Error during cleaning of %s%s  - %s" di.FullName Environment.NewLine e.Message, e)
     else
         Directory.CreateDirectory path |> ignore
     // set writeable

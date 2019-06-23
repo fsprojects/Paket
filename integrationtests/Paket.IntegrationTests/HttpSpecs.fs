@@ -11,7 +11,7 @@ open Paket
 
 [<Test>]
 let ``#1341 http dlls``() = 
-    prepare "i001341-http-dlls"
+    use __ = prepare "i001341-http-dlls"
     let root = scenarioTempPath "i001341-http-dlls"
     let deps = sprintf """group Files
 

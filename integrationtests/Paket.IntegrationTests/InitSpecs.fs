@@ -13,7 +13,7 @@ open System.Diagnostics
 [<Ignore(".net core paket doesnt init the boostrapper")>]
 #endif
 let ``#1040 init should download release version of bootstrapper``() = 
-    paket "init" "i001040-init-downloads-bootstrapper" |> ignore
+    use __ = paket "init" "i001040-init-downloads-bootstrapper" |> fst
     let bootstrapperPath = Path.Combine(scenarioTempPath "i001040-init-downloads-bootstrapper",".paket","paket.exe")
    
     let productVersion = FileVersionInfo.GetVersionInfo(bootstrapperPath).ProductVersion
@@ -26,7 +26,7 @@ let ``#1040 init should download release version of bootstrapper``() =
 #endif
 let ``#1743 empty log file``() =
     try
-        paket "init --log-file" "i001040-init-downloads-bootstrapper" |> ignore
+        use __ = paket "init --log-file" "i001040-init-downloads-bootstrapper" |> fst
         failwith "expected error"
     with
     | exn when exn.Message.Split('\n').[0].Contains "--log-file" -> ()
