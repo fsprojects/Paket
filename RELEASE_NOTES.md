@@ -1,3 +1,6 @@
+#### 5.210.2 - 2019-06-24
+* BUGFIX: Change caching logic to be more suitable for FAKE and in particular the Ionide tooling - https://github.com/fsprojects/Paket/pull/3598
+
 #### 5.210.1 - 2019-06-11
 * BUGFIX: Fixed native library detection - enables FAKE native library support - https://github.com/fsprojects/Paket/pull/3593
 * BUGFIX: Allow projects without Guids - https://github.com/fsprojects/Paket/issues/3528
