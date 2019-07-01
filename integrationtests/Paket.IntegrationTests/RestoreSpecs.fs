@@ -9,6 +9,23 @@ open Paket
 open Paket.Utils
 
 [<Test>]
+let ``#2684 Paket should not be called the second time in msbuild (Restore Performance)``() = 
+    let project = "console"
+    let scenario = "i002684-fast-restore"
+    use __ = prepareSdk scenario
+
+    let wd = (scenarioTempPath scenario) @@ project
+    // first call paket restore (to restore and to extract the targets file as well as emulate a "full" restore)
+    directPaket "restore" scenario |> ignore
+    // second time no more paket calls should be required (as we already did a full restore)
+    directDotnetEx [ "PAKET_ERROR_ON_MSBUILD_EXEC", "true" ] true (sprintf "restore %s.fsproj" project) wd
+        |> ignore
+    // make sure it builds as well (checks if restore-targets contains syntax errors)
+    directDotnet true (sprintf "build %s.fsproj" project) wd
+        |> ignore
+
+
+[<Test>]
 let ``#2496 Paket fails on projects that target multiple frameworks``() = 
     let project = "EmptyTarget"
     let scenario = "i002496"

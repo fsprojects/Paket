@@ -97,7 +97,7 @@ type PaketMsg =
     static member isError ({ IsError = e}:PaketMsg) = e
     static member getMessage ({ Message = msg }:PaketMsg) = msg
 
-let directToolEx isPaket toolInfo commands workingDir =
+let directToolEx env isPaket toolInfo commands workingDir =
     let processFilename, processArgs =
         match fst toolInfo, snd toolInfo with
         | "", path ->
@@ -138,6 +138,8 @@ let directToolEx isPaket toolInfo commands workingDir =
         try
             ExecProcessWithLambdas (fun info ->
               info.FileName <- processFilename
+              for (key, value) in env do
+                info.EnvironmentVariables.[key] <- value
               info.WorkingDirectory <- workingDir
               info.CreateNoWindow <- true
               info.Arguments <- processArgs)
@@ -170,17 +172,17 @@ let directToolEx isPaket toolInfo commands workingDir =
                 printfn "%s" msg
 
     if result <> 0 then 
-        let errors = String.Join(Environment.NewLine,msgs |> Seq.filter PaketMsg.isError |> Seq.map PaketMsg.getMessage)
-        if String.IsNullOrWhiteSpace errors then
-            failwithf "The process exited with code %i" result
-        else
-            failwith errors
+        let output = String.Join(Environment.NewLine,msgs |> Seq.map (fun m -> (if m.IsError then "ERR:" else "OUT:") + m.Message ))
+        //if String.IsNullOrWhiteSpace errors then
+        failwithf "The process '%s' exited with code %i, output: \n%s" processFilename result output
+        //else
+        //    failwith errors
 
     msgs
     #endif
 
 let directPaketInPathEx command scenarioPath =
-    directToolEx true paketToolPath command scenarioPath
+    directToolEx [] true paketToolPath command scenarioPath
 
 let checkResults msgs =
     msgs
@@ -188,10 +190,14 @@ let checkResults msgs =
     |> Seq.toList
     |> shouldEqual []
 
-let directDotnet checkZeroWarn command workingDir =
-    let msgs = directToolEx false ("", dotnetToolPath) command workingDir
+let directDotnetEx env checkZeroWarn command workingDir =
+    let msgs = directToolEx env false ("", dotnetToolPath) command workingDir
     if checkZeroWarn then checkResults msgs
     msgs
+
+
+let directDotnet checkZeroWarn command workingDir =
+    directDotnetEx [] checkZeroWarn command workingDir
 
 let private fromMessages msgs =
     String.Join(Environment.NewLine,msgs |> Seq.map PaketMsg.getMessage)
