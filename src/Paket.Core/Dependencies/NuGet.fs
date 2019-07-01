@@ -851,7 +851,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     verbosefn "%O %O already downloaded." packageName version
                 return false
             elif getFromFallbackFolder () || (not force && getFromCache caches) then
-                return false
+                return true
             else
                 match source with
                 | LocalNuGet(path,_) ->
