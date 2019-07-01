@@ -1,3 +1,6 @@
+#### 5.212.0 - 2019-07-01
+* PERFORMANCE: If Paket didn't download a package, then it will no longer try to extract it - https://github.com/fsprojects/Paket/pull/3605
+
 #### 5.211.0 - 2019-06-24
 * BUGFIX: Paket 5.207.4 broke the FAKE release process and creates empty packages - https://github.com/fsprojects/Paket/issues/3599
 * BUGFIX: Change caching logic to be more suitable for FAKE and in particular the Ionide tooling - https://github.com/fsprojects/Paket/pull/3598
