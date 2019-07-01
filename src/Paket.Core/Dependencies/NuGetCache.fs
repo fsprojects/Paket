@@ -346,26 +346,18 @@ let TryGetFallbackNupkg (packageName:PackageName) (version:SemVerInfo) =
         if fallbackFile.Exists && fallbackFile.Length > 0L then Some fallbackFile.FullName else None
     | None -> None
 
-let GetPackageUserFolderDir (packageName:PackageName, version:SemVerInfo, kind:PackageResolver.ResolvedPackageKind) =
-    let dir =
-        match kind with
-        | PackageResolver.ResolvedPackageKind.DotnetCliTool ->
-            GetTargetUserToolsFolder packageName version
-        | PackageResolver.ResolvedPackageKind.Package ->
-            GetTargetUserFolder packageName version
-
-    let targetFolder = DirectoryInfo(dir)
-    targetFolder.FullName
-
 /// Extracts the given package to the user folder
 let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, kind:PackageResolver.ResolvedPackageKind) =
     async {
-        let dir = GetPackageUserFolderDir (packageName, version, kind)
+        let! dir =
+            async {
+                match kind with
+                | PackageResolver.ResolvedPackageKind.DotnetCliTool ->
+                    let! _ = ExtractPackageToUserFolder(fileName, packageName, version, PackageResolver.ResolvedPackageKind.Package)
+                    return GetTargetUserToolsFolder packageName version
+                | PackageResolver.ResolvedPackageKind.Package ->
+                    return GetTargetUserFolder packageName version }
 
-        if kind = PackageResolver.ResolvedPackageKind.DotnetCliTool then
-            let! _ = ExtractPackageToUserFolder(fileName, packageName, version, PackageResolver.ResolvedPackageKind.Package)
-            ()
-        
         let targetFolder = DirectoryInfo(dir)
 
         use _ = Profile.startCategory Profile.Category.FileIO
