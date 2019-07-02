@@ -849,8 +849,9 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
             if not force && targetFile.Exists && targetFile.Length > 0L then
                 if verbose then
                     verbosefn "%O %O already downloaded." packageName version
+                return false
             elif getFromFallbackFolder () || (not force && getFromCache caches) then
-                ()
+                return true
             else
                 match source with
                 | LocalNuGet(path,_) ->
@@ -861,9 +862,11 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     use _ = Profile.startCategory Profile.Category.FileIO
                     ensureDir targetFileName
                     File.Copy(nupkg.FullName,targetFileName,true)
+                    return true
                 | _ ->
                 // discover the link on the fly
                 let downloadUrl = ref ""
+                let mutable didDownload = false
                 try
                     let sw = System.Diagnostics.Stopwatch.StartNew()
                     let groupString = if groupName = Constants.MainDependencyGroup then "" else sprintf " (%O)" groupName
@@ -974,6 +977,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
 
                         if not (File.Exists targetFileName) then
                             try File.Move(tmpFile, targetFileName)
+                                didDownload <- true
                             with | :? System.IO.IOException as e ->
                                 traceWarnfn "Error while moving temp file as '%s' already exists (maybe some other instance downloaded it as well): %O" targetFileName e
                                 ()
@@ -993,10 +997,12 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     try
                         if downloadLicense && not (String.IsNullOrWhiteSpace nugetPackage.LicenseUrl) then
                             do! DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName)
+                        return didDownload
                     with
                     | exn ->
                         if verbose then
                             traceWarnfn "Could not download license for %O %O from %s.%s    %s" packageName version nugetPackage.LicenseUrl Environment.NewLine exn.Message
+                        return didDownload
                 with
                 | :? System.Net.WebException as exn when
                     attempt < 5 &&
@@ -1005,15 +1011,15 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                       | Some(Credentials(_)) -> true
                       | _ -> false)
                         ->  traceWarnfn "Could not download %O %O.%s    %s.%sRetry." packageName version Environment.NewLine exn.Message Environment.NewLine
-                            do! download false (attempt + 1)
+                            return! download false (attempt + 1)
                 | exn when String.IsNullOrWhiteSpace !downloadUrl ->
-                    raise (Exception(sprintf "Could not download %O %O." packageName version, exn))
-                | exn -> raise (Exception(sprintf "Could not download %O %O from %s." packageName version !downloadUrl, exn)) }
+                    return raise (Exception(sprintf "Could not download %O %O." packageName version, exn))
+                | exn -> return raise (Exception(sprintf "Could not download %O %O from %s." packageName version !downloadUrl, exn)) }
 
     async {
         configResolved.Path |> Option.iter SymlinkUtils.delete
 
-        do! download true 0
+        let! didDownload = download true 0
 
         match isLocalOverride, configResolved with
         | true, ResolvedPackagesFolder.NoPackagesFolder -> return failwithf "paket.local in combination with storage:none is not supported (use storage: symlink instead)"
@@ -1025,8 +1031,12 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
             folder |> Utils.DirectoryInfo |> Utils.deleteDir 
             ensureDir folder
 
-            let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, kind)
-            
+            let! extractedUserFolder = async {
+                if not didDownload then
+                    return GetPackageUserFolderDir (packageName, version, kind)
+                else return! ExtractPackageToUserFolder(targetFile.FullName, packageName, version, kind)          
+            }
+
             SymlinkUtils.makeDirectoryLink folder extractedUserFolder
 
             let packageFilePath = Path.Combine(extractedUserFolder, NuGetCache.GetPackageFileName packageName version)
@@ -1034,7 +1044,11 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
         | false, otherConfig ->
             otherConfig.Path |> Option.iter SymlinkUtils.delete
 
-            let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, kind)
+            let! extractedUserFolder = async {
+                if not didDownload then
+                    return GetPackageUserFolderDir (packageName, version, kind)
+                else return! ExtractPackageToUserFolder(targetFile.FullName, packageName, version, kind)          
+            }
 
             let! files = NuGetCache.CopyFromCache(otherConfig, targetFile.FullName, licenseFileName, packageName, version, force, detailed)
 
