@@ -13,7 +13,6 @@ let ``#3608 dotnet build should work with unparsable cache``() =
     let project = "console"
     let scenario = "i003608-invalid-cache"
     use __ = prepareSdk scenario
-
     let wd = (scenarioTempPath scenario) @@ project
     // Build should work immediately (and call 'paket restore')
     directDotnet true (sprintf "build %s.fsproj" project) wd

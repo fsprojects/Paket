@@ -144,7 +144,7 @@ let ``fails on wrong framework given`` () =
 
     use __ = paket "install" scenario |> fst
 
-    let failure = Assert.Throws (fun () ->
+    let failure = Assert.Throws<ProcessFailedWithExitCode> (fun () ->
         let result = directPaket "generate-load-scripts framework foo framework bar framework net45" scenario
         printf "%s" result
     )
@@ -161,7 +161,7 @@ let ``fails on wrong scripttype given`` () =
 
     use __ = paket "install" scenario |> fst
 
-    let failure = Assert.Throws (fun () ->
+    let failure = Assert.Throws<ProcessFailedWithExitCode> (fun () ->
         let result = directPaket (sprintf "generate-load-scripts type foo type bar framework net45") scenario
         printf "%s" result
     )
