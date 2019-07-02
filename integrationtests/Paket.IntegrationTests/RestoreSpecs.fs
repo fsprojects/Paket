@@ -9,6 +9,17 @@ open Paket
 open Paket.Utils
 
 [<Test>]
+let ``#3608 dotnet build should work with unparsable cache``() = 
+    let project = "console"
+    let scenario = "i003608-invalid-cache"
+    use __ = prepareSdk scenario
+
+    let wd = (scenarioTempPath scenario) @@ project
+    // Build should work immediately (and call 'paket restore')
+    directDotnet true (sprintf "build %s.fsproj" project) wd
+        |> ignore
+
+[<Test>]
 let ``#2684 Paket should not be called the second time in msbuild (Restore Performance)``() = 
     let project = "console"
     let scenario = "i002684-fast-restore"
@@ -23,7 +34,6 @@ let ``#2684 Paket should not be called the second time in msbuild (Restore Perfo
     // make sure it builds as well (checks if restore-targets contains syntax errors)
     directDotnet true (sprintf "build %s.fsproj" project) wd
         |> ignore
-
 
 [<Test>]
 let ``#2496 Paket fails on projects that target multiple frameworks``() = 

@@ -29,7 +29,9 @@ let ``#1743 empty log file``() =
         use __ = paket "init --log-file" "i001040-init-downloads-bootstrapper" |> fst
         failwith "expected error"
     with
-    | exn when exn.Message.Split('\n').[0].Contains "--log-file" -> ()
+    | ProcessFailedWithExitCode(_, _, msgs) ->
+        (msgs.Errors |> Seq.head).Contains "--log-file"
+            |> shouldEqual true
 
 [<Test>]
 #if PAKET_NETCORE

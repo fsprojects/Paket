@@ -82,32 +82,35 @@
     <PropertyGroup>
       <PaketRestoreRequired>true</PaketRestoreRequired>
       <NoWarn>$(NoWarn);NU1603;NU1604;NU1605;NU1608</NoWarn>
+      <CacheFilesExist>false</CacheFilesExist>
+      <CacheFilesExist Condition=" Exists('$(PaketRestoreCacheFile)') And Exists('$(PaketLockFilePath)') ">true</CacheFilesExist>
     </PropertyGroup>
 
     <!-- Read the hash of the lockfile -->
-    <GetFileHash Files="$(PaketLockFilePath)" Algorithm="SHA256" HashEncoding="hex" >
+    <GetFileHash Condition=" '$(CacheFilesExist)' == 'true' " Files="$(PaketLockFilePath)" Algorithm="SHA256" HashEncoding="hex" >
       <Output TaskParameter="Hash" PropertyName="PaketRestoreLockFileHash" />
     </GetFileHash>
     <!-- Read the hash of the cache, which is json, but a very simple key value object -->
-    <PropertyGroup>
+    <PropertyGroup Condition=" '$(CacheFilesExist)' == 'true' ">
         <PaketRestoreCachedContents>$([System.IO.File]::ReadAllText('$(PaketRestoreCacheFile)'))</PaketRestoreCachedContents>
     </PropertyGroup>
-    <ItemGroup>
+    <ItemGroup Condition=" '$(CacheFilesExist)' == 'true' ">
         <!-- Parse our simple 'paket.restore.cached' json ...-->
         <PaketRestoreCachedSplitObject Include="$([System.Text.RegularExpressions.Regex]::Split(`$(PaketRestoreCachedContents)`, `{|}|,`))"></PaketRestoreCachedSplitObject>
         <!-- Keep Key, Value ItemGroup-->
-        <PaketRestoreCachedKeyValue Include="@(PaketRestoreCachedSplitObject)">
-            <Key>$([System.Text.RegularExpressions.Regex]::Split(`%(Identity)`, `": "`)[0].Replace(`"`, ``).Replace(` `, ``))</Key>
-            <Value>$([System.Text.RegularExpressions.Regex]::Split(`%(Identity)`, `": "`)[1].Replace(`"`, ``).Replace(` `, ``))</Value>
+        <PaketRestoreCachedKeyValue Include="@(PaketRestoreCachedSplitObject)" 
+            Condition=" $([System.Text.RegularExpressions.Regex]::Split(`%(Identity)`, `&quot;: &quot;`).Length) &gt; 1 ">
+          <Key>$([System.Text.RegularExpressions.Regex]::Split(`%(Identity)`, `": "`)[0].Replace(`"`, ``).Replace(` `, ``))</Key>
+          <Value>$([System.Text.RegularExpressions.Regex]::Split(`%(Identity)`, `": "`)[1].Replace(`"`, ``).Replace(` `, ``))</Value>
         </PaketRestoreCachedKeyValue>
     </ItemGroup>
-    <PropertyGroup>
+    <PropertyGroup Condition=" '$(CacheFilesExist)' == 'true' ">
         <!-- Retrieve the hashes we are interested in -->
         <PackagesDownloadedHash Condition=" '%(PaketRestoreCachedKeyValue.Key)' == 'packagesDownloadedHash' ">%(PaketRestoreCachedKeyValue.Value)</PackagesDownloadedHash>
         <ProjectsRestoredHash Condition=" '%(PaketRestoreCachedKeyValue.Key)' == 'projectsRestoredHash' ">%(PaketRestoreCachedKeyValue.Value)</ProjectsRestoredHash>
     </PropertyGroup>
 
-    <PropertyGroup Condition="Exists('$(PaketRestoreCacheFile)') ">
+    <PropertyGroup Condition=" '$(CacheFilesExist)' == 'true' ">
       <!-- If the restire file doesn't exist we need to restore, otherwise only if hashes don't match -->
       <PaketRestoreRequired>true</PaketRestoreRequired>
       <PaketRestoreRequired Condition=" '$(PaketRestoreLockFileHash)' == '$(ProjectsRestoredHash)' ">false</PaketRestoreRequired>

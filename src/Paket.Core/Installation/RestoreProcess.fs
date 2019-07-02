@@ -182,7 +182,7 @@ let copiedElements = ref false
 
 type private MyAssemblyFinder () = class end
 
-let saveToFile newContent (targetFile:FileInfo) =
+let private saveToFile newContent (targetFile:FileInfo) =
     let rec loop trials =
         try
             if not targetFile.Directory.Exists then
@@ -567,6 +567,7 @@ let internal getStringHash (s:string) =
     |> BitConverter.ToString
     |> fun s -> s.Replace("-", "")
 
+
 type internal Hash =
     | Hash of string
     member x.HashString =
@@ -576,7 +577,11 @@ type internal Hash =
         match x with
         | Hash s -> String.IsNullOrEmpty s
     static member OfString s = Hash (getStringHash s)
-        
+   
+let internal getLockFileHashFromContent (content:string) =
+    Hash.OfString content   
+let internal getLockFileHash (f:string) =
+    getLockFileHashFromContent (File.ReadAllText f)     
 
 type internal RestoreCache =
     { PackagesDownloadedHash : Hash
@@ -591,7 +596,7 @@ type internal RestoreCache =
         { PackagesDownloadedHash = Hash ""
           ProjectsRestoredHash = Hash "" }
 
-let private writeRestoreCache (file:string) { PackagesDownloadedHash = Hash packagesDownloadedHash; ProjectsRestoredHash = Hash projectsRestoredHash} =
+let internal writeRestoreCache (file:string) { PackagesDownloadedHash = Hash packagesDownloadedHash; ProjectsRestoredHash = Hash projectsRestoredHash} =
     let jobj = new Newtonsoft.Json.Linq.JObject()
     jobj.["packagesDownloadedHash"] <- Newtonsoft.Json.Linq.JToken.op_Implicit packagesDownloadedHash
     jobj.["projectsRestoredHash"] <- Newtonsoft.Json.Linq.JToken.op_Implicit projectsRestoredHash
@@ -668,7 +673,7 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
             None, RestoreCache.Empty, Hash "", false
         else
             let cache = readRestoreCache(lockFileName)
-            let lockFileHash = Hash.OfString (File.ReadAllText lockFileName.FullName)
+            let lockFileHash = getLockFileHash lockFileName.FullName
             let updatedCache =
                 { PackagesDownloadedHash = lockFileHash // we always download all packages in that situation
                   ProjectsRestoredHash = if projectFile = AllProjects then lockFileHash else cache.ProjectsRestoredHash }

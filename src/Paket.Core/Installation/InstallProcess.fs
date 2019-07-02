@@ -585,7 +585,10 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 first := false
 
     let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
-    Paket.RestoreProcess.saveToFile (lockFile.ToString()) (FileInfo restoreCacheFile) |> ignore
+    let hash = Paket.RestoreProcess.getLockFileHashFromContent (lockFile.ToString())
+    // NIT: We probably need to check if we have really fully restored (could be partial install)
+    // Lets see if users report issues
+    Paket.RestoreProcess.writeRestoreCache restoreCacheFile { PackagesDownloadedHash = hash; ProjectsRestoredHash = hash }
     Paket.RestoreProcess.WriteGitignore restoreCacheFile
 
     for project, _ in projectsAndReferences do

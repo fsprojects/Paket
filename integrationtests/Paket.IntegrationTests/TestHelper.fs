@@ -92,10 +92,21 @@ let prepareSdk scenario =
     FileHelper.CopyFile tmpPaketFolder targetsFile
     cleanup
 
-type PaketMsg =
+type OutputMsg =
   { IsError : bool; Message : string }
-    static member isError ({ IsError = e}:PaketMsg) = e
-    static member getMessage ({ Message = msg }:PaketMsg) = msg
+    static member isError ({ IsError = e}:OutputMsg) = e
+    static member getMessage ({ Message = msg }:OutputMsg) = msg
+type OutputData =
+    internal { _Messages : ResizeArray<OutputMsg> }
+    member x.Messages : seq<OutputMsg> = x._Messages :> _
+    member x.Errors = x._Messages |> Seq.filter OutputMsg.isError |> Seq.map OutputMsg.getMessage
+    member x.Outputs = x._Messages |> Seq.filter (not << OutputMsg.isError) |> Seq.map OutputMsg.getMessage
+
+exception ProcessFailedWithExitCode of exitCode:int * fileName:string * msgs:OutputData
+    with
+    override x.Message =
+        let output = String.Join(Environment.NewLine,x.msgs.Messages |> Seq.map (fun m -> (if m.IsError then "ERR:" else "OUT:") + m.Message ))
+        sprintf "The process '%s' exited with code %i, output: \n%s" x.fileName x.exitCode output
 
 let directToolEx env isPaket toolInfo commands workingDir =
     let processFilename, processArgs =
@@ -123,7 +134,7 @@ let directToolEx env isPaket toolInfo commands workingDir =
     Environment.SetEnvironmentVariable("PAKET_DETAILED_WARNINGS", "true")
     printfn "%s> %s %s" workingDir (if isPaket then "paket" else processFilename) processArgs
     let perfMessages = ResizeArray()
-    let msgs = ResizeArray<PaketMsg>()
+    let msgs = ResizeArray<OutputMsg>()
     let mutable perfMessagesStarted = false
     let addAndPrint isError msg =
         if not isError then
@@ -165,18 +176,14 @@ let directToolEx env isPaket toolInfo commands workingDir =
     if isPaket then
         // Only throw after the result <> 0 check because the current test might check the argument parsing
         // this is the only case where no performance is printed
-        let isUsageError = result <> 0 && msgs |> Seq.filter PaketMsg.isError |> Seq.map PaketMsg.getMessage |> Seq.exists (fun msg -> msg.Contains "USAGE:")
+        let isUsageError = result <> 0 && msgs |> Seq.filter OutputMsg.isError |> Seq.map OutputMsg.getMessage |> Seq.exists (fun msg -> msg.Contains "USAGE:")
         if not isUsageError then
             printfn "Performance:"
             for msg in perfMessages do
                 printfn "%s" msg
 
-    if result <> 0 then 
-        let output = String.Join(Environment.NewLine,msgs |> Seq.map (fun m -> (if m.IsError then "ERR:" else "OUT:") + m.Message ))
-        //if String.IsNullOrWhiteSpace errors then
-        failwithf "The process '%s' exited with code %i, output: \n%s" processFilename result output
-        //else
-        //    failwith errors
+    if result <> 0 then
+        raise <| ProcessFailedWithExitCode(result, processFilename,  { _Messages = msgs })
 
     msgs
     #endif
@@ -186,7 +193,7 @@ let directPaketInPathEx command scenarioPath =
 
 let checkResults msgs =
     msgs
-    |> Seq.filter PaketMsg.isError
+    |> Seq.filter OutputMsg.isError
     |> Seq.toList
     |> shouldEqual []
 
@@ -200,7 +207,7 @@ let directDotnet checkZeroWarn command workingDir =
     directDotnetEx [] checkZeroWarn command workingDir
 
 let private fromMessages msgs =
-    String.Join(Environment.NewLine,msgs |> Seq.map PaketMsg.getMessage)
+    String.Join(Environment.NewLine,msgs |> Seq.map OutputMsg.getMessage)
 
 let directPaketInPath command scenarioPath = directPaketInPathEx command scenarioPath |> fromMessages
 

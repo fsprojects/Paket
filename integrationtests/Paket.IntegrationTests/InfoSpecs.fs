@@ -17,7 +17,7 @@ let ``#3200 info should locate paket.dependencies``() =
 
     let ``paket info --paket-dependencies-dir`` workingDir =
         directPaketInPathEx "info --paket-dependencies-dir" workingDir
-        |> Seq.map PaketMsg.getMessage
+        |> Seq.map OutputMsg.getMessage
         |> List.ofSeq
 
     // paket.dependencies not exists
