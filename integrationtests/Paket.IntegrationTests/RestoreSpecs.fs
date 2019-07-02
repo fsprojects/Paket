@@ -20,7 +20,8 @@ let ``#3608 dotnet build should work with unparsable cache``() =
         |> ignore
 
 [<Test>]
-let ``#2684 Paket should not be called the second time in msbuild (Restore Performance)``() = 
+let ``#2684 Paket should not be called the second time in msbuild (Restore Performance)``() =
+    // NOTE: This test also ensure that FAKE can be used without paket on the CI server, see https://github.com/fsharp/FAKE/issues/2348
     let project = "console"
     let scenario = "i002684-fast-restore"
     use __ = prepareSdk scenario
