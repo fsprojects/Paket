@@ -1,8 +1,5 @@
-#### 5.212.1 - 2019-07-01
-* REVERT: If Paket didn't download a package, then it will no longer try to extract it - https://github.com/fsprojects/Paket/pull/3605
-
-#### 5.212.0 - 2019-07-01
-* PERFORMANCE: If Paket didn't download a package, then it will no longer try to extract it - https://github.com/fsprojects/Paket/pull/3605
+#### 5.213.0 - 2019-07-02
+* PERFORMANCE: If Paket didn't download a package, then it will no longer try to extract it - https://github.com/fsprojects/Paket/pull/3607
 
 #### 5.211.0 - 2019-06-24
 * BUGFIX: Paket 5.207.4 broke the FAKE release process and creates empty packages - https://github.com/fsprojects/Paket/issues/3599
