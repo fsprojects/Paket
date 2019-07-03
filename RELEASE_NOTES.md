@@ -1,3 +1,6 @@
+#### 5.215.0 - 2019-07-03
+* BUGFIX: Disable fast restore for MSBuild version < 15.8 - https://github.com/fsprojects/Paket/pull/3611
+
 #### 5.214.0 - 2019-07-03
 * PERFORMANCE: Fast restore reactivated - https://github.com/fsprojects/Paket/pull/3608
 
