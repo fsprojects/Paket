@@ -1,3 +1,6 @@
+#### 5.214.0 - 2019-07-03
+* PERFORMANCE: Fast restore reactivated - https://github.com/fsprojects/Paket/pull/3608
+
 #### 5.213.0 - 2019-07-02
 * PERFORMANCE: If Paket didn't download a package, then it will no longer try to extract it - https://github.com/fsprojects/Paket/pull/3607
 
