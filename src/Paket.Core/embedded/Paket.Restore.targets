@@ -5,6 +5,11 @@
     <!-- make MSBuild track this file for incremental builds. -->
     <!-- ref https://blogs.msdn.microsoft.com/msbuild/2005/09/26/how-to-ensure-changes-to-a-custom-target-file-prompt-a-rebuild/ -->
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+
+    <DetectedMSBuildVersion>$(MSBuildVersion)</DetectedMSBuildVersion>
+    <DetectedMSBuildVersion Condition="$(MSBuildVersion) == ''">15.0.0</DetectedMSBuildVersion>
+    <MSBuildSupportsHashing>false</MSBuildSupportsHashing>
+    <MSBuildSupportsHashing Condition=" '$(DetectedMSBuildVersion)' &gt; '15.8.0' ">true</MSBuildSupportsHashing>
     <!-- Mark that this target file has been loaded.  -->
     <IsPaketRestoreTargetsFileLoaded>true</IsPaketRestoreTargetsFileLoaded>
     <PaketToolsPath>$(MSBuildThisFileDirectory)</PaketToolsPath>
@@ -74,8 +79,8 @@
   </Target>
 
   <!-- Official workaround for https://docs.microsoft.com/en-us/visualstudio/msbuild/getfilehash-task?view=vs-2019 -->
-  <UsingTask TaskName="Microsoft.Build.Tasks.GetFileHash" AssemblyName="Microsoft.Build.Tasks.Core, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" Condition=" '$(MSBuildVersion)' &lt; '16.0.360' " />
-  <UsingTask TaskName="Microsoft.Build.Tasks.VerifyFileHash" AssemblyName="Microsoft.Build.Tasks.Core, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" Condition=" '$(MSBuildVersion)' &lt; '16.0.360' " />
+  <UsingTask TaskName="Microsoft.Build.Tasks.GetFileHash" AssemblyName="Microsoft.Build.Tasks.Core, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" Condition=" '$(MSBuildSupportsHashing)' == 'true' And '$(DetectedMSBuildVersion)' &lt; '16.0.360' " />
+  <UsingTask TaskName="Microsoft.Build.Tasks.VerifyFileHash" AssemblyName="Microsoft.Build.Tasks.Core, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" Condition=" '$(MSBuildSupportsHashing)' == 'true' And '$(DetectedMSBuildVersion)' &lt; '16.0.360' " />
   <Target Name="PaketRestore" Condition="'$(PaketRestoreDisabled)' != 'True'" BeforeTargets="_GenerateDotnetCliToolReferenceSpecs;_GenerateProjectRestoreGraphPerFramework;_GenerateRestoreGraphWalkPerFramework;CollectPackageReferences" DependsOnTargets="PaketBootstrapping">
 
     <!-- Step 1 Check if lockfile is properly restored (if the hash of the lockfile and the cache-file match) -->
@@ -87,14 +92,14 @@
     </PropertyGroup>
 
     <!-- Read the hash of the lockfile -->
-    <GetFileHash Condition=" '$(CacheFilesExist)' == 'true' " Files="$(PaketLockFilePath)" Algorithm="SHA256" HashEncoding="hex" >
+    <GetFileHash Condition=" '$(MSBuildSupportsHashing)' == 'true' And '$(CacheFilesExist)' == 'true' " Files="$(PaketLockFilePath)" Algorithm="SHA256" HashEncoding="hex" >
       <Output TaskParameter="Hash" PropertyName="PaketRestoreLockFileHash" />
     </GetFileHash>
     <!-- Read the hash of the cache, which is json, but a very simple key value object -->
-    <PropertyGroup Condition=" '$(CacheFilesExist)' == 'true' ">
+    <PropertyGroup Condition=" '$(MSBuildSupportsHashing)' == 'true' And '$(CacheFilesExist)' == 'true' ">
         <PaketRestoreCachedContents>$([System.IO.File]::ReadAllText('$(PaketRestoreCacheFile)'))</PaketRestoreCachedContents>
     </PropertyGroup>
-    <ItemGroup Condition=" '$(CacheFilesExist)' == 'true' ">
+    <ItemGroup Condition=" '$(MSBuildSupportsHashing)' == 'true' And '$(CacheFilesExist)' == 'true' ">
         <!-- Parse our simple 'paket.restore.cached' json ...-->
         <PaketRestoreCachedSplitObject Include="$([System.Text.RegularExpressions.Regex]::Split(`$(PaketRestoreCachedContents)`, `{|}|,`))"></PaketRestoreCachedSplitObject>
         <!-- Keep Key, Value ItemGroup-->
@@ -104,13 +109,13 @@
           <Value>$([System.Text.RegularExpressions.Regex]::Split(`%(Identity)`, `": "`)[1].Replace(`"`, ``).Replace(` `, ``))</Value>
         </PaketRestoreCachedKeyValue>
     </ItemGroup>
-    <PropertyGroup Condition=" '$(CacheFilesExist)' == 'true' ">
+    <PropertyGroup Condition=" '$(MSBuildSupportsHashing)' == 'true' And '$(CacheFilesExist)' == 'true' ">
         <!-- Retrieve the hashes we are interested in -->
         <PackagesDownloadedHash Condition=" '%(PaketRestoreCachedKeyValue.Key)' == 'packagesDownloadedHash' ">%(PaketRestoreCachedKeyValue.Value)</PackagesDownloadedHash>
         <ProjectsRestoredHash Condition=" '%(PaketRestoreCachedKeyValue.Key)' == 'projectsRestoredHash' ">%(PaketRestoreCachedKeyValue.Value)</ProjectsRestoredHash>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(CacheFilesExist)' == 'true' ">
+    <PropertyGroup Condition=" '$(MSBuildSupportsHashing)' == 'true' And '$(CacheFilesExist)' == 'true' ">
       <!-- If the restire file doesn't exist we need to restore, otherwise only if hashes don't match -->
       <PaketRestoreRequired>true</PaketRestoreRequired>
       <PaketRestoreRequired Condition=" '$(PaketRestoreLockFileHash)' == '$(ProjectsRestoredHash)' ">false</PaketRestoreRequired>
@@ -126,6 +131,7 @@
     </PropertyGroup>
 
     <!-- Do a global restore if required -->
+    <Warning Text="This version of MSBuild (we assume '$(DetectedMSBuildVersion)' or older) doesn't support GetFileHash, so paket fast restore is disabled." Condition=" '$(MSBuildSupportsHashing)' != 'true' " />
     <Error Text="Stop build because of PAKET_ERROR_ON_MSBUILD_EXEC and we always call the bootstrapper" Condition=" '$(PAKET_ERROR_ON_MSBUILD_EXEC)' == 'true' AND '$(PaketBootstrapperStyle)' == 'classic' AND Exists('$(PaketBootStrapperExePath)') AND !(Exists('$(PaketExePath)'))" />
     <Exec Command='$(PaketBootStrapperCommand)' Condition=" '$(PaketBootstrapperStyle)' == 'classic' AND Exists('$(PaketBootStrapperExePath)') AND !(Exists('$(PaketExePath)'))" ContinueOnError="false" />
     <Error Text="Stop build because of PAKET_ERROR_ON_MSBUILD_EXEC and we need a full restore (hashes don't match)" Condition=" '$(PAKET_ERROR_ON_MSBUILD_EXEC)' == 'true' AND '$(PaketRestoreRequired)' == 'true' AND '$(PaketDisableGlobalRestore)' != 'true'" />
@@ -237,8 +243,6 @@
   <Target Name="PaketDisableDirectPack" AfterTargets="_IntermediatePack" BeforeTargets="GenerateNuspec" Condition="('$(IsPackable)' == '' Or '$(IsPackable)' == 'true') And Exists('$(PaketIntermediateOutputPath)/$(MSBuildProjectFile).references')" >
     <PropertyGroup>
       <ContinuePackingAfterGeneratingNuspec>false</ContinuePackingAfterGeneratingNuspec>
-      <DetectedMSBuildVersion>$(MSBuildVersion)</DetectedMSBuildVersion>
-      <DetectedMSBuildVersion Condition="$(MSBuildVersion) == ''">15.8.0</DetectedMSBuildVersion>
     </PropertyGroup>
   </Target>
 
