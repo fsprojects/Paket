@@ -116,7 +116,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(MSBuildSupportsHashing)' == 'true' And '$(CacheFilesExist)' == 'true' ">
-      <!-- If the restire file doesn't exist we need to restore, otherwise only if hashes don't match -->
+      <!-- If the restore file doesn't exist we need to restore, otherwise only if hashes don't match -->
       <PaketRestoreRequired>true</PaketRestoreRequired>
       <PaketRestoreRequired Condition=" '$(PaketRestoreLockFileHash)' == '$(ProjectsRestoredHash)' ">false</PaketRestoreRequired>
       <PaketRestoreRequired Condition=" '$(PaketRestoreLockFileHash)' == '' ">true</PaketRestoreRequired>
