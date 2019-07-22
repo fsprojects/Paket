@@ -502,7 +502,13 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
     let rec loop trials =
         try
             if File.Exists (referencesFile.FileName) then
+                // The existing cached file can be read-only if it was copied from a read-only file.
+                // For example, when using Team Foundation Version Control with Server workspaces.
+                if paketCachedReferencesFileName.Exists && paketCachedReferencesFileName.IsReadOnly then
+                    paketCachedReferencesFileName.IsReadOnly <- false
+
                 File.Copy(referencesFile.FileName, paketCachedReferencesFileName.FullName, true)
+                paketCachedReferencesFileName.IsReadOnly <- false
             else
                 // it can happen that the references file doesn't exist if paket doesn't find one in that case we update the cache by deleting it.
                 if paketCachedReferencesFileName.Exists then paketCachedReferencesFileName.Delete()
