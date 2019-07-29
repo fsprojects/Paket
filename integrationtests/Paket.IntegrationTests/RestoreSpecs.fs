@@ -88,8 +88,13 @@ let ``#3012 Paket restore silently fails when TargetFramework(s) are specified i
     use __ = prepareSdk scenario
     directPaket "install" scenario |> ignore
     directDotnet false "build" projectDir |> ignore
-    
+
 [<Test>]
+#if NO_UNIT_PLATFORMATTRIBUTE
+[<Ignore "PlatformAttribute not supported by netstandard NUnit">]
+#else
+[<Platform "Win">] // read-only filesystem entries are really only a Windows thing
+#endif
 let ``#3410 Paket restore fails when obj files are readonly`` () =
     let scenario = "i003410-readonly-obj"
     let projectName = "dotnet"
@@ -101,8 +106,10 @@ let ``#3410 Paket restore fails when obj files are readonly`` () =
         
     use __ = prepareSdk scenario
 
-    let cachedReferencesPath = projectDir @@ "obj" @@ "dotnet.csproj.paket.references.cached";
-    File.SetAttributes(cachedReferencesPath, File.GetAttributes(cachedReferencesPath) ||| FileAttributes.ReadOnly)
-
-    directDotnet false "restore" projectDir |> ignore
-    directDotnet false "build" projectDir |> ignore
+    let cachedReferencesFile = FileInfo(projectDir @@ "obj" @@ "dotnet.csproj.paket.references.cached")
+    cachedReferencesFile.IsReadOnly <- true
+    try
+        directDotnet false "restore" projectDir |> ignore
+        directDotnet false "build" projectDir |> ignore
+    finally
+        cachedReferencesFile.IsReadOnly <- false
