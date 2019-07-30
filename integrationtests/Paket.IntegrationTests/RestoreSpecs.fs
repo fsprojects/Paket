@@ -106,7 +106,10 @@ let ``#3410 Paket restore fails when obj files are readonly`` () =
         
     use __ = prepareSdk scenario
 
+    let referencesFile = FileInfo(projectDir @@ "paket.references")
     let cachedReferencesFile = FileInfo(projectDir @@ "obj" @@ "dotnet.csproj.paket.references.cached")
+    cachedReferencesFile.Directory.Create()
+    cachedReferencesFile.FullName |> referencesFile.CopyTo |> ignore
     cachedReferencesFile.IsReadOnly <- true
     try
         directDotnet false "restore" projectDir |> ignore
