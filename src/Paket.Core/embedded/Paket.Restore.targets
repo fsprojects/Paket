@@ -64,7 +64,7 @@
 
     <!-- Disable automagic references for F# dotnet sdk -->
     <!-- This will not do anything for other project types -->
-    <!-- see https://github.com/fsharp/fslang-design/blob/master/RFCs/FS-1032-fsharp-in-dotnet-sdk.md -->
+    <!-- see https://github.com/fsharp/fslang-design/blob/master/tooling/FST-1002-fsharp-in-dotnet-sdk.md -->
     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
     <DisableImplicitSystemValueTupleReference>true</DisableImplicitSystemValueTupleReference>
 
