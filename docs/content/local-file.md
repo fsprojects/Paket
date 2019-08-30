@@ -5,7 +5,7 @@ of a dependent project.
 
 > Notes: 
 >
-> * **!!!** This feature works only for old-style .NET projects. If will not work with .NET SDK based projects.
+> * **!!!** This feature works only for old-style .NET projects. If will not work with .NET SDK based projects. Details [here](https://github.com/fsprojects/Paket/issues/3116).
 > * You **should not commit** `paket.local`. This file should always be added to `.gitignore`, because it specifies file paths that are only accessible on your machine.
 > * `paket.local` affects only the paket **restore** command, not the install or update command.
 > * By default `paket.local` will only substitute packages with an **identical** version to the `paket.lock` file.  See [Nupkg version](#Nupkg-version) for alternatives.
