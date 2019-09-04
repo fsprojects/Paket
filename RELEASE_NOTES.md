@@ -1,3 +1,6 @@
+#### 5.217.0 - 2019-09-04
+* Nuke Paket files after install - https://github.com/fsprojects/Paket/issues/3618
+
 #### 5.216.0 - 2019-08-10
 * Add roll-forward config to enable running on later major versions of the runtime - https://github.com/fsprojects/Paket/pull/3635
 
