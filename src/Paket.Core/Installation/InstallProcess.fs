@@ -593,23 +593,24 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
     for project, _ in projectsAndReferences do
         let di = (FileInfo project.FileName).Directory
-        for file in Directory.EnumerateFiles(di.FullName,"project.assets.json", SearchOption.AllDirectories) do
-            try
-                File.Delete file
-            with
-            | _ -> ()
+        for objDir in Directory.EnumerateDirectories(di.FullName,"obj", SearchOption.AllDirectories) do
+            for file in Directory.EnumerateFiles(objDir,"project.assets.json", SearchOption.AllDirectories) do
+                try
+                    File.Delete file
+                with
+                | _ -> ()
 
-        // for file in Directory.EnumerateFiles(di.FullName,"*.references", SearchOption.AllDirectories) do
-        //     try
-        //         File.Delete file
-        //     with
-        //     | _ -> ()
+            for file in Directory.EnumerateFiles(objDir,"*.references", SearchOption.AllDirectories) do
+                try
+                    File.Delete file
+                with
+                | _ -> ()
 
-        // for file in Directory.EnumerateFiles(di.FullName,"*.paket.*", SearchOption.AllDirectories) do
-        //     try
-        //         File.Delete file
-        //     with
-        //     | _ -> ()
+            for file in Directory.EnumerateFiles(objDir,"*.paket.*", SearchOption.AllDirectories) do
+                try
+                    File.Delete file
+                with
+                | _ -> ()
 
 /// Installs all packages from the lock file.
 let Install(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, updatedGroups) =
