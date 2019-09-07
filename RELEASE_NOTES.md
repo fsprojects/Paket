@@ -1,4 +1,4 @@
-#### 5.218.0 - 2019-09-04
+#### 5.218.1 - 2019-09-07
 * Nuke Paket files after install - https://github.com/fsprojects/Paket/issues/3618
 
 #### 5.216.0 - 2019-08-10
