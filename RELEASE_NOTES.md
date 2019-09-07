@@ -1,4 +1,7 @@
-#### 5.218.1 - 2019-09-07
+#### 5.219.0 - 2019-09-07
+* Support for creating snupkg symbol packages - https://github.com/fsprojects/Paket/pull/3636
+
+#### 5.218.1 - 2019-09-04
 * Nuke Paket files after install - https://github.com/fsprojects/Paket/issues/3618
 
 #### 5.216.0 - 2019-08-10
