@@ -186,7 +186,7 @@ let CreateModel(alternativeProjectRoot, root, force, dependenciesFile:Dependenci
              RemoteDownload.DownloadSourceFiles(root, kv.Key, force, files)
 
     lockFile.Groups
-    |> Seq.map (fun kv' ->
+    |> Seq.collect (fun kv' ->
         let sources = dependenciesFile.Groups.[kv'.Key].Sources
         let caches = dependenciesFile.Groups.[kv'.Key].Caches
         kv'.Value.Resolution
@@ -201,7 +201,6 @@ let CreateModel(alternativeProjectRoot, root, force, dependenciesFile:Dependenci
             return results })
         |> Async.Parallel
         |> Async.RunSynchronously)
-    |> Seq.concat
     |> Seq.concat
     |> Seq.toArray
 
@@ -377,7 +376,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
         let directDependencies, errorMessages =
             referenceFile.Groups
-            |> Seq.map (fun kv ->
+            |> Seq.collect (fun kv ->
                 lockFile.GetRemoteReferencedPackages(referenceFile,kv.Value) @ kv.Value.NugetPackages
                 |> Seq.map (fun ps ->
                     let group =
@@ -397,7 +396,6 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     | Choice2Of2 error1, Choice2Of2 error2 -> Choice2Of2 (error1 + "\n" + error2)
                     | Choice2Of2 error, _ | _, Choice2Of2 error -> Choice2Of2 error
                     ))
-            |> Seq.concat
             |> Seq.partitionAndChoose
                     (function Choice1Of2 _ -> true | Choice2Of2 _ -> false)
                     (function Choice1Of2 resolvedPackage -> Some resolvedPackage | _ -> None)
