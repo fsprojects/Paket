@@ -34,9 +34,9 @@ let FindPackagesNotExtractedYet(dependenciesFileName) =
     lockFile.GetGroupedResolution()
     |> Map.toList
     |> List.filter (fun ((group,package),resolved) ->
-        let packSetting = defaultArg resolved.Settings.StorageConfig PackagesFolderGroupConfig.Default
+        let packSettings = defaultArg resolved.Settings.StorageConfig PackagesFolderGroupConfig.Default
         let includeVersionInPath = defaultArg resolved.Settings.IncludeVersionInPath false
-        let resolvedPath = packSetting.Resolve root group package resolved.Version includeVersionInPath
+        let resolvedPath = packSettings.Resolve root group package resolved.Version includeVersionInPath
         NuGetCache.IsPackageVersionExtracted(resolvedPath, package, resolved.Version) |> not)
     |> List.map fst
 
@@ -101,10 +101,9 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
                 targetDir, overridenFile, force
 
         let! result = async {
-            // TODO: Cleanup - Download gets a source and should be able to handle LocalNuGet as well, so this is duplicated
-            match package.Source with
-            | NuGetV2 _ | NuGetV3 _ ->
-                let source =
+            let source =
+                match package.Source with
+                | NuGetV2 _ | NuGetV3 _ ->
                     let normalizeFeedUrl s = (normalizeFeedUrl s).Replace("https://","http://")
 
                     let normalized = normalizeFeedUrl package.Source.Url
@@ -119,11 +118,9 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
                     match source with
                     | None -> failwithf "The NuGet source %s for package %O was not found in the paket.dependencies file with sources %A" package.Source.Url package.Name sources
                     | Some s -> s
-
-                return! extractPackage caches package alternativeProjectRoot root localOverride source groupName v includeVersionInPath downloadLicense force
-
-            | LocalNuGet(path,_) as source ->
-                return! extractPackage caches package alternativeProjectRoot root localOverride source groupName v includeVersionInPath downloadLicense force
+                | LocalNuGet _ ->
+                    package.Source
+            return! extractPackage caches package alternativeProjectRoot root localOverride source groupName v includeVersionInPath downloadLicense force
         }
 
         // manipulate overridenFile after package extraction
@@ -158,10 +155,9 @@ let internal restore (alternativeProjectRoot, root, groupName, sources, caches, 
 
 let internal computePackageHull groupName (lockFile : LockFile) (referencesFileNames : string seq) =
     referencesFileNames
-    |> Seq.map (fun fileName ->
+    |> Seq.collect (fun fileName ->
         lockFile.GetPackageHull(groupName,ReferencesFile.FromFile fileName)
         |> Seq.map (fun p -> (snd p.Key)))
-    |> Seq.concat
 
 let findAllReferencesFiles root =
     let findRefFile (p:ProjectFile) =
@@ -254,12 +250,12 @@ let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches,
             | ResolvedPackageKind.Package -> InstallModelKind.Package
             | ResolvedPackageKind.DotnetCliTool -> InstallModelKind.DotnetCliTool
         let model =
-                InstallModel.CreateFromContent(
-                    package.Name,
-                    package.Version,
-                    kind,
-                    Requirements.getExplicitRestriction package.Settings.FrameworkRestrictions,
-                    content.Force())
+            InstallModel.CreateFromContent(
+                package.Name,
+                package.Version,
+                kind,
+                getExplicitRestriction package.Settings.FrameworkRestrictions,
+                content.Force())
         return (groupName,package.Name), (package,model)
     }
 
@@ -299,10 +295,10 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
                 let p = group.Resolution.[packageName]
                 let restrictions =
                     match p.Settings.FrameworkRestrictions with
-                    | FrameworkRestrictions.ExplicitRestriction FrameworkRestriction.HasNoRestriction -> group.Options.Settings.FrameworkRestrictions
-                    | FrameworkRestrictions.ExplicitRestriction fw -> FrameworkRestrictions.ExplicitRestriction fw
+                    | ExplicitRestriction FrameworkRestriction.HasNoRestriction -> group.Options.Settings.FrameworkRestrictions
+                    | ExplicitRestriction fw -> ExplicitRestriction fw
                     | _ -> group.Options.Settings.FrameworkRestrictions
-                let condition = restrictions |> getExplicitRestriction
+                let condition = getExplicitRestriction restrictions
                 p,condition,packageSettings)
             |> Seq.groupBy (fun (_,c,__) -> c)
             |> Seq.collect (fun (condition,packages) ->
@@ -360,7 +356,7 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
 
         saveToFile content fileInfo |> ignore
 
-let ImplicitPackages = [PackageName "NETStandard.Library"]  |> Set.ofList
+let ImplicitPackages = Set.ofList [ PackageName "NETStandard.Library" ]
 
 let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) (groups:Map<GroupName,LockFileGroup>) (targetFrameworks: string option) (objDir: DirectoryInfo) =
     let projectFileInfo = FileInfo projectFile.FileName
@@ -760,9 +756,9 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
                             let resolvedPackage = resolved.Force().[key]
 
                             match resolvedPackage.Settings.FrameworkRestrictions with
-                            | Requirements.ExplicitRestriction restrictions ->
+                            | ExplicitRestriction restrictions ->
                                 targets
-                                |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, TargetProfile.SinglePlatform target))
+                                |> Array.exists (fun target -> isTargetMatchingRestrictions(restrictions, TargetProfile.SinglePlatform target))
                             | _ -> true)
 
                 match dependenciesFile.Groups |> Map.tryFind kv.Value.Name with
