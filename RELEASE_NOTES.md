@@ -1,3 +1,12 @@
+#### 5.219.0 - 2019-09-07
+* Support for creating snupkg symbol packages - https://github.com/fsprojects/Paket/pull/3636
+
+#### 5.218.1 - 2019-09-04
+* Nuke Paket files after install - https://github.com/fsprojects/Paket/issues/3618
+
+#### 5.216.0 - 2019-08-10
+* Add roll-forward config to enable running on later major versions of the runtime - https://github.com/fsprojects/Paket/pull/3635
+
 #### 5.215.0 - 2019-07-03
 * BUGFIX: Disable fast restore for MSBuild version < 15.8 - https://github.com/fsprojects/Paket/pull/3611
 
@@ -108,9 +117,9 @@
 * REVERT: Retry automatically when a request times out - https://github.com/fsprojects/Paket/pull/3424
 
 #### 5.187.0 - 2018-11-13
-* Create a gitignore around paket's .cached file - https://github.com/fsprojects/Paket/issues/3060 
+* Create a gitignore around paket's .cached file - https://github.com/fsprojects/Paket/issues/3060
 * Paket template checks if restored with 5.185.3 or later - https://github.com/fsprojects/Paket/issues/3404
-* BUGFIX: Remove ReadOnly flag before writing to files - https://github.com/fsprojects/Paket/issues/3410 
+* BUGFIX: Remove ReadOnly flag before writing to files - https://github.com/fsprojects/Paket/issues/3410
 * BUGFIX: Added compat fallback in case of older cache files - https://github.com/fsprojects/Paket/pull/3417
 * BUGFIX: Used lowest_matching for paket's own FSharp.Core dependency - https://github.com/fsprojects/Paket/pull/3415
 * BUGFIX: Retry automatically when a request times out - https://github.com/fsprojects/Paket/pull/3420
@@ -197,7 +206,7 @@
 #### 5.170.0 - 2018-06-05
 * PERFORMANCE: Fixed filtered update performance - https://github.com/fsprojects/Paket/pull/3233
 * PERFORMANCE: Check if everything is up-to-date after aquiring lock
-* BUGFIX: Regression from semver2 support in paket tempates - https://github.com/fsprojects/Paket/pull/3229 
+* BUGFIX: Regression from semver2 support in paket tempates - https://github.com/fsprojects/Paket/pull/3229
 * USABILITY: Always trace on early restore exit
 
 #### 5.169.0 - 2018-05-26
@@ -691,7 +700,7 @@
 * BUGFIX: find-package-versions doesn't require paket.dependencies to be present as long as a source is explicitly specified - https://github.com/fsprojects/Paket/pull/2478
 
 #### 5.3.0 - 2017-06-30
-* BUGFIX: Ignoring pre-release status when deps file requested prerelease - https://github.com/fsprojects/Paket/pull/2474 
+* BUGFIX: Ignoring pre-release status when deps file requested prerelease - https://github.com/fsprojects/Paket/pull/2474
 * BUGFIX: Don't remove placeholder from file view - https://github.com/fsprojects/Paket/issues/2469
 * BUGFIX: Automatic restore in VS should also work with bootstraper
 * BUGFIX: Do not add old myget sources during NuGet convert

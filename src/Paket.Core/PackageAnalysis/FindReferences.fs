@@ -1,9 +1,6 @@
 ﻿module Paket.FindReferences
 
-open System
-open System.IO
 open Logging
-open Paket.Domain
 open Chessie.ErrorHandling
 
 let private findReferencesFor groupName package (lockFile: LockFile) projects = trial {
@@ -34,7 +31,7 @@ let TouchReferencesOfPackages packages environment = trial {
         |> List.map (fun (group,package) -> FindReferencesForPackage group package environment)
         |> collect
 
-    let projects = 
+    let projects =
         references
         |> List.collect id
         |> List.distinctBy (fun project-> project.FileName)

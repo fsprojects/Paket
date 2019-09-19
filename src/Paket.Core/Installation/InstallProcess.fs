@@ -37,7 +37,7 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
     let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
     let storageOption = defaultArg settings.StorageConfig PackagesFolderGroupConfig.Default
     match storageOption.Resolve root groupName packageName version includeVersionInPath with
-    | ResolvedPackagesFolder.SymbolicLink targetFolder 
+    | ResolvedPackagesFolder.SymbolicLink targetFolder
     | ResolvedPackagesFolder.ResolvedFolder targetFolder ->
         let direct = DirectoryInfo targetFolder
         if direct.Exists then
@@ -61,8 +61,8 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
 
                         failwithf "Group directory for group %s was not found." groupName
 
-            let found = 
-                di.GetDirectories() 
+            let found =
+                di.GetDirectories()
                 |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase lowerName subDir.FullName)
 
             match found with
@@ -71,7 +71,7 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
 
     | ResolvedPackagesFolder.NoPackagesFolder ->
         let d = DirectoryInfo(NuGetCache.GetTargetUserFolder packageName version)
-        if not d.Exists then 
+        if not d.Exists then
             failwithf "Package directory for package %O was not found in %s. Storage mode is \"none\"." packageName d.FullName
         d
 
@@ -101,7 +101,7 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
                         try
                             findPackageFolder root (group, packName) (v,i)
                         with
-                        | _ -> 
+                        | _ ->
                             findPackageFolder root (group, packName) (v,{ i with IncludeVersionInPath = None })
                     s,s',packageDir)
             |> Seq.choose (fun (contentCopySettings,contentCopyToOutputSettings,packageDir) ->
@@ -167,8 +167,8 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
                 removeEmptyDirHierarchy (DirectoryInfo dirPath)
 
         project.GetPaketFileItems()
-        |> List.filter (fun fi -> 
-                not (fi.FullName.Contains Constants.PaketFilesFolderName) && 
+        |> List.filter (fun fi ->
+                not (fi.FullName.Contains Constants.PaketFilesFolderName) &&
                  not (contentFiles.Contains fi.FullName) &&
                  fi.Name <> "paket.references")
         |> removeFilesAndTrimDirs
@@ -186,7 +186,7 @@ let CreateModel(alternativeProjectRoot, root, force, dependenciesFile:Dependenci
              RemoteDownload.DownloadSourceFiles(root, kv.Key, force, files)
 
     lockFile.Groups
-    |> Seq.map (fun kv' ->
+    |> Seq.collect (fun kv' ->
         let sources = dependenciesFile.Groups.[kv'.Key].Sources
         let caches = dependenciesFile.Groups.[kv'.Key].Caches
         kv'.Value.Resolution
@@ -201,7 +201,6 @@ let CreateModel(alternativeProjectRoot, root, force, dependenciesFile:Dependenci
             return results })
         |> Async.Parallel
         |> Async.RunSynchronously)
-    |> Seq.concat
     |> Seq.concat
     |> Seq.toArray
 
@@ -315,9 +314,9 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
             |> Seq.exists (fun a -> a.Version <> assemblyVersion)
 
         assemblies
-        |> Seq.choose (fun (assembly,token,refs,redirects,profile) -> 
+        |> Seq.choose (fun (assembly,token,refs,redirects,profile) ->
                 token |> Option.map (fun token -> (assembly,token,refs,redirects,profile)))
-        |> Seq.filter (fun (_,_,_,redirects,_) -> 
+        |> Seq.filter (fun (_,_,_,redirects,_) ->
             match redirects with
             | Some BindingRedirectsSettings.On
             | Some BindingRedirectsSettings.Force -> true
@@ -338,13 +337,13 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
         |> Seq.sort
 
     applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root allKnownLibNames bindingRedirects
-    
+
 let installForDotnetSDK root (project:ProjectFile) =
     let paketTargetsPath = RestoreProcess.extractRestoreTargets root
     let relativePath = createRelativePath project.FileName paketTargetsPath
     project.RemoveImportForPaketTargets()
     project.AddImportForPaketTargets(relativePath)
-    
+
 /// Installs all packages from the lock file.
 let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups) =
     tracefn " - Creating model and downloading packages."
@@ -364,11 +363,11 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
     let model = CreateModel(options.AlternativeProjectRoot, root, options.Force, dependenciesFile, lockFile, Set.ofSeq packagesToInstall, updatedGroups) |> Map.ofArray
     let lookup = lockFile.GetDependencyLookupTable()
     let projectCache = Dictionary<string, ProjectFile option>();
-    
+
     let prefix = dependenciesFile.Directory.Length + 1
     let norm (s:string) = (s.Substring prefix).Replace('\\', '/')
 
-    tracefn " - Installing for projects"        
+    tracefn " - Installing for projects"
     for project, referenceFile in projectsAndReferences do
         tracefn "   - %s -> %s" (norm referenceFile.FileName) (norm project.FileName)
         let toolsVersion = project.GetToolsVersion()
@@ -377,7 +376,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
         let directDependencies, errorMessages =
             referenceFile.Groups
-            |> Seq.map (fun kv ->
+            |> Seq.collect (fun kv ->
                 lockFile.GetRemoteReferencedPackages(referenceFile,kv.Value) @ kv.Value.NugetPackages
                 |> Seq.map (fun ps ->
                     let group =
@@ -397,7 +396,6 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     | Choice2Of2 error1, Choice2Of2 error2 -> Choice2Of2 (error1 + "\n" + error2)
                     | Choice2Of2 error, _ | _, Choice2Of2 error -> Choice2Of2 error
                     ))
-            |> Seq.concat
             |> Seq.partitionAndChoose
                     (function Choice1Of2 _ -> true | Choice2Of2 _ -> false)
                     (function Choice1Of2 resolvedPackage -> Some resolvedPackage | _ -> None)
@@ -480,7 +478,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                         )
                 (Seq.append pathAcc refpaths),(Seq.append errorAcc errors)
             )|> fun (refpaths,errors) -> Seq.toArray refpaths, Seq.concat [| errorMessages ; errors |] |> Seq.toArray
-        
+
         if toolsVersion >= 15.0 then
             // HACK: just validate that the list of packages contains one named FSharp.Core, if it is a *.fsproj
             if project.Name.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase) then
@@ -536,14 +534,14 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                                 createRelativePath project.FileName targetFile.FullName
                           Link = None }
                 ) |> Seq.toList
-           
+
             if toolsVersion >= 15.0 then
                 let resolved = lazy(model |> Map.map (fun k v -> fst v))
                 let _referencesFile = Paket.RestoreProcess.RestoreNewSdkProject lockFile resolved lockFile.Groups project None
                 processContentFiles root project Map.empty gitRemoteItems options
             else
                 processContentFiles root project usedPackages gitRemoteItems options
-            
+
             project.Save forceTouch
             projectCache.[project.FileName] <- Some project
 
@@ -560,10 +558,10 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
             for g in lockFile.Groups do
                 let group = g.Value
-                
+
                 let groupRedirects =
                     g.Value.Options.Redirects ++ commandRedirects
-                
+
                 model
                 |> Seq.filter (fun kv -> (fst kv.Key) = g.Key)
                 |> Seq.map (fun kv ->
@@ -593,11 +591,24 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
     for project, _ in projectsAndReferences do
         let di = (FileInfo project.FileName).Directory
-        for file in Directory.EnumerateFiles(di.FullName,"project.assets.json", SearchOption.AllDirectories) do
-            try
-                File.Delete file
-            with
-            | _ -> ()
+        for objDir in Directory.EnumerateDirectories(di.FullName,"obj", SearchOption.AllDirectories) do
+            for file in Directory.EnumerateFiles(objDir,"project.assets.json", SearchOption.AllDirectories) do
+                try
+                    File.Delete file
+                with
+                | _ -> ()
+
+            for file in Directory.EnumerateFiles(objDir,"*.references", SearchOption.AllDirectories) do
+                try
+                    File.Delete file
+                with
+                | _ -> ()
+
+            for file in Directory.EnumerateFiles(objDir,"*.paket.*", SearchOption.AllDirectories) do
+                try
+                    File.Delete file
+                with
+                | _ -> ()
 
 /// Installs all packages from the lock file.
 let Install(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, updatedGroups) =

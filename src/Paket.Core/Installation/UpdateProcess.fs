@@ -5,30 +5,28 @@ open Paket
 open System.IO
 open Paket.Domain
 open Paket.PackageResolver
-open System.Collections.Generic
 open Chessie.ErrorHandling
 open Paket.Logging
-open InstallProcess
 
 let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGraphFromPackage (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode semVerUpdateMode =
     let dependenciesFile =
         let processFile createRequirementF =
             lockFile.GetGroupedResolution()
             |> Map.fold (fun (dependenciesFile:DependenciesFile) (groupName,packageName) resolvedPackage ->
-                    let settings =
-                        match dependenciesFile.Groups |> Map.tryFind groupName with
+                let settings =
+                    match dependenciesFile.Groups |> Map.tryFind groupName with
+                    | None -> resolvedPackage.Settings
+                    | Some group ->
+                        match group.Packages |> List.tryFind (fun p -> p.Name = packageName) with
                         | None -> resolvedPackage.Settings
-                        | Some group ->
-                            match group.Packages |> List.tryFind (fun p -> p.Name = packageName) with
-                            | None -> resolvedPackage.Settings
-                            | Some p -> p.Settings
+                        | Some p -> p.Settings
 
-                    dependenciesFile.AddFixedPackage(
-                        groupName,
-                        packageName,
-                        createRequirementF resolvedPackage.Version,
-                        settings)) dependenciesFile
-    
+                dependenciesFile.AddFixedPackage(
+                    groupName,
+                    packageName,
+                    createRequirementF resolvedPackage.Version,
+                    settings)) dependenciesFile
+
         let formatPrerelease (v:SemVerInfo) =
             match v.PreRelease with
             | Some p -> sprintf " prerelease"
@@ -68,11 +66,11 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
                     |> Seq.map (fun k -> k.Key)
                     |> Seq.filter (fun (g, p) -> g = groupName && filter.Match p)
                     |> Set.ofSeq
-                    |> fun s -> 
+                    |> fun s ->
                         match filter with
                         | PackageFilter.PackageName name -> Set.add (groupName,name) s
                         | _ -> s
-                    
+
                 let groups =
                     dependenciesFile.Groups
                     |> Map.filter (fun k _ -> k = groupName || changes |> Seq.exists (fun (g,_) -> g = k))
@@ -81,7 +79,7 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
             | InstallGroup groupName ->
                 let hasAnyChanges,nuGetChanges,remoteFileChanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,true)
 
-                let hasChanges groupName x = 
+                let hasChanges groupName x =
                     let hasChanges = hasChanges groupName x
                     if not hasChanges then
                         tracefn "Skipping resolver for group %O since it is already up-to-date" groupName
@@ -98,7 +96,7 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
             | Install ->
                 let hasAnyChanges,nuGetChanges,remoteFileChanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,true)
 
-                let hasChanges groupName x = 
+                let hasChanges groupName x =
                     let hasChanges = hasChanges groupName x
                     if not hasChanges then
                         tracefn "Skipping resolver for group %O since it is already up-to-date" groupName
@@ -115,7 +113,7 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
             match updateMode with
             | UpdateAll ->
                 Map.empty
-            | UpdateGroup groupName -> 
+            | UpdateGroup groupName ->
                 DependencyChangeDetection.GetPreferredNuGetVersions(dependenciesFile,lockFile)
                 |> Map.filter (fun (g, p) _ -> g <> groupName)
             | UpdateFiltered (groupName, filter) ->
@@ -126,8 +124,8 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
                 |> Map.filter (fun (g, p) _ -> g <> groupName)
             | Install ->
                 DependencyChangeDetection.GetPreferredNuGetVersions(dependenciesFile,lockFile)
-            |> Map.map (fun (groupName,_packageName) (v,s) -> 
-                let caches = 
+            |> Map.map (fun (groupName,_packageName) (v,s) ->
+                let caches =
                     match dependenciesFile.Groups |> Map.tryFind groupName with
                     | None -> []
                     | Some group -> group.Caches
@@ -152,29 +150,29 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
             | _ -> return exploredPackage }
 
         getPreferredVersionsF,getPackageDetailsF,groups
-        
+
     let resolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPreferredVersionsF, getPackageDetailsF, getRuntimeGraphFromPackage, groupsToUpdate, updateMode)
 
-    let groups = 
+    let groups =
         dependenciesFile.Groups
-        |> Seq.choose (fun kv -> 
-                let groupName = kv.Key
-                match resolution |> Map.tryFind groupName with
-                | Some group ->
-                    let model = group.ResolvedPackages.GetModelOrFail()
-                    for x in model do
-                        if x.Value.Unlisted then
-                            traceWarnfn "The owner of %O %A has unlisted the package. This could mean that the package version is deprecated or shouldn't be used anymore." x.Value.Name x.Value.Version
-                    let dependenciesGroup = kv.Value
-                    Some
-                        (groupName, 
-                            { Name = dependenciesGroup.Name
-                              Options = dependenciesGroup.Options
-                              Resolution = model
-                              RemoteFiles = group.ResolvedSourceFiles })
-                | None -> lockFile.Groups |> Map.tryFind groupName |> Option.map (fun g -> groupName,g)) // just copy from lockfile
+        |> Seq.choose (fun kv ->
+            let groupName = kv.Key
+            match resolution |> Map.tryFind groupName with
+            | Some group ->
+                let model = group.ResolvedPackages.GetModelOrFail()
+                for x in model do
+                    if x.Value.Unlisted then
+                        traceWarnfn "The owner of %O %A has unlisted the package. This could mean that the package version is deprecated or shouldn't be used anymore." x.Value.Name x.Value.Version
+                let dependenciesGroup = kv.Value
+                Some
+                    (groupName,
+                        { Name = dependenciesGroup.Name
+                          Options = dependenciesGroup.Options
+                          Resolution = model
+                          RemoteFiles = group.ResolvedSourceFiles })
+            | None -> lockFile.Groups |> Map.tryFind groupName |> Option.map (fun g -> groupName,g)) // just copy from lockfile
         |> Map.ofSeq
-    
+
     LockFile(lockFile.FileName, groups),groupsToUpdate
 
 let detectProjectFrameworksForDependenciesFile (dependenciesFile:DependenciesFile) =
@@ -183,15 +181,15 @@ let detectProjectFrameworksForDependenciesFile (dependenciesFile:DependenciesFil
         let targetFrameworks = lazy (
             let rawRestrictions =
                 RestoreProcess.findAllReferencesFiles root |> returnOrFail
-                |> List.collect (fun (p,_) -> 
-                    p.GetTargetProfiles() 
+                |> List.collect (fun (p,_) ->
+                    p.GetTargetProfiles()
                     |> List.map (Requirements.FrameworkRestriction.ExactlyPlatform))
                 |> List.distinct
             if rawRestrictions.IsEmpty then Paket.Requirements.FrameworkRestriction.NoRestriction
             else rawRestrictions |> Seq.fold Paket.Requirements.FrameworkRestriction.combineRestrictionsWithOr Paket.Requirements.FrameworkRestriction.EmptySet)
 
         dependenciesFile.Groups
-        |> Map.map (fun groupName group -> 
+        |> Map.map (fun groupName group ->
             let restrictions =
                 match group.Options.Settings.FrameworkRestrictions with
                 | Requirements.FrameworkRestrictions.AutoDetectFramework ->
@@ -222,13 +220,13 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, alternativeProjectRoot,
 
     let lockFile,updatedGroups =
         selectiveUpdate
-            force 
+            force
             getSha1
             getVersionsF
             (NuGet.GetPackageDetails alternativeProjectRoot root force)
             (RuntimeGraph.getRuntimeGraphFromNugetCache root)
-            oldLockFile 
-            dependenciesFile 
+            oldLockFile
+            dependenciesFile
             updateMode
             semVerUpdateMode
     let hasChanged = lockFile.Save()
@@ -236,7 +234,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, alternativeProjectRoot,
 
 /// Smart install command
 let SmartInstall(dependenciesFile:DependenciesFile, updateMode, options : UpdaterOptions) =
-    let lockFile,hasChanged,updatedGroups = SelectiveUpdate(dependenciesFile, options.Common.AlternativeProjectRoot, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)    
+    let lockFile,hasChanged,updatedGroups = SelectiveUpdate(dependenciesFile, options.Common.AlternativeProjectRoot, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)
 
     let root = Path.GetDirectoryName dependenciesFile.FileName
     let projectsAndReferences = RestoreProcess.findAllReferencesFiles root |> returnOrFail
@@ -250,7 +248,7 @@ let SmartInstall(dependenciesFile:DependenciesFile, updateMode, options : Update
     let shouldGenerateScripts =
         options.Common.GenerateLoadScripts ||
         // hardcoded assumption, if option is set on any of the group, generate everything
-        dependenciesFile.Groups 
+        dependenciesFile.Groups
         |> Seq.map (fun kvp -> kvp.Value)
         |> Seq.filter (fun g -> g.Options.Settings.GenerateLoadScripts = Some true)
         |> Seq.tryHead
@@ -259,12 +257,12 @@ let SmartInstall(dependenciesFile:DependenciesFile, updateMode, options : Update
     if shouldGenerateScripts then
         let groupsToGenerate =
           if options.Common.GenerateLoadScripts then [] else
-          dependenciesFile.Groups 
+          dependenciesFile.Groups
           |> Seq.map (fun kvp -> kvp.Value)
           |> Seq.filter (fun g -> g.Options.Settings.GenerateLoadScripts = Some true)
           |> Seq.map (fun g -> g.Name)
           |> Seq.toList
-        
+
         let rootDir = DirectoryInfo dependenciesFile.RootPath
         let depCache= DependencyCache(lockFile)
         let scripts = LoadingScripts.ScriptGeneration.constructScriptsFromData depCache groupsToGenerate options.Common.ProvidedFrameworks options.Common.ProvidedScriptTypes
@@ -281,7 +279,7 @@ let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, ne
     let dependenciesFile =
         match newVersion with
         | Some v -> dependenciesFile.UpdatePackageVersion(groupName,packageName, v)
-        | None -> 
+        | None ->
             tracefn "Updating %O in %s group %O" packageName dependenciesFileName groupName
             dependenciesFile
 
@@ -317,5 +315,5 @@ let UpdateGroup(dependenciesFileName, groupName,  options : UpdaterOptions) =
 /// Update command
 let Update(dependenciesFileName, options : UpdaterOptions) =
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
-    
+
     SmartInstall(dependenciesFile, UpdateAll, options)
