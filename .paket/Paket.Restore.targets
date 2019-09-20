@@ -7,7 +7,7 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
 
     <DetectedMSBuildVersion>$(MSBuildVersion)</DetectedMSBuildVersion>
-    <DetectedMSBuildVersion Condition="$(MSBuildVersion) == ''">15.0.0</DetectedMSBuildVersion>
+    <DetectedMSBuildVersion Condition="'$(MSBuildVersion)' == ''">15.0.0</DetectedMSBuildVersion>
     <MSBuildSupportsHashing>false</MSBuildSupportsHashing>
     <MSBuildSupportsHashing Condition=" '$(DetectedMSBuildVersion)' &gt; '15.8.0' ">true</MSBuildSupportsHashing>
     <!-- Mark that this target file has been loaded.  -->
@@ -300,7 +300,7 @@
               DevelopmentDependency="$(DevelopmentDependency)"
               BuildOutputInPackage="@(_BuildOutputInPackage)"
               TargetPathsToSymbols="@(_TargetPathsToSymbols)"
-              SymbolPackageFormat="symbols.nupkg"
+              SymbolPackageFormat="$(SymbolPackageFormat)"
               TargetFrameworks="@(_TargetFrameworks)"
               AssemblyName="$(AssemblyName)"
               PackageOutputPath="$(PackageOutputAbsolutePath)"
@@ -347,7 +347,7 @@
               DevelopmentDependency="$(DevelopmentDependency)"
               BuildOutputInPackage="@(_BuildOutputInPackage)"
               TargetPathsToSymbols="@(_TargetPathsToSymbols)"
-              SymbolPackageFormat="symbols.nupkg"
+              SymbolPackageFormat="$(SymbolPackageFormat)"
               TargetFrameworks="@(_TargetFrameworks)"
               AssemblyName="$(AssemblyName)"
               PackageOutputPath="$(PackageOutputAbsolutePath)"

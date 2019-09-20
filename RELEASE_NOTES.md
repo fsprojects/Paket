@@ -1,3 +1,6 @@
+#### 5.219.1 - 2019-09-20
+* BUGFIX: CopyLocal support - https://github.com/fsprojects/Paket/pull/3659
+
 #### 5.219.0 - 2019-09-07
 * Support for creating snupkg symbol packages - https://github.com/fsprojects/Paket/pull/3636
 

@@ -286,7 +286,7 @@ module FolderScanner =
         sscanfHelper opts pf s
         |> handleErrors s
 
-    
+
 
     let private retrieveReplacedFormatString =
         let findSpecifiers = Regex(@"%(?<formatSpec>.)({(?<inside>.*?)})?")
@@ -299,7 +299,7 @@ module FolderScanner =
                     let scannerName = m.Groups.["inside"].Value
                     formatSpec, scannerName, m.Value, m.Index)
                 |> Seq.toList
-            
+
             (*
             let replacedFormatString =
                 matches
@@ -495,8 +495,7 @@ module InstallModel =
 
     let private getAllFiles folderType choosefn =
         folderType
-        |> Seq.map (fun folder -> choosefn folder.FolderContents)
-        |> Seq.concat
+        |> Seq.collect (fun folder -> choosefn folder.FolderContents)
 
     /// This is for library references, which at the same time can be used for references (old world - pre dotnetcore)
     let getLegacyReferences (target : TargetProfile) (installModel:InstallModel) =
@@ -506,7 +505,7 @@ module InstallModel =
     let getLegacyFrameworkReferences (target : TargetProfile) (installModel:InstallModel) =
         getFileFolders target (installModel.CompileLibFolders) (fun f -> f.FrameworkReferences |> Set.toSeq)
         |> Seq.cache
-        
+
     let getAllLegacyFrameworkReferences (installModel:InstallModel) =
         getAllFiles installModel.CompileLibFolders (fun f -> f.FrameworkReferences |> Set.toSeq)
         |> Seq.cache
@@ -580,8 +579,8 @@ module InstallModel =
             | NuspecReferences.All -> true
             | NuspecReferences.Explicit list -> List.exists (fileEndsWith file) list
 
-        if not install then 
-            this 
+        if not install then
+            this
         else
             let folders = addFileToFolder path (Library.ofFile file) this.CompileLibFolders ReferenceOrLibraryFolder.addLibrary
             { this with
@@ -704,7 +703,7 @@ module InstallModel =
         let allRids = allLibraries |> Seq.choose (fun s -> s.Rid) |> Set.ofSeq
         let bestMatchingRid =
             RuntimeGraph.getInheritanceList rid graph
-            |> Seq.tryFind (fun rid -> allRids.Contains rid)
+            |> Seq.tryFind allRids.Contains
         let tfmData =
             getFileFolders target (installModel.RuntimeLibFolders) (Set.toSeq)
             |> Seq.filter (fun lib -> lib.Rid = bestMatchingRid)
@@ -869,7 +868,7 @@ module InstallModel =
     let addNuGetFiles (content:NuGetPackageContent) (model:InstallModel) : InstallModel =
         let asList o = defaultArg o []
         let analyzers = NuGet.tryFindFolder "analyzers" content |> asList
-        let loadscripts = 
+        let loadscripts =
             // Find all files in 'loadscripts'
             (NuGet.tryFindFolder "loadscripts" content |> asList) @
             // Also look for 'FsLab.fsx/csx' at the root of 'FsLab'
