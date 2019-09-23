@@ -331,12 +331,27 @@ let GetTargetUserNupkg (packageName:PackageName) (version:SemVerInfo) =
 let GetTargetUserToolsFolder (packageName:PackageName) (version:SemVerInfo) =
     DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,".tools",packageName.CompareString,version.Normalize())).FullName
 
-let TryGetFallbackFolder () =
+let TryGetFallbackFolderFromHardCodedPath () =
+    let fallbackDir =
+        match isUnix with
+        | true ->
+            [|"/usr/share/dotnet/sdk/NuGetFallbackFolder" |]
+        | false ->
+            [| @"C:\Program Files\dotnet\sdk\NuGetFallbackFolder"; 
+               @"C:\Program Files (x86)\dotnet\sdk\NuGetFallbackFolder"|]
+    fallbackDir
+    |> Array.tryFind Directory.Exists
+
+let TryGetFallbackFolderFromBin () =
     let dotnet = if isUnix then "dotnet" else "dotnet.exe"
     ProcessHelper.tryFindFileOnPath dotnet |> Option.bind (fun fileName ->
         let dotnetDir = Path.GetDirectoryName fileName
         let fallbackDir = Path.Combine (dotnetDir, "sdk", "NuGetFallbackFolder")
         if Directory.Exists fallbackDir then Some fallbackDir else None)
+
+let TryGetFallbackFolder () =
+    TryGetFallbackFolderFromHardCodedPath () 
+    |> Option.orElseWith TryGetFallbackFolderFromBin
 
 let TryGetFallbackNupkg (packageName:PackageName) (version:SemVerInfo) =
     match TryGetFallbackFolder() with
