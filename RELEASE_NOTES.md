@@ -1,3 +1,6 @@
+#### 5.219.3 - 2019-09-24
+* BUGFIX: Fixed typo in targets file so that bootstrapper can be found - https://github.com/fsprojects/Paket/pull/3665
+
 #### 5.219.2 - 2019-09-20
 * BUGFIX: Fixed UnauthorizedAccessException writing to MyProject.paket.references.cached - https://github.com/fsprojects/Paket/pull/3617
 
