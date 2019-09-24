@@ -34,7 +34,7 @@
     <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' == 'Windows_NT' AND Exists('$(PaketRootPath)paket.exe') ">$(PaketRootPath)paket.exe</PaketExePath>
     <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' == 'Windows_NT' AND Exists('$(PaketToolsPath)paket.exe') ">$(PaketToolsPath)paket.exe</PaketExePath>
     <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' == 'Windows_NT' AND '$(PaketBootstrapperStyle)' == 'proj' ">$(PaketToolsPath)paket.exe</PaketExePath>
-    <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' == 'Windows_NT' AND Exists('$(PaketBootStrapperExeDir)') ">$(_PaketBootStrapperExeDir)paket.exe</PaketExePath>
+    <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' == 'Windows_NT' AND Exists('$(PaketBootStrapperExeDir)') ">$(PaketBootStrapperExeDir)paket.exe</PaketExePath>
     <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' == 'Windows_NT' ">paket.exe</PaketExePath>
 
     <!-- no windows, try native paket as default,  root => tool => proj style => mono paket => bootstrpper => global -->
