@@ -1,4 +1,4 @@
-#### 5.219.4 - 2019-09-24
+#### 5.219.5 - 2019-09-24
 * Try hardcoded path for NuGetFallbackFolder - https://github.com/fsprojects/Paket/pull/3663
 
 #### 5.219.3 - 2019-09-24
