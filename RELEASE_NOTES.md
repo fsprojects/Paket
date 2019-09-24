@@ -1,3 +1,6 @@
+#### 5.219.4 - 2019-09-24
+* Try hardcoded path for NuGetFallbackFolder - https://github.com/fsprojects/Paket/pull/3663
+
 #### 5.219.3 - 2019-09-24
 * BUGFIX: Fixed typo in targets file so that bootstrapper can be found - https://github.com/fsprojects/Paket/pull/3665
 

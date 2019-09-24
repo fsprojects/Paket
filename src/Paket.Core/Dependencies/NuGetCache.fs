@@ -22,7 +22,7 @@ open System.Threading.Tasks
 // show the path that was too long
 let FileInfo str =
     try
-        FileInfo str 
+        FileInfo str
     with
       :? PathTooLongException as exn -> raise (PathTooLongException("Path too long: " + str, exn))
 
@@ -212,7 +212,7 @@ let tryGetDetailsFromCache force nugetURL (packageName:PackageName) (version:Sem
     else
         None
 
-let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (get : unit -> ODataSearchResult Async) : ODataSearchResult Async =    
+let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (get : unit -> ODataSearchResult Async) : ODataSearchResult Async =
     let get() =
         async {
             let! result = get()
@@ -331,16 +331,18 @@ let GetTargetUserNupkg (packageName:PackageName) (version:SemVerInfo) =
 let GetTargetUserToolsFolder (packageName:PackageName) (version:SemVerInfo) =
     DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,".tools",packageName.CompareString,version.Normalize())).FullName
 
-let TryGetFallbackFolderFromHardCodedPath () =
+let TryGetFallbackFolderFromHardCodedPath = lazy (
     let fallbackDir =
         match isUnix with
         | true ->
             [|"/usr/share/dotnet/sdk/NuGetFallbackFolder" |]
         | false ->
-            [| @"C:\Program Files\dotnet\sdk\NuGetFallbackFolder"; 
-               @"C:\Program Files (x86)\dotnet\sdk\NuGetFallbackFolder"|]
+            [| Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet","sdk", "NuGetFallbackFolder")
+               Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "dotnet","sdk", "NuGetFallbackFolder")|]
+
     fallbackDir
     |> Array.tryFind Directory.Exists
+)
 
 let TryGetFallbackFolderFromBin () =
     let dotnet = if isUnix then "dotnet" else "dotnet.exe"
@@ -350,7 +352,7 @@ let TryGetFallbackFolderFromBin () =
         if Directory.Exists fallbackDir then Some fallbackDir else None)
 
 let TryGetFallbackFolder () =
-    TryGetFallbackFolderFromHardCodedPath () 
+    TryGetFallbackFolderFromHardCodedPath.Force()
     |> Option.orElseWith TryGetFallbackFolderFromBin
 
 let TryGetFallbackNupkg (packageName:PackageName) (version:SemVerInfo) =
@@ -380,7 +382,7 @@ let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, ver
         if kind = PackageResolver.ResolvedPackageKind.DotnetCliTool then
             let! _ = ExtractPackageToUserFolder(fileName, packageName, version, PackageResolver.ResolvedPackageKind.Package)
             ()
-        
+
         let targetFolder = DirectoryInfo(dir)
 
         use _ = Profile.startCategory Profile.Category.FileIO
