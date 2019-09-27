@@ -1,3 +1,6 @@
+#### 5.219.6 - 2019-09-27
+* Add PaketCommand contidion for Paket installed as .NET Core 3.0 local tool - https://github.com/fsprojects/Paket/pull/3668/files
+
 #### 5.219.5 - 2019-09-24
 * Try hardcoded path for NuGetFallbackFolder - https://github.com/fsprojects/Paket/pull/3663
 
