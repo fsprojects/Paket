@@ -207,6 +207,8 @@ module ResolutionRaw =
                 let pr = formatPR req.VersionRequirement
                 let tp = if req.TransitivePrereleases then "*" else ""
                 match req.Parent with
+                | RuntimeDependency ->
+                    sprintf "   - Runtime Dependency requested package %O: %s%s%s" req.Name vr pr tp
                 | DependenciesFile _ ->
                     sprintf "   - Dependencies file requested package %O: %s%s%s" req.Name vr pr tp
                 | DependenciesLock(_,path) ->
@@ -483,7 +485,7 @@ let private explorePackageConfig (getPackageDetailsBlock:PackageDetailsSyncFunc)
 
         let settings =
             match dependency.Parent with
-            | DependenciesFile _ | DependenciesLock _ -> dependency.Settings
+            | DependenciesFile _ | DependenciesLock _ | RuntimeDependency -> dependency.Settings
             | Package _ ->
                 match pkgConfig.RootDependencies.TryGetValue packageDetails.Name with
                 | true, r -> r.Settings + dependency.Settings

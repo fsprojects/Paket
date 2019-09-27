@@ -1158,6 +1158,7 @@ type RemoteFileInstallSettings =
             | _ -> None }
 
 type PackageRequirementSource =
+| RuntimeDependency
 | DependenciesFile of string * int
 | DependenciesLock of string * string
 | Package of PackageName * SemVerInfo * PackageSource
@@ -1168,6 +1169,7 @@ type PackageRequirementSource =
 
     override this.ToString() =
         match this with
+        | RuntimeDependency -> "Runtime Dependency"
         | DependenciesFile(x,_) -> x
         | DependenciesLock(_,x) -> x
         | Package(name,version,_) ->
