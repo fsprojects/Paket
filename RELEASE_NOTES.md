@@ -1,4 +1,4 @@
-#### 5.219.7 - 2019-09-29
+#### 5.219.8 - 2019-09-29
 * BUGFIX: Make paket work as global tool again - https://github.com/fsprojects/Paket/issues/3671
 
 #### 5.219.6 - 2019-09-27
