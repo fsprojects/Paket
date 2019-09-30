@@ -1,19 +1,9 @@
-#### 5.219.8 - 2019-09-29
+#### 5.220.0 - 2019-09-30
 * BUGFIX: Make paket work as global tool again - https://github.com/fsprojects/Paket/issues/3671
-
-#### 5.219.6 - 2019-09-27
 * Add PaketCommand contidion for Paket installed as .NET Core 3.0 local tool - https://github.com/fsprojects/Paket/pull/3668/files
-
-#### 5.219.5 - 2019-09-24
 * Try hardcoded path for NuGetFallbackFolder - https://github.com/fsprojects/Paket/pull/3663
-
-#### 5.219.3 - 2019-09-24
 * BUGFIX: Fixed typo in targets file so that bootstrapper can be found - https://github.com/fsprojects/Paket/pull/3665
-
-#### 5.219.2 - 2019-09-20
 * BUGFIX: Fixed UnauthorizedAccessException writing to MyProject.paket.references.cached - https://github.com/fsprojects/Paket/pull/3617
-
-#### 5.219.1 - 2019-09-20
 * BUGFIX: Fixed CopyLocal support - https://github.com/fsprojects/Paket/pull/3659
 
 #### 5.219.0 - 2019-09-07
