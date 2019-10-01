@@ -69,6 +69,29 @@ use.
 <li>Install <a href="editor-support.html">editor support</a>.</li>
 <li>Set up <a href="shell-completion.html">shell completion</a> for Paket commands.</li>
 </ul>
+<h2><a name="Installation-on-NET-Core" class="anchor" href="#Installation-on-NET-Core">Installation on .NET Core</a></h2>
+<h3><a name="Global-tool" class="anchor" href="#Global-tool">Global tool</a></h3>
+<p>Paket can be used a global tool</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">dotnet tool install --global Paket
+</code></pre></td></tr></table>
+<h3><a name="Local-tool" class="anchor" href="#Local-tool">Local tool</a></h3>
+<p>With the .NET Core 3 CLI, you can now use Local Tools.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">dotnet new tool-manifest
+
+dotnet tool install Paket
+</code></pre></td></tr></table>
+<p>Don't forget to commit <code>dotnet-tools.json</code> to your source control.</p>
+<p>Now you can run Paket with:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">dotnet paket --help
+</code></pre></td></tr></table>
 <h2><a name="Installation-per-repository" class="anchor" href="#Installation-per-repository">Installation per repository</a></h2>
 <p>The most common use of Paket is as a command line tool inside your project
 repository.</p>
