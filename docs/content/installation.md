@@ -29,6 +29,15 @@ dotnet new tool-manifest
 dotnet tool install Paket
 ```
 
+Don't forget to commit `dotnet-tools.json` to your source control.
+
+Now you can run Paket with:
+
+```sh
+dotnet paket --help
+```
+
+
 ## Installation per repository
 
 The most common use of Paket is as a command line tool inside your project
