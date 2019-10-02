@@ -336,7 +336,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                               VersionRequirement = versionReq
                               ResolverStrategyForDirectDependencies = group.Options.ResolverStrategyForDirectDependencies
                               ResolverStrategyForTransitives = group.Options.ResolverStrategyForTransitives
-                              Parent = PackageRequirementSource.DependenciesFile("runtimeresolution.dependencies",0)
+                              Parent = PackageRequirementSource.RuntimeDependency
                               Graph = Set.empty
                               Sources = group.Sources
                               Kind = PackageRequirementKind.Package
@@ -363,7 +363,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                                 match oldDepsInfo with
                                 | Some d -> d.ResolverStrategyForTransitives
                                 | None -> group.Options.ResolverStrategyForTransitives
-                              Parent = PackageRequirementSource.DependenciesFile("runtimeresolution.dependencies",0)
+                              Parent = PackageRequirementSource.RuntimeDependency
                               Graph = Set.empty
                               Sources = group.Sources
                               Kind = PackageRequirementKind.Package
