@@ -1,3 +1,6 @@
+#### 5.223.0 - 2019-10-02
+* BUGFIX: Update getResolverStrategy for rootRequirements - https://github.com/fsprojects/Paket/pull/3670
+
 #### 5.220.0 - 2019-09-30
 * BUGFIX: Make paket work as global tool again - https://github.com/fsprojects/Paket/issues/3671
 * Add PaketCommand contidion for Paket installed as .NET Core 3.0 local tool - https://github.com/fsprojects/Paket/pull/3668/files
