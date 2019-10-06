@@ -392,7 +392,9 @@ let createHttpClientRaw (url,auth:Auth option) : HttpClient =
                 UseProxy = true,
                 Proxy = getDefaultProxyFor url)
         handler.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
+#if !NO_MAXCONNECTIONPERSERVER    
         handler.MaxConnectionsPerServer <- 4
+#endif    
         let client = new HttpClient(handler)
         client.Timeout <- Threading.Timeout.InfiniteTimeSpan
         match auth with
