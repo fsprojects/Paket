@@ -259,7 +259,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                                     Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN" |> fun x -> if isNull(x) then None else Some(Token(x))
                                    else
                                     None
-                        use client = createHttpClient(x, auth)
+                        let client = createHttpClient(x, auth)
                         let folder = DirectoryInfo(Path.Combine(Path.GetTempPath(),"external_paket",(hash x).ToString()))
                         if not folder.Exists then
                             folder.Create()

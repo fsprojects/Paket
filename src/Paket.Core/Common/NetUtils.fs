@@ -354,16 +354,14 @@ let useDefaultHandler =
         let env = env.ToLowerInvariant()
         env = "true" || env = "yes" || env = "y"
 
-// TODO:
-// re-use HttpClient instances and 
-// try to use MaxConnectionsPerServer = 4
-let createHttpClient (url,auth:Auth option) =
+let createHttpClientRaw (url,auth:Auth option) : HttpClient =
 #if !NO_WINCLIENTHANDLER
     if isWindows && not useDefaultHandler then
         // See https://github.com/dotnet/corefx/issues/31098
         let proxy = getDefaultProxyFor url
         let handler = new WinHttpHandler(Proxy = proxy)
         handler.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
+        handler.MaxConnectionsPerServer <- 4
 
         let client = new HttpClient(handler)
         client.Timeout <- Threading.Timeout.InfiniteTimeSpan
@@ -394,7 +392,7 @@ let createHttpClient (url,auth:Auth option) =
                 UseProxy = true,
                 Proxy = getDefaultProxyFor url)
         handler.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
-
+        handler.MaxConnectionsPerServer <- 4
         let client = new HttpClient(handler)
         client.Timeout <- Threading.Timeout.InfiniteTimeSpan
         match auth with
@@ -419,6 +417,11 @@ let createHttpClient (url,auth:Auth option) =
         client.DefaultRequestHeaders.Add("user-agent", "Paket")
         handler.UseProxy <- true
         client
+
+// TODO:
+// re-use HttpClient instances and 
+// try to use MaxConnectionsPerServer = 4
+let createHttpClient = memoize createHttpClientRaw
 
 #if USE_WEB_CLIENT_FOR_UPLOAD
 type CustomTimeoutWebClient(timeout) =
@@ -477,7 +480,7 @@ let private resolveAuth (auth: AuthProvider) doRequest =
 /// [omit]
 let downloadFromUrlWithTimeout (auth:AuthProvider, url : string) (timeout:TimeSpan option) (filePath: string) =
     let doRequest auth = async {
-        use client = createHttpClient (url,auth)
+        let client = createHttpClient (url,auth)
         if timeout.IsSome then
             client.Timeout <- timeout.Value
         let! tok = Async.CancellationToken
@@ -503,7 +506,7 @@ let downloadFromUrl (auth:AuthProvider, url : string) (filePath: string) =
 let getFromUrl (auth:AuthProvider, url : string, contentType : string) =
     let uri = Uri url
     let doRequest auth = async {
-        use client = createHttpClient(url,auth)
+        let client = createHttpClient(url,auth)
         let! tok = Async.CancellationToken
         if notNullOrEmpty contentType then
             addAcceptHeader client contentType
@@ -524,7 +527,7 @@ let getFromUrl (auth:AuthProvider, url : string, contentType : string) =
 
 let getXmlFromUrl (auth:AuthProvider, url : string) =
     let doRequest auth = async {
-        use client = createHttpClient (url,auth)
+        let client = createHttpClient (url,auth)
         let! tok = Async.CancellationToken
         // mimic the headers sent from nuget client to odata/ endpoints
         addAcceptHeader client "application/atom+xml, application/xml"
@@ -576,7 +579,7 @@ let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : s
         let! tok = Async.CancellationToken
         let tokSource = System.Threading.CancellationTokenSource.CreateLinkedTokenSource(tok)
         try
-            use client = createHttpClient (url,auth)
+            let client = createHttpClient (url,auth)
             tokSource.CancelAfter(requestTimeoutInMs)
 
             if notNullOrEmpty contentType then
@@ -596,8 +599,8 @@ let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : s
                 else
                     Logging.traceWarnfn "Request failed due to timeout (%d ms). Trying again, this was try %i/%i." requestTimeoutInMs iTry nTries
                 return! _safeGetFromUrl(auth, url, contentType, iTry + 1, nTries)
-            
-            return UnknownError (ExceptionDispatchInfo.Capture (new TimeoutException(sprintf "Request to '%O' timed out" uri, inner)))
+            else
+                return UnknownError (ExceptionDispatchInfo.Capture (new TimeoutException(sprintf "Request to '%O' timed out" uri, inner)))
         | :? RequestFailedException as w ->
             match w.Info with
             | Some { StatusCode = HttpStatusCode.NotFound } -> return NotFound
