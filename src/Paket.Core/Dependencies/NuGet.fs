@@ -271,8 +271,6 @@ let tryFindFile file (content:NuGetPackageContent) =
                   UnparsedPackageFile.PathWithinPackage = c.Name }
         | _ -> None)
 
-let isRequestEnvVarSet = Environment.GetEnvironmentVariable("PAKET_DEBUG_REQUESTS") = "true"
-
 let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
     let verboseRequest = verbose || isRequestEnvVarSet
     async {
@@ -742,8 +740,8 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
             )
             |> fun exns -> AggregateException(message, exns) :> exn
 
-        if verboseRequest then
-            reportRequests verboseRequest trial1
+        if verbose then
+            reportRequests verbose trial1
             |> printfn "%s"
         match trial1 with
         | _ when Array.isEmpty trial1.Versions |> not ->
@@ -751,12 +749,12 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
         | _ ->
             let requested = trial1.Requests |> Seq.collect (fun i -> i.Requests) |> Seq.map (fun r -> "   " + r.Request.Url)
             traceWarnfn "Trial1 (NuGet.GetVersions) did not yield any results, trying again.%s%O" Environment.NewLine (String.Join(Environment.NewLine, requested)) 
+            if verboseRequest then
+                reportRequests verboseRequest trial1
+                |> printfn "%s"
             let! trial2 = trial true
             match trial2 with
             | _ when Array.isEmpty trial2.Versions |> not ->
-                if verboseRequest then
-                    reportRequests verboseRequest trial1
-                    |> printfn "%s"
                 return trial2.Requests
             | _ ->
                 let errorMsg =
