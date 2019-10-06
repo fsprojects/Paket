@@ -354,6 +354,9 @@ let useDefaultHandler =
         let env = env.ToLowerInvariant()
         env = "true" || env = "yes" || env = "y"
 
+// TODO:
+// re-use HttpClient instances and 
+// try to use MaxConnectionsPerServer = 4
 let createHttpClient (url,auth:Auth option) =
 #if !NO_WINCLIENTHANDLER
     if isWindows && not useDefaultHandler then
