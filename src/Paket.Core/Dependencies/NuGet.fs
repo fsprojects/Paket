@@ -271,7 +271,10 @@ let tryFindFile file (content:NuGetPackageContent) =
                   UnparsedPackageFile.PathWithinPackage = c.Name }
         | _ -> None)
 
+let isRequestEnvVarSet = Environment.GetEnvironmentVariable("PAKET_DEBUG_REQUESTS") = "true"
+
 let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
+    let verboseRequest = verbose || isRequestEnvVarSet
     async {
         let targetFile = FileInfo targetFileName
         if not force && targetFile.Exists && targetFile.Length > 0L then
@@ -317,8 +320,8 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
                     verbosefn "License for %O %O downloaded from %s." packageName version licenseUrl
             with
             | exn ->
-                if verbose then
-                    traceWarnfn "Could not download license for %O %O from %s.%s    %s" packageName version licenseUrl Environment.NewLine exn.Message
+                if verboseRequest then
+                    traceWarnfn "Could not download license for %O %O from %s.%s    %O" packageName version licenseUrl Environment.NewLine exn
     }
 
 let private getFilesMatching targetFolder searchPattern subFolderName filesDescriptionForVerbose =
@@ -384,6 +387,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
     let sources = parameters.Package.Sources
     let packageName = parameters.Package.PackageName
     let version = parameters.Version
+    let verboseRequest = verbose || isRequestEnvVarSet
     async {
         let inCache =
             sources
@@ -410,7 +414,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
             with
             | exn ->
                 traceWarnfn "Possible Performance degradation, V3 was not working: %s" exn.Message
-                if verbose then
+                if verboseRequest then
                     printfn "Error while using V3 API: %O" exn
    
                 match NuGetV3.calculateNuGet2Path nugetSource.Url with
@@ -439,7 +443,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
                         with
                         | :? System.IO.IOException as exn ->
                             // Handling IO exception here for less noise in output: https://github.com/fsprojects/Paket/issues/2480
-                            if verbose then
+                            if verboseRequest then
                                 traceWarnfn "I/O error for source '%O': %O" source exn
                             else
                                 traceWarnfn "I/O error for source '%O': %s" source exn.Message
@@ -453,7 +457,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
                                                          information <- re.Message
                                 | None -> ignore()                                
                             | _ -> ignore()
-                            if information <> "" then
+                            if not verboseRequest && information <> "" then
                                 traceWarnIfNotBefore (source, information) "Source '%O' exception: %O" source information
                             else 
                                 traceWarnfn "Source '%O' exception: %O" source e                                
@@ -526,12 +530,13 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
               DirectDependencies = nugetObject.GetDependencies() } }
 
 let rec GetPackageDetails alternativeProjectRoot root force (parameters:GetPackageDetailsParameters): Async<PackageResolver.PackageDetails> =
+    let verboseRequest = verbose || isRequestEnvVarSet
     async {
         try
             return! getPackageDetails alternativeProjectRoot root force parameters
         with
         | exn when (not force) ->
-            if verbose then
+            if verboseRequest then
                 traceWarnfn "GetPackageDetails failed: %O" exn
             else
                 traceWarnfn "Something failed in GetPackageDetails, trying again with force: %s" exn.Message
@@ -584,6 +589,7 @@ let getVersionsCached key f (source, auth, nugetURL, package) =
 let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersionsParameters) = async {
     let packageName = parameters.Package.PackageName
     let sources = parameters.Package.Sources
+    let verboseRequest = verbose || isRequestEnvVarSet
     let trial force = async {
         let getVersionsFailedCacheFileName (source:PackageSource) =
             let h = source.Url |> NuGetCache.normalizeUrl |> hash |> abs
@@ -592,7 +598,7 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
             try
                 FileInfo fileName
             with
-            | exn -> failwithf "%s is not a valid file name. Message: %s" fileName exn.Message
+            | inner -> rethrowf exn inner "'%s' is not a valid file name" fileName
 
         let sources =
             sources
@@ -687,14 +693,14 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
                             if req.TaskResult.IsCanceled then
                                 add(sprintf " - Request '%s' was cancelled (another one was faster)" req.Request.Url)
                             elif req.TaskResult.IsFaulted then
-                                if verbose then
+                                if verboseRequest then
                                     add(sprintf " - Request '%s' errored: %O" req.Request.Url req.TaskResult.Exception)
                                 else
                                     add(sprintf " - Request '%s' errored: %s" req.Request.Url req.TaskResult.Exception.Message)
                             else
                                 match req.TaskResult.Result with
                                 | NuGetCache.NuGetResponseGetVersions.FailedVersionRequest err ->
-                                    if verbose then
+                                    if verboseRequest then
                                         add(sprintf " - Request '%s' finished with: %O" req.Request.Url err.Error.SourceException)
                                     else
                                         add(sprintf " - Request '%s' finished with: %s" req.Request.Url err.Error.SourceException.Message)
@@ -736,8 +742,8 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
             )
             |> fun exns -> AggregateException(message, exns) :> exn
 
-        if verbose then
-            reportRequests verbose trial1
+        if verboseRequest then
+            reportRequests verboseRequest trial1
             |> printfn "%s"
         match trial1 with
         | _ when Array.isEmpty trial1.Versions |> not ->
@@ -748,8 +754,8 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
             let! trial2 = trial true
             match trial2 with
             | _ when Array.isEmpty trial2.Versions |> not ->
-                if verbose then
-                    reportRequests verbose trial1
+                if verboseRequest then
+                    reportRequests verboseRequest trial1
                     |> printfn "%s"
                 return trial2.Requests
             | _ ->
@@ -785,6 +791,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
     let normalizedNupkgName = NuGetCache.GetPackageFileName packageName version
     let configResolved = config.Resolve root groupName packageName version includeVersionInPath
+    let verboseRequest = verbose || isRequestEnvVarSet
     let targetFileName =
         if not isLocalOverride then
             NuGetCache.GetTargetUserNupkg packageName version
@@ -1012,9 +1019,9 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                       | _ -> false)
                         ->  traceWarnfn "Could not download %O %O.%s    %s.%sRetry." packageName version Environment.NewLine exn.Message Environment.NewLine
                             return! download false (attempt + 1)
-                | exn when String.IsNullOrWhiteSpace !downloadUrl ->
-                    return raise (Exception(sprintf "Could not download %O %O." packageName version, exn))
-                | exn -> return raise (Exception(sprintf "Could not download %O %O from %s." packageName version !downloadUrl, exn)) }
+                | inner when String.IsNullOrWhiteSpace !downloadUrl ->
+                    return rethrowf exn inner "Could not download %O %O." packageName version
+                | inner -> return rethrowf exn inner "Could not download %O %O from %s." packageName version !downloadUrl }
 
     async {
         configResolved.Path |> Option.iter SymlinkUtils.delete
