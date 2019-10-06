@@ -588,13 +588,16 @@ let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : s
             let! raw = client.DownloadStringTaskAsync(uri, tokSource.Token) |> Async.AwaitTaskWithoutAggregate
             return SuccessResponse raw
         with
-        | exn when tokSource.IsCancellationRequested && not tok.IsCancellationRequested && canRetry ->
-            // Timeout reached
-            if verbose || isRequestEnvVarSet then
-                Logging.traceWarnfn "Request failed due to timeout (%d ms). Trying again, this was try %i/%i. Error was %O" requestTimeoutInMs iTry nTries exn
-            else
-                Logging.traceWarnfn "Request failed due to timeout (%d ms). Trying again, this was try %i/%i." requestTimeoutInMs iTry nTries
-            return! _safeGetFromUrl(auth, url, contentType, iTry + 1, nTries)
+        | inner when tokSource.IsCancellationRequested && not tok.IsCancellationRequested ->
+            if canRetry then
+                // Timeout reached
+                if verbose || isRequestEnvVarSet then
+                    Logging.traceWarnfn "Request failed due to timeout (%d ms). Trying again, this was try %i/%i. Error was %O" requestTimeoutInMs iTry nTries inner
+                else
+                    Logging.traceWarnfn "Request failed due to timeout (%d ms). Trying again, this was try %i/%i." requestTimeoutInMs iTry nTries
+                return! _safeGetFromUrl(auth, url, contentType, iTry + 1, nTries)
+            
+            return UnknownError (ExceptionDispatchInfo.Capture (new TimeoutException(sprintf "Request to '%O' timed out" uri, inner)))
         | :? RequestFailedException as w ->
             match w.Info with
             | Some { StatusCode = HttpStatusCode.NotFound } -> return NotFound
