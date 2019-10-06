@@ -5,6 +5,7 @@
     <PaketCoreSourcesDir>..\Paket.Core</PaketCoreSourcesDir>
     <DefineConstants>NO_BOOTSTRAPPER;NO_CONFIGURATIONMANAGER;CUSTOM_WEBPROXY;$(DefineConstants)</DefineConstants>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Version Condition="'$(PAKET_PROJ_VERSION)' != ''">$(PAKET_PROJ_VERSION)</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.SDK\src\AssemblyReader.fs">
