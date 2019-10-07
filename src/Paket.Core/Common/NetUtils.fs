@@ -354,76 +354,80 @@ let useDefaultHandler =
         let env = env.ToLowerInvariant()
         env = "true" || env = "yes" || env = "y"
 
-let createHttpClientRaw (url,auth:Auth option) : HttpClient =
+
+let createHttpHandlerRaw(url, auth: Auth option) : HttpClientHandler =
+    let proxy = getDefaultProxyFor url
 #if !NO_WINCLIENTHANDLER
     if isWindows && not useDefaultHandler then
         // See https://github.com/dotnet/corefx/issues/31098
-        let proxy = getDefaultProxyFor url
         let handler = new WinHttpHandler(Proxy = proxy)
         handler.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
         handler.MaxConnectionsPerServer <- 4
 
-        let client = new HttpClient(handler)
-        client.Timeout <- Threading.Timeout.InfiniteTimeSpan
         match auth with
         | None -> handler.ServerCredentials <- CredentialCache.DefaultCredentials
         | Some(Credentials({Username = username; Password = password; Type = AuthType.Basic})) ->
-            // see lengthy comment below.
-            let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
-            client.DefaultRequestHeaders.Authorization <-
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials)
+            // handled via defaultrequestheaders
+            ()
         | Some(Credentials({Username = username; Password = password; Type = AuthType.NTLM})) ->
             let cred = System.Net.NetworkCredential(username,password)
             handler.ServerCredentials <- cred.GetCredential(new Uri(url), "NTLM")
         | Some(Token token) ->
-            client.DefaultRequestHeaders.Authorization <-
-                new System.Net.Http.Headers.AuthenticationHeaderValue("token", token)
-        client.DefaultRequestHeaders.Add("user-agent", "Paket")
+            // handled via defaultrequestheaders
+            ()
         // from https://github.com/dotnet/corefx/blob/b6b9a1ad24339266a27fef826233dbbe192cf254/src/System.Net.Http/src/System/Net/Http/HttpClientHandler.Windows.cs#L454-L477
         if isNull handler.Proxy then
             handler.WindowsProxyUsePolicy <- WindowsProxyUsePolicy.UseWinInetProxy
         else
             handler.WindowsProxyUsePolicy <- WindowsProxyUsePolicy.UseCustomProxy
-        client
+        handler
     else
 #endif
-        let handler =
-            new HttpClientHandler(
-                UseProxy = true,
-                Proxy = getDefaultProxyFor url)
-        handler.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
+    let handler =
+        new HttpClientHandler(
+            UseProxy = true,
+            Proxy = getDefaultProxyFor url)
+    handler.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
 #if !NO_MAXCONNECTIONPERSERVER    
-        handler.MaxConnectionsPerServer <- 4
+    handler.MaxConnectionsPerServer <- 4
 #endif    
-        let client = new HttpClient(handler)
-        client.Timeout <- Threading.Timeout.InfiniteTimeSpan
-        match auth with
-        | None -> handler.UseDefaultCredentials <- true
-        | Some(Credentials({Username = username; Password = password; Type = AuthType.Basic})) ->
-            // http://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
-            //this works ONLY if the server returns 401 first
-            //client DOES NOT send credentials on first request
-            //ONLY after a 401
-            //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
+    match auth with
+    | None -> handler.UseDefaultCredentials <- true
+    | Some(Credentials({Username = username; Password = password; Type = AuthType.Basic})) ->
+        // handled via defaultrequestheaders
+        ()
+    | Some(Credentials({Username = username; Password = password; Type = AuthType.NTLM})) ->
+        let cred = System.Net.NetworkCredential(username,password)
+        handler.Credentials <- cred.GetCredential(new Uri(url), "NTLM")
+    | Some(Token token) ->
+        // handled via defaultrequestheaders
+        ()
+    handler.UseProxy <- true
+    handler
 
-            //so use THIS instead to send credentials RIGHT AWAY
-            let credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(username + ":" + password))
-            client.DefaultRequestHeaders.Authorization <-
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials)
-        | Some(Credentials({Username = username; Password = password; Type = AuthType.NTLM})) ->
-            let cred = System.Net.NetworkCredential(username,password)
-            handler.Credentials <- cred.GetCredential(new Uri(url), "NTLM")
-        | Some(Token token) ->
-            client.DefaultRequestHeaders.Authorization <-
-                new System.Net.Http.Headers.AuthenticationHeaderValue("token", token)
-        client.DefaultRequestHeaders.Add("user-agent", "Paket")
-        handler.UseProxy <- true
-        client
 
-// TODO:
-// re-use HttpClient instances and 
-// try to use MaxConnectionsPerServer = 4
-let createHttpClient = memoize createHttpClientRaw
+let createHttpHandler = memoize createHttpHandlerRaw
+
+let createHttpClient (url,auth:Auth option) : HttpClient =
+    let handler = createHttpHandler (url, auth)
+    let client = new HttpClient(handler)
+    match auth with
+    | None -> 
+        // handled in handler
+        ()
+    | Some(Credentials({Username = username; Password = password; Type = AuthType.Basic})) ->
+        // see lengthy comment below.
+        let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
+        client.DefaultRequestHeaders.Authorization <-
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials)
+    | Some(Credentials({Username = username; Password = password; Type = AuthType.NTLM})) ->
+        // handled in handler
+        ()
+    | Some(Token token) ->
+        client.DefaultRequestHeaders.Authorization <-
+            new System.Net.Http.Headers.AuthenticationHeaderValue("token", token)
+    client.DefaultRequestHeaders.Add("user-agent", "Paket")
+    client
 
 #if USE_WEB_CLIENT_FOR_UPLOAD
 type CustomTimeoutWebClient(timeout) =
