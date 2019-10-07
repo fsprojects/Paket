@@ -416,7 +416,13 @@ let createHttpClient (url,auth:Auth option) : HttpClient =
         // handled in handler
         ()
     | Some(Credentials({Username = username; Password = password; Type = AuthType.Basic})) ->
-        // see lengthy comment below.
+        // http://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
+        //this works ONLY if the server returns 401 first
+        //client DOES NOT send credentials on first request
+        //ONLY after a 401
+        //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
+
+        //so use THIS instead to send credentials RIGHT AWAY
         let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
         client.DefaultRequestHeaders.Authorization <-
             new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials)
