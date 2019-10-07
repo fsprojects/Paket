@@ -355,7 +355,7 @@ let useDefaultHandler =
         env = "true" || env = "yes" || env = "y"
 
 
-let createHttpHandlerRaw(url, auth: Auth option) : HttpClientHandler =
+let createHttpHandlerRaw(url, auth: Auth option) : HttpMessageHandler =
     let proxy = getDefaultProxyFor url
 #if !NO_WINCLIENTHANDLER
     if isWindows && not useDefaultHandler then
@@ -380,7 +380,7 @@ let createHttpHandlerRaw(url, auth: Auth option) : HttpClientHandler =
             handler.WindowsProxyUsePolicy <- WindowsProxyUsePolicy.UseWinInetProxy
         else
             handler.WindowsProxyUsePolicy <- WindowsProxyUsePolicy.UseCustomProxy
-        handler
+        handler :> _
     else
 #endif
     let handler =
@@ -403,7 +403,7 @@ let createHttpHandlerRaw(url, auth: Auth option) : HttpClientHandler =
         // handled via defaultrequestheaders
         ()
     handler.UseProxy <- true
-    handler
+    handler :> _
 
 
 let createHttpHandler = memoize createHttpHandlerRaw
