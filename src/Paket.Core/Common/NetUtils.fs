@@ -603,6 +603,24 @@ let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : s
             let! raw = client.DownloadStringTaskAsync(uri, tokSource.Token) |> Async.AwaitTaskWithoutAggregate
             return SuccessResponse raw
         with
+        | :? RequestFailedException as w ->
+            match w.Info with
+            | Some { StatusCode = HttpStatusCode.NotFound } -> return NotFound
+            | Some { StatusCode = HttpStatusCode.Unauthorized } -> return Unauthorized
+            | _ ->
+                if verbose || isRequestEnvVarSet then
+                    Logging.verbosefn "Error while retrieving '%s': %O" url w
+                return UnknownError (ExceptionDispatchInfo.Capture w)
+        | :? HttpRequestException as inner when not (isNull inner.InnerException) && inner.InnerException.Message.Contains("12002") ->
+            if canRetry then
+                // Timeout reached
+                if verbose || isRequestEnvVarSet then
+                    Logging.traceWarnfn "Request failed with strange HttpRequestException. Trying again, this was try %i/%i. Error was %O" iTry nTries inner
+                else
+                    Logging.traceWarnfn "Request failed with strange HttpRequestException. Trying again, this was try %i/%i." iTry nTries
+                return! _safeGetFromUrl(auth, url, contentType, iTry + 1, nTries)
+            else
+                return UnknownError (ExceptionDispatchInfo.Capture (new exn(sprintf "Request to '%O' failed with strange HttpRequestException" uri, inner)))
         | inner when tokSource.IsCancellationRequested && not tok.IsCancellationRequested ->
             if canRetry then
                 // Timeout reached
@@ -613,18 +631,10 @@ let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : s
                 return! _safeGetFromUrl(auth, url, contentType, iTry + 1, nTries)
             else
                 return UnknownError (ExceptionDispatchInfo.Capture (new TimeoutException(sprintf "Request to '%O' timed out" uri, inner)))
-        | :? RequestFailedException as w ->
-            match w.Info with
-            | Some { StatusCode = HttpStatusCode.NotFound } -> return NotFound
-            | Some { StatusCode = HttpStatusCode.Unauthorized } -> return Unauthorized
-            | _ ->
-                if verbose || isRequestEnvVarSet then
-                    Logging.verbosefn "Error while retrieving '%s': %O" url w
-                return UnknownError (ExceptionDispatchInfo.Capture w)
         | inner ->
             if verbose || isRequestEnvVarSet then
                 Logging.traceWarnfn "Request to '%O' failed with unknown error: %O" uri inner
-            return UnknownError (ExceptionDispatchInfo.Capture inner)
+            return UnknownError (ExceptionDispatchInfo.Capture (exn(sprintf "Request to '%O' failed with unknown error (_safeGetFromUrl)" uri, inner)))
     }
 
 /// [omit]
