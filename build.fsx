@@ -647,6 +647,8 @@ Target "ReleaseGitHub" (fun _ ->
     Branches.tag "" release.NugetVersion
     Branches.pushTag "" remote release.NugetVersion
 
+    tracefn "Creating gihub release"
+
     // release on github
     createClient user pw
     |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
