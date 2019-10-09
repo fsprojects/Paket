@@ -1,3 +1,6 @@
+#### 5.224.0-alpha001 - 2019-10-09
+* Limit number of open connections to a server and add `PAKET_DEBUG_REQUESTS` to debug request failures - https://github.com/fsprojects/Paket/pull/3683
+
 #### 5.223.3 - 2019-10-09
 * BUGFIX: Update getResolverStrategy for rootRequirements - https://github.com/fsprojects/Paket/pull/3670
 
