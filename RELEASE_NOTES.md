@@ -1,4 +1,4 @@
-#### 5.223.2 - 2019-10-09
+#### 5.223.3 - 2019-10-09
 * BUGFIX: Update getResolverStrategy for rootRequirements - https://github.com/fsprojects/Paket/pull/3670
 
 #### 5.220.0 - 2019-09-30
