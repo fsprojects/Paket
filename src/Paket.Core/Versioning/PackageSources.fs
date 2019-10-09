@@ -182,7 +182,7 @@ type PackageSource =
 
     static member WarnIfNoConnection (source,_) = 
         let n url (auth:AuthProvider) =
-            use client = NetUtils.createHttpClient(url, auth.Retrieve true)
+            let client = NetUtils.createHttpClient(url, auth.Retrieve true)
             try 
                 client.DownloadData url |> ignore 
             with _ ->

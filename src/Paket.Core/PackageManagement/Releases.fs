@@ -30,7 +30,7 @@ let private downloadLatestVersionOf files destDir =
     let auth = Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN"
                |> fun x -> if isNull(x) then None else Some(Token(x))
 
-    use client = createHttpClient(Constants.GitHubUrl, auth)
+    let client = createHttpClient(Constants.GitHubUrl, auth)
 
     trial {
         let latest = "https://github.com/fsprojects/Paket/releases/latest";

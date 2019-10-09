@@ -73,7 +73,7 @@ type NuGetRequestGetVersions =
             try
                 return! r.DoRequest()
             with e ->
-                return FailedVersionRequest { Url = r.Url; Error = System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture e }
+                return FailedVersionRequest { Url = r.Url; Error = System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture (exn(sprintf "Unhandled error in request to '%O' in NuGetRequestGetVersions.run" r.Url, e)) }
         }
 
 
