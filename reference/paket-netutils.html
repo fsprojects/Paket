@@ -165,7 +165,7 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L123-123" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L128-128" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -183,7 +183,7 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L352-352" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L411-411" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -194,14 +194,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '278', 278)" onmouseover="showTip(event, '278', 278)">
-            createWebClient (url, auth)
+            createHttpHandler 
           </code>
           <div class="tip" id="278">
-            <strong>Signature:</strong> (url:string * auth:Auth option) -&gt; CustomTimeoutWebClient<br />
+            <strong>Signature:</strong> string * Auth option -&gt; HttpMessageHandler<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L421-421" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L409-409" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -212,14 +212,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '279', 279)" onmouseover="showTip(event, '279', 279)">
-            downloadFileSync url fileName client
+            createHttpHandlerRaw (url, auth)
           </code>
           <div class="tip" id="279">
-            <strong>Signature:</strong> url:string -&gt; fileName:string -&gt; client:HttpClient -&gt; Result&lt;unit,DomainMessage&gt;<br />
+            <strong>Signature:</strong> (url:string * auth:Auth option) -&gt; HttpMessageHandler<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L621-621" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L358-358" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -230,14 +230,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '280', 280)" onmouseover="showTip(event, '280', 280)">
-            downloadStringSync url client
+            createWebClient (url, auth)
           </code>
           <div class="tip" id="280">
-            <strong>Signature:</strong> url:string -&gt; client:HttpClient -&gt; Result&lt;string,DomainMessage&gt;<br />
+            <strong>Signature:</strong> (url:string * auth:Auth option) -&gt; CustomTimeoutWebClient<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L615-615" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L446-446" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -248,14 +248,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '281', 281)" onmouseover="showTip(event, '281', 281)">
-            envProxies ()
+            downloadFileSync url fileName client
           </code>
           <div class="tip" id="281">
-            <strong>Signature:</strong> unit -&gt; Map&lt;string,WebProxy&gt;<br />
+            <strong>Signature:</strong> url:string -&gt; fileName:string -&gt; client:HttpClient -&gt; Result&lt;unit,DomainMessage&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L72-72" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L655-655" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -266,14 +266,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '282', 282)" onmouseover="showTip(event, '282', 282)">
-            failIfNoSuccess resp
+            downloadStringSync url client
           </code>
           <div class="tip" id="282">
-            <strong>Signature:</strong> resp:HttpResponseMessage -&gt; Async&lt;unit&gt;<br />
+            <strong>Signature:</strong> url:string -&gt; client:HttpClient -&gt; Result&lt;string,DomainMessage&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L214-214" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L649-649" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -284,14 +284,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '283', 283)" onmouseover="showTip(event, '283', 283)">
-            getDefaultProxyFor 
+            envProxies ()
           </code>
           <div class="tip" id="283">
-            <strong>Signature:</strong> string -&gt; WebProxy<br />
+            <strong>Signature:</strong> unit -&gt; Map&lt;string,WebProxy&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L125-125" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L77-77" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -302,14 +302,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '284', 284)" onmouseover="showTip(event, '284', 284)">
-            getXmlFromUrl (auth, url)
+            failIfNoSuccess resp
           </code>
           <div class="tip" id="284">
-            <strong>Signature:</strong> (auth:AuthProvider * url:string) -&gt; Async&lt;string&gt;<br />
+            <strong>Signature:</strong> resp:HttpResponseMessage -&gt; Async&lt;unit&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L515-515" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L219-219" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -320,14 +320,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '285', 285)" onmouseover="showTip(event, '285', 285)">
-            normalizeFeedUrl source
+            getDefaultProxyFor 
           </code>
           <div class="tip" id="285">
-            <strong>Signature:</strong> source:string -&gt; string<br />
+            <strong>Signature:</strong> string -&gt; WebProxy<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L58-58" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L130-130" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -338,14 +338,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '286', 286)" onmouseover="showTip(event, '286', 286)">
-            requestStatus ex
+            getXmlFromUrl (auth, url)
           </code>
           <div class="tip" id="286">
-            <strong>Signature:</strong> ex:Exception -&gt; HttpStatusCode option<br />
+            <strong>Signature:</strong> (auth:AuthProvider * url:string) -&gt; Async&lt;string&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L222-222" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L540-540" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -356,14 +356,50 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '287', 287)" onmouseover="showTip(event, '287', 287)">
-            useDefaultHandler 
+            normalizeFeedUrl source
           </code>
           <div class="tip" id="287">
+            <strong>Signature:</strong> source:string -&gt; string<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L63-63" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '288', 288)" onmouseover="showTip(event, '288', 288)">
+            requestStatus ex
+          </code>
+          <div class="tip" id="288">
+            <strong>Signature:</strong> ex:Exception -&gt; HttpStatusCode option<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L227-227" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '289', 289)" onmouseover="showTip(event, '289', 289)">
+            useDefaultHandler 
+          </code>
+          <div class="tip" id="289">
             <strong>Signature:</strong> bool<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L345-345" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L350-350" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -381,72 +417,53 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '288', 288)" onmouseover="showTip(event, '288', 288)">
+          <code onmouseout="hideTip(event, '290', 290)" onmouseover="showTip(event, '290', 290)">
             DownloadData(uri)
           </code>
-          <div class="tip" id="288">
+          <div class="tip" id="290">
             <strong>Signature:</strong> uri:string -&gt; byte []<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L309-309" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L314-314" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
               <p>CompiledName: <code>HttpClient.DownloadData</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '289', 289)" onmouseover="showTip(event, '289', 289)">
-            DownloadData(uri)
-          </code>
-          <div class="tip" id="289">
-            <strong>Signature:</strong> uri:Uri -&gt; byte []<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L311-311" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-              <p>CompiledName: <code>HttpClient.DownloadData</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '290', 290)" onmouseover="showTip(event, '290', 290)">
-            DownloadDataTaskAsync(uri, tok)
-          </code>
-          <div class="tip" id="290">
-            <strong>Signature:</strong> (uri:Uri * tok:CancellationToken) -&gt; Task&lt;byte []&gt;<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L301-301" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-              <p>CompiledName: <code>HttpClient.DownloadDataTaskAsync</code></p>
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '291', 291)" onmouseover="showTip(event, '291', 291)">
-            DownloadDataTaskAsync(uri, tok)
+            DownloadData(uri)
           </code>
           <div class="tip" id="291">
-            <strong>Signature:</strong> (uri:string * tok:CancellationToken) -&gt; Task&lt;byte []&gt;<br />
+            <strong>Signature:</strong> uri:Uri -&gt; byte []<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L308-308" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L316-316" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>HttpClient.DownloadData</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '292', 292)" onmouseover="showTip(event, '292', 292)">
+            DownloadDataTaskAsync(uri, tok)
+          </code>
+          <div class="tip" id="292">
+            <strong>Signature:</strong> (uri:Uri * tok:CancellationToken) -&gt; Task&lt;byte []&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L306-306" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -457,72 +474,72 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '292', 292)" onmouseover="showTip(event, '292', 292)">
-            DownloadFile(uri, filePath)
-          </code>
-          <div class="tip" id="292">
-            <strong>Signature:</strong> (uri:string * filePath:string) -&gt; unit<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L284-284" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-              <p>CompiledName: <code>HttpClient.DownloadFile</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
           <code onmouseout="hideTip(event, '293', 293)" onmouseover="showTip(event, '293', 293)">
-            DownloadFile(uri, filePath)
+            DownloadDataTaskAsync(uri, tok)
           </code>
           <div class="tip" id="293">
-            <strong>Signature:</strong> (uri:Uri * filePath:string) -&gt; unit<br />
+            <strong>Signature:</strong> (uri:string * tok:CancellationToken) -&gt; Task&lt;byte []&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L286-286" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L313-313" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-              <p>CompiledName: <code>HttpClient.DownloadFile</code></p>
+              <p>CompiledName: <code>HttpClient.DownloadDataTaskAsync</code></p>
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '294', 294)" onmouseover="showTip(event, '294', 294)">
-            DownloadFileTaskAsync(...)
+            DownloadFile(uri, filePath)
           </code>
           <div class="tip" id="294">
-            <strong>Signature:</strong> (uri:Uri * tok:CancellationToken * filePath:string) -&gt; Task&lt;unit&gt;<br />
+            <strong>Signature:</strong> (uri:string * filePath:string) -&gt; unit<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L272-272" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L289-289" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-              <p>CompiledName: <code>HttpClient.DownloadFileTaskAsync</code></p>
+              <p>CompiledName: <code>HttpClient.DownloadFile</code></p>
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '295', 295)" onmouseover="showTip(event, '295', 295)">
-            DownloadFileTaskAsync(...)
+            DownloadFile(uri, filePath)
           </code>
           <div class="tip" id="295">
-            <strong>Signature:</strong> (uri:string * tok:CancellationToken * filePath:string) -&gt; Task&lt;unit&gt;<br />
+            <strong>Signature:</strong> (uri:Uri * filePath:string) -&gt; unit<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L283-283" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L291-291" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>HttpClient.DownloadFile</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '296', 296)" onmouseover="showTip(event, '296', 296)">
+            DownloadFileTaskAsync(...)
+          </code>
+          <div class="tip" id="296">
+            <strong>Signature:</strong> (uri:Uri * tok:CancellationToken * filePath:string) -&gt; Task&lt;unit&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L277-277" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -533,49 +550,11 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '296', 296)" onmouseover="showTip(event, '296', 296)">
-            DownloadString(uri)
-          </code>
-          <div class="tip" id="296">
-            <strong>Signature:</strong> uri:string -&gt; string<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L296-296" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-              <p>CompiledName: <code>HttpClient.DownloadString</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
           <code onmouseout="hideTip(event, '297', 297)" onmouseover="showTip(event, '297', 297)">
-            DownloadString(uri)
+            DownloadFileTaskAsync(...)
           </code>
           <div class="tip" id="297">
-            <strong>Signature:</strong> uri:Uri -&gt; string<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L298-298" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-              <p>CompiledName: <code>HttpClient.DownloadString</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '298', 298)" onmouseover="showTip(event, '298', 298)">
-            DownloadStringTaskAsync(uri, tok)
-          </code>
-          <div class="tip" id="298">
-            <strong>Signature:</strong> (uri:Uri * tok:CancellationToken) -&gt; Task&lt;string&gt;<br />
+            <strong>Signature:</strong> (uri:string * tok:CancellationToken * filePath:string) -&gt; Task&lt;unit&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
@@ -584,21 +563,59 @@
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-              <p>CompiledName: <code>HttpClient.DownloadStringTaskAsync</code></p>
+              <p>CompiledName: <code>HttpClient.DownloadFileTaskAsync</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '298', 298)" onmouseover="showTip(event, '298', 298)">
+            DownloadString(uri)
+          </code>
+          <div class="tip" id="298">
+            <strong>Signature:</strong> uri:string -&gt; string<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L301-301" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>HttpClient.DownloadString</code></p>
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '299', 299)" onmouseover="showTip(event, '299', 299)">
-            DownloadStringTaskAsync(uri, tok)
+            DownloadString(uri)
           </code>
           <div class="tip" id="299">
-            <strong>Signature:</strong> (uri:string * tok:CancellationToken) -&gt; Task&lt;string&gt;<br />
+            <strong>Signature:</strong> uri:Uri -&gt; string<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L295-295" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L303-303" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>HttpClient.DownloadString</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '300', 300)" onmouseover="showTip(event, '300', 300)">
+            DownloadStringTaskAsync(uri, tok)
+          </code>
+          <div class="tip" id="300">
+            <strong>Signature:</strong> (uri:Uri * tok:CancellationToken) -&gt; Task&lt;string&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L293-293" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -609,15 +626,34 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '300', 300)" onmouseover="showTip(event, '300', 300)">
+          <code onmouseout="hideTip(event, '301', 301)" onmouseover="showTip(event, '301', 301)">
+            DownloadStringTaskAsync(uri, tok)
+          </code>
+          <div class="tip" id="301">
+            <strong>Signature:</strong> (uri:string * tok:CancellationToken) -&gt; Task&lt;string&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L300-300" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>HttpClient.DownloadStringTaskAsync</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '302', 302)" onmouseover="showTip(event, '302', 302)">
             UploadFileAsMultipart(url filename)
           </code>
-          <div class="tip" id="300">
+          <div class="tip" id="302">
             <strong>Signature:</strong> url:Uri -&gt; filename:string -&gt; unit<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L248-248" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L253-253" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -628,15 +664,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '301', 301)" onmouseover="showTip(event, '301', 301)">
+          <code onmouseout="hideTip(event, '303', 303)" onmouseover="showTip(event, '303', 303)">
             UploadFileAsMultipart(url filename)
           </code>
-          <div class="tip" id="301">
+          <div class="tip" id="303">
             <strong>Signature:</strong> url:Uri -&gt; filename:string -&gt; HttpResponseMessage<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L314-314" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L319-319" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -655,15 +691,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '302', 302)" onmouseover="showTip(event, '302', 302)">
+          <code onmouseout="hideTip(event, '304', 304)" onmouseover="showTip(event, '304', 304)">
             ( |RequestStatus|_| ) ex
           </code>
-          <div class="tip" id="302">
+          <div class="tip" id="304">
             <strong>Signature:</strong> ex:Object -&gt; HttpStatusCode option<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L237-237" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/NetUtils.fs#L242-242" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
