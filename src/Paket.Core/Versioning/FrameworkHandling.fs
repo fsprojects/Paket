@@ -43,7 +43,7 @@ type DotNetStandardVersion =
         | DotNetStandardVersion.V2_1 -> "2.1"
     static member TryParse s =
         match s with
-        | "" 
+        | ""
         | "1"   -> Some(DotNetStandardVersion.V1_0)
         | "1.1" -> Some(DotNetStandardVersion.V1_1)
         | "1.2" -> Some(DotNetStandardVersion.V1_2)
@@ -228,7 +228,7 @@ type DotNetCoreAppVersion =
         if lower.NumKey < upper.NumKey then
             [ lower.NumKey .. upper.NumKey ]
         else
-            [ lower.NumKey .. -1 .. upper.NumKey ] 
+            [ lower.NumKey .. -1 .. upper.NumKey ]
         |> List.map DotNetCoreAppVersion.FromNum
 
     override this.ToString() =
@@ -649,6 +649,7 @@ type FrameworkIdentifier =
         | DotNetCoreApp DotNetCoreAppVersion.V2_1 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_0 ]
         | DotNetCoreApp DotNetCoreAppVersion.V2_2 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_1 ]
         | DotNetCoreApp DotNetCoreAppVersion.V3_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_2; DotNetStandard DotNetStandardVersion.V2_1 ]
+        | DotNetCoreApp DotNetCoreAppVersion.V3_1 -> [ DotNetCoreApp DotNetCoreAppVersion.V3_0 ]
         | DotNetUnity DotNetUnityVersion.V3_5_Full -> [ ]
         | DotNetUnity DotNetUnityVersion.V3_5_Subset -> [ ]
         | DotNetUnity DotNetUnityVersion.V3_5_Micro -> [ ]
@@ -1022,7 +1023,7 @@ type PortableProfileType =
         | Profile336 -> [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
         | Profile344 -> [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
     member x.FolderName =
-       match x with 
+       match x with
         | Profile2 -> "portable-net40+sl4+win8+wp7"
         | Profile3 -> "portable-net40+sl4"
         | Profile4 -> "portable-net45+sl4+win8+wp7"
@@ -1174,6 +1175,7 @@ module KnownTargetProfiles =
         DotNetCoreAppVersion.V2_1
         DotNetCoreAppVersion.V2_2
         DotNetCoreAppVersion.V3_0
+        DotNetCoreAppVersion.V3_1
     ]
 
     let DotNetUnityVersions = [
