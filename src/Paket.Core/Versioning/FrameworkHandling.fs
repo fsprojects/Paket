@@ -201,6 +201,7 @@ type DotNetCoreAppVersion =
     | V2_1
     | V2_2
     | V3_0
+    | V3_1
 
     member private this.NumKey =
         match this with
@@ -210,6 +211,7 @@ type DotNetCoreAppVersion =
         | V2_1 -> 3
         | V2_2 -> 4
         | V3_0 -> 5
+        | V3_1 -> 6
 
     static member private FromNum num =
         match num with
@@ -219,6 +221,7 @@ type DotNetCoreAppVersion =
         | 3 -> V2_1
         | 4 -> V2_2
         | 5 -> V3_0
+        | 6 -> V3_1
         | _   -> failwithf "'%i' has no corresponding framework version" num
 
     static member (<->) (lower:DotNetCoreAppVersion,upper:DotNetCoreAppVersion) =
@@ -236,6 +239,7 @@ type DotNetCoreAppVersion =
         | V2_1 -> "v2.1"
         | V2_2 -> "v2.2"
         | V3_0 -> "v3.0"
+        | V3_1 -> "v3.1"
 
     member this.ShortString() =
         match this with
@@ -245,6 +249,7 @@ type DotNetCoreAppVersion =
         | DotNetCoreAppVersion.V2_1 -> "2.1"
         | DotNetCoreAppVersion.V2_2 -> "2.2"
         | DotNetCoreAppVersion.V3_0 -> "3.0"
+        | DotNetCoreAppVersion.V3_1 -> "3.1"
 
     static member TryParse s =
         match s with
@@ -254,6 +259,7 @@ type DotNetCoreAppVersion =
         | "2.1" -> Some (DotNetCoreAppVersion.V2_1)
         | "2.2" -> Some (DotNetCoreAppVersion.V2_2)
         | "3" -> Some (DotNetCoreAppVersion.V3_0)
+        | "3.1" -> Some (DotNetCoreAppVersion.V3_1)
         | _ -> None
 
 [<RequireQualifiedAccess>]
