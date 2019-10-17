@@ -1,3 +1,6 @@
+#### 5.226.0 - 2019-10-17
+* New paket.targets to support global and local dotnet paket for old style projetcs - https://github.com/fsprojects/Paket/issues/3687
+
 #### 5.225.0 - 2019-10-17
 * Update frameworks to support netcoreapp3.1 - https://github.com/fsprojects/Paket/pull/3688
 
