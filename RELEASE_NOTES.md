@@ -1,3 +1,6 @@
+#### 5.225.0 - 2019-10-17
+* Update frameworks to support netcoreapp3.1 - https://github.com/fsprojects/Paket/pull/3688
+
 #### 5.224.0 - 2019-10-09
 * Limit number of open connections to a server and add `PAKET_DEBUG_REQUESTS` to debug request failures - https://github.com/fsprojects/Paket/pull/3683
 
