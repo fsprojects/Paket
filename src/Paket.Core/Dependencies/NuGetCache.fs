@@ -382,7 +382,7 @@ let tryFindLocalPackage directory (packageName:PackageName) (version:SemVerInfo)
 
 
 /// Reads nuspec from nupkg
-let getNuSpecFromNupgk (fileName:string) =
+let getNuSpecFromNupkg (fileName:string) =
     use __ = Profile.startCategory Profile.Category.FileIO
     let nuspecFile = FileInfo(fileName.Replace(".nupkg",".nuspec"))
     if nuspecFile.Exists then
@@ -399,7 +399,7 @@ let getCacheDataFromExtractedPackage (packageName:PackageName) (version:SemVerIn
     match TryGetFallbackNupkg packageName version with
     | Some nupkg ->
         let fi = FileInfo nupkg
-        let nuspec = getNuSpecFromNupgk nupkg
+        let nuspec = getNuSpecFromNupkg nupkg
         return
             { PackageName = nuspec.OfficialName
               DownloadUrl = packageName.ToString()
@@ -416,7 +416,7 @@ let getCacheDataFromExtractedPackage (packageName:PackageName) (version:SemVerIn
         let targetFolder = DirectoryInfo(dir)
         match tryFindLocalPackage targetFolder.FullName packageName version with
         | Some nupkg ->
-            let nuspec = getNuSpecFromNupgk nupkg.FullName
+            let nuspec = getNuSpecFromNupkg nupkg.FullName
             return
                 { PackageName = nuspec.OfficialName
                   DownloadUrl = packageName.ToString()

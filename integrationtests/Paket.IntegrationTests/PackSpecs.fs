@@ -529,7 +529,7 @@ let ``#2520 interproject-references parameter overide --pin-project-references``
     use __ = paket ("pack --pin-project-references \"" + outPath + "\"") scenario |> fst
     ZipFile.ExtractToDirectory(package, outPath)
 
-    let nuspec = NuGetCache.getNuSpecFromNupgk package
+    let nuspec = NuGetCache.getNuSpecFromNupkg package
     let dependency =
         match nuspec.Dependencies.Value with
         | [d] -> d
@@ -552,7 +552,7 @@ let ``#2520 --interproject-references cli parameter overide interproject-referen
     use __ = paket ("pack --interproject-references keep-minor \"" + outPath + "\"") scenario |> fst
     ZipFile.ExtractToDirectory(package, outPath)
 
-    let nuspec = NuGetCache.getNuSpecFromNupgk package
+    let nuspec = NuGetCache.getNuSpecFromNupkg package
     let dependency =
         match nuspec.Dependencies.Value with
         | [d] -> d
@@ -578,7 +578,7 @@ let ``#2694 paket fixnuspec should not remove project references``() =
 
     let nupkgPath = wd @@ "bin" @@ "Debug" @@ project + ".1.0.0.nupkg"
     if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
-    let nuspec = NuGetCache.getNuSpecFromNupgk nupkgPath
+    let nuspec = NuGetCache.getNuSpecFromNupkg nupkgPath
     match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "library") with
     | None -> Assert.Fail("Expected package to still contain the project reference!")
     | Some s -> ignore s
@@ -647,7 +647,7 @@ let ``#3317 pack multitarget with p2p`` () =
     let nupkgPath = Path.Combine(outPath, "MyProj.Main.1.0.0.nupkg")
 
     if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
-    let nuspec = NuGetCache.getNuSpecFromNupgk nupkgPath
+    let nuspec = NuGetCache.getNuSpecFromNupkg nupkgPath
     let depsByTfm byTfm = nuspec.Dependencies.Value |> Seq.choose (fun (pkgName,version,tfm) -> if (tfm.GetExplicitRestriction()) = byTfm then Some (pkgName,version) else None) |> Seq.toList
     let pkgVer name version = (PackageName name), (VersionRequirement.Parse version)
 
@@ -683,7 +683,7 @@ let ``#4002 dotnet pack of a global tool shouldnt contain references``() =
 
     let nupkgPath = Path.Combine(outPath, project + ".1.0.0.nupkg")
     if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
-    let nuspec = NuGetCache.getNuSpecFromNupgk nupkgPath
+    let nuspec = NuGetCache.getNuSpecFromNupkg nupkgPath
 
     printfn "%A" nuspec
 
@@ -718,7 +718,7 @@ let ``#4003 dotnet pack of a global tool with p2p``() =
 
     let nupkgPath = Path.Combine(outPath, project + ".1.0.0.nupkg")
     if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
-    let nuspec = NuGetCache.getNuSpecFromNupgk nupkgPath
+    let nuspec = NuGetCache.getNuSpecFromNupkg nupkgPath
 
     printfn "%A" nuspec
 
@@ -815,7 +815,7 @@ let ``#2776 transitive project references included`` () =
     Path.Combine(outPath, "lib", "netstandard2.0", "C.dll") |> checkFileExists
     Path.Combine(outPath, "lib", "netstandard2.0", "D.dll") |> checkFileExists
 
-    let nuspec = NuGetCache.getNuSpecFromNupgk package
+    let nuspec = NuGetCache.getNuSpecFromNupkg package
     let dependencies = nuspec.Dependencies.Value |> Seq.map (fun (x,_,_) -> x)
     dependencies |> shouldContain (PackageName "nlog")
 
@@ -836,7 +836,7 @@ let ``#2776 transitive references stops on project with template`` () =
     File.Exists(Path.Combine(outPath, "lib", "netstandard2.0", "C.dll")) |> shouldEqual false
     File.Exists(Path.Combine(outPath, "lib", "netstandard2.0", "D.dll")) |> shouldEqual false
 
-    let nuspec = NuGetCache.getNuSpecFromNupgk package
+    let nuspec = NuGetCache.getNuSpecFromNupkg package
     let dependencies = nuspec.Dependencies.Value |> Seq.map (fun (x,_,_) -> x)
 
     dependencies |> shouldContain (PackageName "C")
@@ -867,7 +867,7 @@ let ``#3558 pack multitarget with p2p by tfm`` () =
         let nupkgPath = Path.Combine(outPath, "MyProj.Common.1.0.0.nupkg")
 
         if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
-        let nuspec = NuGetCache.getNuSpecFromNupgk nupkgPath
+        let nuspec = NuGetCache.getNuSpecFromNupkg nupkgPath
         printfn "%A" nuspec
         printfn "%A" nuspec.Dependencies.Value
         let depsByTfm byTfm = nuspec.Dependencies.Value |> Seq.choose (fun (pkgName,version,tfm) -> if (tfm.GetExplicitRestriction()) = byTfm then Some (pkgName,version) else None) |> Seq.toList
@@ -889,7 +889,7 @@ let ``#3558 pack multitarget with p2p by tfm`` () =
         let nupkgPath = Path.Combine(outPath, "MyProj.Main.1.0.0.nupkg")
 
         if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
-        let nuspec = NuGetCache.getNuSpecFromNupgk nupkgPath
+        let nuspec = NuGetCache.getNuSpecFromNupkg nupkgPath
         printfn "%A" nuspec
         printfn "%A" nuspec.Dependencies.Value
         let depsByTfm byTfm = nuspec.Dependencies.Value |> Seq.choose (fun (pkgName,version,tfm) -> if (tfm.GetExplicitRestriction()) = byTfm then Some (pkgName,version) else None) |> Seq.toList

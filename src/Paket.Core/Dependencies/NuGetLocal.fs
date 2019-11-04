@@ -54,7 +54,7 @@ let findLocalPackage directory (packageName:PackageName) (version:SemVerInfo) =
 
 /// Reads package name from a nupkg file
 let getPackageNameFromLocalFile fileName =
-    let nuspec = getNuSpecFromNupgk fileName
+    let nuspec = getNuSpecFromNupkg fileName
     nuspec.OfficialName
 
 /// Reads direct dependencies from a nupkg file
@@ -64,7 +64,7 @@ let getDetailsFromLocalNuGetPackage isCache alternativeProjectRoot root localNuG
         let di = getDirectoryInfoForLocalNuGetFeed localNugetPath alternativeProjectRoot root
         let nupkg = findLocalPackage di.FullName packageName version
 
-        let nuspec = getNuSpecFromNupgk nupkg.FullName
+        let nuspec = getNuSpecFromNupkg nupkg.FullName
 
         return
             { PackageName = nuspec.OfficialName
