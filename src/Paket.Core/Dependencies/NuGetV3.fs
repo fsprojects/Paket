@@ -35,9 +35,6 @@ type NugetV3SourceRootJSON =
     { [<JsonProperty("resources")>]
       Resources : NugetV3SourceResourceJSON [] }
 
-//type NugetV3Source =
-//    { Url : string
-//      Authentication : NugetSourceAuthentication option }
 
 type NugetV3ResourceType =
     | AutoComplete
@@ -54,11 +51,11 @@ type NugetV3ResourceType =
         | Catalog -> "Catalog"
     member this.AcceptedVersions =
         match this with
-        | AutoComplete -> ([ "3.0.0-rc"; "3.0.0-beta" ] |> List.map (SemVer.Parse >> Some)) @ [ None ]
-        | AllVersionsAPI -> [ Some (SemVer.Parse "3.0.0"); None ]
+        | AutoComplete -> None :: ([ "3.0.0-rc"; "3.0.0-beta" ] |> List.map (SemVer.Parse >> Some))
+        | AllVersionsAPI -> None :: [ Some (SemVer.Parse "3.0.0") ]
         // prefer 3.6.0 as it includes semver packages.
-        | PackageIndex -> ([ "3.6.0"; "3.4.0"; "3.0.0-rc"; "3.0.0-beta" ] |> List.map (SemVer.Parse >> Some)) @ [ None ]
-        | Catalog -> [ Some (SemVer.Parse "3.0.0"); None ]
+        | PackageIndex -> None :: ([ "3.6.0"; "3.4.0"; "3.0.0-rc"; "3.0.0-beta" ] |> List.map (SemVer.Parse >> Some))
+        | Catalog -> None :: [ Some (SemVer.Parse "3.0.0") ]
 
 // Cache for nuget indices of sources
 type ResourceIndex = Map<NugetV3ResourceType,string>
@@ -132,8 +129,7 @@ let getNuGetV3Resource (source : NuGetV3Source) (resourceType : NugetV3ResourceT
             let map =
                 NugetV3ResourceType.All
                 |> Seq.choose (fun t ->
-                    match t.AcceptedVersions
-                          |> Seq.tryPick (fun v -> (rawMap.TryFind (t, v))) with
+                    match t.AcceptedVersions |> Seq.tryPick (fun v -> (rawMap.TryFind (t, v))) with
                     | Some s -> Some (t, pickRandom s)
                     | None -> None)
                 |> Map.ofSeq

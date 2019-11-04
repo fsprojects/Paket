@@ -1,3 +1,6 @@
+#### 5.228.0 - 2019-11-04
+* PERFORMANCE: Prefer latest AutoComplete server
+
 #### 5.227.0 - 2019-10-29
 * Support for github NuGet repos - https://github.com/fsprojects/Paket/issues/3692
 
