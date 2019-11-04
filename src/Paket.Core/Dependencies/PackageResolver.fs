@@ -1301,6 +1301,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                 let! versions = (requestVersions).Work.Task |> Async.AwaitTask
                                 // Preload the first version in range of this requirement
                                 for ((verToPreload, sources), prio) in selectVersionsToPreload verReq fst versions do
+
                                     let w = startRequestGetPackageDetails (GetPackageDetailsParameters.ofParams sources groupName pack verToPreload)
                                     w.Work.TryReprioritize true prio
                                 return ()
