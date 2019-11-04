@@ -2,7 +2,7 @@
 namespace System
 open System.Reflection
 
-[<assembly: AssemblyTitleAttribute("Paket")>]
+[<assembly: AssemblyTitleAttribute("LockFileComparer")>]
 [<assembly: AssemblyProductAttribute("Paket")>]
 [<assembly: AssemblyCompanyAttribute("Paket team")>]
 [<assembly: AssemblyDescriptionAttribute("A dependency manager for .NET with support for NuGet packages and git repositories.")>]
@@ -12,7 +12,7 @@ open System.Reflection
 do ()
 
 module internal AssemblyVersionInformation =
-    let [<Literal>] AssemblyTitle = "Paket"
+    let [<Literal>] AssemblyTitle = "LockFileComparer"
     let [<Literal>] AssemblyProduct = "Paket"
     let [<Literal>] AssemblyCompany = "Paket team"
     let [<Literal>] AssemblyDescription = "A dependency manager for .NET with support for NuGet packages and git repositories."
