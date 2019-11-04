@@ -46,6 +46,7 @@ type NugetV3ResourceType =
         | AutoComplete -> "SearchAutoCompleteService"
         | AllVersionsAPI -> "PackageBaseAddress"
         | PackageIndex -> "RegistrationsBaseUrl"
+
     member this.AcceptedVersions =
         match this with
         | AutoComplete -> ([ "3.0.0-rc"; "3.0.0-beta" ] |> List.map (SemVer.Parse >> Some)) @ [None]

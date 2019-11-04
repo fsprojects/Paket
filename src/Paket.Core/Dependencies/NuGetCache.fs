@@ -18,6 +18,7 @@ open System.Runtime.ExceptionServices
 
 open System.Net
 open System.Threading.Tasks
+open System.Text.RegularExpressions
 
 // show the path that was too long
 let FileInfo str =
@@ -166,84 +167,6 @@ let getCacheFiles force cacheVersion nugetURL (packageName:PackageName) (version
         | ex -> traceErrorfn "Cannot cleanup '%s': %O" (sprintf "%s*.json" prefix) ex
     FileInfo(newFile)
 
-type ODataSearchResult =
-    | EmptyResult
-    | Match of NuGetPackageCache
-
-module ODataSearchResult =
-    let get x =
-        match x with
-        | EmptyResult -> failwithf "Cannot call get on 'EmptyResult'"
-        | Match r -> r
-
-let tryGetDetailsFromCache force nugetURL (packageName:PackageName) (version:SemVerInfo) : ODataSearchResult option =
-    let cacheFile = getCacheFiles force NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
-    if not force && cacheFile.Exists then
-        try
-            let json = File.ReadAllText(cacheFile.FullName)
-
-            try
-                let cacheResult =
-                    let cachedObject = JsonConvert.DeserializeObject<NuGetPackageCache> json
-                    if (PackageName cachedObject.PackageName <> packageName) ||
-                        (cachedObject.Version <> version.Normalize())
-                    then
-                        if verbose then
-                            traceVerbose (sprintf "Invalidating Cache '%s:%s' <> '%s:%s'" cachedObject.PackageName cachedObject.Version packageName.Name (version.Normalize()))
-                        cacheFile.Delete()
-                        None
-                    else
-                        Some cachedObject
-
-                match cacheResult with
-                | Some res -> Some (ODataSearchResult.Match res)
-                | None -> None
-            with
-            | exn ->
-                try cacheFile.Delete() with | _ -> ()
-                if verbose then
-                    traceWarnfn "Error while loading cache: %O" exn
-                None
-        with
-        | exn ->
-            if verbose then
-                traceWarnfn "Error while reading cache file: %O" exn
-            None
-    else
-        None
-
-let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (get : unit -> ODataSearchResult Async) : ODataSearchResult Async =
-    let get() =
-        async {
-            let! result = get()
-            match result with
-            | ODataSearchResult.Match result ->
-                let cacheFile = getCacheFiles force NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
-                let serialized = JsonConvert.SerializeObject(result)
-                let cachedData =
-                    try
-                        if cacheFile.Exists then
-                            use cacheReader = cacheFile.OpenText()
-                            cacheReader.ReadToEnd()
-                        else ""
-                    with
-                    | ex ->
-                        traceWarnfn "Can't read cache file %O:%s Message: %O" cacheFile Environment.NewLine ex
-                        ""
-                if String.CompareOrdinal(serialized, cachedData) <> 0 then
-                    File.WriteAllText(cacheFile.FullName, serialized)
-            | _ ->
-                // TODO: Should we cache 404? Probably not.
-                ()
-            return result
-        }
-    async {
-        match tryGetDetailsFromCache force nugetURL packageName version with
-        | None -> return! get()
-        | Some res -> return res
-    }
-
-
 let fixDatesInArchive fileName =
     try
         use zipToOpen = new FileStream(fileName, FileMode.Open)
@@ -258,7 +181,6 @@ let fixDatesInArchive fileName =
             | _ -> e.LastWriteTime <- maxTime
     with
     | exn -> traceWarnfn "Could not fix timestamps in %s. Error: %s" fileName exn.Message
-
 
 let fixArchive fileName =
     if isMonoRuntime then
@@ -278,6 +200,16 @@ let inline isExtracted (directory:DirectoryInfo) (packageName:PackageName) (vers
     |> Seq.exists (fun f ->
         (not (String.equalsIgnoreCase f.FullName fi.FullName)) &&
           (not (String.equalsIgnoreCase f.FullName licenseFile)))
+
+type ODataSearchResult =
+    | EmptyResult
+    | Match of NuGetPackageCache
+
+module ODataSearchResult =
+    let get x =
+        match x with
+        | EmptyResult -> failwithf "Can't call \".get\" on 'EmptyResult'"
+        | Match r -> r
 
 let IsPackageVersionExtracted(config:ResolvedPackagesFolder, packageName:PackageName, version:SemVerInfo) =
     match config.Path with
@@ -373,6 +305,173 @@ let GetPackageUserFolderDir (packageName:PackageName, version:SemVerInfo, kind:P
 
     let targetFolder = DirectoryInfo(dir)
     targetFolder.FullName
+
+
+let tryGetDetailsFromCache force nugetURL (packageName:PackageName) (version:SemVerInfo) : ODataSearchResult option =
+    let cacheFile = getCacheFiles force NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
+
+    if not force && cacheFile.Exists then
+        try
+            let json = File.ReadAllText(cacheFile.FullName)
+
+            try
+                let cacheResult =
+                    let cachedObject = JsonConvert.DeserializeObject<NuGetPackageCache> json
+                    if (PackageName cachedObject.PackageName <> packageName) ||
+                        (cachedObject.Version <> version.Normalize())
+                    then
+                        if verbose then
+                            traceVerbose (sprintf "Invalidating Cache '%s:%s' <> '%s:%s'" cachedObject.PackageName cachedObject.Version packageName.Name (version.Normalize()))
+                        cacheFile.Delete()
+                        None
+                    else
+                        Some cachedObject
+
+                match cacheResult with
+                | Some res -> Some (ODataSearchResult.Match res)
+                | None -> None
+            with
+            | exn ->
+                try cacheFile.Delete() with | _ -> ()
+                if verbose then
+                    traceWarnfn "Error while loading cache: %O" exn
+                None
+        with
+        | exn ->
+            if verbose then
+                traceWarnfn "Error while reading cache file: %O" exn
+            None
+    else
+        None
+
+/// Reads packageName and version from .nupkg file name
+let parsePackageInfoFromFileName fileName : (PackageName * SemVerInfo) option =
+    let regex = Regex ("^(?<name>.*?)\.(?<version>\d.*)\.nupkg$", RegexOptions.IgnoreCase)
+    match regex.Match fileName with
+    | matchResult when matchResult.Success && matchResult.Groups.Count = 3 ->
+        try
+            let semVer = SemVer.Parse matchResult.Groups.["version"].Value
+            let packageName = PackageName matchResult.Groups.["name"].Value
+            Some (packageName, semVer)
+        with
+        | _ -> None
+    | _ -> None
+
+let tryFindLocalPackage directory (packageName:PackageName) (version:SemVerInfo) =
+    if not (Directory.Exists directory) then
+        None
+    else
+    let v1 = FileInfo(Path.Combine(directory, sprintf "%O.%O.nupkg" packageName version))
+    if v1.Exists then Some v1 else
+    let normalizedVersion = version.Normalize()
+    let v2 = FileInfo(Path.Combine(directory, sprintf "%O.%s.nupkg" packageName normalizedVersion))
+    if v2.Exists then Some v2 else
+
+    let condition x =
+        match parsePackageInfoFromFileName x with
+        | Some (name, ver) -> packageName = name && version = ver
+        | None -> false
+
+    let v3 =
+        Directory.EnumerateFiles(directory,"*.nupkg",SearchOption.AllDirectories)
+        |> Seq.tryFind (Path.GetFileName >> condition)
+
+    match v3 with
+    | None -> None
+    | Some x -> Some(FileInfo x)
+
+
+/// Reads nuspec from nupkg
+let getNuSpecFromNupgk (fileName:string) =
+    use __ = Profile.startCategory Profile.Category.FileIO
+    let nuspecFile = FileInfo(fileName.Replace(".nupkg",".nuspec"))
+    if nuspecFile.Exists then
+        Nuspec.Load(nuspecFile.FullName)
+    else
+        fixArchive fileName
+        use zipToCreate = new FileStream(fileName, FileMode.Open, FileAccess.Read)
+        use zip = new ZipArchive(zipToCreate, ZipArchiveMode.Read)
+        let zippedNuspec = zip.Entries |> Seq.find (fun f -> f.FullName.EndsWith ".nuspec")
+        use stream = zippedNuspec.Open()
+        Nuspec.Load(Path.Combine(fileName, Path.GetFileName zippedNuspec.FullName), stream)
+
+let getCacheDataFromExtractedPackage (packageName:PackageName) (version:SemVerInfo) = async {
+    match TryGetFallbackNupkg packageName version with
+    | Some nupkg ->
+        let fi = FileInfo nupkg
+        let nuspec = getNuSpecFromNupgk nupkg
+        return
+            { PackageName = nuspec.OfficialName
+              DownloadUrl = packageName.ToString()
+              SerializedDependencies = []
+              SourceUrl = fi.Directory.FullName
+              CacheVersion = NuGetPackageCache.CurrentCacheVersion
+              LicenseUrl = nuspec.LicenseUrl
+              Version = version.Normalize()
+              Unlisted = false }
+               .WithDependencies nuspec.Dependencies.Value
+            |> Some
+    | _ ->
+        let dir = GetPackageUserFolderDir (packageName, version, PackageResolver.ResolvedPackageKind.Package)
+        let targetFolder = DirectoryInfo(dir)
+        match tryFindLocalPackage targetFolder.FullName packageName version with
+        | Some nupkg ->
+            let nuspec = getNuSpecFromNupgk nupkg.FullName
+            return
+                { PackageName = nuspec.OfficialName
+                  DownloadUrl = packageName.ToString()
+                  SerializedDependencies = []
+                  SourceUrl = targetFolder.FullName
+                  CacheVersion = NuGetPackageCache.CurrentCacheVersion
+                  LicenseUrl = nuspec.LicenseUrl
+                  Version = version.Normalize()
+                  Unlisted = false }
+                   .WithDependencies nuspec.Dependencies.Value
+                |> Some
+        | _ ->
+            return None
+}
+
+let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (getViaWebRequest : unit -> ODataSearchResult Async) : ODataSearchResult Async =
+    let writeCacheFile(result:NuGetPackageCache) =
+        let cacheFile = getCacheFiles force NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
+        let serialized = JsonConvert.SerializeObject(result)
+        let cachedData =
+            try
+                if cacheFile.Exists then
+                    use cacheReader = cacheFile.OpenText()
+                    cacheReader.ReadToEnd()
+                else ""
+            with
+            | ex ->
+                traceWarnfn "Can't read cache file %O:%s Message: %O" cacheFile Environment.NewLine ex
+                ""
+        if String.CompareOrdinal(serialized, cachedData) <> 0 then
+            File.WriteAllText(cacheFile.FullName, serialized)
+
+    let getViaWebRequest () =
+        async {
+            let! result = getViaWebRequest()
+            match result with
+            | Match result ->
+                writeCacheFile result
+            | _ ->
+                // TODO: Should we cache 404? Probably not.
+                ()
+            return result
+        }
+    async {
+        match tryGetDetailsFromCache force nugetURL packageName version with
+        | None when force -> return! getViaWebRequest()
+        | None ->
+            let! result = getCacheDataFromExtractedPackage packageName version
+            match result with
+            | Some result ->
+                writeCacheFile result
+                return Match result
+            | _ -> return! getViaWebRequest()
+        | Some res -> return res
+    }
 
 /// Extracts the given package to the user folder
 let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, kind:PackageResolver.ResolvedPackageKind) =

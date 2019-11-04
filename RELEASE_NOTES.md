@@ -1,3 +1,6 @@
+#### 5.230.0-alpha001 - 2019-11-04
+* PERFORMANCE: Use package details from extracted files
+
 #### 5.229.0 - 2019-11-04
 * PERFORMANCE: Prefer latest AutoComplete server
 

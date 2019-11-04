@@ -4,6 +4,7 @@ open Paket.Domain
 open NUnit.Framework
 open FsUnit
 open Paket.NuGetLocal
+open Paket.NuGetCache
 open System.IO
 
 

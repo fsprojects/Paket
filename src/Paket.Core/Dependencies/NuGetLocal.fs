@@ -30,19 +30,6 @@ let getAllVersionsFromLocalPath (isCache, localNugetPath, package:PackageName, a
             return SuccessResponse(versions)
         })
 
-/// Reads packageName and version from .nupkg file name
-let parsePackageInfoFromFileName fileName : (PackageName * SemVerInfo) option =
-    let regex = Regex ("^(?<name>.*?)\.(?<version>\d.*)\.nupkg$", RegexOptions.IgnoreCase)
-    match regex.Match fileName with
-    | matchResult when matchResult.Success && matchResult.Groups.Count = 3 -> 
-        try
-            let semVer = SemVer.Parse matchResult.Groups.["version"].Value
-            let packageName = PackageName matchResult.Groups.["name"].Value 
-            Some (packageName, semVer)
-        with
-        | _ -> None        
-    | _ -> None
-
 let findLocalPackage directory (packageName:PackageName) (version:SemVerInfo) =
     if not (Directory.Exists directory) then
         failwithf "The package %O %O can't be found in %s. (The directory doesn't exist.)%sPlease check the feed definition in your paket.dependencies file." packageName version directory Environment.NewLine
@@ -52,11 +39,11 @@ let findLocalPackage directory (packageName:PackageName) (version:SemVerInfo) =
     let v2 = FileInfo(Path.Combine(directory, sprintf "%O.%s.nupkg" packageName normalizedVersion))
     if v2.Exists then v2 else
 
-    let condition x = 
+    let condition x =
         match parsePackageInfoFromFileName x with
         | Some (name, ver) -> packageName = name && version = ver
-        | None -> false 
-        
+        | None -> false
+
     let v3 =
         Directory.EnumerateFiles(directory,"*.nupkg",SearchOption.AllDirectories)
         |> Seq.tryFind (Path.GetFileName >> condition)
@@ -64,16 +51,6 @@ let findLocalPackage directory (packageName:PackageName) (version:SemVerInfo) =
     match v3 with
     | None -> failwithf "The package %O %O can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." packageName version directory Environment.NewLine
     | Some x -> FileInfo x
-
-/// Reads nuspec from nupkg
-let getNuSpecFromNupgk fileName =
-    use __ = Profile.startCategory Profile.Category.FileIO
-    fixArchive fileName
-    use zipToCreate = new FileStream(fileName, FileMode.Open, FileAccess.Read)
-    use zip = new ZipArchive(zipToCreate, ZipArchiveMode.Read)
-    let zippedNuspec = zip.Entries |> Seq.find (fun f -> f.FullName.EndsWith ".nuspec")
-    use stream = zippedNuspec.Open()
-    Nuspec.Load(Path.Combine(fileName, Path.GetFileName zippedNuspec.FullName), stream)
 
 /// Reads package name from a nupkg file
 let getPackageNameFromLocalFile fileName =
