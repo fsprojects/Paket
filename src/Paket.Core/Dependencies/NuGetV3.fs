@@ -63,7 +63,8 @@ type NugetV3ResourceType =
 // Cache for nuget indices of sources
 type ResourceIndex = Map<NugetV3ResourceType,string>
 let private nugetV3Resources = System.Collections.Concurrent.ConcurrentDictionary<NuGetV3Source,Task<ResourceIndex>>()
-let private rnd = new Random()
+let private rnd = Random()
+
 let getNuGetV3Resource (source : NuGetV3Source) (resourceType : NugetV3ResourceType) : Async<string> =
     let key = source
     let getResourcesRaw () =
@@ -73,11 +74,11 @@ let getNuGetV3Resource (source : NuGetV3Source) (resourceType : NugetV3ResourceT
             let rawData =
                 match rawData with
                 | Unauthorized ->
-                    raise (new Exception(sprintf "Could not load resources from '%s': Unauthorized (401)" source.Url))
+                    raise (Exception(sprintf "Could not load resources from '%s': Unauthorized (401)" source.Url))
                 | NotFound ->
-                    raise (new Exception(sprintf "Could not load resources (404) from '%s'" source.Url))
+                    raise (Exception(sprintf "Could not load resources (404) from '%s'" source.Url))
                 | UnknownError e ->
-                    raise (new Exception(sprintf "Could not load resources from '%s'" source.Url, e.SourceException))
+                    raise (Exception(sprintf "Could not load resources from '%s'" source.Url, e.SourceException))
                 | SuccessResponse x -> x
 
             let json = JsonConvert.DeserializeObject<NugetV3SourceRootJSON>(rawData)
@@ -89,7 +90,7 @@ let getNuGetV3Resource (source : NuGetV3Source) (resourceType : NugetV3ResourceT
                 resources
                 |> Seq.choose (fun (res, value) ->
                     let spl = res.Split('/')
-                    let name_version =
+                    let nameAndVersion =
                         match spl.Length with
                         | 0 -> None
                         | 1 -> Some (res, None)
@@ -108,7 +109,7 @@ let getNuGetV3Resource (source : NuGetV3Source) (resourceType : NugetV3ResourceT
                             if verbose then
                                 eprintfn "Unable to parse @type in nuget v3: '%s'" res
                             None
-                    match name_version with
+                    match nameAndVersion with
                     | None -> None
                     | Some (name, version) ->
                         let resType =
@@ -329,14 +330,14 @@ let private getHostSpecificFileName fromUrl =
 let private getCatalogPageDirectory(basePath:String,item:String) =
     let hostName = getHostSpecificFileName item
     let cachePath = Path.Combine(basePath, "catalog", hostName)
-    let directory = new DirectoryInfo(cachePath)
+    let directory = DirectoryInfo(cachePath)
     if directory.Exists |> not then
         traceWarnfn "Create page cache \"%s\" -- long delay expected" directory.FullName
         directory.Create()
     directory;
 
 let private getPageFileContent(pageFileName:String) =
-    let pageFileInfo = new FileInfo(pageFileName+".gz")
+    let pageFileInfo = FileInfo(pageFileName+".gz")
     if pageFileInfo.Exists then
         try
             // File.ReadAllText(pageFileInfo.FullName)
@@ -508,7 +509,7 @@ let setCatalogCursor basePath catalog =
     let hostName = getHostSpecificFileName catalog.Source
     let fullName = Path.Combine(basePath, hostName + ".txt")
 
-    let fileInfo = new FileInfo(fullName)
+    let fileInfo = FileInfo(fullName)
     let backFile = fileInfo.FullName + ".bak"
     if fileInfo.Exists then
         try
@@ -520,7 +521,7 @@ let setCatalogCursor basePath catalog =
     else
         fileInfo.Directory.Create()
 
-    let nextFile = new FileInfo(fileInfo.FullName + ".tmp")
+    let nextFile = FileInfo(fileInfo.FullName + ".tmp")
     use textFile = nextFile.CreateText()
 
     textFile.WriteLine(":" + catalog.Cursor.ToString("O"))
@@ -545,14 +546,14 @@ let getCatalogUpdated auth basePath catalog cancel =
             }
 
             let catalogIndex = getCatalogIndex auth catalog.Source cancel
-            assert (catalogIndex.CommitId |> String.IsNullOrWhiteSpace = false)
+            assert (catalogIndex.CommitId |> String.IsNullOrWhiteSpace |> not)
 
             for indexItem in catalogIndex.Items do
                 if indexItem.CommitTimeStamp < catalog.Cursor then ignore()
                 else
 
                 let indexPage = getCatalogPage auth indexItem basePath cancel
-                assert (indexPage.CommitId |> String.IsNullOrWhiteSpace = false)
+                assert (indexPage.CommitId |> String.IsNullOrWhiteSpace |> not)
 
                 if indexPage.CommitTimeStamp < catalog.Cursor then ignore()
                 else
@@ -870,7 +871,7 @@ let getPackageDetails (source:NuGetV3Source) (packageName:PackageName) (version:
                     else
                         group.Dependencies
                         |> Seq.map(fun dep -> dep, group.TargetFramework))
-                |> Seq.map(fun (dep, targetFramework) ->
+                |> Seq.map (fun (dep, targetFramework) ->
                     let targetFramework =
                         match targetFramework with
                         | null -> ParsedPlatformPath.Empty
