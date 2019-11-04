@@ -39,23 +39,19 @@ type NugetV3SourceRootJSON =
 type NugetV3ResourceType =
     | AutoComplete
     | AllVersionsAPI
-    //| Registration
     | PackageIndex
-    | Catalog
-    static member All = [ AutoComplete; AllVersionsAPI; PackageIndex; Catalog ]
+    static member All = [ AutoComplete; AllVersionsAPI; PackageIndex ]
     member this.AsString =
         match this with
         | AutoComplete -> "SearchAutoCompleteService"
         | AllVersionsAPI -> "PackageBaseAddress"
         | PackageIndex -> "RegistrationsBaseUrl"
-        | Catalog -> "Catalog"
     member this.AcceptedVersions =
         match this with
         | AutoComplete -> None :: ([ "3.0.0-rc"; "3.0.0-beta" ] |> List.map (SemVer.Parse >> Some))
         | AllVersionsAPI -> None :: [ Some (SemVer.Parse "3.0.0") ]
         // prefer 3.6.0 as it includes semver packages.
         | PackageIndex -> None :: ([ "3.6.0"; "3.4.0"; "3.0.0-rc"; "3.0.0-beta" ] |> List.map (SemVer.Parse >> Some))
-        | Catalog -> None :: [ Some (SemVer.Parse "3.0.0") ]
 
 // Cache for nuget indices of sources
 type ResourceIndex = Map<NugetV3ResourceType,string>
@@ -228,26 +224,6 @@ let getAllVersionsAPI(auth,nugetUrl) =
                         None
         } |> Async.StartAsTask)
 
-/// [omit]
-let getCatalogAPI auth nugetUrl =
-    let catalogApi =
-        async {
-            match calculateNuGet3Path nugetUrl with
-            | None -> return None
-            | Some v3Path ->
-                let source = { Url = v3Path; Authentication = auth }
-                let! v3res = getNuGetV3Resource source Catalog |> Async.Catch
-                return
-                    match v3res with
-                    | Choice1Of2 s -> Some s
-                    | Choice2Of2 ex ->
-                        if verbose then traceWarnfn "getCatalogAPI: %s" (ex.ToString())
-                        None
-        } |> Async.RunSynchronously
-    match catalogApi with
-    | Some url when url |> String.IsNullOrEmpty |> not -> url
-    | _-> failwithf "NO NuGetV3 Catalog on %s" nugetUrl
-
 type NugetV3CatalogIndexItem =
     {   [<JsonProperty("@id")>]
         Id : string
@@ -288,31 +264,6 @@ type NugetV3CatalogPage =
         Items : NugetV3CatalogPageItem []
     }
 
-type NugetV3CatalogIndex =
-    {   [<JsonProperty("commitId")>]
-        CommitId : string
-        [<JsonProperty("commitTimeStamp")>]
-        CommitTimeStamp : DateTimeOffset
-        [<JsonProperty("count")>]
-        Count : int
-        [<JsonProperty("items")>]
-        Items : NugetV3CatalogIndexItem []
-    }
-
-/// [omit]
-let private getCatalogIndex auth nugetUrl cancel =
-    let catalogApi = getCatalogAPI auth nugetUrl
-    let indexResponse =
-        async {
-            return! safeGetFromUrl (auth, catalogApi, acceptJson)
-        } |> (fun future ->
-            Async.StartAsTaskProperCancel(future,TaskCreationOptions.None,cancel))
-    match indexResponse.Result with
-    | NotFound -> failwith "Catalog/3.0 Index NotFound/404"; ""
-    | Unauthorized -> failwith "Catalog/3.0 Index Unauthorized/401"; ""
-    | UnknownError e -> failwithf "Catalog/3.0 Index N/A %A" e; ""
-    | SuccessResponse s -> s
-    |> JsonConvert.DeserializeObject<NugetV3CatalogIndex>
 
 let private getHostSpecificFileName fromUrl =
     let normalizeFileName name =
@@ -336,7 +287,6 @@ let private getPageFileContent(pageFileName:String) =
     let pageFileInfo = FileInfo(pageFileName+".gz")
     if pageFileInfo.Exists then
         try
-            // File.ReadAllText(pageFileInfo.FullName)
             use archive = File.OpenRead(pageFileInfo.FullName)
             use compressed = new GZipStream(archive,CompressionMode.Decompress)
             use reader = new StreamReader(compressed,Encoding.UTF8)
@@ -352,7 +302,6 @@ let private getPageFileContent(pageFileName:String) =
 
 let private setPageFileContent(pageFileName:String,responseData:String) =
     try
-        // File.WriteAllText(pageFileName,responseData)
         let bytes = Encoding.UTF8.GetBytes(responseData)
         use archive = File.OpenWrite(pageFileName+".gz")
         use compressed = new GZipStream(archive,CompressionLevel.Optimal)
@@ -532,73 +481,6 @@ let setCatalogCursor basePath catalog =
 
     nextFile.Replace(fileInfo.FullName,backFile,true).Exists
 
-let getCatalogUpdated auth basePath catalog cancel =
-    let asyncRes =
-        async {
-            let mutable builder = {
-                Source = catalog.Source
-                Cursor = catalog.Cursor
-                Packages = catalog.Packages |> Map.map (fun k v -> List.rev v)
-            }
-
-            let catalogIndex = getCatalogIndex auth catalog.Source cancel
-            assert (catalogIndex.CommitId |> String.IsNullOrWhiteSpace |> not)
-
-            for indexItem in catalogIndex.Items do
-                if indexItem.CommitTimeStamp < catalog.Cursor then ignore()
-                else
-
-                let indexPage = getCatalogPage auth indexItem basePath cancel
-                assert (indexPage.CommitId |> String.IsNullOrWhiteSpace |> not)
-
-                if indexPage.CommitTimeStamp < catalog.Cursor then ignore()
-                else
-
-                for pageItem in indexPage.Items do
-                    if pageItem.CommitTimeStamp < catalog.Cursor then ignore()
-                    else
-
-                    let version =
-                        match pageItem.ItemType with
-                        | "nuget:PackageDelete" -> Some (Choice1Of2 pageItem.NuGetVersion)
-                        | "nuget:PackageDetails" -> Some (Choice2Of2 pageItem.NuGetVersion)
-                        | _ -> None
-
-                    match version with
-                    | Some choice ->
-
-                        let versionList =
-                            match Map.tryFind pageItem.NuGetId builder.Packages with
-                            | Some versions ->
-                                match choice with
-                                | Choice1Of2 delete -> versions |> List.except [delete]
-                                | Choice2Of2 details -> details :: versions
-                            | None ->
-                                match choice with
-                                | Choice1Of2 delete -> []
-                                | Choice2Of2 details -> [details]
-
-                        match versionList with
-                        | [] ->
-                            builder <- {
-                                builder with
-                                    Packages = builder.Packages.Remove(pageItem.NuGetId)}
-                        | versions ->
-                            builder <- {
-                                builder with
-                                    Packages = builder.Packages.Add(pageItem.NuGetId,versionList)}
-
-                        builder <- {builder with Cursor = indexPage.CommitTimeStamp}
-
-                    | None -> ignore() // nothing to do here
-            let updated = {
-                builder with
-                    Packages = builder.Packages
-                    |> Map.map (fun k v -> List.rev v) // we were pre-pending new items
-                    |> Map.map semVerOrder2 }
-            return updated
-        }
-    Async.StartAsTaskProperCancel(asyncRes, TaskCreationOptions.None, cancel)
 
 /// [omit]
 let extractAutoCompleteVersions(response:string) =
