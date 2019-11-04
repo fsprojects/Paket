@@ -782,33 +782,6 @@ let getPackageDetails (source:NuGetV3Source) (packageName:PackageName) (version:
             |> ODataSearchResult.Match
     }
 
-let loadFromCacheOrGetDetails (force:bool)
-                              (cacheFileName:string)
-                              (source:NuGetV3Source)
-                              (packageName:PackageName)
-                              (version:SemVerInfo) =
-    async {
-        if not force && File.Exists cacheFileName then
-            try
-                let json = File.ReadAllText(cacheFileName)
-                let cachedObject = JsonConvert.DeserializeObject<NuGetPackageCache> json
-                if cachedObject.CacheVersion <> NuGetPackageCache.CurrentCacheVersion then
-                    let! details = getPackageDetails source packageName version
-                    return true,details
-                else
-                    return false,ODataSearchResult.Match cachedObject
-            with exn ->
-                if verboseWarnings then
-                    traceWarnfn "Possible Performance degradation, could not retrieve '%O' from cache: %O" packageName exn
-                else
-                    traceWarnIfNotBefore ("NuGetV3 n/a", packageName, exn.Message) "Possible Performance degradation, could not retrieve '%O' from cache: %s" packageName exn.Message
-                let! details = getPackageDetails source packageName version
-                return true,details
-        else
-            let! details = getPackageDetails source packageName version
-            return true,details
-    }
-
 /// Uses the NuGet v3 registration endpoint to retrieve package details .
 let GetPackageDetails (force:bool) (source:NuGetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<ODataSearchResult> =
     getDetailsFromCacheOr
