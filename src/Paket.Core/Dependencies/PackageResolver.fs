@@ -481,8 +481,8 @@ let private explorePackageConfig (getPackageDetailsBlock:PackageDetailsSyncFunc)
     let newRestrictions = filterRestrictions dependency.Settings.FrameworkRestrictions pkgConfig.GlobalRestrictions
 
     try
-        let packageDetails : PackageDetails =
-            getPackageDetailsBlock (GetPackageDetailsParameters.ofParamsEx isAssumedVersion packageSources pkgConfig.GroupName dependency.Name version)
+        let packageDetails : PackageDetails = getPackageDetailsBlock (GetPackageDetailsParameters.ofParamsEx isAssumedVersion packageSources pkgConfig.GroupName dependency.Name version)
+
         let filteredDependencies = DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies
 
         let settings =
@@ -918,19 +918,24 @@ module ResolverTaskMemory =
     let ofWork w = { Work = w; WaitedAlready = false }
 
 let selectVersionsToPreload (verReq:VersionRequirement) f versions =
+    let versions = HashSet<_>()
     seq {
         match versions |> Seq.tryFind (fun v -> verReq.IsInRange(f v, true)) with
         | Some verToPreload ->
-            yield verToPreload, WorkPriority.LikelyRequired
+            if versions.Add verToPreload then
+                yield verToPreload, WorkPriority.LikelyRequired
         | None -> ()
         match versions |> Seq.tryFind (f >> verReq.IsInRange) with
         | Some verToPreload ->
-            yield verToPreload, WorkPriority.LikelyRequired
+            if versions.Add verToPreload then
+                yield verToPreload, WorkPriority.LikelyRequired
         | None -> ()
-        for v in versions |> Seq.filter (fun v -> verReq.IsInRange(f v, true)) |> Seq.tryTake 10 do
-            yield v, WorkPriority.MightBeRequired
-        for v in versions |> Seq.filter (f >> verReq.IsInRange) |> Seq.tryTake 10 do
-            yield v, WorkPriority.MightBeRequired
+        for v in versions |> Seq.filter (fun v -> verReq.IsInRange(f v, true)) |> Seq.tryTake 3 do
+            if versions.Add v then
+                yield v, WorkPriority.MightBeRequired
+        for v in versions |> Seq.filter (f >> verReq.IsInRange) |> Seq.tryTake 3 do
+            if versions.Add v then
+                yield v, WorkPriority.MightBeRequired
     }
 
 let RequestTimeout = 180000
