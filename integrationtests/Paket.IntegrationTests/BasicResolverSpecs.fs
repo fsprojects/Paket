@@ -28,14 +28,6 @@ let ``#49 windsor should resolve correctly``() =
     |> shouldEqual (SemVer.Parse "3.2.1")
 
 [<Test>]
-let ``#51 should resolve with pessimistic strategy correctly``() =
-    // TODO: change back to i000051-resolve-pessimistic
-    let cleanup, lockFile = update "i000051"
-    use __ = cleanup
-    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Windsor-log4net"].Version
-    |> shouldEqual (SemVer.Parse "3.2.0.1")
-
-[<Test>]
 let ``#55 should resolve with pessimistic strategy correctly``() =
     let cleanup, lockFile = update "i000055-resolve-with-pessimistic-strategy"
     use __ = cleanup
@@ -95,7 +87,7 @@ let ``#299 should restore package ending in lib``() =
 
     Directory.Exists(Path.Combine(scenarioTempPath "i000299-restore-package-that-ends-in-lib","packages","FunScript.TypeScript.Binding.lib"))
     |> shouldEqual true
-    
+
 [<Test>]
 let ``#359 should restore package with nuget in name``() =
     let cleanup, lockFile = update "i000359-packagename-contains-nuget"
@@ -133,7 +125,7 @@ let ``#1450 should resolve with twiddle wakka``() =
     use __ = cleanup
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "EnterpriseLibrary.SemanticLogging"].Version
     |> shouldBeSmallerThan (SemVer.Parse "3")
-    
+
 [<Test>]
 let ``#2640 shouldn't try GetDetails if package only exists locally``() =
     use __ = updateEx true "i002640" |> fst
