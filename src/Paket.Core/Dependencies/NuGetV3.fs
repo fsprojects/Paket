@@ -48,10 +48,10 @@ type NugetV3ResourceType =
         | PackageIndex -> "RegistrationsBaseUrl"
     member this.AcceptedVersions =
         match this with
-        | AutoComplete -> None :: ([ "3.0.0-rc"; "3.0.0-beta" ] |> List.map (SemVer.Parse >> Some))
-        | AllVersionsAPI -> None :: [ Some (SemVer.Parse "3.0.0") ]
+        | AutoComplete -> ([ "3.0.0-rc"; "3.0.0-beta" ] |> List.map (SemVer.Parse >> Some)) @ [None]
+        | AllVersionsAPI -> [ Some (SemVer.Parse "3.0.0") ] @ [None]
         // prefer 3.6.0 as it includes semver packages.
-        | PackageIndex -> None :: ([ "3.6.0"; "3.4.0"; "3.0.0-rc"; "3.0.0-beta" ] |> List.map (SemVer.Parse >> Some))
+        | PackageIndex -> ([ "3.6.0"; "3.4.0"; "3.0.0-rc"; "3.0.0-beta" ] |> List.map (SemVer.Parse >> Some)) @ [None]
 
 // Cache for nuget indices of sources
 type ResourceIndex = Map<NugetV3ResourceType,string>
