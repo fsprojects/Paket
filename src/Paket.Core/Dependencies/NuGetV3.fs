@@ -160,8 +160,6 @@ type JSONRootData =
 /// [omit]
 let private searchDict = new System.Collections.Concurrent.ConcurrentDictionary<_,System.Threading.Tasks.Task<_>>()
 
-/// [omit]
-let private allVersionsDict = new System.Collections.Concurrent.ConcurrentDictionary<_,System.Threading.Tasks.Task<_>>()
 
 /// Calculates the NuGet v3 URL from a NuGet v2 URL.
 let calculateNuGet3Path(nugetUrl:string) =
@@ -208,22 +206,7 @@ let getSearchAPI(auth,nugetUrl) =
                         None
         } |> Async.StartAsTask)
 
-/// [omit]
-let getAllVersionsAPI(auth,nugetUrl) =
-    allVersionsDict.GetOrAdd(nugetUrl, fun nugetUrl ->
-        async {
-            match calculateNuGet3Path nugetUrl with
-            | None -> return None
-            | Some v3Path ->
-                let source = { Url = v3Path; Authentication = auth }
-                let! v3res = getNuGetV3Resource source AllVersionsAPI |> Async.Catch
-                return
-                    match v3res with
-                    | Choice1Of2 s -> Some s
-                    | Choice2Of2 ex ->
-                        if verbose then traceWarnfn "getAllVersionsAPI: %s" (ex.ToString())
-                        None
-        } |> Async.StartAsTask)
+
 
 type NugetV3CatalogIndexItem =
     {   [<JsonProperty("@id")>]
