@@ -1,4 +1,4 @@
-#### 5.230.0-alpha001 - 2019-11-04
+#### 5.230.0 - 2019-11-05
 * PERFORMANCE: Use package details from extracted files
 
 #### 5.229.0 - 2019-11-04
