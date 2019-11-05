@@ -14,18 +14,18 @@ type PaketEnv = {
 }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
-module PaketEnv = 
-    let create root dependenciesFile lockFile projects = 
+module PaketEnv =
+    let create root dependenciesFile lockFile projects =
         { RootDirectory = root
           DependenciesFile = dependenciesFile
           LockFile = lockFile
           Projects = projects }
 
     let fromRootDirectory (directory : DirectoryInfo) = trial {
-        if not directory.Exists then 
+        if not directory.Exists then
             return! fail (DirectoryDoesntExist directory)
         else
-            let! dependenciesFile = 
+            let! dependenciesFile =
                 let fi = FileInfo(Path.Combine(directory.FullName, Constants.DependenciesFileName))
                 if not fi.Exists then
                     fail (DependenciesFileNotFoundInDir directory)
@@ -50,8 +50,8 @@ module PaketEnv =
             return create directory dependenciesFile lockFile projects
     }
 
-    let locatePaketRootDirectory (directory : DirectoryInfo) = 
-        if not directory.Exists then 
+    let locatePaketRootDirectory (directory : DirectoryInfo) =
+        if not directory.Exists then
             None
         else
             directory
@@ -64,8 +64,8 @@ module PaketEnv =
     let ensureNotExists (directory : DirectoryInfo) =
         match fromRootDirectory directory with
         | Result.Ok(_) -> fail (PaketEnvAlreadyExistsInDirectory directory)
-        | Result.Bad(msgs) -> 
-            let filtered = 
+        | Result.Bad(msgs) ->
+            let filtered =
                 msgs
                 |> List.filter (function
                     | DependenciesFileNotFoundInDir _ -> false
@@ -83,19 +83,19 @@ module PaketEnv =
 
     let initWithContent sources additional (directory : DirectoryInfo) =
         match locatePaketRootDirectory directory with
-        | Some rootDirectory when rootDirectory.FullName = directory.FullName -> 
+        | Some rootDirectory when rootDirectory.FullName = directory.FullName ->
             Logging.tracefn "Paket is already initialized in %s" rootDirectory.FullName
             ok ()
-        | _ -> 
-            let sourcesSerialized = 
+        | _ ->
+            let sourcesSerialized =
                 (sources
                 |> List.map (string >> DependenciesFileSerializer.sourceString))
                 @ [""]
                 |> Array.ofList
-            
+
             let serialized = Array.append sourcesSerialized (additional |> Array.ofList)
 
-            let mainGroup = 
+            let mainGroup =
                 { Name = Constants.MainDependencyGroup
                   Options = InstallOptions.Default
                   Sources = sources
@@ -105,7 +105,7 @@ module PaketEnv =
                   RemoteFiles = [] }
             let groups = [Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
 
-            let dependenciesFile = 
+            let dependenciesFile =
                 DependenciesFile(
                     Path.Combine(directory.FullName, Constants.DependenciesFileName),
                     groups,
@@ -114,5 +114,5 @@ module PaketEnv =
             dependenciesFile.ToString() |> saveFile dependenciesFile.FileName
 
     let init (directory : DirectoryInfo) =
-        let sources = [PackageSources.DefaultNuGetSource]
+        let sources = [PackageSources.DefaultNuGetV3Source]
         initWithContent sources [] directory

@@ -142,8 +142,6 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         | Some group -> sprintf "%sHowever, %O was found in group %O." Environment.NewLine packageName group.Value.Name
         | None -> ""
 
-
-
     member this.SimplifyFrameworkRestrictions() =
         let transform (dependenciesFile:DependenciesFile) (group:DependenciesGroup) =
             let getRestrictionList =
@@ -829,7 +827,6 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
     /// Find the matching lock file to a dependencies file
     member this.FindLockFile() = DependenciesFile.FindLockfile this.FileName
-
 
 type PaketFiles =
     | JustDependencies    of DependenciesFile

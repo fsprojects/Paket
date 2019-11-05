@@ -26,7 +26,7 @@ let paketVersion = AssemblyVersionInformation.AssemblyInformationalVersion
 let mutable tracedVersion = false
 
 let tracePaketVersion silent =
-    if not silent && not tracedVersion then 
+    if not silent && not tracedVersion then
         tracedVersion <- true
         tracefn "Paket version %s" paketVersion
 
@@ -581,7 +581,7 @@ let pack (results : ParseResults<_>) =
 let discoverPackageSources explicitSource (dependencies: Dependencies option) =
     match explicitSource, dependencies with
     | Some source, _ ->
-        [PackageSource.NuGetV2Source source]
+        [PackageSource.Parse source]
     | _, Some dependencies ->
         PackageSources.DefaultNuGetSource ::
         (dependencies.GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat)

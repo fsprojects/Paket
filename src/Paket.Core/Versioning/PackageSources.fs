@@ -3,12 +3,7 @@
 open System
 open System.IO
 open System.Text.RegularExpressions
-
 open Paket.Logging
-open Chessie.ErrorHandling
-
-open Newtonsoft.Json
-open System.Threading.Tasks
 
 let private envVarRegex = Regex("^%(\w*)%$", RegexOptions.Compiled)
 
@@ -196,7 +191,7 @@ type PackageSource =
                 traceWarnfn "Local NuGet feed doesn't exist: %s." path
 
 let DefaultNuGetSource = PackageSource.NuGetV2Source Constants.DefaultNuGetStream
-
+let DefaultNuGetV3Source = PackageSource.NuGetV3Source Constants.DefaultNuGetV3Stream
 
 type NugetPackage = {
     Id : string
