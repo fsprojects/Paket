@@ -1,3 +1,6 @@
+#### 5.231.1 - 2019-11-06
+* BUGFIX: Allow GitHub package registry urls without trailing slash - https://github.com/fsprojects/Paket/issues/3700
+
 #### 5.231.0 - 2019-11-05
 * PERFORMANCE: Use NuGet v3 as default source in paket init
 

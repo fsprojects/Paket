@@ -118,16 +118,19 @@ let getNuGetV3Resource (source : NuGetV3Source) (resourceType : NugetV3ResourceT
                 |> Map.ofSeq
 
             // when multiple items are given for load-balancing select a random one
-            let pickRandom (l:_ list) =
-                let idx = rnd.Next(l.Length)
-                l |> List.item idx
+            let pickRandom (urls:_ list) =
+                let idx = rnd.Next(urls.Length)
+                urls |> List.item idx
 
             // Select the "best" version
             let map =
                 NugetV3ResourceType.All
                 |> Seq.choose (fun t ->
                     match t.AcceptedVersions |> Seq.tryPick (fun v -> (rawMap.TryFind (t, v))) with
-                    | Some s -> Some (t, pickRandom s)
+                    | Some urls ->
+                        let url = pickRandom urls
+                        let url = if url.EndsWith("/") then url else url + "/"
+                        Some (t, url)
                     | None -> None)
                 |> Map.ofSeq
 
