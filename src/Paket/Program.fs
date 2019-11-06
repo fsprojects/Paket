@@ -581,7 +581,7 @@ let pack (results : ParseResults<_>) =
 let discoverPackageSources explicitSource (dependencies: Dependencies option) =
     match explicitSource, dependencies with
     | Some source, _ ->
-        [PackageSource.Parse source]
+        [PackageSource.NuGetV2Source source]
     | _, Some dependencies ->
         PackageSources.DefaultNuGetSource ::
         (dependencies.GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat)

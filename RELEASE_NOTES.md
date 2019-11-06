@@ -1,3 +1,6 @@
+#### 5.231.2 - 2019-11-06
+* BUGFIX: Fixed IndexOutOfRangeException starting from 5.231.0 - https://github.com/fsprojects/Paket/issues/3701
+
 #### 5.231.1 - 2019-11-06
 * BUGFIX: Allow GitHub package registry urls without trailing slash - https://github.com/fsprojects/Paket/issues/3700
 
