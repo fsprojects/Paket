@@ -40,51 +40,56 @@
     <!-- Disable Paket restore under NCrunch build -->
     <PaketRestoreDisabled Condition="'$(NCrunch)' == '1'">True</PaketRestoreDisabled>
 
+    <!-- Disable test for CLI tool completely - overrideable via properties in projects or via environmentvariables -->
+    <PaketDisableCliTest Condition=" '$(PaketDisableCliTest)' == '' ">False</PaketDisableCliTest>
+
     <PaketIntermediateOutputPath Condition=" '$(PaketIntermediateOutputPath)' == '' ">$(BaseIntermediateOutputPath.TrimEnd('\').TrimEnd('\/'))</PaketIntermediateOutputPath>
   </PropertyGroup>
 
-  <!-- Check if paket is available as local dotnet cli tool -->
+  <!-- Resolve how paket should be called -->
   <Target Name="SetPaketCommand" >
   
+    <!-- Test if paket is available in the standard locations. If so, that takes priority. Case 1/2 - non-windows specific -->
+    <PropertyGroup Condition=" '$(OS)' != 'Windows_NT' ">
+      <!-- no windows, try native paket as default, root => tool -->
+      <PaketExePath Condition=" '$(PaketExePath)' == '' AND Exists('$(PaketRootPath)paket') ">$(PaketRootPath)paket</PaketExePath>
+      <PaketExePath Condition=" '$(PaketExePath)' == '' AND Exists('$(PaketToolsPath)paket') ">$(PaketToolsPath)paket</PaketExePath>
+    </PropertyGroup>
+
+    <!-- Test if paket is available in the standard locations. If so, that takes priority. Case 2/2 - same across platforms -->
+    <PropertyGroup>
+      <!-- root => tool -->
+      <PaketExePath Condition=" '$(PaketExePath)' == '' AND Exists('$(PaketRootPath)paket.exe') ">$(PaketRootPath)paket.exe</PaketExePath>
+      <PaketExePath Condition=" '$(PaketExePath)' == '' AND Exists('$(PaketToolsPath)paket.exe') ">$(PaketToolsPath)paket.exe</PaketExePath>
+    </PropertyGroup>
+
+    <!-- If paket hasn't be found in standard locations, test for CLI tool, if the test hasn't been disabled. -->
     <!-- Call 'dotnet paket' and see if it returns without an error. Mute all the output. -->
-    <Exec Command="dotnet paket --version" IgnoreExitCode="true" StandardOutputImportance="low" StandardErrorImportance="low" >
+    <Exec Condition=" '$(PaketExePath)' == '' AND '$(PaketDisableCliTest)' != 'True'" Command="dotnet paket --version" IgnoreExitCode="true" StandardOutputImportance="low" StandardErrorImportance="low" >
       <Output TaskParameter="ExitCode" PropertyName="LocalPaketToolExitCode" />
     </Exec>
 
-    <!-- If local paket tool is found, use that -->
-    <PropertyGroup Condition=" '$(LocalPaketToolExitCode)' == '0' ">
+    <!-- If paket is installed as CLI use that. Again, only if paket haven't already been found in standard locations. -->
+    <PropertyGroup Condition=" '$(PaketExePath)' == '' AND '$(LocalPaketToolExitCode)' == '0' ">
       <InternalPaketCommand>dotnet paket</InternalPaketCommand>
     </PropertyGroup>
 
-    <!-- If not, then we go through our normal steps of setting the Paket command.  -->
-    <PropertyGroup Condition=" '$(LocalPaketToolExitCode)' != '0' ">
-      <!-- windows, root => tool => proj style => bootstrapper => global -->
-      <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' == 'Windows_NT' AND Exists('$(PaketRootPath)paket.exe') ">$(PaketRootPath)paket.exe</PaketExePath>
-      <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' == 'Windows_NT' AND Exists('$(PaketToolsPath)paket.exe') ">$(PaketToolsPath)paket.exe</PaketExePath>
-      <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' == 'Windows_NT' AND '$(PaketBootstrapperStyle)' == 'proj' ">$(PaketToolsPath)paket.exe</PaketExePath>
-      <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' == 'Windows_NT' AND Exists('$(PaketBootStrapperExeDir)') ">$(_PaketBootStrapperExeDir)paket.exe</PaketExePath>
-      <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' == 'Windows_NT' ">paket.exe</PaketExePath>
+    <!-- If neither local files nor CLI tool can be found, attempt using bootstrapper or global tool instead. -->
+    <PropertyGroup Condition=" '$(PaketExePath)' == '' AND '$(LocalPaketToolExitCode)' != '0' ">
+      <!-- Test for bootstrapper setup -->
+      <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(PaketBootstrapperStyle)' == 'proj' ">$(PaketToolsPath)paket</PaketExePath>
+      <PaketExePath Condition=" '$(PaketExePath)' == '' AND Exists('$(PaketBootStrapperExeDir)') ">$(PaketBootStrapperExeDir)paket</PaketExePath>
 
-      <!-- no windows, try native paket as default,  root => tool => proj style => mono paket => bootstrpper => global -->
-      <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' != 'Windows_NT' AND Exists('$(PaketRootPath)paket') ">$(PaketRootPath)paket</PaketExePath>
-      <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' != 'Windows_NT' AND Exists('$(PaketToolsPath)paket') ">$(PaketToolsPath)paket</PaketExePath>
-      <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' != 'Windows_NT' AND '$(PaketBootstrapperStyle)' == 'proj' ">$(PaketToolsPath)paket</PaketExePath>
+      <!-- If all else fails, use global approach. -->
+      <PaketExePath Condition=" '$(PaketExePath)' == ''">paket</PaketExePath>
+    </PropertyGroup>
 
-      <!-- no windows, try mono paket -->
-      <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' != 'Windows_NT' AND Exists('$(PaketRootPath)paket.exe') ">$(PaketRootPath)paket.exe</PaketExePath>
-      <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' != 'Windows_NT' AND Exists('$(PaketToolsPath)paket.exe') ">$(PaketToolsPath)paket.exe</PaketExePath>
-
-      <!-- no windows, try bootstrapper -->
-      <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' != 'Windows_NT' AND Exists('$(PaketBootStrapperExeDir)') ">$(PaketBootStrapperExeDir)paket.exe</PaketExePath>
-
-      <!-- no windows, try global native paket -->
-      <PaketExePath Condition=" '$(PaketExePath)' == '' AND '$(OS)' != 'Windows_NT' ">paket</PaketExePath>
-
+    <!-- If not using CLI, setup correct execution command. -->
+    <PropertyGroup Condition=" '$(InternalPaketCommand)' == '' ">
       <_PaketExeExtension>$([System.IO.Path]::GetExtension("$(PaketExePath)"))</_PaketExeExtension>
       <InternalPaketCommand Condition=" '$(InternalPaketCommand)' == '' AND '$(_PaketExeExtension)' == '.dll' ">dotnet "$(PaketExePath)"</InternalPaketCommand>
       <InternalPaketCommand Condition=" '$(InternalPaketCommand)' == '' AND '$(OS)' != 'Windows_NT' AND '$(_PaketExeExtension)' == '.exe' ">$(MonoPath) --runtime=v4.0.30319 "$(PaketExePath)"</InternalPaketCommand>
       <InternalPaketCommand Condition=" '$(InternalPaketCommand)' == '' ">"$(PaketExePath)"</InternalPaketCommand>
-
     </PropertyGroup>
 
     <!-- The way to get a property to be available outside the target is to use this task. -->
