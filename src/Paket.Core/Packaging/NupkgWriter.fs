@@ -162,6 +162,14 @@ module internal NupkgWriter =
         !! "authors" (core.Authors |> String.concat ", ")
         if optional.Owners <> [] then !! "owners" (String.Join(", ",optional.Owners))
         (!!?) "licenseUrl" optional.LicenseUrl
+        match optional.RepositoryType, optional.RepositoryUrl with
+        | Some t, Some url ->
+            let d = XElement(ns + "repository")
+            d.SetAttributeValue(XName.Get "type", t)
+            d.SetAttributeValue(XName.Get "url", url)
+            metadataNode.Add d
+        | _ -> ()
+
         (!!?) "projectUrl" optional.ProjectUrl
         (!!?) "iconUrl" optional.IconUrl
         if optional.RequireLicenseAcceptance then

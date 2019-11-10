@@ -2070,6 +2070,8 @@ type ProjectFile with
             IconUrl = prop "IconUrl"
             LicenseUrl = prop "LicenseUrl"
             Copyright = prop "Copyright"
+            RepositoryType = prop "RepositoryType"
+            RepositoryUrl = prop "RepositoryUrl"
             RequireLicenseAcceptance = propMap "RequireLicenseAcceptance" false tryBool
             Tags = propMap "Tags" [] splitString
             DevelopmentDependency = propMap "DevelopmentDependency" false tryBool

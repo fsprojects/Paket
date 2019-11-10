@@ -146,6 +146,8 @@ type OptionalPackagingInfo =
       ProjectUrl : string option
       IconUrl : string option
       LicenseUrl : string option
+      RepositoryUrl : string option
+      RepositoryType : string option
       Copyright : string option
       RequireLicenseAcceptance : bool
       Tags : string list
@@ -171,6 +173,8 @@ type OptionalPackagingInfo =
           Language = None
           ProjectUrl = None
           LicenseUrl = None
+          RepositoryUrl = None
+          RepositoryType = None
           IconUrl = None
           Copyright = None
           RequireLicenseAcceptance = false
@@ -531,6 +535,8 @@ module internal TemplateFile =
           Language = get "language"
           ProjectUrl = get "projectUrl"
           IconUrl = get "iconUrl"
+          RepositoryType = get "repositoryType"
+          RepositoryUrl = get "repositoryUrl"
           LicenseUrl = get "licenseUrl"
           Copyright = get "copyright"
           RequireLicenseAcceptance = requireLicenseAcceptance
