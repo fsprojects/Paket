@@ -93,7 +93,7 @@ let platformInfoAction (psi : ProcessStartInfo) =
     if psi.FileName.ToLowerInvariant().EndsWith(".dll") then
         // Run DotNetCore
         let exeName = if isUnix then "dotnet" else "dotnet.exe"
-        let dotnetExe = 
+        let dotnetExe =
             match tryFindFileOnPath exeName with
             | Some exe -> exe
             | None -> exeName

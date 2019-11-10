@@ -387,7 +387,7 @@ let inline normalizeHomeDirectory (path : string) =
     else
         path
 
-let inline normalizePath(path:string) = 
+let inline normalizePath(path:string) =
     (normalizeHomeDirectory path)
       .Replace("\\",dirSeparator)
       .Replace("/",dirSeparator).TrimEnd(Path.DirectorySeparatorChar)
@@ -429,7 +429,7 @@ type PackagesFolderGroupConfig =
                     Path.Combine(root, Constants.DefaultPackagesFolderName, groupName.CompareString)
             Some groupDir
     member x.Resolve root groupName (packageName:PackageName) version includeVersionInPath  =
-        let parentPath () = 
+        let parentPath () =
             let groupDir = x.ResolveGroupDir root groupName |> Option.get
             let packageFolder = string packageName + (if includeVersionInPath then "." + string version else "")
             Path.Combine(groupDir, packageFolder)

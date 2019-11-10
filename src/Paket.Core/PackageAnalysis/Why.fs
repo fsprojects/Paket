@@ -19,26 +19,26 @@ and LblPathNode<'a> =
 
 module AdjLblGraph =
     let rec paths start stop visited (g: AdjLblGraph<_>) : list<LblPath<_>> =
-        let adjacents = 
+        let adjacents =
             g.[start]
             |> Seq.filter (fun kv -> not (Set.contains kv.Key visited))
         [ for kv in adjacents do
             let n, lbl = kv.Key, kv.Value
             if n = stop then yield (start, LblPathLeaf (stop, lbl))
-            for path in paths n stop (Set.add n visited) g do 
+            for path in paths n stop (Set.add n visited) g do
                 yield (start, LblPathNode path)]
 
 let depGraph (res : PackageResolver.PackageResolution) : AdjLblGraph<_> =
     res
-    |> Seq.map (fun pair -> 
+    |> Seq.map (fun pair ->
         let k = pair.Key
         let v = pair.Value.Dependencies
-                |> Seq.map (fun (p,v,f) -> p,(v,f)) 
+                |> Seq.map (fun (p,v,f) -> p,(v,f))
                 |> dict
         k,v)
     |> dict
 
-type WhyOptions = 
+type WhyOptions =
     { Details : bool }
 
 type DependencyChain = LblPath<VersionRequirement * FrameworkRestrictions>
@@ -56,29 +56,29 @@ module DependencyChain =
             match vr.ToString() with
             | "" -> ""
             | nonempty -> sprintf " (%s)" nonempty
-        let formatFxReq (fr : FrameworkRestrictions) = 
+        let formatFxReq (fr : FrameworkRestrictions) =
             match fr with
-            | AutoDetectFramework 
+            | AutoDetectFramework
             | ExplicitRestriction Paket.Requirements.FrameworkRestriction.HasNoRestriction -> ""
             | ExplicitRestriction fr -> sprintf " (%O)" fr
 
-        let formatName (name: PackageName) i = 
-            sprintf "%s-> %O - %O" 
-                (String.replicate i "  ") 
+        let formatName (name: PackageName) i =
+            sprintf "%s-> %O - %O"
+                (String.replicate i "  ")
                 name.Name
                 (resolution.Item name).Version
 
         let rec format' i (name,chain) =
-            let rest = 
+            let rest =
                 match chain, showDetails with
-                | LblPathNode chain,_ -> 
+                | LblPathNode chain,_ ->
                     format' (i+1) chain
-                | LblPathLeaf (name,(vr,fr)), true -> 
+                | LblPathLeaf (name,(vr,fr)), true ->
                     sprintf "%s -%s%s" (formatName name (i+1)) (formatVerReq vr) (formatFxReq fr)
-                | LblPathLeaf (name,_), false -> 
+                | LblPathLeaf (name,_), false ->
                     formatName name (i+1)
             sprintf "%s%s%s" (formatName name i) Environment.NewLine rest
-        
+
         format' 0 c
 
     let formatMany resolution showDetails chains =
@@ -105,25 +105,25 @@ type InferError =
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Reason =
     let format = function
-    | TopLevel -> 
-        sprintf "direct (%s) and top-level dependency." 
+    | TopLevel ->
+        sprintf "direct (%s) and top-level dependency."
                 Constants.DependenciesFileName
-    | Direct chains -> 
+    | Direct chains ->
         sprintf "direct (%s) dependency."
                 Constants.DependenciesFileName
-    | Transitive chains -> 
+    | Transitive chains ->
         sprintf "transitive dependency."
 
-    let infer (packageName : PackageName, 
+    let infer (packageName : PackageName,
                groupName : GroupName,
-               directDeps : Set<PackageName>, 
+               directDeps : Set<PackageName>,
                lockFile : LockFile) :
                Result<_,_> =
 
         let inferError () =
             let otherGroups =
-                lockFile.Groups 
-                |> Seq.filter (fun pair -> pair.Value.Resolution.ContainsKey packageName) 
+                lockFile.Groups
+                |> Seq.filter (fun pair -> pair.Value.Resolution.ContainsKey packageName)
                 |> Seq.map (fun pair -> pair.Key)
                 |> Seq.toList
             if List.isEmpty otherGroups then
@@ -133,16 +133,16 @@ module Reason =
 
         let group = lockFile.GetGroup groupName
         if not (group.Resolution.ContainsKey packageName) then
-            inferError () 
-            |> List.singleton 
+            inferError ()
+            |> List.singleton
             |> Result.Bad
         else
             let graph = depGraph group.Resolution
-            let topLevelDeps = 
+            let topLevelDeps =
                 lockFile.GetTopLevelDependencies groupName
                 |> Seq.map (fun pair -> pair.Key)
                 |> Set.ofSeq
-            let chains = 
+            let chains =
                 topLevelDeps
                 |> Set.toList
                 |> List.collect (fun p -> AdjLblGraph.paths p packageName Set.empty graph)
@@ -156,19 +156,19 @@ module Reason =
             | false, true ->
                 Result.Bad []
 
-let ohWhy (packageName, 
-           directDeps : Set<PackageName>, 
-           lockFile : LockFile, 
-           groupName, 
-           usage, 
+let ohWhy (packageName,
+           directDeps : Set<PackageName>,
+           lockFile : LockFile,
+           groupName,
+           usage,
            options) =
 
     match Reason.infer(packageName, groupName, directDeps, lockFile) with
     | Result.Bad [NuGetNotInLockFile] ->
         traceErrorfn "NuGet %O was not found in %s" packageName Constants.LockFileName
     | Result.Bad [NuGetNotInGroup otherGroups] ->
-        traceWarnfn 
-            "NuGet %O was not found in %s group. However it was found in following groups: %A. Specify correct group." 
+        traceWarnfn
+            "NuGet %O was not found in %s group. However it was found in following groups: %A. Specify correct group."
             packageName
             (groupName.ToString())
             (otherGroups |> List.map (fun pair -> pair.ToString()))
@@ -192,10 +192,10 @@ let ohWhy (packageName,
                 | shortest :: rest, false ->
                     DependencyChain.format resolution options.Details shortest |> tracen
                     tracen ""
-                    tracefn 
-                        "... and %d chain%s more starting at %O ..." 
-                        rest.Length 
-                        (if rest.Length > 1 then "s" else "") 
+                    tracefn
+                        "... and %d chain%s more starting at %O ..."
+                        rest.Length
+                        (if rest.Length > 1 then "s" else "")
                         top
                     tracen "To display all chains use --details flag."
                 | all, true ->

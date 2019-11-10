@@ -10,12 +10,12 @@ type VolatileBarrier() =
 
 /// Extensions for async workflows.
 [<AutoOpen>]
-module AsyncExtensions = 
+module AsyncExtensions =
   open System
   open System.Threading.Tasks
   open System.Threading
   open System.Runtime.ExceptionServices
-  
+
   // This uses a trick to get the underlying OperationCanceledException
   let inline getCancelledException (completedTask:Task) (waitWithAwaiter) =
       let fallback = new TaskCanceledException(completedTask) :> OperationCanceledException
@@ -28,7 +28,7 @@ module AsyncExtensions =
       | other ->
           // shouldn't happen, but just in case...
           new TaskCanceledException(fallback.Message, other) :> OperationCanceledException
-  type Microsoft.FSharp.Control.Async with 
+  type Microsoft.FSharp.Control.Async with
      /// Runs both computations in parallel and returns the result as a tuple.
     static member Parallel (a : Async<'a>, b : Async<'b>) : Async<'a * 'b> =
         async {
@@ -140,7 +140,7 @@ module AsyncExtensions =
 
     static member map f a =
         async { return f a }
-    static member tryFindSequential (f : 'T -> bool) (tasks : Async<'T> seq) = 
+    static member tryFindSequential (f : 'T -> bool) (tasks : Async<'T> seq) =
         let work = tasks |> Seq.mapi (fun i item -> i,item) |> Seq.toList
         let results = Array.init work.Length (fun _ -> TaskCompletionSource<'T>())
         let retResults = results |> Array.map (fun tcs -> tcs.Task)
@@ -152,7 +152,7 @@ module AsyncExtensions =
                 results.[i].SetResult res
                 if f res then
                     for j in i + 1 .. work.Length - 1 do results.[j].SetCanceled()
-                    return retResults, Some i 
+                    return retResults, Some i
                 else
                     return! workNext rest
         }
@@ -185,19 +185,19 @@ module AsyncExtensions =
                      | false when Interlocked.Increment currentIndex = tasks.Length ->
                         sc (retResults,None)
                      | _ -> ()
-    
+
                  let econt index (exn : exn) =
                      results.[index].TrySetException exn |> ignore
-                     if Interlocked.Increment exnCount = 1 then 
+                     if Interlocked.Increment exnCount = 1 then
                          innerCts.Cancel() ; ec exn
-    
+
                  let ccont index (exn : OperationCanceledException) =
                      results.[index].TrySetCanceled () |> ignore
                      if Interlocked.Increment exnCount = 1 then
                          innerCts.Cancel(); cc exn
-    
+
                  for i, task in tasks |> Seq.indexed do
-                     System.Threading.Tasks.Task.Factory.StartNew(fun () -> 
+                     System.Threading.Tasks.Task.Factory.StartNew(fun () ->
                         Async.StartWithContinuations(task, scont i, econt i, ccont i, innerCts.Token))
                      |> ignore
      }

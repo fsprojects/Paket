@@ -21,9 +21,9 @@ let private findTransitive (groupName, packages, flatLookup, nameF, failureF) =
 let private removePackage(packageName, hasPackageSettings, transitivePackages, fileName, interactive) =
     if transitivePackages |> Seq.exists (fun p -> p = packageName) && not(hasPackageSettings) then
         if interactive then
-            let message = sprintf "Do you want to remove transitive dependency %O from file %s?" packageName fileName 
+            let message = sprintf "Do you want to remove transitive dependency %O from file %s?" packageName fileName
             Utils.askYesNo(message)
-        else 
+        else
             true
     else
         false
@@ -59,7 +59,7 @@ let simplifyReferencesFile (refFile:ReferencesFile, groupName, flatLookup, inter
 
 let beforeAndAfter environment dependenciesFile projects =
     environment,
-    { environment with 
+    { environment with
         DependenciesFile = dependenciesFile
         Projects = projects }
 
@@ -70,20 +70,20 @@ let simplify interactive environment = trial {
     let dependenciesFileRef = ref (environment.DependenciesFile.SimplifyFrameworkRestrictions())
     let projectsRef = ref None
     let projectFiles, referencesFiles = List.unzip environment.Projects
-    let referencesFilesRef = ref referencesFiles    
+    let referencesFilesRef = ref referencesFiles
 
     for kv in lockFile.Groups do
         let groupName = kv.Key
         let! dependenciesFile = simplifyDependenciesFile(!dependenciesFileRef, groupName, flatLookup, interactive)
         dependenciesFileRef := dependenciesFile
-        
+
         let! referencesFiles' =
             !referencesFilesRef
             |> List.map (fun refFile -> simplifyReferencesFile(refFile, groupName, flatLookup, interactive))
             |> collect
 
         referencesFilesRef := referencesFiles'
-    
+
     let projects = List.zip projectFiles (!referencesFilesRef)
     projectsRef := Some projects
 

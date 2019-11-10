@@ -9,18 +9,18 @@ open System.Text.RegularExpressions
 [<CustomEquality; CustomComparison>]
 type PackageName =
     | PackageName of name:string * compareString:string
-    
-    member self.Name = 
+
+    member self.Name =
        self |> function PackageName (name=n) -> n
-    
-    member self.CompareString = 
+
+    member self.CompareString =
        self |> function PackageName (compareString=c) -> c
 
-    override this.ToString() = 
+    override this.ToString() =
         match this with
         | PackageName (name,_) -> name
 
-    override this.Equals that = 
+    override this.Equals that =
         match that with
         | :? PackageName as that -> this.CompareString = that.CompareString
         | _ -> false
@@ -28,8 +28,8 @@ type PackageName =
     override this.GetHashCode () = hash this.CompareString
 
     interface System.IComparable with
-       member this.CompareTo that = 
-          match that with 
+       member this.CompareTo that =
+          match that with
           | :? PackageName as that -> StringComparer.Ordinal.Compare(this.CompareString, that.CompareString)
           | _ -> invalidArg "that" "cannot compare value of different types"
 
@@ -37,7 +37,7 @@ type PackageName =
 let PackageName(name:string) =
     if name.Contains(":") then
         failwithf "PackageName can't contain ':'"
-    let trimmed = name.Trim()    
+    let trimmed = name.Trim()
     PackageName.PackageName(trimmed,trimmed.ToLowerInvariant())
 
 
@@ -47,17 +47,17 @@ let PackageName(name:string) =
 type GroupName =
    | GroupName of name:string * compareString:string
 
-   member self.Name = 
+   member self.Name =
        self |> function GroupName (name=n) -> n
-    
-    member self.CompareString = 
+
+    member self.CompareString =
        self |> function GroupName (compareString=c) -> c
 
-    override this.ToString () = 
+    override this.ToString () =
         match this with
         | GroupName (name,_) -> name
 
-    override this.Equals(that) = 
+    override this.Equals(that) =
         match that with
         | :? GroupName as that -> this.CompareString = that.CompareString
         | _ -> false
@@ -65,39 +65,39 @@ type GroupName =
     override this.GetHashCode() = hash this.CompareString
 
     interface System.IComparable with
-       member this.CompareTo that = 
-          match that with 
+       member this.CompareTo that =
+          match that with
           | :? GroupName as that -> StringComparer.Ordinal.Compare(this.CompareString, that.CompareString)
           | _ -> invalidArg "that" "cannot compare value of different types"
 
 /// Function to convert a string into a group name
-let GroupName(name:string) = 
+let GroupName(name:string) =
     match name.ToLowerInvariant().Trim() with
     | "lib" | "runtimes" -> invalidArg "name" (sprintf "It is not allowed to use '%s' as group name." name)
     | id -> GroupName.GroupName(name.Trim(), id)
 
 let [<Literal>] MainGroup = "Main"
 
-type QualifiedPackageName = 
+type QualifiedPackageName =
     | QualifiedPackageName of group:GroupName * package:PackageName
 
-    member self.Package = 
+    member self.Package =
        self |> function QualifiedPackageName (package=p) -> p
-    
-    member self.Group = 
+
+    member self.Group =
        self |> function QualifiedPackageName (group=g) -> g
 
     static member FromStrings (groupName: string option, packageName: string) =
-        let groupName = 
+        let groupName =
             match groupName with
-            | None 
+            | None
             | Some "" -> GroupName MainGroup
             | Some name -> GroupName name
         let packageName = PackageName packageName
         QualifiedPackageName (groupName, packageName)
 
 type PackageMatch(ex:String) =
-    member val Expression = Regex("^" + ex + "$", RegexOptions.CultureInvariant ||| RegexOptions.IgnoreCase) 
+    member val Expression = Regex("^" + ex + "$", RegexOptions.CultureInvariant ||| RegexOptions.IgnoreCase)
 
 // Represents a filter of normalized package names
 [<System.Diagnostics.DebuggerDisplay("{ToString()}")>]
@@ -118,7 +118,7 @@ type PackageFilter =
         | PackageFilter filter -> filter.Expression.ToString()
 
 
-type DomainMessage = 
+type DomainMessage =
     | DirectoryDoesntExist of DirectoryInfo
     | DependenciesFileNotFoundInDir of DirectoryInfo
     | DependenciesFileParseError of FileInfo * exn
@@ -127,7 +127,7 @@ type DomainMessage =
     | ReferencesFileParseError of FileInfo * exn
 
     | PackageSourceParseError of string
-    
+
     | InvalidCredentialsMigrationMode of string
     | PaketEnvAlreadyExistsInDirectory of DirectoryInfo
     | NugetConfigFileParseError of FileInfo
@@ -139,31 +139,31 @@ type DomainMessage =
 
     | DownloadError of string
     | ReleasesJsonParseError
-    
-    | DirectoryCreateError of string 
+
+    | DirectoryCreateError of string
     | FileDeleteError of string
     | FileSaveError of string
 
     | ConfigFileParseError
-    
+
     | PackagingConfigParseError of file:string * error:string
 
-    override this.ToString() = 
+    override this.ToString() =
         match this with
-        | DirectoryDoesntExist(di) -> 
+        | DirectoryDoesntExist(di) ->
             sprintf "Directory %s does not exist." di.FullName
-        | DependenciesFileNotFoundInDir(di) -> 
+        | DependenciesFileNotFoundInDir(di) ->
             sprintf "Dependencies file not found in %s." di.FullName
-        | DependenciesFileParseError(fi,e) -> 
+        | DependenciesFileParseError(fi,e) ->
             sprintf "Unable to parse %s. (%s)" fi.FullName e.Message
-        | LockFileNotFound(di) -> 
+        | LockFileNotFound(di) ->
             sprintf "Lock file not found in %s. Create lock file by running paket install." di.FullName
-        | LockFileParseError(fi) -> 
+        | LockFileParseError(fi) ->
             sprintf "Unable to parse lock %s." fi.FullName
-        | ReferencesFileParseError(fi,e) -> 
+        | ReferencesFileParseError(fi,e) ->
             sprintf "Unable to parse %s. (%s)" fi.FullName e.Message
-        
-        | PackageSourceParseError(source) -> 
+
+        | PackageSourceParseError(source) ->
             sprintf "Unable to parse package source: %s." source
 
         | InvalidCredentialsMigrationMode(mode) ->
@@ -175,18 +175,18 @@ type DomainMessage =
         | NugetPackagesConfigParseError(fi) ->
             sprintf "Unable to parse %s" fi.FullName
 
-        | StrictModeDetected -> 
+        | StrictModeDetected ->
             "Strict mode detected. Command not executed."
-        | DependencyNotFoundInLockFile(packageName) -> 
+        | DependencyNotFoundInLockFile(packageName) ->
             sprintf "Package %O from paket.dependencies not found in lock file." packageName
-        | ReferenceNotFoundInLockFile(path, groupName, packageName) -> 
+        | ReferenceNotFoundInLockFile(path, groupName, packageName) ->
             sprintf "Package %O from %s not found in lock file in group %s." packageName path groupName
 
         | DownloadError url ->
             sprintf "Error occured while downloading from %s." url
         | ReleasesJsonParseError ->
             "Unable to parse Json from GitHub releases API."
-        
+
         | DirectoryCreateError path ->
             sprintf "Unable to create directory %s." path
         | FileDeleteError path ->

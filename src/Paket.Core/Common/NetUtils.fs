@@ -347,7 +347,7 @@ let internal addAcceptHeader (client:HttpClient) (contentType:string) =
 let internal addHeader (client:HttpClient) (headerKey:string) (headerVal:string) =
     client.DefaultRequestHeaders.Add(headerKey, headerVal)
 
-let useDefaultHandler = 
+let useDefaultHandler =
     match Environment.GetEnvironmentVariable("PAKET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER") with
     | null -> false
     | env ->
@@ -388,9 +388,9 @@ let createHttpHandlerRaw(url, auth: Auth option) : HttpMessageHandler =
             UseProxy = true,
             Proxy = getDefaultProxyFor url)
     handler.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
-#if !NO_MAXCONNECTIONPERSERVER    
+#if !NO_MAXCONNECTIONPERSERVER
     handler.MaxConnectionsPerServer <- 4
-#endif    
+#endif
     match auth with
     | None -> handler.UseDefaultCredentials <- true
     | Some(Credentials({Username = username; Password = password; Type = AuthType.Basic})) ->
@@ -412,7 +412,7 @@ let createHttpClient (url,auth:Auth option) : HttpClient =
     let handler = createHttpHandler (url, auth)
     let client = new HttpClient(handler)
     match auth with
-    | None -> 
+    | None ->
         // handled in handler
         ()
     | Some(Credentials({Username = username; Password = password; Type = AuthType.Basic})) ->

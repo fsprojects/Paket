@@ -13,7 +13,7 @@ open Paket.Git.Handling
 
 let private safeGetFromUrlCached = safeGetFromUrl |> memoizeAsync
 
-let private lookupDocument (auth,url : string)  = 
+let private lookupDocument (auth,url : string)  =
     safeGetFromUrlCached(auth,url,null)
 
 let private auth key =
@@ -23,10 +23,10 @@ let private auth key =
         AuthService.GetGlobalAuthenticationProvider key
 
 // Gets the sha1 of a branch
-let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction) authKey = 
-    async { 
+let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction) authKey =
+    async {
         match origin with
-        | ModuleResolver.Origin.GitHubLink -> 
+        | ModuleResolver.Origin.GitHubLink ->
             let branch = ModuleResolver.getVersionRequirement versionRestriction
             let url = sprintf "https://api.github.com/repos/%s/%s/commits/%s" owner project branch
             let! document = lookupDocument(auth authKey,url)
@@ -57,12 +57,12 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
                 return raise (new Exception(sprintf "Could not find hash for %s" url, err.SourceException))
         | ModuleResolver.Origin.GitLink (LocalGitOrigin path) ->
             let path = path.Replace(@"file:///", "")
-            let branch = 
+            let branch =
                 match versionRestriction with
                 | VersionRestriction.NoVersionRestriction -> "master"
                 | VersionRestriction.Concrete branch      -> branch
                 | _ -> failwith "unexpected version restriction"
-            
+
             match Git.Handling.getHash path branch with
                 | Some hash -> return hash
                 | None -> return failwithf "Could not find hash for %s in '%s'" branch path
@@ -71,7 +71,7 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
                 match versionRestriction with
                 | VersionRestriction.NoVersionRestriction -> Git.Handling.getHashFromRemote url ""
                 | VersionRestriction.Concrete branch -> Git.Handling.getHashFromRemote url branch
-                | VersionRestriction.VersionRequirement vr -> 
+                | VersionRestriction.VersionRequirement vr ->
                     let repoCacheFolder = Path.Combine(Constants.GitRepoCacheFolder,project)
                     Paket.Git.Handling.fetchCache repoCacheFolder url
 
@@ -83,8 +83,8 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
 
                     match matchingVersions with
                     | [||] -> failwithf "No tags in %s match %O. Tags: %A" url vr tags
-                    | _ -> 
-                        let tag = matchingVersions |> Array.max |> string 
+                    | _ ->
+                        let tag = matchingVersions |> Array.max |> string
                         match Git.Handling.getHash repoCacheFolder tag with
                         | None -> failwithf "Could not resolve hash for tag %s in %s." tag url
                         | Some hash -> hash
@@ -108,13 +108,13 @@ let downloadDependenciesFile(force,rootPath,groupName,parserF,remoteFile:ModuleR
         let dependenciesFileName = remoteFile.Name.Replace(fi.Name,Constants.DependenciesFileName)
         let destination = FileInfo(remoteFile.ComputeFilePath(rootPath,groupName,dependenciesFileName))
 
-        let url = 
+        let url =
             match remoteFile.Origin with
-            | ModuleResolver.GitHubLink -> 
+            | ModuleResolver.GitHubLink ->
                 rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit dependenciesFileName
-            | ModuleResolver.GistLink -> 
+            | ModuleResolver.GistLink ->
                 rawGistFileUrl remoteFile.Owner remoteFile.Project dependenciesFileName
-            | ModuleResolver.HttpLink url -> 
+            | ModuleResolver.HttpLink url ->
                 url.Replace(remoteFile.Name,Constants.DependenciesFileName)
             | ModuleResolver.GitLink _ -> failwithf "Can't compute dependencies file url for %O" remoteFile
 
@@ -126,17 +126,17 @@ let downloadDependenciesFile(force,rootPath,groupName,parserF,remoteFile:ModuleR
             with
             | _ -> None
         let auth = AuthProvider.ofFunction auth
-  
+
         let exists =
             let di = destination.Directory
             let versionFile = FileInfo(Path.Combine(di.FullName, Constants.PaketVersionFileName))
             not force &&
-              not (String.IsNullOrWhiteSpace remoteFile.Commit) && 
+              not (String.IsNullOrWhiteSpace remoteFile.Commit) &&
               destination.Exists &&
-              versionFile.Exists && 
+              versionFile.Exists &&
               File.ReadAllText(versionFile.FullName).Contains(remoteFile.Commit)
 
-    
+
         if exists then
             return parserF (File.ReadAllText(destination.FullName))
         else
@@ -178,7 +178,7 @@ let rec DirectoryCopy(sourceDirName, destDirName, copySubDirs) =
     for file in dir.GetFiles() do
         file.CopyTo(Path.Combine(destDirName, file.Name), true) |> ignore
 
-    // If copying subdirectories, copy them and their contents to new location. 
+    // If copying subdirectories, copy them and their contents to new location.
     if copySubDirs then
         for subdir in dirs do
             DirectoryCopy(subdir.FullName, Path.Combine(destDirName, subdir.Name), copySubDirs)
@@ -194,7 +194,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
     | Origin.GitLink (LocalGitOrigin cloneUrl), _ ->
         if not (Utils.isMatchingPlatform remoteFile.OperatingSystemRestriction) then () else
         let cloneUrl = cloneUrl.TrimEnd('/')
-        
+
         let repoCacheFolder = Path.Combine(Constants.GitRepoCacheFolder,remoteFile.Project)
         let repoFolder = Path.Combine(destination,remoteFile.Project)
         let cacheCloneUrl = "file:///" + repoCacheFolder
@@ -205,13 +205,13 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         match remoteFile.Command with
         | None -> ()
         | Some command ->
-            
+
             let command,args =
                 match command.IndexOf ' ' with
                 | -1 -> command,""
                 | p -> command.Substring(0,p),command.Substring(p+1)
-            
-            let command = 
+
+            let command =
                 if Path.IsPathRooted command then command else
                 let p = Path.Combine(repoFolder,command)
                 if File.Exists p then p else command
@@ -219,21 +219,21 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
 
             try
                 tracefn "Running \"%s\"" tCommand
-                let processResult = 
+                let processResult =
                     ProcessHelper.ExecProcessAndReturnMessages (fun info ->
                         info.FileName <- command
                         info.WorkingDirectory <- repoFolder
                         info.Arguments <- args) gitTimeOut
 
                 let ok,msg,errors = processResult.OK,processResult.Messages,ProcessHelper.toLines processResult.Errors
-               
+
                 let errorText = ProcessHelper.toLines msg + Environment.NewLine + errors
                 if not ok then failwith errorText
                 if ok && msg.Count = 0 then tracefn "Done." else
                 if verbose then
                     for m in msg do
                         tracefn "%s" m
-            with 
+            with
             | exn -> failwithf "Could not run \"%s\".\r\nError: %s" tCommand exn.Message
     | Origin.GistLink, Constants.FullProjectSourceFileName ->
         let fi = FileInfo(destination)
@@ -245,15 +245,15 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         let json = JObject.Parse(document)
         let files = json.["files"] |> Seq.map (fun i -> i.First.["filename"].ToString(), i.First.["raw_url"].ToString())
 
-        let task = 
-            files |> Seq.map (fun (filename, url) -> 
+        let task =
+            files |> Seq.map (fun (filename, url) ->
                 async {
                     let path = Path.Combine(projectPath,filename)
                     do! downloadFromUrl(AuthProvider.ofFunction (fun _ -> None), url) path
-                } 
+                }
             ) |> Async.Parallel
         task |> Async.RunSynchronously |> ignore
-    | Origin.GitHubLink, Constants.FullProjectSourceFileName -> 
+    | Origin.GitHubLink, Constants.FullProjectSourceFileName ->
         let fi = FileInfo(destination)
         let projectPath = fi.Directory.FullName
         let zipFile = Path.Combine(projectPath,sprintf "%s.zip" remoteFile.Commit)
@@ -265,7 +265,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
 
         let source = Path.Combine(projectPath, sprintf "%s-%s" remoteFile.Project remoteFile.Commit)
         DirectoryCopy(source,projectPath,true)
-    | Origin.GistLink, _ -> 
+    | Origin.GistLink, _ ->
         let downloadUrl = rawGistFileUrl remoteFile.Owner remoteFile.Project remoteFile.Name
         let authentication = auth remoteFile.AuthKey
         return! downloadFromUrl(authentication, downloadUrl) destination
@@ -281,12 +281,12 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         | ".zip" ->
             do! downloadFromUrlWithTimeout(authentication, url) timeout destination
             ZipFile.ExtractToDirectory(destination, targetFolder.FullName)
-        | _ -> 
+        | _ ->
             do! downloadFromUrlWithTimeout(authentication, url) timeout destination
 }
 
 let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.ResolvedSourceFile list) =
-    let remoteFiles,gitRepos = 
+    let remoteFiles,gitRepos =
         sourceFiles
         |> List.partition (fun x -> match x.Origin with | GitLink _ -> false | _ -> true)
 
@@ -299,13 +299,13 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
             let isInCorrectVersion =
                 if force then false else
                 match Git.Handling.getCurrentHash repoFolder with
-                | Some hash -> 
+                | Some hash ->
                     match gitRepo.Command, gitRepo.PackagePath with
                     | Some _, Some path when not (DirectoryInfo(repoFolder + path).Exists) ->
                         false
                     | _ ->
                         hash = gitRepo.Commit
-                | None -> 
+                | None ->
                     // something is wrong with the repo
                     Utils.deleteDir (DirectoryInfo repoFolder)
                     false
@@ -314,7 +314,7 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
                 if verbose then
                     verbosefn "%s is already up-to-date." repoFolder
             else
-                do! downloadRemoteFiles(gitRepo,destination) 
+                do! downloadRemoteFiles(gitRepo,destination)
         })
     |> Async.Parallel
     |> Async.RunSynchronously
@@ -356,7 +356,7 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
             if not force && exists then
                 if verbose then
                     verbosefn "Sourcefile %O is already there." source
-            else 
+            else
                 tracefn "Downloading %O to %s" source destination
                 download 5
 

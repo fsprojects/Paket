@@ -9,27 +9,27 @@ open Paket
 open Paket.Logging
 
 let GetUrlWithEndpoint (url: string option) (endPoint: string option) =
-    let (|UrlWithEndpoint|_|) url = 
+    let (|UrlWithEndpoint|_|) url =
         match url with
-        | Some url when not (String.IsNullOrEmpty(Uri(url).AbsolutePath.TrimStart('/'))) -> Some(Uri(url)) 
-        | _                                                                              -> None  
+        | Some url when not (String.IsNullOrEmpty(Uri(url).AbsolutePath.TrimStart('/'))) -> Some(Uri(url))
+        | _                                                                              -> None
 
     let (|IsUrl|_|) (url: string option) =
         match url with
         | Some url -> Uri(url.TrimEnd('/') + "/") |> Some
         | _        -> None
-    
-    let defaultEndpoint = "/api/v2/package" 
-    let urlWithEndpoint = 
+
+    let defaultEndpoint = "/api/v2/package"
+    let urlWithEndpoint =
         match (url, endPoint) with
         | None                   , _                   -> Uri(Uri("https://nuget.org"), defaultEndpoint)
         | IsUrl baseUrl          , Some customEndpoint -> Uri(baseUrl, customEndpoint.TrimStart('/'))
         | UrlWithEndpoint baseUrl, _                   -> baseUrl
         | IsUrl baseUrl          , None                -> Uri(baseUrl, defaultEndpoint)
-        | Some whyIsThisNeeded   , _                   -> failwith "Url and endpoint combination not supported"  
+        | Some whyIsThisNeeded   , _                   -> failwith "Url and endpoint combination not supported"
     urlWithEndpoint.ToString ()
 
-  
+
 let Push maxTrials url apiKey clientVersion packageFileName =
     let tracefnVerbose m = Printf.kprintf traceVerbose m
 #if USE_WEB_CLIENT_FOR_UPLOAD
@@ -45,7 +45,7 @@ let Push maxTrials url apiKey clientVersion packageFileName =
             match authOpt with
             | Some (Auth.Credentials {Username = u}) ->
                 tracefnVerbose "Authorizing using credentials for user %s" u
-            | Some (Auth.Token _) -> 
+            | Some (Auth.Token _) ->
                 tracefnVerbose "Authorizing using token"
             | None ->
                 tracefnVerbose "No authorization found in config file."
@@ -76,7 +76,7 @@ let Push maxTrials url apiKey clientVersion packageFileName =
             rethrowf Exception rfe "Package %s already exists" packageFileName
         | exn when exn.Message.Contains("(409)") ->
             failwithf "Package %s already exists." packageFileName
-        | exn when trial < maxTrials ->            
+        | exn when trial < maxTrials ->
             match exn with
 #if USE_WEB_CLIENT_FOR_UPLOAD
             | :? WebException as we when not (isNull we.Response) ->

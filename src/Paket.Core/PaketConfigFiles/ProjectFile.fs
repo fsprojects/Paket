@@ -22,7 +22,7 @@ type BuildAction =
     | Resource | Page // These two are WPF only - https://msdn.microsoft.com/library/aa970494%28v=vs.100%29.aspx?f=255&MSPPError=-2147217396
     // There are some other build actions - http://stackoverflow.com/questions/145752/what-are-the-various-build-action-settings-in-visual-studio-project-properties/145769#145769
 
-    override this.ToString() = 
+    override this.ToString() =
         match this with
         | Compile -> "Compile"
         | Content -> "Content"
@@ -34,7 +34,7 @@ type BuildAction =
         [Compile; Content; Resource; Page] |> List.map (fun x->x.ToString())
 
 /// File item inside of project files.
-type FileItem = 
+type FileItem =
     { BuildAction : BuildAction
       Include : string
       WithPaketSubNode: bool
@@ -42,7 +42,7 @@ type FileItem =
       Link : string option }
 
 /// Project references inside of project files.
-type ProjectReference = 
+type ProjectReference =
     { Path : string
       RelativePath : string
       Name : string option
@@ -58,7 +58,7 @@ type CompileItem =
 /// Project output type.
 [<RequireQualifiedAccess>]
 type ProjectOutputType =
-| Exe 
+| Exe
 | Library
 
 [<RequireQualifiedAccess>]
@@ -69,7 +69,7 @@ module LanguageEvaluation =
         projectDocument
         |> getDescendants "PropertyGroup"
         |> List.filter(fun g -> g.Attributes.Count = 0)
-        |> List.collect(fun g -> g |> getDescendants "ProjectTypeGuids") 
+        |> List.collect(fun g -> g |> getDescendants "ProjectTypeGuids")
         |> List.filter(fun pt -> pt.Attributes.Count = 0)
         |> List.collect(fun pt -> pt.InnerText.Split ';' |> List.ofArray)
         |> List.distinct
@@ -107,7 +107,7 @@ module LanguageEvaluation =
         [
             "{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}" // Nemerle
         ] |> List.map Guid.Parse |> Set.ofList
-    
+
     let private ironPythonGuids =
         [
             "{D499C55F-46C0-4FE1-8D05-02605C1891EA}" // IronPython
@@ -118,7 +118,7 @@ module LanguageEvaluation =
             "{e1296024-58b6-4e25-843e-b9faa9b07be6}" // ServiceFabric
         ] |> List.map Guid.Parse |> Set.ofList
 
-    let private getGuidLanguage (guid:Guid) = 
+    let private getGuidLanguage (guid:Guid) =
         let isCsharp = csharpGuids.Contains(guid)
         let isVb = vbGuids.Contains(guid)
         let isFsharp = fsharpGuids.Contains(guid)
@@ -151,7 +151,7 @@ module LanguageEvaluation =
         getLanguageFromExtension (ext.ToLowerInvariant())
 
     /// Get the programming language for a project file using the "ProjectTypeGuids"
-    let getProjectLanguage (projectDocument:XmlDocument) (fileName: string) = 
+    let getProjectLanguage (projectDocument:XmlDocument) (fileName: string) =
         let cons x y = x :: y
 
         let languageGroups =
@@ -168,7 +168,7 @@ module LanguageEvaluation =
         | _ -> ProjectLanguage.Unknown
 
 /// Contains methods to read and manipulate project files.
-type ProjectFile = 
+type ProjectFile =
     { FileName: string
       OriginalText : string
       Document : XmlDocument
@@ -198,7 +198,7 @@ module ProjectFile =
 
         let manager = XmlNamespaceManager doc.NameTable
         manager.AddNamespace ("ns", Constants.ProjectDefaultNameSpace)
-        let projectNode = 
+        let projectNode =
             match doc |> getNode "Project" with
             | Some node -> node
             | _ -> failwithf "unable to find Project node in file %s" fullName
@@ -228,10 +228,10 @@ module ProjectFile =
             let fi = FileInfo fileName
             if isSupportedFile fi then
                 Some(loadFromFile fileName)
-            else 
+            else
                 None
         with
-        | exn -> 
+        | exn ->
             traceWarnfn "Unable to parse project %s:%s      %s" fileName Environment.NewLine exn.Message
             None
 
@@ -239,10 +239,10 @@ module ProjectFile =
         try
             project.Document.CreateElement (name, project.Document.DocumentElement.NamespaceURI)
         with
-        | _ -> 
+        | _ ->
             project.Document.CreateElement (name, Constants.ProjectDefaultNameSpace)
 
-    let createNodeSet name text (project:ProjectFile) = 
+    let createNodeSet name text (project:ProjectFile) =
         let node = createNode name project
         node.InnerText <- text
         node
@@ -336,14 +336,14 @@ module ProjectFile =
 
         let rec parseComparison (data:StringBuilder) (input:string) index =
             let isCompChar c = c = '<' || c = '>' || c = '!' || c = '='
-                       
+
             if input.Length <= index then None else
             let c = input.[index]
-            if data.Length = 0 && c = ' 'then 
+            if data.Length = 0 && c = ' 'then
                 parseComparison data input (index + 1)
-            elif data.Length = 2 && isCompChar c then 
+            elif data.Length = 2 && isCompChar c then
                 None
-            elif isCompChar c then 
+            elif isCompChar c then
                 parseComparison (data.Append c) input (index + 1)
             else
                 let s = string data
@@ -455,7 +455,7 @@ module ProjectFile =
 
         let conditionMatches data condition =
             let allConditions = parseFullCondition (Some []) (StringBuilder()) condition 0
-                
+
             match allConditions with
             | None -> false
             | Some conditions -> handleConditions data conditions true
@@ -527,7 +527,7 @@ module ProjectFile =
         for node in project.Document |> getDescendants name do
             let mutable isPaketNode = false
             for child in node.ChildNodes do
-                if child.Name = "Paket" && String.equalsIgnoreCase child.InnerText "true" then 
+                if child.Name = "Paket" && String.equalsIgnoreCase child.InnerText "true" then
                     isPaketNode <- true
             if isPaketNode = paketOnes then yield node
     ]
@@ -540,10 +540,10 @@ module ProjectFile =
         for node in project.Document |> getDescendants "Reference" do
             let hasHintPath = ref false
             for child in node.ChildNodes do
-                if child.Name = "HintPath" then 
+                if child.Name = "HintPath" then
                     hasHintPath := true
             if not !hasHintPath then
-                yield node.Attributes.["Include"].InnerText.Split(',').[0] 
+                yield node.Attributes.["Include"].InnerText.Split(',').[0]
     ]
 
     let deletePaketNodes name (project:ProjectFile) =
@@ -555,16 +555,16 @@ module ProjectFile =
         for node in nodesToDelete do
             node.ParentNode.RemoveChild node |> ignore
 
-    let updateFileItems (fileItems:FileItem list) (project:ProjectFile) = 
-        let newItemGroups = 
-            let firstItemGroup = 
-                project.ProjectNode 
-                |> getNodes "ItemGroup" 
-                |> List.filter (fun n -> List.isEmpty (getNodes "Reference" n)) 
+    let updateFileItems (fileItems:FileItem list) (project:ProjectFile) =
+        let newItemGroups =
+            let firstItemGroup =
+                project.ProjectNode
+                |> getNodes "ItemGroup"
+                |> List.filter (fun n -> List.isEmpty (getNodes "Reference" n))
                 |> List.tryHead
 
             match firstItemGroup with
-            | None -> 
+            | None ->
                 let node = createNode "ItemGroup" project
                 if List.isEmpty fileItems |> not then
                     project.ProjectNode.AppendChild node |> ignore
@@ -579,13 +579,13 @@ module ProjectFile =
                     BuildAction.Compile, node :?> XmlElement
                     BuildAction.Reference, node :?> XmlElement
                     BuildAction.Resource, node :?> XmlElement
-                    BuildAction.Page, node :?> XmlElement 
+                    BuildAction.Page, node :?> XmlElement
                 ]
             |> dict
 
         for fileItem in fileItems |> List.rev do
-            let libReferenceNode = 
-                let name = 
+            let libReferenceNode =
+                let name =
                     match fileItem.BuildAction with
                     | BuildAction.Reference ->
                         fileItem.Include |> normalizePath |> Path.GetFileNameWithoutExtension
@@ -593,9 +593,9 @@ module ProjectFile =
 
                 createNode (string fileItem.BuildAction) project
                 |> addAttribute "Include" name
-                |> fun node -> 
+                |> fun node ->
                     match fileItem.BuildAction with
-                    | BuildAction.Reference -> 
+                    | BuildAction.Reference ->
                         node
                         |> addChild (createNodeSet "HintPath" fileItem.Include project)
                         |> addChild (createNodeSet "Private" "True" project)
@@ -605,32 +605,32 @@ module ProjectFile =
                         |> addChild (createNodeSet "SubType" "Designer" project)
                     | _ -> node
                 |> fun n -> if fileItem.WithPaketSubNode then addChild (createNodeSet "Paket" "True" project) n else n
-                |> fun n -> 
+                |> fun n ->
                     if fileItem.BuildAction <> BuildAction.Content then n else
                     match fileItem.CopyToOutputDirectory with
                     | Some CopyToOutputDirectorySettings.Always -> addChild (createNodeSet "CopyToOutputDirectory" "Always" project) n
                     | Some CopyToOutputDirectorySettings.Never  -> addChild (createNodeSet "CopyToOutputDirectory" "Never" project) n
                     | Some CopyToOutputDirectorySettings.PreserveNewest  -> addChild (createNodeSet "CopyToOutputDirectory" "PreserveNewest" project) n
                     | None -> n
-                |> fun n -> 
+                |> fun n ->
                     match fileItem.Link with
                     | Some link -> addChild (createNodeSet "Link" (link.Replace("\\","/")) project) n
                     | _ -> n
 
             let fileItemsInSameDir =
-                project.Document 
+                project.Document
                 |> getDescendants (string fileItem.BuildAction)
-                |> List.filter (fun node -> 
+                |> List.filter (fun node ->
                     match node |> getAttribute "Include" with
                     | Some path when path.StartsWith (fileItem.Include |> normalizePath |> Path.GetDirectoryName |> windowsPath) -> true
                     | _ -> false)
-            
 
-            if Seq.isEmpty fileItemsInSameDir then 
+
+            if Seq.isEmpty fileItemsInSameDir then
                 newItemGroups.[fileItem.BuildAction].PrependChild libReferenceNode |> ignore
             else
-                let existingNode = 
-                    fileItemsInSameDir 
+                let existingNode =
+                    fileItemsInSameDir
                     |> Seq.tryFind (withAttributeValue "Include" fileItem.Include)
 
                 match existingNode with
@@ -639,7 +639,7 @@ module ProjectFile =
                     parent.InsertBefore(libReferenceNode, existingNode) |> ignore
                     parent.RemoveChild(existingNode) |> ignore
                 | None  ->
-                    let firstNode = fileItemsInSameDir |> Seq.head 
+                    let firstNode = fileItemsInSameDir |> Seq.head
                     firstNode.ParentNode.InsertBefore(libReferenceNode, firstNode) |> ignore
 
         let paketNodes =
@@ -651,7 +651,7 @@ module ProjectFile =
         for paketNode in paketNodes do
             match getAttribute "Include" paketNode with
             | Some path ->
-                if not (fileItems |> List.exists (fun fi -> fi.Include = path)) then 
+                if not (fileItems |> List.exists (fun fi -> fi.Include = path)) then
                   paketNode.ParentNode.RemoveChild paketNode |> ignore
             | _ -> ()
 
@@ -665,12 +665,12 @@ module ProjectFile =
             (model.GetAllLegacyReferenceAndFrameworkReferenceNames())
 
         getCustomReferenceAndFrameworkNodes project
-        |> List.filter (fun node -> 
+        |> List.filter (fun node ->
             let libName = node.Attributes.["Include"].InnerText.Split(',').[0]
             Set.contains libName libs)
 
     let deleteCustomModelNodes (model:InstallModel) (project:ProjectFile) =
-        let nodesToDelete = 
+        let nodesToDelete =
             getCustomModelNodes model project
             |> List.filter (fun node ->
                 let mutable isFrameworkNode = true
@@ -678,11 +678,11 @@ module ProjectFile =
                 for child in node.ChildNodes do
                     if child.Name = "HintPath" then isFrameworkNode <- false
                     if child.Name = "Private" then isFrameworkNode  <- false
-                    if child.Name = "Paket" && String.equalsIgnoreCase child.InnerText "false" then 
+                    if child.Name = "Paket" && String.equalsIgnoreCase child.InnerText "false" then
                         isManualNode <- true
 
                 not isFrameworkNode && not isManualNode)
-        
+
         if nodesToDelete <> [] then
             if verbose then
                 verbosefn "    - Deleting custom projects nodes for %O" model.PackageName
@@ -693,7 +693,7 @@ module ProjectFile =
     let generateAnalyzersXml (model:InstallModel) (project:ProjectFile)  =
         let createAnalyzersNode (analyzers: AnalyzerLib list) =
             let itemGroup = createNode "ItemGroup" project
-                                
+
             for lib in analyzers do
                 let fi = FileInfo (normalizePath lib.Path)
                 createNode "Analyzer" project
@@ -703,7 +703,7 @@ module ProjectFile =
                 |> ignore
             itemGroup
 
-        let shouldBeInstalled (analyzer : AnalyzerLib) = 
+        let shouldBeInstalled (analyzer : AnalyzerLib) =
             match analyzer.Language, project.Language with
             | AnalyzerLanguage.Any, projectLanguage -> projectLanguage <> ProjectLanguage.Unknown
             | AnalyzerLanguage.CSharp, ProjectLanguage.CSharp -> true
@@ -727,13 +727,13 @@ module ProjectFile =
     }
 
     let generateXml (model:InstallModel) (usedFrameworkLibs:HashSet<TargetProfile*string>) (aliases:Map<string,string>) (embedInteropTypes:bool option) (copyLocal:bool option) (specificVersion:bool option) (importTargets:bool) (referenceCondition:string option) (allTargetProfiles:Set<TargetProfile>) (project:ProjectFile) : XmlContext =
-        let references = 
+        let references =
             getCustomReferenceAndFrameworkNodes project
             |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
             |> Set.ofList
 
         let model = model.FilterReferences references
-        let createItemGroup (targets:TargetProfile Set) (frameworkReferences:FrameworkReference list) (libraries:Library list) = 
+        let createItemGroup (targets:TargetProfile Set) (frameworkReferences:FrameworkReference list) (libraries:Library list) =
             let itemGroup = createNode "ItemGroup" project
 
             for ref in frameworkReferences |> List.sortBy (fun f -> f.Name) do
@@ -749,15 +749,15 @@ module ProjectFile =
                     |> Map.tryPick (fun dll alias -> if fi.Name.Equals(dll, StringComparison.OrdinalIgnoreCase) then Some(alias) else None)
 
                 let relativePath = createRelativePath project.FileName fi.FullName
-                let privateSettings = 
+                let privateSettings =
                     match copyLocal with
-                    | Some true -> "True" 
+                    | Some true -> "True"
                     | Some false -> "False"
                     | None -> if relativePath.Contains @"\ref\" then "False" else "True"
 
-                let specificVersionSettings = 
+                let specificVersionSettings =
                     match specificVersion with
-                    | Some true -> "True" 
+                    | Some true -> "True"
                     | Some false -> "False"
                     | None -> "True"
 
@@ -783,9 +783,9 @@ module ProjectFile =
 
             itemGroup
 
-        let createPropertyGroup (references:MsBuildFile list) = 
+        let createPropertyGroup (references:MsBuildFile list) =
             let propertyGroup = createNode "PropertyGroup" project
-                      
+
             let propertyNames =
                 references
                 |> Seq.map (fun lib ->
@@ -798,12 +798,12 @@ module ProjectFile =
                     let node = createNode propertyName project
                     node.InnerText <- s
                     node
-                    |> propertyGroup.AppendChild 
+                    |> propertyGroup.AppendChild
                     |> ignore
                     propertyName,createRelativePath project.FileName fi.FullName,path.Substring(0,path.LastIndexOf("build\\") + 6))
                 |> Set.ofSeq
-                    
-            propertyNames,propertyGroup        
+
+            propertyNames,propertyGroup
 
         let allTargets =
             model.CompileLibFolders
@@ -823,23 +823,23 @@ module ProjectFile =
             |> List.sortBy (fun libFolder -> libFolder.Path)
             |> List.collect (fun libFolder ->
                 match libFolder with
-                | _ -> 
+                | _ ->
                     match PlatformMatching.getCondition referenceCondition allTargets libFolder.Targets with
                     | "" -> []
                     | condition ->
-                        let condition = 
+                        let condition =
                             match condition with
                             | "$(TargetFrameworkIdentifier) == 'true'" -> "true"
                             | _ -> condition
 
-                        let frameworkReferences = 
-                            libFolder.FolderContents.FrameworkReferences 
-                            |> Seq.sortBy (fun r -> r.Name) 
+                        let frameworkReferences =
+                            libFolder.FolderContents.FrameworkReferences
+                            |> Seq.sortBy (fun r -> r.Name)
                             |> Seq.toList
 
                         let libraries =
-                            libFolder.FolderContents.Libraries 
-                            |> Seq.sortBy (fun r -> r.Path) 
+                            libFolder.FolderContents.Libraries
+                            |> Seq.sortBy (fun r -> r.Path)
                             |> Seq.toList
 
                         let assemblyTargets = ref libFolder.Targets
@@ -854,7 +854,7 @@ module ProjectFile =
                             [condition,createItemGroup libFolder.Targets frameworkReferences libraries,false]
                         else
                             let specialFrameworkAssemblies, rest =
-                                frameworkReferences 
+                                frameworkReferences
                                 |> List.partition (fun fr -> duplicates.Contains fr.Name)
 
                             match PlatformMatching.getCondition referenceCondition allTargets !assemblyTargets with
@@ -865,7 +865,7 @@ module ProjectFile =
                         )
 
         // global targets are targets, that are either directly in the /build folder.
-        // (ref https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#including-msbuild-props-and-targets-in-a-package). 
+        // (ref https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#including-msbuild-props-and-targets-in-a-package).
         let globalTargets, frameworkSpecificTargets =
             if not importTargets then List.empty, List.empty else
             let sortedTargets = model.TargetsFileFolders |> List.sortBy (fun lib -> lib.Path)
@@ -890,15 +890,15 @@ module ProjectFile =
                 let nodes =
                     conditions
                     |> List.map (fun (condition,itemGroup,ownNode) ->
-                        let condition = 
+                        let condition =
                             match condition with
                             | "$(TargetFrameworkIdentifier) == 'true'" -> "true"
                             | _ -> condition
 
-                        let whenNode = 
+                        let whenNode =
                             createNode "When" project
-                            |> addAttribute "Condition" condition 
-               
+                            |> addAttribute "Condition" condition
+
                         if not itemGroup.IsEmpty then
                             whenNode.AppendChild itemGroup |> ignore
                             if ownNode then
@@ -912,10 +912,10 @@ module ProjectFile =
                         chooseNode2.AppendChild node |> ignore
                     else
                         chooseNode.AppendChild node |> ignore
-                                
+
                 match !containsReferences,!containsReferences2 with
-                | true,true -> [chooseNode2; chooseNode] 
-                | true,false -> [chooseNode] 
+                | true,true -> [chooseNode2; chooseNode]
+                | true,false -> [chooseNode]
                 | false,true -> [chooseNode2]
                 | false,false -> [createNode "Choose" project]
 
@@ -933,30 +933,30 @@ module ProjectFile =
                     frameworkSpecificTargetsFileConditions
                     |> List.map (fun (condition,(propertyNames,propertyGroup)) ->
                         let finalCondition = if condition = "" || condition.Length > 3000 || condition = "$(TargetFrameworkIdentifier) == 'true'" then "1 == 1" else condition
-                        let whenNode = 
+                        let whenNode =
                             createNode "When" project
-                            |> addAttribute "Condition" finalCondition 
+                            |> addAttribute "Condition" finalCondition
                         if not (Set.isEmpty propertyNames) then
                             whenNode.AppendChild(propertyGroup) |> ignore
                             containsProperties := true
                         whenNode)
                 for node in nodes do
                     propertyChooseNode.AppendChild node |> ignore
-                
+
                 (frameworkSpecificTargetsFileConditions |> List.map (fun (_,(propertyNames,_)) -> propertyNames)),
                 (if !containsProperties then propertyChooseNode else createNode "Choose" project)
-                
 
-        let frameworkSpecificPropsNodes = 
+
+        let frameworkSpecificPropsNodes =
             frameworkSpecificPropertyNames
             |> Seq.concat
             |> Seq.distinctBy (fun (x,_,_) -> x)
             |> Seq.filter (fun (propertyName,path,buildPath) -> String.endsWithIgnoreCase "props" propertyName)
-            |> Seq.map (fun (propertyName,path,buildPath) -> 
-                let fileName = 
+            |> Seq.map (fun (propertyName,path,buildPath) ->
+                let fileName =
                     match propertyName with
                     | _ when frameworkSpecificPropertyChooseNode.ChildNodes.Count = 0 -> path
-                    | name when String.endsWithIgnoreCase "props" name  -> sprintf "%s$(%s).props" buildPath propertyName 
+                    | name when String.endsWithIgnoreCase "props" name  -> sprintf "%s$(%s).props" buildPath propertyName
                     | _ -> failwithf "Unknown .props filename %s" propertyName
 
                 createNode "Import" project
@@ -965,13 +965,13 @@ module ProjectFile =
                 |> addAttribute "Label" "Paket")
             |> Seq.toList
 
-        let frameworkSpecificTargetsNodes = 
+        let frameworkSpecificTargetsNodes =
             frameworkSpecificPropertyNames
             |> Seq.concat
             |> Seq.distinctBy (fun (x,_,_) -> x)
             |> Seq.filter (fun (propertyName,path,buildPath) -> String.endsWithIgnoreCase "props" propertyName  |> not)
-            |> Seq.map (fun (propertyName,path,buildPath) -> 
-                let fileName = 
+            |> Seq.map (fun (propertyName,path,buildPath) ->
+                let fileName =
                     match propertyName with
                     | _ when frameworkSpecificPropertyChooseNode.ChildNodes.Count = 0 -> path
                     | name when String.endsWithIgnoreCase  "targets" name ->
@@ -983,7 +983,7 @@ module ProjectFile =
                 |> addAttribute "Condition" (sprintf "Exists('%s')" fileName)
                 |> addAttribute "Label" "Paket")
             |> Seq.toList
-        
+
         let globalPropsNodes =
             globalTargets
             |> Seq.collect (fun t -> t.FolderContents)
@@ -997,7 +997,7 @@ module ProjectFile =
                 |> addAttribute "Condition" (sprintf "Exists('%s')" fileName)
                 |> addAttribute "Label" "Paket")
             |> Seq.toList
-        
+
         let globalTargetsNodes =
             globalTargets
             |> Seq.collect (fun t -> t.FolderContents)
@@ -1023,14 +1023,14 @@ module ProjectFile =
             AnalyzersNode = analyzersNode
         } : XmlContext
 
-    let removePaketNodes (project:ProjectFile) = 
+    let removePaketNodes (project:ProjectFile) =
         deletePaketNodes "Analyzer" project
         deletePaketNodes "Reference" project
         deletePaketNodes "NativeReference" project
 
         let rec getPaketNodes (node:XmlNode) =
             [for node in node.ChildNodes do
-                if node.Name.Contains "__paket__" || 
+                if node.Name.Contains "__paket__" ||
                     (node.Name = "Import" && match node |> getAttribute "Project" with Some v -> v.Contains "__paket__" | None -> false) ||
                     (node |> withAttributeValue "Label" "Paket")
                 then
@@ -1040,7 +1040,7 @@ module ProjectFile =
                 elif node.Name = "CopyRuntimeDependencies" then
                     yield node
                 yield! getPaketNodes node]
-        
+
         for node in getPaketNodes project.Document do
             let parent = node.ParentNode
             try
@@ -1063,8 +1063,8 @@ module ProjectFile =
     let getTargetFrameworkVersion (project:ProjectFile) = getProperty "TargetFrameworkVersion" project
     let getTargetFramework (project:ProjectFile) = getProperty "TargetFramework" project
     let getTargetFrameworks (project:ProjectFile) = getProperty "TargetFrameworks" project
-    let getTargetFrameworksParsed (project:ProjectFile) = 
-        getTargetFrameworks project 
+    let getTargetFrameworksParsed (project:ProjectFile) =
+        getTargetFrameworks project
         |> Option.map (fun x -> x.Split([|';'|],StringSplitOptions.RemoveEmptyEntries))
         |> Option.toArray
         |> Array.concat
@@ -1108,18 +1108,18 @@ module ProjectFile =
                 | None -> "net"
                 | Some x -> x
 
-            let frameworks = 
+            let frameworks =
                 match getTargetFrameworkVersion project with
-                | None -> 
-                    let xs = getTargetFrameworksParsed project 
+                | None ->
+                    let xs = getTargetFrameworksParsed project
                     (getTargetFramework project |> Option.toList) @ xs
-                    
+
                 | Some x -> [prefix() + (x.Replace("v",""))]
 
             match frameworks |> List.choose (fun s -> FrameworkDetection.Extract s |> Option.map TargetProfile.SinglePlatform) |> List.filter (fun x -> match x with TargetProfile.SinglePlatform(Unsupported _) -> false | _ -> true)  with
             | [] -> [TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4)]
             | xs -> xs
-            
+
 
         match getTargetFrameworkProfile project with
         | Some profile when profile = "Unity Web v3.5" ->
@@ -1139,12 +1139,12 @@ module ProjectFile =
         | _ -> fallback()
 
     let updateReferences
-            (completeModel: Map<GroupName*PackageName,_*InstallModel>) 
-            (directPackages : Map<GroupName*PackageName,_*InstallSettings>) 
-            (usedPackages : Map<GroupName*PackageName,_*InstallSettings>)  
+            (completeModel: Map<GroupName*PackageName,_*InstallModel>)
+            (directPackages : Map<GroupName*PackageName,_*InstallSettings>)
+            (usedPackages : Map<GroupName*PackageName,_*InstallSettings>)
             (project:ProjectFile) =
         removePaketNodes project
-        
+
         let findInsertSpot() =
             // nuget inserts properties directly at the top, and targets directly at the end.
             // our inserts depend on $(TargetFrameworkVersion), which may be set either from another import, or directly in the project file.
@@ -1163,8 +1163,8 @@ module ProjectFile =
             let mutable l = iTarget
             while l < project.ProjectNode.ChildNodes.Count do
                 let node = project.ProjectNode.ChildNodes.[l].OuterXml.ToString()
-                if String.startsWithIgnoreCase  "<import" node && 
-                   (String.containsIgnoreCase "microsoft.csharp.targets" node || 
+                if String.startsWithIgnoreCase  "<import" node &&
+                   (String.containsIgnoreCase "microsoft.csharp.targets" node ||
                      String.containsIgnoreCase "microsoft.fsharp.targets" node ||
                      //List of xamarin csharp targets generated with following bash command inside $(MSBuildExtensionsPath)\Xamarin
                      //find . -name "*.CSharp.targets" | sed 's#.*/##'   | tr '[:upper:]' '[:lower:]' | xargs printf '                     String.containsIgnoreCase "%s" node ||\n'
@@ -1192,21 +1192,21 @@ module ProjectFile =
 
         let usedFrameworkLibs = HashSet<TargetProfile*string>()
 
-        let specialPackagesWithFrameworkConflictLibs = 
+        let specialPackagesWithFrameworkConflictLibs =
             [PackageName "System.Net.Http"] // see https://github.com/fsprojects/Paket/issues/2352
             |> Set.ofList
 
         let filteredModel =
             completeModel
             |> Map.filter (fun kv _ -> usedPackages.ContainsKey kv)
-        
+
         let contexts =
             filteredModel
-            |> Seq.map (fun kv -> 
+            |> Seq.map (fun kv ->
                     deleteCustomModelNodes (snd kv.Value) project
                     let installSettings = snd usedPackages.[kv.Key]
-                    let restrictionList = 
-                        installSettings.FrameworkRestrictions 
+                    let restrictionList =
+                        installSettings.FrameworkRestrictions
                         |> getExplicitRestriction
 
                     let projectModel =
@@ -1218,13 +1218,13 @@ module ProjectFile =
                     let _, packageName = kv.Key
                     if specialPackagesWithFrameworkConflictLibs.Contains packageName then
                         for t in KnownTargetProfiles.AllProfiles do
-                            if (projectModel.GetLibReferenceFiles t) 
-                               |> Seq.exists (fun t -> t.Name = packageName.ToString() + ".dll") 
+                            if (projectModel.GetLibReferenceFiles t)
+                               |> Seq.exists (fun t -> t.Name = packageName.ToString() + ".dll")
                             then
                                 usedFrameworkLibs.Add(t,packageName.ToString()) |> ignore
 
                     kv,installSettings,restrictionList,projectModel)
-            |> Seq.sortBy (fun (kv,_,_,_) -> 
+            |> Seq.sortBy (fun (kv,_,_,_) ->
                     let group, packName = kv.Key
                     group.CompareString, packName.CompareString)
             |> Seq.map (fun (kv,installSettings,restrictionList,projectModel) ->
@@ -1234,28 +1234,28 @@ module ProjectFile =
                     |> Seq.filter (fun targetProfile -> isTargetMatchingRestrictions(restrictionList,targetProfile))
                     |> Seq.filter (projectModel.GetLibReferenceFiles >> Seq.isEmpty)
                     |> Seq.iter (fun targetProfile ->
-                            let libReferences = 
-                                projectModel.GetAllLegacyReferences() 
+                            let libReferences =
+                                projectModel.GetAllLegacyReferences()
 
                             if not (Seq.isEmpty libReferences) then
                                 traceWarnfn "Package %O contains libraries, but not for the selected TargetFramework %O in project %s."
                                     (snd kv.Key) targetProfile project.FileName)
 
                 let importTargets = defaultArg installSettings.ImportTargets true
-            
+
                 let allFrameworks = applyRestrictionsToTargets restrictionList KnownTargetProfiles.AllProfiles
                 generateXml projectModel usedFrameworkLibs installSettings.Aliases installSettings.EmbedInteropTypes installSettings.CopyLocal installSettings.SpecificVersion importTargets installSettings.ReferenceCondition (set allFrameworks) project)
 
         for ctx in contexts do
             for chooseNode in ctx.ChooseNodes do
                 let i = ref (project.ProjectNode.ChildNodes.Count-1)
-                while 
-                  !i >= 0 && 
-                    (String.startsWithIgnoreCase "<import" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString())  && 
+                while
+                  !i >= 0 &&
+                    (String.startsWithIgnoreCase "<import" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString())  &&
                      String.containsIgnoreCase "label" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString())  &&
                      String.containsIgnoreCase "paket" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString()) )  do
                     decr i
-            
+
                 if !i <= 0 then
                     if chooseNode.ChildNodes.Count > 0 then
                         project.ProjectNode.AppendChild chooseNode |> ignore
@@ -1282,7 +1282,7 @@ module ProjectFile =
                     else
                         for node in ctx.FrameworkSpecificPropsNodes do
                             project.ProjectNode.InsertAfter(node,project.ProjectNode.ChildNodes.[iProp-1]) |> ignore
-            
+
                 if ctx.FrameworkSpecificPropertyChooseNode.ChildNodes.Count > 0 then
                     if iTarget = 0 then
                         project.ProjectNode.AppendChild ctx.FrameworkSpecificPropertyChooseNode |> ignore
@@ -1291,7 +1291,7 @@ module ProjectFile =
                             project.ProjectNode.AppendChild node |> ignore
                     else
                         let node = project.ProjectNode.ChildNodes.[iTarget-1]
-                    
+
                         for n in ctx.FrameworkSpecificPropsNodes do
                             project.ProjectNode.InsertAfter(n,node) |> ignore
 
@@ -1333,10 +1333,10 @@ module ProjectFile =
         |> List.concat
         |> List.map (fun n -> FileInfo(Path.Combine(Path.GetDirectoryName project.FileName, n.Attributes.["Include"].Value)))
 
-    let getProjectGuid project = 
+    let getProjectGuid project =
         try
             let forceGetInnerText node name =
-                match node |> getNode name with 
+                match node |> getNode name with
                 | Some n -> n.InnerText
                 | None -> failwithf "unable to parse %s" node.Name
 
@@ -1347,7 +1347,7 @@ module ProjectFile =
 
     let getInterProjectDependencies project =
         let forceGetName node name =
-            match node |> getNode name with 
+            match node |> getNode name with
             | Some n -> Some n.InnerText
             | None ->
                 match node |> getAttribute "Include" with
@@ -1360,11 +1360,11 @@ module ProjectFile =
             node |> getNode name |> Option.map (fun n -> n.InnerText)
 
         [for node in project.Document |> getDescendants "ProjectReference" do
-            let getNormalizedPath incPath = 
-                let normalizedPath = incPath |> normalizePath 
-                if normalizedPath.Contains "$(SolutionDir)" then 
+            let getNormalizedPath incPath =
+                let normalizedPath = incPath |> normalizePath
+                if normalizedPath.Contains "$(SolutionDir)" then
                     match getProperty "SolutionDir" project with
-                    | Some slnDir -> normalizedPath.Replace("$(SolutionDir)",slnDir) 
+                    | Some slnDir -> normalizedPath.Replace("$(SolutionDir)",slnDir)
                     | None -> normalizedPath.Replace("$(SolutionDir)", Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar.ToString())
                 else normalizedPath
 
@@ -1373,13 +1373,13 @@ module ProjectFile =
                 Option.map getNormalizedPath incPath
 
             let referenceOutputAssembly =
-                match node |> getNode "ReferenceOutputAssembly" with 
+                match node |> getNode "ReferenceOutputAssembly" with
                 | Some n -> n.InnerText.ToLower() = "true"
                 | None -> true
 
             let makePathNode (path: string) =
                 { Path =
-                    if Path.IsPathRooted path then Path.GetFullPath path else 
+                    if Path.IsPathRooted path then Path.GetFullPath path else
                     let di = FileInfo(normalizePath project.FileName).Directory
                     Path.Combine(di.FullName,path) |> Path.GetFullPath
 
@@ -1396,82 +1396,82 @@ module ProjectFile =
             | None -> () ]
 
     let replaceNuGetPackagesFile project =
-        let noneAndContentNodes = 
-            (project.Document |> getDescendants "None") @ 
+        let noneAndContentNodes =
+            (project.Document |> getDescendants "None") @
             (project.Document |> getDescendants "Content")
-        
+
         match noneAndContentNodes |> List.tryFind (withAttributeValue "Include" Constants.PackagesConfigFile) with
         | None -> ()
         | Some nugetNode ->
-            match noneAndContentNodes |> List.filter (withAttributeValue "Include" Constants.ReferencesFile) with 
+            match noneAndContentNodes |> List.filter (withAttributeValue "Include" Constants.ReferencesFile) with
             | [_] -> nugetNode.ParentNode.RemoveChild nugetNode |> ignore
-            | [] -> 
+            | [] ->
                 for c in nugetNode.ChildNodes do
                     nugetNode.RemoveChild c |> ignore
                 nugetNode.Attributes.["Include"].Value <- Constants.ReferencesFile
             | _::_ -> failwithf "multiple %s nodes in project file %s" Constants.ReferencesFile project.FileName
 
     let removeNuGetTargetsEntries project =
-        let toDelete = 
+        let toDelete =
             [ project.Document |> getDescendants "RestorePackages" |> List.tryHead
-              project.Document 
-              |> getDescendants "Import" 
-              |> List.tryFind (fun n -> 
+              project.Document
+              |> getDescendants "Import"
+              |> List.tryFind (fun n ->
                     match n |> getAttribute "Project" with
-                    | Some p -> p.Equals("$(SolutionDir)\\.nuget\\nuget.targets", 
+                    | Some p -> p.Equals("$(SolutionDir)\\.nuget\\nuget.targets",
                                          StringComparison.OrdinalIgnoreCase)
                     | None -> false)
               project.Document
               |> getDescendants "Target"
               |> List.tryFind (withAttributeValue "Name" "EnsureNuGetPackageBuildImports") ]
             |> List.choose id
-        
+
         for node in toDelete do
             let parent = node.ParentNode
             node.ParentNode.RemoveChild node |> ignore
-            if not parent.HasChildNodes then 
+            if not parent.HasChildNodes then
                 parent.ParentNode.RemoveChild parent |> ignore
 
     let removeNuGetPackageImportStamp project =
         let toDelete =
-            project.Document 
-            |> getDescendants "PropertyGroup" 
+            project.Document
+            |> getDescendants "PropertyGroup"
             |> List.collect (getDescendants "NuGetPackageImportStamp")
-        
+
         for node in toDelete do
             let parent = node.ParentNode
             node.ParentNode.RemoveChild node |> ignore
-            if not parent.HasChildNodes then 
+            if not parent.HasChildNodes then
                 parent.ParentNode.RemoveChild parent |> ignore
 
     let removeImportAndTargetEntries (packages : list<string * SemVerInfo> ) (project:ProjectFile) =
-        let toDelete = 
-            project.Document 
+        let toDelete =
+            project.Document
             |> getDescendants "Import"
-            |> List.filter (fun node -> 
+            |> List.filter (fun node ->
                 match node |> getAttribute "Project" with
                 | Some p -> packages |> List.exists (fun (id, version) ->
                     p.IndexOf(sprintf "%s.%O" id version, StringComparison.OrdinalIgnoreCase) >= 0)
                 | None -> false)
-        
+
         for node in toDelete do
             let sibling = node.NextSibling
-            tracefn "Removing 'Import' entry from %s for project %s" 
-                project.FileName 
+            tracefn "Removing 'Import' entry from %s for project %s"
+                project.FileName
                 (node |> getAttribute "Project" |> Option.get)
             node.ParentNode.RemoveChild node |> ignore
             match sibling with
             | null -> ()
             | sibling when sibling.Name.Equals "Target" ->
-                let deleteTarget = 
+                let deleteTarget =
                     Utils.askYesNo
-                        (sprintf "Do you want to delete Target named '%s' from %s ?" 
+                        (sprintf "Do you want to delete Target named '%s' from %s ?"
                             (sibling |> getAttribute "Name" |> Option.get)
                             project.FileName)
                 if deleteTarget then
                     sibling.ParentNode.RemoveChild sibling |> ignore
             | _ -> ()
-    
+
     let packageReferencesNoPrivateAssets project =
         project.ProjectNode
         |> getDescendants "PackageReference"
@@ -1497,7 +1497,7 @@ module ProjectFile =
 
     let removePackageReferenceEntries project =
         let toDelete = packageReferencesNoPrivateAssets project
-        
+
         for node in toDelete do
             node.ParentNode.RemoveChild node |> ignore
 
@@ -1505,22 +1505,22 @@ module ProjectFile =
 
     let removeCliToolReferenceEntries project =
         let toDelete = cliToolsNoPrivateAssets project
-        
+
         for node in toDelete do
             node.ParentNode.RemoveChild node |> ignore
 
         deleteIfEmpty "ItemGroup" project |> ignore
 
-    let removeNugetAnalysers (packages : list<string*SemVerInfo>) (project : ProjectFile) : unit = 
+    let removeNugetAnalysers (packages : list<string*SemVerInfo>) (project : ProjectFile) : unit =
         let packageIds = packages |> List.map (fun (id,version) -> sprintf "%s.%O" id version)
         let pathContainsString (searchString :string) = packageIds |> List.exists (fun id -> searchString.Contains(id))
 
         let isAnalyserFromNuget (node : XmlNode) =
-                defaultArg 
+                defaultArg
                     (node |> getAttribute "Include" |> Option.map pathContainsString)
                     false
-                
-        let toDelete = 
+
+        let toDelete =
                 project.Document
                 |> getDescendants "Analyzer"
                 |>  List.filter isAnalyserFromNuget
@@ -1528,10 +1528,10 @@ module ProjectFile =
         for node in toDelete do
             tracefn "Removing 'Analyzer' entry from %s for project %s"
                 (node |> getAttribute "Include" |> Option.get)
-                project.FileName 
+                project.FileName
 
             node.ParentNode.RemoveChild node |> ignore
-                        
+
     let outputType (project:ProjectFile) =
         seq {for outputType in project.Document |> getDescendants "OutputType" ->
                 match outputType.InnerText with
@@ -1540,24 +1540,24 @@ module ProjectFile =
                 | _        -> ProjectOutputType.Library }
         |> Seq.tryHead
         |> function None -> ProjectOutputType.Library | Some x -> x
-    
+
     let buildOutputTargetFolder (project:ProjectFile) =
-        project.Document 
-        |> getDescendants "BuildOutputTargetFolder" 
+        project.Document
+        |> getDescendants "BuildOutputTargetFolder"
         |> Seq.tryHead
         |> Option.map (fun e -> e.InnerText)
-    
+
     let appendTargetFrameworkToOutputPath (project:ProjectFile) =
         match project.Document |> getDescendants "AppendTargetFrameworkToOutputPath" |> Seq.tryHead with
         | Some e -> not (String.Equals(e.InnerText, "false", StringComparison.OrdinalIgnoreCase))
-        | None -> true 
-            
+        | None -> true
+
     let addImportForPaketTargets relativeTargetsPath (project:ProjectFile) =
-        match project.Document 
-              |> getDescendants "Import" 
+        match project.Document
+              |> getDescendants "Import"
               |> List.tryFind (withAttributeValue "Project" relativeTargetsPath) with
         | Some _ -> ()
-        | None -> 
+        | None ->
             let node = createNode "Import" project |> addAttribute "Project" relativeTargetsPath
             project.ProjectNode.AppendChild node |> ignore
 
@@ -1584,7 +1584,7 @@ module ProjectFile =
         then BuildAction.Reference
         else determineBuildAction fileName project
 
-    let getAssemblyName (project:ProjectFile) = 
+    let getAssemblyName (project:ProjectFile) =
         let assemblyName =
             project.Document
             |> getDescendants "AssemblyName"
@@ -1598,7 +1598,7 @@ module ProjectFile =
                     traceWarnfn "Found multiple AssemblyName nodes in file %s, using first" project.FileName
                     assemblyName.InnerText
             |> fun assemblyName ->
-                if String.IsNullOrWhiteSpace assemblyName then 
+                if String.IsNullOrWhiteSpace assemblyName then
                     let fi = FileInfo project.FileName
                     fi.Name.Replace(fi.Extension,"")
                 else assemblyName
@@ -1627,7 +1627,7 @@ module ProjectFile =
                     | [] -> ""
 
         let platforms =
-            if not (String.IsNullOrWhiteSpace buildPlatform) then 
+            if not (String.IsNullOrWhiteSpace buildPlatform) then
                 [buildPlatform]
             else
                 [ "AnyCPU"
@@ -1740,7 +1740,7 @@ type ProjectFile with
     member this.GetFrameworkAssemblies() =  ProjectFile.getFrameworkAssemblies this
 
     member this.DeletePaketNodes name = ProjectFile.deletePaketNodes name this
-    
+
     member this.UpdateFileItems(fileItems : FileItem list) = ProjectFile.updateFileItems fileItems this
 
     member this.RemoveNugetAnalysers(packages : list<string*SemVerInfo>) = ProjectFile.removeNugetAnalysers packages this
@@ -1751,7 +1751,7 @@ type ProjectFile with
 
     member this.GenerateXml(model, usedFrameworkLibs:HashSet<TargetProfile*string>, aliases, embedInteropTypes, copyLocal, specificVersion, importTargets, allTargetProfiles:#seq<TargetProfile>, referenceCondition) = ProjectFile.generateXml model usedFrameworkLibs aliases embedInteropTypes copyLocal specificVersion importTargets referenceCondition (set allTargetProfiles) this
 
-    member this.RemovePaketNodes () = ProjectFile.removePaketNodes this 
+    member this.RemovePaketNodes () = ProjectFile.removePaketNodes this
 
     member this.UpdateReferences (completeModel, directDependencies, usedPackages) = ProjectFile.updateReferences completeModel directDependencies usedPackages this
 
@@ -1782,15 +1782,15 @@ type ProjectFile with
     member this.OutputType =  ProjectFile.outputType this
 
     member this.BuildOutputTargetFolder =  ProjectFile.buildOutputTargetFolder this
-    
+
     member this.AppendTargetFrameworkToOutputPath =  ProjectFile.appendTargetFrameworkToOutputPath this
-        
+
     member this.GetTargetFrameworkIdentifier () =  ProjectFile.getTargetFrameworkIdentifier this
 
     member this.GetTargetFrameworkProfile () = ProjectFile.getTargetFrameworkProfile this
 
     member this.GetTargetProfiles() =  ProjectFile.getTargetProfiles this
-    
+
     member this.AddImportForPaketTargets relativeTargetsPath = ProjectFile.addImportForPaketTargets relativeTargetsPath this
 
     member this.RemoveImportForPaketTargets() =  ProjectFile.removeImportForPaketTargets this
@@ -1818,14 +1818,14 @@ type ProjectFile with
     static member FindCorrespondingFile (projectFile:FileInfo,correspondingFile:string) =
         let specificFile = FileInfo (Path.Combine(projectFile.Directory.FullName, projectFile.Name + "." + correspondingFile))
         if specificFile.Exists then Some specificFile.FullName else
-        
-        let rec findInDir (currentDir:DirectoryInfo) = 
+
+        let rec findInDir (currentDir:DirectoryInfo) =
             let generalFile = FileInfo(Path.Combine(currentDir.FullName, correspondingFile))
             if generalFile.Exists then Some generalFile.FullName
             elif (FileInfo (Path.Combine(currentDir.FullName, Constants.DependenciesFileName))).Exists then None
             elif currentDir.Parent = null then None
             else findInDir currentDir.Parent
-                
+
         findInDir projectFile.Directory
 
     member this.FindCorrespondingFile (correspondingFile:string) = ProjectFile.FindCorrespondingFile(FileInfo this.FileName,correspondingFile)
@@ -1833,13 +1833,13 @@ type ProjectFile with
     member this.FindReferencesFile() = this.FindCorrespondingFile Constants.ReferencesFile
 
     member this.FindLocalizedLanguageNames() =
-        let tryGetAttributeValue name node = 
+        let tryGetAttributeValue name node =
             if hasAttribute name node then
                 Some node.Attributes.[name].Value
             else
                 None
 
-        let tryGetLanguage value = 
+        let tryGetLanguage value =
             let pattern = @"\.(?<language>\w+(-\w+)?)\.resx$"
             let m = Regex.Match(value, pattern, RegexOptions.ExplicitCapture)
             if m.Success then
@@ -1861,12 +1861,12 @@ type ProjectFile with
     member this.HasPackageInstalled(groupName,package) =
         match this.FindReferencesFile() with
         | None -> false
-        | Some fileName -> 
+        | Some fileName ->
             let referencesFile = ReferencesFile.FromFile fileName
             match referencesFile.Groups |> Map.tryFind groupName with
             | None -> false
             | Some group ->
-                group.NugetPackages 
+                group.NugetPackages
                 |> Seq.exists (fun p -> p.Name = package)
 
     static member FindReferencesFile(projectFile) = ProjectFile.FindCorrespondingFile(projectFile, Constants.ReferencesFile)
@@ -1894,23 +1894,23 @@ type ProjectFile with
     static member FindAllProjectFiles folder : FileInfo [] =
         let paketPath = Path.Combine(folder,Constants.PaketFilesFolderName) |> normalizePath
 
-        let findAllFiles (folder, pattern) = 
-            let rec search (di:DirectoryInfo) = 
+        let findAllFiles (folder, pattern) =
+            let rec search (di:DirectoryInfo) =
                 try
                     let files = di.GetFiles(pattern, SearchOption.TopDirectoryOnly)
                     di.GetDirectories()
                     |> Array.filter (fun di ->
-                        try 
+                        try
                             let path = normalizePath di.FullName
                             if di.Name = Constants.DefaultPackagesFolderName then false else
                             if di.Name = ".git" then false else
                             if di.Name = ".fable" then false else
                             if di.Name = "node_modules" then false else
                             if path = paketPath then false else
-                            Path.Combine(path, Constants.DependenciesFileName) 
-                            |> File.Exists 
-                            |> not 
-                        with 
+                            Path.Combine(path, Constants.DependenciesFileName)
+                            |> File.Exists
+                            |> not
+                        with
                         | _ -> false)
                     |> Array.collect search
                     |> Array.append files
@@ -1922,7 +1922,7 @@ type ProjectFile with
 
         findAllFiles(folder, "*proj*")
         |> Array.filter ProjectFile.isSupportedFile
-    
+
     /// Finds all project files
     static member FindAllProjects folder : ProjectFile [] =
         ProjectFile.FindAllProjectFiles folder
@@ -1936,8 +1936,8 @@ type ProjectFile with
         | None ->
             try
                 let fi = FileInfo (normalizePath (projectName.Trim().Trim([|'\"'|]))) // check if we can detect the path
-                let rec checkDir (dir:DirectoryInfo) = 
-                    match projects |> Seq.tryFind (fun p -> 
+                let rec checkDir (dir:DirectoryInfo) =
+                    match projects |> Seq.tryFind (fun p ->
                         String.equalsIgnoreCase ((FileInfo p.FileName).Directory.ToString()) (dir.ToString())) with
                     | Some p -> Some p
                     | None ->
@@ -1993,7 +1993,7 @@ type ProjectFile with
         else
             [this]
 
-    member this.GetCompileItems (includeReferencedProjects : bool) cache = 
+    member this.GetCompileItems (includeReferencedProjects : bool) cache =
         let getCompileRefs projectFile =
             projectFile.Document
             |> getDescendants "Compile"
@@ -2032,8 +2032,8 @@ type ProjectFile with
                 DestinationPath = compileItem.DestinationPath.Replace("%(FileName)", Path.GetFileName(realFile))
                 BaseDir = compileItem.BaseDir
             })
-        
-        this.GetProjects includeReferencedProjects cache 
+
+        this.GetProjects includeReferencedProjects cache
         |> this.ProjectsWithoutTemplates
         |> Seq.collect getCompileRefs
         |> Seq.map getCompileItem
@@ -2042,22 +2042,22 @@ type ProjectFile with
 
     member self.GetTemplateMetadata () =
         let prop name = self.GetProperty name
-        
+
         let propOr name value =
             defaultArg (self.GetProperty name) value
-        
+
         let propMap name value fn =
             defaultArg (self.GetProperty name|>Option.map fn) value
-        
+
         let tryBool (s: string) = Boolean.TryParse s |> function true, value -> value | _ -> false
-        
+
         let splitString = String.split[|';'|] >> Array.map (fun x -> x.Trim()) >> List.ofArray
 
         let coreInfo : ProjectCoreInfo = {
-            Id = prop "id" 
+            Id = prop "id"
             Version = propMap "version" (Some(SemVer.Parse "0.0.1")) (SemVer.Parse>>Some)
             Authors = propMap "Authors" None (splitString >> Some)
-            Description = prop "Description" 
+            Description = prop "Description"
             Symbols = propMap "Symbols" false tryBool
         }
         let optionalInfo =  {
@@ -2069,12 +2069,12 @@ type ProjectFile with
             ProjectUrl = prop "ProjectUrl"
             IconUrl = prop "IconUrl"
             LicenseUrl = prop "LicenseUrl"
-            Copyright = prop  "Copyright" 
+            Copyright = prop  "Copyright"
             RequireLicenseAcceptance = propMap "RequireLicenseAcceptance" false tryBool
             Tags = propMap "Tags" [] splitString
             DevelopmentDependency = propMap "DevelopmentDependency" false tryBool
             DependencyGroups = []
-            ExcludedDependencies = Set.empty //propOr "ExcludedDependencies" 
+            ExcludedDependencies = Set.empty //propOr "ExcludedDependencies"
             ExcludedGroups = Set.empty // propOr "ExcludedGroups" Set.empty
             References = [] //propOr "References" []
             FrameworkAssemblyReferences = [] //propOr "FrameworkAssemblyReferences" []
@@ -2085,5 +2085,5 @@ type ProjectFile with
             IncludeReferencedProjects = propMap "IncludeReferencedProjects" true tryBool
             InterprojectReferencesConstraint = propMap "InterprojectReferencesConstraint" None InterprojectReferencesConstraint.Parse
         }
-        
+
         (coreInfo, optionalInfo)
