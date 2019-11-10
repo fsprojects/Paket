@@ -84,7 +84,7 @@ module private TemplateParser =
 
     let parse (contents : string) =
         let contents = contents.Replace("\r\n","\n").Replace("\r","\n")
-        let remaining = 
+        let remaining =
             contents.Split('\n')
             |> Array.toList
 
@@ -157,9 +157,9 @@ type OptionalPackagingInfo =
       FrameworkAssemblyReferences : string list
       /// (src * target) list
       Files : (string * string) list
-      FilesExcluded : string list 
+      FilesExcluded : string list
       PackageTypes : string list
-      IncludePdbs : bool 
+      IncludePdbs : bool
       IncludeReferencedProjects : bool
       InterprojectReferencesConstraint: InterprojectReferencesConstraint option
       }
@@ -182,7 +182,7 @@ type OptionalPackagingInfo =
           References = []
           FrameworkAssemblyReferences = []
           Files = []
-          FilesExcluded = [] 
+          FilesExcluded = []
           PackageTypes = []
           IncludeReferencedProjects = false
           IncludePdbs = false
@@ -199,7 +199,7 @@ type TemplateFile =
       Contents : TemplateFileContents }
 
     with
-        member x.IncludeReferencedProjects = 
+        member x.IncludeReferencedProjects =
             match x.Contents with
             | CompleteInfo(_,c) -> c.IncludeReferencedProjects
             | ProjectInfo (_,c) ->  c.IncludeReferencedProjects
@@ -240,7 +240,7 @@ module internal TemplateFile =
             | ProjectInfo(core, optional) -> ProjectInfo(core, { optional with ReleaseNotes = Some releaseNotes })
         { templateFile with Contents = contents }
 
-    let setProjectUrl url templateFile = 
+    let setProjectUrl url templateFile =
         let contents =
             match templateFile.Contents with
             | CompleteInfo(core, optional) -> CompleteInfo(core, { optional with ProjectUrl = Some url })
@@ -279,7 +279,7 @@ module internal TemplateFile =
         | Some m -> ok m
         | None -> failP file "No description line in paket.template file."
 
-    let private (|Framework|_|) (line:string) =        
+    let private (|Framework|_|) (line:string) =
         match line.Trim()  with
         | String.RemovePrefix "framework:" trimmed ->
             match FrameworkDetection.Extract trimmed with
@@ -294,19 +294,19 @@ module internal TemplateFile =
         | String.RemovePrefix "//" _ -> Some (Empty line)
         | String.RemovePrefix "#" _ -> Some (Empty line)
         | _ -> None
-   
+
     let private getDependencyByLine (fileName, lockFile:LockFile,currentVersion:SemVerInfo option, specificVersions:Map<string, SemVerInfo>, line:string, framework:FrameworkIdentifier option) =
         let item = line.Split([|"//"; "#"|], 2, StringSplitOptions.None).[0].Trim()
         if item |> String.IsNullOrWhiteSpace then
             None // skip comment lines, allowing paket.dependencies-like formatting
         else
-        
+
         let reg = Regex(@"(?in)^(?<id>[^\s@!~>\<\=]+)(?<version>.*)?").Match item
         let packageName = PackageName reg.Groups.["id"].Value
-        
+
         let rawRequirement = reg.Groups.["version"].Value.Trim()
         let regVersion = Regex(@"(?in)(?<repl>(?<what>(LOCKED|CURRENT))((?<=\k<what>)VERSION|:(?<spec>(Major|Minor|Patch|Build|\[-?[1-4]\]))|-(?<group>[\w-]+)){1,3})")
-        
+
         let rec versionReplace requireText =
             match regVersion.Match requireText with
             | m when m.Success ->
@@ -315,67 +315,67 @@ module internal TemplateFile =
                     | String.EqualsIC "LOCKED" ->
                         match m.Groups.["group"] with
                         | g when g.Success -> // this may as well include Main
-                        
+
                             let groupName = GroupName g.Value
                             match lockFile.Groups |> Map.tryFind groupName with
-                            | Some group -> 
+                            | Some group ->
                                 match group.Resolution |> Map.tryFind packageName with
                                 | Some resolvedPackage -> resolvedPackage.Version
                                 | None -> failwithf "The template file %s contains the placeholder %A, but no version was given for package %O in group %O in paket.lock" fileName requireText packageName groupName
                             | None -> failwithf "The template file %s contains the placeholder %A, but group %O was not found in paket.lock" fileName requireText groupName
-                                      
+
                         | _ -> // default to Main, _or_ any other group with warning
-                            let mainGroup = lockFile.Groups.[Constants.MainDependencyGroup] 
+                            let mainGroup = lockFile.Groups.[Constants.MainDependencyGroup]
                             match mainGroup.TryFind packageName with
                             | Some resolvedPackage -> resolvedPackage.Resolved.Version
                             | None ->
-                                let packages = lockFile.GetGroupedResolution() |> Seq.filter (fun kv -> snd kv.Key = packageName) |> Seq.toList                
+                                let packages = lockFile.GetGroupedResolution() |> Seq.filter (fun kv -> snd kv.Key = packageName) |> Seq.toList
                                 match packages with
                                 | [] -> failwithf "The template file %s contains the placeholder %A, but no version was given for package %O in paket.lock." fileName requireText packageName
                                 | [groupAndPackage] ->
                                     traceWarnfn "The template file %s contains the placeholder %A, but version for package %O was found in group %A." fileName requireText packageName (fst groupAndPackage.Key)
                                     groupAndPackage.Value.Version
-                                | _ -> failwithf "The template file %s contains the placeholder %A, but more than one group contains package %O in paket.lock." fileName requireText packageName                                
-                        
-                    | String.EqualsIC "CURRENT" -> 
+                                | _ -> failwithf "The template file %s contains the placeholder %A, but more than one group contains package %O in paket.lock." fileName requireText packageName
+
+                    | String.EqualsIC "CURRENT" ->
                         match specificVersions.TryFind (string packageName) with
                         | Some excplicitVersion -> excplicitVersion
                         | None ->
                             match currentVersion with
                             | Some thisVersion -> thisVersion
                             | None -> failwithf "The template file %s contains the placeholder %A, but no version was given." fileName requireText
-                                                    
+
                     | _ -> failwithf "The template file %s contains invalid placeholder %A" fileName line
-            
+
                 let versionParts = (sourceVersion.AsString |> String.split [|'-'; '+'|]).[0] |> String.split [|'.'|]
-                let segmentCount = 
+                let segmentCount =
                     match m.Groups.["spec"] with
                     | spec when spec.Success ->
                         match spec.Value with
                         | "[1]" | "Major" -> 1
                         | "[2]" | "Minor" -> 2
-                        | "[3]" | "Patch" -> 3 
+                        | "[3]" | "Patch" -> 3
                         | "[4]" | "Build" -> 4 // do not normalize zero builds away, if explicitly requested
                         | "[-1]" | "[-2]" | "[-3]" ->
-                            let versionLength = 
-                                versionParts |> Seq.rev // count non-zero segments, from original, NOT-normalized source 
-                                |> Seq.takeWhile (fun i -> match bigint.TryParse i with | true, n -> n > 0I | _ -> false) 
+                            let versionLength =
+                                versionParts |> Seq.rev // count non-zero segments, from original, NOT-normalized source
+                                |> Seq.takeWhile (fun i -> match bigint.TryParse i with | true, n -> n > 0I | _ -> false)
                                 |> Seq.length
                             versionLength + (int (spec.Value.Trim([|'['; ']'|])))
                         | _ -> failwithf "The template file %s contains invalid specification %s" fileName line
                     | _ -> 0
-                    
-                let targetVersion = 
+
+                let targetVersion =
                     match segmentCount with
                     | 1 | 2 | 3 | 4 -> String.Join(".", versionParts, 0, Math.Min(versionParts.Length, Math.Max(0, segmentCount)))
                     | _ -> sourceVersion.AsString
-                
+
                 let targetReplaced = m.Result(sprintf "$`%s$'" targetVersion).Trim("@!".ToCharArray())
                 versionReplace targetReplaced
-                 
+
             | _ -> requireText
-                
-        let versionString = versionReplace rawRequirement                
+
+        let versionString = versionReplace rawRequirement
         let versionRequirement = DependenciesFileParser.parseVersionRequirement versionString
         Some (packageName, versionRequirement)
 
@@ -388,7 +388,7 @@ module internal TemplateFile =
                 let groups = OptionalDependencyGroup.ForFramework framework::current::other
                 lineNo, groups
             | Empty  _ -> lineNo, current::other
-            | _ -> 
+            | _ ->
                 match getDependencyByLine(fileName, lockFile, currentVersion, specificVersions, line, current.Framework) with
                 | Some dependency -> lineNo, { current with Dependencies = current.Dependencies @ [dependency] }::other
                 | None -> lineNo, current::other
@@ -400,8 +400,8 @@ module internal TemplateFile =
                 match getDependencyByLine(fileName, lockFile, currentVersion, specificVersions, line, None) with
                 | Some dependency -> lineNo, [{ Framework = None; Dependencies = [dependency] }]
                 | None -> lineNo, []
-            
-   
+
+
     let private getDependencyGroups (fileName, lockFile:LockFile, info : Map<string, string>,currentVersion:SemVerInfo option, specificVersions:Map<string, SemVerInfo>) =
         match Map.tryFind "dependencies" info with
         | None -> []
@@ -414,7 +414,7 @@ module internal TemplateFile =
     let private getExcludedDependencies (info : Map<string, string>) =
         match Map.tryFind "excludeddependencies" info with
         | None -> []
-        | Some d -> 
+        | Some d ->
             d.Split '\n'
             |> Array.map (fun d ->
                 let reg = Regex(@"(?<id>\S+)(?<version>.*)").Match d
@@ -424,7 +424,7 @@ module internal TemplateFile =
     let private getExcludedGroups (info : Map<string, string>) =
         match Map.tryFind "excludedgroups" info with
         | None -> []
-        | Some d -> 
+        | Some d ->
             d.Split '\n'
             |> Array.map (fun d ->
                 let reg = Regex(@"(?<id>\S+)").Match d
@@ -437,11 +437,11 @@ module internal TemplateFile =
     let private getFiles (map : Map<string, string>) =
         match Map.tryFind "files" map with
         | None -> []
-        | Some d -> 
+        | Some d ->
             d.Split '\n'
             |> Array.filter (fun s -> not (String.IsNullOrWhiteSpace s || isExclude.IsMatch s || isComment.IsMatch s))
             |> Seq.map (fun (line:string) ->
-                let splitted = 
+                let splitted =
                     line.Split([|"==>"|],StringSplitOptions.None)
                     |> Array.collect (fun line -> line.Split([|"=>"|],StringSplitOptions.None))
                     |> Array.map String.trim
@@ -452,7 +452,7 @@ module internal TemplateFile =
     let private getFileExcludes (map : Map<string, string>) =
         match Map.tryFind "files" map with
         | None -> []
-        | Some d -> 
+        | Some d ->
             d.Split '\n'
             |> Array.filter (fun s -> not (String.IsNullOrWhiteSpace s))
             |> Array.filter isExclude.IsMatch
@@ -493,7 +493,7 @@ module internal TemplateFile =
             match get "tags" with
             | None -> []
             | Some t ->
-                t.Split ' ' 
+                t.Split ' '
                 |> Array.filter (fun s -> not (String.IsNullOrWhiteSpace s))
                 |> Array.map (String.trim >> String.trimChars [|','|])
                 |> Array.toList
@@ -513,13 +513,13 @@ module internal TemplateFile =
             | None -> []
             | Some o ->
                 o.Split ',' |> Array.map String.trim |> Array.toList
-        
-        let includePdbs = 
+
+        let includePdbs =
             match get "include-pdbs" with
             | Some x when String.equalsIgnoreCase x "true" -> true
             | _ -> false
 
-        let includeReferencedProjects = 
+        let includeReferencedProjects =
             match get "include-referenced-projects" with
             | Some x when String.equalsIgnoreCase x "true" -> true
             | _ -> false
@@ -544,7 +544,7 @@ module internal TemplateFile =
           Files = getFiles map
           FilesExcluded = getFileExcludes map
           PackageTypes = packageTypes
-          IncludeReferencedProjects = includeReferencedProjects 
+          IncludeReferencedProjects = includeReferencedProjects
           IncludePdbs = includePdbs
           InterprojectReferencesConstraint = getInterprojectReferencesConstraint map}
 
@@ -646,7 +646,7 @@ module internal TemplateFile =
         | Choice1Of2 m ->
             let type' = parsePackageConfigType filename m
             if type' |> failed then false
-            else 
+            else
                 match (returnOrFail type') with
                 | ProjectType -> true
                 | FileType -> false
@@ -656,8 +656,8 @@ module internal TemplateFile =
     let FindTemplateFiles root =
         let findTemplates dir = Directory.EnumerateFiles(dir, "*" + Constants.TemplateFile, SearchOption.AllDirectories)
         Directory.EnumerateDirectories(root)
-        |> Seq.filter (fun di -> 
-             let name = DirectoryInfo(di).Name.ToLower() 
+        |> Seq.filter (fun di ->
+             let name = DirectoryInfo(di).Name.ToLower()
              name <> "packages" && name <> "paket-files")
         |> Seq.collect findTemplates
         |> Seq.append (Directory.EnumerateFiles(root, "*" + Constants.TemplateFile, SearchOption.TopDirectoryOnly))
