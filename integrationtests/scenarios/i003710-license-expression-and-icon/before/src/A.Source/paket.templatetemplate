@@ -1,0 +1,27 @@
+type file
+id A.Source
+owners Team
+authors Team
+projectUrl
+    https://github.com/
+icon
+    guy-fieri.jpg
+license
+    MIT
+repositoryType
+    git
+repositoryUrl
+    https://github.com/my-org/my-custom-repo
+requireLicenseAcceptance
+    false
+copyright
+    Copyright 2015
+tags
+    tag
+summary
+    summary
+description
+    Project has no description
+files
+   ../A/**/*.cs ==> ./A
+   guy-fieri.jpg ==> img/

@@ -162,6 +162,20 @@ module internal NupkgWriter =
         !! "authors" (core.Authors |> String.concat ", ")
         if optional.Owners <> [] then !! "owners" (String.Join(", ",optional.Owners))
         (!!?) "licenseUrl" optional.LicenseUrl
+
+        match optional.License, optional.LicenseFile with
+        | Some l, None ->
+            let d = XElement(ns + "license", l)
+            d.SetAttributeValue(XName.Get "type", "expression")
+            metadataNode.Add d
+        | None, Some lf ->
+            let d = XElement(ns + "license", lf)
+            d.SetAttributeValue(XName.Get "type", "file")
+            metadataNode.Add d
+        | Some _, Some _ ->
+            raise (Exception("Cannot specify both a license and licenseFile attribute. Pick one or the other."))
+        | None, None -> ()
+
         match optional.RepositoryType, optional.RepositoryUrl with
         | Some t, Some url ->
             let d = XElement(ns + "repository")
@@ -172,6 +186,7 @@ module internal NupkgWriter =
 
         (!!?) "projectUrl" optional.ProjectUrl
         (!!?) "iconUrl" optional.IconUrl
+        (!!?) "icon" optional.Icon
         if optional.RequireLicenseAcceptance then
             !! "requireLicenseAcceptance" "true"
         !! "description" core.Description

@@ -927,3 +927,28 @@ let ``#3707 allows repositoryUrl``() =
     let expected = """<repository type="git" url="https://github.com/my-org/my-custom-repo" />"""
     if not (nuspec.Contains expected) then
         failwith nuspec
+
+[<Test>]
+let ``#3710 specify license expression and icon``() =
+    let scenario = "i003710-license-expression-and-icon"
+    
+    let outPath = Path.Combine(scenarioTempPath scenario,"out")
+    let templatePath = Path.Combine(scenarioTempPath scenario,"src", "A.Source", "paket.template")
+    use __ = paket ("pack version 1.0.0 output \"" + outPath + "\" -v") scenario |> fst
+    
+    let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
+    
+    let unzippedNupkgPath = Path.Combine(outPath, "Extracted")
+    ZipFile.ExtractToDirectory(package, unzippedNupkgPath)
+    
+    let nuspecFile = FileInfo(Path.Combine(unzippedNupkgPath, "A.Source.nuspec"))
+    let nuspec = File.ReadAllText(nuspecFile.FullName)
+    let expectedLicense = """<license type="expression">MIT</license>"""
+    let expectedIcon = """<icon>guy-fieri.jpg</icon>"""
+    let expectedFile = """<file src="guy-fieri.jpg" target="img" />"""
+    if not (nuspec.Contains expectedLicense) then
+        failwith ("nuspec doesn't have the license expression.\n" + nuspec)
+    if not (nuspec.Contains expectedIcon) then
+        failwith ("nuspec doesn't have the icon.\n" + nuspec)
+    if not (nuspec.Contains expectedFile) then
+        failwith ("nuspec doesn't have the icon file.\n" + nuspec)
