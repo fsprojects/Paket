@@ -1,35 +1,18 @@
 # What is Paket?
 
-Paket is a dependency manager for .NET and mono projects, which is designed to
-work well with [NuGet](https://www.nuget.org/) packages and also enables
-referencing files directly from [Git repositories](git-dependencies.html) or any
-[HTTP resource](http-dependencies.html). It enables precise and predictable
-control over what packages the projects within your application reference.
+Paket is a dependency manager for .NET projects. Paket enabled precise and predictable control over your dependencies. With Paket, you can reference:
 
-If you want to learn how to use Paket then read the
-["Getting started" tutorial](getting-started.html) and take a look at the
-[FAQ](faq.html).
+* [NuGet](https://www.nuget.org/) packages
+* Files from [Git repositories](git-dependencies.html)
+* Files from any [HTTP resource](http-dependencies.html).
 
-If you are already using NuGet for package management in your solution then you
-can learn about the upgrade process in the
-[convert from NuGet](getting-started.html#Automatic-NuGet-conversion) section.
+Get Started by learning how to [install Paket](install-paket.html) with Paket and take a look at the [FAQ](faq.html) to learn more about it.
 
-For information about Paket with .NET SDK, .NET Core and the `dotnet` CLI see
-the
-["Paket and the .NET SDK / .NET Core CLI tools" guide](paket-and-dotnet-cli.html).
+If you are using legacy NuGet (`packages.config`-based) for package management in your solution, you can learn about the upgrade process in the [convert from NuGet tutorial](convert-from-nuget-tutorial.html)
+
+For information about Paket with .NET SDK, .NET Core and the `dotnet` CLI see the["Paket and the .NET SDK / .NET Core CLI tools" guide](paket-and-dotnet-cli.html).
 
 [![Paket Overview](img/paket-overview.png)](img/paket-overview.png)
-
-## How to get Paket
-
-Paket is available as:
-
-* [Download from GitHub.com](https://github.com/fsprojects/Paket/releases/latest)
-* As a package [`Paket` on nuget.org](https://www.nuget.org/packages/Paket/)
-* [Plugins for popular editors](editor-support.html)
-
-[![Join the chat at https://gitter.im/fsprojects/Paket](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/fsprojects/Paket?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![NuGet Status](https://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
 
 ## Contributing and copyright
 
