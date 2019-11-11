@@ -13,19 +13,11 @@ module Paket.IntegrationTests.BasicResolverSpecs
 
 open Fake
 open Paket
-open System
 open NUnit.Framework
 open FsUnit
 open System
 open System.IO
 open Paket.Domain
-
-[<Test>]
-let ``#49 windsor should resolve correctly``() =
-    let cleanup, lockFile = update "i000049-resolve-windsor-correctly"
-    use __ = cleanup
-    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Windsor"].Version
-    |> shouldEqual (SemVer.Parse "3.2.1")
 
 [<Test>]
 let ``#55 should resolve with pessimistic strategy correctly``() =
