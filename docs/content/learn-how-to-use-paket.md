@@ -76,7 +76,7 @@ This file shows all direct and [transitive dependencies](faq.html#transitive) an
 If you want to check if your dependencies have updates you can run the [`paket outdated` command](paket-outdated.html):
 
 ```sh
-dotnet paket oudated
+dotnet paket outdated
 ```
 
 Or if you're not using .NET Core:
