@@ -18,7 +18,7 @@ Paket works entirely out of the box on .NET Core, and it's simple to get started
 
    ```sh
    dotnet new tool-manifest
-   dotnet tool instal paket
+   dotnet tool install paket
    dotnet tool restore
    dotnet paket restore
    ```
