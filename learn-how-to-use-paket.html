@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>paket push
+    <title>Learn how to use paket
 </title>
     <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -57,42 +57,82 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1><a name="paket-push" class="anchor" href="#paket-push">paket push</a></h1>
-<p>Push a NuGet package.</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
-<span class="l">11: </span>
-<span class="l">12: </span>
-<span class="l">13: </span>
-<span class="l">14: </span>
-<span class="l">15: </span>
+<h1><a name="Learn-how-to-use-paket" class="anchor" href="#Learn-how-to-use-paket">Learn how to use paket</a></h1>
+<p>Once you've <a href="install-paket.html">installed Paket</a>, it's time to learn how to use it!</p>
+<p>You can refer to a <a href="https://github.com/cartermp/MinimalPaketAndFakeSample">minimal sample codebase</a> that shows how Paket works in a codebase.</p>
+<h2><a name="Core-concepts" class="anchor" href="#Core-concepts">Core concepts</a></h2>
+<p>Paket manages your dependencies with three core file types:</p>
+<ul>
+<li><a href="dependencies.file.html"><code>paket.dependencies</code></a>, where you specify your dependencies and their versions for your entire codebase.</li>
+<li><a href="references-files.html"><code>paket.references</code></a>, a file that specifies a subset of your dependencies for every project in a solution.</li>
+<li><a href="lock-file.html"><code>paket.lock</code></a>, a lock file that Paket generates when it runs. When you check it into source control, you get reproducible builds.</li>
+</ul>
+<p>You edit the <code>paket.dependencies</code> and <code>paket.references</code> files by hand as needed. When you run a paket command, it will generate the <code>paket.lock</code> file.</p>
+<p>All three file types must be committed to source control.</p>
+<h2><a name="Important-paket-commands" class="anchor" href="#Important-paket-commands">Important paket commands</a></h2>
+<p>The most frequently used Paket commands are:</p>
+<ul>
+<li><p><a href="paket-install.html"><code>paket install</code></a> - Run this after modifying the <code>paket.dependencies</code> file. It will update the <code>paket.lock</code> file, and then update all projects in your codebase that specify paket dependencies to import references.</p></li>
+<li><p><a href="paket-update.html"><code>paket update</code></a> - Run this to update your codebase to the latest versions of all dependent packages. It will update the <code>paket.lock</code> file to reference the most recent versions permitted by the restrictions in <code>paket.dependencies</code>, then apply these changes to all projects in your codebase.</p></li>
+<li><p><a href="paket-restore.html"><code>paket restore</code></a> - Run this after cloning the repository or switching branches. It will take the current <code>paket.lock</code> file and update all projects in your codebase so that they are referencing the correct versions of NuGet packages. It should be called by your build script in your codebase, so you should not need to run it manually.</p></li>
+</ul>
+<p>Refer to the <a href="https://github.com/cartermp/MinimalPaketAndFakeSample">minimal sample codebase</a> that shows how these commands are used in a codebase.</p>
+<p>There is a reference to all paket commands in the table of contents on the right-hand side of this page.</p>
+<h2><a name="Walkthrough" class="anchor" href="#Walkthrough">Walkthrough</a></h2>
+<p>Create a <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> in your solution's root with the .NET CLI:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket push [--help] [--url &lt;url&gt;] [--api-key &lt;key&gt;] [--endpoint &lt;path&gt;] &lt;path&gt;
-
-PACKAGE:
-
-    &lt;path&gt;                path to the .nupkg file
-
-OPTIONS:
-
-    --url &lt;url&gt;           URL of the NuGet feed
-    --api-key &lt;key&gt;       API key for the URL (default: value of the NUGET_KEY environment variable)
-    --endpoint &lt;path&gt;     API endpoint to push to (default: /api/v2/package)
-    --silent, -s          suppress console output
-    --verbose, -v         print detailed information to the console
-    --log-file &lt;path&gt;     print output to a file
-    --help                display this list of options.
+<td class="snippet"><pre class="fssnip"><code lang="sh">dotnet paket init
 </code></pre></td></tr></table>
-<p>If you add the <code>--verbose</code> flag Paket will run in verbose mode and show detailed information.</p>
-<p>With <code>--log-file [path]</code> you can trace the logged information into a file.</p>
+<p>You can also create it by hand.</p>
+<p>Make the dependencies file look like this to continue:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://api.nuget.org/v3/index.json
+
+<span class="k">nuget</span> Newtonsoft.Json
+<span class="k">nuget</span> Colorful.Console
+</code></pre></td></tr></table>
+<h3><a name="Installing-dependencies" class="anchor" href="#Installing-dependencies">Installing dependencies</a></h3>
+<p>For every project in your codebase, create a <code>paket.references</code> file that specifies the dependencies you want to pull in for that project.</p>
+<p>In the <a href="https://github.com/cartermp/MinimalPaketAndFakeSample">minimal sample codebase</a>, the library project has <code>Newtonsoft.Json</code> and the console project has <code>Colorful.Console</code>.</p>
+<p>Once you have a <code>paket.references</code> file alongside every project in your codebase, install all dependencies with this command:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">dotnet paket install
+</code></pre></td></tr></table>
+<p>Or if you're not using .NET Core,</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">./paket/paket.exe install
+</code></pre></td></tr></table>
+<p>The <a href="paket-install.html"><code>paket install</code> command</a> will analyze your dependencies and automatically generate the <a href="lock-file.html"><code>paket.lock</code> file</a>. It's often quite large!</p>
+<p>This file shows all direct and <a href="faq.html#transitive">transitive dependencies</a> and pins every dependency to a concrete version. You'll want to commit this file to your version control system (<a href="faq.html#Why-should-I-commit-the-lock-file">read why</a>).</p>
+<h3><a name="Updating-packages" class="anchor" href="#Updating-packages">Updating packages</a></h3>
+<p>If you want to check if your dependencies have updates you can run the <a href="paket-outdated.html"><code>paket outdated</code> command</a>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">dotnet paket oudated
+</code></pre></td></tr></table>
+<p>Or if you're not using .NET Core:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">.paket/paket.exe outdated
+</code></pre></td></tr></table>
+<p>If you want to update all packages you can use the <a href="paket-update.html"><code>paket update</code> command</a>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">dotnet paket update
+</code></pre></td></tr></table>
+<p>Or if you're not using .NET Core:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">.paket/paket.exe update
+</code></pre></td></tr></table>
+<p>This command will analyze your <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> and update the <a href="lock-file.html"><code>paket.lock</code> file</a> to specify all of the updated dependencies.</p>
 
 
         </div>

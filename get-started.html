@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>paket push
+    <title>Get started
 </title>
     <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -57,42 +57,90 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1><a name="paket-push" class="anchor" href="#paket-push">paket push</a></h1>
-<p>Push a NuGet package.</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
-<span class="l">11: </span>
-<span class="l">12: </span>
-<span class="l">13: </span>
-<span class="l">14: </span>
-<span class="l">15: </span>
+<h1><a name="Get-started" class="anchor" href="#Get-started">Get started</a></h1>
+<p>This guide shows how to get started with Paket in various ways, depending on your scenario:</p>
+<ul>
+<li><a href="get-started.md#net-core-preferred">Get started with .NET Core (preferred)</a></li>
+<li><a href="get-started.md#install-the-paket-bootstrapper-legacy">Get started with the paket bootstrapper (legacy)</a></li>
+<li><a href="get-started.md#convert-from-legacy-nuget">Convert from legacy NuGet</a></li>
+</ul>
+<h2><a name="NET-Core-preferred" class="anchor" href="#NET-Core-preferred">.NET Core (preferred)</a></h2>
+<p>Paket works entirely out of the box on .NET Core, and it's simple to get started.</p>
+<ol>
+<li>
+<p>Install .NET Core 3.0 or higher</p>
+<p>If you don't have it already, you'll need to <a href="https://dotnet.microsoft.com/download">download and install the latest .NET Core</a>.</p>
+</li>
+<li>
+<p>Install and restore Paket as a local tool in the root of your codebase:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket push [--help] [--url &lt;url&gt;] [--api-key &lt;key&gt;] [--endpoint &lt;path&gt;] &lt;path&gt;
-
-PACKAGE:
-
-    &lt;path&gt;                path to the .nupkg file
-
-OPTIONS:
-
-    --url &lt;url&gt;           URL of the NuGet feed
-    --api-key &lt;key&gt;       API key for the URL (default: value of the NUGET_KEY environment variable)
-    --endpoint &lt;path&gt;     API endpoint to push to (default: /api/v2/package)
-    --silent, -s          suppress console output
-    --verbose, -v         print detailed information to the console
-    --log-file &lt;path&gt;     print output to a file
-    --help                display this list of options.
+<td class="snippet"><pre class="fssnip"><code lang="sh">dotnet new tool-manifest
+dotnet tool instal paket
+dotnet tool restore
+dotnet paket restore
 </code></pre></td></tr></table>
-<p>If you add the <code>--verbose</code> flag Paket will run in verbose mode and show detailed information.</p>
-<p>With <code>--log-file [path]</code> you can trace the logged information into a file.</p>
+<p>This will create a <code>.config/dotnet-tools.json</code> file in the root of your codebase. It must be checked into source control.</p>
+</li>
+<li>
+<p>Initialize Paket by creating a dependencies file.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">dotnet paket init
+</code></pre></td></tr></table>
+</li>
+</ol>
+<p>If you have a <code>build.sh</code>/<code>build.cmd</code> build script, also make sure you add the last two commands before you execute your build:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">dotnet tool restore
+dotnet paket restore
+# Your call to build comes after the restore calls, possibly with FAKE: https://fake.build/
+</code></pre></td></tr></table>
+<p>This will ensure Paket works in any .NET Core build environment.</p>
+<p>Make sure to add the following entries to your <code>.gitignore</code>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="pn">#</span><span class="id">Paket</span> <span class="id">dependency</span> <span class="id">manager</span>
+<span class="pn">.</span><span class="id">paket</span><span class="o">/</span>
+<span class="id">paket</span><span class="o">-</span><span class="id">files</span><span class="o">/</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Next, <a href="learn-how-to-use-paket.html">learn how to use Paket</a></p>
+<h2><a name="Install-the-Paket-bootstrapper-legacy" class="anchor" href="#Install-the-Paket-bootstrapper-legacy">Install the Paket bootstrapper (legacy)</a></h2>
+<p>If you're not using .NET Core, or you're stuck on .NET Core 2.2 or lower, you can use the paket bootstrapper.</p>
+<ol>
+<li>Create a <code>.paket</code> directory in the root of your solution.</li>
+<li>Download the latest <a href="https://github.com/fsprojects/Paket/releases/latest"><code>paket.bootstrapper.exe</code></a> into that directory.</li>
+<li>Rename <code>.paket/paket.bootstrapper.exe</code> to <code>.paket/paket.exe</code>. <a href="bootstrapper.html#Magic-mode">Read more about "magic mode"</a>.</li>
+<li>Commit <code>.paket/paket.exe</code> to your repository.</li>
+<li>
+After the first <code>.paket/paket.exe</code> invocation Paket will create a couple of
+files in <code>.paket</code> — commit those as well.
+</li>
+</ol>
+<p>Make sure to add the following entries to your <code>.gitignore</code>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="pn">#</span><span class="id">Paket</span> <span class="id">dependency</span> <span class="id">manager</span>
+<span class="pn">.</span><span class="id">paket</span><span class="o">/</span>
+<span class="id">paket</span><span class="o">-</span><span class="id">files</span><span class="o">/</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Next, <a href="learn-how-to-use-paket.html">learn how to use Paket</a></p>
+<h3><a name="Convert-from-NuGet" class="anchor" href="#Convert-from-NuGet">Convert from NuGet</a></h3>
+<p>If you are using legacy NuGet (<code>packages.config</code>-style), then check out the tutorial on how to automatically <a href="convert-from-nuget-tutorial.html">convert from legacy nuget</a>.</p>
 
 
         </div>
