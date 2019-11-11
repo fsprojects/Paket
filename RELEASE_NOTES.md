@@ -1,7 +1,6 @@
-#### 5.231.2 - 2019-11-06
+#### 5.232.0 - 2019-11-11
+* Add repository tag to template file - https://github.com/fsprojects/Paket/pull/3707
 * BUGFIX: Fixed IndexOutOfRangeException starting from 5.231.0 - https://github.com/fsprojects/Paket/issues/3701
-
-#### 5.231.1 - 2019-11-06
 * BUGFIX: Allow GitHub package registry urls without trailing slash - https://github.com/fsprojects/Paket/issues/3700
 
 #### 5.231.0 - 2019-11-05
