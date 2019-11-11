@@ -20,7 +20,6 @@ Paket works entirely out of the box on .NET Core, and it's simple to get started
    dotnet new tool-manifest
    dotnet tool install paket
    dotnet tool restore
-   dotnet paket restore
    ```
 
    This will create a `.config/dotnet-tools.json` file in the root of your codebase. It must be checked into source control.
