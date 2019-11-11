@@ -46,8 +46,8 @@ let tags = "nuget, bundler, F#"
 let solutionFile  = "Paket.sln"
 
 // Pattern specifying assemblies to be tested using NUnit
-let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
-let integrationTestAssemblies = "integrationtests/Paket.IntegrationTests/bin/Release/*Tests*.dll"
+let testAssemblies = "tests/**/bin/Release/net46/*Tests*.dll"
+let integrationTestAssemblies = "integrationtests/Paket.IntegrationTests/bin/Release/net46/*Tests*.dll"
 
 // Git configuration (used for publishing documentation in gh-pages branch)
 // The profile where the project is posted
@@ -69,6 +69,7 @@ let mutable dotnetExePath = "dotnet"
 // --------------------------------------------------------------------------------------
 
 let buildDir = "bin"
+let buildDirNet46 = "bin/net46"
 let buildDirNetCore = "bin_netcore"
 let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
@@ -140,6 +141,7 @@ Target "Clean" (fun _ ->
     !! "src/**/bin"
     ++ "tests/**/bin"
     ++ buildDir
+    ++ buildDirNet46
     ++ buildDirNetCore
     ++ tempDir
     |> CleanDirs
@@ -157,20 +159,18 @@ Target "CleanDocs" (fun _ ->
 
 Target "Build" (fun _ ->
     if isMono then
-        !! solutionFile
-        |> MSBuildReleaseExt "" [
-                "VisualStudioVersion", "14.0"
-                "ToolsVersion"       , "14.0"
-        ] "Rebuild"
-        |> ignore
+        DotNetCli.Build (fun c ->
+            { c with
+                Project = solutionFile
+                ToolPath = dotnetExePath
+            })
     else
-        !! solutionFile
-        |> MSBuildReleaseExt "" [
-                "VisualStudioVersion", "14.0"
-                "ToolsVersion"       , "14.0"
-                "SourceLinkCreate"   , "true"
-        ] "Rebuild"
-        |> ignore
+        DotNetCli.Build (fun c ->
+            { c with
+                Project = solutionFile
+                ToolPath = dotnetExePath
+                AdditionalArgs = [ "/p:SourceLinkCreate=true" ]
+            })
 )
 
 let assertExitCodeZero x =
@@ -342,13 +342,13 @@ Target "MergePaketTool" (fun _ ->
 
     let toPack =
         mergeLibs
-        |> List.map (fun l -> buildDir @@ l)
+        |> List.map (fun l -> buildDirNet46 @@ l)
         |> separated " "
 
     let result =
         ExecProcess (fun info ->
             info.FileName <- currentDirectory </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
-            info.Arguments <- sprintf "/lib:%s /ver:%s /out:%s %s" buildDir release.AssemblyVersion paketFile toPack
+            info.Arguments <- sprintf "/lib:%s /ver:%s /out:%s %s" buildDirNet46 release.AssemblyVersion paketFile toPack
             ) (TimeSpan.FromMinutes 5.)
 
     if result <> 0 then failwithf "Error during ILRepack execution."

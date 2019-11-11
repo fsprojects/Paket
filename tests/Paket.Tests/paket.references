@@ -2,8 +2,6 @@ FSharp.Core
 Argu
 Chessie
 Newtonsoft.Json
-FSharp.Compiler.Tools
-
 NUnit
 NUnit3TestAdapter
 FsCheck

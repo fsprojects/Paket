@@ -23,7 +23,7 @@ let paketToolPath =
 #if PAKET_NETCORE
     dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin_netcore/paket.dll")
 #else
-    "", FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.exe")
+    "", FullName(__SOURCE_DIRECTORY__ + "../../../bin/net46/paket.exe")
 #endif
 
 let integrationTestPath = FullName(__SOURCE_DIRECTORY__ + "../../../integrationtests/scenarios")
@@ -40,7 +40,7 @@ let cleanup scenario =
 
 //let cleanupAllScenarios() =
 //    for scenario in scenarios |> Seq.toList do
-//        try 
+//        try
 //            cleanup scenario
 //            scenarios.Remove(scenario) |> ignore<bool>
 //        with e ->
@@ -121,7 +121,7 @@ let directToolEx env isPaket toolInfo commands workingDir =
         ExecProcessWithLambdas (fun info ->
           info.FileName <- processFilename
           info.WorkingDirectory <- workingDir
-          info.Arguments <- processArgs) 
+          info.Arguments <- processArgs)
           (System.TimeSpan.FromMinutes 7.)
           false
           (printfn "%s")
@@ -144,7 +144,7 @@ let directToolEx env isPaket toolInfo commands workingDir =
                 perfMessages.Add(msg)
 
         msgs.Add({ IsError = isError; Message = msg})
-        
+
     let result =
         try
             ExecProcessWithLambdas (fun info ->
@@ -269,7 +269,7 @@ let updateShouldFindPackageConflict packageName scenario =
         use __ = update scenario |> fst
         failwith "No conflict was found."
     with
-    | exn when exn.Message.Contains("Conflict detected") && exn.Message.Contains(sprintf "requested package %s" packageName) -> 
+    | exn when exn.Message.Contains("Conflict detected") && exn.Message.Contains(sprintf "requested package %s" packageName) ->
         #if INTERACTIVE
         printfn "Ninject conflict test passed"
         #endif
@@ -321,13 +321,13 @@ let isPackageCachedWithOnlyLowercaseNames (name: string) =
 
     let lowercaseName = name.ToLowerInvariant()
 
-    let packageFolders = 
+    let packageFolders =
         [ nugetCache; userPackageFolder ]
         |> List.collect (Directory.GetDirectories >> List.ofArray)
         |> List.filter (fun x -> Path.GetFileName x |> String.equalsIgnoreCase name)
 
     let packageFolderNames = packageFolders |> List.map Path.GetFileName |> List.distinct
-    
+
     // ensure that names of package directories are lowercase only
     match packageFolderNames with
     | [ x ] when x = lowercaseName ->

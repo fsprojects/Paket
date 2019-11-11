@@ -1,7 +1,6 @@
 FSharp.Core
 Chessie
 Newtonsoft.Json
-FSharp.Compiler.Tools
 NUnit
 
 NUnit3TestAdapter
