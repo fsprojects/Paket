@@ -67,7 +67,7 @@
     <!-- First test: Is CLI configured to be used in "dotnet-tools.json"? - can result in a false negative; only a positive outcome is reliable. -->
     <PropertyGroup Condition=" '$(PaketExePath)' == '' ">
       <_DotnetToolsJson Condition="Exists('$(PaketRootPath)/.config/dotnet-tools.json')">$([System.IO.File]::ReadAllText("$(PaketRootPath)/.config/dotnet-tools.json"))</_DotnetToolsJson>
-      <_ConfigContainsPaket Condition=" '$(_DotnetToolsJson)' != ''">$(DotnetToolsJson.Contains('"paket"'))</_ConfigContainsPaket>
+      <_ConfigContainsPaket Condition=" '$(_DotnetToolsJson)' != ''">$(_DotnetToolsJson.Contains('"paket"'))</_ConfigContainsPaket>
       <_ConfigContainsPaket Condition=" '$(_ConfigContainsPaket)' == ''">false</_ConfigContainsPaket>
     </PropertyGroup>
 
