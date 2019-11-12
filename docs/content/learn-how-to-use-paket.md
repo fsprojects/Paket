@@ -20,9 +20,9 @@ All three file types must be committed to source control.
 
 The most frequently used Paket commands are:
 
-* [`paket install`](paket-install.html) - Run this after modifying the `paket.dependencies` file. It will update the `paket.lock` file, and then update all projects in your codebase that specify paket dependencies to import references.
+* [`paket install`](paket-install.html) - Run this after adding or removing packages from the `paket.dependencies` file. It will update any affected parts of the lock file that were affected by the changes in the `paket.dependencies` file, and then refresh all projects in your codebase that specify paket dependencies to import references.
 
-* [`paket update`](paket-update.html) - Run this to update your codebase to the latest versions of all dependent packages. It will update the `paket.lock` file to reference the most recent versions permitted by the restrictions in `paket.dependencies`, then apply these changes to all projects in your codebase.
+* [`paket update`](paket-update.html) - Run this to update your codebase to the latest versions of *all* dependent packages. It will update the `paket.lock` file to reference the most recent versions permitted by the restrictions in `paket.dependencies`, then apply these changes to all projects in your codebase.
 
 * [`paket restore`](paket-restore.html) - Run this after cloning the repository or switching branches. It will take the current `paket.lock` file and update all projects in your codebase so that they are referencing the correct versions of NuGet packages. It should be called by your build script in your codebase, so you should not need to run it manually.
 
