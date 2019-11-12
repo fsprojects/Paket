@@ -1,15 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputPath>..\..\bin\</OutputPath>
+    <PackageId>Paket</PackageId>
+    <AssemblyName>paket</AssemblyName>
+    <PackAsTool Condition=" '$(TargetFramework)' != 'net461'" >true</PackAsTool>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Commands.fs" />
     <Compile Include="Program.fs" />
-    <Content Include="App.config" />
+    <Content Condition=" '$(TargetFramework)' == 'net461'" Include="App.config" />
     <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup>

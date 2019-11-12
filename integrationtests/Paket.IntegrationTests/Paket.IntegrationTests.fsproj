@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <DefineConstants Condition=" '$(TargetFramework)' != 'net461'">PAKET_NETCORE;NO_UNIT_PLATFORMATTRIBUTE;TESTSUITE_KNOWN_FAILURE_DOTNETCORE_3005;FAKE_NETSTANDARD_API;@(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\paket-files\forki\FsUnit\FsUnit.fs">
@@ -47,6 +47,10 @@
     <Reference Include="FakeLib">
       <HintPath>..\..\packages\build\FAKE\tools\FakeLib.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net461'">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

@@ -1,13 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net45</TargetFramework>
+    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Version Condition="'$(PAKET_PROJ_VERSION)' != ''">$(PAKET_PROJ_VERSION)</Version>
+    <PackageVersion Condition="'$(PAKET_PROJ_VERSION)' != ''">$(PAKET_PROJ_VERSION)</PackageVersion>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup>
-    <DefineConstants>USE_WEB_CLIENT_FOR_UPLOAD;NO_WINCLIENTHANDLER;NO_MAXCONNECTIONPERSERVER</DefineConstants>
+  <PropertyGroup Condition=" '$(TargetFramework)' != 'net461'">
+	  <DefineConstants>NO_BOOTSTRAPPER;NO_CONFIGURATIONMANAGER;CUSTOM_WEBPROXY;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net461'">
+    <DefineConstants>USE_WEB_CLIENT_FOR_UPLOAD;NO_MAXCONNECTIONPERSERVER</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
@@ -101,11 +108,14 @@
     <Content Include="app.config" />
     <None Include="Prototypes\script-generation.fsx" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461'">
     <Reference Include="System.Configuration, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="System.IO.Compression, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
     <Reference Include="System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="System.Security, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   </ItemGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' != 'net461'">
+    <DefineConstants>$(DefineConstants);DOTNETCORE;NETSTANDARD1_5;NETSTANDARD1_6;USE_HTTP_CLIENT</DefineConstants>
+  </PropertyGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

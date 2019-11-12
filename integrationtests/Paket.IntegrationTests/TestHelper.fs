@@ -23,7 +23,7 @@ let paketToolPath =
 #if PAKET_NETCORE
     dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin_netcore/paket.dll")
 #else
-    "", FullName(__SOURCE_DIRECTORY__ + "../../../bin/net46/paket.exe")
+    "", FullName(__SOURCE_DIRECTORY__ + "../../../bin/net461/paket.exe")
 #endif
 
 let integrationTestPath = FullName(__SOURCE_DIRECTORY__ + "../../../integrationtests/scenarios")

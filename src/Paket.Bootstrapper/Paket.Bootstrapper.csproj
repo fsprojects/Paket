@@ -2,16 +2,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
     <StartupObject>Paket.Bootstrapper.Program</StartupObject>
     <AssemblyName>paket.bootstrapper</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <OutputPath>..\..\bin\</OutputPath>
+    <DefineConstants Condition=" '$(TargetFramework)' != 'net461'">NO_SSL3;NO_SYSTEMWEBPROXY;PAKET_BOOTSTRAP_NO_CACHE;PAKET_BOOTSTRAP_WORKAROUND_MSBUILD_URLS;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(PaketUseLocalGithub)' == 'true' ">
+    <DefineConstants>LOCAL_GITHUB;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Include="paket.template" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461'">
     <Reference Include="System.Configuration, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net461'">
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.0" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

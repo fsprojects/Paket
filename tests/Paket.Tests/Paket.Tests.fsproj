@@ -2,9 +2,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' != 'net461'">
+    <DefineConstants>WEBPROXY_NETSTANDARD;TESTSUITE_RUNS_ON_DOTNETCORE;NO_UNIT_PLATFORMATTRIBUTE;NO_UNIT_TIMEOUTATTRIBUTE;@(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\paket-files\forki\FsUnit\FsUnit.fs">
@@ -29,106 +32,59 @@
     <Compile Include="Versioning\DependencySetSpecs.fs" />
     <Compile Include="Versioning\FrameworkRestrictionTests.fs" />
     <Compile Include="Versioning\InterprojectReferencesConstraintSpecs.fs" />
-    <None Include="Nuspec\EmptyLibs.nuspec" />
-    <None Include="Nuspec\Fantomas.nuspec" />
-    <None Include="Nuspec\FluentAssertions.nuspec" />
-    <None Include="Nuspec\FluentAssertions4.nuspec" />
-    <None Include="Nuspec\FSharp.Data.nuspec" />
-    <None Include="Nuspec\FSharp.Data.Prerelease.nuspec" />
-    <None Include="Nuspec\FSharp.Data.SqlClient.nuspec" />
-    <None Include="Nuspec\FSharp.Data.SqlEnumProvider.nuspec" />
-    <None Include="Nuspec\FsXaml.Wpf.nuspec" />
-    <None Include="Nuspec\LiteGuard.Source.nuspec" />
-    <None Include="Nuspec\log4net.nuspec" />
-    <None Include="Nuspec\MathNet.Numerics.FSharp.nuspec" />
-    <None Include="Nuspec\MathNet.Numerics.nuspec" />
-    <None Include="Nuspec\Microsoft.AspNetCore.Antiforgery.nuspec" />
-    <None Include="Nuspec\Microsoft.AspNetCore.Mvc.ViewFeatures.nuspec" />
-    <None Include="Nuspec\Microsoft.Framework.Logging.nuspec" />
-    <None Include="Nuspec\Microsoft.Net.Http.nuspec" />
-    <None Include="Nuspec\Octokit.nuspec" />
-    <None Include="Nuspec\RazorEngine.nuspec" />
-    <None Include="Nuspec\ReadOnlyCollectionExtensions.nuspec" />
-    <None Include="Nuspec\WindowsAzure.Storage.nuspec" />
-    <None Include="Nuspec\EasyNetQ.nuspec" />
-    <None Include="Nuspec\Xamarin.Forms.nuspec" />
+    <TestAsset Include="Nuspec\EmptyLibs.nuspec" />
+    <TestAsset Include="Nuspec\Fantomas.nuspec" />
+    <TestAsset Include="Nuspec\FluentAssertions.nuspec" />
+    <TestAsset Include="Nuspec\FluentAssertions4.nuspec" />
+    <TestAsset Include="Nuspec\FSharp.Data.nuspec" />
+    <TestAsset Include="Nuspec\FSharp.Data.Prerelease.nuspec" />
+    <TestAsset Include="Nuspec\FSharp.Data.SqlClient.nuspec" />
+    <TestAsset Include="Nuspec\FSharp.Data.SqlEnumProvider.nuspec" />
+    <TestAsset Include="Nuspec\FsXaml.Wpf.nuspec" />
+    <TestAsset Include="Nuspec\LiteGuard.Source.nuspec" />
+    <TestAsset Include="Nuspec\log4net.nuspec" />
+    <TestAsset Include="Nuspec\MathNet.Numerics.FSharp.nuspec" />
+    <TestAsset Include="Nuspec\MathNet.Numerics.nuspec" />
+    <TestAsset Include="Nuspec\Microsoft.AspNetCore.Antiforgery.nuspec" />
+    <TestAsset Include="Nuspec\Microsoft.AspNetCore.Mvc.ViewFeatures.nuspec" />
+    <TestAsset Include="Nuspec\Microsoft.Framework.Logging.nuspec" />
+    <TestAsset Include="Nuspec\Microsoft.Net.Http.nuspec" />
+    <TestAsset Include="Nuspec\Octokit.nuspec" />
+    <TestAsset Include="Nuspec\RazorEngine.nuspec" />
+    <TestAsset Include="Nuspec\ReadOnlyCollectionExtensions.nuspec" />
+    <TestAsset Include="Nuspec\WindowsAzure.Storage.nuspec" />
+    <TestAsset Include="Nuspec\EasyNetQ.nuspec" />
+    <TestAsset Include="Nuspec\Xamarin.Forms.nuspec" />
     <Compile Include="Nuspec\NuspecSpecs.fs" />
     <Compile Include="NuGetLocal\NuGetLocalSpecs.fs" />
-    <None Include="NuGetLocal\case1\package.name.0.1.0-alpha2.nupkg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="NuGetLocal\case1\package.name.0.1.2.nupkg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="NuGetLocal\case1\package.name.1.2.0.nupkg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="NuGetLocal\case2\package.name.0.1.0.0-alpha2.nupkg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="NuGetLocal\case2\package.name.1.2.0.0.nupkg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="NuGetLocal\case3\netstedFolder\package.in.nested.folder.1.0.0.nupkg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <Content Include="PackagesConfig\xunit.visualstudio.packages.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="PackagesConfig\asp.net.packages.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <TestAsset Include="NuGetLocal\case1\package.name.0.1.0-alpha2.nupkg" />
+    <TestAsset Include="NuGetLocal\case1\package.name.0.1.2.nupkg" />
+    <TestAsset Include="NuGetLocal\case1\package.name.1.2.0.nupkg" />
+    <TestAsset Include="NuGetLocal\case2\package.name.0.1.0.0-alpha2.nupkg" />
+    <TestAsset Include="NuGetLocal\case2\package.name.1.2.0.0.nupkg" />
+    <TestAsset Include="NuGetLocal\case3\netstedFolder\package.in.nested.folder.1.0.0.nupkg" />
+    <TestAsset Include="PackagesConfig\xunit.visualstudio.packages.config" />
+    <TestAsset Include="PackagesConfig\asp.net.packages.config" />
     <Compile Include="PackagesConfig\ReadConfig.fs" />
     <Compile Include="PackagesConfig\WriteConfig.fs" />
-    <Content Include="JSON-LD\Rx-PlatformServices.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <TestAsset Include="JSON-LD\Rx-PlatformServices.json" />
     <Compile Include="JSON-LD\JSONLDSpecs.fs" />
-    <Content Include="NuGetOData\Fantomas.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="NuGetOData\Microsoft.AspNet.WebApi.Client.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="NuGetOData\Fleece.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="NuGetOData\EmptyFeedList.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="NuGetOData\ReadOnlyCollectionExtensions.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="NuGetOData\Math.Numerics.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="NuGetOData\Math.Numerics.FSharp.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="NuGetOData\Rx-PlatformServices.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="NuGetOData\EasyNetQ.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="NuGetOData\BenchmarkDotNet-UnknownFramework.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <TestAsset Include="NuGetOData\Fantomas.xml" />
+    <TestAsset Include="NuGetOData\Microsoft.AspNet.WebApi.Client.xml" />
+    <TestAsset Include="NuGetOData\Fleece.xml" />
+    <TestAsset Include="NuGetOData\EmptyFeedList.xml" />
+    <TestAsset Include="NuGetOData\ReadOnlyCollectionExtensions.xml" />
+    <TestAsset Include="NuGetOData\Math.Numerics.xml" />
+    <TestAsset Include="NuGetOData\Math.Numerics.FSharp.xml" />
+    <TestAsset Include="NuGetOData\Rx-PlatformServices.xml" />
+    <TestAsset Include="NuGetOData\EasyNetQ.xml" />
+    <TestAsset Include="NuGetOData\BenchmarkDotNet-UnknownFramework.xml" />
     <Compile Include="NuGetOData\ODataSpecs.fs" />
-    <Content Include="NuGetConfig\ClearTextPasswordConfig.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="NuGetConfig\PasswordConfig.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <TestAsset Include="NuGetConfig\ClearTextPasswordConfig.xml" />
+    <TestAsset Include="NuGetConfig\PasswordConfig.xml" />
     <Compile Include="NuGetConfig\NuGetConfigSpecs.fs" />
-    <Content Include="NuGetConfig\ConfigWithDisabledFeed.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="NuGetConfig\ConfigWithDisabledFeedFromUpstream.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Compile Include="DependenciesFile\StorageSpecs.fs" />
+    <TestAsset Include="NuGetConfig\ConfigWithDisabledFeed.xml" />
+    <TestAsset Include="NuGetConfig\ConfigWithDisabledFeedFromUpstream.xml" />
     <Compile Include="DependenciesFile\VersionRangeSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRequirementSpecs.fs" />
     <Compile Include="DependenciesFile\ParserSpecs.fs" />
@@ -164,88 +120,35 @@
     <Compile Include="Lockfile\ParserSpecs.fs" />
     <Compile Include="Lockfile\QuerySpecs.fs" />
     <Compile Include="Lockfile\ParserWithMultipleSourcesSpecs.fs" />
-    <Compile Include="LocalFile\LocalFileSpecs.fs" />
     <Compile Include="ReferencesFile\ReferencesFileSpecs.fs" />
+    <Compile Include="LocalFile\LocalFileSpecs.fs" />
     <Compile Include="Simplifier\BasicScenarioSpecs.fs" />
-    <None Include="ProjectFile\TestData\AnalyzerProject.csprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFrameworkAndOutputPath.csprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\EmptyFsharpGuid.fsprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\EmptyVbGuid.vbprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\EmptyPyGuid.pyprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\Project1.fsprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\Project1.vcxprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\Project2.fsprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\Project3.fsprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\Project4.fsprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\Project5.fsprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\ProjectWithConditions.fsprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\Empty.fsprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\EmptyWithOldStuff.fsprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\FrameworkAssemblies.fsprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\CustomFantomasNode.fsprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\CustomPaketFantomasNode.fsprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\NoCustomFantomasNode.fsprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\MaintainsOrdering.fsprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\NewSilverlightClassLibrary.csprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\FSharp.Core.Fluent-3.1.fsprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\WithWildcardCompileItems.csprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\LocalizedLib.csprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\Unity.csprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\EmptyCsharpGuid.csprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFramework.csprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <TestAsset Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFrameworkAndOutputPath.csprojtest" />
+    <TestAsset Include="ProjectFile\TestData\EmptyFsharpGuid.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\EmptyVbGuid.vbprojtest" />
+    <TestAsset Include="ProjectFile\TestData\EmptyPyGuid.pyprojtest" />
+    <TestAsset Include="ProjectFile\TestData\Project1.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\Project1.vcxprojtest" />
+    <TestAsset Include="ProjectFile\TestData\Project2.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\Project3.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\Project4.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\Project5.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\ProjectWithConditions.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\Empty.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\EmptyWithOldStuff.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\FrameworkAssemblies.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\CustomFantomasNode.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\CustomPaketFantomasNode.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\NoCustomFantomasNode.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\MaintainsOrdering.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\NewSilverlightClassLibrary.csprojtest" />
+    <TestAsset Include="ProjectFile\TestData\FSharp.Core.Fluent-3.1.fsprojtest" />
+    <TestAsset Include="ProjectFile\TestData\WithWildcardCompileItems.csprojtest" />
+    <TestAsset Include="ProjectFile\TestData\LocalizedLib.csprojtest" />
+    <TestAsset Include="ProjectFile\TestData\Unity.csprojtest" />
+    <TestAsset Include="ProjectFile\TestData\EmptyCsharpGuid.csprojtest" />
+    <TestAsset Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFramework.csprojtest" />
+    <TestAsset Include="ProjectFile\TestData\AnalyzerProject.csprojtest" />
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
     <Compile Include="ProjectFile\TargetFrameworkSpecs.fs" />
     <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />
@@ -257,6 +160,8 @@
     <Compile Include="ProjectFile\UpdateFromNugetSpecs.fs" />
     <Compile Include="ProjectFile\ReadPropertySpecs.fs" />
     <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
+    <None Include="InstallModel\runtimeJsonMsNetCorePlatforms2_2_1.json" />
+    <None Include="InstallModel\runtimeJsonMsNetCoreTargets2_1_0.json" />
     <Compile Include="InstallModel\RuntimeGraphTests.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
     <Compile Include="InstallModel\Xml\ControlzEx.fs" />
@@ -301,6 +206,19 @@
     <Compile Include="CommandsCheck.fs" />
     <Content Include="App.config" />
   </ItemGroup>
+
+  <Target Name="AddTestAssetAsNoneItems" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+      <!-- MSBUILD BLACK MAGIC!!! ....
+          is just a `TestAsset list -> None list`, like `List.map`, don't be scared -->
+
+      <None Include="%(TestAsset.Identity)">
+        <Link>%(TestAsset.Identity)</Link>
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Paket.Core\Paket.Core.fsproj" />
     <ProjectReference Include="..\..\src\Paket\Paket.fsproj" />

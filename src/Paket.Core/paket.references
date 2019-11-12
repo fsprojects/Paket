@@ -2,6 +2,8 @@ Newtonsoft.Json
 FSharp.Core
 Mono.Cecil
 Chessie
+System.Security.Cryptography.ProtectedData
+System.Net.Http.WinHttpHandler
 System.Net.Http
 
 File:Globbing.fs Common\
