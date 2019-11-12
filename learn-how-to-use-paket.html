@@ -72,8 +72,8 @@
 <h2><a name="Important-paket-commands" class="anchor" href="#Important-paket-commands">Important paket commands</a></h2>
 <p>The most frequently used Paket commands are:</p>
 <ul>
-<li><p><a href="paket-install.html"><code>paket install</code></a> - Run this after modifying the <code>paket.dependencies</code> file. It will update the <code>paket.lock</code> file, and then update all projects in your codebase that specify paket dependencies to import references.</p></li>
-<li><p><a href="paket-update.html"><code>paket update</code></a> - Run this to update your codebase to the latest versions of all dependent packages. It will update the <code>paket.lock</code> file to reference the most recent versions permitted by the restrictions in <code>paket.dependencies</code>, then apply these changes to all projects in your codebase.</p></li>
+<li><p><a href="paket-install.html"><code>paket install</code></a> - Run this after adding or removing packages from the <code>paket.dependencies</code> file. It will update any affected parts of the lock file that were affected by the changes in the <code>paket.dependencies</code> file, and then refresh all projects in your codebase that specify paket dependencies to import references.</p></li>
+<li><p><a href="paket-update.html"><code>paket update</code></a> - Run this to update your codebase to the latest versions of <em>all</em> dependent packages. It will update the <code>paket.lock</code> file to reference the most recent versions permitted by the restrictions in <code>paket.dependencies</code>, then apply these changes to all projects in your codebase.</p></li>
 <li><p><a href="paket-restore.html"><code>paket restore</code></a> - Run this after cloning the repository or switching branches. It will take the current <code>paket.lock</code> file and update all projects in your codebase so that they are referencing the correct versions of NuGet packages. It should be called by your build script in your codebase, so you should not need to run it manually.</p></li>
 </ul>
 <p>Refer to the <a href="https://github.com/cartermp/MinimalPaketAndFakeSample">minimal sample codebase</a> that shows how these commands are used in a codebase.</p>
@@ -115,7 +115,7 @@
 <p>If you want to check if your dependencies have updates you can run the <a href="paket-outdated.html"><code>paket outdated</code> command</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">dotnet paket oudated
+<td class="snippet"><pre class="fssnip"><code lang="sh">dotnet paket outdated
 </code></pre></td></tr></table>
 <p>Or if you're not using .NET Core:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
