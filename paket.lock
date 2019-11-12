@@ -1174,7 +1174,7 @@ NUGET
     FSharp.Compiler.Service (17.0.1)
       System.Collections.Immutable (>= 1.3.1)
       System.Reflection.Metadata (>= 1.4.2)
-    ILRepack (2.0.15)
+    ILRepack (2.0.18)
     Microsoft.AspNet.Razor (3.2.4)
     Microsoft.NETCore.Platforms (2.0) - restriction: || (&& (>= monoandroid) (>= net461)) (&& (>= monotouch) (>= net461)) (&& (< net45) (>= net461) (>= netstandard1.5) (< netstandard1.6)) (&& (< net45) (>= net461) (< netstandard1.5)) (&& (>= net461) (< netstandard1.0)) (&& (>= net461) (< netstandard1.3)) (&& (>= net461) (< netstandard1.4)) (&& (>= net461) (< netstandard1.5) (>= uap10.0)) (&& (>= net461) (< netstandard2.0)) (&& (>= net461) (< portable-net45+win8+wpa81)) (&& (>= net461) (< portable-net451+win81+wpa81)) (&& (>= net461) (>= uap10.1)) (&& (>= net461) (>= xamarinios)) (&& (>= net461) (>= xamarinmac)) (&& (>= net461) (>= xamarintvos)) (&& (>= net461) (>= xamarinwatchos))
     NETStandard.Library (2.0) - restriction: && (>= net461) (< netstandard2.0)
