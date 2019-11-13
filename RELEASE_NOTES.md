@@ -1,3 +1,6 @@
+#### 5.233.0 - 2019-11-13
+* BUGFIX: Change cli target detection to not block on "paket --version" - https://github.com/fsprojects/Paket/pull/3706
+
 #### 5.232.0 - 2019-11-11
 * Add repository tag to template file - https://github.com/fsprojects/Paket/pull/3707
 * BUGFIX: Fixed IndexOutOfRangeException starting from 5.231.0 - https://github.com/fsprojects/Paket/issues/3701
