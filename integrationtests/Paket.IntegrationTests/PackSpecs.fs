@@ -589,7 +589,7 @@ let ``#2694 paket fixnuspec should not remove project references``() =
     // Should we remove Microsoft.NETCore.App?
     // Problably not as "packaged" console applications have this dependency by default, see https://www.nuget.org/packages/dotnet-mergenupkg
     nuspec.Dependencies.Value.Length
-    |> shouldEqual 3
+    |> shouldEqual 2
 
 [<Test>]
 let ``#2765 pack single template does not evaluate other template`` () =
