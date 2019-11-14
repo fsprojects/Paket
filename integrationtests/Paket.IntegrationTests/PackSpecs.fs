@@ -588,7 +588,10 @@ let ``#2694 paket fixnuspec should not remove project references``() =
 
     // Should we remove Microsoft.NETCore.App?
     // Problably not as "packaged" console applications have this dependency by default, see https://www.nuget.org/packages/dotnet-mergenupkg
-    failwithf "Dependencies: %A" nuspec.Dependencies.Value
+    if nuspec.Dependencies.Value.Length <> 1 then
+        failwithf "Dependencies: %A" nuspec.Dependencies.Value
+    
+    
     
 
 [<Test>]
