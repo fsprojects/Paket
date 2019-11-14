@@ -18,14 +18,15 @@ and LblPathNode<'a> =
 | LblPathLeaf of PackageName * 'a
 
 module AdjLblGraph =
-    let rec paths start stop visited (g: AdjLblGraph<_>) : list<LblPath<_>> =
+    let rec paths start stop (visited: HashSet<_>) (g: AdjLblGraph<_>) : list<LblPath<_>> =
         let adjacents =
             g.[start]
-            |> Seq.filter (fun kv -> not (Set.contains kv.Key visited))
+            |> Seq.filter (fun kv -> not (visited.Contains kv.Key))
         [ for kv in adjacents do
             let n, lbl = kv.Key, kv.Value
             if n = stop then yield (start, LblPathLeaf (stop, lbl))
-            for path in paths n stop (Set.add n visited) g do
+            visited.Add n |> ignore
+            for path in paths n stop visited g do
                 yield (start, LblPathNode path)]
 
 let depGraph (res : PackageResolver.PackageResolution) : AdjLblGraph<_> =
@@ -145,7 +146,7 @@ module Reason =
             let chains =
                 topLevelDeps
                 |> Set.toList
-                |> List.collect (fun p -> AdjLblGraph.paths p packageName Set.empty graph)
+                |> List.collect (fun p -> AdjLblGraph.paths p packageName (HashSet<_>()) graph)
             match Set.contains packageName directDeps, Set.contains packageName topLevelDeps with
             | true, true ->
                 Result.Ok ((TopLevel, group.Resolution), [])

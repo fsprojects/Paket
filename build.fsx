@@ -93,7 +93,7 @@ let stable =
 
 let testSuiteFilterFlakyTests = getEnvironmentVarAsBoolOrDefault "PAKET_TESTSUITE_FLAKYTESTS" false
 
-let genFSAssemblyInfo (projectPath) =
+let genFSAssemblyInfo (projectPath: string) =
     let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
     let folderName = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(projectPath))
     let basePath = "src" @@ folderName
@@ -107,7 +107,7 @@ let genFSAssemblyInfo (projectPath) =
         Attribute.FileVersion release.AssemblyVersion
         Attribute.InformationalVersion release.NugetVersion ]
 
-let genCSAssemblyInfo (projectPath) =
+let genCSAssemblyInfo (projectPath: string) =
     let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
     let folderName = System.IO.Path.GetDirectoryName(projectPath)
     let basePath = folderName @@ "Properties"
