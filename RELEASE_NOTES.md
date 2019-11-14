@@ -1,3 +1,6 @@
+#### 5.234.0 - 2019-11-14
+* BUGFIX: Keep preferred versions for the correct group - https://github.com/fsprojects/Paket/issues/3717
+
 #### 5.233.0 - 2019-11-13
 * BUGFIX: Change cli target detection to not block on "paket --version" - https://github.com/fsprojects/Paket/pull/3706
 
