@@ -115,13 +115,13 @@ let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGrap
                 Map.empty
             | UpdateGroup groupName ->
                 DependencyChangeDetection.GetPreferredNuGetVersions(dependenciesFile,lockFile)
-                |> Map.filter (fun (g, p) _ -> g <> groupName)
+                |> Map.filter (fun (g, p) _ -> g = groupName)
             | UpdateFiltered (groupName, filter) ->
                 DependencyChangeDetection.GetPreferredNuGetVersions(dependenciesFile,lockFile)
-                |> Map.filter (fun (g, p) _ -> g <> groupName || not (filter.Match p))
+                |> Map.filter (fun (g, p) _ -> g = groupName || not (filter.Match p))
             | InstallGroup groupName ->
                 DependencyChangeDetection.GetPreferredNuGetVersions(dependenciesFile,lockFile)
-                |> Map.filter (fun (g, p) _ -> g <> groupName)
+                |> Map.filter (fun (g, p) _ -> g = groupName)
             | Install ->
                 DependencyChangeDetection.GetPreferredNuGetVersions(dependenciesFile,lockFile)
             |> Map.map (fun (groupName,_packageName) (v,s) ->
