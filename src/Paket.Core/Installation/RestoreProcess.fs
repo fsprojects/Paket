@@ -275,6 +275,8 @@ let createAlternativeNuGetConfig (projectFile:FileInfo, objDirectory:DirectoryIn
 
     saveToFile config alternativeConfigFileInfo |> ignore
 
+let FSharpCore = PackageName "FSharp.Core"
+
 let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (packages:((GroupName * PackageName) * PackageInstallSettings * _)seq) (fileInfo:FileInfo) =
     let cliParts =
         if Seq.isEmpty cliTools then
@@ -284,6 +286,8 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
             |> Seq.map (fun cliTool -> sprintf """        <DotNetCliToolReference Include="%O" Version="%O" />""" cliTool.Name cliTool.Version)
             |> fun xs -> String.Join(Environment.NewLine,xs)
             |> fun s -> "    <ItemGroup>" + Environment.NewLine + s + Environment.NewLine + "    </ItemGroup>"
+
+    let mutable FSharpCoreDetected = false
 
     let packagesParts =
         if Seq.isEmpty packages then
@@ -310,6 +314,11 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
                     if condition = "" || condition = "true" then "" else
                     sprintf " AND (%s)" condition
 
+                if not FSharpCoreDetected then
+                    for p,_,_ in packages do
+                        if p.Name = FSharpCore then
+                            FSharpCoreDetected <- true
+
                 let packageReferences =
                     packages
                     |> Seq.collect (fun (p,_,packageSettings) ->
@@ -324,6 +333,18 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
                  yield "    </ItemGroup>"])
             |> fun xs -> String.Join(Environment.NewLine,xs)
 
+    let disableImplicits =
+        if FSharpCoreDetected then
+            """
+            <!-- Disable automagic references for F# dotnet sdk -->
+            <!-- This will not do anything for other project types -->
+            <!-- see https://github.com/fsharp/fslang-design/blob/master/tooling/FST-1002-fsharp-in-dotnet-sdk.md -->
+            <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+            <DisableImplicitSystemValueTupleReference>true</DisableImplicitSystemValueTupleReference>
+            """
+        else
+            ""
+
     // When updating the PaketPropsVersion be sure to update the Paket.Restore.targets which checks this value
     let content =
         sprintf """<?xml version="1.0" encoding="utf-8" standalone="no"?>
@@ -331,11 +352,12 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
     <PropertyGroup>
         <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
         <PaketPropsVersion>5.185.3</PaketPropsVersion>
-        <PaketPropsLoaded>true</PaketPropsLoaded>
+        <PaketPropsLoaded>true</PaketPropsLoaded>%s
     </PropertyGroup>
 %s
 %s
 </Project>"""
+            disableImplicits
             cliParts
             packagesParts
 
