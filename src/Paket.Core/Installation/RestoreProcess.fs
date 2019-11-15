@@ -287,8 +287,6 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
             |> fun xs -> String.Join(Environment.NewLine,xs)
             |> fun s -> "    <ItemGroup>" + Environment.NewLine + s + Environment.NewLine + "    </ItemGroup>"
 
-    let mutable FSharpCoreDetected = false
-
     let packagesParts =
         if Seq.isEmpty packages then
             ""
@@ -314,11 +312,6 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
                     if condition = "" || condition = "true" then "" else
                     sprintf " AND (%s)" condition
 
-                if not FSharpCoreDetected then
-                    for p,_,_ in packages do
-                        if p.Name = FSharpCore then
-                            FSharpCoreDetected <- true
-
                 let packageReferences =
                     packages
                     |> Seq.collect (fun (p,_,packageSettings) ->
@@ -333,8 +326,8 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
                  yield "    </ItemGroup>"])
             |> fun xs -> String.Join(Environment.NewLine,xs)
 
-    let disableImplicits =
-        if FSharpCoreDetected then
+    let disableImplicitFSharpCore =
+        if packages |> Seq.exists (fun ((_,name),_,_) -> name = FSharpCore) then
             """
             <!-- Disable automagic references for F# dotnet sdk -->
             <!-- This will not do anything for other project types -->
@@ -357,7 +350,7 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
 %s
 %s
 </Project>"""
-            disableImplicits
+            disableImplicitFSharpCore
             cliParts
             packagesParts
 
