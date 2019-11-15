@@ -31,12 +31,6 @@
     <PaketBootStrapperCommand Condition=" '$(OS)' == 'Windows_NT' ">"$(PaketBootStrapperExePath)"</PaketBootStrapperCommand>
     <PaketBootStrapperCommand Condition=" '$(OS)' != 'Windows_NT' ">$(MonoPath) --runtime=v4.0.30319 "$(PaketBootStrapperExePath)"</PaketBootStrapperCommand>
 
-    <!-- Disable automagic references for F# dotnet sdk -->
-    <!-- This will not do anything for other project types -->
-    <!-- see https://github.com/fsharp/fslang-design/blob/master/tooling/FST-1002-fsharp-in-dotnet-sdk.md -->
-    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
-    <DisableImplicitSystemValueTupleReference>true</DisableImplicitSystemValueTupleReference>
-
     <!-- Disable Paket restore under NCrunch build -->
     <PaketRestoreDisabled Condition="'$(NCrunch)' == '1'">True</PaketRestoreDisabled>
 
