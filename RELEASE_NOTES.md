@@ -1,4 +1,5 @@
-#### 5.234.1 - 2019-11-15
+#### 5.235.0 - 2019-11-15
+* BUGFIX: DisableImplicitFSharpCoreReference is only set if FSharp.Core is explicitly referenced - https://github.com/fsprojects/Paket/pull/3725
 * PERFORMANCE: paket why uses HashSet to keep track of already visited nodes - https://github.com/fsprojects/Paket/pull/3722
 
 #### 5.234.0 - 2019-11-14
