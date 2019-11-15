@@ -176,7 +176,7 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L344-344" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L359-359" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -190,11 +190,11 @@
             createPaketPropsFile (...)
           </code>
           <div class="tip" id="613">
-            <strong>Signature:</strong> lockFile:LockFile -&gt; cliTools:seq&lt;ResolvedPackage&gt; -&gt; packages:seq&lt;(GroupName * PackageName) * PackageInstallSettings * &#39;?9258&gt; -&gt; fileInfo:FileInfo -&gt; bool * string<br />
-                          <strong>Type parameters:</strong> '?9258          </div>
+            <strong>Signature:</strong> lockFile:LockFile -&gt; cliTools:seq&lt;ResolvedPackage&gt; -&gt; packages:seq&lt;(GroupName * PackageName) * PackageInstallSettings * &#39;?9259&gt; -&gt; fileInfo:FileInfo -&gt; bool * string<br />
+                          <strong>Type parameters:</strong> '?9259          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L278-278" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L280-280" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -212,7 +212,7 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L361-361" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L376-376" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -230,7 +230,7 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L521-521" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L536-536" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -323,7 +323,7 @@ returns - package, libs files, props files, targets files, analyzers files</p>
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L537-537" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L552-552" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -354,14 +354,14 @@ returns - package, libs files, props files, targets files, analyzers files</p>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '622', 622)" onmouseover="showTip(event, '622', 622)">
-            ImplicitPackages 
+            FSharpCore 
           </code>
           <div class="tip" id="622">
-            <strong>Signature:</strong> Set&lt;PackageName&gt;<br />
+            <strong>Signature:</strong> PackageName<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L359-359" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L278-278" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -372,14 +372,14 @@ returns - package, libs files, props files, targets files, analyzers files</p>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '623', 623)" onmouseover="showTip(event, '623', 623)">
-            objDirectory (...)
+            ImplicitPackages 
           </code>
           <div class="tip" id="623">
-            <strong>Signature:</strong> (projectFileInfo:FileInfo * outputPath:DirectoryInfo option) -&gt; DirectoryInfo<br />
+            <strong>Signature:</strong> Set&lt;PackageName&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L551-551" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L374-374" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -390,14 +390,14 @@ returns - package, libs files, props files, targets files, analyzers files</p>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '624', 624)" onmouseover="showTip(event, '624', 624)">
-            Restore (...)
+            objDirectory (...)
           </code>
           <div class="tip" id="624">
-            <strong>Signature:</strong> (dependenciesFileName:string * projectFile:RestoreProjectOptions * force:bool * group:GroupName option * ignoreChecks:bool * failOnChecks:bool * targetFrameworks:string option * outputPath:string option * skipRestoreTargetsExtraction:bool) -&gt; unit<br />
+            <strong>Signature:</strong> (projectFileInfo:FileInfo * outputPath:DirectoryInfo option) -&gt; DirectoryInfo<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L650-650" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L566-566" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -408,14 +408,32 @@ returns - package, libs files, props files, targets files, analyzers files</p>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '625', 625)" onmouseover="showTip(event, '625', 625)">
-            RestoreNewSdkProject (...)
+            Restore (...)
           </code>
           <div class="tip" id="625">
+            <strong>Signature:</strong> (dependenciesFileName:string * projectFile:RestoreProjectOptions * force:bool * group:GroupName option * ignoreChecks:bool * failOnChecks:bool * targetFrameworks:string option * outputPath:string option * skipRestoreTargetsExtraction:bool) -&gt; unit<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L665-665" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '626', 626)" onmouseover="showTip(event, '626', 626)">
+            RestoreNewSdkProject (...)
+          </code>
+          <div class="tip" id="626">
             <strong>Signature:</strong> lockFile:LockFile -&gt; resolved:Lazy&lt;Map&lt;(GroupName * PackageName),PackageInfo&gt;&gt; -&gt; groups:Map&lt;GroupName,LockFileGroup&gt; -&gt; projectFile:ProjectFile -&gt; targetFrameworks:string option -&gt; outputPath:DirectoryInfo option -&gt; ReferencesFile<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L556-556" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L571-571" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
