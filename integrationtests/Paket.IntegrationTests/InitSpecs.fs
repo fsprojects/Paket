@@ -12,10 +12,10 @@ open System.Diagnostics
 #if PAKET_NETCORE
 [<Ignore(".net core paket doesnt init the boostrapper")>]
 #endif
-let ``#1040 init should download release version of bootstrapper``() = 
+let ``#1040 init should download release version of bootstrapper``() =
     use __ = paket "init" "i001040-init-downloads-bootstrapper" |> fst
     let bootstrapperPath = Path.Combine(scenarioTempPath "i001040-init-downloads-bootstrapper",".paket","paket.exe")
-   
+
     let productVersion = FileVersionInfo.GetVersionInfo(bootstrapperPath).ProductVersion
     String.IsNullOrWhiteSpace productVersion |> shouldEqual false
     productVersion.Contains("-") |> shouldEqual false
@@ -37,7 +37,7 @@ let ``#1743 empty log file``() =
 #if PAKET_NETCORE
 [<Ignore(".net core paket doesnt init the boostrapper")>]
 #endif
-let ``#1240 current bootstrapper should work``() = 
+let ``#1240 current bootstrapper should work``() =
     CleanDir (scenarioTempPath "i001240-bootstrapper")
     let paketToolPath = FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.bootstrapper.exe")
     CopyFile (scenarioTempPath "i001240-bootstrapper") paketToolPath
@@ -47,7 +47,7 @@ let ``#1240 current bootstrapper should work``() =
           info.FileName <- scenarioTempPath "i001240-bootstrapper" </> "paket.bootstrapper.exe"
           info.WorkingDirectory <- scenarioTempPath "i001240-bootstrapper"
           info.Arguments <- "") (System.TimeSpan.FromMinutes 5.)
-    if result.ExitCode <> 0 then 
+    if result.ExitCode <> 0 then
         let errors = String.Join(Environment.NewLine,result.Errors)
         printfn "%s" <| String.Join(Environment.NewLine,result.Messages)
         failwith errors
@@ -59,7 +59,7 @@ let ``#1240 current bootstrapper should work``() =
     |> shouldEqual true
 
 [<Test>]
-let ``#1041 init api``() = 
+let ``#1041 init api``() =
     let tempScenarioDir = scenarioTempPath "i001041-init-api"
 
     let url = "http://my.test/api"

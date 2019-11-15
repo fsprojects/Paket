@@ -3,7 +3,7 @@ content: none
 
 nuget Newtonsoft.Json redirects: force
 nuget Argu >= 5.1.0
-nuget FSharp.Core > 4.3 lowest_matching: true, redirects: force 
+nuget FSharp.Core > 4.3 lowest_matching: true, redirects: force
 nuget Chessie >= 0.6
 nuget Mono.Cecil prerelease
 
