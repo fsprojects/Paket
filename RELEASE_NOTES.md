@@ -1,3 +1,6 @@
+#### 5.234.1 - 2019-11-15
+* PERFORMANCE: paket why uses HashSet to keep track of already visited nodes - https://github.com/fsprojects/Paket/pull/3722
+
 #### 5.234.0 - 2019-11-14
 * BUGFIX: Keep preferred versions for the correct group - https://github.com/fsprojects/Paket/issues/3717
 
