@@ -111,8 +111,13 @@ module PaketEnv =
                     groups,
                     serialized)
 
-            dependenciesFile.ToString() |> saveFile dependenciesFile.FileName
+            dependenciesFile.ToString()
+            |> saveFile dependenciesFile.FileName
 
     let init (directory : DirectoryInfo) =
         let sources = [PackageSources.DefaultNuGetV3Source]
-        initWithContent sources [] directory
+        let additionalLines = [
+            "storage: none"
+            "framework: netcore3.0, netstandard2.0"
+        ]
+        initWithContent sources additionalLines directory
