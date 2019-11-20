@@ -1,3 +1,6 @@
+#### 5.236.1 - 2019-11-20
+* BUGFIX: "Update group" kept old versions fixed - https://github.com/fsprojects/Paket/pull/3725
+
 #### 5.236.0 - 2019-11-15
 * Paket init is now a bit more opionionated and restricts to netcore3.0, nestandard2.0, nestandard2.1 - https://github.com/fsprojects/Paket/pull/3725
 
