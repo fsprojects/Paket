@@ -185,14 +185,6 @@ let runCmdIn workDir exe =
 /// Execute a dotnet cli command
 let dotnet workDir = runCmdIn workDir "dotnet"
 
-Target "DotnetRestoreTools" (fun _ ->
-    DotNetCli.Restore (fun c ->
-        { c with
-            Project = currentDirectory </> "tools" </> "tools.fsproj"
-            ToolPath = dotnetExePath
-        })
-)
-
 Target "DotnetRestore" (fun _ ->
 
     //WORKAROUND dotnet restore with paket doesnt restore the PackageReference of SourceLink
@@ -731,8 +723,5 @@ Target "All" DoNothing
 
 "EnsurePackageSigned"
   ==> "Release"
-
-"DotnetRestoreTools"
-  ==> "MergeDotnetCoreIntoNuget"
 
 RunTargetOrDefault "All"
