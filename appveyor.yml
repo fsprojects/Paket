@@ -2,6 +2,11 @@ image: Visual Studio 2017
 init:
   - git config --global core.autocrlf input
 
+install:
+  - ps: Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile "${env:TEMP}\dotnet-install.ps1"
+  - ps: $sdkVersionFromGlobalJson = (Get-Content -Raw -Path 'global.json' | Out-String | ConvertFrom-Json).sdk.version
+  - ps: '& "${env:TEMP}\dotnet-install.ps1" -Version $sdkVersionFromGlobalJson'
+
 build_script:
   - cmd: build.cmd BuildPackage
 
