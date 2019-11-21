@@ -347,9 +347,6 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
         <PaketPropsVersion>5.185.3</PaketPropsVersion>
         <PaketPropsLoaded>true</PaketPropsLoaded>%s
     </PropertyGroup>
-    <PropertyGroup Condition="($(DesignTimeBuild) == true)">
-        <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    </PropertyGroup>
 %s
 %s
 </Project>"""

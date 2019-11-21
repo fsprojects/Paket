@@ -1,5 +1,5 @@
-#### 5.236.5 - 2019-11-21
-* BUGFIX: Paket caused build warnings by adding references to NETStandard.Library - https://github.com/fsprojects/Paket/issues/2852
+#### 5.236.6 - 2019-11-21
+* REVERT: Paket caused build warnings by adding references to NETStandard.Library - https://github.com/fsprojects/Paket/issues/2852
 
 #### 5.236.1 - 2019-11-20
 * BUGFIX: "Update group" kept old versions fixed - https://github.com/fsprojects/Paket/pull/3725
