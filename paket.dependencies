@@ -25,12 +25,6 @@ github fsharp/FAKE:0341a2e614eb2a7f34607cec914eb0ed83ce9add src/app/FakeLib/Glob
 github fsprojects/FSharp.TypeProviders.SDK:dc5ac01a1ac288eceb1fd6f12a5d388236f4f8e5 src/AssemblyReader.fs
 github forki/FsUnit FsUnit.fs
 
-group NetCoreCliTools
-  storage: none
-  source https://nuget.org/api/v2
-
-  clitool dotnet-mergenupkg ~> 2.3
-
 group NetCoreTools
   storage: none
   source https://nuget.org/api/v2

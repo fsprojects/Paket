@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 if test "$OS" = "Windows_NT"
 then
+  dotnet tool restore
+
   # use .Net
   .paket/paket.exe restore
   exit_code=$?
