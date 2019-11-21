@@ -347,6 +347,9 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
         <PaketPropsVersion>5.185.3</PaketPropsVersion>
         <PaketPropsLoaded>true</PaketPropsLoaded>%s
     </PropertyGroup>
+    <PropertyGroup Condition="($(DesignTimeBuild) == true)">
+        <NoWarn>$(NoWarn);NETSDK1023</NoWarn>
+    </PropertyGroup>
 %s
 %s
 </Project>"""
