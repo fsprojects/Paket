@@ -348,7 +348,7 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
         <PaketPropsLoaded>true</PaketPropsLoaded>%s
     </PropertyGroup>
     <PropertyGroup Condition="($(DesignTimeBuild) == true)">
-        <NoWarn>$(NoWarn);NETSDK1023</NoWarn>
+        <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     </PropertyGroup>
 %s
 %s
