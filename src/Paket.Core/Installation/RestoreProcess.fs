@@ -277,8 +277,6 @@ let createAlternativeNuGetConfig (projectFile:FileInfo, objDirectory:DirectoryIn
 
 let FSharpCore = PackageName "FSharp.Core"
 
-let ImplicitPackages = Set.ofList [ PackageName "NETStandard.Library" ]
-
 let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (packages:((GroupName * PackageName) * PackageInstallSettings * _)seq) (fileInfo:FileInfo) =
     let cliParts =
         if Seq.isEmpty cliTools then
@@ -294,7 +292,6 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
             ""
         else
             packages
-            |> Seq.filter (fun ((_,name),_,_) -> not (ImplicitPackages.Contains name))
             |> Seq.map (fun ((groupName,packageName),packageSettings,_) ->
                 let group = lockFile.Groups.[groupName]
                 let p = group.Resolution.[packageName]
@@ -373,6 +370,8 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
         let content = String.Join(Environment.NewLine,cliParts)
 
         saveToFile content fileInfo |> ignore
+
+let ImplicitPackages = Set.ofList [ PackageName "NETStandard.Library" ]
 
 let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (referencesFile:ReferencesFile) (resolved:Lazy<Map<GroupName*PackageName,PackageInfo>>) (groups:Map<GroupName,LockFileGroup>) (targetFrameworks: string option) (objDir: DirectoryInfo) =
     let projectFileInfo = FileInfo projectFile.FileName
