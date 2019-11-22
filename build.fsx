@@ -92,6 +92,15 @@ let stable =
     | _ -> release
 
 
+let runDotnet workingDir args =
+    let result =
+        ExecProcess (fun info ->
+            info.FileName <- dotnetExePath
+            info.WorkingDirectory <- workingDir
+            info.Arguments <- args) TimeSpan.MaxValue
+    if result <> 0 then
+        failwithf "dotnet %s failed" args
+
 let testSuiteFilterFlakyTests = getEnvironmentVarAsBoolOrDefault "PAKET_TESTSUITE_FLAKYTESTS" false
 
 let genFSAssemblyInfo (projectPath: string) =
@@ -186,12 +195,13 @@ let runCmdIn workDir exe =
 let dotnet workDir = runCmdIn workDir "dotnet"
 
 Target "DotnetRestore" (fun _ ->
-
     //WORKAROUND dotnet restore with paket doesnt restore the PackageReference of SourceLink
     // ref https://github.com/fsprojects/Paket/issues/2930
     Paket.Restore (fun p ->
         { p with
             Group = "NetCoreTools" })
+
+    runDotnet "." "tool restore"
 
     DotNetCli.Restore (fun c ->
         { c with
@@ -274,6 +284,7 @@ Target "RunIntegrationTestsNetCore" (fun _ ->
             TimeOut = TimeSpan.FromMinutes 60.
         })
 )
+
 "Clean" ==> "DotnetPublish" ==> "RunIntegrationTestsNetCore"
 
 // --------------------------------------------------------------------------------------
@@ -361,6 +372,7 @@ Target "RunIntegrationTests" (fun _ ->
             Where = if testSuiteFilterFlakyTests then "cat==Flaky" else "cat!=Flaky"
             TimeOut = TimeSpan.FromMinutes 40. })
 )
+
 "Clean" ==> "Build" ==> "RunIntegrationTests"
 
 

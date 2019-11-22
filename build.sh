@@ -1,19 +1,17 @@
 #!/usr/bin/env bash
 if test "$OS" = "Windows_NT"
 then
-  dotnet tool restore
-
   # use .Net
   .paket/paket.exe restore
   exit_code=$?
   if [ $exit_code -ne 0 ]; then
   	exit $exit_code
   fi
-  MSBuild=`pwd -W`/packages/build/RoslynTools.MSBuild/tools/msbuild/MSBuild.exe packages/build/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx 
+  MSBuild=`pwd -W`/packages/build/RoslynTools.MSBuild/tools/msbuild/MSBuild.exe packages/build/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx
 else
   mono .paket/paket.exe restore
   exit_code=$?
-  if [ $exit_code -ne 0 ]; then  
+  if [ $exit_code -ne 0 ]; then
     certificate_count=$(certmgr -list -c Trust | grep X.509 | wc -l)
     if [ $certificate_count -le 1 ]; then
       echo "Couldn't download Paket. This might be because your Mono installation"
@@ -30,6 +28,6 @@ else
   fi
   # Note: the bundled MSBuild crashes hard on linux, so we still rely on the system-installed version
   #export MSBuild=packages/build/RoslynTools.MSBuild/tools/msbuild/MSBuild.exe
-  mono packages/build/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx 
+  mono packages/build/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx
 fi
 
