@@ -357,7 +357,7 @@ let useDefaultHandler =
 
 let createHttpHandlerRaw(url, auth: Auth option) : HttpMessageHandler =
     let proxy = getDefaultProxyFor url
-#if !NO_WINCLIENTHANDLER
+
     if isWindows && not useDefaultHandler then
         // See https://github.com/dotnet/corefx/issues/31098
         let handler = new WinHttpHandler(Proxy = proxy)
@@ -382,7 +382,6 @@ let createHttpHandlerRaw(url, auth: Auth option) : HttpMessageHandler =
             handler.WindowsProxyUsePolicy <- WindowsProxyUsePolicy.UseCustomProxy
         handler :> _
     else
-#endif
     let handler =
         new HttpClientHandler(
             UseProxy = true,

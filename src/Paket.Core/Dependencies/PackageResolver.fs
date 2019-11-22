@@ -783,13 +783,13 @@ type private StepFlags = {
 } with
     override self.ToString () =
         sprintf
-            "[< FLAGS >]\n\
-            | Ready          - %b\n\
-            | UseUnlisted    - %b\n\
-            | HasUnlisted    - %b\n\
-            | ForceBreak     - %b\n\
-            | FirstTrial     - %b\n\
-            | UnlistedSearch - %b\n"
+            """[< FLAGS >]\n\
+               | Ready          - %b\n\
+               | UseUnlisted    - %b\n\
+               | HasUnlisted    - %b\n\
+               | ForceBreak     - %b\n\
+               | FirstTrial     - %b\n\
+               | UnlistedSearch - %b\n"""
             self.Ready self.UseUnlisted self.HasUnlisted self.ForceBreak self.FirstTrial self.UnlistedSearch
 
 type private Stage =

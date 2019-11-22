@@ -586,11 +586,6 @@ let ``#2694 paket fixnuspec should not remove project references``() =
     | None -> Assert.Fail("Expected package to still contain the FSharp.Core reference!")
     | Some s -> ignore s
 
-    // Should we remove Microsoft.NETCore.App?
-    // Problably not as "packaged" console applications have this dependency by default, see https://www.nuget.org/packages/dotnet-mergenupkg
-    nuspec.Dependencies.Value.Length
-    |> shouldEqual 3
-
 [<Test>]
 let ``#2765 pack single template does not evaluate other template`` () =
     let scenario = "i002765-evaluate-only-single-template"
