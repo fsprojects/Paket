@@ -26,8 +26,8 @@ namespace Paket.Bootstrapper
             public const string IgnoreCache = "-f";
             public const string MaxFileAge = "--max-file-age=";
             public const string Run = "--run";
-            public const string OutputDir = "--output-dir=";
             public const string AsTool = "--as-tool";
+            public const string OutputDir = "--output-dir=";
             public const string ConfigFile = "--config-file=";
         }
         public static class AppSettingKeys
@@ -38,6 +38,7 @@ namespace Paket.Bootstrapper
             public const string PaketVersion = "PaketVersion";
             public const string Prerelease = "Prerelease";
             public const string IgnoreCache = "IgnoreCache";
+            public const string BootstrapperOutputDir = "BootstrapperOutputDir";
         }
         public static class EnvArgs
         {
@@ -47,24 +48,6 @@ namespace Paket.Bootstrapper
             public const string PaketVersionEnvPosix = "PAKET_VERSION";
         }
 
-        private static void FillTarget(DownloadArguments downloadArguments, bool magicMode, IFileSystemProxy fileSystem)
-        {
-            var folder = Path.GetDirectoryName(fileSystem.GetExecutingAssemblyPath()) ?? "";
-            var target = magicMode ? GetMagicModeTarget(fileSystem) : Path.Combine(folder, "paket.exe");
-
-            downloadArguments.Target = target;
-            downloadArguments.Folder = Path.GetDirectoryName(target);
-        }
-
-        private static void FillTargetToRelativeDir(DownloadArguments downloadArguments, IFileSystemProxy fileSystem)
-        {
-            var folder = fileSystem.GetCurrentDirectory();
-            var target = Path.Combine(folder, "paket.exe");
-
-            downloadArguments.Target = target;
-            downloadArguments.Folder = Path.GetDirectoryName(target);
-        }
-
         public static BootstrapperOptions ParseArgumentsAndConfigurations(IEnumerable<string> arguments, NameValueCollection appSettings, IDictionary envVariables, IFileSystemProxy fileSystem, IEnumerable<string> argumentsInDependenciesFile)
         {
             var options = new BootstrapperOptions();
@@ -72,32 +55,10 @@ namespace Paket.Bootstrapper
             var magicMode = GetIsMagicMode(fileSystem);
             var transparentMagicMode = magicMode && commandArgs.IndexOf(CommandArgs.Run) == -1;
 
-            var outputDirArg = commandArgs.SingleOrDefault(x => x.StartsWith(CommandArgs.OutputDir));
-            if (outputDirArg != null)
-            {
-                commandArgs.Remove(outputDirArg);
-                var folder = outputDirArg.Substring(CommandArgs.OutputDir.Length);
-                var target = Path.Combine(folder, "paket.exe");
+            NameValueCollection settings = ParseBootstrapperOnlyCommandArgs(commandArgs, appSettings, options.DownloadArguments, fileSystem, magicMode);
 
-                options.DownloadArguments.Target = target;
-                options.DownloadArguments.Folder = Path.GetDirectoryName(target);
-            }
-            else
-            {
-                FillTarget(options.DownloadArguments, magicMode, fileSystem);
-            }
-
-            var configFileArg = commandArgs.SingleOrDefault(x => x.StartsWith(CommandArgs.ConfigFile));
-            if (configFileArg != null)
-            {
-                commandArgs.Remove(configFileArg);
-                var configFilePath = configFileArg.Substring(CommandArgs.ConfigFile.Length);
-                var newSettings = ReadSettings(configFilePath);
-                appSettings = newSettings;
-            }
-
-            // 1 - AppSettings
-            FillOptionsFromAppSettings(options, appSettings);
+            // 1 - AppSettings or settings from target settings file
+            FillOptionsFromAppSettings(options, settings);
 
             // 2 - paket.dependencies
             FillNonRunOptionsFromArguments(options, argumentsInDependenciesFile.ToList());
@@ -166,6 +127,62 @@ namespace Paket.Bootstrapper
             return options;
         }
 
+        private static NameValueCollection ParseBootstrapperOnlyCommandArgs(List<string> commandArgs, NameValueCollection appSettings, DownloadArguments downloadArguments, IFileSystemProxy fileSystem, bool magicMode)
+        {
+            var configFileArg = commandArgs.SingleOrDefault(x => x.StartsWith(CommandArgs.ConfigFile));
+            NameValueCollection newSettings = appSettings;
+            if (configFileArg != null)
+            {
+                commandArgs.Remove(configFileArg);
+                var configFilePath = configFileArg.Substring(CommandArgs.ConfigFile.Length);
+                newSettings = ReadSettings(configFilePath);
+            }
+
+            // Check if output dir has been provided - commandline takes priority
+            var outputDirArg = commandArgs.SingleOrDefault(x => x.StartsWith(CommandArgs.OutputDir));
+            var bootstrapperOutputDir = newSettings.GetKey(AppSettingKeys.BootstrapperOutputDir);
+            string targetFolder = null;
+            if (outputDirArg != null)
+            {
+                commandArgs.Remove(outputDirArg);
+                targetFolder = outputDirArg.Substring(CommandArgs.OutputDir.Length);
+            }
+            else if(bootstrapperOutputDir != null)
+            {
+                targetFolder = bootstrapperOutputDir;
+            }
+
+            // Fill target - if none has been found, the default (temp folder with unique exe name) is used
+            FillTarget(downloadArguments, magicMode, targetFolder, fileSystem);
+
+            return newSettings;
+        }
+
+        private static void FillTarget(DownloadArguments downloadArguments, bool magicMode, string targetFolder, IFileSystemProxy fileSystem)
+        {
+            if (targetFolder == null && !magicMode)
+            {
+                targetFolder = Path.GetDirectoryName(fileSystem.GetExecutingAssemblyPath()) ?? "";
+            }
+
+            string targetPath;
+            if (targetFolder != null)
+            {
+                targetPath = Path.Combine(targetFolder, "paket.exe");
+            }
+            else
+            {
+                targetPath = GetMagicModeTarget(fileSystem);
+                targetFolder = Path.GetDirectoryName(targetPath);
+            }
+
+            // Make sure folder exists - creates it, and parents, if it does not exist.
+            fileSystem.CreateDirectory(targetFolder);
+
+            downloadArguments.Target = targetPath;
+            downloadArguments.Folder = targetFolder;
+        }
+
         private static NameValueCollection ReadSettings(string configFilePath)
         {
             var doc = XDocument.Load(configFilePath);
@@ -231,7 +248,6 @@ namespace Paket.Bootstrapper
             {
                 options.DownloadArguments.IgnoreCache = true;
             }
-
         }
 
         private static void FillOptionsFromEnvVariables(BootstrapperOptions options, IDictionary envVariables)
@@ -367,8 +383,7 @@ namespace Paket.Bootstrapper
             //    accessing the same file as their path depends on the bootstrapper path.
             var assemblyLocation = fileSystemProxy.GetExecutingAssemblyPath();
             var targetName = String.Format("paket_{0}.exe",GetHash(assemblyLocation));
-            var targetFolder = Path.Combine(fileSystemProxy.GetTempPath(), "paket");            
-            fileSystemProxy.CreateDirectory(targetFolder);
+            var targetFolder = Path.Combine(fileSystemProxy.GetTempPath(), "paket");
             return Path.Combine(targetFolder, targetName);
         }
 

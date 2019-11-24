@@ -58,6 +58,9 @@ paket.bootstrapper.exe [prerelease|<version>] [--prefer-nuget] [--self] [-s] [-f
 * `--run`: Once downloaded run `paket.exe`. All arguments following this one are
   ignored and passed directly to `paket.exe`.
 
+* `--config-file=<config-file-path>`: Forces the bootstrapper to use another
+  config file instead of the default `paket.bootstrapper.exe.config` file.
+
 * `--help`: Show help detailing all possible options.
 
 ### In application settings
@@ -76,14 +79,16 @@ Example:
     <add key="ForceNuget" value="True"/>
     <add key="Prerelease" value="True"/>
     <add key="PaketVersion" value="1.5"/>
+    <add key="BoostrapperOutputDir" value="_workDir" />
   </appSettings>
 </configuration>
 ```
 
 * `PreferNuget`: Same as `--prefer-nuget` option.
 * `ForceNuget`: Same as `--force-nuget` option.
-* `PaketVersion`: Same as `<version>` option.
 * `Prerelease`: Same as `prerelease` option.
+* `PaketVersion`: Same as `<version>` option.
+* `BootstrapperOuputDir`: Same as `--output-dir=` option.
 
 ### With environment variables
 
