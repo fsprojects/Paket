@@ -1,3 +1,6 @@
+#### 5.237.0 - 2019-11-25
+* Added BootstrapperOutputDir to config - https://github.com/fsprojects/Paket/pull/3733
+
 #### 5.236.6 - 2019-11-21
 * REVERT: Paket caused build warnings by adding references to NETStandard.Library - https://github.com/fsprojects/Paket/issues/2852
 
