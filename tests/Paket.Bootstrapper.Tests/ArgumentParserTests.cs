@@ -557,7 +557,7 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
             Assert.That(result.DownloadArguments.IgnorePrerelease, Is.False);
             Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.Null);
-            Assert.That(result.DownloadArguments.Target, Does.StartWith(Path.Combine(MagicModeFileSystemSystem.GetTempPath(), "paket\\paket_")).And.EndsWith(".exe"));
+            Assert.That(result.DownloadArguments.Target, Does.StartWith(Path.Combine(MagicModeFileSystemSystem.GetTempPath(), "paket", "paket_")).And.EndsWith(".exe"));
         }
 
         [Test]
@@ -699,7 +699,7 @@ namespace Paket.Bootstrapper.Tests
           Assert.That(result, Is.Not.Null);
           Assert.That(result.UnprocessedCommandArgs, Is.Empty);
           Assert.That(result.Run, Is.True);
-          Assert.AreEqual("_workDir\\paket.exe", result.DownloadArguments.Target);
+          Assert.AreEqual(Path.Combine("_workDir", "paket.exe"), result.DownloadArguments.Target);
         }
 
         [Test]
@@ -716,7 +716,7 @@ namespace Paket.Bootstrapper.Tests
           Assert.That(result, Is.Not.Null);
           Assert.That(result.UnprocessedCommandArgs, Is.Empty);
           Assert.That(result.Run, Is.True);
-          Assert.AreEqual("_appSettingWorkDir\\paket.exe", result.DownloadArguments.Target);
+          Assert.AreEqual(Path.Combine("_appSettingWorkDir", "paket.exe"), result.DownloadArguments.Target);
         }
 
         [Test]
@@ -734,7 +734,7 @@ namespace Paket.Bootstrapper.Tests
           Assert.That(result.UnprocessedCommandArgs, Is.Empty);
           Assert.That(result.Run, Is.True);
           // CommandLine must take precedence
-          Assert.AreEqual("_workDir\\paket.exe", result.DownloadArguments.Target);
+          Assert.AreEqual(Path.Combine("_workDir", "paket.exe"), result.DownloadArguments.Target);
         }
 
 
