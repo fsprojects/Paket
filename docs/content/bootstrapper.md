@@ -88,7 +88,7 @@ Example:
 * `ForceNuget`: Same as `--force-nuget` option.
 * `Prerelease`: Same as `prerelease` option.
 * `PaketVersion`: Same as `<version>` option.
-* `BootstrapperOuputDir`: Same as `--output-dir=` option.
+* `BootstrapperOutputDir`: Same as `--output-dir=` option.
 
 ### With environment variables
 
@@ -174,9 +174,9 @@ A few default settings are applied:
   once to restore normal output or twice to show more details.
 * If no version is specified a default `--max-file-age` of `12` hours is used.
 
-**IMPORTANT PERFOMANCE NOTE:**
+**Note about anti virus and magic mode:**
 
-If you have aggresive Anti Virus monitoring, but have your development folder
-excluded, then be aware that the temp folder will be impacted in Magic Mode.
-To work around this, change the `BoostrapperOutputDir` to a folder that uses
-a path inside the repo, and exclude that folder from git instead.
+If your anti virus is too aggressive, and must have paket excluded, it will not
+be fully excluded unless you change the `BoostrapperOutputDir` to a folder that
+is excluded from the anti virus scanner, e.g. a sub folder inside the repository
+of the project utilizing magic mode.
