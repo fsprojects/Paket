@@ -121,6 +121,10 @@ directly to GitHub or nuget.org, based on other flags.</p>
 <p><code>--run</code>: Once downloaded run <code>paket.exe</code>. All arguments following this one are
 ignored and passed directly to <code>paket.exe</code>.</p>
 </li>
+<li>
+<p><code>--config-file=&lt;config-file-path&gt;</code>: Forces the bootstrapper to use another
+config file instead of the default <code>paket.bootstrapper.exe.config</code> file.</p>
+</li>
 <li><p><code>--help</code>: Show help detailing all possible options.</p></li>
 </ul>
 <h3><a name="In-application-settings" class="anchor" href="#In-application-settings">In application settings</a></h3>
@@ -128,15 +132,16 @@ ignored and passed directly to <code>paket.exe</code>.</p>
 default options. When an option is passed on the command line, the corresponding
 application setting is ignored.</p>
 <p>Example:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-<span class="l">5: </span>
-<span class="l">6: </span>
-<span class="l">7: </span>
-<span class="l">8: </span>
-<span class="l">9: </span>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="xml"><span class="prep">&lt;?</span>xml version=<span class="s">"1.0"</span> encoding=<span class="s">"utf-8"</span> <span class="prep">?&gt;</span>
 <span class="k">&lt;</span><span class="i">configuration</span><span class="k">&gt;</span>
@@ -145,14 +150,16 @@ application setting is ignored.</p>
     <span class="k">&lt;</span><span class="i">add</span> <span class="o">key</span><span class="k">="ForceNuget"</span> <span class="o">value</span><span class="k">="True"</span><span class="k">/&gt;</span>
     <span class="k">&lt;</span><span class="i">add</span> <span class="o">key</span><span class="k">="Prerelease"</span> <span class="o">value</span><span class="k">="True"</span><span class="k">/&gt;</span>
     <span class="k">&lt;</span><span class="i">add</span> <span class="o">key</span><span class="k">="PaketVersion"</span> <span class="o">value</span><span class="k">="1.5"</span><span class="k">/&gt;</span>
+    <span class="k">&lt;</span><span class="i">add</span> <span class="o">key</span><span class="k">="BoostrapperOutputDir"</span> <span class="o">value</span><span class="k">="_workDir"</span> <span class="k">/&gt;</span>
   <span class="k">&lt;/</span><span class="i">appSettings</span><span class="k">&gt;</span>
 <span class="k">&lt;/</span><span class="i">configuration</span><span class="k">&gt;</span>
 </code></pre></td></tr></table>
 <ul>
 <li><code>PreferNuget</code>: Same as <code>--prefer-nuget</code> option.</li>
 <li><code>ForceNuget</code>: Same as <code>--force-nuget</code> option.</li>
-<li><code>PaketVersion</code>: Same as <code>&lt;version&gt;</code> option.</li>
 <li><code>Prerelease</code>: Same as <code>prerelease</code> option.</li>
+<li><code>PaketVersion</code>: Same as <code>&lt;version&gt;</code> option.</li>
+<li><code>BootstrapperOutputDir</code>: Same as <code>--output-dir=</code> option.</li>
 </ul>
 <h3><a name="With-environment-variables" class="anchor" href="#With-environment-variables">With environment variables</a></h3>
 <p><code>PAKET_VERSION</code>: The requested version can also be set using this environment
@@ -236,6 +243,11 @@ once to restore normal output or twice to show more details.
 </li>
 <li>If no version is specified a default <code>--max-file-age</code> of <code>12</code> hours is used.</li>
 </ul>
+<p><strong>Note about anti virus and magic mode:</strong></p>
+<p>If your anti virus is too aggressive, and must have paket excluded, it will not
+be fully excluded unless you change the <code>BoostrapperOutputDir</code> to a folder that
+is excluded from the anti virus scanner, e.g. a sub folder inside the repository
+of the project utilizing magic mode.</p>
 
 
         </div>
