@@ -236,12 +236,6 @@ Target "DotnetPackage" (fun _ ->
     CleanDir outPath
     DotNetCli.Pack (fun c ->
         { c with
-            Project = "src/Paket.Core/Paket.Core.fsproj"
-            ToolPath = dotnetExePath
-            AdditionalArgs = [(sprintf "-o \"%s\"" outPath); (sprintf "/p:Version=%s" release.NugetVersion)]
-        })
-    DotNetCli.Pack (fun c ->
-        { c with
             Project = "src/Paket/Paket.fsproj"
             ToolPath = dotnetExePath
             AdditionalArgs = [(sprintf "-o \"%s\"" outPath); (sprintf "/p:Version=%s" release.NugetVersion)]
@@ -450,7 +444,6 @@ Target "MergeDotnetCoreIntoNuget" (fun _ ->
 
         runTool """mergenupkg --source "%s" --other "%s" %s""" nupkg netcoreNupkg args
 
-    mergeNupkg "Paket.Core" "--framework netstandard2.0"
     mergeNupkg "Paket" "--tools"
     mergeNupkg "paket.bootstrapper" "--tools"
 )
