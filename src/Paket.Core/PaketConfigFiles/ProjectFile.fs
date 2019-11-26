@@ -1897,7 +1897,7 @@ type ProjectFile with
         let paketPath = Path.Combine(folder,Constants.PaketFilesFolderName) |> normalizePath
 
         let findAllFiles folder =
-            let rec search (di:DirectoryInfo) =
+            let rec search topLevel (di:DirectoryInfo) =
                 try
                     if verbose then
                         verbosefn "Searching in %s" di.FullName
@@ -1911,19 +1911,20 @@ type ProjectFile with
                             if di.Name = ".git" then false else
                             if di.Name = ".fable" then false else
                             if di.Name = "node_modules" then false else
+                            if topLevel && isLinux && di.FullName = "/sys" then false else
                             if path = paketPath then false else
                             Path.Combine(path, Constants.DependenciesFileName)
                             |> File.Exists
                             |> not
                         with
                         | _ -> false)
-                    |> Array.collect search
+                    |> Array.collect (search false)
                     |> Array.append files
                 with
                 | _ -> Array.empty
 
-            DirectoryInfo folder
-            |> search
+
+            search true (DirectoryInfo folder)
 
         findAllFiles folder
         |> Array.filter ProjectFile.isSupportedFile
