@@ -712,8 +712,13 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
         let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
         if not hasLocalFile && not ignoreChecks then
+            if verbose then
+                verbosefn "Checking for changes in lock file."
             let hasAnyChanges,nugetChanges,remoteFilechanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile.Value,false)
             let checkResponse = if failOnChecks then failwithf else traceWarnfn
+            if verbose then
+                verbosefn "HasChanges: %b" hasAnyChanges
+
             if hasAnyChanges then
                 checkResponse "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
                 for (group, package, changes) in nugetChanges do
@@ -810,6 +815,9 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
                 if canEarlyExit then
                     tracefn "The last restore was successful. Nothing left to do."
                 else
+                    if verbose then
+                        verbosefn "Checking if restore hash is up-to-date"
+
                     if not (cache.IsPackagesDownloadUpToDate lockFileHash) then
                         tracefn "Starting %srestore process." (if canCacheRestore then "full " else "")
                         for task in tasks do

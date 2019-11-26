@@ -378,10 +378,11 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Restores all dependencies.
     member this.Restore(): unit = this.Restore(false,None,[],false,false,false,None,None)
+
     /// Simple packages restore:
     /// - Doesn't restore projects
     /// - Doesn't write targets file
-    member this.SimplePackagesRestore(): unit =
+    member __.SimplePackagesRestore(): unit =
         RestoreProcess.Restore(dependenciesFileName,RestoreProcess.RestoreProjectOptions.NoProjects,false,None,true,false,None,None,true)
 
     /// Restores the given paket.references files.
@@ -395,8 +396,13 @@ type Dependencies(dependenciesFileName: string) =
         if touchAffectedRefs then
             let packagesToTouch = RestoreProcess.FindPackagesNotExtractedYet(dependenciesFileName)
             this.Process (FindReferences.TouchReferencesOfPackages packagesToTouch)
+
         let restoreOpts =
-            if files = [] then RestoreProcess.RestoreProjectOptions.AllProjects else RestoreProcess.RestoreProjectOptions.ReferenceFileList files
+            if List.isEmpty files then
+                RestoreProcess.RestoreProjectOptions.AllProjects
+            else
+                RestoreProcess.RestoreProjectOptions.ReferenceFileList files
+
         RestoreProcess.Restore(dependenciesFileName,restoreOpts,force,Option.map GroupName group,ignoreChecks, failOnChecks, targetFramework, outputPath, false)
 
     /// Restores the given paket.references files.
