@@ -825,8 +825,8 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
                             |> Async.RunSynchronously
                             |> ignore
 
-                    if verbose then
-                        verbosefn "Creating script files for all groups"
+                        if verbose then
+                            verbosefn "Creating script files for all groups"
 
                         CreateScriptsForGroups lockFile.Value groups
                     else
@@ -834,6 +834,9 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
 
                     match updatedCache with
                     | Some updatedCache ->
+                        if verbose then
+                            verbosefn "Writing restore hash file"
+
                         let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
                         writeRestoreCache restoreCacheFile updatedCache
                         WriteGitignore restoreCacheFile
