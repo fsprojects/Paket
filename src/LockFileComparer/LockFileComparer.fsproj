@@ -8,7 +8,7 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Paket.Core.preview3\Paket.Core.fsproj" />
+    <ProjectReference Include="..\Paket.Core\Paket.Core.fsproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
