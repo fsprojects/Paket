@@ -6,7 +6,6 @@
     <StartupObject>Paket.Bootstrapper.Program</StartupObject>
     <AssemblyName>paket.bootstrapper</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <OutputPath>..\..\bin\</OutputPath>
     <DefineConstants Condition=" '$(TargetFramework)' != 'net461'">NO_SSL3;NO_SYSTEMWEBPROXY;PAKET_BOOTSTRAP_NO_CACHE;PAKET_BOOTSTRAP_WORKAROUND_MSBUILD_URLS;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
@@ -14,9 +13,19 @@
     <DefineConstants>LOCAL_GITHUB;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Include="paket.template" />
+  <PropertyGroup Condition=" '$(PackAsTool)' == 'true'">
+    <TargetFrameworks></TargetFrameworks>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(PackAsTool)' == 'true'">
+    <Content Include="..\..\bin\merged\paket.exe">
+      <Pack>true</Pack>
+      <PackagePath>tools</PackagePath>
+      <Visible>true</Visible>
+    </Content>
   </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461'">
     <Reference Include="System.Configuration, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   </ItemGroup>
