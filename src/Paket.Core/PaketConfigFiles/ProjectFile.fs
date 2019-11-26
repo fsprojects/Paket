@@ -1918,6 +1918,9 @@ type ProjectFile with
                             if topLevel && isLinux && di.FullName = "/tmp" then false else
                             if topLevel && isLinux && di.FullName = "/home" then false else
                             if topLevel && isLinux && di.FullName = "/media" then false else
+                            if topLevel && isLinux && di.FullName = "/root" then false else
+                            if topLevel && isLinux && di.FullName = "/var" then false else
+                            if topLevel && isLinux && di.FullName = "/sbin" then false else
                             if topLevel && isLinux && di.FullName = "/etc" then false else
                             if path = paketPath then false else
                             Path.Combine(path, Constants.DependenciesFileName)
