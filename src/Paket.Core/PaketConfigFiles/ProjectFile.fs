@@ -1912,6 +1912,13 @@ type ProjectFile with
                             if di.Name = ".fable" then false else
                             if di.Name = "node_modules" then false else
                             if topLevel && isLinux && di.FullName = "/sys" then false else
+                            if topLevel && isLinux && di.FullName = "/usr" then false else
+                            if topLevel && isLinux && di.FullName = "/proc" then false else
+                            if topLevel && isLinux && di.FullName = "/lib" then false else
+                            if topLevel && isLinux && di.FullName = "/tmp" then false else
+                            if topLevel && isLinux && di.FullName = "/home" then false else
+                            if topLevel && isLinux && di.FullName = "/media" then false else
+                            if topLevel && isLinux && di.FullName = "/etc" then false else
                             if path = paketPath then false else
                             Path.Combine(path, Constants.DependenciesFileName)
                             |> File.Exists
