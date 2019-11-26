@@ -742,28 +742,41 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
         )
 
         let outputPath = outputPath |> Option.map DirectoryInfo
+
         let referencesFileNames =
             match projectFile with
             | SingleProject projectFileName ->
+                if verbose then
+                    verbosefn "Single project: %A" projectFileName
+
                 let projectFile = ProjectFile.LoadFromFile projectFileName
                 let referencesFile = RestoreNewSdkProject lockFile.Value resolved groups projectFile targetFrameworks outputPath
 
                 [referencesFile.FileName]
-            | ReferenceFileList l -> l
-            | NoProjects -> []
+            | ReferenceFileList list ->
+                if verbose then
+                    verbosefn "References file list: %A" list
+                list
+            | NoProjects ->
+                if verbose then
+                    verbosefn "No projects to restore"
+                []
             | AllProjects ->
                 if group = None then
+                    if verbose then
+                        verbosefn "Searching for SDK projects..."
+
                     // Restore all projects
                     let allSDKProjects =
                         ProjectFile.FindAllProjects root
-                        |> Seq.filter (fun proj -> proj.GetToolsVersion() >= 15.0)
+                        |> Array.filter (fun proj -> proj.GetToolsVersion() >= 15.0)
+
+                    if verbose then
+                        verbosefn "SDK projects found: %A" allSDKProjects
 
                     for proj in allSDKProjects do
                         RestoreNewSdkProject lockFile.Value resolved groups proj targetFrameworks outputPath |> ignore
                 []
-
-        if verbose then
-            verbosefn "References files detected: %A" referencesFileNames
 
         let targetFilter =
             targetFrameworks

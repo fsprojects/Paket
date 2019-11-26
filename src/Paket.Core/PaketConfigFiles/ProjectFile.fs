@@ -227,6 +227,8 @@ module ProjectFile =
             if String.IsNullOrWhiteSpace fileName then None else
             let fi = FileInfo fileName
             if isSupportedFile fi then
+                if verbose then
+                    verbosefn "Loading %s" fileName
                 Some(loadFromFile fileName)
             else
                 None
