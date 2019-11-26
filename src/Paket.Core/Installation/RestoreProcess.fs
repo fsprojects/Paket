@@ -734,24 +734,45 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
                 | None -> failwithf "The group %O was not found in the paket.lock file." groupName
                 | Some group -> [groupName,group] |> Map.ofList
 
-        let resolved = lazy (lockFile.Value.GetGroupedResolution())
+        let resolved = lazy (
+            if verbose then
+                let groupNames = groups |> Seq.map (fun kv -> kv.Key) |> Seq.toArray
+                verbosefn "Gettting resolution for groups: %A" groupNames
+            lockFile.Value.GetGroupedResolution()
+        )
 
         let outputPath = outputPath |> Option.map DirectoryInfo
+
         let referencesFileNames =
             match projectFile with
             | SingleProject projectFileName ->
+                if verbose then
+                    verbosefn "Single project: %A" projectFileName
+
                 let projectFile = ProjectFile.LoadFromFile projectFileName
                 let referencesFile = RestoreNewSdkProject lockFile.Value resolved groups projectFile targetFrameworks outputPath
 
                 [referencesFile.FileName]
-            | ReferenceFileList l -> l
-            | NoProjects -> []
+            | ReferenceFileList list ->
+                if verbose then
+                    verbosefn "References file list: %A" list
+                list
+            | NoProjects ->
+                if verbose then
+                    verbosefn "No projects to restore"
+                []
             | AllProjects ->
                 if group = None then
+                    if verbose then
+                        verbosefn "Searching for SDK projects..."
+
                     // Restore all projects
                     let allSDKProjects =
                         ProjectFile.FindAllProjects root
-                        |> Seq.filter (fun proj -> proj.GetToolsVersion() >= 15.0)
+                        |> Array.filter (fun proj -> proj.GetToolsVersion() >= 15.0)
+
+                    if verbose then
+                        verbosefn "SDK projects found: %A" allSDKProjects
 
                     for proj in allSDKProjects do
                         RestoreNewSdkProject lockFile.Value resolved groups proj targetFrameworks outputPath |> ignore
@@ -825,8 +846,8 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
                             |> Async.RunSynchronously
                             |> ignore
 
-                    if verbose then
-                        verbosefn "Creating script files for all groups"
+                        if verbose then
+                            verbosefn "Creating script files for all groups"
 
                         CreateScriptsForGroups lockFile.Value groups
                     else
@@ -834,6 +855,9 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
 
                     match updatedCache with
                     | Some updatedCache ->
+                        if verbose then
+                            verbosefn "Writing restore hash file"
+
                         let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
                         writeRestoreCache restoreCacheFile updatedCache
                         WriteGitignore restoreCacheFile

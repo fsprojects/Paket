@@ -227,6 +227,8 @@ module ProjectFile =
             if String.IsNullOrWhiteSpace fileName then None else
             let fi = FileInfo fileName
             if isSupportedFile fi then
+                if verbose then
+                    verbosefn "Loading %s" fileName
                 Some(loadFromFile fileName)
             else
                 None
@@ -1894,10 +1896,13 @@ type ProjectFile with
     static member FindAllProjectFiles folder : FileInfo [] =
         let paketPath = Path.Combine(folder,Constants.PaketFilesFolderName) |> normalizePath
 
-        let findAllFiles (folder, pattern) =
+        let findAllFiles folder =
             let rec search (di:DirectoryInfo) =
                 try
-                    let files = di.GetFiles(pattern, SearchOption.TopDirectoryOnly)
+                    if verbose then
+                        verbosefn "Searching in %s" di.FullName
+
+                    let files = di.GetFiles("*proj*", SearchOption.TopDirectoryOnly)
                     di.GetDirectories()
                     |> Array.filter (fun di ->
                         try
@@ -1920,7 +1925,7 @@ type ProjectFile with
             DirectoryInfo folder
             |> search
 
-        findAllFiles(folder, "*proj*")
+        findAllFiles folder
         |> Array.filter ProjectFile.isSupportedFile
 
     /// Finds all project files
