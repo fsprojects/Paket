@@ -185,6 +185,7 @@ Target "Build" (fun _ ->
 Target "Restore" (fun _ ->
     //WORKAROUND dotnet restore with paket doesnt restore the PackageReference of SourceLink
     // ref https://github.com/fsprojects/Paket/issues/2930
+    //TODO check if is needed, because a full paket restore is done in the build.bat/sh before run this fsx
     Paket.Restore (fun p ->
         { p with
             Group = "NetCoreTools" })
@@ -322,6 +323,7 @@ Target "MergePaketTool" (fun _ ->
 
     if result <> 0 then failwithf "Error during ILRepack execution."
 )
+"Publish" ==> "MergePaketTool"
 
 Target "RunIntegrationTests" (fun _ ->
     CreateDir "tests_result/net/Paket.IntegrationTests"
@@ -394,8 +396,6 @@ Target "NuGet" (fun _ ->
             AdditionalArgs = [(sprintf "-o \"%s\"" tempDir); (sprintf "/p:Version=%s" release.NugetVersion); "/p:PackAsTool=true"]
         })
 )
-
-"DotnetPublish" ==> "NuGet"
 
 Target "PublishNuGet" (fun _ ->
     if hasBuildParam "PublishBootstrapper" |> not then
