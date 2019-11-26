@@ -825,6 +825,9 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
                             |> Async.RunSynchronously
                             |> ignore
 
+                    if verbose then
+                        verbosefn "Creating script files for all groups"
+
                         CreateScriptsForGroups lockFile.Value groups
                     else
                         tracefn "Finished restoring projects."
