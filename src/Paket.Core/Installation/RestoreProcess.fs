@@ -734,7 +734,12 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
                 | None -> failwithf "The group %O was not found in the paket.lock file." groupName
                 | Some group -> [groupName,group] |> Map.ofList
 
-        let resolved = lazy (lockFile.Value.GetGroupedResolution())
+        let resolved = lazy (
+            if verbose then
+                let groupNames = groups |> Seq.map (fun kv -> kv.Key) |> Seq.toArray
+                verbosefn "Gettting resolution for groups: %A" groupNames
+            lockFile.Value.GetGroupedResolution()
+        )
 
         let outputPath = outputPath |> Option.map DirectoryInfo
         let referencesFileNames =
@@ -756,6 +761,9 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
                     for proj in allSDKProjects do
                         RestoreNewSdkProject lockFile.Value resolved groups proj targetFrameworks outputPath |> ignore
                 []
+
+        if verbose then
+            verbosefn "References files detected: %A" referencesFileNames
 
         let targetFilter =
             targetFrameworks
