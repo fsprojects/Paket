@@ -1,3 +1,6 @@
+#### 5.237.1 - 2019-11-26
+* More verbose logging
+
 #### 5.237.0 - 2019-11-25
 * Added BootstrapperOutputDir to config - https://github.com/fsprojects/Paket/pull/3733
 

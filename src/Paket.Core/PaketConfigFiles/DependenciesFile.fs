@@ -814,8 +814,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
     static member ReadFromFile fileName : DependenciesFile =
         if verbose then
-            verbosefn "Parsing %s" fileName
+            verbosefn "Loading %s" fileName
         let source = File.ReadAllLines fileName
+        if verbose then
+            verbosefn "Parsing:"
+            verbosefn "%A" source
         DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName true source)
 
     /// Find the matching lock file to a dependencies file
