@@ -796,8 +796,6 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
         DependenciesFile(DependenciesFileParser.parseDependenciesFile this.FileName false newLines)
 
-
-
     override __.ToString() = String.Join(Environment.NewLine, textRepresentation |> Array.skipWhile String.IsNullOrWhiteSpace)
 
     member this.Save() =
@@ -819,7 +817,10 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         if verbose then
             verbosefn "Parsing:"
             verbosefn "%A" source
-        DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName true source)
+        let parsed = DependenciesFileParser.parseDependenciesFile fileName true source
+        if verbose then
+            verbosefn "Parsed."
+        DependenciesFile(parsed)
 
     /// Find the matching lock file to a dependencies file
     static member FindLockfile(dependenciesFileName) =
