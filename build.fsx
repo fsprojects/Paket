@@ -280,8 +280,7 @@ Target "QuickTest" (fun _ ->
         { c with
             Project = "tests/Paket.Tests/Paket.Tests.fsproj"
             AdditionalArgs =
-              [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
-                "-v"; "n"]
+              [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky") ]
             ToolPath = dotnetExePath
         })
 )
@@ -292,8 +291,7 @@ Target "QuickIntegrationTests" (fun _ ->
         { c with
             Project = "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
             AdditionalArgs =
-              [ "--filter"; "TestCategory=scriptgen"
-                "-v"; "n"]
+              [ "--filter"; "TestCategory=scriptgen" ]
             TimeOut = TimeSpan.FromMinutes 40.
             ToolPath = dotnetExePath
         })
