@@ -1,5 +1,5 @@
 language: csharp
-dist: trusty
+dist: xenial
 
 sudo: false
 
@@ -16,7 +16,7 @@ env:
     # just flaky tests
     - PAKET_TESTSUITE_FLAKYTESTS=true
 
-dotnet: 2.1.500
+dotnet: 3.0.100
 
 mono:
   - 5.18.1
