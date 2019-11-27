@@ -250,7 +250,6 @@ Target "RunIntegrationTestsNetCore" (fun _ ->
             Framework = "netcoreapp2.1"
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
-                "--framework=netcoreapp2.0"
                 sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]
             TimeOut = TimeSpan.FromMinutes 60.
             ToolPath = dotnetExePath
