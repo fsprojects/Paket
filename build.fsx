@@ -155,6 +155,9 @@ Target "Clean" (fun _ ->
     ++ buildDir
     ++ buildDirNet461
     ++ buildDirNetCore
+    ++ buildDirBootstrapper
+    ++ buildDirBootstrapperNet461
+    ++ buildDirBootstrapperNetCore
     ++ tempDir
     |> CleanDirs
 
@@ -263,33 +266,28 @@ Target "RunIntegrationTestsNetCore" (fun _ ->
 
 Target "RunTests" (fun _ ->
 
-    CreateDir "tests_result/net/Paket.Tests"
+    let runTest fw proj tfm =
+        CreateDir (sprintf "tests_result/%s/%s" fw proj)
 
-    DotNetCli.Test (fun c ->
-        { c with
-            Project = "tests/Paket.Tests/Paket.Tests.fsproj"
-            Framework = "net461"
-            AdditionalArgs =
-              [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
-                sprintf "--logger:trx;LogFileName=%s" ("tests_result/net/Paket.Tests/TestResult.trx" |> Path.GetFullPath)
-                "--no-build"
-                "-v"; "n"]
-            ToolPath = dotnetExePath
-        })
+        let logFilePath = (sprintf "tests_result/%s/%s/TestResult.trx" fw proj) |> Path.GetFullPath
 
-    CreateDir "tests_result/netcore/Paket.Tests"
+        DotNetCli.Test (fun c ->
+            { c with
+                Project = "tests/Paket.Tests/Paket.Tests.fsproj"
+                Framework = tfm
+                AdditionalArgs =
+                  [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
+                    sprintf "--logger:trx;LogFileName=%s" logFilePath
+                    "--no-build"
+                    "-v"; "n"]
+                ToolPath = dotnetExePath
+            })
 
-    DotNetCli.Test (fun c ->
-        { c with
-            Project = "tests/Paket.Tests/Paket.Tests.fsproj"
-            Framework = "netcoreapp2.1"
-            AdditionalArgs =
-              [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
-                sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.Tests/TestResult.trx" |> Path.GetFullPath)
-                "--no-build"
-                "-v"; "n"]
-            ToolPath = dotnetExePath
-        })
+    runTest "net" "Paket.Tests" "net461"
+    runTest "netcore" "Paket.Tests" "netcoreapp2.1"
+
+    runTest "net" "Paket.Bootstrapper.Tests" "net461"
+    runTest "netcore" "Paket.Bootstrapper.Tests" "netcoreapp2.1"
 )
 
 Target "QuickTest" (fun _ ->

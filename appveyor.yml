@@ -45,10 +45,12 @@ on_finish:
   - ps: >-
       $wc = New-Object 'System.Net.WebClient';
       $testResults = @(
-        '.\tests_result\net\Paket.Tests\TestResult.xml'
-        '.\tests_result\net\Paket.IntegrationTests\TestResult.xml'
+        '.\tests_result\net\Paket.Tests\TestResult.trx'
+        '.\tests_result\net\Paket.IntegrationTests\TestResult.trx'
+        '.\tests_result\net\Paket.Bootstrapper.Tests\TestResult.trx'
         '.\tests_result\netcore\Paket.Tests\TestResult.trx'
         '.\tests_result\netcore\Paket.IntegrationTests\TestResult.trx'
+        '.\tests_result\netcore\Paket.Bootstrapper.Tests\TestResult.trx'
       )
   - ps: >-
       Foreach ($path in $testResults) {
