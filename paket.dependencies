@@ -17,7 +17,6 @@ nuget Moq
 nuget FSCheck
 
 nuget NUnit redirects: force
-nuget NUnit.Console
 // current workaround for https://github.com/nunit/nunit3-vs-adapter/issues/366
 nuget NUnit3TestAdapter version_in_path: true
 
