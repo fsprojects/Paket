@@ -19,6 +19,7 @@ artifacts:
     name: bin_bootstrapper
   - path: 'temp\*.nupkg'
     type: NuGetPackage
+    name: nupkgs
   - path: 'tests_result\**\*.trx'
     name: TestResults
     type: zip
