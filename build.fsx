@@ -69,8 +69,11 @@ let mutable dotnetExePath = "dotnet"
 // --------------------------------------------------------------------------------------
 
 let buildDir = "bin"
-let buildDirNet461 = "bin/net461"
-let buildDirNetCore = "bin/netcoreapp2.1"
+let buildDirNet461 = buildDir @@ "net461"
+let buildDirNetCore = buildDir @@ "netcoreapp2.1"
+let buildDirBootstrapper = "bin_bootstrapper"
+let buildDirBootstrapperNet461 = buildDirBootstrapper @@ "net461"
+let buildDirBootstrapperNetCore = buildDirBootstrapper @@ "netcoreapp2.1"
 let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
 let paketFile = buildMergedDir @@ "paket.exe"
@@ -216,6 +219,21 @@ Target "Publish" (fun _ ->
             Project = "src/Paket"
             Framework = "netcoreapp2.1"
             Output = FullName (currentDirectory </> buildDirNetCore)
+            ToolPath = dotnetExePath
+        })
+    DotNetCli.Publish (fun c ->
+        { c with
+            Project = "src/Paket.Bootstrapper"
+            Framework = "net461"
+            Output = FullName (currentDirectory </> buildDirBootstrapperNet461)
+            ToolPath = dotnetExePath
+        })
+
+    DotNetCli.Publish (fun c ->
+        { c with
+            Project = "src/Paket.Bootstrapper"
+            Framework = "netcoreapp2.1"
+            Output = FullName (currentDirectory </> buildDirBootstrapperNetCore)
             ToolPath = dotnetExePath
         })
 )

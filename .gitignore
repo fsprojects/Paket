@@ -213,3 +213,4 @@ integrationtests/scenarios/*/before/**/obj
 
 # artifacts
 /src/Paket/Properties/launchSettings.json
+/bin_bootstrapper/

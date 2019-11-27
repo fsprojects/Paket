@@ -39,7 +39,7 @@ let ``#1743 empty log file``() =
 #endif
 let ``#1240 current bootstrapper should work``() =
     CleanDir (scenarioTempPath "i001240-bootstrapper")
-    let paketToolPath = FullName(__SOURCE_DIRECTORY__ + "../../../bin/net461/paket.bootstrapper.exe")
+    let _, paketToolPath = paketBootstrapperToolPath
     CopyFile (scenarioTempPath "i001240-bootstrapper") paketToolPath
 
     let result =
