@@ -212,5 +212,4 @@ package-lock.json
 integrationtests/scenarios/*/before/**/obj
 
 # artifacts
-/bin_netcore/
 /src/Paket/Properties/launchSettings.json

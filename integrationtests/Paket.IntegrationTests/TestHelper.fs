@@ -21,7 +21,7 @@ let dotnetToolPath =
 
 let paketToolPath =
 #if PAKET_NETCORE
-    dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin_netcore/paket.dll")
+    dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin/netcoreapp2.1/paket.dll")
 #else
     "", FullName(__SOURCE_DIRECTORY__ + "../../../bin/net461/paket.exe")
 #endif
