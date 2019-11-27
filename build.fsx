@@ -177,8 +177,8 @@ Target "Build" (fun _ ->
         DotNetCli.Build (fun c ->
             { c with
                 Project = solutionFile
-                ToolPath = dotnetExePath
                 AdditionalArgs = [ "/p:SourceLinkCreate=true" ]
+                ToolPath = dotnetExePath
             })
 )
 
@@ -206,17 +206,17 @@ Target "Publish" (fun _ ->
     DotNetCli.Publish (fun c ->
         { c with
             Project = "src/Paket"
-            ToolPath = dotnetExePath
+            Framework = "net461"
             Output = FullName (currentDirectory </> buildDirNet461)
-            AdditionalArgs = [ "-f net461" ]
+            ToolPath = dotnetExePath
         })
 
     DotNetCli.Publish (fun c ->
         { c with
             Project = "src/Paket"
-            ToolPath = dotnetExePath
+            Framework = "netcoreapp2.1"
             Output = FullName (currentDirectory </> buildDirNetCore)
-            AdditionalArgs = [ "-f netcoreapp2.1" ]
+            ToolPath = dotnetExePath
         })
 )
 "Clean" ==> "Build" ?=> "Publish"
@@ -229,77 +229,76 @@ Target "RunIntegrationTestsNetCore" (fun _ ->
     DotNetCli.Test (fun c ->
         { c with
             Project = "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
-            ToolPath = dotnetExePath
+            Framework = "netcoreapp2.1"
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
                 "--framework=netcoreapp2.0"
                 sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]
             TimeOut = TimeSpan.FromMinutes 60.
+            ToolPath = dotnetExePath
         })
 )
 
 "Clean" ==> "Publish" ==> "RunIntegrationTestsNetCore"
 
 // --------------------------------------------------------------------------------------
-// Run the unit tests using test runner
+// Run the unit tests
 
 Target "RunTests" (fun _ ->
+
     CreateDir "tests_result/net/Paket.Tests"
 
-    !! testAssemblies
-    |> NUnit3 (fun p ->
-        { p with
-            ShadowCopy = false
-            WorkingDir = "tests_result/net/Paket.Tests" |> Path.GetFullPath
-            Agents = Some 1 //workaround for https://github.com/nunit/nunit-console/issues/219
-            TimeOut = TimeSpan.FromMinutes 20. })
+    DotNetCli.Test (fun c ->
+        { c with
+            Project = "tests/Paket.Tests/Paket.Tests.fsproj"
+            Framework = "net461"
+            AdditionalArgs =
+              [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
+                sprintf "--logger:trx;LogFileName=%s" ("tests_result/net/Paket.Tests/TestResult.trx" |> Path.GetFullPath)
+                "--no-build"
+                "-v"; "n"]
+            ToolPath = dotnetExePath
+        })
 
     CreateDir "tests_result/netcore/Paket.Tests"
 
     DotNetCli.Test (fun c ->
         { c with
             Project = "tests/Paket.Tests/Paket.Tests.fsproj"
+            Framework = "netcoreapp2.1"
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
                 sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.Tests/TestResult.trx" |> Path.GetFullPath)
+                "--no-build"
                 "-v"; "n"]
             ToolPath = dotnetExePath
         })
 )
 
 Target "QuickTest" (fun _ ->
-
-    [   "src/Paket.Core/Paket.Core.fsproj"
-        "tests/Paket.Tests/Paket.Tests.fsproj"
-    ]   |> MSBuildRelease "" "Rebuild"
-        |> ignore
-
-    !! testAssemblies
-    |> NUnit3 (fun p ->
-        { p with
-            ShadowCopy = false
-            WorkingDir = "tests/Paket.Tests" |> Path.GetFullPath
-            TimeOut = TimeSpan.FromMinutes 20. })
+    DotNetCli.Test (fun c ->
+        { c with
+            Project = "tests/Paket.Tests/Paket.Tests.fsproj"
+            AdditionalArgs =
+              [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
+                "-v"; "n"]
+            ToolPath = dotnetExePath
+        })
 )
 "Clean" ==> "QuickTest"
 
 Target "QuickIntegrationTests" (fun _ ->
-    [   "src/Paket.Core/Paket.Core.fsproj"
-        "src/Paket/Paket.fsproj"
-        "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
-    ]   |> MSBuildDebug "" "Rebuild"
-        |> ignore
-
-
-    !! integrationTestAssemblies
-    |> NUnit3 (fun p ->
-        { p with
-            ShadowCopy = false
-            Where = "cat==scriptgen"
-            WorkingDir = "integrationtests/Paket.IntegrationTests" |> Path.GetFullPath
-            TimeOut = TimeSpan.FromMinutes 40. })
+    DotNetCli.Test (fun c ->
+        { c with
+            Project = "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
+            AdditionalArgs =
+              [ "--filter"; "TestCategory=scriptgen"
+                "-v"; "n"]
+            TimeOut = TimeSpan.FromMinutes 40.
+            ToolPath = dotnetExePath
+        })
 )
-"Clean" ==> "QuickIntegrationTests"
+"Clean" ==> "Publish" ==> "QuickIntegrationTests"
 
 
 // --------------------------------------------------------------------------------------
@@ -325,21 +324,26 @@ Target "MergePaketTool" (fun _ ->
 )
 "Publish" ==> "MergePaketTool"
 
-Target "RunIntegrationTests" (fun _ ->
+Target "RunIntegrationTestsNet" (fun _ ->
     CreateDir "tests_result/net/Paket.IntegrationTests"
 
     // improves the speed of the test-suite by disabling the runtime resolution.
     System.Environment.SetEnvironmentVariable("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
-    !! integrationTestAssemblies
-    |> NUnit3 (fun p ->
-        { p with
-            ShadowCopy = false
-            WorkingDir = "tests_result/net/Paket.IntegrationTests" |> Path.GetFullPath
-            Where = if testSuiteFilterFlakyTests then "cat==Flaky" else "cat!=Flaky"
-            TimeOut = TimeSpan.FromMinutes 40. })
+
+    DotNetCli.Test (fun c ->
+        { c with
+            Project = "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
+            Framework = "netcoreapp2.1"
+            AdditionalArgs =
+              [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
+                sprintf "--logger:trx;LogFileName=%s" ("tests_result/net/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]
+            TimeOut = TimeSpan.FromMinutes 60.
+            ToolPath = dotnetExePath
+        })
+
 )
 
-"Clean" ==> "Publish" ==> "RunIntegrationTests"
+"Clean" ==> "Publish" ==> "RunIntegrationTestsNet"
 
 
 let pfx = "code-sign.pfx"
@@ -386,14 +390,20 @@ Target "NuGet" (fun _ ->
     DotNetCli.Pack (fun c ->
         { c with
             Project = "src/Paket/Paket.fsproj"
+            OutputPath = tempDir
+            AdditionalArgs =
+                [ sprintf "/p:Version=%s" release.NugetVersion
+                  "/p:PackAsTool=true" ]
             ToolPath = dotnetExePath
-            AdditionalArgs = [(sprintf "-o \"%s\"" tempDir); (sprintf "/p:Version=%s" release.NugetVersion); "/p:PackAsTool=true"]
         })
     DotNetCli.Pack (fun c ->
         { c with
             Project = "src/Paket.Bootstrapper/Paket.Bootstrapper.csproj"
+            OutputPath = tempDir
+            AdditionalArgs =
+                [ sprintf "/p:Version=%s" release.NugetVersion
+                  "/p:PackAsTool=true"]
             ToolPath = dotnetExePath
-            AdditionalArgs = [(sprintf "-o \"%s\"" tempDir); (sprintf "/p:Version=%s" release.NugetVersion); "/p:PackAsTool=true"]
         })
 )
 
@@ -628,7 +638,7 @@ Target "All" DoNothing
 
 "All"
   ==> "MergePaketTool"
-  =?> ("RunIntegrationTests", not <| (hasBuildParam "SkipIntegrationTests" || hasBuildParam "SkipIntegrationTestsNet"))
+  =?> ("RunIntegrationTestsNet", not <| (hasBuildParam "SkipIntegrationTests" || hasBuildParam "SkipIntegrationTestsNet"))
   =?> ("RunIntegrationTestsNetCore", not <| (hasBuildParam "SkipIntegrationTests" || hasBuildParam "SkipIntegrationTestsNetCore"))
   ==> "SignAssemblies"
   ==> "CalculateDownloadHash"
