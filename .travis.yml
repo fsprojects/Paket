@@ -1,4 +1,4 @@
-language: csharp
+language: fsharp
 dist: xenial
 
 sudo: false
