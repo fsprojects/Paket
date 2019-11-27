@@ -625,7 +625,7 @@ Target "ReleaseGitHub" (fun _ ->
     |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
     |> uploadFile "./bin/merged/paket.exe"
     |> uploadFile "./bin/merged/paket-sha256.txt"
-    |> uploadFile "./bin/paket.bootstrapper.exe"
+    |> uploadFile "./bin_bootstrapper/net461/paket.bootstrapper.exe"
     |> uploadFile ".paket/paket.targets"
     |> uploadFile ".paket/Paket.Restore.targets"
     |> uploadFile (tempDir </> sprintf "Paket.%s.nupkg" (release.NugetVersion))
