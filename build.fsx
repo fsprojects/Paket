@@ -242,25 +242,6 @@ Target "Publish" (fun _ ->
 )
 "Clean" ==> "Build" ?=> "Publish"
 
-Target "RunIntegrationTestsNetCore" (fun _ ->
-    CreateDir "tests_result/netcore/Paket.IntegrationTests"
-
-    // improves the speed of the test-suite by disabling the runtime resolution.
-    System.Environment.SetEnvironmentVariable("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
-    DotNetCli.Test (fun c ->
-        { c with
-            Project = "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
-            Framework = "netcoreapp2.1"
-            AdditionalArgs =
-              [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
-                sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]
-            TimeOut = TimeSpan.FromMinutes 60.
-            ToolPath = dotnetExePath
-        })
-)
-
-"Clean" ==> "Publish" ==> "RunIntegrationTestsNetCore"
-
 // --------------------------------------------------------------------------------------
 // Run the unit tests
 
@@ -284,10 +265,10 @@ Target "RunTests" (fun _ ->
             })
 
     runTest "net" "Paket.Tests" "net461"
-    runTest "netcore" "Paket.Tests" "netcoreapp2.1"
+    runTest "netcore" "Paket.Tests" "netcoreapp3.0"
 
     runTest "net" "Paket.Bootstrapper.Tests" "net461"
-    runTest "netcore" "Paket.Bootstrapper.Tests" "netcoreapp2.1"
+    runTest "netcore" "Paket.Bootstrapper.Tests" "netcoreapp3.0"
 )
 
 Target "QuickTest" (fun _ ->
@@ -346,7 +327,7 @@ Target "RunIntegrationTestsNet" (fun _ ->
     DotNetCli.Test (fun c ->
         { c with
             Project = "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
-            Framework = "netcoreapp2.1"
+            Framework = "net461"
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
                 sprintf "--logger:trx;LogFileName=%s" ("tests_result/net/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]
@@ -355,9 +336,26 @@ Target "RunIntegrationTestsNet" (fun _ ->
         })
 
 )
-
 "Clean" ==> "Publish" ==> "RunIntegrationTestsNet"
 
+
+Target "RunIntegrationTestsNetCore" (fun _ ->
+    CreateDir "tests_result/netcore/Paket.IntegrationTests"
+
+    // improves the speed of the test-suite by disabling the runtime resolution.
+    System.Environment.SetEnvironmentVariable("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
+    DotNetCli.Test (fun c ->
+        { c with
+            Project = "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
+            Framework = "netcoreapp3.0"
+            AdditionalArgs =
+              [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
+                sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]
+            TimeOut = TimeSpan.FromMinutes 60.
+            ToolPath = dotnetExePath
+        })
+)
+"Clean" ==> "Publish" ==> "RunIntegrationTestsNetCore"
 
 let pfx = "code-sign.pfx"
 let mutable isUnsignedAllowed = true
