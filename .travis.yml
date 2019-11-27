@@ -25,6 +25,8 @@ mono:
 
 matrix:
   allow_failures:
+    # fake fails, ref https://github.com/fsharp/FAKE/issues/2362
+    - mono: latest
     # flaky test are expected to fail from time to time
     - env: PAKET_TESTSUITE_FLAKYTESTS=true
     # sporadic MonoBtlsException: Ssl error:1000007d:SSL routines:OPENSSL_internal:CERTIFICATE_VERIFY_FAILED
