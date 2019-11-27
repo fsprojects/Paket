@@ -15,6 +15,8 @@ version: 0.0.1.{build}
 artifacts:
   - path: bin
     name: bin
+  - path: bin_bootstrapper
+    name: bin_bootstrapper
   - path: 'temp\*.nupkg'
     type: NuGetPackage
   - path: 'tests_result\**\*.trx'
