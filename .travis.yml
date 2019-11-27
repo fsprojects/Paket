@@ -35,4 +35,5 @@ branches:
     - gh-pages
 
 script:
+  # the `< /dev/null` workaround for dotnet test hang (ref https://github.com/microsoft/vstest/issues/2080#issuecomment-539879345 )
   - ./build.sh BuildPackage < /dev/null
