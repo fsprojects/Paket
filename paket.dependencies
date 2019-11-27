@@ -16,9 +16,9 @@ nuget System.Net.Http.WinHttpHandler
 nuget Moq
 nuget FSCheck
 
-nuget NUnit redirects: force
-// current workaround for https://github.com/nunit/nunit3-vs-adapter/issues/366
-nuget NUnit3TestAdapter version_in_path: true
+nuget NUnit ~> 3.12.0
+nuget NUnit3TestAdapter ~> 3.13.0
+nuget Microsoft.NET.Test.Sdk ~> 16.2.0
 
 github fsharp/FAKE:0341a2e614eb2a7f34607cec914eb0ed83ce9add src/app/FakeLib/Globbing/Globbing.fs
 github fsprojects/FSharp.TypeProviders.SDK:dc5ac01a1ac288eceb1fd6f12a5d388236f4f8e5 src/AssemblyReader.fs

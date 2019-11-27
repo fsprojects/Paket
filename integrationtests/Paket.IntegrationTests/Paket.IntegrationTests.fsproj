@@ -44,13 +44,10 @@
     <ProjectReference Include="..\..\src\Paket.Core\Paket.Core.fsproj" />
   </ItemGroup>
   <ItemGroup>
+    <!-- TODO check this ref, should we use FakeLib package? -->
     <Reference Include="FakeLib">
       <HintPath>..\..\packages\build\FAKE\tools\FakeLib.dll</HintPath>
     </Reference>
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net461'">
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
