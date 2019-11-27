@@ -374,6 +374,7 @@ Target "SignAssemblies" (fun _ ->
     let filesToSign =
         !! "bin/**/*.exe"
         ++ "bin/**/Paket.Core.dll"
+        ++ "bin_bootstrapper/**/*.exe"
 
     filesToSign
         |> Seq.iter (fun executable ->
