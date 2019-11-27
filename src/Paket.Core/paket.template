@@ -11,3 +11,6 @@ iconurl https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img
 tags
     nuget, bundler, F#
 include-pdbs true
+dependencies
+  framework: net461
+  framework: netstandard2.0
