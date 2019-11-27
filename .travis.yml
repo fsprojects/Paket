@@ -35,4 +35,4 @@ branches:
     - gh-pages
 
 script:
-  - ./build.sh BuildPackage
+  - ./build.sh BuildPackage < /dev/null
