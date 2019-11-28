@@ -6,7 +6,7 @@
     <PackageId>Paket</PackageId>
     <AssemblyName>paket</AssemblyName>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(PackAsTool)' == 'true'">
+  <PropertyGroup Condition=" '$(PackAsTool)' == 'true' ">
     <!-- .net tools support netcoreapp only -->
     <TargetFrameworks></TargetFrameworks>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -18,7 +18,7 @@
     <Content Include="App.config" Condition=" '$(TargetFramework)' == 'net461' " />
     <None Include="paket.references" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackAsTool)' == 'true'">
+  <ItemGroup Condition=" '$(PackAsTool)' == 'true' ">
     <!-- include the merged paket.exe inside the package, in tools dir -->
     <Content Include="..\..\bin\merged\paket.exe">
       <Pack>true</Pack>
