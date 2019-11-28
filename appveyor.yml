@@ -15,10 +15,11 @@ version: 0.0.1.{build}
 artifacts:
   - path: bin
     name: bin
-  - path: bin_netcore
-    name: bin_netcore
+  - path: bin_bootstrapper
+    name: bin_bootstrapper
   - path: 'temp\*.nupkg'
     type: NuGetPackage
+    name: nupkgs
   - path: 'tests_result\**\*.trx'
     name: TestResults
     type: zip
@@ -45,14 +46,16 @@ on_finish:
   - ps: >-
       $wc = New-Object 'System.Net.WebClient';
       $testResults = @(
-        '.\tests_result\net\Paket.Tests\TestResult.xml'
-        '.\tests_result\net\Paket.IntegrationTests\TestResult.xml'
+        '.\tests_result\net\Paket.Tests\TestResult.trx'
+        '.\tests_result\net\Paket.IntegrationTests\TestResult.trx'
+        '.\tests_result\net\Paket.Bootstrapper.Tests\TestResult.trx'
         '.\tests_result\netcore\Paket.Tests\TestResult.trx'
         '.\tests_result\netcore\Paket.IntegrationTests\TestResult.trx'
+        '.\tests_result\netcore\Paket.Bootstrapper.Tests\TestResult.trx'
       )
   - ps: >-
       Foreach ($path in $testResults) {
         If (Test-Path $path) {
-          $wc.UploadFile("https://ci.appveyor.com/api/testresults/nunit3/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $path))
+          $wc.UploadFile("https://ci.appveyor.com/api/testresults/mstest/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $path))
         }
       }

@@ -1,0 +1,15 @@
+<Project ToolsVersion="15.0">
+
+  <!-- copy pdbs from packages to publish dir -->
+  <Target Name="AddPdbsToPublishDir" AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <ResolvedFileToPublish
+        Include="@(ResolvedFileToPublish->'%(RootDir)%(Directory)%(Filename).pdb')" 
+        Condition="Exists('%(RootDir)%(Directory)%(Filename).pdb')">
+        <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+        <RelativePath>%(Filename).pdb</RelativePath>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+
+</Project>

@@ -21,9 +21,16 @@ let dotnetToolPath =
 
 let paketToolPath =
 #if PAKET_NETCORE
-    dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin_netcore/paket.dll")
+    dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin/netcoreapp2.1/paket.dll")
 #else
     "", FullName(__SOURCE_DIRECTORY__ + "../../../bin/net461/paket.exe")
+#endif
+
+let paketBootstrapperToolPath =
+#if PAKET_NETCORE
+    dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin_bootstrapper/netcoreapp2.1/paket.bootstrapper.dll")
+#else
+    "", FullName(__SOURCE_DIRECTORY__ + "../../../bin_bootstrapper/net461/paket.bootstrapper.exe")
 #endif
 
 let integrationTestPath = FullName(__SOURCE_DIRECTORY__ + "../../../integrationtests/scenarios")

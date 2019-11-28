@@ -3,17 +3,33 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <OutputPath>..\..\bin\</OutputPath>
     <PackageId>Paket</PackageId>
     <AssemblyName>paket</AssemblyName>
-    <PackAsTool Condition=" '$(TargetFramework)' != 'net461'" >true</PackAsTool>
+    <!-- package metadata -->
+    <Description>A dependency manager for .NET with support for NuGet packages and git repositories.</Description>
+    <PackageLicenseUrl>http://fsprojects.github.io/Paket/license.html</PackageLicenseUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png</PackageIconUrl>
+    <PackageTags>nuget;bundler;F#</PackageTags>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(PackAsTool)' == 'true' ">
+    <!-- .net tools support netcoreapp only -->
+    <TargetFrameworks></TargetFrameworks>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Commands.fs" />
     <Compile Include="Program.fs" />
-    <Content Condition=" '$(TargetFramework)' == 'net461'" Include="App.config" />
+    <Content Include="App.config" Condition=" '$(TargetFramework)' == 'net461' " />
     <None Include="paket.references" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackAsTool)' == 'true' ">
+    <!-- include the merged paket.exe inside the package, in tools dir -->
+    <Content Include="..\..\bin\merged\paket.exe">
+      <Pack>true</Pack>
+      <PackagePath>tools</PackagePath>
+      <Visible>true</Visible>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Paket.Core\Paket.Core.fsproj" />

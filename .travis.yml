@@ -1,5 +1,5 @@
 language: csharp
-dist: trusty
+dist: xenial
 
 sudo: false
 
@@ -16,7 +16,7 @@ env:
     # just flaky tests
     - PAKET_TESTSUITE_FLAKYTESTS=true
 
-dotnet: 2.1.500
+dotnet: 3.0.100
 
 mono:
   - 5.18.1
@@ -25,6 +25,8 @@ mono:
 
 matrix:
   allow_failures:
+    # fake fails, ref https://github.com/fsharp/FAKE/issues/2362
+    - mono: latest
     # flaky test are expected to fail from time to time
     - env: PAKET_TESTSUITE_FLAKYTESTS=true
     # sporadic MonoBtlsException: Ssl error:1000007d:SSL routines:OPENSSL_internal:CERTIFICATE_VERIFY_FAILED
@@ -35,4 +37,5 @@ branches:
     - gh-pages
 
 script:
-  - ./build.sh BuildPackage
+  # the `< /dev/null` workaround for dotnet test hang (ref https://github.com/microsoft/vstest/issues/2080#issuecomment-539879345 )
+  - ./build.sh BuildPackage < /dev/null
