@@ -12,14 +12,14 @@
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' != 'net461' ">
-	  <DefineConstants>NO_BOOTSTRAPPER;NO_CONFIGURATIONMANAGER;CUSTOM_WEBPROXY;$(DefineConstants)</DefineConstants>
+    <DefineConstants>NO_BOOTSTRAPPER;NO_CONFIGURATIONMANAGER;CUSTOM_WEBPROXY;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <DefineConstants>USE_WEB_CLIENT_FOR_UPLOAD;NO_MAXCONNECTIONPERSERVER</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
-    <EmbeddedResource Include="embedded\Paket.Restore.targets" >
+    <EmbeddedResource Include="embedded\Paket.Restore.targets">
       <LogicalName>Paket.Restore.targets</LogicalName>
     </EmbeddedResource>
     <Compile Include="Common\AssemblyInfo.fs" />
