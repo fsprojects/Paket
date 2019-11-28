@@ -5,6 +5,7 @@
     <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
     <StartupObject>Paket.Bootstrapper.Program</StartupObject>
     <AssemblyName>paket.bootstrapper</AssemblyName>
+    <ToolCommandName>paketbootstrapper</ToolCommandName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <DefineConstants Condition=" '$(TargetFramework)' != 'net461'">NO_SSL3;NO_SYSTEMWEBPROXY;PAKET_BOOTSTRAP_NO_CACHE;PAKET_BOOTSTRAP_WORKAROUND_MSBUILD_URLS;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
