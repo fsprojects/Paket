@@ -866,6 +866,28 @@ let handleCommand silent command =
     | Version
     | Log_File _ -> failwithf "internal error: this code should never be reached."
 
+#if PAKET_GLOBAL_LOCAL
+
+let rec findRootInHierarchyFrom dir =
+    let dotPaketDir =
+        Path.Combine(dir.FullName, Constants.PaketFolderName)
+        |> DirectoryInfo
+    if dotPaketDir.Exists then
+        Some dotPaketDir
+    else
+        match dotPaketDir.Parent with
+        | null -> None
+        | parent -> findRootInHierarchyFrom parent
+
+let findRootInHierarchy () =
+    (Directory.GetCurrentDirectory() |> DirectoryInfo)
+    |> findRootInHierarchyHelper
+
+let runIt exeName exeArgs =
+    printfn "%s %A" exeName exeArgs
+
+#endif
+
 let main() =
     let waitDebuggerEnvVar = Environment.GetEnvironmentVariable ("PAKET_WAIT_DEBUGGER")
     if waitDebuggerEnvVar = "1" then
@@ -940,4 +962,32 @@ let main() =
             printErrorExt true true true exn
         else printError exn
 
-main()
+
+[<EntryPoint>]
+let theMain argv =
+
+#if PAKET_GLOBAL_LOCAL
+
+    let isToolGlobal = true
+    let isToolLocal = not isToolGlobal
+
+    let isToolLocal then
+        main ()
+    else
+        let paketRoot = findRootInHierarchy ()
+        match paketRoot with
+        | None ->
+            // act as global tool
+            mainGlobal ()
+        | Some dir ->
+            let existsDotConfigAlonsideDotPaket = true
+            if existsDotConfigAlonsideDotPaket then
+                // paket as local tool => `dotnet paket`
+                runIt "dotnet" ("paket" :: argv)
+            else
+                // old paket => `.paket/paket`
+                runIt ".paket/paket" argv
+
+#else
+    main ()
+#endif
