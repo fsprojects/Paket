@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <AutoGenerateBindingRedirects Condition=" '$(TargetFramework)' == 'net461' ">true</AutoGenerateBindingRedirects>
     <Version Condition="'$(PAKET_PROJ_VERSION)' != ''">$(PAKET_PROJ_VERSION)</Version>
     <PackageVersion Condition="'$(PAKET_PROJ_VERSION)' != ''">$(PAKET_PROJ_VERSION)</PackageVersion>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
@@ -106,7 +106,7 @@
     <Compile Include="Packaging\PackageProcess.fs" />
     <Compile Include="PublicAPI.fs" />
     <None Include="paket.template" />
-    <Content Include="app.config" />
+    <Content Include="app.config" Condition=" '$(TargetFramework)' == 'net461' " />
     <None Include="Prototypes\script-generation.fsx" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461'">
