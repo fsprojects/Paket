@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(PackAsTool)' == 'true'">
-    <Content Include="..\..\bin\merged\paket.exe">
+    <Content Include="..\..\bin_bootstrapper\net461\paket.bootstrapper.exe">
       <Pack>true</Pack>
       <PackagePath>tools</PackagePath>
       <Visible>true</Visible>
