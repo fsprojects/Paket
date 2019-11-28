@@ -635,6 +635,13 @@ Target "BuildPackage" DoNothing
 // --------------------------------------------------------------------------------------
 // Run all targets by default. Invoke 'build <Target>' to override
 
+let hasBuildParams buildParams =
+    buildParams
+    |> List.map hasBuildParam
+    |> List.exists id
+let unlessBuildParams buildParams =
+    not (hasBuildParams buildParams)
+
 Target "All" DoNothing
 
 "Clean"
@@ -642,7 +649,7 @@ Target "All" DoNothing
   ==> "Restore"
   ==> "AssemblyInfo"
   ==> "Build"
-  ==> "RunTests"
+  =?> ("RunTests", unlessBuildParams [ "SkipTests"; "SkipUnitTests" ])
   =?> ("GenerateReferenceDocs",isLocalBuild && not isMono && not (hasBuildParam "SkipDocs"))
   =?> ("GenerateDocs",isLocalBuild && not isMono && not (hasBuildParam "SkipDocs"))
   ==> "All"
@@ -650,11 +657,11 @@ Target "All" DoNothing
 
 "All"
   ==> "MergePaketTool"
-  =?> ("RunIntegrationTestsNet", not <| (hasBuildParam "SkipIntegrationTests" || hasBuildParam "SkipIntegrationTestsNet"))
-  =?> ("RunIntegrationTestsNetCore", not <| (hasBuildParam "SkipIntegrationTests" || hasBuildParam "SkipIntegrationTestsNetCore"))
+  =?> ("RunIntegrationTestsNet", unlessBuildParams [ "SkipTests"; "SkipIntegrationTests"; "SkipIntegrationTestsNet" ] )
+  =?> ("RunIntegrationTestsNetCore", unlessBuildParams [ "SkipTests"; "SkipIntegrationTests"; "SkipIntegrationTestsNetCore" ] )
   ==> "SignAssemblies"
   ==> "CalculateDownloadHash"
-  =?> ("NuGet", not <| hasBuildParam "SkipNuGet")
+  =?> ("NuGet", unlessBuildParams [ "SkipNuGet" ])
   ==> "BuildPackage"
 
 "EnsurePackageSigned"
