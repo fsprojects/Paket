@@ -3,6 +3,7 @@ System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
 
 #r @"packages/build/FAKE/tools/FakeLib.dll"
 #r "System.IO.Compression.FileSystem"
+#r "System.Xml.Linq"
 
 open Fake
 open Fake.Git
@@ -13,6 +14,7 @@ open System
 open System.IO
 open Fake.Testing.NUnit3
 open System.Security.Cryptography
+open System.Xml.Linq
 
 // --------------------------------------------------------------------------------------
 // START TODO: Provide project-specific details below
@@ -391,6 +393,23 @@ Target "CalculateDownloadHash" (fun _ ->
     File.WriteAllText(buildMergedDir @@ "paket-sha256.txt", sprintf "%s paket.exe" hash)
 )
 
+let releaseNotesProp releaseNotesLines =
+    let xn name = XName.Get(name)
+    let text = releaseNotesLines |> String.concat Environment.NewLine
+    let doc =
+        XDocument(
+            [ XComment("This document was automatically generated.") :> obj
+              XElement(xn "Project",
+                XElement(xn "PropertyGroup",
+                    XElement(xn "PackageReleaseNotes", text)
+                )
+              ) :> obj ]
+        )
+
+    let path = Path.GetTempFileName()
+    doc.Save(path)
+    path
+
 Target "NuGet" (fun _ ->
     Paket.Pack (fun p ->
         { p with
@@ -399,12 +418,15 @@ Target "NuGet" (fun _ ->
             TemplateFile = "src/Paket.Core/paket.template"
             ReleaseNotes = toLines release.Notes })
     // pack as .NET tools
+    let releaseNotesPath = releaseNotesProp release.Notes
+
     DotNetCli.Pack (fun c ->
         { c with
             Project = "src/Paket/Paket.fsproj"
             OutputPath = tempDir
             AdditionalArgs =
                 [ sprintf "/p:Version=%s" release.NugetVersion
+                  sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath
                   "/p:PackAsTool=true" ]
             ToolPath = dotnetExePath
         })
@@ -414,6 +436,7 @@ Target "NuGet" (fun _ ->
             OutputPath = tempDir
             AdditionalArgs =
                 [ sprintf "/p:Version=%s" release.NugetVersion
+                  sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath
                   "/p:PackAsTool=true"]
             ToolPath = dotnetExePath
         })
