@@ -1187,6 +1187,8 @@ GITHUB
   remote: fsharp/FAKE
     modules/Octokit/Octokit.fsx (96f1594fd50ced6c1aa45d7cf74fb6c067d08ac1)
       Octokit (>= 0.20)
+  remote: enricosada/add_icon_to_exe
+    rh/ResourceHacker.exe (e11eda501acea369ac2950beb34b8888495bf21f)
 GROUP NetCoreTools
 STORAGE: NONE
 NUGET

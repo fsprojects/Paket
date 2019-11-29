@@ -393,6 +393,22 @@ Target "CalculateDownloadHash" (fun _ ->
     File.WriteAllText(buildMergedDir @@ "paket-sha256.txt", sprintf "%s paket.exe" hash)
 )
 
+Target "AddIconToExe" (fun _ ->
+    // add icon to paket.exe
+    // workaround https://github.com/dotnet/fsharp/issues/1172
+    let paketExeIcon = "src" @@ "Paket" @@ "paket.ico"
+
+    // use resourcehacker to add the icon
+    let rhPath = "paket-files" @@ "build" @@ "enricosada" @@ "add_icon_to_exe" @@ "rh" @@ "ResourceHacker.exe"
+    let args = sprintf """-open "%s" -save "%s" -action addskip -res "%s" -mask ICONGROUP,MAINICON,""" paketFile paketFile paketExeIcon
+
+    let result =
+        ExecProcess (fun info ->
+            info.FileName <- rhPath
+            info.Arguments <- args) (TimeSpan.FromMinutes 1.)
+    if result <> 0 then failwithf "Error during adding icon %s to %s with %s %s" paketExeIcon paketFile rhPath args
+)
+
 let releaseNotesProp releaseNotesLines =
     let xn name = XName.Get(name)
     let text = releaseNotesLines |> String.concat Environment.NewLine
@@ -680,6 +696,7 @@ Target "All" DoNothing
 
 "All"
   ==> "MergePaketTool"
+  =?> ("AddIconToExe", not isMono)
   =?> ("RunIntegrationTestsNet", unlessBuildParams [ "SkipTests"; "SkipIntegrationTests"; "SkipIntegrationTestsNet" ] )
   =?> ("RunIntegrationTestsNetCore", unlessBuildParams [ "SkipTests"; "SkipIntegrationTests"; "SkipIntegrationTestsNetCore" ] )
   ==> "SignAssemblies"
