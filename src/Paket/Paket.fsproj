@@ -11,6 +11,9 @@
     <PackageIconUrl>https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png</PackageIconUrl>
     <PackageTags>nuget;bundler;F#</PackageTags>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
+	  <DefineConstants>PAKET_GLOBAL_LOCAL;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(PackAsTool)' == 'true' ">
     <!-- .net tools support netcoreapp only -->
     <TargetFrameworks></TargetFrameworks>

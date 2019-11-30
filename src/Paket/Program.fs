@@ -869,12 +869,12 @@ let handleCommand silent command =
 
 #if PAKET_GLOBAL_LOCAL
 
-let rec findRootInHierarchyFrom dir =
+let rec findRootInHierarchyFrom (dir: DirectoryInfo) =
     let dotPaketDir =
         Path.Combine(dir.FullName, Constants.PaketFolderName)
         |> DirectoryInfo
     if dotPaketDir.Exists then
-        Some dotPaketDir
+        Some dir
     else
         match dotPaketDir.Parent with
         | null -> None
@@ -882,10 +882,18 @@ let rec findRootInHierarchyFrom dir =
 
 let findRootInHierarchy () =
     (Directory.GetCurrentDirectory() |> DirectoryInfo)
-    |> findRootInHierarchyHelper
+    |> findRootInHierarchyFrom
 
 let runIt exeName exeArgs =
     printfn "%s %A" exeName exeArgs
+    0
+
+let mainGlobal () =
+    0
+
+let dotnetToolManifestPath (dir: DirectoryInfo) =
+    Path.Combine(dir.FullName, ".config", "dotnet-tools.json")
+    |> FileInfo
 
 #endif
 
@@ -974,7 +982,7 @@ let theMain argv =
     let isToolGlobal = true
     let isToolLocal = not isToolGlobal
 
-    let isToolLocal then
+    if isToolLocal then
         main ()
     else
         let paketRoot = findRootInHierarchy ()
@@ -983,13 +991,14 @@ let theMain argv =
             // act as global tool
             mainGlobal ()
         | Some dir ->
-            let existsDotConfigAlonsideDotPaket = true
-            if existsDotConfigAlonsideDotPaket then
+            let manifestToolPath = dotnetToolManifestPath dir
+            printfn "%O" manifestToolPath
+            if manifestToolPath.Exists then
                 // paket as local tool => `dotnet paket`
-                runIt "dotnet" ("paket" :: argv)
+                runIt "dotnet" [| yield "paket"; yield! argv |]
             else
                 // old paket => `.paket/paket`
-                runIt ".paket/paket" argv
+                runIt (Path.Combine(Constants.PaketFolderName, Constants.PaketFileName)) argv
 
 #else
     main ()
