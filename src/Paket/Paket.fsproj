@@ -36,6 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Paket.Core\Paket.Core.fsproj" />
+    <ProjectReference Include="..\Paket.CmdLineHelpers\Paket.CmdLineHelpers.csproj" Condition=" '$(TargetFramework)' == 'netcoreapp2.1' " />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

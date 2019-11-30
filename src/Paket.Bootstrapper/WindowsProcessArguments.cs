@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Paket.Bootstrapper
 {
-    static class WindowsProcessArguments
+    public static class WindowsProcessArguments
     {
         static void AddBackslashes(StringBuilder builder, int backslashes, bool beforeQuote)
         {

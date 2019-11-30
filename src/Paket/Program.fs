@@ -870,23 +870,36 @@ let handleCommand silent command =
 #if PAKET_GLOBAL_LOCAL
 
 let rec findRootInHierarchyFrom (dir: DirectoryInfo) =
-    let dotPaketDir =
-        Path.Combine(dir.FullName, Constants.PaketFolderName)
-        |> DirectoryInfo
-    if dotPaketDir.Exists then
-        Some dir
+    printfn "searching in %s" dir.FullName
+    if not (dir.Exists) then
+        None
     else
-        match dotPaketDir.Parent with
-        | null -> None
-        | parent -> findRootInHierarchyFrom parent
+        let dotPaketDir =
+            Path.Combine(dir.FullName, Constants.PaketFolderName)
+            |> DirectoryInfo
+        if dotPaketDir.Exists then
+            Some dir
+        else
+            printfn "parent %O" dotPaketDir.Parent
+            match dir.Parent with
+            | null -> None
+            | root -> findRootInHierarchyFrom root
 
 let findRootInHierarchy () =
     (Directory.GetCurrentDirectory() |> DirectoryInfo)
     |> findRootInHierarchyFrom
 
+open System.Text
+
 let runIt exeName exeArgs =
     printfn "%s %A" exeName exeArgs
-    0
+
+    use p = new Process()
+    let argString : string = Paket.Bootstrapper.WindowsProcessArguments.ToString(exeArgs)
+    p.StartInfo <- ProcessStartInfo(FileName = exeName, Arguments = argString, UseShellExecute = false)
+    p.Start() |> ignore
+    p.WaitForExit()
+    p.ExitCode
 
 let mainGlobal () =
     0
