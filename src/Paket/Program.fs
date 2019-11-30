@@ -869,6 +869,15 @@ let handleCommand silent command =
 
 #if PAKET_GLOBAL_LOCAL
 
+(*
+#load @"..\Paket.Core\Common\Domain.fs"
+#load @"..\Paket.Core\Common\Logging.fs"
+#load @"..\Paket.Core\Common\Constants.fs"
+open System
+open System.IO
+open Paket
+*)
+
 let rec findRootInHierarchyFrom (dir: DirectoryInfo) =
     printfn "searching in %s" dir.FullName
     if not (dir.Exists) then
@@ -888,8 +897,6 @@ let rec findRootInHierarchyFrom (dir: DirectoryInfo) =
 let findRootInHierarchy () =
     (Directory.GetCurrentDirectory() |> DirectoryInfo)
     |> findRootInHierarchyFrom
-
-open System.Text
 
 let runIt exeName exeArgs =
     printfn "%s %A" exeName exeArgs
