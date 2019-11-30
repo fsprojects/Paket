@@ -37,10 +37,11 @@ let processWithValidationEx printUsage silent validateF commandF result =
         traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
         printUsage result
 
-        Environment.ExitCode <- 1
+        1
     else
         try
             commandF result
+            0
         finally
             sw.Stop()
             if not silent then
@@ -954,13 +955,15 @@ let main() =
                 | None -> null
 
             handleCommand silent (results.GetSubCommand())
+        else
+            0
     with
     | exn when not (exn :? System.NullReferenceException) ->
-        Environment.ExitCode <- 1
         traceErrorfn "Paket failed with"
         if Environment.GetEnvironmentVariable "PAKET_DETAILED_ERRORS" = "true" then
             printErrorExt true true true exn
         else printError exn
+        1
 
 
 [<EntryPoint>]
