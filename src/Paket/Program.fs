@@ -895,6 +895,26 @@ let dotnetToolManifestPath (dir: DirectoryInfo) =
     Path.Combine(dir.FullName, ".config", "dotnet-tools.json")
     |> FileInfo
 
+open System.Reflection
+
+let isToolLocal () =
+    let x = typeof<AddArgs>.Assembly.Location
+    printfn "%s" x
+
+    // local
+    // C:\Users\e0s01ao\.nuget\packages\paket\5.239.0-beta-0001\tools\netcoreapp2.1\any\paket.dll
+
+    // global
+    // C:\Users\e0s01ao\.dotnet\tools\.store\paket\5.239.0-beta-0001\paket\5.239.0-beta-0001\tools\netcoreapp2.1\any\paket.dll
+
+    let isToolGlobal = x.Contains(".store")
+
+    printfn "tg %O" isToolGlobal
+
+    let isToolLocal = not isToolGlobal
+
+    isToolLocal
+
 #endif
 
 let main() =
@@ -976,19 +996,22 @@ let main() =
 
 [<EntryPoint>]
 let theMain argv =
+    printfn "real main"
 
 #if PAKET_GLOBAL_LOCAL
+    let isToolLocal = isToolLocal ()
 
-    let isToolGlobal = true
-    let isToolLocal = not isToolGlobal
+    printfn "local: %O" isToolLocal
 
     if isToolLocal then
+        printfn "localtool: run main"
         main ()
     else
         let paketRoot = findRootInHierarchy ()
         match paketRoot with
         | None ->
             // act as global tool
+            printfn "globaltool: run mainglobal"
             mainGlobal ()
         | Some dir ->
             let manifestToolPath = dotnetToolManifestPath dir
@@ -1001,5 +1024,7 @@ let theMain argv =
                 runIt (Path.Combine(Constants.PaketFolderName, Constants.PaketFileName)) argv
 
 #else
+    printfn "main not g"
+
     main ()
 #endif
