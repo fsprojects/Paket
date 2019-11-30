@@ -879,7 +879,6 @@ open Paket
 *)
 
 let rec findRootInHierarchyFrom (dir: DirectoryInfo) =
-    printfn "searching in %s" dir.FullName
     if not (dir.Exists) then
         None
     else
@@ -889,7 +888,6 @@ let rec findRootInHierarchyFrom (dir: DirectoryInfo) =
         if dotPaketDir.Exists then
             Some dir
         else
-            printfn "parent %O" dotPaketDir.Parent
             match dir.Parent with
             | null -> None
             | root -> findRootInHierarchyFrom root
@@ -899,17 +897,40 @@ let findRootInHierarchy () =
     |> findRootInHierarchyFrom
 
 let runIt exeName exeArgs =
-    printfn "%s %A" exeName exeArgs
-
     use p = new Process()
-    let argString : string = Paket.Bootstrapper.WindowsProcessArguments.ToString(exeArgs)
-    p.StartInfo <- ProcessStartInfo(FileName = exeName, Arguments = argString, UseShellExecute = false)
+
+    // let argString : string = Paket.Bootstrapper.WindowsProcessArguments.ToString(exeArgs)
+    // let psi = ProcessStartInfo(FileName = exeName, Arguments = argString, UseShellExecute = false)
+    // printfn "Running: %s %A" exeName (psi.Arguments)
+
+    let psi = ProcessStartInfo(FileName = exeName, Arguments = "", UseShellExecute = false)
+    for arg in exeArgs do
+        psi.ArgumentList.Add(arg)
+    printfn "Running: %s %A" exeName (psi.ArgumentList |> Seq.toList)
+
+    p.StartInfo <- psi
+
     p.Start() |> ignore
     p.WaitForExit()
     p.ExitCode
 
-let mainGlobal () =
-    0
+
+[<RequireQualifiedAccess>]
+type GlobalCommand =
+    // global options
+    | [<AltCommandLine("-s");Inherit>]                  Silent
+    | [<AltCommandLine("-v");Inherit>]                  Verbose
+    // subcommands
+    | [<CustomCommandLine("init")>]                     Init of ParseResults<InitArgs>
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | Init _ -> "create an empty paket.dependencies file in the current working directory"
+            | Silent -> "suppress console output"
+            | Verbose -> "print detailed information to the console"
+
+let globalCommandParser = ArgumentParser.Create<GlobalCommand>(programName = "paket", errorHandler = new ProcessExiter(), checkStructure = false)
 
 let dotnetToolManifestPath (dir: DirectoryInfo) =
     Path.Combine(dir.FullName, ".config", "dotnet-tools.json")
@@ -919,17 +940,17 @@ open System.Reflection
 
 let isToolLocal () =
     let x = typeof<AddArgs>.Assembly.Location
-    printfn "%s" x
+    // printfn "%s" x
 
-    // local
+    // local is like
     // C:\Users\e0s01ao\.nuget\packages\paket\5.239.0-beta-0001\tools\netcoreapp2.1\any\paket.dll
 
-    // global
+    // global is like
     // C:\Users\e0s01ao\.dotnet\tools\.store\paket\5.239.0-beta-0001\paket\5.239.0-beta-0001\tools\netcoreapp2.1\any\paket.dll
 
     let isToolGlobal = x.Contains(".store")
 
-    printfn "tg %O" isToolGlobal
+    // printfn "tg %O" isToolGlobal
 
     let isToolLocal = not isToolGlobal
 
@@ -1013,38 +1034,81 @@ let main() =
         else printError exn
         1
 
+#if PAKET_GLOBAL_LOCAL
+
+let handleGlobalCommand silent command =
+    match command with
+    | GlobalCommand.Init r -> processCommand silent (init) r
+    // global options; list here in order to maintain compiler warnings
+    // in case of new subcommands added
+    | GlobalCommand.Verbose
+    | GlobalCommand.Silent -> failwithf "internal error: this code should never be reached."
+
+let mainGlobal () =
+    let waitDebuggerEnvVar = Environment.GetEnvironmentVariable ("PAKET_WAIT_DEBUGGER")
+    if waitDebuggerEnvVar = "1" then
+        waitForDebugger()
+
+    Logging.verboseWarnings <- Environment.GetEnvironmentVariable "PAKET_DETAILED_WARNINGS" = "true"
+    use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
+
+    // TODO ^--- no need to duplicate these, move in entrypoint
+
+    try
+        let parser = ArgumentParser.Create<GlobalCommand>(programName = "paket",
+                                                    helpTextMessage = sprintf "Paket version %s%sHelp was requested:" paketVersion Environment.NewLine,
+                                                    errorHandler = new PaketExiter(),
+                                                    checkStructure = false)
+
+        let results = parser.ParseCommandLine(raiseOnUsage = true)
+        let silent = results.Contains <@ GlobalCommand.Silent @>
+        tracePaketVersion silent
+
+        if results.Contains <@ GlobalCommand.Verbose @> then
+            Logging.verbose <- true
+            Logging.verboseWarnings <- true
+
+        handleGlobalCommand silent (results.GetSubCommand())
+
+        //TODO v---- no need to duplicate, move in entrypoint? or not
+    with
+    | exn when not (exn :? System.NullReferenceException) ->
+        traceErrorfn "Paket failed with"
+        if Environment.GetEnvironmentVariable "PAKET_DETAILED_ERRORS" = "true" then
+            printErrorExt true true true exn
+        else printError exn
+        1
+
+#endif
 
 [<EntryPoint>]
 let theMain argv =
-    printfn "real main"
-
 #if PAKET_GLOBAL_LOCAL
     let isToolLocal = isToolLocal ()
 
-    printfn "local: %O" isToolLocal
-
     if isToolLocal then
-        printfn "localtool: run main"
         main ()
     else
         let paketRoot = findRootInHierarchy ()
         match paketRoot with
         | None ->
-            // act as global tool
-            printfn "globaltool: run mainglobal"
+            // act as global tool (subset of commands)
             mainGlobal ()
         | Some dir ->
             let manifestToolPath = dotnetToolManifestPath dir
-            printfn "%O" manifestToolPath
             if manifestToolPath.Exists then
                 // paket as local tool => `dotnet paket`
+
+                //TODO check if paket is installed in manifest! otherwise tell to user!
+
                 runIt "dotnet" [| yield "paket"; yield! argv |]
             else
                 // old paket => `.paket/paket`
-                runIt (Path.Combine(Constants.PaketFolderName, Constants.PaketFileName)) argv
+                let paketExePath =
+                    Path.Combine(dir.FullName, Constants.PaketFolderName, Constants.PaketFileName)
+                    |> Path.GetFullPath
+                runIt paketExePath argv
 
 #else
-    printfn "main not g"
-
     main ()
 #endif
