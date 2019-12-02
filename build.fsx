@@ -373,6 +373,9 @@ Target "SignAssemblies" (fun _ ->
         !! "bin/**/*.exe"
         ++ "bin/**/Paket.Core.dll"
         ++ "bin_bootstrapper/**/*.exe"
+        |> Seq.cache
+
+    if Seq.length filesToSign < 3 then failwith "Didn't find files to sign"
 
     filesToSign
         |> Seq.iter (fun executable ->
