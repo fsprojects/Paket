@@ -1,4 +1,4 @@
-#### 5.238.1 - 2019-11-26
+#### 5.238.2 - 2019-11-26
 * Exclude top-level linux folders for docker support - https://github.com/fsprojects/Paket/issues/3123
 * More verbose logging
 
