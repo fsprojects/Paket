@@ -97,7 +97,7 @@ type ReferencesFile =
 
                     let remoteFiles =
                         remoteLines
-                        |> List.map (fun segments ->
+                        |> List.map (fun s ->
                                         let segments = s.Replace("File:","").Split([|' '|], StringSplitOptions.RemoveEmptyEntries)
                                         let hasPath =
                                             let get x = if segments.Length > x then segments.[x] else ""
