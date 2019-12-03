@@ -6,12 +6,12 @@ open Logging
 open Paket.Domain
 open Paket.Requirements
 
-type RemoteFileReference = 
+type RemoteFileReference =
     { Name : string
       Link : string
       Settings : RemoteFileInstallSettings }
 
-type PackageInstallSettings = 
+type PackageInstallSettings =
     { Name : PackageName
       Settings : InstallSettings }
 
@@ -26,51 +26,51 @@ type InstallGroup =
       NugetPackages : PackageInstallSettings list
       RemoteFiles : RemoteFileReference list }
 
-type ReferencesFile = 
+type ReferencesFile =
     { FileName: string
-      Groups: Map<GroupName,InstallGroup> } 
-    
+      Groups: Map<GroupName,InstallGroup> }
+
     static member DefaultLink = Constants.PaketFilesFolderName
 
-    static member New(fileName) = 
+    static member New(fileName) =
         let groups = [Constants.MainDependencyGroup, { Name = Constants.MainDependencyGroup; NugetPackages = []; RemoteFiles = [] }] |> Map.ofList
         { FileName = fileName
           Groups = groups }
 
-    static member FromLines(lines : string[]) = 
+    static member FromLines(lines : string[]) =
         let groupedLines =
             lines
             |> Seq.map removeComment
-            |> Seq.fold (fun state line -> 
+            |> Seq.fold (fun state line ->
                 match state with
                 | [] -> failwithf "error while parsing %A" lines
                 | ((name,lines) as currentGroup)::otherGroups ->
                     if line.StartsWith "group " then
                         let name = line.Replace("group","").Trim()
                         (GroupName name,[])::currentGroup::otherGroups
-                    else 
+                    else
                         (name,line::lines)::otherGroups) [Constants.MainDependencyGroup,[]]
             |> List.map (fun (name,lines) -> name,lines |> List.rev |> Array.ofList)
 
         let isSingleFile (line: string) = line.StartsWith "File:"
         let notEmpty (line: string) = not (String.IsNullOrWhiteSpace line)
-        let parsePackageInstallSettings (line: string) : PackageInstallSettings = 
+        let parsePackageInstallSettings (line: string) : PackageInstallSettings =
             let line = if line.StartsWith "nuget " then line.Substring(6) else line
-               
+
             let parts = line.Split(' ')
             { Name = PackageName parts.[0]
-              Settings = InstallSettings.Parse(line.Replace(parts.[0],"")) } 
+              Settings = InstallSettings.Parse(line.Replace(parts.[0],"")) }
 
-        let groups = 
-            groupedLines 
+        let groups =
+            groupedLines
             |> List.map (fun (groupName,lines) ->
                     let remoteLines,nugetLines =
-                        lines 
-                        |> Array.filter notEmpty 
+                        lines
+                        |> Array.filter notEmpty
                         |> Array.map (fun s -> s.Trim())
                         |> Array.toList
                         |> List.partition isSingleFile
-        
+
                     let nugetPackages =
                         let packages = System.Collections.Generic.List<PackageInstallSettings>()
                         for line in nugetLines do
@@ -95,27 +95,27 @@ type ReferencesFile =
                             | _-> packages.Add(parsePackageInstallSettings line)
                         packages |> Seq.toList
 
-                    let remoteFiles = 
+                    let remoteFiles =
                         remoteLines
-                        |> List.map (fun s -> s.Replace("File:","").Split([|' '|], StringSplitOptions.RemoveEmptyEntries))
                         |> List.map (fun segments ->
+                                        let segments = s.Replace("File:","").Split([|' '|], StringSplitOptions.RemoveEmptyEntries)
                                         let hasPath =
                                             let get x = if segments.Length > x then segments.[x] else ""
-                                            segments.Length >= 2 && not ((get 1).Contains(":")) && not ((get 2).StartsWith(":")) 
+                                            segments.Length >= 2 && not ((get 1).Contains(":")) && not ((get 2).StartsWith(":"))
 
-                                        let rest = 
+                                        let rest =
                                             let skip = if hasPath then 2 else 1
                                             if segments.Length < skip then "" else String.Join(" ",segments |> Seq.skip skip)
 
                                         { Name = segments.[0]
-                                          Link = if hasPath then segments.[1] else ReferencesFile.DefaultLink 
+                                          Link = if hasPath then segments.[1] else ReferencesFile.DefaultLink
                                           Settings = RemoteFileInstallSettings.Parse rest })
                     { Name = groupName; NugetPackages = nugetPackages; RemoteFiles = remoteFiles })
-            |> List.fold (fun m g -> 
+            |> List.fold (fun m g ->
                 match Map.tryFind g.Name m with
                 | None -> Map.add g.Name g m
-                | Some group -> 
-                    let newGroup = 
+                | Some group ->
+                    let newGroup =
                         { Name = g.Name
                           NugetPackages = g.NugetPackages @ group.NugetPackages
                           RemoteFiles = g.RemoteFiles @ group.RemoteFiles }
@@ -133,7 +133,7 @@ type ReferencesFile =
     member this.AddNuGetReference(groupName, packageName : PackageName, embedInteropTypes: bool, copyLocal: bool, specificVersion: bool, importTargets: bool, frameworkRestrictions, includeVersionInPath, downloadLicense, omitContent : bool, createBindingRedirects, referenceCondition) =
         let package: PackageInstallSettings =
             { Name = packageName
-              Settings = 
+              Settings =
                   { EmbedInteropTypes = if embedInteropTypes then Some embedInteropTypes else None
                     CopyLocal = if not copyLocal then Some copyLocal else None
                     SpecificVersion = if not specificVersion then Some specificVersion else None
@@ -152,10 +152,10 @@ type ReferencesFile =
                     Simplify = None } }
 
         match this.Groups |> Map.tryFind groupName with
-        | None -> 
+        | None ->
                 tracefn "Adding package %O to %s into new group %O" packageName this.FileName groupName
 
-                let newGroup = 
+                let newGroup =
                     { Name = groupName
                       NugetPackages = [ package ]
                       RemoteFiles = [] }
@@ -163,7 +163,7 @@ type ReferencesFile =
 
                 { this with Groups = newGroups }
 
-        | Some group -> 
+        | Some group ->
             if group.NugetPackages |> Seq.exists (fun p -> p.Name = packageName) then
                 this
             else
@@ -174,7 +174,7 @@ type ReferencesFile =
 
                 { this with Groups = newGroups }
 
-    member this.AddNuGetReference(groupName, packageName : PackageName) = 
+    member this.AddNuGetReference(groupName, packageName : PackageName) =
         this.AddNuGetReference(groupName, packageName, false, true, true, true, ExplicitRestriction FrameworkRestriction.NoRestriction, false, false, false, None, null)
 
     member this.RemoveNuGetReference(groupName, packageName : PackageName) =
@@ -194,13 +194,13 @@ type ReferencesFile =
         tracefn "References file saved to %s" this.FileName
 
     override this.ToString() =
-        let printSourceFile (s:RemoteFileReference) = 
-            "File:" + s.Name + 
+        let printSourceFile (s:RemoteFileReference) =
+            "File:" + s.Name +
               (if s.Link <> ReferencesFile.DefaultLink then " " + s.Link else "") +
               (match s.Settings.Link with | Some x -> " link: " + x.ToString().ToLower() | _ -> "")
 
-        let printGroup g = 
-            (g.NugetPackages |> List.collect (fun p -> 
+        let printGroup g =
+            (g.NugetPackages |> List.collect (fun p ->
                  let packageStr = String.Join(" ",[p.Name.ToString(); p.Settings.ToString()] |> List.filter (fun s -> s <> ""))
                  let excludes = (p.Settings.Excludes |> List.map (fun e -> sprintf "  exclude %s" e))
                  let aliases = (p.Settings.Aliases |> Seq.map (fun kv -> sprintf "  alias %s %s" kv.Key kv.Value)) |> Seq.toList
@@ -211,7 +211,7 @@ type ReferencesFile =
             (Environment.NewLine,
              [|let mainGroup = this.Groups.[Constants.MainDependencyGroup]
                yield! printGroup mainGroup
-               for g in this.Groups do 
+               for g in this.Groups do
                 if g.Key <> Constants.MainDependencyGroup then
                     if g.Value.NugetPackages <> [] || g.Value.RemoteFiles <> [] then
                         yield "group " + g.Key.ToString()
