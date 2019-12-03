@@ -59,7 +59,7 @@ module PaketEnv =
                 | null -> None
                 | dir -> Some(Path.Combine(dir.FullName, Constants.DependenciesFileName), dir.Parent))
             |> Seq.tryFind File.Exists
-            |> Option.map (fun f -> DirectoryInfo(Path.GetDirectoryName(f)))
+            |> Option.map (Path.GetDirectoryName >> DirectoryInfo)
 
     let ensureNotExists (directory : DirectoryInfo) =
         match fromRootDirectory directory with
