@@ -29,8 +29,7 @@ let GetUrlWithEndpoint (url: string option) (endPoint: string option) =
         | Some whyIsThisNeeded   , _                   -> failwith "Url and endpoint combination not supported"
     urlWithEndpoint.ToString ()
 
-
-let Push maxTrials url apiKey clientVersion packageFileName =
+let Push maxTrials url apiKey clientVersion packageFileName ignoreConflicts =
     let tracefnVerbose m = Printf.kprintf traceVerbose m
 #if USE_WEB_CLIENT_FOR_UPLOAD
     let useHttpClient = Environment.GetEnvironmentVariable "PAKET_PUSH_HTTPCLIENT" = "true"
@@ -72,6 +71,10 @@ let Push maxTrials url apiKey clientVersion packageFileName =
 #endif
             tracefn "Pushing %s complete." packageFileName
         with
+        | :? RequestFailedException as rfe when rfe.Info.IsSome && rfe.Info.Value.StatusCode = HttpStatusCode.Conflict && ignoreConflicts ->
+            tracefn "Package %s already exists. - Conflict (409) status ignored!" packageFileName
+        | exn when exn.Message.Contains("(409)") && ignoreConflicts ->
+            tracefn "Package %s already exists. - Conflict (409) status ignored!" packageFileName
         | :? RequestFailedException as rfe when rfe.Info.IsSome && rfe.Info.Value.StatusCode = HttpStatusCode.Conflict ->
             rethrowf Exception rfe "Package %s already exists" packageFileName
         | exn when exn.Message.Contains("(409)") ->
