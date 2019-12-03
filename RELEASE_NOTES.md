@@ -1,3 +1,6 @@
+#### 5.239.0 - 2019-12-03
+* PaketUpdate failed with semver 2.0 version and jfrog hosted repository - https://github.com/fsprojects/Paket/issues/3601
+
 #### 5.238.2 - 2019-11-26
 * Exclude top-level linux folders for docker support - https://github.com/fsprojects/Paket/issues/3123
 * More verbose logging
