@@ -534,11 +534,26 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
             with
             | exn ->
                 try
+                    let target = FileInfo(targetFolder).FullName |> normalizePath
                     traceWarnfn "Package couldn't be extracted to %s. Message: %s. Trying to extract files individually." targetFolder exn.Message
                     use archive = ZipFile.OpenRead fileName
                     for entry in archive.Entries do
-                        let destinationPath = Path.GetFullPath(Path.Combine(targetFolder, entry.FullName))
+                        let destinationPath = Path.GetFullPath(Path.Combine(targetFolder, entry.FullName.Trim([| '/'; '\\'|])))
+
                         let fi = FileInfo(destinationPath)
+                        let folder = fi.Directory.FullName |> normalizePath
+                        let isSubFolder =
+                            let comparer =
+                                if isLinux then
+                                    System.StringComparison.Ordinal
+                                else
+                                    System.StringComparison.OrdinalIgnoreCase
+
+                            folder.StartsWith(target,comparer)
+
+                        if not isSubFolder then
+                            raise (Exception(sprintf "Error during extraction of %s.%sPackage is corrupted or possible zip leak attac in entry \"%s\"." fileName Environment.NewLine entry.FullName))
+
                         if not fi.Directory.Exists then
                             fi.Directory.Create()
                         if fi.Exists then
