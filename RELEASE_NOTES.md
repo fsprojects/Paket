@@ -1,3 +1,6 @@
+#### 5.240.0 - 2019-12-04
+* WORKAROUND: Microsoft pushed couple of invalid zips to nuget.org this works around it - https://github.com/fsprojects/Paket/issues/3743
+
 #### 5.239.0 - 2019-12-03
 * PaketUpdate failed with semver 2.0 version and jfrog hosted repository - https://github.com/fsprojects/Paket/issues/3601
 
