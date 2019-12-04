@@ -533,9 +533,23 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
                 ZipFile.ExtractToDirectory(fileName, targetFolder)
             with
             | exn ->
-                let text = if detailed then sprintf "%s In rare cases a firewall might have blocked the download. Please look into the file and see if it contains text with further information." Environment.NewLine else ""
-                let path = try Path.GetFullPath fileName with :? PathTooLongException -> sprintf "%s (!too long!)" fileName
-                raise (Exception(sprintf "Error during extraction of %s.%s%s" path Environment.NewLine text, exn))
+                try
+                    traceWarnfn "Package couldn't be extracted to %s. Message: %s. Trying to extract files individually." targetFolder exn.Message
+                    use archive = ZipFile.OpenRead fileName
+                    for entry in archive.Entries do
+                        let destinationPath = Path.GetFullPath(Path.Combine(targetFolder, entry.FullName))
+                        let fi = FileInfo(destinationPath)
+                        if not fi.Directory.Exists then
+                            fi.Directory.Create()
+                        if fi.Exists then
+                            try fi.Delete() with | _ -> ()
+
+                        entry.ExtractToFile(destinationPath)
+                with
+                | exn ->
+                    let text = if detailed then sprintf "%s In rare cases a firewall might have blocked the download. Please look into the file and see if it contains text with further information." Environment.NewLine else ""
+                    let path = try Path.GetFullPath fileName with :? PathTooLongException -> sprintf "%s (!too long!)" fileName
+                    raise (Exception(sprintf "Error during extraction of %s.%s%s" path Environment.NewLine text, exn))
 
             cleanup directory
             if verbose then
