@@ -74,8 +74,9 @@
 <span class="l">13: </span>
 <span class="l">14: </span>
 <span class="l">15: </span>
+<span class="l">16: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket push [--help] [--url &lt;url&gt;] [--api-key &lt;key&gt;] [--endpoint &lt;path&gt;] &lt;path&gt;
+<td class="snippet"><pre class="fssnip"><code lang="sh">paket push [--help] [--url &lt;url&gt;] [--api-key &lt;key&gt;] [--endpoint &lt;path&gt;] [--ignoreConflicts] &lt;path&gt;
 
 PACKAGE:
 
@@ -86,6 +87,7 @@ OPTIONS:
     --url &lt;url&gt;           URL of the NuGet feed
     --api-key &lt;key&gt;       API key for the URL (default: value of the NUGET_KEY environment variable)
     --endpoint &lt;path&gt;     API endpoint to push to (default: /api/v2/package)
+    --ignoreConflicts     Ignore any HTTP409 (Conflict) errors and treat as success
     --silent, -s          suppress console output
     --verbose, -v         print detailed information to the console
     --log-file &lt;path&gt;     print output to a file
