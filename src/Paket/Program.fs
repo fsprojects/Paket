@@ -739,11 +739,13 @@ let push paketVersion (results : ParseResults<_>) =
         (results.TryGetResult <@ PushArgs.Api_Key @>,
          results.TryGetResult <@ PushArgs.Api_Key_Legacy @>)
         |> legacyOption results (ReplaceArgument("--api-key", "apikey"))
+    let ignoreConflicts = results.Contains <@ PushArgs.Ignore_Conflicts @>
 
     Dependencies.Push(fileName,
                       ?url = url,
                       ?endPoint = endpoint,
-                      ?apiKey = apiKey)
+                      ?apiKey = apiKey,
+                      ignoreConflicts = ignoreConflicts)
 
 let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
     let providedFrameworks =
