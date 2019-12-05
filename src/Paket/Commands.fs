@@ -592,6 +592,8 @@ type PushArgs =
 
     | [<Unique>] Endpoint of path:string
     | [<Hidden;Unique;CustomCommandLine("endpoint")>] Endpoint_Legacy of path:string
+
+    | [<Unique;CustomCommandLine("--ignoreConflicts")>] Ignore_Conflicts
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -607,6 +609,8 @@ with
 
             | Endpoint(_) -> "API endpoint to push to (default: /api/v2/package)"
             | Endpoint_Legacy(_) -> "[obsolete]"
+
+            | Ignore_Conflicts -> "Ignore any HTTP409 (Conflict) errors and treat as success"
 
 type GenerateLoadScriptsArgs =
     | [<AltCommandLine("-g")>] Group of name:string

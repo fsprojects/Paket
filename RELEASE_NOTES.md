@@ -1,5 +1,8 @@
-#### 6.0.0-alpha005 - 2019-12-05
+#### 6.0.0-alpha006 - 2019-12-05
 * Full .NET Core / SDK compatible version
+
+#### 5.241.1 - 2019-12-05
+* Added IgnoreConflict option for paket push - https://github.com/fsprojects/Paket/pull/3741
 
 #### 5.240.1 - 2019-12-05
 * SECURITY: Check against zip leak in the workaround case of 5.240.0 - https://github.com/fsprojects/Paket/pull/3747
