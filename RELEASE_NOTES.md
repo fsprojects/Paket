@@ -1,3 +1,6 @@
+#### 5.241.0 - 2019-12-05
+* Added IgnoreConflict option for paket push - https://github.com/fsprojects/Paket/pull/3741
+
 #### 5.240.1 - 2019-12-05
 * SECURITY: Check against zip leak in the workaround case of 5.240.0 - https://github.com/fsprojects/Paket/pull/3747
 
