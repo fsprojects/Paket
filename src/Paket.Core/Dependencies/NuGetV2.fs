@@ -20,134 +20,6 @@ open Paket.Requirements
 open FSharp.Polyfill
 open System.Runtime.ExceptionServices
 
-let private followODataLink auth url =
-    let rec followODataLinkSafe (knownVersions:Set<_>) (url:string) =
-        async {
-            let! raw = getFromUrl(auth, url, acceptXml)
-            if String.IsNullOrWhiteSpace raw then return true, [||] else
-            let doc = XmlDocument()
-            doc.LoadXml raw
-            let feed =
-                match doc |> getNode "feed" with
-                | Some node -> node
-                | None -> failwithf "unable to parse data from %s" url
-
-            let readEntryVersion = Some
-                                   >> optGetNode "properties"
-                                   >> optGetNode "Version"
-                                   >> Option.map (fun node -> node.InnerText)
-
-            let entriesVersions = feed |> getNodes "entry" |> List.choose readEntryVersion
-            let newSet = entriesVersions |> Set.ofList
-            let noNewFound = newSet.IsSubsetOf knownVersions
-            if noNewFound then
-                return false, [||]
-            else
-
-            let linksToFollow =
-                feed
-                |> getNodes "link"
-                |> List.filter (fun node -> node |> getAttribute "rel" = Some "next")
-                |> List.choose (fun a ->
-                    match getAttribute "href" a with
-                    | Some data ->
-                        let newUrl = Uri.UnescapeDataString data
-                        if newUrl <> url then Some newUrl else None
-                    | _ -> None )
-
-            let! linksVersions =
-                linksToFollow
-                |> List.map (followODataLinkSafe (Set.union newSet knownVersions))
-                |> Async.Parallel
-
-            let atLeastOneFailed =
-                linksVersions
-                |> Seq.map fst
-                |> Seq.tryFindIndex not
-
-            let collected =
-                linksVersions
-                |> Seq.map snd
-                |> Seq.collect id
-                |> Seq.toArray
-
-            match atLeastOneFailed with
-            | Some i ->
-                let mutable uri = null // warn once per specific API endpoint, but try to cut the query
-                let baseUrl = if Uri.TryCreate(url, UriKind.Absolute, &uri) then uri.AbsolutePath else url
-                traceWarnIfNotBefore baseUrl
-                    "At least one 'next' link (index %d) returned a empty result (noticed on '%O'): ['%s']" 
-                    i url (System.String.Join("' ; '", linksToFollow))
-            | None -> ()
-            return
-                true,
-                collected
-                |> Array.append (entriesVersions |> List.toArray)
-        }
-    async {
-        let! _, res = followODataLinkSafe Set.empty url
-        return res
-    }
-
-let private tryGetAllVersionsFromNugetODataWithFilterWarnings = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
-
-let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageName) =
-    let url = sprintf "%s/Packages?semVerLevel=2.0.0&$filter=Id eq '%O'" nugetURL package
-    NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
-        async {
-            try
-                let! result = followODataLink auth url
-                return SuccessResponse result
-            with exn ->
-                match tryGetAllVersionsFromNugetODataWithFilterWarnings.TryGetValue nugetURL with
-                | true, true -> ()
-                | _, _ ->
-                    traceWarnfn "Possible Performance degradation, could not retrieve '%s', ignoring further warnings for this source" url
-                    tryGetAllVersionsFromNugetODataWithFilterWarnings.TryAdd(nugetURL, true) |> ignore
-                if verbose then
-                    printfn "Error while retrieving data from '%s': %O" url exn
-                let url = sprintf "%s/Packages?semVerLevel=2.0.0&$filter=tolower(Id) eq '%s'" nugetURL (package.CompareString)
-                try
-                    let! result = followODataLink auth url
-                    return SuccessResponse result
-                with exn ->
-                    let cap = ExceptionDispatchInfo.Capture exn
-                    return UnknownError cap
-        })
-
-
-let tryGetAllVersionsFromNugetODataFindById (auth, nugetURL, package:PackageName) =
-    let url = sprintf "%s/FindPackagesById()?semVerLevel=2.0.0&id='%O'" nugetURL package
-    NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
-        async {
-            try
-                let! result = followODataLink auth url
-                return SuccessResponse result
-            with exn ->
-                let cap = ExceptionDispatchInfo.Capture exn
-                return UnknownError cap
-        })
-
-let tryGetAllVersionsFromNugetODataFindByIdNewestFirst (auth, nugetURL, package:PackageName) =
-    let url = sprintf "%s/FindPackagesById()?semVerLevel=2.0.0&id='%O'&$orderby=Published desc" nugetURL package
-    NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
-        async {
-            try
-                let! result = followODataLink auth url
-                return SuccessResponse result
-            with exn ->
-                let cap = ExceptionDispatchInfo.Capture exn
-                return UnknownError cap
-        })
-
-let private getXmlDoc url raw =
-    let doc = XmlDocument()
-    try
-        doc.LoadXml raw
-    with
-    | e -> raise (Exception(sprintf "Could not parse response from %s as OData.%sData:%s%s" url Environment.NewLine Environment.NewLine raw, e))
-    doc
-
 let private handleODataEntry nugetURL packageName version entry =
     let officialName =
         match (entry |> getNode "properties" |> optGetNode "Id") ++ (entry |> getNode "title") with
@@ -231,6 +103,156 @@ let private handleODataEntry nugetURL packageName version entry =
       Version = (SemVer.Parse v).Normalize()
       Unlisted = publishDate = Constants.MagicUnlistingDate }
         .WithDependencies dependencies
+
+
+let private followODataLink force packageName auth nugetURL url =
+    let rec followODataLinkSafe (knownVersions:Set<_>) (url:string) =
+        async {
+            let! raw = getFromUrl(auth, url, acceptXml)
+            if String.IsNullOrWhiteSpace raw then return true, [||] else
+            let doc = XmlDocument()
+            doc.LoadXml raw
+            let feed =
+                match doc |> getNode "feed" with
+                | Some node -> node
+                | None -> failwithf "unable to parse data from %s" url
+
+            let readEntryVersion node = 
+                let v = 
+                    node
+                    |> getNode "properties"
+                    |> optGetNode "Version"
+                    |> Option.map (fun node -> node.InnerText)
+                match v with
+                | Some v -> 
+                    let fullEntry = 
+                        try
+                            Some(handleODataEntry nugetURL packageName v node)
+                        with 
+                        | _ -> None
+                    Some v, fullEntry
+                | None ->
+                    None, None
+
+            let entries = feed |> getNodes "entry" |> List.map readEntryVersion
+            let entriesVersions = entries |> List.choose fst
+            let fullMetaData = entries |> List.choose snd
+            for entry in fullMetaData do
+                try
+                    NuGetCache.writePackageDetailsCacheFile force nugetURL packageName (SemVer.Parse entry.Version) entry
+                with
+                | _ -> ()
+
+            let newSet = entriesVersions |> Set.ofList
+            let noNewFound = newSet.IsSubsetOf knownVersions
+            if noNewFound then
+                return false, [||]
+            else
+
+            let linksToFollow =
+                feed
+                |> getNodes "link"
+                |> List.filter (fun node -> node |> getAttribute "rel" = Some "next")
+                |> List.choose (fun a ->
+                    match getAttribute "href" a with
+                    | Some data ->
+                        let newUrl = Uri.UnescapeDataString data
+                        if newUrl <> url then Some newUrl else None
+                    | _ -> None )
+
+            let! linksVersions =
+                linksToFollow
+                |> List.map (followODataLinkSafe (Set.union newSet knownVersions))
+                |> Async.Parallel
+
+            let atLeastOneFailed =
+                linksVersions
+                |> Seq.map fst
+                |> Seq.tryFindIndex not
+
+            let collected =
+                linksVersions
+                |> Seq.map snd
+                |> Seq.collect id
+                |> Seq.toArray
+
+            match atLeastOneFailed with
+            | Some i ->
+                let mutable uri = null // warn once per specific API endpoint, but try to cut the query
+                let baseUrl = if Uri.TryCreate(url, UriKind.Absolute, &uri) then uri.AbsolutePath else url
+                traceWarnIfNotBefore baseUrl
+                    "At least one 'next' link (index %d) returned an empty result (noticed on '%O'): ['%s']" 
+                    i url (System.String.Join("' ; '", linksToFollow))
+            | None -> ()
+            return
+                true,
+                collected
+                |> Array.append (entriesVersions |> List.toArray)
+        }
+    async {
+        let! _, res = followODataLinkSafe Set.empty url
+        return res
+    }
+
+let private tryGetAllVersionsFromNugetODataWithFilterWarnings = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
+
+let tryGetAllVersionsFromNugetODataWithFilter (force, auth, nugetURL, packageName:PackageName) =
+    let url = sprintf "%s/Packages?semVerLevel=2.0.0&$filter=Id eq '%O'" nugetURL packageName
+    NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
+        async {
+            try
+                let! result = followODataLink force packageName auth nugetURL url
+                return SuccessResponse result
+            with exn ->
+                match tryGetAllVersionsFromNugetODataWithFilterWarnings.TryGetValue nugetURL with
+                | true, true -> ()
+                | _, _ ->
+                    traceWarnfn "Possible Performance degradation, could not retrieve '%s', ignoring further warnings for this source" url
+                    tryGetAllVersionsFromNugetODataWithFilterWarnings.TryAdd(nugetURL, true) |> ignore
+                if verbose then
+                    printfn "Error while retrieving data from '%s': %O" url exn
+                let url = sprintf "%s/Packages?semVerLevel=2.0.0&$filter=tolower(Id) eq '%s'" nugetURL (packageName.CompareString)
+                try
+                    let! result = followODataLink force packageName auth nugetURL url
+                    return SuccessResponse result
+                with exn ->
+                    let cap = ExceptionDispatchInfo.Capture exn
+                    return UnknownError cap
+        })
+
+
+let tryGetAllVersionsFromNugetODataFindById (force, auth, nugetURL, packageName:PackageName) =
+    let url = sprintf "%s/FindPackagesById()?semVerLevel=2.0.0&id='%O'" nugetURL packageName
+    NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
+        async {
+            try
+                let! result = followODataLink force packageName auth nugetURL url
+                return SuccessResponse result
+            with exn ->
+                let cap = ExceptionDispatchInfo.Capture exn
+                return UnknownError cap
+        })
+
+let tryGetAllVersionsFromNugetODataFindByIdNewestFirst (force, auth, nugetURL, packageName:PackageName) =
+    let url = sprintf "%s/FindPackagesById()?semVerLevel=2.0.0&id='%O'&$orderby=Published desc" nugetURL packageName
+    NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
+        async {
+            try
+                let! result = followODataLink force packageName auth nugetURL url
+                return SuccessResponse result
+            with exn ->
+                let cap = ExceptionDispatchInfo.Capture exn
+                return UnknownError cap
+        })
+
+let private getXmlDoc url raw =
+    let doc = XmlDocument()
+    try
+        doc.LoadXml raw
+    with
+    | e -> raise (Exception(sprintf "Could not parse response from %s as OData.%sData:%s%s" url Environment.NewLine Environment.NewLine raw, e))
+    doc
+
 
 // parse search results.
 let parseODataListDetails (url,nugetURL,packageName:PackageName,version:SemVerInfo,doc) : ODataSearchResult =
@@ -384,7 +406,7 @@ let getDetailsFromNuGetViaODataFast isVersionAssumed nugetSource (packageName:Pa
     }
 
 // parse search results.
-let parseFindPackagesByIDODataListDetails (url,nugetURL,packageName:PackageName,version:SemVerInfo,doc) : ODataSearchResult =
+let parseFindPackagesByIDODataListDetails (nugetURL,packageName:PackageName,version:SemVerInfo,doc) : ODataSearchResult =
     let feedNode =
         match doc |> getNode "feed" with
         | Some node -> node
@@ -414,7 +436,7 @@ let rec parseFindPackagesByIDODataEntryDetails (url,nugetSource:NuGetSource,pack
         tracefn "%s" raw
     let doc = getXmlDoc url raw
 
-    match parseFindPackagesByIDODataListDetails (url,nugetSource.Url,packageName,version,doc) with
+    match parseFindPackagesByIDODataListDetails (nugetSource.Url,packageName,version,doc) with
     | EmptyResult ->
         let linksToFollow =
              doc
