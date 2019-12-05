@@ -67,7 +67,7 @@ let private handleODataEntry nugetURL packageName version entry =
                 | Some p ->
                     Some p
                 | None ->
-                    if not (restriction.StartsWith "_") then 
+                    if not (restriction.StartsWith "_") then
                         Logging.traceWarnIfNotBefore ("Package", restriction, packageName, version) "Could not detect any platforms from '%s' in package %O %O, please tell the package authors" restriction packageName version
                     None
              else Some PlatformMatching.ParsedPlatformPath.Empty)
@@ -117,18 +117,18 @@ let private followODataLink force packageName auth nugetURL url =
                 | Some node -> node
                 | None -> failwithf "unable to parse data from %s" url
 
-            let readEntryVersion node = 
-                let v = 
+            let readEntryVersion node =
+                let v =
                     node
                     |> getNode "properties"
                     |> optGetNode "Version"
                     |> Option.map (fun node -> node.InnerText)
                 match v with
-                | Some v -> 
-                    let fullEntry = 
+                | Some v ->
+                    let fullEntry =
                         try
                             Some(handleODataEntry nugetURL packageName v node)
-                        with 
+                        with
                         | _ -> None
                     Some v, fullEntry
                 | None ->
@@ -181,7 +181,7 @@ let private followODataLink force packageName auth nugetURL url =
                 let mutable uri = null // warn once per specific API endpoint, but try to cut the query
                 let baseUrl = if Uri.TryCreate(url, UriKind.Absolute, &uri) then uri.AbsolutePath else url
                 traceWarnIfNotBefore baseUrl
-                    "At least one 'next' link (index %d) returned an empty result (noticed on '%O'): ['%s']" 
+                    "At least one 'next' link (index %d) returned an empty result (noticed on '%O'): ['%s']"
                     i url (System.String.Join("' ; '", linksToFollow))
             | None -> ()
             return

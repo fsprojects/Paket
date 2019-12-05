@@ -1049,7 +1049,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
         try
             getAndReport details.Package.Sources Profile.BlockReason.PackageDetails workHandle
         with e ->
-            raise (Exception (sprintf "Unable to retrieve package details for '%O'-%s" details.Package.PackageName details.Version.AsString, e))
+            raise (Exception (sprintf "Unable to retrieve package details for %O %O" details.Package.PackageName details.Version, e))
 
     let startedGetVersionsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,ResolverTaskMemory<_>>()
     let startRequestGetVersions (versions:GetPackageVersionsParameters) =
