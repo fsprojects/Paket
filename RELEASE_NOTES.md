@@ -1,4 +1,4 @@
-#### 5.241.0 - 2019-12-05
+#### 5.241.1 - 2019-12-05
 * Added IgnoreConflict option for paket push - https://github.com/fsprojects/Paket/pull/3741
 
 #### 5.240.1 - 2019-12-05
