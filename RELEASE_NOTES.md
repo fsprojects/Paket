@@ -1,5 +1,8 @@
-#### 6.0.0-alpha004 - 2019-12-04
+#### 6.0.0-alpha005 - 2019-12-05
 * Full .NET Core / SDK compatible version
+
+#### 5.240.1 - 2019-12-05
+* SECURITY: Check against zip leak in the workaround case of 5.240.0 - https://github.com/fsprojects/Paket/pull/3747
 
 #### 5.240.0 - 2019-12-04
 * WORKAROUND: Microsoft pushed couple of invalid zips to nuget.org this works around it - https://github.com/fsprojects/Paket/issues/3743
