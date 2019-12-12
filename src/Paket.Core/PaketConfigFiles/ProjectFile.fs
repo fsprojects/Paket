@@ -2018,9 +2018,15 @@ type ProjectFile with
         let getCompileItem (projectFile, compileNode) =
             let projectFolder = projectFile.FileName |> Path.GetFullPath |> Path.GetDirectoryName
             let sourceFile =
-                compileNode
-                |> getAttribute "Include"
-                |> fun attr -> attr.Value
+                let file = 
+                    match compileNode |> getAttribute "Include" with
+                    | Some file -> file
+                    | None ->
+                        match compileNode |> getAttribute "Update" with
+                        | Some file -> file
+                        | None -> failwithf "The Compile entry is in unknown format and doesn't contain a Update or Include attribute."
+
+                file
                 |> normalizePath
                 |> fun relPath -> Path.Combine(projectFolder, relPath)
 
