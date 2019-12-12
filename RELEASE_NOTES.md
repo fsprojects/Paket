@@ -1,5 +1,8 @@
-#### 6.0.0-alpha006 - 2019-12-05
+#### 6.0.0-alpha007 - 2019-12-12
 * Full .NET Core / SDK compatible version
+
+#### 5.241.2 - 2019-12-12
+* BUGFIX: Paket pack failed when project contained Compile Update entries - https://github.com/fsprojects/Paket/issues/3752
 
 #### 5.241.1 - 2019-12-05
 * Added IgnoreConflict option for paket push - https://github.com/fsprojects/Paket/pull/3741
