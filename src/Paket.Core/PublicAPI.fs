@@ -720,7 +720,8 @@ type Dependencies(dependenciesFileName: string) =
             |> List.distinct
 
         let versions =
-            NuGet.GetVersions true alternativeProjectRoot root (GetPackageVersionsParameters.ofParams sources (GroupName "") (PackageName name))
+            let versionParameters = GetPackageVersionsParameters.ofParams sources (GroupName "") (PackageName name) None
+            NuGet.GetVersions true alternativeProjectRoot root versionParameters
             |> Async.RunSynchronously
             |> List.map (fun (v,_) -> v.ToString())
             |> List.toArray

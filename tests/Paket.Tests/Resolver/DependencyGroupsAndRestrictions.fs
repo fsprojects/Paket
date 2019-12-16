@@ -1,4 +1,4 @@
-﻿module DependencyGroupsAndRestrictions
+﻿module Paket.Resolver.DependencyGroupsAndRestrictions
 
 open Paket
 open NUnit.Framework
