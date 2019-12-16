@@ -1079,6 +1079,8 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
             let sorted =
                 match resolverStrategy with
                 | ResolverStrategy.Max -> List.sortDescending versions
+                | ResolverStrategy.LatestPatch -> List.sortDescending versions
+                | ResolverStrategy.LatestMinor -> List.sortDescending versions
                 | ResolverStrategy.Min -> List.sort versions
 
             yield! sorted }
