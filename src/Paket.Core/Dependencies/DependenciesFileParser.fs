@@ -326,6 +326,8 @@ module DependenciesFileParser =
             let setting =
                 match trimmed.Replace(":","").Trim() with
                 | String.EqualsIC "max" -> Some ResolverStrategy.Max
+                | String.EqualsIC "latest-patch" -> Some ResolverStrategy.LatestPatch
+                | String.EqualsIC "latest-minor" -> Some ResolverStrategy.LatestMinor
                 | String.EqualsIC "min" -> Some ResolverStrategy.Min
                 | _ -> None
 
