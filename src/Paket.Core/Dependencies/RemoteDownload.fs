@@ -261,7 +261,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         let authentication = auth remoteFile.AuthKey
         CleanDir projectPath
         do! downloadFromUrl(authentication, downloadUrl) zipFile
-        ZipFile.ExtractToDirectory(zipFile,projectPath)
+        Utils.extractZipToDirectory zipFile projectPath
 
         let source = Path.Combine(projectPath, sprintf "%s-%s" remoteFile.Project remoteFile.Commit)
         DirectoryCopy(source,projectPath,true)
@@ -280,7 +280,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         match Path.GetExtension(destination).ToLowerInvariant() with
         | ".zip" ->
             do! downloadFromUrlWithTimeout(authentication, url) timeout destination
-            ZipFile.ExtractToDirectory(destination, targetFolder.FullName)
+            Utils.extractZipToDirectory destination targetFolder.FullName
         | _ ->
             do! downloadFromUrlWithTimeout(authentication, url) timeout destination
 }

@@ -4,6 +4,7 @@ module Paket.Utils
 
 open System
 open System.IO
+open System.IO.Compression
 open System.Xml
 open System.Text
 open Paket
@@ -673,6 +674,59 @@ let getSha512Stream (stream:Stream) =
 let getSha512File (filePath:string) =
     use stream = File.OpenRead(filePath)
     getSha512Stream stream
+
+let fixDatesInArchive fileName =
+    try
+        use zipToOpen = new FileStream(fileName, FileMode.Open)
+        use archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update)
+        let maxTime = DateTimeOffset.Now
+
+        for e in archive.Entries do
+            try
+                let d = min maxTime e.LastWriteTime
+                e.LastWriteTime <- d
+            with
+            | _ -> e.LastWriteTime <- maxTime
+    with
+    | exn -> traceWarnfn "Could not fix timestamps in %s. Error: %s" fileName exn.Message
+
+let fixArchive fileName =
+    if isMonoRuntime then
+        fixDatesInArchive fileName
+
+let extractZipToDirectory (zipFileName:string) (directoryName:string) =
+    Directory.CreateDirectory directoryName |> ignore
+    try
+        fixArchive zipFileName
+        ZipFile.ExtractToDirectory(zipFileName, directoryName)
+    with
+    | exn ->
+        let targetPath = FileInfo(directoryName).FullName |> normalizePath
+        traceWarnfn "Package %s couldn't be extracted to \"%s\". %s: %s. Trying to extract files individually." zipFileName directoryName (exn.GetType().FullName) exn.Message
+        use archive = ZipFile.OpenRead zipFileName
+        for entry in archive.Entries do
+            let destinationPath = Path.GetFullPath(Path.Combine(targetPath, entry.FullName.Trim([| '/'; '\\'|])))
+
+            let fi = FileInfo(destinationPath)
+            let folder = fi.Directory.FullName |> normalizePath
+            let isSubFolder =
+                let comparer =
+                    if isLinux then
+                        System.StringComparison.Ordinal
+                    else
+                        System.StringComparison.OrdinalIgnoreCase
+
+                folder.StartsWith(targetPath,comparer)
+
+            if not isSubFolder then
+                raise (Exception(sprintf "Error during extraction of %s.%sPackage is corrupted or possible zip leak attack in entry \"%s\"." zipFileName Environment.NewLine entry.FullName))
+
+            if not fi.Directory.Exists then
+                fi.Directory.Create()
+            if fi.Exists then
+                try fi.Delete() with | _ -> ()
+                
+            entry.ExtractToFile(destinationPath)
 
 // adapted from MiniRx
 // http://minirx.codeplex.com/
