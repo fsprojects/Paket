@@ -35,53 +35,54 @@ type DependencyCache (lockFile:LockFile) =
 
 
     let getLeafPackagesGeneric getPackageName getDependencies (knownPackages:Set<_>) openList =
-        
+
         let leafPackages =
-            openList |> List.filter (fun p ->
+            openList
+            |> List.filter (fun p ->
                 not (knownPackages.Contains(getPackageName p)) &&
                 getDependencies p |> Seq.forall (knownPackages.Contains)
             )
 
         let newKnownPackages =
             (knownPackages,leafPackages)
-            ||> Seq.fold (fun state package -> state |> Set.add (getPackageName package)) 
+            ||> Seq.fold (fun state package -> state |> Set.add (getPackageName package))
 
         let newState =
-            openList |> List.filter (fun p -> 
+            openList |> List.filter (fun p ->
                 leafPackages |> Seq.forall (fun l -> getPackageName l <> getPackageName p)
             )
         leafPackages, newKnownPackages, newState
 
 
     let getPackageOrderGeneric getPackageName getDependencies packages =
-        
+
         let rec step finalList knownPackages currentPackages =
             match currentPackages |> getLeafPackagesGeneric getPackageName getDependencies knownPackages with
             | ([], _, _) -> finalList
             | (leafPackages, newKnownPackages, newState) ->
                 step (leafPackages @ finalList) newKnownPackages newState
-        
+
         step [] Set.empty packages
-        |> List.rev  
+        |> List.rev
 
 
     let getPackageOrderResolvedPackage =
-        getPackageOrderGeneric 
-            (fun (p:PackageResolver.PackageInfo) -> p.Name) 
+        getPackageOrderGeneric
+            (fun (p:PackageResolver.PackageInfo) -> p.Name)
             (fun p -> p.Dependencies |> Seq.map (fun (n,_,_) -> n))
 
 
     let loadPackages () =
-        let packs = 
+        let packs =
             lockFile.GetResolvedPackages() |> Seq.map (fun kvp -> async {
                 let groupName, packages = kvp.Key,kvp.Value
                 let orderedPackages = getPackageOrderResolvedPackage kvp.Value
                 orderedGroupCache.TryAdd (groupName,orderedPackages) |> ignore
             }) |> Array.ofSeq
-        Async.Parallel packs 
-        |> Async.RunSynchronously 
+        Async.Parallel packs
+        |> Async.RunSynchronously
         |> ignore
-    
+
     do loadPackages ()
 
     let getDllOrder (dllFiles : AssemblyDefinition list) =
@@ -99,14 +100,14 @@ type DependencyCache (lockFile:LockFile) =
         installModel.PackageLoadScripts
         |> List.filter (fun s ->  s.Path.EndsWith("." + scriptTypeExtension))
         |> List.map (fun s -> s.Path)
-    
+
     let getDllsWithinPackage (framework: FrameworkIdentifier) (installModel :InstallModel) =
         let dllFiles =
             installModel
             |> InstallModel.getLegacyReferences (TargetProfile.SinglePlatform framework)
             |> Seq.map (fun l -> l.Path)
-            |> Seq.choose (fun path -> 
-                try 
+            |> Seq.choose (fun path ->
+                try
                     (AssemblyDefinition.ReadAssembly path, FileInfo(path)) |> Some
                 with
                 | :? BadImageFormatException -> None
@@ -115,13 +116,13 @@ type DependencyCache (lockFile:LockFile) =
 
         getDllOrder (dllFiles.Keys |> Seq.toList)
         |> List.map (fun a -> dllFiles.[a])
-    
-    let referencesForGroup group (framework:FrameworkIdentifier) = 
+
+    let referencesForGroup group (framework:FrameworkIdentifier) =
         let libs = HashSet<FileInfo>()
         let sysLibs = HashSet<_>()
         match tryGet group orderedGroupCache with
         | None -> []
-        | Some packs -> 
+        | Some packs ->
             for pack in packs do
                 match tryGet (group,pack.Name) installModelCache with
                 | None -> ()
@@ -132,23 +133,23 @@ type DependencyCache (lockFile:LockFile) =
                     for sysLib in model.GetAllLegacyFrameworkReferences() do
                         sysLibs.Add sysLib |> ignore
 
-            let assemblyFilePerAssemblyDef = 
-                libs |> Seq.choose (fun (f:FileInfo) -> 
+            let assemblyFilePerAssemblyDef =
+                libs |> Seq.choose (fun (f:FileInfo) ->
                     try
                         (AssemblyDefinition.ReadAssembly (f.FullName:string), f) |> Some
                     with
                     | :? BadImageFormatException -> None)
                 |> dict
 
-            let assemblies = 
+            let assemblies =
                 assemblyFilePerAssemblyDef.Keys
                 |> Seq.toList |> getDllOrder
                 |> Seq.map (assemblyFilePerAssemblyDef.TryGetValue >> snd)
 
-            let assemblyRefs = 
-                assemblies |> Seq.map ReferenceType.Assembly 
+            let assemblyRefs =
+                assemblies |> Seq.map ReferenceType.Assembly
 
-            let frameworkRefs = 
+            let frameworkRefs =
                 sysLibs
                 |> Seq.map (fun x ->  ReferenceType.Framework x.Name)
 
@@ -157,29 +158,29 @@ type DependencyCache (lockFile:LockFile) =
 
     member self.GetOrderedReferences groupName framework =
         match tryGet (groupName,framework) orderedGroupReferences with
-        | Some refs -> refs 
+        | Some refs -> refs
         | None ->
             self.StartSetupGroup groupName |> ignore
-            let refs = referencesForGroup groupName framework 
+            let refs = referencesForGroup groupName framework
             orderedGroupReferences.TryAdd((groupName,framework),refs)|> ignore
-            refs 
-            
+            refs
+
 
     member __.GetOrderedPackageReferences groupName packageName framework =
         match tryGet (groupName,packageName) installModelCache with
         | None -> []
         | Some model ->
             let model = model.Result
-            getDllsWithinPackage framework model 
-    
+            getDllsWithinPackage framework model
+
     member __.GetPackageLoadScripts groupName packageName _framework scriptTypeExtension =
         match tryGet (groupName,packageName) installModelCache with
         | None -> []
         | Some model ->
             let model = model.Result
-            getPackageLoadScriptsWithinPackage scriptTypeExtension model 
-    
-    
+            getPackageLoadScriptsWithinPackage scriptTypeExtension model
+
+
     member self.GetOrderedFrameworkReferences  groupName packageName (framework: FrameworkIdentifier) =
         match tryGet (groupName,packageName) installModelCache with
         | None -> []
@@ -200,22 +201,22 @@ type DependencyCache (lockFile:LockFile) =
 
 
     member __.LockFile = lockFile
-    
-    member __.InstallModels () = 
+
+    member __.InstallModels () =
         installModelCache |> Seq.map (fun x -> x.Value.Result) |> List.ofSeq
-    
-    member __.InstallModelTasks () = 
+
+    member __.InstallModelTasks () =
         installModelCache |> Seq.map (fun x -> x.Value) |> List.ofSeq
-    
-    member __.Nuspecs () = 
+
+    member __.Nuspecs () =
         nuspecCache |> Seq.map (fun x -> x.Value.Result) |> List.ofSeq
-        
-    member __.NuspecsTasks () = 
+
+    member __.NuspecsTasks () =
         nuspecCache |> Seq.map (fun x -> x.Value) |> List.ofSeq
 
     member __.StartSetupGroup (groupName:GroupName) : bool =
-        if loadedGroups.Contains groupName then 
-            true 
+        if loadedGroups.Contains groupName then
+            true
         else
             match tryGet groupName orderedGroupCache with
             | None -> false
@@ -224,7 +225,7 @@ type DependencyCache (lockFile:LockFile) =
                     if verbose then
                         verbosefn "[Loading packages from group - %O]" groupName
 
-                resolvedPackageList 
+                resolvedPackageList
                 |> List.iter (fun package ->
                     let folder = package.Folder lockFile.RootPath groupName
 
@@ -248,18 +249,18 @@ type DependencyCache (lockFile:LockFile) =
                         async {
                             let! spec = nuspec |> Async.AwaitTask
                             return InstallModel.CreateFromContent(
-                                package.Name, 
-                                package.Version, 
+                                package.Name,
+                                package.Version,
                                 kind,
-                                Paket.Requirements.FrameworkRestriction.NoRestriction, 
+                                Paket.Requirements.FrameworkRestriction.NoRestriction,
                                 (NuGet.GetContentWithNuSpec spec folder).Force())
-                        } 
+                        }
                         |> Async.StartAsTask
                     installModelCache.TryAdd((groupName,package.Name) , model) |> ignore)
 
                 loadedGroups.Add groupName |> ignore
                 true
-    
+
     member self.AwaitFinishSetup() =
         async {
             if not finishedSetup then
@@ -269,38 +270,39 @@ type DependencyCache (lockFile:LockFile) =
                     do! t |> Async.AwaitTask |> Async.Ignore
             finishedSetup <- true
         }
-    
+
     member self.SetupGroup (groupName:GroupName) : bool =
         match tryGet groupName orderedGroupCache with
         | None -> false
         | Some _ ->
             let res = self.StartSetupGroup groupName
-            installModelCache |> Seq.iter (fun (kv) -> kv.Value.Wait())
+            installModelCache |> Seq.iter (fun kv -> kv.Value.Wait())
             res
 
     member self.OrderedGroups () =
-        orderedGroupCache |> Seq.map (fun x -> 
+        orderedGroupCache
+        |> Seq.map (fun x ->
             self.StartSetupGroup x.Key |> ignore
             x.Key, x.Value
-        )|> Map.ofSeq
-    
-    member self.OrderedGroups (groupName:GroupName) = 
+        )
+        |> Map.ofSeq
+
+    member self.OrderedGroups (groupName:GroupName) =
         self.StartSetupGroup groupName |> ignore
         tryGet groupName orderedGroupCache |> Option.defaultValue []
-        
-    member self.ClearLoaded () = loadedGroups.Clear ()
+
+    member __.ClearLoaded () = loadedGroups.Clear ()
 
 
-    new (dependencyFilePath:string) = 
+    new (dependencyFilePath:string) =
         let lockFile = DependenciesFile.FindLockfile dependencyFilePath |> fun path -> path.FullName |> LockFile.LoadFrom
         DependencyCache (lockFile)
 
- 
-    member __.InstallModel groupName packageName = 
+
+    member __.InstallModel groupName packageName =
         let model = tryGet (groupName, packageName) installModelCache
         model |> Option.map (fun r -> r.Result)
-        
-    member __.InstallModelTask groupName packageName = 
-        let model = tryGet (groupName, packageName) installModelCache
-        model |> Option.map (fun r -> r)
-    
+
+    member __.InstallModelTask groupName packageName =
+        tryGet (groupName, packageName) installModelCache
+

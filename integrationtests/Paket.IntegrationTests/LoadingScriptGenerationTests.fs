@@ -66,7 +66,7 @@ let assertExpectations scenario expectationType expectations =
 let ``simple dependencies generates expected scripts``() = 
     let scenario = "simple-dependencies"
     let framework = "net4"
-    paket "install" scenario |> ignore
+    use __ = paket "install" scenario |> fst
 
     directPaket (sprintf "generate-load-scripts framework %s" framework) scenario |> ignore
   
@@ -95,7 +95,7 @@ let ``simple dependencies generates expected scripts``() =
 let ``fslab generates expected load of package loader script``() = 
     let scenario = "fslab"
     let framework = "net4"
-    paket "install" scenario |> ignore
+    use __ = paket "install" scenario |> fst
 
     directPaket (sprintf "generate-load-scripts framework %s" framework) scenario |> ignore
   
@@ -120,9 +120,9 @@ let nHibernate35Expectations =
 [<Test;Category("scriptgen")>]
 let ``framework specified``() = 
     let scenario = "framework-specified"
-    paket "install" scenario |> ignore
+    use __ = paket "install" scenario |> fst
 
-    directPaket "generate-load-scripts" scenario |> ignore
+    directPaket "generate-load-scripts" scenario |> ignore<string>
     
     nHibernate35Expectations |> assertExpectations scenario ExpectationType.ShouldContain
 
@@ -131,34 +131,20 @@ let ``framework specified``() =
 let ``don't generate scripts when no references are found``() = 
     (* The deps file for this scenario just includes FAKE, which has no lib or framework references, so no script should be generated for it. *)
     let scenario = "no-references"
-    paket "install" scenario |> ignore
+    use __ = paket "install" scenario |> fst
 
-    directPaket "generate-load-scripts" scenario |> ignore
+    directPaket "generate-load-scripts" scenario |> ignore<string>
     let scriptRootDir = scriptRoot scenario
     Assert.IsFalse(scriptRootDir.Exists)
 
-
-[<TestCase("csx");TestCase("fsx")>]
-[<Test;Category("scriptgen")>]
-let ``only generates scripts for language provided`` (language : string) = 
-    let scenario = "single-file-type"
-    paket "install" scenario |> ignore
-
-    directPaket (sprintf "generate-load-scripts type %s" language) scenario |> ignore
-
-    let scriptRootDir = scriptRoot scenario
-    let scriptFiles = scriptRootDir.GetFiles("", SearchOption.AllDirectories)
-    let allMatching = scriptFiles |> Array.map (fun fi -> fi.Extension) |> Array.forall ((=) language)
-    Assert.IsTrue(allMatching)
-     
 
 [<Test; Category("scriptgen")>]
 let ``fails on wrong framework given`` () =
     let scenario = "wrong-args"
 
-    paket "install" scenario |> ignore
+    use __ = paket "install" scenario |> fst
 
-    let failure = Assert.Throws (fun () ->
+    let failure = Assert.Throws<ProcessFailedWithExitCode> (fun () ->
         let result = directPaket "generate-load-scripts framework foo framework bar framework net45" scenario
         printf "%s" result
     )
@@ -173,9 +159,9 @@ let ``fails on wrong framework given`` () =
 let ``fails on wrong scripttype given`` () =
     let scenario = "wrong-args"
 
-    paket "install" scenario |> ignore
+    use __ = paket "install" scenario |> fst
 
-    let failure = Assert.Throws (fun () ->
+    let failure = Assert.Throws<ProcessFailedWithExitCode> (fun () ->
         let result = directPaket (sprintf "generate-load-scripts type foo type bar framework net45") scenario
         printf "%s" result
     )
@@ -189,9 +175,9 @@ let ``fails on wrong scripttype given`` () =
 [<Test; Category("scriptgen")>]
 let ``issue 1676 casing`` () =
     let scenario = "issue-1676"
-    paket "install" scenario |> ignore
+    use __ = paket "install" scenario |> fst
 
-    directPaket "generate-load-scripts framework net46" scenario |> ignore
+    directPaket "generate-load-scripts framework net46" scenario |> ignore<string>
 
     let expectations = [
         "entityframework.csx", [
@@ -214,9 +200,9 @@ let ``issue 1676 casing`` () =
 [<Test; Category("scriptgen")>]
 let ``mscorlib excluded from f# script`` () =
     let scenario = "mscorlib"
-    paket "install" scenario |> ignore
+    use __ = paket "install" scenario |> fst
 
-    directPaket "generate-load-scripts framework net46" scenario |> ignore
+    directPaket "generate-load-scripts framework net46" scenario |> ignore<string>
 
     let scriptRootDir = scriptRoot scenario
     let hasFilesWithMsCorlib =
@@ -238,9 +224,9 @@ let ``mscorlib excluded from f# script`` () =
 [<Test; Category("scriptgen")>]
 let ``fsharp.core excluded from f# script`` () =
     let scenario = "fsharpcore"
-    paket "install" scenario |> ignore
+    use __ = paket "install" scenario |> fst
 
-    directPaket "generate-load-scripts framework net46" scenario |> ignore
+    directPaket "generate-load-scripts framework net46" scenario |> ignore<string>
 
     let scriptRootDir = scriptRoot scenario
     let hasFilesWithFsharpCore =
@@ -256,25 +242,25 @@ let ``fsharp.core excluded from f# script`` () =
 [<Test; Category("scriptgen dependencies")>]
 let ``generates script on install`` () =
     let scenario = "dependencies-file-flag"
-    paket "install" scenario |> ignore
+    use __ = paket "install" scenario |> fst
     
     nHibernate35Expectations |> assertExpectations scenario ExpectationType.ShouldContain
 
 [<Test; Category("scriptgen dependencies")>]
 let ``issue 2156 netstandard`` () =
     let scenario = "issue-2156"
-    paket "install" scenario |> ignore
-    directPaket "generate-load-scripts" scenario |> ignore
+    use __ = paket "install" scenario |> fst
+    directPaket "generate-load-scripts" scenario |> ignore<string>
     // note: no assert for now, I don't know what we are exactly expecting
 
 [<Test; Category("scriptgen")>]
 let ``don't touch file if contents are same`` () =
     let scenario = "issue-2939"
-    paket "install" scenario |> ignore
+    use __ = paket "install" scenario |> fst
     let scriptsFolder = scriptRoot scenario
     let newtonsoftScript = Path.Combine(scriptsFolder.FullName, "Newtonsoft.Json.fsx") |> FileInfo
     let modificationDate = newtonsoftScript.LastWriteTimeUtc
-    directPaket "install" scenario |> ignore
+    directPaket "install" scenario |> ignore<string>
     newtonsoftScript.Refresh()
     Assert.AreEqual(modificationDate, newtonsoftScript.LastWriteTimeUtc)
 

@@ -24,7 +24,15 @@ type LockFileGroup =
         | Some r ->
             Some (PackageInfo.from r x.Options.Settings)
         | None -> None
+
 module LockFileSerializer =
+    let packageNames = System.Collections.Concurrent.ConcurrentDictionary<string,string>()
+    let writePackageName (name:PackageName) =
+        let packageName = name.ToString()
+        match packageNames.TryGetValue(packageName.ToLower()) with
+        | true, x -> x
+        | _ -> packageName
+
     /// [omit]
     let serializeOptionsAsLines options = [
         if options.Strict then yield "REFERENCES: STRICT"
@@ -144,9 +152,9 @@ module LockFileSerializer =
 
 
                       if s = "" then 
-                          yield sprintf "    %O %s" package.Name versionStr 
+                          yield sprintf "    %s %s" (writePackageName package.Name) versionStr 
                       else
-                          yield sprintf "    %O %s - %s" package.Name versionStr s
+                          yield sprintf "    %s %s - %s" (writePackageName package.Name) versionStr s
 
                       for name,v,restrictions in package.Dependencies do
                           let versionStr = 
@@ -155,9 +163,9 @@ module LockFileSerializer =
 
                           let restrictions = filterRestrictions options.Settings.FrameworkRestrictions restrictions |> getExplicitRestriction
                           if FrameworkRestriction.NoRestriction = restrictions || restrictions = getExplicitRestriction options.Settings.FrameworkRestrictions then
-                            yield sprintf "      %O %s" name versionStr
+                            yield sprintf "      %s %s" (writePackageName name) versionStr
                           else
-                            yield sprintf "      %O %s - restriction: %O" name versionStr restrictions]
+                            yield sprintf "      %s %s - restriction: %O" (writePackageName name) versionStr restrictions]
     
         String.Join(Environment.NewLine, all |> List.map (fun s -> s.TrimEnd()))
 
@@ -244,7 +252,6 @@ module LockFileSerializer =
         String.Join(Environment.NewLine, all |> List.map (fun s -> s.TrimEnd()))
 
 module LockFileParser =
-
     type ParseState = { 
         GroupName : GroupName
         RepositoryType : string option
@@ -480,11 +487,13 @@ module LockFileParser =
                                 failwithf "No version specified for package %O in group %O." package currentGroup.GroupName
                             parts'.[1] |> removeBrackets
 
+                        let lockFilePackageName = parts'.[0]
+                        let packageName = LockFileSerializer.packageNames.GetOrAdd(lockFilePackageName.ToLower(), fun _ -> lockFilePackageName)
                         { currentGroup with 
                             LastWasPackage = true
                             Packages = 
                                     { Source = PackageSource.Parse(remote, AuthService.GetGlobalAuthenticationProvider remote)
-                                      Name = PackageName parts'.[0]
+                                      Name = PackageName packageName
                                       Dependencies = Set.empty
                                       Unlisted = false
                                       Settings = settings
@@ -628,7 +637,7 @@ module LockFileParser =
 type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
     let fileName = if isNull fileName then String.Empty else fileName
     
-    let tryFindRemoteFile (remoteFiles:ResolvedSourceFile list) name =
+    let tryFindRemoteFile (remoteFiles:ResolvedSourceFile list) (name: string) =
         remoteFiles |> List.tryFind (fun x -> x.Name.EndsWith(name))
     let findRemoteFile referencesFile remoteFiles name =
         match tryFindRemoteFile remoteFiles name with
@@ -878,7 +887,6 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
     member this.GetOrderedPackageHull(groupName,referencesFile:ReferencesFile,targetProfileOpt) =
         let usedPackageKeys = HashSet<_>()
         let toVisit = ref Set.empty
-        let visited = ref Set.empty
         let cliTools = ref Set.empty
         let resolution =
             match this.Groups |> Map.tryFind groupName with
@@ -918,29 +926,45 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                     toVisit := Set.add (k,p,deps) !toVisit
         | None -> ()
 
+        let visited = Dictionary<_,_>()
+        
         while !toVisit <> Set.empty do
             let current = Set.minElement !toVisit
             toVisit := Set.remove current !toVisit
-            if Set.contains current !visited then () else
-            visited := Set.add current !visited
-            let (groupName,_),p,deps = current
+            
+            let visitKey,p,deps = current
+            if visited.ContainsKey(visitKey) then ()
+            else            
+            visited.Add(visitKey,(p,HashSet(deps)))
+            
+            let (groupName,_packageName) = visitKey
             for dep in deps do
                 let deps = this.GetDirectDependenciesOfSafe(groupName,dep,referencesFile.FileName)
                 toVisit := Set.add ((groupName,dep),p,deps) !toVisit
        
         let emitted = HashSet<_>()
-        [while !visited <> Set.empty do
-            let ((groupName,packageName),p,deps) = 
-                !visited
-                |> Seq.minBy (fun ((groupName,packageName),_,c) -> Set.count c,groupName,packageName) 
-
-            if emitted.Add (groupName,packageName) then 
-                yield ((groupName,packageName),p,deps)
+        [while visited.Count > 0 do
+            let current =
+                visited |> Seq.minBy (fun item ->
+                    let (_,deps) = item.Value;
+                    (deps.Count,item.Key))
                 
-            visited := 
-                !visited
-                |> Set.remove ((groupName,packageName),p,deps)
-                |> Set.map (fun ((g,p),b,c) -> if g = groupName then (g,p),b,Set.filter ((<>) packageName) c else (g,p),b,c)],!cliTools
+            let (groupName,packageName) = current.Key
+            
+            visited.Remove(current.Key) |> ignore
+            
+            for item in visited do
+                let (itemGroup, _) = item.Key
+                if itemGroup = groupName then
+                    let (_, itemDeps) = item.Value
+                    itemDeps.Remove(packageName) |> ignore
+                else ()
+                
+            if emitted.Add (current.Key) then
+                let (settings,dependencies) = current.Value
+                let deps = Set.ofSeq dependencies
+                yield (current.Key,settings,deps)
+        ], !cliTools
 
     member this.GetOrderedPackageHull(groupName,referencesFile:ReferencesFile) =
         this.GetOrderedPackageHull(groupName,referencesFile,None)

@@ -18,14 +18,14 @@ let private tryGenerateDescription packageId outputType =
         Some (sprintf "%s %s." id outputType)
     | _ -> None
 
-let private merge buildConfig buildPlatform versionFromAssembly specificVersions (projectFile:ProjectFile) templateFile = 
+let private merge buildConfig buildPlatform versionFromAssembly specificVersions (projectFile:ProjectFile) templateFile =
     let withVersion =
         match versionFromAssembly with
         | None -> templateFile
         | Some v -> templateFile |> TemplateFile.setVersion (Some v) specificVersions
 
     match withVersion with
-    | { Contents = ProjectInfo(md, opt) } -> 
+    | { Contents = ProjectInfo(md, opt) } ->
         let assemblyReader,id,versionFromAssembly,assemblyFileName = readAssemblyFromProjFile buildConfig buildPlatform projectFile
         let attribs = loadAssemblyAttributes assemblyReader
 
@@ -59,7 +59,7 @@ let private merge buildConfig buildPlatform versionFromAssembly specificVersions
                     | None -> f ()
                     | x -> x
 
-                let merged = 
+                let merged =
                     { Id = md.Id
                       Version = md.Version ++ versionFromAssembly
                       Authors = md.Authors ++ getAuthors attribs
@@ -75,9 +75,9 @@ let private merge buildConfig buildPlatform versionFromAssembly specificVersions
                           if merged.Description = None || merged.Description = Some "" then yield "Description" ]
                         |> fun xs -> String.Join(", ",xs)
 
-                    failwithf 
-                        "Incomplete mandatory metadata in template file %s (even including assembly attributes)%sTemplate: %A%sMissing: %s" 
-                        templateFile.FileName 
+                    failwithf
+                        "Incomplete mandatory metadata in template file %s (even including assembly attributes)%sTemplate: %A%sMissing: %s"
+                        templateFile.FileName
                         Environment.NewLine merged
                         Environment.NewLine missing
 
@@ -111,13 +111,13 @@ let private convertToSymbols (projectFile:ProjectFile) includeReferencedProjects
         let augmentedFiles = optional.Files |> List.append sourceFiles
         { templateFile with Contents = ProjectInfo({ core with Symbols = true }, { optional with Files = augmentedFiles }) }
 
-let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, minimumFromLockFile, pinProjectReferences, interprojectReferencesConstraint, symbols, includeReferencedProjects, projectUrl) =
+let Pack(workingDir: string, dependenciesFile : DependenciesFile, packageOutputPath: string, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile: string option, excludedTemplates, lockDependencies, minimumFromLockFile, pinProjectReferences, interprojectReferencesConstraint, symbols, includeReferencedProjects, projectUrl) =
     let buildConfig = defaultArg buildConfig "Release"
     let buildPlatform = defaultArg buildPlatform ""
     let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(workingDir,packageOutputPath)
     Utils.createDir packageOutputPath |> returnOrFail
 
-    let lockFile = 
+    let lockFile =
         let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
         LockFile.LoadFrom(lockFileName.FullName)
 
@@ -129,7 +129,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
         | None -> Set.empty
         | Some excluded -> set excluded
 
-    let allTemplateFiles = 
+    let allTemplateFiles =
         let hashSet = new HashSet<_>()
         match templateFile with
         | Some template ->
@@ -139,7 +139,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
         | None ->
             for template in TemplateFile.FindTemplateFiles workingDir do
                 hashSet.Add template |> ignore
-    
+
         hashSet
 
     let cache = PackProcessCache.empty
@@ -156,13 +156,13 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
                     let templateFileParsed = TemplateFile.ParseFromFile(fileName,lockFile,version,specificVersions)
                     Some(projectFile,templateFileParsed)
                 | None -> None)
-        |> Array.filter (fun (_,templateFile) -> 
+        |> Array.filter (fun (_,templateFile) ->
             match templateFile with
-            | CompleteTemplate _ -> false 
+            | CompleteTemplate _ -> false
             | IncompleteTemplate -> true)
-        |> Array.filter (fun (_,templateFile) -> 
+        |> Array.filter (fun (_,templateFile) ->
             match TemplateFile.tryGetId templateFile with
-            | Some id -> 
+            | Some id ->
                 if excludedTemplateIds.Contains id then
                     allTemplateFiles.Remove(templateFile.FileName) |> ignore
                     false
@@ -173,18 +173,18 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
             let merged = lazy (
                 let loadedTemplate = TemplateFile.ValidateTemplate templateFile'
                 merge buildConfig buildPlatform version specificVersions projectFile loadedTemplate)
-            let willBePacked = 
+            let willBePacked =
                 match templateFile with
                 | Some file -> normalizePath (Path.GetFullPath file) = normalizePath (Path.GetFullPath templateFile'.FileName)
                 | None -> true
-            
+
             Path.GetFullPath projectFile.FileName |> normalizePath,(merged,projectFile,willBePacked))
         |> Map.ofArray
 
     // add dependencies
     let allTemplates =
         let optWithSymbols (projectFile:ProjectFile) templateFile =
-            seq { 
+            seq {
                 yield (templateFile |> convertToNormal symbols)
                 if symbols then
                     yield templateFile |> convertToSymbols projectFile includeReferencedProjects cache }
@@ -192,7 +192,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
         let convertRemainingTemplate fileName =
             let templateFile = TemplateFile.Load(fileName,lockFile,version,specificVersions)
             match templateFile with
-            | { Contents = ProjectInfo(_) } -> 
+            | { Contents = ProjectInfo(_) } ->
                 let fi = FileInfo(fileName)
                 let allProjectFiles = ProjectFile.FindAllProjects(fi.Directory.FullName) |> Array.toList
 
@@ -206,11 +206,11 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
 
         let remaining = allTemplateFiles |> Seq.collect convertRemainingTemplate |> Seq.toList
         projectTemplates
-        |> Map.filter (fun _ (_,_,willBePacked) -> willBePacked) 
+        |> Map.filter (fun _ (_,_,willBePacked) -> willBePacked)
         |> Map.toList
-        |> Seq.collect(fun (_,(t, p, _)) -> 
+        |> Seq.collect(fun (_,(t, p, _)) ->
             seq {
-                for template in optWithSymbols p (t.Force()) do 
+                for template in optWithSymbols p (t.Force()) do
                     yield template, p
                 }
             )
@@ -219,11 +219,11 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
          |> Seq.toList
 
     let excludedTemplates =
-        allTemplates 
+        allTemplates
         |> List.filter (fun t -> match t with CompleteTemplate(c,_) -> not (excludedTemplateIds.Contains c.Id) | _ -> true)
-    
+
     // set projectUrl
-    let templatesWithProjectUrl = 
+    let templatesWithProjectUrl =
         match projectUrl with
         | None -> excludedTemplates
         | Some url -> excludedTemplates |> List.map (TemplateFile.setProjectUrl url)
@@ -239,15 +239,15 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
 
     // Package all templates
     processedTemplates
-    |> List.map (fun templateFile -> 
-            async { 
+    |> List.map (fun templateFile ->
+            async {
                 match templateFile with
-                | CompleteTemplate(core, optional) -> 
+                | CompleteTemplate(core, optional) ->
                     tracefn "Packaging: %s" templateFile.FileName
                     let outputPath = NupkgWriter.Write core optional (Path.GetDirectoryName templateFile.FileName) packageOutputPath
                     NuGetCache.fixDatesInArchive outputPath
                     tracefn "Wrote: %s" outputPath
-                | IncompleteTemplate -> 
+                | IncompleteTemplate ->
                     failwithf "There was an attempt to pack the incomplete template file %s." templateFile.FileName
             })
     |> Async.Parallel

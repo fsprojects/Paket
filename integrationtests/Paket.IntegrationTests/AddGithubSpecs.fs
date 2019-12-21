@@ -13,8 +13,8 @@ open Paket.Domain
 [<Test>]
 let ``#3014 paket github add clitool``() =
     let scenario = "i003014-add-github"
-    prepare scenario
-    paket "github add forki/FsUnit" scenario |> ignore
+    use __ = prepare scenario
+    directPaket "github add forki/FsUnit" scenario |> ignore<string>
 
     let depsFile = DependenciesFile.ReadFromFile(Path.Combine(scenarioTempPath scenario,"paket.dependencies"))
     let requirement = depsFile.GetGroup(Constants.MainDependencyGroup).RemoteFiles |> List.exactlyOne

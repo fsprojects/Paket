@@ -13,11 +13,11 @@ type GitLinkOrigin =
 
 let extractUrlParts (gitConfig:string) =
     let isOperator operator = VersionRange.BasicOperators |> List.exists ((=) operator)
-    let url,commit,options = 
+    let url,commit,options =
         match gitConfig.Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> List.ofArray with
         | part::_ ->
             let rest = gitConfig.Substring(part.Length)
-            let parts = 
+            let parts =
                 [ let current = Text.StringBuilder()
                   let quoted = ref false
                   for x in rest do
@@ -31,62 +31,62 @@ let extractUrlParts (gitConfig:string) =
                         current.Clear() |> ignore
                     else
                         current.Append x |> ignore
-                
+
                   yield current.ToString()]
                 |> List.filter (String.IsNullOrWhiteSpace >> not)
 
             match parts with
-            | k::colon::_ when colon = ":" && (k.ToLower() = "build" || k.ToLower() = "os" || k.ToLower() = "packages")  -> 
+            | k::colon::_ when colon = ":" && (k.ToLower() = "build" || k.ToLower() = "os" || k.ToLower() = "packages")  ->
                 part,None,rest
-            | operator::version::operator2::version2::prerelease::options when 
-                    isOperator operator && isOperator operator2 && 
-                      not (prerelease.ToLower() = "build" || prerelease.ToLower() = "os" || prerelease.ToLower() = "packages" || prerelease = ":") 
-               -> 
+            | operator::version::operator2::version2::prerelease::options when
+                    isOperator operator && isOperator operator2 &&
+                      not (prerelease.ToLower() = "build" || prerelease.ToLower() = "os" || prerelease.ToLower() = "packages" || prerelease = ":")
+               ->
                 let startPos = gitConfig.Substring(part.Length).IndexOf(prerelease)
                 let options = gitConfig.Substring(part.Length + startPos + prerelease.Length)
                 part,Some(operator + " " + version + " " + operator2 + " " + version2 +  " " + prerelease),options
-            | operator::version::prerelease::options when 
-                    isOperator operator && not (isOperator prerelease) && 
-                      not (prerelease.ToLower() = "build" || prerelease.ToLower() = "os" || prerelease.ToLower() = "packages" || prerelease = ":") 
-               -> 
+            | operator::version::prerelease::options when
+                    isOperator operator && not (isOperator prerelease) &&
+                      not (prerelease.ToLower() = "build" || prerelease.ToLower() = "os" || prerelease.ToLower() = "packages" || prerelease = ":")
+               ->
                 let startPos = gitConfig.Substring(part.Length).IndexOf(prerelease)
                 let options = gitConfig.Substring(part.Length + startPos + prerelease.Length)
                 part,Some(operator + " " + version +  " " + prerelease),options
-            | operator::version::operator2::version2::options when isOperator operator && isOperator operator2 -> 
+            | operator::version::operator2::version2::options when isOperator operator && isOperator operator2 ->
                 let startPos = gitConfig.Substring(part.Length).IndexOf(version2)
                 let options = gitConfig.Substring(part.Length + startPos + version2.Length)
                 part,Some(operator + " " + version + " " + operator2 + " " + version2),options
-            | operator::version::options when isOperator operator -> 
+            | operator::version::options when isOperator operator ->
                 let startPos = gitConfig.Substring(part.Length).IndexOf(version)
                 let options = gitConfig.Substring(part.Length + startPos + version.Length)
                 part,Some(operator + " " + version),options
-            | commit::options -> 
+            | commit::options ->
                 let startPos = gitConfig.Substring(part.Length).IndexOf(commit)
                 let options = gitConfig.Substring(part.Length + startPos + commit.Length)
                 part,Some commit,options
             | _ -> gitConfig,None,""
         | _ -> gitConfig,None,""
-    
+
     let kvPairs = parseKeyValuePairs options
 
-    let buildCommand = 
+    let buildCommand =
         match kvPairs.TryGetValue "build" with
         | true,x -> Some (x.Trim('\"'))
         | _ -> None
 
-    let operatingSystemRestriction = 
+    let operatingSystemRestriction =
         match kvPairs.TryGetValue "os" with
         | true,x -> Some (x.Trim('\"'))
         | _ -> None
 
-    let packagePath = 
+    let packagePath =
         match kvPairs.TryGetValue "packages" with
         | true,x -> Some (x.Trim('\"'))
         | _ -> None
 
     let url = url.TrimEnd '/'
-    let url = 
-        match url.Split ' ' |> Array.toList with 
+    let url =
+        match url.Split ' ' |> Array.toList with
         | [url; commit] -> url
         | _ -> url
 
@@ -102,11 +102,11 @@ let extractUrlParts (gitConfig:string) =
         | LocalGitOrigin _ ->
             "localfilesystem"
         | _ ->
-            match url.Replace(":","/").LastIndexOf('/') with 
+            match url.Replace(":","/").LastIndexOf('/') with
             | -1 -> url
             | pos -> url.Substring(0, pos)
-                        
-    let server = 
+
+    let server =
         match server.IndexOf("://") with
         | -1 -> server
         | pos -> server.Substring(pos + 3).Replace(":","") |> removeInvalidChars
@@ -117,7 +117,7 @@ let extractUrlParts (gitConfig:string) =
 
     server,commit,project,origin,buildCommand,operatingSystemRestriction,packagePath
 
-let getHash repoFolder commitish = 
+let getHash repoFolder commitish =
     try
         if System.IO.Directory.Exists repoFolder |> not then None else
         Some (CommandHelper.runSimpleGitCommand repoFolder ("rev-parse --verify " + commitish))

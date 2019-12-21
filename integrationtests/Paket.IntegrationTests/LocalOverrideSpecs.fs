@@ -14,7 +14,7 @@ open NUnit.Framework
 let ``#1633 paket.local local source override``() =
     clearPackageAtVersion "NUnit" "2.6.3"
 
-    paketEx true "restore" "i001633-local-source-override" |> ignore
+    use __1 = paketEx true "restore" "i001633-local-source-override" |> fst
     let doc = new XmlDocument()
     Path.Combine(
         scenarioTempPath "i001633-local-source-override",
@@ -35,7 +35,7 @@ let ``#1633 paket.local local source override``() =
     |> shouldEqual []
 
     // Issue #2690
-    paketEx true "restore" "i001633-local-source-override" |> ignore
+    use __2 = paketEx true "restore" "i001633-local-source-override" |> fst
 
     // The package should not be in cache
     isPackageCached "NUnit" "2.6.3"

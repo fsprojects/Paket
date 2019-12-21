@@ -12,14 +12,16 @@ open Paket.Requirements
 
 [<Test>]
 let ``#140 windsor should resolve framework dependent dependencies``() =
-    let lockFile = update "i000140-resolve-framework-restrictions"
+    let cleanup, lockFile = update "i000140-resolve-framework-restrictions"
+    use __ = cleanup
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "TaskParallelLibrary"].Settings.FrameworkRestrictions
     |> getExplicitRestriction
     |> shouldEqual (FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V3_5), DotNetFramework(FrameworkVersion.V4)))
 
-[<Test>]
+[<Test; Ignore "slow test">]
 let ``#1182 framework restrictions overwrite each other``() =
-    let lockFile = update "i001182-framework-restrictions"
+    let cleanup, lockFile = update "i001182-framework-restrictions"
+    use __ = cleanup
     let lockFile = lockFile.ToString()
     lockFile.Contains("Microsoft.Data.OData (>= 5.6.2)") |> shouldEqual true
     lockFile.Contains("framework: winv4.5") |> shouldEqual false
@@ -32,7 +34,7 @@ let ``#1182 framework restrictions overwrite each other``() =
 [<Flaky>] // failure on assert
 #endif
 let ``#1190 paket add nuget should handle transitive dependencies``() = 
-    paket "add nuget xunit version 2.1.0" "i001190-transitive-dependencies-with-restr" |> ignore
+    use __ = paket "add nuget xunit version 2.1.0" "i001190-transitive-dependencies-with-restr" |> fst
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-dependencies-with-restr","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "xunit.abstractions"].Settings.FrameworkRestrictions
     |> getExplicitRestriction
@@ -40,7 +42,7 @@ let ``#1190 paket add nuget should handle transitive dependencies``() =
     
 [<Test>]
 let ``#1190 paket add nuget should handle transitive dependencies with restrictions``() = 
-    paket "add nuget xunit version 2.1.0" "i001190-transitive-deps" |> ignore
+    use __ = paket "add nuget xunit version 2.1.0" "i001190-transitive-deps" |> fst
     
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-deps","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "xunit.abstractions"].Settings.FrameworkRestrictions
@@ -50,7 +52,8 @@ let ``#1190 paket add nuget should handle transitive dependencies with restricti
     
 [<Test>]
 let ``#1197 framework dependencies are not restricting each other``() = 
-    let lockFile = update "i001197-too-strict-frameworks"
+    let cleanup, lockFile = update "i001197-too-strict-frameworks"
+    use __ = cleanup
     
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "log4net"].Version
     |> shouldBeGreaterThan (SemVer.Parse "0")
@@ -58,23 +61,24 @@ let ``#1197 framework dependencies are not restricting each other``() =
     
 [<Test>]
 let ``#1213 framework dependencies propagate``() = 
-    let lockFile = update "i001213-framework-propagation"
-    
+    let cleanup, lockFile = update "i001213-framework-propagation"
+    use __ = cleanup
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Newtonsoft.Json"].Settings.FrameworkRestrictions
     |> getExplicitRestriction
     |> shouldEqual FrameworkRestriction.NoRestriction
 
 [<Test>]
 let ``#1215 framework dependencies propagate``() = 
-    let lockFile = update "i001215-framework-propagation-no-restriction"
-    
+    let cleanup, lockFile = update "i001215-framework-propagation-no-restriction"
+    use __ = cleanup
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Microsoft.Bcl.Async"].Settings.FrameworkRestrictions
     |> getExplicitRestriction
     |> shouldEqual FrameworkRestriction.NoRestriction
 
 [<Test>]
 let ``#1232 framework dependencies propagate``() = 
-    let lockFile = update "i001232-sql-lite"
+    let cleanup, lockFile = update "i001232-sql-lite"
+    use __ = cleanup
     let restriction =
         lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "System.Data.SQLite.Core"].Settings.FrameworkRestrictions
         |> getExplicitRestriction
@@ -87,6 +91,6 @@ let ``#1232 framework dependencies propagate``() =
 
 [<Test>]
 let ``#1494 detect platform 5.0``() = 
-    let lockFile = update "i001494-download"
+    use __ = update "i001494-download" |> fst
     
     ()

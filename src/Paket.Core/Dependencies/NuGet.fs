@@ -44,7 +44,7 @@ module NuGetContent =
             | NuGetFile name -> () }
         if not ignoreRoot then toSeqImpl "" x
         else
-            match x with 
+            match x with
             | NuGetFile name -> ["", x] :> _
             | NuGetDirectory (name, contents) ->
                 contents |> Seq.collect (toSeqImpl "")
@@ -60,7 +60,7 @@ module NuGetContent =
         | NuGetDirectory (name, contents) -> NuGetDirectory(f name, contents)
         | NuGetFile name -> NuGetFile (f name)
 
-let inline ofGivenList rootName directories files =
+let inline ofGivenList rootName (directories: string seq) (files: string seq) =
     let folders = System.Collections.Generic.Dictionary<_,NuGetContent list>()
     let l = obj()
     let inline getCurrent n = match folders.TryGetValue n with | true, l -> l | _ -> []
@@ -72,7 +72,7 @@ let inline ofGivenList rootName directories files =
         let parent = Path.GetDirectoryName di
         let name = Path.GetFileName di
         append parent (NuGetDirectory (name, [])))
-        
+
     files
     |> Seq.iter (fun fi ->
         let parent = Path.GetDirectoryName fi
@@ -80,7 +80,7 @@ let inline ofGivenList rootName directories files =
         append parent (NuGetFile name))
 
     let rec fixContent path (c:NuGetContent) =
-        match c with 
+        match c with
         | NuGetFile _ -> c
         | NuGetDirectory (n, _) ->
             let newPath = Path.Combine(path, n)
@@ -94,7 +94,7 @@ type NuGetPackageContent =
     { Content : NuGetContent list
       Path : string
       Spec : Nuspec }
-      
+
 
 let rec private ofDirectorySlow targetFolder =
     let dir = DirectoryInfo(targetFolder)
@@ -113,37 +113,51 @@ let rec private ofDirectorySlow targetFolder =
         else []
 
     NuGetDirectory(dir.Name, subDirs @ files)
-    
-   
+
+
 let ofDirectory targetFolder =
     let spec = Path.Combine(targetFolder, "paket-installmodel.cache")
-    if File.Exists (spec) then
-        let rootDirName = Path.GetFileName(targetFolder)
-        let spec = File.ReadAllText(spec)
-        let readLines =
-            spec.Split('\n')
-            |> Seq.map (fun line ->
-                if line.StartsWith "D: " then 
-                  Some (line.Substring 4), None
-                elif line.StartsWith "F: " then 
-                  None, Some (line.Substring 4)
-                else None, None)
-            |> Seq.toList
-        let directories = readLines |> Seq.choose fst
-        let files = readLines |> Seq.choose snd
-        ofGivenList rootDirName directories files
-    else
+    let readFromDisk () =
         let result = ofDirectorySlow targetFolder
         let text =
             result
             |> NuGetContent.toSeq true
-            |> Seq.map (function 
+            |> Seq.map (function
                 | prefix, NuGetDirectory (name, _) -> sprintf "D: %s/%s" prefix name
                 | prefix, NuGetFile (name) -> sprintf "F: %s/%s" prefix name)
             |> fun s -> String.Join("\n", s)
         try File.WriteAllText(spec, text)
-        with e -> eprintf "Error: %O" e
+        with e -> eprintf "Error writing '%s': %O" spec e
         result
+    if File.Exists (spec) then
+        // read from file if possible
+        try
+            let rootDirName = Path.GetFileName(targetFolder)
+            let spec =
+                try File.ReadAllText(spec)
+                with
+                | :? System.IO.FileNotFoundException -> reraise()
+                | :? System.IO.IOException ->
+                    // maybe not yet completely written, wait and try again
+                    Thread.Sleep 300
+                    File.ReadAllText(spec)
+            let readLines =
+                spec.Split('\n')
+                |> Seq.map (fun line ->
+                    if line.StartsWith "D: " then
+                      Some (line.Substring 4), None
+                    elif line.StartsWith "F: " then
+                      None, Some (line.Substring 4)
+                    else None, None)
+                |> Seq.toList
+            let directories = readLines |> Seq.choose fst
+            let files = readLines |> Seq.choose snd
+            ofGivenList rootDirName directories files
+        with :? System.IO.IOException as e ->
+            eprintf "Error reading '%s', falling back to slow mode. Error was: %O" spec e
+            readFromDisk()
+    else
+        readFromDisk()
 
 (*
 let perfCompare f1 f2 =
@@ -153,7 +167,7 @@ let perfCompare f1 f2 =
         |> Seq.collect (fun dir -> Directory.EnumerateDirectories(dir))
         |> Seq.toList
     let inline time f =
-        packages |> List.map (fun dir -> 
+        packages |> List.map (fun dir ->
             let w = Stopwatch.StartNew()
             let result = f dir
             w.Stop()
@@ -164,11 +178,11 @@ let perfCompare f1 f2 =
         |> Seq.toList
     let times1 = lines |> List.map fst
     let times2 = lines |> List.map snd
-    
+
     Seq.zip times1.Head times2.Head
     |> Seq.iter (fun ((_, left), (_, right)) ->
         if left <> right then eprintf "%A <> %A" left right)
-    
+
     printfn "f1: %A" (times1 |> Seq.map (fun tl -> tl |> Seq.fold (fun (t1:TimeSpan) t2 -> t1.Add(fst t2)) (new TimeSpan(0L))))
     printfn "f2: %A" (times2 |> Seq.map (fun tl -> tl |> Seq.fold (fun (t1:TimeSpan) t2 -> t1.Add(fst t2)) (new TimeSpan(0L))))
 
@@ -221,7 +235,7 @@ let GetContent dir = lazy (
         di.EnumerateFiles("*.nuspec", SearchOption.TopDirectoryOnly)
         |> Seq.tryExactlyOne
         |> Option.map (fun f -> Nuspec.Load(f.FullName))
-    
+
     match spec with
     | Some spec -> (GetContentWithNuSpec spec dir).Force()
     | None -> failwithf "Could not find nuspec in '%s', try deleting the directory and restoring again." dir)
@@ -252,12 +266,13 @@ let tryFindFile file (content:NuGetPackageContent) =
     content.Content
     |> List.tryPick (fun c ->
         match c with
-        | NuGetFile _ when String.equalsIgnoreCase c.Name file -> 
+        | NuGetFile _ when String.equalsIgnoreCase c.Name file ->
             Some {UnparsedPackageFile.FullPath = Path.Combine(content.Path, c.Name)
                   UnparsedPackageFile.PathWithinPackage = c.Name }
         | _ -> None)
 
 let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
+    let verboseRequest = verbose || isRequestEnvVarSet
     async {
         let targetFile = FileInfo targetFileName
         if not force && targetFile.Exists && targetFile.Length > 0L then
@@ -303,8 +318,8 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
                     verbosefn "License for %O %O downloaded from %s." packageName version licenseUrl
             with
             | exn ->
-                if verbose then
-                    traceWarnfn "Could not download license for %O %O from %s.%s    %s" packageName version licenseUrl Environment.NewLine exn.Message
+                if verboseRequest then
+                    traceWarnfn "Could not download license for %O %O from %s.%s    %O" packageName version licenseUrl Environment.NewLine exn
     }
 
 let private getFilesMatching targetFolder searchPattern subFolderName filesDescriptionForVerbose =
@@ -370,6 +385,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
     let sources = parameters.Package.Sources
     let packageName = parameters.Package.PackageName
     let version = parameters.Version
+    let verboseRequest = verbose || isRequestEnvVarSet
     async {
         let inCache =
             sources
@@ -396,9 +412,9 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
             with
             | exn ->
                 traceWarnfn "Possible Performance degradation, V3 was not working: %s" exn.Message
-                if verbose then
+                if verboseRequest then
                     printfn "Error while using V3 API: %O" exn
-   
+
                 match NuGetV3.calculateNuGet2Path nugetSource.Url with
                 | Some url ->
                     let nugetSource : NuGetSource =
@@ -408,7 +424,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
                 | _ ->
                     raise exn
                     return! tryV3 nugetSource force
-   
+
         }
 
         let getPackageDetails force =
@@ -425,24 +441,24 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
                         with
                         | :? System.IO.IOException as exn ->
                             // Handling IO exception here for less noise in output: https://github.com/fsprojects/Paket/issues/2480
-                            if verbose then
+                            if verboseRequest then
                                 traceWarnfn "I/O error for source '%O': %O" source exn
                             else
                                 traceWarnfn "I/O error for source '%O': %s" source exn.Message
                             return! trySelectFirst (exn :> exn :: errors) rest
                         | e ->
                             let mutable information = ""
-                            match e.GetBaseException() with 
-                            | :? RequestFailedException as re -> 
-                                match re.Info with 
+                            match e.GetBaseException() with
+                            | :? RequestFailedException as re ->
+                                match re.Info with
                                 | Some requestinfo -> if requestinfo.StatusCode = HttpStatusCode.NotFound then
                                                          information <- re.Message
-                                | None -> ignore()                                
+                                | None -> ignore()
                             | _ -> ignore()
-                            if information <> "" then
+                            if not verboseRequest && information <> "" then
                                 traceWarnIfNotBefore (source, information) "Source '%O' exception: %O" source information
-                            else 
-                                traceWarnfn "Source '%O' exception: %O" source e                                
+                            else
+                                traceWarnfn "Source '%O' exception: %O" source e
                             //let capture = ExceptionDispatchInfo.Capture e
                             return! trySelectFirst (e :: errors) rest
                     | [] -> return None, errors
@@ -512,12 +528,13 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
               DirectDependencies = nugetObject.GetDependencies() } }
 
 let rec GetPackageDetails alternativeProjectRoot root force (parameters:GetPackageDetailsParameters): Async<PackageResolver.PackageDetails> =
+    let verboseRequest = verbose || isRequestEnvVarSet
     async {
         try
             return! getPackageDetails alternativeProjectRoot root force parameters
         with
         | exn when (not force) ->
-            if verbose then
+            if verboseRequest then
                 traceWarnfn "GetPackageDetails failed: %O" exn
             else
                 traceWarnfn "Something failed in GetPackageDetails, trying again with force: %s" exn.Message
@@ -570,6 +587,7 @@ let getVersionsCached key f (source, auth, nugetURL, package) =
 let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersionsParameters) = async {
     let packageName = parameters.Package.PackageName
     let sources = parameters.Package.Sources
+    let verboseRequest = verbose || isRequestEnvVarSet
     let trial force = async {
         let getVersionsFailedCacheFileName (source:PackageSource) =
             let h = source.Url |> NuGetCache.normalizeUrl |> hash |> abs
@@ -578,7 +596,7 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
             try
                 FileInfo fileName
             with
-            | exn -> failwithf "%s is not a valid file name. Message: %s" fileName exn.Message
+            | inner -> rethrowf exn inner "'%s' is not a valid file name" fileName
 
         let sources =
             sources
@@ -673,14 +691,14 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
                             if req.TaskResult.IsCanceled then
                                 add(sprintf " - Request '%s' was cancelled (another one was faster)" req.Request.Url)
                             elif req.TaskResult.IsFaulted then
-                                if verbose then
+                                if verboseRequest then
                                     add(sprintf " - Request '%s' errored: %O" req.Request.Url req.TaskResult.Exception)
                                 else
                                     add(sprintf " - Request '%s' errored: %s" req.Request.Url req.TaskResult.Exception.Message)
                             else
                                 match req.TaskResult.Result with
                                 | NuGetCache.NuGetResponseGetVersions.FailedVersionRequest err ->
-                                    if verbose then
+                                    if verboseRequest then
                                         add(sprintf " - Request '%s' finished with: %O" req.Request.Url err.Error.SourceException)
                                     else
                                         add(sprintf " - Request '%s' finished with: %s" req.Request.Url err.Error.SourceException.Message)
@@ -730,13 +748,13 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
             return trial1.Requests
         | _ ->
             let requested = trial1.Requests |> Seq.collect (fun i -> i.Requests) |> Seq.map (fun r -> "   " + r.Request.Url)
-            traceWarnfn "Trial1 (NuGet.GetVersions) did not yield any results, trying again.%s%O" Environment.NewLine (String.Join(Environment.NewLine, requested)) 
+            traceWarnfn "Trial1 (NuGet.GetVersions) did not yield any results, trying again.%s%O" Environment.NewLine (String.Join(Environment.NewLine, requested))
+            if verboseRequest then
+                reportRequests verboseRequest trial1
+                |> printfn "%s"
             let! trial2 = trial true
             match trial2 with
             | _ when Array.isEmpty trial2.Versions |> not ->
-                if verbose then
-                    reportRequests verbose trial1
-                    |> printfn "%s"
                 return trial2.Requests
             | _ ->
                 let errorMsg =
@@ -771,6 +789,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
     let normalizedNupkgName = NuGetCache.GetPackageFileName packageName version
     let configResolved = config.Resolve root groupName packageName version includeVersionInPath
+    let verboseRequest = verbose || isRequestEnvVarSet
     let targetFileName =
         if not isLocalOverride then
             NuGetCache.GetTargetUserNupkg packageName version
@@ -792,7 +811,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
             CleanDir p
         | _ -> ()
 
-    let ensureDir fileName =
+    let ensureDir (fileName: string) =
         let parent = Path.GetDirectoryName fileName
         if not (Directory.Exists parent) then Directory.CreateDirectory parent |> ignore
 
@@ -835,8 +854,9 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
             if not force && targetFile.Exists && targetFile.Length > 0L then
                 if verbose then
                     verbosefn "%O %O already downloaded." packageName version
+                return false
             elif getFromFallbackFolder () || (not force && getFromCache caches) then
-                ()
+                return true
             else
                 match source with
                 | LocalNuGet(path,_) ->
@@ -847,9 +867,11 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     use _ = Profile.startCategory Profile.Category.FileIO
                     ensureDir targetFileName
                     File.Copy(nupkg.FullName,targetFileName,true)
+                    return true
                 | _ ->
                 // discover the link on the fly
                 let downloadUrl = ref ""
+                let mutable didDownload = false
                 try
                     let sw = System.Diagnostics.Stopwatch.StartNew()
                     let groupString = if groupName = Constants.MainDependencyGroup then "" else sprintf " (%O)" groupName
@@ -898,16 +920,13 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     let requestTimeout =
                         getTimeoutOrDefaultValue "PAKET_REQUEST_TIMEOUT" defaultTimeout
                     // timeout for response of the stream for the package to be downloaded
-                    let responseStreamTimeout =                    
+                    let responseStreamTimeout =
                         getTimeoutOrDefaultValue "PAKET_RESPONSE_STREAM_TIMEOUT" defaultTimeout
                     // timeout for the read and write stream operations on the package to be downloaded
                     let streamReadWriteTimeout =
                         getTimeoutOrDefaultValue "PAKET_STREAMREADWRITE_TIMEOUT" defaultTimeout
 
                     let requestTokenSource = System.Threading.CancellationTokenSource.CreateLinkedTokenSource cancellationToken
-                    let streamReadWriteTokenSource = System.Threading.CancellationTokenSource.CreateLinkedTokenSource cancellationToken
-
-                    streamReadWriteTokenSource.CancelAfter streamReadWriteTimeout
                     requestTokenSource.CancelAfter requestTimeout
 
                     let client = NetUtils.createHttpClient(!downloadUrl, source.Auth.Retrieve (attempt <> 0))
@@ -922,50 +941,73 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode
 
                     let! httpResponseStream = responseMsg.Content.ReadAsStreamAsync() |> Async.AwaitTask
-    
+
                     if httpResponseStream.CanTimeout
-                    then httpResponseStream.ReadTimeout <- responseStreamTimeout;
+                    then httpResponseStream.ReadTimeout <- responseStreamTimeout
 
                     let bufferSize = 1024 * 10
                     let buffer : byte [] = Array.zeroCreate bufferSize
                     let bytesRead = ref -1
 
-                    use fileStream = File.Create(targetFileName)
-                    let printProgress = not Console.IsOutputRedirected
-                    let mutable pos = 0L
+                    let tmpFile = Path.GetDirectoryName targetFileName + Path.GetRandomFileName() + ".paket_tmp"
+                    try
+                        let mutable pos = 0L
+                        do! async {
+                            use fileStream = File.Create(tmpFile)
+                            let printProgress = not Console.IsOutputRedirected
 
-                    let length = try Some httpResponseStream.Length with :? System.NotSupportedException -> None
-                    while !bytesRead <> 0 do
-                        if printProgress && lastSpeedMeasure.Elapsed > TimeSpan.FromSeconds(10.) then
-                            // report speed and progress
-                            let speed = int (float readSinceLastMeasure * 8. / float lastSpeedMeasure.ElapsedMilliseconds)
-                            let percent =
-                                match length with
-                                | Some l -> sprintf "%d" (int (pos * 100L / l))
-                                | None -> "Unknown"
-                            tracefn "Still downloading from %O to %s (%d kbit/s, %s %%)" !downloadUrl targetFileName speed percent
-                            readSinceLastMeasure <- 0L
-                            lastSpeedMeasure.Restart()
+                            let length = try Some httpResponseStream.Length with :? System.NotSupportedException -> None
+                            while !bytesRead <> 0 do
+                                if printProgress && lastSpeedMeasure.Elapsed > TimeSpan.FromSeconds(10.) then
+                                    // report speed and progress
+                                    let speed = int (float readSinceLastMeasure * 8. / float lastSpeedMeasure.ElapsedMilliseconds)
+                                    let percent =
+                                        match length with
+                                        | Some l -> sprintf "%d" (int (pos * 100L / l))
+                                        | None -> "Unknown"
+                                    tracefn "Still downloading from %O to %s (%d kbit/s, %s %%)" !downloadUrl tmpFile speed percent
+                                    readSinceLastMeasure <- 0L
+                                    lastSpeedMeasure.Restart()
 
-                        // if there is no response for streamReadWriteTimeout milliseconds -> abort
-                        let! bytes = httpResponseStream.ReadAsync(buffer, 0, bufferSize, streamReadWriteTokenSource.Token) |> Async.AwaitTaskWithoutAggregate
-                        bytesRead := bytes
-                        do! fileStream.WriteAsync(buffer, 0, !bytesRead, streamReadWriteTokenSource.Token) |> Async.AwaitTaskWithoutAggregate
-                        readSinceLastMeasure <- readSinceLastMeasure + int64 bytes
-                        pos <- pos + int64 bytes
+                                // recreate token every time to continue as long as there is progress...
+                                let streamReadWriteTokenSource = System.Threading.CancellationTokenSource.CreateLinkedTokenSource cancellationToken
+                                streamReadWriteTokenSource.CancelAfter streamReadWriteTimeout
+                                // if there is no response for streamReadWriteTimeout milliseconds -> abort
+                                let! bytes = httpResponseStream.ReadAsync(buffer, 0, bufferSize, streamReadWriteTokenSource.Token) |> Async.AwaitTaskWithoutAggregate
+                                bytesRead := bytes
+                                do! fileStream.WriteAsync(buffer, 0, !bytesRead, streamReadWriteTokenSource.Token) |> Async.AwaitTaskWithoutAggregate
+                                readSinceLastMeasure <- readSinceLastMeasure + int64 bytes
+                                pos <- pos + int64 bytes }
+                        // close/dispose filestream such that we can move
 
+                        if not (File.Exists targetFileName) then
+                            try File.Move(tmpFile, targetFileName)
+                                didDownload <- true
+                            with | :? System.IO.IOException as e ->
+                                traceWarnfn "Error while moving temp file as '%s' already exists (maybe some other instance downloaded it as well): %O" targetFileName e
+                                ()
+                        else
+                            tracefn "Not moving as '%s' already exists (maybe some other instance downloaded it as well)" targetFileName
 
-                    let speed = int (float pos * 8. / float sw.ElapsedMilliseconds)
-                    let size = pos / (1024L * 1024L)
-                    tracefn "Download of %O %O%s done in %s. (%d kbit/s, %d MB)" packageName version groupString (Utils.TimeSpanToReadableString sw.Elapsed) speed size
+                        let speed = int (float pos * 8. / float sw.ElapsedMilliseconds)
+                        let size = pos / (1024L * 1024L)
+                        tracefn "Download of %O %O%s done in %s. (%d kbit/s, %d MB)" packageName version groupString (Utils.TimeSpanToReadableString sw.Elapsed) speed size
+                    finally
+                        if File.Exists tmpFile then
+                            try File.Delete(tmpFile)
+                            with | :? System.IO.IOException ->
+                                traceWarnfn "Error while removing temp file '%s'" tmpFile
+                                ()
 
                     try
                         if downloadLicense && not (String.IsNullOrWhiteSpace nugetPackage.LicenseUrl) then
                             do! DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName)
+                        return didDownload
                     with
                     | exn ->
                         if verbose then
                             traceWarnfn "Could not download license for %O %O from %s.%s    %s" packageName version nugetPackage.LicenseUrl Environment.NewLine exn.Message
+                        return didDownload
                 with
                 | :? System.Net.WebException as exn when
                     attempt < 5 &&
@@ -974,15 +1016,15 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                       | Some(Credentials(_)) -> true
                       | _ -> false)
                         ->  traceWarnfn "Could not download %O %O.%s    %s.%sRetry." packageName version Environment.NewLine exn.Message Environment.NewLine
-                            do! download false (attempt + 1)
-                | exn when String.IsNullOrWhiteSpace !downloadUrl ->
-                    raise (Exception(sprintf "Could not download %O %O." packageName version, exn))
-                | exn -> raise (Exception(sprintf "Could not download %O %O from %s." packageName version !downloadUrl, exn)) }
+                            return! download false (attempt + 1)
+                | inner when String.IsNullOrWhiteSpace !downloadUrl ->
+                    return rethrowf exn inner "Could not download %O %O." packageName version
+                | inner -> return rethrowf exn inner "Could not download %O %O from %s." packageName version !downloadUrl }
 
     async {
         configResolved.Path |> Option.iter SymlinkUtils.delete
 
-        do! download true 0
+        let! didDownload = download true 0
 
         match isLocalOverride, configResolved with
         | true, ResolvedPackagesFolder.NoPackagesFolder -> return failwithf "paket.local in combination with storage:none is not supported (use storage: symlink instead)"
@@ -990,12 +1032,16 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
         | true, ResolvedPackagesFolder.ResolvedFolder directory ->
             let! folder = ExtractPackage(targetFile.FullName, directory, packageName, version, detailed)
             return targetFileName,folder
-        | false, ResolvedPackagesFolder.SymbolicLink folder -> 
-            folder |> Utils.DirectoryInfo |> Utils.deleteDir 
+        | false, ResolvedPackagesFolder.SymbolicLink folder ->
+            folder |> Utils.DirectoryInfo |> Utils.deleteDir
             ensureDir folder
 
-            let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, kind)
-            
+            let! extractedUserFolder = async {
+                if not didDownload then
+                    return GetPackageUserFolderDir (packageName, version, kind)
+                else return! ExtractPackageToUserFolder(targetFile.FullName, packageName, version, kind)
+            }
+
             SymlinkUtils.makeDirectoryLink folder extractedUserFolder
 
             let packageFilePath = Path.Combine(extractedUserFolder, NuGetCache.GetPackageFileName packageName version)
@@ -1003,7 +1049,11 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
         | false, otherConfig ->
             otherConfig.Path |> Option.iter SymlinkUtils.delete
 
-            let! extractedUserFolder = ExtractPackageToUserFolder(targetFile.FullName, packageName, version, kind)
+            let! extractedUserFolder = async {
+                if not didDownload then
+                    return GetPackageUserFolderDir (packageName, version, kind)
+                else return! ExtractPackageToUserFolder(targetFile.FullName, packageName, version, kind)
+            }
 
             let! files = NuGetCache.CopyFromCache(otherConfig, targetFile.FullName, licenseFileName, packageName, version, force, detailed)
 
@@ -1014,7 +1064,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
 
             return targetFileName,finalFolder
     }
-    
+
 
 let DownloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool, config:PackagesFolderGroupConfig, source : PackageSource, caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, kind, includeVersionInPath, downloadLicense, force, detailed) =
     downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride, config, source , caches, groupName, packageName, version, kind, includeVersionInPath, downloadLicense, force, detailed)

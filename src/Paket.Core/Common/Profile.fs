@@ -16,26 +16,26 @@ type Category =
     | FileIO
     | Other
 
-type EventBoundary = 
+type EventBoundary =
     | Start of DateTime
     | End of DateTime
     with
-        static member GetTime(b: EventBoundary) = 
+        static member GetTime(b: EventBoundary) =
             match b with
             | Start(dt) -> dt
             | End(dt) -> dt
-        static member IsEndBoundary(b: EventBoundary) = 
+        static member IsEndBoundary(b: EventBoundary) =
             match b with
             | End(_) -> true
             | _ -> false
-        static member IsStartBoundary(b: EventBoundary) = 
+        static member IsStartBoundary(b: EventBoundary) =
             match b with
             | Start(_) -> true
             | _ -> false
 
 type Event = { Category: Category; Start: EventBoundary; End: EventBoundary }
 
-let private getNextSpan(startIndex: int, boundaries: EventBoundary array): (TimeSpan * (int * EventBoundary array)) option = 
+let private getNextSpan(startIndex: int, boundaries: EventBoundary array): (TimeSpan * (int * EventBoundary array)) option =
     let mutable i = startIndex
     while (i < boundaries.Length) && EventBoundary.IsEndBoundary(boundaries.[i]) do
         i <- i + 1
@@ -43,7 +43,7 @@ let private getNextSpan(startIndex: int, boundaries: EventBoundary array): (Time
     if i >= boundaries.Length then
         None
     else
-        let mutable spanStart = i 
+        let mutable spanStart = i
         i <- i + 1
         let mutable boundaryStartCount = 1
 
@@ -53,17 +53,17 @@ let private getNextSpan(startIndex: int, boundaries: EventBoundary array): (Time
                 boundaryStartCount <- boundaryStartCount + 1
             | End(_) ->
                 boundaryStartCount <- boundaryStartCount - 1
-                
+
             i <- i + 1
 
         // Calculate the next time span.
         let startTime = EventBoundary.GetTime(boundaries.[spanStart])
         let endTime = EventBoundary.GetTime(boundaries.[Math.Min(Math.Max(0, boundaries.Length - 1), i - 1)])
 
-        Some((endTime - startTime, (i, boundaries)))        
+        Some((endTime - startTime, (i, boundaries)))
 
-let getCoalescedEventTimeSpans(boundaries: EventBoundary array): TimeSpan array = 
-    let sortedBoundaries = 
+let getCoalescedEventTimeSpans(boundaries: EventBoundary array): TimeSpan array =
+    let sortedBoundaries =
         boundaries
         |> Array.sortBy (fun b -> EventBoundary.GetTime(b))
 
@@ -72,7 +72,7 @@ let getCoalescedEventTimeSpans(boundaries: EventBoundary array): TimeSpan array 
 
 let events =
     System.Collections.Concurrent.ConcurrentBag<Event>()
-    
+
 let trackEvent cat =
     let now = DateTime.Now
     events.Add({ Category = cat; Start = Start(now); End = End(now) })
@@ -81,14 +81,14 @@ let startCategory cat =
     let cw = Stopwatch.StartNew()
     let mutable wasDisposed = false
     { new System.IDisposable with
-        member x.Dispose () = 
+        member x.Dispose () =
             if not wasDisposed then
                 wasDisposed <- true
                 let now = DateTime.Now
                 let start = now - cw.Elapsed
                 cw.Stop(); events.Add({ Category = cat; Start = Start(start); End = End(now)})
     }
-    
+
 let startCategoryF cat f =
     let cw = Stopwatch.StartNew()
     let res = f()

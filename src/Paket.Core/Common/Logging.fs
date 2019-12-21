@@ -77,10 +77,10 @@ let traceErrorIfNotBefore key fmt = traceIfNotBefore traceError key fmt
 // Console Trace
 
 /// [omit]
-let traceColored color (s:string) = 
+let traceColored color (s:string) =
     let curColor = Console.ForegroundColor
     if curColor <> color then Console.ForegroundColor <- color
-    use textWriter = 
+    use textWriter =
         match color with
         | ConsoleColor.Red -> Console.Error
         | ConsoleColor.Yellow -> Console.Out

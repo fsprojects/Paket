@@ -1,6 +1,0 @@
-
-HTTP
-  remote: http://nlp.stanford.edu
-  specs:
-    stanford-ner-2015-12-09.zip (/software/stanford-ner-2015-12-09.zip)
-    stanford-segmenter-2015-12-09.zip (/software/stanford-segmenter-2015-12-09.zip)

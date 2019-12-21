@@ -24,7 +24,7 @@ let [<Literal>] BootstrapperFileName      = "paket.bootstrapper.exe"
 let [<Literal>] PaketFileName             = "paket.exe"
 let [<Literal>] TargetsFileName           = "paket.targets"
 let [<Literal>] ReferencesFile            = "paket.references"
-let [<Literal>] AccessLockFileName        = "paket.locked"
+let [<Literal>] AccessLockFileName        = "paket.processlock"
 let [<Literal>] PaketFilesFolderName      = "paket-files"
 let [<Literal>] DefaultPackagesFolderName = "packages"
 let [<Literal>] SolutionFolderProjectGuid = "2150E333-8FDC-42A3-9474-1A3956D46DE8"
@@ -53,11 +53,11 @@ module Environment =
             | LocalApplicationData -> "LocalAppData", ".local/share"
             | ProgramFiles -> "PROGRAMFILES", ".programfiles"
             | ProgramFilesX86 -> "PROGRAMFILES(X86)", ".programfilesX86"
-        
+
         let isWindows =
             System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
                 System.Runtime.InteropServices.OSPlatform.Windows)
-        let homePath = 
+        let homePath =
             if isWindows then
                 let defaultPath = Environment.GetEnvironmentVariable("USERPROFILE")
                 if System.String.IsNullOrEmpty defaultPath then
@@ -75,16 +75,16 @@ module Environment =
 
 let MainDependencyGroup = GroupName "Main"
 
-let getEnVar variable = 
+let getEnVar variable =
     let envar = Environment.GetEnvironmentVariable variable
     if String.IsNullOrEmpty envar then None else Some envar
 
 let getEnvDir specialPath =
-    let dir = Environment.GetFolderPath specialPath 
+    let dir = Environment.GetFolderPath specialPath
     if String.IsNullOrEmpty dir then None else Some dir
 
 let AppDataFolder =
-    getEnvDir Environment.SpecialFolder.ApplicationData 
+    getEnvDir Environment.SpecialFolder.ApplicationData
     |> Option.defaultWith (fun _ ->
         let fallback = Path.GetFullPath ".paket"
         Logging.traceWarnfn "Could not find AppDataFolder, try to set the APPDATA environment variable. Using '%s' instead." fallback
@@ -99,7 +99,7 @@ let PaketConfigFile     = Path.Combine(PaketConfigFolder, "paket.config")
 let PaketRestoreHashFilePath = Path.Combine(PaketFilesFolderName, RestoreHashFile)
 
 let LocalRootForTempData =
-    getEnvDir Environment.SpecialFolder.UserProfile 
+    getEnvDir Environment.SpecialFolder.UserProfile
     |> Option.orElse (getEnvDir Environment.SpecialFolder.LocalApplicationData)
     |> Option.defaultWith (fun _ ->
         let fallback = Path.GetFullPath ".paket"
@@ -113,8 +113,8 @@ let GitRepoCacheFolder = Path.Combine(LocalRootForTempData,".paket","git","db")
 
 let [<Literal>] GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES"
 
-let UserNuGetPackagesFolder = 
-    getEnVar GlobalPackagesFolderEnvironmentKey 
+let UserNuGetPackagesFolder =
+    getEnVar GlobalPackagesFolderEnvironmentKey
     |> Option.map (fun path ->
         path.Replace (Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
     ) |> Option.defaultWith (fun _ ->
@@ -126,7 +126,7 @@ let MagicUnlistingDate = DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.FromHours(
 
 /// The NuGet cache folder.
 let NuGetCacheFolder =
-    getEnVar "NuGetCachePath" 
+    getEnVar "NuGetCachePath"
     |> Option.bind (fun cachePath ->
         let di = DirectoryInfo cachePath
         if not di.Exists then di.Create()

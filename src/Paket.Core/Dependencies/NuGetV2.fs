@@ -193,7 +193,7 @@ let private handleODataEntry nugetURL packageName version entry =
                 let restriction = a.[2]
                 match PlatformMatching.extractPlatforms false restriction with
                 | Some p ->
-                    Some { p with Platforms = p.Platforms |> List.filter KnownTargetProfiles.isSupportedProfile }
+                    Some p
                 | None ->
                     if not (restriction.StartsWith "_") then 
                         Logging.traceWarnIfNotBefore ("Package", restriction, packageName, version) "Could not detect any platforms from '%s' in package %O %O, please tell the package authors" restriction packageName version
@@ -210,12 +210,14 @@ let private handleODataEntry nugetURL packageName version entry =
         |> Seq.map (fun (_,_,pp) -> pp)
         |> Seq.distinctBy (fun pp -> pp.Platforms |> List.sort)
         |> Seq.toList
+
     let cleanedPackages =
         rawPackages
         |> Seq.filter (fun (n,_,_) -> System.String.IsNullOrEmpty (n.ToString()) |> not)
         |> Seq.toList
-    let dependencies, warnings =
-        addFrameworkRestrictionsToDependencies cleanedPackages frameworks
+
+    let dependencies, warnings = addFrameworkRestrictionsToDependencies cleanedPackages frameworks
+
     for warning in warnings do
         let message = warning.Format officialName version
         Logging.traceWarnIfNotBefore message "%s" message
@@ -381,10 +383,74 @@ let getDetailsFromNuGetViaODataFast isVersionAssumed nugetSource (packageName:Pa
         | Choice2Of2 ex -> return raise (exn("error", ex))
     }
 
+// parse search results.
+let parseFindPackagesByIDODataListDetails (url,nugetURL,packageName:PackageName,version:SemVerInfo,doc) : ODataSearchResult =
+    let feedNode =
+        match doc |> getNode "feed" with
+        | Some node -> node
+        | None ->
+            failwithf "Could not find 'entry' node for package %O %O" packageName version
+
+    let getVersion (n:XmlNode) =
+        match n |> getNode "properties" |> optGetNode "Version" with
+        | Some v -> Some(SemVer.Parse(v.InnerText).Normalize())
+        | None -> None
+
+    let v = version.Normalize()
+
+    match feedNode |> getNodes "entry" |> List.tryFind (fun n -> getVersion n = Some v) with
+    | None ->
+        // When no entry node is found our search did not yield anything.
+        EmptyResult
+    | Some entry ->
+        handleODataEntry nugetURL packageName version entry
+        |> ODataSearchResult.Match
+
+let rec parseFindPackagesByIDODataEntryDetails (url,nugetSource:NuGetSource,packageName:PackageName,version:SemVerInfo) = async {
+    let! raw = getFromUrl(nugetSource.Authentication,url,acceptXml)
+    if verbose then
+        tracefn "Response from %s:" url
+        tracefn ""
+        tracefn "%s" raw
+    let doc = getXmlDoc url raw
+
+    match parseFindPackagesByIDODataListDetails (url,nugetSource.Url,packageName,version,doc) with
+    | EmptyResult ->
+        let linksToFollow =
+             doc
+             |> getNodes "link"
+             |> List.filter (fun node -> node |> getAttribute "rel" = Some "next")
+             |> List.choose (fun a ->
+                 match getAttribute "href" a with
+                 | Some data ->
+                     let newUrl = Uri.UnescapeDataString data
+                     if newUrl <> url then Some newUrl else None
+                 | _ -> None)
+        let result = ref None
+
+        for link in linksToFollow do
+            if !result = None then
+                let! r = parseFindPackagesByIDODataEntryDetails (link,nugetSource,packageName,version)
+                match r with
+                | EmptyResult -> ()
+                | r -> result := Some r
+
+        match !result with
+        | Some r -> return r
+        | _ -> return EmptyResult
+
+    | ODataSearchResult.Match entry -> return ODataSearchResult.Match entry
+}
 
 /// Gets package details from NuGet via OData
-let getDetailsFromNuGetViaOData isVersionAssumed nugetSource (packageName:PackageName) (version:SemVerInfo) =
-    getDetailsFromNuGetViaODataFast isVersionAssumed nugetSource packageName version
+let getDetailsFromNuGetViaOData isVersionAssumed nugetSource (packageName:PackageName) (version:SemVerInfo) = async {
+    try
+        return! getDetailsFromNuGetViaODataFast isVersionAssumed nugetSource packageName version
+    with
+    | _ ->
+        let url = sprintf "%s/FindPackagesById()?semVerLevel=2.0.0&id='%O'" nugetSource.Url packageName
+        return! parseFindPackagesByIDODataEntryDetails (url,nugetSource,packageName,version)
+}
 
 let getDetailsFromNuGet force isVersionAssumed nugetSource packageName version =
     getDetailsFromCacheOr

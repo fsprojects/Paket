@@ -1,4 +1,0 @@
-NUGET
-  remote: https://www.nuget.org/api/v2
-  specs:
-    Newtonsoft.Json (8.0.2)

@@ -18,16 +18,16 @@ let inline addChild child (node:XmlElement) =
 /// [omit]
 let inline hasAttribute name (node:XmlNode) =
     if isNull node || isNull node.Attributes then false else
-    node.Attributes 
+    node.Attributes
     |> Seq.cast<XmlAttribute>
     |> Seq.exists (fun a -> a.Name = name)
 
 /// [omit]
 let inline getAttribute name (node:XmlNode) =
     if isNull node || isNull node.Attributes then None else
-    node.Attributes 
-    |> Seq.cast<XmlAttribute> 
-    |> Seq.tryFind (fun a -> a.Name = name && (isNull a.Value |> not)) 
+    node.Attributes
+    |> Seq.cast<XmlAttribute>
+    |> Seq.tryFind (fun a -> a.Name = name && (isNull a.Value |> not))
     |> Option.map (fun a -> a.Value)
 
 /// [omit]
@@ -36,7 +36,7 @@ let inline withAttributeValue attributeName valueText node =
 
 
 /// [omit]
-let inline withAttributeValueEndsWith attributeName valueText node =
+let inline withAttributeValueEndsWith attributeName (valueText: string) node =
     match getAttribute attributeName node with
     | Some text when text.EndsWith valueText -> true
     | _ -> false
@@ -60,17 +60,17 @@ let inline getNodes name (node:XmlNode) =
     let xpath = sprintf "*[local-name() = '%s']" name
     match node.SelectNodes(xpath) with
     | null -> []
-    | nodeList -> 
+    | nodeList ->
         nodeList
         |> Seq.cast<XmlNode>
         |> Seq.toList
 
 /// [omit]
-let inline getDescendants name (node:XmlNode) = 
+let inline getDescendants name (node:XmlNode) =
     let xpath = sprintf ".//*[local-name() = '%s']" name
     match node.SelectNodes(xpath) with
     | null -> []
-    | nodeList -> 
+    | nodeList ->
         nodeList
         |> Seq.cast<XmlNode>
         |> Seq.toList

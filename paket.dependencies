@@ -1,37 +1,29 @@
 source https://nuget.org/api/v2
 content: none
 
-nuget Newtonsoft.Json redirects: force
+nuget Newtonsoft.Json >= 10.0.3 redirects: force
 nuget Argu >= 5.1.0
-nuget FSharp.Core > 4.3 lowest_matching: true, redirects: force 
+nuget FSharp.Core > 4.3 lowest_matching: true, redirects: force
 nuget Chessie >= 0.6
-nuget Mono.Cecil prerelease
+nuget Mono.Cecil ~> 0.11.1
 
-nuget System.Security.Cryptography.ProtectedData
-
-nuget FSharp.Compiler.Tools
+nuget System.Security.Cryptography.ProtectedData >= 4.4
 
 nuget NETStandard.Library ~> 2.0
 nuget Microsoft.NETCore.App ~> 2.1
-nuget System.Net.Http.WinHttpHandler
+nuget System.Net.Http.WinHttpHandler >= 4.5
 
+# tests
 nuget Moq
 nuget FSCheck
 
-nuget NUnit redirects: force
-nuget NUnit.Console
-// current workaround for https://github.com/nunit/nunit3-vs-adapter/issues/366
-nuget NUnit3TestAdapter version_in_path: true
+nuget NUnit ~> 3.12.0
+nuget NUnit3TestAdapter ~> 3.13.0
+nuget Microsoft.NET.Test.Sdk ~> 16.2.0
 
 github fsharp/FAKE:0341a2e614eb2a7f34607cec914eb0ed83ce9add src/app/FakeLib/Globbing/Globbing.fs
 github fsprojects/FSharp.TypeProviders.SDK:dc5ac01a1ac288eceb1fd6f12a5d388236f4f8e5 src/AssemblyReader.fs
 github forki/FsUnit FsUnit.fs
-
-group NetCoreCliTools
-  storage: none
-  source https://nuget.org/api/v2
-
-  clitool dotnet-mergenupkg ~> 2.3
 
 group NetCoreTools
   storage: none
@@ -46,7 +38,7 @@ group Build
   source https://nuget.org/api/v2
   source https://ci.appveyor.com/nuget/fsharp-formatting
 
-  nuget FAKE
+  nuget FAKE < 5
   nuget FSharp.Formatting prerelease
   nuget System.ValueTuple
   nuget Microsoft.AspNet.Razor
@@ -61,3 +53,6 @@ group Build
   nuget RoslynTools.MSBuild prerelease
   # Note: RoslynTools.ReferenceAssemblies does not contain the required reference assemblies for net45, so I created 0x53A.ReferenceAssemblies.Paket. It is much smaller, anyway.
   #nuget RoslynTools.ReferenceAssemblies prerelease
+
+  # add icon to exe
+  github enricosada/add_icon_to_exe:e11eda501acea369ac2950beb34b8888495bf21f rh/ResourceHacker.exe

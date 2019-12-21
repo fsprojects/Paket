@@ -130,7 +130,7 @@ let ``should favor strategy override when updating all``() =
         DependenciesFile.FromSource(config6)
         |> resolve graph2 UpdateMode.UpdateAll
     getVersion resolved.[PackageName "Castle.Windsor-NLog"] |> shouldEqual "3.3.0"
-    getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.3.0"
+    getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.3.1"
     getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.3.1"
 
 [<Test>]
@@ -139,7 +139,7 @@ let ``should respect overrides when updating single package``() =
         DependenciesFile.FromSource(config6)
         |> resolve graph2 (UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, PackageName "Castle.Windsor-NLog" |> PackageFilter.ofName))
     getVersion resolved.[PackageName "Castle.Windsor-NLog"] |> shouldEqual "3.3.0"
-    getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.3.0"
+    getVersion resolved.[PackageName "Castle.Core-NLog"] |> shouldEqual "3.3.1"
     getVersion resolved.[PackageName "Castle.Core"] |> shouldEqual "3.3.1"
 
 [<Test>]

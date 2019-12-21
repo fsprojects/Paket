@@ -21,11 +21,11 @@ namespace Paket.Bootstrapper.Tests
 
         class DummyFileSystemProxy : IFileSystemProxy
         {
-            private readonly string assembly;
+            private readonly string _assembly;
 
             public DummyFileSystemProxy(string assembly)
             {
-                this.assembly = assembly;
+                _assembly = assembly;
             }
 
             public bool FileExists(string filename)
@@ -98,7 +98,7 @@ namespace Paket.Bootstrapper.Tests
 
             public string GetExecutingAssemblyPath()
             {
-                return assembly;
+                return _assembly;
             }
 
             public string GetTempPath()
@@ -557,7 +557,7 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
             Assert.That(result.DownloadArguments.IgnorePrerelease, Is.False);
             Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.Null);
-            Assert.That(result.DownloadArguments.Target, Does.StartWith(MagicModeFileSystemSystem.GetTempPath()).And.EndsWith(".exe"));
+            Assert.That(result.DownloadArguments.Target, Does.StartWith(Path.Combine(MagicModeFileSystemSystem.GetTempPath(), "paket", "paket_")).And.EndsWith(".exe"));
         }
 
         [Test]
@@ -685,6 +685,56 @@ namespace Paket.Bootstrapper.Tests
             //assert
             Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.EqualTo(4242));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
+        }
+
+        [Test]
+        public void Magic_WithOutputDirInCommandLine()
+        {
+          //arrange
+
+          //act
+          var result = ParseMagic(new[] {"--output-dir=_workDir"}, null, null);
+
+          //assert
+          Assert.That(result, Is.Not.Null);
+          Assert.That(result.UnprocessedCommandArgs, Is.Empty);
+          Assert.That(result.Run, Is.True);
+          Assert.AreEqual(Path.Combine("_workDir", "paket.exe"), result.DownloadArguments.Target);
+        }
+
+        [Test]
+        public void Magic_WithOutputDirInAppSettings()
+        {
+          //arrange
+          var appSettings = new NameValueCollection();
+          appSettings.Add(ArgumentParser.AppSettingKeys.BootstrapperOutputDir, "_appSettingWorkDir");
+
+          //act
+          var result = ParseMagic(new string[0], appSettings, null);
+
+          //assert
+          Assert.That(result, Is.Not.Null);
+          Assert.That(result.UnprocessedCommandArgs, Is.Empty);
+          Assert.That(result.Run, Is.True);
+          Assert.AreEqual(Path.Combine("_appSettingWorkDir", "paket.exe"), result.DownloadArguments.Target);
+        }
+
+        [Test]
+        public void Magic_WithOutputDirInCommandLineAndAppSettings()
+        {
+          //arrange
+          var appSettings = new NameValueCollection();
+          appSettings.Add(ArgumentParser.AppSettingKeys.BootstrapperOutputDir, "_appSettingWorkDir");
+
+          //act
+          var result = ParseMagic(new[] {"--output-dir=_workDir"}, appSettings, null);
+
+          //assert
+          Assert.That(result, Is.Not.Null);
+          Assert.That(result.UnprocessedCommandArgs, Is.Empty);
+          Assert.That(result.Run, Is.True);
+          // CommandLine must take precedence
+          Assert.AreEqual(Path.Combine("_workDir", "paket.exe"), result.DownloadArguments.Target);
         }
 
 

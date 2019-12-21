@@ -26,7 +26,7 @@ let paketVersion = AssemblyVersionInformation.AssemblyInformationalVersion
 let mutable tracedVersion = false
 
 let tracePaketVersion silent =
-    if not silent && not tracedVersion then 
+    if not silent && not tracedVersion then
         tracedVersion <- true
         tracefn "Paket version %s" paketVersion
 
@@ -426,15 +426,16 @@ let restore (results : ParseResults<_>) =
     let ignoreChecks = results.Contains <@ RestoreArgs.Ignore_Checks @>
     let failOnChecks = results.Contains <@ RestoreArgs.Fail_On_Checks @>
     let targetFramework = results.TryGetResult <@ RestoreArgs.Target_Framework @>
+    let outputPath = results.TryGetResult <@ RestoreArgs.Output_Path @>
 
     match project with
     | Some project ->
-        Dependencies.Locate().Restore(force, group, project, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)
+        Dependencies.Locate().Restore(force, group, project, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework, outputPath)
     | None ->
         if List.isEmpty files then
-            Dependencies.Locate().Restore(force, group, installOnlyReferenced, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)
+            Dependencies.Locate().Restore(force, group, installOnlyReferenced, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework, outputPath)
         else
-            Dependencies.Locate().Restore(force, group, files, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)
+            Dependencies.Locate().Restore(force, group, files, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework, outputPath)
 
 let simplify (results : ParseResults<_>) =
     let interactive = results.Contains <@ SimplifyArgs.Interactive @>
@@ -738,11 +739,13 @@ let push paketVersion (results : ParseResults<_>) =
         (results.TryGetResult <@ PushArgs.Api_Key @>,
          results.TryGetResult <@ PushArgs.Api_Key_Legacy @>)
         |> legacyOption results (ReplaceArgument("--api-key", "apikey"))
+    let ignoreConflicts = results.Contains <@ PushArgs.Ignore_Conflicts @>
 
     Dependencies.Push(fileName,
                       ?url = url,
                       ?endPoint = endpoint,
-                      ?apiKey = apiKey)
+                      ?apiKey = apiKey,
+                      ignoreConflicts = ignoreConflicts)
 
 let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
     let providedFrameworks =
@@ -892,7 +895,15 @@ let main() =
             ignore
             false
             (fun _ -> true)
-            (fun _ -> Dependencies.Locate().Restore(false, None, project, false, false, false, None)) ()
+            (fun _ -> Dependencies.Locate().Restore(false, None, project, false, false, false, None, None)) ()
+    | [| _; "restore"; "--project"; project; "--output-path"; outputPath; "--target-framework"; targetFramework |]
+    | [| _; "--from-bootstrapper"; "restore"; "--project"; project; "--output-path"; outputPath; "--target-framework"; targetFramework |] ->
+        // Project restore fast route, see https://github.com/fsprojects/Argu/issues/90
+        processWithValidationEx
+            ignore
+            false
+            (fun _ -> true)
+            (fun _ -> Dependencies.Locate().Restore(false, None, project, false, false, false, Some targetFramework, Some outputPath)) ()
     | [| _; "install" |] | [| _; "--from-bootstrapper"; "install" |] ->
         // Global restore fast route, see https://github.com/fsprojects/Argu/issues/90
         processWithValidationEx

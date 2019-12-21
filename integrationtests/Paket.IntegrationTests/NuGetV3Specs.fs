@@ -16,14 +16,14 @@ open Paket.NuGetV3
 
 [<Test>]
 let ``#1387 update package in v3``() =
-    update "i001387-nugetv3" |> ignore
+    use __ = update "i001387-nugetv3" |> fst
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001387-nugetv3","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Bender"].Version
     |> shouldEqual (SemVer.Parse "3.0.29.0")
 
 [<Test>]
 let ``#2700-1 v3 works properly``() =
-    paketEx true "update" "i002700-1" |> ignore
+    use __ = paketEx true "update" "i002700-1" |> fst
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i002700-1","paket.lock"))
     let mainGroup = lockFile.Groups.[Constants.MainDependencyGroup]
     mainGroup.Resolution.[PackageName "Microsoft.CSharp"].Source.Url
@@ -82,19 +82,3 @@ let ``#3030-2 interpret all versions in nuget catalog`` serviceUrl =
     if failure.Count > 0 then Assert.Warn(sprintf "%A" failure)
     else Assert.IsTrue(true) // runners fail tests w/o asserts
     // failure |> shouldBeEmpty -- use after SemVer is fixed
-
-[<TestCase("https://api.nuget.org/v3/index.json", Explicit = true)>]
-let ``#3030-9 update nuget catalog from public index`` serviceUrl =
-    use canceler = new CancellationTokenSource(360000)
-    use tconsole = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
-    try
-    
-    let baseDir = Path.Combine(integrationTestPath, "i003030-catalog")
-    let tempDir = Path.Combine(Path.GetTempPath(), "PaketTests\\nuget3")
-    
-    let catalog = getCatalogCursor baseDir serviceUrl
-    let updated = (getCatalogUpdated AuthProvider.empty tempDir catalog canceler.Token).Result
-      
-    Assert.IsTrue (setCatalogCursor baseDir updated)
-    finally
-    canceler.Cancel()

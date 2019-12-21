@@ -58,6 +58,9 @@ paket.bootstrapper.exe [prerelease|<version>] [--prefer-nuget] [--self] [-s] [-f
 * `--run`: Once downloaded run `paket.exe`. All arguments following this one are
   ignored and passed directly to `paket.exe`.
 
+* `--config-file=<config-file-path>`: Forces the bootstrapper to use another
+  config file instead of the default `paket.bootstrapper.exe.config` file.
+
 * `--help`: Show help detailing all possible options.
 
 ### In application settings
@@ -76,14 +79,16 @@ Example:
     <add key="ForceNuget" value="True"/>
     <add key="Prerelease" value="True"/>
     <add key="PaketVersion" value="1.5"/>
+    <add key="BoostrapperOutputDir" value="_workDir" />
   </appSettings>
 </configuration>
 ```
 
 * `PreferNuget`: Same as `--prefer-nuget` option.
 * `ForceNuget`: Same as `--force-nuget` option.
-* `PaketVersion`: Same as `<version>` option.
 * `Prerelease`: Same as `prerelease` option.
+* `PaketVersion`: Same as `<version>` option.
+* `BootstrapperOutputDir`: Same as `--output-dir=` option.
 
 ### With environment variables
 
@@ -168,3 +173,10 @@ A few default settings are applied:
 * The bootstrapper is silenced and only errors are displayed. `-v` can be used
   once to restore normal output or twice to show more details.
 * If no version is specified a default `--max-file-age` of `12` hours is used.
+
+**Note about anti virus and magic mode:**
+
+If your anti virus is too aggressive, and must have paket excluded, it will not
+be fully excluded unless you change the `BoostrapperOutputDir` to a folder that
+is excluded from the anti virus scanner, e.g. a sub folder inside the repository
+of the project utilizing magic mode.

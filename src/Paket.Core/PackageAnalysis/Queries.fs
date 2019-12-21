@@ -2,7 +2,6 @@
 
 open Domain
 open System.IO
-open System
 
 
 let getLockFileFromDependenciesFile dependenciesFileName =
@@ -12,8 +11,8 @@ let getLockFileFromDependenciesFile dependenciesFileName =
 let listPackages (packages: System.Collections.Generic.KeyValuePair<GroupName*PackageName, PackageResolver.PackageInfo> seq) =
     packages
     |> Seq.map (fun kv ->
-            let groupName,packageName = kv.Key
-            groupName.ToString(),packageName.ToString(),kv.Value.Version.ToString())
+        let groupName,packageName = kv.Key
+        groupName.ToString(),packageName.ToString(),kv.Value.Version.ToString())
     |> Seq.toList
 
 let getAllInstalledPackagesFromLockFile (lockFile: LockFile) =
@@ -55,10 +54,11 @@ let getRuntimeGraph (lockFile: LockFile) (groupName:GroupName) =
     |> Seq.choose (fun p ->
         let groupFolder = if groupName = Constants.MainDependencyGroup then "" else "/" + groupName.ToString()
         let runtimeJson = sprintf "%s/packages%s/%O/runtime.json" lockFile.RootPath groupFolder p.Name
-        if File.Exists runtimeJson then Some runtimeJson
-        else None)
-    |> Seq.map File.ReadAllText
-    |> Seq.map RuntimeGraphParser.readRuntimeGraph
+        if File.Exists runtimeJson then
+            let data = File.ReadAllText runtimeJson
+            Some (RuntimeGraphParser.readRuntimeGraph data)
+        else
+            None)
     |> RuntimeGraph.mergeSeq
 
 let getRuntimePackages (rid) (lockFile:LockFile) (groupName:GroupName) =
@@ -91,7 +91,7 @@ let resolveEnvironmentFrameworkForScriptGeneration = lazy (
     //dunno what is used for, using a default
     DotNetFramework (FrameworkVersion.V4_5)
 #else
-    let version = Environment.Version
+    let version = System.Environment.Version
     match version.Major, version.Minor, version.Build, version.Revision with
     | 4, 0, 30319, 42000 -> DotNetFramework (FrameworkVersion.V4_6)
     | 4, 0, 30319, _ -> DotNetFramework (FrameworkVersion.V4_5)

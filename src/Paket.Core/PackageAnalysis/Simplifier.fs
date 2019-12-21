@@ -8,33 +8,34 @@ open Paket.Logging
 open Paket.PackageResolver
 open Chessie.ErrorHandling
 
-let private findTransitive (groupName,packages, flatLookup, failureF) = 
+let private findTransitive (groupName, packages, flatLookup, nameF, failureF) =
     packages
-    |> List.map (fun packageName -> 
-        flatLookup 
-        |> Map.tryFind (groupName, packageName)
-        |> failIfNone (failureF packageName))
+    |> List.map (fun package ->
+        flatLookup
+        |> Map.tryFind (groupName, (nameF package))
+        |> failIfNone (failureF (nameF package)))
     |> collect
+    |> lift Seq.distinct
     |> lift Seq.concat
 
-let private removePackage(packageName, transitivePackages, fileName, interactive) =
-    if transitivePackages |> Seq.exists (fun p -> p = packageName) then
+let private removePackage(packageName, hasPackageSettings, transitivePackages, fileName, interactive) =
+    if transitivePackages |> Seq.exists (fun p -> p = packageName) && not(hasPackageSettings) then
         if interactive then
-            let message = sprintf "Do you want to remove transitive dependency %O from file %s?" packageName fileName 
+            let message = sprintf "Do you want to remove transitive dependency %O from file %s?" packageName fileName
             Utils.askYesNo(message)
-        else 
+        else
             true
     else
         false
 
 let simplifyDependenciesFile (dependenciesFile : DependenciesFile, groupName, flatLookup, interactive) = trial {
-    let packages = dependenciesFile.Groups.[groupName].Packages |> List.map (fun p -> p.Name)
-    let! transitive = findTransitive(groupName, packages, flatLookup, DependencyNotFoundInLockFile)
+    let packages = dependenciesFile.Groups.[groupName].Packages
+    let! transitive = findTransitive(groupName, packages, flatLookup, (fun p -> p.Name), DependencyNotFoundInLockFile)
 
     return
-        dependenciesFile.Groups.[groupName].Packages
+        packages |> List.filter(fun p -> p.Kind = Requirements.PackageRequirementKind.Package)
         |> List.fold  (fun (d:DependenciesFile) package ->
-                if removePackage(package.Name, transitive, dependenciesFile.FileName, interactive) then
+                if removePackage(package.Name, package.HasPackageSettings, transitive, dependenciesFile.FileName, interactive) then
                     d.Remove(groupName,package.Name)
                 else d) dependenciesFile
 }
@@ -42,14 +43,14 @@ let simplifyDependenciesFile (dependenciesFile : DependenciesFile, groupName, fl
 let simplifyReferencesFile (refFile:ReferencesFile, groupName, flatLookup, interactive) = trial {
     match refFile.Groups |> Map.tryFind groupName with
     | None -> return refFile
-    | Some g -> 
-        let! transitive = findTransitive(groupName, g.NugetPackages |> List.map (fun p -> p.Name), 
-                                flatLookup, 
+    | Some g ->
+        let! transitive = findTransitive(groupName, g.NugetPackages,
+                                flatLookup, (fun p -> p.Name),
                                 (fun p -> ReferenceNotFoundInLockFile(refFile.FileName, groupName.ToString(),p)))
 
-        let newPackages = 
-            g.NugetPackages 
-            |> List.filter (fun p -> not (removePackage(p.Name, transitive, refFile.FileName, interactive)))
+        let newPackages =
+            g.NugetPackages
+            |> List.filter (fun p -> not (removePackage(p.Name, p.HasPackageSettings, transitive, refFile.FileName, interactive)))
 
         let newGroups = refFile.Groups |> Map.add groupName {g with NugetPackages = newPackages }
 
@@ -58,7 +59,7 @@ let simplifyReferencesFile (refFile:ReferencesFile, groupName, flatLookup, inter
 
 let beforeAndAfter environment dependenciesFile projects =
     environment,
-    { environment with 
+    { environment with
         DependenciesFile = dependenciesFile
         Projects = projects }
 
@@ -69,20 +70,20 @@ let simplify interactive environment = trial {
     let dependenciesFileRef = ref (environment.DependenciesFile.SimplifyFrameworkRestrictions())
     let projectsRef = ref None
     let projectFiles, referencesFiles = List.unzip environment.Projects
-    let referencesFilesRef = ref referencesFiles    
+    let referencesFilesRef = ref referencesFiles
 
     for kv in lockFile.Groups do
         let groupName = kv.Key
         let! dependenciesFile = simplifyDependenciesFile(!dependenciesFileRef, groupName, flatLookup, interactive)
         dependenciesFileRef := dependenciesFile
-        
+
         let! referencesFiles' =
             !referencesFilesRef
             |> List.map (fun refFile -> simplifyReferencesFile(refFile, groupName, flatLookup, interactive))
             |> collect
 
         referencesFilesRef := referencesFiles'
-    
+
     let projects = List.zip projectFiles (!referencesFilesRef)
     projectsRef := Some projects
 

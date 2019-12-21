@@ -95,7 +95,7 @@ module internal NupkgWriter =
                 dep.SetAttributeValue(XName.Get "version", version)
             dep
 
-        let buildGroupNode (framework:FrameworkIdentifier option, add) = 
+        let buildGroupNode (framework:FrameworkIdentifier option, add) =
             let g = XElement(ns + "group")
             match framework with
             | Some f -> g.SetAttributeValue(XName.Get "targetFramework", f.ToString())
@@ -105,7 +105,7 @@ module internal NupkgWriter =
 
         let aggregateDependencies excludedDependencies dependencyList =
             dependencyList
-            |> List.filter (fun (a, _) -> Set.contains a excludedDependencies |> not)            
+            |> List.filter (fun (a, _) -> Set.contains a excludedDependencies |> not)
 
         let buildDependencyNodes (add, dependencies)  =
             dependencies
@@ -125,7 +125,7 @@ module internal NupkgWriter =
             | [g] when Option.isNone g.Framework ->
                 let deps = aggregateDependencies excludedDependencies g.Dependencies
                 buildDependencyNodes(d.Add, deps)
-            | _ -> 
+            | _ ->
                 for g in dependencyGroups do
                     buildDependencyNodesByGroup excludedDependencies d.Add g
             metadataNode.Add d
@@ -138,7 +138,7 @@ module internal NupkgWriter =
         let buildReferencesNode referenceList =
             if List.isEmpty referenceList then () else
             let d = XElement(ns + "references")
-            for r in referenceList do 
+            for r in referenceList do
                 d.Add(buildReferenceNode r)
             metadataNode.Add d
 
@@ -162,6 +162,14 @@ module internal NupkgWriter =
         !! "authors" (core.Authors |> String.concat ", ")
         if optional.Owners <> [] then !! "owners" (String.Join(", ",optional.Owners))
         (!!?) "licenseUrl" optional.LicenseUrl
+        match optional.RepositoryType, optional.RepositoryUrl with
+        | Some t, Some url ->
+            let d = XElement(ns + "repository")
+            d.SetAttributeValue(XName.Get "type", t)
+            d.SetAttributeValue(XName.Get "url", url)
+            metadataNode.Add d
+        | _ -> ()
+
         (!!?) "projectUrl" optional.ProjectUrl
         (!!?) "iconUrl" optional.IconUrl
         if optional.RequireLicenseAcceptance then
@@ -385,7 +393,7 @@ module internal NupkgWriter =
         outputPath
 
 [<AutoOpen>]
-module NuspecExtensions = 
+module NuspecExtensions =
     open NupkgWriter
 
     type Nuspec with
@@ -396,7 +404,7 @@ module NuspecExtensions =
                 Id + ".nuspec", nuspecDoc ({coreInfo with Id = Id}, optionalInfo)
             | {Contents = ProjectInfo(projectInfo, optionalInfo) } ->
                 Id + ".nuspec", nuspecDoc (projectInfo.ToCoreInfo Id, optionalInfo)
-            
+
 
         static member FromProject (projectPath:string, dependenciesFile:DependenciesFile) =
             match ProjectFile.TryLoad projectPath  with
@@ -406,15 +414,15 @@ module NuspecExtensions =
                     project.FindReferencesFile ()
                     |> Option.map (fun refsPath ->
                         let references = ReferencesFile.FromFile refsPath
-                        references.Groups |> Seq.collect (fun kvp -> 
-                        kvp.Value.NugetPackages |> List.choose (fun pkg -> 
+                        references.Groups |> Seq.collect (fun kvp ->
+                        kvp.Value.NugetPackages |> List.choose (fun pkg ->
                             dependenciesFile.TryGetPackage(kvp.Key,pkg.Name)
                             |> Option.map (fun verreq -> pkg.Name,verreq.VersionRequirement)))
                         |> List.ofSeq
                     ) |> Option.defaultValue []
                 let projectInfo, optionalInfo = project.GetTemplateMetadata ()
 
-                let optionalInfo = 
+                let optionalInfo =
                     { optionalInfo with
                         DependencyGroups = [ OptionalDependencyGroup.For None packages ]
                     }
@@ -422,6 +430,5 @@ module NuspecExtensions =
                 // TODO - this might be the point to add in some info from the
                 // lock and dependencies fiels that weren't in the project file
                 name + ".nuspec", nuspecDoc (projectInfo.ToCoreInfo name, optionalInfo )
-            
-       
-            
+
+

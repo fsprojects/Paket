@@ -1,0 +1,7 @@
+type project
+dependencies
+  framework: net45
+  framework: netstandard2.0
+files
+    bin/Release/net45/MyProj.Main.dll ==> lib/net45
+    bin/Release/netstandard2.0/MyProj.Main.dll ==> lib/netstandard2.0

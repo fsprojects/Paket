@@ -1,6 +1,6 @@
 /// Getting help docs from Paket.exe
-#r "../../bin/Argu.dll"
-#r "../../bin/Paket.exe"
+#r "../../bin/net461/Argu.dll"
+#r "../../bin/net461/Paket.exe"
 open System.IO
 
 

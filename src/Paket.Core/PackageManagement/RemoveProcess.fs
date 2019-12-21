@@ -12,7 +12,7 @@ let private removePackageFromProject (project : ProjectFile) groupName package =
         .RemoveNuGetReference(groupName,package)
         .Save()
 
-let private remove removeFromProjects dependenciesFileName alternativeProjectRoot groupName (package: PackageName) force installAfter = 
+let private remove removeFromProjects (dependenciesFileName: string) alternativeProjectRoot groupName (package: PackageName) force installAfter =
     let root = Path.GetDirectoryName dependenciesFileName
     let allProjects = ProjectFile.FindAllProjects root
     

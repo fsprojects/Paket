@@ -1,5 +1,5 @@
 language: csharp
-dist: trusty
+dist: xenial
 
 sudo: false
 
@@ -16,17 +16,16 @@ env:
     # just flaky tests
     - PAKET_TESTSUITE_FLAKYTESTS=true
 
-dotnet: 2.1.401
+dotnet: 3.0.100
 
 mono:
-  - 5.12.0
-  - 5.10.0
-  - 5.8.1
+  - 5.18.1
+  - 5.16.0
   - latest
 
 matrix:
   allow_failures:
-    # travis failure to install mono (ref https://github.com/travis-ci/travis-ci/issues/9171)
+    # fake fails, ref https://github.com/fsharp/FAKE/issues/2362
     - mono: latest
     # flaky test are expected to fail from time to time
     - env: PAKET_TESTSUITE_FLAKYTESTS=true
@@ -38,4 +37,5 @@ branches:
     - gh-pages
 
 script:
-  - ./build.sh BuildPackage
+  # the `< /dev/null` workaround for dotnet test hang (ref https://github.com/microsoft/vstest/issues/2080#issuecomment-539879345 )
+  - ./build.sh BuildPackage < /dev/null

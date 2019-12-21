@@ -1,3 +1,160 @@
+#### 6.0.0-alpha007 - 2019-12-12
+* Full .NET Core / SDK compatible version
+
+#### 5.241.2 - 2019-12-12
+* BUGFIX: Paket pack failed when project contained Compile Update entries - https://github.com/fsprojects/Paket/issues/3752
+
+#### 5.241.1 - 2019-12-05
+* Added IgnoreConflict option for paket push - https://github.com/fsprojects/Paket/pull/3741
+
+#### 5.240.1 - 2019-12-05
+* SECURITY: Check against zip leak in the workaround case of 5.240.0 - https://github.com/fsprojects/Paket/pull/3747
+
+#### 5.240.0 - 2019-12-04
+* WORKAROUND: Microsoft pushed couple of invalid zips to nuget.org this works around it - https://github.com/fsprojects/Paket/issues/3743
+
+#### 5.239.0 - 2019-12-03
+* PaketUpdate failed with semver 2.0 version and jfrog hosted repository - https://github.com/fsprojects/Paket/issues/3601
+
+#### 5.238.2 - 2019-11-26
+* Exclude top-level linux folders for docker support - https://github.com/fsprojects/Paket/issues/3123
+* More verbose logging
+
+#### 5.237.0 - 2019-11-25
+* Added BootstrapperOutputDir to config - https://github.com/fsprojects/Paket/pull/3733
+
+#### 5.236.6 - 2019-11-21
+* REVERT: Paket caused build warnings by adding references to NETStandard.Library - https://github.com/fsprojects/Paket/issues/2852
+
+#### 5.236.1 - 2019-11-20
+* BUGFIX: "Update group" kept old versions fixed - https://github.com/fsprojects/Paket/pull/3725
+
+#### 5.236.0 - 2019-11-15
+* Paket init is now a bit more opionionated and restricts to netcore3.0, nestandard2.0, nestandard2.1 - https://github.com/fsprojects/Paket/pull/3725
+
+#### 5.235.0 - 2019-11-15
+* BUGFIX: DisableImplicitFSharpCoreReference is only set if FSharp.Core is explicitly referenced - https://github.com/fsprojects/Paket/pull/3725
+* PERFORMANCE: paket why uses HashSet to keep track of already visited nodes - https://github.com/fsprojects/Paket/pull/3722
+
+#### 5.234.0 - 2019-11-14
+* BUGFIX: Keep preferred versions for the correct group - https://github.com/fsprojects/Paket/issues/3717
+
+#### 5.233.0 - 2019-11-13
+* BUGFIX: Change cli target detection to not block on "paket --version" - https://github.com/fsprojects/Paket/pull/3706
+
+#### 5.232.0 - 2019-11-11
+* Add repository tag to template file - https://github.com/fsprojects/Paket/pull/3707
+* BUGFIX: Fixed IndexOutOfRangeException starting from 5.231.0 - https://github.com/fsprojects/Paket/issues/3701
+* BUGFIX: Allow GitHub package registry urls without trailing slash - https://github.com/fsprojects/Paket/issues/3700
+
+#### 5.231.0 - 2019-11-05
+* PERFORMANCE: Use NuGet v3 as default source in paket init
+
+#### 5.230.0 - 2019-11-05
+* PERFORMANCE: Use package details from extracted files
+
+#### 5.229.0 - 2019-11-04
+* PERFORMANCE: Prefer latest AutoComplete server
+
+#### 5.227.0 - 2019-10-29
+* Support for github NuGet repos - https://github.com/fsprojects/Paket/issues/3692
+
+#### 5.226.0 - 2019-10-17
+* New paket.targets to support global and local dotnet paket for old style projetcs - https://github.com/fsprojects/Paket/issues/3687
+
+#### 5.225.0 - 2019-10-17
+* Update frameworks to support netcoreapp3.1 - https://github.com/fsprojects/Paket/pull/3688
+
+#### 5.224.0 - 2019-10-09
+* Limit number of open connections to a server and add `PAKET_DEBUG_REQUESTS` to debug request failures - https://github.com/fsprojects/Paket/pull/3683
+
+#### 5.223.3 - 2019-10-09
+* BUGFIX: Update getResolverStrategy for rootRequirements - https://github.com/fsprojects/Paket/pull/3670
+
+#### 5.220.0 - 2019-09-30
+* BUGFIX: Make paket work as global tool again - https://github.com/fsprojects/Paket/issues/3671
+* Add PaketCommand contidion for Paket installed as .NET Core 3.0 local tool - https://github.com/fsprojects/Paket/pull/3668/files
+* Try hardcoded path for NuGetFallbackFolder - https://github.com/fsprojects/Paket/pull/3663
+* BUGFIX: Fixed typo in targets file so that bootstrapper can be found - https://github.com/fsprojects/Paket/pull/3665
+* BUGFIX: Fixed UnauthorizedAccessException writing to MyProject.paket.references.cached - https://github.com/fsprojects/Paket/pull/3617
+* BUGFIX: Fixed CopyLocal support - https://github.com/fsprojects/Paket/pull/3659
+
+#### 5.219.0 - 2019-09-07
+* Support for creating snupkg symbol packages - https://github.com/fsprojects/Paket/pull/3636
+
+#### 5.218.1 - 2019-09-04
+* Nuke Paket files after install - https://github.com/fsprojects/Paket/issues/3618
+
+#### 5.216.0 - 2019-08-10
+* Add roll-forward config to enable running on later major versions of the runtime - https://github.com/fsprojects/Paket/pull/3635
+
+#### 5.215.0 - 2019-07-03
+* BUGFIX: Disable fast restore for MSBuild version < 15.8 - https://github.com/fsprojects/Paket/pull/3611
+
+#### 5.214.0 - 2019-07-03
+* PERFORMANCE: Fast restore reactivated - https://github.com/fsprojects/Paket/pull/3608
+
+#### 5.213.0 - 2019-07-02
+* PERFORMANCE: If Paket didn't download a package, then it will no longer try to extract it - https://github.com/fsprojects/Paket/pull/3607
+
+#### 5.211.0 - 2019-06-24
+* BUGFIX: Paket 5.207.4 broke the FAKE release process and creates empty packages - https://github.com/fsprojects/Paket/issues/3599
+* BUGFIX: Change caching logic to be more suitable for FAKE and in particular the Ionide tooling - https://github.com/fsprojects/Paket/pull/3598
+* BUGFIX: Fixed native library detection - enables FAKE native library support - https://github.com/fsprojects/Paket/pull/3593
+* BUGFIX: Allow projects without Guids - https://github.com/fsprojects/Paket/issues/3528
+
+#### 5.209.0 - 2019-05-29
+* Relaxed NuGet v3 check. Allows URLs that does not end with /index.json - https://github.com/fsprojects/Paket/pull/3590
+
+#### 5.208.0 - 2019-05-28
+* BUGFIX: Rename paket.locked file to paket.processlock to avoid McAfee scanner to evaluate the file as threat - https://github.com/fsprojects/Paket/pull/3586
+* BUGFIX: Fixed multiple dotnet pack invocations with different Version property - https://github.com/fsprojects/Paket/pull/3585
+* BUGFIX: Nuke project.assets.json files after paket install - https://github.com/fsprojects/Paket/issues/3577
+* BUGFIX: Keep casing of packages stable in paket.lock - https://github.com/fsprojects/Paket/issues/3340
+* COSMETICS: Improved error message for missing monikers - https://github.com/fsprojects/Paket/pull/3583
+
+#### 5.207.0 - 2019-05-11
+* Simplifier removes unsupported frameworks - https://github.com/fsprojects/Paket/pull/3574
+
+#### 5.206.0 - 2019-05-08
+* BUGFIX: Paket considers dependencies target framework restrictions in paket pack - https://github.com/fsprojects/Paket/pull/3558
+
+#### 5.205.0 - 2019-05-07
+* BUGFIX: Fix issues with lock file simplification - https://github.com/fsprojects/Paket/pull/3570
+
+#### 5.204.3 - 2019-05-07
+* Allow to parse DNXCore in lock file and be backwards compatible again
+
+#### 5.203.2 - 2019-04-15
+* BUGFIX: Fixed #3459, #3418 and #3375 - https://github.com/fsprojects/Paket/pull/3554
+
+#### 5.203.1 - 2019-04-15
+* BUGFIX: Xamarin.Mac supports .Net Standard 2.0 - https://github.com/fsprojects/Paket/pull/3555
+
+#### 5.203.0 - 2019-04-11
+* Support for BaseIntermediateOutputPath - https://github.com/fsprojects/Paket/pull/3527
+
+#### 5.202.0 - 2019-04-10
+* EMERGENCY-RELEASE
+
+#### 5.201.1 - 2019-04-10
+* Adapt PackTask to breaking changes in MSBuild 16 - https://github.com/fsprojects/Paket/pull/3542
+* BUGFIX: Simplify Fix Extra Settings - https://github.com/fsprojects/Paket/pull/3538
+* BUGFIX: Always try and extract Paket.Restore.targets even if up to date - https://github.com/fsprojects/Paket/pull/3524
+* Adding support for multiple target frameworks to the pack command - https://github.com/fsprojects/Paket/pull/3534
+* New setting that shields packages from simplifier - https://github.com/fsprojects/Paket/pull/3523
+* BUGFIX: Fixed symlinks on linux - https://github.com/fsprojects/Paket/pull/3372
+
+#### 5.200.0 - 2019-04-02
+* Support for .NET Standard 2.1 and .NET 4.8
+* Removed .NET 5.0 moniker because it was never released
+* Removed the old temporary monikers for dnxcore and dnx
+
+#### 5.198.0 - 2019-02-22
+* PERFORMANCE: Speedup for paket restore - https://github.com/fsprojects/Paket/pull/3512
+* BUGFIX: Do not run in StackOverflow during ReleaseLock
+* BUGFIX: Paket install writed restore cache file -https://github.com/fsprojects/Paket/issues/3508
+
 #### 5.197.0 - 2019-02-18
 * BUGFIX: Restore SDK projects during paket install - https://github.com/fsprojects/Paket/pull/3503
 
@@ -41,9 +198,9 @@
 * REVERT: Retry automatically when a request times out - https://github.com/fsprojects/Paket/pull/3424
 
 #### 5.187.0 - 2018-11-13
-* Create a gitignore around paket's .cached file - https://github.com/fsprojects/Paket/issues/3060 
+* Create a gitignore around paket's .cached file - https://github.com/fsprojects/Paket/issues/3060
 * Paket template checks if restored with 5.185.3 or later - https://github.com/fsprojects/Paket/issues/3404
-* BUGFIX: Remove ReadOnly flag before writing to files - https://github.com/fsprojects/Paket/issues/3410 
+* BUGFIX: Remove ReadOnly flag before writing to files - https://github.com/fsprojects/Paket/issues/3410
 * BUGFIX: Added compat fallback in case of older cache files - https://github.com/fsprojects/Paket/pull/3417
 * BUGFIX: Used lowest_matching for paket's own FSharp.Core dependency - https://github.com/fsprojects/Paket/pull/3415
 * BUGFIX: Retry automatically when a request times out - https://github.com/fsprojects/Paket/pull/3420
@@ -130,7 +287,7 @@
 #### 5.170.0 - 2018-06-05
 * PERFORMANCE: Fixed filtered update performance - https://github.com/fsprojects/Paket/pull/3233
 * PERFORMANCE: Check if everything is up-to-date after aquiring lock
-* BUGFIX: Regression from semver2 support in paket tempates - https://github.com/fsprojects/Paket/pull/3229 
+* BUGFIX: Regression from semver2 support in paket tempates - https://github.com/fsprojects/Paket/pull/3229
 * USABILITY: Always trace on early restore exit
 
 #### 5.169.0 - 2018-05-26
@@ -624,7 +781,7 @@
 * BUGFIX: find-package-versions doesn't require paket.dependencies to be present as long as a source is explicitly specified - https://github.com/fsprojects/Paket/pull/2478
 
 #### 5.3.0 - 2017-06-30
-* BUGFIX: Ignoring pre-release status when deps file requested prerelease - https://github.com/fsprojects/Paket/pull/2474 
+* BUGFIX: Ignoring pre-release status when deps file requested prerelease - https://github.com/fsprojects/Paket/pull/2474
 * BUGFIX: Don't remove placeholder from file view - https://github.com/fsprojects/Paket/issues/2469
 * BUGFIX: Automatic restore in VS should also work with bootstraper
 * BUGFIX: Do not add old myget sources during NuGet convert

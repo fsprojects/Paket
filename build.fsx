@@ -3,6 +3,7 @@ System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
 
 #r @"packages/build/FAKE/tools/FakeLib.dll"
 #r "System.IO.Compression.FileSystem"
+#r "System.Xml.Linq"
 
 open Fake
 open Fake.Git
@@ -13,6 +14,7 @@ open System
 open System.IO
 open Fake.Testing.NUnit3
 open System.Security.Cryptography
+open System.Xml.Linq
 
 // --------------------------------------------------------------------------------------
 // START TODO: Provide project-specific details below
@@ -46,8 +48,8 @@ let tags = "nuget, bundler, F#"
 let solutionFile  = "Paket.sln"
 
 // Pattern specifying assemblies to be tested using NUnit
-let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
-let integrationTestAssemblies = "integrationtests/Paket.IntegrationTests/bin/Release/*Tests*.dll"
+let testAssemblies = "tests/**/bin/Release/net461/*Tests*.dll"
+let integrationTestAssemblies = "integrationtests/Paket.IntegrationTests/bin/Release/net461/*Tests*.dll"
 
 // Git configuration (used for publishing documentation in gh-pages branch)
 // The profile where the project is posted
@@ -62,14 +64,18 @@ let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
 let dotnetcliVersion = DotNetCli.GetDotNetSDKVersionFromGlobalJson()
 
-let mutable dotnetExePath = "dotnet"    
+let mutable dotnetExePath = "dotnet"
 
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps
 // --------------------------------------------------------------------------------------
 
 let buildDir = "bin"
-let buildDirNetCore = "bin_netcore"
+let buildDirNet461 = buildDir @@ "net461"
+let buildDirNetCore = buildDir @@ "netcoreapp2.1"
+let buildDirBootstrapper = "bin_bootstrapper"
+let buildDirBootstrapperNet461 = buildDirBootstrapper @@ "net461"
+let buildDirBootstrapperNetCore = buildDirBootstrapper @@ "netcoreapp2.1"
 let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
 let paketFile = buildMergedDir @@ "paket.exe"
@@ -79,21 +85,30 @@ Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
 System.Net.ServicePointManager.SecurityProtocol <- unbox 192 ||| unbox 768 ||| unbox 3072 ||| unbox 48
 
 // Read additional information from the release notes document
-let releaseNotesData = 
+let releaseNotesData =
     File.ReadAllLines "RELEASE_NOTES.md"
     |> parseAllReleaseNotes
 
 let release = List.head releaseNotesData
 
-let stable = 
+let stable =
     match releaseNotesData |> List.tryFind (fun r -> r.NugetVersion.Contains("-") |> not) with
     | Some stable -> stable
     | _ -> release
 
 
+let runDotnet workingDir args =
+    let result =
+        ExecProcess (fun info ->
+            info.FileName <- dotnetExePath
+            info.WorkingDirectory <- workingDir
+            info.Arguments <- args) TimeSpan.MaxValue
+    if result <> 0 then
+        failwithf "dotnet %s failed" args
+
 let testSuiteFilterFlakyTests = getEnvironmentVarAsBoolOrDefault "PAKET_TESTSUITE_FLAKYTESTS" false
 
-let genFSAssemblyInfo (projectPath) =
+let genFSAssemblyInfo (projectPath: string) =
     let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
     let folderName = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(projectPath))
     let basePath = "src" @@ folderName
@@ -107,7 +122,7 @@ let genFSAssemblyInfo (projectPath) =
         Attribute.FileVersion release.AssemblyVersion
         Attribute.InformationalVersion release.NugetVersion ]
 
-let genCSAssemblyInfo (projectPath) =
+let genCSAssemblyInfo (projectPath: string) =
     let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
     let folderName = System.IO.Path.GetDirectoryName(projectPath)
     let basePath = folderName @@ "Properties"
@@ -122,8 +137,8 @@ let genCSAssemblyInfo (projectPath) =
 
 // Generate assembly info files with the right version & up-to-date information
 Target "AssemblyInfo" (fun _ ->
-    let fsProjs =  !! "src/**/*.fsproj" |> Seq.filter (fun s -> not <| s.Contains("preview"))
-    let csProjs = !! "src/**/*.csproj" |> Seq.filter (fun s -> not <| s.Contains("preview"))
+    let fsProjs =  !! "src/**/*.fsproj"
+    let csProjs = !! "src/**/*.csproj"
     fsProjs |> Seq.iter genFSAssemblyInfo
     csProjs |> Seq.iter genCSAssemblyInfo
 )
@@ -139,8 +154,12 @@ Target "InstallDotNetCore" (fun _ ->
 Target "Clean" (fun _ ->
     !! "src/**/bin"
     ++ "tests/**/bin"
-    ++ buildDir 
+    ++ buildDir
+    ++ buildDirNet461
     ++ buildDirNetCore
+    ++ buildDirBootstrapper
+    ++ buildDirBootstrapperNet461
+    ++ buildDirBootstrapperNetCore
     ++ tempDir
     |> CleanDirs
 
@@ -157,113 +176,170 @@ Target "CleanDocs" (fun _ ->
 
 Target "Build" (fun _ ->
     if isMono then
-        !! solutionFile
-        |> MSBuildReleaseExt "" [
-                "VisualStudioVersion", "14.0"
-                "ToolsVersion"       , "14.0"
-        ] "Rebuild"
-        |> ignore
+        DotNetCli.Build (fun c ->
+            { c with
+                Project = solutionFile
+                ToolPath = dotnetExePath
+            })
     else
-        !! solutionFile
-        |> MSBuildReleaseExt "" [
-                "VisualStudioVersion", "14.0"
-                "ToolsVersion"       , "14.0"
-                "SourceLinkCreate"   , "true"
-        ] "Rebuild"
-        |> ignore
+        DotNetCli.Build (fun c ->
+            { c with
+                Project = solutionFile
+                AdditionalArgs = [ "/p:SourceLinkCreate=true" ]
+                ToolPath = dotnetExePath
+            })
 )
 
-let assertExitCodeZero x = 
-    if x = 0 then () else 
-    failwithf "Command failed with exit code %i" x
-
-let runCmdIn workDir exe = 
-    Printf.ksprintf (fun args -> 
-        tracefn "%s %s" exe args
-        Shell.Exec(exe, args, workDir) |> assertExitCodeZero)
-
-/// Execute a dotnet cli command
-let dotnet workDir = runCmdIn workDir "dotnet"
-
-Target "DotnetRestoreTools" (fun _ ->
-    DotNetCli.Restore (fun c ->
-        { c with
-            Project = currentDirectory </> "tools" </> "tools.fsproj"
-            ToolPath = dotnetExePath
-        })
-)
-
-Target "DotnetRestore" (fun _ ->
-
+Target "Restore" (fun _ ->
     //WORKAROUND dotnet restore with paket doesnt restore the PackageReference of SourceLink
     // ref https://github.com/fsprojects/Paket/issues/2930
+    //TODO check if is needed, because a full paket restore is done in the build.bat/sh before run this fsx
     Paket.Restore (fun p ->
         { p with
             Group = "NetCoreTools" })
 
+    DotNetCli.RunCommand (fun c ->
+        { c with
+            ToolPath = dotnetExePath
+        }) "tool restore"
+
     DotNetCli.Restore (fun c ->
         { c with
-            Project = "Paket.preview3.sln"
+            Project = "Paket.sln"
             ToolPath = dotnetExePath
         })
 )
 
-Target "DotnetBuild" (fun _ ->
-    DotNetCli.Build (fun c ->
-        { c with
-            Project = "Paket.preview3.sln"
-            ToolPath = dotnetExePath
-            AdditionalArgs = [ "/p:SourceLinkCreate=true" ]
-        })
-)
-"Clean" ==> "DotnetRestore" ==> "DotnetBuild" 
-
-Target "DotnetPublish" (fun _ ->
+Target "Publish" (fun _ ->
     DotNetCli.Publish (fun c ->
         { c with
-            Project = "src/Paket.preview3"
+            Project = "src/Paket"
+            Framework = "net461"
+            Output = FullName (currentDirectory </> buildDirNet461)
             ToolPath = dotnetExePath
+        })
+
+    DotNetCli.Publish (fun c ->
+        { c with
+            Project = "src/Paket"
+            Framework = "netcoreapp2.1"
             Output = FullName (currentDirectory </> buildDirNetCore)
+            ToolPath = dotnetExePath
+        })
+    DotNetCli.Publish (fun c ->
+        { c with
+            Project = "src/Paket.Bootstrapper"
+            Framework = "net461"
+            Output = FullName (currentDirectory </> buildDirBootstrapperNet461)
+            ToolPath = dotnetExePath
+        })
+
+    DotNetCli.Publish (fun c ->
+        { c with
+            Project = "src/Paket.Bootstrapper"
+            Framework = "netcoreapp2.1"
+            Output = FullName (currentDirectory </> buildDirBootstrapperNetCore)
+            ToolPath = dotnetExePath
         })
 )
-"Clean" ==> "DotnetBuild" ?=> "DotnetPublish" 
+"Clean" ==> "Build" ?=> "Publish"
 
-Target "DotnetPackage" (fun _ ->
-    let outPath = FullName (currentDirectory </> tempDir </> "dotnetcore")
-    CleanDir outPath
-    DotNetCli.Pack (fun c ->
-        { c with
-            Project = "src/Paket.Core.preview3/Paket.Core.fsproj"
-            ToolPath = dotnetExePath
-            AdditionalArgs = [(sprintf "-o \"%s\"" outPath); (sprintf "/p:Version=%s" release.NugetVersion)]
-        })
-    DotNetCli.Pack (fun c ->
-        { c with
-            Project = "src/Paket.preview3/Paket.fsproj"
-            ToolPath = dotnetExePath
-            AdditionalArgs = [(sprintf "-o \"%s\"" outPath); (sprintf "/p:Version=%s" release.NugetVersion)]
-        })
-    DotNetCli.Pack (fun c ->
-        { c with
-            Project = "src/Paket.Bootstrapper.preview3/Paket.Bootstrapper.csproj"
-            ToolPath = dotnetExePath
-            AdditionalArgs = [(sprintf "-o \"%s\"" outPath); (sprintf "/p:Version=%s" release.NugetVersion)]
-        })
+// --------------------------------------------------------------------------------------
+// Run the unit tests
+
+Target "RunTests" (fun _ ->
+
+    let runTest fw proj tfm =
+        CreateDir (sprintf "tests_result/%s/%s" fw proj)
+
+        let logFilePath = (sprintf "tests_result/%s/%s/TestResult.trx" fw proj) |> Path.GetFullPath
+
+        DotNetCli.Test (fun c ->
+            { c with
+                Project = "tests/Paket.Tests/Paket.Tests.fsproj"
+                Framework = tfm
+                AdditionalArgs =
+                  [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
+                    sprintf "--logger:trx;LogFileName=%s" logFilePath
+                    "--no-build"
+                    "-v"; "n"]
+                ToolPath = dotnetExePath
+            })
+
+    runTest "net" "Paket.Tests" "net461"
+    runTest "netcore" "Paket.Tests" "netcoreapp3.0"
+
+    runTest "net" "Paket.Bootstrapper.Tests" "net461"
+    runTest "netcore" "Paket.Bootstrapper.Tests" "netcoreapp3.0"
 )
 
-Target "DotnetTest" (fun _ ->
-    CreateDir "tests_result/netcore/Paket.Tests"
+Target "QuickTest" (fun _ ->
+    DotNetCli.Test (fun c ->
+        { c with
+            Project = "tests/Paket.Tests/Paket.Tests.fsproj"
+            AdditionalArgs =
+              [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky") ]
+            ToolPath = dotnetExePath
+        })
+)
+"Clean" ==> "QuickTest"
+
+Target "QuickIntegrationTests" (fun _ ->
+    DotNetCli.Test (fun c ->
+        { c with
+            Project = "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
+            AdditionalArgs =
+              [ "--filter"; "TestCategory=scriptgen" ]
+            TimeOut = TimeSpan.FromMinutes 40.
+            ToolPath = dotnetExePath
+        })
+)
+"Clean" ==> "Publish" ==> "QuickIntegrationTests"
+
+
+// --------------------------------------------------------------------------------------
+// Build a NuGet package
+
+let mergeLibs = ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "Argu.dll"; "Chessie.dll"; "Mono.Cecil.dll"; "System.Net.Http.WinHttpHandler.dll"; "System.Buffers.dll"]
+
+Target "MergePaketTool" (fun _ ->
+    CreateDir buildMergedDir
+
+    let toPack =
+        mergeLibs
+        |> List.map (fun l -> buildDirNet461 @@ l)
+        |> separated " "
+
+    let result =
+        ExecProcess (fun info ->
+            info.FileName <- currentDirectory </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
+            info.Arguments <- sprintf "/lib:%s /ver:%s /out:%s %s" buildDirNet461 release.AssemblyVersion paketFile toPack
+            ) (TimeSpan.FromMinutes 5.)
+
+    if result <> 0 then failwithf "Error during ILRepack execution."
+)
+"Publish" ==> "MergePaketTool"
+
+Target "RunIntegrationTestsNet" (fun _ ->
+    CreateDir "tests_result/net/Paket.IntegrationTests"
+
+    // improves the speed of the test-suite by disabling the runtime resolution.
+    System.Environment.SetEnvironmentVariable("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
 
     DotNetCli.Test (fun c ->
         { c with
-            Project = "tests/Paket.Tests.preview3/Paket.Tests.fsproj"
+            Project = "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
+            Framework = "net461"
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
-                sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.Tests/TestResult.trx" |> Path.GetFullPath) 
-                "-v"; "n"]
+                sprintf "--logger:trx;LogFileName=%s" ("tests_result/net/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]
+            TimeOut = TimeSpan.FromMinutes 60.
             ToolPath = dotnetExePath
         })
+
 )
+"Clean" ==> "Publish" ==> "RunIntegrationTestsNet"
+
 
 Target "RunIntegrationTestsNetCore" (fun _ ->
     CreateDir "tests_result/netcore/Paket.IntegrationTests"
@@ -272,103 +348,16 @@ Target "RunIntegrationTestsNetCore" (fun _ ->
     System.Environment.SetEnvironmentVariable("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
     DotNetCli.Test (fun c ->
         { c with
-            Project = "integrationtests/Paket.IntegrationTests.preview3/Paket.IntegrationTests.fsproj"
-            ToolPath = dotnetExePath
+            Project = "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
+            Framework = "netcoreapp3.0"
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
                 sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]
-            TimeOut = TimeSpan.FromMinutes 50.
+            TimeOut = TimeSpan.FromMinutes 60.
+            ToolPath = dotnetExePath
         })
 )
-"Clean" ==> "DotnetPublish" ==> "RunIntegrationTestsNetCore" 
-
-// --------------------------------------------------------------------------------------
-// Run the unit tests using test runner
-
-Target "RunTests" (fun _ ->
-    CreateDir "tests_result/net/Paket.Tests"
-
-    !! testAssemblies
-    |> NUnit3 (fun p ->
-        { p with
-            ShadowCopy = false
-            WorkingDir = "tests_result/net/Paket.Tests" |> Path.GetFullPath
-            Agents = Some 1 //workaround for https://github.com/nunit/nunit-console/issues/219 
-            TimeOut = TimeSpan.FromMinutes 20. })
-)
-
-Target "QuickTest" (fun _ ->
-
-    [   "src/Paket.Core/Paket.Core.fsproj"
-        "tests/Paket.Tests/Paket.Tests.fsproj"
-    ]   |> MSBuildRelease "" "Rebuild"
-        |> ignore
-
-    !! testAssemblies
-    |> NUnit3 (fun p ->
-        { p with
-            ShadowCopy = false
-            WorkingDir = "tests/Paket.Tests" |> Path.GetFullPath
-            TimeOut = TimeSpan.FromMinutes 20. })
-)
-"Clean" ==> "QuickTest"
-
-Target "QuickIntegrationTests" (fun _ ->
-    [   "src/Paket.Core/Paket.Core.fsproj"
-        "src/Paket/Paket.fsproj"
-        "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
-    ]   |> MSBuildDebug "" "Rebuild"
-        |> ignore
-    
-    
-    !! integrationTestAssemblies    
-    |> NUnit3 (fun p ->
-        { p with
-            ShadowCopy = false
-            Where = "cat==scriptgen"
-            WorkingDir = "integrationtests/Paket.IntegrationTests" |> Path.GetFullPath
-            TimeOut = TimeSpan.FromMinutes 40. })
-)
-"Clean" ==> "QuickIntegrationTests" 
-
-
-// --------------------------------------------------------------------------------------
-// Build a NuGet package
-
-let mergeLibs = ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "Argu.dll"; "Chessie.dll"; "Mono.Cecil.dll"]
-
-Target "MergePaketTool" (fun _ ->
-    CreateDir buildMergedDir
-    
-    let toPack =
-        mergeLibs
-        |> List.map (fun l -> buildDir @@ l)
-        |> separated " "
-
-    let result =
-        ExecProcess (fun info ->
-            info.FileName <- currentDirectory </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
-            info.Arguments <- sprintf "/lib:%s /ver:%s /out:%s %s" buildDir release.AssemblyVersion paketFile toPack
-            ) (TimeSpan.FromMinutes 5.)
-
-    if result <> 0 then failwithf "Error during ILRepack execution."
-)
-
-Target "RunIntegrationTests" (fun _ ->
-    CreateDir "tests_result/net/Paket.IntegrationTests" 
-
-    // improves the speed of the test-suite by disabling the runtime resolution.
-    System.Environment.SetEnvironmentVariable("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
-    !! integrationTestAssemblies    
-    |> NUnit3 (fun p ->
-        { p with
-            ShadowCopy = false
-            WorkingDir = "tests_result/net/Paket.IntegrationTests" |> Path.GetFullPath
-            Where = if testSuiteFilterFlakyTests then "cat==Flaky" else "cat!=Flaky"
-            TimeOut = TimeSpan.FromMinutes 40. })
-)
-"Clean" ==> "Build" ==> "RunIntegrationTests" 
-
+"Clean" ==> "Publish" ==> "RunIntegrationTestsNetCore"
 
 let pfx = "code-sign.pfx"
 let mutable isUnsignedAllowed = true
@@ -380,9 +369,13 @@ Target "SignAssemblies" (fun _ ->
         else failwithf "%s not found, can't sign assemblies" pfx
     else
 
-    let filesToSign = 
+    let filesToSign =
         !! "bin/**/*.exe"
         ++ "bin/**/Paket.Core.dll"
+        ++ "bin_bootstrapper/**/*.exe"
+        |> Seq.cache
+
+    if Seq.length filesToSign < 3 then failwith "Didn't find files to sign"
 
     filesToSign
         |> Seq.iter (fun executable ->
@@ -403,50 +396,69 @@ Target "CalculateDownloadHash" (fun _ ->
     File.WriteAllText(buildMergedDir @@ "paket-sha256.txt", sprintf "%s paket.exe" hash)
 )
 
-Target "NuGet" (fun _ ->
-    let testTemplateFiles =
-        !! "integrationtests/**/paket.template"
-        |> Seq.map (fun f -> f, f + "-disabled")
-        |> Seq.toList
-        
+Target "AddIconToExe" (fun _ ->
+    // add icon to paket.exe
+    // workaround https://github.com/dotnet/fsharp/issues/1172
+    let paketExeIcon = "src" @@ "Paket" @@ "paket.ico"
 
-    try
-        testTemplateFiles
-        |> Seq.iter (fun (f, d) -> File.Move(f, d))
+    // use resourcehacker to add the icon
+    let rhPath = "paket-files" @@ "build" @@ "enricosada" @@ "add_icon_to_exe" @@ "rh" @@ "ResourceHacker.exe"
+    let args = sprintf """-open "%s" -save "%s" -action addskip -res "%s" -mask ICONGROUP,MAINICON,""" paketFile paketFile paketExeIcon
 
-        let files = !! "src/**/*.preview*" |> Seq.toList
-        for file in files do
-            File.Move(file,file + ".temp")
-
-        Paket.Pack (fun p -> 
-            { p with 
-                ToolPath = "bin/merged/paket.exe" 
-                Version = release.NugetVersion
-                ReleaseNotes = toLines release.Notes })
-
-        for file in files do
-            File.Move(file + ".temp",file)
-    finally
-        testTemplateFiles
-        |> Seq.iter (fun (f, d) ->
-            if File.Exists(d) then File.Move(d, f))
+    let result =
+        ExecProcess (fun info ->
+            info.FileName <- rhPath
+            info.Arguments <- args) (TimeSpan.FromMinutes 1.)
+    if result <> 0 then failwithf "Error during adding icon %s to %s with %s %s" paketExeIcon paketFile rhPath args
 )
 
-"DotnetPublish" ==> "NuGet" 
+let releaseNotesProp releaseNotesLines =
+    let xn name = XName.Get(name)
+    let text = releaseNotesLines |> String.concat Environment.NewLine
+    let doc =
+        XDocument(
+            [ XComment("This document was automatically generated.") :> obj
+              XElement(xn "Project",
+                XElement(xn "PropertyGroup",
+                    XElement(xn "PackageReleaseNotes", text)
+                )
+              ) :> obj ]
+        )
 
-Target "MergeDotnetCoreIntoNuget" (fun _ ->
+    let path = Path.GetTempFileName()
+    doc.Save(path)
+    path
 
-    let runTool = runCmdIn "tools" dotnetExePath
+Target "NuGet" (fun _ ->
+    Paket.Pack (fun p ->
+        { p with
+            ToolPath = "bin/merged/paket.exe"
+            Version = release.NugetVersion
+            TemplateFile = "src/Paket.Core/paket.template"
+            ReleaseNotes = toLines release.Notes })
+    // pack as .NET tools
+    let releaseNotesPath = releaseNotesProp release.Notes
 
-    let mergeNupkg packageName args =
-        let nupkg = tempDir </> sprintf "%s.%s.nupkg" packageName (release.NugetVersion) |> Path.GetFullPath
-        let netcoreNupkg = tempDir </> "dotnetcore" </> sprintf "%s.%s.nupkg" packageName (release.NugetVersion) |> Path.GetFullPath
-
-        runTool """mergenupkg --source "%s" --other "%s" %s""" nupkg netcoreNupkg args
-
-    mergeNupkg "Paket.Core" "--framework netstandard2.0"
-    mergeNupkg "Paket" "--tools"
-    mergeNupkg "paket.bootstrapper" "--tools"
+    DotNetCli.Pack (fun c ->
+        { c with
+            Project = "src/Paket/Paket.fsproj"
+            OutputPath = tempDir
+            AdditionalArgs =
+                [ sprintf "/p:Version=%s" release.NugetVersion
+                  sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath
+                  "/p:PackAsTool=true" ]
+            ToolPath = dotnetExePath
+        })
+    DotNetCli.Pack (fun c ->
+        { c with
+            Project = "src/Paket.Bootstrapper/Paket.Bootstrapper.csproj"
+            OutputPath = tempDir
+            AdditionalArgs =
+                [ sprintf "/p:Version=%s" release.NugetVersion
+                  sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath
+                  "/p:PackAsTool=true"]
+            ToolPath = dotnetExePath
+        })
 )
 
 Target "PublishNuGet" (fun _ ->
@@ -454,13 +466,11 @@ Target "PublishNuGet" (fun _ ->
         !! (tempDir </> "*bootstrapper*")
         |> Seq.iter File.Delete
 
-    !! (tempDir </> "dotnetcore" </> "*.nupkg")
-    |> Seq.iter File.Delete
-
-    Paket.Push (fun p -> 
-        { p with 
+    Paket.Push (fun p ->
+        { p with
             ToolPath = "bin/merged/paket.exe"
-            WorkingDir = tempDir }) 
+            ApiKey = getBuildParam "NugetKey"
+            WorkingDir = tempDir })
 )
 
 
@@ -579,7 +589,7 @@ Target "GenerateHelpDebug" (fun _ ->
     generateHelp' true true true
 )
 
-Target "KeepRunning" (fun _ ->    
+Target "KeepRunning" (fun _ ->
     use watcher = !! "docs/content/**/*.*" |> WatchChanges (fun changes ->
          generateHelp false false
     )
@@ -597,7 +607,7 @@ Target "GenerateDocs" DoNothing
 // Release Scripts
 
 Target "ReleaseDocs" (fun _ ->
-    if disableDocs then () else   
+    if disableDocs then () else
     let tempDocsDir = "temp/gh-pages"
     CleanDir tempDocsDir
     Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
@@ -645,13 +655,15 @@ Target "ReleaseGitHub" (fun _ ->
 
     Branches.tag "" release.NugetVersion
     Branches.pushTag "" remote release.NugetVersion
-    
+
+    tracefn "Creating gihub release"
+
     // release on github
     createClient user pw
-    |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes 
+    |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
     |> uploadFile "./bin/merged/paket.exe"
     |> uploadFile "./bin/merged/paket-sha256.txt"
-    |> uploadFile "./bin/paket.bootstrapper.exe"
+    |> uploadFile "./bin_bootstrapper/net461/paket.bootstrapper.exe"
     |> uploadFile ".paket/paket.targets"
     |> uploadFile ".paket/Paket.Restore.targets"
     |> uploadFile (tempDir </> sprintf "Paket.%s.nupkg" (release.NugetVersion))
@@ -662,24 +674,24 @@ Target "ReleaseGitHub" (fun _ ->
 
 Target "Release" DoNothing
 Target "BuildPackage" DoNothing
-Target "BuildCore" DoNothing
 // --------------------------------------------------------------------------------------
 // Run all targets by default. Invoke 'build <Target>' to override
+
+let hasBuildParams buildParams =
+    buildParams
+    |> List.map hasBuildParam
+    |> List.exists id
+let unlessBuildParams buildParams =
+    not (hasBuildParams buildParams)
 
 Target "All" DoNothing
 
 "Clean"
-  =?> ("InstallDotNetCore", not <| hasBuildParam "DISABLE_NETCORE")
-  =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
-  =?> ("DotnetBuild", not <| hasBuildParam "DISABLE_NETCORE")
-  ==> "BuildCore"
-
-"Clean"
+  ==> "InstallDotNetCore"
+  ==> "Restore"
   ==> "AssemblyInfo"
   ==> "Build"
-  <=> "BuildCore"
-  ==> "RunTests"
-  =?> ("DotnetTest", not <| hasBuildParam "DISABLE_NETCORE")
+  =?> ("RunTests", unlessBuildParams [ "SkipTests"; "SkipUnitTests" ])
   =?> ("GenerateReferenceDocs",isLocalBuild && not isMono && not (hasBuildParam "SkipDocs"))
   =?> ("GenerateDocs",isLocalBuild && not isMono && not (hasBuildParam "SkipDocs"))
   ==> "All"
@@ -687,13 +699,12 @@ Target "All" DoNothing
 
 "All"
   ==> "MergePaketTool"
-  =?> ("RunIntegrationTests", not <| (hasBuildParam "SkipIntegrationTests" || hasBuildParam "SkipIntegrationTestsNet"))
-  =?> ("RunIntegrationTestsNetCore", not <| (hasBuildParam "SkipIntegrationTests" || hasBuildParam "SkipIntegrationTestsNetCore" || hasBuildParam "DISABLE_NETCORE"))
+  =?> ("AddIconToExe", not isMono)
+  =?> ("RunIntegrationTestsNet", unlessBuildParams [ "SkipTests"; "SkipIntegrationTests"; "SkipIntegrationTestsNet" ] )
+  =?> ("RunIntegrationTestsNetCore", unlessBuildParams [ "SkipTests"; "SkipIntegrationTests"; "SkipIntegrationTestsNetCore" ] )
   ==> "SignAssemblies"
   ==> "CalculateDownloadHash"
-  =?> ("NuGet", not <| hasBuildParam "SkipNuGet")
-  =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE" && not <| hasBuildParam "SkipNuGet")
-  =?> ("MergeDotnetCoreIntoNuget", not <| hasBuildParam "DISABLE_NETCORE" && not <| hasBuildParam "SkipNuGet")
+  =?> ("NuGet", unlessBuildParams [ "SkipNuGet" ])
   ==> "BuildPackage"
 
 "EnsurePackageSigned"
@@ -726,8 +737,5 @@ Target "All" DoNothing
 
 "EnsurePackageSigned"
   ==> "Release"
-
-"DotnetRestoreTools"
-  ==> "MergeDotnetCoreIntoNuget"
 
 RunTargetOrDefault "All"

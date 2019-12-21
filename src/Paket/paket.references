@@ -1,4 +1,10 @@
 Argu
 FSharp.Core
 Chessie
-FSharp.Compiler.Tools
+
+# workaround for transitive of FSharp.Core not pulled when packaging as PackAsTool
+Newtonsoft.Json
+Mono.Cecil
+System.Security.Cryptography.ProtectedData
+System.Net.Http.WinHttpHandler
+System.Net.Http

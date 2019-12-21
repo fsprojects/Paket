@@ -1,4 +1,0 @@
-git https://github.com/forki/nupkgtest.git build build:"build.cmd", Packages: /source/, OS:windows
-git https://github.com/forki/nupkgtest.git build build:"build.sh", Packages: /source/, OS:mono
-
-nuget Argu

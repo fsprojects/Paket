@@ -455,7 +455,6 @@ module FrameworkRestriction =
                 FrameworkRestriction.WithOrListInternal newOrList fr
             else fr
 
-
         /// When we optmized a clause away completely we can replace the hole formula with "NoRestriction"
         /// This happens for example with ( <net45 || >=net45) and the removeNegatedLiteralsWhichOccurSinglePositive
         /// optimization
@@ -464,7 +463,35 @@ module FrameworkRestriction =
                 fr.OrFormulas
                 |> Seq.exists (fun andFormular -> andFormular.Literals |> Seq.isEmpty)
             if containsEmptyAnd then NoRestriction else fr
-        
+
+        /// Remove unsupported frameworks:
+        /// Unsupported frameworks are expected to never exist,
+        /// therefore `= unsupported1.0` and `>= unsupported1.0` are the empty set (isNegated = false)
+        /// while `<> unsupported1.0` and `<unsupported1.0` are just all frameworks (isNegated = true)
+        let removeUnsupportedFrameworks (fr:FrameworkRestriction) =
+            let newOrList, workDone =
+                let mutable workDone = false
+                fr.OrFormulas
+                |> List.choose (fun andFormula ->
+                    let filteredList, removeAndClause =
+                        let mutable removeAndClause = false
+                        andFormula.Literals
+                        |> List.filter (function
+                            | { LiteraL = FrameworkRestrictionLiteralI.ExactlyL (TargetProfile.SinglePlatform (FrameworkIdentifier.Unsupported _)); IsNegated = false }
+                            | { LiteraL = FrameworkRestrictionLiteralI.AtLeastL (TargetProfile.SinglePlatform (FrameworkIdentifier.Unsupported _)); IsNegated = false } ->
+                                // `>= unsupported` or `= unsupported` -> remove the clause as && with empty set is the empty set
+                                removeAndClause <- true // we could break here.
+                                workDone <- true
+                                false
+                            | { LiteraL = FrameworkRestrictionLiteralI.ExactlyL (TargetProfile.SinglePlatform (FrameworkIdentifier.Unsupported _)); IsNegated = true }
+                            | { LiteraL = FrameworkRestrictionLiteralI.AtLeastL (TargetProfile.SinglePlatform (FrameworkIdentifier.Unsupported _)); IsNegated = true } ->
+                                // `< unsupported` or `<> unsupported` -> remove the literal as any set && with all frameworks is the given set
+                                workDone <- true
+                                false
+                            | _ -> true), removeAndClause
+                    if removeAndClause then None else Some { Literals = filteredList }), workDone
+            if workDone then FrameworkRestriction.WithOrListInternal newOrList fr else fr
+
         let sortClauses (fr:FrameworkRestriction) =
             fr.OrFormulas
             |> List.map (fun andFormula -> { Literals = andFormula.Literals |> List.distinct |> List.sort })
@@ -475,6 +502,7 @@ module FrameworkRestriction =
                 else fr
         let optimize fr =
             fr
+            |> removeUnsupportedFrameworks
             |> removeNegatedLiteralsWhichOccurSinglePositive
             |> removeSubsetLiteralsInAndClause
             |> removeSubsetLiteralsInOrClause
@@ -495,7 +523,7 @@ module FrameworkRestriction =
     // (ie not only a different formula describing the same set, but the same exact formula)        
     let private simplify'', cacheSimple = memoizeByExt (fun (fr:FrameworkRestriction) -> fr.ToString()) simplify'
 
-    let private simplify (fr:FrameworkRestriction) =
+    let internal simplify (fr:FrameworkRestriction) =
         if fr.IsSimple then fr
         else 
             let simpleFormula = simplify'' fr
@@ -637,8 +665,6 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
         else
             problems.Add p
 
-    let extractFw = FrameworkDetection.Extract
-
     let extractProfile framework =
         PlatformMatching.extractPlatforms false framework |> Option.bind (fun pp ->
             let prof = pp.ToTargetProfile false
@@ -683,13 +709,13 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
                     match fw2 with
                     | None ->
                         let handlers =
-                            [ extractFw >> Option.map FrameworkRestriction.AtLeast
+                            [ FrameworkDetection.Extract >> Option.map FrameworkRestriction.AtLeast
                               extractProfile >> Option.map FrameworkRestriction.AtLeastPlatform ]
 
                         tryParseFramework handlers fw1
 
                     | Some fw2 ->
-                        let tryParse = tryParseFramework [extractFw]
+                        let tryParse = tryParseFramework [FrameworkDetection.Extract]
 
                         match tryParse fw1, tryParse fw2 with
                         | Some x, Some y -> Some (FrameworkRestriction.Between (x, y))
@@ -701,7 +727,7 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
                 let fw, remaining = frameworkToken (x.Substring 1)
 
                 let handlers =
-                    [ extractFw >> Option.map FrameworkRestriction.Exactly ]
+                    [ FrameworkDetection.Extract >> Option.map FrameworkRestriction.Exactly ]
 
                 tryParseFramework handlers fw, remaining
 
@@ -710,7 +736,7 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
                 let fw, remaining = frameworkToken (x.Substring 2)
 
                 let handlers =
-                    [ extractFw >> Option.map FrameworkRestriction.Exactly ]
+                    [ FrameworkDetection.Extract >> Option.map FrameworkRestriction.Exactly ]
 
                 tryParseFramework handlers fw, remaining
 
@@ -718,7 +744,7 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
                 let fw, remaining = frameworkToken x
 
                 let handlers =
-                    [ extractFw >> Option.map FrameworkRestriction.Exactly
+                    [ FrameworkDetection.Extract >> Option.map FrameworkRestriction.Exactly
                       extractProfile >> Option.map FrameworkRestriction.AtLeastPlatform ]
 
                 tryParseFramework handlers fw, remaining
@@ -765,9 +791,6 @@ let private parseRestrictionsRaw skipSimplify (text:string) =
             let rest = h.Substring 2
             let restTrimmed = rest.TrimStart()
             let idx = restTrimmed.IndexOf(' ')
-            //let splitted = rest.Split([|' '|], StringSplitOptions.RemoveEmptyEntries)
-            //if splitted.Length < 1 then failwithf "No parameter after >= or < in '%s'" text
-            //let rawOperator = splitted.[0]
             let endOperator = 
                 if idx < 0 then 
                     if restTrimmed.Length = 0 then failwithf "No parameter after >= or < in '%s'" text
@@ -775,12 +798,24 @@ let private parseRestrictionsRaw skipSimplify (text:string) =
                 else idx
             let rawOperator = restTrimmed.Substring(0, endOperator)
             let operator = rawOperator.TrimEnd([|')'|])
-            match PlatformMatching.extractPlatforms false operator |> Option.bind (fun (pp:PlatformMatching.ParsedPlatformPath) ->
-                let prof = pp.ToTargetProfile false
-                if prof.IsSome && prof.Value.IsUnsupportedPortable then
-                    handleError (RestrictionParseProblem.UnsupportedPortable operator)
-                prof) with
-            | None -> failwithf "invalid parameter '%s' after >= or < in '%s'" operator text
+
+            let extractedPlatform = PlatformMatching.extractPlatforms false operator
+            let platFormPath =
+                extractedPlatform
+                |> Option.bind (fun (pp:PlatformMatching.ParsedPlatformPath) ->
+                    let prof = pp.ToTargetProfile false
+                    if prof.IsSome && prof.Value.IsUnsupportedPortable then
+                        handleError (RestrictionParseProblem.UnsupportedPortable operator)
+                    prof)
+
+            match platFormPath with
+            | None -> 
+                match extractedPlatform with
+                | Some pp when pp.Platforms = [] ->
+                    let operatorIndex = text.IndexOf operator
+                    FrameworkRestriction.NoRestriction, text.Substring(operatorIndex + operator.Length)
+                | _ ->
+                    failwithf "invalid parameter '%s' after >= or < in '%s'" operator text
             | Some plat ->
                 let f =
                     if isSmaller then FrameworkRestriction.NotAtLeastPlatform
@@ -841,6 +876,7 @@ let private parseRestrictionsRaw skipSimplify (text:string) =
     result, problems.ToArray()
     
 let parseRestrictions = memoize (parseRestrictionsRaw false)
+// skips simplify
 let internal parseRestrictionsSimplified = parseRestrictionsRaw true
 
 let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestrictions) =
@@ -889,8 +925,9 @@ type InstallSettings =
       StorageConfig : PackagesFolderGroupConfig option
       Excludes : string list
       Aliases : Map<string,string>
-      CopyContentToOutputDirectory : CopyToOutputDirectorySettings option 
-      GenerateLoadScripts : bool option }
+      CopyContentToOutputDirectory : CopyToOutputDirectorySettings option
+      GenerateLoadScripts : bool option
+      Simplify : bool option }
 
     static member Default =
         { EmbedInteropTypes = None
@@ -906,8 +943,9 @@ type InstallSettings =
           Excludes = []
           Aliases = Map.empty
           CopyContentToOutputDirectory = None
-          OmitContent = None 
-          GenerateLoadScripts = None }
+          OmitContent = None
+          GenerateLoadScripts = None
+          Simplify = None }
 
     member this.ToString(groupSettings:InstallSettings,asLines) =
         let options =
@@ -958,6 +996,9 @@ type InstallSettings =
               match this.GenerateLoadScripts with
               | Some true when groupSettings.GenerateLoadScripts <> this.GenerateLoadScripts -> yield "generate_load_scripts: true"
               | Some false when groupSettings.GenerateLoadScripts <> this.GenerateLoadScripts  -> yield "generate_load_scripts: false"
+              | _ -> ()
+              match this.Simplify with
+              | Some false -> yield "simplify: false"
               | _ -> () ]
 
         let separator = if asLines then Environment.NewLine else ", "
@@ -1066,6 +1107,10 @@ type InstallSettings =
                 match getPair "generate_load_scripts" with
                 | Some "on"  | Some "true" -> Some true
                 | Some "off" | Some "false" -> Some true
+                | _ -> None
+              Simplify =
+                match getPair "simplify" with
+                | Some "never" | Some "false" -> Some false
                 | _ -> None }
 
         // ignore resolver settings here
@@ -1113,16 +1158,24 @@ type RemoteFileInstallSettings =
             | _ -> None }
 
 type PackageRequirementSource =
+| RuntimeDependency
 | DependenciesFile of string * int
 | DependenciesLock of string * string
 | Package of PackageName * SemVerInfo * PackageSource
+
     member this.IsRootRequirement() =
         match this with
         | DependenciesFile _ | DependenciesLock _ -> true
         | _ -> false
 
+    member this.IsRuntimeRequirement() =
+        match this with
+        | RuntimeDependency -> true
+        | _ -> false
+
     override this.ToString() =
         match this with
+        | RuntimeDependency -> "Runtime Dependency"
         | DependenciesFile(x,_) -> x
         | DependenciesLock(_,x) -> x
         | Package(name,version,_) ->
@@ -1167,7 +1220,11 @@ type PackageRequirement =
 
     member this.Depth = this.Graph.Count
 
-    static member Compare(x,y,startWithPackage:PackageFilter option,boostX,boostY) =        
+    member this.SettingString = (sprintf "%O %s %s %O %s" this.VersionRequirement (if this.ResolverStrategyForTransitives.IsSome then (sprintf "%O" this.ResolverStrategyForTransitives) else "") (if this.ResolverStrategyForDirectDependencies.IsSome then (sprintf "%O" this.ResolverStrategyForDirectDependencies) else "") this.Settings (if this.TransitivePrereleases then "TransitivePrereleases-true" else ""))
+
+    member this.HasPackageSettings = String.IsNullOrWhiteSpace this.SettingString |> not
+
+    static member Compare(x,y,startWithPackage:PackageFilter option,boostX,boostY) =
         if obj.ReferenceEquals(x, y) then 0 else
         let c = compare
                   (not x.VersionRequirement.Range.IsGlobalOverride,x.Depth)

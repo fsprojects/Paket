@@ -296,6 +296,7 @@ type RestoreArgs =
     | [<Hidden;CustomCommandLine("--references-files")>] References_File_Legacy of path:string list
 
     | [<Unique>] Target_Framework of framework:string
+    | [<Unique>] Output_Path of path:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -317,6 +318,7 @@ with
             | References_File_Legacy(_) -> "[obsolete]"
 
             | Target_Framework(_) -> "restore only for the specified target framework"
+            | Output_Path(_) -> "Output path directory of MSBuild. When used in combination with the new dotnet cli based sdk, paket will write supporting files (nuget.config, paket.resolved) there"
 
 type SimplifyArgs =
     | [<Unique;AltCommandLine("-i")>] Interactive
@@ -416,7 +418,7 @@ with
             match this with
             | Files _ -> ".nuspec files to fix transitive dependencies within"
             | ReferencesFile _ -> "paket.references to use"
-            | ProjectFile _ -> "the proejct file to use"
+            | ProjectFile _ -> "the project file to use"
 
 type GenerateNuspecArgs =
     | [<ExactlyOnce;CustomCommandLine "project">] Project of project:string
@@ -590,6 +592,8 @@ type PushArgs =
 
     | [<Unique>] Endpoint of path:string
     | [<Hidden;Unique;CustomCommandLine("endpoint")>] Endpoint_Legacy of path:string
+
+    | [<Unique;CustomCommandLine("--ignoreConflicts")>] Ignore_Conflicts
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -605,6 +609,8 @@ with
 
             | Endpoint(_) -> "API endpoint to push to (default: /api/v2/package)"
             | Endpoint_Legacy(_) -> "[obsolete]"
+
+            | Ignore_Conflicts -> "Ignore any HTTP409 (Conflict) errors and treat as success"
 
 type GenerateLoadScriptsArgs =
     | [<AltCommandLine("-g")>] Group of name:string

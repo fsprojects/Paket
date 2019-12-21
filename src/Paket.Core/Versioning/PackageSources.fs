@@ -1,22 +1,17 @@
-﻿module Paket.PackageSources 
+﻿module Paket.PackageSources
 
 open System
 open System.IO
 open System.Text.RegularExpressions
-
 open Paket.Logging
-open Chessie.ErrorHandling
-
-open Newtonsoft.Json
-open System.Threading.Tasks
 
 let private envVarRegex = Regex("^%(\w*)%$", RegexOptions.Compiled)
 
-type EnvironmentVariable = 
+type EnvironmentVariable =
     { Variable : string
       Value    : string }
 
-    static member Create(variable) = 
+    static member Create(variable) =
         if envVarRegex.IsMatch(variable) then
             let trimmed = envVarRegex.Match(variable).Groups.[1].Value
             match Environment.GetEnvironmentVariable(trimmed) with
@@ -54,7 +49,7 @@ type KnownNuGetSources =
     | UnknownNuGetServer
 
 [<CustomComparison;CustomEquality>]
-type NuGetSource = 
+type NuGetSource =
     { Url : string
       Authentication : AuthProvider }
     member x.BasicAuth isRetry =
@@ -83,23 +78,23 @@ let internal parseAuth(text:string, source) =
         //|> Option.map (function Credentials userPass -> ConfigAuthentication userPass | _ -> ConfigAuthentication{ Username = ""; Password = ""; Type = AuthType.Basic})
 
     if text.Contains("username:") || text.Contains("password:") then
-        if not (userNameRegex.IsMatch(text) && passwordRegex.IsMatch(text)) then 
+        if not (userNameRegex.IsMatch(text) && passwordRegex.IsMatch(text)) then
             failwithf "Could not parse auth in \"%s\"" text
 
         let username = userNameRegex.Match(text).Groups.[1].Value
         let password = passwordRegex.Match(text).Groups.[1].Value
 
-        let authType = 
+        let authType =
             if (authTypeRegex.IsMatch(text))
             then authTypeRegex.Match(text).Groups.[1].Value |> NetUtils.parseAuthTypeString
             else NetUtils.AuthType.Basic
 
-        let auth = 
+        let auth =
             match EnvironmentVariable.Create(username),
                     EnvironmentVariable.Create(password) with
             | Some userNameVar, Some passwordVar ->
                {Username = userNameVar.Value; Password = passwordVar.Value; Type = authType }
-            | _, _ -> 
+            | _, _ ->
                {Username = username; Password = password; Type = authType }
 
         match auth with
@@ -128,7 +123,7 @@ type PackageSource =
     static member Parse(line : string) =
         let sourceRegex = Regex("source[ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
         let parts = line.Split ' '
-        let source = 
+        let source =
             if sourceRegex.IsMatch line then
                 sourceRegex.Match(line).Groups.[1].Value.TrimEnd([| '/' |])
             else
@@ -137,39 +132,40 @@ type PackageSource =
         let feed = normalizeFeedUrl source
         PackageSource.Parse(feed, parseAuth(line, feed))
 
-    static member Parse(source,auth) = 
+    static member Parse(source,auth) =
         match tryParseWindowsStyleNetworkPath source with
         | Some path -> PackageSource.Parse(path)
         | _ ->
             match System.Uri.TryCreate(source, System.UriKind.Absolute) with
             | true, uri ->
 #if DOTNETCORE
-                if uri.Scheme = "file" then 
+                if uri.Scheme = "file" then
 #else
-                if uri.Scheme = System.Uri.UriSchemeFile then 
+                if uri.Scheme = System.Uri.UriSchemeFile then
 #endif
                     LocalNuGet(source,None)
-                else 
-                    if Regex("/v3(?:/[-\w]+)?/index.json$").IsMatch source then
+                else
+                    if source.Contains("/v3/") || (source.Contains "github.com" && source.EndsWith("index.json")) then
                         NuGetV3 { Url = source; Authentication = auth }
                     else
                         NuGetV2 { Url = source; Authentication = auth }
+
             | _ ->  match System.Uri.TryCreate(source, System.UriKind.Relative) with
                     | true, uri -> LocalNuGet(source,None)
                     | _ -> failwithf "unable to parse package source: %s" source
 
-    member this.Url = 
+    member this.Url =
         match this with
         | NuGetV2 n -> n.Url
         | NuGetV3 n -> n.Url
         | LocalNuGet(n,_) -> n
 
-    member this.IsLocalFeed = 
+    member this.IsLocalFeed =
         match this with
         | LocalNuGet(n,_) -> true
         | _ -> false
 
-    member this.Auth = 
+    member this.Auth =
         match this with
         | NuGetV2 n -> n.Authentication
         | NuGetV3 n -> n.Authentication
@@ -180,22 +176,22 @@ type PackageSource =
 
     static member FromCache (cache:Cache) = LocalNuGet(cache.Location,Some cache)
 
-    static member WarnIfNoConnection (source,_) = 
+    static member WarnIfNoConnection (source,_) =
         let n url (auth:AuthProvider) =
-            use client = NetUtils.createHttpClient(url, auth.Retrieve true)
-            try 
-                client.DownloadData url |> ignore 
+            let client = NetUtils.createHttpClient(url, auth.Retrieve true)
+            try
+                client.DownloadData url |> ignore
             with _ ->
                 traceWarnfn "Unable to ping remote NuGet feed: %s." url
         match source with
         | NuGetV2 x -> n x.Url x.Authentication
         | NuGetV3 x -> n x.Url x.Authentication
-        | LocalNuGet(path,_) -> 
-            if not (Directory.Exists (RemoveOutsideQuotes path)) then 
+        | LocalNuGet(path,_) ->
+            if not (Directory.Exists (RemoveOutsideQuotes path)) then
                 traceWarnfn "Local NuGet feed doesn't exist: %s." path
 
 let DefaultNuGetSource = PackageSource.NuGetV2Source Constants.DefaultNuGetStream
-
+let DefaultNuGetV3Source = PackageSource.NuGetV3Source Constants.DefaultNuGetV3Stream
 
 type NugetPackage = {
     Id : string

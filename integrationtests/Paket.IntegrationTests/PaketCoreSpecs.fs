@@ -15,7 +15,7 @@ let alternativeProjectRoot = None
 
 [<Test>]
 let ``#1251 full installer demo``() = 
-    prepare "i001251-installer-demo"
+    use __ = prepare "i001251-installer-demo"
     let deps = """source https://nuget.org/api/v2
     nuget FAKE
     nuget FSharp.Formatting"""
@@ -34,7 +34,7 @@ let ``#1251 full installer demo``() =
 
 [<Test>]
 let ``#1251 install FSharp.Collections.ParallelSeq``() = 
-    prepare "i001251-installer-demo"
+    use __ = prepare "i001251-installer-demo"
     let deps = """source https://nuget.org/api/v2
     nuget FSharp.Collections.ParallelSeq"""
 
@@ -52,7 +52,7 @@ let ``#1251 install FSharp.Collections.ParallelSeq``() =
 [<Test>]
 let ``#1259 install via script``() =
     Environment.SetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
-    prepare "i001259-install-script"
+    use __ = prepare "i001259-install-script"
 
     Paket.Dependencies
        .Install("""

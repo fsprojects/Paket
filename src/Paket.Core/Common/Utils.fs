@@ -197,7 +197,7 @@ let CleanDir path =
         try
             emptyDir di
         with
-        | exn -> failwithf "Error during cleaning of %s%s  - %s" di.FullName Environment.NewLine exn.Message
+        | e -> raise <| exn(sprintf "Error during cleaning of %s%s  - %s" di.FullName Environment.NewLine e.Message, e)
     else
         Directory.CreateDirectory path |> ignore
     // set writeable
@@ -387,7 +387,7 @@ let inline normalizeHomeDirectory (path : string) =
     else
         path
 
-let inline normalizePath(path:string) = 
+let inline normalizePath(path:string) =
     (normalizeHomeDirectory path)
       .Replace("\\",dirSeparator)
       .Replace("/",dirSeparator).TrimEnd(Path.DirectorySeparatorChar)
@@ -429,7 +429,7 @@ type PackagesFolderGroupConfig =
                     Path.Combine(root, Constants.DefaultPackagesFolderName, groupName.CompareString)
             Some groupDir
     member x.Resolve root groupName (packageName:PackageName) version includeVersionInPath  =
-        let parentPath () = 
+        let parentPath () =
             let groupDir = x.ResolveGroupDir root groupName |> Option.get
             let packageFolder = string packageName + (if includeVersionInPath then "." + string version else "")
             Path.Combine(groupDir, packageFolder)
@@ -453,7 +453,7 @@ let RunInLockedAccessMode(lockedFolder,action) =
     let p = System.Diagnostics.Process.GetCurrentProcess()
     let fileName = Path.Combine(lockedFolder,Constants.AccessLockFileName)
 
-    // Checks the packagesFolder for a paket.locked file or waits until it get access to it.
+    // Checks the packagesFolder for a paket.processlock file or waits until it get access to it.
     let rec acquireLock (startTime:DateTime) (timeOut:TimeSpan) trials =
         try
             let rec waitForUnlocked counter =
@@ -486,27 +486,33 @@ let RunInLockedAccessMode(lockedFolder,action) =
                 tracefn "Could not acquire lock to %s.%s%s%sTrials left: %d." fileName Environment.NewLine exn.Message Environment.NewLine trials
                 acquireLock startTime timeOut trials
             else
-                raise (Exception(sprintf "Could not acquire lock to '%s'." fileName, exn))
+                failwithf "Could not acquire lock to '%s'. No more trials left" fileName
 
-    let rec releaseLock() =
+    let rec releaseLock trials =
         try
             if File.Exists fileName then
                 let content = File.ReadAllText fileName
                 if content = string p.Id then
                     File.Delete fileName
         with
-        | _ -> releaseLock()
+        | exn when trials > 0 ->
+            Thread.Sleep 100
+            let trials = trials - 1
+            tracefn "Could not release lock to %s.%s%s%sTrials left: %d." fileName Environment.NewLine exn.Message Environment.NewLine trials
+            releaseLock trials
+        | _ ->
+            ()
 
     try
         acquireLock DateTime.Now (TimeSpan.FromMinutes 10.) 100
 
         let result = action()
 
-        releaseLock()
+        releaseLock 5
         result
     with
     | _ ->
-        releaseLock()
+        releaseLock 5
         reraise()
 
 
@@ -515,11 +521,11 @@ let RunInLockedAccessMode(lockedFolder,action) =
 module String =
 
     /// Match if 'text' starts with the 'prefix' string case
-    let (|StartsWith|_|) prefix (input: string) =
+    let (|StartsWith|_|) (prefix: string) (input: string) =
         if input.StartsWith prefix then Some () else None
 
     /// Match if 'text' starts with the 'prefix' and return the text with the prefix removed
-    let (|RemovePrefix|_|) prefix (input: string) =
+    let (|RemovePrefix|_|) (prefix: string) (input: string) =
         if input.StartsWith prefix then Some (input.Substring prefix.Length)
         else None
 
@@ -569,8 +575,8 @@ module String =
     let quoted (text:string) = (if text.Contains(" ") then "\"" + text + "\"" else text)
 
     let inline trim (text:string) = text.Trim()
-    let inline trimChars chs (text:string) = text.Trim chs
-    let inline trimStart pre (text:string) = text.TrimStart pre
+    let inline trimChars (chs: char[]) (text:string) = text.Trim chs
+    let inline trimStart (pre: char[]) (text:string) = text.TrimStart pre
     let inline split sep (text:string) = text.Split sep
 
 // MonadPlus - "or else"

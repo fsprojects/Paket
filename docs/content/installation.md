@@ -9,6 +9,35 @@ This guide will show you
 * Install [editor support](editor-support.html).
 * Set up [shell completion](shell-completion.html) for Paket commands.
 
+## Installation on .NET Core
+
+### Global tool
+
+Paket can be used a global tool
+
+```sh
+dotnet tool install --global Paket
+```
+
+### Local tool
+
+With the .NET Core 3 CLI, you can now use Local Tools.
+
+```sh
+dotnet new tool-manifest
+
+dotnet tool install Paket
+```
+
+Don't forget to commit `dotnet-tools.json` to your source control.
+
+Now you can run Paket with:
+
+```sh
+dotnet paket --help
+```
+
+
 ## Installation per repository
 
 The most common use of Paket is as a command line tool inside your project

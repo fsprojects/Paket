@@ -114,6 +114,8 @@ field of the same name in the `.nupkg`.
 * `projectUrl`
 * `iconUrl`
 * `licenseUrl`
+* `repositoryType`
+* `repositoryUrl`
 * `copyright`
 * `requireLicenseAcceptance` (`true` or `false`)
 * `tags`

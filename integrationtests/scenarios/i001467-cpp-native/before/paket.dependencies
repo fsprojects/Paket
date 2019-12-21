@@ -1,3 +1,0 @@
-source https://www.nuget.org/api/v2/
-
-nuget cpprestsdk 2.7.0

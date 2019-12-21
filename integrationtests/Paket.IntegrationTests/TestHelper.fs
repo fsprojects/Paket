@@ -10,7 +10,8 @@ open System
 open System.IO
 open Paket.Logging
 
-let scenarios = System.Collections.Generic.List<_>()
+let disableScenarioCleanup = false // change to true to debug a single test temporarily.
+
 let isLiveUnitTesting = AppDomain.CurrentDomain.GetAssemblies() |> Seq.exists (fun a -> a.GetName().Name = "Microsoft.CodeAnalysis.LiveUnitTesting.Runtime")
 
 let dotnetToolPath =
@@ -20,9 +21,16 @@ let dotnetToolPath =
 
 let paketToolPath =
 #if PAKET_NETCORE
-    dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin_netcore/paket.dll")
+    dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin/netcoreapp2.1/paket.dll")
 #else
-    "", FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.exe")
+    "", FullName(__SOURCE_DIRECTORY__ + "../../../bin/net461/paket.exe")
+#endif
+
+let paketBootstrapperToolPath =
+#if PAKET_NETCORE
+    dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin_bootstrapper/netcoreapp2.1/paket.bootstrapper.dll")
+#else
+    "", FullName(__SOURCE_DIRECTORY__ + "../../../bin_bootstrapper/net461/paket.bootstrapper.exe")
 #endif
 
 let integrationTestPath = FullName(__SOURCE_DIRECTORY__ + "../../../integrationtests/scenarios")
@@ -37,10 +45,13 @@ let cleanup scenario =
         traceWarnfn "Failed to clean dir '%s', trying again: %O" scenarioPath e
         CleanDir scenarioPath
 
-let cleanupAllScenarios() =
-    for scenario in scenarios do
-        cleanup scenario
-    scenarios.Clear()
+//let cleanupAllScenarios() =
+//    for scenario in scenarios |> Seq.toList do
+//        try
+//            cleanup scenario
+//            scenarios.Remove(scenario) |> ignore<bool>
+//        with e ->
+//            traceWarnfn "Failed to cleanup a particular scenario %s, %O" scenario e
 
 let createScenarioDir scenario =
     let scenarioPath = scenarioTempPath scenario
@@ -49,17 +60,31 @@ let createScenarioDir scenario =
 
 let prepare scenario =
     if isLiveUnitTesting then Assert.Inconclusive("Integration tests are disabled when in a Live-Unit-Session")
-    if scenarios.Count > 10 then
-        cleanupAllScenarios()
+    //if scenarios.Count > 10 then
+    //    cleanupAllScenarios()
 
-    scenarios.Add scenario
-    let originalScenarioPath = originalScenarioPath scenario
-    let scenarioPath = createScenarioDir scenario
-    CopyDir scenarioPath originalScenarioPath (fun _ -> true)
+    //scenarios.Add scenario
+    let cleanup =
+        { new System.IDisposable with
+            member x.Dispose() =
+                if not disableScenarioCleanup then
+                    try
+                        cleanup scenario
+                    with e -> eprintfn "Error in test cleanup (Dispose): %O" e }
+    let mutable shouldDispose = cleanup
+    try
+        let originalScenarioPath = originalScenarioPath scenario
+        let scenarioPath = createScenarioDir scenario
+        CopyDir scenarioPath originalScenarioPath (fun _ -> true)
 
-    for ext in ["fsproj";"csproj";"vcxproj";"template";"json"] do
-        for file in Directory.GetFiles(scenarioPath, (sprintf "*.%stemplate" ext), SearchOption.AllDirectories) do
-            File.Move(file, Path.ChangeExtension(file, ext))
+        for ext in ["fsproj";"csproj";"vcxproj";"template";"json"] do
+            for file in Directory.GetFiles(scenarioPath, (sprintf "*.%stemplate" ext), SearchOption.AllDirectories) do
+                File.Move(file, Path.ChangeExtension(file, ext))
+        shouldDispose <- null
+        cleanup
+    finally
+        if not (isNull shouldDispose) then shouldDispose.Dispose()
+
 
 let prepareSdk scenario =
     let tmpPaketFolder = (scenarioTempPath scenario) @@ ".paket"
@@ -67,19 +92,30 @@ let prepareSdk scenario =
     let paketExe = snd paketToolPath
 
     setEnvironVar "PaketExePath" paketExe
-    prepare scenario
+    let cleanup = prepare scenario
     if (not (Directory.Exists tmpPaketFolder)) then
         Directory.CreateDirectory tmpPaketFolder |> ignore
 
     FileHelper.CopyFile tmpPaketFolder targetsFile
+    cleanup
 
-
-type PaketMsg =
+type OutputMsg =
   { IsError : bool; Message : string }
-    static member isError ({ IsError = e}:PaketMsg) = e
-    static member getMessage ({ Message = msg }:PaketMsg) = msg
+    static member isError ({ IsError = e}:OutputMsg) = e
+    static member getMessage ({ Message = msg }:OutputMsg) = msg
+type OutputData =
+    internal { _Messages : ResizeArray<OutputMsg> }
+    member x.Messages : seq<OutputMsg> = x._Messages :> _
+    member x.Errors = x._Messages |> Seq.filter OutputMsg.isError |> Seq.map OutputMsg.getMessage
+    member x.Outputs = x._Messages |> Seq.filter (not << OutputMsg.isError) |> Seq.map OutputMsg.getMessage
 
-let directToolEx isPaket toolInfo commands workingDir =
+exception ProcessFailedWithExitCode of exitCode:int * fileName:string * msgs:OutputData
+    with
+    override x.Message =
+        let output = String.Join(Environment.NewLine,x.msgs.Messages |> Seq.map (fun m -> (if m.IsError then "ERR:" else "OUT:") + m.Message ))
+        sprintf "The process '%s' exited with code %i, output: \n%s" x.fileName x.exitCode output
+
+let directToolEx env isPaket toolInfo commands workingDir =
     let processFilename, processArgs =
         match fst toolInfo, snd toolInfo with
         | "", path ->
@@ -92,7 +128,7 @@ let directToolEx isPaket toolInfo commands workingDir =
         ExecProcessWithLambdas (fun info ->
           info.FileName <- processFilename
           info.WorkingDirectory <- workingDir
-          info.Arguments <- processArgs) 
+          info.Arguments <- processArgs)
           (System.TimeSpan.FromMinutes 7.)
           false
           (printfn "%s")
@@ -105,7 +141,7 @@ let directToolEx isPaket toolInfo commands workingDir =
     Environment.SetEnvironmentVariable("PAKET_DETAILED_WARNINGS", "true")
     printfn "%s> %s %s" workingDir (if isPaket then "paket" else processFilename) processArgs
     let perfMessages = ResizeArray()
-    let msgs = ResizeArray<PaketMsg>()
+    let msgs = ResizeArray<OutputMsg>()
     let mutable perfMessagesStarted = false
     let addAndPrint isError msg =
         if not isError then
@@ -115,11 +151,13 @@ let directToolEx isPaket toolInfo commands workingDir =
                 perfMessages.Add(msg)
 
         msgs.Add({ IsError = isError; Message = msg})
-        
+
     let result =
         try
             ExecProcessWithLambdas (fun info ->
               info.FileName <- processFilename
+              for (key, value) in env do
+                info.EnvironmentVariables.[key] <- value
               info.WorkingDirectory <- workingDir
               info.CreateNoWindow <- true
               info.Arguments <- processArgs)
@@ -145,40 +183,38 @@ let directToolEx isPaket toolInfo commands workingDir =
     if isPaket then
         // Only throw after the result <> 0 check because the current test might check the argument parsing
         // this is the only case where no performance is printed
-        let isUsageError = result <> 0 && msgs |> Seq.filter PaketMsg.isError |> Seq.map PaketMsg.getMessage |> Seq.exists (fun msg -> msg.Contains "USAGE:")
+        let isUsageError = result <> 0 && msgs |> Seq.filter OutputMsg.isError |> Seq.map OutputMsg.getMessage |> Seq.exists (fun msg -> msg.Contains "USAGE:")
         if not isUsageError then
-            if perfMessages.Count = 0 then
-                failwith "No Performance messages recieved in test!"
             printfn "Performance:"
             for msg in perfMessages do
                 printfn "%s" msg
 
-    if result <> 0 then 
-        let errors = String.Join(Environment.NewLine,msgs |> Seq.filter PaketMsg.isError |> Seq.map PaketMsg.getMessage)
-        if String.IsNullOrWhiteSpace errors then
-            failwithf "The process exited with code %i" result
-        else
-            failwith errors
+    if result <> 0 then
+        raise <| ProcessFailedWithExitCode(result, processFilename,  { _Messages = msgs })
 
     msgs
     #endif
 
 let directPaketInPathEx command scenarioPath =
-    directToolEx true paketToolPath command scenarioPath
+    directToolEx [] true paketToolPath command scenarioPath
 
 let checkResults msgs =
     msgs
-    |> Seq.filter PaketMsg.isError
+    |> Seq.filter OutputMsg.isError
     |> Seq.toList
     |> shouldEqual []
 
-let directDotnet checkZeroWarn command workingDir =
-    let msgs = directToolEx false ("", dotnetToolPath) command workingDir
+let directDotnetEx env checkZeroWarn command workingDir =
+    let msgs = directToolEx env false ("", dotnetToolPath) command workingDir
     if checkZeroWarn then checkResults msgs
     msgs
 
+
+let directDotnet checkZeroWarn command workingDir =
+    directDotnetEx [] checkZeroWarn command workingDir
+
 let private fromMessages msgs =
-    String.Join(Environment.NewLine,msgs |> Seq.map PaketMsg.getMessage)
+    String.Join(Environment.NewLine,msgs |> Seq.map OutputMsg.getMessage)
 
 let directPaketInPath command scenarioPath = directPaketInPathEx command scenarioPath |> fromMessages
 
@@ -188,22 +224,37 @@ let directPaketEx command scenario =
 let directPaket command scenario = directPaketEx command scenario |> fromMessages
 
 let paketEx checkZeroWarn command scenario =
-    prepare scenario
-
-    let msgs = directPaketEx command scenario
-    if checkZeroWarn then checkResults msgs
-    msgs
+    let cleanup = prepare scenario
+    let mutable shouldDispose = cleanup
+    try
+        let msgs = directPaketEx command scenario
+        if checkZeroWarn then checkResults msgs
+        shouldDispose <- null
+        cleanup, msgs
+    finally
+        if not (isNull shouldDispose) then shouldDispose.Dispose()
 
 let paket command scenario =
-    paketEx false command scenario |> fromMessages
+    let mutable shouldDispose = null
+    try
+        let cleanup, msgs = paketEx false command scenario
+        shouldDispose <- cleanup
+        let newMsgs = msgs |> fromMessages
+        shouldDispose <- null
+        cleanup, newMsgs
+    finally
+        if not (isNull shouldDispose) then shouldDispose.Dispose()
 
 let updateEx checkZeroWarn scenario =
-    #if INTERACTIVE
-    paket "update --verbose" scenario |> printfn "%s"
-    #else
-    paketEx checkZeroWarn "update" scenario |> ignore
-    #endif
-    LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
+    let mutable shouldDispose = null
+    try
+        let cleanup = paketEx checkZeroWarn "update" scenario |> fst
+        shouldDispose <- cleanup
+        let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
+        shouldDispose <- null
+        cleanup, lockFile
+    finally
+        if not (isNull shouldDispose) then shouldDispose.Dispose()
 
 let update scenario =
     updateEx false scenario
@@ -212,20 +263,20 @@ let installEx checkZeroWarn scenario =
     #if INTERACTIVE
     paket "install --verbose" scenario |> printfn "%s"
     #else
-    paketEx checkZeroWarn  "install" scenario |> ignore
+    paketEx checkZeroWarn  "install" scenario |> fst,
     #endif
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
 let install scenario = installEx false scenario
 
-let restore scenario = paketEx false "restore" scenario |> ignore
+let restore scenario = paketEx false "restore" scenario |> fst
 
 let updateShouldFindPackageConflict packageName scenario =
     try
-        update scenario |> ignore
+        use __ = update scenario |> fst
         failwith "No conflict was found."
     with
-    | exn when exn.Message.Contains("Conflict detected") && exn.Message.Contains(sprintf "requested package %s" packageName) -> 
+    | exn when exn.Message.Contains("Conflict detected") && exn.Message.Contains(sprintf "requested package %s" packageName) ->
         #if INTERACTIVE
         printfn "Ninject conflict test passed"
         #endif
@@ -277,13 +328,13 @@ let isPackageCachedWithOnlyLowercaseNames (name: string) =
 
     let lowercaseName = name.ToLowerInvariant()
 
-    let packageFolders = 
+    let packageFolders =
         [ nugetCache; userPackageFolder ]
         |> List.collect (Directory.GetDirectories >> List.ofArray)
         |> List.filter (fun x -> Path.GetFileName x |> String.equalsIgnoreCase name)
 
     let packageFolderNames = packageFolders |> List.map Path.GetFileName |> List.distinct
-    
+
     // ensure that names of package directories are lowercase only
     match packageFolderNames with
     | [ x ] when x = lowercaseName ->
