@@ -245,7 +245,7 @@ let Pack(workingDir: string, dependenciesFile : DependenciesFile, packageOutputP
                 | CompleteTemplate(core, optional) ->
                     tracefn "Packaging: %s" templateFile.FileName
                     let outputPath = NupkgWriter.Write core optional (Path.GetDirectoryName templateFile.FileName) packageOutputPath
-                    NuGetCache.fixDatesInArchive outputPath
+                    Utils.fixDatesInArchive outputPath
                     tracefn "Wrote: %s" outputPath
                 | IncompleteTemplate ->
                     failwithf "There was an attempt to pack the incomplete template file %s." templateFile.FileName

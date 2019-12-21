@@ -167,25 +167,6 @@ let getCacheFiles force cacheVersion nugetURL (packageName:PackageName) (version
         | ex -> traceErrorfn "Cannot cleanup '%s': %O" (sprintf "%s*.json" prefix) ex
     FileInfo(newFile)
 
-let fixDatesInArchive fileName =
-    try
-        use zipToOpen = new FileStream(fileName, FileMode.Open)
-        use archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update)
-        let maxTime = DateTimeOffset.Now
-
-        for e in archive.Entries do
-            try
-                let d = min maxTime e.LastWriteTime
-                e.LastWriteTime <- d
-            with
-            | _ -> e.LastWriteTime <- maxTime
-    with
-    | exn -> traceWarnfn "Could not fix timestamps in %s. Error: %s" fileName exn.Message
-
-let fixArchive fileName =
-    if isMonoRuntime then
-        fixDatesInArchive fileName
-
 let GetLicenseFileName (packageName:PackageName) (version:SemVerInfo) = packageName.CompareString + "." + version.Normalize() + ".license.html"
 let GetPackageFileName (packageName:PackageName) (version:SemVerInfo) = packageName.CompareString + "." + version.Normalize() + ".nupkg"
 
@@ -485,14 +466,12 @@ let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, ver
         let targetFolder = DirectoryInfo(dir)
 
         use _ = Profile.startCategory Profile.Category.FileIO
-        if isExtracted targetFolder packageName version |> not then
-            Directory.CreateDirectory(targetFolder.FullName) |> ignore
-            let fi = FileInfo fileName
-            let targetPackageFileName = Path.Combine(targetFolder.FullName,fi.Name)
-            if normalizePath fileName <> normalizePath targetPackageFileName then
-                File.Copy(fileName,targetPackageFileName,true)
-
-            ZipFile.ExtractToDirectory(fileName, targetFolder.FullName)
+        if isExtracted targetFolder packageName version then
+            if verbose then
+                verbosefn "%O %O already extracted" packageName version
+        else
+            extractZipToDirectory fileName targetFolder.FullName
+            
             // lowercase the .nuspec file to mimic NuGet behavior
             let nuspecFileName = sprintf "%s.nuspec" (packageName.ToString())
             let nuspecLowerFileName = sprintf "%s.nuspec" (packageName.CompareString)
@@ -507,13 +486,22 @@ let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, ver
                 // in the filesystem, because otherwise it is noop (at least in explorer)
                 File.Move(filePath, tempFilePath)
                 File.Move(tempFilePath, lowerFilePath)
+            
+            let fi = FileInfo fileName
+            let targetPackageFileName = Path.Combine(targetFolder.FullName,fi.Name)
+            if normalizePath fileName <> normalizePath targetPackageFileName then
+                File.Copy(fileName,targetPackageFileName,true)
+            
             let cachedHashFile = Path.Combine(Constants.NuGetCacheFolder,fi.Name + ".sha512")
             if not (File.Exists cachedHashFile) then
                 let packageHash = getSha512File fileName
                 File.WriteAllText(cachedHashFile,packageHash)
-
             File.Copy(cachedHashFile,targetPackageFileName + ".sha512")
+            
             cleanup targetFolder
+            if verbose then
+                verbosefn "%O %O unzipped to %s" packageName version targetFolder.FullName
+                
         return targetFolder.FullName
     }
 
@@ -523,48 +511,16 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
         use _ = Profile.startCategory Profile.Category.FileIO
         let directory = DirectoryInfo(targetFolder)
         if isExtracted directory packageName version then
-             if verbose then
-                 verbosefn "%O %O already extracted" packageName version
+            if verbose then
+                verbosefn "%O %O already extracted" packageName version
         else
-            Directory.CreateDirectory targetFolder |> ignore
-
             try
-                fixArchive fileName
-                ZipFile.ExtractToDirectory(fileName, targetFolder)
+                extractZipToDirectory fileName targetFolder
             with
             | exn ->
-                try
-                    let target = FileInfo(targetFolder).FullName |> normalizePath
-                    traceWarnfn "Package couldn't be extracted to %s. Message: %s. Trying to extract files individually." targetFolder exn.Message
-                    use archive = ZipFile.OpenRead fileName
-                    for entry in archive.Entries do
-                        let destinationPath = Path.GetFullPath(Path.Combine(targetFolder, entry.FullName.Trim([| '/'; '\\'|])))
-
-                        let fi = FileInfo(destinationPath)
-                        let folder = fi.Directory.FullName |> normalizePath
-                        let isSubFolder =
-                            let comparer =
-                                if isLinux then
-                                    System.StringComparison.Ordinal
-                                else
-                                    System.StringComparison.OrdinalIgnoreCase
-
-                            folder.StartsWith(target,comparer)
-
-                        if not isSubFolder then
-                            raise (Exception(sprintf "Error during extraction of %s.%sPackage is corrupted or possible zip leak attac in entry \"%s\"." fileName Environment.NewLine entry.FullName))
-
-                        if not fi.Directory.Exists then
-                            fi.Directory.Create()
-                        if fi.Exists then
-                            try fi.Delete() with | _ -> ()
-
-                        entry.ExtractToFile(destinationPath)
-                with
-                | exn ->
-                    let text = if detailed then sprintf "%s In rare cases a firewall might have blocked the download. Please look into the file and see if it contains text with further information." Environment.NewLine else ""
-                    let path = try Path.GetFullPath fileName with :? PathTooLongException -> sprintf "%s (!too long!)" fileName
-                    raise (Exception(sprintf "Error during extraction of %s.%s%s" path Environment.NewLine text, exn))
+                let text = if detailed then sprintf "%s In rare cases a firewall might have blocked the download. Please look into the file and see if it contains text with further information." Environment.NewLine else ""
+                let path = try Path.GetFullPath fileName with :? PathTooLongException -> sprintf "%s (!too long!)" fileName
+                raise (Exception(sprintf "Error during extraction of %s.%s%s" path Environment.NewLine text, exn))
 
             cleanup directory
             if verbose then
