@@ -34,7 +34,7 @@ let isValid ((g,deps):ResolverPuzzle) resolution =
             | Some (r:ResolvedPackage) -> if not <| vr.IsInRange(r.Version) then Error else s
             | None -> Open ((d,vr)::deps)
         | _ -> s) (Open [])
-    |> fun s -> 
+    |> fun s ->
         match s with
         | Open [] -> Valid
         | Error -> Error
@@ -57,7 +57,7 @@ let bruteForce ((g,deps):ResolverPuzzle) =
             match g with
             | (p,v,packageDeps) :: g' ->
                 match check (g',deps) resolution with
-                | None -> 
+                | None ->
                     match Map.tryFind p resolution with
                     | Some(_) -> None
                     | _ ->
@@ -70,25 +70,25 @@ let bruteForce ((g,deps):ResolverPuzzle) =
                               Source = PackageSources.DefaultNuGetSource
                               Kind = ResolvedPackageKind.Package
                               IsRuntimeDependency = false }
-                                        
+
                         let deps' = packageDeps @ deps
                         if createsError (g,deps') resolved then None else
                         let resolution' = Map.add p resolved resolution
-                        check (g',deps') resolution'                
+                        check (g',deps') resolution'
                 | r -> r
             | _ -> None
 
-    let g' = 
-        g 
-        |> List.sortByDescending (fun (p,_,deps') -> 
-            deps |> List.exists (fun (p',_) -> p' = p), 
+    let g' =
+        g
+        |> List.sortByDescending (fun (p,_,deps') ->
+            deps |> List.exists (fun (p',_) -> p' = p),
             deps' |> List.length)
 
     check (g',deps) Map.empty
 
 [<Test>]
 let ``resolver doesn't stop at strange graph``() =
-    
+
     let graph : PackageGraph = [
         PackageName "P1",SemVer.Parse "10.11.11", [PackageName "P7", VersionRequirement (VersionRange.AtMost "4.2.11.10",PreReleaseStatus.No)]
         PackageName "P3",SemVer.Parse "1.1.3",    [PackageName "P8", VersionRequirement (VersionRange.AtMost "0.2.8",PreReleaseStatus.No)]
@@ -96,9 +96,9 @@ let ``resolver doesn't stop at strange graph``() =
         PackageName "P7",SemVer.Parse "4.2.11.10", []
         PackageName "P7",SemVer.Parse "10.3.5.7", []
         PackageName "P7",SemVer.Parse "11.10.10.3", []
-    ] 
+    ]
 
-    let deps : Dependency list = 
+    let deps : Dependency list =
         [PackageName "P3",VersionRequirement (VersionRange.AtLeast "0",PreReleaseStatus.No)
          PackageName "P7",VersionRequirement (VersionRange.AtMost "11.10.10.3",PreReleaseStatus.No)]
 
@@ -110,7 +110,7 @@ let ``resolver doesn't stop at strange graph``() =
 let ``can resolve empty requirements`` () =
     check (fun (g:PackageGraph) ->
         match resolve g [] with
-        | Resolution.Ok resolution -> resolution |> Map.isEmpty            
+        | Resolution.Ok resolution -> resolution |> Map.isEmpty
         | _ -> false)
 
 [<Test>]
@@ -124,11 +124,11 @@ let ``if it resolves then, it should satisfy all deps. if not we have a real con
                     failwithf "duplicates found in resolution: %A" resolution
 
                 deps
-                |> List.forall (fun (d,vr) -> 
+                |> List.forall (fun (d,vr) ->
                     match resolution |> Map.tryFind d with
-                    | Some r -> vr.IsInRange(r.Version) 
+                    | Some r -> vr.IsInRange(r.Version)
                     | None -> false)
-                
+
             | conflict ->
                 match bruteForce (g,deps) with
                 | None -> ()

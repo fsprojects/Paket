@@ -7,8 +7,8 @@ open NUnit.Framework
 open System
 
 [<Test>]
-let ``simple event boundaries work``() = 
-    let boundaries = 
+let ``simple event boundaries work``() =
+    let boundaries =
         [|
             Start(new DateTime(2017, 12, 23, 19, 7, 0))
             End(new DateTime(2017, 12, 23, 19, 15, 0))
@@ -19,8 +19,8 @@ let ``simple event boundaries work``() =
     Assert.AreEqual(expected, results)
 
 [<Test>]
-let ``coalescing event boundaries works``() = 
-    let boundaries = 
+let ``coalescing event boundaries works``() =
+    let boundaries =
         [|
             Start(new DateTime(2017, 12, 23, 19, 7, 0))
             Start(new DateTime(2017, 12, 23, 19, 14, 0))
@@ -33,8 +33,8 @@ let ``coalescing event boundaries works``() =
     Assert.AreEqual(expected, results)
 
 [<Test>]
-let ``skip mismatched event end boundaries``() = 
-    let boundaries = 
+let ``skip mismatched event end boundaries``() =
+    let boundaries =
         [|
             End(new DateTime(2017, 12, 23, 19, 6, 0))
             Start(new DateTime(2017, 12, 23, 19, 7, 0))
@@ -49,8 +49,8 @@ let ``skip mismatched event end boundaries``() =
     Assert.AreEqual(expected, results)
 
 [<Test>]
-let ``arbitrary event boundaries produce at least one time span``() = 
-    let hasBeginBeforeEnd(bounds: EventBoundary array) = 
+let ``arbitrary event boundaries produce at least one time span``() =
+    let hasBeginBeforeEnd(bounds: EventBoundary array) =
         let firstStart = bounds |> Array.tryFindIndex EventBoundary.IsStartBoundary
         let firstEnd = bounds |> Array.tryFindIndex EventBoundary.IsEndBoundary
 
@@ -58,7 +58,7 @@ let ``arbitrary event boundaries produce at least one time span``() =
         | (Some(fs), Some(fe)) when fs < fe -> true
         | _ -> false
 
-    let boundariesCoalesceToAtLeastOneTimeSpan(bounds: EventBoundary array) = 
+    let boundariesCoalesceToAtLeastOneTimeSpan(bounds: EventBoundary array) =
         not(hasBeginBeforeEnd(bounds)) || not(getCoalescedEventTimeSpans(bounds) |> Array.isEmpty)
 
     Check.QuickThrowOnFailure boundariesCoalesceToAtLeastOneTimeSpan
