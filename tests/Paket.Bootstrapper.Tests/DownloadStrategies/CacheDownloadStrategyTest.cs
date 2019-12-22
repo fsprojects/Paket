@@ -70,7 +70,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             Assert.That(result, Is.EqualTo("any"));
             mockEffectiveStrategy.Verify();
         }
-        
+
         [Test]
         public void GetLatestVersion_EffectiveStrategyFails_UseFallback()
         {
@@ -178,7 +178,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             //assert
             mockEffectiveStrategy.Verify(x => x.SelfUpdate("any"));
         }
-        
+
         [Test]
         public void GetLatestVersion_PaketFileCorrupt_DownloadPaketFile()
         {
@@ -249,7 +249,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
 
         public string ItHasFilename(string filename)
         {
-            return It.IsRegex($@"\w*[\\/]{filename}");
+            return It.IsRegex(@"\w*[\\/]" + filename);
         }
 
         [Test]
@@ -293,7 +293,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
 
             public override void Close()
             {
-                
+
             }
 
             public void ReallyClose()
