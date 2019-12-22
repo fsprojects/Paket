@@ -1,7 +1,7 @@
-#### 6.0.0-alpha010 - 2019-12-22
+#### 6.0.0-alpha011 - 2019-12-22
 * Full .NET Core / SDK compatible version
 
-#### 5.241.3 - 2019-12-22
+#### 5.241.5 - 2019-12-22
 * BUGFIX: Fixed #3763 partially extracted nugets - https://github.com/fsprojects/Paket/pull/3764
 
 #### 5.241.2 - 2019-12-12
