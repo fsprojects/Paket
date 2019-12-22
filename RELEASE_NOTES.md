@@ -1,4 +1,4 @@
-#### 5.241.3 - 2019-12-22
+#### 5.241.4 - 2019-12-22
 * BUGFIX: Fixed #3763 partially extracted nugets - https://github.com/fsprojects/Paket/pull/3764
 
 #### 5.241.2 - 2019-12-12
