@@ -2,9 +2,9 @@
 
 This guide shows how to get started with Paket in various ways, depending on your scenario:
 
-* [Get started with .NET Core (preferred)](get-started.md#net-core-preferred)
-* [Get started with the paket bootstrapper (legacy)](get-started.md#install-the-paket-bootstrapper-legacy)
-* [Convert from legacy NuGet](get-started.md#convert-from-legacy-nuget)
+* [Get started with .NET Core (preferred)](#net-core-preferred)
+* [Get started with the paket bootstrapper (legacy)](#install-the-paket-bootstrapper-legacy)
+* [Convert from legacy NuGet](#convert-from-nuget)
 
 ## .NET Core (preferred)
 
