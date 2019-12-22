@@ -89,8 +89,8 @@ you have on your system.</p>
     <span class="k">use</span> <span onmouseout="hideTip(event, 'fs9', 10)" onmouseover="showTip(event, 'fs9', 10)" class="id">wc</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fs10', 11)" onmouseover="showTip(event, 'fs10', 11)" class="d">Net</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs11', 12)" onmouseover="showTip(event, 'fs11', 12)" class="id">WebClient</span><span class="pn">(</span><span class="pn">)</span>
     <span class="k">let</span> <span onmouseout="hideTip(event, 'fs12', 13)" onmouseover="showTip(event, 'fs12', 13)" class="id">tmp</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs13', 14)" onmouseover="showTip(event, 'fs13', 14)" class="rt">Path</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs14', 15)" onmouseover="showTip(event, 'fs14', 15)" class="id">GetTempFileName</span><span class="pn">(</span><span class="pn">)</span>
     <span class="k">let</span> <span onmouseout="hideTip(event, 'fs15', 16)" onmouseover="showTip(event, 'fs15', 16)" class="id">stable</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs9', 17)" onmouseover="showTip(event, 'fs9', 17)" class="fn">wc</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs16', 18)" onmouseover="showTip(event, 'fs16', 18)" class="id">DownloadString</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs8', 19)" onmouseover="showTip(event, 'fs8', 19)" class="id">url</span><span class="pn">)</span>
-    <span onmouseout="hideTip(event, 'fs9', 20)" onmouseover="showTip(event, 'fs9', 20)" class="fn">wc</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs17', 21)" onmouseover="showTip(event, 'fs17', 21)" class="id">DownloadFile</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs15', 22)" onmouseover="showTip(event, 'fs15', 22)" class="id">stable</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs12', 23)" onmouseover="showTip(event, 'fs12', 23)" class="id">tmp</span><span class="pn">)</span>
-    <span onmouseout="hideTip(event, 'fs6', 24)" onmouseover="showTip(event, 'fs6', 24)" class="rt">File</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs18', 25)" onmouseover="showTip(event, 'fs18', 25)" class="id">Move</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs12', 26)" onmouseover="showTip(event, 'fs12', 26)" class="id">tmp</span><span class="pn">,</span><span onmouseout="hideTip(event, 'fs13', 27)" onmouseover="showTip(event, 'fs13', 27)" class="rt">Path</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs19', 28)" onmouseover="showTip(event, 'fs19', 28)" class="id">GetFileName</span> <span onmouseout="hideTip(event, 'fs15', 29)" onmouseover="showTip(event, 'fs15', 29)" class="id">stable</span><span class="pn">)</span>
+    <span onmouseout="hideTip(event, 'fs9', 20)" onmouseover="showTip(event, 'fs9', 20)" class="fn">wc</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs16', 21)" onmouseover="showTip(event, 'fs16', 21)" class="id">DownloadFile</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs15', 22)" onmouseover="showTip(event, 'fs15', 22)" class="id">stable</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs12', 23)" onmouseover="showTip(event, 'fs12', 23)" class="id">tmp</span><span class="pn">)</span>
+    <span onmouseout="hideTip(event, 'fs6', 24)" onmouseover="showTip(event, 'fs6', 24)" class="rt">File</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs17', 25)" onmouseover="showTip(event, 'fs17', 25)" class="id">Move</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs12', 26)" onmouseover="showTip(event, 'fs12', 26)" class="id">tmp</span><span class="pn">,</span><span onmouseout="hideTip(event, 'fs13', 27)" onmouseover="showTip(event, 'fs13', 27)" class="rt">Path</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs18', 28)" onmouseover="showTip(event, 'fs18', 28)" class="id">GetFileName</span> <span onmouseout="hideTip(event, 'fs15', 29)" onmouseover="showTip(event, 'fs15', 29)" class="id">stable</span><span class="pn">)</span>
 
 <span class="pp">#r</span> <span class="s">&quot;paket.exe&quot;</span>
 </code></pre></td>
@@ -108,7 +108,7 @@ you have on your system.</p>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">open</span> <span class="id">Paket</span>
 
 <span class="c">// Locate the paket.dependencies file.</span>
-<span class="k">let</span> <span onmouseout="hideTip(event, 'fs20', 30)" onmouseover="showTip(event, 'fs20', 30)" class="id">dependencies</span> <span class="o">=</span> <span class="id">Dependencies</span><span class="pn">.</span><span class="id">Locate</span><span class="pn">(</span><span class="k">__SOURCE_DIRECTORY__</span><span class="pn">)</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs19', 30)" onmouseover="showTip(event, 'fs19', 30)" class="id">dependencies</span> <span class="o">=</span> <span class="id">Dependencies</span><span class="pn">.</span><span class="id">Locate</span><span class="pn">(</span><span class="k">__SOURCE_DIRECTORY__</span><span class="pn">)</span>
 <span class="fsi">found: paket.dependencies</span>
 </code></pre></td>
 </tr>
@@ -130,17 +130,17 @@ you have on your system.</p>
 <span class="l">13: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Install a package.</span>
-<span onmouseout="hideTip(event, 'fs20', 31)" onmouseover="showTip(event, 'fs20', 31)" class="id">dependencies</span><span class="pn">.</span><span class="id">Add</span> <span class="s">&quot;FSharp.Data&quot;</span>
+<span onmouseout="hideTip(event, 'fs19', 31)" onmouseover="showTip(event, 'fs19', 31)" class="id">dependencies</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs16', 32)" onmouseover="showTip(event, 'fs16', 32)" class="id">Add</span> <span class="s">&quot;FSharp.Data&quot;</span>
 
 <span class="c">// Check which version is installed.</span>
-<span onmouseout="hideTip(event, 'fs20', 32)" onmouseover="showTip(event, 'fs20', 32)" class="id">dependencies</span><span class="pn">.</span><span class="id">GetInstalledVersion</span> <span class="s">&quot;FSharp.Data&quot;</span>
+<span onmouseout="hideTip(event, 'fs19', 33)" onmouseover="showTip(event, 'fs19', 33)" class="id">dependencies</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs16', 34)" onmouseover="showTip(event, 'fs16', 34)" class="id">GetInstalledVersion</span> <span class="s">&quot;FSharp.Data&quot;</span>
 <span class="fsi">val it : string option = Some &quot;2.1.0&quot;</span>
 
 <span class="c">// Remove a package.</span>
-<span onmouseout="hideTip(event, 'fs20', 33)" onmouseover="showTip(event, 'fs20', 33)" class="id">dependencies</span><span class="pn">.</span><span class="id">Remove</span> <span class="s">&quot;FSharp.Data&quot;</span>
+<span onmouseout="hideTip(event, 'fs19', 35)" onmouseover="showTip(event, 'fs19', 35)" class="id">dependencies</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs16', 36)" onmouseover="showTip(event, 'fs16', 36)" class="id">Remove</span> <span class="s">&quot;FSharp.Data&quot;</span>
 
 <span class="c">// Check again which version is installed.</span>
-<span onmouseout="hideTip(event, 'fs20', 34)" onmouseover="showTip(event, 'fs20', 34)" class="id">dependencies</span><span class="pn">.</span><span class="id">GetInstalledVersion</span> <span class="s">&quot;FSharp.Data&quot;</span>
+<span onmouseout="hideTip(event, 'fs19', 37)" onmouseover="showTip(event, 'fs19', 37)" class="id">dependencies</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs16', 38)" onmouseover="showTip(event, 'fs16', 38)" class="id">GetInstalledVersion</span> <span class="s">&quot;FSharp.Data&quot;</span>
 <span class="fsi">val it : string option = None</span>
 </code></pre></td>
 </tr>
@@ -178,12 +178,12 @@ you have on your system.</p>
 <span class="l">29: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Install some packages.</span>
-<span onmouseout="hideTip(event, 'fs20', 35)" onmouseover="showTip(event, 'fs20', 35)" class="id">dependencies</span><span class="pn">.</span><span class="id">Add</span> <span class="s">&quot;FSharp.Data&quot;</span>
-<span onmouseout="hideTip(event, 'fs20', 36)" onmouseover="showTip(event, 'fs20', 36)" class="id">dependencies</span><span class="pn">.</span><span class="id">Add</span> <span class="s">&quot;FSharp.Formatting&quot;</span>
-<span onmouseout="hideTip(event, 'fs20', 37)" onmouseover="showTip(event, 'fs20', 37)" class="id">dependencies</span><span class="pn">.</span><span class="id">Add</span> <span class="s">&quot;FsUnit&quot;</span>
+<span onmouseout="hideTip(event, 'fs19', 39)" onmouseover="showTip(event, 'fs19', 39)" class="id">dependencies</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs16', 40)" onmouseover="showTip(event, 'fs16', 40)" class="id">Add</span> <span class="s">&quot;FSharp.Data&quot;</span>
+<span onmouseout="hideTip(event, 'fs19', 41)" onmouseover="showTip(event, 'fs19', 41)" class="id">dependencies</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs16', 42)" onmouseover="showTip(event, 'fs16', 42)" class="id">Add</span> <span class="s">&quot;FSharp.Formatting&quot;</span>
+<span onmouseout="hideTip(event, 'fs19', 43)" onmouseover="showTip(event, 'fs19', 43)" class="id">dependencies</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs16', 44)" onmouseover="showTip(event, 'fs16', 44)" class="id">Add</span> <span class="s">&quot;FsUnit&quot;</span>
 
 <span class="c">// List all installed packages.</span>
-<span onmouseout="hideTip(event, 'fs20', 38)" onmouseover="showTip(event, 'fs20', 38)" class="id">dependencies</span><span class="pn">.</span><span class="id">GetInstalledPackages</span><span class="pn">(</span><span class="pn">)</span>
+<span onmouseout="hideTip(event, 'fs19', 45)" onmouseover="showTip(event, 'fs19', 45)" class="id">dependencies</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs16', 46)" onmouseover="showTip(event, 'fs16', 46)" class="id">GetInstalledPackages</span><span class="pn">(</span><span class="pn">)</span>
 <span class="fsi">val it : (string * string * string) list =</span>
 <span class="fsi">  [(&quot;Main&quot;, &quot;FSharp.Compiler.Service&quot;, &quot;0.0.67&quot;); (&quot;Main&quot;, &quot;FSharp.Data&quot;, &quot;2.1.0&quot;);</span>
 <span class="fsi">   (&quot;Main&quot;, &quot;FSharp.Formatting&quot;, &quot;2.4.36&quot;); (&quot;Main&quot;, &quot;FsUnit&quot;, &quot;1.3.0.1&quot;);</span>
@@ -191,20 +191,20 @@ you have on your system.</p>
 <span class="fsi">   (&quot;Main&quot;, &quot;RazorEngine&quot;, &quot;3.3.0&quot;); (&quot;Main&quot;, &quot;Zlib.Portable&quot;, &quot;1.10.0&quot;)]</span>
 
 <span class="c">// List only the direct dependencies.</span>
-<span onmouseout="hideTip(event, 'fs20', 39)" onmouseover="showTip(event, 'fs20', 39)" class="id">dependencies</span><span class="pn">.</span><span class="id">GetDirectDependencies</span><span class="pn">(</span><span class="pn">)</span>
+<span onmouseout="hideTip(event, 'fs19', 47)" onmouseover="showTip(event, 'fs19', 47)" class="id">dependencies</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs16', 48)" onmouseover="showTip(event, 'fs16', 48)" class="id">GetDirectDependencies</span><span class="pn">(</span><span class="pn">)</span>
 <span class="fsi">val it : (string * string * string) list =</span>
 <span class="fsi">  [(&quot;Main&quot;, &quot;FSharp.Data&quot;, &quot;2.1.0&quot;); (&quot;Main&quot;, &quot;FSharp.Formatting&quot;, &quot;2.4.36&quot;);</span>
 <span class="fsi">   (&quot;Main&quot;, &quot;FsUnit&quot;, &quot;1.3.0.1&quot;)]</span>
 
 <span class="c">// List direct dependencies for the given package.</span>
-<span onmouseout="hideTip(event, 'fs20', 40)" onmouseover="showTip(event, 'fs20', 40)" class="id">dependencies</span><span class="pn">.</span><span class="id">GetDirectDependenciesForPackage</span><span class="pn">(</span><span class="s">&quot;Main&quot;</span><span class="pn">,</span> <span class="s">&quot;FSharp.Compiler.Service&quot;</span><span class="pn">)</span>
+<span onmouseout="hideTip(event, 'fs19', 49)" onmouseover="showTip(event, 'fs19', 49)" class="id">dependencies</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs16', 50)" onmouseover="showTip(event, 'fs16', 50)" class="id">GetDirectDependenciesForPackage</span><span class="pn">(</span><span class="s">&quot;Main&quot;</span><span class="pn">,</span> <span class="s">&quot;FSharp.Compiler.Service&quot;</span><span class="pn">)</span>
 <span class="fsi">val it : (string * string * string) list =</span>
 <span class="fsi">  ...</span>
 
 <span class="c">// List all usages of a package in Paket.</span>
-<span class="k">let</span> <span onmouseout="hideTip(event, 'fs21', 41)" onmouseover="showTip(event, 'fs21', 41)" class="id">paketDependencies</span> <span class="o">=</span> <span class="id">Dependencies</span><span class="pn">.</span><span class="id">Locate</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs1', 42)" onmouseover="showTip(event, 'fs1', 42)" class="id">System</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs2', 43)" onmouseover="showTip(event, 'fs2', 43)" class="id">IO</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs13', 44)" onmouseover="showTip(event, 'fs13', 44)" class="id">Path</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs22', 45)" onmouseover="showTip(event, 'fs22', 45)" class="id">Combine</span><span class="pn">(</span><span class="k">__SOURCE_DIRECTORY__</span><span class="pn">,</span><span class="s">&quot;..&quot;</span><span class="pn">)</span><span class="pn">)</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs20', 51)" onmouseover="showTip(event, 'fs20', 51)" class="id">paketDependencies</span> <span class="o">=</span> <span class="id">Dependencies</span><span class="pn">.</span><span class="id">Locate</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs1', 52)" onmouseover="showTip(event, 'fs1', 52)" class="id">System</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs2', 53)" onmouseover="showTip(event, 'fs2', 53)" class="id">IO</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs13', 54)" onmouseover="showTip(event, 'fs13', 54)" class="id">Path</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs21', 55)" onmouseover="showTip(event, 'fs21', 55)" class="id">Combine</span><span class="pn">(</span><span class="k">__SOURCE_DIRECTORY__</span><span class="pn">,</span><span class="s">&quot;..&quot;</span><span class="pn">)</span><span class="pn">)</span>
 <span class="fsi">found: D:\code\Paket\paket.dependencies</span>
-<span onmouseout="hideTip(event, 'fs21', 46)" onmouseover="showTip(event, 'fs21', 46)" class="id">paketDependencies</span><span class="pn">.</span><span class="id">FindReferencesFor</span> <span class="s">&quot;UnionArgParser&quot;</span>
+<span onmouseout="hideTip(event, 'fs20', 56)" onmouseover="showTip(event, 'fs20', 56)" class="id">paketDependencies</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs16', 57)" onmouseover="showTip(event, 'fs16', 57)" class="id">FindReferencesFor</span> <span class="s">&quot;UnionArgParser&quot;</span>
 <span class="fsi">val it : string list = [&quot;D:\code\Paket\src\Paket\Paket.fsproj&quot;]</span>
 </code></pre></td>
 </tr>
@@ -225,13 +225,12 @@ you have on your system.</p>
 <div class="tip" id="fs13">type Path =<br />&#160;&#160;static val DirectorySeparatorChar : char<br />&#160;&#160;static val AltDirectorySeparatorChar : char<br />&#160;&#160;static val VolumeSeparatorChar : char<br />&#160;&#160;static val InvalidPathChars : char[]<br />&#160;&#160;static val PathSeparator : char<br />&#160;&#160;static member ChangeExtension : path:string * extension:string -&gt; string<br />&#160;&#160;static member Combine : [&lt;ParamArray&gt;] paths:string[] -&gt; string + 3 overloads<br />&#160;&#160;static member GetDirectoryName : path:string -&gt; string<br />&#160;&#160;static member GetExtension : path:string -&gt; string<br />&#160;&#160;static member GetFileName : path:string -&gt; string<br />&#160;&#160;...</div>
 <div class="tip" id="fs14">Path.GetTempFileName() : string</div>
 <div class="tip" id="fs15">val stable : string</div>
-<div class="tip" id="fs16">Net.WebClient.DownloadString(address: Uri) : string<br />Net.WebClient.DownloadString(address: string) : string</div>
-<div class="tip" id="fs17">Net.WebClient.DownloadFile(address: Uri, fileName: string) : unit<br />Net.WebClient.DownloadFile(address: string, fileName: string) : unit</div>
-<div class="tip" id="fs18">File.Move(sourceFileName: string, destFileName: string) : unit</div>
-<div class="tip" id="fs19">Path.GetFileName(path: string) : string</div>
-<div class="tip" id="fs20">val dependencies : obj</div>
-<div class="tip" id="fs21">val paketDependencies : obj</div>
-<div class="tip" id="fs22">Path.Combine([&lt;ParamArray&gt;] paths: string []) : string<br />Path.Combine(path1: string, path2: string) : string<br />Path.Combine(path1: string, path2: string, path3: string) : string<br />Path.Combine(path1: string, path2: string, path3: string, path4: string) : string</div>
+<div class="tip" id="fs16"></div>
+<div class="tip" id="fs17">File.Move(sourceFileName: string, destFileName: string) : unit</div>
+<div class="tip" id="fs18">Path.GetFileName(path: string) : string</div>
+<div class="tip" id="fs19">val dependencies : obj</div>
+<div class="tip" id="fs20">val paketDependencies : obj</div>
+<div class="tip" id="fs21">Path.Combine([&lt;ParamArray&gt;] paths: string []) : string<br />Path.Combine(path1: string, path2: string) : string<br />Path.Combine(path1: string, path2: string, path3: string) : string<br />Path.Combine(path1: string, path2: string, path3: string, path4: string) : string</div>
 
         </div>
         <div class="span3">
