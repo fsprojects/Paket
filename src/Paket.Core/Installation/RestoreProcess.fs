@@ -326,17 +326,6 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
                  yield "    </ItemGroup>"])
             |> fun xs -> String.Join(Environment.NewLine,xs)
 
-    let disableImplicitFSharpCore =
-        if packages |> Seq.exists (fun ((_,name),_,_) -> name = FSharpCore) then
-            """
-            <!-- Disable automagic references for F# dotnet sdk -->
-            <!-- This will not do anything for other project types -->
-            <!-- see https://github.com/fsharp/fslang-design/blob/master/tooling/FST-1002-fsharp-in-dotnet-sdk.md -->
-            <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
-            <DisableImplicitSystemValueTupleReference>true</DisableImplicitSystemValueTupleReference>
-            """
-        else
-            ""
 
     // When updating the PaketPropsVersion be sure to update the Paket.Restore.targets which checks this value
     let content =
@@ -345,12 +334,11 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
     <PropertyGroup>
         <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
         <PaketPropsVersion>5.185.3</PaketPropsVersion>
-        <PaketPropsLoaded>true</PaketPropsLoaded>%s
+        <PaketPropsLoaded>true</PaketPropsLoaded>
     </PropertyGroup>
 %s
 %s
 </Project>"""
-            disableImplicitFSharpCore
             cliParts
             packagesParts
 
