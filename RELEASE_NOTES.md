@@ -1,3 +1,6 @@
+#### 5.241.6 - 2020-01-04
+* REVERT: Do only disable automagic when FSharp.Core is actually used - https://github.com/fsprojects/Paket/issues/3769
+
 #### 5.241.5 - 2019-12-22
 * BUGFIX: Fixed #3763 partially extracted nugets - https://github.com/fsprojects/Paket/pull/3764
 
