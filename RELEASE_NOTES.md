@@ -1,4 +1,4 @@
-#### 6.0.0-alpha013 - 2020-01-10
+#### 6.0.0-alpha014 - 2020-01-10
 * Full .NET Core / SDK compatible version
 
 #### 5.241.6 - 2020-01-04
@@ -36,7 +36,7 @@
 * BUGFIX: "Update group" kept old versions fixed - https://github.com/fsprojects/Paket/pull/3725
 
 #### 5.236.0 - 2019-11-15
-* Paket init is now a bit more opionionated and restricts to netcore3.0, nestandard2.0, nestandard2.1 - https://github.com/fsprojects/Paket/pull/3725
+* Paket init is now a bit more opinionated and restricts to netcore3.0, nestandard2.0, nestandard2.1 - https://github.com/fsprojects/Paket/pull/3725
 
 #### 5.235.0 - 2019-11-15
 * BUGFIX: DisableImplicitFSharpCoreReference is only set if FSharp.Core is explicitly referenced - https://github.com/fsprojects/Paket/pull/3725

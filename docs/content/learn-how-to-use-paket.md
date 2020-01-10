@@ -1,6 +1,6 @@
 # Learn how to use paket
 
-Once you've [installed Paket](install-paket.html), it's time to learn how to use it!
+Once you've [installed Paket](get-started.html), it's time to learn how to use it!
 
 You can refer to a [minimal sample codebase](https://github.com/cartermp/MinimalPaketAndFakeSample) that shows how Paket works in a codebase.
 
