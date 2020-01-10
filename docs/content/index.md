@@ -6,7 +6,7 @@ Paket is a dependency manager for .NET projects. Paket enabled precise and predi
 * Files from [Git repositories](git-dependencies.html)
 * Files from any [HTTP resource](http-dependencies.html).
 
-Get Started by learning how to [install Paket](install-paket.html) with Paket and take a look at the [FAQ](faq.html) to learn more about it.
+Get Started by learning [how to use Paket](learn-how-to-use-paket.html) and take a look at the [FAQ](faq.html) to learn more about it.
 
 If you are using legacy NuGet (`packages.config`-based) for package management in your solution, you can learn about the upgrade process in the [convert from NuGet tutorial](convert-from-nuget-tutorial.html)
 

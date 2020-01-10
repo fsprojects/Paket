@@ -1,4 +1,4 @@
-#### 6.0.0-alpha012 - 2020-01-04
+#### 6.0.0-alpha013 - 2020-01-10
 * Full .NET Core / SDK compatible version
 
 #### 5.241.6 - 2020-01-04
