@@ -13,7 +13,7 @@ let userProfile =
     else res
 
 let MakeDependencyManagerCommand scriptType packageManagerTargetFramework projectRootDirArgument = 
-    sprintf "install --generate-load-scripts load-script-type %s load-script-framework %s project-root \"%s\"" 
+    sprintf "install --generate-load-scripts --load-script-type %s --load-script-framework %s project-root \"%s\""
         scriptType packageManagerTargetFramework (System.IO.Path.GetFullPath projectRootDirArgument)
 
 let getDirectoryAndAllParentDirectories (directory: DirectoryInfo) =

@@ -1,19 +1,25 @@
 ﻿namespace Microsoft.FSharp.DependencyManager.Paket
 
 // used as a marker that compiler scans for, although there is no hard dependency, filtered by name
-type FSharpCompilerExtensibilityAttribute() =
+type DependencyManagerAttribute() =
   inherit System.Attribute()
 
-type [<FSharpCompilerExtensibility>] PaketDependencyManager() =
-    member __.Name = "Paket"
-    member __.ToolName = "paket.exe"
-    member __.Key = "paket"
-    member __.ResolveDependencies(targetFramework:string, scriptDir: string, scriptName: string, packageManagerTextLines: string seq) = 
-        ReferenceLoading.PaketHandler.ResolveDependencies(
-            targetFramework,
-            scriptDir,
-            scriptName,
-            packageManagerTextLines)
+module Attributes =
+    [<assembly: DependencyManagerAttribute()>]
+    do ()
 
-    interface System.IDisposable with
-        member __.Dispose() = ()
+[<DependencyManager>]
+type PaketDependencyManagerProvider(outputDir: string option) =
+  member x.Name = "paket"
+  member x.Key = "paket"
+  member x.ResolveDependencies(scriptDir: string, mainScriptName: string, scriptName: string, packageManagerTextLines: string seq, targetFramework: string) : bool * string list * string list =
+    try
+      let loadScript, additionalIncludeDirs = 
+        ReferenceLoading.PaketHandler.ResolveDependencies(
+                 targetFramework,
+                 scriptDir,
+                 scriptName,
+                 packageManagerTextLines)
+      true, [loadScript] , additionalIncludeDirs
+    with
+      e -> false, [], []
