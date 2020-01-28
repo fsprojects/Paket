@@ -1,16 +1,16 @@
 # What is Paket?
 
-Paket is a dependency manager for .NET projects. Paket enabled precise and predictable control over your dependencies. With Paket, you can reference:
+Paket is a dependency manager for .NET projects. Paket enables precise and predictable control over your dependencies. With Paket, you can reference:
 
 * [NuGet](https://www.nuget.org/) packages
 * Files from [Git repositories](git-dependencies.html)
 * Files from any [HTTP resource](http-dependencies.html).
 
-Get Started by learning [how to use Paket](learn-how-to-use-paket.html) and take a look at the [FAQ](faq.html) to learn more about it.
+Get started by learning [how to use Paket](learn-how-to-use-paket.html) and take a look at the [FAQ](faq.html) to learn more about it.
 
-If you are using legacy NuGet (`packages.config`-based) for package management in your solution, you can learn about the upgrade process in the [convert from NuGet tutorial](convert-from-nuget-tutorial.html)
+If you are using legacy NuGet (`packages.config`-based) projects for package management in your solution, you can learn about the upgrade process in the [convert from NuGet tutorial](convert-from-nuget-tutorial.html)
 
-For information about Paket with .NET SDK, .NET Core and the `dotnet` CLI see the["Paket and the .NET SDK / .NET Core CLI tools" guide](paket-and-dotnet-cli.html).
+For information about using Paket with .NET SDK, .NET Core and the `dotnet` CLI see the["Paket and the .NET SDK / .NET Core CLI tools" guide](paket-and-dotnet-cli.html).
 
 [![Paket Overview](img/paket-overview.png)](img/paket-overview.png)
 
