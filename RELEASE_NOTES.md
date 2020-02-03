@@ -1,3 +1,6 @@
+#### 5.242.0 - 2020-02-03
+* Change default TFM on paket init to netcoreap31
+
 #### 5.241.6 - 2020-01-04
 * REVERT: Do only disable automagic when FSharp.Core is actually used - https://github.com/fsprojects/Paket/issues/3769
 
