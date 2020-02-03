@@ -1,5 +1,8 @@
-#### 6.0.0-alpha014 - 2020-01-10
+#### 6.0.0-alpha015 - 2020-02-03
 * Full .NET Core / SDK compatible version
+
+#### 5.242.0 - 2020-02-03
+* Change default TFM on paket init to netcoreap31
 
 #### 5.241.6 - 2020-01-04
 * REVERT: Do only disable automagic when FSharp.Core is actually used - https://github.com/fsprojects/Paket/issues/3769
