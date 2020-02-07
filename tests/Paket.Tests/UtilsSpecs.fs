@@ -327,3 +327,13 @@ let ``startsWithIgnoreCase handles shorter strings correct``() =
 let ``containsIgnoreCase handles shorter strings correct``() =
     let actual = Paket.Utils.String.containsIgnoreCase "long_long" "short"
     Assert.False(actual)
+
+[<Test>]
+let ``makeHash is stable``() =
+    [
+        ("./NuGetLocal/case1/package.name.0.1.0-alpha2.nupkg", "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e")
+    ]
+    |> List.iter(fun (path, expectedHash) ->
+        let actualHash = Paket.Utils.makeHash(FileInfo(path))
+        actualHash |> shouldEqual expectedHash
+    )

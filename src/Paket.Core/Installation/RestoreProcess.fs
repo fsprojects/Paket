@@ -12,6 +12,24 @@ open Chessie.ErrorHandling
 open System.Reflection
 open Requirements
 
+/// ensures that the hash of a package exists and then checks the package hash against the pinned hash
+let private checkNupkgHash (package : ResolvedPackage) (nupkg) useNupkgHash =
+    match(match useNupkgHash with
+          | UseNupkgHash.Off -> None
+          | UseNupkgHash.Save -> Some(false)
+          | UseNupkgHash.SaveAndVerify -> Some(true)) with
+    | None -> package
+    | Some (verify) ->
+        let packageHash = Utils.makeHash (FileInfo nupkg)
+        match (verify, package.Settings.NupkgHash) with
+        | false, _ | _, None -> 
+            { package with Settings = { package.Settings with NupkgHash = Some packageHash }}
+        | true, Some storedHash ->
+            if storedHash <> packageHash then
+                failwithf "Error when extracting nuget package %O, the hash of %s did not match the pinned hash of %s" package.Name packageHash storedHash
+            else 
+                package
+
 // "copy_local: true" is being used to set the "PrivateAssets=All" setting for a package.
 // "copy_local: false" in new SDK format is defined as "ExcludeAssets=runtime".
 /// Combines the copy_local settings from the lock file and a project's references file
@@ -51,7 +69,7 @@ let CopyToCaches force caches fileName =
                 traceWarnfn "Could not copy %s to cache %s%s%s" fileName cache.Location Environment.NewLine exn.Message
 
 /// returns - package, libs files, props files, targets files, analyzers files
-let private extractPackage caches (package:PackageInfo) alternativeProjectRoot root isLocalOverride source groupName version includeVersionInPath downloadLicense force =
+let private extractPackage caches (package:PackageInfo) alternativeProjectRoot root isLocalOverride source groupName version includeVersionInPath downloadLicense force useNupkgHash =
     let downloadAndExtract force detailed = async {
         let cfg = defaultArg package.Settings.StorageConfig PackagesFolderGroupConfig.Default
 
@@ -60,6 +78,8 @@ let private extractPackage caches (package:PackageInfo) alternativeProjectRoot r
                 alternativeProjectRoot, root, isLocalOverride, cfg, source, caches, groupName,
                 package.Name, version, package.Kind, includeVersionInPath, downloadLicense, force, detailed)
 
+        let package = { package with Resolved = checkNupkgHash package.Resolved fileName useNupkgHash }
+        
         CopyToCaches force caches fileName
         return package, NuGet.GetContent folder
     }
@@ -80,7 +100,7 @@ let private extractPackage caches (package:PackageInfo) alternativeProjectRoot r
 
 /// Downloads and extracts a package.
 /// returns - package, libs files, props files, targets files, analyzers files
-let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package : PackageInfo, localOverride) =
+let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package : PackageInfo, localOverride, useNupkgHash) =
     async {
         let storage = defaultArg package.Settings.StorageConfig PackagesFolderGroupConfig.Default
         let v = package.Version
@@ -120,7 +140,7 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
                     | Some s -> s
                 | LocalNuGet _ ->
                     package.Source
-            return! extractPackage caches package alternativeProjectRoot root localOverride source groupName v includeVersionInPath downloadLicense force
+            return! extractPackage caches package alternativeProjectRoot root localOverride source groupName v includeVersionInPath downloadLicense force useNupkgHash
         }
 
         // manipulate overridenFile after package extraction
@@ -138,10 +158,11 @@ let internal restore (alternativeProjectRoot, root, groupName, sources, caches, 
     async {
         RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles)
         let group = lockFile.Groups.[groupName]
+        let useNupkgHash = defaultArg group.Options.Settings.UseNupkgHash UseNupkgHash.SaveAndVerify
         let tasks =
-            lockFile.Groups.[groupName].Resolution
+            group.Resolution
             |> Map.filter (fun name _ -> packages.Contains name)
-            |> Seq.map (fun kv -> ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, group.GetPackage kv.Key, Set.contains kv.Key overriden))
+            |> Seq.map (fun kv -> ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, group.GetPackage kv.Key, Set.contains kv.Key overriden, useNupkgHash))
             |> Seq.splitInto 5
             |> Seq.map (fun tasks -> async {
                 for t in tasks do
@@ -242,9 +263,9 @@ let extractRestoreTargets root =
             path
     else path
 
-let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package) =
+let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package, useNupkgHash) =
     async {
-        let! (package, content) = ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package, false)
+        let! (package, content) = ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package, false, useNupkgHash)
         let kind =
             match package.Kind with
             | ResolvedPackageKind.Package -> InstallModelKind.Package

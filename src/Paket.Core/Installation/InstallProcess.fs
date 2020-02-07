@@ -187,11 +187,12 @@ let CreateModel(alternativeProjectRoot, root, force, dependenciesFile:Dependenci
 
     lockFile.Groups
     |> Seq.collect (fun kv' ->
+        let useNupkgHash = defaultArg kv'.Value.Options.Settings.UseNupkgHash UseNupkgHash.SaveAndVerify
         let sources = dependenciesFile.Groups.[kv'.Key].Sources
         let caches = dependenciesFile.Groups.[kv'.Key].Caches
         kv'.Value.Resolution
         |> Map.filter (fun name _ -> packages.Contains(kv'.Key,name))
-        |> Seq.map (fun kv -> RestoreProcess.CreateInstallModel(alternativeProjectRoot, root,kv'.Key,sources,caches,force,kv'.Value.GetPackage kv.Key))
+        |> Seq.map (fun kv -> RestoreProcess.CreateInstallModel(alternativeProjectRoot, root,kv'.Key,sources,caches,force,kv'.Value.GetPackage kv.Key,useNupkgHash))
         |> Seq.splitInto 5
         |> Seq.map (fun tasks -> async {
             let results = new System.Collections.Generic.List<_>()
@@ -347,6 +348,45 @@ let installForDotnetSDK root (project:ProjectFile) =
 /// Installs all packages from the lock file.
 let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups) =
     tracefn " - Creating model and downloading packages."
+
+    (* 
+        TODO: make this not terrible.  Here I have to write tons of functions to basically in-place updated the resolution map in the lock file group. 
+        I have to unwrap each layer and return a new object expression all the way down from lockfile to lockfile groups to lockfile group to group resolution to package :(
+    *)
+
+    let updateLockfileHashes (lock : LockFile) (model : Map<(GroupName*PackageName),(PackageResolver.PackageInfo*InstallModel)> ) =
+        let updateGroup (group : LockFileGroup) packageName hash =
+            match group.Resolution.TryFind packageName with
+            | None -> group
+            | Some pkg -> 
+                let newMap = group.Resolution |> Map.add packageName {pkg with Settings = {pkg.Settings with NupkgHash = Some hash}} 
+                { group with Resolution = newMap}
+        let updateGroups (groups : Map<GroupName, LockFileGroup>) groupName packageName hash =
+            match groups.TryFind groupName with
+            | None -> groups
+            | Some g -> groups |> Map.add groupName (updateGroup g packageName hash) 
+
+        let updateLockWithHash (lockFile : LockFile) (groupName, packageName, hash) = 
+            LockFile(lockFile.FileName, updateGroups lockFile.Groups groupName packageName hash)
+
+        let packagesWithHashes = 
+            model 
+            |> Seq.choose (fun kvp -> 
+                let (gn, pn), (rp, _) = kvp.Key, kvp.Value
+                match rp.Resolved.Settings.NupkgHash with 
+                | None -> None 
+                | Some h -> Some (gn, pn, h))
+        let updated = 
+            packagesWithHashes
+            |> Seq.fold updateLockWithHash lock
+        updated.Save() |> ignore // ideally we'd have a checkpoint during restore to do the save instead of willy-nilly during a function.
+        updated
+
+    let tryFindGroupWithMessage groupName fileName groups = 
+        match groups |> Map.tryFind groupName with
+        | None -> failwithf "%s uses the group %O, but this group was not found in paket.lock." fileName groupName
+        | Some g -> g
+
     let packagesToInstall =
         if options.OnlyReferenced then
             projectsAndReferences
@@ -361,6 +401,8 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
     let root = Path.GetDirectoryName lockFile.FileName
     let model = CreateModel(options.AlternativeProjectRoot, root, options.Force, dependenciesFile, lockFile, Set.ofSeq packagesToInstall, updatedGroups) |> Map.ofArray
+    // use the new model (especially the hashes) to update the lockfile so that we persist the hashes
+    let lockFile = updateLockfileHashes lockFile model
     let lookup = lockFile.GetDependencyLookupTable()
     let projectCache = Dictionary<string, ProjectFile option>();
 

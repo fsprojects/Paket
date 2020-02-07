@@ -1,3 +1,4 @@
 source https://nuget.org/api/v2
 
+nupkg_hash: off
 nuget StackExchange.Redis ~> 1.0

@@ -1043,3 +1043,69 @@ let ``should parse lock file with cli tool``() =
     LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings lockFileWithCLiTool)
+
+let ``save nupkg_hash lockfile`` = """NUPKG_HASH: save
+NUGET
+  remote: "D:\code\temp with space"
+    Castle.Windsor (2.1)
+"""
+
+let ``verify nupkg_hash lockfile`` = """NUPKG_HASH: verify
+NUGET
+  remote: "D:\code\temp with space"
+    Castle.Windsor (2.1)
+"""
+
+let ``don't use nupkg_hash lockfile`` = """NUPKG_HASH: off
+NUGET
+  remote: "D:\code\temp with space"
+    Castle.Windsor (2.1)
+"""
+
+[<Test>]
+let ``should parse nupkg_hash directive when present``() =
+    let onFile = LockFile.Parse("", toLines ``save nupkg_hash lockfile``)
+    onFile.Groups.[Constants.MainDependencyGroup].Options.Settings.UseNupkgHash
+    |> shouldEqual (Some UseNupkgHash.Save)
+    
+    let onFile = LockFile.Parse("", toLines ``verify nupkg_hash lockfile``)
+    onFile.Groups.[Constants.MainDependencyGroup].Options.Settings.UseNupkgHash
+    |> shouldEqual (Some UseNupkgHash.SaveAndVerify)
+
+    let offFile = LockFile.Parse("", toLines ``don't use nupkg_hash lockfile``)
+    offFile.Groups.[Constants.MainDependencyGroup].Options.Settings.UseNupkgHash
+    |> shouldEqual (Some UseNupkgHash.Off)
+
+[<Test>]
+let ``should not use nupkg_hash when not present``() =
+    let lockFile = LockFile.Parse("", toLines packageRedirectsLockFile)
+    lockFile.Groups.[Constants.MainDependencyGroup].Options.Settings.UseNupkgHash
+    |> shouldEqual None
+
+[<Test>]
+let ``should save nupkg_hash directive when set``() = 
+    let original = LockFile.Parse("", toLines ``save nupkg_hash lockfile``)
+    let mainGroup = original.Groups.[Constants.MainDependencyGroup]
+    let newGroup = { mainGroup with Options = { mainGroup.Options with Settings = { mainGroup.Options.Settings with UseNupkgHash = Some UseNupkgHash.Off } } }
+    let transformed = LockFile("", original.Groups.Add(Constants.MainDependencyGroup, newGroup))
+    let transformedOutput = transformed.ToString().Replace("\r\n", "\n")
+    transformedOutput |> shouldEqual (``don't use nupkg_hash lockfile``.Replace("\r\n", "\n"))
+
+let ``use nupkg_hash lockfile with nupkg_hash`` = """NUPKG_HASH: save
+NUGET
+  remote: "D:\code\temp with space"
+    Castle.Windsor (2.1) - nupkg_hash: foobar
+"""
+
+[<Test>]
+let ``should save hash when set``() = 
+    let original = LockFile.Parse("", toLines ``save nupkg_hash lockfile``)
+    let mainGroup = original.Groups.[Constants.MainDependencyGroup]
+    printfn "%A" mainGroup.Resolution
+    let packageName = PackageName "Castle.Windsor"
+    let packageResolution = mainGroup.Resolution |> Map.find packageName
+    let newPackageResolution = { packageResolution with Settings = { packageResolution.Settings with NupkgHash = Some "foobar" } }
+    let newGroup = { mainGroup with Resolution = mainGroup.Resolution |> Map.add packageName newPackageResolution }
+    let transformed = LockFile("", original.Groups.Add(Constants.MainDependencyGroup, newGroup))
+    let transformedOutput = transformed.ToString().Replace("\r\n", "\n")
+    transformedOutput |> shouldEqual (``use nupkg_hash lockfile with nupkg_hash``.Replace("\r\n", "\n"))

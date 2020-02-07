@@ -911,6 +911,13 @@ type BindingRedirectsSettings =
 | Off
 | Force
 
+
+[<RequireQualifiedAccess>]
+type UseNupkgHash =
+| SaveAndVerify
+| Save
+| Off
+
 type InstallSettings = 
     { ImportTargets : bool option
       FrameworkRestrictions: FrameworkRestrictions
@@ -927,7 +934,9 @@ type InstallSettings =
       Aliases : Map<string,string>
       CopyContentToOutputDirectory : CopyToOutputDirectorySettings option
       GenerateLoadScripts : bool option
-      Simplify : bool option }
+      Simplify : bool option 
+      UseNupkgHash : UseNupkgHash option
+      NupkgHash : string option }
 
     static member Default =
         { EmbedInteropTypes = None
@@ -945,7 +954,9 @@ type InstallSettings =
           CopyContentToOutputDirectory = None
           OmitContent = None
           GenerateLoadScripts = None
-          Simplify = None }
+          Simplify = None 
+          UseNupkgHash = None
+          NupkgHash = None }
 
     member this.ToString(groupSettings:InstallSettings,asLines) =
         let options =
@@ -997,6 +1008,9 @@ type InstallSettings =
               | Some true when groupSettings.GenerateLoadScripts <> this.GenerateLoadScripts -> yield "generate_load_scripts: true"
               | Some false when groupSettings.GenerateLoadScripts <> this.GenerateLoadScripts  -> yield "generate_load_scripts: false"
               | _ -> ()
+              match this.NupkgHash with
+              | None -> ()
+              | Some h -> yield "nupkg_hash: " + h
               match this.Simplify with
               | Some false -> yield "simplify: false"
               | _ -> () ]
@@ -1021,6 +1035,8 @@ type InstallSettings =
                 CreateBindingRedirects = self.CreateBindingRedirects ++ other.CreateBindingRedirects
                 IncludeVersionInPath = self.IncludeVersionInPath ++ other.IncludeVersionInPath
                 LicenseDownload = self.LicenseDownload ++ other.LicenseDownload
+                UseNupkgHash = self.UseNupkgHash ++ other.UseNupkgHash
+                NupkgHash = self.NupkgHash ++ other.NupkgHash
         }
         
     static member Parse(text:string) : InstallSettings = InstallSettings.Parse(false, text)
@@ -1111,7 +1127,12 @@ type InstallSettings =
               Simplify =
                 match getPair "simplify" with
                 | Some "never" | Some "false" -> Some false
-                | _ -> None }
+                | _ -> None
+              NupkgHash = 
+                match getPair "nupkg_hash" with
+                | Some s -> Some s
+                | _ -> None
+              UseNupkgHash = None }
 
         // ignore resolver settings here
         getPair "strategy" |> ignore

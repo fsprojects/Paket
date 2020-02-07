@@ -680,29 +680,9 @@ let getSha512File (filePath:string) =
     use stream = File.OpenRead(filePath)
     getSha512Stream stream
 
-let fixDatesInArchive fileName =
-    try
-        use zipToOpen = new FileStream(fileName, FileMode.Open)
-        use archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update)
-        let maxTime = DateTimeOffset.Now
-
-        for e in archive.Entries do
-            try
-                let d = min maxTime e.LastWriteTime
-                e.LastWriteTime <- d
-            with
-            | _ -> e.LastWriteTime <- maxTime
-    with
-    | exn -> traceWarnfn "Could not fix timestamps in %s. Error: %s" fileName exn.Message
-
-let fixArchive fileName =
-    if isMonoRuntime then
-        fixDatesInArchive fileName
-
 let extractZipToDirectory (zipFileName:string) (directoryName:string) =
     Directory.CreateDirectory directoryName |> ignore
     try
-        fixArchive zipFileName
         ZipFile.ExtractToDirectory(zipFileName, directoryName)
     with
     | exn ->
@@ -902,3 +882,10 @@ module Task =
 
     let Map<'TIn,'TOut> (mapper : 'TIn -> 'TOut) (t:Task<'TIn>) : Task<'TOut> =
         t.ContinueWith((fun (t:Task<'TIn>) -> mapper(t.Result)))
+
+let makeHash (fileInfo : FileInfo) =
+    use h = System.Security.Cryptography.SHA512.Create()
+    use stream = fileInfo.OpenRead()
+    h.ComputeHash(stream)
+    |> Array.map(fun (x : byte) -> x.ToString("x2")) 
+    |> String.concat ""

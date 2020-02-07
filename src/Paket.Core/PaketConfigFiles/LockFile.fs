@@ -91,7 +91,13 @@ module LockFileSerializer =
 
         match options.Settings.FrameworkRestrictions |> getExplicitRestriction with
         | FrameworkRestriction.HasNoRestriction -> ()
-        | list  -> yield "RESTRICTION: " + list.ToString() ]
+        | list  -> yield "RESTRICTION: " + list.ToString()
+
+        match options.Settings.UseNupkgHash with
+        | None -> ()
+        | Some UseNupkgHash.Off -> yield "NUPKG_HASH: off"
+        | Some UseNupkgHash.Save -> yield "NUPKG_HASH: save"
+        | Some UseNupkgHash.SaveAndVerify -> yield "NUPKG_HASH: verify" ]
 
     /// [omit]
     let serializePackages options (resolved : PackageResolution) = 
@@ -280,7 +286,8 @@ module LockFileParser =
     | Command of string
     | PackagePath of string
     | OperatingSystemRestriction of string
-
+    | UseNupkgHash of UseNupkgHash option
+    
     let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Group|InstallOption|) (state, line:string) =
         match (state.RepositoryType, line.Trim()) with
         | _, "HTTP" -> RepositoryType "HTTP"
@@ -364,6 +371,15 @@ module LockFileParser =
             InstallOption(PackagePath trimmed)
         | _, String.RemovePrefix "os: " trimmed ->
             InstallOption(OperatingSystemRestriction trimmed)
+        | _, String.RemovePrefix "NUPKG_HASH:" trimmed -> 
+            let setting = 
+                match trimmed.Trim().ToLowerInvariant() with
+                | "off" -> Some UseNupkgHash.Off
+                | "save" -> Some UseNupkgHash.Save
+                | "verify" -> Some UseNupkgHash.SaveAndVerify
+                | _ -> None
+
+            InstallOption(UseNupkgHash(setting))
         | _, trimmed when line.StartsWith "      " ->
             let pos = trimmed.IndexOf " - "
             let namePart, settingsPart =
@@ -415,6 +431,7 @@ module LockFileParser =
         | ReferenceCondition condition -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition }}
         | DirectDependenciesResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForDirectDependencies = strategy }
         | TransitiveDependenciesResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForTransitives = strategy }
+        | UseNupkgHash set -> {currentGroup.Options with Settings = { currentGroup.Options.Settings with UseNupkgHash = set} }
         | _ -> failwithf "Unknown option %A" option
 
     let Parse(lockFileLines) =

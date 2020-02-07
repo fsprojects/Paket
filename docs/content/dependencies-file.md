@@ -485,6 +485,21 @@ source https://nuget.org/api/v2
 nuget Suave simplify: never
 ```
 
+## Package Hash option
+
+This option is used to disable Paket's package verification mechanism. By default, all NuGet packages are hashed, ahd their SHA512 hash is saved into the `paket.lock` file. On restore of a package, the hash from the `paket.lock` is used to verify the integrity. 
+
+To disable verification, add the `nupkg_hash: save` directive to either the top-level of your `paket.dependencies` file, or within a particular desired dependency group.
+
+```paket
+	nupkg_hash: save
+	source https://nuget.org/api/v2
+
+	nuget FAKE
+```
+
+To disable saving package hashes entirely add `nupkg_hash: off`.
+
 ## Comments
 
 All lines starting with with `//` or `#` are considered comments.

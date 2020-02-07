@@ -784,6 +784,21 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
 let private getLicenseFile (packageName:PackageName) version =
     Path.Combine(NuGetCache.GetTargetUserFolder packageName version, NuGetCache.GetLicenseFileName packageName version)
 
+let private cleanTaintedNupkg (packageName:PackageName) version =
+    // historically paket modified nupkg files when run on mono,
+    // by changing the LastWriteTime of the entries in the zip.
+    // this changes the hash of the nupkg file.
+    // we are going to detect the possibly tainted nupkg files,
+    // and evict them from the cache.
+    let dir = NuGetCache.GetTargetUserFolder packageName version
+    let needsClean =
+        if File.Exists(Path.Combine(dir, ".nupkg.metadata")) then false // nuget inserted this in the cache, we can trust it
+        else if File.Exists(Path.Combine(dir, ".paket.metadata")) then false // paket inserted this in the cache, without modifiying the nupkg
+        else true
+    if needsClean then
+        traceWarnfn "Removing %O %O from cache due to nupkg modification" packageName version
+        deleteDir (DirectoryInfo dir)
+    
 /// Downloads the given package to the NuGet Cache folder
 let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverride:bool, config:PackagesFolderGroupConfig, source : PackageSource, caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, kind, includeVersionInPath, downloadLicense, force, detailed) =
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
@@ -810,6 +825,8 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                 verbosefn "Cleaning %s" p
             CleanDir p
         | _ -> ()
+        
+    cleanTaintedNupkg packageName version
 
     let ensureDir (fileName: string) =
         let parent = Path.GetDirectoryName fileName

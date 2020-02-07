@@ -369,7 +369,6 @@ let getNuSpecFromNupkg (fileName:string) =
     if nuspecFile.Exists then
         Nuspec.Load(nuspecFile.FullName)
     else
-        fixArchive fileName
         use zipToCreate = new FileStream(fileName, FileMode.Open, FileAccess.Read)
         use zip = new ZipArchive(zipToCreate, ZipArchiveMode.Read)
         let zippedNuspec = zip.Entries |> Seq.find (fun f -> f.FullName.EndsWith ".nuspec")
@@ -454,6 +453,16 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
         | Some res -> return res
     }
 
+let writePackageMetadata (packageCacheDir:DirectoryInfo) =
+    // currently, this files presence is used as a marker that
+    // the nupkg file was written by a paket version that does
+    // not modify LastWriteTime
+    File.WriteAllText(
+        Path.Combine(packageCacheDir.FullName, ".paket.metadata"),
+        """{
+    "version": 1
+}""")
+    
 /// Extracts the given package to the user folder
 let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, kind:PackageResolver.ResolvedPackageKind) =
     async {
@@ -475,17 +484,20 @@ let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, ver
             // lowercase the .nuspec file to mimic NuGet behavior
             let nuspecFileName = sprintf "%s.nuspec" (packageName.ToString())
             let nuspecLowerFileName = sprintf "%s.nuspec" (packageName.CompareString)
-            let filePath = Path.Combine(targetFolder.FullName, nuspecFileName)
-            let lowerFilePath = Path.Combine(targetFolder.FullName, nuspecLowerFileName)
-            if isUnix then
-                File.Move(filePath, lowerFilePath)
-            else
-                let nuspecTempFileName = sprintf "%s.nuspec.tmp" (packageName.CompareString)
-                let tempFilePath = Path.Combine(targetFolder.FullName, nuspecTempFileName)
-                // On windows we have to move the file twice to actually have the correct casing
-                // in the filesystem, because otherwise it is noop (at least in explorer)
-                File.Move(filePath, tempFilePath)
-                File.Move(tempFilePath, lowerFilePath)
+            let nuspecFilePath = Path.Combine(targetFolder.FullName, nuspecFileName)
+            let nuspecLowerFilePath = Path.Combine(targetFolder.FullName, nuspecLowerFileName)
+            
+            // not all packages have nuspec files with the pattern {packageName}.nuspec
+            if File.Exists(nuspecFilePath) then
+                if isUnix then
+                    File.Move(nuspecFilePath, nuspecLowerFilePath)
+                else
+                    let nuspecTempFileName = sprintf "%s.nuspec.tmp" (packageName.CompareString)
+                    let tempFilePath = Path.Combine(targetFolder.FullName, nuspecTempFileName)
+                    // On windows we have to move the file twice to actually have the correct casing
+                    // in the filesystem, because otherwise it is noop (at least in explorer)
+                    File.Move(nuspecFilePath, tempFilePath)
+                    File.Move(tempFilePath, nuspecLowerFilePath)
             
             let fi = FileInfo fileName
             let targetPackageFileName = Path.Combine(targetFolder.FullName,fi.Name)
@@ -497,6 +509,8 @@ let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, ver
                 let packageHash = getSha512File fileName
                 File.WriteAllText(cachedHashFile,packageHash)
             File.Copy(cachedHashFile,targetPackageFileName + ".sha512")
+            
+            writePackageMetadata targetFolder
             
             cleanup targetFolder
             if verbose then

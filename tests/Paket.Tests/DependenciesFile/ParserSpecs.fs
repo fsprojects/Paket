@@ -1630,3 +1630,14 @@ let ``should parse config with home path in cache``() =
     let cfg = DependenciesFile.FromSource(configWithHomePathInCache)
     let expected = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".paket-cache")
     cfg.Groups.[Constants.MainDependencyGroup].Caches.[0].Location |> shouldEqual expected
+
+[<Test>]
+let ``should parse hashing directive``() =
+    let t text expected =
+        let hashfile = DependenciesFile.FromSource(text)
+        hashfile.Groups.[Constants.MainDependencyGroup].Options.Settings.UseNupkgHash |> shouldEqual expected
+        
+    t "nupkg_hash off" (Some UseNupkgHash.Off)
+    t "nupkg_hash save" (Some UseNupkgHash.Save)
+    t "nupkg_hash verify" (Some UseNupkgHash.SaveAndVerify)
+    t "" (None)
