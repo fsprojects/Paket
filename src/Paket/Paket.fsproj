@@ -2,13 +2,10 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <PackageId>Paket</PackageId>
+    <!-- <Title>Paket</Title> -->
     <AssemblyName>paket</AssemblyName>
     <!-- package metadata -->
-    <Description>A dependency manager for .NET with support for NuGet packages and git repositories.</Description>
-    <PackageLicenseUrl>http://fsprojects.github.io/Paket/license.html</PackageLicenseUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png</PackageIconUrl>
     <PackageTags>nuget;bundler;F#</PackageTags>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(PackAsTool)' == 'true' ">
@@ -17,7 +14,6 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Commands.fs" />
     <Compile Include="Program.fs" />
     <Content Include="App.config" Condition=" '$(TargetFramework)' == 'net461' " />

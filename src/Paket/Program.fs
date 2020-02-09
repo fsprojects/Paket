@@ -4,6 +4,7 @@ module Paket.Program
 open System
 open System.Diagnostics
 open System.IO
+open System.Reflection
 
 open Paket.Logging
 open Paket.Commands
@@ -21,7 +22,12 @@ type PaketExiter() =
                 tracen msg ; exit 0
             else traceError msg ; exit 1
 
-let paketVersion = AssemblyVersionInformation.AssemblyInformationalVersion
+let paketVersion =
+    Assembly
+        .GetEntryAssembly()
+        .GetCustomAttributes<AssemblyInformationalVersionAttribute>()
+    |> Seq.tryHead
+    |> function Some x -> x.InformationalVersion | None -> "<unspecified>"
 
 let mutable tracedVersion = false
 

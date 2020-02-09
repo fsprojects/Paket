@@ -7,7 +7,6 @@ System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
 
 open Fake
 open Fake.Git
-open Fake.AssemblyInfoFile
 open Fake.ReleaseNotesHelper
 open Fake.UserInputHelper
 open System
@@ -107,41 +106,6 @@ let runDotnet workingDir args =
         failwithf "dotnet %s failed" args
 
 let testSuiteFilterFlakyTests = getEnvironmentVarAsBoolOrDefault "PAKET_TESTSUITE_FLAKYTESTS" false
-
-let genFSAssemblyInfo (projectPath: string) =
-    let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
-    let folderName = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(projectPath))
-    let basePath = "src" @@ folderName
-    let fileName = basePath @@ "AssemblyInfo.fs"
-    CreateFSharpAssemblyInfo fileName
-      [ Attribute.Title (projectName)
-        Attribute.Product project
-        Attribute.Company (authors |> String.concat ", ")
-        Attribute.Description summary
-        Attribute.Version release.AssemblyVersion
-        Attribute.FileVersion release.AssemblyVersion
-        Attribute.InformationalVersion release.NugetVersion ]
-
-let genCSAssemblyInfo (projectPath: string) =
-    let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
-    let folderName = System.IO.Path.GetDirectoryName(projectPath)
-    let basePath = folderName @@ "Properties"
-    let fileName = basePath @@ "AssemblyInfo.cs"
-    CreateCSharpAssemblyInfo fileName
-      [ Attribute.Title (projectName)
-        Attribute.Product project
-        Attribute.Description summary
-        Attribute.Version release.AssemblyVersion
-        Attribute.FileVersion release.AssemblyVersion
-        Attribute.InformationalVersion release.NugetVersion ]
-
-// Generate assembly info files with the right version & up-to-date information
-Target "AssemblyInfo" (fun _ ->
-    let fsProjs =  !! "src/**/*.fsproj"
-    let csProjs = !! "src/**/*.csproj"
-    fsProjs |> Seq.iter genFSAssemblyInfo
-    csProjs |> Seq.iter genCSAssemblyInfo
-)
 
 Target "InstallDotNetCore" (fun _ ->
     dotnetExePath <- DotNetCli.InstallDotNetSDK dotnetcliVersion
@@ -689,7 +653,6 @@ Target "All" DoNothing
 "Clean"
   ==> "InstallDotNetCore"
   ==> "Restore"
-  ==> "AssemblyInfo"
   ==> "Build"
   =?> ("RunTests", unlessBuildParams [ "SkipTests"; "SkipUnitTests" ])
   =?> ("GenerateReferenceDocs",isLocalBuild && not isMono && not (hasBuildParam "SkipDocs"))

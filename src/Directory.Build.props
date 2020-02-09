@@ -2,6 +2,10 @@
   <!-- MSBuild only includes the first Directory.Build.props, so we need to manually include the root one -->
   <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
   <PropertyGroup>
+    <Description>A dependency manager for .NET with support for NuGet packages and git repositories.</Description>
+    <Authors>Paket team</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIconUrl>https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png</PackageIconUrl>
     <DebugType>portable</DebugType>
   </PropertyGroup>
   <ItemGroup>
