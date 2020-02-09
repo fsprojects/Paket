@@ -1180,6 +1180,8 @@ NUGET
       FSharp.Compiler.Service (>= 17.0.1 < 18.0)
       Microsoft.AspNet.Razor (>= 3.2.3 < 4.0)
       System.ValueTuple (>= 4.4 < 5.0)
+  remote: https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json
+    RoslynTools.MSBuild (16.4.0-alpha)
 GITHUB
   remote: fsharp/FAKE
     modules/Octokit/Octokit.fsx (b8f82a3e2d1b3e834897bdb0e2b49f170f9be504)

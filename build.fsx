@@ -225,8 +225,7 @@ Target "RunTests" (fun _ ->
                 AdditionalArgs =
                   [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
                     sprintf "--logger:trx;LogFileName=%s" logFilePath
-                    "--no-build"
-                    "-v"; "n"]
+                    "--no-build"]
                 ToolPath = dotnetExePath
             })
 
