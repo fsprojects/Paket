@@ -1,8 +1,11 @@
 <Project>
- <PropertyGroup>
-	<TargetFrameworkRootPath>$(MSBuildThisFileDirectory)packages\build\0x53A.ReferenceAssemblies.Paket\tools\framework</TargetFrameworkRootPath>
- </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
- <Import Project="$(PackageReleaseNotesFile)" Condition=" Exists('$(PackageReleaseNotesFile)') " />
+  <Import Project="$(PackageReleaseNotesFile)" Condition=" Exists('$(PackageReleaseNotesFile)') " />
 
 </Project>
