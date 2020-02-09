@@ -35,7 +35,7 @@ With `--log-file [path]` you can trace the logged information into a file.
 // Binaries that have XML documentation (in a corresponding generated XML file)
 let referenceBinaries = [ "Paket.Core.dll" ]
 
-let githubLink = "http://github.com/fsprojects/Paket"
+let githubLink = "https://github.com/fsprojects/Paket"
 
 // Specify more information about your project
 let info =
@@ -43,7 +43,7 @@ let info =
     "project-author", "Steffen Forkmann, Alexander Groß"
     "project-summary", "A dependency manager for .NET with support for NuGet packages and git repositories."
     "project-github", githubLink
-    "project-nuget", "http://nuget.org/packages/Paket" ]
+    "project-nuget", "https://nuget.org/packages/Paket" ]
 
 // --------------------------------------------------------------------------------------
 // For typical project, no changes are needed below
