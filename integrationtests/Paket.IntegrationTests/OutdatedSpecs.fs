@@ -1,6 +1,5 @@
 ﻿module Paket.IntegrationTests.OutdatedSpecs
 
-open Fake
 open System
 open NUnit.Framework
 open FsUnit

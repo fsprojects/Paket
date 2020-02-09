@@ -1,6 +1,5 @@
 ﻿module Paket.IntegrationTests.PackSpecs
 
-open Fake
 open System
 open NUnit.Framework
 open FsUnit
@@ -33,11 +32,7 @@ let ``#1348 npm type folder names`` () =
 
     let desiredFolderName = "font-awesome@4.5.0"
 
-    let extractedFolder =
-        Path.Combine(outPath,"jspm_packages", "npm")
-        |> directoryInfo
-        |> subDirectories
-        |> Array.head
+    let extractedFolder = (DirectoryInfo <| Path.Combine(outPath,"jspm_packages", "npm")).GetDirectories().[0]
 
     extractedFolder.Name |> shouldEqual desiredFolderName
 
@@ -763,7 +758,7 @@ let ``#4004 dotnet pack using different versions``() =
 let ``#3599 dotnet pack should work with build metadata``() =
     let project = "lib1"
     let scenario = "i003599-pack-build-meta"
-    prepareSdk scenario
+    use __ = prepareSdk scenario
 
     let rootPath = scenarioTempPath scenario
     let outPath = Path.Combine(rootPath, "out")

@@ -19,6 +19,8 @@ let dotnetToolPath =
     | null | "" -> "dotnet"
     | s -> s
 
+let FullName x = Path.GetFullPath x
+
 let paketToolPath =
 #if PAKET_NETCORE
     dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin/netcoreapp2.1/paket.dll")
@@ -87,16 +89,16 @@ let prepare scenario =
 
 
 let prepareSdk scenario =
-    let tmpPaketFolder = (scenarioTempPath scenario) @@ ".paket"
+    let tmpPaketFolder = Path.Combine(scenarioTempPath scenario, ".paket")
     let targetsFile = FullName(__SOURCE_DIRECTORY__ + "../../../src/Paket.Core/embedded/Paket.Restore.targets")
     let paketExe = snd paketToolPath
 
-    setEnvironVar "PaketExePath" paketExe
+    Environment.SetEnvironmentVariable("PaketExePath", paketExe)
     let cleanup = prepare scenario
     if (not (Directory.Exists tmpPaketFolder)) then
         Directory.CreateDirectory tmpPaketFolder |> ignore
 
-    FileHelper.CopyFile tmpPaketFolder targetsFile
+    File.Copy(targetsFile, Path.Combine(tmpPaketFolder, Path.GetFileName targetsFile))
     cleanup
 
 type OutputMsg =
@@ -352,6 +354,14 @@ let isPackageCachedWithOnlyLowercaseNames (name: string) =
             |> List.ofSeq
         packageNameSegments = [ lowercaseName ]
     | _ -> false
+
+let (</>) x1 x2 = Path.Combine(x1, x2)
+
+let (@@) x1 (x2: string) = Path.Combine(x1, x2.TrimStart('\\', '/'))
+
+let checkFileExists path =
+    if not <| File.Exists path then
+        raise <| FileNotFoundException("Assertion that file exists failed.", path)
 
 [<AttributeUsage(AttributeTargets.Method, AllowMultiple=false)>]
 type FlakyAttribute() = inherit CategoryAttribute()

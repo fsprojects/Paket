@@ -1,6 +1,5 @@
 ﻿module Paket.IntegrationTests.NuGetV3Specs
 
-open Fake
 open System
 open NUnit.Framework
 open FsUnit

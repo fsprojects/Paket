@@ -1,7 +1,6 @@
 ﻿#if INTERACTIVE
 System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
 #r "../../packages/test/NUnit/lib/net45/nunit.framework.dll"
-#r "../../packages/build/FAKE/tools/Fakelib.dll"
 #r "../../packages/Chessie/lib/net40/Chessie.dll"
 #r "../../bin/paket.core.dll"
 #load "../../paket-files/test/forki/FsUnit/FsUnit.fs"
@@ -11,7 +10,6 @@ open Paket.IntegrationTests.TestHelpers
 module Paket.IntegrationTests.BasicResolverSpecs
 #endif
 
-open Fake
 open Paket
 open NUnit.Framework
 open FsUnit

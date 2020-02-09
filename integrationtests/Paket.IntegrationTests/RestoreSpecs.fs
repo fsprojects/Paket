@@ -2,7 +2,6 @@
 
 open System
 open System.IO
-open Fake
 open NUnit.Framework
 open FsUnit
 open Paket

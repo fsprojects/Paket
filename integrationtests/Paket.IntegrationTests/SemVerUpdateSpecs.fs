@@ -1,6 +1,5 @@
 ﻿module Paket.IntegrationTests.SemVerUpdateSpecs
 
-open Fake
 open Paket
 open System
 open NUnit.Framework

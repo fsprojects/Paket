@@ -48,11 +48,11 @@ let ``#1240 current bootstrapper should work``() =
           info.WorkingDirectory <- scenarioTempPath "i001240-bootstrapper"
           info.Arguments <- "") (System.TimeSpan.FromMinutes 5.)
     if result.ExitCode <> 0 then
-        let errors = String.Join(Environment.NewLine,result.Errors)
-        printfn "%s" <| String.Join(Environment.NewLine,result.Messages)
+        let errors = String.concat Environment.NewLine result.Errors
+        printfn "%s" <| String.concat Environment.NewLine result.Messages
         failwith errors
 
-    String.Join(Environment.NewLine,result.Messages).Contains("latest stable")
+    (String.concat Environment.NewLine result.Messages).Contains("latest stable")
     |> shouldEqual true
 
     File.Exists(scenarioTempPath "i001240-bootstrapper" </> "paket.exe")

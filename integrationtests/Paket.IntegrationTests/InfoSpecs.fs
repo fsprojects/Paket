@@ -1,6 +1,5 @@
 ﻿module Paket.IntegrationTests.InfoSpecs
 
-open Fake
 open System
 open NUnit.Framework
 open FsUnit

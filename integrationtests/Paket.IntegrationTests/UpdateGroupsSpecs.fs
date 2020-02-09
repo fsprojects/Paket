@@ -1,5 +1,4 @@
 ﻿module Paket.IntegrationTests.UpdateGroupSpecs
-open Fake
 open System
 open NUnit.Framework
 open FsUnit

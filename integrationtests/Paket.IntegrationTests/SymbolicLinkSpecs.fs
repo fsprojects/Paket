@@ -1,7 +1,6 @@
 ﻿module Paket.IntegrationTests.SymbolicLinkSpecs
 
 open NUnit.Framework
-open Fake
 open FsUnit
 open Paket
 
