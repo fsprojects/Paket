@@ -16,7 +16,6 @@
   <ItemGroup>
     <Compile Include="Commands.fs" />
     <Compile Include="Program.fs" />
-    <Content Include="App.config" Condition=" '$(TargetFramework)' == 'net461' " />
     <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackAsTool)' == 'true' ">

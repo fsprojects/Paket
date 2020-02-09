@@ -206,7 +206,6 @@
     <Compile Include="Performance\EventBoundarySpecs.fs" />
     <Compile Include="Performance\BackgroundMapBuilder.fs" />
     <Compile Include="CommandsCheck.fs" />
-    <Content Include="App.config" />
   </ItemGroup>
 
   <Target Name="AddTestAssetAsNoneItems" BeforeTargets="PrepareForBuild">
