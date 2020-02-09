@@ -1,5 +1,7 @@
 ﻿namespace Paket
 
+#nowarn "86" // Redefining comparison operators.
+
 open System
 open System.Collections.Generic
 
@@ -114,7 +116,7 @@ type VersionRange =
                 | PreReleaseStatus.Concrete list2 -> list1.Head <> list2.Head
         
         let other, pre1, pre2 = tuple   
-             
+
         let (>) v1 v2 = v1 > v2 && checkPre pre1 pre2
         let (<) v1 v2 = v1 < v2 && checkPre pre1 pre2
         
