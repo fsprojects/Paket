@@ -154,18 +154,6 @@ Target "Build" (fun _ ->
 )
 
 Target "Restore" (fun _ ->
-    //WORKAROUND dotnet restore with paket doesnt restore the PackageReference of SourceLink
-    // ref https://github.com/fsprojects/Paket/issues/2930
-    //TODO check if is needed, because a full paket restore is done in the build.bat/sh before run this fsx
-    Paket.Restore (fun p ->
-        { p with
-            Group = "NetCoreTools" })
-
-    DotNetCli.RunCommand (fun c ->
-        { c with
-            ToolPath = dotnetExePath
-        }) "tool restore"
-
     DotNetCli.Restore (fun c ->
         { c with
             Project = "Paket.sln"
@@ -262,7 +250,17 @@ Target "QuickIntegrationTests" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
 
-let mergeLibs = ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "Argu.dll"; "Chessie.dll"; "Mono.Cecil.dll"; "System.Net.Http.WinHttpHandler.dll"; "System.Buffers.dll"]
+let mergeLibs = [
+    "paket.exe"
+    "Paket.Core.dll"
+    "FSharp.Core.dll"
+    "Newtonsoft.Json.dll"
+    "Argu.dll"
+    "Chessie.dll"
+    "Mono.Cecil.dll"
+    "System.Net.Http.WinHttpHandler.dll"
+    "System.Buffers.dll"
+]
 
 Target "MergePaketTool" (fun _ ->
     CreateDir buildMergedDir
@@ -352,7 +350,7 @@ Target "SignAssemblies" (fun _ ->
 
 Target "CalculateDownloadHash" (fun _ ->
     use stream = File.OpenRead(paketFile)
-    use sha = new SHA256Managed()
+    use sha = SHA256.Create()
     let checksum = sha.ComputeHash(stream)
     let hash = BitConverter.ToString(checksum).Replace("-", String.Empty)
     File.WriteAllText(buildMergedDir @@ "paket-sha256.txt", sprintf "%s paket.exe" hash)
@@ -401,26 +399,19 @@ Target "NuGet" (fun _ ->
     // pack as .NET tools
     let releaseNotesPath = releaseNotesProp release.Notes
 
-    DotNetCli.Pack (fun c ->
-        { c with
-            Project = "src/Paket/Paket.fsproj"
-            OutputPath = tempDir
-            AdditionalArgs =
-                [ sprintf "/p:Version=%s" release.NugetVersion
-                  sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath
-                  "/p:PackAsTool=true" ]
-            ToolPath = dotnetExePath
-        })
-    DotNetCli.Pack (fun c ->
-        { c with
-            Project = "src/Paket.Bootstrapper/Paket.Bootstrapper.csproj"
-            OutputPath = tempDir
-            AdditionalArgs =
-                [ sprintf "/p:Version=%s" release.NugetVersion
-                  sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath
-                  "/p:PackAsTool=true"]
-            ToolPath = dotnetExePath
-        })
+    ["src/Paket/Paket.fsproj"; "src/Paket.Bootstrapper/Paket.Bootstrapper.csproj"]
+    |> List.iter (fun proj ->
+        DotNetCli.Pack (fun c ->
+            { c with
+                Project = proj
+                OutputPath = tempDir
+                AdditionalArgs = [
+                    sprintf "/p:Version=%s" release.NugetVersion
+                    sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath
+                    "/p:PackAsTool=true" ]
+                ToolPath = dotnetExePath
+            })
+    )
 )
 
 Target "PublishNuGet" (fun _ ->
