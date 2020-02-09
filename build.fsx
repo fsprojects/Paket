@@ -11,6 +11,7 @@ open Fake.ReleaseNotesHelper
 open Fake.UserInputHelper
 open System
 open System.IO
+open System.Net
 open Fake.Testing.NUnit3
 open System.Security.Cryptography
 open System.Xml.Linq
@@ -79,9 +80,7 @@ let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
 let paketFile = buildMergedDir @@ "paket.exe"
 
-Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
-
-System.Net.ServicePointManager.SecurityProtocol <- unbox 192 ||| unbox 768 ||| unbox 3072 ||| unbox 48
+ServicePointManager.SecurityProtocol <- enum 192 ||| enum 768 ||| enum 3072
 
 // Read additional information from the release notes document
 let releaseNotesData =
