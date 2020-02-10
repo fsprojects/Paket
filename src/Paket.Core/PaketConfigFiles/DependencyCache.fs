@@ -1,4 +1,4 @@
-﻿namespace Paket
+namespace Paket
 
 open System.IO
 open Paket.Domain
@@ -128,9 +128,10 @@ type DependencyCache (lockFile:LockFile) =
                 | None -> ()
                 | Some model ->
                     let model = model.Result
-                    for lib in model.GetLibReferenceFiles (TargetProfile.SinglePlatform framework) do
+                    let profile = TargetProfile.SinglePlatform framework
+                    for lib in model.GetLibReferenceFiles profile do
                         libs.Add lib |> ignore
-                    for sysLib in model.GetAllLegacyFrameworkReferences() do
+                    for sysLib in model.getLegacyFrameworkReferences profile do
                         sysLibs.Add sysLib |> ignore
 
             let assemblyFilePerAssemblyDef =
