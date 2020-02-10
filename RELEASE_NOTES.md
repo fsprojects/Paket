@@ -1,3 +1,6 @@
+#### 5.242.1 - 2020-02-10
+* BUGFIX: Don't generate refs to full framework assemblies for netstandard scripts
+
 #### 5.242.0 - 2020-02-03
 * Change default TFM on paket init to netcoreap31
 
