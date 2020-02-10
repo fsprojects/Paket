@@ -1,5 +1,8 @@
-#### 6.0.0-alpha015 - 2020-02-03
+#### 6.0.0-alpha016 - 2020-02-10
 * Full .NET Core / SDK compatible version
+
+#### 5.242.1 - 2020-02-10
+* BUGFIX: Don't generate refs to full framework assemblies for netstandard scripts
 
 #### 5.242.0 - 2020-02-03
 * Change default TFM on paket init to netcoreap31
