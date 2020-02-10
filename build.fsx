@@ -390,27 +390,23 @@ let releaseNotesProp releaseNotesLines =
     path
 
 Target "NuGet" (fun _ ->
-    Paket.Pack (fun p ->
-        { p with
-            ToolPath = "bin/merged/paket.exe"
-            Version = release.NugetVersion
-            TemplateFile = "src/Paket.Core/paket.template"
-            ReleaseNotes = toLines release.Notes })
-    // pack as .NET tools
     let releaseNotesPath = releaseNotesProp release.Notes
 
-    ["src/Paket/Paket.fsproj"; "src/Paket.Bootstrapper/Paket.Bootstrapper.csproj"]
-    |> List.iter (fun proj ->
+    !! "src/Paket*/Paket*.?sproj"
+    |> Seq.iter (fun proj ->
         DotNetCli.Pack (fun c ->
             { c with
                 Project = proj
                 OutputPath = tempDir
-                AdditionalArgs = [
-                    sprintf "/p:Version=%s" release.NugetVersion
-                    sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath
-                    "/p:PackAsTool=true" ]
+                AdditionalArgs =
+                    [
+                        sprintf "/p:Version=%s" release.NugetVersion
+                        sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath
+                        "/p:PackAsTool=true"
+                    ]
                 ToolPath = dotnetExePath
-            })
+            }
+        )
     )
 )
 
