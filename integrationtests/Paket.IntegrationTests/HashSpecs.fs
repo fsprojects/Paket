@@ -11,20 +11,25 @@ open System.Diagnostics
 open Paket
 open Paket.Domain
 
-let nugetPackagesFolder scenario =
-    Path.Combine((scenarioTempPath scenario), "user_packages")
-
-let directPaket command scenario = 
-    directPaketEnv ["NUGET_PACKAGES", nugetPackagesFolder scenario] (command + " --verbose") scenario
-
+//let nugetPackagesFolder scenario =
+//    Path.Combine((scenarioTempPath scenario), "user_packages")
+//
+//let directPaket command scenario = 
+//    directPaketEnv ["NUGET_PACKAGES", nugetPackagesFolder scenario] (command + " --verbose") scenario
+//
+//let getTargetUserFolder scenario (packageName:PackageName) (version:SemVerInfo) =
+//    DirectoryInfo(Path.Combine(nugetPackagesFolder scenario,packageName.CompareString,version.Normalize())).FullName
+//
+//let getTargetUserNupkg scenario (packageName:PackageName) (version:SemVerInfo) =
+//    let normalizedNupkgName = NuGetCache.GetPackageFileName packageName version
+//    let path = getTargetUserFolder scenario packageName version
+//    Path.Combine(path, normalizedNupkgName)
 let getTargetUserFolder scenario (packageName:PackageName) (version:SemVerInfo) =
-    DirectoryInfo(Path.Combine(nugetPackagesFolder scenario,packageName.CompareString,version.Normalize())).FullName
+    NuGetCache.GetTargetUserFolder packageName version
 
 let getTargetUserNupkg scenario (packageName:PackageName) (version:SemVerInfo) =
-    let normalizedNupkgName = NuGetCache.GetPackageFileName packageName version
-    let path = getTargetUserFolder scenario packageName version
-    Path.Combine(path, normalizedNupkgName)
-
+    NuGetCache.GetTargetUserNupkg packageName version
+    
 [<Test>]
 let ``save hash on install``() =
     let scenario = "save-nupkg_hash-on-install"
