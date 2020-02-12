@@ -11,6 +11,9 @@ open System.Diagnostics
 open Paket
 open Paket.Domain
 
+let directPaket command scenario = 
+    directPaket (command + " --verbose") scenario
+    
 //let nugetPackagesFolder scenario =
 //    Path.Combine((scenarioTempPath scenario), "user_packages")
 //
