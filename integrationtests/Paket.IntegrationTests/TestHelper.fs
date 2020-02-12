@@ -195,8 +195,11 @@ let directToolEx env isPaket toolInfo commands workingDir =
     msgs
     #endif
 
+let directPaketInPathEnvEx env command scenarioPath =
+    directToolEx env true paketToolPath command scenarioPath
+
 let directPaketInPathEx command scenarioPath =
-    directToolEx [] true paketToolPath command scenarioPath
+    directPaketInPathEnvEx [] command scenarioPath
 
 let checkResults msgs =
     msgs
@@ -218,10 +221,14 @@ let private fromMessages msgs =
 
 let directPaketInPath command scenarioPath = directPaketInPathEx command scenarioPath |> fromMessages
 
-let directPaketEx command scenario =
-    directPaketInPathEx command (scenarioTempPath scenario)
+let directPaketEnvEx env command scenario =
+    directPaketInPathEnvEx env command (scenarioTempPath scenario)
 
-let directPaket command scenario = directPaketEx command scenario |> fromMessages
+let directPaketEx command scenario =
+    directPaketEnvEx [] command scenario
+
+let directPaketEnv env command scenario = directPaketEnvEx env command scenario |> fromMessages
+let directPaket command scenario = directPaketEnv [] command scenario
 
 let paketEx checkZeroWarn command scenario =
     let cleanup = prepare scenario

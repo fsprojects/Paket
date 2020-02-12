@@ -11,7 +11,19 @@ open System.Diagnostics
 open Paket
 open Paket.Domain
 
-//let scenario = "i003014-add-github"
+let nugetPackagesFolder scenario =
+    Path.Combine((scenarioTempPath scenario), "user_packages")
+
+let directPaket command scenario = 
+    directPaketEnv ["NUGET_PACKAGES", nugetPackagesFolder scenario] command scenario
+
+let getTargetUserFolder scenario (packageName:PackageName) (version:SemVerInfo) =
+    DirectoryInfo(Path.Combine(nugetPackagesFolder scenario,packageName.CompareString,version.Normalize())).FullName
+
+let getTargetUserNupkg scenario (packageName:PackageName) (version:SemVerInfo) =
+    let normalizedNupkgName = NuGetCache.GetPackageFileName packageName version
+    let path = getTargetUserFolder scenario packageName version
+    Path.Combine(path, normalizedNupkgName)
 
 [<Test>]
 let ``save hash on install``() =
@@ -64,11 +76,12 @@ let ``verify old tainted nupkg is removed from cache``() =
          (PackageName "Microsoft.Win32.Primitives"), (SemVer.Parse "4.3")]
         
     let scenario = "verify-good-nupkg_hash-on-restore"
+    let getTargetUserFolder = getTargetUserFolder scenario
     let scenarioTempPath = (scenarioTempPath scenario)
     use __ = prepare scenario
     
     for p, v in packages do
-        let nupkgDir = NuGetCache.GetTargetUserFolder p v
+        let nupkgDir = getTargetUserFolder p v
         deleteDir (DirectoryInfo nupkgDir)
     
     directPaket "restore" scenario |> ignore<string>
@@ -77,13 +90,13 @@ let ``verify old tainted nupkg is removed from cache``() =
     deleteDir (DirectoryInfo (Path.Combine(scenarioTempPath, "paket-files")))
     
     for p, v in packages do
-        let nupkgDir = NuGetCache.GetTargetUserFolder p v
+        let nupkgDir = getTargetUserFolder p v
         let metadata = Path.Combine(nupkgDir, ".paket.metadata")
         File.Delete metadata
-        let nupkg = NuGetCache.GetTargetUserNupkg p v
+        let nupkg = getTargetUserNupkg scenario p v
         fixDatesInArchive nupkg
 
-    let out = directPaket "restore" scenario
+    let out = directPaket "restore --verbose" scenario
     for p, v in packages do
         let p = p.ToString()
         let v = v.ToString()
