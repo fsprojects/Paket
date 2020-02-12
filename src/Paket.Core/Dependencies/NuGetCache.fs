@@ -376,7 +376,7 @@ let getNuSpecFromNupkg (fileName:string) =
         Nuspec.Load(Path.Combine(fileName, Path.GetFileName zippedNuspec.FullName), stream)
 
 let getCacheDataFromExtractedPackage (packageName:PackageName) (version:SemVerInfo) = async {
-    match TryGetFallbackNupkg packageName version with
+    match None with
     | Some nupkg ->
         let fi = FileInfo nupkg
         let nuspec = getNuSpecFromNupkg nupkg

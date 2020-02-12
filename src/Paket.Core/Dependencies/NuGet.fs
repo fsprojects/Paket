@@ -856,15 +856,16 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
         | [] -> false
 
     let getFromFallbackFolder () =
-        match NuGetCache.TryGetFallbackNupkg packageName version with
-        | Some fileName ->
-            verbosefn "Copying %O %O from SDK cache" packageName version
-            use __ = Profile.startCategory Profile.Category.FileIO
-            ensureDir targetFileName
-            File.Copy(fileName,targetFileName,true)
-            true
-        | None -> false
-
+//        match NuGetCache.TryGetFallbackNupkg packageName version with
+//        | Some fileName ->
+//            verbosefn "Copying %O %O from SDK cache" packageName version
+//            use __ = Profile.startCategory Profile.Category.FileIO
+//            ensureDir targetFileName
+//            File.Copy(fileName,targetFileName,true)
+//            true
+//        | None -> false
+        false
+        
     let rec download authenticated attempt =
         async {
             if not force && targetFile.Exists && targetFile.Length > 0L then
