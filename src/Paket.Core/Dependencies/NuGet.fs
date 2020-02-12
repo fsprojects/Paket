@@ -792,7 +792,8 @@ let private cleanTaintedNupkg (packageName:PackageName) version =
     // and evict them from the cache.
     let dir = NuGetCache.GetTargetUserFolder packageName version
     let needsClean =
-        if File.Exists(Path.Combine(dir, ".paket.metadata")) then false // paket inserted this in the cache, without modifiying the nupkg
+        if File.Exists(Path.Combine(dir, ".nupkg.metadata")) then false // nuget inserted this in the cache, (hopefully) we can trust it
+        else if File.Exists(Path.Combine(dir, ".paket.metadata")) then false // paket inserted this in the cache, without modifiying the nupkg
         else true
     if needsClean then
         traceWarnfn "Removing %O %O from cache due to nupkg modification" packageName version
