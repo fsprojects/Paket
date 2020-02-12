@@ -59,24 +59,33 @@ let fixDatesInArchive fileName =
     
 [<Test>]
 let ``verify old tainted nupkg is removed from cache``() =
+    let packages =
+        [(PackageName "Newtonsoft.Json"), (SemVer.Parse "12.0.3")
+         (PackageName "Microsoft.Win32.Primitives"), (SemVer.Parse "4.3")]
+        
     let scenario = "verify-good-nupkg_hash-on-restore"
     let scenarioTempPath = (scenarioTempPath scenario)
     use __ = prepare scenario
     
-    let nupkgDir = NuGetCache.GetTargetUserFolder (PackageName "Newtonsoft.Json") (SemVer.Parse "12.0.3")
-    
-    deleteDir (DirectoryInfo nupkgDir)
+    for p, v in packages do
+        let nupkgDir = NuGetCache.GetTargetUserFolder p v
+        deleteDir (DirectoryInfo nupkgDir)
     
     directPaket "restore" scenario |> ignore<string>
     
     deleteDir (DirectoryInfo (Path.Combine(scenarioTempPath, "packages")))
     deleteDir (DirectoryInfo (Path.Combine(scenarioTempPath, "paket-files")))
-    File.Delete (Path.Combine(nupkgDir, ".paket.metadata"))
     
-    let nupkg = NuGetCache.GetTargetUserNupkg (PackageName "Newtonsoft.Json") (SemVer.Parse "12.0.3")
-    
-    fixDatesInArchive nupkg
-    
+    for p, v in packages do
+        let nupkgDir = NuGetCache.GetTargetUserFolder p v
+        let metadata = Path.Combine(nupkgDir, ".paket.metadata")
+        File.Delete metadata
+        let nupkg = NuGetCache.GetTargetUserNupkg p v
+        fixDatesInArchive nupkg
+
     let out = directPaket "restore" scenario
-    if out.Contains("Removing Newtonsoft.Json 12.0.3 from cache due to nupkg modification") |> not then
-        failwith "modified nupkg should have been removed from the cache"
+    for p, v in packages do
+        let p = p.ToString()
+        let v = v.ToString()
+        if out.Contains(sprintf "Removing %s %s from cache due to nupkg modification" p v) |> not then
+            failwithf "modified %s %s nupkg should have been removed from the cache, out:\n%s" p v out 
