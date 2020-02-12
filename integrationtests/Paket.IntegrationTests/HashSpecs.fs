@@ -15,7 +15,7 @@ let nugetPackagesFolder scenario =
     Path.Combine((scenarioTempPath scenario), "user_packages")
 
 let directPaket command scenario = 
-    directPaketEnv ["NUGET_PACKAGES", nugetPackagesFolder scenario] command scenario
+    directPaketEnv ["NUGET_PACKAGES", nugetPackagesFolder scenario] (command + " --verbose") scenario
 
 let getTargetUserFolder scenario (packageName:PackageName) (version:SemVerInfo) =
     DirectoryInfo(Path.Combine(nugetPackagesFolder scenario,packageName.CompareString,version.Normalize())).FullName
