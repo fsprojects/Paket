@@ -327,8 +327,13 @@ let isMatchingOperatingSystem (operatingSystemFilter : string option) =
 let isMatchingPlatform (operatingSystemFilter : string option) =
     match operatingSystemFilter with
     | None -> true
+#if NETSTANDARD1_6 || NETSTANDARD2_0
+    | Some filter when filter = "mono" -> isMacOS || isUnix
+    | Some filter when filter = "windows" -> isWindows
+#else
     | Some filter when filter = "mono" -> isMonoRuntime
     | Some filter when filter = "windows" -> not isMonoRuntime
+#endif
     | _ -> isMatchingOperatingSystem operatingSystemFilter
 
 /// [omit]
