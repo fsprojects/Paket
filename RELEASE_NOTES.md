@@ -1,3 +1,6 @@
+#### 5.242.2 - 2020-02-17
+* BUGFIX: Update matching platform check - https://github.com/fsprojects/Paket/pull/3797
+
 #### 5.242.1 - 2020-02-10
 * BUGFIX: Don't generate refs to full framework assemblies for netstandard scripts
 
