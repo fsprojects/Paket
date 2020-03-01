@@ -86,7 +86,8 @@ let internal indentAssemblyBindings config =
 let private configFiles = [ "app"; "web" ] |> Set.ofList
 let private projectFiles = [ ".csproj"; ".vbproj"; ".fsproj"; ".wixproj"; ".nproj"; ".vcxproj"; ".pyproj"; ".sfproj"; ".sqlproj" ] |> Set.ofList
 let private toLower (s:string) = s.ToLower()
-let private isAppOrWebConfig = configFiles.Contains << (Path.GetFileNameWithoutExtension >> toLower)
+let private isAppOrWebConfig =
+    configFiles.Contains << (fun (x : string) -> Path.GetFileNameWithoutExtension(x) |> toLower)
 
 let internal getConfig getFiles directory  =
     getFiles(directory, "*.config", SearchOption.AllDirectories)
