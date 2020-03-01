@@ -31,7 +31,7 @@ module internal NupkgWriter =
             Map.ofList [ "rels", "application/vnd.openxmlformats-package.relationships+xml"
                          "psmdcp", "application/vnd.openxmlformats-package.core-properties+xml" ]
 
-        let ext path = Path.GetExtension(path).TrimStart([| '.' |]).ToLowerInvariant()
+        let ext (path : string) = Path.GetExtension(path).TrimStart([| '.' |]).ToLowerInvariant()
 
         let fType ext =
             knownExtensions
