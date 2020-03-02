@@ -1569,7 +1569,7 @@ module ProjectFile =
         |> List.tryFind (fun n -> withAttributeValueEndsWith "Project" Constants.TargetsFileName n || withAttributeValueEndsWith "Project" "Paket.Restore.targets" n)
         |> Option.iter (fun n -> n.ParentNode.RemoveChild n |> ignore)
 
-    let determineBuildAction fileName (project:ProjectFile) =
+    let determineBuildAction (fileName : string) (project:ProjectFile) =
         match (Path.GetExtension fileName).ToLowerInvariant() with
         | ext when Path.GetExtension project.FileName = ext + "proj"
             -> BuildAction.Compile
@@ -1581,7 +1581,7 @@ module ProjectFile =
             -> BuildAction.Resource
         | _ -> BuildAction.Content
 
-    let determineBuildActionForRemoteItems fileName (project:ProjectFile) =
+    let determineBuildActionForRemoteItems (fileName : string) (project:ProjectFile) =
         if Path.GetExtension fileName = ".dll"
         then BuildAction.Reference
         else determineBuildAction fileName project
