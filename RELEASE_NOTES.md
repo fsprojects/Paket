@@ -1,5 +1,6 @@
-#### 6.0.0-alpha018 - 2020-02-17
+#### 6.0.0-alpha019 - 2020-03-18
 * Full .NET Core / SDK compatible version
+* Support for .netcoreapp5.0
 
 #### 5.242.2 - 2020-02-17
 * BUGFIX: Update matching platform check - https://github.com/fsprojects/Paket/pull/3797
