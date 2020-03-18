@@ -656,7 +656,7 @@ type FrameworkIdentifier =
         | DotNetCoreApp DotNetCoreAppVersion.V2_2 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_1 ]
         | DotNetCoreApp DotNetCoreAppVersion.V3_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_2; DotNetStandard DotNetStandardVersion.V2_1 ]
         | DotNetCoreApp DotNetCoreAppVersion.V3_1 -> [ DotNetCoreApp DotNetCoreAppVersion.V3_0 ]
-        | DotNetCoreApp DotNetCoreAppVersion.V5_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V3_1; DotNetFramework FrameworkVersion.V4_8 ]
+        | DotNetCoreApp DotNetCoreAppVersion.V5_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V3_1 ]
         | DotNetUnity DotNetUnityVersion.V3_5_Full -> [ ]
         | DotNetUnity DotNetUnityVersion.V3_5_Subset -> [ ]
         | DotNetUnity DotNetUnityVersion.V3_5_Micro -> [ ]
