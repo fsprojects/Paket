@@ -95,7 +95,18 @@ let GetPaketLoadScriptLocation baseDir optionalFrameworkDir scriptName =
 /// <param name="scriptName">filename for the script (not necessarily existing if interactive evaluation)</param>
 /// <param name="packageManagerTextLinesFromScript">Package manager text lines from script, those are meant to be just the inner part, without `#r "paket:` prefix</param>
 let ResolveDependenciesForLanguage(fileType,targetFramework:string,prioritizedSearchPaths: string seq, scriptDir: string, scriptName: string,packageManagerTextLinesFromScript: string seq) =
-    let workingDir = Path.Combine(Path.GetTempPath(), "script-packages", string(abs(hash (scriptDir,scriptName))))
+    let hashString (str: string) =
+      // https://andrewlock.net/why-is-string-gethashcode-different-each-time-i-run-my-program-in-net-core/
+      let mutable hash1 = (5381 <<< 16) + 5381
+      let mutable hash2 = hash1
+      for i in 0 .. 2 .. str.Length do
+        hash1 <- ((hash1 <<< 5) + hash1) ^^^ (int str.[i])
+        if i >= str.Length - 1 then ()
+        else
+          hash2 <- ((hash2 <<< 5) + hash2) ^^^ (int str.[i + 1])
+      hash1 + (hash2 * 1566083941)
+    let scriptDirHash = abs (hashString (scriptDir + scriptName))
+    let workingDir = Path.Combine(Path.GetTempPath(), "script-packages", string scriptDirHash)
     let depsFileName = "paket.dependencies"
     let workingDirSpecFile = FileInfo(Path.Combine(workingDir,depsFileName))
     if not (Directory.Exists workingDir) then

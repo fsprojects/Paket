@@ -12,7 +12,7 @@ module Attributes =
 type PaketDependencyManagerProvider(outputDir: string option) =
   member x.Name = "paket"
   member x.Key = "paket"
-  member x.ResolveDependencies(scriptDir: string, mainScriptName: string, scriptName: string, packageManagerTextLines: string seq, targetFramework: string) : bool * string list * string list =
+  member x.ResolveDependencies(scriptDir: string, mainScriptName: string, scriptName: string, packageManagerTextLines: string seq, targetFramework: string) : bool * string list * string list * string list =
     try
       let loadScript, additionalIncludeDirs = 
         ReferenceLoading.PaketHandler.ResolveDependencies(
@@ -20,6 +20,8 @@ type PaketDependencyManagerProvider(outputDir: string option) =
                  scriptDir,
                  scriptName,
                  packageManagerTextLines)
-      true, [loadScript] , additionalIncludeDirs
+      true, [], [loadScript], additionalIncludeDirs
     with
-      e -> false, [], []
+      e -> 
+        printfn "exception while resolving dependencies: %s" (string e)
+        false, [], [], []

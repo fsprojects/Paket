@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <Compile Include="ReferenceLoading.PaketHandler.fs" />
-    <Compile Include="PaketDependencyManager.fsi" />
     <Compile Include="PaketDependencyManager.fs" />
   </ItemGroup>
 
