@@ -1,6 +1,6 @@
 /// Getting help docs from Paket.exe
-#r "../../bin/net461/Argu.dll"
-#r "../../bin/net461/Paket.exe"
+#r "../../src/Paket/bin/Release/net461/Argu.dll"
+#r "../../src/Paket/bin/Release/net461/paket.exe"
 open System.IO
 
 
@@ -61,7 +61,7 @@ open FSharp.MetadataFormat
 open FSharp.Formatting.Razor
 
 // Paths with template/source/output locations
-let bin        = __SOURCE_DIRECTORY__ @@ "../../bin"
+let bin        = __SOURCE_DIRECTORY__ @@ "../../src/paket/bin"
 let content    = __SOURCE_DIRECTORY__ @@ "../content"
 let completion = __SOURCE_DIRECTORY__ @@ "../../completion"
 let output     = __SOURCE_DIRECTORY__ @@ "../output"
