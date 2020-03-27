@@ -1,3 +1,6 @@
+#### 5.243.0 - 2020-03-27
+* Add support for MonoAndroid10.0 - https://github.com/fsprojects/Paket/pull/3817
+
 #### 5.242.2 - 2020-02-17
 * BUGFIX: Update matching platform check - https://github.com/fsprojects/Paket/pull/3797
 
