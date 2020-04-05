@@ -2090,6 +2090,7 @@ type ProjectFile with
             Language = prop "Langauge"
             ProjectUrl = prop "ProjectUrl"
             IconUrl = prop "IconUrl"
+            LicenseExpression = prop "LicenseExpression"
             LicenseUrl = prop "LicenseUrl"
             Copyright = prop "Copyright"
             RepositoryType = prop "RepositoryType"
