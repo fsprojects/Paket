@@ -848,9 +848,30 @@ type Dependencies(dependenciesFileName: string) =
             use fileStream = File.Open (nuspecFile, FileMode.Create)
             doc.Save fileStream
 
+
     static member FixNuspecs (referencesFile:ReferencesFile, nuspecFileList:string list) =
+        let attr (name: string) (node: XmlNode) =
+            match node.Attributes.[name] with
+            | null -> None
+            | attr -> Some attr.InnerText
+
+        /// adjusts the given version requirement from a nuspec file using the 'locked' version of that same dependency
+        let adjustRangeToLockedVersion (VersionRequirement(range, prerelease)) (lockedVersion: SemVerInfo) =
+            let range' =
+                match range with
+                | VersionRange.Maximum max -> VersionRange.Between(VersionRangeBound.Including, lockedVersion, max, VersionRangeBound.Including)
+                | VersionRange.GreaterThan _ -> VersionRange.GreaterThan lockedVersion
+                | VersionRange.Minimum _ -> VersionRange.Minimum lockedVersion
+                | VersionRange.Specific _ -> VersionRange.Specific lockedVersion
+                | VersionRange.LessThan top -> VersionRange.Between(VersionRangeBound.Including, lockedVersion, top, VersionRangeBound.Excluding)
+                | VersionRange.OverrideAll _ -> VersionRange.OverrideAll lockedVersion
+                | VersionRange.Range(_, _, right, rightBound) -> VersionRange.Range(VersionRangeBound.Including, lockedVersion, right, rightBound)
+
+            VersionRequirement(range', prerelease)
+
         let deps = Dependencies.Locate(Path.GetDirectoryName(referencesFile.FileName))
         let locked = deps.GetLockFile()
+        let depsFile = deps.GetDependenciesFile()
 
         // NuGet has thrown away "group" association, so this is best effort.
         let known =
@@ -867,6 +888,26 @@ type Dependencies(dependenciesFileName: string) =
             |> Seq.collect (fun kv -> kv.Value.NugetPackages)
             |> Seq.map (fun i -> i.Name)
             |> Set.ofSeq
+
+        let mainGroupDesiredDepRanges =
+            depsFile.Groups.[GroupName MainGroup].Packages
+            |> List.map (fun p -> p.Name, p.VersionRequirement)
+            |> Map.ofList
+
+        let lockFileMainGroupVersions =
+            directDeps
+            |> Seq.choose (fun p -> locked.Groups.[GroupName MainGroup].TryFind p)
+            |> Seq.map (fun p -> p.Name, p.Version)
+            |> Map.ofSeq
+
+        let lockedPackageVersionRequirements =
+            mainGroupDesiredDepRanges
+            |> Map.map (fun packageName versionRequirement ->
+                match lockFileMainGroupVersions |> Map.tryFind packageName with
+                | Some lockedVersion -> adjustRangeToLockedVersion versionRequirement lockedVersion
+                | None -> versionRequirement
+            )
+
         for nuspecFile in nuspecFileList do
             let nuspecText = File.ReadAllText nuspecFile
 
@@ -877,16 +918,48 @@ type Dependencies(dependenciesFileName: string) =
 
             let rec traverse (parent:XmlNode) =
                 let nodesToRemove = ResizeArray()
+
+                let (|IndirectDependency|DirectDependency|UnknownDependency|) (p: PackageName) =
+                    if not (known.Contains p)
+                    then UnknownDependency
+                    else
+                        if directDeps.Contains p
+                        then DirectDependency
+                        else IndirectDependency
+
+                let (|MatchesRange|NeedsRangeUpdate|LockRangeNotFound|) (packageName: PackageName, nuspecVersionRequirement: VersionRequirement) =
+
+                    match lockedPackageVersionRequirements.TryFind packageName with
+                    | Some lockedFileRange ->
+                        if lockedFileRange = nuspecVersionRequirement
+                        then MatchesRange
+                        else NeedsRangeUpdate lockedFileRange
+                    | None -> LockRangeNotFound
+
                 for node in parent.ChildNodes do
                     if node.Name = "dependency" then
-                        let packageName =
-                            match node.Attributes.["id"] with null -> "" | x -> x.InnerText
-                        let packName = PackageName packageName
+                        let packName = attr "id" node |> Option.map PackageName
+                        let versionRange = attr "version" node |> Option.bind VersionRequirement.TryParse
+
                         // Ignore unknown packages, see https://github.com/fsprojects/Paket/issues/2694
-                        // TODO: Add some version sanity check here.
                         // Assert that the version we remove it not newer than what we have in our resolution!
-                        if known.Contains packName && not (directDeps.Contains (PackageName packageName)) then
+                        match packName with
+                        | Some IndirectDependency ->
                             nodesToRemove.Add node |> ignore
+                        | Some UnknownDependency -> ()
+                        | Some (DirectDependency as packName) ->
+                            match versionRange with
+                            | Some versionRange ->
+                                match packName, versionRange with
+                                | MatchesRange -> ()
+                                | LockRangeNotFound ->
+                                    raise (Exception(sprintf "Could not find version range for package %O" packName))
+                                | NeedsRangeUpdate newVersionRange ->
+                                    let nugetVersionRangeString = newVersionRange.FormatInNuGetSyntax()
+                                    node.Attributes.["version"].InnerText <- nugetVersionRangeString
+                        | None ->
+                            raise (Exception(sprintf "Could not read dependency id for package node %O" node))
+
 
                 if nodesToRemove.Count = 0 then
                     for node in parent.ChildNodes do traverse node
