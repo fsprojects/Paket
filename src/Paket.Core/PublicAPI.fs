@@ -908,6 +908,23 @@ type Dependencies(dependenciesFileName: string) =
                 | None -> versionRequirement
             )
 
+        let (|IndirectDependency|DirectDependency|UnknownDependency|) (p: PackageName) =
+            if not (known.Contains p)
+            then UnknownDependency
+            else
+                if directDeps.Contains p
+                then DirectDependency
+                else IndirectDependency
+
+        let (|MatchesRange|NeedsRangeUpdate|LockRangeNotFound|) (packageName: PackageName, nuspecVersionRequirement: VersionRequirement) =
+
+            match lockedPackageVersionRequirements.TryFind packageName with
+            | Some lockedFileRange ->
+                if lockedFileRange = nuspecVersionRequirement
+                then MatchesRange
+                else NeedsRangeUpdate lockedFileRange
+            | None -> LockRangeNotFound
+
         for nuspecFile in nuspecFileList do
             let nuspecText = File.ReadAllText nuspecFile
 
@@ -918,23 +935,6 @@ type Dependencies(dependenciesFileName: string) =
 
             let rec traverse (parent:XmlNode) =
                 let nodesToRemove = ResizeArray()
-
-                let (|IndirectDependency|DirectDependency|UnknownDependency|) (p: PackageName) =
-                    if not (known.Contains p)
-                    then UnknownDependency
-                    else
-                        if directDeps.Contains p
-                        then DirectDependency
-                        else IndirectDependency
-
-                let (|MatchesRange|NeedsRangeUpdate|LockRangeNotFound|) (packageName: PackageName, nuspecVersionRequirement: VersionRequirement) =
-
-                    match lockedPackageVersionRequirements.TryFind packageName with
-                    | Some lockedFileRange ->
-                        if lockedFileRange = nuspecVersionRequirement
-                        then MatchesRange
-                        else NeedsRangeUpdate lockedFileRange
-                    | None -> LockRangeNotFound
 
                 for node in parent.ChildNodes do
                     if node.Name = "dependency" then
