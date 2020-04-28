@@ -876,7 +876,7 @@ type Dependencies(dependenciesFileName: string) =
         let depsFile = deps.GetDependenciesFile()
 
         // NuGet has thrown away "group" association, so this is best effort.
-        let known =
+        let implicitOrExplictlyReferencedPackages =
             locked.GetPackageHull referencesFile
             |> Seq.map (fun kv -> kv.Key |> snd)
             |> Set.ofSeq
@@ -941,8 +941,9 @@ type Dependencies(dependenciesFileName: string) =
 //        printfn ""
 
         let (|IndirectDependency|DirectDependency|UnknownDependency|) (p: PackageName) =
-            if not (known.Contains p)
-            then UnknownDependency
+            if not (implicitOrExplictlyReferencedPackages.Contains p)
+            then
+                UnknownDependency
             else
                 match groupsForProjectReferencedDeps.TryFind p with
                 | None -> IndirectDependency
@@ -977,6 +978,7 @@ type Dependencies(dependenciesFileName: string) =
                     if node.Name = "dependency" then
                         let packName = attr "id" node |> Option.map PackageName
                         let versionRange = attr "version" node |> Option.bind VersionRequirement.TryParse
+                        tracefn "Checking dependency status for package %O, version %O" packName versionRange
 
                         // Ignore unknown packages, see https://github.com/fsprojects/Paket/issues/2694
                         // Assert that the version we remove it not newer than what we have in our resolution!
@@ -985,20 +987,28 @@ type Dependencies(dependenciesFileName: string) =
                            && not (directDeps.Contains (PackageName packageName)) then
                         match packName with
                         | Some IndirectDependency ->
+                            tracefn "Package '%O' was not explicitly referenced in %s and will be removed" packName.Value referencesFile.FileName
                             nodesToRemove.Add node |> ignore
-                        | Some UnknownDependency -> ()
+                        | Some UnknownDependency ->
+                            tracefn "Package '%O' is not part of the explicit dependency tree in %s and so will be skipped" packName.Value referencesFile.FileName
+                            ()
                         | Some (DirectDependency ((GroupName(grp, _)) as g, (PackageName.PackageName(pkg, _) as p))) ->
                             match versionRange with
                             | Some versionRange ->
                                 match (g, p), versionRange with
-                                | MatchesRange -> ()
+                                | MatchesRange ->
+                                    tracefn "Package '%s' is a direct dependency and requires no version patching" pkg
+                                    ()
                                 | LockRangeNotFound ->
-                                    printfn "Couldn't find a version range for package '%s' in group '%s', is this package in your paket.dependencies file?" pkg grp
+                                    tracefn "Couldn't find a version range for package '%s' in group '%s', is this package in your paket.dependencies file?" pkg grp
                                     ()
                                 | NeedsRangeUpdate newVersionRange ->
+                                    let oldVersionRangeString = versionRange.FormatInNuGetSyntax()
                                     let nugetVersionRangeString = newVersionRange.FormatInNuGetSyntax()
+                                    tracefn "Package '%s' is a direct dependency and requires version patching from %s to %s"pkg oldVersionRangeString nugetVersionRangeString
                                     node.Attributes.["version"].InnerText <- nugetVersionRangeString
                             | None ->
+                                tracefn "Package '%s' is a direct dependency but no desired range was found, so it will be skipped" pkg
                                 ()
                         | None ->
                             raise (Exception(sprintf "Could not read dependency id for package node %O" node))
