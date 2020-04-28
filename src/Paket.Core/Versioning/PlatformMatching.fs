@@ -28,9 +28,9 @@ let inline split (path : string) =
 // TODO: This function does now quite a lot, there probably should be several functions.
 let private extractPlatformsPriv = memoize (fun path ->
     let splits = split path
-    let platforms = 
-        splits 
-        |> Array.choose FrameworkDetection.Extract 
+    let platforms =
+        splits
+        |> Array.choose FrameworkDetection.Extract
         |> Array.toList
 
     if platforms.Length = 0 then
@@ -43,7 +43,7 @@ let private extractPlatformsPriv = memoize (fun path ->
     else Some { Name = path; Platforms = platforms })
 
 let extractPlatforms warn path =
-    if System.String.IsNullOrEmpty path then 
+    if System.String.IsNullOrEmpty path then
         Some ParsedPlatformPath.Empty
     else
         match extractPlatformsPriv path with
@@ -84,7 +84,7 @@ let rec getPlatformPenalty =
             | _, TargetProfile.PortableProfile (PortableProfileType.UnsupportedProfile fws) ->
                 // We cannot find unsupported profiles in our "SupportedPlatforms" list
                 // Just check if we are compatible at all and return a high penalty
-                
+
                 if packagePlatform.IsSupportedBy targetPlatform then
                     Penalty_UnsupportedProfile
                 else MaxPenalty
@@ -170,20 +170,20 @@ let collectPlatforms =
     memoize (fun (framework,profls) -> loop ([]:TargetProfile list) framework profls)
 
 
-let platformsSupport = 
-    let rec platformsSupport platform platforms = 
+let platformsSupport =
+    let rec platformsSupport platform platforms =
         if Set.isEmpty platforms then MaxPenalty
         elif platforms |> Set.contains (platform) then 1
-        else 
+        else
             platforms |> Set.toArray
-            |> Array.Parallel.map (fun (p : TargetProfile) -> 
+            |> Array.Parallel.map (fun (p : TargetProfile) ->
                 collectPlatforms (p,KnownTargetProfiles.AllProfiles)
             ) |> Set.unionMany
             |> platformsSupport platform |> (+) 1
     memoize (fun (platform,platforms) -> platformsSupport platform platforms)
 
 
-let findBestMatch = 
+let findBestMatch =
     let rec findBestMatch (paths : ParsedPlatformPath list, targetProfile : TargetProfile) =
         paths
         |> List.map (fun path -> path, (getPathPenalty (path, targetProfile)))
@@ -195,9 +195,9 @@ let findBestMatch =
     memoize (fun (paths : ParsedPlatformPath list,targetProfile : TargetProfile) -> findBestMatch(paths,targetProfile))
 
 // For a given list of paths and target profiles return tuples of paths with their supported target profiles.
-// Every target profile will only be listed for own path - the one that best supports it. 
-let getSupportedTargetProfiles =    
-    memoize 
+// Every target profile will only be listed for own path - the one that best supports it.
+let getSupportedTargetProfiles =
+    memoize
         (fun (paths : ParsedPlatformPath list) ->
             KnownTargetProfiles.AllProfiles
             |> Seq.choose (fun target ->
@@ -223,7 +223,7 @@ let getTargetCondition (target:TargetProfile) =
         | DotNetUnity(DotNetUnityVersion.V3_5_Micro as version) ->
             "$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "($(TargetFrameworkVersion) == '%O' And $(TargetFrameworkProfile) == 'Unity Micro v3.5')" version
         | DotNetUnity(DotNetUnityVersion.V3_5_Web as version) ->
-            "$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "($(TargetFrameworkVersion) == '%O' And $(TargetFrameworkProfile) == 'Unity Web v3.5')" version               
+            "$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "($(TargetFrameworkVersion) == '%O' And $(TargetFrameworkProfile) == 'Unity Web v3.5')" version
         | Windows(version) -> "$(TargetFrameworkIdentifier) == '.NETCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version.NetCoreVersion
         | Silverlight(version) -> "$(TargetFrameworkIdentifier) == 'Silverlight'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | WindowsPhoneApp(version) -> "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp'", sprintf "$(TargetFrameworkVersion) == '%O'" version
@@ -240,13 +240,14 @@ let getTargetCondition (target:TargetProfile) =
         | Native(NoBuildMode,bits) -> (sprintf "'$(Platform)'=='%s'" bits.AsString), ""
         | Native(profile,bits) -> (sprintf "'$(Configuration)|$(Platform)'=='%s|%s'" profile.AsString bits.AsString), ""
         | Tizen version ->"$(TargetFrameworkIdentifier) == 'Tizen'", sprintf "$(TargetFrameworkVersion) == '%O'" version
+        | XCode version ->"$(TargetFrameworkIdentifier) == 'XCode'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | Unsupported s -> "", ""
     | TargetProfile.PortableProfile p -> sprintf "$(TargetFrameworkProfile) == '%O'" p.ProfileName,""
 
 let getCondition (referenceCondition:string option) (allTargets: TargetProfile Set list) (targets : TargetProfile Set) =
     let inline CheckIfFullyInGroup typeName matchF filterRestF (processed,targets) =
-        let fullyContained = 
-            KnownTargetProfiles.AllDotNetProfiles 
+        let fullyContained =
+            KnownTargetProfiles.AllDotNetProfiles
             |> List.filter matchF
             |> List.forall (fun p -> targets |> Set.contains p)
 
@@ -266,10 +267,10 @@ let getCondition (referenceCondition:string option) (allTargets: TargetProfile S
         |> CheckIfFullyInGroupS "WindowsPhone" (function TargetProfile.SinglePlatform (WindowsPhone _) -> true | _ -> false)
 
     let conditions =
-        if targets.Count = 1 && targets |> Set.minElement = TargetProfile.SinglePlatform(Native(NoBuildMode,NoPlatform)) then 
+        if targets.Count = 1 && targets |> Set.minElement = TargetProfile.SinglePlatform(Native(NoBuildMode,NoPlatform)) then
             targets
-        else 
-            targets 
+        else
+            targets
             |> Set.filter (function
                            | TargetProfile.SinglePlatform(Native(NoBuildMode,NoPlatform)) -> false
                            | _ -> true)
@@ -280,7 +281,7 @@ let getCondition (referenceCondition:string option) (allTargets: TargetProfile S
         |> List.groupBy fst
 
     let conditionString =
-        let andString = 
+        let andString =
             conditions
             |> List.map (fun (group,conditions) ->
                 match List.ofSeq (conditions |> Seq.map snd |> Set.ofSeq) with
@@ -293,15 +294,15 @@ let getCondition (referenceCondition:string option) (allTargets: TargetProfile S
                     let detail =
                         conditions
                         |> fun cs -> String.Join(" Or ",cs)
-                        
+
                     sprintf "%s And (%s)" group detail)
-        
+
         match andString with
         | [] -> ""
         | [x] -> x
         | xs -> String.Join(" Or ", List.map (fun cs -> sprintf "(%s)" cs) xs)
-    
-    match referenceCondition with 
+
+    match referenceCondition with
     | None -> conditionString
     | Some condition ->
         // msbuild triggers a warning MSB4130 when we leave out the quotes around the condition

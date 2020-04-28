@@ -300,6 +300,27 @@ type DotNetUnityVersion =
         | DotNetUnityVersion.V3_5_Subset -> "35-Unity Subset v3.5"
         | DotNetUnityVersion.V3_5_Full -> "35-Unity Full v3.5"
 
+[<RequireQualifiedAccess>]
+type XCodeVersion =
+    | V10
+    | V11
+    override this.ToString() =
+        match this with
+        | V10 -> "XCODE10"
+        | V11 -> "XCODE11"
+
+    member this.ShortString() =
+        match this with
+        | XCodeVersion.V10 -> "XCODE10"
+        | XCodeVersion.V11 -> "XCODE11"
+
+    static member TryParse s =
+        match s with
+        | "10" -> Some (XCodeVersion.V10)
+        | "11" -> Some (XCodeVersion.V11)
+        | _ -> None
+
+
 module KnownAliases =
     let Data =
         [".netframework", "net"
@@ -537,6 +558,7 @@ type TizenVersion =
         | "" | "3" -> Some (TizenVersion.V3)
         | "4" -> Some (TizenVersion.V4)
         | _ -> None
+
 /// Framework Identifier type.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 type FrameworkIdentifier =
@@ -558,6 +580,7 @@ type FrameworkIdentifier =
     | WindowsPhoneApp of WindowsPhoneAppVersion
     | Silverlight of SilverlightVersion
     | Tizen of TizenVersion
+    | XCode of XCodeVersion
     | Unsupported of string
 
     override x.ToString() =
@@ -581,6 +604,7 @@ type FrameworkIdentifier =
         | WindowsPhoneApp v -> "wpa" + v.ShortString()
         | Silverlight v -> "sl" + v.ShortString()
         | Tizen v -> "tizen" + v.ShortString()
+        | XCode v -> "xcode" + v.ShortString()
         | Unsupported s -> s
 
 
@@ -693,6 +717,8 @@ type FrameworkIdentifier =
         | WindowsPhone WindowsPhoneVersion.V8_1 -> [ WindowsPhone WindowsPhoneVersion.V8 ]
         | Tizen TizenVersion.V3 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Tizen TizenVersion.V4 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | XCode XCodeVersion.V10 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | XCode XCodeVersion.V11 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Unsupported _ -> []
 
 module FrameworkDetection =
@@ -838,6 +864,7 @@ module FrameworkDetection =
                     () -> Some (Unsupported path)
                 | v when v.StartsWith "dotnet" -> Some (Unsupported path)
                 | MatchTfm "tizen" TizenVersion.TryParse fm -> Some (Tizen fm)
+                | MatchTfm "xcode" XCodeVersion.TryParse fm -> Some (XCode fm)
                 // Default is full framework, for example "35"
                 | MatchTfm "" FrameworkVersion.TryParse fm -> Some (DotNetFramework fm)
                 | _ -> None
@@ -1520,6 +1547,7 @@ module SupportCalculation =
                     | DotNetStandard _
                     | Unsupported _
                     | XamarinMac -> false
+                    | XCode _
                     | Tizen _ -> failwithf "Unexpected framework while trying to resolve PCL Profile"
                     | _ -> true)
             if minimal.Length > 0 then
