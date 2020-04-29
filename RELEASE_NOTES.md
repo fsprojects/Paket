@@ -1,3 +1,6 @@
+#### 5.244.2 - 2020-04-29
+* Detect when MSBuild 16 is not using SDK - https://github.com/fsprojects/Paket/issues/3837
+
 #### 5.244.1 - 2020-04-26
 * REVERT: Apply version ranges to nuspecs during fix-up command - https://github.com/fsprojects/Paket/pull/3835
 
