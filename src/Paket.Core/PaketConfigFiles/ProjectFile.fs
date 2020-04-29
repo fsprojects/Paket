@@ -1095,11 +1095,11 @@ module ProjectFile =
         | null -> adjustIfWeHaveSDK 4.0
         | v ->
             match Double.TryParse(v.Value, NumberStyles.Any, CultureInfo.InvariantCulture) with
-            | true , 15.0 ->
+            | true , v when v >= 15.0 ->
                     let sdkAttr = project.ProjectNode.Attributes.["Sdk"]
                     if  isNull sdkAttr || String.IsNullOrWhiteSpace sdkAttr.Value
                     then 14.0   // adjustment so paket still installs to old style msbuild projects that are using MSBuild15 but not the new format
-                    else 15.0
+                    else v
             | true,  version -> adjustIfWeHaveSDK version
             | _         -> adjustIfWeHaveSDK 4.0
 
