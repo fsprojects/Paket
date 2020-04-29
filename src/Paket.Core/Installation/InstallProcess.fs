@@ -369,10 +369,8 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
     tracefn " - Installing for projects"
     for project, referenceFile in projectsAndReferences do
-        tracefn "   - %s -> %s" (norm referenceFile.FileName) (norm project.FileName)
         let toolsVersion = project.GetToolsVersion()
-        if verbose then
-            verbosefn "Installing to %s with ToolsVersion %O" project.FileName toolsVersion
+        tracefn "   - %s -> %s (MSBuild %O)" (norm referenceFile.FileName) (norm project.FileName) toolsVersion
 
         let directDependencies, errorMessages =
             referenceFile.Groups
@@ -492,7 +490,6 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
         // if any errors have been found during the installation process thus far, fail and print all errors collected
         if not (Seq.isEmpty errorMessages) then
             failwithf "Installation Errors :\n%s" (String.concat "\n" errorMessages)
-
         else // start the installation process
             if toolsVersion >= 15.0 then
                 installForDotnetSDK root project

@@ -1,10 +1,13 @@
-#### 6.0.0-alpha025 - 2020-04-28
+#### 6.0.0-alpha026 - 2020-04-29
 * Full .NET Core / SDK compatible version
 * Support for XCode
 * Support for .netcoreapp5.0
 
-#### 5.244.0 - 2020-04-26
-* Apply version ranges to nuspecs during fix-up command - https://github.com/fsprojects/Paket/pull/3835
+#### 5.244.2 - 2020-04-29
+* Detect when MSBuild 16 is not using SDK - https://github.com/fsprojects/Paket/issues/3837
+
+#### 5.244.1 - 2020-04-26
+* REVERT: Apply version ranges to nuspecs during fix-up command - https://github.com/fsprojects/Paket/pull/3835
 
 #### 5.243.0 - 2020-03-27
 * Add support for MonoAndroid10.0 - https://github.com/fsprojects/Paket/pull/3817
