@@ -316,7 +316,9 @@ type XCodeVersion =
 
     static member TryParse s =
         match s with
+        | "1" -> Some (XCodeVersion.V10)
         | "10" -> Some (XCodeVersion.V10)
+        | "1.1" -> Some (XCodeVersion.V11)
         | "11" -> Some (XCodeVersion.V11)
         | _ -> None
 
