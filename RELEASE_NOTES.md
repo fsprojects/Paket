@@ -1,4 +1,4 @@
-#### 5.245.0 - 2020-05-05
+#### 5.245.1 - 2020-05-05
 * Allow to restore netcoreapp5.0 - https://github.com/fsprojects/Paket/issues/3811
 
 #### 5.244.2 - 2020-04-29

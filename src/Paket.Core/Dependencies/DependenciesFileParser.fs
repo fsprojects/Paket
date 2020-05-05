@@ -601,6 +601,3 @@ module DependenciesFileParser =
         VersionRequirement = parseVersionRequirement (version.Trim(VersionRange.StrategyOperators |> Array.ofList))
         ResolverStrategy = parseResolverStrategy version
     }
-
-
-

@@ -268,14 +268,14 @@ type DotNetCoreAppVersion =
 
     static member TryParse s =
         match s with
-        | "" | "1" -> Some (DotNetCoreAppVersion.V1_0)
-        | "1.1" -> Some (DotNetCoreAppVersion.V1_1)
-        | "2" -> Some (DotNetCoreAppVersion.V2_0)
-        | "2.1" -> Some (DotNetCoreAppVersion.V2_1)
-        | "2.2" -> Some (DotNetCoreAppVersion.V2_2)
-        | "3" -> Some (DotNetCoreAppVersion.V3_0)
-        | "3.1" -> Some (DotNetCoreAppVersion.V3_1)
-        | "5.0" -> Some (DotNetCoreAppVersion.V5_0)
+        | _ when s = "" || s = "1" -> Some (DotNetCoreAppVersion.V1_0)
+        | _ when s = "1.1" -> Some (DotNetCoreAppVersion.V1_1)
+        | _ when s = "2" || s = "2.0" -> Some (DotNetCoreAppVersion.V2_0)
+        | _ when s = "2.1" -> Some (DotNetCoreAppVersion.V2_1)
+        | _ when s = "2.2" -> Some (DotNetCoreAppVersion.V2_2)
+        | _ when s = "3" || s = "3.0" -> Some (DotNetCoreAppVersion.V3_0)
+        | _ when s = "3.1" -> Some (DotNetCoreAppVersion.V3_1)
+        | _ when s = "5.0" || s = "5" -> Some (DotNetCoreAppVersion.V5_0)
         | _ -> None
 
 [<RequireQualifiedAccess>]
