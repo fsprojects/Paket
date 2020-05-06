@@ -117,7 +117,7 @@ module LockFileSerializer =
                     hasReported := true
 
                   yield "  remote: " + String.quoted source
-                  yield "  protocolVersion: " + String.quoted (if protocolVersion = Some NugetProtocolVersion.ProtocolVersion2 then "2" else "3")
+                  yield "  protocolVersion: " + String.quoted (if protocolVersion = Some ProtocolVersion2 then "2" else "3")
 
                   for _,_,_,package in packages |> Seq.sortBy (fun (_,_,_,p) -> p.Name) do
                       let versionStr = 
@@ -460,7 +460,7 @@ module LockFileParser =
                 if String.IsNullOrWhiteSpace line || line.Trim().StartsWith("specs:") then currentGroup::otherGroups else
                 match (currentGroup, line) with
                 | Remote(RemoteUrl(url)) -> { currentGroup with RemoteUrl = url}::otherGroups
-                | Remote(ProtocolVersion(protocolVersion)) -> { currentGroup with NugetProtocolVersion = (if protocolVersion = Some "2" then Some NugetProtocolVersion.ProtocolVersion2 else Some NugetProtocolVersion.ProtocolVersion3) }::otherGroups
+                | Remote(ProtocolVersion(protocolVersion)) -> { currentGroup with NugetProtocolVersion = (if protocolVersion = Some "2" then Some ProtocolVersion2 else Some ProtocolVersion3) }::otherGroups
                 | Group groupName -> { GroupName = GroupName groupName; RepositoryType = None; RemoteUrl = None; NugetProtocolVersion = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false } :: currentGroup :: otherGroups
                 | InstallOption(Command(command)) -> 
                     let sourceFiles = 
@@ -509,7 +509,7 @@ module LockFileParser =
 
                     match (currentGroup.RemoteUrl, currentGroup.NugetProtocolVersion) with
                     | (Some remote, Some protocolVersion) -> handleNugetDetails remote (Some protocolVersion)
-                    | (Some remote, None) -> handleNugetDetails remote (Some NugetProtocolVersion.ProtocolVersion3)
+                    | (Some remote, None) -> handleNugetDetails remote (Some ProtocolVersion3)
                     | (None, _) -> failwith "no source has been specified."
                 | NugetDependency (name, v, frameworkSettings) ->
                     let version,_,isRuntimeDependency,settings = parsePackage v

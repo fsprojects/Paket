@@ -119,8 +119,8 @@ let internal parseProtocolVersion(text:string, source) =
         let (parsed, specifiedProtocolVersion) = Int32.TryParse(textProtocolVersion)
 
         match (parsed,specifiedProtocolVersion) with
-        | (true, 2) -> Some NugetProtocolVersion.ProtocolVersion2
-        | (true, 3) -> Some NugetProtocolVersion.ProtocolVersion3
+        | (true, 2) -> Some ProtocolVersion2
+        | (true, 3) -> Some ProtocolVersion3
         | _ -> failwithf "Unsupported protocolVersion in \"%s\". Should be either 2 or 3" text
     else
         None
@@ -168,9 +168,9 @@ type PackageSource =
                     LocalNuGet(source,None)
                 else
                     match protocolVersion with
-                    | Some NugetProtocolVersion.ProtocolVersion2 -> NuGetV2 { Url = source; ProtocolVersion = NugetProtocolVersion.ProtocolVersion2; Authentication = auth }
-                    | Some NugetProtocolVersion.ProtocolVersion3 -> NuGetV3 { Url = source; ProtocolVersion = NugetProtocolVersion.ProtocolVersion3; Authentication = auth }
-                    | None -> NuGetV3 { Url = source; ProtocolVersion = NugetProtocolVersion.ProtocolVersion3; Authentication = auth }
+                    | Some ProtocolVersion2 -> NuGetV2 { Url = source; ProtocolVersion = ProtocolVersion2; Authentication = auth }
+                    | Some ProtocolVersion3 -> NuGetV3 { Url = source; ProtocolVersion = ProtocolVersion3; Authentication = auth }
+                    | None -> NuGetV3 { Url = source; ProtocolVersion = ProtocolVersion3; Authentication = auth }
             | _ ->  match System.Uri.TryCreate(source, System.UriKind.Relative) with
                     | true, uri -> LocalNuGet(source,None)
                     | _ -> failwithf "unable to parse package source: %s" source
@@ -192,8 +192,8 @@ type PackageSource =
         | NuGetV3 n -> n.Authentication
         | LocalNuGet(n,_) -> CredentialProviders.GetAuthenticationProvider n
 
-    static member NuGetV2Source url = NuGetV2 { Url = url; ProtocolVersion = NugetProtocolVersion.ProtocolVersion2; Authentication  = CredentialProviders.GetAuthenticationProvider url }
-    static member NuGetV3Source url = NuGetV3 { Url = url; ProtocolVersion = NugetProtocolVersion.ProtocolVersion3; Authentication  = CredentialProviders.GetAuthenticationProvider url }
+    static member NuGetV2Source url = NuGetV2 { Url = url; ProtocolVersion = ProtocolVersion2; Authentication  = CredentialProviders.GetAuthenticationProvider url }
+    static member NuGetV3Source url = NuGetV3 { Url = url; ProtocolVersion = ProtocolVersion3; Authentication  = CredentialProviders.GetAuthenticationProvider url }
 
     static member FromCache (cache:Cache) = LocalNuGet(cache.Location,Some cache)
 
