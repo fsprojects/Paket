@@ -448,7 +448,7 @@ module LockFileParser =
 
             parts.[0],kind,isRuntimeDependency,InstallSettings.Parse(true, optionsString)
 
-        ([{ GroupName = Constants.MainDependencyGroup; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false }], lockFileLines)
+        ([{ GroupName = Constants.MainDependencyGroup; RepositoryType = None; RemoteUrl = None; NugetProtocolVersion = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false }], lockFileLines)
         ||> Seq.fold(fun state line ->
             match state with
             | [] -> failwithf "error"
@@ -456,7 +456,7 @@ module LockFileParser =
                 if String.IsNullOrWhiteSpace line || line.Trim().StartsWith("specs:") then currentGroup::otherGroups else
                 match (currentGroup, line) with
                 | Remote url -> { currentGroup with RemoteUrl = Some url }::otherGroups
-                | Group groupName -> { GroupName = GroupName groupName; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false } :: currentGroup :: otherGroups
+                | Group groupName -> { GroupName = GroupName groupName; RepositoryType = None; RemoteUrl = None; NugetProtocolVersion = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false } :: currentGroup :: otherGroups
                 | InstallOption(Command(command)) -> 
                     let sourceFiles = 
                         match currentGroup.SourceFiles with
