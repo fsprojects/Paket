@@ -114,7 +114,6 @@ module LockFileSerializer =
                   if not !hasReported then
                     yield "NUGET"
                     hasReported := true
-
                   yield "  remote: " + String.quoted source
                   match protocolVersion with
                   | Some p -> yield "  protocolVersion: " + String.quoted (if p = ProtocolVersion2 then "2" else "3")
@@ -293,9 +292,13 @@ module LockFileParser =
         | _, "GIT" -> RepositoryType "GIT"
         | _, "NUGET" -> RepositoryType "NUGET"
         | _, "GITHUB" -> RepositoryType "GITHUB"
-        | Some "NUGET", String.RemovePrefix "protocolVersion:" trimmed -> Remote(ProtocolVersion(Some (trimmed.Trim())))
-        | _, String.RemovePrefix "remote:" trimmed -> Remote(RemoteUrl(Some (trimmed.Trim())))
-        | Some "NUGET", String.RemovePrefix "remote:" trimmed -> Remote(RemoteUrl(Some (PackageSource.Parse("source " + trimmed.Trim()).ToString())))
+        | Some "NUGET", String.RemovePrefix "protocolVersion:" trimmed ->
+                Remote(ProtocolVersion(Some (trimmed.Trim())))
+        | Some "NUGET", String.RemovePrefix "remote:" trimmed ->
+            let inner = PackageSource.Parse("source " + trimmed.Trim())
+            Remote(RemoteUrl(Some (inner.ToString())))
+        | _, String.RemovePrefix "remote:" trimmed ->
+            Remote(RemoteUrl(Some (trimmed.Trim())))
         | _, String.RemovePrefix "GROUP" trimmed -> Group(trimmed.Replace("GROUP","").Trim())
         | _, String.RemovePrefix "REFERENCES:" trimmed -> InstallOption(ReferencesMode(trimmed.Trim() = "STRICT"))
         | _, String.RemovePrefix "REDIRECTS:" trimmed ->
