@@ -100,12 +100,12 @@ module LockFileSerializer =
             |> Seq.map (fun kv ->
                     let package = kv.Value
                     match package.Source with
-                    | NuGetV2 source -> source.Url,source.Authentication,package
-                    | NuGetV3 source -> source.Url,source.Authentication,package
+                    | NuGetV2 source -> source.Url,Some source.ProtocolVersion,source.Authentication,package
+                    | NuGetV3 source -> source.Url,Some source.ProtocolVersion,source.Authentication,package
                     // TODO: Add credentials provider...
-                    | LocalNuGet(path,_) -> path,AuthService.GetGlobalAuthenticationProvider path,package
+                    | LocalNuGet(path,_) -> path,None,AuthService.GetGlobalAuthenticationProvider path,package
                 )
-            |> Seq.groupBy (fun (a,b,_) -> a)
+            |> Seq.groupBy (fun (nugetSource, protocolVersion, authProvider,_) -> (nugetSource, protocolVersion))
 
         let all = 
             let hasReported = ref false
