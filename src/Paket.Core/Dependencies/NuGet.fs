@@ -419,6 +419,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
                 | Some url ->
                     let nugetSource : NuGetSource =
                         { Url = url
+                          ProtocolVersion = NugetProtocolVersion.ProtocolVersion2
                           Authentication = nugetSource.Authentication }
                     return! tryV2 nugetSource force
                 | _ ->
