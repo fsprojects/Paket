@@ -256,7 +256,7 @@ module LockFileParser =
         GroupName : GroupName
         RepositoryType : string option
         RemoteUrl :string option
-        NugetProtocolVersion: NugetProtocolVersion options
+        NugetProtocolVersion: NugetProtocolVersion option
         Packages : ResolvedPackage list
         SourceFiles : ResolvedSourceFile list
         LastWasPackage : bool
@@ -479,8 +479,7 @@ module LockFileParser =
                     { currentGroup with Options = extractOption currentGroup option }::otherGroups
                 | RepositoryType repoType -> { currentGroup with RepositoryType = Some repoType }::otherGroups
                 | NugetPackage details ->
-                    match currentGroup.RemoteUrl with
-                    | Some remote -> 
+                    let handlerNugetDetails remote protocolVersion =
                         let package,kind,isRuntimeDependency,settings = parsePackage details
                         let parts' = package.Split ' '
                         let version = 
@@ -493,7 +492,7 @@ module LockFileParser =
                         { currentGroup with 
                             LastWasPackage = true
                             Packages = 
-                                    { Source = PackageSource.Parse(remote, AuthService.GetGlobalAuthenticationProvider remote)
+                                    { Source = PackageSource.Parse(remote, protocolVersion, AuthService.GetGlobalAuthenticationProvider remote)
                                       Name = PackageName packageName
                                       Dependencies = Set.empty
                                       Unlisted = false
@@ -502,7 +501,11 @@ module LockFileParser =
                                       Kind = kind
                                       // TODO: write stuff into the lockfile and read it here
                                       IsRuntimeDependency = isRuntimeDependency } :: currentGroup.Packages }::otherGroups
-                    | None -> failwith "no source has been specified."
+
+                    match (currentGroup.RemoteUrl, currentGroup.NugetProtocolVersion) with
+                    | (Some remote, Some protocolVersion) -> handlerNugetDetails remote (Some protocolVersion)
+                    | (Some remote, None) -> handlerNugetDetails remote (Some NugetProtocolVersion.ProtocolVersion3)
+                    | (None, _) -> failwith "no source has been specified."
                 | NugetDependency (name, v, frameworkSettings) ->
                     let version,_,isRuntimeDependency,settings = parsePackage v
                     assert (not isRuntimeDependency)
