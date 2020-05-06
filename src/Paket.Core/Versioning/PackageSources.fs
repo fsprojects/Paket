@@ -71,8 +71,6 @@ type NuGetSource =
           | :? NuGetSource as y -> compare x.Url y.Url
           | _ -> invalidArg "yobj" "cannot compare values of different types"
 
-type NuGetV3Source = NuGetSource
-
 let userNameRegex = Regex("username[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 let passwordRegex = Regex("password[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 let authTypeRegex = Regex("authtype[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
@@ -127,13 +125,11 @@ let internal parseProtocolVersion(text:string, source) =
 
 /// Represents the package source type.
 type PackageSource =
-| NuGetV2 of NuGetSource
-| NuGetV3 of NuGetV3Source
+| NuGet of NuGetSource
 | LocalNuGet of string * Cache option
     override this.ToString() =
         match this with
-        | NuGetV2 source -> source.Url
-        | NuGetV3 source -> source.Url
+        | NuGet source -> source.Url
         | LocalNuGet(path,_) -> path
     member x.NuGetType =
         match x.Url with
@@ -168,17 +164,15 @@ type PackageSource =
                     LocalNuGet(source,None)
                 else
                     match protocolVersion with
-                    | Some ProtocolVersion2 -> NuGetV2 { Url = source; ProtocolVersion = ProtocolVersion2; Authentication = auth }
-                    | Some ProtocolVersion3 -> NuGetV3 { Url = source; ProtocolVersion = ProtocolVersion3; Authentication = auth }
-                    | None -> NuGetV3 { Url = source; ProtocolVersion = ProtocolVersion3; Authentication = auth }
+                    | Some p -> NuGet { Url = source; ProtocolVersion = p; Authentication = auth }
+                    | None -> NuGet { Url = source; ProtocolVersion = ProtocolVersion2; Authentication = auth }
             | _ ->  match System.Uri.TryCreate(source, System.UriKind.Relative) with
                     | true, uri -> LocalNuGet(source,None)
                     | _ -> failwithf "unable to parse package source: %s" source
 
     member this.Url =
         match this with
-        | NuGetV2 n -> n.Url
-        | NuGetV3 n -> n.Url
+        | NuGet n -> n.Url
         | LocalNuGet(n,_) -> n
 
     member this.IsLocalFeed =
@@ -188,12 +182,11 @@ type PackageSource =
 
     member this.Auth =
         match this with
-        | NuGetV2 n -> n.Authentication
-        | NuGetV3 n -> n.Authentication
+        | NuGet n -> n.Authentication
         | LocalNuGet(n,_) -> CredentialProviders.GetAuthenticationProvider n
 
-    static member NuGetV2Source url = NuGetV2 { Url = url; ProtocolVersion = ProtocolVersion2; Authentication  = CredentialProviders.GetAuthenticationProvider url }
-    static member NuGetV3Source url = NuGetV3 { Url = url; ProtocolVersion = ProtocolVersion3; Authentication  = CredentialProviders.GetAuthenticationProvider url }
+    static member NuGetV2Source url = NuGet { Url = url; ProtocolVersion = ProtocolVersion2; Authentication  = CredentialProviders.GetAuthenticationProvider url }
+    static member NuGetV3Source url = NuGet { Url = url; ProtocolVersion = ProtocolVersion3; Authentication  = CredentialProviders.GetAuthenticationProvider url }
 
     static member FromCache (cache:Cache) = LocalNuGet(cache.Location,Some cache)
 
@@ -205,8 +198,7 @@ type PackageSource =
             with _ ->
                 traceWarnfn "Unable to ping remote NuGet feed: %s." url
         match source with
-        | NuGetV2 x -> n x.Url x.Authentication
-        | NuGetV3 x -> n x.Url x.Authentication
+        | NuGet x -> n x.Url x.Authentication
         | LocalNuGet(path,_) ->
             if not (Directory.Exists (RemoveOutsideQuotes path)) then
                 traceWarnfn "Local NuGet feed doesn't exist: %s." path
