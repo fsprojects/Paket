@@ -111,14 +111,15 @@ module LockFileSerializer =
             let hasReported = ref false
             [ yield! serializeOptionsAsLines options
 
-              for (source), packages in sources do
+              for (source, protocolVersion), packages in sources do
                   if not !hasReported then
                     yield "NUGET"
                     hasReported := true
 
                   yield "  remote: " + String.quoted source
+                  yield "  protocolVersion: " + String.quoted (if protocolVersion = Some NugetProtocolVersion.ProtocolVersion2 then "2" else "3")
 
-                  for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> p.Name) do
+                  for _,_,_,package in packages |> Seq.sortBy (fun (_,_,_,p) -> p.Name) do
                       let versionStr = 
                           let s'' = package.Version.ToString()
                           let s' = 
