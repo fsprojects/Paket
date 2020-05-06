@@ -256,6 +256,7 @@ module LockFileParser =
         GroupName : GroupName
         RepositoryType : string option
         RemoteUrl :string option
+        NugetProtocolVersion: NugetProtocolVersion options
         Packages : ResolvedPackage list
         SourceFiles : ResolvedSourceFile list
         LastWasPackage : bool
