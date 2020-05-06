@@ -142,7 +142,7 @@ type PackageSource =
         | _ when urlSimilarToTfsOrVsts x.Url -> KnownNuGetSources.TfsOrVsts
         | _ -> KnownNuGetSources.UnknownNuGetServer
     static member Parse(line : string) =
-        let sourceRegex = Regex("source[ ]*[\"]([^\"]*)[\"][ ]*(protocolVersion[ ]*:\d)", RegexOptions.IgnoreCase)
+        let sourceRegex = Regex("source[ ]*[\"]([^\"]*)[\"](\s+.+)?", RegexOptions.IgnoreCase)
         let parts = line.Split ' '
         let source =
             if sourceRegex.IsMatch line then
