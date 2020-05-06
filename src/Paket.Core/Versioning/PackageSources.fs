@@ -108,7 +108,62 @@ let internal parseAuth(text:string, source) =
     else
         getAuth()
 
-let internal parseProtocolVersion(text:string, source) =
+let (|NugetV3Url|_|) (url: Uri) =
+  if url.ToString() = "https://api.nuget.org/v3/index.json" then Some () else None
+
+type 't ``[]`` with
+  member x.GetReverseIndex(i: int) = x.[x.Length - i]
+
+let (|Https|_|) (uri: Uri) = if uri.Scheme = "https" then Some () else None
+let (|Host|_|) (h: string) (uri: Uri) =
+    if uri.Host.EndsWith h
+    then Some ()
+    else None
+
+let (|LeadingPathSegments|_|) (segs: string[]) (uri: Uri) =
+    let segCount = segs.Length
+    let uriSegs = uri.Segments
+    if uriSegs.Length < segCount+1 then None // initial segment is a /, so we need to skip it
+    else
+        let items: string[] = uriSegs.[1..segCount]
+        let matched =
+            (items, segs)
+            ||> Array.zip
+            |> Array.forall(fun (l, r) -> l.TrimEnd('/') = r) // have to trim end because the Uri.Segments api keeps the /-separators on the end of the segment
+        if matched then Some () else None
+
+let (|TrailingPathSegments|_|) (segs: string []) (uri: Uri) =
+    let segCount = segs.Length
+    let uriSegs = uri.Segments
+    if uriSegs.Length < segCount then None
+    else
+        let items: string[] = uriSegs.[(uriSegs.Length-segCount)..]
+        let matched =
+            (items, segs)
+            ||> Array.zip
+            |> Array.forall(fun (l, r) -> l.TrimEnd('/') = r) // have to trim end because the Uri.Segments api keeps the /-separators on the end of the segment
+        if matched then Some () else None
+
+let (|MyGetV3Url|_|) (url: Uri) =
+
+  // https://<your_myget_domain>/F/<your-feed-name>/<feed_endpoint>
+  try
+      match url with
+      | Https & Host "myget.org" & TrailingPathSegments [|"api";"v3"; "index.json"|] -> Some ()
+      | _ -> None
+  with _ -> None
+
+let (|ArtifactoryV3Url|_|) (url: Uri) =
+    match url with
+    | LeadingPathSegments [|"artifactory"; "api";"nuget";"v3"|] -> Some ()
+    | _ -> None
+
+let (|KnownNugetV3Endpoint|_|) url =
+    match Uri url with
+    | NugetV3Url | MyGetV3Url | ArtifactoryV3Url -> Some ()
+    | _ -> None
+
+let internal parseProtocolVersion(text:string, nugetSource) =
     if text.Contains("protocolVersion:") then
         if not (protocolVersionRegex.IsMatch(text)) then
             failwithf "Could not parse protocolVersion in \"%s\"" text
@@ -121,7 +176,13 @@ let internal parseProtocolVersion(text:string, source) =
         | (true, 3) -> Some ProtocolVersion3
         | _ -> failwithf "Unsupported protocolVersion in \"%s\". Should be either 2 or 3" text
     else
-        None
+        // derive protocolVersion from some well-known urls
+        try
+            match nugetSource with
+            | KnownNugetV3Endpoint -> Some ProtocolVersion3
+            | _ -> None
+        with
+        | _ -> None
 
 /// Represents the package source type.
 type PackageSource =
@@ -150,7 +211,7 @@ type PackageSource =
 
         PackageSource.Parse(feed, parseProtocolVersion(line, feed), parseAuth(line, feed))
 
-    static member Parse(source,auth) =
+    static member Parse(source, protocolVersion, auth) =
         match tryParseWindowsStyleNetworkPath source with
         | Some path -> PackageSource.Parse(path)
         | _ ->

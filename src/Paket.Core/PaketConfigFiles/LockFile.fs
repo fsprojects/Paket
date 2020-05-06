@@ -116,7 +116,9 @@ module LockFileSerializer =
                     hasReported := true
 
                   yield "  remote: " + String.quoted source
-                  yield "  protocolVersion: " + String.quoted (if protocolVersion = Some ProtocolVersion2 then "2" else "3")
+                  match protocolVersion with
+                  | Some p -> yield "  protocolVersion: " + String.quoted (if p = ProtocolVersion2 then "2" else "3")
+                  | None -> ()
 
                   for _,_,_,package in packages |> Seq.sortBy (fun (_,_,_,p) -> p.Name) do
                       let versionStr =
