@@ -48,9 +48,14 @@ type KnownNuGetSources =
     | MyGet
     | UnknownNuGetServer
 
+type NugetProtocolVersion =
+    | ProtocolVersion2
+    | ProtocolVersion3
+
 [<CustomComparison;CustomEquality>]
 type NuGetSource =
     { Url : string
+      ProtocolVersion: NugetProtocolVersion
       Authentication : AuthProvider }
     member x.BasicAuth isRetry =
         x.Authentication.Retrieve isRetry
@@ -71,6 +76,7 @@ type NuGetV3Source = NuGetSource
 let userNameRegex = Regex("username[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 let passwordRegex = Regex("password[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 let authTypeRegex = Regex("authtype[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
+let protocolVersionRegex = Regex("protocolVersion[:][ ]*(\d)", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 
 let internal parseAuth(text:string, source) =
     let getAuth() =
@@ -104,6 +110,21 @@ let internal parseAuth(text:string, source) =
     else
         getAuth()
 
+let internal parseProtocolVersion(text:string, source) =
+    if text.Contains("protocolVersion:") then
+        if not (protocolVersionRegex.IsMatch(text)) then
+            failwithf "Could not parse protocolVersion in \"%s\"" text
+
+        let textProtocolVersion = protocolVersionRegex.Match(text).Groups.[1].Value
+        let (parsed, specifiedProtocolVersion) = Int32.TryParse(textProtocolVersion)
+
+        match (parsed,specifiedProtocolVersion) with
+        | (true, 2) -> Some NugetProtocolVersion.ProtocolVersion2
+        | (true, 3) -> Some NugetProtocolVersion.ProtocolVersion3
+        | _ -> failwithf "Unsupported protocolVersion in \"%s\". Should be either 2 or 3" text
+    else
+        None
+
 /// Represents the package source type.
 type PackageSource =
 | NuGetV2 of NuGetSource
@@ -121,7 +142,7 @@ type PackageSource =
         | _ when urlSimilarToTfsOrVsts x.Url -> KnownNuGetSources.TfsOrVsts
         | _ -> KnownNuGetSources.UnknownNuGetServer
     static member Parse(line : string) =
-        let sourceRegex = Regex("source[ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
+        let sourceRegex = Regex("source[ ]*[\"]([^\"]*)[\"][ ]*(protocolVersion[ ]*:\d)", RegexOptions.IgnoreCase)
         let parts = line.Split ' '
         let source =
             if sourceRegex.IsMatch line then
@@ -130,7 +151,8 @@ type PackageSource =
                 parts.[1].Replace("\"","").TrimEnd([| '/' |])
 
         let feed = normalizeFeedUrl source
-        PackageSource.Parse(feed, parseAuth(line, feed))
+
+        PackageSource.Parse(feed, parseProtocolVersion(line, feed), parseAuth(line, feed))
 
     static member Parse(source,auth) =
         match tryParseWindowsStyleNetworkPath source with
@@ -145,11 +167,10 @@ type PackageSource =
 #endif
                     LocalNuGet(source,None)
                 else
-                    if source.Contains("/v3/") || source.EndsWith("index.json") then
-                        NuGetV3 { Url = source; Authentication = auth }
-                    else
-                        NuGetV2 { Url = source; Authentication = auth }
-
+                    match protocolVersion with
+                    | Some NugetProtocolVersion.ProtocolVersion2 -> NuGetV2 { Url = source; ProtocolVersion = NugetProtocolVersion.ProtocolVersion2; Authentication = auth }
+                    | Some NugetProtocolVersion.ProtocolVersion3 -> NuGetV3 { Url = source; ProtocolVersion = NugetProtocolVersion.ProtocolVersion3; Authentication = auth }
+                    | None -> NuGetV3 { Url = source; ProtocolVersion = NugetProtocolVersion.ProtocolVersion3; Authentication = auth }
             | _ ->  match System.Uri.TryCreate(source, System.UriKind.Relative) with
                     | true, uri -> LocalNuGet(source,None)
                     | _ -> failwithf "unable to parse package source: %s" source
@@ -171,8 +192,8 @@ type PackageSource =
         | NuGetV3 n -> n.Authentication
         | LocalNuGet(n,_) -> CredentialProviders.GetAuthenticationProvider n
 
-    static member NuGetV2Source url = NuGetV2 { Url = url; Authentication = CredentialProviders.GetAuthenticationProvider url }
-    static member NuGetV3Source url = NuGetV3 { Url = url; Authentication = CredentialProviders.GetAuthenticationProvider url }
+    static member NuGetV2Source url = NuGetV2 { Url = url; ProtocolVersion = NugetProtocolVersion.ProtocolVersion2; Authentication  = CredentialProviders.GetAuthenticationProvider url }
+    static member NuGetV3Source url = NuGetV3 { Url = url; ProtocolVersion = NugetProtocolVersion.ProtocolVersion3; Authentication  = CredentialProviders.GetAuthenticationProvider url }
 
     static member FromCache (cache:Cache) = LocalNuGet(cache.Location,Some cache)
 
