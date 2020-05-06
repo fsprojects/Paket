@@ -282,17 +282,19 @@ module LockFileParser =
     | Command of string
     | PackagePath of string
     | OperatingSystemRestriction of string
+    | ProtocolVersion of string option
+    | RemoteUrl of string option
 
-    let private (|ProtocolVersion|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Group|InstallOption|) (state, line:string) =
+    let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Group|InstallOption|) (state, line:string) =
         match (state.RepositoryType, line.Trim()) with
         | _, "HTTP" -> RepositoryType "HTTP"
         | _, "GIST" -> RepositoryType "GIST"
         | _, "GIT" -> RepositoryType "GIT"
         | _, "NUGET" -> RepositoryType "NUGET"
         | _, "GITHUB" -> RepositoryType "GITHUB"
-        | Some "NUGET", String.RemovePrefix "protocolVersion:" trimmed -> ProtocolVersion(trimmed.Trim())
-        | _, String.RemovePrefix "remote:" trimmed -> Remote(trimmed.Trim())
-        | Some "NUGET", String.RemovePrefix "remote:" trimmed -> Remote(PackageSource.Parse("source " + trimmed.Trim()).ToString())
+        | Some "NUGET", String.RemovePrefix "protocolVersion:" trimmed -> Remote(ProtocolVersion(Some trimmed))
+        | _, String.RemovePrefix "remote:" trimmed -> Remote(RemoteUrl(Some (trimmed.Trim())))
+        | Some "NUGET", String.RemovePrefix "remote:" trimmed -> Remote(RemoteUrl(Some (PackageSource.Parse("source " + trimmed.Trim()).ToString())))
         | _, String.RemovePrefix "GROUP" trimmed -> Group(trimmed.Replace("GROUP","").Trim())
         | _, String.RemovePrefix "REFERENCES:" trimmed -> InstallOption(ReferencesMode(trimmed.Trim() = "STRICT"))
         | _, String.RemovePrefix "REDIRECTS:" trimmed -> 
@@ -457,8 +459,8 @@ module LockFileParser =
             | currentGroup::otherGroups ->
                 if String.IsNullOrWhiteSpace line || line.Trim().StartsWith("specs:") then currentGroup::otherGroups else
                 match (currentGroup, line) with
-                | ProtocolVersion protocolVersion -> { currentGroup with NugetProtocolVersion = Some protocolVersion }::otherGroups
-                | Remote url -> { currentGroup with RemoteUrl = Some url }::otherGroups
+                | Remote(RemoteUrl(url)) -> { currentGroup with RemoteUrl = url}::otherGroups
+                | Remote(ProtocolVersion(protocolVersion)) -> { currentGroup with NugetProtocolVersion = (if protocolVersion = Some "2" then Some NugetProtocolVersion.ProtocolVersion2 else Some NugetProtocolVersion.ProtocolVersion3) }::otherGroups
                 | Group groupName -> { GroupName = GroupName groupName; RepositoryType = None; RemoteUrl = None; NugetProtocolVersion = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false } :: currentGroup :: otherGroups
                 | InstallOption(Command(command)) -> 
                     let sourceFiles = 
