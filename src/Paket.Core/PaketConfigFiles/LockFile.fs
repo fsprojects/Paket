@@ -58,7 +58,7 @@ module LockFileSerializer =
         match options.ResolverStrategyForDirectDependencies with
         | Some ResolverStrategy.Min -> yield "LOWEST_MATCHING: TRUE"
         | Some ResolverStrategy.Max -> yield "LOWEST_MATCHING: FALSE"
-        | None -> () 
+        | None -> ()
         match options.Settings.CopyLocal with
         | Some x -> yield "COPY-LOCAL: " + x.ToString().ToUpper()
         | None -> ()
@@ -94,20 +94,19 @@ module LockFileSerializer =
         | list  -> yield "RESTRICTION: " + list.ToString() ]
 
     /// [omit]
-    let serializePackages options (resolved : PackageResolution) = 
+    let serializePackages options (resolved : PackageResolution) =
         let sources =
             resolved
             |> Seq.map (fun kv ->
                     let package = kv.Value
                     match package.Source with
-                    | NuGetV2 source -> source.Url,Some source.ProtocolVersion,source.Authentication,package
-                    | NuGetV3 source -> source.Url,Some source.ProtocolVersion,source.Authentication,package
+                    | NuGet source -> source.Url,Some source.ProtocolVersion,source.Authentication,package
                     // TODO: Add credentials provider...
                     | LocalNuGet(path,_) -> path,None,AuthService.GetGlobalAuthenticationProvider path,package
                 )
             |> Seq.groupBy (fun (nugetSource, protocolVersion, authProvider,_) -> (nugetSource, protocolVersion))
 
-        let all = 
+        let all =
             let hasReported = ref false
             [ yield! serializeOptionsAsLines options
 
@@ -120,12 +119,12 @@ module LockFileSerializer =
                   yield "  protocolVersion: " + String.quoted (if protocolVersion = Some ProtocolVersion2 then "2" else "3")
 
                   for _,_,_,package in packages |> Seq.sortBy (fun (_,_,_,p) -> p.Name) do
-                      let versionStr = 
+                      let versionStr =
                           let s'' = package.Version.ToString()
-                          let s' = 
-                            if source.Contains "nuget.org" && options.Settings.IncludeVersionInPath <> Some true && package.Settings.IncludeVersionInPath <> Some true then 
-                                package.Version.NormalizeToShorter() 
-                            else 
+                          let s' =
+                            if source.Contains "nuget.org" && options.Settings.IncludeVersionInPath <> Some true && package.Settings.IncludeVersionInPath <> Some true then
+                                package.Version.NormalizeToShorter()
+                            else
                                 s''
 
                           let s = if s''.Length > s'.Length then s' else s''
@@ -152,13 +151,13 @@ module LockFileSerializer =
                         | _, s -> s
 
 
-                      if s = "" then 
-                          yield sprintf "    %s %s" (writePackageName package.Name) versionStr 
+                      if s = "" then
+                          yield sprintf "    %s %s" (writePackageName package.Name) versionStr
                       else
                           yield sprintf "    %s %s - %s" (writePackageName package.Name) versionStr s
 
                       for name,v,restrictions in package.Dependencies do
-                          let versionStr = 
+                          let versionStr =
                               let s = v.ToString()
                               if s = "" then s else "(" + s + ")"
 
@@ -167,7 +166,7 @@ module LockFileSerializer =
                             yield sprintf "      %s %s" (writePackageName name) versionStr
                           else
                             yield sprintf "      %s %s - restriction: %O" (writePackageName name) versionStr restrictions]
-    
+
         String.Join(Environment.NewLine, all |> List.map (fun s -> s.TrimEnd()))
 
     let serializeSourceFiles (files:ResolvedSourceFile list) =
@@ -176,7 +175,7 @@ module LockFileSerializer =
 
             [ for (owner,project,origin), files in files |> List.groupBy (fun f -> f.Owner, f.Project, f.Origin) do
                 match origin with
-                | GitHubLink -> 
+                | GitHubLink ->
                     if not (updateHasReported.Contains(GitHubLink)) then
                         yield "GITHUB"
                         updateHasReported.Remove (HttpLink "") |> ignore
@@ -193,8 +192,8 @@ module LockFileSerializer =
                         updateHasReported.Remove (HttpLink "") |> ignore
                         updateHasReported.Add (GitLink (RemoteGitOrigin""))
                     yield sprintf "  remote: " + url
-               
-                | GistLink -> 
+
+                | GistLink ->
                     if not (updateHasReported.Contains(GistLink)) then
                         yield "GIST"
                         updateHasReported.Remove GitHubLink |> ignore
@@ -223,11 +222,11 @@ module LockFileSerializer =
                     match String.IsNullOrEmpty(file.Commit) with
                     | false ->
                         match file.AuthKey with
-                        | Some authKey -> 
+                        | Some authKey ->
                             yield sprintf "    %s (%s) %s" path file.Commit authKey
-                        | None -> 
+                        | None ->
                             yield sprintf "    %s (%s)" path file.Commit
-                    | true -> 
+                    | true ->
                         match file.AuthKey with
                         | Some authKey -> yield sprintf "    %s %s" path authKey
                         | None -> yield sprintf "    %s" path
@@ -245,7 +244,7 @@ module LockFileSerializer =
                     | Some filter -> yield "      os: " + filter
 
                     for (name,v) in file.Dependencies do
-                        let versionStr = 
+                        let versionStr =
                             let s = v.ToString()
                             if s = "" then s else "(" + s + ")"
                         yield sprintf "      %O %s" name versionStr]
@@ -253,7 +252,7 @@ module LockFileSerializer =
         String.Join(Environment.NewLine, all |> List.map (fun s -> s.TrimEnd()))
 
 module LockFileParser =
-    type ParseState = { 
+    type ParseState = {
         GroupName : GroupName
         RepositoryType : string option
         RemoteUrl :string option
@@ -261,7 +260,7 @@ module LockFileParser =
         Packages : ResolvedPackage list
         SourceFiles : ResolvedSourceFile list
         LastWasPackage : bool
-        Options: InstallOptions 
+        Options: InstallOptions
     }
 
     type private ParserOption =
@@ -297,7 +296,7 @@ module LockFileParser =
         | Some "NUGET", String.RemovePrefix "remote:" trimmed -> Remote(RemoteUrl(Some (PackageSource.Parse("source " + trimmed.Trim()).ToString())))
         | _, String.RemovePrefix "GROUP" trimmed -> Group(trimmed.Replace("GROUP","").Trim())
         | _, String.RemovePrefix "REFERENCES:" trimmed -> InstallOption(ReferencesMode(trimmed.Trim() = "STRICT"))
-        | _, String.RemovePrefix "REDIRECTS:" trimmed -> 
+        | _, String.RemovePrefix "REDIRECTS:" trimmed ->
             let setting =
                 match trimmed.Trim() with
                 | String.EqualsIC "on" -> Some BindingRedirectsSettings.On
@@ -306,7 +305,7 @@ module LockFileParser =
                 | _ -> None
 
             InstallOption (Redirects setting)
-        | _, String.RemovePrefix "STORAGE:" trimmed -> 
+        | _, String.RemovePrefix "STORAGE:" trimmed ->
             let setting =
                 match trimmed.Trim() with
                 | String.EqualsIC "NONE" -> Some PackagesFolderGroupConfig.NoPackagesFolder
@@ -319,27 +318,27 @@ module LockFileParser =
         | _, String.RemovePrefix "LICENSE-DOWNLOAD:" trimmed -> InstallOption(LicenseDownload(trimmed.Trim() = "TRUE"))
         | _, String.RemovePrefix "COPY-LOCAL:" trimmed -> InstallOption(CopyLocal(trimmed.Trim() = "TRUE"))
         | _, String.RemovePrefix "SPECIFIC-VERSION:" trimmed -> InstallOption(SpecificVersion(trimmed.Trim() = "TRUE"))
-        | _, String.RemovePrefix "GENERATE-LOAD-SCRIPTS:" trimmed -> 
+        | _, String.RemovePrefix "GENERATE-LOAD-SCRIPTS:" trimmed ->
             let setting =
                 match trimmed.Trim() with
                 | String.EqualsIC "on" -> Some true
                 | String.EqualsIC "off" -> Some false
                 | _ -> None
-                                            
+
             InstallOption (GenerateLoadScripts setting)
-        | _, String.RemovePrefix "COPY-CONTENT-TO-OUTPUT-DIR:" trimmed -> 
+        | _, String.RemovePrefix "COPY-CONTENT-TO-OUTPUT-DIR:" trimmed ->
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
                 | "always" -> CopyToOutputDirectorySettings.Always
                 | "never" -> CopyToOutputDirectorySettings.Never
                 | "preserve_newest" -> CopyToOutputDirectorySettings.PreserveNewest
                 | x -> failwithf "Unknown copy_content_to_output_dir settings: %A" x
-                                            
+
             InstallOption (CopyContentToOutputDir setting)
         | _, String.RemovePrefix "FRAMEWORK:" trimmed -> InstallOption(FrameworkRestrictions(ExplicitRestriction (trimmed.Trim() |> Requirements.parseRestrictionsLegacy true |> fst)))
         | _, String.RemovePrefix "RESTRICTION:" trimmed -> InstallOption(FrameworkRestrictions(ExplicitRestriction (trimmed.Trim() |> Requirements.parseRestrictionsSimplified |> fst)))
         | _, String.RemovePrefix "CONDITION:" trimmed -> InstallOption(ReferenceCondition(trimmed.Trim().ToUpper()))
-        | _, String.RemovePrefix "CONTENT:" trimmed -> 
+        | _, String.RemovePrefix "CONTENT:" trimmed ->
             let setting =
                 match trimmed.Trim().ToLowerInvariant() with
                 | "none" -> ContentCopySettings.Omit
@@ -347,7 +346,7 @@ module LockFileParser =
                 | _ -> ContentCopySettings.Overwrite
 
             InstallOption (OmitContent setting)
-        | _, String.RemovePrefix "STRATEGY:" trimmed -> 
+        | _, String.RemovePrefix "STRATEGY:" trimmed ->
             let setting =
                 match trimmed.Trim() with
                 | String.EqualsIC "min" -> Some ResolverStrategy.Min
@@ -355,7 +354,7 @@ module LockFileParser =
                 | _ -> None
 
             InstallOption(TransitiveDependenciesResolverStrategy(setting))
-        | _, String.RemovePrefix "LOWEST_MATCHING:" trimmed -> 
+        | _, String.RemovePrefix "LOWEST_MATCHING:" trimmed ->
             let setting =
                 match trimmed.Trim() with
                 | String.EqualsIC "true" -> Some ResolverStrategy.Min
@@ -388,7 +387,7 @@ module LockFileParser =
                 else
                     InstallSettings.Default
             if namePart.Contains "(" then
-                let parts = namePart.Split '(' 
+                let parts = namePart.Split '('
                 let first = parts.[0]
                 let rest = String.Join ("(", parts |> Seq.skip 1)
                 let versionEndPos = rest.IndexOf(")")
@@ -409,8 +408,8 @@ module LockFileParser =
         | ReferencesMode mode -> { currentGroup.Options with Strict = mode }
         | Redirects mode -> { currentGroup.Options with Redirects = mode }
         | StorageConfig mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with StorageConfig = mode }}
-        | ImportTargets mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ImportTargets = Some mode } } 
-        | LicenseDownload mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with LicenseDownload = Some mode } } 
+        | ImportTargets mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ImportTargets = Some mode } }
+        | LicenseDownload mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with LicenseDownload = Some mode } }
         | CopyLocal mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyLocal = Some mode }}
         | SpecificVersion mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with SpecificVersion = Some mode }}
         | CopyContentToOutputDir mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyContentToOutputDirectory = Some mode }}
@@ -427,8 +426,8 @@ module LockFileParser =
         let removeBrackets = remove "(" >> remove ")"
         let parsePackage (s : string) =
             let parts = s.Split([|" - "|],StringSplitOptions.None)
-            let optionsString = 
-                if parts.Length < 2 then "" else 
+            let optionsString =
+                if parts.Length < 2 then "" else
                 if parts.[1] <> "" && parts.[1].Contains(":") |> not then
                     ("framework: " + parts.[1])
                 else
@@ -462,41 +461,41 @@ module LockFileParser =
                 | Remote(RemoteUrl(url)) -> { currentGroup with RemoteUrl = url}::otherGroups
                 | Remote(ProtocolVersion(protocolVersion)) -> { currentGroup with NugetProtocolVersion = (if protocolVersion = Some "2" then Some ProtocolVersion2 else Some ProtocolVersion3) }::otherGroups
                 | Group groupName -> { GroupName = GroupName groupName; RepositoryType = None; RemoteUrl = None; NugetProtocolVersion = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false } :: currentGroup :: otherGroups
-                | InstallOption(Command(command)) -> 
-                    let sourceFiles = 
+                | InstallOption(Command(command)) ->
+                    let sourceFiles =
                         match currentGroup.SourceFiles with
                         | sourceFile::rest ->{ sourceFile with Command = Some command } :: rest
                         |  _ -> failwith "missing source file"
                     { currentGroup with SourceFiles = sourceFiles }::otherGroups
-                | InstallOption(PackagePath(path)) -> 
-                    let sourceFiles = 
+                | InstallOption(PackagePath(path)) ->
+                    let sourceFiles =
                         match currentGroup.SourceFiles with
                         | sourceFile::rest ->{ sourceFile with PackagePath = Some path } :: rest
                         |  _ -> failwith "missing source file"
                     { currentGroup with SourceFiles = sourceFiles }::otherGroups
-                | InstallOption(OperatingSystemRestriction(filter)) -> 
-                    let sourceFiles = 
+                | InstallOption(OperatingSystemRestriction(filter)) ->
+                    let sourceFiles =
                         match currentGroup.SourceFiles with
                         | sourceFile::rest ->{ sourceFile with OperatingSystemRestriction = Some filter } :: rest
                         |  _ -> failwith "missing source file"
                     { currentGroup with SourceFiles = sourceFiles }::otherGroups
-                | InstallOption option -> 
+                | InstallOption option ->
                     { currentGroup with Options = extractOption currentGroup option }::otherGroups
                 | RepositoryType repoType -> { currentGroup with RepositoryType = Some repoType }::otherGroups
                 | NugetPackage details ->
                     let handleNugetDetails remote protocolVersion =
                         let package,kind,isRuntimeDependency,settings = parsePackage details
                         let parts' = package.Split ' '
-                        let version = 
+                        let version =
                             if parts'.Length < 2 then
                                 failwithf "No version specified for package %O in group %O." package currentGroup.GroupName
                             parts'.[1] |> removeBrackets
 
                         let lockFilePackageName = parts'.[0]
                         let packageName = LockFileSerializer.packageNames.GetOrAdd(lockFilePackageName.ToLower(), fun _ -> lockFilePackageName)
-                        { currentGroup with 
+                        { currentGroup with
                             LastWasPackage = true
-                            Packages = 
+                            Packages =
                                     { Source = PackageSource.Parse(remote, protocolVersion, AuthService.GetGlobalAuthenticationProvider remote)
                                       Name = PackageName packageName
                                       Dependencies = Set.empty
@@ -516,7 +515,7 @@ module LockFileParser =
                     assert (not isRuntimeDependency)
                     if currentGroup.LastWasPackage then
                         match currentGroup.Packages with
-                        | currentPackage :: otherPackages -> 
+                        | currentPackage :: otherPackages ->
                             { currentGroup with
                                     Packages = { currentPackage with
                                                     Dependencies = Set.add (PackageName name, DependenciesFileParser.parseVersionRequirement version, frameworkSettings.FrameworkRestrictions) currentPackage.Dependencies
@@ -524,9 +523,9 @@ module LockFileParser =
                         | [] -> failwithf "cannot set a dependency to %s %s - no package has been specified." name v
                     else
                         match currentGroup.SourceFiles with
-                        | currentFile :: rest -> 
+                        | currentFile :: rest ->
                             { currentGroup with
-                                    SourceFiles = 
+                                    SourceFiles =
                                         { currentFile with
                                                     Dependencies = Set.add (PackageName name, DependenciesFileParser.parseVersionRequirement version) currentFile.Dependencies
                                                 } :: rest }  ::otherGroups
@@ -572,13 +571,13 @@ module LockFileParser =
                     | HttpLink _ ->
                         match currentGroup.RemoteUrl |> Option.map(fun s -> s.Split '/' |> Array.toList) with
                         | Some [ protocol; _; domain; ] ->
-                            let project, name, path, authKey = 
+                            let project, name, path, authKey =
                                  match details.Split ' ' with
                                  | [| filePath; path |] -> "", filePath, path |> removeBrackets, None
                                  | [| filePath; path; authKey |] -> "", filePath, path |> removeBrackets, (Some authKey)
                                  | _ -> failwith "invalid file source details."
-                        
-                            let removeInvalidChars (str:string) = 
+
+                            let removeInvalidChars (str:string) =
                                 System.Text.RegularExpressions.Regex.Replace(str, "[:@\,]", "_")
 
                             let sourceFile =
@@ -591,7 +590,7 @@ module LockFileParser =
                                   Command = None
                                   OperatingSystemRestriction = None
                                   PackagePath = None
-                                  AuthKey = authKey } 
+                                  AuthKey = authKey }
 
                             { currentGroup with
                                 LastWasPackage = false
@@ -637,7 +636,7 @@ module LockFileParser =
                                                 Command = buildCommand
                                                 OperatingSystemRestriction = operatingSystemRestriction
                                                 PackagePath = packagePath
-                                                Name = "" 
+                                                Name = ""
                                                 AuthKey = None } :: currentGroup.SourceFiles }::otherGroups
                         | _ ->  failwithf "invalid remote details %A" currentGroup.RemoteUrl)
 
@@ -645,7 +644,7 @@ module LockFileParser =
 /// Allows to parse and analyze paket.lock files.
 type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
     let fileName = if isNull fileName then String.Empty else fileName
-    
+
     let tryFindRemoteFile (remoteFiles:ResolvedSourceFile list) (name: string) =
         remoteFiles |> List.tryFind (fun x -> x.Name.EndsWith(name))
     let findRemoteFile referencesFile remoteFiles name =
@@ -659,7 +658,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
 
     member __.Groups = groups
     member __.FileName = fileName
-    member __.RootPath = 
+    member __.RootPath =
         try FileInfo(fileName).Directory.FullName
         with _ -> String.Empty
 
@@ -672,10 +671,10 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
         match groups |> Seq.tryFind (fun g -> g.Value.Resolution.ContainsKey packageName) with
         | Some group -> sprintf "%sHowever, %O was found in group %O." Environment.NewLine packageName group.Value.Name
         | None -> ""
-        
-    
+
+
     /// Gets all dependencies of the given package
-    member this.GetAllNormalizedDependenciesOf(groupName,package:PackageName,context) = 
+    member this.GetAllNormalizedDependenciesOf(groupName,package:PackageName,context) =
         let group = groups.[groupName]
         let usedPackages = HashSet<_>()
 
@@ -742,28 +741,28 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
         let group = groups.[groupName]
 
         match group.Resolution |> Map.tryFind package with
-        | Some v -> 
+        | Some v ->
             let usedPackages = HashSet<_>()
-            
+
             for d,_,_ in v.Dependencies do
                 if group.Resolution.ContainsKey d then
                     usedPackages.Add d |> ignore
-                
+
             usedPackages |> Set.ofSeq
         | None -> failwithf "Package %O was referenced in %s, but it was not found in the paket.lock file in group %O.%s" package context groupName (this.CheckIfPackageExistsInAnyGroup package)
 
     member __.GetTransitiveDependencies(groupName) =
-        let collectDependenciesForGroup group = 
+        let collectDependenciesForGroup group =
             let fromNuGets =
                 group.Resolution
-                |> Seq.collect (fun d -> 
-                    d.Value.Dependencies 
+                |> Seq.collect (fun d ->
+                    d.Value.Dependencies
                     |> Seq.map (fun (n,_,_) -> n))
                 |> Set.ofSeq
-                
+
             let runtimeDeps =
                 group.Resolution
-                |> Seq.choose (fun d -> 
+                |> Seq.choose (fun d ->
                     if d.Value.IsRuntimeDependency then
                         Some d.Value.Name
                     else
@@ -774,16 +773,16 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                 group.RemoteFiles
                 |> Seq.collect (fun d -> d.Dependencies |> Seq.map fst)
                 |> Set.ofSeq
-            
+
             fromSourceFiles
             |> Set.union fromNuGets
             |> Set.union runtimeDeps
-            
+
         match groups.TryFind groupName with
         | None -> Set.empty
         | Some group -> collectDependenciesForGroup group
 
-    member this.GetTopLevelDependencies(groupName) = 
+    member this.GetTopLevelDependencies(groupName) =
         match groups |> Map.tryFind groupName with
         | None -> Map.empty
         | Some group ->
@@ -811,7 +810,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
             [|  let mainGroup = groups.[Constants.MainDependencyGroup]
                 yield LockFileSerializer.serializePackages mainGroup.Options mainGroup.Resolution
                 yield LockFileSerializer.serializeSourceFiles mainGroup.RemoteFiles
-                for g in groups do 
+                for g in groups do
                     if g.Key <> Constants.MainDependencyGroup then
                         yield "GROUP " + g.Value.Name.ToString()
                         yield LockFileSerializer.serializePackages g.Value.Options g.Value.Resolution
@@ -906,11 +905,11 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
         | Some g ->
             for p in g.NugetPackages do
                 let k = groupName,p.Name
-                let package = 
+                let package =
                     match resolution |> Map.tryFind p.Name with
                     | Some p -> p
                     | None -> failwithf "Error for %s: Package %O was not found in group %O of the paket.lock file." referencesFile.FileName p.Name groupName
-                
+
                 match package.Kind with
                 | ResolvedPackageKind.DotnetCliTool ->
                     cliTools := Set.add package !cliTools
@@ -927,48 +926,48 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                     if not restore then () else
                     if usedPackageKeys.Contains k then
                         failwithf "Package %O is referenced more than once in %s within group %O." p.Name referencesFile.FileName groupName
-                
+
                     usedPackageKeys.Add k |> ignore
 
-                    let deps = this.GetDirectDependenciesOfSafe(groupName,p.Name,referencesFile.FileName) 
-                
+                    let deps = this.GetDirectDependenciesOfSafe(groupName,p.Name,referencesFile.FileName)
+
                     toVisit := Set.add (k,p,deps) !toVisit
         | None -> ()
 
         let visited = Dictionary<_,_>()
-        
+
         while !toVisit <> Set.empty do
             let current = Set.minElement !toVisit
             toVisit := Set.remove current !toVisit
-            
+
             let visitKey,p,deps = current
             if visited.ContainsKey(visitKey) then ()
-            else            
+            else
             visited.Add(visitKey,(p,HashSet(deps)))
-            
+
             let (groupName,_packageName) = visitKey
             for dep in deps do
                 let deps = this.GetDirectDependenciesOfSafe(groupName,dep,referencesFile.FileName)
                 toVisit := Set.add ((groupName,dep),p,deps) !toVisit
-       
+
         let emitted = HashSet<_>()
         [while visited.Count > 0 do
             let current =
                 visited |> Seq.minBy (fun item ->
                     let (_,deps) = item.Value;
                     (deps.Count,item.Key))
-                
+
             let (groupName,packageName) = current.Key
-            
+
             visited.Remove(current.Key) |> ignore
-            
+
             for item in visited do
                 let (itemGroup, _) = item.Key
                 if itemGroup = groupName then
                     let (_, itemDeps) = item.Value
                     itemDeps.Remove(packageName) |> ignore
                 else ()
-                
+
             if emitted.Add (current.Key) then
                 let (settings,dependencies) = current.Value
                 let deps = Set.ofSeq dependencies
@@ -1000,9 +999,9 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
 
         usedPackages
 
-    member this.GetDependencyLookupTable () = 
+    member this.GetDependencyLookupTable () =
         groups |> Seq.map (fun kv ->
-            kv.Value.Resolution |> Seq.map (fun kv' -> 
+            kv.Value.Resolution |> Seq.map (fun kv' ->
                 (kv.Key,kv'.Key),
                 this.GetAllDependenciesOf(kv.Key,kv'.Value.Name,this.FileName)
                     |> Set.ofSeq
@@ -1036,12 +1035,12 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                     | ResolvedPackageKind.DotnetCliTool -> InstallModelKind.DotnetCliTool
 
                 InstallModel.CreateFromContent(
-                    resolvedPackage.Name, 
+                    resolvedPackage.Name,
                     resolvedPackage.Version,
                     kind,
-                    FrameworkRestriction.NoRestriction, 
+                    FrameworkRestriction.NoRestriction,
                     NuGet.GetContent(folder).Force())
-    
+
 
     /// Returns a list of packages inside the lockfile with their group and version number
     member this.InstalledPackages =
@@ -1050,4 +1049,4 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
             groupName, packageName, kv.Value.Version
         ) |> Seq.toList
 
-    
+

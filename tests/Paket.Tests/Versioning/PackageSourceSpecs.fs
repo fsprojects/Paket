@@ -4,7 +4,7 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open Paket.Domain
-open Paket.PackageSources 
+open Paket.PackageSources
 
 [<TestCase("https://nuget.org/api/v2")>]
 [<TestCase("https://nuget.org/api/v2/")>]
@@ -15,13 +15,17 @@ open Paket.PackageSources
 let ``should parse known nuget2 source``(feed : string) =
     let line = sprintf "source %s" feed
     match PackageSource.Parse(line) with
-    | NuGetV2 { Url = source; Authentication = _ } ->
+    | NuGet { Url = source; Authentication = _; ProtocolVersion = ProtocolVersion2 } ->
         let quoted = sprintf "source  \"%s\"" feed
         match PackageSource.Parse(quoted) with
-        | NuGetV2 { Url = qsource; Authentication = _ } -> 
+        | NuGet { Url = qsource; Authentication = _; ProtocolVersion = ProtocolVersion2 } ->
             source |> shouldEqual qsource
+        | NuGet { Url = qsource; Authentication = _; ProtocolVersion = ProtocolVersion3 } ->
+            failwithf "%s should be parsed as a v2 protocol when quoted" feed
         | _ -> failwith quoted
-    | _ -> failwith feed  
+    | NuGet { Url = qsource; Authentication = _; ProtocolVersion = ProtocolVersion3 } ->
+        failwithf "%s should be parsed as a v2 protocol" feed
+    | _ -> failwith feed
 
 [<TestCase("https://api.nuget.org/v3/index.json")>]
 [<TestCase("https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json")>]
@@ -31,10 +35,14 @@ let ``should parse known nuget2 source``(feed : string) =
 let ``should parse known nuget3 source``(feed : string) =
     let line = sprintf "source %s" feed
     match PackageSource.Parse(line) with
-    | NuGetV3 { Url = source; Authentication = _ } ->
+    | NuGet { Url = source; Authentication = _; ProtocolVersion = ProtocolVersion3 } ->
         let quoted = sprintf "source  \"%s\"" feed
         match PackageSource.Parse(quoted) with
-        | NuGetV3 { Url = qsource; Authentication = _ } -> 
+        | NuGet { Url = qsource; Authentication = _; ProtocolVersion = ProtocolVersion3 } ->
             source |> shouldEqual qsource
+        | NuGet { Url = source; Authentication = _; ProtocolVersion = ProtocolVersion2 } ->
+            failwithf "%s should be parsed as a v3 protocol when quoted" feed
         | _ -> failwith quoted
-    | _ -> failwith feed  
+    | NuGet { Url = source; Authentication = _; ProtocolVersion = ProtocolVersion2 } ->
+        failwithf "%s should be parsed as a v3 protocol" feed
+    | _ -> failwith feed
