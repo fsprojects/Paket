@@ -199,7 +199,7 @@ let getSearchAPI(auth,nugetUrl) =
             match calculateNuGet3Path nugetUrl with
             | None -> return None
             | Some v3Path ->
-                let source = { Url = v3Path; Authentication = auth }
+                let source = { Url = v3Path; ProtocolVersion = ProtocolVersion3; Authentication = auth }
                 let! v3res = getNuGetV3Resource source AutoComplete |> Async.Catch
                 return
                     match v3res with
