@@ -88,7 +88,6 @@ nuget "Rx-Main" "~> 2.0" framework: >= net40 """
 let ``should generate lock file with no targets import for packages``() =
     let expected = """NUGET
   remote: "D:\code\temp with space"
-  protocolVersion: 2
     Castle.Windsor (2.1) - import_targets: false, restriction: == net35
     Castle.Windsor-log4net (3.3) - import_targets: false, restriction: == net35
       Castle.Windsor (>= 2.0)

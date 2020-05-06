@@ -291,7 +291,7 @@ module LockFileParser =
         | _, "GIT" -> RepositoryType "GIT"
         | _, "NUGET" -> RepositoryType "NUGET"
         | _, "GITHUB" -> RepositoryType "GITHUB"
-        | Some "NUGET", String.RemovePrefix "protocolVersion:" trimmed -> Remote(ProtocolVersion(Some trimmed))
+        | Some "NUGET", String.RemovePrefix "protocolVersion:" trimmed -> Remote(ProtocolVersion(Some (trimmed.Trim())))
         | _, String.RemovePrefix "remote:" trimmed -> Remote(RemoteUrl(Some (trimmed.Trim())))
         | Some "NUGET", String.RemovePrefix "remote:" trimmed -> Remote(RemoteUrl(Some (PackageSource.Parse("source " + trimmed.Trim()).ToString())))
         | _, String.RemovePrefix "GROUP" trimmed -> Group(trimmed.Replace("GROUP","").Trim())
@@ -459,7 +459,14 @@ module LockFileParser =
                 if String.IsNullOrWhiteSpace line || line.Trim().StartsWith("specs:") then currentGroup::otherGroups else
                 match (currentGroup, line) with
                 | Remote(RemoteUrl(url)) -> { currentGroup with RemoteUrl = url}::otherGroups
-                | Remote(ProtocolVersion(protocolVersion)) -> { currentGroup with NugetProtocolVersion = (if protocolVersion = Some "2" then Some ProtocolVersion2 else Some ProtocolVersion3) }::otherGroups
+                | Remote(ProtocolVersion(protocolVersion)) ->
+                    let protocol =
+                        match protocolVersion with
+                        | Some "2" -> ProtocolVersion2
+                        | Some "3" -> ProtocolVersion3
+                        | None -> ProtocolVersion2 // TODO: for Paket 6.x change this default to 3
+                        | Some v -> failwithf "unknown nuget protocol version '%s', allowed protocols are 2 and 3" v //TODO: ok to fail like this?
+                    { currentGroup with NugetProtocolVersion = Some protocol }::otherGroups
                 | Group groupName -> { GroupName = GroupName groupName; RepositoryType = None; RemoteUrl = None; NugetProtocolVersion = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false } :: currentGroup :: otherGroups
                 | InstallOption(Command(command)) ->
                     let sourceFiles =
@@ -508,7 +515,7 @@ module LockFileParser =
 
                     match (currentGroup.RemoteUrl, currentGroup.NugetProtocolVersion) with
                     | (Some remote, Some protocolVersion) -> handleNugetDetails remote (Some protocolVersion)
-                    | (Some remote, None) -> handleNugetDetails remote (Some ProtocolVersion3)
+                    | (Some remote, None) -> handleNugetDetails remote (Some ProtocolVersion2) // TODO: set this default to 3 with 6.0.0
                     | (None, _) -> failwith "no source has been specified."
                 | NugetDependency (name, v, frameworkSettings) ->
                     let version,_,isRuntimeDependency,settings = parsePackage v
