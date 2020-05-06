@@ -28,7 +28,7 @@ let ``should read config which only contains a source``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Length |> shouldEqual 1
-    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head  |> shouldEqual (NuGetV2({ Url = "http://www.nuget.org/api/v2"; Authentication = AuthProvider.empty }))
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head  |> shouldEqual (NuGetV2({ Url = "http://www.nuget.org/api/v2"; ProtocolVersion = ProtocolVersion2; Authentication = AuthProvider.empty }))
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth.Retrieve true
         |> shouldEqual None
 let config1 = """
@@ -709,6 +709,7 @@ let ``should read config with encapsulated password source with no auth type spe
     |> shouldEqual [ 
         PackageSource.NuGetV2 { 
             Url = "http://www.nuget.org/api/v2"
+            ProtocolVersion = ProtocolVersion2
             Authentication = AuthProvider.empty } ]
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth.Retrieve true
         |> shouldEqual (Some (Credentials{ Username = "tatü tata"; Password = "you got hacked!"; Type = NetUtils.AuthType.Basic}))
@@ -726,6 +727,7 @@ let ``should read config with encapsulated password source and auth type specifi
     |> shouldEqual [ 
         PackageSource.NuGetV2 { 
             Url = "http://www.nuget.org/api/v2"
+            ProtocolVersion = ProtocolVersion2
             Authentication = AuthProvider.ofUserPassword { Username = "tatü tata"; Password = "you got hacked!"; Type = NetUtils.AuthType.NTLM} } ]
 
 let configWithPasswordInSingleQuotes = """
@@ -756,6 +758,7 @@ let ``should read config with password in env variable``() =
     |> shouldEqual [ 
         PackageSource.NuGetV2 { 
             Url = "http://www.nuget.org/api/v2"
+            ProtocolVersion = ProtocolVersion2;
             Authentication = AuthProvider.empty} ]
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth.Retrieve true
         |> shouldEqual (Some (Credentials{ Username = "user XYZ"; Password = "pw Love"; Type = NetUtils.AuthType.Basic}))
@@ -775,6 +778,7 @@ let ``should read config with password in env variable and auth type specified``
     |> shouldEqual [ 
         PackageSource.NuGetV2 { 
             Url = "http://www.nuget.org/api/v2"
+            ProtocolVersion = ProtocolVersion2
             Authentication = AuthProvider.empty } ]
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth.Retrieve true
         |> shouldEqual (Some (Credentials{ Username = "user XYZ"; Password = "pw Love"; Type = NetUtils.AuthType.NTLM}))
