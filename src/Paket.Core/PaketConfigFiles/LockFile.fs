@@ -479,7 +479,7 @@ module LockFileParser =
                     { currentGroup with Options = extractOption currentGroup option }::otherGroups
                 | RepositoryType repoType -> { currentGroup with RepositoryType = Some repoType }::otherGroups
                 | NugetPackage details ->
-                    let handlerNugetDetails remote protocolVersion =
+                    let handleNugetDetails remote protocolVersion =
                         let package,kind,isRuntimeDependency,settings = parsePackage details
                         let parts' = package.Split ' '
                         let version = 
@@ -503,8 +503,8 @@ module LockFileParser =
                                       IsRuntimeDependency = isRuntimeDependency } :: currentGroup.Packages }::otherGroups
 
                     match (currentGroup.RemoteUrl, currentGroup.NugetProtocolVersion) with
-                    | (Some remote, Some protocolVersion) -> handlerNugetDetails remote (Some protocolVersion)
-                    | (Some remote, None) -> handlerNugetDetails remote (Some NugetProtocolVersion.ProtocolVersion3)
+                    | (Some remote, Some protocolVersion) -> handleNugetDetails remote (Some protocolVersion)
+                    | (Some remote, None) -> handleNugetDetails remote (Some NugetProtocolVersion.ProtocolVersion3)
                     | (None, _) -> failwith "no source has been specified."
                 | NugetDependency (name, v, frameworkSettings) ->
                     let version,_,isRuntimeDependency,settings = parsePackage v
