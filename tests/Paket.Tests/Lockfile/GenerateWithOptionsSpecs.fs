@@ -28,10 +28,11 @@ SPECIFIC-VERSION: TRUE
 RESTRICTION: >= net45
 NUGET
   remote: http://www.nuget.org/api/v2
+  protocolVersion: 2
     Castle.Windsor-log4net (3.2)"""
 
 [<Test>]
-let ``should generate strict lock file``() = 
+let ``should generate strict lock file``() =
     let cfg = DependenciesFile.FromSource(config1)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph1, PackageDetailsFromGraph graph1).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
@@ -55,10 +56,11 @@ let expected2 = """IMPORT-TARGETS: FALSE
 CONTENT: NONE
 NUGET
   remote: http://www.nuget.org/api/v2
+  protocolVersion: 2
     Microsoft.SqlServer.Types (1.0)"""
 
 [<Test>]
-let ``should generate content none lock file``() = 
+let ``should generate content none lock file``() =
     let cfg = DependenciesFile.FromSource(configWithContent)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph2, PackageDetailsFromGraph graph2).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
@@ -71,7 +73,7 @@ source "http://www.nuget.org/api/v2"
 nuget "Microsoft.SqlServer.Types"
 """
 
-let graph3 = 
+let graph3 =
     OfSimpleGraph [
         "Microsoft.SqlServer.Types","1.0",[]
     ]
@@ -79,17 +81,18 @@ let graph3 =
 let expected3 = """REDIRECTS: ON
 NUGET
   remote: http://www.nuget.org/api/v2
+  protocolVersion: 2
     Microsoft.SqlServer.Types (1.0)"""
 
 [<Test>]
-let ``should generate redirects lock file``() = 
+let ``should generate redirects lock file``() =
     let cfg = DependenciesFile.FromSource(configWithRedirects)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected3)
 
 [<Test>]
-let ``should generate strategy min lock file``() = 
+let ``should generate strategy min lock file``() =
     let config = """
     strategy min
     source "http://www.nuget.org/api/v2"
@@ -100,6 +103,7 @@ let ``should generate strategy min lock file``() =
     let expected = """STRATEGY: MIN
 NUGET
   remote: http://www.nuget.org/api/v2
+  protocolVersion: 2
     Microsoft.SqlServer.Types (1.0)"""
 
     let cfg = DependenciesFile.FromSource(config)
@@ -108,7 +112,7 @@ NUGET
     |> shouldEqual (normalizeLineEndings expected)
 
 [<Test>]
-let ``should generate strategy max lock file``() = 
+let ``should generate strategy max lock file``() =
     let config = """
     strategy max
     source "http://www.nuget.org/api/v2"
@@ -119,6 +123,7 @@ let ``should generate strategy max lock file``() =
     let expected = """STRATEGY: MAX
 NUGET
   remote: http://www.nuget.org/api/v2
+  protocolVersion: 2
     Microsoft.SqlServer.Types (1.0)"""
 
     let cfg = DependenciesFile.FromSource(config)
@@ -127,7 +132,7 @@ NUGET
     |> shouldEqual (normalizeLineEndings expected)
 
 [<Test>]
-let ``should generate lowest_matching true lock file``() = 
+let ``should generate lowest_matching true lock file``() =
     let config = """
     lowest_matching true
     source "http://www.nuget.org/api/v2"
@@ -138,6 +143,7 @@ let ``should generate lowest_matching true lock file``() =
     let expected = """LOWEST_MATCHING: TRUE
 NUGET
   remote: http://www.nuget.org/api/v2
+  protocolVersion: 2
     Microsoft.SqlServer.Types (1.0)"""
 
     let cfg = DependenciesFile.FromSource(config)
@@ -146,7 +152,7 @@ NUGET
     |> shouldEqual (normalizeLineEndings expected)
 
 [<Test>]
-let ``should generate lowest_matching false lock file``() = 
+let ``should generate lowest_matching false lock file``() =
     let config = """
     lowest_matching false
     source "http://www.nuget.org/api/v2"
@@ -157,6 +163,7 @@ let ``should generate lowest_matching false lock file``() =
     let expected = """LOWEST_MATCHING: FALSE
 NUGET
   remote: http://www.nuget.org/api/v2
+  protocolVersion: 2
     Microsoft.SqlServer.Types (1.0)"""
 
     let cfg = DependenciesFile.FromSource(config)
@@ -166,7 +173,7 @@ NUGET
 
 
 [<Test>]
-let ``should resolve config with global framework restrictions``() = 
+let ``should resolve config with global framework restrictions``() =
 
     let config = """framework: >= net40
 
@@ -186,19 +193,20 @@ nuget NLog.Contrib
     let expected = """RESTRICTION: >= net40
 NUGET
   remote: https://www.nuget.org/api/v2
+  protocolVersion: 2
     NLog (1.0.1) - restriction: == net40
     NLog.Contrib (1.0)
       NLog (>= 1.0.1)"""
 
     let cfg = DependenciesFile.FromSource(config)
     let group = cfg.Groups.[Constants.MainDependencyGroup]
-    group.Packages.Head.Settings.FrameworkRestrictions 
+    group.Packages.Head.Settings.FrameworkRestrictions
     |> getExplicitRestriction
     |> shouldEqual (FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4)))
 
     let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "NLog"] |> shouldEqual "1.0.1"
-    resolved.[PackageName "NLog"].Settings.FrameworkRestrictions 
+    resolved.[PackageName "NLog"].Settings.FrameworkRestrictions
     |> getExplicitRestriction
     |> shouldEqual (FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4)))
 

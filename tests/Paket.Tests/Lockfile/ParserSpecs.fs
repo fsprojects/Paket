@@ -12,6 +12,7 @@ open Paket.PackageSources
 let lockFile = """COPY-LOCAL: FALSE
 NUGET
   remote: https://www.nuget.org/api/v2
+  protocolVersion: 2
   specs:
     Castle.Windsor (2.1)
     Castle.Windsor-log4net (3.3)
@@ -31,7 +32,7 @@ GITHUB
 """
 
 [<Test>]
-let ``should parse lock file``() = 
+let ``should parse lock file``() =
     let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 6
@@ -48,7 +49,7 @@ let ``should parse lock file``() =
     packages.[1].Name |> shouldEqual (PackageName "Castle.Windsor-log4net")
     packages.[1].Version |> shouldEqual (SemVer.Parse "3.3")
     packages.[1].Dependencies |> shouldEqual (Set.ofList [PackageName "Castle.Windsor", VersionRequirement(Minimum(SemVer.Parse "2.0"), PreReleaseStatus.No), makeOrList []; PackageName "log4net", VersionRequirement(Minimum(SemVer.Parse "1.0"), PreReleaseStatus.No), makeOrList []])
-    
+
     packages.[5].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[5].Name |> shouldEqual (PackageName "log4net")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.1")
@@ -76,7 +77,7 @@ let ``should parse lock file``() =
             PackagePath = None
             Commit = "Globbing"
             AuthKey = None } ]
-    
+
     sourceFiles.[0].Commit |> shouldEqual "7699e40e335f3cc54ab382a8969253fecc1e08a9"
     sourceFiles.[0].Name |> shouldEqual "src/app/FAKE/Cli.fs"
     sourceFiles.[0].ToString() |> shouldEqual "fsharp/FAKE:7699e40e335f3cc54ab382a8969253fecc1e08a9 src/app/FAKE/Cli.fs"
@@ -85,6 +86,7 @@ let strictLockFile = """REFERENCES: STRICT
 IMPORT-TARGETS: FALSE
 NUGET
   remote: https://www.nuget.org/api/v2
+  protocolVersion: 2
   specs:
     Castle.Windsor (2.1)
     Castle.Windsor-log4net (3.3)
@@ -99,7 +101,7 @@ NUGET
 """
 
 [<Test>]
-let ``should parse strict lock file``() = 
+let ``should parse strict lock file``() =
     let lockFile = LockFileParser.Parse(toLines strictLockFile) |> List.head
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 6
@@ -136,7 +138,7 @@ NUGET
 """
 
 [<Test>]
-let ``should parse redirects lock file``() = 
+let ``should parse redirects lock file``() =
     let lockFile = LockFileParser.Parse(toLines redirectsLockFile)
 
     let main = lockFile.Tail.Tail.Head
@@ -164,12 +166,13 @@ let lockFileWithFrameworkRestrictions = """FRAMEWORK: >= NET45
 IMPORT-TARGETS: TRUE
 NUGET
   remote: https://www.nuget.org/api/v2
+  protocolVersion: 2
   specs:
     Castle.Windsor (2.1)
 """
 
 [<Test>]
-let ``should parse lock file with framework restrictions``() = 
+let ``should parse lock file with framework restrictions``() =
     let lockFile = LockFileParser.Parse(toLines lockFileWithFrameworkRestrictions) |> List.head
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 1
@@ -180,6 +183,7 @@ let ``should parse lock file with framework restrictions``() =
 
 let dogfood = """NUGET
   remote: https://www.nuget.org/api/v2
+  protocolVersion: 2
   specs:
     DotNetZip (1.9.3)
     FAKE (3.5.5)
@@ -215,7 +219,7 @@ GITHUB
       Octokit (>= 0)"""
 
 [<Test>]
-let ``should parse own lock file``() = 
+let ``should parse own lock file``() =
     let lockFile = LockFileParser.Parse(toLines dogfood) |> List.head
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 16
@@ -230,6 +234,7 @@ let ``should parse own lock file``() =
 
 let dogfood2 = """NUGET
   remote: https://www.nuget.org/api/v2
+  protocolVersion: 2
   specs:
     DotNetZip (1.9.3)
     FAKE (3.5.5)
@@ -265,7 +270,7 @@ GITHUB
       Octokit"""
 
 [<Test>]
-let ``should parse own lock file2``() = 
+let ``should parse own lock file2``() =
     let lockFile = LockFileParser.Parse(toLines dogfood2) |> List.head
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 16
@@ -281,6 +286,7 @@ let ``should parse own lock file2``() =
 
 let frameworkRestricted = """NUGET
   remote: https://www.nuget.org/api/v2
+  protocolVersion: 2
   specs:
     Fleece (0.4.0)
       FSharpPlus (>= 0.0.4)
@@ -299,7 +305,7 @@ let frameworkRestricted = """NUGET
 """
 
 [<Test>]
-let ``should parse framework restricted lock file``() = 
+let ``should parse framework restricted lock file``() =
     let lockFile = LockFileParser.Parse(toLines frameworkRestricted) |> List.head
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 7
@@ -312,7 +318,7 @@ let ``should parse framework restricted lock file``() =
     packages.[3].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
-    packages.[3].Settings.FrameworkRestrictions 
+    packages.[3].Settings.FrameworkRestrictions
     |> getExplicitRestriction
     |> shouldEqual (FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5)))
     packages.[3].Settings.ImportTargets |> shouldEqual None
@@ -340,6 +346,7 @@ let ``should parse framework restricted lock file``() =
 
 let frameworkRestricted' = """NUGET
   remote: https://www.nuget.org/api/v2
+  protocolVersion: 2
   specs:
     Fleece (0.4.0) - license_download: true
       FSharpPlus (>= 0.0.4)
@@ -358,7 +365,7 @@ let frameworkRestricted' = """NUGET
 """
 
 [<Test>]
-let ``should parse framework restricted lock file in new syntax``() = 
+let ``should parse framework restricted lock file in new syntax``() =
     let lockFile = LockFileParser.Parse(toLines frameworkRestricted') |> List.head
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 7
@@ -375,7 +382,7 @@ let ``should parse framework restricted lock file in new syntax``() =
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
     packages.[3].Settings.CopyContentToOutputDirectory |> shouldEqual (Some CopyToOutputDirectorySettings.Never)
     packages.[3].Settings.FrameworkRestrictions
-    |> getExplicitRestriction 
+    |> getExplicitRestriction
     |> shouldEqual (FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5)))
     packages.[3].Settings.CopyLocal |> shouldEqual None
     packages.[3].Settings.SpecificVersion |> shouldEqual None
@@ -404,7 +411,7 @@ let ``should parse framework restricted lock file in new syntax``() =
     packages.[5].Settings.SpecificVersion |> shouldEqual (Some true)
     packages.[5].Settings.OmitContent |> shouldEqual None
     packages.[5].Settings.IncludeVersionInPath |> shouldEqual None
-    packages.[5].Settings.FrameworkRestrictions 
+    packages.[5].Settings.FrameworkRestrictions
     |> getExplicitRestriction
     |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
                      FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
@@ -418,7 +425,7 @@ HTTP
 """
 
 [<Test>]
-let ``should parse simple http reference``() = 
+let ``should parse simple http reference``() =
     let lockFile = LockFileParser.Parse(toLines simpleHTTP) |> List.head
     let references = lockFile.SourceFiles
 
@@ -467,7 +474,7 @@ let ``should parse portable lockfile``() =
 
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 2
-    
+
     packages.[1].Name |> shouldEqual (PackageName "Zlib.Portable")
     packages.[1].Version |> shouldEqual (SemVer.Parse "1.10.0")
     (packages.[1].Settings.FrameworkRestrictions |> getExplicitRestriction).ToString() |> shouldEqual ">= portable-net40+sl5+win8+wp8"
@@ -514,7 +521,7 @@ let ``should parse reactiveui lockfile``() =
     references.Length |> shouldEqual 0
 
     let packages = List.rev lockFile.Packages
-    
+
     packages.[8].Name |> shouldEqual (PackageName "Rx-WindowStoreApps")
     packages.[8].Version |> shouldEqual (SemVer.Parse "2.2.5")
     (packages.[8].Settings.FrameworkRestrictions |> getExplicitRestriction).ToString() |> shouldEqual "== win8"
@@ -525,11 +532,13 @@ let ``should parse reactiveui lockfile``() =
 
 let multipleFeedLockFileLegacy = """NUGET
   remote: http://internalfeed/NugetWebFeed/nuget
+  protocolVersion: 2
     Internal_1 (1.2.10)
       Newtonsoft.Json (>= 6.0 < 6.1)
     log4net (1.2.10)
     Newtonsoft.Json (6.0.6)
   remote: https://www.nuget.org/api/v2
+  protocolVersion: 2
     Microsoft.AspNet.WebApi (5.2.3)
       Microsoft.AspNet.WebApi.WebHost (>= 5.2.3 < 5.3)
     Microsoft.AspNet.WebApi.Client (5.2.3)
@@ -543,11 +552,13 @@ let multipleFeedLockFileLegacy = """NUGET
 
 let multipleFeedLockFile = """NUGET
   remote: http://internalfeed/NugetWebFeed/nuget
+  protocolVersion: 2
     Internal_1 (1.2.10)
       Newtonsoft.Json (>= 6.0 < 6.1)
     log4net (1.2.10)
     Newtonsoft.Json (6.0.6)
   remote: https://www.nuget.org/api/v2
+  protocolVersion: 2
     Microsoft.AspNet.WebApi (5.2.3)
       Microsoft.AspNet.WebApi.WebHost (>= 5.2.3 < 5.3)
     Microsoft.AspNet.WebApi.Client (5.2.3)
@@ -569,7 +580,7 @@ let ``should parse lockfile with multiple feeds``() =
 
         let packages = List.rev lockFile.Packages
         packages.Length |> shouldEqual 7
-    
+
         packages.[3].Name |> shouldEqual (PackageName "Microsoft.AspNet.WebApi")
         packages.[3].Version |> shouldEqual (SemVer.Parse "5.2.3")
         packages.[3].Source.ToString() |> shouldEqual "https://www.nuget.org/api/v2"
@@ -580,7 +591,7 @@ let ``should parse and serialise multiple feed lockfile``() =
         let lockFile = LockFile.Parse("",toLines lockFileText)
         let lockFile' = lockFile.ToString()
 
-        normalizeLineEndings lockFile' 
+        normalizeLineEndings lockFile'
         |> shouldEqual (normalizeLineEndings multipleFeedLockFile)
 
 
@@ -602,11 +613,11 @@ NUGET
 """
 
 [<Test>]
-let ``should parse lock file with groups``() = 
+let ``should parse lock file with groups``() =
     let lockFile1 = LockFileParser.Parse(toLines groupsLockFile) |> List.skip 1 |> List.head
     lockFile1.GroupName |> shouldEqual Constants.MainDependencyGroup
     let packages1 = List.rev lockFile1.Packages
-    
+
     packages1.Length |> shouldEqual 1
     lockFile1.Options.Strict |> shouldEqual false
     lockFile1.Options.Redirects |> shouldEqual (Some BindingRedirectsSettings.On)
@@ -621,7 +632,7 @@ let ``should parse lock file with groups``() =
     let lockFile2 = LockFileParser.Parse(toLines groupsLockFile) |> List.head
     lockFile2.GroupName.ToString() |> shouldEqual "Build"
     let packages2 = List.rev lockFile2.Packages
-    
+
     packages2.Length |> shouldEqual 1
     lockFile2.Options.Strict |> shouldEqual false
     lockFile2.Options.Redirects |> shouldEqual (Some BindingRedirectsSettings.On)
@@ -640,11 +651,11 @@ let ``should parse and serialise groups lockfile``() =
     let lockFile = LockFile.Parse("",toLines groupsLockFile)
     let lockFile' = lockFile.ToString()
 
-    normalizeLineEndings lockFile' 
+    normalizeLineEndings lockFile'
     |> shouldEqual (normalizeLineEndings groupsLockFile)
 
 [<Test>]
-let ``should parse strategy min lock file``() = 
+let ``should parse strategy min lock file``() =
     let lockFile = """STRATEGY: MIN
 NUGET
   remote: "D:\code\temp with space"
@@ -652,12 +663,12 @@ NUGET
 """
     let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
     let packages = List.rev lockFile.Packages
-    
+
     packages.Length |> shouldEqual 1
     lockFile.Options.ResolverStrategyForTransitives |> shouldEqual (Some ResolverStrategy.Min)
-    
+
 [<Test>]
-let ``should parse strategy max lock file``() = 
+let ``should parse strategy max lock file``() =
     let lockFile = """STRATEGY: MAX
 NUGET
   remote: "D:\code\temp with space"
@@ -666,12 +677,12 @@ NUGET
 """
     let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
     let packages = List.rev lockFile.Packages
-    
+
     packages.Length |> shouldEqual 1
     lockFile.Options.ResolverStrategyForTransitives |> shouldEqual (Some ResolverStrategy.Max)
 
 [<Test>]
-let ``should parse no strategy lock file``() = 
+let ``should parse no strategy lock file``() =
     let lockFile = """NUGET
   remote: "D:\code\temp with space"
   specs:
@@ -679,10 +690,10 @@ let ``should parse no strategy lock file``() =
 """
     let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
     let packages = List.rev lockFile.Packages
-    
+
     packages.Length |> shouldEqual 1
     lockFile.Options.ResolverStrategyForTransitives |> shouldEqual None
-    
+
 let packageRedirectsLockFile = """REDIRECTS: ON
 NUGET
   remote: "D:\code\temp with space"
@@ -704,11 +715,11 @@ NUGET
 """
 
 [<Test>]
-let ``should parse redirects lock file and packages``() = 
+let ``should parse redirects lock file and packages``() =
     let lockFile = LockFileParser.Parse(toLines packageRedirectsLockFile)
     let main = lockFile.Tail.Tail.Head
     let packages = List.rev main.Packages
-    
+
     packages.Length |> shouldEqual 4
     main.Options.Redirects |> shouldEqual (Some BindingRedirectsSettings.On)
 
@@ -716,10 +727,10 @@ let ``should parse redirects lock file and packages``() =
     packages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some BindingRedirectsSettings.On)
     packages.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some BindingRedirectsSettings.Off)
     packages.Tail.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some BindingRedirectsSettings.Force)
-    
+
     let build = lockFile.Tail.Head
     let packages = List.rev build.Packages
-    
+
     packages.Length |> shouldEqual 1
     build.Options.Redirects |> shouldEqual None
 
@@ -727,7 +738,7 @@ let ``should parse redirects lock file and packages``() =
 
     let test = lockFile.Head
     let packages = List.rev test.Packages
-    
+
     packages.Length |> shouldEqual 1
     test.Options.Redirects |> shouldEqual (Some BindingRedirectsSettings.Off)
 
@@ -738,7 +749,7 @@ let ``should parse and serialize redirects lockfile``() =
     let lockFile = LockFile.Parse("",toLines packageRedirectsLockFile)
     let lockFile' = lockFile.ToString()
 
-    normalizeLineEndings lockFile' 
+    normalizeLineEndings lockFile'
     |> shouldEqual (normalizeLineEndings packageRedirectsLockFile)
 
 let autodetectLockFile = """REDIRECTS: ON
@@ -769,11 +780,11 @@ NUGET
 """
 
 [<Test>]
-let ``should parse lock file from auto-detect settings``() = 
+let ``should parse lock file from auto-detect settings``() =
     let lockFile = LockFileParser.Parse(toLines autodetectLockFile)
     let main = lockFile.Head
     let packages = List.rev main.Packages
-    
+
     packages.Length |> shouldEqual 8
 
     packages.Head.Name |> shouldEqual (PackageName "Autofac")
@@ -790,18 +801,19 @@ let lockFileWithManyFrameworksLegacy = """NUGET
 
 let lockFileWithManyFrameworks = """NUGET
   remote: https://www.nuget.org/api/v2
+  protocolVersion: 2
     CommonServiceLocator (1.3) - restriction: || (== sl5) (>= net40) (>= portable-net45+win8+wp8+wpa81)
     MvvmLightLibs (5.2)
       CommonServiceLocator (>= 1.0) - restriction: || (== net35) (== sl4)
       CommonServiceLocator (>= 1.3) - restriction: || (== sl5) (>= net40) (>= portable-net45+win8+wp8+wpa81)"""
 
 [<Test>]
-let ``should parse lock file many frameworks``() = 
+let ``should parse lock file many frameworks``() =
     for lockFile in [lockFileWithManyFrameworksLegacy;lockFileWithManyFrameworks] do
         let lockFile = LockFileParser.Parse(toLines lockFile)
         let main = lockFile.Head
         let packages = List.rev main.Packages
-    
+
         packages.Length |> shouldEqual 2
 
         packages.Head.Name |> shouldEqual (PackageName "CommonServiceLocator")
@@ -812,6 +824,7 @@ let ``should parse lock file many frameworks``() =
 
 let lockFileWithDependencies = """NUGET
   remote: https://www.nuget.org/api/v2
+  protocolVersion: 2
     Argu (2.1)
     Chessie (0.4)
       FSharp.Core
@@ -819,17 +832,18 @@ let lockFileWithDependencies = """NUGET
     Newtonsoft.Json (8.0.3) - redirects: force"""
 
 [<Test>]
-let ``should parse lock file with depdencies``() = 
+let ``should parse lock file with dependencies``() =
     let lockFile = LockFileParser.Parse(toLines lockFileWithDependencies)
     let main = lockFile.Head
     let packages = List.rev main.Packages
-    
+
     LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings lockFileWithDependencies)
 
 let lockFileWithGreaterZeroDependency = """NUGET
   remote: https://www.nuget.org/api/v2
+  protocolVersion: 2
   specs:
     Argu (2.1)
     Chessie (0.4)
@@ -838,11 +852,11 @@ let lockFileWithGreaterZeroDependency = """NUGET
     Newtonsoft.Json (8.0.3) - redirects: force"""
 
 [<Test>]
-let ``should parse lock file with greater zero dependency``() = 
+let ``should parse lock file with greater zero dependency``() =
     let lockFile = LockFileParser.Parse(toLines lockFileWithGreaterZeroDependency)
     let main = lockFile.Head
     let packages = List.rev main.Packages
-    
+
     LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings lockFileWithDependencies)
@@ -855,7 +869,7 @@ GIT
 """
 
 [<Test>]
-let ``should parse full git lock file``() = 
+let ``should parse full git lock file``() =
     let lockFile = LockFileParser.Parse(toLines fullGitLockFile)
     lockFile.Head.RemoteUrl |> shouldEqual (Some "git@github.com:fsprojects/Paket.git")
     lockFile.Head.SourceFiles.Head.Commit |> shouldEqual "528024723f314aa1011499a122258167b53699f7"
@@ -869,7 +883,7 @@ GIT
 """
 
 [<Test>]
-let ``should parse local git lock file``() = 
+let ``should parse local git lock file``() =
     let lockFile = LockFileParser.Parse(toLines localGitLockFile)
     lockFile.Head.RemoteUrl |> shouldEqual (Some "file:///c:/code/Paket.VisualStudio")
     lockFile.Head.SourceFiles.Head.Commit |> shouldEqual "528024723f314aa1011499a122258167b53699f7"
@@ -890,7 +904,7 @@ GIT
 """
 
 [<Test>]
-let ``should parse local git lock file with build``() = 
+let ``should parse local git lock file with build``() =
     let lockFile = LockFileParser.Parse(toLines localGitLockFileWithBuild)
     lockFile.Head.RemoteUrl |> shouldEqual (Some "https://github.com/forki/nupkgtest.git")
     lockFile.Head.SourceFiles.Head.Commit |> shouldEqual "2942d23fcb13a2574b635194203aed7610b21903"
@@ -910,7 +924,7 @@ GIT
 """
 
 [<Test>]
-let ``should parse local git lock file with build and no specs``() = 
+let ``should parse local git lock file with build and no specs``() =
     let lockFile = LockFileParser.Parse(toLines localGitLockFileWithBuildAndNoSpecs)
     lockFile.Head.RemoteUrl |> shouldEqual (Some "https://github.com/forki/nupkgtest.git")
     lockFile.Head.SourceFiles.Head.Commit |> shouldEqual "2942d23fcb13a2574b635194203aed7610b21903"
@@ -953,6 +967,7 @@ let ``should parse lock file with spaces in file names``() =
 
 let lockFileWithNewRestrictions = """NUGET
   remote: http://www.nuget.org/api/v2
+  protocolVersion: 2
     MathNet.Numerics (3.2.3)
       TaskParallelLibrary (>= 1.0.2856) - restriction: && (>= net35) (< net40)
     MathNet.Numerics.FSharp (3.2.3)
@@ -964,13 +979,14 @@ let ``should parse new restrictions && (>= net35) (< net40)``() =
     let lockFile = LockFileParser.Parse (toLines lockFileWithNewRestrictions)
     let main = lockFile.Head
     let packages = lockFile.Tail
-    
+
     LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings lockFileWithNewRestrictions)
 
 let lockFileWithNewComplexRestrictions = """NUGET
   remote: http://www.nuget.org/api/v2
+  protocolVersion: 2
     AWSSDK.Core (3.1.5.3)
       Microsoft.Net.Http (>= 2.2.29) - restriction: && (< net45) (>= portable-net45+win8+wp8+wpa81)
       PCLStorage (>= 1.0.2) - restriction: && (< net45) (>= portable-net45+win8+wp8+wpa81)
@@ -991,13 +1007,14 @@ let ``should parse new restrictions || (&& (< net45) (>= portable-net45+win8+wp8
     let lockFile = LockFileParser.Parse (toLines lockFileWithNewComplexRestrictions)
     let main = lockFile.Head
     let packages = lockFile.Tail
-    
+
     LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings lockFileWithNewComplexRestrictions)
 
 let lockFileWithMissingVersion = """NUGET
   remote: https://www.nuget.org/api/v2
+  protocolVersion: 2
     Microsoft.Bcl (1.1.10) - restriction: || (== net10) (== net11) (== net20) (== net30) (== net35) (== net40)
       Microsoft.Bcl.Build (>= 1.0.14)
     Microsoft.Bcl.Build (1.0.21) - import_targets: false, restriction: || (== net10) (== net11) (== net20) (== net30) (== net35) (== net40)
@@ -1012,13 +1029,14 @@ let ``should parse lockfile with missing version``() =
     let lockFile = LockFileParser.Parse (toLines lockFileWithMissingVersion)
     let main = lockFile.Head
     let packages = lockFile.Tail
-    
+
     LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings lockFileWithMissingVersion)
 
 let lockFileWithCLiTool = """NUGET
   remote: https://www.nuget.org/api/v2
+  protocolVersion: 2
     Argu (2.1)
     Chessie (0.4)
       FSharp.Core
@@ -1027,11 +1045,11 @@ let lockFileWithCLiTool = """NUGET
     Newtonsoft.Json (8.0.3) - redirects: force"""
 
 [<Test>]
-let ``should parse lock file with cli tool``() = 
+let ``should parse lock file with cli tool``() =
     let lockFile = LockFileParser.Parse(toLines lockFileWithCLiTool)
     let main = lockFile.Head
     let packages = List.rev main.Packages
-    
+
     packages
     |> List.find (fun p -> p.Name = PackageName "dotnet-fable")
     |> fun p -> p.Kind |> shouldEqual Paket.PackageResolver.ResolvedPackageKind.DotnetCliTool
