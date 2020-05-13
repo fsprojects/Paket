@@ -11,6 +11,12 @@ Paket comes with a command that helps to convert existing solution from NuGet's
 1. Run the [`convert-from-nuget`](paket-convert-from-nuget.html) command:
 
 ```sh
+$ dotnet paket convert-from-nuget
+```
+
+Or if you're not using .NET Core:
+
+```sh
 $ .paket/paket.exe convert-from-nuget
 ```
 
