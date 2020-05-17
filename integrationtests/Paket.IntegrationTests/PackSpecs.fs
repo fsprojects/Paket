@@ -998,3 +998,36 @@ let ``allow repositoryFull``() =
     let expected = """<repository type="git" url="https://github.com/my-org/my-custom-repo" branch="test-branch" commit="e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3" />"""
     if not (nuspec.Contains expected) then
         failwith nuspec
+open System.Xml
+
+let private scrapeDeps (nuspecPath: string) =
+    let rec allDeps (doc: XmlNode) = seq {
+        for node in doc.ChildNodes do
+            if node.Name = "dependency" then
+              yield node.Attributes.["id"].Value, node.Attributes.["version"].Value
+            else yield! allDeps node
+    }
+    let text = File.ReadAllText nuspecPath
+    let doc = Xml.XmlDocument()
+    doc.LoadXml text
+
+    allDeps doc
+    |> Map.ofSeq
+
+[<Test>]
+let ``#2883 writes warning for missing direct dependencies``() =
+    let scenario = "i002883-fixup-nuspecs"
+    use __ = prepareSdk scenario
+    let scenarioRoot = scenarioTempPath scenario
+    let fsprojPath = Path.Combine(scenarioRoot, "lib.csproj")
+
+    let inputNuspecPath = Path.Combine(scenarioRoot, "lib.1.0.0.nuspec")
+
+    let dispose, messages = paket (sprintf "fix-nuspecs files %s project-file %s" inputNuspecPath fsprojPath) scenario
+    use __ = dispose
+
+    match messages
+          |> String.split [|'\n'|]
+          |> Seq.tryFind (fun msg -> msg.Contains "Microsoft.Extensions.DependencyInjection" && msg.Contains "is this package in your paket.dependencies file?") with
+    | Some _ -> ()
+    | None -> failwithf "Expected paket to warn user about missing top-level reference while packaging dependencies"

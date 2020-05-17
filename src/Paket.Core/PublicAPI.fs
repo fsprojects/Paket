@@ -936,10 +936,6 @@ type Dependencies(dependenciesFileName: string) =
             )
             |> Map.ofSeq
 
-//        printfn "=====\ndirectDeps\n====="
-//        for (grp, pkg) in projectReferencedDeps do printfn "%A ==> %A" grp pkg.Name
-//        printfn ""
-
         let (|IndirectDependency|DirectDependency|UnknownDependency|) (p: PackageName) =
             if not (implicitOrExplictlyReferencedPackages.Contains p)
             then
@@ -950,10 +946,6 @@ type Dependencies(dependenciesFileName: string) =
                 | Some [] -> IndirectDependency
                 | Some [group] -> DirectDependency (group, p)
                 | Some (firstGroup::_) -> DirectDependency (firstGroup, p)
-
-//        printfn "=====\nlocked\n====="
-//        for dep in lockedPackageVersionRequirements do printfn "%O" dep
-//        printfn ""
 
         let (|MatchesRange|NeedsRangeUpdate|LockRangeNotFound|) (groupAndPackage: (GroupName * PackageName), nuspecVersionRequirement: VersionRequirement) =
 
