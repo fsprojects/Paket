@@ -1031,3 +1031,24 @@ let ``#2883 writes warning for missing direct dependencies``() =
           |> Seq.tryFind (fun msg -> msg.Contains "Microsoft.Extensions.DependencyInjection" && msg.Contains "is this package in your paket.dependencies file?") with
     | Some _ -> ()
     | None -> failwithf "Expected paket to warn user about missing top-level reference while packaging dependencies"
+
+[<Test>]
+let ``#2883 writes ranges for floating deps``() =
+    let scenario = "i002883-apply-version-ranges"
+    use __ = prepareSdk scenario
+    let scenarioRoot = scenarioTempPath scenario
+    let fsprojPath = Path.Combine(scenarioRoot, "before.fsproj")
+
+    let inputNuspecPath = Path.Combine(scenarioRoot, "before.nuspec")
+    let inputDeps = scrapeDeps inputNuspecPath
+    let dispose, messages = paket (sprintf "fix-nuspecs files %s project-file %s" inputNuspecPath fsprojPath) scenario
+    use __ = dispose
+    let outputDeps = scrapeDeps inputNuspecPath
+
+    match outputDeps |> Map.tryFind "FSharp.Compiler.Service" with
+    | Some "[35.0.0,36.0.0)" -> ()
+    | _ ->
+        failwithf "Expected to modify deps for FSharp.Compiler.Service package with floating version constraint.\nBefore:\t%A\nAfter:\t%A\nMessages:\t%A"
+            inputDeps
+            outputDeps
+            messages
