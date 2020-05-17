@@ -89,3 +89,38 @@ let ``should parse protocol v2 even on wellknown nuget v3 source when protocolVe
     | NuGet { Url = _; Authentication = _; ProtocolVersion = ProtocolVersion3 } ->
         failwithf "%s should be parsed as a v2 protocol when protocolVersion explicitly specify v2" feed
     | e -> failwithf "%s %A" feed e
+
+
+[<TestCase("a")>]
+[<TestCase("")>]
+[<TestCase("          ")>]
+[<TestCase(".")>]
+[<TestCase("-1")>]
+let ``should not parse line if version for 'protocolVersion' is invalid or missing`` (invalidProtocolVersion: string) =
+    let line = sprintf "source https://api.nuget.org/v3/index.json protocolVersion: %s" invalidProtocolVersion
+
+    try
+        let _ = PackageSource.Parse(line)
+        failwith "expected error"
+    with
+    | e -> 
+        e.Message
+        |> shouldEqual (sprintf "Could not parse protocolVersion in \"%s\"" line)
+    |> ignore
+
+
+[<TestCase("0")>]
+[<TestCase("1")>]
+[<TestCase("4")>]
+let ``should not parse line if version for 'protocolVersion' is not a supported version`` (invalidProtocolVersion: string) =
+    let line = sprintf "source https://api.nuget.org/v3/index.json protocolVersion: %s" invalidProtocolVersion
+    
+    try
+        let _ = PackageSource.Parse(line)
+        failwith "expected error"
+    with
+    | e -> 
+        e.Message
+        |> shouldEqual (sprintf "Unsupported protocolVersion in \"%s\". Should be either 2 or 3" line)
+    |> ignore
+    
