@@ -1,4 +1,4 @@
-#### 5.245.2 - 2020-05-25
+#### 5.245.3 - 2020-05-25
 * Treat nuget repo as v3 if url ends with index.json  - https://github.com/fsprojects/Paket/issues/3806
 
 #### 5.245.1 - 2020-05-05
