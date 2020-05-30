@@ -482,7 +482,7 @@ Target "GenerateReferenceDocs" (fun _ ->
     let argLine = System.String.Join(" ", args)
     execute
       true
-      (sprintf "Building reference documentation, this could take some time, please wait...")
+      "Building reference documentation, this could take some time, please wait..."
       "generating reference documentation failed"
       (fakeStartInfo argLine "generate.fsx" "docs/tools" "" [])
 )
