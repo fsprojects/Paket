@@ -613,12 +613,13 @@ let findPackages silent (results : ParseResults<_>) =
 
     match search with
     | None ->
+        Console.CancelKeyPress.Add (fun c -> c.Cancel <- true)
         let rec repl () =
             if not silent then
-                tracefn " - Please enter search text (:q for exit):"
+                tracefn " - Please enter search text (press Ctrl+C to exit):"
 
             match Console.ReadLine() with
-            | ":q" -> ()
+            | null -> ()
             | searchText ->
                 searchAndPrint searchText
                 repl ()
