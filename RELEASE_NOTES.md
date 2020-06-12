@@ -1,4 +1,4 @@
-#### 5.245.4 - 2020-05-12
+#### 5.245.4 - 2020-06-12
 * Allow to quite `paket find-packages` with Ctrl+c - https://github.com/fsprojects/Paket/pull/3865
 
 #### 5.245.3 - 2020-05-25
