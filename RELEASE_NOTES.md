@@ -1,7 +1,16 @@
-#### 6.0.0-alpha028 - 2020-05-30
+#### 6.0.0-alpha029 - 2020-06-12
 * Full .NET Core / SDK compatible version
 * Support for XCode
 * Support for .netcoreapp5.0
+
+#### 5.245.4 - 2020-06-12
+* Allow to quite `paket find-packages` with Ctrl+c - https://github.com/fsprojects/Paket/pull/3865
+
+#### 5.245.3 - 2020-05-25
+* Treat NuGet repo as v3 if url ends with index.json  - https://github.com/fsprojects/Paket/issues/3806
+
+#### 5.245.1 - 2020-05-05
+* Allow to restore netcoreapp5.0 - https://github.com/fsprojects/Paket/issues/3811
 
 #### 5.244.2 - 2020-04-29
 * Detect when MSBuild 16 is not using SDK - https://github.com/fsprojects/Paket/issues/3837
