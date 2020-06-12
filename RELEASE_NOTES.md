@@ -1,5 +1,8 @@
+#### 5.245.4 - 2020-05-12
+* Allow to quite `paket find-packages` with Ctrl+c - https://github.com/fsprojects/Paket/pull/3865
+
 #### 5.245.3 - 2020-05-25
-* Treat nuget repo as v3 if url ends with index.json  - https://github.com/fsprojects/Paket/issues/3806
+* Treat NuGet repo as v3 if url ends with index.json  - https://github.com/fsprojects/Paket/issues/3806
 
 #### 5.245.1 - 2020-05-05
 * Allow to restore netcoreapp5.0 - https://github.com/fsprojects/Paket/issues/3811
