@@ -15,29 +15,6 @@
     <!-- .net tools support netcoreapp only -->
     <TargetFrameworks></TargetFrameworks>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <Optimize>false</Optimize>
-    <Tailcalls>false</Tailcalls>
-    <OutputPath>..\..\bin\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <WarningLevel>3</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
-    <StartAction>Project</StartAction>
-    <StartProgram>paket.exe</StartProgram>
-    <StartAction>Project</StartAction>
-    <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>C:\temp\Gu.Reactive</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
-    <StartArguments>install --verbose</StartArguments>
-    <StartWorkingDirectory>C:\proj\Paket</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\temp\PaketTargetFrameworkRepro\</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\bookstore</StartWorkingDirectory>
-    <StartWorkingDirectory>C:\temp\paket-conflict\paket.conflict.app</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\temp\i3032</StartWorkingDirectory>
-    <StartWorkingDirectory>C:\code\Paket\integrationtests\scenarios\i003062-external-lock\before</StartWorkingDirectory>
-    <StartWorkingDirectory>C:\temp\netcore5</StartWorkingDirectory>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
