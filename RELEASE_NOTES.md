@@ -1,3 +1,6 @@
+#### 5.246.1 - 2020-06-13
+* BUGFIX: Fix a misspelled TFM - https://github.com/fsprojects/Paket/pull/3855
+
 #### 5.246.0 - 2020-06-13
 * Add support for licenseExpression in paket.template - https://github.com/fsprojects/Paket/pull/3824
 
