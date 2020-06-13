@@ -1,7 +1,10 @@
-#### 6.0.0-alpha029 - 2020-06-12
+#### 6.0.0-alpha030 - 2020-06-13
 * Full .NET Core / SDK compatible version
 * Support for XCode
 * Support for .netcoreapp5.0
+
+#### 5.246.0 - 2020-06-13
+* Add support for licenseExpression in paket.template - https://github.com/fsprojects/Paket/pull/3824
 
 #### 5.245.4 - 2020-06-12
 * Allows to quit `paket find-packages` with Ctrl+c - https://github.com/fsprojects/Paket/pull/3865
