@@ -1,3 +1,6 @@
+#### 5.246.0 - 2020-06-13
+* Add support for licenseExpression in paket.template - https://github.com/fsprojects/Paket/pull/3824
+
 #### 5.245.4 - 2020-06-12
 * Allow to quite `paket find-packages` with Ctrl+c - https://github.com/fsprojects/Paket/pull/3865
 
