@@ -1,7 +1,10 @@
-#### 6.0.0-alpha030 - 2020-06-13
+#### 6.0.0-alpha031 - 2020-06-13
 * Full .NET Core / SDK compatible version
 * Support for XCode
 * Support for .netcoreapp5.0
+
+#### 5.246.1 - 2020-06-13
+* BUGFIX: Fix a misspelled TFM - https://github.com/fsprojects/Paket/pull/3855
 
 #### 5.246.0 - 2020-06-13
 * Add support for licenseExpression in paket.template - https://github.com/fsprojects/Paket/pull/3824
