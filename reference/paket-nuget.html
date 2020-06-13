@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>NuGet - Paket</title>
+    <link rel="icon" type="image/png" href="..//img/logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content=""/>
+    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="..//content/style.css" />
+    <script type="text/javascript" src="..//content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <style type="text/css">
+      table.pre td.lines {
+        vertical-align: top;
+      }
+      pre.fssnip code[lang=batchfile],
+      pre.fssnip code[lang=msh] {
+        display: inline-block;
+        white-space: pre-wrap;       /* CSS 3 */
+        white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+        white-space: -pre-wrap;      /* Opera 4-6 */
+        white-space: -o-pre-wrap;    /* Opera 7 */
+        word-wrap: break-word;       /* Internet Explorer 5.5+ */
+        word-break: keep-all;
+        padding-left: 2em;
+        text-indent: -2em;
+      }
+    </style>
+    <script type="text/javascript">
+      $(function() {
+        $("code[lang='batchfile'], code[lang='msh']").each(function() {
+          $(this).html($(this).html().replace(/ &lt;/g, "&nbsp;&lt;"))
+        })
+      })
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://github.com/fsprojects/Paket">github page</a></li>
+        </ul>
+        <h3 class="muted"><a href="..//index.html">Paket</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+
+
+
+<h1>NuGet</h1>
+<p>
+  <span>Namespace: Paket</span><br />
+</p>
+<div class="xmldoc">
+</div>
+
+<!-- Render nested types and modules, if there are any -->
+  <h2>Nested types and modules</h2>
+  <div>
+      <table class="table table-bordered type-list">
+    <thead>
+      <tr><td>Type</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td class="type-name">
+            <a href="paket-nuget-getversionerror.html">GetVersionError</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-nuget-getversionrequest.html">GetVersionRequest</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-nuget-getversionrequestresult.html">GetVersionRequestResult</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-nuget-nugetcontent.html">NuGetContent</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-nuget-nugetpackagecache.html">NuGetPackageCache</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-nuget-nugetpackagecontent.html">NuGetPackageContent</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-nuget-sourcerequest.html">SourceRequest</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-nuget-sourceresponse.html">SourceResponse</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-nuget-sourceresponsetype.html">SourceResponseType</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-nuget-unparsedpackagefile.html">UnparsedPackageFile</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+    </tbody>
+  </table>
+  <table class="table table-bordered module-list">
+    <thead>
+      <tr><td>Module</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td class="module-name">
+            <a href="paket-nuget-nugetcontentmodule.html">NuGetContent</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+  <h3>Functions and values</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Function or value</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '312', 312)" onmouseover="showTip(event, '312', 312)">
+            addContent content contents
+          </code>
+          <div class="tip" id="312">
+            <strong>Signature:</strong> content:string -&gt; contents:NuGetContent list -&gt; NuGetContent list<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L200-200" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '313', 313)" onmouseover="showTip(event, '313', 313)">
+            createEntry content
+          </code>
+          <div class="tip" id="313">
+            <strong>Signature:</strong> content:string -&gt; NuGetContent<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L191-191" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '314', 314)" onmouseover="showTip(event, '314', 314)">
+            DownloadAndExtractPackage (...)
+          </code>
+          <div class="tip" id="314">
+            <strong>Signature:</strong> (alternativeProjectRoot:string option * root:string * isLocalOverride:bool * config:PackagesFolderGroupConfig * source:PackageSource * caches:Cache list * groupName:GroupName * packageName:PackageName * version:SemVerInfo * kind:ResolvedPackageKind * includeVersionInPath:bool * downloadLicense:bool * force:bool * detailed:bool) -&gt; Async&lt;string * string&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L1069-1069" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '315', 315)" onmouseover="showTip(event, '315', 315)">
+            DownloadLicense (...)
+          </code>
+          <div class="tip" id="315">
+            <strong>Signature:</strong> (root:&#39;?10085 * force:bool * packageName:PackageName * version:SemVerInfo * licenseUrl:string * targetFileName:string) -&gt; Async&lt;unit&gt;<br />
+                          <strong>Type parameters:</strong> '?10085          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L274-274" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '316', 316)" onmouseover="showTip(event, '316', 316)">
+            GetAnalyzerFiles targetFolder
+          </code>
+          <div class="tip" id="316">
+            <strong>Signature:</strong> targetFolder:string -&gt; UnparsedPackageFile []<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L378-378" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Finds all analyzer files in a nuget package.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '317', 317)" onmouseover="showTip(event, '317', 317)">
+            GetContent dir
+          </code>
+          <div class="tip" id="317">
+            <strong>Signature:</strong> dir:string -&gt; Lazy&lt;NuGetPackageContent&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L229-229" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '318', 318)" onmouseover="showTip(event, '318', 318)">
+            GetContentWithNuSpec spec dir
+          </code>
+          <div class="tip" id="318">
+            <strong>Signature:</strong> spec:Nuspec -&gt; dir:string -&gt; Lazy&lt;NuGetPackageContent&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L224-224" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '319', 319)" onmouseover="showTip(event, '319', 319)">
+            GetLibFiles targetFolder
+          </code>
+          <div class="tip" id="319">
+            <strong>Signature:</strong> targetFolder:string -&gt; UnparsedPackageFile []<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L355-355" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Finds all libraries in a nuget package.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '320', 320)" onmouseover="showTip(event, '320', 320)">
+            GetPackageDetails (...)
+          </code>
+          <div class="tip" id="320">
+            <strong>Signature:</strong> alternativeProjectRoot:string option -&gt; root:string -&gt; force:bool -&gt; parameters:GetPackageDetailsParameters -&gt; Async&lt;PackageDetails&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L530-530" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '321', 321)" onmouseover="showTip(event, '321', 321)">
+            GetTargetsFiles (targetFolder, pkg)
+          </code>
+          <div class="tip" id="321">
+            <strong>Signature:</strong> (targetFolder:string * pkg:PackageName) -&gt; UnparsedPackageFile []<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L369-369" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Finds all targets files in a nuget package.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '322', 322)" onmouseover="showTip(event, '322', 322)">
+            GetVersions (...)
+          </code>
+          <div class="tip" id="322">
+            <strong>Signature:</strong> force:bool -&gt; alternativeProjectRoot:string option -&gt; root:string -&gt; parameters:GetPackageVersionsParameters -&gt; Async&lt;(SemVerInfo * PackageSource list) list&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L587-587" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Allows to retrieve all version no. for a package from the given sources.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '323', 323)" onmouseover="showTip(event, '323', 323)">
+            getVersionsCached (...)
+          </code>
+          <div class="tip" id="323">
+            <strong>Signature:</strong> key:string -&gt; f:(&#39;?10108 * &#39;?10109 * &#39;?10110 -&gt; NuGetRequestGetVersions) -&gt; (source:PackageSource * auth:&#39;?10108 * nugetURL:&#39;?10109 * package:&#39;?10110) -&gt; NuGetRequestGetVersions<br />
+                          <strong>Type parameters:</strong> '?10108, '?10109, '?10110          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L567-567" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '324', 324)" onmouseover="showTip(event, '324', 324)">
+            ofDirectory targetFolder
+          </code>
+          <div class="tip" id="324">
+            <strong>Signature:</strong> targetFolder:string -&gt; NuGetContent<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L118-118" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '325', 325)" onmouseover="showTip(event, '325', 325)">
+            ofFiles filesList
+          </code>
+          <div class="tip" id="325">
+            <strong>Signature:</strong> filesList:seq&lt;string&gt; -&gt; NuGetContent list<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L220-220" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '326', 326)" onmouseover="showTip(event, '326', 326)">
+            ofGivenList rootName directories files
+          </code>
+          <div class="tip" id="326">
+            <strong>Signature:</strong> rootName:string -&gt; directories:seq&lt;string&gt; -&gt; files:seq&lt;string&gt; -&gt; NuGetContent<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L63-63" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '327', 327)" onmouseover="showTip(event, '327', 327)">
+            protocolCache 
+          </code>
+          <div class="tip" id="327">
+            <strong>Signature:</strong> ConcurrentDictionary&lt;PackageSource,string&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L544-544" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '328', 328)" onmouseover="showTip(event, '328', 328)">
+            tryFindFile file content
+          </code>
+          <div class="tip" id="328">
+            <strong>Signature:</strong> file:string -&gt; content:NuGetPackageContent -&gt; UnparsedPackageFile option<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L265-265" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '329', 329)" onmouseover="showTip(event, '329', 329)">
+            tryFindFolder folder content
+          </code>
+          <div class="tip" id="329">
+            <strong>Signature:</strong> folder:string -&gt; content:NuGetPackageContent -&gt; UnparsedPackageFile list option<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L243-243" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '330', 330)" onmouseover="showTip(event, '330', 330)">
+            tryNuGetV3 (auth, nugetV3Url, package)
+          </code>
+          <div class="tip" id="330">
+            <strong>Signature:</strong> (auth:AuthProvider * nugetV3Url:string * package:PackageName) -&gt; NuGetRequestGetVersions<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGet.fs#L380-380" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+        </div>
+        <div class="span3">
+          <img src="..//img/logo.png" alt="F# Project" style="width:150px;margin:10px" />
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">Paket</li>
+            <li><a href="..//index.html">Home page</a></li>
+            <li><a href="..//get-started.html">Get started</a></li>
+            <li><a href="..//learn-how-to-use-paket.html">Learn how to use paket</a></li>
+            <li><a href="..//convert-from-nuget-tutorial.html">Convert from legacy NuGet</a></li>
+            <li><a href="..//paket-and-dotnet-cli.html">Paket with .NET SDK</a></li>
+            <li><a href="..//faq.html">FAQ</a></li>
+            <li><a href="..//release-notes.html">Release Notes</a></li>
+            <li><a href="..//contact.html">Contact</a></li>
+            <li><a href="..//testimonials.html">Testimonials</a></li>
+            <li><a href="..//license.html">License</a></li>
+            <li><a href="..//glossary.html">Glossary</a></li>
+
+            <li class="nav-header">Download Paket</li>
+            <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
+            <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+
+            <li class="nav-header">GitHub</li>
+            <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+
+            <li class="nav-header">Documentation</li>
+            <li><a href="..//dependencies-file.html">paket.dependencies</a></li>
+            <li><a href="..//lock-file.html">paket.lock</a></li>
+            <li><a href="..//references-files.html">paket.references</a></li>
+            <li><a href="..//template-files.html">paket.template</a></li>
+            <li><a href="..//local-file.html">paket.local</a></li>
+            <li><a href="..//paket-folder.html">.paket folder</a></li>
+            <li><a href="..//bootstrapper.html">paket.bootstrapper.exe</a></li>
+            <li class="divider"></li>
+            <li><a href="..//resolver.html">Package resolution algorithm</a></li>
+            <li><a href="..//groups.html">Dependency Groups</a></li>
+            <li><a href="..//caches.html">Additional Caches</a></li>
+            <li><a href="..//nuget-dependencies.html">NuGet dependencies</a></li>
+            <li><a href="..//git-dependencies.html">Git dependencies</a></li>
+            <li><a href="..//github-dependencies.html">GitHub dependencies</a></li>
+            <li><a href="..//http-dependencies.html">HTTP dependencies</a></li>
+            <li><a href="..//analyzers.html">Analyzers</a></li>
+            <li class="divider"></li>
+            <li><a href="..//installation.html">Installation</a></li>
+            <li><a href="..//reference-from-repl.html">Using Paket from F# Interactive</a></li>
+            <li><a href="..//editor-support.html">Editor support</a></li>
+            <li><a href="..//shell-completion.html">Shell completion</a></li>
+            <li><a href="..//credential-providers.html">Credential Providers</a></li>
+            <li class="divider"></li>
+            <li><a href="..//reference/index.html">API Reference</a></li>
+
+            <li class="nav-header">Paket commands</li>
+            <li><a href="..//paket-add.html">paket add</a></li>
+            <li><a href="..//paket-auto-restore.html">paket auto-restore</a></li>
+            <li><a href="..//paket-clear-cache.html">paket clear-cache</a></li>
+            <li><a href="..//paket-config.html">paket config</a></li>
+            <li><a href="..//paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
+            <li><a href="..//paket-find-refs.html">paket find-refs</a></li>
+            <li><a href="..//paket-find-packages.html">paket find-packages</a></li>
+            <li><a href="..//paket-find-package-versions.html">paket find-package-versions</a></li>
+            <li><a href="..//paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
+            <li><a href="..//paket-info.html">paket info</a></li>
+            <li><a href="..//paket-init.html">paket init</a></li>
+            <li><a href="..//paket-install.html">paket install</a></li>
+            <li><a href="..//paket-outdated.html">paket outdated</a></li>
+            <li><a href="..//paket-pack.html">paket pack</a></li>
+            <li><a href="..//paket-push.html">paket push</a></li>
+            <li><a href="..//paket-remove.html">paket remove</a></li>
+            <li><a href="..//paket-restore.html">paket restore</a></li>
+            <li><a href="..//paket-simplify.html">paket simplify</a></li>
+            <li><a href="..//paket-show-groups.html">paket show-groups</a></li>
+            <li><a href="..//paket-show-installed-packages.html">paket show-installed-packages</a></li>
+            <li><a href="..//paket-update.html">paket update</a></li>
+            <li><a href="..//paket-why.html">paket why</a></li>
+            <li><a href="..//paket-restriction.html">paket restriction</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <a href="http://github.com/fsprojects/Paket"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/></a>
+  </body>
+</html>
