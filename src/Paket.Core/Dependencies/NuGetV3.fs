@@ -56,10 +56,10 @@ type NugetV3ResourceType =
 
 // Cache for nuget indices of sources
 type ResourceIndex = Map<NugetV3ResourceType,string>
-let private nugetV3Resources = System.Collections.Concurrent.ConcurrentDictionary<NuGetV3Source,Task<ResourceIndex>>()
+let private nugetV3Resources = System.Collections.Concurrent.ConcurrentDictionary<NuGetSource,Task<ResourceIndex>>()
 let private rnd = Random()
 
-let getNuGetV3Resource (source : NuGetV3Source) (resourceType : NugetV3ResourceType) : Async<string> =
+let getNuGetV3Resource (source : NuGetSource) (resourceType : NugetV3ResourceType) : Async<string> =
     let key = source
     let getResourcesRaw () =
         async {
@@ -199,7 +199,7 @@ let getSearchAPI(auth,nugetUrl) =
             match calculateNuGet3Path nugetUrl with
             | None -> return None
             | Some v3Path ->
-                let source = { Url = v3Path; Authentication = auth }
+                let source = { Url = v3Path; ProtocolVersion = ProtocolVersion3; Authentication = auth }
                 let! v3res = getNuGetV3Resource source AutoComplete |> Async.Catch
                 return
                     match v3res with
@@ -600,7 +600,7 @@ type PackageIndex =
       [<JsonProperty("count")>]
       Count : int }
 
-let private getPackageIndexRaw (source : NuGetV3Source) (packageName:PackageName) =
+let private getPackageIndexRaw (source : NuGetSource) (packageName:PackageName) =
     async {
         let! registrationUrl = getNuGetV3Resource source PackageIndex
         let url = registrationUrl.TrimEnd('/') + "/" + packageName.ToString().ToLowerInvariant() + "/index.json"
@@ -620,7 +620,7 @@ let private getPackageIndexMemoized =
 let getPackageIndex source packageName = getPackageIndexMemoized (source, packageName)
 
 
-let private getPackageIndexPageRaw (source:NuGetV3Source) (url:string) =
+let private getPackageIndexPageRaw (source: NuGetSource) (url:string) =
     async {
         let! rawData = safeGetFromUrl (source.Authentication, url, acceptJson)
         return
@@ -642,7 +642,7 @@ let private getPackageIndexPageMemoized =
 let getPackageIndexPage source (page:PackageIndexPage) = getPackageIndexPageMemoized (source, page.Id)
 
 
-let getRelevantPage (source:NuGetV3Source) (index:PackageIndex) (version:SemVerInfo) =
+let getRelevantPage (source:NuGetSource) (index:PackageIndex) (version:SemVerInfo) =
     async {
         try
             let normalizedVersion = SemVer.Parse (version.ToString().ToLowerInvariant())
@@ -703,7 +703,7 @@ let getRelevantPage (source:NuGetV3Source) (index:PackageIndex) (version:SemVerI
             return raise <| exn (sprintf "Failed to find relevant page in '%s'" index.Id, e)
     }
 
-let getPackageDetails (source:NuGetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<ODataSearchResult> =
+let getPackageDetails (source:NuGetSource) (packageName:PackageName) (version:SemVerInfo) : Async<ODataSearchResult> =
     async {
         let! pageIndex = getPackageIndex source packageName
         match pageIndex with
@@ -770,7 +770,7 @@ let getPackageDetails (source:NuGetV3Source) (packageName:PackageName) (version:
     }
 
 /// Uses the NuGet v3 registration endpoint to retrieve package details .
-let GetPackageDetails (force:bool) (source:NuGetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<ODataSearchResult> =
+let GetPackageDetails (force:bool) (source:NuGetSource) (packageName:PackageName) (version:SemVerInfo) : Async<ODataSearchResult> =
     getDetailsFromCacheOr
         force
         source.Url

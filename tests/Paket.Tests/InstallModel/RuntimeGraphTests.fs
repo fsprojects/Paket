@@ -149,6 +149,7 @@ let ``Check that runtime dependencies are saved as such in the lockfile`` () =
 
     let expectedLockFile = """NUGET
   remote: http://www.nuget.org/api/v2
+  protocolVersion: 2
     MyDependency (4.0)
     MyRuntimeDependency (4.0.1) - isRuntimeDependency: true"""
 
@@ -233,7 +234,7 @@ let ``Check that runtime dependencies are loaded from the lockfile`` () =
     |> List.sortBy (fun (t,_,_) ->t)
     |> shouldEqual expected
 
-    
+
 [<Test>]
 let ``Check that runtime inheritance works`` () =
     let runtimeGraph = RuntimeGraphParser.readRuntimeGraph rids
@@ -250,13 +251,13 @@ let ``Check that runtime inheritance works`` () =
     let model =
         InstallModel.EmptyModel (PackageName "testpackage", SemVer.Parse "1.0.0")
         |> InstallModel.addNuGetFiles content
-        
+
     let targetProfile = Paket.TargetProfile.SinglePlatform(Paket.FrameworkIdentifier.DotNetStandard (Paket.DotNetStandardVersion.V1_6))
     model.GetRuntimeAssemblies runtimeGraph (Rid.Of "win-x86") (targetProfile)
     |> Seq.map (fun fi -> fi.Library.PathWithinPackage)
     |> Seq.toList
     |> shouldEqual [ "runtimes/win/lib/netstandard1.1/testpackage.dll" ]
-    
+
 [<Test>]
 let ``Check that runtime inheritance works (2)`` () =
     let runtimeGraph = runtimeGraphMsNetCorePlatforms2_2_1
@@ -279,7 +280,7 @@ let ``Check that runtime inheritance works (2)`` () =
     let model =
         InstallModel.EmptyModel (PackageName "System.Runtime.InteropServices.RuntimeInformation", SemVer.Parse "4.3.0")
         |> InstallModel.addNuGetFiles content
-        
+
     let targetProfile = Paket.TargetProfile.SinglePlatform(Paket.FrameworkIdentifier.DotNetStandard (Paket.DotNetStandardVersion.V1_6))
     model.GetRuntimeAssemblies runtimeGraph (Rid.Of "win10-x86") (targetProfile)
     |> Seq.map (fun fi -> fi.Library.PathWithinPackage)
@@ -291,4 +292,3 @@ let ``Check correct inheritance list`` () =
     let runtimeGraph = RuntimeGraphParser.readRuntimeGraph rids
     RuntimeGraph.getInheritanceList (Rid.Of "win-x86") runtimeGraph
         |> shouldEqual [ Rid.Of "win-x86"; Rid.Of "win"; Rid.Of "any"; Rid.Of "base"]
-    

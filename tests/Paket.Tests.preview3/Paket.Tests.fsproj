@@ -42,6 +42,7 @@
     <Compile Include="$(PaketTestsSourcesDir)\Versioning\DependencySetSpecs.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\Versioning\FrameworkRestrictionTests.fs" />
     <Compile Include="$(PaketTestsSourcesDir)\Versioning\InterprojectReferencesConstraintSpecs.fs" />
+    <Compile Include="$(PaketTestsSourcesDir)\Versioning\PackageSourceSpecs.fs" />
     <TestAsset Include="Nuspec\EmptyLibs.nuspec" />
     <TestAsset Include="Nuspec\Fantomas.nuspec" />
     <TestAsset Include="Nuspec\FluentAssertions.nuspec" />
