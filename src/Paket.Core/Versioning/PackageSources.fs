@@ -48,14 +48,9 @@ type KnownNuGetSources =
     | MyGet
     | UnknownNuGetServer
 
-type NugetProtocolVersion =
-    | ProtocolVersion2
-    | ProtocolVersion3
-
 [<CustomComparison;CustomEquality>]
 type NuGetSource =
     { Url : string
-      ProtocolVersion: NugetProtocolVersion
       Authentication : AuthProvider }
     member x.BasicAuth isRetry =
         x.Authentication.Retrieve isRetry
@@ -71,10 +66,11 @@ type NuGetSource =
           | :? NuGetSource as y -> compare x.Url y.Url
           | _ -> invalidArg "yobj" "cannot compare values of different types"
 
+type NuGetV3Source = NuGetSource
+
 let userNameRegex = Regex("username[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 let passwordRegex = Regex("password[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 let authTypeRegex = Regex("authtype[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
-let protocolVersionRegex = Regex("protocolVersion[:][ ]*(\d)", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 
 let internal parseAuth(text:string, source) =
     let getAuth() =
@@ -108,89 +104,15 @@ let internal parseAuth(text:string, source) =
     else
         getAuth()
 
-let (|NugetV3Url|_|) (url: Uri) =
-  if url.ToString() = "https://api.nuget.org/v3/index.json" then Some () else None
-
-type 't ``[]`` with
-  member x.GetReverseIndex(i: int) = x.[x.Length - i]
-
-let (|Https|_|) (uri: Uri) = if uri.Scheme = "https" then Some () else None
-let (|Host|_|) (h: string) (uri: Uri) =
-    if uri.Host.EndsWith h
-    then Some ()
-    else None
-
-let (|LeadingPathSegments|_|) (segs: string[]) (uri: Uri) =
-    let segCount = segs.Length
-    let uriSegs = uri.Segments
-    if uriSegs.Length < segCount+1 then None // initial segment is a /, so we need to skip it
-    else
-        let items: string[] = uriSegs.[1..segCount]
-        let matched =
-            (items, segs)
-            ||> Array.zip
-            |> Array.forall(fun (l, r) -> l.TrimEnd('/') = r) // have to trim end because the Uri.Segments api keeps the /-separators on the end of the segment
-        if matched then Some () else None
-
-let (|TrailingPathSegments|_|) (segs: string []) (uri: Uri) =
-    let segCount = segs.Length
-    let uriSegs = uri.Segments
-    if uriSegs.Length < segCount then None
-    else
-        let items: string[] = uriSegs.[(uriSegs.Length-segCount)..]
-        let matched =
-            (items, segs)
-            ||> Array.zip
-            |> Array.forall(fun (l, r) -> l.TrimEnd('/') = r) // have to trim end because the Uri.Segments api keeps the /-separators on the end of the segment
-        if matched then Some () else None
-
-let (|MyGetV3Url|_|) (url: Uri) =
-
-  // https://<your_myget_domain>/F/<your-feed-name>/<feed_endpoint>
-  try
-      match url with
-      | Https & Host "myget.org" & TrailingPathSegments [|"api";"v3"; "index.json"|] -> Some ()
-      | _ -> None
-  with _ -> None
-
-let (|ArtifactoryV3Url|_|) (url: Uri) =
-    match url with
-    | LeadingPathSegments [|"artifactory"; "api";"nuget";"v3"|] -> Some ()
-    | _ -> None
-
-let (|KnownNugetV3Endpoint|_|) url =
-    match Uri url with
-    | NugetV3Url | MyGetV3Url | ArtifactoryV3Url -> Some ()
-    | _ -> None
-
-let internal parseProtocolVersion(text:string, nugetSource) =
-    if text.Contains("protocolVersion:") then
-        if not (protocolVersionRegex.IsMatch(text)) then
-            failwithf "Could not parse protocolVersion in \"%s\"" text
-
-        let textProtocolVersion = protocolVersionRegex.Match(text).Groups.[1].Value
-        let (parsed, specifiedProtocolVersion) = Int32.TryParse(textProtocolVersion)
-
-        match (parsed,specifiedProtocolVersion) with
-        | (true, 2) -> Some ProtocolVersion2
-        | (true, 3) -> Some ProtocolVersion3
-        | _ -> failwithf "Unsupported protocolVersion in \"%s\". Should be either 2 or 3" text
-    else
-        // derive protocolVersion from some well-known urls
-        try
-            match nugetSource with
-            | KnownNugetV3Endpoint -> Some ProtocolVersion3
-            | _ -> None
-        with
-        | _ -> None
-
 /// Represents the package source type.
 type PackageSource =
-| NuGet of NuGetSource
+| NuGetV2 of NuGetSource
+| NuGetV3 of NuGetV3Source
 | LocalNuGet of string * Cache option
     override this.ToString() =
         match this with
-        | NuGet source -> source.Url
+        | NuGetV2 source -> source.Url
+        | NuGetV3 source -> source.Url
         | LocalNuGet(path,_) -> path
     member x.NuGetType =
         match x.Url with
@@ -199,7 +121,7 @@ type PackageSource =
         | _ when urlSimilarToTfsOrVsts x.Url -> KnownNuGetSources.TfsOrVsts
         | _ -> KnownNuGetSources.UnknownNuGetServer
     static member Parse(line : string) =
-        let sourceRegex = Regex("source[ ]*[\"]([^\"]*)[\"]([ ]+.+)?", RegexOptions.IgnoreCase)
+        let sourceRegex = Regex("source[ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
         let parts = line.Split ' '
         let source =
             if sourceRegex.IsMatch line then
@@ -208,10 +130,9 @@ type PackageSource =
                 parts.[1].Replace("\"","").TrimEnd([| '/' |])
 
         let feed = normalizeFeedUrl source
+        PackageSource.Parse(feed, parseAuth(line, feed))
 
-        PackageSource.Parse(feed, parseProtocolVersion(line, feed), parseAuth(line, feed))
-
-    static member Parse(source, protocolVersion, auth) =
+    static member Parse(source,auth) =
         match tryParseWindowsStyleNetworkPath source with
         | Some path -> PackageSource.Parse(path)
         | _ ->
@@ -224,16 +145,19 @@ type PackageSource =
 #endif
                     LocalNuGet(source,None)
                 else
-                    match protocolVersion with
-                    | Some p -> NuGet { Url = source; ProtocolVersion = p; Authentication = auth }
-                    | None -> NuGet { Url = source; ProtocolVersion = ProtocolVersion2; Authentication = auth }
+                    if source.Contains("/v3/") || source.EndsWith("index.json") then
+                        NuGetV3 { Url = source; Authentication = auth }
+                    else
+                        NuGetV2 { Url = source; Authentication = auth }
+
             | _ ->  match System.Uri.TryCreate(source, System.UriKind.Relative) with
                     | true, uri -> LocalNuGet(source,None)
                     | _ -> failwithf "unable to parse package source: %s" source
 
     member this.Url =
         match this with
-        | NuGet n -> n.Url
+        | NuGetV2 n -> n.Url
+        | NuGetV3 n -> n.Url
         | LocalNuGet(n,_) -> n
 
     member this.IsLocalFeed =
@@ -243,11 +167,12 @@ type PackageSource =
 
     member this.Auth =
         match this with
-        | NuGet n -> n.Authentication
+        | NuGetV2 n -> n.Authentication
+        | NuGetV3 n -> n.Authentication
         | LocalNuGet(n,_) -> CredentialProviders.GetAuthenticationProvider n
 
-    static member NuGetV2Source url = NuGet { Url = url; ProtocolVersion = ProtocolVersion2; Authentication  = CredentialProviders.GetAuthenticationProvider url }
-    static member NuGetV3Source url = NuGet { Url = url; ProtocolVersion = ProtocolVersion3; Authentication  = CredentialProviders.GetAuthenticationProvider url }
+    static member NuGetV2Source url = NuGetV2 { Url = url; Authentication = CredentialProviders.GetAuthenticationProvider url }
+    static member NuGetV3Source url = NuGetV3 { Url = url; Authentication = CredentialProviders.GetAuthenticationProvider url }
 
     static member FromCache (cache:Cache) = LocalNuGet(cache.Location,Some cache)
 
@@ -259,7 +184,8 @@ type PackageSource =
             with _ ->
                 traceWarnfn "Unable to ping remote NuGet feed: %s." url
         match source with
-        | NuGet x -> n x.Url x.Authentication
+        | NuGetV2 x -> n x.Url x.Authentication
+        | NuGetV3 x -> n x.Url x.Authentication
         | LocalNuGet(path,_) ->
             if not (Directory.Exists (RemoveOutsideQuotes path)) then
                 traceWarnfn "Local NuGet feed doesn't exist: %s." path

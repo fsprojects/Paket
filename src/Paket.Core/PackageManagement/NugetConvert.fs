@@ -334,7 +334,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.ToAuthentication mode n))
             |> List.filter (fun (key,v) -> key.Contains "NuGetFallbackFolder" |> not)
             |> List.map (fun (source, auth) -> 
-                            try PackageSource.Parse(source, Some ProtocolVersion3, AuthProvider.ofFunction (fun _ -> auth)) |> ok
+                            try PackageSource.Parse(source,AuthProvider.ofFunction (fun _ -> auth)) |> ok
                             with _ -> source |> PackageSourceParseError |> fail
                             |> successTee PackageSource.WarnIfNoConnection)
                             

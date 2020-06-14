@@ -31,7 +31,6 @@ let graph =
 
 let expected = """NUGET
   remote: http://www.nuget.org/api/v2
-  protocolVersion: 2
     Castle.Windsor (2.1)
     Castle.Windsor-log4net (3.3)
       Castle.Windsor (>= 2.0)
@@ -44,7 +43,7 @@ let expected = """NUGET
       Rx-Core (>= 2.1)"""
 
 [<Test>]
-let ``should generate lock file``() =
+let ``should generate lock file``() = 
     let cfg = DependenciesFile.FromSource(config1)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options

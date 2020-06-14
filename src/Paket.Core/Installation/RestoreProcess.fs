@@ -103,7 +103,7 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
         let! result = async {
             let source =
                 match package.Source with
-                | NuGet _ ->
+                | NuGetV2 _ | NuGetV3 _ ->
                     let normalizeFeedUrl s = (normalizeFeedUrl s).Replace("https://","http://")
 
                     let normalized = normalizeFeedUrl package.Source.Url
@@ -111,7 +111,8 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
                         sources
                         |> List.tryPick (fun source ->
                             match source with
-                            | NuGet s when normalizeFeedUrl s.Url = normalized -> Some source
+                            | NuGetV2 s when normalizeFeedUrl s.Url = normalized -> Some source
+                            | NuGetV3 s when normalizeFeedUrl s.Url = normalized -> Some source
                             | _ -> None)
 
                     match source with

@@ -646,7 +646,7 @@ type Dependencies(dependenciesFileName: string) =
         |> Seq.distinct
         |> Seq.map (fun source ->
             match source with
-            | NuGet ({ ProtocolVersion = ProtocolVersion2 } as s) ->
+            | NuGetV2 s ->
                 let res = NuGetV3.getSearchAPI(s.Authentication,s.Url) |> Async.AwaitTask |> Async.RunSynchronously
                 match res with
                 | Some _ ->
@@ -655,7 +655,7 @@ type Dependencies(dependenciesFileName: string) =
                 | None ->
                     NuGetV2.FindPackages(s.Authentication, s.Url, searchTerm, maxResults)
                     |> Async.map (FSharp.Core.Result.mapError (fun err -> s.Url, err))
-            | NuGet ({ ProtocolVersion = ProtocolVersion3 } as s) ->
+            | NuGetV3 s ->
                 NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults)
                 |> Async.map (FSharp.Core.Result.mapError (fun err -> s.Url, err))
             | LocalNuGet(s,_) ->

@@ -19,11 +19,10 @@ let graph =
 
 let expected = """NUGET
   remote: http://www.nuget.org/api/v2
-  protocolVersion: 2
     Castle.Windsor-log4net (3.2)"""
 
 [<Test>]
-let ``should generate no auth in lock file``() =
+let ``should generate no auth in lock file``() = 
     let cfg = DependenciesFile.FromSource(config1)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
