@@ -1,3 +1,6 @@
+#### 5.247.0 - 2020-06-14
+* Added protocolVersion for NuGet source - https://github.com/fsprojects/Paket/pull/3844
+
 #### 5.246.1 - 2020-06-13
 * BUGFIX: Fix a misspelled TFM - https://github.com/fsprojects/Paket/pull/3855
 
