@@ -1,3 +1,6 @@
+#### 5.247.1 - 2020-06-14
+* REVERT: Added protocolVersion for NuGet source - https://github.com/fsprojects/Paket/pull/3844
+
 #### 5.247.0 - 2020-06-14
 * Added protocolVersion for NuGet source - https://github.com/fsprojects/Paket/pull/3844
 
