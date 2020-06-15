@@ -1,4 +1,4 @@
-#### 5.247.2 - 2020-06-14
+#### 5.247.2 - 2020-06-15
 * Remove recursion from lock access test
 
 #### 5.247.1 - 2020-06-14
@@ -14,7 +14,7 @@
 * Add support for licenseExpression in paket.template - https://github.com/fsprojects/Paket/pull/3824
 
 #### 5.245.4 - 2020-06-12
-* Allow to quite `paket find-packages` with Ctrl+c - https://github.com/fsprojects/Paket/pull/3865
+* Allows to quit `paket find-packages` with Ctrl+c - https://github.com/fsprojects/Paket/pull/3865
 
 #### 5.245.3 - 2020-05-25
 * Treat NuGet repo as v3 if url ends with index.json  - https://github.com/fsprojects/Paket/issues/3806
