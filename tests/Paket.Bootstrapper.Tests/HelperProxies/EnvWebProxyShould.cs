@@ -28,7 +28,7 @@ namespace Paket.Bootstrapper.Tests.HelperProxies
             using (new DisposableEnvVar("http_proxy"))
             using (new DisposableEnvVar("https_proxy"))
             {
-                var envProxy = TestHelper.TestProxyProvider.EnvProxy;
+                var envProxy = TestHelper.NoSingletonProxyProvider.EnvProxy;
                 IWebProxy proxy;
                 Assert.IsFalse(envProxy.TryGetProxyFor(new Uri("http://github.com"), out _));
                 Assert.IsFalse(envProxy.TryGetProxyFor(new Uri("https://github.com"), out _));
@@ -41,7 +41,7 @@ namespace Paket.Bootstrapper.Tests.HelperProxies
             using (new DisposableEnvVar("no_proxy"))
             {
                 IWebProxy proxy;
-                Assert.IsTrue(TestHelper.TestProxyProvider.EnvProxy.TryGetProxyFor(new Uri("http://github.com"), out proxy));
+                Assert.IsTrue(TestHelper.NoSingletonProxyProvider.EnvProxy.TryGetProxyFor(new Uri("http://github.com"), out proxy));
                 var webProxy = proxy as WebProxy;
                 Assert.IsNotNull(webProxy);
                 Assert.That(webProxy.Address, Is.EqualTo(new Uri("http://proxy.local")));
@@ -57,7 +57,7 @@ namespace Paket.Bootstrapper.Tests.HelperProxies
             using (new DisposableEnvVar("no_proxy"))
             {
                 IWebProxy proxy;
-                Assert.IsTrue(TestHelper.TestProxyProvider.EnvProxy.TryGetProxyFor(new Uri("http://github.com"), out proxy));
+                Assert.IsTrue(TestHelper.NoSingletonProxyProvider.EnvProxy.TryGetProxyFor(new Uri("http://github.com"), out proxy));
                 var webProxy = proxy as WebProxy;
                 Assert.IsNotNull(webProxy);
                 Assert.That(webProxy.Address, Is.EqualTo(new Uri("http://proxy.local:8080")));
@@ -74,7 +74,7 @@ namespace Paket.Bootstrapper.Tests.HelperProxies
             using (new DisposableEnvVar("no_proxy"))
             {
                 IWebProxy proxy;
-                Assert.IsTrue(TestHelper.TestProxyProvider.EnvProxy.TryGetProxyFor(new Uri("http://github.com"), out proxy));
+                Assert.IsTrue(TestHelper.NoSingletonProxyProvider.EnvProxy.TryGetProxyFor(new Uri("http://github.com"), out proxy));
                 var webProxy = proxy as WebProxy;
                 Assert.IsNotNull(webProxy);
                 Assert.That(webProxy.Address, Is.EqualTo(new Uri("http://proxy.local:8080")));
@@ -94,7 +94,7 @@ namespace Paket.Bootstrapper.Tests.HelperProxies
             using (new DisposableEnvVar("no_proxy"))
             {
                 IWebProxy proxy;
-                Assert.IsTrue(TestHelper.TestProxyProvider.EnvProxy.TryGetProxyFor(new Uri("https://github.com"), out proxy));
+                Assert.IsTrue(TestHelper.NoSingletonProxyProvider.EnvProxy.TryGetProxyFor(new Uri("https://github.com"), out proxy));
                 var webProxy = proxy as WebProxy;
                 Assert.IsNotNull(webProxy);
                 Assert.That(webProxy.Address, Is.EqualTo(new Uri("http://proxy.local:8080")));
@@ -113,7 +113,7 @@ namespace Paket.Bootstrapper.Tests.HelperProxies
             using (new DisposableEnvVar("no_proxy", ".local,127.0.0.1"))
             {
                 IWebProxy proxy;
-                Assert.IsTrue(TestHelper.TestProxyProvider.EnvProxy.TryGetProxyFor(new Uri("http://github.com"), out proxy));
+                Assert.IsTrue(TestHelper.NoSingletonProxyProvider.EnvProxy.TryGetProxyFor(new Uri("http://github.com"), out proxy));
                 var webProxy = proxy as WebProxy;
                 Assert.IsNotNull(webProxy);
                 Assert.That(webProxy.Address, Is.EqualTo(new Uri("http://proxy.local:8080")));

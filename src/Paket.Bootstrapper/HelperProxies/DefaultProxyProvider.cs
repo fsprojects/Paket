@@ -1,22 +1,18 @@
-﻿using System;
-
-namespace Paket.Bootstrapper.HelperProxies
+﻿namespace Paket.Bootstrapper.HelperProxies
 {
     public class DefaultProxyProvider : IProxyProvider
     {
-        private IProxyProvider This => this;
+        public IFileSystemProxy FileSystemProxy { get; }
 
-        IFileSystemProxy IProxyProvider.FileSystemProxy { get; } = new FileSystemProxy();
+        public IWebRequestProxy WebRequestProxy { get; }
 
-        private readonly IWebRequestProxy webRequestProxy;
-        IWebRequestProxy IProxyProvider.WebRequestProxy => webRequestProxy;
-
-        private Lazy<EnvProxy> _instance = new Lazy<EnvProxy>();
-        IEnvProxy IProxyProvider.EnvProxy => _instance.Value;
+        public IEnvProxy EnvProxy { get; }
 
         public DefaultProxyProvider()
         {
-            webRequestProxy = new WebRequestProxy(This.EnvProxy);
+            FileSystemProxy = new FileSystemProxy();
+            EnvProxy = new EnvProxy();
+            WebRequestProxy = new WebRequestProxy(EnvProxy);
         }
     }
 }
