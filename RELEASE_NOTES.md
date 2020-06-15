@@ -1,7 +1,22 @@
-#### 6.0.0-alpha029 - 2020-06-12
+#### 6.0.0-alpha030 - 2020-06-15
 * Full .NET Core / SDK compatible version
 * Support for XCode
 * Support for .netcoreapp5.0
+
+#### 5.247.2 - 2020-06-15
+* Remove recursion from lock access test
+
+#### 5.247.1 - 2020-06-14
+* REVERT: Added protocolVersion for NuGet source - https://github.com/fsprojects/Paket/pull/3844
+
+#### 5.247.0 - 2020-06-14
+* Added protocolVersion for NuGet source - https://github.com/fsprojects/Paket/pull/3844
+
+#### 5.246.1 - 2020-06-13
+* BUGFIX: Fix a misspelled TFM - https://github.com/fsprojects/Paket/pull/3855
+
+#### 5.246.0 - 2020-06-13
+* Add support for licenseExpression in paket.template - https://github.com/fsprojects/Paket/pull/3824
 
 #### 5.245.4 - 2020-06-12
 * Allow to quite `paket find-packages` with Ctrl+c - https://github.com/fsprojects/Paket/pull/3865

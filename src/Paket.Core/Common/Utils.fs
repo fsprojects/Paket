@@ -453,61 +453,71 @@ type PackagesFolderGroupConfig =
 
 
 let RunInLockedAccessMode(lockedFolder,action) =
-    if Directory.Exists lockedFolder |> not then
+    if not (Directory.Exists lockedFolder) then
         Directory.CreateDirectory lockedFolder |> ignore
 
     let p = System.Diagnostics.Process.GetCurrentProcess()
     let fileName = Path.Combine(lockedFolder,Constants.AccessLockFileName)
+    let pid = string p.Id
 
-    // Checks the packagesFolder for a paket.processlock file or waits until it get access to it.
-    let rec acquireLock (startTime:DateTime) (timeOut:TimeSpan) trials =
-        try
-            let rec waitForUnlocked counter =
+    // Checks the lockedFolder for a paket.processlock file or waits until it get access to it.
+    let acquireLock (startTime:DateTime) (timeOut:TimeSpan) trials =
+        let mutable skip = false
+        let mutable trials = trials
+        while not skip do
+            try
+                let mutable skipUnlock = false
+                while not skipUnlock do
+                    if File.Exists fileName then
+                        let content = File.ReadAllText fileName
+                        if content = pid then
+                            skipUnlock <- true
+                        else
+                            let currentProcess = System.Diagnostics.Process.GetCurrentProcess()
+                            let hasRunningPaketProcess =
+                                Process.GetProcessesByName p.ProcessName
+                                |> Array.filter (fun p -> p.Id <> currentProcess.Id)
+                                |> Array.exists (fun p -> content = string p.Id && (not p.HasExited))
+
+                            if hasRunningPaketProcess then
+                                if startTime + timeOut <= DateTime.Now then
+                                    failwith "timeout"
+                                else
+                                    Thread.Sleep 100
+                    else
+                        skipUnlock <- true
+
+                File.WriteAllText(fileName, pid)
+                skip <- true
+            with
+            | exn when exn.Message = "timeout" ->
+                failwithf "Could not acquire lock to '%s'.%sThe process timed out." fileName Environment.NewLine
+            | exn ->
+                if trials > 0 then
+                    trials <- trials - 1
+                    if verbose then
+                        tracefn "Could not acquire lock to %s.%s%s%sTrials left: %d." fileName Environment.NewLine exn.Message Environment.NewLine trials
+                else
+                    failwithf "Could not acquire lock to '%s'. No more trials left. Message.: %s" fileName exn.Message
+
+    let releaseLock trials =
+        let mutable skip = false
+        let mutable trials = trials
+        while not skip do
+            try
                 if File.Exists fileName then
                     let content = File.ReadAllText fileName
-                    if content <> string p.Id then
-                        let currentProcess = System.Diagnostics.Process.GetCurrentProcess()
-                        let hasRunningPaketProcess =
-                            Process.GetProcessesByName p.ProcessName
-                            |> Array.filter (fun p -> p.Id <> currentProcess.Id)
-                            |> Array.exists (fun p -> content = string p.Id && (not p.HasExited))
-
-                        if hasRunningPaketProcess then
-                            if startTime + timeOut <= DateTime.Now then
-                                failwith "timeout"
-                            else
-                                if counter % 100 = 0 then
-                                    tracefn "%s is locked by paket.exe (PID = %s). Waiting..." fileName content
-                                Thread.Sleep 100
-                                waitForUnlocked (counter + 1)
-
-            waitForUnlocked 0
-            File.WriteAllText(fileName, string p.Id)
-        with
-        | exn when exn.Message = "timeout" ->
-            failwithf "Could not acquire lock to '%s'.%sThe process timed out." fileName Environment.NewLine
-        | exn ->
-            if trials > 0 then
-                let trials = trials - 1
-                tracefn "Could not acquire lock to %s.%s%s%sTrials left: %d." fileName Environment.NewLine exn.Message Environment.NewLine trials
-                acquireLock startTime timeOut trials
-            else
-                failwithf "Could not acquire lock to '%s'. No more trials left" fileName
-
-    let rec releaseLock trials =
-        try
-            if File.Exists fileName then
-                let content = File.ReadAllText fileName
-                if content = string p.Id then
-                    File.Delete fileName
-        with
-        | exn when trials > 0 ->
-            Thread.Sleep 100
-            let trials = trials - 1
-            tracefn "Could not release lock to %s.%s%s%sTrials left: %d." fileName Environment.NewLine exn.Message Environment.NewLine trials
-            releaseLock trials
-        | _ ->
-            ()
+                    if content = pid then
+                        File.Delete fileName
+                skip <- true
+            with
+            | exn when trials > 0 ->
+                Thread.Sleep 100
+                trials <- trials - 1
+                if verbose then
+                    tracefn "Could not release lock to %s.%s%s%sTrials left: %d." fileName Environment.NewLine exn.Message Environment.NewLine trials
+            | _ ->
+                skip <- true
 
     try
         acquireLock DateTime.Now (TimeSpan.FromMinutes 10.) 100
@@ -730,7 +740,7 @@ let extractZipToDirectory (zipFileName:string) (directoryName:string) =
                 fi.Directory.Create()
             if fi.Exists then
                 try fi.Delete() with | _ -> ()
-                
+
             entry.ExtractToFile(destinationPath)
 
 // adapted from MiniRx
