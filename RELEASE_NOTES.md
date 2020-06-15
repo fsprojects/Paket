@@ -1,3 +1,6 @@
+#### 5.247.2 - 2020-06-14
+* Remove recursion from lock access test
+
 #### 5.247.1 - 2020-06-14
 * REVERT: Added protocolVersion for NuGet source - https://github.com/fsprojects/Paket/pull/3844
 
