@@ -137,8 +137,9 @@ committed to source control:
 
 The following files can be committed, but are not essential:
 
-* [`.paket/paket.targets`](paket-folder.html) allows you to enable automatic
-  package restore in Visual Studio.
+* [`.paket/Paket.Restore.targets`](paket-folder.html) allows you to enable automatic
+  package restore in Visual Studio. If not commited then if using Visual Studio you 
+  will need to run `dotnet restore` manually. 
 * [`.paket/paket.bootstrapper.exe`](bootstrapper.html) is a small,
   rarely updated executable that will download the latest version of the main
   `paket.exe`. It is not necessary, but can be very useful for other developers
