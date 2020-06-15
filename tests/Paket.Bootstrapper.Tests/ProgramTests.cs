@@ -15,7 +15,7 @@ namespace Paket.Bootstrapper.Tests
 
             //act
             var downloadArguments = new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, false, null);
-            var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, false, false);
+            var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, false, false, TestHelper.ProxyProvider);
 
             //assert
             Assert.That(strategy, Is.TypeOf<CacheDownloadStrategy>());
@@ -32,7 +32,7 @@ namespace Paket.Bootstrapper.Tests
 
             //act
             var downloadArguments = new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, false, null);
-            var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, true, false);
+            var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, true, false, TestHelper.ProxyProvider);
 
             //assert
             Assert.That(strategy, Is.TypeOf<CacheDownloadStrategy>());
@@ -48,7 +48,7 @@ namespace Paket.Bootstrapper.Tests
 
             //act
             var downloadArguments = new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, false, null);
-            var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, true, true);
+            var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, true, true, TestHelper.ProxyProvider);
 
             //assert
             Assert.That(strategy, Is.TypeOf<CacheDownloadStrategy>());
@@ -63,7 +63,7 @@ namespace Paket.Bootstrapper.Tests
 
             //act
             var downloadArguments =  new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, false, null);
-            var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, false, true);
+            var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, false, true, TestHelper.ProxyProvider);
 
             //assert
             Assert.That(strategy, Is.TypeOf<CacheDownloadStrategy>());
@@ -78,7 +78,7 @@ namespace Paket.Bootstrapper.Tests
 
             //act
             var downloadArguments = new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, true, null);
-            var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, false, false);
+            var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, false, false, TestHelper.ProxyProvider);
 
             //assert
             Assert.That(strategy, Is.TypeOf<GitHubDownloadStrategy>());
@@ -93,7 +93,7 @@ namespace Paket.Bootstrapper.Tests
 
             //act
             var downloadArguments = new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, true, 10);
-            var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, false, false);
+            var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, false, false, TestHelper.ProxyProvider);
 
             //assert
             Assert.That(strategy, Is.TypeOf<TemporarilyIgnoreUpdatesDownloadStrategy>());
@@ -111,7 +111,7 @@ namespace Paket.Bootstrapper.Tests
 
             //act
             var downloadArguments = new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, false, 10);
-            var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, true, true);
+            var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, true, true, TestHelper.ProxyProvider);
 
             //assert
             Assert.That(strategy, Is.TypeOf<TemporarilyIgnoreUpdatesDownloadStrategy>());
