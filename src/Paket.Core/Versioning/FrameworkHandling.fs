@@ -150,24 +150,30 @@ type FrameworkVersion =
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 type UAPVersion =
     | V10
+    | V10_0_14393
     | V10_0_15138
     | V10_0_16299
     | V10_0_16300
+    | V10_0_18362
     | V10_1
     override this.ToString() =
         match this with
         | V10 -> "10.0"
+        | V10_0_14393 -> "10.0.14393"
         | V10_0_15138 -> "10.0.15138"
         | V10_0_16299 -> "10.0.16299"
         | V10_0_16300 -> "10.0.16300"
+        | V10_0_18362 -> "10.0.18362"
         | V10_1 -> "10.1"
 
     member this.ShortString() =
         match this with
         | UAPVersion.V10 -> "10.0"
+        | UAPVersion.V10_0_14393 -> "10.0.14393"
         | UAPVersion.V10_0_15138 -> "10.0.15138"
         | UAPVersion.V10_0_16299 -> "10.0.16299"
         | UAPVersion.V10_0_16300 -> "10.0.16300"
+        | UAPVersion.V10_0_18362 -> "10.0.18362"
         | UAPVersion.V10_1 -> "10.1"
 
     member this.NetCoreVersion =
@@ -175,9 +181,11 @@ type UAPVersion =
         match this with
         // Assumed from C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETCore
         | UAPVersion.V10
+        | UAPVersion.V10_0_14393
         | UAPVersion.V10_0_15138
         | UAPVersion.V10_0_16299
-        | UAPVersion.V10_0_16300 -> "v5.0"
+        | UAPVersion.V10_0_16300
+        | UAPVersion.V10_0_18362 -> "v5.0"
         // No idea, for now use 5.0 to keep project files constant
         // If someone starts complaining fix this and update the baselines.
         | UAPVersion.V10_1 -> "v5.0"
@@ -185,9 +193,11 @@ type UAPVersion =
     static member TryParse s =
         match s with
         | "" | "1" | "10" -> Some UAPVersion.V10
+        | "10.0.14393" -> Some UAPVersion.V10_1
         | "10.0.15138" -> Some UAPVersion.V10_1
         | "10.0.16299" -> Some UAPVersion.V10_1
         | "10.0.16300" -> Some UAPVersion.V10_1
+        | "10.0.18362" -> Some UAPVersion.V10_1
         | "10.1" -> Some UAPVersion.V10_1
         | _ -> None
 
@@ -202,6 +212,7 @@ type DotNetCoreAppVersion =
     | V2_2
     | V3_0
     | V3_1
+    | V5_0
 
     member private this.NumKey =
         match this with
@@ -212,6 +223,7 @@ type DotNetCoreAppVersion =
         | V2_2 -> 4
         | V3_0 -> 5
         | V3_1 -> 6
+        | V5_0 -> 7
 
     static member private FromNum num =
         match num with
@@ -222,6 +234,7 @@ type DotNetCoreAppVersion =
         | 4 -> V2_2
         | 5 -> V3_0
         | 6 -> V3_1
+        | 7 -> V5_0
         | _   -> failwithf "'%i' has no corresponding framework version" num
 
     static member (<->) (lower:DotNetCoreAppVersion,upper:DotNetCoreAppVersion) =
@@ -240,6 +253,7 @@ type DotNetCoreAppVersion =
         | V2_2 -> "v2.2"
         | V3_0 -> "v3.0"
         | V3_1 -> "v3.1"
+        | V5_0 -> "v5.0"
 
     member this.ShortString() =
         match this with
@@ -250,16 +264,18 @@ type DotNetCoreAppVersion =
         | DotNetCoreAppVersion.V2_2 -> "2.2"
         | DotNetCoreAppVersion.V3_0 -> "3.0"
         | DotNetCoreAppVersion.V3_1 -> "3.1"
+        | DotNetCoreAppVersion.V5_0 -> "5.0"
 
     static member TryParse s =
         match s with
-        | "" | "1" -> Some (DotNetCoreAppVersion.V1_0)
-        | "1.1" -> Some (DotNetCoreAppVersion.V1_1)
-        | "2" -> Some (DotNetCoreAppVersion.V2_0)
-        | "2.1" -> Some (DotNetCoreAppVersion.V2_1)
-        | "2.2" -> Some (DotNetCoreAppVersion.V2_2)
-        | "3" -> Some (DotNetCoreAppVersion.V3_0)
-        | "3.1" -> Some (DotNetCoreAppVersion.V3_1)
+        | _ when s = "" || s = "1" -> Some (DotNetCoreAppVersion.V1_0)
+        | _ when s = "1.1" -> Some (DotNetCoreAppVersion.V1_1)
+        | _ when s = "2" || s = "2.0" -> Some (DotNetCoreAppVersion.V2_0)
+        | _ when s = "2.1" -> Some (DotNetCoreAppVersion.V2_1)
+        | _ when s = "2.2" -> Some (DotNetCoreAppVersion.V2_2)
+        | _ when s = "3" || s = "3.0" -> Some (DotNetCoreAppVersion.V3_0)
+        | _ when s = "3.1" -> Some (DotNetCoreAppVersion.V3_1)
+        | _ when s = "5.0" || s = "5" -> Some (DotNetCoreAppVersion.V5_0)
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -283,6 +299,29 @@ type DotNetUnityVersion =
         | DotNetUnityVersion.V3_5_Micro -> "35-Unity Micro v3.5"
         | DotNetUnityVersion.V3_5_Subset -> "35-Unity Subset v3.5"
         | DotNetUnityVersion.V3_5_Full -> "35-Unity Full v3.5"
+
+[<RequireQualifiedAccess>]
+type XCodeVersion =
+    | V10
+    | V11
+    override this.ToString() =
+        match this with
+        | V10 -> "XCODE10"
+        | V11 -> "XCODE11"
+
+    member this.ShortString() =
+        match this with
+        | XCodeVersion.V10 -> "XCODE10"
+        | XCodeVersion.V11 -> "XCODE11"
+
+    static member TryParse s =
+        match s with
+        | "1" -> Some (XCodeVersion.V10)
+        | "10" -> Some (XCodeVersion.V10)
+        | "1.1" -> Some (XCodeVersion.V11)
+        | "11" -> Some (XCodeVersion.V11)
+        | _ -> None
+
 
 module KnownAliases =
     let Data =
@@ -417,6 +456,7 @@ type MonoAndroidVersion =
     | V8
     | V8_1
     | V9
+    | V10
     member this.ShortString() =
         match this with
         | MonoAndroidVersion.V1    -> ""
@@ -435,6 +475,7 @@ type MonoAndroidVersion =
         | MonoAndroidVersion.V8   -> "8.0"
         | MonoAndroidVersion.V8_1   -> "8.1"
         | MonoAndroidVersion.V9   -> "9.0"
+        | MonoAndroidVersion.V10 -> "10.0"
     override this.ToString() =
         match this with
         | MonoAndroidVersion.V1    -> "v1.0"
@@ -453,6 +494,7 @@ type MonoAndroidVersion =
         | MonoAndroidVersion.V8   -> "v8.0"
         | MonoAndroidVersion.V8_1   -> "v8.1"
         | MonoAndroidVersion.V9   -> "v9.0"
+        | MonoAndroidVersion.V10 -> "v10.0"
 
     static member TryParse s =
         match s with
@@ -475,6 +517,8 @@ type MonoAndroidVersion =
         | "8.1" -> Some (MonoAndroidVersion.V8_1)
         | "9"
         | "9.0" -> Some (MonoAndroidVersion.V9)
+        | "10"
+        | "10.0" -> Some (MonoAndroidVersion.V10)
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -516,6 +560,7 @@ type TizenVersion =
         | "" | "3" -> Some (TizenVersion.V3)
         | "4" -> Some (TizenVersion.V4)
         | _ -> None
+
 /// Framework Identifier type.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 type FrameworkIdentifier =
@@ -537,6 +582,7 @@ type FrameworkIdentifier =
     | WindowsPhoneApp of WindowsPhoneAppVersion
     | Silverlight of SilverlightVersion
     | Tizen of TizenVersion
+    | XCode of XCodeVersion
     | Unsupported of string
 
     override x.ToString() =
@@ -560,6 +606,7 @@ type FrameworkIdentifier =
         | WindowsPhoneApp v -> "wpa" + v.ShortString()
         | Silverlight v -> "sl" + v.ShortString()
         | Tizen v -> "tizen" + v.ShortString()
+        | XCode v -> "xcode" + v.ShortString()
         | Unsupported s -> s
 
 
@@ -603,6 +650,7 @@ type FrameworkIdentifier =
         | MonoAndroid MonoAndroidVersion.V8 -> [ MonoAndroid MonoAndroidVersion.V7_1; DotNetStandard DotNetStandardVersion.V2_0 ]
         | MonoAndroid MonoAndroidVersion.V8_1 -> [ MonoAndroid MonoAndroidVersion.V8 ]
         | MonoAndroid MonoAndroidVersion.V9 -> [ MonoAndroid MonoAndroidVersion.V8_1 ]
+        | MonoAndroid MonoAndroidVersion.V10 -> [ MonoAndroid MonoAndroidVersion.V9 ]
         | MonoTouch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | MonoMac -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Native(_) -> [ ]
@@ -611,9 +659,11 @@ type FrameworkIdentifier =
         | XamarinTV -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | XamarinWatch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | UAP UAPVersion.V10 -> [ Windows WindowsVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1; DotNetStandard DotNetStandardVersion.V1_4  ]
+        | UAP UAPVersion.V10_0_14393 -> [ UAP UAPVersion.V10 ]
         | UAP UAPVersion.V10_0_15138 -> [ UAP UAPVersion.V10 ]
         | UAP UAPVersion.V10_0_16299 -> [ UAP UAPVersion.V10; DotNetStandard DotNetStandardVersion.V2_0 ]
         | UAP UAPVersion.V10_0_16300 -> [ UAP UAPVersion.V10; DotNetStandard DotNetStandardVersion.V2_0 ]
+        | UAP UAPVersion.V10_0_18362 -> [ UAP UAPVersion.V10; DotNetStandard DotNetStandardVersion.V2_0 ]
         | UAP UAPVersion.V10_1 -> [ UAP UAPVersion.V10_0_15138 ]
         | DotNetFramework FrameworkVersion.V1 -> [ ]
         | DotNetFramework FrameworkVersion.V1_1 -> [ DotNetFramework FrameworkVersion.V1 ]
@@ -650,6 +700,7 @@ type FrameworkIdentifier =
         | DotNetCoreApp DotNetCoreAppVersion.V2_2 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_1 ]
         | DotNetCoreApp DotNetCoreAppVersion.V3_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V2_2; DotNetStandard DotNetStandardVersion.V2_1 ]
         | DotNetCoreApp DotNetCoreAppVersion.V3_1 -> [ DotNetCoreApp DotNetCoreAppVersion.V3_0 ]
+        | DotNetCoreApp DotNetCoreAppVersion.V5_0 -> [ DotNetCoreApp DotNetCoreAppVersion.V3_1 ]
         | DotNetUnity DotNetUnityVersion.V3_5_Full -> [ ]
         | DotNetUnity DotNetUnityVersion.V3_5_Subset -> [ ]
         | DotNetUnity DotNetUnityVersion.V3_5_Micro -> [ ]
@@ -668,6 +719,8 @@ type FrameworkIdentifier =
         | WindowsPhone WindowsPhoneVersion.V8_1 -> [ WindowsPhone WindowsPhoneVersion.V8 ]
         | Tizen TizenVersion.V3 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Tizen TizenVersion.V4 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | XCode XCodeVersion.V10 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | XCode XCodeVersion.V11 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Unsupported _ -> []
 
 module FrameworkDetection =
@@ -813,6 +866,7 @@ module FrameworkDetection =
                     () -> Some (Unsupported path)
                 | v when v.StartsWith "dotnet" -> Some (Unsupported path)
                 | MatchTfm "tizen" TizenVersion.TryParse fm -> Some (Tizen fm)
+                | MatchTfm "xcode" XCodeVersion.TryParse fm -> Some (XCode fm)
                 // Default is full framework, for example "35"
                 | MatchTfm "" FrameworkVersion.TryParse fm -> Some (DotNetFramework fm)
                 | _ -> None
@@ -1176,6 +1230,7 @@ module KnownTargetProfiles =
         DotNetCoreAppVersion.V2_2
         DotNetCoreAppVersion.V3_0
         DotNetCoreAppVersion.V3_1
+        DotNetCoreAppVersion.V5_0
     ]
 
     let DotNetUnityVersions = [
@@ -1230,6 +1285,7 @@ module KnownTargetProfiles =
         MonoAndroidVersion.V8
         MonoAndroidVersion.V8_1
         MonoAndroidVersion.V9
+        MonoAndroidVersion.V10
     ]
 
     let MonoAndroidProfiles =
@@ -1238,9 +1294,11 @@ module KnownTargetProfiles =
 
     let UAPVersons = [
         UAPVersion.V10
+        UAPVersion.V10_0_14393
         UAPVersion.V10_0_15138
         UAPVersion.V10_0_16299
         UAPVersion.V10_0_16300
+        UAPVersion.V10_0_18362
         UAPVersion.V10_1
     ]
 
@@ -1491,6 +1549,7 @@ module SupportCalculation =
                     | DotNetStandard _
                     | Unsupported _
                     | XamarinMac -> false
+                    | XCode _
                     | Tizen _ -> failwithf "Unexpected framework while trying to resolve PCL Profile"
                     | _ -> true)
             if minimal.Length > 0 then

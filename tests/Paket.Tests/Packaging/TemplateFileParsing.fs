@@ -154,8 +154,8 @@ projectUrl
     http://github.com/fsprojects/Chessie
 iconUrl
     https://raw.githubusercontent.com/fsprojects/Chessie/master/docs/files/img/logo.png
-licenseUrl
-    http://github.com/fsprojects/Chessie/blob/master/LICENSE.txt
+licenseExpression
+    Unlicense
 requireLicenseAcceptance
     false
 copyright
@@ -199,7 +199,7 @@ let ``Optional fields are read`` (fileContent : string) =
     sut.Copyright |> shouldEqual (Some "Copyright 2015")
     sut.Summary |> shouldEqual (Some "Railway-oriented programming for .NET")
     sut.IconUrl |> shouldEqual (Some "https://raw.githubusercontent.com/fsprojects/Chessie/master/docs/files/img/logo.png")
-    sut.LicenseUrl |> shouldEqual (Some "http://github.com/fsprojects/Chessie/blob/master/LICENSE.txt")
+    sut.LicenseExpression |> shouldEqual (Some "Unlicense")
     sut.ProjectUrl |> shouldEqual (Some "http://github.com/fsprojects/Chessie")
     sut.Tags |> shouldEqual ["rop";"fsharp";"F#"]
     sut.Owners |> shouldEqual ["Steffen Forkmann";"Max Malook";"Tomasz Heimowski"]

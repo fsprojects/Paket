@@ -7,8 +7,14 @@ Paket comes with a command that helps to convert existing solution from NuGet's
 
 1. Please start by making a **backup of your repository**
 1. Download Paket and it's bootstrapper as described in the
-   ["Getting started" tutorial](getting-started.html#Downloading-Paket-and-it-s-BootStrapper)
+   ["Get started" tutorial](get-started.html)
 1. Run the [`convert-from-nuget`](paket-convert-from-nuget.html) command:
+
+```sh
+$ dotnet paket convert-from-nuget
+```
+
+Or if you're not using .NET Core:
 
 ```sh
 $ .paket/paket.exe convert-from-nuget

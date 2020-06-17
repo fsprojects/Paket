@@ -1095,11 +1095,11 @@ module ProjectFile =
         | null -> adjustIfWeHaveSDK 4.0
         | v ->
             match Double.TryParse(v.Value, NumberStyles.Any, CultureInfo.InvariantCulture) with
-            | true , 15.0 ->
+            | true , v when v >= 15.0 ->
                     let sdkAttr = project.ProjectNode.Attributes.["Sdk"]
                     if  isNull sdkAttr || String.IsNullOrWhiteSpace sdkAttr.Value
                     then 14.0   // adjustment so paket still installs to old style msbuild projects that are using MSBuild15 but not the new format
-                    else 15.0
+                    else v
             | true,  version -> adjustIfWeHaveSDK version
             | _         -> adjustIfWeHaveSDK 4.0
 
@@ -1569,7 +1569,7 @@ module ProjectFile =
         |> List.tryFind (fun n -> withAttributeValueEndsWith "Project" Constants.TargetsFileName n || withAttributeValueEndsWith "Project" "Paket.Restore.targets" n)
         |> Option.iter (fun n -> n.ParentNode.RemoveChild n |> ignore)
 
-    let determineBuildAction fileName (project:ProjectFile) =
+    let determineBuildAction (fileName : string) (project:ProjectFile) =
         match (Path.GetExtension fileName).ToLowerInvariant() with
         | ext when Path.GetExtension project.FileName = ext + "proj"
             -> BuildAction.Compile
@@ -1581,7 +1581,7 @@ module ProjectFile =
             -> BuildAction.Resource
         | _ -> BuildAction.Content
 
-    let determineBuildActionForRemoteItems fileName (project:ProjectFile) =
+    let determineBuildActionForRemoteItems (fileName : string) (project:ProjectFile) =
         if Path.GetExtension fileName = ".dll"
         then BuildAction.Reference
         else determineBuildAction fileName project
@@ -2090,6 +2090,7 @@ type ProjectFile with
             Language = prop "Langauge"
             ProjectUrl = prop "ProjectUrl"
             IconUrl = prop "IconUrl"
+            LicenseExpression = prop "LicenseExpression"
             LicenseUrl = prop "LicenseUrl"
             Copyright = prop "Copyright"
             RepositoryType = prop "RepositoryType"

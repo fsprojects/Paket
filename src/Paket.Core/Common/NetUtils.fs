@@ -24,11 +24,6 @@ let private uploadRequestTimeoutInMs = 20 * 60 * 1000
 
 let internal isRequestEnvVarSet = Environment.GetEnvironmentVariable("PAKET_DEBUG_REQUESTS") = "true"
 
-#if !NETSTANDARD1_6
-ServicePointManager.SecurityProtocol <- unbox 192 ||| unbox 768 ||| unbox 3072 ||| unbox 48
-                                        ///SecurityProtocolType.Tls ||| SecurityProtocolType.Tls11 ||| SecurityProtocolType.Tls12 ||| SecurityProtocolType.Ssl3
-#endif
-
 type AuthType = | Basic | NTLM
 type UserPassword = { Username: string; Password: string; Type : AuthType }
 type Auth =

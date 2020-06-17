@@ -33,7 +33,7 @@ A `paket.template` file using `type project` may look like this:
 
 ```text
 type project
-licenseUrl http://opensource.org/licenses/MIT
+licenseExpression MIT
 ```
 
 This template file will be used to create a `.nupkg`
@@ -113,7 +113,8 @@ field of the same name in the `.nupkg`.
 * `language`
 * `projectUrl`
 * `iconUrl`
-* `licenseUrl`
+* `licenseExpression`: More info on what you can specify: <https://docs.microsoft.com/de-de/nuget/reference/nuspec#license>  
+* `licenseUrl` (deprecated by NuGet)
 * `repositoryType`
 * `repositoryUrl`
 * `copyright`

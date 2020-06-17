@@ -145,7 +145,7 @@ type PackageSource =
 #endif
                     LocalNuGet(source,None)
                 else
-                    if source.Contains("/v3/") || (source.Contains "github.com" && source.EndsWith("index.json")) then
+                    if source.Contains("/v3/") || source.EndsWith("index.json") then
                         NuGetV3 { Url = source; Authentication = auth }
                     else
                         NuGetV2 { Url = source; Authentication = auth }

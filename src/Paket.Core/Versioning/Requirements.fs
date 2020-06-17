@@ -656,6 +656,7 @@ type RestrictionParseProblem =
         | RestrictionParseProblem.ParseSecondOperator _
         | RestrictionParseProblem.ParseFramework _
         | SyntaxError _ -> true
+
 let parseRestrictionsLegacy failImmediatly (text:string) =
     // older lockfiles to the new "restriction" semantics
     let problems = ResizeArray<_>()

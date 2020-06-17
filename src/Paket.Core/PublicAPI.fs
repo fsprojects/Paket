@@ -919,6 +919,7 @@ module PublicAPI =
                         | DotNetCoreApp _
                         | DotNetStandard _
                         | Unsupported _
+                        | XCode _
                         | Tizen _ -> false
                         | _ -> true)
                 if fws.Length > 0 then SupportCalculation.findPortable false fws |> ignore)

@@ -31,7 +31,7 @@ module internal NupkgWriter =
             Map.ofList [ "rels", "application/vnd.openxmlformats-package.relationships+xml"
                          "psmdcp", "application/vnd.openxmlformats-package.core-properties+xml" ]
 
-        let ext path = Path.GetExtension(path).TrimStart([| '.' |]).ToLowerInvariant()
+        let ext (path : string) = Path.GetExtension(path).TrimStart([| '.' |]).ToLowerInvariant()
 
         let fType ext =
             knownExtensions
@@ -161,6 +161,13 @@ module internal NupkgWriter =
         (!!?) "title" optional.Title
         !! "authors" (core.Authors |> String.concat ", ")
         if optional.Owners <> [] then !! "owners" (String.Join(", ",optional.Owners))
+        match optional.LicenseExpression with
+        | Some licenseExpression ->
+            let el = XElement(ns + "license")
+            el.SetAttributeValue(XName.Get "type", "expression")
+            el.SetValue(licenseExpression)
+            metadataNode.Add el
+        | _ -> ()
         (!!?) "licenseUrl" optional.LicenseUrl
         match optional.RepositoryType, optional.RepositoryUrl with
         | Some t, Some url ->

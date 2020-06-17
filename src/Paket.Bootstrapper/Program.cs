@@ -20,15 +20,7 @@ namespace Paket.Bootstrapper
 
         static void Main(string[] args)
         {
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12
-                                         | SecurityProtocolType.Tls11
-                                         | SecurityProtocolType.Tls
-#if NO_SSL3
-                                         ;
-#else
-                                         | SecurityProtocolType.Ssl3;
-#endif
-
+            AppContext.SetSwitch("Switch.System.Net.DontEnableSystemDefaultTlsVersions", false);
             executionWatch.Start();
             Console.CancelKeyPress += CancelKeyPressed;
 

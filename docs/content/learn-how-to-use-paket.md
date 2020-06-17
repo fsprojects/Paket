@@ -64,7 +64,7 @@ dotnet paket install
 Or if you're not using .NET Core,
 
 ```sh
-./paket/paket.exe install
+.paket/paket.exe install
 ```
 
 The [`paket install` command](paket-install.html) will analyze your dependencies and automatically generate the [`paket.lock` file](lock-file.html). It's often quite large!

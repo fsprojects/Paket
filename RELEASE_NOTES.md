@@ -1,5 +1,44 @@
-#### 6.0.0-alpha016 - 2020-02-10
+#### 6.0.0-alpha033 - 2020-06-15
 * Full .NET Core / SDK compatible version
+* Support for XCode
+* Support for .netcoreapp5.0
+
+#### 5.247.2 - 2020-06-15
+* Remove recursion from lock access test
+
+#### 5.247.1 - 2020-06-14
+* REVERT: Added protocolVersion for NuGet source - https://github.com/fsprojects/Paket/pull/3844
+
+#### 5.247.0 - 2020-06-14
+* Added protocolVersion for NuGet source - https://github.com/fsprojects/Paket/pull/3844
+
+#### 5.246.1 - 2020-06-13
+* BUGFIX: Fix a misspelled TFM - https://github.com/fsprojects/Paket/pull/3855
+
+#### 5.246.0 - 2020-06-13
+* Add support for licenseExpression in paket.template - https://github.com/fsprojects/Paket/pull/3824
+
+#### 5.245.4 - 2020-06-12
+* Allows to quit `paket find-packages` with Ctrl+c - https://github.com/fsprojects/Paket/pull/3865
+
+#### 5.245.3 - 2020-05-25
+* Treat NuGet repo as v3 if url ends with index.json  - https://github.com/fsprojects/Paket/issues/3806
+
+#### 5.245.1 - 2020-05-05
+* Allow to restore netcoreapp5.0 - https://github.com/fsprojects/Paket/issues/3811
+
+#### 5.244.2 - 2020-04-29
+* Detect when MSBuild 16 is not using SDK - https://github.com/fsprojects/Paket/issues/3837
+
+#### 5.244.1 - 2020-04-26
+* REVERT: Apply version ranges to nuspecs during fix-up command - https://github.com/fsprojects/Paket/pull/3835
+
+#### 5.243.0 - 2020-03-27
+* Add support for MonoAndroid10.0 - https://github.com/fsprojects/Paket/pull/3817
+* Add support for uap10.0.14393 and uap10.0.18362 - https://github.com/fsprojects/Paket/pull/3818
+
+#### 5.242.2 - 2020-02-17
+* BUGFIX: Update matching platform check - https://github.com/fsprojects/Paket/pull/3797
 
 #### 5.242.1 - 2020-02-10
 * BUGFIX: Don't generate refs to full framework assemblies for netstandard scripts

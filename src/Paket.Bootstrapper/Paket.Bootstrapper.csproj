@@ -7,6 +7,8 @@
     <AssemblyName>paket.bootstrapper</AssemblyName>
     <ToolCommandName>paketbootstrapper</ToolCommandName>
     <DefineConstants Condition=" '$(TargetFramework)' != 'net461'">NO_SSL3;NO_SYSTEMWEBPROXY;PAKET_BOOTSTRAP_NO_CACHE;PAKET_BOOTSTRAP_WORKAROUND_MSBUILD_URLS;$(DefineConstants)</DefineConstants>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <DefineConstants Condition=" '$(TargetFramework)' != 'net461'">NO_SYSTEMWEBPROXY;PAKET_BOOTSTRAP_NO_CACHE;PAKET_BOOTSTRAP_WORKAROUND_MSBUILD_URLS;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(PaketUseLocalGithub)' == 'true' ">

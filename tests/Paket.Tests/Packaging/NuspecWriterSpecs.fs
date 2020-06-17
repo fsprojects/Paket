@@ -363,7 +363,7 @@ let ``should not serialize all properties``() =
     <title>A title</title>
     <authors>Michael, Steffen</authors>
     <owners>Steffen, Alex</owners>
-    <licenseUrl>http://www.somewhere.com/license.html</licenseUrl>
+    <license type="expression">MIT</license>
     <projectUrl>http://www.somewhere.com</projectUrl>
     <iconUrl>http://www.somewhere.com/Icon</iconUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
@@ -397,7 +397,7 @@ second line</releaseNotes>
               Summary = Some "summary"
               Language = Some "en-US"
               ProjectUrl = Some "http://www.somewhere.com"
-              LicenseUrl = Some "http://www.somewhere.com/license.html"
+              LicenseExpression = Some "MIT"
               IconUrl = Some "http://www.somewhere.com/Icon"
               Copyright = Some "Paket owners 2015"
               RequireLicenseAcceptance = true
