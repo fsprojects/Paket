@@ -115,9 +115,11 @@ we will help to fix this in the affected packages.
 
 ## What files should I commit?
 
-Paket creates a number of files in your repository, and most of them should be
-committed to source control. To be clear, these are the files that should be
-committed to source control:
+There are two main ways to incorporate paket in your repository which are
+outlined in the [get started section](get-started.html). .NET Core 3.0+ or
+the legacy ["magic mode" approach](bootstrapper.html#Magic-mode). The first
+has the least files to commit, but to be clear here are first what you should
+always commit to source control no matter the approach:
 
 * [`paket.dependencies`](dependencies-file.html) specifies your application's
   dependencies, and how they should be fulfilled.
@@ -135,37 +137,24 @@ committed to source control:
   [`paket.template` file](template-files.html) that specifies package metadata.
   Each of these files should be committed to source control.
 
-The following files can be committed, but are not essential:
+When using legacy ["magic mode" approach](bootstrapper.html#Magic-mode) the
+following files should also be committed:
 
 * [`.paket/paket.targets`](paket-folder.html) allows you to enable automatic
   package restore in Visual Studio.
-* [`.paket/paket.bootstrapper.exe`](bootstrapper.html) is a small,
-  rarely updated executable that will download the latest version of the main
-  `paket.exe`. It is not necessary, but can be very useful for other developers
-  and build servers, so they can easily retrieve `paket.exe` and restore
-  packages without having Paket already installed and in the `PATH`. For
-  example, it is common to have a
-  [`build.sh`](https://github.com/fsprojects/Paket/blob/master/build.sh) or
-  [`build.cmd`](https://github.com/fsprojects/Paket/blob/master/build.cmd) file
-  in the root of a repository that will do the equivalent of:
-
-  ```sh
-  .paket/paket.bootstrapper.exe
-  .paket/paket.exe restore
-
-  // Invoke build tool/scripts to build solution.
-  ```
+* [`.paket/paket.exe`](bootstrapper.html) should really be the renamed
+  paket.bootstrapper.exe which will automatically download the latest version
+  of `paket.exe` and redirect the calls to that file instead.
 
 The following files should *not* be committed to your version control system,
 and should be added to any ignore files:
 
-* `.paket/paket.exe`, the main Paket executable, downloaded by
-  [`.paket/paket.bootstrapper.exe`](bootstrapper.html). It should not be
-  committed, as it is a binary file which can unnecessarily bloat repositories,
-  and because it is likely to be updated on a regular basis.
 * `paket-files` directory, as [`paket install`](paket-install.html) will restore
   this.
 * Same applies to the `packages` directory.
+* `.paket/paket.bootstrapper.exe`, if you have this in your repo, you have not
+  yet updated to the recommended ["magic mode" approach](bootstrapper.html#Magic-mode),
+  when running legacy (pre .NET Core 3.0) applications.
 
 ## Why should I commit the lock file?
 
