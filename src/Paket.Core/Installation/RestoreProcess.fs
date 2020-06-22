@@ -240,7 +240,9 @@ let extractRestoreTargets root =
             copiedElements := true
             if fileWritten then tracefn "Extracted Paket.Restore.targets to: %s (Can be disabled with PAKET_SKIP_RESTORE_TARGETS=true)" path
             path
-    else path
+    else 
+        tracefn "Skipping extraction of Paket.Restore.targets - if it was enabled, it would have been extracted to: %s (Can be re-enabled with PAKET_SKIP_RESTORE_TARGETS=false or deleting the environment variable to revert to default behavior)" path
+        path
 
 let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package) =
     async {
