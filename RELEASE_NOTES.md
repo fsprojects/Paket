@@ -1,9 +1,9 @@
-#### 6.0.0-alpha033 - 2020-06-15
+#### 6.0.0-alpha034 - 2020-06-22
 * Full .NET Core / SDK compatible version
 * Support for XCode
 * Support for .netcoreapp5.0
 
-#### 5.247.2 - 2020-06-15
+#### 5.247.3 - 2020-06-22
 * Remove recursion from lock access test
 
 #### 5.247.1 - 2020-06-14

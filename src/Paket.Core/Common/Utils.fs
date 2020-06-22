@@ -456,9 +456,9 @@ let RunInLockedAccessMode(lockedFolder,action) =
     if not (Directory.Exists lockedFolder) then
         Directory.CreateDirectory lockedFolder |> ignore
 
-    let p = System.Diagnostics.Process.GetCurrentProcess()
+    let currentProcess = System.Diagnostics.Process.GetCurrentProcess()
     let fileName = Path.Combine(lockedFolder,Constants.AccessLockFileName)
-    let pid = string p.Id
+    let pid = string currentProcess.Id
 
     // Checks the lockedFolder for a paket.processlock file or waits until it get access to it.
     let acquireLock (startTime:DateTime) (timeOut:TimeSpan) trials =
@@ -472,11 +472,10 @@ let RunInLockedAccessMode(lockedFolder,action) =
                         let content = File.ReadAllText fileName
                         if content = pid then
                             skipUnlock <- true
-                        else
-                            let currentProcess = System.Diagnostics.Process.GetCurrentProcess()
+                        else 
                             let hasRunningPaketProcess =
-                                Process.GetProcessesByName p.ProcessName
-                                |> Array.filter (fun p -> p.Id <> currentProcess.Id)
+                                Process.GetProcessesByName currentProcess.ProcessName
+                                |> Array.filter (fun p -> string p.Id <> pid)
                                 |> Array.exists (fun p -> content = string p.Id && (not p.HasExited))
 
                             if hasRunningPaketProcess then
@@ -484,9 +483,11 @@ let RunInLockedAccessMode(lockedFolder,action) =
                                     failwith "timeout"
                                 else
                                     Thread.Sleep 100
+                            else 
+                                skipUnlock <- true
                     else
                         skipUnlock <- true
-
+                    
                 File.WriteAllText(fileName, pid)
                 skip <- true
             with
