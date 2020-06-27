@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>RestoreProcess - Paket</title>
+    <link rel="icon" type="image/png" href="..//img/logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content=""/>
+    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="..//content/style.css" />
+    <script type="text/javascript" src="..//content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <style type="text/css">
+      table.pre td.lines {
+        vertical-align: top;
+      }
+      pre.fssnip code[lang=batchfile],
+      pre.fssnip code[lang=msh] {
+        display: inline-block;
+        white-space: pre-wrap;       /* CSS 3 */
+        white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+        white-space: -pre-wrap;      /* Opera 4-6 */
+        white-space: -o-pre-wrap;    /* Opera 7 */
+        word-wrap: break-word;       /* Internet Explorer 5.5+ */
+        word-break: keep-all;
+        padding-left: 2em;
+        text-indent: -2em;
+      }
+    </style>
+    <script type="text/javascript">
+      $(function() {
+        $("code[lang='batchfile'], code[lang='msh']").each(function() {
+          $(this).html($(this).html().replace(/ &lt;/g, "&nbsp;&lt;"))
+        })
+      })
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://github.com/fsprojects/Paket">github page</a></li>
+        </ul>
+        <h3 class="muted"><a href="..//index.html">Paket</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+
+
+
+<h1>RestoreProcess</h1>
+<p>
+  <span>Namespace: Paket</span><br />
+</p>
+<div class="xmldoc">
+<p>Contains methods for the restore process.</p>
+
+</div>
+
+<!-- Render nested types and modules, if there are any -->
+  <h2>Nested types and modules</h2>
+  <div>
+      <table class="table table-bordered type-list">
+    <thead>
+      <tr><td>Type</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td class="type-name">
+            <a href="paket-restoreprocess-restoreprojectoptions.html">RestoreProjectOptions</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
+
+  <h3>Functions and values</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Function or value</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '608', 608)" onmouseover="showTip(event, '608', 608)">
+            copiedElements 
+          </code>
+          <div class="tip" id="608">
+            <strong>Signature:</strong> bool ref<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L177-177" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '609', 609)" onmouseover="showTip(event, '609', 609)">
+            CopyToCaches force caches fileName
+          </code>
+          <div class="tip" id="609">
+            <strong>Signature:</strong> force:bool -&gt; caches:seq&lt;Cache&gt; -&gt; fileName:string -&gt; unit<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L44-44" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '610', 610)" onmouseover="showTip(event, '610', 610)">
+            createAlternativeNuGetConfig (...)
+          </code>
+          <div class="tip" id="610">
+            <strong>Signature:</strong> (projectFile:FileInfo * objDirectory:DirectoryInfo) -&gt; unit<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L263-263" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '611', 611)" onmouseover="showTip(event, '611', 611)">
+            CreateInstallModel (...)
+          </code>
+          <div class="tip" id="611">
+            <strong>Signature:</strong> (alternativeProjectRoot:string option * root:string * groupName:GroupName * sources:PackageSource list * caches:Cache list * force:bool * package:PackageInfo) -&gt; Async&lt;(GroupName * PackageName) * (PackageInfo * InstallModel)&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L245-245" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '612', 612)" onmouseover="showTip(event, '612', 612)">
+            createPaketCLIToolsFile (...)
+          </code>
+          <div class="tip" id="612">
+            <strong>Signature:</strong> cliTools:seq&lt;ResolvedPackage&gt; -&gt; fileInfo:FileInfo -&gt; unit<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L347-347" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '613', 613)" onmouseover="showTip(event, '613', 613)">
+            createPaketPropsFile (...)
+          </code>
+          <div class="tip" id="613">
+            <strong>Signature:</strong> lockFile:LockFile -&gt; cliTools:seq&lt;ResolvedPackage&gt; -&gt; packages:seq&lt;(GroupName * PackageName) * PackageInstallSettings * &#39;?9259&gt; -&gt; fileInfo:FileInfo -&gt; bool * string<br />
+                          <strong>Type parameters:</strong> '?9259          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L280-280" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '614', 614)" onmouseover="showTip(event, '614', 614)">
+            createProjectReferencesFiles (...)
+          </code>
+          <div class="tip" id="614">
+            <strong>Signature:</strong> lockFile:LockFile -&gt; projectFile:ProjectFile -&gt; referencesFile:ReferencesFile -&gt; resolved:Lazy&lt;Map&lt;(GroupName * PackageName),PackageInfo&gt;&gt; -&gt; groups:Map&lt;GroupName,LockFileGroup&gt; -&gt; targetFrameworks:string option -&gt; objDir:DirectoryInfo -&gt; unit<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L364-364" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '615', 615)" onmouseover="showTip(event, '615', 615)">
+            CreateScriptsForGroups lockFile groups
+          </code>
+          <div class="tip" id="615">
+            <strong>Signature:</strong> lockFile:LockFile -&gt; groups:Map&lt;GroupName,LockFileGroup&gt; -&gt; unit<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L524-524" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '616', 616)" onmouseover="showTip(event, '616', 616)">
+            extractElement root name
+          </code>
+          <div class="tip" id="616">
+            <strong>Signature:</strong> root:string -&gt; name:string -&gt; bool * string<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L217-217" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '617', 617)" onmouseover="showTip(event, '617', 617)">
+            ExtractPackage (...)
+          </code>
+          <div class="tip" id="617">
+            <strong>Signature:</strong> (alternativeProjectRoot:string option * root:string * groupName:GroupName * sources:PackageSource list * caches:Cache list * force:bool * package:PackageInfo * localOverride:bool) -&gt; Async&lt;PackageInfo * Lazy&lt;NuGetPackageContent&gt;&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L83-83" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Downloads and extracts a package.
+returns - package, libs files, props files, targets files, analyzers files</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '618', 618)" onmouseover="showTip(event, '618', 618)">
+            extractRestoreTargets root
+          </code>
+          <div class="tip" id="618">
+            <strong>Signature:</strong> root:string -&gt; string<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L233-233" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '619', 619)" onmouseover="showTip(event, '619', 619)">
+            findAllReferencesFiles root
+          </code>
+          <div class="tip" id="619">
+            <strong>Signature:</strong> root:string -&gt; Result&lt;(ProjectFile * ReferencesFile) list,DomainMessage&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L162-162" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '620', 620)" onmouseover="showTip(event, '620', 620)">
+            FindOrCreateReferencesFile projectFile
+          </code>
+          <div class="tip" id="620">
+            <strong>Signature:</strong> projectFile:ProjectFile -&gt; ReferencesFile<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L540-540" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '621', 621)" onmouseover="showTip(event, '621', 621)">
+            FindPackagesNotExtractedYet (...)
+          </code>
+          <div class="tip" id="621">
+            <strong>Signature:</strong> dependenciesFileName:string -&gt; (GroupName * PackageName) list<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L29-29" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Finds packages which would be affected by a restore, i.e. not extracted yet or with the wrong version</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '622', 622)" onmouseover="showTip(event, '622', 622)">
+            FSharpCore 
+          </code>
+          <div class="tip" id="622">
+            <strong>Signature:</strong> PackageName<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L278-278" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '623', 623)" onmouseover="showTip(event, '623', 623)">
+            ImplicitPackages 
+          </code>
+          <div class="tip" id="623">
+            <strong>Signature:</strong> Set&lt;PackageName&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L362-362" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '624', 624)" onmouseover="showTip(event, '624', 624)">
+            objDirectory (...)
+          </code>
+          <div class="tip" id="624">
+            <strong>Signature:</strong> (projectFileInfo:FileInfo * outputPath:DirectoryInfo option) -&gt; DirectoryInfo<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L554-554" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '625', 625)" onmouseover="showTip(event, '625', 625)">
+            Restore (...)
+          </code>
+          <div class="tip" id="625">
+            <strong>Signature:</strong> (dependenciesFileName:string * projectFile:RestoreProjectOptions * force:bool * group:GroupName option * ignoreChecks:bool * failOnChecks:bool * targetFrameworks:string option * outputPath:string option * skipRestoreTargetsExtraction:bool) -&gt; unit<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L653-653" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '626', 626)" onmouseover="showTip(event, '626', 626)">
+            RestoreNewSdkProject (...)
+          </code>
+          <div class="tip" id="626">
+            <strong>Signature:</strong> lockFile:LockFile -&gt; resolved:Lazy&lt;Map&lt;(GroupName * PackageName),PackageInfo&gt;&gt; -&gt; groups:Map&lt;GroupName,LockFileGroup&gt; -&gt; projectFile:ProjectFile -&gt; targetFrameworks:string option -&gt; outputPath:DirectoryInfo option -&gt; ReferencesFile<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/RestoreProcess.fs#L559-559" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+        </div>
+        <div class="span3">
+          <img src="..//img/logo.png" alt="F# Project" style="width:150px;margin:10px" />
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">Paket</li>
+            <li><a href="..//index.html">Home page</a></li>
+            <li><a href="..//get-started.html">Get started</a></li>
+            <li><a href="..//learn-how-to-use-paket.html">Learn how to use paket</a></li>
+            <li><a href="..//convert-from-nuget-tutorial.html">Convert from legacy NuGet</a></li>
+            <li><a href="..//paket-and-dotnet-cli.html">Paket with .NET SDK</a></li>
+            <li><a href="..//faq.html">FAQ</a></li>
+            <li><a href="..//release-notes.html">Release Notes</a></li>
+            <li><a href="..//contact.html">Contact</a></li>
+            <li><a href="..//testimonials.html">Testimonials</a></li>
+            <li><a href="..//license.html">License</a></li>
+            <li><a href="..//glossary.html">Glossary</a></li>
+
+            <li class="nav-header">Download Paket</li>
+            <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
+            <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+
+            <li class="nav-header">GitHub</li>
+            <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+
+            <li class="nav-header">Documentation</li>
+            <li><a href="..//dependencies-file.html">paket.dependencies</a></li>
+            <li><a href="..//lock-file.html">paket.lock</a></li>
+            <li><a href="..//references-files.html">paket.references</a></li>
+            <li><a href="..//template-files.html">paket.template</a></li>
+            <li><a href="..//local-file.html">paket.local</a></li>
+            <li><a href="..//paket-folder.html">.paket folder</a></li>
+            <li><a href="..//bootstrapper.html">paket.bootstrapper.exe</a></li>
+            <li class="divider"></li>
+            <li><a href="..//resolver.html">Package resolution algorithm</a></li>
+            <li><a href="..//groups.html">Dependency Groups</a></li>
+            <li><a href="..//caches.html">Additional Caches</a></li>
+            <li><a href="..//nuget-dependencies.html">NuGet dependencies</a></li>
+            <li><a href="..//git-dependencies.html">Git dependencies</a></li>
+            <li><a href="..//github-dependencies.html">GitHub dependencies</a></li>
+            <li><a href="..//http-dependencies.html">HTTP dependencies</a></li>
+            <li><a href="..//analyzers.html">Analyzers</a></li>
+            <li class="divider"></li>
+            <li><a href="..//installation.html">Installation</a></li>
+            <li><a href="..//reference-from-repl.html">Using Paket from F# Interactive</a></li>
+            <li><a href="..//editor-support.html">Editor support</a></li>
+            <li><a href="..//shell-completion.html">Shell completion</a></li>
+            <li><a href="..//credential-providers.html">Credential Providers</a></li>
+            <li class="divider"></li>
+            <li><a href="..//reference/index.html">API Reference</a></li>
+
+            <li class="nav-header">Paket commands</li>
+            <li><a href="..//paket-add.html">paket add</a></li>
+            <li><a href="..//paket-auto-restore.html">paket auto-restore</a></li>
+            <li><a href="..//paket-clear-cache.html">paket clear-cache</a></li>
+            <li><a href="..//paket-config.html">paket config</a></li>
+            <li><a href="..//paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
+            <li><a href="..//paket-find-refs.html">paket find-refs</a></li>
+            <li><a href="..//paket-find-packages.html">paket find-packages</a></li>
+            <li><a href="..//paket-find-package-versions.html">paket find-package-versions</a></li>
+            <li><a href="..//paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
+            <li><a href="..//paket-info.html">paket info</a></li>
+            <li><a href="..//paket-init.html">paket init</a></li>
+            <li><a href="..//paket-install.html">paket install</a></li>
+            <li><a href="..//paket-outdated.html">paket outdated</a></li>
+            <li><a href="..//paket-pack.html">paket pack</a></li>
+            <li><a href="..//paket-push.html">paket push</a></li>
+            <li><a href="..//paket-remove.html">paket remove</a></li>
+            <li><a href="..//paket-restore.html">paket restore</a></li>
+            <li><a href="..//paket-simplify.html">paket simplify</a></li>
+            <li><a href="..//paket-show-groups.html">paket show-groups</a></li>
+            <li><a href="..//paket-show-installed-packages.html">paket show-installed-packages</a></li>
+            <li><a href="..//paket-update.html">paket update</a></li>
+            <li><a href="..//paket-why.html">paket why</a></li>
+            <li><a href="..//paket-restriction.html">paket restriction</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <a href="http://github.com/fsprojects/Paket"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/></a>
+  </body>
+</html>
