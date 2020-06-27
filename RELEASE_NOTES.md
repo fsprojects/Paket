@@ -1,7 +1,10 @@
-#### 6.0.0-alpha034 - 2020-06-22
+#### 6.0.0-alpha035 - 2020-06-23
 * Full .NET Core / SDK compatible version
 * Support for XCode
 * Support for .netcoreapp5.0
+
+#### 5.247.4 - 2020-06-27
+* BUGFIX: Do not add development dependencies to the nuspec of a target nupkg while paket packing - https://github.com/fsprojects/Paket/pull/3873
 
 #### 5.247.3 - 2020-06-22
 * Remove recursion from lock access test
