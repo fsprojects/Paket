@@ -152,9 +152,11 @@ work – and even NuGet.exe can't do it in command line mode.</p>
 <p>Instead we encourage the .NET community to use a declarative install process and
 we will help to fix this in the affected packages.</p>
 <h2><a name="What-files-should-I-commit" class="anchor" href="#What-files-should-I-commit">What files should I commit?</a></h2>
-<p>Paket creates a number of files in your repository, and most of them should be
-committed to source control. To be clear, these are the files that should be
-committed to source control:</p>
+<p>There are two main ways to incorporate paket in your repository which are
+outlined in the <a href="get-started.html">get started section</a>. .NET Core 3.0+ or
+the legacy <a href="bootstrapper.html#Magic-mode">"magic mode" approach</a>. The first
+has the least files to commit, but to be clear here are first what you should
+always commit to source control no matter the approach:</p>
 <ul>
 <li>
 <a href="dependencies-file.html"><code>paket.dependencies</code></a> specifies your application's
@@ -180,44 +182,32 @@ deployed as a NuGet project it will have a
 Each of these files should be committed to source control.
 </li>
 </ul>
-<p>The following files can be committed, but are not essential:</p>
+<p>When using legacy <a href="bootstrapper.html#Magic-mode">"magic mode" approach</a> the
+following files should also be committed:</p>
 <ul>
 <li>
 <a href="paket-folder.html"><code>.paket/paket.targets</code></a> allows you to enable automatic
 package restore in Visual Studio.
 </li>
 <li>
-<a href="bootstrapper.html"><code>.paket/paket.bootstrapper.exe</code></a> is a small,
-rarely updated executable that will download the latest version of the main
-<code>paket.exe</code>. It is not necessary, but can be very useful for other developers
-and build servers, so they can easily retrieve <code>paket.exe</code> and restore
-packages without having Paket already installed and in the <code>PATH</code>. For
-example, it is common to have a
-<a href="https://github.com/fsprojects/Paket/blob/master/build.sh"><code>build.sh</code></a> or
-<a href="https://github.com/fsprojects/Paket/blob/master/build.cmd"><code>build.cmd</code></a> file
-in the root of a repository that will do the equivalent of:
-
-<code>sh
-.paket/paket.bootstrapper.exe
-.paket/paket.exe restore
-
-// Invoke build tool/scripts to build solution.</code>
+<a href="bootstrapper.html"><code>.paket/paket.exe</code></a> should really be the renamed
+paket.bootstrapper.exe which will automatically download the latest version
+of <code>paket.exe</code> and redirect the calls to that file instead.
 </li>
 </ul>
 <p>The following files should <em>not</em> be committed to your version control system,
 and should be added to any ignore files:</p>
 <ul>
 <li>
-<code>.paket/paket.exe</code>, the main Paket executable, downloaded by
-<a href="bootstrapper.html"><code>.paket/paket.bootstrapper.exe</code></a>. It should not be
-committed, as it is a binary file which can unnecessarily bloat repositories,
-and because it is likely to be updated on a regular basis.
-</li>
-<li>
 <code>paket-files</code> directory, as <a href="paket-install.html"><code>paket install</code></a> will restore
 this.
 </li>
 <li>Same applies to the <code>packages</code> directory.</li>
+<li>
+<code>.paket/paket.bootstrapper.exe</code>, if you have this in your repo, you have not
+yet updated to the recommended <a href="bootstrapper.html#Magic-mode">"magic mode" approach</a>,
+when running legacy (pre .NET Core 3.0) applications.
+</li>
 </ul>
 <h2><a name="Why-should-I-commit-the-lock-file" class="anchor" href="#Why-should-I-commit-the-lock-file">Why should I commit the lock file?</a></h2>
 <p>Committing the <a href="lock-file.html"><code>paket.lock</code> file</a> to your version control
