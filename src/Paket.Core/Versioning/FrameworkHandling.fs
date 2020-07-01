@@ -202,6 +202,7 @@ type FrameworkVersion =
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 type UAPVersion =
     | V10
+    | V10_0_10240
     | V10_0_14393
     | V10_0_15138
     | V10_0_16299
@@ -211,6 +212,7 @@ type UAPVersion =
     override this.ToString() =
         match this with
         | V10 -> "10.0"
+        | V10_0_10240 -> "10.0.10240"
         | V10_0_14393 -> "10.0.14393"
         | V10_0_15138 -> "10.0.15138"
         | V10_0_16299 -> "10.0.16299"
@@ -221,6 +223,7 @@ type UAPVersion =
     member this.ShortString() =
         match this with
         | UAPVersion.V10 -> "10.0"
+        | UAPVersion.V10_0_10240 -> "10.0.10240"
         | UAPVersion.V10_0_14393 -> "10.0.14393"
         | UAPVersion.V10_0_15138 -> "10.0.15138"
         | UAPVersion.V10_0_16299 -> "10.0.16299"
@@ -233,6 +236,7 @@ type UAPVersion =
         match this with
         // Assumed from C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETCore
         | UAPVersion.V10
+        | UAPVersion.V10_0_10240
         | UAPVersion.V10_0_14393
         | UAPVersion.V10_0_15138
         | UAPVersion.V10_0_16299
@@ -245,6 +249,7 @@ type UAPVersion =
     static member TryParse s =
         match s with
         | "" | "1" | "10" -> Some UAPVersion.V10
+        | "10.0.10240" -> Some UAPVersion.V10_1
         | "10.0.14393" -> Some UAPVersion.V10_1
         | "10.0.15138" -> Some UAPVersion.V10_1
         | "10.0.16299" -> Some UAPVersion.V10_1
@@ -683,6 +688,7 @@ type FrameworkIdentifier =
         | XamarinTV -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | XamarinWatch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | UAP UAPVersion.V10 -> [ Windows WindowsVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1; DotNetStandard DotNetStandardVersion.V1_4  ]
+        | UAP UAPVersion.V10_0_10240 -> [ UAP UAPVersion.V10 ]
         | UAP UAPVersion.V10_0_14393 -> [ UAP UAPVersion.V10 ]
         | UAP UAPVersion.V10_0_15138 -> [ UAP UAPVersion.V10 ]
         | UAP UAPVersion.V10_0_16299 -> [ UAP UAPVersion.V10; DotNetStandard DotNetStandardVersion.V2_0 ]
@@ -1371,8 +1377,9 @@ module KnownTargetProfiles =
        MonoAndroidVersions
        |> List.map (MonoAndroid >> TargetProfile.SinglePlatform)
 
-    let UAPVersons = [
+    let UAPVersions = [
         UAPVersion.V10
+        UAPVersion.V10_0_10240
         UAPVersion.V10_0_14393
         UAPVersion.V10_0_15138
         UAPVersion.V10_0_16299
@@ -1382,7 +1389,7 @@ module KnownTargetProfiles =
     ]
 
     let UAPProfiles =
-       UAPVersons
+       UAPVersions
        |> List.map (UAP >> TargetProfile.SinglePlatform)
 
     let WindowsPhoneVersions = [
