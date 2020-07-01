@@ -35,7 +35,7 @@ let ``Check that lists are updated``() =
     checkList KnownTargetProfiles.DotNetUnityVersions
     checkList KnownTargetProfiles.MonoAndroidVersions
     checkList KnownTargetProfiles.SilverlightVersions
-    checkList KnownTargetProfiles.UAPVersons
+    checkList KnownTargetProfiles.UAPVersions
     checkList KnownTargetProfiles.WindowsPhoneAppVersions
     checkList KnownTargetProfiles.WindowsPhoneVersions
     checkList KnownTargetProfiles.WindowsVersions
