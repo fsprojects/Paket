@@ -18,6 +18,7 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="TestHelpers.fs" />
     <Compile Include="UtilsSpecs.fs" />
+    <Compile Include="AesSpecs.fs" />
     <Compile Include="Versioning\PackageSourceSpecs.fs" />
     <Compile Include="Versioning\PlatformMatchingSpecs.fs" />
     <Compile Include="Versioning\SemVerSpecs.fs" />

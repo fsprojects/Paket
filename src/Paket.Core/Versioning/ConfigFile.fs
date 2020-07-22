@@ -7,6 +7,7 @@ open System.Text
 open System.IO
 
 open Chessie.ErrorHandling
+open Paket.Core.Common
 open Paket.Domain
 open Paket.Xml
 open Paket.Logging
@@ -38,41 +39,11 @@ let private getConfigNode (nodeName : string) =
         return node
     }
 
-
 let private saveConfigNode (node : XmlNode) =
     trial {
         do! createDir Constants.PaketConfigFolder
         do! saveNormalizedXml Constants.PaketConfigFile node.OwnerDocument
     }
-
-
-let private fillRandomBytes =
-    let provider = RandomNumberGenerator.Create()
-    (fun (b:byte[]) -> provider.GetBytes(b))
-
-let private getRandomSalt() =
-    let saltSize = 8
-    let saltBytes = Array.create saltSize ( new Byte() )
-    fillRandomBytes(saltBytes)
-    saltBytes
-
-/// Encrypts a string with a user specific keys
-let Encrypt (password : string) = 
-    let salt = getRandomSalt()
-    let encryptedPassword = 
-        try 
-            ProtectedData.Protect(Encoding.UTF8.GetBytes password, salt, DataProtectionScope.CurrentUser)
-        with | :? CryptographicException as e ->
-            if verbose then
-                verbosefn "could not protect password: %s\n for current user" e.Message
-            ProtectedData.Protect(Encoding.UTF8.GetBytes password, salt, DataProtectionScope.LocalMachine)
-    salt |> Convert.ToBase64String ,
-    encryptedPassword |> Convert.ToBase64String
-
-/// Decrypt a encrypted string with a user specific keys
-let Decrypt (salt : string) (encrypted : string) =
-    ProtectedData.Unprotect(Convert.FromBase64String encrypted, Convert.FromBase64String salt, DataProtectionScope.CurrentUser)
-    |> Encoding.UTF8.GetString
 
 let DecryptNuget (encrypted : string) = 
     ProtectedData.Unprotect(Convert.FromBase64String encrypted, Encoding.UTF8.GetBytes "NuGet", DataProtectionScope.CurrentUser)
@@ -108,7 +79,8 @@ let getAuthFromNode (node : XmlNode) =
             | n -> n.Value |> NetUtils.parseAuthTypeString
 
         let salt = node.Attributes.["salt"].Value
-        Credentials ({Username = username; Password = Decrypt salt password; Type = authType})
+        let (PlainTextPassword password) = Crypto.decrypt password salt
+        Credentials ({Username = username; Password = password; Type = authType})
     | "token" -> Token node.Attributes.["value"].Value
     | _ -> failwith "unknown node"
 
@@ -119,11 +91,11 @@ let private createSourceNode (credentialsNode : XmlNode) source nodeName =
     node
 
 let private setCredentials (username : string) (password : string) (authType : string) (node : XmlElement) =
-    let salt, encrypedPassword = Encrypt password
+    let encryptedPassword, salt  = Crypto.encrypt (PlainTextPassword password)
     node.SetAttribute ("username", username)
-    node.SetAttribute ("password", encrypedPassword)
+    node.SetAttribute ("password", encryptedPassword.ToString())
     node.SetAttribute ("authType", authType)
-    node.SetAttribute ("salt", salt)
+    node.SetAttribute ("salt", salt.ToString())
     node
 
 let private setToken (token : string) (node : XmlElement) =
