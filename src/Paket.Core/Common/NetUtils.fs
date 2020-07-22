@@ -406,7 +406,13 @@ let createHttpHandlerRaw(url, auth: Auth option) : HttpMessageHandler =
     handler :> _
 
 
-let createHttpHandler = memoize createHttpHandlerRaw
+let createHttpHandler = 
+    memoizeBy 
+        // Truncates the url to only to host part, so there is only one handler per source/host.
+        // 8 chars as startindex is chosen because `https://` is 8 chars long and we need the host delimiting `/`.
+        // For instance `https://api.nuget.org/v3/index.json` and `https://api.nuget.org/v3-flatcontainer/fsharp.core/index.json?semVerLevel=2.0.0` both get truncated to `https://api.nuget.org/` and share one handler (and one connection pool).
+        (fun (url : string, auth) -> url.Substring(0, url.IndexOf('/', 8) + 1), auth) 
+        createHttpHandlerRaw 
 
 let createHttpClient (url,auth:Auth option) : HttpClient =
     let handler = createHttpHandler (url, auth)
