@@ -1,4 +1,4 @@
-﻿namespace Paket.Core.Common
+namespace Paket.Core.Common
 
 open System
 open System.IO
