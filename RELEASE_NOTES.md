@@ -1,3 +1,6 @@
+#### 5.248.0 - 2020-07-23
+* Use AES encryption when not on windows - https://github.com/fsprojects/Paket/pull/3884
+
 #### 5.247.4 - 2020-06-27
 * BUGFIX: Do not add development dependencies to the nuspec of a target nupkg while paket packing - https://github.com/fsprojects/Paket/pull/3873
 
