@@ -1,6 +1,7 @@
 ﻿module Paket.ConfigFileSpecs
 
 open Paket
+open Paket.Core.Common
 open Paket.ConfigFile
 open NUnit.Framework
 open System.Xml
@@ -31,9 +32,9 @@ let ``get username, password, and auth type from node``() =
     let doc = sampleDoc()
     let node = doc.CreateElement("credential")
     node.SetAttribute("username", "demo-user")
-    let salt, password = Encrypt "demopassword"
-    node.SetAttribute("password", password)
-    node.SetAttribute("salt", salt)
+    let password, salt = Crypto.encrypt (PlainTextPassword "demopassword")
+    node.SetAttribute("password", password.ToString())
+    node.SetAttribute("salt", salt.ToString())
     node.SetAttribute("authType", "ntlm")
     // Act
     let (Credentials{Username = username; Password = password; Type = NetUtils.AuthType.NTLM}) = getAuthFromNode node
@@ -53,9 +54,9 @@ let ``get username and password from node without auth type``() =
     let doc = sampleDoc()
     let node = doc.CreateElement("credential")
     node.SetAttribute("username", "demo-user")
-    let salt, password = Encrypt "demopassword"
-    node.SetAttribute("password", password)
-    node.SetAttribute("salt", salt)
+    let password, salt = Crypto.encrypt (PlainTextPassword "demopassword")
+    node.SetAttribute("password", password.ToString())
+    node.SetAttribute("salt", salt.ToString())
     // Act
     let (Credentials{Username = username; Password = password; Type = NetUtils.AuthType.Basic}) = getAuthFromNode node
 

@@ -1,7 +1,13 @@
-#### 6.0.0-alpha035 - 2020-06-23
+#### 6.0.0-alpha036 - 2020-07-23
 * Full .NET Core / SDK compatible version
 * Support for XCode
 * Support for .netcoreapp5.0
+
+#### 5.248.1 - 2020-07-23
+* BUGFIX: Corrects memozation of HttpHandlers - https://github.com/fsprojects/Paket/pull/3881
+
+#### 5.248.0 - 2020-07-23
+* Use AES encryption when not on windows - https://github.com/fsprojects/Paket/pull/3884
 
 #### 5.247.4 - 2020-06-27
 * BUGFIX: Do not add development dependencies to the nuspec of a target nupkg while paket packing - https://github.com/fsprojects/Paket/pull/3873
