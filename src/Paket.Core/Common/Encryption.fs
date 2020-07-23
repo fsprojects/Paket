@@ -145,8 +145,8 @@ module DPApi =
 
 [<RequireQualifiedAccess>]
 module Crypto =
-    let encrypt plainTextPassword =
-        if Utils.isWindows then
+    let encrypt plainTextPassword = 
+        if isWindows then
             let (dpApiPassword, dpApiSalt) = DPApi.encrypt plainTextPassword
             (EncryptedPassword.DPApi dpApiPassword, Salt.DPApi dpApiSalt)
         else
