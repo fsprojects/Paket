@@ -1,3 +1,6 @@
+#### 5.248.1 - 2020-07-23
+* BUGFIX: Corrects memozation of HttpHandlers - https://github.com/fsprojects/Paket/pull/3881
+
 #### 5.248.0 - 2020-07-23
 * Use AES encryption when not on windows - https://github.com/fsprojects/Paket/pull/3884
 
