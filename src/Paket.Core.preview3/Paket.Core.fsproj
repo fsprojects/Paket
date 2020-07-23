@@ -30,6 +30,7 @@
     <Compile Include="$(PaketCoreSourcesDir)\Common\Constants.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\Profile.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\Utils.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Common\Encryption.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\Xml.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\ProcessHelper.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\SymlinkUtils.fs" />
