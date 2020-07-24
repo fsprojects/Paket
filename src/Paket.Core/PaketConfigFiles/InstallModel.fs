@@ -125,6 +125,11 @@ module TargetsFolder =
           RootContents = f folder.RootContents
           FrameworkFolders = folder.FrameworkFolders
                              |> List.map (FrameworkFolder.map f) }
+    let mapFrameworkFolders f (folder: TargetsFolder<'a>) : TargetsFolder<'a> =
+        { Name = folder.Name
+          RootContents = folder.RootContents
+          FrameworkFolders = folder.FrameworkFolders |> List.map f }
+        
 type AnalyzerLanguage =
     | Any | CSharp | FSharp | VisualBasic
 
@@ -805,7 +810,7 @@ module InstallModel =
         references |> Seq.fold addFrameworkAssemblyReference (installModel:InstallModel)
 
 
-    let filterExcludes (excludes:string list) (installModel:InstallModel) =
+    let filterExcludes (excludes:string list) (installModel:InstallModel) =    
         let excluded (e: string) (pathOrName:string) =
             pathOrName.Contains e
 
@@ -857,6 +862,14 @@ module InstallModel =
                     installModel.RuntimeAssemblyFolders
                     |> List.map applyRestriction
                     |> List.filter (fun folder -> not folder.Targets.IsEmpty)
+
+                TargetsFileFolders =
+                    installModel.TargetsFileFolders
+                    |> List.map (TargetsFolder.mapFrameworkFolders applyRestriction)
+                    |> List.map (fun targetFolder ->
+                        { targetFolder
+                          with FrameworkFolders = targetFolder.FrameworkFolders
+                                                  |> List.filter (fun folder -> not folder.Targets.IsEmpty) })
             }
             
     let getRootFiles (targetsFiles:UnparsedPackageFile list) =
