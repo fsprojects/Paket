@@ -777,6 +777,17 @@ let ``should handle props files``() =
 
     model.GetTargetsFiles(TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V2))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\xunit.runner.visualstudio\build\net20\xunit.runner.visualstudio.props"
+        
+[<Test>]
+let ``should handle global props files``() = 
+    let model =
+        InstallModel.EmptyModel(PackageName "xunit.runner.visualstudio",SemVer.Parse "0.1").AddTargetsFiles(
+            [ @"..\xunit.runner.visualstudio\build\xunit.runner.visualstudio.props"
+              @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props" ] |> fromLegacyList @"..\xunit.runner.visualstudio\")
+            .FilterBlackList()
+
+    model.GetTargetsFiles(TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V2))
+        |> Seq.map (fun f -> f.Path) |> shouldContain @"..\xunit.runner.visualstudio\build\xunit.runner.visualstudio.props"
 
 [<Test>]
 let ``should handle Targets files``() = 
