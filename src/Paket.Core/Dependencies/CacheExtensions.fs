@@ -6,20 +6,19 @@ open Paket.Domain
 module CacheExtensions =
     type Nuspec with
         static member LoadFromCache(name:PackageName, version) =
-            let getFullPathToNuspec folder = Path.Combine(folder,sprintf "%O.nuspec" name)
             let folder = DirectoryInfo(NuGetCache.GetTargetUserFolder name version).FullName
-            let nuspec = getFullPathToNuspec folder
+            let nuspec = Path.Combine(folder,sprintf "%O.nuspec" name)
             let fi = FileInfo(nuspec)
             // It happens in some cases that the package is not available in the cache, and in that case
-            // it would be sensible to search for the nuspec in the default package folder before returning
+            // it would be sensible to recusrively search for the nuspec in the default package folder before returning
             // a Nuspec.All, see issue #3723
             // Maybe this method should be refactored/renamed now, as it not only tries to load from the cache
             // but also the packages folder.
             match fi.Exists with
             | true -> Nuspec.Load nuspec
-            | _ -> let nugetPackageFolderPathInDefaultPackageFolder = Path.Combine(Constants.DefaultPackagesFolderName,name.CompareString)
-                   let newNuspecPath = getFullPathToNuspec nugetPackageFolderPathInDefaultPackageFolder
-                   Nuspec.Load newNuspecPath
+            | _ -> let candiateNupkgs = Directory.GetFiles(Constants.DefaultPackagesFolderName, sprintf "%O.nuspec" name.CompareString, SearchOption.AllDirectories)
+                   let expectedNumberOfMatches = 1
+                   if (candiateNupkgs.Length = expectedNumberOfMatches) then Nuspec.Load candiateNupkgs.[0] else Nuspec.Load nuspec
 
     type PackageResolver.PackageInfo with
         member x.Folder root groupName =
