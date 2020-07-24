@@ -16,7 +16,7 @@ module CacheExtensions =
             // but also the packages folder.
             match fi.Exists with
             | true -> Nuspec.Load nuspec
-            | _ -> let candiateNupkgs = Directory.GetFiles(Constants.DefaultPackagesFolderName, sprintf "%O.nuspec" name.CompareString, SearchOption.AllDirectories)
+            | _ -> let candiateNupkgs = Directory.GetFiles(Constants.DefaultPackagesFolderName, sprintf "%O.nuspec" name, SearchOption.AllDirectories)
                    let expectedNumberOfMatches = 1
                    if (candiateNupkgs.Length = expectedNumberOfMatches) then Nuspec.Load candiateNupkgs.[0] else Nuspec.Load nuspec
 
