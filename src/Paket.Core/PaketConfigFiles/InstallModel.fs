@@ -54,13 +54,16 @@ type MsBuildFile = {
 }
 
 module MsBuildFile =
-    let ofFile (f:FrameworkDependentFile) =
-        let fi = FileInfo(normalizePath f.File.FullPath)
+    let ofUnparsedPackageFile (unparsedFile: UnparsedPackageFile) =
+        let fi = FileInfo(normalizePath unparsedFile.FullPath)
         let name =
             let ext = fi.Extension
             if String.IsNullOrEmpty ext then fi.Name
             else fi.Name.Replace(ext, "")
-        { Name = name; Path = f.File.FullPath }
+        { Name = name; Path = unparsedFile.FullPath }
+    
+    let ofFrameworkDependantFile (f:FrameworkDependentFile) =
+        ofUnparsedPackageFile f.File
 
 type FrameworkReference = {
     Name : string
@@ -97,7 +100,31 @@ module FrameworkFolder =
         Targets = l.Targets
         FolderContents = f l.FolderContents
     }
+    
+[<RequireQualifiedAccess>]
+type TargetsFolder<'T> = {
+    Name: string
+    RootContents: 'T
+    FrameworkFolders: FrameworkFolder<'T> list
+}
 
+[<RequireQualifiedAccess>]
+module TargetsFolder =
+    let getAllFiles (folder: TargetsFolder<'T Set>) =
+        folder.FrameworkFolders
+        |> Seq.collect (fun f -> f.FolderContents)
+        |> Seq.append (folder.RootContents)
+    
+    let isEmpty folder =
+        folder
+        |> getAllFiles
+        |> Seq.isEmpty
+
+    let map f (folder: TargetsFolder<'a>): TargetsFolder<'b> =
+        { Name = folder.Name
+          RootContents = f folder.RootContents
+          FrameworkFolders = folder.FrameworkFolders
+                             |> List.map (FrameworkFolder.map f) }
 type AnalyzerLanguage =
     | Any | CSharp | FSharp | VisualBasic
 
@@ -138,7 +165,7 @@ type InstallModel = {
     CompileRefFolders : FrameworkFolder<Library Set> list
     RuntimeAssemblyFolders : FrameworkFolder<RuntimeLibrary Set> list
     RuntimeLibFolders : FrameworkFolder<RuntimeLibrary Set> list
-    TargetsFileFolders : FrameworkFolder<MsBuildFile Set> list
+    TargetsFileFolders : TargetsFolder<MsBuildFile Set> list
     Analyzers: AnalyzerLib list
     PackageLoadScripts: PackageLoadScript list
     LicenseUrl: string option
@@ -474,12 +501,9 @@ module InstallModel =
                 traceWarnIfNotBefore ("File", p.BasePath) "Could detect native library in '%s' which is incorrectly packaged because it should be directly under 'native' or in the 'nativeassets' folder, please tell the package authors" p.FullPath
                 { Path = l; File = p; Runtime = Some rid }))
 
-    let getMsbuildFile (p:UnparsedPackageFile) =
+    let getFrameworkDependentMsbuildFile (p:UnparsedPackageFile) =
         (trySscanf "build/%A{tfm}/%A{noSeperator}" p : (Tfm * string) option)
         |> Option.map (fun (l,_) -> { Path = l; File = p; Runtime = None })
-        |> Option.orElseWith (fun _ ->
-            (trySscanf "build/%A{noSeperator}" p : string option)
-            |> Option.map (fun (_) -> { Path = Tfm.Empty; File = p; Runtime = None }))
 
     // Build up InstallModel
 
@@ -523,9 +547,20 @@ module InstallModel =
             // Fallback for old packages
             getLegacyReferences target installModel
         else results
-
+        
     let getTargetsFiles (target : TargetProfile) (installModel:InstallModel) =
-        getFileFolders target installModel.TargetsFileFolders (fun f -> f |> Set.toSeq)
+        let frameworkSpecificFolders =
+            installModel.TargetsFileFolders
+            |> List.collect (fun target -> target.FrameworkFolders)
+            
+        let frameworkSpecificTargetFiles = getFileFolders target frameworkSpecificFolders Set.toSeq
+        let rootTargetFiles =
+            installModel.TargetsFileFolders
+            |> List.map (fun folder -> folder.RootContents)
+            |> List.map Set.toSeq
+            |> Seq.collect id
+        
+        seq {yield! rootTargetFiles; yield! frameworkSpecificTargetFiles}
 
     /// This is for library references, which at the same time can be used for references (old world - pre dotnetcore)
     let getLegacyPlatformReferences frameworkIdentifier installModel =
@@ -535,10 +570,14 @@ module InstallModel =
         lib
         |> Seq.map (fun l -> l.FolderContents)
         |> Seq.forall Set.isEmpty
+        
+    let isEmpty' (folders: TargetsFolder<Set<'T>> list) =
+        folders
+        |> Seq.forall TargetsFolder.isEmpty
 
     let removeIfCompletelyEmpty (this:InstallModel) =
         let foldersEmpty =
-            isEmpty this.CompileRefFolders && isEmpty this.TargetsFileFolders && isEmpty this.RuntimeAssemblyFolders && isEmpty this.RuntimeLibFolders &&
+            isEmpty this.CompileRefFolders && isEmpty' this.TargetsFileFolders && isEmpty this.RuntimeAssemblyFolders && isEmpty this.RuntimeLibFolders &&
             this.CompileLibFolders
             |> Seq.map (fun c -> c.FolderContents.Libraries |> Set.toSeq, c.FolderContents.FrameworkReferences |> Set.toSeq)
             |> Seq.forall (fun (libs, refs) -> Seq.isEmpty libs && Seq.isEmpty refs)
@@ -641,13 +680,7 @@ module InstallModel =
             |> List.ofSeq
 
         { installModel with PackageLoadScripts = installModel.PackageLoadScripts @ packageLoadScripts}
-
-
-    let rec addTargetsFile (path:FrameworkFolder<_>)  (file:FrameworkDependentFile) (installModel:InstallModel) :InstallModel =
-        { installModel with
-            TargetsFileFolders = addFileToFolder path (MsBuildFile.ofFile file) installModel.TargetsFileFolders Set.add
-        }
-
+        
     let getAllRuntimeAssemblies (installModel:InstallModel) =
         getAllFiles installModel.RuntimeAssemblyFolders (fun f -> f |> Set.toSeq)
         |> Seq.cache
@@ -746,7 +779,7 @@ module InstallModel =
     let mapRuntimeAssemblyFiles mapfn (installModel:InstallModel) =
         mapRuntimeAssemblyFolders (FrameworkFolder.map (mapfn)) installModel
     let mapTargetsFiles mapfn (installModel:InstallModel) =
-        mapTargetsFileFolders (FrameworkFolder.map (mapfn)) installModel
+        mapTargetsFileFolders (TargetsFolder.map (mapfn)) installModel
 
     let addFrameworkAssemblyReference (installModel:InstallModel) (reference:FrameworkAssemblyReference) : InstallModel =
         let referenceApplies (folder : FrameworkFolder<_>) =
@@ -824,18 +857,42 @@ module InstallModel =
                     installModel.RuntimeAssemblyFolders
                     |> List.map applyRestriction
                     |> List.filter (fun folder -> not folder.Targets.IsEmpty)
-
-                TargetsFileFolders =
-                    installModel.TargetsFileFolders
-                    |> List.map applyRestriction
-                    |> List.filter (fun folder -> not folder.Targets.IsEmpty)
             }
+            
+    let getRootFiles (targetsFiles:UnparsedPackageFile list) =
+        targetsFiles
+        |> List.choose
+           (fun unparsedPackageFile ->
+             match unparsedPackageFile.PathWithinPackage.Split([|'/'; '\\'|]) with
+             | [|_; _|] -> Some <| MsBuildFile.ofUnparsedPackageFile unparsedPackageFile
+             | _ -> None)
+        |> Set.ofList
 
-    let rec addTargetsFiles (targetsFiles:UnparsedPackageFile list) (this:InstallModel) : InstallModel =
-        let targetsFileFolders =
-            calcLibFoldersG Set.empty getMsbuildFile targetsFiles
-        { this with TargetsFileFolders = targetsFileFolders }
-            |> addItem targetsFiles getMsbuildFile (addTargetsFile) (fun i -> i.TargetsFileFolders)
+    let rec addTargetsFiles (name: string) (targetsFiles:UnparsedPackageFile list) (this:InstallModel) : InstallModel =
+        let frameworkFolders =
+            calcLibFoldersG Set.empty getFrameworkDependentMsbuildFile targetsFiles
+            
+        let rootMsBuildFiles =
+            targetsFiles
+            |> getRootFiles        
+        
+        let frameworkFolders =
+            List.fold (fun (frameworkFolders:FrameworkFolder<MsBuildFile Set> list) file ->
+            match getFrameworkDependentMsbuildFile file with
+            | Some (parsedFile:FrameworkDependentFile) ->
+                match List.tryFind (fun (folder:FrameworkFolder<MsBuildFile Set>) -> folder.Path = parsedFile.Path) frameworkFolders with
+                | Some folder ->
+                    addFileToFolder folder (MsBuildFile.ofFrameworkDependantFile parsedFile) frameworkFolders Set.add
+                | _ -> frameworkFolders
+            | None -> frameworkFolders) frameworkFolders targetsFiles
+            
+        let targetsFolder: TargetsFolder<MsBuildFile Set> = {
+            Name = name
+            RootContents = rootMsBuildFiles
+            FrameworkFolders = frameworkFolders
+        }
+            
+        { this with TargetsFileFolders = targetsFolder::this.TargetsFileFolders }
 
 
     let filterReferences (references:string Set) (this:InstallModel) =
@@ -878,11 +935,15 @@ module InstallModel =
         let ref = NuGet.tryFindFolder "ref" content |> asList
         let runtimes = NuGet.tryFindFolder "runtimes" content |> asList
         let build = NuGet.tryFindFolder "build" content |> asList
+        let buildTransitive = NuGet.tryFindFolder "buildTransitive" content |> asList
+        let buildMultiTargeting = NuGet.tryFindFolder "buildMultiTargeting" content |> asList
 
         model
         |> addLibReferences (lib @ ref @ runtimes) content.Spec.References
-        |> addTargetsFiles build
         |> addAnalyzerFiles analyzers
+        |> addTargetsFiles "build" build
+        |> addTargetsFiles "buildTransitive" buildTransitive
+        |> addTargetsFiles "buildMultiTargeting" buildMultiTargeting
         |> addPackageLoadScriptFiles loadscripts
         |> addFrameworkAssemblyReferences content.Spec.FrameworkAssemblyReferences
         |> addLicense content.Spec.LicenseUrl
@@ -899,7 +960,7 @@ module InstallModel =
     let createFromLibs packageName packageVersion kind frameworkRestrictions (libs:UnparsedPackageFile seq) targetsFiles analyzerFiles packageLoadScriptFiles (nuspec:Nuspec) =
         emptyModel packageName packageVersion kind
         |> addLibReferences libs nuspec.References
-        |> addTargetsFiles targetsFiles
+        |> addTargetsFiles "build" targetsFiles
         |> addAnalyzerFiles analyzerFiles
         |> addPackageLoadScriptFiles packageLoadScriptFiles
         |> addFrameworkAssemblyReferences nuspec.FrameworkAssemblyReferences
@@ -975,9 +1036,9 @@ type InstallModel with
 
     member this.AddPackageLoadScriptFiles packageLoadScriptFiles = InstallModel.addPackageLoadScriptFiles packageLoadScriptFiles this
 
-    member this.AddTargetsFile(path, file) = InstallModel.addTargetsFile path file this
-
-    member this.AddTargetsFiles targetsFiles = InstallModel.addTargetsFiles targetsFiles this
+    member this.AddTargetsFiles (name,targetsFiles) = InstallModel.addTargetsFiles name targetsFiles this
+    
+    member this.AddTargetsFiles targetsFiles = InstallModel.addTargetsFiles "build" targetsFiles this
 
     member this.AddFrameworkAssemblyReference reference = InstallModel.addFrameworkAssemblyReference this reference
 
