@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>ResolutionRaw - Paket</title>
+    <title>TargetsFolder - Paket</title>
     <link rel="icon" type="image/png" href="..//img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
@@ -59,10 +59,9 @@
 
 
 
-<h1>ResolutionRaw</h1>
+<h1>TargetsFolder</h1>
 <p>
   <span>Namespace: Paket</span><br />
-  <span>Parent Module: <a href="paket-packageresolver.html">PackageResolver</a></span>
 </p>
 <div class="xmldoc">
 </div>
@@ -78,15 +77,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '430', 430)" onmouseover="showTip(event, '430', 430)">
-            buildConflictReport (...)
+          <code onmouseout="hideTip(event, '667', 667)" onmouseover="showTip(event, '667', 667)">
+            getAllFiles(folder)
           </code>
-          <div class="tip" id="430">
-            <strong>Signature:</strong> errorReport:StringBuilder -&gt; conflicts:Set&lt;PackageRequirement&gt; -&gt; StringBuilder<br />
-                      </div>
+          <div class="tip" id="667">
+            <strong>Signature:</strong> folder:TargetsFolder&lt;Set&lt;&#39;T&gt;&gt; -&gt; seq&lt;&#39;T&gt;<br />
+                          <strong>Type parameters:</strong> 'T          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L187-187" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L113-113" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -96,15 +95,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '431', 431)" onmouseover="showTip(event, '431', 431)">
-            getConflicts res
+          <code onmouseout="hideTip(event, '668', 668)" onmouseover="showTip(event, '668', 668)">
+            isEmpty(folder)
           </code>
-          <div class="tip" id="431">
-            <strong>Signature:</strong> res:ResolutionRaw -&gt; Set&lt;PackageRequirement&gt;<br />
-                      </div>
+          <div class="tip" id="668">
+            <strong>Signature:</strong> folder:TargetsFolder&lt;Set&lt;&#39;?9810&gt;&gt; -&gt; bool<br />
+                          <strong>Type parameters:</strong> '?9810          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L179-179" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L118-118" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -114,15 +113,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '432', 432)" onmouseover="showTip(event, '432', 432)">
-            getErrorText showResolvedPackages res
+          <code onmouseout="hideTip(event, '669', 669)" onmouseover="showTip(event, '669', 669)">
+            map(f folder)
           </code>
-          <div class="tip" id="432">
-            <strong>Signature:</strong> showResolvedPackages:bool -&gt; res:ResolutionRaw -&gt; string<br />
-                      </div>
+          <div class="tip" id="669">
+            <strong>Signature:</strong> f:(&#39;a -&gt; &#39;b) -&gt; folder:TargetsFolder&lt;&#39;a&gt; -&gt; TargetsFolder&lt;&#39;b&gt;<br />
+                          <strong>Type parameters:</strong> 'a, 'b          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L224-224" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L123-123" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -132,15 +131,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '433', 433)" onmouseover="showTip(event, '433', 433)">
-            isDone res
+          <code onmouseout="hideTip(event, '670', 670)" onmouseover="showTip(event, '670', 670)">
+            mapFrameworkFolders(f folder)
           </code>
-          <div class="tip" id="433">
-            <strong>Signature:</strong> res:ResolutionRaw -&gt; bool<br />
-                      </div>
+          <div class="tip" id="670">
+            <strong>Signature:</strong> f:(FrameworkFolder&lt;&#39;a&gt; -&gt; FrameworkFolder&lt;&#39;a&gt;) -&gt; folder:TargetsFolder&lt;&#39;a&gt; -&gt; TargetsFolder&lt;&#39;a&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L253-253" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L128-128" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
