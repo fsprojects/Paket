@@ -1,3 +1,6 @@
+#### 5.249.0 - 2020-07-25
+* Add support for props and target files in root of file - https://github.com/fsprojects/Paket/pull/3889
+
 #### 5.248.2 - 2020-07-25
 * BUGFIX: Search all the sub-directories under the default packages directory and do not use CompareString while searching under packages directory - https://github.com/fsprojects/Paket/pull/3888
 
