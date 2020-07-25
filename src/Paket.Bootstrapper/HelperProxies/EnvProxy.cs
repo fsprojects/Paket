@@ -4,11 +4,10 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Linq;
 
-namespace Paket.Bootstrapper
+namespace Paket.Bootstrapper.HelperProxies
 {
-    internal class EnvProxy
+    internal class EnvProxy : IEnvProxy
     {
-        private static readonly EnvProxy instance = new EnvProxy();
         private readonly Dictionary<string, IWebProxy> proxies = new Dictionary<string, IWebProxy>(StringComparer.OrdinalIgnoreCase);
 
         private static string GetEnvVarValue(string name)
@@ -58,16 +57,16 @@ namespace Paket.Bootstrapper
             }
         }
 
-        protected EnvProxy()
+        public EnvProxy()
         {
             var bypassList = GetBypassList();
             AddProxy("http", bypassList);
             AddProxy("https", bypassList);
         }
 
-        public static bool TryGetProxyFor(Uri uri, out IWebProxy proxy)
+        public bool TryGetProxyFor(Uri uri, out IWebProxy proxy)
         {
-            return instance.proxies.TryGetValue(uri.Scheme, out proxy);
+            return proxies.TryGetValue(uri.Scheme, out proxy);
         }
     }
 }

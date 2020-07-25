@@ -24,7 +24,7 @@ namespace Paket.Bootstrapper
             executionWatch.Start();
             Console.CancelKeyPress += CancelKeyPressed;
 
-            var fileProxy = new FileSystemProxy();
+            IProxyProvider proxyProvider = new DefaultProxyProvider();
 
             var appSettings = ConfigurationManager.AppSettings;
 
@@ -45,14 +45,14 @@ namespace Paket.Bootstrapper
             }
 
             var optionsBeforeDependenciesFile = ArgumentParser.ParseArgumentsAndConfigurations(args, appSettings,
-                Environment.GetEnvironmentVariables(), fileProxy, Enumerable.Empty<string>());
+                Environment.GetEnvironmentVariables(), proxyProvider.FileSystemProxy, Enumerable.Empty<string>());
             ConsoleImpl.Verbosity = optionsBeforeDependenciesFile.Verbosity;
 
             var argumentsFromDependenciesFile =
                 WindowsProcessArguments.Parse(
-                    PaketDependencies.GetBootstrapperArgsForFolder(fileProxy));
+                    PaketDependencies.GetBootstrapperArgsForFolder(proxyProvider.FileSystemProxy));
             var options = ArgumentParser.ParseArgumentsAndConfigurations(args, appSettings,
-                Environment.GetEnvironmentVariables(), fileProxy, argumentsFromDependenciesFile);
+                Environment.GetEnvironmentVariables(), proxyProvider.FileSystemProxy, argumentsFromDependenciesFile);
             if (options.ShowHelp)
             {
                 ConsoleImpl.WriteAlways(BootstrapperHelper.HelpText);
@@ -68,11 +68,11 @@ namespace Paket.Bootstrapper
             options.DownloadArguments.IgnoreCache = true;
 #endif
 
-            var effectiveStrategy = GetEffectiveDownloadStrategy(options.DownloadArguments, options.PreferNuget, options.ForceNuget);
+            var effectiveStrategy = GetEffectiveDownloadStrategy(options.DownloadArguments, options.PreferNuget, options.ForceNuget, proxyProvider);
             ConsoleImpl.WriteTrace("Using strategy: " + effectiveStrategy.Name);
             ConsoleImpl.WriteTrace("Using install kind: " + (options.DownloadArguments.AsTool? "tool": "exe"));
 
-            StartPaketBootstrapping(effectiveStrategy, options.DownloadArguments, fileProxy, () => OnSuccessfulDownload(options));
+            StartPaketBootstrapping(effectiveStrategy, options.DownloadArguments, proxyProvider.FileSystemProxy, () => OnSuccessfulDownload(options));
         }
 
         private static void OnSuccessfulDownload(BootstrapperOptions options)
@@ -227,13 +227,13 @@ namespace Paket.Bootstrapper
             }
         }
 
-        public static DownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget, bool forceNuget)
+        public static DownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget, bool forceNuget, IProxyProvider proxyProvider)
         {
             var gitHubDownloadStrategy =
                 dlArgs.AsTool
-                ? new GitHubDownloadToolStrategy(new WebRequestProxy(), new FileSystemProxy()).AsCached(dlArgs.IgnoreCache)
-                : new GitHubDownloadStrategy(new WebRequestProxy(), new FileSystemProxy()).AsCached(dlArgs.IgnoreCache);
-            var nugetDownloadStrategy = new NugetDownloadStrategy(new WebRequestProxy(), new FileSystemProxy(), dlArgs.Folder, dlArgs.NugetSource, dlArgs.AsTool).AsCached(dlArgs.IgnoreCache);
+                ? new GitHubDownloadToolStrategy(proxyProvider.WebRequestProxy, proxyProvider.FileSystemProxy).AsCached(dlArgs.IgnoreCache)
+                : new GitHubDownloadStrategy(proxyProvider.WebRequestProxy, proxyProvider.FileSystemProxy).AsCached(dlArgs.IgnoreCache);
+            var nugetDownloadStrategy = new NugetDownloadStrategy(proxyProvider.WebRequestProxy, proxyProvider.FileSystemProxy, dlArgs.Folder, dlArgs.NugetSource, dlArgs.AsTool).AsCached(dlArgs.IgnoreCache);
 
             DownloadStrategy effectiveStrategy;
             if (forceNuget)

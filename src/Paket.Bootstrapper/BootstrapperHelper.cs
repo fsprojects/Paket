@@ -71,29 +71,29 @@ Options:
             return fileName;
         }
 
-        internal static void PrepareWebClient(WebClient client, string url)
+        internal static void PrepareWebClient(WebClient client, string url, IEnvProxy envProxy)
         {
             client.Headers.Add("user-agent", PaketBootstrapperUserAgent);
             client.UseDefaultCredentials = true;
-            client.Proxy = GetDefaultWebProxyFor(url);
+            client.Proxy = GetDefaultWebProxyFor(url, envProxy);
         }
 
-        internal static HttpWebRequest PrepareWebRequest(string url)
+        internal static HttpWebRequest PrepareWebRequest(string url, IEnvProxy envProxy)
         {
             var request = (HttpWebRequest)HttpWebRequest.Create(url);
             request.UserAgent = PaketBootstrapperUserAgent;
             request.UseDefaultCredentials = true;
-            request.Proxy = GetDefaultWebProxyFor(url);
+            request.Proxy = GetDefaultWebProxyFor(url, envProxy);
             request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
             return request;
         }
 
-        internal static IWebProxy GetDefaultWebProxyFor(String url)
+        internal static IWebProxy GetDefaultWebProxyFor(String url, IEnvProxy envProxy)
         {
             Uri uri = new Uri(url);
 
             IWebProxy result;
-            if (EnvProxy.TryGetProxyFor(uri, out result) && result.GetProxy(uri) != uri)
+            if (envProxy.TryGetProxyFor(uri, out result) && result.GetProxy(uri) != uri)
                 return result;
 
 #if NO_SYSTEMWEBPROXY

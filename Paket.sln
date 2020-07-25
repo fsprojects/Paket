@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27009.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30204.135
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}"
 EndProject
@@ -68,13 +68,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{ED8079DD-2B06-4030-9F0F-DC548F98E1C4}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Paket.Tests", "tests\Paket.Tests\Paket.Tests.fsproj", "{E789C72A-5CFD-436B-8EF1-61AA2852A89F}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Paket.Tests", "tests\Paket.Tests\Paket.Tests.fsproj", "{E789C72A-5CFD-436B-8EF1-61AA2852A89F}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Paket", "src\Paket\Paket.fsproj", "{09B32F18-0C20-4489-8C83-5106D5C04C93}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Paket", "src\Paket\Paket.fsproj", "{09B32F18-0C20-4489-8C83-5106D5C04C93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Paket.Bootstrapper", "src\Paket.Bootstrapper\Paket.Bootstrapper.csproj", "{CE3F8B87-1ABD-462E-A35B-CDCEC695898B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paket.Bootstrapper", "src\Paket.Bootstrapper\Paket.Bootstrapper.csproj", "{CE3F8B87-1ABD-462E-A35B-CDCEC695898B}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Paket.Core", "src\Paket.Core\Paket.Core.fsproj", "{7BAB0AE2-089F-4761-B138-A717AA2F86C5}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Paket.Core", "src\Paket.Core\Paket.Core.fsproj", "{7BAB0AE2-089F-4761-B138-A717AA2F86C5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "commands", "commands", "{4425A246-BD18-4622-86B5-0154F19165E4}"
 	ProjectSection(SolutionItems) = preProject
@@ -97,15 +97,20 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "commands", "commands", "{44
 		docs\content\commands\why.md = docs\content\commands\why.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Paket.Bootstrapper.Tests", "tests\Paket.Bootstrapper.Tests\Paket.Bootstrapper.Tests.csproj", "{7C622582-E281-4EAB-AADA-B5893BB89B45}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paket.Bootstrapper.Tests", "tests\Paket.Bootstrapper.Tests\Paket.Bootstrapper.Tests.csproj", "{7C622582-E281-4EAB-AADA-B5893BB89B45}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Paket.IntegrationTests", "integrationtests\Paket.IntegrationTests\Paket.IntegrationTests.fsproj", "{7234B9B4-8CF5-4E68-AA29-050C087B9246}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Paket.IntegrationTests", "integrationtests\Paket.IntegrationTests\Paket.IntegrationTests.fsproj", "{7234B9B4-8CF5-4E68-AA29-050C087B9246}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{62D18A14-5240-4CB1-AA8A-762D3EB0E19A}"
 	ProjectSection(SolutionItems) = preProject
 		.paket\paket.exe.config = .paket\paket.exe.config
 		.paket\Paket.Restore.targets = .paket\Paket.Restore.targets
 		.paket\paket.targets = .paket\paket.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1C9A57E4-9D94-44D1-A106-FC588B7B72DE}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
 Global
