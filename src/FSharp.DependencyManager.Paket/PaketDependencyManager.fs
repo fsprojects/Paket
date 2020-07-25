@@ -8,18 +8,32 @@ module Attributes =
     [<assembly: DependencyManagerAttribute()>]
     do ()
 
-#if PREVIEW5
-// dotnet 5.0.100-preview.1.20155.7
-type ReturnType = bool * string list * string list * string list 
-#else
-// VS 16.6.0 Preview 1
-type ReturnType = bool * string seq * string seq * string seq
-#endif
+/// The results of ResolveDependencies
+type ResolveDependenciesResult (success: bool, stdOut: string array, stdError: string array, resolutions: string seq, sourceFiles: string seq, roots: string seq) =
+
+    /// Succeded?
+    member _.Success = success
+
+    /// The resolution output log
+    member _.StdOut = stdOut
+
+    /// The resolution error log (* process stderror *)
+    member _.StdError = stdError
+
+    /// The resolution paths
+    member _.Resolutions = resolutions
+
+    /// The source code file paths
+    member _.SourceFiles = sourceFiles
+
+    /// The roots to package directories
+    member _.Roots = roots
+
 [<DependencyManager>]
 type PaketDependencyManagerProvider(outputDir: string option) =
   member x.Name = "paket"
   member x.Key = "paket"
-  member x.ResolveDependencies(scriptDir: string, mainScriptName: string, scriptName: string, packageManagerTextLines: string seq, targetFramework: string) : ReturnType =
+  member x.ResolveDependencies(scriptDir: string, mainScriptName: string, scriptName: string, packageManagerTextLines: string seq, targetFramework: string) : ResolveDependenciesResult =
     try
       let loadScript, additionalIncludeDirs = 
         ReferenceLoading.PaketHandler.ResolveDependencies(
@@ -27,8 +41,8 @@ type PaketDependencyManagerProvider(outputDir: string option) =
                  scriptDir,
                  scriptName,
                  packageManagerTextLines)
-      true, [] :> _ , [loadScript] :> _ , additionalIncludeDirs:> _ 
+      ResolveDependenciesResult(true, [|"ok paket"|], [|"err paket"|], additionalIncludeDirs, [loadScript], [])
     with
       e -> 
         printfn "exception while resolving dependencies: %s" (string e)
-        false, [] :> _ , [] :> _ , [] :> _ 
+        ResolveDependenciesResult(false, [||], [||], [||], [||], [||])
