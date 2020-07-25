@@ -1,3 +1,6 @@
+#### 5.248.2 - 2020-07-25
+* BUGFIX: Search all the sub-directories under the default packages directory and do not use CompareString while searching under packages directory - https://github.com/fsprojects/Paket/pull/3888
+
 #### 5.248.1 - 2020-07-23
 * BUGFIX: Corrects memozation of HttpHandlers - https://github.com/fsprojects/Paket/pull/3881
 
