@@ -948,15 +948,11 @@ module InstallModel =
         let ref = NuGet.tryFindFolder "ref" content |> asList
         let runtimes = NuGet.tryFindFolder "runtimes" content |> asList
         let build = NuGet.tryFindFolder "build" content |> asList
-        let buildTransitive = NuGet.tryFindFolder "buildTransitive" content |> asList
-        let buildMultiTargeting = NuGet.tryFindFolder "buildMultiTargeting" content |> asList
 
         model
         |> addLibReferences (lib @ ref @ runtimes) content.Spec.References
         |> addAnalyzerFiles analyzers
         |> addTargetsFiles "build" build
-        |> addTargetsFiles "buildTransitive" buildTransitive
-        |> addTargetsFiles "buildMultiTargeting" buildMultiTargeting
         |> addPackageLoadScriptFiles loadscripts
         |> addFrameworkAssemblyReferences content.Spec.FrameworkAssemblyReferences
         |> addLicense content.Spec.LicenseUrl
