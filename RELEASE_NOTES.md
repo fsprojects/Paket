@@ -1,4 +1,13 @@
-#### 5.248.0 - 2020-06-27
+#### 5.249.0 - 2020-07-25
+* Add support for props and target files in root of file - https://github.com/fsprojects/Paket/pull/3889
+
+#### 5.248.2 - 2020-07-25
+* BUGFIX: Search all the sub-directories under the default packages directory and do not use CompareString while searching under packages directory - https://github.com/fsprojects/Paket/pull/3888
+
+#### 5.248.1 - 2020-07-23
+* BUGFIX: Corrects memozation of HttpHandlers - https://github.com/fsprojects/Paket/pull/3881
+
+#### 5.248.0 - 2020-07-23
 * Use AES encryption when not on windows - https://github.com/fsprojects/Paket/pull/3884
 
 #### 5.247.4 - 2020-06-27

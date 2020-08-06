@@ -869,11 +869,11 @@ module ProjectFile =
         // global targets are targets, that are either directly in the /build folder.
         // (ref https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#including-msbuild-props-and-targets-in-a-package).
         let globalTargets, frameworkSpecificTargets =
-            if not importTargets then List.empty, List.empty else
-            let sortedTargets = model.TargetsFileFolders |> List.sortBy (fun lib -> lib.Path)
-            sortedTargets
-            |> List.partition (fun lib -> "" = lib.Path.Name)
-
+            if not importTargets then Seq.empty, List.empty else
+            let globalTargets = model.TargetsFileFolders |> Seq.collect (fun f -> f.RootContents)
+            let frameworkSpecificTargets = model.TargetsFileFolders |> List.collect (fun f -> f.FrameworkFolders)
+            globalTargets,frameworkSpecificTargets
+            
         let frameworkSpecificTargetsFileConditions =
             frameworkSpecificTargets
             |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition allTargets lib.Targets,createPropertyGroup (lib.FolderContents |> List.ofSeq))
@@ -988,7 +988,6 @@ module ProjectFile =
 
         let globalPropsNodes =
             globalTargets
-            |> Seq.collect (fun t -> t.FolderContents)
             |> Seq.map (fun t -> t.Path)
             |> Seq.distinct
             |> Seq.filter (fun t -> String.endsWithIgnoreCase ".props" t)
@@ -1002,7 +1001,6 @@ module ProjectFile =
 
         let globalTargetsNodes =
             globalTargets
-            |> Seq.collect (fun t -> t.FolderContents)
             |> Seq.map (fun t -> t.Path)
             |> Seq.distinct
             |> Seq.filter (fun t -> String.endsWithIgnoreCase ".targets" t)
