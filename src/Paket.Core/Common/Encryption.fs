@@ -39,35 +39,35 @@ type Salt =
 [<RequireQualifiedAccess>]
 module private AesSalt =
     let [<Literal>] saltSeparator = "SALT_SEPARATOR"
-        
+
     let private toBytes (AesKey keyString, AesIV ivString) =
         (AesKey << Convert.FromBase64String) keyString,
         (AesIV << Convert.FromBase64String) ivString
-        
+
     let encode ((AesKey key): AesKey<byte[]>,(AesIV iv): AesIV<byte[]>) =
-        seq {yield key; yield iv}
+        [ key; iv ]
         |> Seq.map Convert.ToBase64String
         |> String.concat saltSeparator
         |> AesSalt
-        
+
     let decode (AesSalt saltString) =
         match saltString.Split([|saltSeparator|], StringSplitOptions.None)  with
         | [|keyString;ivString|] -> (AesKey keyString, AesIV ivString)
         | _ -> failwith "Should never happen"
-        
+
     let (|IsAesSalt|_|) (str: string) =
         if str.Contains saltSeparator then
             Some <| AesSalt str
         else
             None
-    
+
 [<RequireQualifiedAccess>]
-module Aes =    
+module Aes =
     let private encryptString (password: string) =
         let writePassword (cryptoStream: CryptoStream) =
             use streamWriter = new StreamWriter(cryptoStream)
             streamWriter.Write(password)
-            
+
         use aes = Aes.Create()
         let encryptor = aes.CreateEncryptor()
         use memoryStream = new MemoryStream()
@@ -75,8 +75,8 @@ module Aes =
         writePassword cryptoStream
         let encryptedPassword = memoryStream.ToArray()
         encryptedPassword,aes.Key,aes.IV
-        
-    let private decryptBytes (encryptedBytes: byte[]) key iv =  
+
+    let private decryptBytes (encryptedBytes: byte[]) key iv =
         use aes = Aes.Create()
         aes.Key <- key
         aes.IV <- iv
@@ -86,50 +86,50 @@ module Aes =
         use streamReader = new StreamReader(cryptoStream)
         let password = streamReader.ReadToEnd()
         password
-    
+
     let private serialize password (key: byte[]) (iv: byte[]) =
         (AesEncryptedPassword << Convert.ToBase64String) password,
         AesSalt.encode (AesKey key, AesIV iv)
-        
+
     let private deserialize (AesEncryptedPassword password) aesSalt =
         let (AesKey key, AesIV iv) = AesSalt.decode aesSalt
-        
+
         Convert.FromBase64String password,
         Convert.FromBase64String key,
         Convert.FromBase64String iv
-        
+
     let encrypt (PlainTextPassword password) =
         encryptString password
         |||> serialize
-        
+
     let decrypt encryptedPassword aesSalt =
         deserialize encryptedPassword aesSalt
         |||> decryptBytes
         |> PlainTextPassword
-    
+
 [<RequireQualifiedAccess>]
 module private DPApiSalt =
     let private fillRandomBytes =
         let provider = RandomNumberGenerator.Create()
         (fun (b:byte[]) -> provider.GetBytes(b))
-        
+
     let encode bytes =
         bytes
         |> Convert.ToBase64String
         |> DPApiSalt
-    
+
     let getRandomSalt() =
         let saltSize = 8
         let saltBytes = Array.create saltSize ( new Byte() )
         fillRandomBytes(saltBytes)
         saltBytes
-        
+
 [<RequireQualifiedAccess>]
 module DPApi =
     let encrypt (PlainTextPassword password) =
         let salt = DPApiSalt.getRandomSalt()
-        let encryptedPassword = 
-            try 
+        let encryptedPassword =
+            try
                 ProtectedData.Protect(Encoding.UTF8.GetBytes password, salt, DataProtectionScope.CurrentUser)
             with | :? CryptographicException as e ->
                 if verbose then
@@ -137,12 +137,12 @@ module DPApi =
                 ProtectedData.Protect(Encoding.UTF8.GetBytes password, salt, DataProtectionScope.LocalMachine)
         encryptedPassword |> Convert.ToBase64String |> DPApiEncryptedPassword,
         salt |> DPApiSalt.encode
-        
+
     let decrypt (encryptedPassword : string) (salt : string)  =
         ProtectedData.Unprotect(Convert.FromBase64String encryptedPassword, Convert.FromBase64String salt, DataProtectionScope.CurrentUser)
         |> Encoding.UTF8.GetString
         |> PlainTextPassword
-        
+
 [<RequireQualifiedAccess>]
 module Crypto =
     let encrypt plainTextPassword = 
@@ -152,10 +152,10 @@ module Crypto =
         else
             let (aesPassword, aesSalt) = Aes.encrypt plainTextPassword
             (EncryptedPassword.Aes aesPassword, Salt.Aes aesSalt)
-            
+
     let decrypt password salt =
         match salt with
-        | AesSalt.IsAesSalt salt -> 
+        | AesSalt.IsAesSalt salt ->
             Aes.decrypt (AesEncryptedPassword password) salt
         | _ ->
             DPApi.decrypt password salt

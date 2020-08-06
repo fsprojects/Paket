@@ -1,7 +1,10 @@
-#### 6.0.0-alpha040 - 2020-07-25
+#### 6.0.0-alpha041 - 2020-08-06
 * Full .NET Core / SDK compatible version
 * Support for XCode
 * Support for .netcoreapp5.0
+
+#### 5.249.1 - 2020-08-06
+* BUGFIX: Do not include buildTransitve/buildMultiTargeting - https://github.com/fsprojects/Paket/pull/3891
 
 #### 5.249.0 - 2020-07-25
 * Add support for props and target files in root of file - https://github.com/fsprojects/Paket/pull/3889
