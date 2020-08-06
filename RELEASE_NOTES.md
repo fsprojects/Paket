@@ -1,4 +1,4 @@
-#### 5.249.1 - 2020-08-06
+#### 5.249.2 - 2020-08-06
 * BUGFIX: Do not include buildTransitve/buildMultiTargeting - https://github.com/fsprojects/Paket/pull/3891
 
 #### 5.249.0 - 2020-07-25
