@@ -1,5 +1,5 @@
 #r "paket: nuget XPlot.Plotly"
 open XPlot.Plotly
 
-Chart.Line [ 1 .. 10 ]
-|> Chart.Show
+printfn "%A" (Chart.Line [ 1 .. 10 ])
+printfn "ok"

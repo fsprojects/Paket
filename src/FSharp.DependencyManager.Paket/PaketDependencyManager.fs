@@ -34,6 +34,12 @@ type PaketDependencyManagerProvider(outputDir: string option) =
   member x.Name = "paket"
   member x.Key = "paket"
   member x.ResolveDependencies(scriptDir: string, mainScriptName: string, scriptName: string, packageManagerTextLines: string seq, targetFramework: string) : ResolveDependenciesResult =
+    let scriptDir =
+        if scriptDir = System.String.Empty then
+            System.Environment.CurrentDirectory
+        else
+            scriptDir
+
     try
       let loadScript, additionalIncludeDirs = 
         ReferenceLoading.PaketHandler.ResolveDependencies(

@@ -6,6 +6,7 @@
     <DefineConstants Condition=" '$(TargetFramework)' != 'net461'">PAKET_NETCORE;NO_UNIT_PLATFORMATTRIBUTE;TESTSUITE_KNOWN_FAILURE_DOTNETCORE_3005;FAKE_NETSTANDARD_API;@(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="FsiExtension.fs" />
     <Compile Include="..\..\paket-files\forki\FsUnit\FsUnit.fs">
       <Paket>True</Paket>
       <Link>FsUnit.fs</Link>
@@ -41,6 +42,7 @@
     <Compile Include="AddGithubSpecs.fs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\FSharp.DependencyManager.Paket\FSharp.DependencyManager.Paket.fsproj" />
     <ProjectReference Include="..\..\src\Paket.Core\Paket.Core.fsproj" />
   </ItemGroup>
   <ItemGroup>
