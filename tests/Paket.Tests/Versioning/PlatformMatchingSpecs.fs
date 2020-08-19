@@ -155,6 +155,11 @@ let ``Can detect net4.00.03``() =
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_0_3)))
 
 [<Test>]
+let ``Can detect net5.0``() =
+    let p = PlatformMatching.forceExtractPlatforms "net5.0"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V5)))
+
+[<Test>]
 let ``Can detect netstandard1.6``() =
     let p = PlatformMatching.forceExtractPlatforms "netstandard1.6"
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6)))
