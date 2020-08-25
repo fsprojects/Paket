@@ -671,6 +671,34 @@ NUGET
     lockFile.Options.ResolverStrategyForTransitives |> shouldEqual (Some ResolverStrategy.Max)
 
 [<Test>]
+let ``should parse strategy latest-patch lock file``() = 
+    let lockFile = """STRATEGY: LATEST-PATCH
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    Castle.Windsor (2.1)
+"""
+    let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
+    let packages = List.rev lockFile.Packages
+    
+    packages.Length |> shouldEqual 1
+    lockFile.Options.ResolverStrategyForTransitives |> shouldEqual (Some ResolverStrategy.LatestPatch)
+
+[<Test>]
+let ``should parse strategy latest-minor lock file``() = 
+    let lockFile = """STRATEGY: LATEST-MINOR
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    Castle.Windsor (2.1)
+"""
+    let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
+    let packages = List.rev lockFile.Packages
+    
+    packages.Length |> shouldEqual 1
+    lockFile.Options.ResolverStrategyForTransitives |> shouldEqual (Some ResolverStrategy.LatestMinor)
+
+[<Test>]
 let ``should parse no strategy lock file``() = 
     let lockFile = """NUGET
   remote: "D:\code\temp with space"

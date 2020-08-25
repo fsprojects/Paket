@@ -1,4 +1,4 @@
-﻿module StrategySpecs
+﻿module Paket.Resolver.StrategySpecs
 
 open Paket
 open NUnit.Framework

@@ -107,6 +107,7 @@
     <Compile Include="Resolver\AddingDependenciesSpecs.fs" />
     <Compile Include="Resolver\GlobalPessimisticStrategySpecs.fs" />
     <Compile Include="Resolver\GlobalOptimisticStrategySpecs.fs" />
+    <Compile Include="Resolver\GlobalKeepLatestPatchStrategySpecs.fs" />
     <Compile Include="Resolver\StrategySpecs.fs" />
     <Compile Include="Resolver\PropertyTestGenerators.fs" />
     <Compile Include="Resolver\PropertyTests.fs" />

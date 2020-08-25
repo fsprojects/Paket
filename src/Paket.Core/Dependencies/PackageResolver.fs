@@ -44,10 +44,11 @@ type GetPackageDetailsParameters =
         GetPackageDetailsParameters.ofParamsEx false sources groupName packageName version
 
 type GetPackageVersionsParameters =
-  { Package : SourcePackageInfo }
-    static member ofParams sources groupName packageName =
+  { Package : SourcePackageInfo
+    MinVersion : SemVerInfo option }
+    static member ofParams sources groupName packageName minVersion =
         SourcePackageInfo.ofParams sources groupName packageName
-        |> fun p -> { Package = p }
+        |> fun p -> { Package = p; MinVersion = minVersion }
 
 type PackageDetailsFunc = GetPackageDetailsParameters -> Async<PackageDetails>
 type PackageDetailsSyncFunc = GetPackageDetailsParameters -> PackageDetails
@@ -585,7 +586,8 @@ let private getCompatibleVersions
             let resolverStrategy = getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives rootDependencies allRequirementsOfCurrentPackage currentRequirement
 
             let allVersions =
-                getVersionsF resolverStrategy (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName currentRequirement.Name)
+                let versionParams = GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName currentRequirement.Name currentRequirement.MinVersionSetting
+                getVersionsF resolverStrategy versionParams
                 |> Seq.map (fun (v, sources) -> VersionCache.ofParams v sources false)
 
             match currentRequirement.VersionRequirement.Range with
@@ -1079,6 +1081,26 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
             let sorted =
                 match resolverStrategy with
                 | ResolverStrategy.Max -> List.sortDescending versions
+                | ResolverStrategy.LatestPatch ->
+                    match versionParams.MinVersion with 
+                    | Some minVersion -> 
+                        let preferred =
+                            versions
+                            |> List.filter (fun (v,s) -> v.Major = minVersion.Major && v.Minor = minVersion.Minor)
+                            |> List.sortDescending 
+
+                        preferred @ List.sortDescending versions
+                    | None -> List.sortDescending versions
+                | ResolverStrategy.LatestMinor ->
+                    match versionParams.MinVersion with 
+                    | Some minVersion -> 
+                        let preferred =
+                            versions
+                            |> List.filter (fun (v,s) -> v.Major = minVersion.Major)
+                            |> List.sortDescending 
+
+                        preferred @ List.sortDescending versions
+                    | None -> List.sortDescending versions
                 | ResolverStrategy.Min -> List.sort versions
 
             yield! sorted }
@@ -1174,7 +1196,8 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
 
                 let currentConflict =
                     let getVersionsF packName =
-                        getVersionsBlock ResolverStrategy.Max (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName) currentStep
+                        let versionParameters = GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName currentRequirement.MinVersionSetting
+                        getVersionsBlock ResolverStrategy.Max versionParameters currentStep
 
                     if Seq.isEmpty conflicts then
                         { currentConflict with
@@ -1296,7 +1319,8 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                     if not alreadyExplored then
                         for (pack,verReq,restr) in exploredPackage.Dependencies do
                             async {
-                                let requestVersions = startRequestGetVersions (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName pack)
+                                let versionParameters = GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName pack currentRequirement.MinVersionSetting
+                                let requestVersions = startRequestGetVersions versionParameters
                                 requestVersions.Work.TryReprioritize true WorkPriority.LikelyRequired
                                 let! versions = (requestVersions).Work.Task |> Async.AwaitTask
                                 // Preload the first version in range of this requirement
@@ -1369,7 +1393,8 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                             step (Step((currentConflict,nextStep,currentRequirement), (currentConflict,currentStep,currentRequirement,compatibleVersions,flags)::priorConflictSteps)) stackpack currentConflict.VersionsToExplore flags
                         else
                             let getVersionsF packName =
-                                getVersionsBlock ResolverStrategy.Max (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName) currentStep
+                                let versionParameters = GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName currentRequirement.MinVersionSetting
+                                getVersionsBlock ResolverStrategy.Max versionParameters currentStep
 
                             let conflictingPackageName,vr =
                                 match Seq.tryHead conflictingResolvedPackages with
@@ -1399,13 +1424,17 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
     }
 
     for openReq in startingStep.OpenRequirements do
-        startRequestGetVersions (GetPackageVersionsParameters.ofParams openReq.Sources groupName openReq.Name)
+        let versionParamters = GetPackageVersionsParameters.ofParams openReq.Sources groupName openReq.Name openReq.MinVersionSetting
+        startRequestGetVersions versionParamters
         |> ignore
 
     let currentRequirement = getCurrentRequirement packageFilter startingStep.OpenRequirements (Dictionary())
 
     let status =
-        let getVersionsF packName = getVersionsBlock ResolverStrategy.Max (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName) startingStep
+        let getVersionsF packName = 
+            let versionParameters = GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName currentRequirement.MinVersionSetting
+            getVersionsBlock ResolverStrategy.Max versionParameters startingStep
+
         ResolutionRaw.ConflictRaw { ResolveStep = startingStep; RequirementSet = Set.empty; Requirement = currentRequirement; GetPackageVersions = getVersionsF }
 
 

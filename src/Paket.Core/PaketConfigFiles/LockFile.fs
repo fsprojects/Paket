@@ -53,11 +53,14 @@ module LockFileSerializer =
         | None -> ()
         match options.ResolverStrategyForTransitives with
         | Some ResolverStrategy.Min -> yield "STRATEGY: MIN"
+        | Some ResolverStrategy.LatestPatch -> yield "STRATEGY: LATEST-PATCH"
+        | Some ResolverStrategy.LatestMinor -> yield "STRATEGY: LATEST-MINOR"
         | Some ResolverStrategy.Max -> yield "STRATEGY: MAX"
         | None -> ()
         match options.ResolverStrategyForDirectDependencies with
         | Some ResolverStrategy.Min -> yield "LOWEST_MATCHING: TRUE"
         | Some ResolverStrategy.Max -> yield "LOWEST_MATCHING: FALSE"
+        | Some x -> failwithf "Strategy %O is invalid as lowest_matching setting." x
         | None -> () 
         match options.Settings.CopyLocal with
         | Some x -> yield "COPY-LOCAL: " + x.ToString().ToUpper()
@@ -346,6 +349,8 @@ module LockFileParser =
             let setting =
                 match trimmed.Trim() with
                 | String.EqualsIC "min" -> Some ResolverStrategy.Min
+                | String.EqualsIC "latest-patch" -> Some ResolverStrategy.LatestPatch
+                | String.EqualsIC "latest-minor" -> Some ResolverStrategy.LatestMinor
                 | String.EqualsIC "max" -> Some ResolverStrategy.Max
                 | _ -> None
 

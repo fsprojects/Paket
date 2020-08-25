@@ -454,7 +454,12 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         match strategy with
         | None -> this
         | Some strategy ->
-        let strategyString = sprintf "strategy: %s" (match strategy with ResolverStrategy.Max -> "max" | ResolverStrategy.Min -> "min")
+        let strategyString =
+            match strategy with
+            | ResolverStrategy.Max -> "strategy: max" 
+            | ResolverStrategy.LatestPatch -> "strategy: latest-patch" 
+            | ResolverStrategy.LatestMinor -> "strategy: latest-minor" 
+            | ResolverStrategy.Min -> "strategy: min"
 
         let list = new System.Collections.Generic.List<_>()
         list.AddRange textRepresentation
@@ -478,7 +483,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         match strategy with
         | None -> this
         | Some strategy ->
-        let strategyString = sprintf "lowest_matching: %s" (match strategy with ResolverStrategy.Max -> "false" | ResolverStrategy.Min -> "true")
+        let strategyString = 
+            match strategy with
+            | ResolverStrategy.Max -> "lowest_matching: max" 
+            | ResolverStrategy.Min -> "lowest_matching: min"
+            | _ -> failwithf "Strategy %O is invalid for lowest_matching setting." strategy
 
         let list = new System.Collections.Generic.List<_>()
         list.AddRange textRepresentation

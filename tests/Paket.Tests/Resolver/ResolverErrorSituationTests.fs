@@ -1,4 +1,4 @@
-﻿module ResolverErrorSituationTests
+﻿module Paket.Resolver.ResolverErrorSituationTests
 
 open Paket
 open NUnit.Framework

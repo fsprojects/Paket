@@ -1,4 +1,4 @@
-﻿module GlobalOptimisticStrategySpecs
+﻿module Paket.Resolver.GlobalOptimisticStrategySpecs
 
 open Paket
 open NUnit.Framework

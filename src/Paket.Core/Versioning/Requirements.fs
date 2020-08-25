@@ -1221,6 +1221,18 @@ type PackageRequirement =
 
     member this.Depth = this.Graph.Count
 
+    member this.MinVersionSetting =
+        match this.VersionRequirement with
+        | VersionRequirement(v,_) ->
+            match v with
+            | Minimum v -> Some v
+            | GreaterThan v -> Some v
+            | Maximum _ -> None
+            | LessThan _ -> None
+            | Specific v -> Some v
+            | OverrideAll _ -> None
+            | Range(_,v,_,_) -> Some v
+
     member this.SettingString = (sprintf "%O %s %s %O %s" this.VersionRequirement (if this.ResolverStrategyForTransitives.IsSome then (sprintf "%O" this.ResolverStrategyForTransitives) else "") (if this.ResolverStrategyForDirectDependencies.IsSome then (sprintf "%O" this.ResolverStrategyForDirectDependencies) else "") this.Settings (if this.TransitivePrereleases then "TransitivePrereleases-true" else ""))
 
     member this.HasPackageSettings = String.IsNullOrWhiteSpace this.SettingString |> not

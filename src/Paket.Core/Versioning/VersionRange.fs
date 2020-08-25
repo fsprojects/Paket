@@ -389,4 +389,6 @@ type VersionRequirement =
 [<RequireQualifiedAccess>]
 type ResolverStrategy =
 | Max
+| LatestPatch
+| LatestMinor
 | Min

@@ -1086,6 +1086,15 @@ let ``should read config with min and max strategy``() =
     cfg.Groups.[GroupName "Test"].Options.ResolverStrategyForTransitives |> shouldEqual (Some ResolverStrategy.Max)
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
+
+
+[<Test>]
+let ``should read config with latest-patch and latest-minor strategy``() = 
+    let cfg = DependenciesFile.FromSource(strategyConfig "latest-patch" "latest-minor")
+    cfg.Groups.[Constants.MainDependencyGroup].Options.ResolverStrategyForTransitives |> shouldEqual (Some ResolverStrategy.LatestPatch)
+    cfg.Groups.[GroupName "Test"].Options.ResolverStrategyForTransitives |> shouldEqual (Some ResolverStrategy.LatestMinor)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
     
 let noStrategyConfig = sprintf """
 strategy %s
