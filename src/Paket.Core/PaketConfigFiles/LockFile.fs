@@ -116,7 +116,7 @@ module LockFileSerializer =
                     hasReported := true
                   yield "  remote: " + String.quoted source
                   match protocolVersion with
-                  | Some p -> yield "  protocolVersion: " + String.quoted (if p = ProtocolVersion2 then "2" else "3")
+                  | Some p -> yield "  protocolVersion: " + String.quoted (if p = ProtocolVersion3 then "3" else "2")
                   | None -> ()
 
                   for _,_,_,package in packages |> Seq.sortBy (fun (_,_,_,p) -> p.Name) do
@@ -467,10 +467,10 @@ module LockFileParser =
                 | Remote(ProtocolVersion(protocolVersion)) ->
                     let protocol =
                         match protocolVersion with
-                        | Some "2" -> ProtocolVersion2
                         | Some "3" -> ProtocolVersion3
-                        | None -> ProtocolVersion2 // TODO: for Paket 6.x change this default to 3
-                        | Some v -> failwithf "unknown nuget protocol version '%s', allowed protocols are 2 and 3" v //TODO: ok to fail like this?
+                        | Some "2" -> ProtocolVersion2
+                        | None -> ProtocolVersion3
+                        | Some unknowVersion -> failwithf "unknown nuget protocol version '%s', allowed protocols are 2 and 3" unknowVersion //TODO: ok to fail like this?
                     { currentGroup with NugetProtocolVersion = Some protocol }::otherGroups
                 | Group groupName -> { GroupName = GroupName groupName; RepositoryType = None; RemoteUrl = None; NugetProtocolVersion = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false } :: currentGroup :: otherGroups
                 | InstallOption(Command(command)) ->

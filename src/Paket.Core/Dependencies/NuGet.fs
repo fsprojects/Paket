@@ -477,10 +477,10 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
                     | _ -> 3)
                 |> List.map (fun source -> source, async {
                     match source with
-                    | NuGet ({ ProtocolVersion = ProtocolVersion2 } as nugetSource) ->
-                        return! tryV2 nugetSource force
                     | NuGet ({ ProtocolVersion = ProtocolVersion3 } as nugetSource) ->
                         return! v3AndFallBack nugetSource force
+                    | NuGet ({ ProtocolVersion = ProtocolVersion2 } as nugetSource) ->
+                        return! tryV2 nugetSource force
                     | LocalNuGet(path,hasCache) ->
                         return! NuGetLocal.getDetailsFromLocalNuGetPackage hasCache.IsSome alternativeProjectRoot root path packageName version
                 })
@@ -614,6 +614,9 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
                 async {
                        if (not force) && errorFileExists then return [] else
                        match nugetSource with
+                       | NuGet ({ ProtocolVersion = ProtocolVersion3 } as source) ->
+                            let! versionsAPI = NuGetV3.getNuGetV3Resource source NuGetV3.AllVersionsAPI
+                            return [ getVersionsCached "V3" tryNuGetV3 (nugetSource, source.Authentication, versionsAPI, packageName) ]
                        | NuGet ({ ProtocolVersion = ProtocolVersion2 } as source) ->
                             let auth = source.Authentication
                             if String.containsIgnoreCase "artifactory" source.Url then
@@ -624,9 +627,6 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
                                       yield getVersionsCached "ODataWithFilter" NuGetV2.tryGetAllVersionsFromNugetODataWithFilter (nugetSource, auth, source.Url, packageName) ]
 
                                 return v2Feeds
-                       | NuGet ({ ProtocolVersion = ProtocolVersion3 } as source) ->
-                            let! versionsAPI = NuGetV3.getNuGetV3Resource source NuGetV3.AllVersionsAPI
-                            return [ getVersionsCached "V3" tryNuGetV3 (nugetSource, source.Authentication, versionsAPI, packageName) ]
                        | LocalNuGet(path,Some _) ->
                             return [ NuGetLocal.getAllVersionsFromLocalPath (true, path, packageName, alternativeProjectRoot, root) ]
                        | LocalNuGet(path,None) ->

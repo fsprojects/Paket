@@ -28,6 +28,10 @@ let ``should read config which only contains a source``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Length |> shouldEqual 1
+    let source = cfg.Groups.[Constants.MainDependencyGroup].Sources.Head
+    match source with 
+    | NuGet n -> n.ProtocolVersion |> shouldEqual ProtocolVersion3
+    | _ -> failwith "foo"
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Head |> shouldEqual (NuGet({ Url = "http://www.nuget.org/api/v2"; ProtocolVersion = ProtocolVersion2; Authentication = AuthProvider.empty }))
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth.Retrieve true
         |> shouldEqual None

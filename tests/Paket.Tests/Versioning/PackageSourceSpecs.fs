@@ -12,19 +12,19 @@ open Paket.PackageSources
 [<TestCase("http://my.domain/artifactory/api/nuget/nugetsource/")>]
 [<TestCase("http://my.domain/artifactory/api/nuget/nuget-local/")>]
 [<TestCase("http://my.domain/artifactory/api/nuget/nuget_proxy/")>]
-let ``should parse known nuget2 source``(feed : string) =
+let ``should parse known nuget2 source as v3 if nothing specified``(feed : string) =
     let line = sprintf "source %s" feed
     match PackageSource.Parse(line) with
-    | NuGet { Url = source; Authentication = _; ProtocolVersion = ProtocolVersion2 } ->
+    | NuGet { Url = source; Authentication = _; ProtocolVersion = ProtocolVersion3 } ->
         let quoted = sprintf "source  \"%s\"" feed
         match PackageSource.Parse(quoted) with
-        | NuGet { Url = qsource; Authentication = _; ProtocolVersion = ProtocolVersion2 } ->
-            source |> shouldEqual qsource
         | NuGet { Url = qsource; Authentication = _; ProtocolVersion = ProtocolVersion3 } ->
-            failwithf "%s should be parsed as a v2 protocol when quoted" feed
+            source |> shouldEqual qsource
+        | NuGet { Url = qsource; Authentication = _; ProtocolVersion = ProtocolVersion2 } ->
+            failwithf "%s should be parsed as a v3 protocol when quoted" feed
         | _ -> failwith quoted
-    | NuGet { Url = qsource; Authentication = _; ProtocolVersion = ProtocolVersion3 } ->
-        failwithf "%s should be parsed as a v2 protocol" feed
+    | NuGet { Url = qsource; Authentication = _; ProtocolVersion = ProtocolVersion2 } ->
+        failwithf "%s should be parsed as a v3 protocol" feed
     | _ -> failwith feed
 
 [<TestCase("https://api.nuget.org/v3/index.json")>]
