@@ -520,7 +520,7 @@ module LockFileParser =
 
                     match (currentGroup.RemoteUrl, currentGroup.NugetProtocolVersion) with
                     | (Some remote, Some protocolVersion) -> handleNugetDetails remote (Some protocolVersion)
-                    | (Some remote, None) -> handleNugetDetails remote (Some ProtocolVersion2) // TODO: set this default to 3 with 6.0.0
+                    | (Some remote, None) -> handleNugetDetails remote (Some ProtocolVersion3)
                     | (None, _) -> failwith "no source has been specified."
                 | NugetDependency (name, v, frameworkSettings) ->
                     let version,_,isRuntimeDependency,settings = parsePackage v
