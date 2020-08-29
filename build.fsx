@@ -267,10 +267,10 @@ Target "RunTests" (fun _ ->
             })
 
     runTest "net" "Paket.Tests" "net461"
-    runTest "netcore" "Paket.Tests" "netcoreapp3.0"
+    runTest "netcore" "Paket.Tests" "netcoreapp3.1"
 
     runTest "net" "Paket.Bootstrapper.Tests" "net461"
-    runTest "netcore" "Paket.Bootstrapper.Tests" "netcoreapp3.0"
+    runTest "netcore" "Paket.Bootstrapper.Tests" "netcoreapp3.1"
 )
 
 Target "QuickTest" (fun _ ->
@@ -349,7 +349,7 @@ Target "RunIntegrationTestsNetCore" (fun _ ->
     DotNetCli.Test (fun c ->
         { c with
             Project = "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
-            Framework = "netcoreapp3.0"
+            Framework = "netcoreapp3.1"
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
                 sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]
