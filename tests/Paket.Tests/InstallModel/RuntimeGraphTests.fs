@@ -153,7 +153,7 @@ let ``Check that runtime dependencies are saved as such in the lockfile`` () =
     MyDependency (4.0)
     MyRuntimeDependency (4.0.1) - isRuntimeDependency: true"""
 
-    let depsFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let depsFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2 protocolVersion: 2
 nuget MyDependency""")
     let lockFile, resolution =
         UpdateProcess.selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) (GetRuntimeGraphFromGraph graph) lockFile depsFile PackageResolver.UpdateMode.Install SemVerUpdateMode.NoRestriction
@@ -197,7 +197,7 @@ let ``Check that runtime dependencies we don't use are ignored`` () =
           "MyRuntimeDependency", "4.0.1", [], RuntimeGraph.Empty ]
         |> OfGraphWithRuntimeDeps
 
-    let depsFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let depsFile = DependenciesFile.FromSource("""source http://api.nuget.org/v3/index.json
 nuget MyDependency""")
     let lockFile, resolution =
         UpdateProcess.selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) (GetRuntimeGraphFromGraph graph) lockFile depsFile PackageResolver.UpdateMode.Install SemVerUpdateMode.NoRestriction
@@ -217,7 +217,8 @@ nuget MyDependency""")
 [<Test>]
 let ``Check that runtime dependencies are loaded from the lockfile`` () =
     let lockFile = """NUGET
-  remote: http://www.nuget.org/api/v2
+  remote: http://api.nuget.org/v3/index.json
+    protocolVersion: 3
     MyDependency (4.0)
     MyRuntimeDependency (4.0.1) - isRuntimeDependency: true"""
 

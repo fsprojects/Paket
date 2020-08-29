@@ -8,7 +8,7 @@ open Paket.ModuleResolver
 open Paket.Domain
 
 let config1 = """
-source "http://www.nuget.org/api/v2"
+source "https://api.nuget.org/v3/index.json"
 
 nuget "Castle.Windsor-log4net" "~> 3.2"
 nuget "Rx-Main" "~> 2.0" """
@@ -32,8 +32,8 @@ let graph =
 [<Test>]
 let ``should generate lock file for packages``() =
     let expected = """NUGET
-  remote: http://www.nuget.org/api/v2
-  protocolVersion: 2
+  remote: https://api.nuget.org/v3/index.json
+  protocolVersion: 3
     Castle.Windsor (2.1)
     Castle.Windsor-log4net (3.3)
       Castle.Windsor (>= 2.0)
@@ -51,7 +51,7 @@ let ``should generate lock file for packages``() =
     |> shouldEqual (normalizeLineEndings expected)
 
 let configWithRestrictions = """
-source "http://www.nuget.org/api/v2"
+source "https://api.nuget.org/v3/index.json"
 
 nuget "Castle.Windsor-log4net" ~> 3.2 framework: net35
 nuget "Rx-Main" "~> 2.0" framework: >= net40 """
@@ -59,8 +59,8 @@ nuget "Rx-Main" "~> 2.0" framework: >= net40 """
 [<Test>]
 let ``should generate lock file with framework restrictions for packages``() =
     let expected = """NUGET
-  remote: http://www.nuget.org/api/v2
-  protocolVersion: 2
+  remote: https://api.nuget.org/v3/index.json
+  protocolVersion: 3
     Castle.Windsor (2.1) - restriction: == net35
     Castle.Windsor-log4net (3.3) - restriction: == net35
       Castle.Windsor (>= 2.0)
@@ -105,7 +105,7 @@ let ``should generate lock file with no targets import for packages``() =
     |> shouldEqual (normalizeLineEndings expected)
 
 let configWithCopyLocal = """
-source "http://www.nuget.org/api/v2"
+source "https://api.nuget.org/v3/index.json"
 
 nuget "Castle.Windsor-log4net" ~> 3.2 copy_local: false, import_targets: false, framework: net35
 nuget "Rx-Main" "~> 2.0" framework: >= net40 """
@@ -113,8 +113,8 @@ nuget "Rx-Main" "~> 2.0" framework: >= net40 """
 [<Test>]
 let ``should generate lock file with no copy local for packages``() =
     let expected = """NUGET
-  remote: http://www.nuget.org/api/v2
-  protocolVersion: 2
+  remote: https://api.nuget.org/v3/index.json
+  protocolVersion: 3
     Castle.Windsor (2.1) - copy_local: false, import_targets: false, restriction: == net35
     Castle.Windsor-log4net (3.3) - copy_local: false, import_targets: false, restriction: == net35
       Castle.Windsor (>= 2.0)
@@ -131,7 +131,7 @@ let ``should generate lock file with no copy local for packages``() =
     |> shouldEqual (normalizeLineEndings expected)
 
 let configWithSpecificVersion = """
-source "http://www.nuget.org/api/v2"
+source "https://api.nuget.org/v3/index.json"
 
 nuget "Castle.Windsor-log4net" ~> 3.2 specific_version: false, import_targets: false, framework: net35
 nuget "Rx-Main" "~> 2.0" framework: >= net40 """
@@ -139,8 +139,8 @@ nuget "Rx-Main" "~> 2.0" framework: >= net40 """
 [<Test>]
 let ``should generate lock file with no specific version for packages``() =
     let expected = """NUGET
-  remote: http://www.nuget.org/api/v2
-  protocolVersion: 2
+  remote: https://api.nuget.org/v3/index.json
+  protocolVersion: 3
     Castle.Windsor (2.1) - specific_version: false, import_targets: false, restriction: == net35
     Castle.Windsor-log4net (3.3) - specific_version: false, import_targets: false, restriction: == net35
       Castle.Windsor (>= 2.0)
@@ -157,7 +157,7 @@ let ``should generate lock file with no specific version for packages``() =
     |> shouldEqual (normalizeLineEndings expected)
 
 let configWithDisabledContent = """
-source "http://www.nuget.org/api/v2"
+source "https://api.nuget.org/v3/index.json"
 
 nuget "Castle.Windsor-log4net" ~> 3.2 framework: net35
 nuget "Rx-Main" "~> 2.0" content: none, framework: >= net40 """
@@ -165,8 +165,8 @@ nuget "Rx-Main" "~> 2.0" content: none, framework: >= net40 """
 [<Test>]
 let ``should generate lock file with disabled content for packages``() =
     let expected = """NUGET
-  remote: http://www.nuget.org/api/v2
-  protocolVersion: 2
+  remote: https://api.nuget.org/v3/index.json
+  protocolVersion: 3
     Castle.Windsor (2.1) - restriction: == net35
     Castle.Windsor-log4net (3.3) - restriction: == net35
       Castle.Windsor (>= 2.0)
@@ -247,7 +247,7 @@ github \"owner:project3:master\""
 
 
 let config2 = """
-source https://www.myget.org/F/ravendb3/
+source https://www.myget.org/F/ravendb3/ protocolVersion: 2
 
 nuget RavenDB.Client == 3.0.3498-Unstable
  """
@@ -270,7 +270,7 @@ let ``should generate lock file for RavenDB.Client``() =
     |> shouldEqual (normalizeLineEndings expected2)
 
 let config3 = """
-source "http://www.nuget.org/api/v2"
+source "https://api.nuget.org/v3/index.json protocolVersion: 3"
 
 nuget "OtherVersionRanges.Package" "~> 1.0" """
 
@@ -283,8 +283,8 @@ let graph3 =
   ]
 
 let expected3 = """NUGET
-  remote: http://www.nuget.org/api/v2
-  protocolVersion: 2
+  remote: https://api.nuget.org/v3/index.json
+  protocolVersion: 3
     GreaterThan.Package (2.1)
       Maximum.Package (<= 3.0)
     LessThan.Package (1.9)
@@ -344,7 +344,7 @@ GIST
 
 [<Test>]
 let ``should generate lock file for http and gist source files``() =
-    let config = """source "http://www.nuget.org/api/v2
+    let config = """source "https://api.nuget.org/v3/index.json
 
 http http://www.fssnip.net/raw/32 myFile2.fs
 http http://www.fssnip.net/raw/34 myFile5.fs httpAuth
@@ -411,8 +411,8 @@ let ``should parse and regenerate http Stanford.NLP.NET project``() =
 [<Test>]
 let ``should generate lock file with second group``() =
     let expected = """NUGET
-  remote: http://www.nuget.org/api/v2
-  protocolVersion: 2
+  remote: https://api.nuget.org/v3/index.json
+  protocolVersion: 3
     Castle.Windsor (2.1) - copy_content_to_output_dir: preserve_newest
     Castle.Windsor-log4net (3.3) - restriction: == net35
       Castle.Windsor (>= 2.0)
@@ -429,8 +429,8 @@ COPY-LOCAL: TRUE
 COPY-CONTENT-TO-OUTPUT-DIR: ALWAYS
 CONDITION: LEGACY
 NUGET
-  remote: http://www.nuget.org/api/v2
-  protocolVersion: 2
+  remote: https://api.nuget.org/v3/index.json
+  protocolVersion: 3
     FAKE (4.0)
 """
     let lockFile = LockFile.Parse("Test",toLines expected)

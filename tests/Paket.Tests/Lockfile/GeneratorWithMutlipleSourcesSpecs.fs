@@ -7,7 +7,7 @@ open TestHelpers
 open Paket.Domain
 
 let config1 = """
-source "http://www.nuget.org/api/v2"
+source "http://www.nuget.org/api/v2 protocolVersion: 2"
 source "http://nuget.org/api/v3"
 
 nuget "Castle.Windsor-log4net" "~> 3.2"

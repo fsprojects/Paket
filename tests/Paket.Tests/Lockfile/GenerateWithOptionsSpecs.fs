@@ -12,7 +12,7 @@ references strict
 framework: >= net45
 copy_local false
 specific_version true
-source "http://www.nuget.org/api/v2"
+source "https://api.nuget.org/v3/index.json"
 
 nuget "Castle.Windsor-log4net" "~> 3.2"
 """
@@ -27,8 +27,8 @@ COPY-LOCAL: FALSE
 SPECIFIC-VERSION: TRUE
 RESTRICTION: >= net45
 NUGET
-  remote: http://www.nuget.org/api/v2
-  protocolVersion: 2
+  remote: https://api.nuget.org/v3/index.json
+  protocolVersion: 3
     Castle.Windsor-log4net (3.2)"""
 
 [<Test>]
@@ -42,7 +42,7 @@ let ``should generate strict lock file``() =
 let configWithContent = """
 content none
 import_targets false
-source "http://www.nuget.org/api/v2"
+source "https://api.nuget.org/v3/index.json"
 
 nuget "Microsoft.SqlServer.Types"
 """
@@ -55,8 +55,8 @@ let graph2 =
 let expected2 = """IMPORT-TARGETS: FALSE
 CONTENT: NONE
 NUGET
-  remote: http://www.nuget.org/api/v2
-  protocolVersion: 2
+  remote: https://api.nuget.org/v3/index.json
+  protocolVersion: 3
     Microsoft.SqlServer.Types (1.0)"""
 
 [<Test>]
@@ -68,7 +68,7 @@ let ``should generate content none lock file``() =
 
 let configWithRedirects = """
 redirects on
-source "http://www.nuget.org/api/v2"
+source "https://api.nuget.org/v3/index.json"
 
 nuget "Microsoft.SqlServer.Types"
 """
@@ -80,8 +80,8 @@ let graph3 =
 
 let expected3 = """REDIRECTS: ON
 NUGET
-  remote: http://www.nuget.org/api/v2
-  protocolVersion: 2
+  remote: https://api.nuget.org/v3/index.json
+  protocolVersion: 3
     Microsoft.SqlServer.Types (1.0)"""
 
 [<Test>]
@@ -95,15 +95,15 @@ let ``should generate redirects lock file``() =
 let ``should generate strategy min lock file``() =
     let config = """
     strategy min
-    source "http://www.nuget.org/api/v2"
+    source "https://api.nuget.org/v3/index.json"
 
     nuget "Microsoft.SqlServer.Types"
     """
 
     let expected = """STRATEGY: MIN
 NUGET
-  remote: http://www.nuget.org/api/v2
-  protocolVersion: 2
+  remote: https://api.nuget.org/v3/index.json
+  protocolVersion: 3
     Microsoft.SqlServer.Types (1.0)"""
 
     let cfg = DependenciesFile.FromSource(config)
@@ -115,15 +115,15 @@ NUGET
 let ``should generate strategy max lock file``() =
     let config = """
     strategy max
-    source "http://www.nuget.org/api/v2"
+    source "https://api.nuget.org/v3/index.json"
 
     nuget "Microsoft.SqlServer.Types"
     """
 
     let expected = """STRATEGY: MAX
 NUGET
-  remote: http://www.nuget.org/api/v2
-  protocolVersion: 2
+  remote: https://api.nuget.org/v3/index.json
+  protocolVersion: 3
     Microsoft.SqlServer.Types (1.0)"""
 
     let cfg = DependenciesFile.FromSource(config)
@@ -135,15 +135,15 @@ NUGET
 let ``should generate lowest_matching true lock file``() =
     let config = """
     lowest_matching true
-    source "http://www.nuget.org/api/v2"
+    source "https://api.nuget.org/v3/index.json"
 
     nuget "Microsoft.SqlServer.Types"
     """
 
     let expected = """LOWEST_MATCHING: TRUE
 NUGET
-  remote: http://www.nuget.org/api/v2
-  protocolVersion: 2
+  remote: https://api.nuget.org/v3/index.json
+  protocolVersion: 3
     Microsoft.SqlServer.Types (1.0)"""
 
     let cfg = DependenciesFile.FromSource(config)
@@ -155,15 +155,15 @@ NUGET
 let ``should generate lowest_matching false lock file``() =
     let config = """
     lowest_matching false
-    source "http://www.nuget.org/api/v2"
+    source "https://api.nuget.org/v3/index.json"
 
     nuget "Microsoft.SqlServer.Types"
     """
 
     let expected = """LOWEST_MATCHING: FALSE
 NUGET
-  remote: http://www.nuget.org/api/v2
-  protocolVersion: 2
+  remote: https://api.nuget.org/v3/index.json
+  protocolVersion: 3
     Microsoft.SqlServer.Types (1.0)"""
 
     let cfg = DependenciesFile.FromSource(config)
@@ -193,7 +193,7 @@ nuget NLog.Contrib
     let expected = """RESTRICTION: >= net40
 NUGET
   remote: https://www.nuget.org/api/v2
-  protocolVersion: 2
+  protocolVersion: 3
     NLog (1.0.1) - restriction: == net40
     NLog.Contrib (1.0)
       NLog (>= 1.0.1)"""

@@ -11,7 +11,7 @@ open FsUnit
 open System
 
 let lockFileData = """NUGET
-  remote: http://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
   specs:
     Castle.Core (3.2.0)
     Castle.Core-log4net (3.2.0)
@@ -51,7 +51,7 @@ let selectiveUpdateFromGraph graph force lockFile depsFile updateMode restrictio
 [<Test>]
 let ``SelectiveUpdate does not update any package when it is neither updating all nor selective updating``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net ~> 3.2
     nuget FAKE""")
@@ -76,7 +76,7 @@ let ``SelectiveUpdate does not update any package when it is neither updating al
 [<Test>]
 let ``SelectiveUpdate updates all packages not constraining version``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net ~> 3.2
     nuget FAKE""")
@@ -101,7 +101,7 @@ let ``SelectiveUpdate updates all packages not constraining version``() =
 [<Test>]
 let ``SelectiveUpdate updates all packages constraining version``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net < 4.0
     nuget Castle.Core ~> 3.2
@@ -127,7 +127,7 @@ let ``SelectiveUpdate updates all packages constraining version``() =
 [<Test>]
 let ``SelectiveUpdate removes a dependency when it is updated to a version that does not depend on a library``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net
     nuget FAKE""")
@@ -152,7 +152,7 @@ let ``SelectiveUpdate removes a dependency when it is updated to a version that 
 [<Test>]
 let ``SelectiveUpdate updates a single package``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net
     nuget FAKE""")
@@ -179,7 +179,7 @@ let ``SelectiveUpdate updates a single package``() =
 [<Test>]
 let ``SelectiveUpdate updates a single constrained package``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net ~> 3.2
     nuget FAKE""")
@@ -206,7 +206,7 @@ let ``SelectiveUpdate updates a single constrained package``() =
 [<Test>]
 let ``SelectiveUpdate updates a single package with constrained dependency in dependencies file``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net ~> 3.2
     nuget Castle.Core ~> 3.2
@@ -234,7 +234,7 @@ let ``SelectiveUpdate updates a single package with constrained dependency in de
 [<Test>]
 let ``SelectiveUpdate installs new packages``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net
     nuget FAKE
@@ -261,7 +261,7 @@ let ``SelectiveUpdate installs new packages``() =
 [<Test>]
 let ``SelectiveUpdate removes a dependency when it updates a single package and it is updated to a version that does not depend on a library``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net
     nuget FAKE""")
@@ -288,7 +288,7 @@ let ``SelectiveUpdate removes a dependency when it updates a single package and 
 [<Test>]
 let ``SelectiveUpdate does not update when a dependency constrain is not met``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net
     nuget Castle.Core = 3.2.0
@@ -315,7 +315,7 @@ let ``SelectiveUpdate does not update when a dependency constrain is not met``()
 [<Test>]
 let ``SelectiveUpdate considers package name case difference``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net
     nuget castle.core = 3.2.0
@@ -343,7 +343,7 @@ let ``SelectiveUpdate considers package name case difference``() =
 [<Test>]
 let ``SelectiveUpdate conflicts when a dependency is contrained``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net
     nuget Castle.Core = 3.2.0
@@ -359,7 +359,7 @@ let ``SelectiveUpdate conflicts when a dependency is contrained``() =
 [<Test>]
 let ``SelectiveUpdate generates paket.lock correctly``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net
     nuget Castle.Core
@@ -377,8 +377,8 @@ let ``SelectiveUpdate generates paket.lock correctly``() =
 
 
     let expected = """NUGET
-  remote: http://www.nuget.org/api/v2
-  protocolVersion: 2
+  remote: https://api.nuget.org/v3/index.json
+  protocolVersion: 3
     Castle.Core (4.0)
     Castle.Core-log4net (3.2)
       Castle.Core (>= 3.2)
@@ -416,7 +416,8 @@ let graph2 =
     |> OfSimpleGraph
 
 let lockFileData2 = """NUGET
-  remote: http://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
+  protocolVersion: 3
   specs:
     log4f (0.4.0)
       log4net (>= 1.2.10 < 2.0.0)
@@ -434,7 +435,7 @@ let lockFile2 = lockFileData2 |> getLockFile
 [<Test>]
 let ``SelectiveUpdate updates package that conflicts with a transitive dependency with correct version``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget log4f
     nuget Ninject.Extensions.Logging.Log4net""")
@@ -465,7 +466,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
 [<Test>]
 let ``SelectiveUpdate updates package that conflicts with a transitive dependency in its own graph with correct version``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget log4f
     nuget Ninject.Extensions.Logging.Log4net""")
@@ -503,7 +504,8 @@ let graph3 =
 
 
 let lockFileData3 = """NUGET
-  remote: http://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
+  protocolVersion: 3
   specs:
     log4f (0.4.0)
       log4net (>= 1.2.10 < 2.0.0)
@@ -522,7 +524,7 @@ let lockFile3 = lockFileData3 |> getLockFile
 [<Test>]
 let ``SelectiveUpdate updates package that conflicts with a transitive dependency of another package with correct version``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget log4f
     nuget Ninject.Extensions.Logging.Log4net
@@ -555,7 +557,7 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
 [<Test>]
 let ``SelectiveUpdate does not conflict with a transitive dependency of another package when paket.dependencies requirement has changed``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Ninject ~> 3.0
     nuget Ninject.Extensions.Logging.Log4net
@@ -587,7 +589,7 @@ let ``SelectiveUpdate does not conflict with a transitive dependency of another 
 [<Test>]
 let ``SelectiveUpdate updates package that conflicts with a deep transitive dependency of another package to correct version``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget log4f
     nuget Ninject.Extensions.Logging.Log4net
@@ -625,7 +627,7 @@ let graph4 =
       |> OfSimpleGraph)
 
 let lockFileData4 = """NUGET
-  remote: http://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
   specs:
     log4net (1.0.4)
     Ninject (2.2.1.4)
@@ -642,7 +644,7 @@ let lockFile4 = lockFileData4 |> getLockFile
 [<Test>]
 let ``SelectiveUpdate updates package that conflicts with a deep transitive dependency in its own graph with correct version``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Ninject.Extensions.Logging.Log4net.Deep""")
 
@@ -679,7 +681,7 @@ let graph5 =
       |> OfSimpleGraph
 
 let lockFileData5 = """NUGET
-  remote: http://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
   specs:
     Ninject (0.0.2-alpha001)
     Ninject.Extensions.Interception (0.0.2-alpha001)
@@ -692,7 +694,7 @@ let lockFile5 = lockFileData5 |> getLockFile
 [<Test>]
 let ``SelectiveUpdate updates package that conflicts with transitive dependency with correct prerelease version``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Ninject.Extensions.Interception
     nuget Ninject.Extensions.Logging""")
@@ -728,13 +730,13 @@ let groupMap (lockFile : LockFile) =
 [<Test>]
 let ``SelectiveUpdate updates all packages from all groups if no group is specified``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net ~> 3.2
     nuget FAKE
 
     group Group
-        source http://www.nuget.org/api/v2
+        source https://api.nuget.org/v3/index.json
 
         nuget Castle.Core-log4net ~> 4.0""")
 
@@ -757,7 +759,7 @@ let ``SelectiveUpdate updates all packages from all groups if no group is specif
     |> shouldEqual expected
 
 let groupedLockFileData = """NUGET
-  remote: http://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
   specs:
     Castle.Core (3.2.0)
     Castle.Core-log4net (3.2.0)
@@ -768,7 +770,7 @@ let groupedLockFileData = """NUGET
 
 GROUP Group
 NUGET
-  remote: http://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
   specs:
     Castle.Core (3.2.0)
     Castle.Core-log4net (3.2.0)
@@ -779,13 +781,13 @@ let groupedLockFile = groupedLockFileData |> getLockFile
 [<Test>]
 let ``SelectiveUpdate updates only packages from specific group if group is specified``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net
     nuget FAKE
 
     group Group
-        source http://www.nuget.org/api/v2
+        source https://api.nuget.org/v3/index.json
 
         nuget Castle.Core-log4net""")
 
@@ -811,13 +813,13 @@ let ``SelectiveUpdate updates only packages from specific group if group is spec
 [<Test>]
 let ``SelectiveUpdate updates only packages from specified group``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net
     nuget FAKE
 
     group Group
-        source http://www.nuget.org/api/v2
+        source https://api.nuget.org/v3/index.json
 
         nuget Castle.Core-log4net""")
 
@@ -840,7 +842,7 @@ let ``SelectiveUpdate updates only packages from specified group``() =
     |> shouldEqual expected
 
 let lockFileData6 = """NUGET
-  remote: http://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
   specs:
     Castle.Core (3.2.0)
     Castle.Core-log4net (3.2.0)
@@ -851,7 +853,7 @@ let lockFileData6 = """NUGET
 
 GROUP Group
 NUGET
-  remote: http://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
   specs:
     Castle.Core (3.2.0)
     Castle.Core-log4net (3.2.0)
@@ -865,13 +867,13 @@ let lockFile6 = lockFileData6 |> getLockFile
 [<Test>]
 let ``SelectiveUpdate updates package from a specific group``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net ~> 3.2
     nuget FAKE
 
     group Group
-        source http://www.nuget.org/api/v2
+        source https://api.nuget.org/v3/index.json
 
         nuget Castle.Core-log4net
         nuget FAKE""")
@@ -900,13 +902,13 @@ let ``SelectiveUpdate updates package from a specific group``() =
 [<Test>]
 let ``SelectiveUpdate does not remove a dependency from group when it is a top-level dependency in that group``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net ~> 3.0
     nuget FAKE
 
     group Group
-        source http://www.nuget.org/api/v2
+        source https://api.nuget.org/v3/index.json
 
         nuget Castle.Core-log4net
         nuget FAKE
@@ -936,13 +938,13 @@ let ``SelectiveUpdate does not remove a dependency from group when it is a top-l
 [<Test>]
 let ``SelectiveUpdate updates package from main group``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net ~> 3.2
     nuget FAKE
 
     group Group
-        source http://www.nuget.org/api/v2
+        source https://api.nuget.org/v3/index.json
 
         nuget Castle.Core-log4net
         nuget FAKE""")
@@ -969,7 +971,7 @@ let ``SelectiveUpdate updates package from main group``() =
     |> shouldEqual expected
 
 let lockFileData7 = """NUGET
-  remote: http://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
   specs:
     Newtonsoft.Json (6.0.8)
     Package (3.2.0)
@@ -988,7 +990,7 @@ let graph7 =
 [<Test>]
 let ``SelectiveUpdate updates package that has a new dependent package that also is a direct dependency``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Newtonsoft.Json
     nuget Package""")
@@ -1012,7 +1014,7 @@ let ``SelectiveUpdate updates package that has a new dependent package that also
     |> shouldEqual expected
 
 let lockFileData8 = """NUGET
-  remote: http://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
   specs:
     APackage (3.2.0)
     Newtonsoft.Json (6.0.8)
@@ -1022,7 +1024,7 @@ let lockFile8 = lockFileData8 |> getLockFile
 [<Test>]
 let ``SelectiveUpdate updates early package that has a new dependent package that also is a direct dependency``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Newtonsoft.Json
     nuget APackage""")
@@ -1048,13 +1050,13 @@ let ``SelectiveUpdate updates early package that has a new dependent package tha
 [<Test>]
 let ``SelectiveUpdate with SemVerUpdateMode.Minor updates package from a specific group in minor version``() =
 
-    let dependenciesFile = DependenciesFile.FromSource("""source http://www.nuget.org/api/v2
+    let dependenciesFile = DependenciesFile.FromSource("""source https://api.nuget.org/v3/index.json
 
     nuget Castle.Core-log4net ~> 3.2
     nuget FAKE
 
     group Group
-        source http://www.nuget.org/api/v2
+        source https://api.nuget.org/v3/index.json
 
         nuget Castle.Core-log4net
         nuget FAKE""")
@@ -1085,14 +1087,14 @@ let ``adding new group to lockfile should not crash``() =
     let update deps lock = selectiveUpdateFromGraph graph true lock deps UpdateMode.Install SemVerUpdateMode.NoRestriction
 
     let initialDepsText =
-        """source http://www.nuget.org/api/v2
+        """source https://api.nuget.org/v3/index.json
         nuget Castle.Core-log4net ~> 3.2"""
     let emptyLock = LockFile.Parse("test", [||])
 
     let addGroupDepsText =
         initialDepsText + """
         group build
-            source http://www.nuget.org/api/v2
+            source https://api.nuget.org/v3/index.json
             nuget FAKE"""
     let deps = DependenciesFile.FromSource(initialDepsText)
 
