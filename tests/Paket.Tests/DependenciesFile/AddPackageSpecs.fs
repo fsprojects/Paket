@@ -9,7 +9,7 @@ open Paket.Requirements
 
 [<Test>]
 let ``should add new packages to the end``() = 
-    let config = """source http://www.nuget.org/api/v2
+    let config = """source https://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net ~> 3.2
 nuget Rx-Main ~> 2.0
@@ -18,7 +18,7 @@ nuget SignalR = 3.3.2"""
 
     let cfg = DependenciesFile.FromSource(config).Add(Constants.MainDependencyGroup, PackageName "xunit","")
     
-    let expected = """source http://www.nuget.org/api/v2
+    let expected = """source https://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net ~> 3.2
 nuget Rx-Main ~> 2.0
@@ -31,7 +31,7 @@ nuget xunit"""
 
 [<Test>]
 let ``should add new packages to alphabetical position``() = 
-    let config = """source http://www.nuget.org/api/v2
+    let config = """source https://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net ~> 3.2
 nuget FAKE = 1.1
@@ -40,7 +40,7 @@ nuget SignalR = 3.3.2"""
 
     let cfg = DependenciesFile.FromSource(config).Add(Constants.MainDependencyGroup, PackageName "Rz","")
     
-    let expected = """source http://www.nuget.org/api/v2
+    let expected = """source https://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net ~> 3.2
 nuget FAKE = 1.1
@@ -53,7 +53,7 @@ nuget SignalR = 3.3.2"""
 
 [<Test>]
 let ``should add new packages before github files``() = 
-    let config = """source http://www.nuget.org/api/v2
+    let config = """source https://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net ~> 3.2
 nuget Rx-Main ~> 2.0
@@ -64,7 +64,7 @@ github forki/FsUnit FsUnit.fs"""
 
     let cfg = DependenciesFile.FromSource(config).Add(Constants.MainDependencyGroup, PackageName "xunit","")
     
-    let expected = """source http://www.nuget.org/api/v2
+    let expected = """source https://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net ~> 3.2
 nuget Rx-Main ~> 2.0
@@ -80,7 +80,7 @@ github forki/FsUnit FsUnit.fs"""
 
 [<Test>]
 let ``should add new packages with ~> version if we give it``() = 
-    let config = """source http://www.nuget.org/api/v2
+    let config = """source https://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net ~> 3.2
 
@@ -88,7 +88,7 @@ github forki/FsUnit FsUnit.fs"""
 
     let cfg = DependenciesFile.FromSource(config).Add(Constants.MainDependencyGroup, PackageName "FAKE","~> 1.2")
     
-    let expected = """source http://www.nuget.org/api/v2
+    let expected = """source https://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net ~> 3.2
 nuget FAKE ~> 1.2
@@ -100,12 +100,12 @@ github forki/FsUnit FsUnit.fs"""
 
 [<Test>]
 let ``should add new packages with specific version if we give it``() = 
-    let config = """source http://www.nuget.org/api/v2
+    let config = """source https://www.nuget.org/api/v2
 nuget Castle.Windsor-log4net ~> 3.2"""
 
     let cfg = DependenciesFile.FromSource(config).Add(Constants.MainDependencyGroup, PackageName "FAKE","1.2")
     
-    let expected = """source http://www.nuget.org/api/v2
+    let expected = """source https://www.nuget.org/api/v2
 nuget Castle.Windsor-log4net ~> 3.2
 nuget FAKE 1.2"""
 
@@ -144,7 +144,7 @@ nuget FAKE !~> 1.2
 
 [<Test>]
 let ``should not fail if package already exists``() = 
-    let config = """source http://www.nuget.org/api/v2
+    let config = """source https://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net ~> 3.2
 nuget Rx-Main ~> 2.0
@@ -155,7 +155,7 @@ nuget SignalR = 3.3.2"""
     
 [<Test>]
 let ``should not fail if package already exists - case insensitive``() = 
-    let config = """source http://www.nuget.org/api/v2
+    let config = """source https://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net ~> 3.2
 nuget Rx-Main ~> 2.0
@@ -811,13 +811,13 @@ nuget Microsoft.AspNet.WebApi"""
 
 [<Test>]
 let ``should pin in correct group``() = 
-    let config = """source http://www.nuget.org/api/v2
+    let config = """source https://www.nuget.org/api/v2
 
     nuget Castle.Core-log4net ~> 3.0
     nuget FAKE
     
     group Group
-        source http://www.nuget.org/api/v2
+        source https://www.nuget.org/api/v2
 
         nuget Castle.Core-log4net
         nuget FAKE
@@ -831,14 +831,14 @@ let ``should pin in correct group``() =
                         InstallSettings.Default)
 
     
-    let expected = """source http://www.nuget.org/api/v2
+    let expected = """source https://www.nuget.org/api/v2
 
     nuget Castle.Core-log4net ~> 3.0
     nuget FAKE
 nuget Castle.Core 3.2.0
     
     group Group
-        source http://www.nuget.org/api/v2
+        source https://www.nuget.org/api/v2
 
         nuget Castle.Core-log4net
         nuget FAKE
@@ -880,7 +880,7 @@ nuget FAKE @~> 1.2
 
 [<Test>]
 let ``should add clitool packages``() = 
-    let config = """source http://www.nuget.org/api/v2
+    let config = """source https://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net ~> 3.2
 nuget Rx-Main ~> 2.0
@@ -889,7 +889,7 @@ nuget SignalR = 3.3.2"""
 
     let cfg = DependenciesFile.FromSource(config).Add(Constants.MainDependencyGroup, PackageName "dotnet-fable","1.3.7", InstallSettings.Default, PackageRequirementKind.DotnetCliTool)
     
-    let expected = """source http://www.nuget.org/api/v2
+    let expected = """source https://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net ~> 3.2
 clitool dotnet-fable 1.3.7

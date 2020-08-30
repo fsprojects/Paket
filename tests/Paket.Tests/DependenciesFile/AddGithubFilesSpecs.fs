@@ -10,13 +10,13 @@ open Paket.Requirements
 
 [<Test>]
 let ``should add new repositories to the end``() = 
-    let config = """source http://www.nuget.org/api/v2
+    let config = """source https://www.nuget.org/api/v2
 
 github fsprojects/FAKE"""
 
     let cfg = DependenciesFile.FromSource(config).AddGithub(Constants.MainDependencyGroup, "fsprojects/FsUnit")
     
-    let expected = """source http://www.nuget.org/api/v2
+    let expected = """source https://www.nuget.org/api/v2
 
 github fsprojects/FAKE
 github fsprojects/FsUnit"""
@@ -57,14 +57,14 @@ let ``should not error when adding existing github-repository``() =
 
 [<Test>]
 let ``should add new repositories to the main group``() = 
-    let config = """source http://www.nuget.org/api/v2
+    let config = """source https://www.nuget.org/api/v2
 
 group Test
 github fsprojects/FAKE"""
 
     let cfg = DependenciesFile.FromSource(config).AddGithub(Constants.MainDependencyGroup, "fsprojects/FsUnit")
     
-    let expected = """source http://www.nuget.org/api/v2
+    let expected = """source https://www.nuget.org/api/v2
 github fsprojects/FsUnit
 
 group Test
@@ -75,7 +75,7 @@ github fsprojects/FAKE"""
 
 [<Test>]
 let ``should add new repositories to the specified group``() = 
-    let config = """source http://www.nuget.org/api/v2
+    let config = """source https://www.nuget.org/api/v2
 
 group Test
 github fsprojects/FAKE
@@ -85,7 +85,7 @@ github fsprojects/SQLProvider"""
 
     let cfg = DependenciesFile.FromSource(config).AddGithub(GroupName "Test", "fsprojects/FsUnit")
     
-    let expected = """source http://www.nuget.org/api/v2
+    let expected = """source https://www.nuget.org/api/v2
 
 group Test
 github fsprojects/FAKE
@@ -99,14 +99,14 @@ github fsprojects/SQLProvider"""
 
 [<Test>]
 let ``should add new group if not already exists``() = 
-    let config = """source http://www.nuget.org/api/v2
+    let config = """source https://www.nuget.org/api/v2
 
 group Test
 github fsprojects/SQLProvider"""
 
     let cfg = DependenciesFile.FromSource(config).AddGithub(GroupName "Test2", "fsprojects/FsUnit")
     
-    let expected = """source http://www.nuget.org/api/v2
+    let expected = """source https://www.nuget.org/api/v2
 
 group Test
 github fsprojects/SQLProvider

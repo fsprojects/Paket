@@ -10,13 +10,13 @@ open Paket.Requirements
 
 [<Test>]
 let ``should add new git repositories to the end``() = 
-    let config = """source http://www.nuget.org/api/v2
+    let config = """source https://www.nuget.org/api/v2
 
 git https://github.com/fsharp/FAKE.git"""
 
     let cfg = DependenciesFile.FromSource(config).AddGit(Constants.MainDependencyGroup, "https://github.com/fsprojects/FsUnit.git")
     
-    let expected = """source http://www.nuget.org/api/v2
+    let expected = """source https://www.nuget.org/api/v2
 
 git https://github.com/fsharp/FAKE.git
 git https://github.com/fsprojects/FsUnit.git"""
@@ -57,14 +57,14 @@ let ``should not error when adding existing git repository``() =
 
 [<Test>]
 let ``should add new git repositories to the main group``() = 
-    let config = """source http://www.nuget.org/api/v2
+    let config = """source https://www.nuget.org/api/v2
 
 group Test
 git https://github.com/fsprojects/FAKE.git"""
 
     let cfg = DependenciesFile.FromSource(config).AddGit(Constants.MainDependencyGroup, "https://github.com/fsprojects/FsUnit.git")
     
-    let expected = """source http://www.nuget.org/api/v2
+    let expected = """source https://www.nuget.org/api/v2
 git https://github.com/fsprojects/FsUnit.git
 
 group Test
@@ -75,7 +75,7 @@ git https://github.com/fsprojects/FAKE.git"""
 
 [<Test>]
 let ``should add new repositories to the specified group``() = 
-    let config = """source http://www.nuget.org/api/v2
+    let config = """source https://www.nuget.org/api/v2
 
 group Test
 git https://github.com/fsprojects/FAKE.git
@@ -85,7 +85,7 @@ git https://github.com/fsprojects/SQLProvider.git"""
 
     let cfg = DependenciesFile.FromSource(config).AddGit(GroupName "Test", "https://github.com/fsprojects/FsUnit.git")
     
-    let expected = """source http://www.nuget.org/api/v2
+    let expected = """source https://www.nuget.org/api/v2
 
 group Test
 git https://github.com/fsprojects/FAKE.git
@@ -99,14 +99,14 @@ git https://github.com/fsprojects/SQLProvider.git"""
 
 [<Test>]
 let ``should add new group if not already exists``() = 
-    let config = """source http://www.nuget.org/api/v2
+    let config = """source https://www.nuget.org/api/v2
 
 group Test
 git https://github.com/fsprojects/SQLProvider.git"""
 
     let cfg = DependenciesFile.FromSource(config).AddGit(GroupName "Test2", "https://github.com/fsprojects/FsUnit.git")
     
-    let expected = """source http://www.nuget.org/api/v2
+    let expected = """source https://www.nuget.org/api/v2
 
 group Test
 git https://github.com/fsprojects/SQLProvider.git
