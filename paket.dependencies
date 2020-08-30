@@ -1,4 +1,4 @@
-source https://nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 content: none
 
 nuget Newtonsoft.Json >= 10.0.3 redirects: force
@@ -27,7 +27,7 @@ github forki/FsUnit FsUnit.fs
 
 group NetCoreTools
   storage: none
-  source https://nuget.org/api/v2
+  source https://api.nuget.org/v3/index.json
 
   nuget SourceLink.Create.CommandLine 2.1.1
   nuget SourceLink.Embed.PaketFiles 2.1.1
@@ -35,7 +35,7 @@ group NetCoreTools
 group Build
   content: none
   framework >= net461
-  source https://nuget.org/api/v2
+  source https://api.nuget.org/v3/index.json
   source https://ci.appveyor.com/nuget/fsharp-formatting
 
   nuget FAKE < 5
