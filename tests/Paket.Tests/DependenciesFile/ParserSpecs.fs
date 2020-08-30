@@ -108,7 +108,7 @@ nuget "MinPackage" "1.1.3"
 let ``should read simple config with comments``() =
     let cfg = DependenciesFile.FromSource(config3)
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Rx-Main"].Range |> shouldEqual (VersionRange.Between("2.2", "3.0"))
-    cfg.Groups.[Constants.MainDependencyGroup].Sources |> List.head |> shouldEqual PackageSources.DefaultNuGetSource
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> List.head |> shouldEqual PackageSources.DefaultNuGetV2Source
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Between("3.0", "4.0"))
 
 let config4 = """
@@ -125,7 +125,7 @@ let ``should read config with multiple sources``() =
     let cfg = DependenciesFile.FromSource(config4)
     cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
 
-    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSources.DefaultNuGetSource; PackageSource.NuGetV2Source "http://nuget.org/api/v3"]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSources.DefaultNuGetV2Source; PackageSource.NuGetV3Source "http://nuget.org/api/v3"]
 
 [<Test>]
 let ``should read source file from config``() =
@@ -1603,7 +1603,7 @@ let ``parsing generate load scripts`` () =
 
 
 let configWithCLitTool = """
-source https://www.nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 
 clitool dotnet-fable
 nuget FAKE
@@ -1615,7 +1615,7 @@ let ``should read config with cli tool``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources
-    |> shouldEqual [PackageSources.DefaultNuGetSource]
+    |> shouldEqual [PackageSources.DefaultNuGetV3Source]
 
     let tool = cfg.Groups.[Constants.MainDependencyGroup].Packages.Head
     let nuget = cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Head

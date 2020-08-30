@@ -212,8 +212,9 @@ type PackageSource =
             if not (Directory.Exists (RemoveOutsideQuotes path)) then
                 traceWarnfn "Local NuGet feed doesn't exist: %s." path
 
-let DefaultNuGetSource = PackageSource.NuGetV2Source Constants.DefaultNuGetStream
+let DefaultNuGetV2Source = PackageSource.NuGetV2Source Constants.DefaultNuGetV2Stream
 let DefaultNuGetV3Source = PackageSource.NuGetV3Source Constants.DefaultNuGetV3Stream
+let DefaultNuGetSource = DefaultNuGetV3Source
 
 type NugetPackage = {
     Id : string

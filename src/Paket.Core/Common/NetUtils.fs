@@ -59,10 +59,10 @@ let normalizeFeedUrl (source:string) =
     match source.TrimEnd([|'/'|]) with
     | "https://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream
     | "http://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream.Replace("https","http")
-    | "https://nuget.org/api/v2" -> Constants.DefaultNuGetStream
-    | "http://nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
-    | "https://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream
-    | "http://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
+    | "https://nuget.org/api/v2" -> Constants.DefaultNuGetV2Stream
+    | "http://nuget.org/api/v2" -> Constants.DefaultNuGetV2Stream.Replace("https","http")
+    | "https://www.nuget.org/api/v2" -> Constants.DefaultNuGetV2Stream
+    | "http://www.nuget.org/api/v2" -> Constants.DefaultNuGetV2Stream.Replace("https","http")
     | source -> source
 
 #if CUSTOM_WEBPROXY

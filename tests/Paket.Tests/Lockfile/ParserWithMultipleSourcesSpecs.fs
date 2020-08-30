@@ -25,11 +25,11 @@ let ``should parse lock file``() =
     packages.Length |> shouldEqual 6
     lockFile.Options.Strict |> shouldEqual false
 
-    packages.[0].Source |> shouldEqual PackageSources.DefaultNuGetSource
+    packages.[0].Source |> shouldEqual PackageSources.DefaultNuGetV2Source
     packages.[0].Name |> shouldEqual (PackageName "Castle.Windsor")
     packages.[0].Version |> shouldEqual (SemVer.Parse "2.1")
 
-    packages.[1].Source |> shouldEqual PackageSources.DefaultNuGetSource
+    packages.[1].Source |> shouldEqual PackageSources.DefaultNuGetV2Source
     packages.[1].Name |> shouldEqual (PackageName "Castle.Windsor-log4net")
     packages.[1].Version |> shouldEqual (SemVer.Parse "3.3")
     

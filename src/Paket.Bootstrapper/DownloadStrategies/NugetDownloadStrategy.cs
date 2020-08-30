@@ -17,7 +17,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             private readonly string nugetSource;
 
             const string NugetSourceAppSettingsKey = "NugetSource";
-            const string DefaultNugetSource = "https://www.nuget.org/api/v2";
+            const string DefaultNugetV2Source = "https://www.nuget.org/api/v2";
             const string GetPackageVersionTemplate = "{0}/package-versions/{1}";
             const string GetLatestFromNugetUrlTemplate = "{0}/package/{1}";
             const string GetSpecificFromNugetUrlTemplate = "{0}/package/{1}/{2}";
@@ -25,7 +25,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             public NugetApiHelper(string packageName, string nugetSource)
             {
                 this.packageName = packageName;
-                this.nugetSource = nugetSource ?? ConfigurationManager.AppSettings[NugetSourceAppSettingsKey] ?? DefaultNugetSource;
+                this.nugetSource = nugetSource ?? ConfigurationManager.AppSettings[NugetSourceAppSettingsKey] ?? DefaultNugetV2Source;
             }
 
             internal string GetAllPackageVersions(bool includePrerelease)

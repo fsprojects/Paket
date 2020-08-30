@@ -6,8 +6,9 @@ open Paket.Domain
 
 
 let [<Literal>] GitHubUrl                 = "https://github.com"
-let [<Literal>] DefaultNuGetStream        = "https://www.nuget.org/api/v2"
+let [<Literal>] DefaultNuGetV2Stream      = "https://www.nuget.org/api/v2"
 let [<Literal>] DefaultNuGetV3Stream      = "https://api.nuget.org/v3/index.json"
+let [<Literal>] DefaultNuGetStream        = DefaultNuGetV3Stream
 let [<Literal>] GitHubReleasesUrl         = "https://api.github.com/repos/fsprojects/Paket/releases"
 let [<Literal>] GithubReleaseDownloadUrl  = "https://github.com/fsprojects/Paket/releases/download"
 /// 'paket.lock'
