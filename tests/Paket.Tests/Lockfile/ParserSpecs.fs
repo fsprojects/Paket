@@ -794,6 +794,7 @@ let ``should parse lock file from auto-detect settings``() =
 
 let lockFileWithManyFrameworksLegacy = """NUGET
   remote: https://www.nuget.org/api/v2
+  protocolVersion: 2
     CommonServiceLocator (1.3) - framework: >= net40, monoandroid, portable-net45+wp80+wpa81+win+monoandroid10+xamarinios10, xamarinios, winv4.5, winv4.5.1, wpv8.0, wpv8.1, sl50
     MvvmLightLibs (5.2)
       CommonServiceLocator (>= 1.0) - framework: net35, sl40
