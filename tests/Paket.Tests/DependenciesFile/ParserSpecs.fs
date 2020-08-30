@@ -1062,7 +1062,7 @@ let ``should read config with duplicate NuGet source``() =
     let cfg = DependenciesFile.FromSource(configWithDuplicateSource)
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Length |> shouldEqual 1
-    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head |> shouldEqual PackageSources.DefaultNuGetSource
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head |> shouldEqual PackageSources.DefaultNuGetV2Source
 
 let configWithInvalidInstallSettings = """
 source https://www.nuget.org/api/v2
@@ -1485,7 +1485,7 @@ let ``should read config with caches``() =
     (main.Caches |> List.item 1).Location |> shouldEqual "//hive/dependencies"
     (main.Caches |> List.item 1).CacheType |> shouldEqual (Some CacheType.AllVersions)
 
-    (main.Sources |> List.item 0) |> shouldEqual PackageSources.DefaultNuGetSource
+    (main.Sources |> List.item 0) |> shouldEqual PackageSources.DefaultNuGetV2Source
     (main.Sources |> List.item 1).Url |> shouldEqual "./dependencies"
     (main.Sources |> List.item 2).Url |> shouldEqual "//hive/dependencies"
 

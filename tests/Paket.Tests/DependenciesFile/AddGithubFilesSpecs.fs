@@ -112,7 +112,7 @@ group Test
 github fsprojects/SQLProvider
 
 group Test2
-source https://www.nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 
 github fsprojects/FsUnit"""
 

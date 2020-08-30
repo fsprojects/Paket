@@ -118,7 +118,7 @@ let ``should add new packages even to empty package section``() =
 
     let cfg = DependenciesFile.FromSource(config).Add(Constants.MainDependencyGroup, PackageName "FAKE","~> 1.2")
     
-    let expected = """source https://www.nuget.org/api/v2
+    let expected = """source https://api.nuget.org/v3/index.json
 
 nuget FAKE ~> 1.2
 
@@ -133,7 +133,7 @@ let ``should add new packages with nuget package resolution strategy``() =
 
     let cfg = DependenciesFile.FromSource(config).Add(Constants.MainDependencyGroup, PackageName "FAKE","!~> 1.2")
     
-    let expected = """source https://www.nuget.org/api/v2
+    let expected = """source https://api.nuget.org/v3/index.json
 
 nuget FAKE !~> 1.2
 """
@@ -698,7 +698,7 @@ group Build
   github fsharp/FAKE modules/Octokit/Octokit.fsx
 
 group Test
-source https://www.nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 
 nuget FSharp.Compiler.Service 1.4.0.1"""
 
@@ -749,7 +749,7 @@ group Build
   github fsharp/FAKE modules/Octokit/Octokit.fsx
 
 group Test
-source https://www.nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 
 nuget Microsoft.AspNet.WebApi"""
 
@@ -784,7 +784,7 @@ github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
 github fsprojects/Chessie src/Chessie/ErrorHandling.fs
 
 group Build
-source https://www.nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 
 nuget Microsoft.AspNet.WebApi
 
@@ -802,7 +802,7 @@ let ``should add Microsoft.AspNet.WebApi package to very first group``() =
                 .Add(GroupName "Build", PackageName "Microsoft.AspNet.WebApi","")
     
     let expected = """group Build
-source https://www.nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 
 nuget Microsoft.AspNet.WebApi"""
 
@@ -853,7 +853,7 @@ let ``should add new packages with paket package resolution strategy``() =
 
     let cfg = DependenciesFile.FromSource(config).Add(Constants.MainDependencyGroup, PackageName "FAKE","@~> 1.2")
     
-    let expected = """source https://www.nuget.org/api/v2
+    let expected = """source https://api.nuget.org/v3/index.json
 
 nuget FAKE @~> 1.2
 """
