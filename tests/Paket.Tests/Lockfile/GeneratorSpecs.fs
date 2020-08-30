@@ -270,7 +270,7 @@ let ``should generate lock file for RavenDB.Client``() =
     |> shouldEqual (normalizeLineEndings expected2)
 
 let config3 = """
-source "https://api.nuget.org/v3/index.json protocolVersion: 3"
+source "https://api.nuget.org/v3/index.json" protocolVersion: 3
 
 nuget "OtherVersionRanges.Package" "~> 1.0" """
 
