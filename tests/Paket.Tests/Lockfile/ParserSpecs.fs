@@ -755,7 +755,7 @@ let ``should parse and serialize redirects lockfile``() =
 let autodetectLockFile = """REDIRECTS: ON
 FRAMEWORK: NET452, NET452
 NUGET
-  remote: http://api.nuget.org/v3/index.json
+  remote: https://api.nuget.org/v3/index.json
   specs:
     Autofac (3.5.2) - framework: net452
     Autofac.Extras.ServiceStack (2.0.2) - framework: net452
