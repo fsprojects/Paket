@@ -1,5 +1,5 @@
 STORAGE: NONE
-RESTRICTION: || (== netstandard2.0) (== netcoreapp2.0)
+RESTRICTION: || (== netstandard2.0) (== netcoreapp2.1)
 NUGET
   remote: https://api.nuget.org/v3/index.json
     FSharp.Core (4.2.3)
