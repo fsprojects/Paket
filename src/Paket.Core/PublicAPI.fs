@@ -641,7 +641,7 @@ type Dependencies(dependenciesFileName: string) =
         let maxResults = defaultArg maxResults 1000
         let sources = sources |> Seq.toList |> List.distinct
         match sources with
-        | [] -> [PackageSources.DefaultNuGetV2Source]
+        | [] -> [PackageSources.DefaultNuGetSource]
         | _ -> sources
         |> Seq.distinct
         |> Seq.map (fun source ->
