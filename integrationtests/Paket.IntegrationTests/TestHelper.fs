@@ -15,20 +15,28 @@ let disableScenarioCleanup = false // change to true to debug a single test temp
 let isLiveUnitTesting = AppDomain.CurrentDomain.GetAssemblies() |> Seq.exists (fun a -> a.GetName().Name = "Microsoft.CodeAnalysis.LiveUnitTesting.Runtime")
 
 let dotnetToolPath =
-    match Environment.GetEnvironmentVariable "DOTNET_EXE_PATH" with
+    match Environment.GetEnvironmentVariable "DOTNET_ROOT" with
     | null | "" -> "dotnet"
-    | s -> s
+    | s -> sprintf "%s/dotnet" (s.TrimEnd('/').TrimEnd('\\'))
 
 let paketToolPath =
 #if PAKET_NETCORE
+#if DEBUG
+    dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../src/Paket/bin/Debug/netcoreapp2.1/paket.dll")
+#else
     dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin/netcoreapp2.1/paket.dll")
+#endif
 #else
     "", FullName(__SOURCE_DIRECTORY__ + "../../../bin/net461/paket.exe")
 #endif
 
 let paketBootstrapperToolPath =
 #if PAKET_NETCORE
+#if DEBUG
+    dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../src/Paket.Bootstrapper/netcoreapp2.1/paket.bootstrapper.dll")
+#else
     dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin_bootstrapper/netcoreapp2.1/paket.bootstrapper.dll")
+#endif
 #else
     "", FullName(__SOURCE_DIRECTORY__ + "../../../bin_bootstrapper/net461/paket.bootstrapper.exe")
 #endif
