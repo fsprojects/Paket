@@ -1,4 +1,4 @@
 generate_load_scripts: true
-source https://www.nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 framework: net45
 nuget NLog 4.5.10

@@ -1,5 +1,5 @@
 strategy: max
-source https://www.nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 redirects: on
 framework: >= net40
 

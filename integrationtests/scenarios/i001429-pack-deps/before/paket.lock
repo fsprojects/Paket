@@ -1,4 +1,4 @@
 NUGET
-  remote: https://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
   specs:
     MySql.Data (6.9.8)

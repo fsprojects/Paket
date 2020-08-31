@@ -1,4 +1,4 @@
-source https://www.nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 framework: netstandard2.0
 
 nuget nlog 4.5.11

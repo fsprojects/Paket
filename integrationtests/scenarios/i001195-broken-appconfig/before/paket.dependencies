@@ -1,4 +1,4 @@
-source "http://nuget.org/api/v2"
+source "https://api.nuget.org/v3/index.json"
 
 nuget Albedo 1.0.2
 nuget AutoFixture.Idioms 3.35.1

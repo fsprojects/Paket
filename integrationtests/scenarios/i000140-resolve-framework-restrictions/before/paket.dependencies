@@ -1,4 +1,4 @@
-source http://nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 
 # Core Dependencies
 nuget FParsec ~> 1.0.1

@@ -1,5 +1,5 @@
 NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
   specs:
     Castle.Core (3.3.3)
     Castle.Windsor (2.5.1)

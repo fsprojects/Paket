@@ -1,5 +1,5 @@
 NUGET
-  remote: https://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
   specs:
     bootstrap (3.3.6) - content: none
       jQuery (>= 1.9.1 < 3.0)

@@ -16,7 +16,7 @@ let alternativeProjectRoot = None
 [<Test>]
 let ``#1251 full installer demo``() = 
     use __ = prepare "i001251-installer-demo"
-    let deps = """source https://nuget.org/api/v2
+    let deps = """source https://api.nuget.org/v3/index.json
     nuget FAKE
     nuget FSharp.Formatting"""
 
@@ -35,7 +35,7 @@ let ``#1251 full installer demo``() =
 [<Test>]
 let ``#1251 install FSharp.Collections.ParallelSeq``() = 
     use __ = prepare "i001251-installer-demo"
-    let deps = """source https://nuget.org/api/v2
+    let deps = """source https://api.nuget.org/v3/index.json
     nuget FSharp.Collections.ParallelSeq"""
 
     let dependenciesFile = DependenciesFile.FromSource(scenarioTempPath "i001251-installer-demo",deps)
@@ -56,7 +56,7 @@ let ``#1259 install via script``() =
 
     Paket.Dependencies
        .Install("""
-    source https://nuget.org/api/v2
+    source https://api.nuget.org/v3/index.json
     nuget FSharp.Data
     nuget Suave
 """, path = scenarioTempPath "i001259-install-script")

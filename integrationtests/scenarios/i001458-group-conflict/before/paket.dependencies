@@ -1,10 +1,10 @@
-source https://nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 nuget Nancy.Bootstrappers.Windsor
 
 group test
-  source https://nuget.org/api/v2
+  source https://api.nuget.org/v3/index.json
   nuget Nancy.Testing
 
 group hosting
-  source https://nuget.org/api/v2
+  source https://api.nuget.org/v3/index.json
   nuget Nancy.Owin

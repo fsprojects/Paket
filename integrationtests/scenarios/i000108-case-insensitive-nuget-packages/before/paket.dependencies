@@ -1,4 +1,4 @@
-source "http://nuget.org/api/v2"
+source "https://api.nuget.org/v3/index.json"
 
 nuget "bootstrap" "3.2.0"
 nuget "jQuery" "1.9.0"

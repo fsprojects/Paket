@@ -3,7 +3,7 @@
 GROUP Analyzers
 STORAGE: NONE
 NUGET
-  remote: http://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
     AsyncUsageAnalyzers (1.0.0-alpha003)
     Gu.Analyzers (1.2.11-dev)
     IDisposableAnalyzers (2.0.1)
@@ -12,7 +12,7 @@ NUGET
 GROUP Roslyn
 STORAGE: NONE
 NUGET
-  remote: http://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
     ManagedEsent (1.9.4) - restriction: >= net46
     Microsoft.CodeAnalysis.Analyzers (2.6) - restriction: >= netstandard1.3
     Microsoft.CodeAnalysis.Common (2.3.1)

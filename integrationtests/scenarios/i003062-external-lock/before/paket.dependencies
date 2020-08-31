@@ -1,4 +1,4 @@
-source http://www.nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 
 external_lock ./external.paket.lock
 

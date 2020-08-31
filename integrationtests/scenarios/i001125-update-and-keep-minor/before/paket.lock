@@ -1,5 +1,5 @@
 NUGET
-  remote: http://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
     FSharp.Compiler.Service (2.0.0.6)
     FSharp.Formatting (2.14.2)
       FSharp.Compiler.Service (2.0.0.6)

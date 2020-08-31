@@ -1,4 +1,4 @@
-source https://www.nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 framework: net45, netstandard2.0
 
 nuget FSharp.Core >= 3.1.2.5 lowest_matching: true

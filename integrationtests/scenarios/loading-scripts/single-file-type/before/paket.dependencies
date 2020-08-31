@@ -1,4 +1,4 @@
-source "http://nuget.org/api/v2"
+source "https://api.nuget.org/v3/index.json"
 nuget NUnit ~> 2
 nuget Argu ~> 1
 nuget log4net ~> 1

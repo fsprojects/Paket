@@ -1,2 +1,2 @@
-source http://nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 nuget FSharp.Actor-logary 2.0.0-alpha5

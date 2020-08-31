@@ -42,7 +42,7 @@ let ``#3127 symlink enabled -> disabled on all dependencies on existing paket.lo
     |> SymlinkUtils.isDirectoryLink 
     |> shouldEqual true
 
-    let paketDependenciesWithoutConfig = """source https://www.nuget.org/api/v2
+    let paketDependenciesWithoutConfig = """source https://api.nuget.org/v3/index.json
 nuget NUnit < 3.0.0"""
     
     paketDependenciesWithoutConfig
@@ -65,7 +65,7 @@ let ``#3127 symlink disabled -> enabled on all dependencies on existing paket.lo
     let workingDir = scenarioTempPath scenario
     let packagesDir = workingDir </> "packages"
     
-    let paketDependenciesWithoutConfig = """source https://www.nuget.org/api/v2
+    let paketDependenciesWithoutConfig = """source https://api.nuget.org/v3/index.json
 nuget NUnit < 3.0.0"""
     
     paketDependenciesWithoutConfig 
@@ -79,7 +79,7 @@ nuget NUnit < 3.0.0"""
     |> SymlinkUtils.isDirectoryLink 
     |> shouldEqual false
 
-    let paketDependenciesWithConfig = """source https://www.nuget.org/api/v2
+    let paketDependenciesWithConfig = """source https://api.nuget.org/v3/index.json
 storage: symlink
 nuget NUnit < 3.0.0"""
     

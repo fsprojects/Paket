@@ -1,6 +1,6 @@
 RESTRICTION: >= net45
 NUGET
-  remote: https://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
     Argu (4.2.1)
       FSharp.Core (>= 3.1.2)
     FSharp.Core (3.1.2.5)
@@ -10,7 +10,7 @@ NUGET
 GROUP NetStandard
 RESTRICTION: == netstandard2.0
 NUGET
-  remote: https://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
     Argu (5.1)
       FSharp.Core (>= 4.3.2)
       System.Configuration.ConfigurationManager (>= 4.4)
