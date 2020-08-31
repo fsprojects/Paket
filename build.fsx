@@ -254,6 +254,10 @@ Target "Publish" (fun _ ->
 Target "RunTests" (fun _ ->
 
     let runTest fw proj tfm =
+        traceImportant (sprintf " ******************* %s %s %s PATH : %s" (fw) (proj) (tfm) (Environment.GetEnvironmentVariable("PATH")))
+        traceImportant (sprintf " ******************* %s %s %s DOTNET_ROOT : %s" (fw) (proj) (tfm) (Environment.GetEnvironmentVariable("DOTNET_ROOT")))
+        traceImportant (sprintf " ******************* %s %s %s DOTNET_MULTILEVEL_LOOKUP : %s" (fw) (proj) (tfm) (Environment.GetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP")))
+
         CreateDir (sprintf "tests_result/%s/%s" fw proj)
 
         let logFilePath = (sprintf "tests_result/%s/%s/TestResult.trx" fw proj) |> Path.GetFullPath
