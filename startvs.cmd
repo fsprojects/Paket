@@ -6,7 +6,7 @@ SETLOCAL
 :: This command launches a Visual Studio solution with environment variables required to use a local version of the .NET Core SDK.
 
 :: This tells .NET Core to use .dotnet\dotnet.exe
-SET DOTNET_ROOT=%AppData%\..\Local\dotnetcore\
+SET DOTNET_ROOT=%LOCALAPPDATA%\dotnetcore\
 
 :: This tells .NET Core not to go looking for .NET Core in other places
 SET DOTNET_MULTILEVEL_LOOKUP=0
