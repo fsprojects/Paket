@@ -8,6 +8,8 @@ then
   	exit $exit_code
   fi
   MSBuild=`pwd -W`/packages/build/RoslynTools.MSBuild/tools/msbuild/MSBuild.exe packages/build/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx
+  
+  &powershell -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) -InstallDir './.dotnet' -Version '3.1.302'"
 else
   mono .paket/paket.exe restore
   exit_code=$?
@@ -28,6 +30,9 @@ else
   fi
   # Note: the bundled MSBuild crashes hard on linux, so we still rely on the system-installed version
   #export MSBuild=packages/build/RoslynTools.MSBuild/tools/msbuild/MSBuild.exe
+
+  curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --version 3.1.302 --install-dir ./.dotnet
+
   mono packages/build/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx
 fi
 

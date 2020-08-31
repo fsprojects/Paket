@@ -144,12 +144,15 @@ Target "AssemblyInfo" (fun _ ->
 )
 
 Target "InstallDotNetCore" (fun _ ->
-    dotnetExePath <- DotNetCli.InstallDotNetSDK dotnetcliVersion
-    let sdkPath = DotNetCli.DotnetSDKPath 
+    // dotnetExePath <- DotNetCli.InstallDotNetSDK dotnetcliVersion
     let path = Environment.GetEnvironmentVariable("PATH")
-    Environment.SetEnvironmentVariable("DOTNET_ROOT", sdkPath)
+    Environment.SetEnvironmentVariable("DOTNET_ROOT", "./.dotnet")
     Environment.SetEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0")
-    Environment.SetEnvironmentVariable("PATH", (sprintf "%s;%s" sdkPath path))
+    Environment.SetEnvironmentVariable("PATH", (sprintf "%s;%s" (directory "./.dotnet") path))
+    traceImportant (Environment.GetEnvironmentVariable("PATH"))
+    traceImportant (Environment.GetEnvironmentVariable("PATH"))
+    traceImportant (Environment.GetEnvironmentVariable("PATH"))
+    traceImportant (Environment.GetEnvironmentVariable("PATH"))
 )
 
 // --------------------------------------------------------------------------------------
