@@ -1,5 +1,5 @@
 NUGET
-  remote: http://api.nuget.org/v3/index.json
+  remote: https://api.nuget.org/v3/index.json
     Machine.Specifications (0.12)
       NETStandard.Library (>= 1.6) - restriction: && (< net35) (>= netstandard1.3)
       System.Diagnostics.TextWriterTraceListener (>= 4.0) - restriction: && (< net35) (>= netstandard1.3)
