@@ -1,3 +1,3 @@
 #load "b.fsx"
-#load "c.fsx"
+#load "skip.c.fsx"
 open FSharp.Data

@@ -44,73 +44,63 @@ let ``fcs can type check `` () =
 
 type FsxTestResult =
     | Pass of fsxFilename: string
-    | Failed of fsxFilename: string * expectedOutput: string * actualOutuput: string
+    | Failed of fsxFilename: string * expectedOutput: string * actualOutuput: string * commandLineArguments: string
 
-let singleFsxFolder = Path.Combine(__SOURCE_DIRECTORY__, "..", "scenarios", "fsi-depmanager", "SimplePaketTest")
+let fsxsFolder = Path.Combine(__SOURCE_DIRECTORY__, "..", "scenarios", "fsi-depmanager")
 
 let runSingleFsxTest (fsxFile: FileInfo) =
 
     let expectedOutput =
-        let goldenFile = Path.Combine(singleFsxFolder, Path.ChangeExtension(fsxFile.Name, "golden"))
+        let goldenFile = Path.Combine(fsxFile.Directory.FullName, Path.ChangeExtension(fsxFile.Name, "golden"))
         if File.Exists goldenFile then
             File.ReadAllText(goldenFile)
         else
             File.Create goldenFile |> ignore
             ""
-
+    let arguments = sprintf @"fsi --langversion:preview %s %s" (sprintf "--compilertool:%s" pathToExtension) fsxFile.FullName
     let actualOutput =
         let p = new System.Diagnostics.Process()
         p.StartInfo.UseShellExecute <- false
         p.StartInfo.FileName <- "dotnet"
-        p.StartInfo.Arguments <- (sprintf @"fsi --langversion:preview %s %s" (sprintf "--compilertool:%s" pathToExtension)) fsxFile.FullName
+        p.StartInfo.Arguments <- arguments
         p.StartInfo.RedirectStandardOutput <- true
         p.StartInfo.RedirectStandardError <- true
         p.Start() |> ignore
         
-        let output = 
-            p.StandardOutput
-                .ReadToEnd()
-                .Split([|System.Environment.NewLine|], System.StringSplitOptions.None)
+        let output =
+            (p.StandardOutput.ReadToEnd() + p.StandardError.ReadToEnd()).Split([|System.Environment.NewLine|], System.StringSplitOptions.None)
             |> Array.filter (fun s -> not (s.StartsWith ":paket>"))
             |> String.concat System.Environment.NewLine
 
         p.WaitForExit()
         output
 
-    File.WriteAllText(Path.Combine(singleFsxFolder, Path.ChangeExtension(fsxFile.Name, "output")), actualOutput)
+    File.WriteAllText(Path.Combine(fsxFile.Directory.FullName, Path.ChangeExtension(fsxFile.Name, "output")), actualOutput)
     let normalizeCR (a: string) = a.Replace("\r\n", "\n")
     let actualOutput = normalizeCR actualOutput
     let expectedOutput = normalizeCR expectedOutput
     if actualOutput = expectedOutput then
-        Pass fsxFile.Name 
+        Pass fsxFile.FullName 
     else 
-        Failed(fsxFile.Name, expectedOutput, actualOutput)
+        Failed(fsxFile.FullName, expectedOutput, actualOutput, arguments)
 
 [<Test>]
 let ``run fsi integration tests`` () =
-    let fsxFiles = DirectoryInfo(singleFsxFolder).GetFiles("*.fsx")
-    let results = 
+    let fsxFiles = DirectoryInfo(fsxsFolder).GetFiles("*.fsx", SearchOption.AllDirectories)
+    let failures = 
         [|
             for fsx in fsxFiles do
-                runSingleFsxTest fsx
+                if not (fsx.Name.StartsWith "skip.") then
+                    
+                    match runSingleFsxTest fsx with
+                    | Pass _ -> printfn "OK: %s" fsx.FullName
+                    | Failed(file,_,_,commandArguments) ->
+                        printfn "KO: %s" fsx.FullName
+                        yield file, commandArguments
         |]
-
-    let failures =
-        results
-        |> Array.choose (function Pass _ -> None | Failed(fsx, expected, actual) -> Some (fsx, expected, actual))
-
+    
     if failures.Length > 0 then
-        // http://www.fssnip.net/l4/title/Diff-two-strings
-        let DiffStrings (s1 : string) (s2 : string) =
-           let s1', s2' = s1.PadRight(s2.Length), s2.PadRight(s1.Length)
-
-           let d1, d2 = 
-              (s1', s2')
-              ||> Seq.zip 
-              |> Seq.map (fun (c1, c2) -> if c1 = c2 then '-','-' else c1, c2)
-              |> Seq.fold (fun (d1, d2) (c1, c2) -> (sprintf "%s%c" d1 c1), (sprintf "%s%c" d2 c2) ) ("","")
-           d1, d2
         failures
-        |> Array.map (fun (fsx, expected, actual) -> sprintf "expected output didn't match for %s\nexpected:\n%s\n\nactual:\n%s\n%A" fsx expected actual (DiffStrings expected actual))
+        |> Array.map (fun (fsxFile, arguments) -> sprintf "file: %s\ncommand: %s" fsxFile arguments)
         |> String.concat System.Environment.NewLine
         |> Assert.Fail
