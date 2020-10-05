@@ -1,3 +1,6 @@
+#### 5.250.0 - 2020-10-05
+* Allow net5.0 moniker
+
 #### 5.249.2 - 2020-08-06
 * BUGFIX: Do not include buildTransitve/buildMultiTargeting - https://github.com/fsprojects/Paket/pull/3891
 
