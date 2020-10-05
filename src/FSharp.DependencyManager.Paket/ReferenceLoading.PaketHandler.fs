@@ -12,7 +12,14 @@ let userProfile =
         Environment.GetEnvironmentVariable("HOME")
     else res
 
+let tweakTargetFramework =
+    function
+        | "netcoreapp5.0" -> "net5.0"
+        | targetFramework -> targetFramework
+
 let MakeDependencyManagerCommand scriptType packageManagerTargetFramework projectRootDirArgument = 
+    let packageManagerTargetFramework = tweakTargetFramework packageManagerTargetFramework
+
     sprintf "install --generate-load-scripts --load-script-type %s --load-script-framework %s project-root \"%s\""
         scriptType packageManagerTargetFramework (System.IO.Path.GetFullPath projectRootDirArgument)
 
@@ -155,7 +162,7 @@ let ResolveDependenciesForLanguage(fileType,targetFramework:string,prioritizedSe
         findSpecFile scriptDir
 
     /// hardcoded to load the "Main" group (implicit in paket)
-    let loadScript = GetPaketLoadScriptLocation workingDir (Some targetFramework) ("main.group." + fileType)
+    let loadScript = GetPaketLoadScriptLocation workingDir (Some (tweakTargetFramework targetFramework)) ("main.group." + fileType)
     let additionalIncludeFolders() = 
         [Path.Combine(workingDir,"paket-files")]
         |> List.filter Directory.Exists
