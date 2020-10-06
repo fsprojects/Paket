@@ -101,7 +101,7 @@ let GetPaketLoadScriptLocation baseDir optionalFrameworkDir scriptName =
 /// <param name="scriptDir"The folder containing the script</param>
 /// <param name="scriptName">filename for the script (not necessarily existing if interactive evaluation)</param>
 /// <param name="packageManagerTextLinesFromScript">Package manager text lines from script, those are meant to be just the inner part, without `#r "paket:` prefix</param>
-let ResolveDependenciesForLanguage(fileType,targetFramework:string,prioritizedSearchPaths: string seq, scriptDir: string, scriptName: string,packageManagerTextLinesFromScript: string seq) =
+let ResolveDependenciesForLanguage(fileType, targetFramework:string, prioritizedSearchPaths: string seq, scriptDir: string, scriptName: string, packageManagerTextLinesFromScript: string seq) =
     let hashString (str: string) =
       // https://andrewlock.net/why-is-string-gethashcode-different-each-time-i-run-my-program-in-net-core/
       let mutable hash1 = (5381 <<< 16) + 5381
@@ -163,7 +163,7 @@ let ResolveDependenciesForLanguage(fileType,targetFramework:string,prioritizedSe
 
     /// hardcoded to load the "Main" group (implicit in paket)
     let loadScript = GetPaketLoadScriptLocation workingDir (Some (tweakTargetFramework targetFramework)) ("main.group." + fileType)
-    let additionalIncludeFolders() = 
+    let additionalIncludeFolders() =
         [Path.Combine(workingDir,"paket-files")]
         |> List.filter Directory.Exists
 
@@ -233,4 +233,11 @@ let ResolveDependenciesForLanguage(fileType,targetFramework:string,prioritizedSe
 /// <param name="scriptName">filename for the script (not necessarily existing if interactive evaluation)</param>
 /// <param name="packageManagerTextLinesFromScript">Package manager text lines from script, those are meant to be just the inner part, without `#r "paket:` prefix</param>
 let ResolveDependencies(targetFramework:string, scriptDir: string, scriptName: string,packageManagerTextLinesFromScript: string seq) =
-    ResolveDependenciesForLanguage("fsx",targetFramework,Seq.empty, scriptDir, scriptName,packageManagerTextLinesFromScript)
+    let extension = 
+        if scriptName.ToLowerInvariant().EndsWith(".fsx") then "fsx"
+        elif scriptName.ToLowerInvariant().EndsWith(".csx") then "csx"
+        else
+            // default to F# in case the calling process doesn't honor giving the script name to discriminate on 
+            "fsx"
+        
+    ResolveDependenciesForLanguage(extension, targetFramework, Seq.empty, scriptDir, scriptName, packageManagerTextLinesFromScript)

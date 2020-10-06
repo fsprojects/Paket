@@ -47,7 +47,13 @@ type PaketDependencyManagerProvider(outputDir: string option) =
                  scriptDir,
                  scriptName,
                  packageManagerTextLines)
-      ResolveDependenciesResult(true, [|"ok paket"|], [|"err paket"|], additionalIncludeDirs, [loadScript], [])
+        
+      let resolutions =
+          // https://github.com/dotnet/fsharp/pull/10224#issue-498147879
+          // if load script causes problem
+          // consider changing this to be the list of all assemblies to load rather than passing through a load script
+          []
+      ResolveDependenciesResult(true, [|"ok paket"|], [|"err paket"|], resolutions, [loadScript], additionalIncludeDirs)
     with
       e -> 
         printfn "exception while resolving dependencies: %s" (string e)
