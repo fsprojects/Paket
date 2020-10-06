@@ -16,7 +16,7 @@ nuget System.Net.Http.WinHttpHandler >= 4.5
 # tests
 nuget Moq
 nuget FSCheck
-nuget FSharp.Compiler.Service >= 36.0.3
+nuget FSharp.Compiler.Service >= 37
 
 nuget NUnit ~> 3.12.0
 nuget NUnit3TestAdapter ~> 3.13.0
