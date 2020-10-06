@@ -43,12 +43,28 @@ module FsiExtension =
         Assert.IsTrue result.HasFullTypeCheckInfo
       | _ -> Assert.Fail()
 
+    type FsxRun = { file: FileInfo; arguments: string; stdOut: string; errOut: string }
     type FsxTestResult =
         | Pass of fsxFilename: string
         | Failed of fsxFilename: string * expectedOutput: string * actualOutuput: string * commandLineArguments: string
 
     let fsxsFolder = Path.Combine(__SOURCE_DIRECTORY__, "..", "scenarios", "fsi-depmanager", "deterministic.output")
 
+    let runSingleFsxTestForOutput (fsxFile: FileInfo) =
+        let arguments = sprintf @"fsi --langversion:preview %s %s" (sprintf "--compilertool:%s" pathToExtension) fsxFile.FullName
+        let standardOutput, errorOutput =
+            let p = new System.Diagnostics.Process()
+            p.StartInfo.UseShellExecute <- false
+            p.StartInfo.FileName <- "dotnet"
+            p.StartInfo.Arguments <- arguments
+            p.StartInfo.RedirectStandardOutput <- true
+            p.StartInfo.RedirectStandardError <- true
+            p.Start() |> ignore
+            let standardOutput, errorOutput = p.StandardOutput.ReadToEnd(), p.StandardError.ReadToEnd()
+            p.WaitForExit()
+            standardOutput, errorOutput
+        { file = fsxFile; stdOut = standardOutput; errOut = errorOutput; arguments = arguments }
+        
     let runSingleFsxTest (fsxFile: FileInfo) =
 
         let expectedOutput =
@@ -58,23 +74,12 @@ module FsiExtension =
             else
                 File.Create goldenFile |> ignore
                 ""
-        let arguments = sprintf @"fsi --langversion:preview %s %s" (sprintf "--compilertool:%s" pathToExtension) fsxFile.FullName
+        let result = runSingleFsxTestForOutput fsxFile
+        
         let actualOutput =
-            let p = new System.Diagnostics.Process()
-            p.StartInfo.UseShellExecute <- false
-            p.StartInfo.FileName <- "dotnet"
-            p.StartInfo.Arguments <- arguments
-            p.StartInfo.RedirectStandardOutput <- true
-            p.StartInfo.RedirectStandardError <- true
-            p.Start() |> ignore
-            
-            let output =
-                (p.StandardOutput.ReadToEnd() + p.StandardError.ReadToEnd()).Split([|System.Environment.NewLine|], System.StringSplitOptions.None)
-                |> Array.filter (fun s -> not (s.StartsWith ":paket>"))
-                |> String.concat System.Environment.NewLine
-
-            p.WaitForExit()
-            output
+            (result.stdOut + result.errOut).Split([|System.Environment.NewLine|], System.StringSplitOptions.None)
+            |> Array.filter (fun s -> not (s.StartsWith ":paket>"))
+            |> String.concat System.Environment.NewLine
 
         File.WriteAllText(Path.Combine(fsxFile.Directory.FullName, Path.ChangeExtension(fsxFile.Name, "output")), actualOutput)
         let normalizeCR (a: string) = a.Replace("\r\n", "\n")
@@ -83,7 +88,7 @@ module FsiExtension =
         if actualOutput = expectedOutput then
             Pass fsxFile.FullName 
         else 
-            Failed(fsxFile.FullName, expectedOutput, actualOutput, arguments)
+            Failed(fsxFile.FullName, expectedOutput, actualOutput, result.arguments)
 
     [<Test>]
     let ``run fsi integration tests that have deterministic output`` () =
@@ -105,3 +110,13 @@ module FsiExtension =
             |> Array.map (fun (fsxFile, arguments) -> sprintf "file: %s\ncommand: %s" fsxFile arguments)
             |> String.concat System.Environment.NewLine
             |> Assert.Fail
+
+    [<Test>]
+    let ``custom/SimplePaketFailTest/plot.fsx`` () =
+        let fsxFile = FileInfo(Path.Combine(fsxsFolder, "..", "custom", "SimplePaketFailTest", "plot.fsx"))
+        let result = runSingleFsxTestForOutput fsxFile
+        if not (result.stdOut.Contains "Unable to retrieve package versions for 'SomeInvalidNugetPackage'") then
+            printfn "arguments:\n%s" result.arguments
+            printfn "stdOut:\n%s" result.stdOut
+            printfn "errOut:\n%s" result.errOut
+            Assert.Fail()
