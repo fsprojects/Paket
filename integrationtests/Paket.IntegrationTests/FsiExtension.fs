@@ -31,9 +31,9 @@ module FsiExtension =
       let sourceText = """
       #r "paket: nuget FSharp.Data"
       let v = FSharp.Data.JsonValue.Boolean true
-      """                           
+      """
       let projectOptions = 
-        checker.GetProjectOptionsFromScript("test.fsx", SourceText.ofString sourceText, otherFlags = [| "/langversion:preview"; |] )
+        checker.GetProjectOptionsFromScript("test.fsx", SourceText.ofString sourceText, otherFlags = [| "/langversion:preview"; sprintf "/compilertool:%s" pathToExtension |] )
         |> Async.RunSynchronously
         |> fst
       
@@ -41,6 +41,10 @@ module FsiExtension =
       match answer with
       | FSharpCheckFileAnswer.Succeeded(result) ->
         Assert.IsTrue result.HasFullTypeCheckInfo
+        Assert.IsTrue (Array.isEmpty result.Errors)
+        Assert.AreEqual("v", result.PartialAssemblySignature.Entities.[0].MembersFunctionsAndValues.[0].DisplayName)
+        Assert.AreEqual("FSharp.Data", result.PartialAssemblySignature.Entities.[0].MembersFunctionsAndValues.[0].FullType.TypeDefinition.AccessPath)
+        Assert.AreEqual("JsonValue", result.PartialAssemblySignature.Entities.[0].MembersFunctionsAndValues.[0].FullType.TypeDefinition.DisplayName)
       | _ -> Assert.Fail()
 
     type FsxRun = { file: FileInfo; arguments: string; stdOut: string; errOut: string }

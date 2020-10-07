@@ -42,7 +42,6 @@
     <Compile Include="AddGithubSpecs.fs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\FSharp.DependencyManager.Paket\FSharp.DependencyManager.Paket.fsproj" />
     <ProjectReference Include="..\..\src\Paket.Core\Paket.Core.fsproj" />
   </ItemGroup>
   <ItemGroup>
