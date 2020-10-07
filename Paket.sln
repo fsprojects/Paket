@@ -100,6 +100,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paket.Bootstrapper.Tests", "tests\Paket.Bootstrapper.Tests\Paket.Bootstrapper.Tests.csproj", "{7C622582-E281-4EAB-AADA-B5893BB89B45}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Paket.IntegrationTests", "integrationtests\Paket.IntegrationTests\Paket.IntegrationTests.fsproj", "{7234B9B4-8CF5-4E68-AA29-050C087B9246}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6C531B7C-B52D-48FA-9EDD-519CCE151F19} = {6C531B7C-B52D-48FA-9EDD-519CCE151F19}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{62D18A14-5240-4CB1-AA8A-762D3EB0E19A}"
 	ProjectSection(SolutionItems) = preProject
@@ -112,6 +115,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
+EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FSharp.DependencyManager.Paket", "src\FSharp.DependencyManager.Paket\FSharp.DependencyManager.Paket.fsproj", "{6C531B7C-B52D-48FA-9EDD-519CCE151F19}"
 EndProject
 Global
