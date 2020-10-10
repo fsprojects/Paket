@@ -149,6 +149,8 @@ type OptionalPackagingInfo =
       LicenseUrl : string option
       RepositoryUrl : string option
       RepositoryType : string option
+      RepositoryBranch : string option
+      RepositoryCommit : string option
       Copyright : string option
       RequireLicenseAcceptance : bool
       Tags : string list
@@ -177,6 +179,8 @@ type OptionalPackagingInfo =
           LicenseUrl = None
           RepositoryUrl = None
           RepositoryType = None
+          RepositoryBranch = None
+          RepositoryCommit = None
           IconUrl = None
           Copyright = None
           RequireLicenseAcceptance = false
@@ -539,6 +543,8 @@ module internal TemplateFile =
           IconUrl = get "iconUrl"
           RepositoryType = get "repositoryType"
           RepositoryUrl = get "repositoryUrl"
+          RepositoryBranch = get "repositoryBranch"
+          RepositoryCommit = get "repositoryCommit"
           LicenseExpression = get "licenseExpression"
           LicenseUrl = get "licenseUrl"
           Copyright = get "copyright"
