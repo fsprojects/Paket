@@ -217,6 +217,7 @@ Target "Publish" (fun _ ->
             Framework = "net461"
             Output = FullName (currentDirectory </> buildDirNet461)
             ToolPath = dotnetExePath
+            AdditionalArgs = ["--no-build"]
         })
 
     DotNetCli.Publish (fun c ->
@@ -225,6 +226,7 @@ Target "Publish" (fun _ ->
             Framework = "netcoreapp2.1"
             Output = FullName (currentDirectory </> buildDirNetCore)
             ToolPath = dotnetExePath
+            AdditionalArgs = ["--no-build"]
         })
     DotNetCli.Publish (fun c ->
         { c with
@@ -232,6 +234,7 @@ Target "Publish" (fun _ ->
             Framework = "net461"
             Output = FullName (currentDirectory </> buildDirBootstrapperNet461)
             ToolPath = dotnetExePath
+            AdditionalArgs = ["--no-build"]
         })
 
     DotNetCli.Publish (fun c ->
@@ -240,6 +243,7 @@ Target "Publish" (fun _ ->
             Framework = "netcoreapp2.1"
             Output = FullName (currentDirectory </> buildDirBootstrapperNetCore)
             ToolPath = dotnetExePath
+            AdditionalArgs = ["--no-build"]
         })
 )
 "Clean" ==> "Build" ?=> "Publish"
@@ -691,6 +695,7 @@ Target "All" DoNothing
   ==> "Restore"
   ==> "AssemblyInfo"
   ==> "Build"
+  ==> "Publish"
   =?> ("RunTests", unlessBuildParams [ "SkipTests"; "SkipUnitTests" ])
   =?> ("GenerateReferenceDocs",isLocalBuild && not isMono && not (hasBuildParam "SkipDocs"))
   =?> ("GenerateDocs",isLocalBuild && not isMono && not (hasBuildParam "SkipDocs"))
