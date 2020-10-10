@@ -175,11 +175,11 @@ module internal NupkgWriter =
             d.SetAttributeValue(XName.Get "type", t)
             d.SetAttributeValue(XName.Get "url", url)
             match optional.RepositoryBranch with
-            | Some b -> 
+            | Some b ->
                 d.SetAttributeValue(XName.Get "branch", b)
             | _ -> ()
             match optional.RepositoryCommit with
-            | Some c -> 
+            | Some c ->
                 d.SetAttributeValue(XName.Get "commit", c)
             | _ -> ()
             metadataNode.Add d
