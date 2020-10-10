@@ -928,7 +928,6 @@ let ``allow repositoryBranch``() =
     let scenario = "i003707-repositoryBranch"
 
     let outPath = Path.Combine(scenarioTempPath scenario,"out")
-    let templatePath = Path.Combine(scenarioTempPath scenario,"src", "A.Source", "paket.template")
     use __ = paket ("pack version 1.0.0 output \"" + outPath + "\" -v") scenario |> fst
 
     let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
@@ -947,7 +946,6 @@ let ``allow repositoryCommit``() =
     let scenario = "i003707-repositoryCommit"
 
     let outPath = Path.Combine(scenarioTempPath scenario,"out")
-    let templatePath = Path.Combine(scenarioTempPath scenario,"src", "A.Source", "paket.template")
     use __ = paket ("pack version 1.0.0 output \"" + outPath + "\" -v") scenario |> fst
 
     let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
@@ -964,16 +962,15 @@ let ``allow repositoryCommit``() =
 [<Test>]
 let ``allow repositoryFull``() =
     let scenario = "i003707-repositoryFull"
-        
+
     let outPath = Path.Combine(scenarioTempPath scenario,"out")
-    let templatePath = Path.Combine(scenarioTempPath scenario,"src", "A.Source", "paket.template")
     use __ = paket ("pack version 1.0.0 output \"" + outPath + "\" -v") scenario |> fst
-        
+
     let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
-        
+
     let unzippedNupkgPath = Path.Combine(outPath, "Extracted")
     ZipFile.ExtractToDirectory(package, unzippedNupkgPath)
-        
+
     let nuspecFile = FileInfo(Path.Combine(unzippedNupkgPath, "A.Source.nuspec"))
     let nuspec = File.ReadAllText(nuspecFile.FullName)
     let expected = """<repository type="git" url="https://github.com/my-org/my-custom-repo" branch="test-branch" commit="e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3" />"""
