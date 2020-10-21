@@ -1,7 +1,8 @@
-#### 6.0.0-alpha043 - 2020-10-21
+#### 6.0.0-alpha044 - 2020-10-21
 * Full .NET Core / SDK compatible version
 * Support for XCode
 * Support for .net5.0
+* FSharp.DependencyManager.Paket FSI extension for #r "paket: ..."
 
 #### 5.250.0 - 2020-10-21
 * Allow net5.0 moniker
