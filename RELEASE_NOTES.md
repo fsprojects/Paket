@@ -1,9 +1,12 @@
-#### 6.0.0-alpha042 - 2020-08-19
+#### 6.0.0-alpha043 - 2020-10-21
 * Full .NET Core / SDK compatible version
 * Support for XCode
 * Support for .net5.0
 
-#### 5.249.1 - 2020-08-06
+#### 5.250.0 - 2020-10-21
+* Allow net5.0 moniker
+
+#### 5.249.2 - 2020-08-06
 * BUGFIX: Do not include buildTransitve/buildMultiTargeting - https://github.com/fsprojects/Paket/pull/3891
 
 #### 5.249.0 - 2020-07-25

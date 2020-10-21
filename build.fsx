@@ -377,15 +377,18 @@ Target "SignAssemblies" (fun _ ->
 
     if Seq.length filesToSign < 3 then failwith "Didn't find files to sign"
 
-    filesToSign
-        |> Seq.iter (fun executable ->
-            let signtool = currentDirectory @@ "tools" @@ "SignTool" @@ "signtool.exe"
-            let args = sprintf "sign /f %s /t http://timestamp.comodoca.com/authenticode %s" pfx executable
-            let result =
-                ExecProcess (fun info ->
-                    info.FileName <- signtool
-                    info.Arguments <- args) System.TimeSpan.MaxValue
-            if result <> 0 then failwithf "Error during signing %s with %s" executable pfx)
+    match getBuildParam "cert-pw" with
+    | pw when not (String.IsNullOrWhiteSpace pw) -> 
+        filesToSign
+            |> Seq.iter (fun executable ->
+                let signtool = currentDirectory @@ "tools" @@ "SignTool" @@ "signtool.exe"
+                let args = sprintf "sign /f %s /p \"%s\" /t http://timestamp.comodoca.com/authenticode %s" pfx pw executable
+                let result =
+                    ExecProcess (fun info ->
+                        info.FileName <- signtool
+                        info.Arguments <- args) System.TimeSpan.MaxValue                    
+                if result <> 0 then failwithf "Error during signing %s with %s" executable pfx)
+    | _ -> failwith "PW for cert missing"            
 )
 
 Target "CalculateDownloadHash" (fun _ ->
