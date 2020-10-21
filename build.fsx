@@ -384,15 +384,19 @@ Target "SignAssemblies" (fun _ ->
         !! "bin/**/*.exe"
         ++ "bin/**/Paket.Core.dll"
 
-    filesToSign
-        |> Seq.iter (fun executable ->
-            let signtool = currentDirectory @@ "tools" @@ "SignTool" @@ "signtool.exe"
-            let args = sprintf "sign /f %s /t http://timestamp.comodoca.com/authenticode %s" pfx executable
-            let result =
-                ExecProcess (fun info ->
-                    info.FileName <- signtool
-                    info.Arguments <- args) System.TimeSpan.MaxValue
-            if result <> 0 then failwithf "Error during signing %s with %s" executable pfx)
+    match getBuildParam "cert-pw" with
+    | pw when not (String.IsNullOrWhiteSpace pw) ->     
+        filesToSign
+            |> Seq.iter (fun executable ->
+                let signtool = currentDirectory @@ "tools" @@ "SignTool" @@ "signtool.exe"
+                let args = sprintf "sign /f %s /p \"%s\" /t http://timestamp.comodoca.com/authenticode %s" pfx pw executable
+                let result =
+                    ExecProcess (fun info ->
+                        info.FileName <- signtool
+                        info.Arguments <- args) System.TimeSpan.MaxValue
+                if result <> 0 then failwithf "Error during signing %s with %s" executable pfx)
+    | _ -> failwithf "No cert pw set"
+
 )
 
 Target "CalculateDownloadHash" (fun _ ->
@@ -408,7 +412,6 @@ Target "NuGet" (fun _ ->
         !! "integrationtests/**/paket.template"
         |> Seq.map (fun f -> f, f + "-disabled")
         |> Seq.toList
-
 
     try
         testTemplateFiles
