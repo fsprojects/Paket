@@ -31,3 +31,12 @@ information see the [License file][license].
   [issues]: https://github.com/fsprojects/Paket/issues
   [readme]: https://github.com/fsprojects/Paket/blob/master/README.md
   [license]: license.html
+  
+## Sponsors
+
+Big thanks to our sponsors:
+
+* [msu solutiuons GmbH](https://msu-solutions.de/)
+* [Rhein-Spree Software Engineering GmbH](https://www.rhein-spree.com/)
+* [Compositional IT](https://www.compositional-it.com)
+* [GROSSWEBER](https://grossweber.com/kontakt/grossweber-en/)
