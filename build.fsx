@@ -675,7 +675,7 @@ Target "ReleaseGitHub" (fun _ ->
     |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
     |> uploadFile "./bin/merged/paket.exe"
     |> uploadFile "./bin/merged/paket-sha256.txt"
-    |> uploadFile "./src/FSharp.DependencyManager.Paket/bin/netstandard2.0/FSharp.DependencyManager.Paket.dll"
+    |> uploadFile "./src/FSharp.DependencyManager.Paket/bin/Release/netstandard2.0/FSharp.DependencyManager.Paket.dll"
     |> uploadFile "./bin_bootstrapper/net461/paket.bootstrapper.exe"
     |> uploadFile ".paket/paket.targets"
     |> uploadFile ".paket/Paket.Restore.targets"
