@@ -185,12 +185,11 @@ module ProjectFile =
 
     let isSupportedFile (fi:FileInfo) =
         supportedEndings
-        |> List.exists (fun e -> fi.Extension.Contains e)
+        |> List.exists fi.Extension.Contains
 
     let name (projectFile:ProjectFile) = FileInfo(projectFile.FileName).Name
 
     let nameWithoutExtension (projectFile:ProjectFile) = Path.GetFileNameWithoutExtension (name projectFile)
-
 
     let loadFromStream (fullName:string) (stream:Stream) =
         let doc = XmlDocument()
@@ -646,8 +645,7 @@ module ProjectFile =
 
         let paketNodes =
             BuildAction.PaketFileNodeNames
-            |> List.map (fun name -> findPaketNodes name project)
-            |> List.concat
+            |> List.collect (fun name -> findPaketNodes name project)
 
         // remove unneeded files
         for paketNode in paketNodes do
@@ -873,7 +871,7 @@ module ProjectFile =
             let globalTargets = model.TargetsFileFolders |> Seq.collect (fun f -> f.RootContents)
             let frameworkSpecificTargets = model.TargetsFileFolders |> List.collect (fun f -> f.FrameworkFolders)
             globalTargets,frameworkSpecificTargets
-            
+
         let frameworkSpecificTargetsFileConditions =
             frameworkSpecificTargets
             |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition allTargets lib.Targets,createPropertyGroup (lib.FolderContents |> List.ofSeq))
@@ -991,8 +989,8 @@ module ProjectFile =
             |> Seq.map (fun t -> t.Path)
             |> Seq.distinct
             |> Seq.filter (fun t -> String.endsWithIgnoreCase ".props" t)
-            |> Seq.map (createRelativePath project.FileName)
-            |> Seq.map (fun fileName ->
+            |> Seq.map (fun t ->
+                let fileName = createRelativePath project.FileName t
                 createNode "Import" project
                 |> addAttribute "Project" fileName
                 |> addAttribute "Condition" (sprintf "Exists('%s')" fileName)
@@ -1004,8 +1002,8 @@ module ProjectFile =
             |> Seq.map (fun t -> t.Path)
             |> Seq.distinct
             |> Seq.filter (fun t -> String.endsWithIgnoreCase ".targets" t)
-            |> Seq.map (createRelativePath project.FileName)
-            |> Seq.map (fun fileName ->
+            |> Seq.map (fun t ->
+                let fileName = createRelativePath project.FileName t
                 createNode "Import" project
                 |> addAttribute "Project" fileName
                 |> addAttribute "Condition" (sprintf "Exists('%s')" fileName)
@@ -1035,7 +1033,7 @@ module ProjectFile =
                     (node |> withAttributeValue "Label" "Paket")
                 then
                     yield node
-                elif node.Name = "UsingTask" && node.Attributes.["TaskName"] <> null && node.Attributes.["TaskName"].Value = "CopyRuntimeDependencies" then
+                elif node.Name = "UsingTask" && (not (isNull node.Attributes.["TaskName"])) && node.Attributes.["TaskName"].Value = "CopyRuntimeDependencies" then
                     yield node
                 elif node.Name = "CopyRuntimeDependencies" then
                     yield node
@@ -1329,8 +1327,7 @@ module ProjectFile =
 
     let getPaketFileItems project =
         BuildAction.PaketFileNodeNames
-        |> List.map (fun name -> findPaketNodes name project)
-        |> List.concat
+        |> List.collect (fun name -> findPaketNodes name project)
         |> List.map (fun n -> FileInfo(Path.Combine(Path.GetDirectoryName project.FileName, n.Attributes.["Include"].Value)))
 
     let getProjectGuid project =
@@ -1823,7 +1820,7 @@ type ProjectFile with
             let generalFile = FileInfo(Path.Combine(currentDir.FullName, correspondingFile))
             if generalFile.Exists then Some generalFile.FullName
             elif (FileInfo (Path.Combine(currentDir.FullName, Constants.DependenciesFileName))).Exists then None
-            elif currentDir.Parent = null then None
+            elif isNull currentDir.Parent then None
             else findInDir currentDir.Parent
 
         findInDir projectFile.Directory
@@ -2016,7 +2013,7 @@ type ProjectFile with
         let getCompileItem (projectFile, compileNode) =
             let projectFolder = projectFile.FileName |> Path.GetFullPath |> Path.GetDirectoryName
             let sourceFile =
-                let file = 
+                let file =
                     match compileNode |> getAttribute "Include" with
                     | Some file -> file
                     | None ->

@@ -61,7 +61,7 @@ module MsBuildFile =
             if String.IsNullOrEmpty ext then fi.Name
             else fi.Name.Replace(ext, "")
         { Name = name; Path = unparsedFile.FullPath }
-    
+
     let ofFrameworkDependantFile (f:FrameworkDependentFile) =
         ofUnparsedPackageFile f.File
 
@@ -100,7 +100,7 @@ module FrameworkFolder =
         Targets = l.Targets
         FolderContents = f l.FolderContents
     }
-    
+
 [<RequireQualifiedAccess>]
 type TargetsFolder<'T> = {
     Name: string
@@ -114,7 +114,7 @@ module TargetsFolder =
         folder.FrameworkFolders
         |> Seq.collect (fun f -> f.FolderContents)
         |> Seq.append (folder.RootContents)
-    
+
     let isEmpty folder =
         folder
         |> getAllFiles
@@ -129,7 +129,7 @@ module TargetsFolder =
         { Name = folder.Name
           RootContents = folder.RootContents
           FrameworkFolders = folder.FrameworkFolders |> List.map f }
-        
+
 type AnalyzerLanguage =
     | Any | CSharp | FSharp | VisualBasic
 
@@ -385,7 +385,7 @@ module FolderScanner =
                 ScanParserFailure error
             | None ->
                 ScanSuccess (results |> Array.map (function ParseSucceeded res -> res | ParseError _ -> failwithf "Should not happen here"))
-        | _ as s -> s
+        | s -> s
 
     let trySscanfExt context advancedScanners opts (pf:PrintfFormat<_,_,_,_,'t>) s : 't option =
         match sscanfExtHelper context advancedScanners opts pf s with
@@ -546,25 +546,24 @@ module InstallModel =
     /// This is for reference assemblies (new dotnetcore world)
     let getCompileReferences (target: TargetProfile) (installModel : InstallModel) =
         let results =
-            getFileFolders target (installModel.CompileRefFolders) (fun f -> f |> Set.toSeq )
+            getFileFolders target (installModel.CompileRefFolders) Set.toSeq
             |> Seq.cache
         if results |> Seq.isEmpty then
             // Fallback for old packages
             getLegacyReferences target installModel
         else results
-        
+
     let getTargetsFiles (target : TargetProfile) (installModel:InstallModel) =
         let frameworkSpecificFolders =
             installModel.TargetsFileFolders
             |> List.collect (fun target -> target.FrameworkFolders)
-            
+
         let frameworkSpecificTargetFiles = getFileFolders target frameworkSpecificFolders Set.toSeq
         let rootTargetFiles =
             installModel.TargetsFileFolders
-            |> List.map (fun folder -> folder.RootContents)
-            |> List.map Set.toSeq
+            |> List.map (fun folder -> Set.toSeq folder.RootContents)
             |> Seq.collect id
-        
+
         seq {yield! rootTargetFiles; yield! frameworkSpecificTargetFiles}
 
     /// This is for library references, which at the same time can be used for references (old world - pre dotnetcore)
@@ -575,7 +574,7 @@ module InstallModel =
         lib
         |> Seq.map (fun l -> l.FolderContents)
         |> Seq.forall Set.isEmpty
-        
+
     let isEmpty' (folders: TargetsFolder<Set<'T>> list) =
         folders
         |> Seq.forall TargetsFolder.isEmpty
@@ -685,7 +684,7 @@ module InstallModel =
             |> List.ofSeq
 
         { installModel with PackageLoadScripts = installModel.PackageLoadScripts @ packageLoadScripts}
-        
+
     let getAllRuntimeAssemblies (installModel:InstallModel) =
         getAllFiles installModel.RuntimeAssemblyFolders (fun f -> f |> Set.toSeq)
         |> Seq.cache
@@ -810,7 +809,7 @@ module InstallModel =
         references |> Seq.fold addFrameworkAssemblyReference (installModel:InstallModel)
 
 
-    let filterExcludes (excludes:string list) (installModel:InstallModel) =    
+    let filterExcludes (excludes:string list) (installModel:InstallModel) =
         let excluded (e: string) (pathOrName:string) =
             pathOrName.Contains e
 
@@ -871,7 +870,7 @@ module InstallModel =
                           with FrameworkFolders = targetFolder.FrameworkFolders
                                                   |> List.filter (fun folder -> not folder.Targets.IsEmpty) })
             }
-            
+
     let getRootFiles (targetsFiles:UnparsedPackageFile list) =
         targetsFiles
         |> List.choose
@@ -884,11 +883,11 @@ module InstallModel =
     let rec addTargetsFiles (name: string) (targetsFiles:UnparsedPackageFile list) (this:InstallModel) : InstallModel =
         let frameworkFolders =
             calcLibFoldersG Set.empty getFrameworkDependentMsbuildFile targetsFiles
-            
+
         let rootMsBuildFiles =
             targetsFiles
-            |> getRootFiles        
-        
+            |> getRootFiles
+
         let frameworkFolders =
             List.fold (fun (frameworkFolders:FrameworkFolder<MsBuildFile Set> list) file ->
             match getFrameworkDependentMsbuildFile file with
@@ -898,13 +897,13 @@ module InstallModel =
                     addFileToFolder folder (MsBuildFile.ofFrameworkDependantFile parsedFile) frameworkFolders Set.add
                 | _ -> frameworkFolders
             | None -> frameworkFolders) frameworkFolders targetsFiles
-            
+
         let targetsFolder: TargetsFolder<MsBuildFile Set> = {
             Name = name
             RootContents = rootMsBuildFiles
             FrameworkFolders = frameworkFolders
         }
-            
+
         { this with TargetsFileFolders = targetsFolder::this.TargetsFileFolders }
 
 
@@ -1046,7 +1045,7 @@ type InstallModel with
     member this.AddPackageLoadScriptFiles packageLoadScriptFiles = InstallModel.addPackageLoadScriptFiles packageLoadScriptFiles this
 
     member this.AddTargetsFiles (name,targetsFiles) = InstallModel.addTargetsFiles name targetsFiles this
-    
+
     member this.AddTargetsFiles targetsFiles = InstallModel.addTargetsFiles "build" targetsFiles this
 
     member this.AddFrameworkAssemblyReference reference = InstallModel.addFrameworkAssemblyReference this reference

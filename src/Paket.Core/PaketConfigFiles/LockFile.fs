@@ -718,14 +718,12 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
 
     member this.ResolveFrameworksForScriptGeneration () = lazy (
         this.Groups
-        |> Seq.map (fun f -> f.Value.Options.Settings.FrameworkRestrictions)
-        |> Seq.map(fun restrictions ->
-            match restrictions with
+        |> Seq.collect (fun kvp ->
+            match kvp.Value.Options.Settings.FrameworkRestrictions with
             | Paket.Requirements.AutoDetectFramework -> failwithf "couldn't detect framework"
             | Paket.Requirements.ExplicitRestriction list ->
                 list.RepresentedFrameworks |> Seq.choose (function TargetProfile.SinglePlatform tf -> Some tf | _ -> None)
-          )
-        |> Seq.concat
+        )
     )
 
     /// Gets only direct dependencies of the given package in the given group.
@@ -786,8 +784,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
 
     member this.GetGroupedResolution () =
         this.Groups
-        |> Seq.map (fun kv -> kv.Value.Resolution |> Seq.map (fun kv' -> (kv.Key,kv'.Key),PackageInfo.from kv'.Value kv.Value.Options.Settings))
-        |> Seq.concat
+        |> Seq.collect (fun kv -> kv.Value.Resolution |> Seq.map (fun kv' -> (kv.Key,kv'.Key),PackageInfo.from kv'.Value kv.Value.Options.Settings))
         |> Map.ofSeq
 
 
@@ -992,18 +989,20 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
         usedPackages
 
     member this.GetDependencyLookupTable () =
-        groups |> Seq.map (fun kv ->
+        groups
+        |> Seq.collect (fun kv ->
             kv.Value.Resolution |> Seq.map (fun kv' ->
                 (kv.Key,kv'.Key),
                 this.GetAllDependenciesOf(kv.Key,kv'.Value.Name,this.FileName)
                     |> Set.ofSeq
                     |> Set.remove kv'.Value.Name
-        )) |> Seq.concat |> Map.ofSeq
+        ))
+        |> Map.ofSeq
 
 
     member this.GetPackageHullSafe (referencesFile, groupName) =
         match referencesFile.Groups |> Map.tryFind groupName with
-        | None -> Result.Succeed(Set.empty)
+        | None -> Result.Succeed Set.empty
         | Some group ->
             group.NugetPackages
             |> Seq.map (fun package ->

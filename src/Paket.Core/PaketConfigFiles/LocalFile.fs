@@ -4,9 +4,9 @@ open Paket.Domain
 open Paket.ModuleResolver
 open Paket.PackageSources
 
-type OverriddenPackage = { 
+type OverriddenPackage = {
     Name : PackageName
-    Group : GroupName 
+    Group : GroupName
 }
 
 type LocalOverride =
@@ -23,23 +23,23 @@ module LocalFile =
 
     let private (|Regex|_|) pattern input =
         let m = System.Text.RegularExpressions.Regex(pattern).Match(input)
-        if m.Success then 
+        if m.Success then
             Some(List.tail [ for g in m.Groups -> g.Value ])
-        else 
+        else
             None
 
-    let nameGroup (name, group) = 
-        let group = 
-            if group = "" then 
-                Constants.MainDependencyGroup 
-            else 
+    let nameGroup (name, group) =
+        let group =
+            if group = "" then
+                Constants.MainDependencyGroup
+            else
                 GroupName group
         { Name = PackageName name
           Group = group }
 
     let private parseLine = function
-        | Regex 
-            "^nuget[ ]+(.*?)([ ]+group[ ]+(.*))?[ ]+->[ ]+(source[ ]+.*?)([ ]+version[ ]+(.*))?$" 
+        | Regex
+            "^nuget[ ]+(.*?)([ ]+group[ ]+(.*))?[ ]+->[ ]+(source[ ]+.*?)([ ]+version[ ]+(.*))?$"
             [package; _; group; source; _; version] ->
             let v =
                 if String.IsNullOrWhiteSpace version then None
@@ -54,7 +54,7 @@ module LocalFile =
             |> Trial.Catch PackageSource.Parse
             |> Trial.mapFailure (fun _ -> [sprintf "Cannot parse source '%s'" source])
             |> Trial.lift (fun s -> LocalSourceOverride (nameGroup(package, group), s, v))
-        | Regex 
+        | Regex
             "nuget[ ]+(.*?)([ ]+group[ ]+(.*))?[ ]+->[ ]+git[ ]+(.*)"
             [package; _; group; gitSource] ->
             LocalGitOverride (nameGroup(package, group), gitSource)
@@ -78,12 +78,12 @@ module LocalFile =
 
     let empty = LocalFile []
 
-    let private overrideResolution (p, v, source) resolution = 
+    let private overrideResolution (p, v, source) resolution =
         resolution
-        |> Map.map (fun name original -> 
+        |> Map.map (fun name original ->
             if name = p then
                 { original with PackageResolver.ResolvedPackage.Source = source
-                                PackageResolver.ResolvedPackage.Version = 
+                                PackageResolver.ResolvedPackage.Version =
                                     defaultArg v original.Version }
             else
                 original)
@@ -101,24 +101,24 @@ module LocalFile =
         x
 
     let overrideDependency (lockFile: LockFile) = warning >> function
-        | LocalSourceOverride ({ Name = p; Group = group },s,v) -> 
+        | LocalSourceOverride ({ Name = p; Group = group },s,v) ->
             let groups =
                 lockFile.Groups
-                |> Map.map (fun name g -> 
-                    if name = group then 
+                |> Map.map (fun name g ->
+                    if name = group then
                         { g with Resolution = overrideResolution (p,v,s) g.Resolution }
                     else
                         g )
             LockFile(lockFile.FileName, groups)
         | LocalGitOverride   ({ Name = p; Group = group},s) ->
-            let owner,branch,project,cloneUrl,buildCommand,operatingSystemRestriction,packagePath = 
+            let owner,branch,project,cloneUrl,buildCommand,operatingSystemRestriction,packagePath =
                 Git.Handling.extractUrlParts s
             let restriction = VersionRestriction.Concrete (defaultArg branch "master")
-            let sha = 
-                RemoteDownload.getSHA1OfBranch (GitLink cloneUrl) owner project restriction None 
+            let sha =
+                RemoteDownload.getSHA1OfBranch (GitLink cloneUrl) owner project restriction None
                 |> Async.RunSynchronously
 
-            let remoteFile = { 
+            let remoteFile = {
                 ResolvedSourceFile.Commit = sha
                 Owner = owner
                 Origin = GitLink cloneUrl
@@ -127,11 +127,11 @@ module LocalFile =
                 Command = buildCommand
                 OperatingSystemRestriction = operatingSystemRestriction
                 PackagePath = packagePath
-                Name = "" 
-                AuthKey = None 
+                Name = ""
+                AuthKey = None
             }
 
-            let packagesPath = 
+            let packagesPath =
                 match packagePath with
                 | Some p -> p
                 | None   ->
@@ -140,24 +140,24 @@ module LocalFile =
             let source groupName =
                 let root = ""
                 let fullPath = remoteFile.ComputeFilePath(root,groupName, packagesPath)
-                let relative = (createRelativePath root fullPath).Replace("\\","/")        
+                let relative = (createRelativePath root fullPath).Replace("\\","/")
                 LocalNuGet(relative, None)
 
             let groups =
                 lockFile.Groups
-                |> Map.map (fun name g -> 
+                |> Map.map (fun name g ->
                     if name = group then
                         { g with Resolution  = overrideResolution (p,None,source g.Name) g.Resolution
-                                 RemoteFiles = remoteFile :: g.RemoteFiles } 
+                                 RemoteFiles = remoteFile :: g.RemoteFiles }
                     else
                         g)
             LockFile(lockFile.FileName, groups)
-            
+
     let overrideLockFile (LocalFile overrides) lockFile =
         List.fold overrideDependency lockFile overrides
 
     let overrides (LocalFile xs) (package, group) =
-        xs 
+        xs
         |> List.exists (function | LocalSourceOverride ({ Name = p; Group = g}, _, _)
-                                 | LocalGitOverride    ({ Name = p; Group = g}, _) 
+                                 | LocalGitOverride    ({ Name = p; Group = g}, _)
                                    -> p = package && g = group)
