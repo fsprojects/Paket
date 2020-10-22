@@ -15,7 +15,7 @@ open Requirements
 // "copy_local: true" is being used to set the "PrivateAssets=All" setting for a package.
 // "copy_local: false" in new SDK format is defined as "ExcludeAssets=runtime".
 /// Combines the copy_local settings from the lock file and a project's references file
-let private CombineCopyLocal (resolvedSettings:InstallSettings) (packageInstallSettings:PackageInstallSettings) =
+let private combineCopyLocal (resolvedSettings:InstallSettings) (packageInstallSettings:PackageInstallSettings) =
     match resolvedSettings.CopyLocal, packageInstallSettings.Settings.CopyLocal with
     | Some false, Some true // E.g. never copy the dll except for unit-test projects
     | None, None -> None
@@ -242,7 +242,7 @@ let extractRestoreTargets root =
                 if verbose then tracefn "Extracted Paket.Restore.targets to: %s (Can be disabled with PAKET_SKIP_RESTORE_TARGETS=true)" path
                 else tracefn "Extracted Paket.Restore.targets to: %s" path
             path
-    else 
+    else
         if verbose then tracefn "Skipping extraction of Paket.Restore.targets - if it was enabled, it would have been extracted to: %s (Can be re-enabled with PAKET_SKIP_RESTORE_TARGETS=false or deleting the environment variable to revert to default behavior)" path
         path
 
@@ -321,7 +321,7 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
                     |> Seq.collect (fun (p,_,packageSettings) ->
                         [yield sprintf """        <PackageReference Include="%O">""" p.Name
                          yield sprintf """            <Version>%O</Version>""" p.Version
-                         if CombineCopyLocal p.Settings packageSettings = Some false then
+                         if combineCopyLocal p.Settings packageSettings = Some false then
                             yield """            <ExcludeAssets>runtime</ExcludeAssets>"""
                          yield """        </PackageReference>"""])
 
@@ -428,13 +428,13 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                 if restore then
                     let direct = allDirectPackages.Contains packageName
                     let package = resolved.Force().[key]
-                    let combinedCopyLocal = CombineCopyLocal resolvedPackage.Settings packageSettings
+                    let combinedCopyLocal = combineCopyLocal resolvedPackage.Settings packageSettings
                     let privateAssetsAll =
                         match combinedCopyLocal with
                         | Some true -> "true"
                         | Some false
                         | None -> "false"
-                    let copy_local =
+                    let copyLocal =
                         match combinedCopyLocal with
                         | Some false -> "false"
                         | Some true
@@ -445,7 +445,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                         (if direct then "Direct" else "Transitive") + "," +
                         kv.Key.ToString() + "," +
                         privateAssetsAll  + "," +
-                        copy_local
+                        copyLocal
 
                     list.Add line
 
@@ -612,7 +612,7 @@ type internal RestoreCache =
           ProjectsRestoredHash = Hash "" }
 
 let internal writeRestoreCache (file:string) { PackagesDownloadedHash = Hash packagesDownloadedHash; ProjectsRestoredHash = Hash projectsRestoredHash} =
-    let jobj = new Newtonsoft.Json.Linq.JObject()
+    let jobj = Newtonsoft.Json.Linq.JObject()
     jobj.["packagesDownloadedHash"] <- Newtonsoft.Json.Linq.JToken.op_Implicit packagesDownloadedHash
     jobj.["projectsRestoredHash"] <- Newtonsoft.Json.Linq.JToken.op_Implicit projectsRestoredHash
     let s = jobj.ToString()
@@ -634,7 +634,7 @@ let private readRestoreCache (lockFileName:FileInfo) =
     let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
     tryReadRestoreCache restoreCacheFile
 
-let internal WriteGitignore restoreCacheFile =
+let internal writeGitignore restoreCacheFile =
     let folder = FileInfo(restoreCacheFile).Directory
     let rec isGitManaged (folder:DirectoryInfo) =
         if File.Exists(Path.Combine(folder.FullName, ".gitignore")) then true else
@@ -852,6 +852,6 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
 
                         let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
                         writeRestoreCache restoreCacheFile updatedCache
-                        WriteGitignore restoreCacheFile
+                        writeGitignore restoreCacheFile
                     | None -> ())
             )

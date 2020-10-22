@@ -132,8 +132,7 @@ let resolve getDependencies getSha1 (file : UnresolvedSource) : ResolvedSourceFi
 
         let recursiveDeps =
             remoteDependencies
-            |> List.map (resolve getDependencies getSha1)
-            |> List.concat
+            |> List.collect (resolve getDependencies getSha1)
 
         { resolved with Dependencies = dependencies } :: recursiveDeps
 
@@ -170,5 +169,4 @@ let Resolve(getDependencies, getSha1, remoteFiles : UnresolvedSource list) : Res
     detectConflicts remoteFiles
 
     remoteFiles
-    |> List.map (resolve getDependencies getSha1)
-    |> List.concat
+    |> List.collect (resolve getDependencies getSha1)
