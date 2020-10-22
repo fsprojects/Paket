@@ -132,6 +132,11 @@ charm. Even better. We also started to use the git functionality of Paket in ref
 git repositories. This enabled us to share code between repositories and solutions without the
 need to create new packages everytime something changed.
 
+[Sebastian Brandt](https://github.com/brase),
+[Rhein-Spree](https://www.rhein-spree.com)
+
+![Rhein-Spree likes Paket, too](img/testimonials-rheinspree.png "RheinSpree likes Paket, too")
+
 ## Please contribute your testimonials!
 
 Adding new testimonials to this page is easy. Just write your quote in plain
