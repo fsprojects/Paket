@@ -118,6 +118,20 @@ Eirik Tsarpalis (Nessos R&D)
 [Nessos](http://www.nessos.gr)
 
 
+## Rhein-Spree Software Engineering GmbH
+
+> Paket enabled us to share code between repositories and solutions without the need to create new packages everytime something changed.
+
+[Rhein-Spree](https://www.rhein-spree.com) is a Berlin based software services company with additional employees in Leipzig and Düsseldorf. We are focused on .NET Technologies with great results.
+
+However, when it comes to dependency management in bigger repositories with multiple solutions we
+felt the pain of the inconsistent resolition of package versions across the repository. It got
+even harder as the solutions grow. At some point we decided to give Paket a try and what should
+we say. We had some work in getting the dependencies file correct and then in worked like a
+charm. Even better. We also started to use the git functionality of Paket in referencing other
+git repositories. This enabled us to share code between repositories and solutions without the
+need to create new packages everytime something changed.
+
 ## Please contribute your testimonials!
 
 Adding new testimonials to this page is easy. Just write your quote in plain
