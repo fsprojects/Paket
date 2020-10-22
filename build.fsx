@@ -378,7 +378,7 @@ Target "SignAssemblies" (fun _ ->
     if Seq.length filesToSign < 3 then failwith "Didn't find files to sign"
 
     match getBuildParam "cert-pw" with
-    | pw when not (String.IsNullOrWhiteSpace pw) -> 
+    | pw when not (String.IsNullOrWhiteSpace pw) ->
         filesToSign
             |> Seq.iter (fun executable ->
                 let signtool = currentDirectory @@ "tools" @@ "SignTool" @@ "signtool.exe"
@@ -386,9 +386,9 @@ Target "SignAssemblies" (fun _ ->
                 let result =
                     ExecProcess (fun info ->
                         info.FileName <- signtool
-                        info.Arguments <- args) System.TimeSpan.MaxValue                    
+                        info.Arguments <- args) System.TimeSpan.MaxValue
                 if result <> 0 then failwithf "Error during signing %s with %s" executable pfx)
-    | _ -> failwith "PW for cert missing"            
+    | _ -> failwith "PW for cert missing"
 )
 
 Target "CalculateDownloadHash" (fun _ ->
@@ -675,7 +675,7 @@ Target "ReleaseGitHub" (fun _ ->
     |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
     |> uploadFile "./bin/merged/paket.exe"
     |> uploadFile "./bin/merged/paket-sha256.txt"
-    |> uploadFile "./bin/netstandard2.0/FSharp.DependencyManager.Paket.dll"
+    |> uploadFile "./src/FSharp.DependencyManager.Paket/bin/netstandard2.0/FSharp.DependencyManager.Paket.dll"
     |> uploadFile "./bin_bootstrapper/net461/paket.bootstrapper.exe"
     |> uploadFile ".paket/paket.targets"
     |> uploadFile ".paket/Paket.Restore.targets"
