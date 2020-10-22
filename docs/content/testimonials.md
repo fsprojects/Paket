@@ -120,7 +120,7 @@ Eirik Tsarpalis (Nessos R&D)
 
 ## Rhein-Spree Software Engineering GmbH
 
-> Paket enabled us to share code between repositories and solutions without the need to create new packages everytime something changed.
+> Paket enabled us to share code between repositories and solutions without the need to create new packages every time something changed.
 
 [Rhein-Spree](https://www.rhein-spree.com) is a Berlin based software services company with additional employees in Leipzig and Düsseldorf. We are focused on .NET Technologies with great results.
 
