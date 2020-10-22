@@ -462,6 +462,15 @@ Target "NuGet" (fun _ ->
                   "/p:PackAsTool=true"]
             ToolPath = dotnetExePath
         })
+    DotNetCli.Pack (fun c ->
+        { c with
+            Project = "src/FSharp.DependencyManager.Paket/FSharp.DependencyManager.Paket.fsproj"
+            OutputPath = tempDir
+            AdditionalArgs =
+                [ sprintf "/p:Version=%s" release.NugetVersion
+                  sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath ]
+            ToolPath = dotnetExePath
+        })
 )
 
 Target "PublishNuGet" (fun _ ->
@@ -666,10 +675,12 @@ Target "ReleaseGitHub" (fun _ ->
     |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
     |> uploadFile "./bin/merged/paket.exe"
     |> uploadFile "./bin/merged/paket-sha256.txt"
+    |> uploadFile "./bin/netstandard2.0/FSharp.DependencyManager.Paket.dll"
     |> uploadFile "./bin_bootstrapper/net461/paket.bootstrapper.exe"
     |> uploadFile ".paket/paket.targets"
     |> uploadFile ".paket/Paket.Restore.targets"
     |> uploadFile (tempDir </> sprintf "Paket.%s.nupkg" (release.NugetVersion))
+    |> uploadFile (tempDir </> sprintf "FSharp.DependencyManager.Paket.%s.nupkg" (release.NugetVersion))
     |> releaseDraft
     |> Async.RunSynchronously
 )
