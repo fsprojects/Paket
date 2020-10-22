@@ -584,7 +584,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
     // NIT: We probably need to check if we have really fully restored (could be partial install)
     // Lets see if users report issues
     Paket.RestoreProcess.writeRestoreCache restoreCacheFile { PackagesDownloadedHash = hash; ProjectsRestoredHash = hash }
-    Paket.RestoreProcess.WriteGitignore restoreCacheFile
+    Paket.RestoreProcess.writeGitignore restoreCacheFile
 
     for project, _ in projectsAndReferences do
         let di = (FileInfo project.FileName).Directory
