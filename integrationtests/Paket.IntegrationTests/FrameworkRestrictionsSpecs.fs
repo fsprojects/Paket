@@ -18,13 +18,6 @@ let ``#140 windsor should resolve framework dependent dependencies``() =
     |> getExplicitRestriction
     |> shouldEqual (FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V3_5), DotNetFramework(FrameworkVersion.V4)))
 
-[<Test; Ignore "slow test">]
-let ``#1182 framework restrictions overwrite each other``() =
-    let cleanup, lockFile = update "i001182-framework-restrictions"
-    use __ = cleanup
-    let lockFile = lockFile.ToString()
-    lockFile.Contains("Microsoft.Data.OData (>= 5.6.2)") |> shouldEqual true
-    lockFile.Contains("framework: winv4.5") |> shouldEqual false
 
 [<Test>]
 #if NO_UNIT_PLATFORMATTRIBUTE
@@ -33,34 +26,34 @@ let ``#1182 framework restrictions overwrite each other``() =
 [<Platform("Mono")>] // PATH TOO LONG on Windows...
 [<Flaky>] // failure on assert
 #endif
-let ``#1190 paket add nuget should handle transitive dependencies``() = 
+let ``#1190 paket add nuget should handle transitive dependencies``() =
     use __ = paket "add nuget xunit version 2.1.0" "i001190-transitive-dependencies-with-restr" |> fst
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-dependencies-with-restr","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "xunit.abstractions"].Settings.FrameworkRestrictions
     |> getExplicitRestriction
     |> fun res -> res.ToString() |> shouldEqual "|| (>= dnx451) (>= dnxcore50) (>= portable-net45+win8+wp8+wpa81)"
-    
+
 [<Test>]
-let ``#1190 paket add nuget should handle transitive dependencies with restrictions``() = 
+let ``#1190 paket add nuget should handle transitive dependencies with restrictions``() =
     use __ = paket "add nuget xunit version 2.1.0" "i001190-transitive-deps" |> fst
-    
+
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-deps","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "xunit.abstractions"].Settings.FrameworkRestrictions
     |> getExplicitRestriction
     |> shouldEqual FrameworkRestriction.NoRestriction
-    
-    
+
+
 [<Test>]
-let ``#1197 framework dependencies are not restricting each other``() = 
+let ``#1197 framework dependencies are not restricting each other``() =
     let cleanup, lockFile = update "i001197-too-strict-frameworks"
     use __ = cleanup
-    
+
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "log4net"].Version
     |> shouldBeGreaterThan (SemVer.Parse "0")
 
-    
+
 [<Test>]
-let ``#1213 framework dependencies propagate``() = 
+let ``#1213 framework dependencies propagate``() =
     let cleanup, lockFile = update "i001213-framework-propagation"
     use __ = cleanup
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Newtonsoft.Json"].Settings.FrameworkRestrictions
@@ -68,7 +61,7 @@ let ``#1213 framework dependencies propagate``() =
     |> shouldEqual FrameworkRestriction.NoRestriction
 
 [<Test>]
-let ``#1215 framework dependencies propagate``() = 
+let ``#1215 framework dependencies propagate``() =
     let cleanup, lockFile = update "i001215-framework-propagation-no-restriction"
     use __ = cleanup
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Microsoft.Bcl.Async"].Settings.FrameworkRestrictions
@@ -76,7 +69,7 @@ let ``#1215 framework dependencies propagate``() =
     |> shouldEqual FrameworkRestriction.NoRestriction
 
 [<Test>]
-let ``#1232 framework dependencies propagate``() = 
+let ``#1232 framework dependencies propagate``() =
     let cleanup, lockFile = update "i001232-sql-lite"
     use __ = cleanup
     let restriction =
@@ -90,7 +83,7 @@ let ``#1232 framework dependencies propagate``() =
     |> shouldEqual true
 
 [<Test>]
-let ``#1494 detect platform 5.0``() = 
+let ``#1494 detect platform 5.0``() =
     use __ = update "i001494-download" |> fst
-    
+
     ()

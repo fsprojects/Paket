@@ -8,7 +8,7 @@ open System.Text.RegularExpressions
 open Paket
 
 [<Test>]
-let ``install should redirect required assemblies only``() = 
+let ``install should redirect required assemblies only``() =
     use __ = paket "install --redirects --createnewbindingfiles" "i001187-binding-redirect" |> fst
 
     let path = Path.Combine(scenarioTempPath "i001187-binding-redirect")
@@ -86,9 +86,9 @@ let ``#2408 should report wrong app.config parsing``() =
         failwith "paket should fail"
     with
     | exn when exn.Message.Contains("Project1") && exn.Message.Contains("app.config") -> ()
-    
+
 [<Test>]
-let ``#1218 install should replace paket's binding redirects with required only``() = 
+let ``#1218 install should replace paket's binding redirects with required only``() =
     use __ = paket "install --redirects --createnewbindingfiles" "i001218-binding-redirect" |> fst
 
     let path = Path.Combine(scenarioTempPath "i001218-binding-redirect")
@@ -166,25 +166,7 @@ let ``#1218 install should replace paket's binding redirects with required only`
 
 
 [<Test>]
-let ``#1270 force redirects``() = 
-    use __ = paket "install --createnewbindingfiles" "i001270-force-redirects" |> fst
-    let path = Path.Combine(scenarioTempPath "i001270-force-redirects")
-    let configPath = Path.Combine(path, "MyClassLibrary", "MyClassLibrary", "app.config")
-
-    let ``FSharp.Core`` = """<assemblyIdentity name="FSharp.Core" publicKeyToken="b03f5f7f11d50a3a" culture="neutral" />"""
-    let AlphaFS = """<assemblyIdentity name="AlphaFS" publicKeyToken="4d31a58f7d7ad5c9" culture="neutral" />"""
-    let ``Newtonsoft.Json`` = """<assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />"""
-    let ``Newtonsoft.Json.Schema`` = """<assemblyIdentity name="Newtonsoft.Json.Schema" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />"""
-
-    let config = File.ReadAllText(configPath)
-
-    config |> shouldContainText ``FSharp.Core``
-    config.Contains AlphaFS |> shouldEqual false
-    config.Contains ``Newtonsoft.Json`` |> shouldEqual false
-    config.Contains ``Newtonsoft.Json.Schema`` |> shouldEqual false
-
-[<Test>]
-let ``#1270 redirects from references``() = 
+let ``#1270 redirects from references``() =
     use __ = paket "install --createnewbindingfiles" "i001270-force-redirects" |> fst
     let path = Path.Combine(scenarioTempPath "i001270-force-redirects")
     let configPath = Path.Combine(path, "MyClassLibrary", "MyClassLibrary2", "app.config")
@@ -202,7 +184,7 @@ let ``#1270 redirects from references``() =
     config.Contains ``Newtonsoft.Json`` |> shouldEqual false
 
 [<Test>]
-let ``#1574 redirects GAC``() = 
+let ``#1574 redirects GAC``() =
     use __ = paket "install --clean-redirects"  "i001574-redirect-gac" |> fst
     let path = Path.Combine(scenarioTempPath "i001574-redirect-gac")
     let configPath = Path.Combine(path, "BindingRedirectPaketBug", "App.config")
@@ -220,12 +202,12 @@ let ``#1621 generates binding redirect when references project with another targ
     use __ = install scenario |> fst
     let ``NUnit`` = """<assemblyIdentity name="nunit.framework" publicKeyToken="2638cd05610744eb" culture="neutral" />"""
     let ``NUnit correct version`` = "newVersion=\"3.0.5813.39031\""
-    
+
     let path = Path.Combine(scenarioTempPath scenario, "projectB")
     let configPath = Path.Combine(path, "app.config")
 
     let config = File.ReadAllText(configPath) |> normalizeLineEndings
-    
+
     config |> shouldContainText ``NUnit``
     config |> shouldContainText ``NUnit correct version``
 
@@ -233,13 +215,11 @@ let ``#1621 generates binding redirect when references project with another targ
 let ``#1783 generates binding redirect when assembly with different version of main group``() =
     let scenario = "i001783-different-versions"
     use __ = install scenario |> fst
-    let ``FSharp.Core`` = """<assemblyIdentity name="FSharp.Core" publicKeyToken="b03f5f7f11d50a3a" culture="neutral" />"""
     let ``Newtonsoft.Json`` = """<assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />"""
-    
+
     let path = Path.Combine(scenarioTempPath scenario, "projectB")
     let configPath = Path.Combine(path, "app.config")
 
     let config = File.ReadAllText(configPath) |> normalizeLineEndings
-    
-    config |> shouldContainText ``FSharp.Core``
+
     config |> shouldContainText ``Newtonsoft.Json``
