@@ -40,9 +40,10 @@ module FsiExtension =
 
       let _, answer = checker.ParseAndCheckFileInProject("test.fsx", 0, SourceText.ofString sourceText, projectOptions) |> Async.RunSynchronously
       match answer with
+      | FSharpCheckFileAnswer.Succeeded(result) when not result.HasFullTypeCheckInfo ->
+        failwithf "Not full type check info found"
       | FSharpCheckFileAnswer.Succeeded(result) ->
-        Assert.IsTrue result.HasFullTypeCheckInfo
-        Assert.IsTrue (Array.isEmpty result.Errors)
+        Assert.AreEqual ([||], result.Errors)
         Assert.AreEqual("v", result.PartialAssemblySignature.Entities.[0].MembersFunctionsAndValues.[0].DisplayName)
         Assert.AreEqual("FSharp.Data", result.PartialAssemblySignature.Entities.[0].MembersFunctionsAndValues.[0].FullType.TypeDefinition.AccessPath)
         Assert.AreEqual("JsonValue", result.PartialAssemblySignature.Entities.[0].MembersFunctionsAndValues.[0].FullType.TypeDefinition.DisplayName)
