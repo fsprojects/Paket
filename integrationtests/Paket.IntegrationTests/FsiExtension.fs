@@ -13,9 +13,19 @@ module FsiExtension =
       "Release"
     #endif
 
-    let pathToExtension = Path.Combine(__SOURCE_DIRECTORY__, "..", "..", "bin", configuration, "netstandard2.1")
     let extensionFileName = "FSharp.DependencyManager.Paket.dll"
 
+    let pathToExtension =
+      let mostRecentLocation =
+        (
+          DirectoryInfo(Path.Combine(__SOURCE_DIRECTORY__, "..", "..")).EnumerateFiles(extensionFileName, SearchOption.AllDirectories)
+          |> Seq.filter (fun f -> not (f.FullName.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar)))
+          |> Seq.sortByDescending (fun f -> f.CreationTimeUtc)
+          |> Seq.head
+        )
+      printfn "%s found in %s" extensionFileName mostRecentLocation.Directory.FullName
+      mostRecentLocation.Directory.FullName
+      
     [<Test>]
     let ``fcs can type check `` () =
       System.AppDomain.CurrentDomain.add_AssemblyResolve(fun _ (e: System.ResolveEventArgs) ->
