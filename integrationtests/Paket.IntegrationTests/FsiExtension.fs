@@ -13,7 +13,7 @@ module FsiExtension =
       "Release"
     #endif
 
-    let pathToExtension = Path.Combine(__SOURCE_DIRECTORY__, "..", "..", "src", "FSharp.DependencyManager.Paket", "bin", configuration, "netstandard2.1")
+    let pathToExtension = Path.Combine(__SOURCE_DIRECTORY__, "..", "..", "bin", configuration, "netstandard2.1")
     let extensionFileName = "FSharp.DependencyManager.Paket.dll"
 
     [<Test>]
