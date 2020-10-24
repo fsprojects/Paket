@@ -29,6 +29,10 @@ module FsiExtension =
       )
 
       let checker = FSharpChecker.Create(suggestNamesForErrors=true, keepAssemblyContents=true)
+      let fileName = Path.Combine(pathToExtension,extensionFileName)
+      if not (File.Exists fileName) then
+        failwithf "Extension: %s not found" fileName
+        
       let sourceText = """
       #r "paket: nuget FSharp.Data"
       let v = FSharp.Data.JsonValue.Boolean true
