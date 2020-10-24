@@ -19,7 +19,7 @@ module FsiExtension =
       let mostRecentLocation =
         (
           DirectoryInfo(Path.Combine(__SOURCE_DIRECTORY__, "..", "..")).EnumerateFiles(extensionFileName, SearchOption.AllDirectories)
-          |> Seq.filter (fun f -> not (f.FullName.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar)))
+          |> Seq.filter (fun f -> not (f.FullName.Contains((string Path.DirectorySeparatorChar) + "obj" + (string Path.DirectorySeparatorChar))))
           |> Seq.sortByDescending (fun f -> f.CreationTimeUtc)
           |> Seq.head
         )
