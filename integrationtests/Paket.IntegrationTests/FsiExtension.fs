@@ -29,6 +29,7 @@ module FsiExtension =
     [<Test>]
     let ``fcs can type check `` () =
       System.AppDomain.CurrentDomain.add_AssemblyResolve(fun _ (e: System.ResolveEventArgs) ->
+          printfn "assembly resolve: %s" e.Name
           // the paket dependency manager assembly depends on fsharp.core version
           // which may not be the same as hosting process
           if e.Name.StartsWith "FSharp.Core," then
