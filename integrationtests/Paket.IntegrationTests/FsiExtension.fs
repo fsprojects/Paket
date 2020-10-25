@@ -13,12 +13,23 @@ module FsiExtension =
       "Release"
     #endif
 
-    let pathToExtension = Path.Combine(__SOURCE_DIRECTORY__, "..", "..", "src", "FSharp.DependencyManager.Paket", "bin", configuration, "netstandard2.1")
     let extensionFileName = "FSharp.DependencyManager.Paket.dll"
 
+    let pathToExtension () =
+      let mostRecentLocation =
+        (
+          DirectoryInfo(Path.Combine(__SOURCE_DIRECTORY__, "..", "..")).EnumerateFiles(extensionFileName, SearchOption.AllDirectories)
+          |> Seq.filter (fun f -> not (f.FullName.Contains((string Path.DirectorySeparatorChar) + "obj" + (string Path.DirectorySeparatorChar))))
+          |> Seq.sortByDescending (fun f -> f.CreationTimeUtc)
+          |> Seq.head
+        )
+      printfn "%s found in %s" extensionFileName mostRecentLocation.Directory.FullName
+      mostRecentLocation.Directory.FullName
+      
     [<Test>]
     let ``fcs can type check `` () =
       System.AppDomain.CurrentDomain.add_AssemblyResolve(fun _ (e: System.ResolveEventArgs) ->
+          printfn "assembly resolve: %s" e.Name
           // the paket dependency manager assembly depends on fsharp.core version
           // which may not be the same as hosting process
           if e.Name.StartsWith "FSharp.Core," then
@@ -29,7 +40,7 @@ module FsiExtension =
       )
 
       let checker = FSharpChecker.Create(suggestNamesForErrors=true, keepAssemblyContents=true)
-      let fileName = Path.Combine(pathToExtension,extensionFileName)
+      let fileName = Path.Combine(pathToExtension (),extensionFileName)
       if not (File.Exists fileName) then
         failwithf "Extension: %s not found" fileName
         
@@ -38,7 +49,7 @@ module FsiExtension =
       let v = FSharp.Data.JsonValue.Boolean true
       """
       let projectOptions =
-        checker.GetProjectOptionsFromScript("test.fsx", SourceText.ofString sourceText, otherFlags = [| "/langversion:preview"; sprintf "/compilertool:%s" pathToExtension |] )
+        checker.GetProjectOptionsFromScript("test.fsx", SourceText.ofString sourceText, otherFlags = [| "/langversion:preview"; sprintf "/compilertool:%s" (pathToExtension()) |] )
         |> Async.RunSynchronously
         |> fst
 
@@ -61,7 +72,7 @@ module FsiExtension =
     let fsxsFolder = Path.Combine(__SOURCE_DIRECTORY__, "..", "scenarios", "fsi-depmanager", "deterministic.output")
 
     let runSingleFsxTestForOutput (fsxFile: FileInfo) =
-        let arguments = sprintf @"fsi --langversion:preview %s %s" (sprintf "--compilertool:%s" pathToExtension) fsxFile.FullName
+        let arguments = sprintf @"fsi --langversion:preview %s %s" (sprintf "--compilertool:%s" (pathToExtension ())) fsxFile.FullName
         let standardOutput, errorOutput =
             let p = new System.Diagnostics.Process()
             p.StartInfo.UseShellExecute <- false
