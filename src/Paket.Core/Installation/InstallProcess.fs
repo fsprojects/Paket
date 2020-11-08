@@ -341,6 +341,8 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
 let installForDotnetSDK root (project:ProjectFile) =
     let paketTargetsPath = RestoreProcess.extractRestoreTargets root
     let relativePath = createRelativePath project.FileName paketTargetsPath
+        
+    Paket.ProjectFile.removePaketNodes project
     project.RemoveImportForPaketTargets()
     project.AddImportForPaketTargets(relativePath)
 
