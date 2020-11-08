@@ -1,4 +1,7 @@
-#### 5.250.0 - 2020-10-05
+#### 5.251.0 - 2020-10-22
+* Backwards compatibility for netcoreapp5.0 moniker
+
+#### 5.250.0 - 2020-10-21
 * Allow net5.0 moniker
 
 #### 5.249.2 - 2020-08-06
