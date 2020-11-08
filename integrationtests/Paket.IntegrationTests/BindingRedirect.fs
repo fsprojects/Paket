@@ -222,5 +222,4 @@ let ``#1783 generates binding redirect when assembly with different version of m
 
     let config = File.ReadAllText(configPath) |> normalizeLineEndings
     
-    config |> shouldContainText ``FSharp.Core``
     config |> shouldContainText ``Newtonsoft.Json``
