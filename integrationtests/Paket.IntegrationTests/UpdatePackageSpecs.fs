@@ -128,11 +128,6 @@ let ``#1579 update allows unpinned``() =
     directPaket "pack templatefile paket.A.template version 1.0.0-prerelease output bin" scenario |> ignore
     directPaket "update" scenario|> ignore
 
-[<Test;Ignore "slow test">]
-let ``#1501 download succeeds``() =
-    use __ = update "i001510-download" |> fst
-    ignore __
-
 [<Test>]
 let ``#1520 update with pinned dependency succeeds``() =
     use __ = update "i001520-pinned-error" |> fst

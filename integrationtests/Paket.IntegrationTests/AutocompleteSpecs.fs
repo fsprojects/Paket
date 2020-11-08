@@ -33,13 +33,6 @@ let ``#1298 should autocomplete versions for FAKE on NuGet3``() =
     result |> shouldNotContain "FAKE.Core"
 
 [<Test>]
-[<Ignore("it's only working on forki's machine")>]
-let ``#1298 should autocomplete versions for msu on local teamcity``() = 
-    let result = Dependencies.FindPackageVersions("",[PackageSource.NuGetV2Source "http://teamcity/guestAuth/app/nuget/v1/FeedService.svc/"],"msu.Addins")
-    result |> shouldNotContain "msu.Addins"
-    result |> shouldContain "03.03.7"
-
-[<Test>]
 let ``#1298 should autocomplete versions for dapper on local feed``() = 
     let result = Dependencies.FindPackageVersions("",[PackageSource.LocalNuGet(DirectoryInfo(Path.Combine(originalScenarioPath "i001219-props-files", "nuget_repo")).FullName,None)],"Dapper")
     result |> shouldEqual [|"1.42.0"; "1.40"|]
