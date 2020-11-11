@@ -56,6 +56,63 @@ type DotNetStandardVersion =
         | _ -> None
 
 [<RequireQualifiedAccess>]
+type Net5WindowsVersion =
+    | V7_0
+    | V8_0
+    | V10_0_17763_0
+    | V10_0_18362_0
+    | V10_0_19041_0
+    override this.ToString() =
+        match this with
+        | V7_0 -> "7.0"
+        | V8_0 -> "8.0"
+        | V10_0_17763_0 -> "10.0.17763.0"
+        | V10_0_18362_0 -> "10.0.18362.0"
+        | V10_0_19041_0 -> "10.0.19041.0"
+
+    static member TryParse s =
+        match s with
+        | "7.0" -> Some Net5WindowsVersion.V7_0
+        | "8.0" -> Some Net5WindowsVersion.V8_0
+        | "10.0.17763.0" -> Some Net5WindowsVersion.V10_0_17763_0
+        | "10.0.18362.0" -> Some Net5WindowsVersion.V10_0_18362_0
+        | "10.0.19041.0" -> Some Net5WindowsVersion.V10_0_19041_0
+        | _ -> None
+
+[<RequireQualifiedAccess>]
+type Net5Os =
+    | Android
+    | IOs
+    | MacOs
+    | TvOs
+    | WatchOs
+    | Windows
+    | WindowsWithVersion of Net5WindowsVersion
+    override this.ToString() =
+        match this with
+        | Android -> "android"
+        | IOs -> "ios"
+        | MacOs -> "macos"
+        | TvOs -> "tvos"
+        | WatchOs -> "watchos"
+        | Windows -> "windows"
+        | WindowsWithVersion v -> "windows" + v.ToString()
+    
+    static member TryParse s =
+        match s with
+        | "android" -> Some Net5Os.Android
+        | "ios" -> Some Net5Os.Android
+        | "macos" -> Some Net5Os.Android
+        | "tvos" -> Some Net5Os.Android
+        | "watchos" -> Some Net5Os.Android
+        | "windows" -> Some Net5Os.Android
+        | _ when s.StartsWith("windows") -> 
+            let versionPart = s.Substring ("windows".Length)
+            Net5WindowsVersion.TryParse(versionPart)
+            |> Option.map Net5Os.WindowsWithVersion
+        | _ -> None
+
+[<RequireQualifiedAccess>]
 /// The Framework version.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 type FrameworkVersion =
@@ -79,6 +136,7 @@ type FrameworkVersion =
     | V4_7_2
     | V4_8
     | V5
+    | V5WithOs of Net5Os
     override this.ToString() =
         match this with
         | V1        -> "v1.0"
@@ -101,6 +159,7 @@ type FrameworkVersion =
         | V4_7_2    -> "v4.7.2"
         | V4_8      -> "v4.8"
         | V5        -> "v5.0"
+        | V5WithOs o-> "v5.0-" + o.ToString() 
 
     member this.ShortString() =
         match this with
@@ -124,6 +183,7 @@ type FrameworkVersion =
         | FrameworkVersion.V4_7_2 -> "472"
         | FrameworkVersion.V4_8 -> "48"
         | FrameworkVersion.V5 -> "5.0"
+        | FrameworkVersion.V5WithOs o -> "5.0-" + o.ToString()
 
     static member TryParse s =
         match s with
@@ -147,6 +207,10 @@ type FrameworkVersion =
         | "4.7.2" -> Some FrameworkVersion.V4_7_2
         | "4.8" -> Some FrameworkVersion.V4_8
         | "5.0" | "5" -> Some FrameworkVersion.V5
+        | _ when s.StartsWith("5.0") -> 
+            let osPart = s.Substring ("5.0".Length)
+            Net5Os.TryParse(osPart)
+            |> Option.map FrameworkVersion.V5WithOs
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -657,6 +721,8 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_7_2 -> [ DotNetFramework FrameworkVersion.V4_7_1 ]
         | DotNetFramework FrameworkVersion.V4_8 -> [ DotNetFramework FrameworkVersion.V4_7_2 ]
         | DotNetFramework FrameworkVersion.V5 -> [ DotNetCoreApp DotNetCoreAppVersion.V3_1; DotNetStandard DotNetStandardVersion.V2_1 ]
+        | DotNetFramework (FrameworkVersion.V5WithOs(Net5Os.WindowsWithVersion(_))) -> [ DotNetFramework (FrameworkVersion.V5WithOs(Net5Os.Windows)) ]
+        | DotNetFramework (FrameworkVersion.V5WithOs(_)) -> [ DotNetFramework FrameworkVersion.V5 ]
         | DotNetStandard DotNetStandardVersion.V1_0 -> [  ]
         | DotNetStandard DotNetStandardVersion.V1_1 -> [ DotNetStandard DotNetStandardVersion.V1_0 ]
         | DotNetStandard DotNetStandardVersion.V1_2 -> [ DotNetStandard DotNetStandardVersion.V1_1 ]
@@ -1167,6 +1233,17 @@ module KnownTargetProfiles =
         FrameworkVersion.V4_7_2
         FrameworkVersion.V4_8
         FrameworkVersion.V5
+        FrameworkVersion.V5WithOs(Net5Os.Android)
+        FrameworkVersion.V5WithOs(Net5Os.IOs)
+        FrameworkVersion.V5WithOs(Net5Os.MacOs)
+        FrameworkVersion.V5WithOs(Net5Os.TvOs)
+        FrameworkVersion.V5WithOs(Net5Os.WatchOs)
+        FrameworkVersion.V5WithOs(Net5Os.Windows)
+        FrameworkVersion.V5WithOs(Net5Os.WindowsWithVersion(Net5WindowsVersion.V7_0))
+        FrameworkVersion.V5WithOs(Net5Os.WindowsWithVersion(Net5WindowsVersion.V8_0))
+        FrameworkVersion.V5WithOs(Net5Os.WindowsWithVersion(Net5WindowsVersion.V10_0_17763_0))
+        FrameworkVersion.V5WithOs(Net5Os.WindowsWithVersion(Net5WindowsVersion.V10_0_18362_0))
+        FrameworkVersion.V5WithOs(Net5Os.WindowsWithVersion(Net5WindowsVersion.V10_0_19041_0))
     ]
 
     let DotNetFrameworkIdentifiers =
