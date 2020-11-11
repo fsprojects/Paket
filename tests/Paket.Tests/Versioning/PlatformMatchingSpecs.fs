@@ -22,7 +22,7 @@ let ``Check that lists are updated``() =
                 Assert.Fail (sprintf "Case '%s' was not found in KnownTargetProfiles.<type>Versions for '%s'" case.Name typeof<'t>.Name)
             foundCase)
         |> shouldEqual true
-        if l.Length <> cases.Length then
+        if l.Length < cases.Length then
             Assert.Fail (sprintf "KnownTargetProfiles.<list> doesnt't match number of cases for '%s'." typeof<'t>.Name)
     let checkList (l:'t list) =
         let tagReader = FSharp.Reflection.FSharpValue.PreComputeUnionTagReader(typeof<'t>)
