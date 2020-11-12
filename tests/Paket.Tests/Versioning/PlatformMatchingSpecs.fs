@@ -164,17 +164,17 @@ let ``Can detect net5.0``() =
 [<Test>]
 let ``Can detect net5.0-windows``() =
     let p = PlatformMatching.forceExtractPlatforms "net5.0-windows"
-    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet5WithOs Net5Os.Windows)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet5Windows Net5WindowsVersion.V7_0)))
 
 [<Test>]
 let ``Can detect net5.0-windows10.0.19041.0``() =
     let p = PlatformMatching.forceExtractPlatforms "net5.0-windows10.0.19041.0"
-    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet5WindowsWithVersion Net5WindowsVersion.V10_0_19041_0)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet5Windows Net5WindowsVersion.V10_0_19041_0)))
 
 [<Test>]
 let ``Can detect net5.0-windows10.0.19041``() =
     let p = PlatformMatching.forceExtractPlatforms "net5.0-windows10.0.19041"
-    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet5WindowsWithVersion Net5WindowsVersion.V10_0_19041_0)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet5Windows Net5WindowsVersion.V10_0_19041_0)))
 
 [<Test>]
 let ``Can detect netstandard1.6``() =
