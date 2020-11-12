@@ -18,14 +18,6 @@ let ``#140 windsor should resolve framework dependent dependencies``() =
     |> getExplicitRestriction
     |> shouldEqual (FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V3_5), DotNetFramework(FrameworkVersion.V4)))
 
-[<Test; Ignore "slow test">]
-let ``#1182 framework restrictions overwrite each other``() =
-    let cleanup, lockFile = update "i001182-framework-restrictions"
-    use __ = cleanup
-    let lockFile = lockFile.ToString()
-    lockFile.Contains("Microsoft.Data.OData (>= 5.6.2)") |> shouldEqual true
-    lockFile.Contains("framework: winv4.5") |> shouldEqual false
-
 [<Test>]
 #if NO_UNIT_PLATFORMATTRIBUTE
 [<Ignore "PlatformAttribute not supported by netstandard NUnit">]

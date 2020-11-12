@@ -1,4 +1,4 @@
-#### 5.254.0 - 2020-11-12
+#### 5.255.0 - 2020-11-12
 * .NET5 OS dependent frameworks - https://github.com/fsprojects/Paket/pull/3934 https://github.com/fsprojects/Paket/pull/3938
 
 #### 5.252.0 - 2020-11-08
