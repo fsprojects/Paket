@@ -1,8 +1,11 @@
-#### 6.0.0-alpha052 - 2020-11-12
+#### 6.0.0-alpha053 - 2020-11-12
 * Full .NET Core / SDK compatible version
 * Support for XCode
 * Support for .net5.0
 * FSharp.DependencyManager.Paket FSI extension for #r "paket: ..."
+
+#### 5.253.0 - 2020-11-12
+* .NET5 OS dependent frameworks - https://github.com/fsprojects/Paket/pull/3934
 
 #### 5.252.0 - 2020-11-08
 * Fix removal of duplicate nodes
