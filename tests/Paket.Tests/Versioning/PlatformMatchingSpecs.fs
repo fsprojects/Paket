@@ -22,7 +22,7 @@ let ``Check that lists are updated``() =
                 Assert.Fail (sprintf "Case '%s' was not found in KnownTargetProfiles.<type>Versions for '%s'" case.Name typeof<'t>.Name)
             foundCase)
         |> shouldEqual true
-        if l.Length < cases.Length then
+        if l.Length <> cases.Length then
             Assert.Fail (sprintf "KnownTargetProfiles.<list> doesnt't match number of cases for '%s'." typeof<'t>.Name)
     let checkList (l:'t list) =
         let tagReader = FSharp.Reflection.FSharpValue.PreComputeUnionTagReader(typeof<'t>)
@@ -30,6 +30,8 @@ let ``Check that lists are updated``() =
         checkListEx tagReader cases l
     
     checkList KnownTargetProfiles.DotNetFrameworkVersions
+    checkList KnownTargetProfiles.DotNet5OperatingSystems
+    checkList KnownTargetProfiles.DotNet5WindowsVersions
     checkList KnownTargetProfiles.DotNetCoreAppVersions
     checkList KnownTargetProfiles.DotNetStandardVersions
     checkList KnownTargetProfiles.DotNetUnityVersions
@@ -158,6 +160,21 @@ let ``Can detect net4.00.03``() =
 let ``Can detect net5.0``() =
     let p = PlatformMatching.forceExtractPlatforms "net5.0"
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V5)))
+
+[<Test>]
+let ``Can detect net5.0-windows``() =
+    let p = PlatformMatching.forceExtractPlatforms "net5.0-windows"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet5WithOs Net5Os.Windows)))
+
+[<Test>]
+let ``Can detect net5.0-windows10.0.19041.0``() =
+    let p = PlatformMatching.forceExtractPlatforms "net5.0-windows10.0.19041.0"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet5WindowsWithVersion Net5WindowsVersion.V10_0_19041_0)))
+
+[<Test>]
+let ``Can detect net5.0-windows10.0.19041``() =
+    let p = PlatformMatching.forceExtractPlatforms "net5.0-windows10.0.19041"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet5WindowsWithVersion Net5WindowsVersion.V10_0_19041_0)))
 
 [<Test>]
 let ``Can detect netstandard1.6``() =
