@@ -1,3 +1,6 @@
+#### 5.253.0 - 2020-11-08
+* .NET5 OS dependent frameworks - https://github.com/fsprojects/Paket/pull/3934
+
 #### 5.252.0 - 2020-11-08
 * Fix removal of duplicate nodes
 
