@@ -4,8 +4,8 @@
 * Support for .net5.0
 * FSharp.DependencyManager.Paket FSI extension for #r "paket: ..."
 
-#### 5.253.0 - 2020-11-12
-* .NET5 OS dependent frameworks - https://github.com/fsprojects/Paket/pull/3934
+#### 5.255.0 - 2020-11-12
+ frameworks - https://github.com/fsprojects/Paket/pull/3934 https://github.com/fsprojects/Paket/pull/3938
 
 #### 5.252.0 - 2020-11-08
 * Fix removal of duplicate nodes
