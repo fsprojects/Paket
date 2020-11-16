@@ -162,8 +162,28 @@ let ``Can detect net5.0``() =
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V5)))
 
 [<Test>]
+let ``Can detect net5``() =
+    let p = PlatformMatching.forceExtractPlatforms "net5"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V5)))
+
+[<Test>]
+let ``Can detect net5000``() =
+    let p = PlatformMatching.forceExtractPlatforms "net5000"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V5)))
+
+[<Test>]
 let ``Can detect net5.0-windows``() =
     let p = PlatformMatching.forceExtractPlatforms "net5.0-windows"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet5Windows Net5WindowsVersion.V7_0)))
+
+[<Test>]
+let ``Can detect net5-windows``() =
+    let p = PlatformMatching.forceExtractPlatforms "net5-windows"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet5Windows Net5WindowsVersion.V7_0)))
+
+[<Test>]
+let ``Can detect net5000-windows``() =
+    let p = PlatformMatching.forceExtractPlatforms "net5000-windows"
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet5Windows Net5WindowsVersion.V7_0)))
 
 [<Test>]
@@ -174,6 +194,16 @@ let ``Can detect net5.0-windows10.0.19041.0``() =
 [<Test>]
 let ``Can detect net5.0-windows10.0.19041``() =
     let p = PlatformMatching.forceExtractPlatforms "net5.0-windows10.0.19041"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet5Windows Net5WindowsVersion.V10_0_19041_0)))
+
+[<Test>]
+let ``Can detect net5-windows10.0.19041``() =
+    let p = PlatformMatching.forceExtractPlatforms "net5-windows10.0.19041"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet5Windows Net5WindowsVersion.V10_0_19041_0)))
+
+[<Test>]
+let ``Can detect net5000-windows10.0.19041``() =
+    let p = PlatformMatching.forceExtractPlatforms "net5000-windows10.0.19041"
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet5Windows Net5WindowsVersion.V10_0_19041_0)))
 
 [<Test>]
