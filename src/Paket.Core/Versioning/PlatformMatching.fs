@@ -247,7 +247,7 @@ let getTargetCondition (target:TargetProfile) =
         | Unsupported s -> "", ""
     | TargetProfile.PortableProfile p -> sprintf "$(TargetFrameworkProfile) == '%O'" p.ProfileName,""
 
-let getCondition (referenceCondition:string option) (allTargets: TargetProfile Set list) (targets : TargetProfile Set) =
+let getCondition (referenceCondition:string option) (targets : TargetProfile Set) =
     let inline CheckIfFullyInGroup typeName matchF filterRestF (processed,targets) =
         let fullyContained = 
             KnownTargetProfiles.AllDotNetProfiles 

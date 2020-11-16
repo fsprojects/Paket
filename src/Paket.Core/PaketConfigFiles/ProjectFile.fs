@@ -826,7 +826,7 @@ module ProjectFile =
             |> List.collect (fun libFolder ->
                 match libFolder with
                 | _ ->
-                    match PlatformMatching.getCondition referenceCondition allTargets libFolder.Targets with
+                    match PlatformMatching.getCondition referenceCondition libFolder.Targets with
                     | "" -> []
                     | condition ->
                         let condition =
@@ -859,7 +859,7 @@ module ProjectFile =
                                 frameworkReferences
                                 |> List.partition (fun fr -> duplicates.Contains fr.Name)
 
-                            match PlatformMatching.getCondition referenceCondition allTargets !assemblyTargets with
+                            match PlatformMatching.getCondition referenceCondition !assemblyTargets with
                             | "" -> [condition,createItemGroup libFolder.Targets rest libraries,false]
                             | lowerCondition ->
                                 [lowerCondition,createItemGroup !assemblyTargets specialFrameworkAssemblies [],true
@@ -876,7 +876,7 @@ module ProjectFile =
             
         let frameworkSpecificTargetsFileConditions =
             frameworkSpecificTargets
-            |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition allTargets lib.Targets,createPropertyGroup (lib.FolderContents |> List.ofSeq))
+            |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition lib.Targets,createPropertyGroup (lib.FolderContents |> List.ofSeq))
 
         let chooseNodes =
             match conditions with

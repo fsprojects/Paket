@@ -7,7 +7,7 @@ open Paket.Domain
 
 open Paket.PlatformMatching
 
-let getCondition cond targets = getCondition cond [targets] targets
+let getCondition cond targets = getCondition cond targets
 
 [<Test>]
 let ``should create empty condition for empty profile list``() = 
