@@ -14,7 +14,7 @@ let userProfile =
 
 let tweakTargetFramework =
     function
-        | "netcoreapp5.0" -> "net5.0"
+        | "netcoreapp5.0" -> "net50"
         | targetFramework -> targetFramework
 
 let MakeDependencyManagerCommand scriptType packageManagerTargetFramework projectRootDirArgument = 
