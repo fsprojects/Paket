@@ -1,14 +1,21 @@
-#### 6.0.0-alpha054 - 2020-11-12
+#### 6.0.0-alpha055 - 2020-11-17
 * Full .NET Core / SDK compatible version
 * Support for XCode
 * Support for .net5.0
 * FSharp.DependencyManager.Paket FSI extension for #r "paket: ..."
 
+#### 5.257.0 - 2020-11-17
+* Support for UAP v10.0.10240 - https://github.com/fsprojects/Paket/pull/3875
+
+#### 5.256.0 - 2020-11-17
+* Support net5-windows, net5000-windows and similar - https://github.com/fsprojects/Paket/pull/3944
+* BUGFIX: Fix how msbuild condition is created based on target frameworks - https://github.com/fsprojects/Paket/pull/3943
+
 #### 5.255.0 - 2020-11-12
- frameworks - https://github.com/fsprojects/Paket/pull/3934 https://github.com/fsprojects/Paket/pull/3938
+* .NET5 OS dependent frameworks - https://github.com/fsprojects/Paket/pull/3934 https://github.com/fsprojects/Paket/pull/3938
 
 #### 5.252.0 - 2020-11-08
-* Fix removal of duplicate nodes
+* BUGFIX: Fix removal of duplicate nodes
 
 #### 5.251.0 - 2020-10-22
 * Backwards compatibility for netcoreapp5.0 moniker
