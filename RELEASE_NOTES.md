@@ -1,3 +1,6 @@
+#### 5.257.0 - 2020-11-17
+* Support for UAP v10.0.10240 - https://github.com/fsprojects/Paket/pull/3875
+
 #### 5.256.0 - 2020-11-17
 * Support net5-windows, net5000-windows and similar - https://github.com/fsprojects/Paket/pull/3944
 * BUGFIX: Fix how msbuild condition is created based on target frameworks - https://github.com/fsprojects/Paket/pull/3943
