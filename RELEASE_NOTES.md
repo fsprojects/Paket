@@ -1,3 +1,6 @@
+#### 5.255.1 - 2020-11-17
+* Fix how msbuild condition is created based on target frameworks - https://github.com/fsprojects/Paket/pull/3943
+
 #### 5.255.0 - 2020-11-12
 * .NET5 OS dependent frameworks - https://github.com/fsprojects/Paket/pull/3934 https://github.com/fsprojects/Paket/pull/3938
 
