@@ -1,11 +1,12 @@
-#### 5.255.1 - 2020-11-17
-* Fix how msbuild condition is created based on target frameworks - https://github.com/fsprojects/Paket/pull/3943
+#### 5.256.0 - 2020-11-17
+* Support net5-windows, net5000-windows and similar - https://github.com/fsprojects/Paket/pull/3944
+* BUGFIX: Fix how msbuild condition is created based on target frameworks - https://github.com/fsprojects/Paket/pull/3943
 
 #### 5.255.0 - 2020-11-12
 * .NET5 OS dependent frameworks - https://github.com/fsprojects/Paket/pull/3934 https://github.com/fsprojects/Paket/pull/3938
 
 #### 5.252.0 - 2020-11-08
-* Fix removal of duplicate nodes
+* BUGFIX: Fix removal of duplicate nodes
 
 #### 5.251.0 - 2020-10-22
 * Backwards compatibility for netcoreapp5.0 moniker
