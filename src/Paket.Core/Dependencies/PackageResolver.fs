@@ -467,16 +467,19 @@ let private explorePackageConfig (getPackageDetailsBlock:PackageDetailsSyncFunc)
     let isAssumedVersion = pkgConfig.VersionCache.AssumedVersion
 
     match pkgConfig.UpdateMode with
-    | Install -> tracefn  " - %O %A" dependency.Name version
-    | InstallGroup _ -> tracefn  " - %O %A" dependency.Name version
-    | _ ->
-        match dependency.VersionRequirement.Range with
-        | OverrideAll _ when dependency.Parent.IsRootRequirement() ->
-            traceWarnfn " - %O is locked to %O" dependency.Name version
-        | Specific _ when dependency.Parent.IsRootRequirement() ->
-            traceWarnfn " - %O is pinned to %O" dependency.Name version
-        | _ ->
-            tracefn  " - %O %A" dependency.Name version
+    | Install
+    | InstallGroup _ ->
+        verbosefn " - %O %A" dependency.Name version
+    | UpdateAll
+    | UpdateFiltered _
+    | UpdateGroup _ ->
+         match dependency.VersionRequirement.Range with
+         | OverrideAll _ when dependency.Parent.IsRootRequirement() ->
+             traceWarnfn " - %O is locked to %O" dependency.Name version
+         | Specific _ when dependency.Parent.IsRootRequirement() ->
+             traceWarnfn " - %O is pinned to %O" dependency.Name version
+         | _ ->
+             verbosefn " - %O %A" dependency.Name version
 
     let newRestrictions = filterRestrictions dependency.Settings.FrameworkRestrictions pkgConfig.GlobalRestrictions
 
@@ -945,7 +948,9 @@ type PreferredVersionsFunc = ResolverStrategy -> GetPackageVersionsParameters ->
 
 /// Resolves all direct and transitive dependencies
 let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : PreferredVersionsFunc, getPackageDetailsRaw : PackageDetailsFunc, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
-    tracefn "Resolving packages for group %O:" groupName
+    match groupName.Name with
+    | "Main" -> tracefn "Resolving dependency graph..."
+    | _ -> tracefn "Resolving dependency graph for group %O..." groupName
 
     let cliToolSettings =
         rootDependencies
