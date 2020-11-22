@@ -685,10 +685,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             traceWarnfn "%s contains package %O in group %O already. ==> Ignored" fileName packageName groupName
             this
         else
-            if version = "" then
-                tracefn "Adding %O to %s into group %O" packageName fileName groupName
-            else
-                tracefn "Adding %O %s to %s into group %O" packageName version fileName groupName
+            match version, groupName.Name with
+            | "", "Main" -> tracefn "Adding package '%O'" packageName
+            | "", _ -> tracefn "Adding package '%O' into group %O" packageName groupName
+            | _, "Main" -> tracefn "Adding package '%O' %s" packageName version
+            | _, _ -> tracefn "Adding package '%O' %s into group %O" packageName version groupName
             this.AddAdditionalPackage(groupName, packageName,version,installSettings,kind)
 
     member this.AddGithub(groupName, repository) =
@@ -800,7 +801,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
     member this.Save() =
         File.WriteAllText(fileName, this.ToString())
-        tracefn "Dependencies files saved to %s" fileName
+        verbosefn "Dependencies files saved to %s" fileName
 
     static member FromSource(rootPath,source:string) : DependenciesFile =
         let source = source.Replace("\r\n","\n").Replace("\r","\n").Split('\n')

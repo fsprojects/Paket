@@ -348,7 +348,6 @@ let installForDotnetSDK root (project:ProjectFile) =
 
 /// Installs all packages from the lock file.
 let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups) =
-    tracefn " - Creating model and downloading packages."
     let packagesToInstall =
         if options.OnlyReferenced then
             projectsAndReferences
@@ -360,16 +359,20 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
         else
             lockFile.GetGroupedResolution()
             |> Seq.map (fun kv -> kv.Key)
+        |> Set
 
+    tracefn "Created dependency graph (%d packages)." packagesToInstall.Count
     let root = Path.GetDirectoryName lockFile.FileName
-    let model = CreateModel(options.AlternativeProjectRoot, root, options.Force, dependenciesFile, lockFile, Set.ofSeq packagesToInstall, updatedGroups) |> Map.ofArray
+    let model = CreateModel(options.AlternativeProjectRoot, root, options.Force, dependenciesFile, lockFile, packagesToInstall, updatedGroups) |> Map.ofArray
     let lookup = lockFile.GetDependencyLookupTable()
     let projectCache = Dictionary<string, ProjectFile option>();
 
     let prefix = dependenciesFile.Directory.Length + 1
     let norm (s:string) = (s.Substring prefix).Replace('\\', '/')
 
-    tracefn " - Installing for projects"
+    if projectsAndReferences.Length > 0 then
+        tracefn " - Installing to %d projects" projectsAndReferences.Length
+
     for project, referenceFile in projectsAndReferences do
         let toolsVersion = project.GetToolsVersion()
         tracefn "   - %s -> %s (MSBuild %O)" (norm referenceFile.FileName) (norm project.FileName) toolsVersion

@@ -191,7 +191,7 @@ type ReferencesFile =
 
     member this.Save() =
         File.WriteAllText(this.FileName, this.ToString())
-        tracefn "References file saved to %s" this.FileName
+        verbosefn "References file saved to %s" this.FileName
 
     override this.ToString() =
         let printSourceFile (s:RemoteFileReference) =

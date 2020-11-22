@@ -67,7 +67,15 @@ let processWithValidationEx printUsage silent validateF commandF result =
                     match groupedResults |> List.tryPick (function Profile.Category.ResolverAlgorithm, _, s -> Some s | _ -> None) with
                     | Some s -> s
                     | None -> TimeSpan()
-                tracefn "Performance:"
+                let totalTimeElapsed =
+                    groupedResults
+                    |> List.choose (fun (cat, _, elapsed) ->
+                        match cat with
+                        | Profile.Category.ResolverAlgorithmBlocked _
+                        | Profile.Category.ResolverAlgorithmNotBlocked _ -> None
+                        | _ -> Some elapsed)
+                    |> List.fold (+) TimeSpan.Zero
+                tracefn "Total time taken: %s" (Utils.TimeSpanToReadableString totalTimeElapsed)
                 groupedResults
                 |> List.sortBy (fun (cat,_,_) ->
                     match cat with
@@ -85,34 +93,33 @@ let processWithValidationEx printUsage silent validateF commandF result =
                         | Profile.BlockReason.GetVersion -> "retrieving package versions"
                     match cat with
                     | Profile.Category.ResolverAlgorithm ->
-                        tracefn " - Resolver: %s (%d runs)" (Utils.TimeSpanToReadableString elapsed) num
+                        verbosefn " - Resolver: %s (%d runs)" (Utils.TimeSpanToReadableString elapsed) num
                         let realTime = resolver - blocked
-                        tracefn "    - Runtime: %s" (Utils.TimeSpanToReadableString realTime)
+                        verbosefn "    - Runtime: %s" (Utils.TimeSpanToReadableString realTime)
                     | Profile.Category.ResolverAlgorithmBlocked b ->
                         let reason = reason b
-                        tracefn "    - Blocked (%s): %s (%d times)" reason (Utils.TimeSpanToReadableString elapsed) num
+                        verbosefn "    - Blocked (%s): %s (%d times)" reason (Utils.TimeSpanToReadableString elapsed) num
                     | Profile.Category.ResolverAlgorithmNotBlocked b ->
                         let reason = reason b
-                        tracefn "    - Not Blocked (%s): %d times" reason num
+                        verbosefn "    - Not Blocked (%s): %d times" reason num
                     | Profile.Category.FileIO ->
-                        tracefn " - Disk IO: %s" (Utils.TimeSpanToReadableString elapsed)
+                        verbosefn " - Disk IO: %s" (Utils.TimeSpanToReadableString elapsed)
                     | Profile.Category.NuGetDownload ->
                         let avg = TimeSpan.FromTicks(elapsed.Ticks / int64 num)
-                        tracefn " - Average Download Time: %s" (Utils.TimeSpanToReadableString avg)
-                        tracefn " - Number of downloads: %d" num
+                        verbosefn " - Average Download Time: %s" (Utils.TimeSpanToReadableString avg)
+                        verbosefn " - Number of downloads: %d" num
                     | Profile.Category.NuGetRequest ->
                         let avg = TimeSpan.FromTicks(elapsed.Ticks / int64 num)
-                        tracefn " - Average Request Time: %s" (Utils.TimeSpanToReadableString avg)
-                        tracefn " - Number of Requests: %d" num
+                        verbosefn " - Average Request Time: %s" (Utils.TimeSpanToReadableString avg)
+                        verbosefn " - Number of Requests: %d" num
                     | Profile.Category.Other ->
-                        tracefn "  - Other: %s" (Utils.TimeSpanToReadableString elapsed)
+                        verbosefn "  - Other: %s" (Utils.TimeSpanToReadableString elapsed)
                     )
 
-                tracefn " - Runtime: %s" (Utils.TimeSpanToReadableString realTime)
+                verbosefn " - Runtime: %s" (Utils.TimeSpanToReadableString realTime)
                 let omitted = Logging.getOmittedWarningCount()
                 if not verbose && omitted > 0 then
-                    traceWarnfn "Paket omitted %d warnings similar to the ones above. You can see them in verbose mode." omitted
-
+                    traceWarnfn "Paket omitted %d warnings. You can see them in verbose mode." omitted
 
 let processWithValidation silent validateF commandF (result : ParseResults<'T>) =
     processWithValidationEx (fun (r:ParseResults<'T>) -> r.Parser.PrintUsage() |> traceError) silent validateF commandF result

@@ -819,9 +819,9 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
 
         if hasChanged then
             File.WriteAllText(fileName, output)
-            tracefn "Locked version resolution written to %s" fileName
+            verbosefn "Locked version resolution written to %s" fileName
         else
-            tracefn "%s is already up-to-date" fileName
+            verbosefn "%s is already up-to-date" fileName
         hasChanged
 
     /// Parses a paket.lock file from file
