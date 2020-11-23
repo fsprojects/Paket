@@ -225,16 +225,18 @@ let add (results : ParseResults<_>) =
         | AddArgsDependencyType.Nuget -> Requirements.PackageRequirementKind.Package
         | AddArgsDependencyType.Clitool -> Requirements.PackageRequirementKind.DotnetCliTool
 
+    let dependencies =
+        Dependencies.TryLocate ()
+        |> Option.defaultWith (fun () ->
+            Dependencies.Init ()
+            Dependencies.Locate ())
+
     match project with
     | Some projectName ->
-        Dependencies
-            .Locate()
-            .AddToProject(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
+        dependencies.AddToProject(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
     | None ->
         let interactive = results.Contains AddArgs.Interactive
-        Dependencies
-            .Locate()
-            .Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
+        dependencies.Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
 
 let github (results : ParseResults<_>) =
     match results.GetResult GithubArgs.Add with
