@@ -25,11 +25,11 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
         traceWarnfn "%s contains package %O in group %O already." dependenciesFileName package groupName
     else
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
-        let lockFile = ref None
+        let mutable lockFile = None
         let lockFileHasPackage =
             if not lockFileName.Exists then false else
             let lf = LockFile.LoadFrom lockFileName.FullName
-            lockFile := Some lf
+            lockFile <- Some lf
             let lockFileGroup = lf.GetGroup(groupName)
             let vr = DependenciesFileParser.parseVersionString version
 
@@ -56,7 +56,7 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
             addToProjectsF projects groupName package
 
             if installAfter then
-                match !lockFile with
+                match lockFile with
                 | None -> ()
                 | Some lockFile ->
                     let touchedGroups = Map.empty.Add(groupName,"")
@@ -74,6 +74,13 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
                 let forceTouch = hasChanged && options.TouchAffectedRefs
                 InstallProcess.Install(options, forceTouch, dependenciesFile, lockFile, updatedGroups)
                 GarbageCollection.CleanUp(dependenciesFile, lockFile)
+        
+        let resolutionForGroup = LockFile.LoadFrom(lockFileName.FullName).GetGroup(groupName).Resolution
+        match resolutionForGroup.TryFind package with
+        | Some resolved ->
+            tracefn "Resolved package '%s' to version %s" package.Name resolved.Version.AsString
+        | None ->
+            traceWarnfn "Could not find package %s in group %s" package.Name groupName.Name
 
 // Add a package with the option to add it to a specified project.
 let AddToProject(dependenciesFileName, groupName, package, version, options : InstallerOptions, projectName, installAfter, runResolver, packageKind) =

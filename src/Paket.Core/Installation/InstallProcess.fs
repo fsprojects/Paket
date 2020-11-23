@@ -361,7 +361,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             |> Seq.map (fun kv -> kv.Key)
         |> Set
 
-    tracefn "Created dependency graph (%d packages)." packagesToInstall.Count
+    tracefn "Created dependency graph (%d packages in total)" packagesToInstall.Count
     let root = Path.GetDirectoryName lockFile.FileName
     let model = CreateModel(options.AlternativeProjectRoot, root, options.Force, dependenciesFile, lockFile, packagesToInstall, updatedGroups) |> Map.ofArray
     let lookup = lockFile.GetDependencyLookupTable()
@@ -370,12 +370,13 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
     let prefix = dependenciesFile.Directory.Length + 1
     let norm (s:string) = (s.Substring prefix).Replace('\\', '/')
 
+
     if projectsAndReferences.Length > 0 then
-        tracefn " - Installing to %d projects" projectsAndReferences.Length
+        verbosefn " - Installing to %d projects" projectsAndReferences.Length
 
     for project, referenceFile in projectsAndReferences do
         let toolsVersion = project.GetToolsVersion()
-        tracefn "   - %s -> %s (MSBuild %O)" (norm referenceFile.FileName) (norm project.FileName) toolsVersion
+        verbosefn "   - %s -> %s (MSBuild %O)" (norm referenceFile.FileName) (norm project.FileName) toolsVersion
 
         let directDependencies, errorMessages =
             referenceFile.Groups
@@ -405,7 +406,6 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     (function Choice2Of2 errorMessage -> Some errorMessage | _ -> None)
             |> fun (resolvedPackages, dependencyErrors) ->
                     Map.ofSeq resolvedPackages, dependencyErrors
-
 
         let usedPackages, errorMessages =
             let mutable d = directDependencies
@@ -508,8 +508,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 gitRemotePathPairs
                 |> Seq.map (fun (file,remoteFilePath) ->
                     let link = if file.Link = "." then Path.GetFileName file.Name else Path.Combine(file.Link, Path.GetFileName file.Name)
-                    if verbose then
-                        tracefn "FileName: %s " file.Name
+                    verbosefn "FileName: %s " file.Name
 
                     let linked = defaultArg file.Settings.Link true
                     let buildAction = project.DetermineBuildActionForRemoteItems file.Name

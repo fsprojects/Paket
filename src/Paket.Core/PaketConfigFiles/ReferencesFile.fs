@@ -153,7 +153,7 @@ type ReferencesFile =
 
         match this.Groups |> Map.tryFind groupName with
         | None ->
-                tracefn "Adding package %O to %s into new group %O" packageName this.FileName groupName
+                verbosefn "Adding package %O to %s into new group %O" packageName this.FileName groupName
 
                 let newGroup =
                     { Name = groupName
@@ -167,7 +167,7 @@ type ReferencesFile =
             if group.NugetPackages |> Seq.exists (fun p -> p.Name = packageName) then
                 this
             else
-                tracefn "Adding package %O to %s into group %O" packageName this.FileName groupName
+                verbosefn "Adding package %O to %s into group %O" packageName this.FileName groupName
 
                 let newGroup = { group with NugetPackages = group.NugetPackages @ [ package ] }
                 let newGroups = this.Groups |> Map.add newGroup.Name newGroup
