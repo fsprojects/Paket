@@ -231,10 +231,21 @@ let add (results : ParseResults<_>) =
             Dependencies.Init ()
             Dependencies.Locate ())
 
+    let project =
+        let extensions = Set [ ".fsproj"; ".csproj" ]
+        match project with
+        | Some _ -> project
+        | None ->
+            Directory.GetCurrentDirectory()
+            |> Directory.EnumerateFiles
+            |> Seq.map Path.GetExtension
+            |> Seq.tryFind extensions.Contains
+
     match project with
     | Some projectName ->
         dependencies.AddToProject(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
     | None ->
+        
         let interactive = results.Contains AddArgs.Interactive
         dependencies.Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
 
