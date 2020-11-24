@@ -74,13 +74,15 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
                 let forceTouch = hasChanged && options.TouchAffectedRefs
                 InstallProcess.Install(options, forceTouch, dependenciesFile, lockFile, updatedGroups)
                 GarbageCollection.CleanUp(dependenciesFile, lockFile)
-        
-        let resolutionForGroup = LockFile.LoadFrom(lockFileName.FullName).GetGroup(groupName).Resolution
-        match resolutionForGroup.TryFind package with
-        | Some resolved ->
-            tracefn "Resolved package '%s' to version %s" package.Name resolved.Version.AsString
-        | None ->
-            traceWarnfn "Could not find package %s in group %s" package.Name groupName.Name
+
+        lockFileName.Refresh()
+        if lockFileName.Exists then
+            let resolutionForGroup = LockFile.LoadFrom(lockFileName.FullName).GetGroup(groupName).Resolution
+            match resolutionForGroup.TryFind package with
+            | Some resolved ->
+                tracefn "Resolved package '%s' to version %s" package.Name resolved.Version.AsString
+            | None ->
+                traceWarnfn "Could not find package %s in group %s" package.Name groupName.Name
 
 // Add a package with the option to add it to a specified project.
 let AddToProject(dependenciesFileName, groupName, package, version, options : InstallerOptions, projectName, installAfter, runResolver, packageKind) =
