@@ -654,7 +654,7 @@ let parseKeyValuePairs (s:string) : Dictionary<string,string> =
         raise (Exception(sprintf "Could not parse '%s' as key/value pairs." s, exn))
 
 let saveFile (fileName : string) (contents : string) =
-    tracefn "Saving file %s" fileName
+    verbosefn "Saving file %s" fileName
     try
         File.WriteAllText (fileName, contents) |> ok
     with _ ->

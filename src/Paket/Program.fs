@@ -231,10 +231,22 @@ let add (results : ParseResults<_>) =
             Dependencies.Init ()
             Dependencies.Locate ())
 
+    // If no project was supplied, check if there's a project in the current folder and if so, use that.
+    let project =
+        match project with
+        | Some _ ->
+            project
+        | None ->
+            match Directory.GetCurrentDirectory() |> ProjectFile.FindAllProjects |> Array.toList with
+            | [] ->
+                None
+            | project :: _ ->
+                Some project.FileName
+
     match project with
     | Some projectName ->
         dependencies.AddToProject(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
-    | None ->
+    | None ->        
         let interactive = results.Contains AddArgs.Interactive
         dependencies.Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
 

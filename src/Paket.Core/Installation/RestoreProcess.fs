@@ -239,11 +239,10 @@ let extractRestoreTargets root =
             let (fileWritten, path) = extractElement root "Paket.Restore.targets"
             copiedElements := true
             if fileWritten then
-                if verbose then tracefn "Extracted Paket.Restore.targets to: %s (Can be disabled with PAKET_SKIP_RESTORE_TARGETS=true)" path
-                else tracefn "Extracted Paket.Restore.targets to: %s" path
+                verbosefn "Extracted Paket.Restore.targets to: %s (Can be disabled with PAKET_SKIP_RESTORE_TARGETS=true)" path
             path
     else
-        if verbose then tracefn "Skipping extraction of Paket.Restore.targets - if it was enabled, it would have been extracted to: %s (Can be re-enabled with PAKET_SKIP_RESTORE_TARGETS=false or deleting the environment variable to revert to default behavior)" path
+        verbosefn "Skipping extraction of Paket.Restore.targets - if it was enabled, it would have been extracted to: %s (Can be re-enabled with PAKET_SKIP_RESTORE_TARGETS=false or deleting the environment variable to revert to default behavior)" path
         path
 
 let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package) =
