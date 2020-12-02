@@ -212,7 +212,7 @@ let ResolveDependenciesForLanguage(fileType, targetFramework:string, prioritized
                 let foldersTried =
                   locations 
                   |> Seq.map (FileInfo)
-                  |> Seq.map (fun f -> $" - {f.DirectoryName}")
+                  |> Seq.map (fun f -> sprintf " - %s" f.DirectoryName)
                   |> String.concat Environment.NewLine
                 failwithf "Paket was not found in '%s' or a parent directory, or in those folders:\n\n%s\n\nPlease download the tool and place it in one of the locations."
                     scriptDir foldersTried
@@ -220,7 +220,7 @@ let ResolveDependenciesForLanguage(fileType, targetFramework:string, prioritized
         Console.ForegroundColor <- ConsoleColor.Green
         Console.Write ":paket>"
         Console.ResetColor()
-        Console.WriteLine($" using {toolPath}")
+        Console.WriteLine(sprintf " using %s" toolPath)
         
         try File.Delete(loadScript) with _ -> ()
         let toolPath = if runningOnMono then "mono " + toolPath else toolPath
