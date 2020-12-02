@@ -53,7 +53,7 @@ type PaketDependencyManagerProvider(outputDir: string option) =
           // if load script causes problem
           // consider changing this to be the list of all assemblies to load rather than passing through a load script
           []
-      ResolveDependenciesResult(true, [|"ok paket"|], [|"err paket"|], resolutions, [loadScript], additionalIncludeDirs)
+      ResolveDependenciesResult(true, [||], [||], resolutions, [loadScript], additionalIncludeDirs)
     with
       e -> 
         printfn "exception while resolving dependencies: %s" (string e)

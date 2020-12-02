@@ -173,58 +173,92 @@ let ResolveDependenciesForLanguage(fileType, targetFramework:string, prioritized
     then 
         (loadScript,additionalIncludeFolders())
     else 
-        let toolPathOpt = 
+        let toolPath = 
             // we try to resolve .paket/paket.exe any place up in the folder structure from current script
             match findPaketExe prioritizedSearchPaths (DirectoryInfo scriptDir) with
-            | Some paketExe -> Some paketExe
+            | Some paketExe -> paketExe
             | None ->
-                let profileExe = Path.Combine (userProfile, PM_DIR, PM_EXE)
-                if File.Exists profileExe then Some profileExe
-                else None
 
-        match toolPathOpt with 
-        | None ->
-            failwithf "Paket was not found in '%s' or a parent directory, or '%s'. Please download the tool and place it in one of the locations."
-               scriptDir userProfile
+              let nugetDirs =
+                let nugetDir = DirectoryInfo(Path.Combine(userProfile, ".nuget", "packages", "paket"))
+                if not nugetDir.Exists then
+                  Seq.empty 
+                else
+                  nugetDir.GetDirectories() 
+                  |> Seq.map (fun d -> 
+                    let splits = d.Name.Split('.','-')
+                    let numberSplits =
+                      [|
+                        for split in splits do
+                          match Int32.TryParse split with
+                          | false,_ -> Choice2Of2 split
+                          | true, v -> Choice1Of2 v
+                      |]
+                    d, numberSplits)
+                  |> Seq.sortByDescending snd
+                  |> Seq.map fst
+                  |> Seq.map (fun d -> Path.Combine(d.FullName, "tools", PM_EXE))
 
-        | Some toolPath ->
-            try File.Delete(loadScript) with _ -> ()
-            let toolPath = if runningOnMono then "mono " + toolPath else toolPath
-            File.WriteAllLines(workingDirSpecFile.FullName, packageManagerTextLines)
-            let startInfo = 
-                System.Diagnostics.ProcessStartInfo(
-                    FileName = toolPath,
-                    WorkingDirectory = workingDir, 
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    Arguments = MakeDependencyManagerCommand fileType targetFramework rootDir,
-                    CreateNoWindow = true,
-                    UseShellExecute = false)
+              let locations =
+                [
+                  yield Path.Combine(userProfile, PM_DIR, PM_EXE)
+                  yield Path.Combine(userProfile, ".dotnet", "tools", PM_EXE)
+                  yield! nugetDirs
+                ]
+              let result = locations |> Seq.tryFind File.Exists
+              match result with
+              | Some paketExe -> paketExe 
+              | None -> 
+                let foldersTried =
+                  locations 
+                  |> Seq.map (FileInfo)
+                  |> Seq.map (fun f -> sprintf " - %s" f.DirectoryName)
+                  |> String.concat Environment.NewLine
+                failwithf "Paket was not found in '%s' or a parent directory, or in those folders:\n\n%s\n\nPlease download the tool and place it in one of the locations."
+                    scriptDir foldersTried
+        
+        Console.ForegroundColor <- ConsoleColor.Green
+        Console.Write ":paket>"
+        Console.ResetColor()
+        Console.WriteLine(sprintf " using %s" toolPath)
+        
+        try File.Delete(loadScript) with _ -> ()
+        let toolPath = if runningOnMono then "mono " + toolPath else toolPath
+        File.WriteAllLines(workingDirSpecFile.FullName, packageManagerTextLines)
+        let startInfo = 
+            System.Diagnostics.ProcessStartInfo(
+                FileName = toolPath,
+                WorkingDirectory = workingDir, 
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                Arguments = MakeDependencyManagerCommand fileType targetFramework rootDir,
+                CreateNoWindow = true,
+                UseShellExecute = false)
                 
-            use p = new System.Diagnostics.Process()
-            let errors = ResizeArray<_>()
-            let log = ResizeArray<_>()
-            p.StartInfo <- startInfo
-            p.ErrorDataReceived.Add(fun d -> if not (isNull d.Data) then errors.Add d.Data)
-            p.OutputDataReceived.Add(fun d -> 
-                if not (isNull d.Data) then
-                    Console.ForegroundColor <- ConsoleColor.Green
-                    Console.Write ":paket>"
-                    Console.ResetColor()
-                    Console.WriteLine (" " + d.Data)
-                    log.Add d.Data
-            )
-            p.Start() |> ignore
-            p.BeginErrorReadLine()
-            p.BeginOutputReadLine()
-            p.WaitForExit()
+        use p = new System.Diagnostics.Process()
+        let errors = ResizeArray<_>()
+        let log = ResizeArray<_>()
+        p.StartInfo <- startInfo
+        p.ErrorDataReceived.Add(fun d -> if not (isNull d.Data) then errors.Add d.Data)
+        p.OutputDataReceived.Add(fun d -> 
+            if not (isNull d.Data) then
+                Console.ForegroundColor <- ConsoleColor.Green
+                Console.Write ":paket>"
+                Console.ResetColor()
+                Console.WriteLine (" " + d.Data)
+                log.Add d.Data
+        )
+        p.Start() |> ignore
+        p.BeginErrorReadLine()
+        p.BeginOutputReadLine()
+        p.WaitForExit()
             
-            if p.ExitCode <> 0 then
-                let msg = String.Join(Environment.NewLine, errors)
-                failwithf "Package resolution using '%s' failed, see directory '%s'.%s%s"
-                    toolPath workingDir Environment.NewLine msg
-            else
-                (loadScript,additionalIncludeFolders())
+        if p.ExitCode <> 0 then
+            let msg = String.Join(Environment.NewLine, errors)
+            failwithf "Package resolution using '%s' failed, see directory '%s'.%s%s"
+                toolPath workingDir Environment.NewLine msg
+        else
+            (loadScript,additionalIncludeFolders())
 
 /// Resolve packages loaded into scripts using `paket:` in `#r` directives such as `#r @"paket: nuget AmazingNugetPackage"`. 
 /// <remarks>This function will throw if the resolution is not successful or the tool wasn't found</remarks>
