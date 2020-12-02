@@ -57,3 +57,6 @@ group Build
 
   # add icon to exe
   github enricosada/add_icon_to_exe:e11eda501acea369ac2950beb34b8888495bf21f rh/ResourceHacker.exe
+
+group FSharpDepManagerExtension
+  nuget FSharp.Core = 5.0.0
