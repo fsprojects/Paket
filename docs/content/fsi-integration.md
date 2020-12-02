@@ -4,17 +4,45 @@ F# Interactive v5 and above ships with [extensions mechanism](https://github.com
 
 FSharp.DependencyManager.Paket implements this extension mechanism to hook same power as [paket.dependencies](dependencies-file.html) file right inside .fsx scripts.
 
-## Installation
+## Making sure paket.exe is found
 
-You have two choices:
+The extension is searching for paket.exe in the folder hierarchy containing the script, checking for a `.paket` folder containing `paket.exe`.
 
-### Deploying the assembly
+It falls back to those user directories if it can't find it in the parent folders:
+
+*  `~/.paket/paket.exe`
+*  `~/.dotnet/tools/paket.exe`
+*  `~/.nuget/packages/paket/{most-recent-version}/tools/paket.exe`
+
+## Install the extension
+
+You have two choices to deploy the assembly:
+
+### Copying the assembly next to the host process
 
 Install the FSharp.DependencyManager.Paket.dll aside of your F# Interactive binaries or the binary of the host process loading the extensions.
+
+In general, the process will explicitly list the folders it is currently checking for extensions:
+
+```
+error FS3216: Package manager key 'paket' was not registered in [C:\Program Files\dotnet\sdk\5.0.100\FSharp; C:\Program Files\dotnet\sdk\5.0.100\FSharp\], []. Currently registered: nuget
+```
 
 ### Passing the folder of the extension as --compilertool flag
 
 Use the `--compilertool` flag when invoking F# Interactive or refer to the documentation of the host process.
+
+For example on windows:
+
+```
+--compilertool:"c:\users\username\.nuget\packages\fsharp.dependencymanager.paket\6.0.0-alpha055\lib\netstandard2.0"
+```
+
+For example on unix:
+
+```
+--compilertool:"~/.nuget/packages/fsharp.dependencymanager.paket/6.0.0-alpha055/lib/netstandard2.0"
+```
 
 ## Usage in scripts
 
