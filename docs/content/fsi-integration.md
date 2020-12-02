@@ -8,7 +8,11 @@ FSharp.DependencyManager.Paket implements this extension mechanism to hook same 
 
 The extension is searching for paket.exe in the folder hierarchy containing the script, checking for a `.paket` folder containing `paket.exe`.
 
-It falls back to the user directory `~/.paket/paket.exe` if it can't find it in the parent folders.
+It falls back to those user directories if it can't find it in the parent folders:
+
+*  `~/.paket/paket.exe`
+*  `~/.dotnet/tools/paket.exe`
+*  `~/.nuget/packages/paket/{most-recent-version}/tools/paket.exe`
 
 ## Install the extension
 
