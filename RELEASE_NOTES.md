@@ -1,7 +1,7 @@
-#### 6.0.0-beta4 - 2020-12-02
+#### 6.0.0-beta5 - 2020-12-12
 * Full .NET Core / SDK compatible version
 * Support for XCode
-* Support for .net5.0
+* Support for .NET 5.0
 * FSharp.DependencyManager.Paket FSI extension for #r "paket: ..."
 
 #### 5.257.0 - 2020-11-17
