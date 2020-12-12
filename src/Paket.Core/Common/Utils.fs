@@ -780,7 +780,7 @@ module ObservableExtensions =
               member __.Subscribe observer =
                 let rm = e.Subscribe observer in f(); rm }
 
-        let sample milliseconds source =
+        let sample (milliseconds: int) source =
             let relay (observer:IObserver<'T>) =
                 let rec loop () = async {
                     let! value = Async.AwaitObservable source
