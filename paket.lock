@@ -868,7 +868,7 @@ GITHUB
 GROUP FSharpDepManagerExtension
 NUGET
   remote: https://www.nuget.org/api/v2
-    FSharp.Core (5.0)
+    FSharp.Core (5.0) - redirects: force
 
 GROUP NetCoreTools
 STORAGE: NONE
