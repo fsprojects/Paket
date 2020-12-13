@@ -60,4 +60,4 @@ group Build
 
 group FSharpDepManagerExtension
   source https://nuget.org/api/v2
-  nuget FSharp.Core = 5.0.0
+  nuget FSharp.Core = 5.0.0 redirects: force
