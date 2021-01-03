@@ -2,6 +2,7 @@
 if test "$OS" = "Windows_NT"
 then
   # use .Net
+  dotnet tool restore
   dotnet paket restore
   exit_code=$?
   if [ $exit_code -ne 0 ]; then
@@ -9,6 +10,7 @@ then
   fi
   MSBuild=`pwd -W`/packages/build/RoslynTools.MSBuild/tools/msbuild/MSBuild.exe packages/build/FAKE/tools/FAKE.exe $@ --fsiargs -d:MONO build.fsx
 else
+  dotnet tool restore
   dotnet paket restore
   exit_code=$?
   if [ $exit_code -ne 0 ]; then
