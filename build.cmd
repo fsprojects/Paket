@@ -1,6 +1,7 @@
 @echo off
 
-.paket\paket.exe restore
+dotnet tool restore
+dotnet paket restore
 if errorlevel 1 (
   exit /b %errorlevel%
 )
