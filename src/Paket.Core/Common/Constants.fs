@@ -131,7 +131,7 @@ let NuGetCacheFolder =
         let di = DirectoryInfo cachePath
         if not di.Exists then di.Create()
         Some di.FullName
-    ) |> Option.orElse (
+    ) |> Option.orElseWith (fun _ ->
         getEnvDir Environment.SpecialFolder.LocalApplicationData
         |> Option.bind (fun appData ->
             let di = DirectoryInfo (Path.Combine (appData, "Nuget", "Cache"))
