@@ -922,3 +922,24 @@ let ``#3707 allows repositoryUrl``() =
     let expected = """<repository type="git" url="https://github.com/my-org/my-custom-repo" />"""
     if not (nuspec.Contains expected) then
         failwith nuspec
+
+[<Test>]
+let ``#3983-dont-remove-packed-projects``() =
+    let scenario = "p003983-dont-remove-packed-projects"
+    let project = "FsLex.Core"
+    use __ = prepareSdk scenario
+
+    let wd = (scenarioTempPath scenario) @@ project
+
+    directDotnet true (sprintf "pack %s.fsproj -p:Version=99.0.0" project) wd
+    |> ignore
+
+    let nupkgPath = wd @@ "bin" @@ "Debug" @@ project + ".99.0.0.nupkg"
+    if File.Exists nupkgPath |> not then Assert.Fail(sprintf "Expected '%s' to exist" nupkgPath)
+    let nuspec = NuGetCache.getNuSpecFromNupkg nupkgPath
+    match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "FsLexYacc.Runtime") with
+    | None -> Assert.Fail("Expected package to still contain the project reference!")
+    | Some s -> ignore s
+    match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "FSharp.Core") with
+    | None -> Assert.Fail("Expected package to still contain the FSharp.Core reference!")
+    | Some s -> ignore s
