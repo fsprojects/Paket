@@ -848,9 +848,13 @@ type Dependencies(dependenciesFileName: string) =
             use fileStream = File.Open (nuspecFile, FileMode.Create)
             doc.Save fileStream
 
-    static member FixNuspecs (referencesFile:ReferencesFile, nuspecFileList:string list) =
+    static member FixNuspecs (projectFile: ProjectFile, referencesFile: ReferencesFile, nuspecFileList:string list) =
         let deps = Dependencies.Locate(Path.GetDirectoryName(referencesFile.FileName))
         let locked = deps.GetLockFile()
+        let projectReferences =
+            projectFile.GetAllReferencedProjects(onlyWithOutput = true, cache = PackProcessCache.empty)
+            |> List.map (fun proj -> proj.NameWithoutExtension)
+            |> Set.ofList
 
         // NuGet has thrown away "group" association, so this is best effort.
         let known =
@@ -867,6 +871,7 @@ type Dependencies(dependenciesFileName: string) =
             |> Seq.collect (fun kv -> kv.Value.NugetPackages)
             |> Seq.map (fun i -> i.Name)
             |> Set.ofSeq
+
         for nuspecFile in nuspecFileList do
             let nuspecText = File.ReadAllText nuspecFile
 
@@ -885,7 +890,9 @@ type Dependencies(dependenciesFileName: string) =
                         // Ignore unknown packages, see https://github.com/fsprojects/Paket/issues/2694
                         // TODO: Add some version sanity check here.
                         // Assert that the version we remove it not newer than what we have in our resolution!
-                        if known.Contains packName && not (directDeps.Contains (PackageName packageName)) then
+                        if known.Contains packName
+                           && not (projectReferences.Contains packageName)
+                           && not (directDeps.Contains (PackageName packageName)) then
                             nodesToRemove.Add node |> ignore
 
                 if nodesToRemove.Count = 0 then

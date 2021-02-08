@@ -663,7 +663,7 @@ let fixNuspecs silent (results : ParseResults<_>) =
     | Some projectFile ->
         let projectFile = Paket.ProjectFile.LoadFromFile(projectFile)
         let refFile = RestoreProcess.FindOrCreateReferencesFile projectFile
-        Dependencies.FixNuspecs (refFile, nuspecFiles)
+        Dependencies.FixNuspecs (projectFile, refFile, nuspecFiles)
     | None ->
         match results.TryGetResult FixNuspecsArgs.ReferencesFile with
         | Some referenceFile ->
