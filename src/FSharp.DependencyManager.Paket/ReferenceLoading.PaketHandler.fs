@@ -14,6 +14,7 @@ let userProfile =
 
 let tweakTargetFramework =
     function
+        | "net5.0" -> "net50"
         | "netcoreapp5.0" -> "net50"
         | targetFramework -> targetFramework
 
