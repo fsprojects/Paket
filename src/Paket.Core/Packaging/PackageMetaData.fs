@@ -414,7 +414,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
          yield! getPackages project]
 
     // filter out any references that are transitive
-    let distinctRefs = allReferences |> List.distinct
+    let distinctRefs = List.distinct allReferences
 
     let refs =
         distinctRefs
