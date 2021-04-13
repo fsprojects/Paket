@@ -3,7 +3,7 @@ module internal ReferenceLoading.PaketHandler
 
 open System
 open System.IO
-let PM_EXE = "paket.exe"
+
 let PM_DIR = ".paket"
 
 let userProfile =
@@ -14,6 +14,7 @@ let userProfile =
 
 let tweakTargetFramework =
     function
+        | "net5.0" -> "net50"
         | "netcoreapp5.0" -> "net50"
         | targetFramework -> targetFramework
 
@@ -58,26 +59,17 @@ let runningOnMono =
 
 /// Walks up directory structure and tries to find paket.exe
 let findPaketExe (prioritizedSearchPaths: string seq) (baseDir: DirectoryInfo) =
-    let prioritizedSearchPaths = prioritizedSearchPaths |> Seq.map (fun d -> DirectoryInfo d)
+    let dirs = [
+        yield! Seq.map DirectoryInfo prioritizedSearchPaths
+        yield! getDirectoryAndAllParentDirectories baseDir
+    ]
 
-    // for each given directory, we look for paket.exe and .paket/paket.exe
-    let getPaketAndExe (directory: DirectoryInfo) =
-        match directory.GetFiles(PM_EXE) with
-        | [| exe |] -> Some exe.FullName
-        | _ ->
-            match directory.GetDirectories(PM_DIR) with
-            | [| dir |] -> 
-                match dir.GetFiles(PM_EXE) with
-                | [| exe |] -> Some exe.FullName
-                | _ -> None
-            | _ -> None
-
-    let allDirs =
-        Seq.concat [prioritizedSearchPaths ; getDirectoryAndAllParentDirectories baseDir]
-        
-    allDirs
-    |> Seq.choose getPaketAndExe
-    |> Seq.tryHead
+    // for each given directory, we look for {paket,paket.exe} and .paket/{paket,paket.exe}
+    dirs
+    |> Seq.collect (fun dir -> [dir; yield! dir.GetDirectories(PM_DIR)])
+    |> Seq.allPairs ["paket"; "paket.exe"]
+    |> Seq.map (fun (name, dir) -> Path.Combine(dir.FullName, name))
+    |> Seq.tryFind File.Exists
 
 /// Resolves absolute load script location: something like
 /// baseDir/.paket/load/scriptName
@@ -197,14 +189,17 @@ let ResolveDependenciesForLanguage(fileType, targetFramework:string, prioritized
                     d, numberSplits)
                   |> Seq.sortByDescending snd
                   |> Seq.map fst
-                  |> Seq.map (fun d -> Path.Combine(d.FullName, "tools", PM_EXE))
+                  |> Seq.map (fun d -> Path.Combine(d.FullName, "tools"))
 
               let locations =
                 [
-                  yield Path.Combine(userProfile, PM_DIR, PM_EXE)
-                  yield Path.Combine(userProfile, ".dotnet", "tools", PM_EXE)
+                  Path.Combine(userProfile, PM_DIR)
+                  Path.Combine(userProfile, ".dotnet", "tools")
                   yield! nugetDirs
                 ]
+                |> Seq.allPairs ["paket"; "paket.exe"]
+                |> Seq.map (fun (name, dir) -> Path.Combine(dir, name))
+
               let result = locations |> Seq.tryFind File.Exists
               match result with
               | Some paketExe -> paketExe 
