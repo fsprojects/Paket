@@ -842,7 +842,7 @@ NUGET
       System.Reflection.Metadata (>= 1.4.2)
     ILRepack (2.0.18)
     Microsoft.AspNet.Razor (3.2.4)
-    Microsoft.NETCore.Platforms (2.0) - restriction: || (&& (>= monoandroid) (>= net461)) (&& (>= monotouch) (>= net461)) (&& (< net45) (>= net461) (>= netstandard1.5) (< netstandard1.6)) (&& (< net45) (>= net461) (< netstandard1.5)) (&& (>= net461) (< netstandard1.0)) (&& (>= net461) (< netstandard1.3)) (&& (>= net461) (< netstandard1.4)) (&& (>= net461) (< netstandard1.5) (>= uap10.0)) (&& (>= net461) (< netstandard2.0)) (&& (>= net461) (< portable-net45+win8+wpa81)) (&& (>= net461) (< portable-net451+win81+wpa81)) (&& (>= net461) (>= uap10.1)) (&& (>= net461) (>= xamarinios)) (&& (>= net461) (>= xamarinmac)) (&& (>= net461) (>= xamarintvos)) (&& (>= net461) (>= xamarinwatchos))
+    Microsoft.NETCore.Platforms (2.0) - restriction: || (&& (>= monotouch) (>= net461)) (&& (< net45) (>= net461) (>= netstandard1.5) (< netstandard1.6)) (&& (< net45) (>= net461) (< netstandard1.5)) (&& (>= net461) (< netstandard1.0)) (&& (>= net461) (< netstandard1.3)) (&& (>= net461) (< netstandard1.4)) (&& (>= net461) (< netstandard1.5) (>= uap10.0)) (&& (>= net461) (< netstandard2.0)) (&& (>= net461) (< portable-net45+win8+wpa81)) (&& (>= net461) (< portable-net451+win81+wpa81)) (&& (>= net461) (>= uap10.1))
     NETStandard.Library (2.0) - restriction: && (>= net461) (< netstandard2.0)
       Microsoft.NETCore.Platforms (>= 1.1)
     Octokit (0.29)
@@ -857,11 +857,9 @@ NUGET
       FSharp.Compiler.Service (>= 17.0.1 < 18.0)
       Microsoft.AspNet.Razor (>= 3.2.3 < 4.0)
       System.ValueTuple (>= 4.4 < 5.0)
-  remote: https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json
-    RoslynTools.MSBuild (0.4.0-alpha)
 GITHUB
   remote: fsharp/FAKE
-    modules/Octokit/Octokit.fsx (96f1594fd50ced6c1aa45d7cf74fb6c067d08ac1)
+    modules/Octokit/Octokit.fsx (13eee5a7b990fa310813f9760094aa3cfebeb33f)
       Octokit (>= 0.20)
   remote: enricosada/add_icon_to_exe
     rh/ResourceHacker.exe (e11eda501acea369ac2950beb34b8888495bf21f)

@@ -50,11 +50,6 @@ group Build
   # Note: this package was produced using https://github.com/jaredpar/xcopy-msbuild and contains the two directories ".NETFramework\v4.5" and ".NETPortable\v4.5"
   nuget 0x53A.ReferenceAssemblies.Paket 0.2.0
 
-  source https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json
-  nuget RoslynTools.MSBuild prerelease
-  # Note: RoslynTools.ReferenceAssemblies does not contain the required reference assemblies for net45, so I created 0x53A.ReferenceAssemblies.Paket. It is much smaller, anyway.
-  #nuget RoslynTools.ReferenceAssemblies prerelease
-
   # add icon to exe
   github enricosada/add_icon_to_exe:e11eda501acea369ac2950beb34b8888495bf21f rh/ResourceHacker.exe
 
