@@ -1,4 +1,4 @@
-#### 6.0.0-beta8 - 2020-12-13
+#### 6.0.0-beta9 - 2021-04-13
 * Full .NET Core / SDK compatible version
 * Support for XCode
 * Support for .NET 5.0
