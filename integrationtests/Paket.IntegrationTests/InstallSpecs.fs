@@ -324,17 +324,6 @@ let ``#1442 should warn on Rx-WinRT``() =
 
 
 [<Test>]
-[<Ignore("")>]
-let ``#1507 allows to download remote dependencies``() =
-    let scenario = "i001507-privateeye"
-
-    use __ = install scenario |> fst
-
-    File.Exists (Path.Combine(scenarioTempPath scenario, "paket-files", "forki", "PrivateEye", "privateeye.fsx")) |> shouldEqual true
-    File.Exists (Path.Combine(scenarioTempPath scenario, "paket-files", "forki", "PrivateEye", "bin", "PrivateEye.Bridge.dll")) |> shouldEqual true
-
-
-[<Test>]
 let ``#1663 should import build targets``() =
     use __ = install "i001663-build-targets" |> fst
     let newFile = Path.Combine(scenarioTempPath "i001663-build-targets","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
