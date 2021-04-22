@@ -171,7 +171,7 @@ type FrameworkVersion =
         | FrameworkVersion.V4_7_1 -> "471"
         | FrameworkVersion.V4_7_2 -> "472"
         | FrameworkVersion.V4_8 -> "48"
-        | FrameworkVersion.V5 -> "50"
+        | FrameworkVersion.V5 -> "5.0"
 
     static member TryParse s =
         match s with
