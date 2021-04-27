@@ -413,44 +413,46 @@ let getCacheDataFromExtractedPackage (packageName:PackageName) (version:SemVerIn
             return None
 }
 
-let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (getViaWebRequest : unit -> ODataSearchResult Async) : ODataSearchResult Async =
-    let writeCacheFile(result:NuGetPackageCache) =
-        let cacheFile = getCacheFiles force NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
-        let serialized = JsonConvert.SerializeObject(result)
-        let cachedData =
-            try
-                if cacheFile.Exists then
-                    use cacheReader = cacheFile.OpenText()
-                    cacheReader.ReadToEnd()
-                else ""
-            with
-            | ex ->
-                traceWarnfn "Can't read cache file %O:%s Message: %O" cacheFile Environment.NewLine ex
-                ""
-        if String.CompareOrdinal(serialized, cachedData) <> 0 then
-            File.WriteAllText(cacheFile.FullName, serialized)
+let writePackageDetailsCacheFile force nugetURL (packageName:PackageName) (version:SemVerInfo) (result:NuGetPackageCache) =
+    let cacheFile = getCacheFiles force NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
+    let serialized = JsonConvert.SerializeObject(result)
+    let cachedData =
+        try
+            if cacheFile.Exists then
+                use cacheReader = cacheFile.OpenText()
+                cacheReader.ReadToEnd()
+            else ""
+        with
+        | ex ->
+            traceWarnfn "Can't read cache file %O:%s Message: %O" cacheFile Environment.NewLine ex
+            ""
+    if String.CompareOrdinal(serialized, cachedData) <> 0 then
+        File.WriteAllText(cacheFile.FullName, serialized)
 
+let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (getViaWebRequest : unit -> ODataSearchResult Async) : ODataSearchResult Async =
     let getViaWebRequest () =
         async {
             let! result = getViaWebRequest()
             match result with
             | Match result ->
-                writeCacheFile result
+                writePackageDetailsCacheFile force nugetURL packageName version result
             | _ ->
                 // TODO: Should we cache 404? Probably not.
                 ()
             return result
         }
+
     async {
         match tryGetDetailsFromCache force nugetURL packageName version with
-        | None when force -> return! getViaWebRequest()
+        | None when force -> 
+            return! getViaWebRequest()
         | None ->
-            let! result = getCacheDataFromExtractedPackage packageName version
-            match result with
+            match! getCacheDataFromExtractedPackage packageName version with
             | Some result ->
-                writeCacheFile result
+                writePackageDetailsCacheFile force nugetURL packageName version result
                 return Match result
-            | _ -> return! getViaWebRequest()
+            | _ -> 
+                return! getViaWebRequest()
         | Some res -> return res
     }
 

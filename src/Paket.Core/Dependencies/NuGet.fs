@@ -377,7 +377,7 @@ let GetTargetsFiles(targetFolder, (pkg : PackageName)) =
 [<Obsolete "Use GetContent instead">]
 let GetAnalyzerFiles(targetFolder) = getFilesMatching targetFolder "*.dll" "analyzers" "analyzer dlls"
 
-let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
+let tryNuGetV3 (force, auth, nugetV3Url, package:PackageName) =
     NuGetV3.findVersionsForPackage(nugetV3Url, auth, package)
 
 
@@ -564,8 +564,8 @@ type GetVersionRequestResult =
     member x.Versions =
         x.Requests |> Array.collect (fun r -> r.Versions)
 
-let getVersionsCached key f (source, auth, nugetURL, package) =
-    let request:NuGetCache.NuGetRequestGetVersions = f (auth, nugetURL, package)
+let getVersionsCached key f (force, source, auth, nugetURL, package) =
+    let request:NuGetCache.NuGetRequestGetVersions = f (force, auth, nugetURL, package)
     NuGetCache.NuGetRequestGetVersions.ofFunc request.Url (fun _ ->
         async {
             match protocolCache.TryGetValue(source) with
@@ -616,16 +616,16 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
                        | NuGetV2 source ->
                             let auth = source.Authentication
                             if String.containsIgnoreCase "artifactory" source.Url then
-                                return [getVersionsCached "ODataNewestFirst" NuGetV2.tryGetAllVersionsFromNugetODataFindByIdNewestFirst (nugetSource, auth, source.Url, packageName) ]
+                                return [ getVersionsCached "ODataNewestFirst" NuGetV2.tryGetAllVersionsFromNugetODataFindByIdNewestFirst (force, nugetSource, auth, source.Url, packageName) ]
                             else
                                 let v2Feeds =
-                                    [ yield getVersionsCached "OData" NuGetV2.tryGetAllVersionsFromNugetODataFindById (nugetSource, auth, source.Url, packageName)
-                                      yield getVersionsCached "ODataWithFilter" NuGetV2.tryGetAllVersionsFromNugetODataWithFilter (nugetSource, auth, source.Url, packageName) ]
+                                    [ yield getVersionsCached "OData" NuGetV2.tryGetAllVersionsFromNugetODataFindById (force, nugetSource, auth, source.Url, packageName)
+                                      yield getVersionsCached "ODataWithFilter" NuGetV2.tryGetAllVersionsFromNugetODataWithFilter (force, nugetSource, auth, source.Url, packageName) ]
 
                                 return v2Feeds
                        | NuGetV3 source ->
                             let! versionsAPI = NuGetV3.getNuGetV3Resource source NuGetV3.AllVersionsAPI
-                            return [ getVersionsCached "V3" tryNuGetV3 (nugetSource, source.Authentication, versionsAPI, packageName) ]
+                            return [ getVersionsCached "V3" tryNuGetV3 (force, nugetSource, source.Authentication, versionsAPI, packageName) ]
                        | LocalNuGet(path,Some _) ->
                             return [ NuGetLocal.getAllVersionsFromLocalPath (true, path, packageName, alternativeProjectRoot, root) ]
                        | LocalNuGet(path,None) ->
