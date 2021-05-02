@@ -924,24 +924,26 @@ module FrameworkDetection =
                     |> Option.bind tryParseVersion
                 else
                     None
-            let (|MatchNet5DashOs|_|) tryParseSecondPart (s:string) =
+            let (|MatchNetXDashOs|_|) dotnetVersionX tryParseSecondPart (s:string) =
                 let parts = s.Split('-')
                 if parts.Length = 2 && s.StartsWith "net" then
                     let versionPart = parts.[0].Substring (3)
                     tryNormalizeVersion versionPart
                     |> function
-                    | Some "5" -> tryParseSecondPart parts.[1]
+                    | Some "5" when dotnetVersionX = 5 -> tryParseSecondPart parts.[1]
+                    | Some "6" when dotnetVersionX = 6  -> tryParseSecondPart parts.[1]
                     | _ -> None
                 else
                     None
-            let (|MatchNet5DashWindows|_|) tryParseVersion (s:string) =
+            let (|MatchNetXDashWindows|_|) dotnetVersionX tryParseVersion (s:string) =
                 let parts = s.Split('-')
                 if parts.Length = 2 && s.StartsWith "net" && parts.[1].StartsWith "win" then
                     let netVersionPart = parts.[0].Substring (3)
                     let winVersionPart = parts.[1].Substring (3)
                     tryNormalizeVersion netVersionPart
                     |> function
-                    | Some "5" -> tryParseVersion winVersionPart
+                    | Some "5"  when dotnetVersionX = 5 -> tryParseVersion winVersionPart
+                    | Some "6"  when dotnetVersionX = 6 -> tryParseVersion winVersionPart
                     | _ -> None
                 else
                     None
@@ -986,8 +988,10 @@ module FrameworkDetection =
                 | "net35-Unity Micro v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Micro)
                 | "net35-Unity Subset v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Subset)
                 | "net35-Unity Full v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Full)
-                | MatchNet5DashWindows Net5WindowsVersion.TryParse fm -> Some (DotNet5Windows fm)
-                | MatchNet5DashOs Net5Os.TryParse fm -> Some (DotNet5WithOs fm)
+                | MatchNetXDashWindows 5 Net5WindowsVersion.TryParse fm -> Some (DotNet5Windows fm)
+                | MatchNetXDashWindows 6 Net6WindowsVersion.TryParse fm -> Some (DotNet6Windows fm)
+                | MatchNetXDashOs 5 Net5Os.TryParse fm -> Some (DotNet5WithOs fm)
+                | MatchNetXDashOs 6 Net6Os.TryParse fm -> Some (DotNet6WithOs fm)
                 | ModifyMatchTfm skipFullAndClient "net" FrameworkVersion.TryParse fm -> Some (DotNetFramework fm)
                 // Backwards compat quirk (2017-08-20).
                 | "uap101" -> Some (UAP UAPVersion.V10_1)
@@ -1355,6 +1359,7 @@ module KnownTargetProfiles =
         FrameworkVersion.V4_7_2
         FrameworkVersion.V4_8
         FrameworkVersion.V5
+        FrameworkVersion.V6
     ]
 
     let DotNetFrameworkIdentifiers =

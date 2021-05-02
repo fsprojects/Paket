@@ -30,6 +30,8 @@ let ``Check that lists are updated``() =
         checkListEx tagReader cases l
     
     checkList KnownTargetProfiles.DotNetFrameworkVersions
+    checkList KnownTargetProfiles.DotNet6OperatingSystems
+    checkList KnownTargetProfiles.DotNet6WindowsVersions
     checkList KnownTargetProfiles.DotNet5OperatingSystems
     checkList KnownTargetProfiles.DotNet5WindowsVersions
     checkList KnownTargetProfiles.DotNetCoreAppVersions
@@ -205,6 +207,29 @@ let ``Can detect net5-windows10.0.19041``() =
 let ``Can detect net5000-windows10.0.19041``() =
     let p = PlatformMatching.forceExtractPlatforms "net5000-windows10.0.19041"
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet5Windows Net5WindowsVersion.V10_0_19041_0)))
+
+[<Test>]
+let ``Can detect a bunch of net6 platforms``() =
+  let testSet = [
+      "net6"                       , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V6)
+      "net6000"                    , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V6)
+      "net6.0-windows"             , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet6Windows Net6WindowsVersion.V7_0)
+      "net6-windows"               , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet6Windows Net6WindowsVersion.V7_0)
+      "net6.0-windows10.0.19041.0" , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet6Windows Net6WindowsVersion.V10_0_19041_0)
+      "net6.0-windows10.0.19041"   , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet6Windows Net6WindowsVersion.V10_0_19041_0)
+      "net6-windows10.0.19041"     , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet6Windows Net6WindowsVersion.V10_0_19041_0)
+      "net6000-windows10.0.19041"  , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet6Windows Net6WindowsVersion.V10_0_19041_0)
+    ]
+
+  let errors = [
+    for p, expected in testSet do
+      let parsed = (PlatformMatching.forceExtractPlatforms p).ToTargetProfile false
+      if parsed <> Some expected then
+        $"{p} resulted into %A{parsed} instead of {expected}"
+  ]
+
+  if not (List.isEmpty errors) then
+    failwith (String.concat "\n" errors)
 
 [<Test>]
 let ``Can detect netstandard1.6``() =
