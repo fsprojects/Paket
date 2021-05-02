@@ -80,6 +80,30 @@ type Net5WindowsVersion =
         | _ -> None
 
 [<RequireQualifiedAccess>]
+type Net6WindowsVersion =
+    | V7_0
+    | V8_0
+    | V10_0_17763_0
+    | V10_0_18362_0
+    | V10_0_19041_0
+    override this.ToString() =
+        match this with
+        | V7_0 -> "7.0"
+        | V8_0 -> "8.0"
+        | V10_0_17763_0 -> "10.0.17763.0"
+        | V10_0_18362_0 -> "10.0.18362.0"
+        | V10_0_19041_0 -> "10.0.19041.0"
+
+    static member TryParse s =
+        match s with
+        | "" | "7.0" | "7" -> Some Net6WindowsVersion.V7_0
+        | "8.0" | "8" -> Some Net6WindowsVersion.V8_0
+        | "10.0.17763.0" | "10.0.17763" -> Some Net6WindowsVersion.V10_0_17763_0
+        | "10.0.18362.0" | "10.0.18362" -> Some Net6WindowsVersion.V10_0_18362_0
+        | "10.0.19041.0" | "10.0.19041" -> Some Net6WindowsVersion.V10_0_19041_0
+        | _ -> None
+
+[<RequireQualifiedAccess>]
 type Net5Os =
     | Android
     | IOs
@@ -102,6 +126,31 @@ type Net5Os =
         | "tvos" -> Some Net5Os.TvOs
         | "watchos" -> Some Net5Os.WatchOs
         | _ -> None
+
+[<RequireQualifiedAccess>]
+type Net6Os =
+    | Android
+    | IOs
+    | MacOs
+    | TvOs
+    | WatchOs
+    override this.ToString() =
+        match this with
+        | Android -> "android"
+        | IOs -> "ios"
+        | MacOs -> "macos"
+        | TvOs -> "tvos"
+        | WatchOs -> "watchos"
+    
+    static member TryParse s =
+        match s with
+        | "android" -> Some Net6Os.Android
+        | "ios"     -> Some Net6Os.IOs
+        | "macos"   -> Some Net6Os.MacOs
+        | "tvos"    -> Some Net6Os.TvOs
+        | "watchos" -> Some Net6Os.WatchOs
+        | _ -> None
+
 
 [<RequireQualifiedAccess>]
 /// The Framework version.
@@ -620,6 +669,8 @@ type TizenVersion =
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 type FrameworkIdentifier =
     | DotNetFramework of FrameworkVersion
+    | DotNet6WithOs of Net6Os
+    | DotNet6Windows of Net6WindowsVersion
     | DotNet5WithOs of Net5Os
     | DotNet5Windows of Net5WindowsVersion
     | UAP of UAPVersion
@@ -645,6 +696,8 @@ type FrameworkIdentifier =
     override x.ToString() =
         match x with
         | DotNetFramework v -> "net" + v.ShortString()
+        | DotNet6WithOs o -> "net5.0-" + o.ToString()
+        | DotNet6Windows v -> "net5.0-windows" + v.ToString()
         | DotNet5WithOs o -> "net5.0-" + o.ToString()
         | DotNet5Windows v -> "net5.0-windows" + v.ToString()
         | DotNetStandard v -> "netstandard" + v.ShortString()
@@ -745,7 +798,7 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_7_2 -> [ DotNetFramework FrameworkVersion.V4_7_1 ]
         | DotNetFramework FrameworkVersion.V4_8 -> [ DotNetFramework FrameworkVersion.V4_7_2 ]
         | DotNetFramework FrameworkVersion.V5 -> [ DotNetCoreApp DotNetCoreAppVersion.V3_1; DotNetStandard DotNetStandardVersion.V2_1 ]
-        | DotNetFramework FrameworkVersion.V6 -> [ DotNetCoreApp DotNetCoreAppVersion.V3_1; DotNetStandard DotNetStandardVersion.V2_1 ]
+        | DotNetFramework FrameworkVersion.V6 -> [ DotNetFramework FrameworkVersion.V5 ]
         | DotNet5WithOs Net5Os.Android -> [ DotNetFramework FrameworkVersion.V5; MonoAndroid MonoAndroidVersion.V10 ]
         | DotNet5WithOs Net5Os.IOs -> [ DotNetFramework FrameworkVersion.V5; XamariniOS ]
         | DotNet5WithOs Net5Os.MacOs -> [ DotNetFramework FrameworkVersion.V5; XamarinMac ]
@@ -756,6 +809,16 @@ type FrameworkIdentifier =
         | DotNet5Windows Net5WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V5; DotNet5Windows Net5WindowsVersion.V8_0 ]
         | DotNet5Windows Net5WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V5; DotNet5Windows Net5WindowsVersion.V10_0_17763_0 ]
         | DotNet5Windows Net5WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V5; DotNet5Windows Net5WindowsVersion.V10_0_18362_0 ]
+        | DotNet6WithOs  Net6Os.Android -> [ DotNetFramework FrameworkVersion.V6; MonoAndroid MonoAndroidVersion.V10 ]
+        | DotNet6WithOs  Net6Os.IOs     -> [ DotNetFramework FrameworkVersion.V6; XamariniOS ]
+        | DotNet6WithOs  Net6Os.MacOs   -> [ DotNetFramework FrameworkVersion.V6; XamarinMac ]
+        | DotNet6WithOs  Net6Os.TvOs    -> [ DotNetFramework FrameworkVersion.V6; XamarinTV ]
+        | DotNet6WithOs  Net6Os.WatchOs -> [ DotNetFramework FrameworkVersion.V6; XamarinWatch ]
+        | DotNet6Windows Net6WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V6 ]
+        | DotNet6Windows Net6WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V6; DotNet6Windows Net6WindowsVersion.V7_0 ]
+        | DotNet6Windows Net6WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet6Windows Net6WindowsVersion.V8_0 ]
+        | DotNet6Windows Net6WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet6Windows Net6WindowsVersion.V10_0_17763_0 ]
+        | DotNet6Windows Net6WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet6Windows Net6WindowsVersion.V10_0_18362_0 ]
         | DotNetStandard DotNetStandardVersion.V1_0 -> [  ]
         | DotNetStandard DotNetStandardVersion.V1_1 -> [ DotNetStandard DotNetStandardVersion.V1_0 ]
         | DotNetStandard DotNetStandardVersion.V1_2 -> [ DotNetStandard DotNetStandardVersion.V1_1 ]
@@ -1326,6 +1389,30 @@ module KnownTargetProfiles =
         DotNet5WindowsVersions
         |> List.map (DotNet5Windows >> TargetProfile.SinglePlatform)
 
+    let DotNet6OperatingSystems = [
+        Net6Os.Android
+        Net6Os.IOs
+        Net6Os.MacOs
+        Net6Os.TvOs
+        Net6Os.WatchOs
+    ]
+
+    let DotNet6WithOsProfiles =
+        DotNet6OperatingSystems
+        |> List.map (DotNet6WithOs >> TargetProfile.SinglePlatform)
+
+    let DotNet6WindowsVersions = [
+        Net6WindowsVersion.V7_0
+        Net6WindowsVersion.V8_0
+        Net6WindowsVersion.V10_0_17763_0
+        Net6WindowsVersion.V10_0_18362_0
+        Net6WindowsVersion.V10_0_19041_0
+    ]
+
+    let DotNet6WindowsProfiles = 
+        DotNet6WindowsVersions
+        |> List.map (DotNet6Windows >> TargetProfile.SinglePlatform)
+
     let DotNetStandardVersions = [
         DotNetStandardVersion.V1_0
         DotNetStandardVersion.V1_1
@@ -1495,6 +1582,8 @@ module KnownTargetProfiles =
 
     let AllDotNetProfiles =
        DotNetFrameworkProfiles @
+       DotNet6WithOsProfiles @
+       DotNet6WindowsProfiles @
        DotNet5WithOsProfiles @
        DotNet5WindowsProfiles @
        DotNetUnityProfiles @
