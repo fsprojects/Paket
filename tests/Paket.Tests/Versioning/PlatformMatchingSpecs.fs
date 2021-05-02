@@ -225,7 +225,7 @@ let ``Can detect a bunch of net6 platforms``() =
     for p, expected in testSet do
       let parsed = (PlatformMatching.forceExtractPlatforms p).ToTargetProfile false
       if parsed <> Some expected then
-        $"{p} resulted into %A{parsed} instead of {expected}"
+        sprintf "%s resulted into %A instead of %A" p parsed expected
   ]
 
   if not (List.isEmpty errors) then
