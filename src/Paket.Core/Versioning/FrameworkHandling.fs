@@ -696,8 +696,8 @@ type FrameworkIdentifier =
     override x.ToString() =
         match x with
         | DotNetFramework v -> "net" + v.ShortString()
-        | DotNet6WithOs o -> "net5.0-" + o.ToString()
-        | DotNet6Windows v -> "net5.0-windows" + v.ToString()
+        | DotNet6WithOs o -> "net6.0-" + o.ToString()
+        | DotNet6Windows v -> "net6.0-windows" + v.ToString()
         | DotNet5WithOs o -> "net5.0-" + o.ToString()
         | DotNet5Windows v -> "net5.0-windows" + v.ToString()
         | DotNetStandard v -> "netstandard" + v.ShortString()
