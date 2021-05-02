@@ -1114,7 +1114,7 @@ module ProjectFile =
 
                 | Some x -> [prefix() + (x.Replace("v",""))]
 
-            match frameworks |> List.choose (fun s -> FrameworkDetection.Extract s |> Option.map TargetProfile.SinglePlatform) |> List.filter (fun x -> match x with TargetProfile.SinglePlatform(Unsupported _) -> false | _ -> true)  with
+            match frameworks |> List.choose (fun s -> FrameworkDetection.internalExtract s |> Option.map TargetProfile.SinglePlatform) |> List.filter (fun x -> match x with TargetProfile.SinglePlatform(Unsupported _) -> false | _ -> true)  with
             | [] -> [TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4)]
             | xs -> xs
 

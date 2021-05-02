@@ -51,7 +51,7 @@ module internal NuSpecParserHelper =
             [{ AssemblyName = name; FrameworkRestrictions = ExplicitRestriction FrameworkRestriction.NoRestriction }]
         | Some name, Some targetFrameworks ->
             targetFrameworks.Split([|','; ' '|],System.StringSplitOptions.RemoveEmptyEntries)
-            |> Array.choose FrameworkDetection.Extract
+            |> Array.choose FrameworkDetection.internalExtract
             |> Array.filter (fun x -> match x with Unsupported _ -> false | _ -> true)
             |> Array.map (fun fw -> 
                 { AssemblyName = name

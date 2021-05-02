@@ -5,6 +5,8 @@ open NUnit.Framework
 open Paket.IntegrationTests.TestHelpers
 open Paket
 
+#nowarn "0044" //  Warning FS0044 This construct is deprecated. Use PlatformMatching.extractPlatforms instead
+
 let makeScenarioPath scenario    = Path.Combine("loading-scripts", scenario)
 let paket command scenario       = paket command (makeScenarioPath scenario)
 let directPaket command scenario = directPaket command (makeScenarioPath scenario)

@@ -30,7 +30,7 @@ let private extractPlatformsPriv = memoize (fun path ->
     let splits = split path
     let platforms =
         splits
-        |> Array.choose FrameworkDetection.Extract
+        |> Array.choose FrameworkDetection.internalExtract
         |> Array.toList
 
     if platforms.Length = 0 then

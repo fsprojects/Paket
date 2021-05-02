@@ -774,7 +774,7 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
             |> Option.map (fun s ->
                 s.Split([|';'|], StringSplitOptions.RemoveEmptyEntries)
                 |> Array.map (fun s -> s.Trim())
-                |> Array.choose FrameworkDetection.Extract
+                |> Array.choose FrameworkDetection.internalExtract
                 |> Array.filter (fun x -> match x with Unsupported _ -> false | _ -> true))
 
         let tasks =
