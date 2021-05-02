@@ -127,6 +127,7 @@ type FrameworkVersion =
     | V4_7_2
     | V4_8
     | V5
+    | V6
     override this.ToString() =
         match this with
         | V1        -> "v1.0"
@@ -149,6 +150,7 @@ type FrameworkVersion =
         | V4_7_2    -> "v4.7.2"
         | V4_8      -> "v4.8"
         | V5        -> "v5.0"
+        | V6        -> "v6.0"
 
     member this.ShortString() =
         match this with
@@ -172,6 +174,7 @@ type FrameworkVersion =
         | FrameworkVersion.V4_7_2 -> "472"
         | FrameworkVersion.V4_8 -> "48"
         | FrameworkVersion.V5 -> "5.0"
+        | FrameworkVersion.V6 -> "6.0"
 
     static member TryParse s =
         match s with
@@ -195,6 +198,7 @@ type FrameworkVersion =
         | "4.7.2" -> Some FrameworkVersion.V4_7_2
         | "4.8" -> Some FrameworkVersion.V4_8
         | "5" -> Some FrameworkVersion.V5
+        | "6" -> Some FrameworkVersion.V6
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -741,6 +745,7 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_7_2 -> [ DotNetFramework FrameworkVersion.V4_7_1 ]
         | DotNetFramework FrameworkVersion.V4_8 -> [ DotNetFramework FrameworkVersion.V4_7_2 ]
         | DotNetFramework FrameworkVersion.V5 -> [ DotNetCoreApp DotNetCoreAppVersion.V3_1; DotNetStandard DotNetStandardVersion.V2_1 ]
+        | DotNetFramework FrameworkVersion.V6 -> [ DotNetCoreApp DotNetCoreAppVersion.V3_1; DotNetStandard DotNetStandardVersion.V2_1 ]
         | DotNet5WithOs Net5Os.Android -> [ DotNetFramework FrameworkVersion.V5; MonoAndroid MonoAndroidVersion.V10 ]
         | DotNet5WithOs Net5Os.IOs -> [ DotNetFramework FrameworkVersion.V5; XamariniOS ]
         | DotNet5WithOs Net5Os.MacOs -> [ DotNetFramework FrameworkVersion.V5; XamarinMac ]
