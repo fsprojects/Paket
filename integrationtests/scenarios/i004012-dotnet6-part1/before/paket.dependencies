@@ -1,0 +1,7 @@
+version 6.0.0-beta10
+
+source https://api.nuget.org/v3/index.json
+framework: net6.0
+storage: none
+
+nuget Argu = 6.1.1

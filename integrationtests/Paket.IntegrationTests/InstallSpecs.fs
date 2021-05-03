@@ -436,6 +436,11 @@ let ``#3062 install should use external lock file``() =
     newLockFile.Groups.[GroupName "main"].Resolution.ContainsKey (PackageName "FAKE") |> shouldEqual true
     newLockFile.Groups.[GroupName "main"].Resolution.[PackageName "Machine.Specifications"].Version |> shouldEqual (SemVer.Parse "0.12")
 
+[<Test>]
+let ``#4012 Support .net 6 (part 1)``() =
+    let cleanup, newLockFile = install "i004012-dotnet6-part1"
+    use __ = cleanup
+    newLockFile.Groups.[GroupName "main"].Resolution.ContainsKey (PackageName "Argu") |> shouldEqual true
 
 #if INTERACTIVE
 ;;
