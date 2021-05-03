@@ -4,6 +4,8 @@ open Paket
 open NUnit.Framework
 open FsUnit
 
+#nowarn "0044" //  Warning FS0044 This construct is deprecated. Use PlatformMatching.extractPlatforms instead
+
 [<Test>]
 let ``should understand basic framework versions net20, net40, net45 ...``() = 
     FrameworkDetection.Extract("net20").Value |> shouldEqual (DotNetFramework(FrameworkVersion.V2))

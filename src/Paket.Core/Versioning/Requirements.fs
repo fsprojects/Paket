@@ -704,13 +704,13 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
                     match fw2 with
                     | None ->
                         let handlers =
-                            [ FrameworkDetection.Extract >> Option.map FrameworkRestriction.AtLeast
+                            [ FrameworkDetection.internalExtract >> Option.map FrameworkRestriction.AtLeast
                               extractProfile >> Option.map FrameworkRestriction.AtLeastPlatform ]
 
                         tryParseFramework handlers fw1
 
                     | Some fw2 ->
-                        let tryParse = tryParseFramework [FrameworkDetection.Extract]
+                        let tryParse = tryParseFramework [FrameworkDetection.internalExtract]
 
                         match tryParse fw1, tryParse fw2 with
                         | Some x, Some y -> Some (FrameworkRestriction.Between (x, y))
@@ -722,7 +722,7 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
                 let fw, remaining = frameworkToken (x.Substring 1)
 
                 let handlers =
-                    [ FrameworkDetection.Extract >> Option.map FrameworkRestriction.Exactly ]
+                    [ FrameworkDetection.internalExtract >> Option.map FrameworkRestriction.Exactly ]
 
                 tryParseFramework handlers fw, remaining
 
@@ -731,7 +731,7 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
                 let fw, remaining = frameworkToken (x.Substring 2)
 
                 let handlers =
-                    [ FrameworkDetection.Extract >> Option.map FrameworkRestriction.Exactly ]
+                    [ FrameworkDetection.internalExtract >> Option.map FrameworkRestriction.Exactly ]
 
                 tryParseFramework handlers fw, remaining
 
@@ -739,7 +739,7 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
                 let fw, remaining = frameworkToken x
 
                 let handlers =
-                    [ FrameworkDetection.Extract >> Option.map FrameworkRestriction.Exactly
+                    [ FrameworkDetection.internalExtract >> Option.map FrameworkRestriction.Exactly
                       extractProfile >> Option.map FrameworkRestriction.AtLeastPlatform ]
 
                 tryParseFramework handlers fw, remaining

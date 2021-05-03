@@ -810,9 +810,9 @@ module FrameworkDetection =
 
 
     open Logging
+
     /// parse a string to construct a Netframework, NetCore, NetStandard, or other dotnet identifier
-    [<Obsolete "Use PlatformMatching.extractPlatforms instead">]
-    let Extract =
+    let internal internalExtract =
         memoize
           (fun (path:string) ->
             let path = KnownAliases.normalizeFramework path
@@ -962,6 +962,10 @@ module FrameworkDetection =
                 | _ -> None
             result)
 
+    /// parse a string to construct a Netframework, NetCore, NetStandard, or other dotnet identifier
+    [<Obsolete "Use PlatformMatching.extractPlatforms instead">]
+    let Extract path = internalExtract path
+
     let DetectFromPath(path : string) : FrameworkIdentifier option =
         let path = path.Replace("\\", "/").ToLower()
         let fi = new FileInfo(path)
@@ -972,7 +976,7 @@ module FrameworkDetection =
             let endPos = path.LastIndexOf(fi.Name,StringComparison.OrdinalIgnoreCase)
             if startPos < 0 || endPos < 0 then None
             else
-                Extract(path.Substring(startPos + 4, endPos - startPos - 5))
+                internalExtract(path.Substring(startPos + 4, endPos - startPos - 5))
 
 
 type PortableProfileType =

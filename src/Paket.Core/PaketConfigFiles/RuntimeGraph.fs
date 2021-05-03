@@ -59,7 +59,7 @@ module RuntimeGraphParser =
             { Name = t.Key
               Supported =
                 [ for s in t.Value :?> JObject :> IEnumerable<KeyValuePair<string, JToken>> do
-                    match FrameworkDetection.Extract s.Key with
+                    match FrameworkDetection.internalExtract s.Key with
                     | Some (Unsupported _ ) -> ()
                     | Some fid ->
                         yield fid,

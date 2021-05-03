@@ -288,7 +288,7 @@ module internal TemplateFile =
     let private (|Framework|_|) (line:string) =
         match line.Trim()  with
         | String.RemovePrefix "framework:" trimmed ->
-            match FrameworkDetection.Extract trimmed with
+            match FrameworkDetection.internalExtract trimmed with
             | Some _ as fw -> Some fw
             | None ->
                 failwithf "Unable to identify a framework from '%s'" trimmed
