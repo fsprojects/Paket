@@ -122,4 +122,4 @@ often very useful to add some tools to your shell/IDE/Text Editor of choice.
 * [Editor support](editor-support.html)
 * [Shell completion](shell-completion.html)
 
-For next steps check out the [Getting Started](getting-started.html) section.
+For next steps check out the [Getting Started](get-started.html) section.
