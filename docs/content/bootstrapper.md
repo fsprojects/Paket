@@ -1,4 +1,4 @@
-# `paket.bootstrapper.exe`
+# The Paket bootstrapper (paket.bootstrapper.exe)
 
 The bootstrapper downloads the latest stable `paket.exe`. By default, the
 bootstrapper caches downloaded versions of `paket.exe` for the current user
