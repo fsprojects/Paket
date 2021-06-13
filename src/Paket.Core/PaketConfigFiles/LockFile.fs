@@ -68,7 +68,7 @@ module LockFileSerializer =
         match options.Settings.CopyContentToOutputDirectory with
         | Some CopyToOutputDirectorySettings.Always -> yield "COPY-CONTENT-TO-OUTPUT-DIR: ALWAYS"
         | Some CopyToOutputDirectorySettings.Never -> yield "COPY-CONTENT-TO-OUTPUT-DIR: NEVER"
-        | Some CopyToOutputDirectorySettings.PreserveNewest -> yield "COPY-CONTENT-TO-OUTPUT-DIR: PRESERVE-NEWEST"
+        | Some CopyToOutputDirectorySettings.PreserveNewest -> yield "COPY-CONTENT-TO-OUTPUT-DIR: PRESERVE_NEWEST"
         | None -> ()
 
         match options.Settings.ImportTargets with
