@@ -997,3 +997,4 @@ let ``allow repositoryFull``() =
     let nuspec = File.ReadAllText(nuspecFile.FullName)
     let expected = """<repository type="git" url="https://github.com/my-org/my-custom-repo" branch="test-branch" commit="e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3" />"""
     if not (nuspec.Contains expected) then
+        failwith nuspec
