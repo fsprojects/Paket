@@ -117,6 +117,8 @@ field of the same name in the `.nupkg`.
 * `licenseUrl` (deprecated by NuGet)
 * `repositoryType`
 * `repositoryUrl`
+* `repositoryBranch` (requires `repositoryUrl` + Nuget 4.7+)
+* `repositoryCommit` (requires `repositoryUrl` + Nuget 4.7+)
 * `copyright`
 * `requireLicenseAcceptance` (`true` or `false`)
 * `tags`

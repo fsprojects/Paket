@@ -2090,6 +2090,8 @@ type ProjectFile with
             Copyright = prop "Copyright"
             RepositoryType = prop "RepositoryType"
             RepositoryUrl = prop "RepositoryUrl"
+            RepositoryBranch = prop "RepositoryBranch"
+            RepositoryCommit = prop "RepositoryCommit"
             RequireLicenseAcceptance = propMap "RequireLicenseAcceptance" false tryBool
             Tags = propMap "Tags" [] splitString
             DevelopmentDependency = propMap "DevelopmentDependency" false tryBool

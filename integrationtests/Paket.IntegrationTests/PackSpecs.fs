@@ -943,3 +943,57 @@ let ``#3983-dont-remove-packed-projects``() =
     match nuspec.Dependencies.Value |> Seq.tryFind (fun (name,_,_) -> name = PackageName "FSharp.Core") with
     | None -> Assert.Fail("Expected package to still contain the FSharp.Core reference!")
     | Some s -> ignore s
+
+
+[<Test>]
+let ``allow repositoryBranch``() =
+    let scenario = "i003707-repositoryBranch"
+
+    let outPath = Path.Combine(scenarioTempPath scenario,"out")
+    use __ = paket ("pack version 1.0.0 output \"" + outPath + "\" -v") scenario |> fst
+
+    let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
+
+    let unzippedNupkgPath = Path.Combine(outPath, "Extracted")
+    ZipFile.ExtractToDirectory(package, unzippedNupkgPath)
+
+    let nuspecFile = FileInfo(Path.Combine(unzippedNupkgPath, "A.Source.nuspec"))
+    let nuspec = File.ReadAllText(nuspecFile.FullName)
+    let expected = """<repository type="git" url="https://github.com/my-org/my-custom-repo" branch="test-branch" />"""
+    if not (nuspec.Contains expected) then
+        failwith nuspec
+
+[<Test>]
+let ``allow repositoryCommit``() =
+    let scenario = "i003707-repositoryCommit"
+
+    let outPath = Path.Combine(scenarioTempPath scenario,"out")
+    use __ = paket ("pack version 1.0.0 output \"" + outPath + "\" -v") scenario |> fst
+
+    let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
+
+    let unzippedNupkgPath = Path.Combine(outPath, "Extracted")
+    ZipFile.ExtractToDirectory(package, unzippedNupkgPath)
+
+    let nuspecFile = FileInfo(Path.Combine(unzippedNupkgPath, "A.Source.nuspec"))
+    let nuspec = File.ReadAllText(nuspecFile.FullName)
+    let expected = """<repository type="git" url="https://github.com/my-org/my-custom-repo" commit="e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3" />"""
+    if not (nuspec.Contains expected) then
+        failwith nuspec
+
+[<Test>]
+let ``allow repositoryFull``() =
+    let scenario = "i003707-repositoryFull"
+
+    let outPath = Path.Combine(scenarioTempPath scenario,"out")
+    use __ = paket ("pack version 1.0.0 output \"" + outPath + "\" -v") scenario |> fst
+
+    let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
+
+    let unzippedNupkgPath = Path.Combine(outPath, "Extracted")
+    ZipFile.ExtractToDirectory(package, unzippedNupkgPath)
+
+    let nuspecFile = FileInfo(Path.Combine(unzippedNupkgPath, "A.Source.nuspec"))
+    let nuspec = File.ReadAllText(nuspecFile.FullName)
+    let expected = """<repository type="git" url="https://github.com/my-org/my-custom-repo" branch="test-branch" commit="e1c65e4524cd70ee6e22abe33e6cb6ec73938cb3" />"""
+    if not (nuspec.Contains expected) then
