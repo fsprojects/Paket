@@ -1,4 +1,7 @@
 source https://nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
+
+storage: none
 content: none
 
 nuget Newtonsoft.Json >= 10.0.3 redirects: force
@@ -12,11 +15,13 @@ nuget System.Security.Cryptography.ProtectedData >= 4.4
 nuget NETStandard.Library ~> 2.0
 nuget Microsoft.NETCore.App ~> 2.1
 nuget System.Net.Http.WinHttpHandler >= 4.5
+nuget Microsoft.NETFramework.ReferenceAssemblies.net461
+nuget Nuget.Packaging
 
 # tests
 nuget Moq
 nuget FSCheck
-nuget FSharp.Compiler.Service >= 37
+nuget FSharp.Compiler.Service
 
 nuget NUnit ~> 3.12.0
 nuget NUnit3TestAdapter ~> 3.13.0
@@ -29,6 +34,7 @@ github forki/FsUnit FsUnit.fs
 group NetCoreTools
   storage: none
   source https://nuget.org/api/v2
+  source https://api.nuget.org/v3/index.json
 
   nuget SourceLink.Create.CommandLine 2.1.1
   nuget SourceLink.Embed.PaketFiles 2.1.1
@@ -37,6 +43,7 @@ group Build
   content: none
   framework >= net461
   source https://nuget.org/api/v2
+  source https://api.nuget.org/v3/index.json
   source https://ci.appveyor.com/nuget/fsharp-formatting
 
   nuget FAKE < 5
@@ -55,4 +62,5 @@ group Build
 
 group FSharpDepManagerExtension
   source https://nuget.org/api/v2
+  source https://api.nuget.org/v3/index.json
   nuget FSharp.Core = 5.0.0 redirects: force

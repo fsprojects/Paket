@@ -5,6 +5,8 @@ Chessie
 System.Security.Cryptography.ProtectedData
 System.Net.Http.WinHttpHandler
 System.Net.Http
+Microsoft.NETFramework.ReferenceAssemblies.net461
+Nuget.Packaging
 
 File:Globbing.fs Common\
 File:AssemblyReader.fs Common\
