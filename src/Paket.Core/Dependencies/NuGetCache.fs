@@ -470,12 +470,12 @@ let private signingContext = Signing.ClientPolicyContext.GetClientPolicy(nugetSe
 let private extractionContext = NuGet.Packaging.PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.Compress, signingContext, NuGet.Common.NullLogger.Instance)
 
 /// Extracts the given package to the user folder
-let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, kind:PackageResolver.ResolvedPackageKind) =
+let rec ExtractPackageToUserFolder(source: PackageSource, fileName:string, packageName:PackageName, version:SemVerInfo, kind:PackageResolver.ResolvedPackageKind) =
     async {
         let dir = GetPackageUserFolderDir (packageName, version, kind)
 
         if kind = PackageResolver.ResolvedPackageKind.DotnetCliTool then
-            let! _ = ExtractPackageToUserFolder(fileName, packageName, version, PackageResolver.ResolvedPackageKind.Package)
+            let! _ = ExtractPackageToUserFolder(source, fileName, packageName, version, PackageResolver.ResolvedPackageKind.Package)
             ()
 
         let targetFolder = DirectoryInfo(dir)
@@ -487,7 +487,8 @@ let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, ver
         else
             use packageFileStream = System.IO.File.OpenRead fileName
             let! ctok = Async.CancellationToken
-            let! _extractedFiles = NuGet.Packaging.PackageExtractor.ExtractPackageAsync(fileName, packageFileStream, pathResolver, extractionContext, ctok) |> Async.AwaitTask
+            let packageSource = source.Url
+            let! _extractedFiles = NuGet.Packaging.PackageExtractor.ExtractPackageAsync(packageSource, packageFileStream, pathResolver, extractionContext, ctok) |> Async.AwaitTask
             extractZipToDirectory fileName targetFolder.FullName
 
             let fi = FileInfo fileName
