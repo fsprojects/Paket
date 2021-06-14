@@ -455,6 +455,20 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
         | Some res -> return res
     }
 
+let private pathResolver = NuGet.Packaging.PackagePathResolver(Constants.UserNuGetPackagesFolder, useSideBySidePaths = false)
+let private nugetSettings = { new NuGet.Configuration.ISettings with
+                                    override this.AddOrUpdate(sectionName: string, item: NuGet.Configuration.SettingItem): unit = ()
+                                    override this.GetConfigFilePaths(): Collections.Generic.IList<string> = ResizeArray() :> _
+                                    override this.GetConfigRoots(): Collections.Generic.IList<string> = ResizeArray () :> _
+                                    override this.GetSection(sectionName: string): NuGet.Configuration.SettingSection = null
+                                    override this.Remove(sectionName: string, item: NuGet.Configuration.SettingItem): unit = ()
+                                    override this.SaveToDisk(): unit = ()
+                                    [<CLIEvent>]
+                                    override this.SettingsChanged: IEvent<EventHandler,EventArgs> = Event<EventHandler,EventArgs>().Publish
+                                    }
+let private signingContext = Signing.ClientPolicyContext.GetClientPolicy(nugetSettings, NuGet.Common.NullLogger.Instance)
+let private extractionContext = NuGet.Packaging.PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.Compress, signingContext, NuGet.Common.NullLogger.Instance)
+
 /// Extracts the given package to the user folder
 let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, kind:PackageResolver.ResolvedPackageKind) =
     async {
@@ -472,38 +486,25 @@ let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, ver
                 verbosefn "%O %O already extracted" packageName version
         else
             use packageFileStream = System.IO.File.OpenRead fileName
-            let pathResolver = NuGet.Packaging.PackagePathResolver(Constants.UserNuGetPackagesFolder, useSideBySidePaths = false)
             let! ctok = Async.CancellationToken
-            let nugetSettings = { new NuGet.Configuration.ISettings with
-                                    override this.AddOrUpdate(sectionName: string, item: NuGet.Configuration.SettingItem): unit = ()
-                                    override this.GetConfigFilePaths(): Collections.Generic.IList<string> = ResizeArray() :> _
-                                    override this.GetConfigRoots(): Collections.Generic.IList<string> = ResizeArray () :> _
-                                    override this.GetSection(sectionName: string): NuGet.Configuration.SettingSection = null
-                                    override this.Remove(sectionName: string, item: NuGet.Configuration.SettingItem): unit = ()
-                                    override this.SaveToDisk(): unit = ()
-                                    [<CLIEvent>]
-                                    override this.SettingsChanged: IEvent<EventHandler,EventArgs> = Event<EventHandler,EventArgs>().Publish
-                                    }
-            let signingContext = Signing.ClientPolicyContext.GetClientPolicy(nugetSettings, NuGet.Common.NullLogger.Instance)
-            let extractionContext = NuGet.Packaging.PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.Compress, signingContext, NuGet.Common.NullLogger.Instance)
             let! _extractedFiles = NuGet.Packaging.PackageExtractor.ExtractPackageAsync(fileName, packageFileStream, pathResolver, extractionContext, ctok) |> Async.AwaitTask
             extractZipToDirectory fileName targetFolder.FullName
-            
+
             let fi = FileInfo fileName
             let targetPackageFileName = Path.Combine(targetFolder.FullName, fi.Name)
             if normalizePath fileName <> normalizePath targetPackageFileName then
                 File.Copy(fileName,targetPackageFileName,true)
-            
+
             let cachedHashFile = Path.Combine(Constants.NuGetCacheFolder,fi.Name + ".sha512")
             if not (File.Exists cachedHashFile) then
                 let packageHash = getSha512File fileName
                 File.WriteAllText(cachedHashFile,packageHash)
             File.Copy(cachedHashFile,targetPackageFileName + ".sha512")
-            
+
             cleanup targetFolder
             if verbose then
                 verbosefn "%O %O unzipped to %s" packageName version targetFolder.FullName
-                
+
         return targetFolder.FullName
     }
 
