@@ -310,10 +310,19 @@ let mergeLibs = [
     "FSharp.Core.dll"
     "Mono.Cecil.dll"
     "Newtonsoft.Json.dll"
+    "NuGet.Common.dll"
+    "NuGet.Configuration.dll"
+    "NuGet.Frameworks.dll"
+    "NuGet.Packaging.dll"
+    "NuGet.Versioning.dll"
     "Paket.Core.dll"
     "paket.exe"
     "System.Buffers.dll"
+    "System.Configuration.ConfigurationManager.dll"
     "System.Net.Http.WinHttpHandler.dll"
+    "System.Security.Cryptography.Cng.dll"
+    "System.Security.Cryptography.Pkcs.dll"
+    "System.Threading.Tasks.Extensions.dll"
 ]
 
 Target "MergePaketTool" (fun _ ->
