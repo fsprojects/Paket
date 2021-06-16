@@ -17,7 +17,9 @@ let rec filesInDir (dir: DirectoryInfo) = seq {
 
 [<Test>]
 let ``download extracts with correct permissions``() =
-    let tempScenarioDir = scenarioTempPath "extracted-package-permissions"
+    let scenario = "extracted-package-permissions"
+    let tempScenarioDir = scenarioTempPath scenario
+    use cleanup = prepare scenario
     let localNugetDir = Path.Combine(tempScenarioDir, ".nuget")
     let _ = directPaketInPathExWithEnv "install" (scenarioTempPath "extracted-package-permissions") [Paket.Constants.GlobalPackagesFolderEnvironmentKey, localNugetDir]
     // after this install, the package should have been extracted. we 
