@@ -372,7 +372,7 @@ Target "RunIntegrationTestsNetCore" (fun _ ->
     DotNetCli.Test (fun c ->
         { c with
             Project = "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
-            Framework = "netcoreapp3.0"
+            Framework = "netcoreapp3.1"
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
                 sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]

@@ -8,3 +8,7 @@ Mono.Cecil
 System.Security.Cryptography.ProtectedData
 System.Net.Http.WinHttpHandler
 System.Net.Http
+Nuget.Packaging
+Microsoft.Win32.Registry
+System.Diagnostics.Process
+System.Diagnostics.TraceSource

@@ -13,6 +13,7 @@
     </Compile>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="TestHelper.fs" />
+    <Compile Include="NugetDownloadSpecs.fs" />
     <Compile Include="InitSpecs.fs" />
     <Compile Include="InfoSpecs.fs" />
     <Compile Include="OutdatedSpecs.fs" />

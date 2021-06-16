@@ -198,6 +198,10 @@ let directToolEx env isPaket toolInfo commands workingDir =
 let directPaketInPathEx command scenarioPath =
     directToolEx [] true paketToolPath command scenarioPath
 
+let directPaketInPathExWithEnv command scenarioPath env =
+    directToolEx env true paketToolPath command scenarioPath
+
+
 let checkResults msgs =
     msgs
     |> Seq.filter OutputMsg.isError

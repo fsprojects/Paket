@@ -17,6 +17,8 @@ nuget Microsoft.NETCore.App ~> 2.1
 nuget System.Net.Http.WinHttpHandler >= 4.5
 nuget Microsoft.NETFramework.ReferenceAssemblies.net461
 nuget Nuget.Packaging
+nuget Microsoft.Win32.Registry
+nuget System.Diagnostics.TraceSource
 
 # tests
 nuget Moq
