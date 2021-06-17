@@ -21,7 +21,7 @@ let ``download extracts with correct permissions``() =
     let tempScenarioDir = scenarioTempPath scenario
     use cleanup = prepare scenario
     let localNugetDir = Path.Combine(tempScenarioDir, ".nuget")
-    let _ = directPaketInPathExWithEnv "install" (scenarioTempPath "extracted-package-permissions") [Paket.Constants.GlobalPackagesFolderEnvironmentKey, localNugetDir]
+    let _ = directPaketInPathExWithEnv "restore" (scenarioTempPath "extracted-package-permissions") [Paket.Constants.GlobalPackagesFolderEnvironmentKey, localNugetDir]
     // after this install, the package should have been extracted. we 
     let dirWithBinaries = Path.Combine(localNugetDir, "microsoft.playwright", "1.12.1", "Drivers", "node") |> DirectoryInfo
     if not dirWithBinaries.Exists then Assert.Fail($"Expected the per-test nuget cache to exist.")
