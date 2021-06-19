@@ -2082,6 +2082,7 @@ type ProjectFile with
             Owners = propMap "Owners" [] splitString
             ReleaseNotes = prop "ReleaseNotes"
             Summary = prop "Summary"
+            Readme = prop "Readme"
             Language = prop "Langauge"
             ProjectUrl = prop "ProjectUrl"
             IconUrl = prop "IconUrl"

@@ -1,15 +1,12 @@
 ﻿module Paket.TemplateFile.Test
 
 open System.IO
-open System.IO
 open Paket
 open Chessie.ErrorHandling
 open FsUnit
 open NUnit.Framework
 open Paket.TestHelpers
 open Paket.Domain
-open Paket.Requirements
-open System.Text.RegularExpressions
 
 [<Literal>]
 let FileBasedShortDesc = """type file
@@ -168,6 +165,8 @@ packageTypes
     DotnetTool, Template
 summary
     Railway-oriented programming for .NET
+readme
+    README.md
 dependencies
      FSharp.Core 4.3.1
      My.OtherThing
@@ -198,6 +197,7 @@ let ``Optional fields are read`` (fileContent : string) =
     sut.Title |> shouldEqual (Some "Chessie.Rop")
     sut.Copyright |> shouldEqual (Some "Copyright 2015")
     sut.Summary |> shouldEqual (Some "Railway-oriented programming for .NET")
+    sut.Readme |> shouldEqual (Some "README.md")
     sut.IconUrl |> shouldEqual (Some "https://raw.githubusercontent.com/fsprojects/Chessie/master/docs/files/img/logo.png")
     sut.LicenseExpression |> shouldEqual (Some "Unlicense")
     sut.ProjectUrl |> shouldEqual (Some "http://github.com/fsprojects/Chessie")

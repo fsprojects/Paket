@@ -7,7 +7,6 @@ open System.Text.RegularExpressions
 open Chessie.ErrorHandling
 open Paket.Domain
 open Paket.InterprojectReferencesConstraint
-open Paket.Requirements
 
 module private TemplateParser =
     type private ParserState =
@@ -142,6 +141,7 @@ type OptionalPackagingInfo =
       Owners : string list
       ReleaseNotes : string option
       Summary : string option
+      Readme : string option
       Language : string option
       ProjectUrl : string option
       IconUrl : string option
@@ -173,6 +173,7 @@ type OptionalPackagingInfo =
           Owners = []
           ReleaseNotes = None
           Summary = None
+          Readme = None
           Language = None
           ProjectUrl = None
           LicenseExpression = None
@@ -538,6 +539,7 @@ module internal TemplateFile =
           Owners = owners
           ReleaseNotes = get "releaseNotes"
           Summary = get "summary"
+          Readme = get "readme"
           Language = get "language"
           ProjectUrl = get "projectUrl"
           IconUrl = get "iconUrl"

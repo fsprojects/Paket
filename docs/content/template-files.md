@@ -110,6 +110,7 @@ field of the same name in the `.nupkg`.
 * `owners`
 * `releaseNotes`
 * `summary`
+* `readme`: This is a path to the readme file inside the package. It should be packaged in the `files` block (see below).
 * `language`
 * `projectUrl`
 * `iconUrl`
