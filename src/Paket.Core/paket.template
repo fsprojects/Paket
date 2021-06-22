@@ -13,4 +13,6 @@ tags
 include-pdbs true
 dependencies
   framework: net461
+    FSharp.Core >= LOCKEDVERSION
   framework: netstandard2.0
+    FSharp.Core >= LOCKEDVERSION
