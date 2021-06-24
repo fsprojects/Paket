@@ -1,4 +1,4 @@
-#### 6.0.0-rc003 - 2021-06-23
+#### 6.0.0-rc004 - 2021-06-24
 * Support for .NET 6.0
 * Full .NET Core / SDK compatible version
 * Support for XCode
