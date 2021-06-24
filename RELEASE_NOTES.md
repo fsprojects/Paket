@@ -1,4 +1,4 @@
-#### 5.258.0 - 2021-06-24
+#### 5.258.1 - 2021-06-24
 * Added NoDefaultExcludes - https://github.com/fsprojects/Paket/pull/4038/files
 
 #### 5.257.0 - 2020-11-17

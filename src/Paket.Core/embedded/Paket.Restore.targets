@@ -360,7 +360,7 @@
               PackageLicenseFile="$(PackageLicenseFile)"
               PackageLicenseExpression="$(PackageLicenseExpression)"
               PackageLicenseExpressionVersion="$(PackageLicenseExpressionVersion)"
-              NoDefaultExcludes="$(NoDefaultExcludes) "/>
+              NoDefaultExcludes="$(NoDefaultExcludes)" />
 
     <PackTask Condition="$(UseMSBuild15_9_Pack)"
               PackItem="$(PackProjectInputFile)"
