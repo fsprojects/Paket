@@ -5,6 +5,9 @@
 * Support for .NET 5.0
 * FSharp.DependencyManager.Paket FSI extension for #r "paket: ..."
 
+#### 5.258.0 - 2021-06-24
+* Added NoDefaultExcludes - https://github.com/fsprojects/Paket/pull/4038
+
 #### 5.257.0 - 2020-11-17
 * Support for UAP v10.0.10240 - https://github.com/fsprojects/Paket/pull/3875
 
