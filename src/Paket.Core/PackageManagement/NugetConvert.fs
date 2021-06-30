@@ -311,7 +311,10 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
         let addPackages dependenciesFile =
             packages
             |> List.map (fun (name, vr, restrictions, kind) ->
-                Constants.MainDependencyGroup, PackageName name, vr, { InstallSettings.Default with FrameworkRestrictions = ExplicitRestriction restrictions}, kind)
+                let settings = { InstallSettings.Default with FrameworkRestrictions = ExplicitRestriction restrictions }
+                // FSharp.Core > 5.0.0 include the xml docs in a content file, so we want to default to ignoring those for new users to prevent confusion
+                let settings = if name.Equals("FSharp.Core", StringComparison.OrdinalIgnoreCase) then { settings with OmitContent = Some ContentCopySettings.Omit } else settings
+                Constants.MainDependencyGroup, PackageName name, vr, settings, kind)
             |> List.fold (fun (dependenciesFile:DependenciesFile) (groupName, packageName,versionRequirement,installSettings,kind) ->
                 let reqKind =
                     match kind with
