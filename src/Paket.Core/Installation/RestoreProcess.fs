@@ -345,7 +345,7 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-        <PaketPropsVersion>5.185.3</PaketPropsVersion>
+        <PaketPropsVersion>6.0.0</PaketPropsVersion>
         <PaketPropsLoaded>true</PaketPropsLoaded>
     </PropertyGroup>
 %s
