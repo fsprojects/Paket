@@ -304,39 +304,41 @@ Target "QuickIntegrationTests" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
 
-let mergeLibs = [
-    "Argu.dll"
-    "Chessie.dll"
-    "FSharp.Core.dll"
-    "Mono.Cecil.dll"
-    "Newtonsoft.Json.dll"
-    "NuGet.Common.dll"
-    "NuGet.Configuration.dll"
-    "NuGet.Frameworks.dll"
-    "NuGet.Packaging.dll"
-    "NuGet.Versioning.dll"
-    "Paket.Core.dll"
-    "paket.exe"
-    "System.Buffers.dll"
-    "System.Configuration.ConfigurationManager.dll"
-    "System.Net.Http.WinHttpHandler.dll"
-    "System.Security.Cryptography.Cng.dll"
-    "System.Security.Cryptography.Pkcs.dll"
-    "System.Threading.Tasks.Extensions.dll"
-]
-
 Target "MergePaketTool" (fun _ ->
     CreateDir buildMergedDir
+    let inBuildDirNet461 (file: string) = buildDirNet461 @@ file
 
-    let toPack =
-        mergeLibs
-        |> List.map (fun l -> buildDirNet461 @@ l)
+    // syntax for ilrepack requires the 'primary' assembly to be the first positional argument, so we enforce that by not making
+    // paket.exe part of the ordered 'component' libraries
+    let primaryExe = inBuildDirNet461 "paket.exe"
+
+    let mergeLibs =
+        [
+            "Argu.dll"
+            "Chessie.dll"
+            "FSharp.Core.dll"
+            "Mono.Cecil.dll"
+            "Newtonsoft.Json.dll"
+            "NuGet.Common.dll"
+            "NuGet.Configuration.dll"
+            "NuGet.Frameworks.dll"
+            "NuGet.Packaging.dll"
+            "NuGet.Versioning.dll"
+            "Paket.Core.dll"
+            "System.Buffers.dll"
+            "System.Configuration.ConfigurationManager.dll"
+            "System.Net.Http.WinHttpHandler.dll"
+            "System.Security.Cryptography.Cng.dll"
+            "System.Security.Cryptography.Pkcs.dll"
+            "System.Threading.Tasks.Extensions.dll"
+        ]
+        |> List.map inBuildDirNet461
         |> separated " "
 
     let result =
         ExecProcess (fun info ->
             info.FileName <- currentDirectory </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
-            info.Arguments <- sprintf "/lib:%s /ver:%s /out:%s %s" buildDirNet461 release.AssemblyVersion paketFile toPack
+            info.Arguments <- sprintf "/lib:%s /ver:%s /out:%s %s %s" buildDirNet461 release.AssemblyVersion paketFile primaryExe mergeLibs
             ) (TimeSpan.FromMinutes 5.)
 
     if result <> 0 then failwithf "Error during ILRepack execution."
