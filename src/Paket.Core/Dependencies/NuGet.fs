@@ -1039,7 +1039,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
             let! extractedUserFolder = async {
                 if not didDownload then
                     return GetPackageUserFolderDir (packageName, version, kind)
-                else return! ExtractPackageToUserFolder(targetFile.FullName, packageName, version, kind)
+                else return! ExtractPackageToUserFolder(source, targetFile.FullName, packageName, version, kind)
             }
 
             SymlinkUtils.makeDirectoryLink folder extractedUserFolder
@@ -1052,7 +1052,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
             let! extractedUserFolder = async {
                 if not didDownload then
                     return GetPackageUserFolderDir (packageName, version, kind)
-                else return! ExtractPackageToUserFolder(targetFile.FullName, packageName, version, kind)
+                else return! ExtractPackageToUserFolder(source, targetFile.FullName, packageName, version, kind)
             }
 
             let! files = NuGetCache.CopyFromCache(otherConfig, targetFile.FullName, licenseFileName, packageName, version, force, detailed)

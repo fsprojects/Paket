@@ -304,7 +304,26 @@ Target "QuickIntegrationTests" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
 
-let mergeLibs = ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "Argu.dll"; "Chessie.dll"; "Mono.Cecil.dll"; "System.Net.Http.WinHttpHandler.dll"; "System.Buffers.dll"]
+let mergeLibs = [
+    "Argu.dll"
+    "Chessie.dll"
+    "FSharp.Core.dll"
+    "Mono.Cecil.dll"
+    "Newtonsoft.Json.dll"
+    "NuGet.Common.dll"
+    "NuGet.Configuration.dll"
+    "NuGet.Frameworks.dll"
+    "NuGet.Packaging.dll"
+    "NuGet.Versioning.dll"
+    "Paket.Core.dll"
+    "paket.exe"
+    "System.Buffers.dll"
+    "System.Configuration.ConfigurationManager.dll"
+    "System.Net.Http.WinHttpHandler.dll"
+    "System.Security.Cryptography.Cng.dll"
+    "System.Security.Cryptography.Pkcs.dll"
+    "System.Threading.Tasks.Extensions.dll"
+]
 
 Target "MergePaketTool" (fun _ ->
     CreateDir buildMergedDir
@@ -353,7 +372,7 @@ Target "RunIntegrationTestsNetCore" (fun _ ->
     DotNetCli.Test (fun c ->
         { c with
             Project = "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
-            Framework = "netcoreapp3.0"
+            Framework = "netcoreapp3.1"
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
                 sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]

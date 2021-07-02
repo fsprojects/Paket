@@ -1,0 +1,6 @@
+source https://api.nuget.org/v3/index.json
+
+storage: none
+framework: netcoreapp3.1
+
+nuget Microsoft.Playwright 1.12.1

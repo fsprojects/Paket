@@ -741,8 +741,9 @@ let extractZipToDirectory (zipFileName:string) (directoryName:string) =
                 fi.Directory.Create()
             if fi.Exists then
                 try fi.Delete() with | _ -> ()
-
             entry.ExtractToFile(destinationPath)
+            
+
 
 // adapted from MiniRx
 // http://minirx.codeplex.com/

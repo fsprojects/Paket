@@ -19,6 +19,7 @@ open System.Runtime.ExceptionServices
 open System.Net
 open System.Threading.Tasks
 open System.Text.RegularExpressions
+open NuGet.Packaging
 
 // show the path that was too long
 let FileInfo str =
@@ -454,13 +455,27 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
         | Some res -> return res
     }
 
+let private pathResolver = NuGet.Packaging.PackagePathResolver(Constants.UserNuGetPackagesFolder, useSideBySidePaths = false)
+let private nugetSettings = { new NuGet.Configuration.ISettings with
+                                    override this.AddOrUpdate(sectionName: string, item: NuGet.Configuration.SettingItem): unit = ()
+                                    override this.GetConfigFilePaths(): Collections.Generic.IList<string> = ResizeArray() :> _
+                                    override this.GetConfigRoots(): Collections.Generic.IList<string> = ResizeArray () :> _
+                                    override this.GetSection(sectionName: string): NuGet.Configuration.SettingSection = null
+                                    override this.Remove(sectionName: string, item: NuGet.Configuration.SettingItem): unit = ()
+                                    override this.SaveToDisk(): unit = ()
+                                    [<CLIEvent>]
+                                    override this.SettingsChanged: IEvent<EventHandler,EventArgs> = Event<EventHandler,EventArgs>().Publish
+                                    }
+let private signingContext = Signing.ClientPolicyContext.GetClientPolicy(nugetSettings, NuGet.Common.NullLogger.Instance)
+let private extractionContext = NuGet.Packaging.PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.Compress, signingContext, NuGet.Common.NullLogger.Instance)
+
 /// Extracts the given package to the user folder
-let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, kind:PackageResolver.ResolvedPackageKind) =
+let rec ExtractPackageToUserFolder(source: PackageSource, fileName:string, packageName:PackageName, version:SemVerInfo, kind:PackageResolver.ResolvedPackageKind) =
     async {
         let dir = GetPackageUserFolderDir (packageName, version, kind)
 
         if kind = PackageResolver.ResolvedPackageKind.DotnetCliTool then
-            let! _ = ExtractPackageToUserFolder(fileName, packageName, version, PackageResolver.ResolvedPackageKind.Package)
+            let! _ = ExtractPackageToUserFolder(source, fileName, packageName, version, PackageResolver.ResolvedPackageKind.Package)
             ()
 
         let targetFolder = DirectoryInfo(dir)
@@ -470,38 +485,27 @@ let rec ExtractPackageToUserFolder(fileName:string, packageName:PackageName, ver
             if verbose then
                 verbosefn "%O %O already extracted" packageName version
         else
+            use packageFileStream = System.IO.File.OpenRead fileName
+            let! ctok = Async.CancellationToken
+            let packageSource = source.Url
+            let! _extractedFiles = NuGet.Packaging.PackageExtractor.ExtractPackageAsync(packageSource, packageFileStream, pathResolver, extractionContext, ctok) |> Async.AwaitTask
             extractZipToDirectory fileName targetFolder.FullName
-            
-            // lowercase the .nuspec file to mimic NuGet behavior
-            let nuspecFileName = sprintf "%s.nuspec" (packageName.ToString())
-            let nuspecLowerFileName = sprintf "%s.nuspec" (packageName.CompareString)
-            let filePath = Path.Combine(targetFolder.FullName, nuspecFileName)
-            let lowerFilePath = Path.Combine(targetFolder.FullName, nuspecLowerFileName)
-            if isUnix then
-                File.Move(filePath, lowerFilePath)
-            else
-                let nuspecTempFileName = sprintf "%s.nuspec.tmp" (packageName.CompareString)
-                let tempFilePath = Path.Combine(targetFolder.FullName, nuspecTempFileName)
-                // On windows we have to move the file twice to actually have the correct casing
-                // in the filesystem, because otherwise it is noop (at least in explorer)
-                File.Move(filePath, tempFilePath)
-                File.Move(tempFilePath, lowerFilePath)
-            
+
             let fi = FileInfo fileName
-            let targetPackageFileName = Path.Combine(targetFolder.FullName,fi.Name)
+            let targetPackageFileName = Path.Combine(targetFolder.FullName, fi.Name)
             if normalizePath fileName <> normalizePath targetPackageFileName then
                 File.Copy(fileName,targetPackageFileName,true)
-            
+
             let cachedHashFile = Path.Combine(Constants.NuGetCacheFolder,fi.Name + ".sha512")
             if not (File.Exists cachedHashFile) then
                 let packageHash = getSha512File fileName
                 File.WriteAllText(cachedHashFile,packageHash)
             File.Copy(cachedHashFile,targetPackageFileName + ".sha512")
-            
+
             cleanup targetFolder
             if verbose then
                 verbosefn "%O %O unzipped to %s" packageName version targetFolder.FullName
-                
+
         return targetFolder.FullName
     }
 
