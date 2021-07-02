@@ -12,6 +12,11 @@ open Chessie.ErrorHandling
 open System.Reflection
 open Requirements
 
+/// Combines the content settings from the lock file and a project's references file, so that the project settings take priority
+let private combineOmitContent (resolvedSettings: InstallSettings) (packageInstallSettings: PackageInstallSettings) = 
+    packageInstallSettings.Settings.OmitContent
+    |> Option.orElse resolvedSettings.OmitContent
+
 // "copy_local: true" is being used to set the "PrivateAssets=All" setting for a package.
 // "copy_local: false" in new SDK format is defined as "ExcludeAssets=runtime".
 /// Combines the copy_local settings from the lock file and a project's references file
@@ -320,8 +325,12 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
                     |> Seq.collect (fun (p,_,packageSettings) ->
                         [yield sprintf """        <PackageReference Include="%O">""" p.Name
                          yield sprintf """            <Version>%O</Version>""" p.Version
-                         if combineCopyLocal p.Settings packageSettings = Some false then
-                            yield """            <ExcludeAssets>runtime</ExcludeAssets>"""
+                         let excludeAssets =
+                            [ if combineCopyLocal p.Settings packageSettings = Some false then yield "runtime"
+                              if combineOmitContent p.Settings packageSettings = Some ContentCopySettings.Omit then yield "contentFiles"]
+                         match excludeAssets with
+                         | [] -> ()
+                         | tags -> yield sprintf """            <ExcludeAssets>%s</ExcludeAssets>""" (tags |> String.concat ";")
                          yield """        </PackageReference>"""])
 
                 [yield sprintf "    <ItemGroup Condition=\"($(DesignTimeBuild) == true)%s\">" condition
@@ -336,7 +345,7 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-        <PaketPropsVersion>5.185.3</PaketPropsVersion>
+        <PaketPropsVersion>6.0.0</PaketPropsVersion>
         <PaketPropsLoaded>true</PaketPropsLoaded>
     </PropertyGroup>
 %s
@@ -428,6 +437,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                     let direct = allDirectPackages.Contains packageName
                     let package = resolved.Force().[key]
                     let combinedCopyLocal = combineCopyLocal resolvedPackage.Settings packageSettings
+                    let combinedOmitContent = combineOmitContent resolvedPackage.Settings packageSettings
                     let privateAssetsAll =
                         match combinedCopyLocal with
                         | Some true -> "true"
@@ -438,13 +448,19 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                         | Some false -> "false"
                         | Some true
                         | None -> "true"
+                    let omitContent =
+                        match combinedOmitContent with
+                        | Some ContentCopySettings.Omit -> "true"
+                        | _ -> "false"
+
                     let line =
                         packageName.ToString() + "," +
                         package.Version.ToString() + "," +
                         (if direct then "Direct" else "Transitive") + "," +
                         kv.Key.ToString() + "," +
                         privateAssetsAll  + "," +
-                        copyLocal
+                        copyLocal + "," +
+                        omitContent
 
                     list.Add line
 
