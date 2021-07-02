@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>paket generate-include-scripts
+    <title>F# Interactive Integration
 </title>
     <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -57,41 +57,78 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1><a name="paket-generate-include-scripts" class="anchor" href="#paket-generate-include-scripts">paket generate-include-scripts</a></h1>
-<p>[obsolete].</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
-<span class="l">11: </span>
-<span class="l">12: </span>
-<span class="l">13: </span>
-<span class="l">14: </span>
+<h1><a name="F-Interactive-Integration" class="anchor" href="#F-Interactive-Integration">F# Interactive Integration</a></h1>
+<p>F# Interactive v5 and above ships with <a href="https://github.com/fsharp/fslang-design/blob/dcc45b557f713a9aee75d85eae7555d41cd1cb0b/tooling/FST-1027-fsi-references.md">extensions mechanism</a>.</p>
+<p>FSharp.DependencyManager.Paket implements this extension mechanism to hook same power as <a href="dependencies-file.html">paket.dependencies</a> file right inside .fsx scripts.</p>
+<h2><a name="Making-sure-paket-exe-is-found" class="anchor" href="#Making-sure-paket-exe-is-found">Making sure paket.exe is found</a></h2>
+<p>The extension is searching for paket.exe in the folder hierarchy containing the script, checking for a <code>.paket</code> folder containing <code>paket.exe</code>.</p>
+<p>It falls back to those user directories if it can't find it in the parent folders:</p>
+<ul>
+<li><code>~/.paket/paket.exe</code></li>
+<li><code>~/.dotnet/tools/paket.exe</code></li>
+<li><code>~/.nuget/packages/paket/{most-recent-version}/tools/paket.exe</code></li>
+</ul>
+<h2><a name="Install-the-extension" class="anchor" href="#Install-the-extension">Install the extension</a></h2>
+<p>You have two choices to deploy the assembly:</p>
+<h3><a name="Copying-the-assembly-next-to-the-host-process" class="anchor" href="#Copying-the-assembly-next-to-the-host-process">Copying the assembly next to the host process</a></h3>
+<p>Install the FSharp.DependencyManager.Paket.dll aside of your F# Interactive binaries or the binary of the host process loading the extensions.</p>
+<p>In general, the process will explicitly list the folders it is currently checking for extensions:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket generate-include-scripts [--help] [--group &lt;name&gt;] [--framework &lt;framework&gt;]
-                               [--type &lt;csx|fsx&gt;]
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="id">error</span> <span class="id">FS3216</span><span class="pn">:</span> <span class="id">Package</span> <span class="id">manager</span> <span class="id">key</span> <span class="id">&#39;</span><span class="id">paket&#39;</span> <span class="id">was</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="id">not</span> <span class="id">registered</span> <span class="k">in</span> <span class="pn">[</span><span class="id">C</span><span class="pn">:</span>
+</code></pre></td>
+</tr>
+</table>
+<h3><a name="Passing-the-folder-of-the-extension-as-compilertool-flag" class="anchor" href="#Passing-the-folder-of-the-extension-as-compilertool-flag">Passing the folder of the extension as --compilertool flag</a></h3>
+<p>Use the <code>--compilertool</code> flag when invoking F# Interactive or refer to the documentation of the host process.</p>
+<p>For example on windows:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">--</span><span class="id">compilertool</span><span class="pn">:</span><span class="s">&quot;c:\users\username\.nuget\packages\fsharp.dependencymanager.paket\6.0.0-alpha055\lib\netstandard2.0&quot;</span>
+</code></pre></td>
+</tr>
+</table>
+<p>For example on unix:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">--</span><span class="id">compilertool</span><span class="pn">:</span><span class="s">&quot;~/.nuget/packages/fsharp.dependencymanager.paket/6.0.0-alpha055/lib/netstandard2.0&quot;</span>
+</code></pre></td>
+</tr>
+</table>
+<h2><a name="Usage-in-scripts" class="anchor" href="#Usage-in-scripts">Usage in scripts</a></h2>
+<p>Using it involves the <code>#r</code> directive with <code>paket</code> extension.</p>
+<p>Here is an example importing FSharp.Data library:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="pp">#r</span> <span class="s">&quot;paket: nuget FSharp.Data&quot;</span>
 
-OPTIONS:
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="id">FSharp</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="id">Data</span>
+<span class="c">// do cool stuff</span>
+</code></pre></td>
+</tr>
+</table>
+<p>It is also possible to use github dependencies to import individual files:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="pp">#r</span> <span class="s">&quot;paket: github fsharp/FAKE src/legacy/FakeLib/Globbing/Globbing.fs&quot;</span>
+<span class="pp">#load</span> <span class="s">@&quot;fsharp\FAKE\src\legacy\FakeLib\Globbing\Globbing.fs&quot;</span>
+ 
+<span class="k">let</span> <span class="id">f</span> <span class="o">=</span> <span class="id">Fake</span><span class="pn">.</span><span class="id">Globbing</span><span class="pn">.</span><span class="id">search</span>
+</code></pre></td>
+</tr>
+</table>
+<h2><a name="Usage-in-FSharp-Compiler-Service" class="anchor" href="#Usage-in-FSharp-Compiler-Service">Usage in FSharp.Compiler.Service</a></h2>
+<p>Same remarks as for installation section above, you'd either make sure the assembly is deployed aside the host process binary, or you'd pass <code>--compilertool</code> flag when building the project options (through <code>GetProjectOptionsFromScript</code>).</p>
 
-    --group, -g &lt;name&gt;    groups to generate scripts for (default: all groups); may be repeated
-    --framework, -f &lt;framework&gt;
-                          framework identifier to generate scripts for, such as net45 or
-                          netstandard1.6; may be repeated
-    --type, -t &lt;csx|fsx&gt;  language to generate scripts for; may be repeated
-    --silent, -s          suppress console output
-    --verbose, -v         print detailed information to the console
-    --log-file &lt;path&gt;     print output to a file
-    --help                display this list of options.
-</code></pre></td></tr></table>
-<p>If you add the <code>--verbose</code> flag Paket will run in verbose mode and show detailed information.</p>
-<p>With <code>--log-file [path]</code> you can trace the logged information into a file.</p>
-
+<div class="tip" id="fs1">val not : value:bool -&gt; bool</div>
+<div class="tip" id="fs2">namespace Microsoft.FSharp</div>
+<div class="tip" id="fs3">namespace Microsoft.FSharp.Data</div>
 
         </div>
         <div class="span3">
