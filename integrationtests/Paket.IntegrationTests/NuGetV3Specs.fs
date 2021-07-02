@@ -27,7 +27,7 @@ let ``#2700-1 v3 works properly``() =
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i002700-1","paket.lock"))
     let mainGroup = lockFile.Groups.[Constants.MainDependencyGroup]
     mainGroup.Resolution.[PackageName "Microsoft.CSharp"].Source.Url
-    |> shouldEqual "https://www.myget.org/F/dotnet-core-svc/api/v3/index.json"
+    |> shouldEqual "https://api.nuget.org/v3/index.json"
 
 [<TestCase("https://api.nuget.org/v3/index.json")>]
 let ``#3030-1 version ordering should not change`` serviceUrl =
