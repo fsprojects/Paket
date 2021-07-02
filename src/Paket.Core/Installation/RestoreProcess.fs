@@ -12,6 +12,11 @@ open Chessie.ErrorHandling
 open System.Reflection
 open Requirements
 
+/// Combines the import targets settings from the lock file and a project's references file, so that the project settings take priority
+let private combineImportTargets (resolvedSettings: InstallSettings) (packageInstallSettings: PackageInstallSettings) =
+    packageInstallSettings.Settings.ImportTargets
+    |> Option.orElse resolvedSettings.ImportTargets
+
 /// Combines the content settings from the lock file and a project's references file, so that the project settings take priority
 let private combineOmitContent (resolvedSettings: InstallSettings) (packageInstallSettings: PackageInstallSettings) = 
     packageInstallSettings.Settings.OmitContent
@@ -327,7 +332,9 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
                          yield sprintf """            <Version>%O</Version>""" p.Version
                          let excludeAssets =
                             [ if combineCopyLocal p.Settings packageSettings = Some false then yield "runtime"
-                              if combineOmitContent p.Settings packageSettings = Some ContentCopySettings.Omit then yield "contentFiles"]
+                              if combineOmitContent p.Settings packageSettings = Some ContentCopySettings.Omit then yield "contentFiles"
+                              // on explicit 'do not import' settings, exclude build props/targets
+                              if combineImportTargets p.Settings packageSettings = Some false then yield! [ "build"; "buildMultitargeting"; "buildTransitive" ] ]
                          match excludeAssets with
                          | [] -> ()
                          | tags -> yield sprintf """            <ExcludeAssets>%s</ExcludeAssets>""" (tags |> String.concat ";")
@@ -438,6 +445,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                     let package = resolved.Force().[key]
                     let combinedCopyLocal = combineCopyLocal resolvedPackage.Settings packageSettings
                     let combinedOmitContent = combineOmitContent resolvedPackage.Settings packageSettings
+                    let combinedImportTargets = combineImportTargets resolvedPackage.Settings packageSettings
                     let privateAssetsAll =
                         match combinedCopyLocal with
                         | Some true -> "true"
@@ -452,15 +460,21 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                         match combinedOmitContent with
                         | Some ContentCopySettings.Omit -> "true"
                         | _ -> "false"
-
+                    let importTargets =
+                        // we want to import msbuild targets by default
+                        match combinedImportTargets with
+                        | Some false -> "false"
+                        | _ -> "true"
                     let line =
-                        packageName.ToString() + "," +
-                        package.Version.ToString() + "," +
-                        (if direct then "Direct" else "Transitive") + "," +
-                        kv.Key.ToString() + "," +
-                        privateAssetsAll  + "," +
-                        copyLocal + "," +
-                        omitContent
+                        [ packageName.ToString()
+                          package.Version.ToString()
+                          if direct then "Direct" else "Transitive"
+                          kv.Key.ToString()
+                          privateAssetsAll
+                          copyLocal
+                          omitContent
+                          importTargets ]
+                        |> String.concat ","
 
                     list.Add line
 

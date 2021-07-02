@@ -238,13 +238,15 @@
         <AllPrivateAssets>$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[4])</AllPrivateAssets>
         <CopyLocal Condition="'%(PaketReferencesFileLinesInfo.Splits)' == '6'">$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[5])</CopyLocal>
         <OmitContent Condition="'%(PaketReferencesFileLinesInfo.Splits)' == '7'">$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[6])</OmitContent>
+        <ImportTargets Condition="'%(PaketReferencesFileLinesInfo.Splits)' == '8'">$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[7])</ImportTargets>
       </PaketReferencesFileLinesInfo>
       <PackageReference Include="%(PaketReferencesFileLinesInfo.PackageName)">
         <Version>%(PaketReferencesFileLinesInfo.PackageVersion)</Version>
         <PrivateAssets Condition=" ('%(PaketReferencesFileLinesInfo.AllPrivateAssets)' == 'true') Or ('$(PackAsTool)' == 'true') ">All</PrivateAssets>
         <ExcludeAssets Condition=" '%(PaketReferencesFileLinesInfo.Splits)' == '6' And %(PaketReferencesFileLinesInfo.CopyLocal) == 'false'">runtime</ExcludeAssets>
         <ExcludeAssets Condition=" '%(PaketReferencesFileLinesInfo.Splits)' != '6' And %(PaketReferencesFileLinesInfo.AllPrivateAssets) == 'exclude'">runtime</ExcludeAssets>
-        <ExcludeAssets Condition=" '%(PaketReferencesFileLinesInfo.Splits)' != '7' And %(PaketReferencesFileLinesInfo.OmitContent) == 'true'">$(ExcludeAssets);contentFiles</ExcludeAssets>
+        <ExcludeAssets Condition=" '%(PaketReferencesFileLinesInfo.Splits)' != '6' And %(PaketReferencesFileLinesInfo.OmitContent) == 'true'">$(ExcludeAssets);contentFiles</ExcludeAssets>
+        <ExcludeAssets Condition=" '%(PaketReferencesFileLinesInfo.Splits)' != '6' And %(PaketReferencesFileLinesInfo.ImportTargets) == 'false'">$(ExcludeAssets);build;buildMultitargeting;buildTransitive</ExcludeAssets>
         <Publish Condition=" '$(PackAsTool)' == 'true' ">true</Publish>
         <AllowExplicitVersion>true</AllowExplicitVersion>
       </PackageReference>
