@@ -327,7 +327,7 @@ Adding the <code>version_in_path</code> flag makes your unit tests appear in the
 <span class="k">nuget</span> Fody   <span class="k">content</span>: once               <span class="c">// Install content files but do not overwrite.</span>
 <span class="k">nuget</span> ServiceStack.Swagger <span class="k">content</span>: true <span class="c">// Install content and always overwrite.</span>
 </code></pre></td></tr></table>
-<p>The default is <code>content: true</code>.</p>
+<p>The default is <code>content: true</code>. <code>content: false</code> is equivalent to setting <code>ExcludeAssets=contentFiles</code> for a <code>PackageReference</code> in NuGet.</p>
 <h3><a name="Controlling-whether-content-files-should-be-copied-to-the-output-directory-during-build" class="anchor" href="#Controlling-whether-content-files-should-be-copied-to-the-output-directory-during-build">Controlling whether content files should be copied to the output directory during build</a></h3>
 <p>It's possible to influence the
 <a href="https://msdn.microsoft.com/en-us/library/bb629388.aspx#Anchor_0"><code>CopyToOutputDirectory</code> property</a>
@@ -356,7 +356,7 @@ for references via the <code>copy_local</code> modifier:</p>
 
 <span class="k">nuget</span> Newtonsoft.Json <span class="k">copy_local</span>: false
 </code></pre></td></tr></table>
-<p>The default is <code>copy_local: true</code>.</p>
+<p>The default is <code>copy_local: true</code>. <code>copy_local: false</code> is equivalent to setting <code>ExcludeAssets=runtime</code> for a <code>PackageReference</code> in NuGet.</p>
 <h3><a name="Importing-and-files" class="anchor" href="#Importing-and-files">Importing <code>*.targets</code> and <code>*.props</code> files</a></h3>
 <p>If you don't want to import <code>*.targets</code> and <code>*.props</code> files from packages, you
 can disable it via the <code>import_targets</code> modifier:</p>
@@ -368,6 +368,7 @@ can disable it via the <code>import_targets</code> modifier:</p>
 
 <span class="k">nuget</span> Microsoft.Bcl.Build <span class="k">import_targets</span>: false <span class="c">// Do not import *.targets and *.props.</span>
 </code></pre></td></tr></table>
+<p><code>import_targets: false</code> is equivalent to setting <code>ExcludeAssets=build;buildMultitargeting;buildTransitive</code> for a <code>PackageReference</code> in NuGet.</p>
 <h3><a name="License-download" class="anchor" href="#License-download">License download</a></h3>
 <p>If you want paket to download licenses automatically you can use the <code>license_download</code> modifier. It is disabled by default.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
