@@ -1,0 +1,4 @@
+STORAGE: NONE
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    FSharp.Core (5.0.2) - copy_local: false

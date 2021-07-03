@@ -116,3 +116,44 @@ let ``#3410 Paket restore fails when obj files are readonly`` () =
         directDotnet false "build" projectDir |> ignore
     finally
         cachedReferencesFile.IsReadOnly <- false
+
+let private excludeAssetsForFSharpCore (propsPath: string) =
+    let propsXml = System.Xml.Linq.XDocument.Load(System.IO.File.OpenRead propsPath)
+    let fsharpCorePackageRef =
+        propsXml.Descendants()
+        |> Seq.find (fun elem -> elem.Name.LocalName = "PackageReference")
+    let excludeAssets = fsharpCorePackageRef.Elements() |> Seq.find (fun elem -> elem.Name.LocalName = "ExcludeAssets")
+    excludeAssets.Value.Split([|';'|], StringSplitOptions.RemoveEmptyEntries)
+
+[<Test>]
+let ``Restore flows through content none to PackageReference`` () =
+    let scenario = "packageref-specs" @@ "omit_content"
+    let workingDir = scenarioTempPath scenario
+    let projectName = "test"
+    use __ = prepareSdk scenario
+    directPaket "restore" scenario |> ignore
+    directDotnet false "restore" workingDir |> ignore
+    let paketProps = workingDir @@ "obj" @@ sprintf "%s.fsproj.paket.props" projectName
+    excludeAssetsForFSharpCore paketProps |> shouldEqual [|"contentFiles"|]
+
+[<Test>]
+let ``Restore flows through copy_local false to PackageReference`` () =
+    let scenario = "packageref-specs" @@ "copy_local_false"
+    let workingDir = scenarioTempPath scenario
+    let projectName = "test"
+    use __ = prepareSdk scenario
+    directPaket "restore" scenario |> ignore
+    directDotnet false "restore" workingDir |> ignore
+    let paketProps = workingDir @@ "obj" @@ sprintf "%s.fsproj.paket.props" projectName
+    excludeAssetsForFSharpCore paketProps |> shouldEqual [|"runtime"|]
+
+[<Test>]
+let ``Restore flows through import_targets false to PackageReference`` () =
+    let scenario = "packageref-specs" @@ "import_targets_false"
+    let workingDir = scenarioTempPath scenario
+    let projectName = "test"
+    use __ = prepareSdk scenario
+    directPaket "restore" scenario |> ignore
+    directDotnet false "restore" workingDir |> ignore
+    let paketProps = workingDir @@ "obj" @@ sprintf "%s.fsproj.paket.props" projectName
+    excludeAssetsForFSharpCore paketProps |> shouldEqual [|"build"; "buildMultitargeting"; "buildTransitive"|]

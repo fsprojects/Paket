@@ -280,7 +280,7 @@ nuget Fody   content: once               // Install content files but do not ove
 nuget ServiceStack.Swagger content: true // Install content and always overwrite.
 ```
 
-The default is `content: true`.
+The default is `content: true`. `content: false` is equivalent to setting `ExcludeAssets=contentFiles` for a `PackageReference` in NuGet.
 
 ### Controlling whether content files should be copied to the output directory during build
 
@@ -308,7 +308,7 @@ source https://nuget.org/api/v2
 nuget Newtonsoft.Json copy_local: false
 ```
 
-The default is `copy_local: true`.
+The default is `copy_local: true`. `copy_local: false` is equivalent to setting `ExcludeAssets=runtime` for a `PackageReference` in NuGet.
 
 ### Importing `*.targets` and `*.props` files
 
@@ -321,6 +321,8 @@ source https://nuget.org/api/v2
 nuget Microsoft.Bcl.Build import_targets: false // Do not import *.targets and *.props.
 ```
 
+`import_targets: false` is equivalent to setting `ExcludeAssets=build;buildMultitargeting;buildTransitive` for a `PackageReference` in NuGet.
+
 ### License download
 
 If you want paket to download licenses automatically you can use the `license_download` modifier. It is disabled by default.
@@ -330,7 +332,6 @@ source https://nuget.org/api/v2
 
 nuget suave license_download: true
 ```
-
 
 ### Controlling assembly binding redirects
 
