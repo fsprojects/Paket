@@ -1,0 +1,5 @@
+source https://api.nuget.org/v3/index.json
+
+storage: none
+
+nuget FSharp.Core 5.0.2 copy_local: false
