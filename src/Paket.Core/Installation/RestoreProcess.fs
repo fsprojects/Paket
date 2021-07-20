@@ -36,7 +36,7 @@ let private combineCopyLocal (resolvedSettings:InstallSettings) (packageInstallS
     | None, Some true -> Some true // Sets PrivateAssets=All
 
 /// Finds packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
-let FindPackagesNotExtractedYet(dependenciesFileName) =
+let FindPackagesNotExtractedYet dependenciesFileName =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let lockFile = LockFile.LoadFrom(lockFileName.FullName)
     let root = lockFileName.Directory.FullName
@@ -246,7 +246,7 @@ let extractRestoreTargets root =
         // allow to be more clever than paket
         if !copiedElements then path
         else
-            let (fileWritten, path) = extractElement root "Paket.Restore.targets"
+            let fileWritten, path = extractElement root "Paket.Restore.targets"
             copiedElements := true
             if fileWritten then
                 verbosefn "Extracted Paket.Restore.targets to: %s (Can be disabled with PAKET_SKIP_RESTORE_TARGETS=true)" path
@@ -257,7 +257,7 @@ let extractRestoreTargets root =
 
 let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package) =
     async {
-        let! (package, content) = ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package, false)
+        let! package, content = ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package, false)
         let kind =
             match package.Kind with
             | ResolvedPackageKind.Package -> InstallModelKind.Package
@@ -428,7 +428,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                     excludes,packages
                 | None -> Set.empty,Set.empty
 
-            for (key,packageSettings,_) in hull do
+            for key,packageSettings,_ in hull do
                 let resolvedPackage = resolved.Force().[key]
                 let _,packageName = key
                 let restore =
@@ -529,7 +529,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
     let paketCachedReferencesFileName = FileInfo(Path.Combine(objDirFullName,projectFileInfo.Name + ".paket.references.cached"))
     let rec loop trials =
         try
-            if File.Exists (referencesFile.FileName) then
+            if File.Exists referencesFile.FileName then
                 // The existing cached file can be read-only if it was copied from a read-only file.
                 // For example, when using Team Foundation Version Control with Server workspaces.
                 if Utils.isWindows then
@@ -630,10 +630,10 @@ let internal getLockFileHash (f:string) =
 type internal RestoreCache =
     { PackagesDownloadedHash : Hash
       ProjectsRestoredHash : Hash }
-    member x.IsPackagesDownloadUpToDate (lockfileHash) =
+    member x.IsPackagesDownloadUpToDate lockfileHash =
         if x.PackagesDownloadedHash.IsEmpty then false
         else x.PackagesDownloadedHash = lockfileHash
-    member x.IsProjectRestoreUpToDate (lockfileHash) =
+    member x.IsProjectRestoreUpToDate lockfileHash =
         if x.ProjectsRestoredHash.IsEmpty then false
         else x.ProjectsRestoredHash = lockfileHash
     static member Empty =
@@ -645,7 +645,7 @@ let internal writeRestoreCache (file:string) { PackagesDownloadedHash = Hash pac
     jobj.["packagesDownloadedHash"] <- Newtonsoft.Json.Linq.JToken.op_Implicit packagesDownloadedHash
     jobj.["projectsRestoredHash"] <- Newtonsoft.Json.Linq.JToken.op_Implicit projectsRestoredHash
     let s = jobj.ToString()
-    saveToFile (s) (FileInfo file) |> ignore<_*_>
+    saveToFile s (FileInfo file) |> ignore<_*_>
     //File.WriteAllText(file, s)
 
 let private tryReadRestoreCache (file:string) =
@@ -742,7 +742,7 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
 
             if hasAnyChanges then
                 checkResponse "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
-                for (group, package, changes) in nugetChanges do
+                for group, package, changes in nugetChanges do
                     traceWarnfn "Changes were detected for %s/%s" (group.ToString()) (package.ToString())
                     for change in changes do
                          traceWarnfn "    - %A" change

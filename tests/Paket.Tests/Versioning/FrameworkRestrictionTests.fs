@@ -56,7 +56,7 @@ let ``Simplify && (false) (< net45)`` () =
             FrameworkRestriction.EmptySet
             FrameworkRestriction.NotAtLeast (DotNetFramework FrameworkVersion.V4_5)])
     toSimplify
-    |> shouldEqual (FrameworkRestriction.EmptySet)
+    |> shouldEqual FrameworkRestriction.EmptySet
 
 [<Test>]
 let ``Simplify && (< net45) (false)`` () =
@@ -65,7 +65,7 @@ let ``Simplify && (< net45) (false)`` () =
             FrameworkRestriction.NotAtLeast (DotNetFramework FrameworkVersion.V4_5)
             FrameworkRestriction.EmptySet])
     toSimplify
-    |> shouldEqual (FrameworkRestriction.EmptySet)
+    |> shouldEqual FrameworkRestriction.EmptySet
 
 [<Test>]
 let ``Simplify && (< net45) (true)`` () =
@@ -106,7 +106,7 @@ let ``Simplify || (>= net45) (>= portable-net45+win8+wp8+wp81+wpa81)`` () =
     let formula = FrameworkRestriction.Or [ atLeastPortable; FrameworkRestriction.AtLeast (DotNetFramework FrameworkVersion.V4_5) ]
     
     formula
-    |> shouldEqual (atLeastPortable)
+    |> shouldEqual atLeastPortable
 
 [<Test>]
 let ``CustomProfile is Supported by its Platforms``() =
@@ -120,7 +120,7 @@ let ``CustomProfile is Supported by its Platforms``() =
 
     unknownProfile.IsSupportedBy (TargetProfile.SinglePlatform (MonoAndroid MonoAndroidVersion.V1))
     |> shouldEqual true
-    unknownProfile.IsSupportedBy (TargetProfile.SinglePlatform (MonoTouch))
+    unknownProfile.IsSupportedBy (TargetProfile.SinglePlatform MonoTouch)
     |> shouldEqual true
     unknownProfile.IsSupportedBy (TargetProfile.SinglePlatform (Silverlight SilverlightVersion.V5))
     |> shouldEqual false
@@ -206,9 +206,9 @@ let ``Portables are detected correctly``() =
     let expected =
         [ TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4);
           TargetProfile.PortableProfile (PortableProfileType.UnsupportedProfile [MonoAndroid MonoAndroidVersion.V1; MonoTouch])
-          TargetProfile.PortableProfile (PortableProfileType.Profile328); TargetProfile.PortableProfile (PortableProfileType.Profile259)
-          TargetProfile.PortableProfile (PortableProfileType.Profile32)
-          TargetProfile.PortableProfile (PortableProfileType.Profile78)
+          TargetProfile.PortableProfile PortableProfileType.Profile328; TargetProfile.PortableProfile PortableProfileType.Profile259
+          TargetProfile.PortableProfile PortableProfileType.Profile32
+          TargetProfile.PortableProfile PortableProfileType.Profile78
           TargetProfile.SinglePlatform (Silverlight SilverlightVersion.V5); TargetProfile.SinglePlatform (Windows WindowsVersion.V8)
           TargetProfile.SinglePlatform (WindowsPhone WindowsPhoneVersion.V8) ]
     portables

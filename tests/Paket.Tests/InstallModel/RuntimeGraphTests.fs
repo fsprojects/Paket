@@ -251,8 +251,8 @@ let ``Check that runtime inheritance works`` () =
         InstallModel.EmptyModel (PackageName "testpackage", SemVer.Parse "1.0.0")
         |> InstallModel.addNuGetFiles content
         
-    let targetProfile = Paket.TargetProfile.SinglePlatform(Paket.FrameworkIdentifier.DotNetStandard (Paket.DotNetStandardVersion.V1_6))
-    model.GetRuntimeAssemblies runtimeGraph (Rid.Of "win-x86") (targetProfile)
+    let targetProfile = Paket.TargetProfile.SinglePlatform(Paket.FrameworkIdentifier.DotNetStandard Paket.DotNetStandardVersion.V1_6)
+    model.GetRuntimeAssemblies runtimeGraph (Rid.Of "win-x86") targetProfile
     |> Seq.map (fun fi -> fi.Library.PathWithinPackage)
     |> Seq.toList
     |> shouldEqual [ "runtimes/win/lib/netstandard1.1/testpackage.dll" ]
@@ -280,8 +280,8 @@ let ``Check that runtime inheritance works (2)`` () =
         InstallModel.EmptyModel (PackageName "System.Runtime.InteropServices.RuntimeInformation", SemVer.Parse "4.3.0")
         |> InstallModel.addNuGetFiles content
         
-    let targetProfile = Paket.TargetProfile.SinglePlatform(Paket.FrameworkIdentifier.DotNetStandard (Paket.DotNetStandardVersion.V1_6))
-    model.GetRuntimeAssemblies runtimeGraph (Rid.Of "win10-x86") (targetProfile)
+    let targetProfile = Paket.TargetProfile.SinglePlatform(Paket.FrameworkIdentifier.DotNetStandard Paket.DotNetStandardVersion.V1_6)
+    model.GetRuntimeAssemblies runtimeGraph (Rid.Of "win10-x86") targetProfile
     |> Seq.map (fun fi -> fi.Library.PathWithinPackage)
     |> Seq.toList
     |> shouldEqual [ "runtimes/win/lib/netstandard1.1/System.Runtime.InteropServices.RuntimeInformation.dll" ]

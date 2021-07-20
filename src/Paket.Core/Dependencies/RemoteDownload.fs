@@ -31,7 +31,7 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
             let url = sprintf "https://api.github.com/repos/%s/%s/commits/%s" owner project branch
             let! document = lookupDocument(auth authKey,url)
             match document with
-            | SuccessResponse (document) ->
+            | SuccessResponse document ->
                 let json = JObject.Parse(document)
                 return json.["sha"].ToString()
             | NotFound ->
@@ -337,7 +337,7 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
 
         (versionFile, version), sources)
     |> List.iter (fun ((versionFile, version), sources) ->
-        for (_, (destination, source)) in sources do
+        for _, (destination, source) in sources do
             let exists =
                 if destination.EndsWith Constants.FullProjectSourceFileName then
                     let di = FileInfo(destination).Directory

@@ -80,7 +80,7 @@ let getAuthFromNode (node : XmlNode) =
 
         let salt = node.Attributes.["salt"].Value
         let (PlainTextPassword password) = Crypto.decrypt password salt
-        Credentials ({Username = username; Password = password; Type = authType})
+        Credentials {Username = username; Password = password; Type = authType}
     | "token" -> Token node.Attributes.["value"].Value
     | _ -> failwith "unknown node"
 
@@ -147,7 +147,7 @@ let AddCredentials (source, username, password, authType) =
             | None -> createSourceNode credentialsNode source "credential" |> Some
             | Some existingNode -> 
                 match getAuthFromNode existingNode with
-                | Credentials ({Password = existingPassword}) ->
+                | Credentials {Password = existingPassword} ->
                     if existingPassword <> password then existingNode |> Some
                     else None
                 | _ -> None

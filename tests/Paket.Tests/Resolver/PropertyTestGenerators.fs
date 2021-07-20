@@ -16,9 +16,9 @@ let chooseFromList xs =
 
 type PackageList = (PackageName*SemVerInfo) list
 type Dependency = PackageName * VersionRequirement
-type PackageGraph = (PackageName*SemVerInfo*(Dependency list)) list
+type PackageGraph = (PackageName*SemVerInfo*Dependency list) list
 
-type ResolverPuzzle = PackageGraph * (Dependency list)
+type ResolverPuzzle = PackageGraph * Dependency list
 
 type PackageTypes =
     static member PackageName() =
@@ -39,7 +39,7 @@ type PackageTypes =
          |> Arb.fromGen
 
     static member DistinctPackages() =
-        Arb.generate<(PackageName * (SemVerInfo list)) list>
+        Arb.generate<(PackageName * SemVerInfo list) list>
         |> Gen.map (fun packages ->
             packages
             |> List.collect (fun (p,vs) -> vs |> List.map (fun v -> p,v))
@@ -80,11 +80,11 @@ type PackageTypes =
     static member ShrinkGraph (g:PackageGraph) : PackageGraph seq =
         seq {
             // remove one package
-            for (p,v,deps) in g do
+            for p,v,deps in g do
                 yield g |> List.filter (fun (p',v',deps') -> p <> p' || v <> v')
 
             // remove one dependency
-            for (p,v,deps) in g do
+            for p,v,deps in g do
                 for d in deps do
                     yield g |> List.map (fun  (p',v',deps') -> if p = p' && v = v' then p,v,deps |> List.filter ((<>) d) else p',v',deps')
         }

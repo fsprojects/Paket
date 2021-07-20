@@ -65,11 +65,11 @@ type FrameworkRestrictionP =
         | FrameworkRestrictionP.NotP(fr) ->
             let notTaken = fr.RepresentedFrameworks
             Set.difference KnownTargetProfiles.AllProfiles notTaken
-        | FrameworkRestrictionP.OrP (frl) ->
+        | FrameworkRestrictionP.OrP frl ->
             frl
             |> Seq.map (fun fr -> fr.RepresentedFrameworks)
             |> Set.unionMany
-        | FrameworkRestrictionP.AndP (frl) ->
+        | FrameworkRestrictionP.AndP frl ->
             match frl with
             | h :: _ ->
                 frl
@@ -85,10 +85,10 @@ type FrameworkRestrictionP =
             tp.SupportedPlatformsTransitive |> Seq.contains r
         | FrameworkRestrictionP.NotP(fr) ->
             fr.IsMatch tp |> not
-        | FrameworkRestrictionP.OrP (frl) ->
+        | FrameworkRestrictionP.OrP frl ->
             frl
             |> List.exists (fun fr -> fr.IsMatch tp)
-        | FrameworkRestrictionP.AndP (frl) ->
+        | FrameworkRestrictionP.AndP frl ->
             frl
             |> List.forall (fun fr -> fr.IsMatch tp)
 
@@ -100,7 +100,7 @@ type FrameworkRestrictionP =
         let inline fallBack doAssert (x:FrameworkRestrictionP) (y:FrameworkRestrictionP) =
 #if DEBUG
             if doAssert then
-                assert (false)// make sure the fallback is never needed
+                assert false// make sure the fallback is never needed
 #endif
             let superset = y.RepresentedFrameworks
             let subset = x.RepresentedFrameworks
@@ -124,10 +124,10 @@ type FrameworkRestrictionP =
                     x' <> y'
                 // This one should never actually hit.
                 | FrameworkRestrictionP.NotP(y') -> fallBack true x y
-                | FrameworkRestrictionP.OrP (ys) ->
+                | FrameworkRestrictionP.OrP ys ->
                     ys
                     |> Seq.exists (fun y' -> x.IsSubsetOf y')
-                | FrameworkRestrictionP.AndP (ys) ->
+                | FrameworkRestrictionP.AndP ys ->
                     ys
                     |> Seq.forall (fun y' -> x.IsSubsetOf y')
             | FrameworkRestrictionP.AtLeastP x' ->
@@ -141,7 +141,7 @@ type FrameworkRestrictionP =
                 // these are or 'common' forms, others are not allowed
                 | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP y') ->
                     // >= x' is only a subset of < y' when their intersection is empty
-                    Set.intersect (x'.PlatformsSupporting) (y'.PlatformsSupporting)
+                    Set.intersect x'.PlatformsSupporting y'.PlatformsSupporting
                     |> Set.isEmpty
                 | FrameworkRestrictionP.NotP(FrameworkRestrictionP.ExactlyP y') ->
                     // >= x' is only a subset of <> y' when y' is not part of >=x'
@@ -150,10 +150,10 @@ type FrameworkRestrictionP =
                     |> not
                 // This one should never actually hit.
                 | FrameworkRestrictionP.NotP(y') -> fallBack true x y
-                | FrameworkRestrictionP.OrP (ys) ->
+                | FrameworkRestrictionP.OrP ys ->
                     ys
                     |> Seq.exists (fun y' -> x.IsSubsetOf y')
-                | FrameworkRestrictionP.AndP (ys) ->
+                | FrameworkRestrictionP.AndP ys ->
                     ys
                     |> Seq.forall (fun y' -> x.IsSubsetOf y')
                     
@@ -181,10 +181,10 @@ type FrameworkRestrictionP =
                     notY.IsSubsetOf notX
                 // This one should never actually hit.
                 | FrameworkRestrictionP.NotP(y') -> fallBack true x y
-                | FrameworkRestrictionP.OrP (ys) ->
+                | FrameworkRestrictionP.OrP ys ->
                     ys
                     |> Seq.exists (fun y' -> x.IsSubsetOf y')
-                | FrameworkRestrictionP.AndP (ys) ->
+                | FrameworkRestrictionP.AndP ys ->
                     ys
                     |> Seq.forall (fun y' -> x.IsSubsetOf y')
             | FrameworkRestrictionP.NotP(FrameworkRestrictionP.ExactlyP x' as notX) ->
@@ -209,18 +209,18 @@ type FrameworkRestrictionP =
                     notY.IsSubsetOf notX
                 // This one should never actually hit.
                 | FrameworkRestrictionP.NotP(y') -> fallBack true x y
-                | FrameworkRestrictionP.OrP (ys) ->
+                | FrameworkRestrictionP.OrP ys ->
                     ys
                     |> Seq.exists (fun y' -> x.IsSubsetOf y')
-                | FrameworkRestrictionP.AndP (ys) ->
+                | FrameworkRestrictionP.AndP ys ->
                     ys
                     |> Seq.forall (fun y' -> x.IsSubsetOf y')
             // This one should never actually hit.
             | FrameworkRestrictionP.NotP(x') -> fallBack true x y
-            | FrameworkRestrictionP.OrP (xs) ->
+            | FrameworkRestrictionP.OrP xs ->
                 xs
                 |> Seq.forall (fun x' -> x'.IsSubsetOf y)
-            | FrameworkRestrictionP.AndP (xs) ->
+            | FrameworkRestrictionP.AndP xs ->
                 xs
                 |> Seq.exists (fun x' -> x'.IsSubsetOf y)
 
@@ -951,10 +951,10 @@ type InstallSettings =
               | Some x when groupSettings.SpecificVersion <> this.SpecificVersion -> yield "specific_version: " + x.ToString().ToLower()
               | _ -> ()
               match this.StorageConfig with
-              | Some (PackagesFolderGroupConfig.NoPackagesFolder) when groupSettings.StorageConfig <> this.StorageConfig -> yield "storage: none"
-              | Some (PackagesFolderGroupConfig.SymbolicLink) when groupSettings.StorageConfig <> this.StorageConfig -> yield "storage: symlink"
+              | Some PackagesFolderGroupConfig.NoPackagesFolder when groupSettings.StorageConfig <> this.StorageConfig -> yield "storage: none"
+              | Some PackagesFolderGroupConfig.SymbolicLink when groupSettings.StorageConfig <> this.StorageConfig -> yield "storage: symlink"
               | Some (PackagesFolderGroupConfig.GivenPackagesFolder s) when groupSettings.StorageConfig <> this.StorageConfig -> failwithf "Not implemented yet."
-              | Some (PackagesFolderGroupConfig.DefaultPackagesFolder) when groupSettings.StorageConfig <> this.StorageConfig -> yield "storage: packages"
+              | Some PackagesFolderGroupConfig.DefaultPackagesFolder when groupSettings.StorageConfig <> this.StorageConfig -> yield "storage: packages"
               | _ -> ()
               match this.CopyContentToOutputDirectory with
               | Some CopyToOutputDirectorySettings.Never when groupSettings.CopyContentToOutputDirectory <> this.CopyContentToOutputDirectory -> yield "copy_content_to_output_dir: never"
@@ -1036,9 +1036,9 @@ type InstallSettings =
                 | _ -> None
               StorageConfig =
                 match getPair "storage" with
-                | Some "packages" -> Some (PackagesFolderGroupConfig.DefaultPackagesFolder)
-                | Some "symlink" -> Some (PackagesFolderGroupConfig.SymbolicLink)
-                | Some "none" -> Some (PackagesFolderGroupConfig.NoPackagesFolder)
+                | Some "packages" -> Some PackagesFolderGroupConfig.DefaultPackagesFolder
+                | Some "symlink" -> Some PackagesFolderGroupConfig.SymbolicLink
+                | Some "none" -> Some PackagesFolderGroupConfig.NoPackagesFolder
                 | _ -> None
               FrameworkRestrictions =
                 match getPair "restriction" with

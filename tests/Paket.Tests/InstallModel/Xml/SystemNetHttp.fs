@@ -153,7 +153,7 @@ let expected = """
 </Choose>"""
 
 [<Test>]
-[<Ignore ("Enable after custom portable penalty works properly")>]
+[<Ignore "Enable after custom portable penalty works properly">]
 let ``should generate Xml for System.Net.Http 2.2.8``() =
     ensureDir()
     let model =

@@ -17,7 +17,7 @@ let ``Check that lists are updated``() =
         let tags = l |> List.map tagReader
         cases
         |> Seq.forall (fun case ->
-            let foundCase = tags |> Seq.contains (case.Tag)
+            let foundCase = tags |> Seq.contains case.Tag
             if not foundCase then
                 Assert.Fail (sprintf "Case '%s' was not found in KnownTargetProfiles.<type>Versions for '%s'" case.Name typeof<'t>.Name)
             foundCase)
@@ -73,7 +73,7 @@ let ``Can detect net45``() =
 [<Test>]
 let ``Can detect MonoTouch0.0``() =
     let p = PlatformMatching.forceExtractPlatforms "MonoTouch0.0"
-    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.MonoTouch)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform FrameworkIdentifier.MonoTouch))
 
 [<Test>]
 let ``Can detect netcore1.0``() =
@@ -111,7 +111,7 @@ let ``Can detect uap101``() =
 [<Test>]
 let ``Can detect MonoTouch0.00``() =
     let p = PlatformMatching.forceExtractPlatforms "MonoTouch0.00"
-    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.MonoTouch)))
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform FrameworkIdentifier.MonoTouch))
 
 [<Test>]
 let ``Can detect WindowsPhoneApp0.0``() =

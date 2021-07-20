@@ -17,7 +17,7 @@ module AsyncExtensions =
   open System.Runtime.ExceptionServices
 
   // This uses a trick to get the underlying OperationCanceledException
-  let inline getCancelledException (completedTask:Task) (waitWithAwaiter) =
+  let inline getCancelledException (completedTask:Task) waitWithAwaiter =
       let fallback = new TaskCanceledException(completedTask) :> OperationCanceledException
       // sadly there is no other public api to retrieve it, but to call .GetAwaiter().GetResult().
       try waitWithAwaiter()
@@ -44,7 +44,7 @@ module AsyncExtensions =
                 if completedTask.IsCanceled then
                     let cancelledException =
                         getCancelledException completedTask (fun () -> completedTask.GetAwaiter().GetResult() |> ignore)
-                    econt (cancelledException)
+                    econt cancelledException
                 elif completedTask.IsFaulted then
                     if completedTask.Exception.InnerExceptions.Count = 1 then
                         econt completedTask.Exception.InnerExceptions.[0]
@@ -59,7 +59,7 @@ module AsyncExtensions =
                 if completedTask.IsCanceled then
                     let cancelledException =
                         getCancelledException completedTask (fun () -> completedTask.GetAwaiter().GetResult() |> ignore)
-                    econt (cancelledException)
+                    econt cancelledException
                 elif completedTask.IsFaulted then
                     if completedTask.Exception.InnerExceptions.Count = 1 then
                         econt completedTask.Exception.InnerExceptions.[0]

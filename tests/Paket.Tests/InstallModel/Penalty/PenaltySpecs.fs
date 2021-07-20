@@ -62,7 +62,7 @@ module ``Given a path`` =
         getFrameworkPathPenalty 
             [ DotNetFramework FrameworkVersion.V4
               Silverlight SilverlightVersion.V5 ] path
-        |> shouldEqual (Penalty_VersionJump)
+        |> shouldEqual Penalty_VersionJump
 
     [<Test>]
     let ``it should return the correct penalty for compatible .NET Frameworks``() =
@@ -135,7 +135,7 @@ module ``General Penalty checks`` =
     [<Test>]
     let ``best match for DotNet Standard 1.0``()=
         Paket.PlatformMatching.findBestMatch (["net20"; "net40"; "net45"; "net451"]|> List.map forceExtractPlatforms, TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_0)))
-        |> shouldEqual (None)
+        |> shouldEqual None
     
     [<Test>]
     let ``prefer net40-client over net35``()=
@@ -146,12 +146,12 @@ module ``General Penalty checks`` =
     [<Test>]
     let ``best match for DotNet Standard 1.1``()=
         Paket.PlatformMatching.findBestMatch (["net20"; "net40"; "net45"; "net451"]|> List.map forceExtractPlatforms, TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_1)))
-        |> shouldEqual (None)
+        |> shouldEqual None
 
     [<Test>]
     let ``best match for DotNet Standard 1.5``()=
         Paket.PlatformMatching.findBestMatch (["net20"; "net40"; "net45"; "net451"]|> List.map forceExtractPlatforms, TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_5)))
-        |> shouldEqual (None)
+        |> shouldEqual None
 
     [<Test>]
     let ``best match for net45``()=
@@ -166,7 +166,7 @@ module ``General Penalty checks`` =
         Paket.PlatformMatching.findBestMatch
           (["portable-netcore451+wpa81"]|> List.map forceExtractPlatforms,
            TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_1)))
-        |> shouldEqual (None)
+        |> shouldEqual None
 
         Paket.PlatformMatching.findBestMatch
           (["portable-netcore451+wpa81"]|> List.map forceExtractPlatforms,
@@ -236,7 +236,7 @@ module ``General Penalty checks`` =
         Paket.PlatformMatching.findBestMatch
           (["portable-net45+win8"]|> List.map forceExtractPlatforms,
            TargetProfile.SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_0)))
-        |> shouldEqual (None)
+        |> shouldEqual None
 
     [<Test>]
     let ``best match for net451``()=

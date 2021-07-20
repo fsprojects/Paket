@@ -106,7 +106,7 @@ let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageNa
                     tryGetAllVersionsFromNugetODataWithFilterWarnings.TryAdd(nugetURL, true) |> ignore
                 if verbose then
                     printfn "Error while retrieving data from '%s': %O" url exn
-                let url = sprintf "%s/Packages?semVerLevel=2.0.0&$filter=tolower(Id) eq '%s'" nugetURL (package.CompareString)
+                let url = sprintf "%s/Packages?semVerLevel=2.0.0&$filter=tolower(Id) eq '%s'" nugetURL package.CompareString
                 try
                     let! result = followODataLink auth url
                     return SuccessResponse result
@@ -273,14 +273,14 @@ let getDetailsFromNuGetViaODataFast isVersionAssumed nugetSource (packageName:Pa
                 (UrlId.GetVersion_ById { LoweredPackageId = true; NormalizedVersion = false })
                 "1_%s/Packages(Id='%s',Version='%O')"
                 nugetSource.Url
-                (packageName.CompareString)
+                packageName.CompareString
                 version
               // DevExpress needs normalized versions? https://github.com/fsprojects/Paket/issues/2599
               UrlToTry.From
                 (UrlId.GetVersion_ById { LoweredPackageId = true; NormalizedVersion = true })
                 "1_%s/Packages(Id='%s',Version='%O')"
                 nugetSource.Url
-                (packageName.CompareString)
+                packageName.CompareString
                 normalizedVersion
               // Use original casing.
               UrlToTry.From
@@ -312,7 +312,7 @@ let getDetailsFromNuGetViaODataFast isVersionAssumed nugetSource (packageName:Pa
                      { ToLower = true; NormalizedVersion = true }))
                 "2_%s/Packages?$filter=(tolower(Id) eq '%s') and (NormalizedVersion eq '%s')"
                 nugetSource.Url
-                (packageName.CompareString)
+                packageName.CompareString
                 normalizedVersion
               // SonarType does not support NormalizedVersion, see https://issues.sonatype.org/browse/NEXUS-6159
               // and https://github.com/fsprojects/Paket/issues/2320
@@ -327,14 +327,14 @@ let getDetailsFromNuGetViaODataFast isVersionAssumed nugetSource (packageName:Pa
                 (UrlId.GetVersion_Filter({ LoweredPackageId = true; NormalizedVersion = false }, { ToLower = true; NormalizedVersion = false }))
                 "2_%s/Packages?$filter=(tolower(Id) eq '%s') and (Version eq '%O')"
                 nugetSource.Url
-                (packageName.CompareString)
+                packageName.CompareString
                 version
               // Not sure
               UrlToTry.From
                 (UrlId.GetVersion_Filter({ LoweredPackageId = true; NormalizedVersion = true }, { ToLower = true; NormalizedVersion = false }))
                 "2_%s/Packages?$filter=(tolower(Id) eq '%s') and (Version eq '%O')"
                 nugetSource.Url
-                (packageName.CompareString)
+                packageName.CompareString
                 normalizedVersion
             ]
         let handleEntryUrl url =

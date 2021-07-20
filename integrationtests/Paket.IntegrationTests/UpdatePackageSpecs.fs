@@ -87,7 +87,7 @@ let ``#1117 can understand portable``() =
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001117-aws","paket.lock"))
     let restrictions = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "PCLStorage"].Settings.FrameworkRestrictions
     match restrictions with
-    | ExplicitRestriction l -> l.ToString() |> shouldEqual ("&& (< net45) (>= portable-net45+win8+wp8+wpa81)")
+    | ExplicitRestriction l -> l.ToString() |> shouldEqual "&& (< net45) (>= portable-net45+win8+wp8+wpa81)"
     | _ -> failwith "wrong"
 
     // Our restriction system can follow that this never actually needs to be installed!

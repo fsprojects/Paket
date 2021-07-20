@@ -44,7 +44,7 @@ module private AesSalt =
         (AesKey << Convert.FromBase64String) keyString,
         (AesIV << Convert.FromBase64String) ivString
 
-    let encode ((AesKey key): AesKey<byte[]>,(AesIV iv): AesIV<byte[]>) =
+    let encode (AesKey key: AesKey<byte[]>,AesIV iv: AesIV<byte[]>) =
         [ key; iv ]
         |> Seq.map Convert.ToBase64String
         |> String.concat saltSeparator
@@ -92,7 +92,7 @@ module Aes =
         AesSalt.encode (AesKey key, AesIV iv)
 
     let private deserialize (AesEncryptedPassword password) aesSalt =
-        let (AesKey key, AesIV iv) = AesSalt.decode aesSalt
+        let AesKey key, AesIV iv = AesSalt.decode aesSalt
 
         Convert.FromBase64String password,
         Convert.FromBase64String key,
@@ -147,10 +147,10 @@ module DPApi =
 module Crypto =
     let encrypt plainTextPassword = 
         if isWindows then
-            let (dpApiPassword, dpApiSalt) = DPApi.encrypt plainTextPassword
+            let dpApiPassword, dpApiSalt = DPApi.encrypt plainTextPassword
             (EncryptedPassword.DPApi dpApiPassword, Salt.DPApi dpApiSalt)
         else
-            let (aesPassword, aesSalt) = Aes.encrypt plainTextPassword
+            let aesPassword, aesSalt = Aes.encrypt plainTextPassword
             (EncryptedPassword.Aes aesPassword, Salt.Aes aesSalt)
 
     let decrypt password salt =

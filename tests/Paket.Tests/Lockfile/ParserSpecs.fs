@@ -446,7 +446,7 @@ let ``should parse lock file for http Stanford.NLP.NET project``() =
     references.Length |> shouldEqual 6
 
     references.[0].Origin |> shouldEqual (Origin.HttpLink("http://nlp.stanford.edu"))
-    references.[0].Commit |> shouldEqual ("/software/stanford-segmenter-2014-10-26.zip")  // That's strange
+    references.[0].Commit |> shouldEqual "/software/stanford-segmenter-2014-10-26.zip"  // That's strange
     references.[0].Project |> shouldEqual ""
     references.[0].Name |> shouldEqual "stanford-segmenter-2014-10-26.zip"
 

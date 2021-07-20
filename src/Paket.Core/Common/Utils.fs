@@ -47,7 +47,7 @@ let internal removeInvalidChars (str : string) = RegularExpressions.Regex.Replac
 
 let inline tryGet (key:^k) this =
     let mutable v = Unchecked.defaultof<'v>
-    let scc = ( ^a : (member TryGetValue : 'k * ('v byref) -> bool) this, key, &v)
+    let scc = ( ^a : (member TryGetValue : 'k * 'v byref -> bool) this, key, &v)
     if scc then Some v else None
 
 let inline internal memoizeByExt (getKey : 'a -> 'key) (f: 'a -> 'b) : ('a -> 'b) * ('key * 'b -> unit) =
@@ -148,7 +148,7 @@ let getDirectoryInfoForLocalNuGetFeed pathInfo alternativeProjectRoot root =
 
 
 // show the path that was too long
-let FileInfo(str) =
+let FileInfo str =
     try
         FileInfo(str)
     with
@@ -156,7 +156,7 @@ let FileInfo(str) =
 
 
 // show the path that was too long
-let DirectoryInfo(str) =
+let DirectoryInfo str =
     try
         DirectoryInfo(str)
     with
@@ -762,12 +762,12 @@ module ObservableExtensions =
     type Microsoft.FSharp.Control.Async with
       static member AwaitObservable(ev1:IObservable<'a>) =
         synchronize (fun f ->
-          Async.FromContinuations((fun (cont,_econt,_ccont) ->
-            let rec callback = (fun value ->
-              remover.Dispose()
-              f cont value )
-            and remover : IDisposable  = ev1.Subscribe callback
-            () )))
+          Async.FromContinuations(fun (cont,_econt,_ccont) ->
+           let rec callback = (fun value ->
+             remover.Dispose()
+             f cont value )
+           and remover : IDisposable  = ev1.Subscribe callback
+           () ))
 
     [<RequireQualifiedAccess>]
     module Observable =
@@ -834,14 +834,14 @@ module ObservableExtensions =
                     let cts = new CancellationTokenSource()
                     let sub =
                         input.Subscribe
-                          ({ new IObserver<#seq<'a>> with
-                              member __.OnNext values = values |> Seq.iter obs.OnNext
-                              member __.OnCompleted() =
-                                cts.Cancel()
-                                obs.OnCompleted()
-                              member __.OnError e =
-                                cts.Cancel()
-                                obs.OnError e })
+                          { new IObserver<#seq<'a>> with
+                             member __.OnNext values = values |> Seq.iter obs.OnNext
+                             member __.OnCompleted() =
+                               cts.Cancel()
+                               obs.OnCompleted()
+                             member __.OnError e =
+                               cts.Cancel()
+                               obs.OnError e }
 
                     { new IDisposable with
                         member __.Dispose() =
@@ -913,4 +913,4 @@ module List =
 module Task =
 
     let Map<'TIn,'TOut> (mapper : 'TIn -> 'TOut) (t:Task<'TIn>) : Task<'TOut> =
-        t.ContinueWith((fun (t:Task<'TIn>) -> mapper(t.Result)))
+        t.ContinueWith (fun (t:Task<'TIn>) -> mapper(t.Result))

@@ -55,7 +55,7 @@ let ``arbitrary event boundaries produce at least one time span``() =
         let firstEnd = bounds |> Array.tryFindIndex EventBoundary.IsEndBoundary
 
         match (firstStart, firstEnd) with
-        | (Some(fs), Some(fe)) when fs < fe -> true
+        | Some(fs), Some(fe) when fs < fe -> true
         | _ -> false
 
     let boundariesCoalesceToAtLeastOneTimeSpan(bounds: EventBoundary array) =

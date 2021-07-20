@@ -47,7 +47,7 @@ let processWithValidationEx printUsage silent validateF commandF result =
                 let realTime = sw.Elapsed
                 let groupedResults =
                     Profile.events
-                    |> Seq.groupBy (fun (ev) -> ev.Category)
+                    |> Seq.groupBy (fun ev -> ev.Category)
                     |> Seq.map (fun (cat, group) ->
                         let l = group |> Seq.toList
                         let eventBoundaries = l |> List.collect(fun ev -> [ev.Start; ev.End])
@@ -146,14 +146,14 @@ let failObsolete o =
 
 let legacyBool (results : ParseResults<_>) legacySyntax (list : bool*bool) =
     match list with
-    | (true, false) ->
+    | true, false ->
         true
-    | (false, true) ->
+    | false, true ->
         warnObsolete legacySyntax
         true
-    | (true, true) ->
+    | true, true ->
         failObsolete legacySyntax
-    | (false, false) ->
+    | false, false ->
         false
 
 let legacyList (results : ParseResults<_>) legacySyntax list =
@@ -161,10 +161,10 @@ let legacyList (results : ParseResults<_>) legacySyntax list =
         List.isEmpty x |> not
 
     match list with
-    | ([], []) -> []
-    | (x, []) when some x ->
+    | [], [] -> []
+    | x, [] when some x ->
         x
-    | ([], y) when some y ->
+    | [], y when some y ->
         warnObsolete legacySyntax
         y
     | _ ->
@@ -172,14 +172,14 @@ let legacyList (results : ParseResults<_>) legacySyntax list =
 
 let legacyOption (results : ParseResults<_>) legacySyntax list =
     match list with
-    | (Some id, None) ->
+    | Some id, None ->
         Some id
-    | (None, Some id) ->
+    | None, Some id ->
         warnObsolete legacySyntax
         Some id
-    | (Some _, Some _) ->
+    | Some _, Some _ ->
         failObsolete legacySyntax
-    | (_, _) -> None
+    | _, _ -> None
 
 let require arg fail =
     match arg with
@@ -551,7 +551,7 @@ let pack (results : ParseResults<_>) =
          results.Contains PackArgs.Lock_Dependencies_To_Minimum_Legacy)
         |> legacyBool results (ReplaceArgument("--minimum-from-lock-file", "minimum-from-lock-file"))
     let pinProjectReferences =
-        let (newSyntax, oldSyntax) =
+        let newSyntax, oldSyntax =
          (results.Contains PackArgs.Pin_Project_References,
           results.Contains PackArgs.Pin_Project_References_Legacy)
 
@@ -856,7 +856,7 @@ let handleCommand silent command =
     | Config r -> processWithValidation silent validateConfig config r
     | ConvertFromNuget r -> processCommand silent convert r
     | FindRefs r -> processCommand silent findRefs r
-    | Init r -> processCommand silent (init) r
+    | Init r -> processCommand silent init r
     | AutoRestore r -> processWithValidation silent validateAutoRestore autoRestore r
     | Install r -> processCommand silent install r
     | Outdated r -> processCommand silent outdated r
@@ -891,11 +891,11 @@ let handleCommand silent command =
     | Log_File _ -> failwithf "internal error: this code should never be reached."
 
 let main() =
-    let waitDebuggerEnvVar = Environment.GetEnvironmentVariable ("PAKET_WAIT_DEBUGGER")
+    let waitDebuggerEnvVar = Environment.GetEnvironmentVariable "PAKET_WAIT_DEBUGGER"
     if waitDebuggerEnvVar = "1" then
         waitForDebugger()
 
-    let resolution = Environment.GetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION")
+    let resolution = Environment.GetEnvironmentVariable "PAKET_DISABLE_RUNTIME_RESOLUTION"
     Logging.verboseWarnings <- Environment.GetEnvironmentVariable "PAKET_DETAILED_WARNINGS" = "true"
     if System.String.IsNullOrEmpty resolution then
         Environment.SetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")

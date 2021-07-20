@@ -130,7 +130,7 @@ module Map =
         m1
         |> Map.toSeq
         |> Seq.append (m2 |> Map.toSeq)
-        |> Seq.groupBy (fst)
+        |> Seq.groupBy fst
         |> Seq.map (fun (k, g) ->
             match g |> Seq.map snd |> Seq.toList with
             | [ a; b ] -> k, f a b
@@ -214,7 +214,7 @@ module RuntimeGraph =
         // 2. Get runtime graph
         try
             let runtime = Path.Combine(extractedDir, "runtime.json")
-            if File.Exists runtime then Some (runtime) else None
+            if File.Exists runtime then Some runtime else None
             |> Option.map File.ReadAllText
             |> Option.map RuntimeGraphParser.readRuntimeGraph
         with e ->

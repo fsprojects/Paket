@@ -162,7 +162,7 @@ let ``should generate full Xml with reference condition and framework restrictio
     ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", InstallModelKind.Package,
-            [ FrameworkRestriction.Exactly (FrameworkIdentifier.XamariniOS)
+            [ FrameworkRestriction.Exactly FrameworkIdentifier.XamariniOS
               FrameworkRestriction.Exactly (FrameworkIdentifier.MonoAndroid MonoAndroidVersion.V1)] |> makeOrList |> getExplicitRestriction,
             [ @"..\Fantomas\lib\portable-net45+win8\FantomasLib.dll" ] |> fromLegacyList @"..\Fantomas\",
               [],

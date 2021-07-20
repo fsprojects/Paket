@@ -113,7 +113,7 @@ module TargetsFolder =
     let getAllFiles (folder: TargetsFolder<'T Set>) =
         folder.FrameworkFolders
         |> Seq.collect (fun f -> f.FolderContents)
-        |> Seq.append (folder.RootContents)
+        |> Seq.append folder.RootContents
 
     let isEmpty folder =
         folder
@@ -205,12 +205,12 @@ module FolderScanner =
 
     let check errorMsg f x =
         if f x then ParseSucceeded x
-        else ParseError (errorMsg)
+        else ParseError errorMsg
 
     let choose errorMsg f x =
         match f x with
         | Some y -> ParseSucceeded y
-        | None -> ParseError (errorMsg)
+        | None -> ParseError errorMsg
 
     let parseDecimal (x: string) = Decimal.TryParse(x, Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture)
 
@@ -265,8 +265,8 @@ module FolderScanner =
     } with
         static member Default = { IgnoreCase = false }
 
-    let private getRegex = memoize (fun (regexString) -> Regex(regexString, RegexOptions.None))
-    let private getRegexIgnoreCase = memoize (fun (regexString) -> Regex(regexString, RegexOptions.IgnoreCase))
+    let private getRegex = memoize (fun regexString -> Regex(regexString, RegexOptions.None))
+    let private getRegexIgnoreCase = memoize (fun regexString -> Regex(regexString, RegexOptions.IgnoreCase))
     let private getRegexString = memoize (fun (formatString:string) ->
         let formatStr = formatString.Replace("%%", "%")
         let constants = formatStr.Split(separators, StringSplitOptions.None)
@@ -322,7 +322,7 @@ module FolderScanner =
 
     let private retrieveReplacedFormatString =
         let findSpecifiers = Regex(@"%(?<formatSpec>.)({(?<inside>.*?)})?")
-        memoize (fun (formatString) ->
+        memoize (fun formatString ->
             let matches =
                 findSpecifiers.Matches(formatString)
                 |> Seq.cast<Match>
@@ -466,7 +466,7 @@ module InstallModel =
             |> Option.map (fun (rid, l, _) -> { Path = l; File = p; Runtime = Some rid }))
         |> Option.orElseWith (fun _ ->
             (trySscanf "lib/%A{noSeperator}" p : string option)
-            |> Option.map (fun (_) -> { Path = Tfm.Empty; File = p; Runtime = None }))
+            |> Option.map (fun _ -> { Path = Tfm.Empty; File = p; Runtime = None }))
 
     let getCompileLibAssembly (p:UnparsedPackageFile) =
         // %s because 'native' uses subfolders...
@@ -491,7 +491,7 @@ module InstallModel =
             { Path = l; File = p; Runtime = None })
         |> Option.orElseWith (fun _ ->
             (trySscanf "lib/%A{noSeperator}" p : string option)
-            |> Option.map (fun (_) -> { Path = Tfm.Empty; File = p; Runtime = None }))
+            |> Option.map (fun _ -> { Path = Tfm.Empty; File = p; Runtime = None }))
 
     let getRuntimeLibrary (p:UnparsedPackageFile) =
         (trySscanf "runtimes/%A{rid}/nativeassets/%A{tfm}/%A{noSeperator}" p : (Rid * Tfm * string) option)
@@ -528,11 +528,11 @@ module InstallModel =
 
     /// This is for library references, which at the same time can be used for references (old world - pre dotnetcore)
     let getLegacyReferences (target : TargetProfile) (installModel:InstallModel) =
-        getFileFolders target (installModel.CompileLibFolders) (fun f -> f.Libraries |> Set.toSeq)
+        getFileFolders target installModel.CompileLibFolders (fun f -> f.Libraries |> Set.toSeq)
         |> Seq.cache
 
     let getLegacyFrameworkReferences (target : TargetProfile) (installModel:InstallModel) =
-        getFileFolders target (installModel.CompileLibFolders) (fun f -> f.FrameworkReferences |> Set.toSeq)
+        getFileFolders target installModel.CompileLibFolders (fun f -> f.FrameworkReferences |> Set.toSeq)
         |> Seq.cache
 
     let getAllLegacyFrameworkReferences (installModel:InstallModel) =
@@ -546,7 +546,7 @@ module InstallModel =
     /// This is for reference assemblies (new dotnetcore world)
     let getCompileReferences (target: TargetProfile) (installModel : InstallModel) =
         let results =
-            getFileFolders target (installModel.CompileRefFolders) Set.toSeq
+            getFileFolders target installModel.CompileRefFolders Set.toSeq
             |> Seq.cache
         if results |> Seq.isEmpty then
             // Fallback for old packages
@@ -703,9 +703,9 @@ module InstallModel =
         let recalculated = calcRuntimeAssemblyFolders unParsedList
         let filledFolder =
             unParsedList
-            |> Seq.fold (fun folder (file) ->
+            |> Seq.fold (fun folder file ->
                 let fdf = (getRuntimeAssembly file).Value
-                match List.tryFind (fun (folder:FrameworkFolder<_>) -> folder.Path = fdf.Path) (folder) with
+                match List.tryFind (fun (folder:FrameworkFolder<_>) -> folder.Path = fdf.Path) folder with
                 | Some path -> addFileToFolder path (RuntimeLibrary.ofFile fdf) folder Set.add
                 | _ -> folder) recalculated
 
@@ -742,7 +742,7 @@ module InstallModel =
             RuntimeGraph.getInheritanceList rid graph
             |> Seq.tryFind allRids.Contains
         let tfmData =
-            getFileFolders target (installModel.RuntimeLibFolders) (Set.toSeq)
+            getFileFolders target installModel.RuntimeLibFolders Set.toSeq
             |> Seq.filter (fun lib -> lib.Rid = bestMatchingRid)
             |> Seq.cache
         let ridData =
@@ -779,15 +779,15 @@ module InstallModel =
     let mapCompileLibReferences mapfn (installModel:InstallModel) =
         mapCompileLibFolders (FrameworkFolder.map (fun l -> { l with Libraries = mapfn l.Libraries })) installModel
     let mapCompileRefFiles mapfn (installModel:InstallModel) =
-        mapCompileRefFolders (FrameworkFolder.map (mapfn)) installModel
+        mapCompileRefFolders (FrameworkFolder.map mapfn) installModel
     let mapRuntimeAssemblyFiles mapfn (installModel:InstallModel) =
-        mapRuntimeAssemblyFolders (FrameworkFolder.map (mapfn)) installModel
+        mapRuntimeAssemblyFolders (FrameworkFolder.map mapfn) installModel
     let mapTargetsFiles mapfn (installModel:InstallModel) =
-        mapTargetsFileFolders (TargetsFolder.map (mapfn)) installModel
+        mapTargetsFileFolders (TargetsFolder.map mapfn) installModel
 
     let addFrameworkAssemblyReference (installModel:InstallModel) (reference:FrameworkAssemblyReference) : InstallModel =
         let referenceApplies (folder : FrameworkFolder<_>) =
-            applyRestrictionsToTargets (reference.FrameworkRestrictions |> getExplicitRestriction) (folder.Targets)
+            applyRestrictionsToTargets (reference.FrameworkRestrictions |> getExplicitRestriction) folder.Targets
             |> Seq.isEmpty
             |> not
 
@@ -1024,7 +1024,7 @@ type InstallModel with
     member this.GetTargetsFiles target =
         InstallModel.getTargetsFiles target this
 
-    member this.getLegacyFrameworkReferences (target) = InstallModel.getLegacyFrameworkReferences target this
+    member this.getLegacyFrameworkReferences target = InstallModel.getLegacyFrameworkReferences target this
     member this.GetAllLegacyFrameworkReferences () = InstallModel.getAllLegacyFrameworkReferences this
     member this.GetAllLegacyReferences () = InstallModel.getAllLegacyReferences this
     member this.GetAllLegacyReferenceAndFrameworkReferenceNames () =

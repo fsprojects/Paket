@@ -59,7 +59,7 @@ let bruteForce ((g,deps):ResolverPuzzle) =
                 match check (g',deps) resolution with
                 | None ->
                     match Map.tryFind p resolution with
-                    | Some(_) -> None
+                    | Some _ -> None
                     | _ ->
                         let resolved =
                             { Name = p

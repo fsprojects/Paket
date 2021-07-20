@@ -192,7 +192,7 @@ let Pack(workingDir: string, dependenciesFile : DependenciesFile, packageOutputP
         let convertRemainingTemplate fileName =
             let templateFile = TemplateFile.Load(fileName,lockFile,version,specificVersions)
             match templateFile with
-            | { Contents = ProjectInfo(_) } ->
+            | { Contents = ProjectInfo _ } ->
                 let fi = FileInfo(fileName)
                 let allProjectFiles = ProjectFile.FindAllProjects(fi.Directory.FullName) |> Array.toList
 

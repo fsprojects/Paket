@@ -41,7 +41,7 @@ let checkContainsPackageRefs pkgRefs (group: XElement) =
 
     let packageRefs = group.Elements(xname "PackageReference") |> Seq.toList
     Assert.AreEqual(pkgRefs |> List.length, packageRefs |> Seq.length, (sprintf "%A" group))
-    for (pkgName, pkgVersion) in pkgRefs do
+    for pkgName, pkgVersion in pkgRefs do
         let pkg =
             packageRefs
             |> List.filter (isPackageReference pkgName)
@@ -149,11 +149,11 @@ group Other1
     match itemGroups with
     | [groupMain; otherGroup] ->
         groupMain
-        |> checkTargetFrameworkRestriction (lockFile.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions)
+        |> checkTargetFrameworkRestriction lockFile.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
         groupMain
         |> checkContainsPackageRefs [ "FSharp.Core","3.1.2.5"; "Argu","4.2.1" ] 
         otherGroup
-        |> checkTargetFrameworkRestriction (lockFile.Groups.[Domain.GroupName "Other1"].Options.Settings.FrameworkRestrictions)
+        |> checkTargetFrameworkRestriction lockFile.Groups.[Domain.GroupName "Other1"].Options.Settings.FrameworkRestrictions
         otherGroup
         |> checkContainsPackageRefs [ "FSharp.Core","4.3.4"; "FsCheck","2.8.2" ] 
     | l ->
@@ -206,17 +206,17 @@ group Other2
     match itemGroups with
     | [groupMain; otherGroup20And21; otherGroupOnly21] ->
         groupMain
-        |> checkTargetFrameworkRestriction (lockFile.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions)
+        |> checkTargetFrameworkRestriction lockFile.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
         groupMain
         |> checkContainsPackageRefs [ "FSharp.Core","3.1.2.5"; "Argu","4.2.1" ] 
 
         otherGroup20And21
-        |> checkTargetFrameworkRestriction (lockFile.Groups.[Domain.GroupName "Other2"].Options.Settings.FrameworkRestrictions)
+        |> checkTargetFrameworkRestriction lockFile.Groups.[Domain.GroupName "Other2"].Options.Settings.FrameworkRestrictions
         otherGroup20And21
         |> checkContainsPackageRefs [ "FSharp.Core","4.3.4" ] 
 
         otherGroupOnly21
-        |> checkTargetFrameworkRestriction (lockFile.Groups.[Domain.GroupName "Other2"].Resolution.[Domain.PackageName "FsCheck"].Settings.FrameworkRestrictions)
+        |> checkTargetFrameworkRestriction lockFile.Groups.[Domain.GroupName "Other2"].Resolution.[Domain.PackageName "FsCheck"].Settings.FrameworkRestrictions
         otherGroupOnly21
         |> checkContainsPackageRefs [ "FsCheck","2.8.2" ] 
     | l ->
@@ -253,7 +253,7 @@ Newtonsoft.Json
     match itemGroups with
     | [groupMain] ->
         groupMain
-        |> checkTargetFrameworkRestriction (lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[Domain.PackageName "Newtonsoft.Json"].Settings.FrameworkRestrictions)
+        |> checkTargetFrameworkRestriction lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[Domain.PackageName "Newtonsoft.Json"].Settings.FrameworkRestrictions
         groupMain
         |> checkContainsPackageRefs [ "Newtonsoft.Json","11.0.2" ] 
     | l ->

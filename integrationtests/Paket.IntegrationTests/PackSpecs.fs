@@ -131,7 +131,7 @@ let ``#1429 pack deps using minimum-from-lock-file``() =
 
     details |> getDependencies |> Seq.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
     let packageName, versionRequirement, restrictions = details |> getDependencies |> Seq.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> Seq.head
-    versionRequirement |> shouldNotEqual (VersionRequirement.AllReleases)
+    versionRequirement |> shouldNotEqual VersionRequirement.AllReleases
 
     //File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","PaketBug","paket.template"))
 
@@ -344,7 +344,7 @@ let ``#1596 pack works for reflected definition assemblies``() =
 
     let outPath = Path.Combine(scenarioTempPath scenario,"bin")
     let templatePath = Path.Combine(scenarioTempPath scenario, "paket.template")
-    let (cleanup, r) = paket "pack output bin version 1.0.0 templatefile paket.template" scenario
+    let cleanup, r = paket "pack output bin version 1.0.0 templatefile paket.template" scenario
     use __ = cleanup
     printfn "paket.pack said: %A" r
     let package = Path.Combine(outPath, "Project2.1.0.0.nupkg")
@@ -670,7 +670,7 @@ let ``#4002 dotnet pack of a global tool shouldnt contain references``() =
     let rootPath = scenarioTempPath scenario
     let outPath = Path.Combine(rootPath, "out")
 
-    directPaket ("restore") scenario
+    directPaket "restore" scenario
     |> ignore
 
     directDotnet true (sprintf "pack -o \"%s\" /p:PackAsTool=true /bl" outPath) rootPath
@@ -705,7 +705,7 @@ let ``#4003 dotnet pack of a global tool with p2p``() =
     let rootPath = scenarioTempPath scenario
     let outPath = Path.Combine(rootPath, "out")
 
-    directPaket ("restore") scenario
+    directPaket "restore" scenario
     |> ignore
 
     directDotnet true (sprintf "pack tool1 -o \"%s\" /bl" outPath) rootPath
@@ -868,9 +868,9 @@ let ``#3558 pack multitarget with p2p by tfm`` () =
         let depsByTfm byTfm = nuspec.Dependencies.Value |> Seq.choose (fun (pkgName,version,tfm) -> if (tfm.GetExplicitRestriction()) = byTfm then Some (pkgName,version) else None) |> Seq.toList
         let pkgVer name version = (PackageName name), (VersionRequirement.Parse version)
 
-        CollectionAssert.AreEquivalent([ pkgVer "Suave" "[1.1.3]" ], depsByTfm (``>= net45``))
+        CollectionAssert.AreEquivalent([ pkgVer "Suave" "[1.1.3]" ], depsByTfm ``>= net45``)
 
-        CollectionAssert.AreEquivalent([ pkgVer "Argu" "[5.2.0]" ], depsByTfm (``>= netstandard2.0``))
+        CollectionAssert.AreEquivalent([ pkgVer "Argu" "[5.2.0]" ], depsByTfm ``>= netstandard2.0``)
 
         CollectionAssert.AreEquivalent([ pkgVer "FSharp.Core" "3.1.2.5" ], depsByTfm (FrameworkRestriction.Or [``>= net45``; ``>= netstandard2.0``]))
 
@@ -890,9 +890,9 @@ let ``#3558 pack multitarget with p2p by tfm`` () =
         let depsByTfm byTfm = nuspec.Dependencies.Value |> Seq.choose (fun (pkgName,version,tfm) -> if (tfm.GetExplicitRestriction()) = byTfm then Some (pkgName,version) else None) |> Seq.toList
         let pkgVer name version = (PackageName name), (VersionRequirement.Parse version)
 
-        CollectionAssert.AreEquivalent([ pkgVer "Suave" "[1.1.3]" ], depsByTfm (``>= net45``))
+        CollectionAssert.AreEquivalent([ pkgVer "Suave" "[1.1.3]" ], depsByTfm ``>= net45``)
 
-        CollectionAssert.AreEquivalent([ pkgVer "Argu" "[5.2.0]" ], depsByTfm (``>= netstandard2.0``))
+        CollectionAssert.AreEquivalent([ pkgVer "Argu" "[5.2.0]" ], depsByTfm ``>= netstandard2.0``)
 
         CollectionAssert.AreEquivalent([ pkgVer "FSharp.Core" "3.1.2.5"; pkgVer "MyProj.Common" "1.0.0" ], depsByTfm (FrameworkRestriction.Or [``>= net45``; ``>= netstandard2.0``]))
 

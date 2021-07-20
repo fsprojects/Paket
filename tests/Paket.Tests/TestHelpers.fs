@@ -20,17 +20,17 @@ let getPortableRestriction s =
 
 type GraphDependency = string * VersionRequirement * FrameworkRestrictions
 
-type DependencyGraph = list<string * string * (GraphDependency) list * RuntimeGraph>
+type DependencyGraph = list<string * string * GraphDependency list * RuntimeGraph>
 
 let OfSimpleGraph (g:seq<string * string * (string * VersionRequirement) list>) : DependencyGraph =
   g
-  |> Seq.map (fun (x, y, (rqs)) ->
+  |> Seq.map (fun (x, y, rqs) ->
     x, y, rqs |> List.map (fun (a,b) -> (a, b, ExplicitRestriction FrameworkRestriction.NoRestriction)), RuntimeGraph.Empty)
   |> Seq.toList
 
 let OfGraphWithRestriction (g:seq<string * string * (string * VersionRequirement * FrameworkRestrictions) list>) : DependencyGraph =
   g
-  |> Seq.map (fun (x, y, (rqs)) ->
+  |> Seq.map (fun (x, y, rqs) ->
     x, y, rqs |> List.map (fun (a,b,c) -> (a, b, c)), RuntimeGraph.Empty)
   |> Seq.toList
 

@@ -40,7 +40,7 @@ let getScriptContentsFailedExpectations (scriptFolder: DirectoryInfo) (expectati
         ) |> dict
 
     seq {
-        for (file, contains) in expectations do
+        for file, contains in expectations do
             match files.TryGetValue file with
             | false, _ -> yield sprintf "file %s was not found" file
             | true, file -> 

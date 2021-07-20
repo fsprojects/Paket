@@ -243,7 +243,7 @@ module DependenciesFileParser =
             let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
             let isVersion(text:string) =
-                let (result,_) = Int32.TryParse(text.[0].ToString()) in result
+                let result,_ = Int32.TryParse(text.[0].ToString()) in result
 
             match parts with
             | name :: operator1 :: version1  :: operator2 :: version2 :: rest
@@ -343,7 +343,7 @@ module DependenciesFileParser =
             let text = trimmed.Replace(":", "").Trim()
 
             if text = "auto-detect" then
-                Some (ParserOptions (ParserOption.AutodetectFrameworkRestrictions))
+                Some (ParserOptions ParserOption.AutodetectFrameworkRestrictions)
             else
                 let restrictions, _ = Requirements.parseRestrictionsLegacy true text
                 if String.IsNullOrWhiteSpace text |> not && restrictions = FrameworkRestriction.NoRestriction then
@@ -355,7 +355,7 @@ module DependenciesFileParser =
             let text = trimmed.Replace(":", "").Trim()
 
             if text = "auto-detect" then
-                Some (ParserOptions (ParserOption.AutodetectFrameworkRestrictions))
+                Some (ParserOptions ParserOption.AutodetectFrameworkRestrictions)
             else
                 let restrictions = Requirements.parseRestrictions text |> fst
                 if String.IsNullOrWhiteSpace text |> not && restrictions = FrameworkRestriction.NoRestriction then

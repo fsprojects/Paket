@@ -151,12 +151,12 @@ nuget Castle.Windsor-log4net >= 3.3.0"""
     let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions (cfg,lockFile)
     let expected =
         Map.ofList
-            ([(Constants.MainDependencyGroup,PackageName "Castle.Core"), (SemVer.Parse "3.3.3");
-              (Constants.MainDependencyGroup,PackageName "Castle.Core-log4net"), (SemVer.Parse "3.3.3");
-              (Constants.MainDependencyGroup,PackageName "Castle.LoggingFacility"), (SemVer.Parse "3.3.0");
-              (Constants.MainDependencyGroup,PackageName "Castle.Windsor"), (SemVer.Parse "3.3.0");
-              (Constants.MainDependencyGroup,PackageName "Castle.Windsor-log4net"), (SemVer.Parse "3.3.0");
-              (Constants.MainDependencyGroup,PackageName "log4net"),  (SemVer.Parse "1.2.10")])
+            [(Constants.MainDependencyGroup,PackageName "Castle.Core"), (SemVer.Parse "3.3.3");
+             (Constants.MainDependencyGroup,PackageName "Castle.Core-log4net"), (SemVer.Parse "3.3.3");
+             (Constants.MainDependencyGroup,PackageName "Castle.LoggingFacility"), (SemVer.Parse "3.3.0");
+             (Constants.MainDependencyGroup,PackageName "Castle.Windsor"), (SemVer.Parse "3.3.0");
+             (Constants.MainDependencyGroup,PackageName "Castle.Windsor-log4net"), (SemVer.Parse "3.3.0");
+             (Constants.MainDependencyGroup,PackageName "log4net"),  (SemVer.Parse "1.2.10")]
 
     newDependencies
     |> Map.filter (fun k v -> not <| changedDependencies.Contains(k))

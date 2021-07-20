@@ -124,12 +124,12 @@ let ofDirectory targetFolder =
             |> NuGetContent.toSeq true
             |> Seq.map (function
                 | prefix, NuGetDirectory (name, _) -> sprintf "D: %s/%s" prefix name
-                | prefix, NuGetFile (name) -> sprintf "F: %s/%s" prefix name)
+                | prefix, NuGetFile name -> sprintf "F: %s/%s" prefix name)
             |> fun s -> String.Join("\n", s)
         try File.WriteAllText(spec, text)
         with e -> eprintf "Error writing '%s': %O" spec e
         result
-    if File.Exists (spec) then
+    if File.Exists spec then
         // read from file if possible
         try
             let rootDirName = Path.GetFileName(targetFolder)
@@ -221,10 +221,10 @@ let ofFiles filesList =
     filesList
     |> Seq.fold (fun state file -> addContent file state) []
 
-let GetContentWithNuSpec spec dir = lazy (
-    { Content = (ofDirectory dir).Contents
-      Path = dir
-      Spec = spec })
+let GetContentWithNuSpec spec dir =
+    lazy { Content = (ofDirectory dir).Contents
+           Path = dir
+           Spec = spec }
 
 let GetContent dir = lazy (
     let di = DirectoryInfo(dir)
@@ -352,7 +352,7 @@ let private getFiles targetFolder subFolderName filesDescriptionForVerbose =
 
 /// Finds all libraries in a nuget package.
 [<Obsolete "Use GetContent instead">]
-let GetLibFiles(targetFolder) =
+let GetLibFiles targetFolder =
     let libs = getFiles targetFolder "lib" "libraries"
     let refs = getFiles targetFolder "ref" "libraries"
     let runtimeLibs = getFiles targetFolder "runtimes" "libraries"
@@ -366,7 +366,7 @@ let GetLibFiles(targetFolder) =
 
 /// Finds all targets files in a nuget package.
 [<Obsolete "Use GetContent instead">]
-let GetTargetsFiles(targetFolder, (pkg : PackageName)) =
+let GetTargetsFiles(targetFolder, pkg : PackageName) =
     let packageId = pkg.CompareString
     getFiles targetFolder "build" ".targets files"
     |> Array.filter (fun p ->
@@ -375,7 +375,7 @@ let GetTargetsFiles(targetFolder, (pkg : PackageName)) =
 
 /// Finds all analyzer files in a nuget package.
 [<Obsolete "Use GetContent instead">]
-let GetAnalyzerFiles(targetFolder) = getFilesMatching targetFolder "*.dll" "analyzers" "analyzer dlls"
+let GetAnalyzerFiles targetFolder = getFilesMatching targetFolder "*.dll" "analyzers" "analyzer dlls"
 
 let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
     NuGetV3.findVersionsForPackage(nugetV3Url, auth, package)
@@ -1013,7 +1013,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     attempt < 5 &&
                     exn.Status = WebExceptionStatus.ProtocolError &&
                      (match source.Auth.Retrieve (attempt <> 0) with
-                      | Some(Credentials(_)) -> true
+                      | Some(Credentials _) -> true
                       | _ -> false)
                         ->  traceWarnfn "Could not download %O %O.%s    %s.%sRetry." packageName version Environment.NewLine exn.Message Environment.NewLine
                             return! download false (attempt + 1)

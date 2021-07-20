@@ -146,7 +146,7 @@ module CredentialProviders =
                     if results |> List.exists (snd >> Option.isSome) then
                         results |> List.choose snd
                     else
-                        for (tp, _) in results do
+                        for tp, _ in results do
                             Logging.traceWarnfn "The authentication scheme '%s' is not supported" tp
                         []
             Success results
@@ -194,7 +194,7 @@ module CredentialProviders =
 
                 result)
 
-    let GetAuthenticationDirect (source : string) (isRetry) =
+    let GetAuthenticationDirect (source : string) isRetry =
         collectProviders()
         |> List.collect (fun provider ->
             match handleProvider isRetry provider source with

@@ -7,7 +7,7 @@ open System.IO
 open Paket.Domain
 open Paket.Logging
 
-let private matchGroupName(groupName) =
+let private matchGroupName groupName =
     match groupName with
         | None -> Constants.MainDependencyGroup
         | Some name -> GroupName name

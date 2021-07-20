@@ -143,7 +143,7 @@ let ``monoandroid8.0 should be compatible with netstandard2.0``() =
 [<Test>]
 let ``Xamarin.Mac should be compatible with netstandard2.0``() =
     let ``netstandard2.0`` = TargetProfile.SinglePlatform (DotNetStandard DotNetStandardVersion.V2_0)
-    let ``xamarinmac`` = TargetProfile.SinglePlatform (XamarinMac)
+    let ``xamarinmac`` = TargetProfile.SinglePlatform XamarinMac
 
     ``xamarinmac``.IsAtLeast ``netstandard2.0``
     |> shouldEqual true
