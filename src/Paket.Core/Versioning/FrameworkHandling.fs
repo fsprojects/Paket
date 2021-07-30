@@ -142,14 +142,16 @@ type Net6Os =
         | TvOs -> "tvos"
         | WatchOs -> "watchos"
     
-    static member TryParse s =
-        match s with
-        | "android" -> Some Net6Os.Android
-        | "ios"     -> Some Net6Os.IOs
-        | "macos"   -> Some Net6Os.MacOs
-        | "tvos"    -> Some Net6Os.TvOs
-        | "watchos" -> Some Net6Os.WatchOs
-        | _ -> None
+    static member TryParse (s:string) =
+        [
+           ("android",Net6Os.Android)
+           ("ios",Net6Os.IOs)
+           ("macos",Net6Os.MacOs)
+           ("tvos",Net6Os.TvOs)
+           ("watchos",Net6Os.WatchOs)
+         ] |> Seq.tryFind(fun (k,_) -> s.StartsWith k)
+           |> Option.map snd
+       
 
 
 [<RequireQualifiedAccess>]

@@ -219,6 +219,7 @@ let ``Can detect a bunch of net6 platforms``() =
       "net6.0-windows10.0.19041"   , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet6Windows Net6WindowsVersion.V10_0_19041_0)
       "net6-windows10.0.19041"     , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet6Windows Net6WindowsVersion.V10_0_19041_0)
       "net6000-windows10.0.19041"  , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet6Windows Net6WindowsVersion.V10_0_19041_0)
+      "net6.0-android30.0"         , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet6WithOs Net6Os.Android)
     ]
 
   let errors = [
