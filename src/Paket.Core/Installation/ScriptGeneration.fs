@@ -113,10 +113,13 @@ module ScriptGeneration =
                 if self.UseRelativePath then
                     (Uri scriptFile.FullName).MakeRelativeUri(Uri libFile.FullName).ToString()
                 else libFile.FullName
+                
+            let paketNamespace =
+                match self.Lang with
+                | ScriptType.CSharp -> ""
+                | ScriptType.FSharp -> "namespace PaketLoadScripts\n"
 
-            let paketNamespace = "namespace PaketLoadScripts\n"
-
-            // create the approiate load string for the target resource
+            // create the appropriate load string for the target resource
             let refString (reference:ReferenceType)  =
                 let escapeString (s:string) =
                     s.Replace("\\", "\\\\").Replace("\"", "\\\"")

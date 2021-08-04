@@ -278,11 +278,19 @@ let ``ignore assemblies that are not expected by the specified framework`` () =
     ] |> assertExpectations scenario ExpectationType.ShouldNotContain
 
 [<Test; Category("scriptgen")>]
-let ``scripts should contain the paket namespace`` () =
+let ``f# scripts should contain the paket namespace`` () =
+    let scenario = "add-namespace"
+    paket "install" scenario |> ignore
+    
+    [
+        "nlog.fsx", ["namespace PaketLoadScripts" ]
+    ] |> assertExpectations scenario ExpectationType.ShouldContain
+    
+[<Test; Category("scriptgen")>]
+let ``c# scripts should not contain the packet namespace`` () =
     let scenario = "add-namespace"
     paket "install" scenario |> ignore
     
     [
         "nlog.csx", ["namespace PaketLoadScripts" ]
-        "nlog.fsx", ["namespace PaketLoadScripts" ]
-    ] |> assertExpectations scenario ExpectationType.ShouldContain
+    ] |> assertExpectations scenario ExpectationType.ShouldNotContain
