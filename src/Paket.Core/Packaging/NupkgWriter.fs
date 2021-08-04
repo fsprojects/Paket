@@ -4,7 +4,6 @@ open System.IO
 open System.Xml.Linq
 open System.IO.Compression
 open Paket
-open Paket.Xml
 open System.Text
 open System.Text.RegularExpressions
 open System.Xml
@@ -191,6 +190,7 @@ module internal NupkgWriter =
             !! "requireLicenseAcceptance" "true"
         !! "description" core.Description
         (!!?) "summary" optional.Summary
+        (!!?) "readme" optional.Readme
         (!!?) "releaseNotes" optional.ReleaseNotes
         (!!?) "copyright" optional.Copyright
         (!!?) "language" optional.Language

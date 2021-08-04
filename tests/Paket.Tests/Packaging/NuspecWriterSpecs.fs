@@ -1,13 +1,9 @@
 ﻿module Paket.NuspecWriterSpecs
 
-open System.IO
 open Paket
-open Chessie.ErrorHandling
 open FsUnit
 open NUnit.Framework
-open TestHelpers
 open Paket.Domain
-open Paket.Requirements
 
 [<Test>]
 let ``should serialize core info``() = 
@@ -369,6 +365,7 @@ let ``should not serialize all properties``() =
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>A description</description>
     <summary>summary</summary>
+    <readme>README.md</readme>
     <releaseNotes>A release notes
 second line</releaseNotes>
     <copyright>Paket owners 2015</copyright>
@@ -395,6 +392,7 @@ second line</releaseNotes>
               Owners = ["Steffen"; "Alex"]
               ReleaseNotes = Some"A release notes\r\nsecond line"
               Summary = Some "summary"
+              Readme = Some "README.md"
               Language = Some "en-US"
               ProjectUrl = Some "http://www.somewhere.com"
               LicenseExpression = Some "MIT"
@@ -404,7 +402,7 @@ second line</releaseNotes>
               References = ["file1.dll";"file2.dll"]
               Tags = ["aa"; "bb"]
               DevelopmentDependency = true }
-                       
+
     let doc = NupkgWriter.nuspecDoc (core, optional)
     doc.ToString()
     |> normalizeLineEndings
