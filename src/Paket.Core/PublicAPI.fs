@@ -753,7 +753,7 @@ type Dependencies(dependenciesFileName: string) =
         PackageProcess.Pack(workingDir, dependenciesFile, outputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, minimumFromLockFile, pinProjectReferences, interprojectReferencesConstraint, symbols, includeReferencedProjects, projectUrl)
 
     /// Pushes a nupkg file.
-    static member Push(packageFileName, ?url, ?apiKey, (?endPoint: string), ?paketVersion, ?maxTrials, ?ignoreConflicts) =
+    static member Push(packageFileName, ?url, ?apiKey, ?endPoint: string, ?paketVersion, ?maxTrials, ?ignoreConflicts) =
         let urlWithEndpoint = RemoteUpload.GetUrlWithEndpoint url endPoint
         let envKey =
             match Environment.GetEnvironmentVariable("NUGET_KEY") |> Option.ofObj with
@@ -931,6 +931,6 @@ module PublicAPI =
                         | _ -> true)
                 if fws.Length > 0 then SupportCalculation.findPortable false fws |> ignore)
             // calculated as part of the above...
-            SupportCalculation.getSupportedPreCalculated (PortableProfileType.Profile259) |> ignore
+            SupportCalculation.getSupportedPreCalculated PortableProfileType.Profile259 |> ignore
         }
         |> Async.StartAsTask

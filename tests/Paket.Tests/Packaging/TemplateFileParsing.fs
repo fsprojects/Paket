@@ -207,10 +207,10 @@ let ``Optional fields are read`` (fileContent : string) =
     sut.DevelopmentDependency |> shouldEqual false
     sut.Language |> shouldEqual (Some "en-gb")
     sut.PackageTypes |> shouldEqual ["DotnetTool"; "Template"]
-    sut.DependencyGroups |> shouldContain ({ Framework = None;
-                                             Dependencies =
-                                                [PackageName "FSharp.Core",VersionRequirement.Parse("[4.3.1]")
-                                                 PackageName "My.OtherThing",VersionRequirement.AllReleases] })
+    sut.DependencyGroups |> shouldContain { Framework = None;
+                                            Dependencies =
+                                               [PackageName "FSharp.Core",VersionRequirement.Parse("[4.3.1]")
+                                                PackageName "My.OtherThing",VersionRequirement.AllReleases] }
     sut.ExcludedDependencies |> shouldContain (PackageName "Newtonsoft.Json")
     sut.ExcludedDependencies |> shouldContain (PackageName "Chessie")
     sut.ExcludedGroups |> shouldContain (GroupName "build")
@@ -882,7 +882,7 @@ let ProjectType1 = """type project
 """
 
 [<TestCase(ProjectType1)>]
-let ``Parsing minimal project based packages works`` (fileContent) =
+let ``Parsing minimal project based packages works`` fileContent =
     let result =
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream fileContent)
         |> returnOrFail

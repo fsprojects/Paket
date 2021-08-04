@@ -385,7 +385,7 @@ http http://nlp.stanford.edu/software/stanford-segmenter-2014-10-26.zip"""
     references.Length |> shouldEqual 6
 
     references.[5].Origin |> shouldEqual (Origin.HttpLink("http://nlp.stanford.edu"))
-    references.[5].Commit |> shouldEqual ("/software/stanford-segmenter-2014-10-26.zip")  // That's strange
+    references.[5].Commit |> shouldEqual "/software/stanford-segmenter-2014-10-26.zip"  // That's strange
     references.[5].Name |> shouldEqual "stanford-segmenter-2014-10-26.zip"  
 
     references

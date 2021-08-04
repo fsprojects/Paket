@@ -30,7 +30,7 @@ let ``should serialize silverlight framework identifier correctly``() =
 
 [<Test>]
 let ``should understand xamarinios``() =
-    FrameworkDetection.Extract("xamarinios10").Value |> shouldEqual (XamariniOS)
+    FrameworkDetection.Extract("xamarinios10").Value |> shouldEqual XamariniOS
 
 [<Test>]
 let ``should serialize xamarinios``() =
@@ -46,7 +46,7 @@ let ``should serialize xamarinwtchos``() =
 
 [<Test>]
 let ``should understand xamarinmac``() =
-    FrameworkDetection.Extract("xamarinmac20").Value |> shouldEqual (XamarinMac)
+    FrameworkDetection.Extract("xamarinmac20").Value |> shouldEqual XamarinMac
 
 [<Test>]
 let ``should serialize xamarinmac``() =

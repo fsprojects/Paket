@@ -182,7 +182,7 @@ let detectProjectFrameworksForDependenciesFile (dependenciesFile:DependenciesFil
                 RestoreProcess.findAllReferencesFiles root |> returnOrFail
                 |> List.collect (fun (p,_) ->
                     p.GetTargetProfiles()
-                    |> List.map (Requirements.FrameworkRestriction.ExactlyPlatform))
+                    |> List.map Requirements.FrameworkRestriction.ExactlyPlatform)
                 |> List.distinct
             if rawRestrictions.IsEmpty then Paket.Requirements.FrameworkRestriction.NoRestriction
             else rawRestrictions |> Seq.fold Paket.Requirements.FrameworkRestriction.combineRestrictionsWithOr Paket.Requirements.FrameworkRestriction.EmptySet)

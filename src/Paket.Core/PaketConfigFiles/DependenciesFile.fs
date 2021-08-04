@@ -113,7 +113,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
     member __.Groups = groups
     /// Directory info for the parent of this paket.dependencies file
     member this.DirectoryInfo =
-        try Some (this.FileInfo.Value.Directory)
+        try Some this.FileInfo.Value.Directory
         with _ -> None
 
     /// The full path of the directory that containes this paket.dependencies file
@@ -220,7 +220,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             let group = this.GetGroup groupName
             let storageConfig = group.Options.Settings.StorageConfig
 
-            let resolveSourceFile (file:ResolvedSourceFile) : (PackageRequirement list * UnresolvedSource list) =
+            let resolveSourceFile (file:ResolvedSourceFile) : PackageRequirement list * UnresolvedSource list =
                 let remoteDependenciesFile =
                     RemoteDownload.downloadDependenciesFile(force,Path.GetDirectoryName fileName, groupName, DependenciesFile.FromSource, file)
                     |> Async.RunSynchronously
@@ -627,7 +627,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 | Some package ->
                     package.ResolverStrategyForTransitives,
                     match package.VersionRequirement.Range with
-                    | OverrideAll(_) -> package.VersionRequirement
+                    | OverrideAll _ -> package.VersionRequirement
                     | _ -> vr.VersionRequirement
                 | None -> vr.ResolverStrategy,vr.VersionRequirement
 
@@ -652,7 +652,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
               groups
               |> Seq.map(fun item -> item.Value)
               |> Seq.filter(fun group -> group.Packages.IsEmpty && group.RemoteFiles.IsEmpty && group.Name <> Constants.MainDependencyGroup)
-              |> Seq.fold(fun (groups, (lines:string[])) emptyGroup ->
+              |> Seq.fold(fun (groups, lines:string[]) emptyGroup ->
                   groups
                   |> Map.remove emptyGroup.Name,
                   lines

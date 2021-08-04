@@ -56,7 +56,7 @@ let ``should understand net40 and net45``() =
     let model = emptymodel.AddReferences ([ @"..\Rx-Main\lib\net40\Rx.dll"; @"..\Rx-Main\lib\net45\Rx.dll" ] |> fromLegacyList @"..\Rx-Main\")
 
     model.GetLegacyReferences(TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4))
-        |> Seq.map (fun f -> f.Path) |> shouldContain (@"..\Rx-Main\lib\net40\Rx.dll")
+        |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Rx-Main\lib\net40\Rx.dll"
     model.GetLegacyReferences(TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4_5)) 
         |> Seq.map (fun f -> f.Path)|> shouldContain @"..\Rx-Main\lib\net45\Rx.dll"
 
@@ -108,11 +108,11 @@ let ``should understand sni packaging``() =
         .RemoveIfCompletelyEmpty()
     model.GetRuntimeLibraries graph (Rid.Of "os-x64") (TargetProfile.SinglePlatform (DotNetCoreApp DotNetCoreAppVersion.V2_2))
        |> Seq.map (fun (r:RuntimeLibrary) -> r.Library.Path) |> shouldNotContain @"..\runtime.win-x64.runtime.native.system.data.sqlclient.sni\runtimes\win-x64\native\sni.dll"
-    model.GetRuntimeLibraries graph (Rid.Of "win10-x64") (TargetProfile.SinglePlatform (DotNetStandard (DotNetStandardVersion.V2_0)))
+    model.GetRuntimeLibraries graph (Rid.Of "win10-x64") (TargetProfile.SinglePlatform (DotNetStandard DotNetStandardVersion.V2_0))
        |> Seq.map (fun (r:RuntimeLibrary) -> r.Library.Path) |> shouldContain @"..\runtime.win-x64.runtime.native.system.data.sqlclient.sni\runtimes\win-x64\native\sni.dll"
-    model.GetRuntimeLibraries graph (Rid.Of "win-x64") (TargetProfile.SinglePlatform (DotNetStandard (DotNetStandardVersion.V2_0)))
+    model.GetRuntimeLibraries graph (Rid.Of "win-x64") (TargetProfile.SinglePlatform (DotNetStandard DotNetStandardVersion.V2_0))
        |> Seq.map (fun (r:RuntimeLibrary) -> r.Library.Path) |> shouldContain @"..\runtime.win-x64.runtime.native.system.data.sqlclient.sni\runtimes\win-x64\native\sni.dll"
-    model.GetRuntimeLibraries graph (Rid.Of "win") (TargetProfile.SinglePlatform (DotNetStandard (DotNetStandardVersion.V2_0)))
+    model.GetRuntimeLibraries graph (Rid.Of "win") (TargetProfile.SinglePlatform (DotNetStandard DotNetStandardVersion.V2_0))
        |> Seq.map (fun (r:RuntimeLibrary) -> r.Library.Path) |> shouldNotContain @"..\runtime.win-x64.runtime.native.system.data.sqlclient.sni\runtimes\win-x64\native\sni.dll"
 
 [<Test>]
@@ -944,10 +944,10 @@ let ``prefer net20 over empty folder``() =
 
 [<Test>]
 let ``should understand xamarinios``() =
-    let model = emptymodel.ApplyFrameworkRestrictions (FrameworkRestriction.Exactly (XamariniOS))
+    let model = emptymodel.ApplyFrameworkRestrictions (FrameworkRestriction.Exactly XamariniOS)
     let model = model.AddReferences ([ @"..\FSharp.Core\lib\portable-net45+monoandroid10+monotouch10+xamarinios10\FSharp.Core.dll" ] |> fromLegacyList @"..\FSharp.Core\")
 
-    model.GetLegacyReferences(TargetProfile.SinglePlatform (XamariniOS))
+    model.GetLegacyReferences(TargetProfile.SinglePlatform XamariniOS)
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\FSharp.Core\lib\portable-net45+monoandroid10+monotouch10+xamarinios10\FSharp.Core.dll"
 
 [<Test>]

@@ -625,7 +625,7 @@ type BlockedCacheEntry =
     { BlockedFormats : string list }
 
 let private tryUrlOrBlacklistI =
-    let tryUrlOrBlacklistInner (f : unit -> Async<obj>, isOk : obj -> bool) (cacheKey) =
+    let tryUrlOrBlacklistInner (f : unit -> Async<obj>, isOk : obj -> bool) cacheKey =
         async {
             //try
             let! res = f ()
@@ -633,7 +633,7 @@ let private tryUrlOrBlacklistI =
         }
     let memoizedBlackList = memoizeAsyncEx tryUrlOrBlacklistInner
     fun f isOk cacheKey ->
-            memoizedBlackList (f, isOk) (cacheKey)
+            memoizedBlackList (f, isOk) cacheKey
 
 let private tryUrlOrBlacklist (f: _ -> Async<'a>) (isOk : 'a -> bool) (source:NuGetSource, id:UrlId) =
     let res =
@@ -671,7 +671,7 @@ let tryAndBlacklistUrl doBlackList doWarn (source:NuGetSource)
                     else
                         return Choice3Of3 () // Url Blacklisted
                 | FirstCall task ->
-                    let! (isOk, res) = task |> Async.AwaitTask
+                    let! isOk, res = task |> Async.AwaitTask
                     if not isOk then
                         if doWarn then
                             traceWarnIfNotBefore url.InstanceUrl "Possible Performance degradation, blacklist '%s'" url.InstanceUrl

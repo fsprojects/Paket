@@ -15,7 +15,7 @@ let ``Loading assembly metadata works``() =
     let workingDir =
         let curDir = Path.GetFullPath(".")
         if curDir.ToLowerInvariant().Contains "system32" then
-            Path.GetDirectoryName (assemblyLocation)
+            Path.GetDirectoryName assemblyLocation
         else curDir
 
     use _cd = TestHelpers.changeWorkingDir workingDir

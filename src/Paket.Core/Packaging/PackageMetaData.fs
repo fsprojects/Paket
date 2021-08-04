@@ -217,7 +217,7 @@ let getTargetDir (project : ProjectFile) targetProfile =
             | Some targetProfile -> sprintf "lib/%O/" targetProfile
             | None -> "lib/"
 
-let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences interprojectReferencesConstraint (projectWithTemplates : Map<string, (Lazy<'TemplateFile>) * ProjectFile * bool>) includeReferencedProjects (version :SemVerInfo option) cache =
+let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences interprojectReferencesConstraint (projectWithTemplates : Map<string, Lazy<'TemplateFile> * ProjectFile * bool>) includeReferencedProjects (version :SemVerInfo option) cache =
     let includeReferencedProjects = template.IncludeReferencedProjects || includeReferencedProjects
 
     let interprojectReferencesConstraint =
@@ -288,7 +288,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                         let satelliteWithFolders =
                             Directory.GetFiles(outputDir, satelliteAssemblyName, SearchOption.AllDirectories)
                             |> Array.map (fun sa -> (sa, Directory.GetParent(sa)))
-                            |> Array.filter (fun (sa, dirInfo) -> Cultures.isLanguageName (dirInfo.Name))
+                            |> Array.filter (fun (sa, dirInfo) -> Cultures.isLanguageName dirInfo.Name)
 
                         let existedSatelliteLanguages =
                             satelliteWithFolders
@@ -362,7 +362,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                    match core.Version with
                    | Some v ->
                        let versionConstraint = interprojectReferencesConstraint.CreateVersionRequirements v
-                       let anyFw = FrameworkRestrictions.ExplicitRestriction (FrameworkRestriction.NoRestriction)
+                       let anyFw = FrameworkRestrictions.ExplicitRestriction FrameworkRestriction.NoRestriction
                        PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v), anyFw
                    | None -> failwithf "There was no version given for %s." evaluatedTemplate.FileName
                | IncompleteTemplate ->
@@ -465,7 +465,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                     | _ -> true)
             |> List.map (fun (group, np, specificVersionRequirement) ->
                 let specificVersionRequirement = defaultArg specificVersionRequirement VersionRequirement.AllReleases
-                let noFrameworkRestriction = FrameworkRestrictions.ExplicitRestriction (FrameworkRestriction.NoRestriction)
+                let noFrameworkRestriction = FrameworkRestrictions.ExplicitRestriction FrameworkRestriction.NoRestriction
                 match group with
                 | None ->
                     match version with

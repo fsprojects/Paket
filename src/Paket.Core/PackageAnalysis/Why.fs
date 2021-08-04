@@ -49,8 +49,8 @@ module DependencyChain =
     let first ((name, _) : DependencyChain) = name
 
     let rec length = function
-    | (_, LblPathNode n) -> length n + 1
-    | (_, LblPathLeaf _) -> 2
+    | _, LblPathNode n -> length n + 1
+    | _, LblPathLeaf _ -> 2
 
     let format (resolution: PackageResolver.PackageResolution) showDetails (c : DependencyChain) =
         let formatVerReq (vr : VersionRequirement) =
@@ -186,7 +186,7 @@ let ohWhy (packageName,
         | Transitive chains ->
             tracefn "It is part of following dependency chains:"
             tracen ""
-            for (top, chains) in chains |> List.groupBy (DependencyChain.first) do
+            for top, chains in chains |> List.groupBy DependencyChain.first do
                 match chains |> List.sortBy DependencyChain.length, options.Details with
                 | shortest :: [], false ->
                     DependencyChain.format resolution options.Details shortest |> tracen

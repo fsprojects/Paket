@@ -63,7 +63,7 @@ module PaketEnv =
 
     let ensureNotExists (directory : DirectoryInfo) =
         match fromRootDirectory directory with
-        | Result.Ok(_) -> fail (PaketEnvAlreadyExistsInDirectory directory)
+        | Result.Ok _ -> fail (PaketEnvAlreadyExistsInDirectory directory)
         | Result.Bad(msgs) ->
             let filtered =
                 msgs

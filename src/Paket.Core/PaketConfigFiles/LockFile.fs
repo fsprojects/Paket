@@ -46,9 +46,9 @@ module LockFileSerializer =
         | Some BindingRedirectsSettings.Off -> yield "REDIRECTS: OFF"
         | None -> ()
         match options.Settings.StorageConfig with
-        | Some (PackagesFolderGroupConfig.NoPackagesFolder) -> yield "STORAGE: NONE"
-        | Some (PackagesFolderGroupConfig.SymbolicLink) -> yield "STORAGE: SYMLINK"
-        | Some (PackagesFolderGroupConfig.DefaultPackagesFolder) -> yield "STORAGE: PACKAGES"
+        | Some PackagesFolderGroupConfig.NoPackagesFolder -> yield "STORAGE: NONE"
+        | Some PackagesFolderGroupConfig.SymbolicLink -> yield "STORAGE: SYMLINK"
+        | Some PackagesFolderGroupConfig.DefaultPackagesFolder -> yield "STORAGE: PACKAGES"
         | Some (PackagesFolderGroupConfig.GivenPackagesFolder f) -> failwithf "Not implemented yet."
         | None -> ()
         match options.ResolverStrategyForTransitives with
@@ -111,7 +111,7 @@ module LockFileSerializer =
             let hasReported = ref false
             [ yield! serializeOptionsAsLines options
 
-              for (source), packages in sources do
+              for source, packages in sources do
                   if not !hasReported then
                     yield "NUGET"
                     hasReported := true
@@ -243,7 +243,7 @@ module LockFileSerializer =
                     | None -> ()
                     | Some filter -> yield "      os: " + filter
 
-                    for (name,v) in file.Dependencies do
+                    for name,v in file.Dependencies do
                         let versionStr =
                             let s = v.ToString()
                             if s = "" then s else "(" + s + ")"
@@ -417,7 +417,7 @@ module LockFileParser =
         | TransitiveDependenciesResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForTransitives = strategy }
         | _ -> failwithf "Unknown option %A" option
 
-    let Parse(lockFileLines) =
+    let Parse lockFileLines =
         let remove textToRemove (source:string) = source.Replace(textToRemove, "")
         let removeBrackets = remove "(" >> remove ")"
         let parsePackage (s : string) =
@@ -934,7 +934,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
             else
             visited.Add(visitKey,(p,HashSet(deps)))
 
-            let (groupName,_packageName) = visitKey
+            let groupName,_packageName = visitKey
             for dep in deps do
                 let deps = this.GetDirectDependenciesOfSafe(groupName,dep,referencesFile.FileName)
                 toVisit := Set.add ((groupName,dep),p,deps) !toVisit
@@ -943,22 +943,22 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
         [while visited.Count > 0 do
             let current =
                 visited |> Seq.minBy (fun item ->
-                    let (_,deps) = item.Value;
+                    let _,deps = item.Value;
                     (deps.Count,item.Key))
 
-            let (groupName,packageName) = current.Key
+            let groupName,packageName = current.Key
 
             visited.Remove(current.Key) |> ignore
 
             for item in visited do
-                let (itemGroup, _) = item.Key
+                let itemGroup, _ = item.Key
                 if itemGroup = groupName then
-                    let (_, itemDeps) = item.Value
+                    let _, itemDeps = item.Value
                     itemDeps.Remove(packageName) |> ignore
                 else ()
 
-            if emitted.Add (current.Key) then
-                let (settings,dependencies) = current.Value
+            if emitted.Add current.Key then
+                let settings,dependencies = current.Value
                 let deps = Set.ofSeq dependencies
                 yield (current.Key,settings,deps)
         ], !cliTools

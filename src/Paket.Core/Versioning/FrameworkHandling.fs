@@ -375,13 +375,13 @@ type DotNetCoreAppVersion =
 
     static member TryParse s =
         match s with
-        | _ when s = "" || s = "1" -> Some (DotNetCoreAppVersion.V1_0)
-        | _ when s = "1.1" -> Some (DotNetCoreAppVersion.V1_1)
-        | _ when s = "2" || s = "2.0" -> Some (DotNetCoreAppVersion.V2_0)
-        | _ when s = "2.1" -> Some (DotNetCoreAppVersion.V2_1)
-        | _ when s = "2.2" -> Some (DotNetCoreAppVersion.V2_2)
-        | _ when s = "3" || s = "3.0" -> Some (DotNetCoreAppVersion.V3_0)
-        | _ when s = "3.1" -> Some (DotNetCoreAppVersion.V3_1)
+        | _ when s = "" || s = "1" -> Some DotNetCoreAppVersion.V1_0
+        | _ when s = "1.1" -> Some DotNetCoreAppVersion.V1_1
+        | _ when s = "2" || s = "2.0" -> Some DotNetCoreAppVersion.V2_0
+        | _ when s = "2.1" -> Some DotNetCoreAppVersion.V2_1
+        | _ when s = "2.2" -> Some DotNetCoreAppVersion.V2_2
+        | _ when s = "3" || s = "3.0" -> Some DotNetCoreAppVersion.V3_0
+        | _ when s = "3.1" -> Some DotNetCoreAppVersion.V3_1
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -422,10 +422,10 @@ type XCodeVersion =
 
     static member TryParse s =
         match s with
-        | "1" -> Some (XCodeVersion.V10)
-        | "10" -> Some (XCodeVersion.V10)
-        | "1.1" -> Some (XCodeVersion.V11)
-        | "11" -> Some (XCodeVersion.V11)
+        | "1" -> Some XCodeVersion.V10
+        | "10" -> Some XCodeVersion.V10
+        | "1.1" -> Some XCodeVersion.V11
+        | "11" -> Some XCodeVersion.V11
         | _ -> None
 
 
@@ -504,11 +504,11 @@ type WindowsPhoneVersion =
         | WindowsPhoneVersion.V8_1 -> "v8.1"
     static member TryParse s =
         match s with
-        | "" | "7" -> Some (WindowsPhoneVersion.V7)
-        | "7.1" -> Some (WindowsPhoneVersion.V7_1)
-        | "7.5" -> Some (WindowsPhoneVersion.V7_5)
-        | "8" -> Some (WindowsPhoneVersion.V8)
-        | "8.1" -> Some (WindowsPhoneVersion.V8_1)
+        | "" | "7" -> Some WindowsPhoneVersion.V7
+        | "7.1" -> Some WindowsPhoneVersion.V7_1
+        | "7.5" -> Some WindowsPhoneVersion.V7_5
+        | "8" -> Some WindowsPhoneVersion.V8
+        | "8.1" -> Some WindowsPhoneVersion.V8_1
         | _ -> None
 [<RequireQualifiedAccess>]
 type WindowsPhoneAppVersion =
@@ -540,9 +540,9 @@ type SilverlightVersion =
         | SilverlightVersion.V5 -> "v5.0"
     static member TryParse s =
         match s with
-        | ""  | "3" -> Some (SilverlightVersion.V3)
-        | "4" -> Some (SilverlightVersion.V4)
-        | "5"  -> Some (SilverlightVersion.V5)
+        | ""  | "3" -> Some SilverlightVersion.V3
+        | "4" -> Some SilverlightVersion.V4
+        | "5"  -> Some SilverlightVersion.V5
         | _ -> None
 [<RequireQualifiedAccess>]
 type MonoAndroidVersion =
@@ -604,27 +604,27 @@ type MonoAndroidVersion =
 
     static member TryParse s =
         match s with
-        | "" | "1" -> Some (MonoAndroidVersion.V1)
-        | "2.2" -> Some (MonoAndroidVersion.V2_2)
-        | "2.3" -> Some (MonoAndroidVersion.V2_3)
-        | "4.0.3" -> Some (MonoAndroidVersion.V4_0_3)
-        | "4.1" -> Some (MonoAndroidVersion.V4_1)
-        | "4.2" -> Some (MonoAndroidVersion.V4_2)
-        | "4.3" -> Some (MonoAndroidVersion.V4_3)
-        | "4.4" -> Some (MonoAndroidVersion.V4_4)
-        | "5" -> Some (MonoAndroidVersion.V5)
-        | "5.1" -> Some (MonoAndroidVersion.V5_1)
-        | "6" -> Some (MonoAndroidVersion.V6)
+        | "" | "1" -> Some MonoAndroidVersion.V1
+        | "2.2" -> Some MonoAndroidVersion.V2_2
+        | "2.3" -> Some MonoAndroidVersion.V2_3
+        | "4.0.3" -> Some MonoAndroidVersion.V4_0_3
+        | "4.1" -> Some MonoAndroidVersion.V4_1
+        | "4.2" -> Some MonoAndroidVersion.V4_2
+        | "4.3" -> Some MonoAndroidVersion.V4_3
+        | "4.4" -> Some MonoAndroidVersion.V4_4
+        | "5" -> Some MonoAndroidVersion.V5
+        | "5.1" -> Some MonoAndroidVersion.V5_1
+        | "6" -> Some MonoAndroidVersion.V6
         | "7"
-        | "7.0" -> Some (MonoAndroidVersion.V7)
-        | "7.1" -> Some (MonoAndroidVersion.V7_1)
+        | "7.0" -> Some MonoAndroidVersion.V7
+        | "7.1" -> Some MonoAndroidVersion.V7_1
         | "8"
-        | "8.0" -> Some (MonoAndroidVersion.V8)
-        | "8.1" -> Some (MonoAndroidVersion.V8_1)
+        | "8.0" -> Some MonoAndroidVersion.V8
+        | "8.1" -> Some MonoAndroidVersion.V8_1
         | "9"
-        | "9.0" -> Some (MonoAndroidVersion.V9)
+        | "9.0" -> Some MonoAndroidVersion.V9
         | "10"
-        | "10.0" -> Some (MonoAndroidVersion.V10)
+        | "10.0" -> Some MonoAndroidVersion.V10
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -663,8 +663,8 @@ type TizenVersion =
         | V4 -> "v4.0"
     static member TryParse s =
         match s with
-        | "" | "3" -> Some (TizenVersion.V3)
-        | "4" -> Some (TizenVersion.V4)
+        | "" | "3" -> Some TizenVersion.V3
+        | "4" -> Some TizenVersion.V4
         | _ -> None
 
 /// Framework Identifier type.
@@ -767,7 +767,7 @@ type FrameworkIdentifier =
         | MonoAndroid MonoAndroidVersion.V10 -> [ MonoAndroid MonoAndroidVersion.V9; DotNetStandard DotNetStandardVersion.V2_1 ]
         | MonoTouch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | MonoMac -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
-        | Native(_) -> [ ]
+        | Native _ -> [ ]
         | XamariniOS -> [ DotNetStandard DotNetStandardVersion.V1_6; DotNetStandard DotNetStandardVersion.V2_0; DotNetStandard DotNetStandardVersion.V2_1 ]
         | XamarinMac -> [ DotNetStandard DotNetStandardVersion.V1_6; DotNetStandard DotNetStandardVersion.V2_0; DotNetStandard DotNetStandardVersion.V2_1 ]
         | XamarinTV -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
@@ -868,13 +868,13 @@ module FrameworkDetection =
     #if DOTNETCORE
         // Environment.Version is not supported
         //dunno what is used for, using a default
-        DotNetFramework (FrameworkVersion.V4_5)
+        DotNetFramework FrameworkVersion.V4_5
     #else
         let version = Environment.Version
         match version.Major, version.Minor, version.Build, version.Revision with
-        | 4, 0, 30319, 42000 -> DotNetFramework (FrameworkVersion.V4_6)
-        | 4, 0, 30319, _ -> DotNetFramework (FrameworkVersion.V4_5)
-        | _ -> DotNetFramework (FrameworkVersion.V4_5) // paket.exe is compiled for framework 4.5
+        | 4, 0, 30319, 42000 -> DotNetFramework FrameworkVersion.V4_6
+        | 4, 0, 30319, _ -> DotNetFramework FrameworkVersion.V4_5
+        | _ -> DotNetFramework FrameworkVersion.V4_5 // paket.exe is compiled for framework 4.5
     #endif
         )
 
@@ -921,7 +921,7 @@ module FrameworkDetection =
 
             let (|MatchTfm|_|) (tfmStart: string) tryParseVersion (s:string) =
                 if s.StartsWith tfmStart then
-                    let versionPart = s.Substring (tfmStart.Length)
+                    let versionPart = s.Substring tfmStart.Length
                     tryNormalizeVersion versionPart
                     |> Option.bind tryParseVersion
                 else
@@ -929,7 +929,7 @@ module FrameworkDetection =
             let (|MatchNetXDashOs|_|) dotnetVersionX tryParseSecondPart (s:string) =
                 let parts = s.Split('-')
                 if parts.Length = 2 && s.StartsWith "net" then
-                    let versionPart = parts.[0].Substring (3)
+                    let versionPart = parts.[0].Substring 3
                     tryNormalizeVersion versionPart
                     |> function
                     | Some "5" when dotnetVersionX = 5 -> tryParseSecondPart parts.[1]
@@ -940,8 +940,8 @@ module FrameworkDetection =
             let (|MatchNetXDashWindows|_|) dotnetVersionX tryParseVersion (s:string) =
                 let parts = s.Split('-')
                 if parts.Length = 2 && s.StartsWith "net" && parts.[1].StartsWith "win" then
-                    let netVersionPart = parts.[0].Substring (3)
-                    let winVersionPart = parts.[1].Substring (3)
+                    let netVersionPart = parts.[0].Substring 3
+                    let winVersionPart = parts.[1].Substring 3
                     tryNormalizeVersion netVersionPart
                     |> function
                     | Some "5"  when dotnetVersionX = 5 -> tryParseVersion winVersionPart
@@ -1856,7 +1856,7 @@ module SupportCalculation =
                     // Regular supported logic is to enumerate all profiles and select compatible ones
                     let profiles =
                         KnownTargetProfiles.AllPortableProfiles
-                        |> List.filter (fun (p) ->
+                        |> List.filter (fun p ->
                             // Portable profile is compatible as soon as if contains us
                             p.Frameworks
                             |> List.exists (fun fw -> fw = tf))

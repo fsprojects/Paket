@@ -102,7 +102,7 @@ type VersionRange =
     member this.IsConflicting (other : VersionRange) =
         (other, this.GetPreReleaseStatus, other.GetPreReleaseStatus) |> this.IsConflicting 
 
-    member this.IsConflicting (tuple : (VersionRange * PreReleaseStatus * PreReleaseStatus)) =
+    member this.IsConflicting (tuple : VersionRange * PreReleaseStatus * PreReleaseStatus) =
         let checkPre pre1 pre2 =
             match pre1 with 
             | PreReleaseStatus.No -> true

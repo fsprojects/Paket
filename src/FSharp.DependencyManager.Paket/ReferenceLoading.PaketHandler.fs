@@ -206,7 +206,7 @@ let ResolveDependenciesForLanguage(fileType, targetFramework:string, prioritized
               | None -> 
                 let foldersTried =
                   locations 
-                  |> Seq.map (FileInfo)
+                  |> Seq.map FileInfo
                   |> Seq.map (fun f -> sprintf " - %s" f.DirectoryName)
                   |> String.concat Environment.NewLine
                 failwithf "Paket was not found in '%s' or a parent directory, or in those folders:\n\n%s\n\nPlease download the tool and place it in one of the locations."

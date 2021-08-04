@@ -63,7 +63,7 @@ let ``should read simple config with prerelease and comment``() =
 
     let packageDefinition = cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Castle.Windsor-log4net"]
     packageDefinition.Range |> shouldEqual (VersionRange.AtLeast("3.2"))
-    packageDefinition.PreReleases |> shouldEqual (PreReleaseStatus.All)
+    packageDefinition.PreReleases |> shouldEqual PreReleaseStatus.All
 
 let configWithVersionLine = """
 version 1.2.3 --prefer-nuget
@@ -1202,7 +1202,7 @@ let ``should read config with target framework``() =
 let validFrameworks =
     let net40 = DotNetFramework(FrameworkVersion.V4)
     let net45 = DotNetFramework(FrameworkVersion.V4_5)
-    let profile78 = TargetProfile.PortableProfile (PortableProfileType.Profile78)
+    let profile78 = TargetProfile.PortableProfile PortableProfileType.Profile78
     let exactly  = FrameworkRestriction.Exactly
     let min  = FrameworkRestriction.AtLeast
     let minPlatform = FrameworkRestriction.AtLeastPlatform

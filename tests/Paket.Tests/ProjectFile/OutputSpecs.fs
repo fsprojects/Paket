@@ -104,19 +104,19 @@ let ``should detect framework profile for ProjectWithConditions file`` () =
 let ``should detect assembly name for Project1 proj file`` () =
     ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project1.fsprojtest").Value.GetAssemblyName()
-    |> shouldEqual ("Paket.Tests.dll")
+    |> shouldEqual "Paket.Tests.dll"
 
 [<Test>]
 let ``should detect assembly name for Project2 proj file`` () =
     ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project2.fsprojtest").Value.GetAssemblyName()
-    |> shouldEqual ("Paket.Tests.exe")
+    |> shouldEqual "Paket.Tests.exe"
 
 [<Test>]
 let ``should detect assembly name for Project3 proj file`` () =
     ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project3.fsprojtest").Value.GetAssemblyName()
-    |> shouldEqual ("Paket.Tests.Win.exe")
+    |> shouldEqual "Paket.Tests.Win.exe"
 
 [<Test>]
 let ``should maintain order when updating project file items`` () = 

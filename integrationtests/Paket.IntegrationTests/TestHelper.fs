@@ -156,7 +156,7 @@ let directToolEx env isPaket toolInfo commands workingDir =
         try
             ExecProcessWithLambdas (fun info ->
               info.FileName <- processFilename
-              for (key, value) in env do
+              for key, value in env do
                 info.EnvironmentVariables.[key] <- value
               info.WorkingDirectory <- workingDir
               info.CreateNoWindow <- true

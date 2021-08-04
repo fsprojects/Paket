@@ -129,7 +129,7 @@ module internal NupkgWriter =
                     buildDependencyNodesByGroup excludedDependencies d.Add g
             metadataNode.Add d
 
-        let buildReferenceNode (fileName) =
+        let buildReferenceNode fileName =
             let dep = XElement(ns + "reference")
             dep.SetAttributeValue(XName.Get "file", fileName)
             dep
@@ -141,7 +141,7 @@ module internal NupkgWriter =
                 d.Add(buildReferenceNode r)
             metadataNode.Add d
 
-        let buildPackageTypesNode (name) =
+        let buildPackageTypesNode name =
             let dep = XElement(ns + "packageType")
             dep.SetAttributeValue(XName.Get "name", name)
             dep

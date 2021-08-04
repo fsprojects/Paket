@@ -26,11 +26,11 @@ type EventBoundary =
             | End(dt) -> dt
         static member IsEndBoundary(b: EventBoundary) =
             match b with
-            | End(_) -> true
+            | End _ -> true
             | _ -> false
         static member IsStartBoundary(b: EventBoundary) =
             match b with
-            | Start(_) -> true
+            | Start _ -> true
             | _ -> false
 
 type Event = { Category: Category; Start: EventBoundary; End: EventBoundary }
@@ -49,9 +49,9 @@ let private getNextSpan(startIndex: int, boundaries: EventBoundary array): (Time
 
         while (boundaryStartCount > 0) && (i < boundaries.Length) do
             match boundaries.[i] with
-            | Start(_) ->
+            | Start _ ->
                 boundaryStartCount <- boundaryStartCount + 1
-            | End(_) ->
+            | End _ ->
                 boundaryStartCount <- boundaryStartCount - 1
 
             i <- i + 1

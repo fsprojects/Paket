@@ -114,7 +114,7 @@ let getPathPenalty =
       (fun (path:ParsedPlatformPath,platform:TargetProfile) ->
         let handleEmpty () =
             match platform with
-            | TargetProfile.SinglePlatform(Native(_)) -> MaxPenalty // an empty path is considered incompatible with native targets
+            | TargetProfile.SinglePlatform(Native _) -> MaxPenalty // an empty path is considered incompatible with native targets
             | _ -> Penalty_Fallback // an empty path is considered compatible with every .NET target, but with a high penalty so explicit paths are preferred
         match path.Platforms with
         | _ when String.IsNullOrWhiteSpace path.Name -> handleEmpty()
@@ -135,7 +135,7 @@ let getFrameworkPathPenalty fr path =
         // No warnig -> should be reported later
         getPathPenalty (path, TargetProfile.FindPortable false fr)
 
-type PathPenalty = (ParsedPlatformPath * int)
+type PathPenalty = ParsedPlatformPath * int
 
 let comparePaths (p1 : PathPenalty) (p2 : PathPenalty) =
     let platformCount1 = (fst p1).Platforms.Length
@@ -164,7 +164,7 @@ let collectPlatforms =
     let rec loop (acc:TargetProfile list) (framework:TargetProfile) (profls:TargetProfile Set) =
         profls
         |> Seq.fold (fun acc f ->
-            if f.SupportedPlatforms |> Set.contains (framework) then
+            if f.SupportedPlatforms |> Set.contains framework then
                 Set.add f acc
             else acc) Set.empty
     memoize (fun (framework,profls) -> loop ([]:TargetProfile list) framework profls)
@@ -173,7 +173,7 @@ let collectPlatforms =
 let platformsSupport =
     let rec platformsSupport platform platforms =
         if Set.isEmpty platforms then MaxPenalty
-        elif platforms |> Set.contains (platform) then 1
+        elif platforms |> Set.contains platform then 1
         else
             platforms |> Set.toArray
             |> Array.Parallel.map (fun (p : TargetProfile) ->
@@ -297,7 +297,7 @@ let getCondition (referenceCondition:string option) (targets : TargetProfile Set
                 | [] -> "false"
                 | [ detail ] -> sprintf "%s And %s" group detail
                 | conditions ->
-                    if conditions |> Seq.exists (String.IsNullOrEmpty) then
+                    if conditions |> Seq.exists String.IsNullOrEmpty then
                         failwithf "Something went wrong (Details: probably in CheckIfFullyInGroup). Please open an issue."
                     let detail =
                         conditions

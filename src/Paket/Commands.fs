@@ -35,17 +35,17 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | NuGet(_) -> "NuGet package ID"
-            | NuGet_Legacy(_) -> "[obsolete]"
+            | NuGet _ -> "NuGet package ID"
+            | NuGet_Legacy _ -> "[obsolete]"
 
-            | Group(_) -> "add the dependency to a group (default: Main group)"
-            | Group_Legacy(_) -> "[obsolete]"
+            | Group _ -> "add the dependency to a group (default: Main group)"
+            | Group_Legacy _ -> "[obsolete]"
 
-            | Version(_) -> "dependency version constraint"
-            | Version_Legacy(_) -> "[obsolete]"
+            | Version _ -> "dependency version constraint"
+            | Version_Legacy _ -> "[obsolete]"
 
-            | Project(_) -> "add the dependency to a single project only"
-            | Project_Legacy(_) -> "[obsolete]"
+            | Project _ -> "add the dependency to a single project only"
+            | Project_Legacy _ -> "[obsolete]"
 
             | Create_New_Binding_Files -> "create binding redirect files if needed"
             | Create_New_Binding_Files_Legacy -> "[obsolete]"
@@ -74,17 +74,17 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Repository(_) -> "repository name <author>/<repo> on github"
-            | Version(_) -> "dependency version constraint"
-            | Group(_) -> "add the dependency to a group (default: Main group)"
-            | File(_) -> "only add specified file"
+            | Repository _ -> "repository name <author>/<repo> on github"
+            | Version _ -> "dependency version constraint"
+            | Group _ -> "add the dependency to a group (default: Main group)"
+            | File _ -> "only add specified file"
 and GithubArgs =
     | [<CliPrefix(CliPrefix.None)>] Add of ParseResults<AddGithubArgs>
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Add(_) -> "add github repository"
+            | Add _ -> "add github repository"
 
 type AddGitArgs =
     | [<ExactlyOnce;MainCommand>] Repository of repository_name:string
@@ -94,16 +94,16 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Repository(_) -> "repository path or url"
-            | Version(_) -> "dependency version, can be branch, commit-hash or tag"
-            | Group(_) -> "add the dependency to a group (default: Main group)"
+            | Repository _ -> "repository path or url"
+            | Version _ -> "dependency version, can be branch, commit-hash or tag"
+            | Group _ -> "add the dependency to a group (default: Main group)"
 and GitArgs =
     | [<CliPrefix(CliPrefix.None)>] Add of ParseResults<AddGitArgs>
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Add(_) -> "add git repository"
+            | Add _ -> "add git repository"
 
 type ConfigArgs =
     | [<Unique;CustomCommandLine("add-credentials")>] AddCredentials of key_or_URL:string
@@ -116,12 +116,12 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | AddCredentials(_) -> "add credentials for URL or credential key"
-            | AddToken(_) -> "add token for URL or credential key"
-            | Username(_) -> "provide username"
-            | Password(_) -> "provide password"
-            | AuthType (_) -> "specify authentication type: basic|ntlm (default: basic)"
-            | Verify (_) -> "specify in case you want to verify the credentials"
+            | AddCredentials _ -> "add credentials for URL or credential key"
+            | AddToken _ -> "add token for URL or credential key"
+            | Username _ -> "provide username"
+            | Password _ -> "provide password"
+            | AuthType _ -> "specify authentication type: basic|ntlm (default: basic)"
+            | Verify _ -> "specify in case you want to verify the credentials"
 
 type ConvertFromNugetArgs =
     | [<Unique;AltCommandLine("-f")>] Force
@@ -138,8 +138,8 @@ with
             | No_Install -> "do not modify projects"
             | No_Auto_Restore -> "do not enable automatic package restore"
 
-            | Migrate_Credentials(_) -> "specify mode for NuGet source credential migration: encrypt|plaintext|selective (default: encrypt)"
-            | Migrate_Credentials_Legacy(_) -> "[obsolete]"
+            | Migrate_Credentials _ -> "specify mode for NuGet source credential migration: encrypt|plaintext|selective (default: encrypt)"
+            | Migrate_Credentials_Legacy _ -> "[obsolete]"
 
 type FindRefsArgs =
     | [<ExactlyOnce;MainCommand>] NuGets of package_ID:string list
@@ -151,11 +151,11 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | NuGets(_) -> "list of NuGet package IDs"
-            | NuGets_Legacy(_) -> "[obsolete]"
+            | NuGets _ -> "list of NuGet package IDs"
+            | NuGets_Legacy _ -> "[obsolete]"
 
-            | Group(_) -> "specify dependency group (default: Main group)"
-            | Group_Legacy(_) -> "[obsolete]"
+            | Group _ -> "specify dependency group (default: Main group)"
+            | Group_Legacy _ -> "[obsolete]"
 
 type InitArgs =
     | [<Hidden;NoCommandLine>] NoArgs
@@ -171,7 +171,7 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Flags(_) -> "enable or disable automatic package restore"
+            | Flags _ -> "enable or disable automatic package restore"
 
 type LanguageFlags = Csx | Fsx
 
@@ -212,14 +212,14 @@ with
             | Keep_Minor -> "only allow updates that preserve the minor version"
             | Keep_Patch -> "only allow updates that preserve the patch version"
             | Touch_Affected_Refs -> "touch project files referencing affected dependencies to help incremental build tools detecting the change"
-            | Project_Root(_) -> "alternative project root (only used for tooling)"
+            | Project_Root _ -> "alternative project root (only used for tooling)"
 
             | Generate_Load_Scripts -> "generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS"
-            | Load_Script_Framework(_) -> "framework identifier to generate scripts for, such as net45 or netstandard1.6; may be repeated"
-            | Load_Script_Framework_Legacy(_) -> "[obsolete]"
+            | Load_Script_Framework _ -> "framework identifier to generate scripts for, such as net45 or netstandard1.6; may be repeated"
+            | Load_Script_Framework_Legacy _ -> "[obsolete]"
 
-            | Load_Script_Type(_) -> "language to generate scripts for; may be repeated; may be repeated"
-            | Load_Script_Type_Legacy(_) -> "[obsolete]"
+            | Load_Script_Type _ -> "language to generate scripts for; may be repeated; may be repeated"
+            | Load_Script_Type_Legacy _ -> "[obsolete]"
 
 type OutdatedArgs =
     | [<Unique;AltCommandLine("-f")>] Force
@@ -236,8 +236,8 @@ with
             | Force -> "force download and reinstallation of all dependencies"
             | Ignore_Constraints -> "ignore version constraints in the paket.dependencies file"
 
-            | Group(_) -> "specify dependency group (default: all groups)"
-            | Group_Legacy(_) -> "[obsolete]"
+            | Group _ -> "specify dependency group (default: all groups)"
+            | Group_Legacy _ -> "[obsolete]"
 
             | Include_Prereleases -> "consider prerelease versions as updates"
 
@@ -258,14 +258,14 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | NuGet(_) -> "NuGet package ID"
-            | NuGet_Legacy(_) -> "[obsolete]"
+            | NuGet _ -> "NuGet package ID"
+            | NuGet_Legacy _ -> "[obsolete]"
 
-            | Group(_) -> "remove the dependency from a group (default: Main group)"
-            | Group_Legacy(_) -> "[obsolete]"
+            | Group _ -> "remove the dependency from a group (default: Main group)"
+            | Group_Legacy _ -> "[obsolete]"
 
-            | Project(_) -> "remove the dependency from a single project only"
-            | Project_Legacy(_) -> "[obsolete]"
+            | Project _ -> "remove the dependency from a single project only"
+            | Project_Legacy _ -> "[obsolete]"
 
             | Force -> "force download and reinstallation of all dependencies"
             | Interactive -> "ask for every project whether to remove the dependency"
@@ -303,22 +303,22 @@ with
             match this with
             | Force -> "force download and reinstallation of all dependencies"
 
-            | Group(_) -> "restore dependencies of a single group"
-            | Group_Legacy(_) -> "[obsolete]"
+            | Group _ -> "restore dependencies of a single group"
+            | Group_Legacy _ -> "[obsolete]"
 
             | Install_Only_Referenced -> "only restore packages that are referenced by paket.references files"
             | Touch_Affected_Refs -> "touch project files referencing affected dependencies to help incremental build tools detecting the change"
             | Ignore_Checks -> "do not check if paket.dependencies and paket.lock are in sync"
             | Fail_On_Checks -> "abort if any checks fail"
 
-            | Project(_) -> "restore dependencies of a single project"
-            | Project_Legacy(_) -> "[obsolete]"
+            | Project _ -> "restore dependencies of a single project"
+            | Project_Legacy _ -> "[obsolete]"
 
-            | References_File(_) -> "restore packages from a paket.references file; may be repeated"
-            | References_File_Legacy(_) -> "[obsolete]"
+            | References_File _ -> "restore packages from a paket.references file; may be repeated"
+            | References_File_Legacy _ -> "[obsolete]"
 
-            | Target_Framework(_) -> "restore only for the specified target framework"
-            | Output_Path(_) -> "Output path directory of MSBuild. When used in combination with the new dotnet cli based sdk, paket will write supporting files (nuget.config, paket.resolved) there"
+            | Target_Framework _ -> "restore only for the specified target framework"
+            | Output_Path _ -> "Output path directory of MSBuild. When used in combination with the new dotnet cli based sdk, paket will write supporting files (nuget.config, paket.resolved) there"
 
 type SimplifyArgs =
     | [<Unique;AltCommandLine("-i")>] Interactive
@@ -354,14 +354,14 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | NuGet(_) -> "NuGet package ID"
-            | NuGet_Legacy(_) -> "[obsolete]"
+            | NuGet _ -> "NuGet package ID"
+            | NuGet_Legacy _ -> "[obsolete]"
 
-            | Group(_) -> "specify dependency group to update (default: all groups)"
-            | Group_Legacy(_) -> "[obsolete]"
+            | Group _ -> "specify dependency group to update (default: all groups)"
+            | Group_Legacy _ -> "[obsolete]"
 
-            | Version(_) -> "dependency version constraint"
-            | Version_Legacy(_) -> "[obsolete]"
+            | Version _ -> "dependency version constraint"
+            | Version_Legacy _ -> "[obsolete]"
 
             | Create_New_Binding_Files -> "create binding redirect files if needed"
             | Create_New_Binding_Files_Legacy -> "[obsolete]"
@@ -389,14 +389,14 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Search(_) -> "search for NuGet package ID"
-            | Search_Legacy(_) -> "[obsolete]"
+            | Search _ -> "search for NuGet package ID"
+            | Search_Legacy _ -> "[obsolete]"
 
-            | Source(_) -> "specify source URL"
-            | Source_Legacy(_) -> "[obsolete]"
+            | Source _ -> "specify source URL"
+            | Source_Legacy _ -> "[obsolete]"
 
-            | Max_Results(_) -> "limit maximum number of results"
-            | Max_Results_Legacy(_) -> "[obsolete]"
+            | Max_Results _ -> "limit maximum number of results"
+            | Max_Results_Legacy _ -> "[obsolete]"
 
 type FixNuspecArgs =
     | [<ExactlyOnce;CustomCommandLine("file")>] File of text:string
@@ -442,8 +442,8 @@ with
             match this with
             | All -> "include transitive dependencies"
 
-            | Project(_) -> "specify project to show dependencies for"
-            | Project_Legacy(_) -> "[obsolete]"
+            | Project _ -> "specify project to show dependencies for"
+            | Project_Legacy _ -> "[obsolete]"
 
 type ShowGroupsArgs =
     | [<Hidden;NoCommandLine>] NoArgs
@@ -464,14 +464,14 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | NuGet(_) -> "NuGet package ID"
-            | NuGet_Legacy(_) -> "[obsolete]"
+            | NuGet _ -> "NuGet package ID"
+            | NuGet_Legacy _ -> "[obsolete]"
 
-            | Source(_) -> "specify source URL"
-            | Source_Legacy(_) -> "[obsolete]"
+            | Source _ -> "specify source URL"
+            | Source_Legacy _ -> "[obsolete]"
 
-            | Max_Results(_) -> "limit maximum number of results"
-            | Max_Results_Legacy(_) -> "[obsolete]"
+            | Max_Results _ -> "limit maximum number of results"
+            | Max_Results_Legacy _ -> "[obsolete]"
 
 type InfoArgs =
     | [<Unique>] Paket_Dependencies_Dir
@@ -536,49 +536,49 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Output(_) -> "output directory for .nupkg files"
-            | Output_Legacy(_) -> "[obsolete]"
+            | Output _ -> "output directory for .nupkg files"
+            | Output_Legacy _ -> "[obsolete]"
 
-            | Build_Config(_) -> "build configuration that should be packaged (default: Release)"
-            | Build_Config_Legacy(_) -> "[obsolete]"
+            | Build_Config _ -> "build configuration that should be packaged (default: Release)"
+            | Build_Config_Legacy _ -> "[obsolete]"
 
-            | Build_Platform(_) -> "build platform that should be packaged (default: check all known platform targets)"
-            | Build_Platform_Legacy(_) -> "[obsolete]"
+            | Build_Platform _ -> "build platform that should be packaged (default: check all known platform targets)"
+            | Build_Platform_Legacy _ -> "[obsolete]"
 
-            | Version(_) -> "version of the package"
-            | Version_Legacy(_) -> "[obsolete]"
+            | Version _ -> "version of the package"
+            | Version_Legacy _ -> "[obsolete]"
 
-            | Template_File(_) -> "pack a single paket.template file"
-            | Template_File_Legacy(_) -> "[obsolete]"
+            | Template_File _ -> "pack a single paket.template file"
+            | Template_File_Legacy _ -> "[obsolete]"
 
-            | Exclude_Template(_) -> "exclude paket.template file by package ID; may be repeated"
-            | Exclude_Template_Legacy(_) -> "[obsolete]"
+            | Exclude_Template _ -> "exclude paket.template file by package ID; may be repeated"
+            | Exclude_Template_Legacy _ -> "[obsolete]"
 
-            | Specific_Version(_) -> "version number to use for package ID; may be repeated"
-            | Specific_Version_Legacy(_) -> "[obsolete]"
+            | Specific_Version _ -> "version number to use for package ID; may be repeated"
+            | Specific_Version_Legacy _ -> "[obsolete]"
 
-            | Release_Notes(_) -> "release notes"
-            | Release_Notes_Legacy(_) -> "[obsolete]"
+            | Release_Notes _ -> "release notes"
+            | Release_Notes_Legacy _ -> "[obsolete]"
 
             | Lock_Dependencies -> "use version constraints from paket.lock instead of paket.dependencies"
-            | Lock_Dependencies_Legacy(_) -> "[obsolete]"
+            | Lock_Dependencies_Legacy _ -> "[obsolete]"
 
             | Lock_Dependencies_To_Minimum -> "use version constraints from paket.lock instead of paket.dependencies and add them as a minimum version; --lock-dependencies overrides this option"
-            | Lock_Dependencies_To_Minimum_Legacy(_) -> "[obsolete]"
+            | Lock_Dependencies_To_Minimum_Legacy _ -> "[obsolete]"
 
             | Pin_Project_References -> "pin dependencies generated from project references to exact versions (=) instead of using minimum versions (>=); with --lock-dependencies project references will be pinned even if this option is not specified"
-            | Pin_Project_References_Legacy(_) -> "[obsolete]"
+            | Pin_Project_References_Legacy _ -> "[obsolete]"
 
-            | Interproject_References(_) -> "set constraints for referenced project versions"
+            | Interproject_References _ -> "set constraints for referenced project versions"
 
             | Symbols -> "create symbol and source packages in addition to library and content packages"
-            | Symbols_Legacy(_) -> "[obsolete]"
+            | Symbols_Legacy _ -> "[obsolete]"
 
             | Include_Referenced_Projects -> "include symbols and source from referenced projects"
-            | Include_Referenced_Projects_Legacy(_) -> "[obsolete]"
+            | Include_Referenced_Projects_Legacy _ -> "[obsolete]"
 
-            | Project_Url(_) -> "homepage URL for the package"
-            | Project_Url_Legacy(_) -> "[obsolete]"
+            | Project_Url _ -> "homepage URL for the package"
+            | Project_Url_Legacy _ -> "[obsolete]"
 
 type PushArgs =
     | [<ExactlyOnce;MainCommand>] Package of path:string
@@ -598,17 +598,17 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Package(_) -> "path to the .nupkg file"
-            | Package_Legacy(_) -> "[obsolete]"
+            | Package _ -> "path to the .nupkg file"
+            | Package_Legacy _ -> "[obsolete]"
 
-            | Url(_) -> "URL of the NuGet feed"
-            | Url_Legacy(_) -> "[obsolete]"
+            | Url _ -> "URL of the NuGet feed"
+            | Url_Legacy _ -> "[obsolete]"
 
-            | Api_Key(_) -> "API key for the URL (default: value of the NUGET_KEY environment variable)"
-            | Api_Key_Legacy(_) -> "[obsolete]"
+            | Api_Key _ -> "API key for the URL (default: value of the NUGET_KEY environment variable)"
+            | Api_Key_Legacy _ -> "[obsolete]"
 
-            | Endpoint(_) -> "API endpoint to push to (default: /api/v2/package)"
-            | Endpoint_Legacy(_) -> "[obsolete]"
+            | Endpoint _ -> "API endpoint to push to (default: /api/v2/package)"
+            | Endpoint_Legacy _ -> "[obsolete]"
 
             | Ignore_Conflicts -> "Ignore any HTTP409 (Conflict) errors and treat as success"
 
@@ -625,14 +625,14 @@ with
   interface IArgParserTemplate with
       member this.Usage =
         match this with
-        | Group(_) -> "groups to generate scripts for (default: all groups); may be repeated"
-        | Group_Legacy(_) -> "[obsolete]"
+        | Group _ -> "groups to generate scripts for (default: all groups); may be repeated"
+        | Group_Legacy _ -> "[obsolete]"
 
-        | Framework(_) -> "framework identifier to generate scripts for, such as net45 or netstandard1.6; may be repeated"
-        | Framework_Legacy(_) -> "[obsolete]"
+        | Framework _ -> "framework identifier to generate scripts for, such as net45 or netstandard1.6; may be repeated"
+        | Framework_Legacy _ -> "[obsolete]"
 
-        | Type(_) -> "language to generate scripts for; may be repeated"
-        | Type_Legacy(_) -> "[obsolete]"
+        | Type _ -> "language to generate scripts for; may be repeated"
+        | Type_Legacy _ -> "[obsolete]"
 
 type WhyArgs =
     | [<ExactlyOnce;MainCommand>] NuGet of package_ID:string
@@ -646,11 +646,11 @@ with
   interface IArgParserTemplate with
       member this.Usage =
         match this with
-        | NuGet(_) -> "NuGet package ID"
-        | NuGet_Legacy(_) -> "[obsolete]"
+        | NuGet _ -> "NuGet package ID"
+        | NuGet_Legacy _ -> "[obsolete]"
 
-        | Group(_) -> "specify dependency group (default: Main group)"
-        | Group_Legacy(_) -> "[obsolete]"
+        | Group _ -> "specify dependency group (default: Main group)"
+        | Group_Legacy _ -> "[obsolete]"
 
         | Details -> "display detailed information with all paths, versions and framework restrictions"
 
@@ -660,7 +660,7 @@ with
   interface IArgParserTemplate with
       member this.Usage =
         match this with
-        | Restriction(_) -> "The restriction to resolve"
+        | Restriction _ -> "The restriction to resolve"
 
 type Command =
     // global options

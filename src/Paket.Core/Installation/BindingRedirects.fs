@@ -42,9 +42,9 @@ let internal setRedirect (doc:XDocument) bindingRedirect =
            | Some dependentAssembly -> dependentAssembly
            | None ->
                 let dependentAssembly = createElementWithNs "dependentAssembly" []
-                dependentAssembly.Add(createElementWithNs "assemblyIdentity" ([ "name", bindingRedirect.AssemblyName
-                                                                                "publicKeyToken", bindingRedirect.PublicKeyToken
-                                                                                "culture", defaultArg bindingRedirect.Culture "neutral" ]))
+                dependentAssembly.Add(createElementWithNs "assemblyIdentity" [ "name", bindingRedirect.AssemblyName
+                                                                               "publicKeyToken", bindingRedirect.PublicKeyToken
+                                                                               "culture", defaultArg bindingRedirect.Culture "neutral" ])
                 assemblyBinding.Add(dependentAssembly)
                 dependentAssembly
                 

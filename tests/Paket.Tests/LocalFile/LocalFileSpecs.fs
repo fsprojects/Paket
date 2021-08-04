@@ -57,7 +57,7 @@ let ``should parse single dev source override with version``() =
             LocalSourceOverride 
                 (LocalFile.nameGroup ("NUnit", "main"),
                  LocalNuGet ("./local_source", None),
-                 Some (SemVer.Zero)) 
+                 Some SemVer.Zero) 
         ]
         |> Trial.ok
 

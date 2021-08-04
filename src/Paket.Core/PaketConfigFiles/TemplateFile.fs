@@ -50,7 +50,7 @@ module private TemplateParser =
     let rec private indentedBlock acc i lines =
         match lines with
         | empty :: t when String.IsNullOrWhiteSpace empty -> indentedBlock (empty :: acc) (i + 1) t
-        | (Indented h)::t -> indentedBlock (h::acc) (i + 1) t
+        | Indented h::t -> indentedBlock (h::acc) (i + 1) t
         | _ -> acc |> List.rev |> String.concat "\n", i, lines
 
     let rec private inner state =
@@ -624,7 +624,7 @@ module internal TemplateFile =
         { FileName = fileName
           Contents = contents }
 
-    let internal ValidateTemplate(parsed) =
+    let internal ValidateTemplate parsed =
         let root = (FileInfo parsed.FileName).Directory.FullName
         let getFiles files =
             [ for source, target in files do

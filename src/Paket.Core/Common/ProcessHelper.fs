@@ -204,7 +204,7 @@ type ProcessResult =
 let ExecProcessAndReturnMessages configProcessStartInfoF timeOut =
     let errors = new List<_>()
     let messages = new List<_>()
-    let exitCode = ExecProcessWithLambdas configProcessStartInfoF timeOut true (errors.Add) (messages.Add)
+    let exitCode = ExecProcessWithLambdas configProcessStartInfoF timeOut true errors.Add messages.Add
     ProcessResult.New exitCode messages errors
 
 /// Converts a sequence of strings to a string with delimiters

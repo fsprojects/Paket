@@ -73,7 +73,7 @@ module LanguageEvaluation =
         |> List.filter(fun pt -> pt.Attributes.Count = 0)
         |> List.collect(fun pt -> pt.InnerText.Split ';' |> List.ofArray)
         |> List.distinct
-        |> List.choose(fun guid -> match Guid.TryParse guid with | (true, g) -> Some g | _ -> None)
+        |> List.choose(fun guid -> match Guid.TryParse guid with | true, g -> Some g | _ -> None)
 
     let private csharpGuids =
         [
@@ -127,11 +127,11 @@ module LanguageEvaluation =
         let isServiceFabric = serviceFabric.Contains(guid)
 
         match (isCsharp, isVb, isFsharp, isNemerle, isIronPython) with
-        | (true, false, false, false, false) -> Some ProjectLanguage.CSharp
-        | (false, true, false, false, false) -> Some ProjectLanguage.VisualBasic
-        | (false, false, true, false, false) -> Some ProjectLanguage.FSharp
-        | (false, false, false, true, false) -> Some ProjectLanguage.Nemerle
-        | (false, false, false, false, true) -> Some ProjectLanguage.IronPython
+        | true, false, false, false, false -> Some ProjectLanguage.CSharp
+        | false, true, false, false, false -> Some ProjectLanguage.VisualBasic
+        | false, false, true, false, false -> Some ProjectLanguage.FSharp
+        | false, false, false, true, false -> Some ProjectLanguage.Nemerle
+        | false, false, false, false, true -> Some ProjectLanguage.IronPython
         | _ -> None
 
     let private getLanguageFromExtension = function
@@ -1851,7 +1851,7 @@ type ProjectFile with
         this.ProjectNode
         |> getDescendants "EmbeddedResource"
         |> List.choose (tryGetAttributeValue "Include")
-        |> List.choose (tryGetLanguage)
+        |> List.choose tryGetLanguage
         |> List.distinct
         |> List.sort
 

@@ -30,7 +30,7 @@ type DependencyCache (lockFile:LockFile) =
     let mutable nuspecCache = ConcurrentDictionary<PackageName*SemVerInfo, System.Threading.Tasks.Task<Nuspec>>()
     let mutable installModelCache = ConcurrentDictionary<GroupName * PackageName,System.Threading.Tasks.Task<InstallModel>>()
     let mutable orderedGroupCache = ConcurrentDictionary<GroupName,PackageInfo list>()
-    let mutable orderedGroupReferences = ConcurrentDictionary<(GroupName * FrameworkIdentifier),ReferenceType list>()
+    let mutable orderedGroupReferences = ConcurrentDictionary<GroupName * FrameworkIdentifier,ReferenceType list>()
     let mutable finishedSetup = false
 
 
@@ -40,7 +40,7 @@ type DependencyCache (lockFile:LockFile) =
             openList
             |> List.filter (fun p ->
                 not (knownPackages.Contains(getPackageName p)) &&
-                getDependencies p |> Seq.forall (knownPackages.Contains)
+                getDependencies p |> Seq.forall knownPackages.Contains
             )
 
         let newKnownPackages =
@@ -58,8 +58,8 @@ type DependencyCache (lockFile:LockFile) =
 
         let rec step finalList knownPackages currentPackages =
             match currentPackages |> getLeafPackagesGeneric getPackageName getDependencies knownPackages with
-            | ([], _, _) -> finalList
-            | (leafPackages, newKnownPackages, newState) ->
+            | [], _, _ -> finalList
+            | leafPackages, newKnownPackages, newState ->
                 step (leafPackages @ finalList) newKnownPackages newState
 
         step [] Set.empty packages
@@ -92,7 +92,7 @@ type DependencyCache (lockFile:LockFile) =
         let known = dllFiles |> Seq.map (fun a -> a.FullName) |> Set.ofSeq
         getPackageOrderGeneric
             (fun (p:AssemblyDefinition) -> p.FullName)
-            (fun p -> p.MainModule.AssemblyReferences |> Seq.map (fun r -> r.FullName) |> Seq.filter (known.Contains))
+            (fun p -> p.MainModule.AssemblyReferences |> Seq.map (fun r -> r.FullName) |> Seq.filter known.Contains)
             dllFiles
 
 
@@ -297,7 +297,7 @@ type DependencyCache (lockFile:LockFile) =
 
     new (dependencyFilePath:string) =
         let lockFile = DependenciesFile.FindLockfile dependencyFilePath |> fun path -> path.FullName |> LockFile.LoadFrom
-        DependencyCache (lockFile)
+        DependencyCache lockFile
 
 
     member __.InstallModel groupName packageName =

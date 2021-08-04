@@ -61,7 +61,7 @@ let getRuntimeGraph (lockFile: LockFile) (groupName:GroupName) =
             None)
     |> RuntimeGraph.mergeSeq
 
-let getRuntimePackages (rid) (lockFile:LockFile) (groupName:GroupName) =
+let getRuntimePackages rid (lockFile:LockFile) (groupName:GroupName) =
     let g = getRuntimeGraph lockFile groupName
 
     lockFile.Groups
@@ -89,12 +89,12 @@ let resolveEnvironmentFrameworkForScriptGeneration = lazy (
 #if DOTNETCORE
     // Environment.Version is not supported
     //dunno what is used for, using a default
-    DotNetFramework (FrameworkVersion.V4_5)
+    DotNetFramework FrameworkVersion.V4_5
 #else
     let version = System.Environment.Version
     match version.Major, version.Minor, version.Build, version.Revision with
-    | 4, 0, 30319, 42000 -> DotNetFramework (FrameworkVersion.V4_6)
-    | 4, 0, 30319, _ -> DotNetFramework (FrameworkVersion.V4_5)
-    | _ -> DotNetFramework (FrameworkVersion.V4_5) // paket.exe is compiled for framework 4.5
+    | 4, 0, 30319, 42000 -> DotNetFramework FrameworkVersion.V4_6
+    | 4, 0, 30319, _ -> DotNetFramework FrameworkVersion.V4_5
+    | _ -> DotNetFramework FrameworkVersion.V4_5 // paket.exe is compiled for framework 4.5
 #endif
     )

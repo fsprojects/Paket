@@ -95,7 +95,7 @@ type VersionCache =
 
 type ResolverStep =
   { Relax: bool
-    FilteredVersions : Map<PackageName, (VersionCache list * bool)>
+    FilteredVersions : Map<PackageName, VersionCache list * bool>
     CurrentResolution : Map<PackageName,ResolvedPackage>
     ClosedRequirements : Set<PackageRequirement>
     OpenRequirements : Set<PackageRequirement> }
@@ -155,7 +155,7 @@ type ConflictInfo =
   { ResolveStep    : ResolverStep
     RequirementSet : PackageRequirement Set
     Requirement    : PackageRequirement
-    GetPackageVersions : (PackageName -> (SemVerInfo * PackageSource list) seq) }
+    GetPackageVersions : PackageName -> (SemVerInfo * PackageSource list) seq }
 
 [<RequireQualifiedAccess>]
 [<DebuggerDisplay "{DebugDisplay()}">]
@@ -317,7 +317,7 @@ let isIncludedIn (set:Set<PackageRequirement>) (packageRequirement:PackageRequir
                 x.VersionRequirement.Range.IsGlobalOverride))
 
 
-let calcOpenRequirements (exploredPackage:ResolvedPackage,lockedPackages:Set<_>,globalFrameworkRestrictions,(verCache:VersionCache),currentRequirement:PackageRequirement,resolverStep:ResolverStep) =
+let calcOpenRequirements (exploredPackage:ResolvedPackage,lockedPackages:Set<_>,globalFrameworkRestrictions,verCache:VersionCache,currentRequirement:PackageRequirement,resolverStep:ResolverStep) =
     let dependenciesByName =
         // there are packages which define multiple dependencies to the same package
         // we compress these here - see #567
@@ -326,7 +326,7 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,lockedPackages:Set<_>,
             exploredPackage.Dependencies
             |> Seq.filter (fun (name,_,_) -> lockedPackages.Contains name |> not)
 
-        for ((name,v,r) as dep) in openDeps do
+        for name,v,r as dep in openDeps do
             match dict.TryGetValue name with
             | true,(_,v2,r2) ->
                 match v,v2 with
@@ -636,12 +636,12 @@ let private getCompatibleVersions
             if globalOverride then List.toSeq versions, false else
             let compat =
                 versions
-                |> Seq.filter (fun (cache) -> currentRequirement.VersionRequirement.IsInRange(cache.Version,currentRequirement.Parent.IsRootRequirement() |> not))
+                |> Seq.filter (fun cache -> currentRequirement.VersionRequirement.IsInRange(cache.Version,currentRequirement.Parent.IsRootRequirement() |> not))
 
             if Seq.isEmpty compat then
                 let withPrereleases =
                     versions
-                    |> Seq.filter (fun (cache) -> currentRequirement.IncludingPrereleases().VersionRequirement.IsInRange(cache.Version,currentRequirement.Parent.IsRootRequirement() |> not))
+                    |> Seq.filter (fun cache -> currentRequirement.IncludingPrereleases().VersionRequirement.IsInRange(cache.Version,currentRequirement.Parent.IsRootRequirement() |> not))
                 if currentStep.Relax || Seq.isEmpty withPrereleases then
                     withPrereleases, false
                 else
@@ -721,7 +721,7 @@ type ConflictState = {
 
 
 let inline boostConflicts
-                    (filteredVersions:Map<PackageName, (VersionCache list * bool)>)
+                    (filteredVersions:Map<PackageName, VersionCache list * bool>)
                     (currentRequirement:PackageRequirement)
                     (stackpack:StackPack)
                     (conflictState:ConflictState) =
@@ -837,7 +837,7 @@ and ResolverRequestQueue =
             if queue.Count = 0 then
                 workers.Add(tcs)
             else
-                let (index, work) = queue |> Seq.mapi (fun i w -> i,w) |> Seq.minBy (fun (_,w) -> w.Priority)
+                let index, work = queue |> Seq.mapi (fun i w -> i,w) |> Seq.minBy (fun (_,w) -> w.Priority)
                 queue.RemoveAt index
                 tcs.TrySetResult (Some work) |> ignore
             tcs.Task
@@ -874,7 +874,7 @@ module ResolverRequestQueue =
                         tcs.TrySetException(new TaskCanceledException(t))
                     elif t.IsFaulted then
                         tcs.TrySetException(t.Exception)
-                    else tcs.TrySetResult (t.Result))
+                    else tcs.TrySetResult t.Result)
                     |> ignore
                 // Important to not wait on the ContinueWith result,
                 // because that one will never finish in the cancellation case
@@ -951,7 +951,7 @@ type private StepResult =
     | State of ConflictState
 
 /// Resolves all direct and transitive dependencies
-let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : PreferredVersionsFunc, getPackageDetailsRaw : PackageDetailsFunc, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
+let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : PreferredVersionsFunc, getPackageDetailsRaw : PackageDetailsFunc, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, rootDependencies:PackageRequirement Set, updateMode : UpdateMode) =
     match groupName.Name with
     | "Main" -> tracefn "Resolving dependency graph..."
     | _ -> tracefn "Resolving dependency graph for group %O..." groupName
@@ -1018,7 +1018,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
             else
                 workHandle.Reprioritize WorkPriority.BlockingWork
                 use d = Profile.startCategory (Profile.Category.ResolverAlgorithmBlocked blockReason)
-                let (waitedAlready, isFinished) = mem.Wait(taskTimeout)
+                let waitedAlready, isFinished = mem.Wait(taskTimeout)
                 // When debugger is attached we just wait forever when calling .Result later ...
                 // apparently the task didn't return, let's throw here
                 if not isFinished (*&& not Debugger.IsAttached*) then
@@ -1107,7 +1107,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
         rootDependencies
         |> Seq.choose (fun d ->
             match d.VersionRequirement with
-            | VersionRequirement.VersionRequirement(VersionRange.OverrideAll v, _) -> Some (d.Name)
+            | VersionRequirement.VersionRequirement(VersionRange.OverrideAll v, _) -> Some d.Name
             | _ -> None)
         |> Set.ofSeq
 
@@ -1121,7 +1121,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
 
         match priorConflictSteps with
         | head :: priorConflictSteps ->
-            let (lastConflict, lastStep, lastRequirement, lastCompatibleVersions, lastFlags) = head
+            let lastConflict, lastStep, lastRequirement, lastCompatibleVersions, lastFlags = head
             let continueConflict =
                 { currentConflict with VersionsToExplore = lastConflict.VersionsToExplore }
             StepResult.Stage ((Inner((continueConflict,lastStep,lastRequirement), priorConflictSteps)), stackpack, lastCompatibleVersions, lastFlags)
@@ -1303,13 +1303,13 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
 
                     // Start pre-loading infos about dependencies.
                     if not alreadyExplored then
-                        for (pack,verReq,restr) in exploredPackage.Dependencies do
+                        for pack,verReq,restr in exploredPackage.Dependencies do
                             async {
                                 let requestVersions = startRequestGetVersions (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName pack)
                                 requestVersions.Work.TryReprioritize true WorkPriority.LikelyRequired
-                                let! versions = (requestVersions).Work.Task |> Async.AwaitTask
+                                let! versions = requestVersions.Work.Task |> Async.AwaitTask
                                 // Preload the first version in range of this requirement
-                                for ((verToPreload, sources), prio) in selectVersionsToPreload verReq fst versions do
+                                for (verToPreload, sources), prio in selectVersionsToPreload verReq fst versions do
                                     let w = startRequestGetPackageDetails (GetPackageDetailsParameters.ofParams sources groupName pack verToPreload)
                                     w.Work.TryReprioritize true prio
                                 return ()

@@ -75,7 +75,7 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
             failwithf "Package directory for package %O was not found in %s. Storage mode is \"none\"." packageName d.FullName
         d
 
-let contentFileBlackList : list<(FileInfo -> bool)> = [
+let contentFileBlackList : list<FileInfo -> bool> = [
     fun f -> f.Name = "_._"
     fun f -> f.Name.EndsWith ".transform"
     fun f -> f.Name.EndsWith ".pp"
@@ -487,7 +487,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             if project.Name.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase) then
                 let hasFSharpCore =
                     usedPackages |> Seq.exists (fun kv ->
-                        let (_, x) = kv.Key
+                        let _, x = kv.Key
                         x.CompareString = "fsharp.core")
                 if not hasFSharpCore then
                     traceWarnfn "F# project %s does not reference FSharp.Core." project.FileName

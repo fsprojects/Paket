@@ -270,7 +270,7 @@ let ``task priorization works``() =
 #endif
 let ``cancellation fsharp.core``() =
 
-    let StartCatchCancellation cancellationToken (work) =
+    let StartCatchCancellation cancellationToken work =
         Async.FromContinuations(fun (cont, econt, _) ->
           // When the child is cancelled, report OperationCancelled
           // as an ordinary exception to "error continuation" rather
@@ -346,7 +346,7 @@ let ``cancellation WorkerQueue``() =
                 workHandle.Task.Result
             else
                 workHandle.Reprioritize WorkPriority.BlockingWork
-                let (waitedAlready, isFinished) = mem.Wait(taskTimeout)
+                let waitedAlready, isFinished = mem.Wait(taskTimeout)
                 // When debugger is attached we just wait forever when calling .Result later ...
                 // apparently the task didn't return, let's throw here
                 if not isFinished (*&& not Debugger.IsAttached*) then
@@ -355,7 +355,7 @@ let ``cancellation WorkerQueue``() =
                     else
                         raise <|
                             TimeoutException(
-                                (sprintf "Waited %d seconds for a request to finish.\n" (taskTimeout / 1000)))
+                                sprintf "Waited %d seconds for a request to finish.\n" (taskTimeout / 1000))
                 if waitedAlready && isFinished then
                     // recovered
                     ()
