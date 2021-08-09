@@ -329,6 +329,7 @@ Target "MergePaketTool" (fun _ ->
             "System.Configuration.ConfigurationManager.dll"
             "System.Memory.dll"
             "System.Net.Http.WinHttpHandler.dll"
+            "System.Runtime.CompilerServices.Unsafe.dll"
             "System.Security.Cryptography.Cng.dll"
             "System.Security.Cryptography.Pkcs.dll"
             "System.Threading.Tasks.Extensions.dll"
