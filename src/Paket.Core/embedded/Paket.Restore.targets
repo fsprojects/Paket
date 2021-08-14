@@ -365,8 +365,8 @@
               PackageLicenseFile="$(PackageLicenseFile)"
               PackageLicenseExpression="$(PackageLicenseExpression)"
               PackageLicenseExpressionVersion="$(PackageLicenseExpressionVersion)"
-              PackageReadmeFile="$(PackageReadmeFile)"
-              NoDefaultExcludes="$(NoDefaultExcludes) "/>
+              Readme="$(PackageReadmeFile)"
+              NoDefaultExcludes="$(NoDefaultExcludes)"/>
 
     <PackTask Condition="$(UseMSBuild16_0_Pack)"
               PackItem="$(PackProjectInputFile)"
