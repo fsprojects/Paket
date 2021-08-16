@@ -45,7 +45,7 @@ let authors = [ "Paket team" ]
 let tags = "nuget, bundler, F#"
 
 // File system information
-let solutionFile  = "Paket.sln"
+let solutionFile = "Paket.sln"
 
 // Pattern specifying assemblies to be tested using NUnit
 let testAssemblies = "tests/**/bin/Release/net461/*Tests*.dll"
