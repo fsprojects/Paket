@@ -7,9 +7,11 @@
     <AssemblyName>paket</AssemblyName>
     <!-- package metadata -->
     <Description>A dependency manager for .NET with support for NuGet packages and git repositories.</Description>
+    <PackageProjectUrl>http://fsprojects.github.io/Paket</PackageProjectUrl>
     <PackageLicenseUrl>http://fsprojects.github.io/Paket/license.html</PackageLicenseUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png</PackageIconUrl>
     <PackageTags>nuget;bundler;F#</PackageTags>
+    <RepositoryUrl>https://github.com/fsprojects/Paket</RepositoryUrl>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(PackAsTool)' == 'true' ">
     <!-- .net tools support netcoreapp only -->
