@@ -6,6 +6,7 @@
     <PackageId>Paket</PackageId>
     <AssemblyName>paket</AssemblyName>
     <!-- package metadata -->
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <Description>A dependency manager for .NET with support for NuGet packages and git repositories.</Description>
     <PackageProjectUrl>http://fsprojects.github.io/Paket</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -19,6 +20,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="\"/>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Commands.fs" />
     <Compile Include="Program.fs" />
