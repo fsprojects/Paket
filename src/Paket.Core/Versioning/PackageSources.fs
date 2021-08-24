@@ -90,12 +90,15 @@ let internal parseAuth(text:string, source) =
             else NetUtils.AuthType.Basic
 
         let auth =
-            match EnvironmentVariable.Create(username),
-                    EnvironmentVariable.Create(password) with
-            | Some userNameVar, Some passwordVar ->
-               {Username = userNameVar.Value; Password = passwordVar.Value; Type = authType }
-            | _, _ ->
-               {Username = username; Password = password; Type = authType }
+            { Username =
+                  EnvironmentVariable.Create(username)
+                  |> Option.map (fun var -> var.Value)
+                  |> Option.defaultValue username
+              Password =
+                  EnvironmentVariable.Create(password)
+                  |> Option.map (fun var -> var.Value)
+                  |> Option.defaultValue password
+              Type = authType }
 
         match auth with
         | {Username = username; Password = password} when username = "" && password = "" -> getAuth()
