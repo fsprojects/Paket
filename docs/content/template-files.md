@@ -146,7 +146,8 @@ files
 If the source part refers to a file then it is copied into the target directory.
 If it refers to a directory, the contents of the directory will be copied into
 the target directory. If you omit the target directory, then the source is copied into
-the `lib` directory of the package.
+the `lib` directory of the package. If you use `.` as the target, the source is copied
+into the root of the package.
 
 Excluding certain files looks like this:
 
