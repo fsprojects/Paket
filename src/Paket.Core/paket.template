@@ -12,7 +12,7 @@ iconurl https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img
 repositoryUrl https://github.com/fsprojects/Paket.git
 repositoryType git
 files
-    ../../README.md ==> /
+    ../../README.md ==> .
 tags
     nuget, bundler, F#
 include-pdbs true
