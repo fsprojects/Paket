@@ -9,7 +9,8 @@ summary
 licenseExpression MIT
 projecturl http://fsprojects.github.io/Paket
 iconurl https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png
-repositoryUrl https://github.com/fsprojects/Paket
+repositoryUrl https://github.com/fsprojects/Paket.git
+repositoryType git
 files
     ../../README.md ==> /
 tags

@@ -9,7 +9,8 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIconUrl>https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png</PackageIconUrl>
     <PackageTags>nuget;bundler;F#</PackageTags>
-    <RepositoryUrl>https://github.com/fsprojects/Paket</RepositoryUrl>
+    <RepositoryUrl>https://github.com/fsprojects/Paket.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>../../bin/</OutputPath>
