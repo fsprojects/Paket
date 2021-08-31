@@ -7,6 +7,7 @@ readme README.md
 summary
     A dependency manager for .NET with support for NuGet packages and git repositories.
 licenseExpression MIT
+licenseUrl https://licenses.nuget.org/MIT
 projecturl http://fsprojects.github.io/Paket
 iconurl https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png
 repositoryUrl https://github.com/fsprojects/Paket.git
