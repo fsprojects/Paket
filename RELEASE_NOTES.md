@@ -1,4 +1,4 @@
-#### 6.0.7 - 2021-08-24
+#### 6.0.13 - 2021-08-31
 * Support for .NET 5.0
 * Support for .NET 6.0
 * Full .NET Core / SDK compatible version
