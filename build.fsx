@@ -7,7 +7,6 @@ System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
 
 open Fake
 open Fake.Git
-open Fake.AssemblyInfoFile
 open Fake.ReleaseNotesHelper
 open Fake.UserInputHelper
 open System
