@@ -175,29 +175,14 @@ Target "CleanDocs" (fun _ ->
 // Build library & test project
 
 Target "Build" (fun _ ->
-    if isMono then
-        DotNetCli.Build (fun c ->
-            { c with
-                Project = solutionFile
-                ToolPath = dotnetExePath
-            })
-    else
-        DotNetCli.Build (fun c ->
-            { c with
-                Project = solutionFile
-                AdditionalArgs = [ "/p:SourceLinkCreate=true" ]
-                ToolPath = dotnetExePath
-            })
+    DotNetCli.Build (fun c ->
+        { c with
+            Project = solutionFile
+            ToolPath = dotnetExePath
+        })
 )
 
 Target "Restore" (fun _ ->
-    //WORKAROUND dotnet restore with paket doesnt restore the PackageReference of SourceLink
-    // ref https://github.com/fsprojects/Paket/issues/2930
-    //TODO check if is needed, because a full paket restore is done in the build.bat/sh before run this fsx
-    Paket.Restore (fun p ->
-        { p with
-            Group = "NetCoreTools" })
-
     DotNetCli.RunCommand (fun c ->
         { c with
             ToolPath = dotnetExePath

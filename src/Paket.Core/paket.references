@@ -7,6 +7,7 @@ System.Net.Http.WinHttpHandler
 System.Net.Http
 Microsoft.NETFramework.ReferenceAssemblies.net461
 Nuget.Packaging
+DotNet.ReproducibleBuilds
 
 File:Globbing.fs Common\
 File:AssemblyReader.fs Common\
