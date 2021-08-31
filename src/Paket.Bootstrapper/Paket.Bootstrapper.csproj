@@ -8,6 +8,7 @@
     <ToolCommandName>paketbootstrapper</ToolCommandName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <DefineConstants Condition=" '$(TargetFramework)' != 'net461'">NO_SYSTEMWEBPROXY;PAKET_BOOTSTRAP_NO_CACHE;PAKET_BOOTSTRAP_WORKAROUND_MSBUILD_URLS;$(DefineConstants)</DefineConstants>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(PaketUseLocalGithub)' == 'true' ">
@@ -35,6 +36,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+    <None Include="../../docs/files/img/logo.png" Pack="true" PackagePath="\"/>
     <PackageReference Include="DotNet.ReproducibleBuilds" Version="0.1.66">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>

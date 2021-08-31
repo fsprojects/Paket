@@ -2,21 +2,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <!-- package metadata -->
-    <Description>A dependency manager for .NET with support for NuGet packages and git repositories.</Description>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageProjectUrl>http://fsprojects.github.io/Paket</PackageProjectUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageIconUrl>https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png</PackageIconUrl>
-    <PackageTags>nuget;bundler;F#</PackageTags>
-    <RepositoryUrl>https://github.com/fsprojects/Paket.git</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>../../bin/</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="\"/>
+    <None Include="../../docs/files/img/logo.png" Pack="true" PackagePath="\"/>
     <Compile Include="ReferenceLoading.PaketHandler.fs" />
     <Compile Include="PaketDependencyManager.fs" />
   </ItemGroup>

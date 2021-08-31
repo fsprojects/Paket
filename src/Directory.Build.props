@@ -3,5 +3,13 @@
   <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
   <PropertyGroup>
     <DebugType>embedded</DebugType>
+    <!-- package metadata -->
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Description>A dependency manager for .NET with support for NuGet packages and git repositories.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>http://fsprojects.github.io/Paket</PackageProjectUrl>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageTags>nuget;bundler;F#</PackageTags>
+    <Authors>Paket team</Authors>
   </PropertyGroup>
 </Project>

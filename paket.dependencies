@@ -15,11 +15,14 @@ nuget System.Security.Cryptography.ProtectedData >= 4.4
 nuget NETStandard.Library ~> 2.0
 nuget Microsoft.NETCore.App ~> 2.1
 nuget System.Net.Http.WinHttpHandler >= 4.5
-nuget Microsoft.NETFramework.ReferenceAssemblies.net461
 nuget Nuget.Packaging
 nuget Microsoft.Win32.Registry
 nuget System.Diagnostics.TraceSource
-nuget DotNet.ReproducibleBuilds copy_local: false
+
+# these two are not public dependencies, they're used for build-time only
+# therefore, treat them as private.
+nuget Microsoft.NETFramework.ReferenceAssemblies.net461 copy_local: true
+nuget DotNet.ReproducibleBuilds copy_local: true
 
 # tests
 nuget Moq

@@ -6,8 +6,10 @@
     <Version Condition="'$(PAKET_PROJ_VERSION)' != ''">$(PAKET_PROJ_VERSION)</Version>
     <PackageVersion Condition="'$(PAKET_PROJ_VERSION)' != ''">$(PAKET_PROJ_VERSION)</PackageVersion>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
-    <GenerateDocumentationFile Condition=" '$(PackAsTool)' != 'true' ">true</GenerateDocumentationFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>TRACE</DefineConstants>
@@ -20,6 +22,8 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
+    <None Include="../../README.md" Pack="true" PackagePath="\" />
+    <None Include="../../docs/files/img/logo.png" Pack="true" PackagePath="\" />
     <EmbeddedResource Include="embedded\Paket.Restore.targets">
       <LogicalName>Paket.Restore.targets</LogicalName>
     </EmbeddedResource>

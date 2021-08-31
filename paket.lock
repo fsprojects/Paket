@@ -20,7 +20,7 @@ NUGET
       FSharp.Core  - restriction: < netstandard1.6
       FSharp.Core (>= 4.0.1.7-alpha) - restriction: >= netstandard1.6
       NETStandard.Library (>= 1.6) - restriction: >= netstandard1.6
-    DotNet.ReproducibleBuilds (0.1.66) - copy_local: false
+    DotNet.ReproducibleBuilds (0.1.66) - copy_local: true
       Microsoft.SourceLink.AzureRepos.Git (>= 1.0)
       Microsoft.SourceLink.Bitbucket.Git (>= 1.0)
       Microsoft.SourceLink.GitHub (>= 1.0)
@@ -69,7 +69,7 @@ NUGET
       System.Resources.Extensions (>= 4.6) - restriction: >= netstandard2.0
       System.Security.Permissions (>= 4.7) - restriction: && (< net472) (>= netstandard2.0)
       System.Threading.Tasks.Dataflow (>= 4.9) - restriction: >= netstandard2.0
-    Microsoft.Build.Tasks.Git (1.0) - copy_local: false
+    Microsoft.Build.Tasks.Git (1.0) - copy_local: true
     Microsoft.Build.Utilities.Core (16.7) - restriction: >= netstandard2.0
       Microsoft.Build.Framework (>= 16.7) - restriction: >= netstandard2.0
       Microsoft.VisualStudio.Setup.Configuration.Interop (>= 1.16.30) - restriction: >= net472
@@ -110,18 +110,18 @@ NUGET
       Microsoft.NETCore.DotNetAppHost (>= 3.1.8)
     Microsoft.NETCore.Platforms (5.0.2) - restriction: || (&& (>= monoandroid) (>= netcoreapp2.1) (< netstandard1.3)) (&& (< monoandroid) (< monotouch) (< net46) (>= netstandard1.3) (< xamarinios) (< xamarinmac) (< xamarintvos) (< xamarinwatchos)) (&& (< monoandroid) (< net45) (< netstandard1.2) (>= netstandard1.3) (< win8)) (&& (< monoandroid) (< net45) (< netstandard1.2) (>= netstandard1.4) (< win8)) (&& (< monoandroid) (< net45) (< netstandard1.3) (>= netstandard1.4) (< win8) (< wpa81)) (&& (< monoandroid) (>= net5.0) (< netstandard2.1) (< xamarintvos) (< xamarinwatchos)) (&& (< monoandroid) (< netstandard1.1) (>= netstandard1.2) (< win8)) (&& (< monoandroid) (< netstandard1.1) (>= netstandard1.3) (< win8)) (&& (< monoandroid) (< netstandard1.1) (>= netstandard1.4) (< win8)) (&& (< monoandroid) (< netstandard1.1) (>= netstandard1.5) (< win8)) (&& (< monoandroid) (< netstandard1.1) (>= netstandard1.6) (< win8)) (&& (>= monotouch) (>= netcoreapp2.1)) (&& (>= net45) (< netstandard1.3)) (&& (< net45) (>= netstandard1.1) (< netstandard1.2) (< win8)) (&& (< net45) (>= netstandard1.2) (< netstandard1.3) (< win8) (< wpa81)) (&& (< net45) (< netstandard1.2) (>= netstandard1.5) (< win8)) (&& (< net45) (< netstandard1.2) (>= netstandard1.6) (< win8)) (&& (< net45) (>= netstandard1.3) (< netstandard1.4) (< win8) (< wpa81)) (&& (< net45) (< netstandard1.3) (>= netstandard1.5) (< win8) (< wpa81)) (&& (< net45) (< netstandard1.3) (>= netstandard1.6) (< win8) (< wpa81)) (&& (< net45) (>= netstandard1.4) (< netstandard1.5) (< win8) (< wpa81)) (&& (< net45) (< netstandard1.4) (>= netstandard1.5) (< win8) (< wpa81)) (&& (< net45) (< netstandard1.4) (>= netstandard1.6) (< win8) (< wpa81)) (&& (< net45) (>= netstandard1.5) (< netstandard1.6) (< win8) (< wpa81)) (&& (< net45) (< netstandard1.5) (>= netstandard1.6) (< win8) (< wpa81)) (&& (< net45) (>= netstandard1.6) (< netstandard2.0) (< win8) (< wpa81)) (&& (< net45) (>= netstandard2.0)) (&& (>= net46) (< netstandard1.4)) (&& (< net46) (>= netstandard2.0) (< xamarinios) (< xamarinmac) (< xamarintvos) (< xamarinwatchos)) (>= net461) (>= netcoreapp2.0) (&& (>= netcoreapp2.1) (< netcoreapp3.0)) (&& (>= netcoreapp3.0) (< xamarinios) (< xamarinmac) (< xamarintvos) (< xamarinwatchos)) (&& (>= netcoreapp3.1) (< xamarinios) (< xamarinmac) (< xamarintvos) (< xamarinwatchos)) (&& (>= netstandard1.0) (< portable-net45+win8+wpa81)) (&& (< netstandard1.0) (>= portable-net45+win8) (< win8)) (&& (< netstandard1.0) (< portable-net45+win8) (>= portable-net45+win8+wpa81)) (&& (< netstandard1.0) (>= portable-net45+win8+wp8+wpa81) (< portable-net45+win8+wpa81)) (&& (< netstandard1.0) (>= win8)) (&& (>= netstandard1.1) (< portable-net45+win8+wpa81)) (&& (< netstandard1.1) (>= uap10.0) (< win8)) (&& (< netstandard1.2) (>= uap10.0) (< win8)) (&& (>= netstandard1.3) (< portable-net45+win8+wpa81)) (&& (< netstandard1.3) (>= uap10.0) (< win8) (< wpa81)) (&& (< netstandard1.3) (< win8) (>= wpa81)) (&& (>= netstandard1.5) (< portable-net45+win8+wpa81)) (&& (< netstandard1.5) (>= uap10.0)) (>= uap10.1) (>= wp8)
     Microsoft.NETCore.Targets (3.1) - restriction: || (&& (< monoandroid) (< monotouch) (< net46) (>= netstandard1.3) (< xamarinios) (< xamarinmac) (< xamarintvos) (< xamarinwatchos)) (&& (< monoandroid) (< net45) (>= netstandard1.1) (< netstandard1.2) (< win8)) (&& (< monoandroid) (< net45) (>= netstandard1.2) (< netstandard1.3) (< win8) (< wpa81)) (&& (< monoandroid) (< net45) (< netstandard1.2) (>= netstandard1.3) (< win8)) (&& (< monoandroid) (< net45) (< netstandard1.2) (>= netstandard1.4) (< win8)) (&& (< monoandroid) (< net45) (< netstandard1.2) (>= netstandard2.0) (< win8)) (&& (< monoandroid) (< net45) (>= netstandard1.3) (< netstandard1.4) (< win8) (< wpa81)) (&& (< monoandroid) (< net45) (< netstandard1.3) (>= netstandard1.4) (< win8) (< wpa81)) (&& (< monoandroid) (< net45) (< netstandard1.3) (>= netstandard2.0) (< win8) (< wpa81)) (&& (< monoandroid) (< net45) (>= netstandard1.4) (< netstandard1.5) (< win8) (< wpa81)) (&& (< monoandroid) (< net45) (< netstandard1.5) (>= netstandard2.0) (< win8) (< wpa81)) (&& (< monoandroid) (< netstandard1.1) (>= netstandard1.2) (< win8)) (&& (< monoandroid) (< netstandard1.1) (>= netstandard1.3) (< win8)) (&& (< monoandroid) (< netstandard1.1) (>= netstandard1.4) (< win8)) (&& (< monoandroid) (< netstandard1.1) (>= netstandard1.5) (< win8)) (&& (< monoandroid) (< netstandard1.1) (>= netstandard1.6) (< win8)) (&& (< monotouch) (< net45) (>= netstandard1.6) (< netstandard2.0) (< win8) (< wpa81) (< xamarintvos) (< xamarinwatchos)) (&& (< net45) (>= net46) (< netstandard1.4)) (&& (< net45) (< netstandard1.2) (>= netstandard1.5) (< win8)) (&& (< net45) (< netstandard1.2) (>= netstandard1.6) (< win8)) (&& (< net45) (< netstandard1.3) (>= netstandard1.5) (< win8) (< wpa81)) (&& (< net45) (< netstandard1.3) (>= netstandard1.6) (< win8) (< wpa81)) (&& (< net45) (< netstandard1.4) (>= netstandard1.5) (< win8) (< wpa81)) (&& (< net45) (< netstandard1.4) (>= netstandard1.6) (< win8) (< wpa81)) (&& (< net45) (>= netstandard1.5) (< netstandard1.6) (< win8) (< wpa81)) (&& (< net45) (< netstandard1.5) (>= netstandard1.6) (< win8) (< wpa81)) (&& (< net45) (>= netstandard2.0) (< win8) (< wpa81) (< xamarinios) (< xamarinmac) (< xamarintvos) (< xamarinwatchos)) (&& (< net46) (>= netstandard2.0) (< xamarinios) (< xamarinmac) (< xamarintvos) (< xamarinwatchos)) (>= netcoreapp2.2) (&& (>= netstandard1.0) (< portable-net45+win8+wpa81) (< wp8)) (&& (>= netstandard1.1) (< portable-net45+win8+wpa81)) (&& (< netstandard1.1) (>= uap10.0) (< win8)) (&& (< netstandard1.2) (>= uap10.0) (< win8)) (&& (>= netstandard1.3) (< portable-net45+win8+wpa81)) (&& (< netstandard1.3) (>= uap10.0) (< win8) (< wpa81)) (&& (>= netstandard1.5) (< portable-net45+win8+wpa81)) (&& (< netstandard1.5) (>= netstandard1.6) (>= uap10.0)) (&& (< netstandard1.5) (>= uap10.0) (< uap10.1)) (&& (< netstandard1.5) (>= uap10.0) (< win8) (< wpa81)) (&& (< netstandard1.5) (>= uap10.0) (< win81) (< wpa81))
-    Microsoft.NETFramework.ReferenceAssemblies.net461 (1.0.2)
-    Microsoft.SourceLink.AzureRepos.Git (1.0) - copy_local: false
+    Microsoft.NETFramework.ReferenceAssemblies.net461 (1.0.2) - copy_local: true
+    Microsoft.SourceLink.AzureRepos.Git (1.0) - copy_local: true
       Microsoft.Build.Tasks.Git (>= 1.0)
       Microsoft.SourceLink.Common (>= 1.0)
-    Microsoft.SourceLink.Bitbucket.Git (1.0) - copy_local: false
+    Microsoft.SourceLink.Bitbucket.Git (1.0) - copy_local: true
       Microsoft.Build.Tasks.Git (>= 1.0)
       Microsoft.SourceLink.Common (>= 1.0)
-    Microsoft.SourceLink.Common (1.0) - copy_local: false
-    Microsoft.SourceLink.GitHub (1.0) - copy_local: false
+    Microsoft.SourceLink.Common (1.0) - copy_local: true
+    Microsoft.SourceLink.GitHub (1.0) - copy_local: true
       Microsoft.Build.Tasks.Git (>= 1.0)
       Microsoft.SourceLink.Common (>= 1.0)
-    Microsoft.SourceLink.GitLab (1.0) - copy_local: false
+    Microsoft.SourceLink.GitLab (1.0) - copy_local: true
       Microsoft.Build.Tasks.Git (>= 1.0)
       Microsoft.SourceLink.Common (>= 1.0)
     Microsoft.TestPlatform.ObjectModel (16.7.1) - restriction: || (&& (>= netcoreapp1.0) (>= uap10.0)) (>= netcoreapp2.1)
