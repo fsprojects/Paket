@@ -6,7 +6,6 @@
     <StartupObject>Paket.Bootstrapper.Program</StartupObject>
     <AssemblyName>paket.bootstrapper</AssemblyName>
     <ToolCommandName>paketbootstrapper</ToolCommandName>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <DefineConstants Condition=" '$(TargetFramework)' != 'net461'">NO_SYSTEMWEBPROXY;PAKET_BOOTSTRAP_NO_CACHE;PAKET_BOOTSTRAP_WORKAROUND_MSBUILD_URLS;$(DefineConstants)</DefineConstants>
     <IsPackable>true</IsPackable>
   </PropertyGroup>

@@ -15,7 +15,6 @@
       <Link>FsUnit.fs</Link>
     </Compile>
     <None Include="paket.references" />
-    <Compile Include="AssemblyInfo.fs" />
     <Compile Include="TestHelpers.fs" />
     <Compile Include="UtilsSpecs.fs" />
     <Compile Include="AesSpecs.fs" />
