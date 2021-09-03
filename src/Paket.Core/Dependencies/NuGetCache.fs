@@ -455,6 +455,7 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
         | Some res -> return res
     }
 
+/// a path resolver that unzips packages to <root>/<package id>/<package version> directories
 let private pathResolver = NuGet.Packaging.VersionFolderPathResolver(Constants.UserNuGetPackagesFolder)
 let private nugetSettings = { new NuGet.Configuration.ISettings with
                                     override this.AddOrUpdate(sectionName: string, item: NuGet.Configuration.SettingItem): unit = ()
@@ -478,6 +479,7 @@ let private nugetLogger: NuGet.Common.ILogger =
     b.VerbosityLevel <- NuGet.Common.LogLevel.Verbose
     b :> NuGet.Common.ILogger
 let private signingContext = Signing.ClientPolicyContext.GetClientPolicy(nugetSettings, nugetLogger)
+/// instructions package extraction to unzip the files in the package, copy the nupkg over, and keep the nuspec as well
 let private extractionContext = NuGet.Packaging.PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.Compress, signingContext, nugetLogger)
 
 /// Extracts the given package to the user folder
