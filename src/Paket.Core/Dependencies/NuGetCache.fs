@@ -481,41 +481,40 @@ let private signingContext = Signing.ClientPolicyContext.GetClientPolicy(nugetSe
 let private extractionContext = NuGet.Packaging.PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.Compress, signingContext, nugetLogger)
 
 /// Extracts the given package to the user folder
-let rec ExtractPackageToUserFolder(source: PackageSource, fileName:string, packageName:PackageName, version:SemVerInfo, kind:PackageResolver.ResolvedPackageKind) =
+let rec ExtractPackageToUserFolder(source: PackageSource, downloadedNupkgPath:string, packageName:PackageName, version:SemVerInfo, kind:PackageResolver.ResolvedPackageKind) =
     async {
         let dir = GetPackageUserFolderDir (packageName, version, kind)
 
         if kind = PackageResolver.ResolvedPackageKind.DotnetCliTool then
-            let! _ = ExtractPackageToUserFolder(source, fileName, packageName, version, PackageResolver.ResolvedPackageKind.Package)
+            let! _ = ExtractPackageToUserFolder(source, downloadedNupkgPath, packageName, version, PackageResolver.ResolvedPackageKind.Package)
             ()
 
         let targetFolder = DirectoryInfo(dir)
+        let packageSource = source.Url
+        let identity = NuGet.Packaging.Core.PackageIdentity(packageName.Name, NuGet.Versioning.NuGetVersion version.AsString)
+        let installFolder = pathResolver.GetInstallPath(identity.Id, identity.Version) |> DirectoryInfo
+        let downloadedNupkgPath =
+            if downloadedNupkgPath.IndexOf(installFolder.FullName, StringComparison.OrdinalIgnoreCase) <> -1 then 
+                // red alert: about to extract the nupkg into the directory it already exists in.
+                // in this case we need to move it to a temp dir because of how nuget's API wants to clear things out first
+                let parentDirOfNupkg = Path.GetDirectoryName downloadedNupkgPath |> DirectoryInfo
+                let parentOfParent = parentDirOfNupkg.Parent
+                let newNupkgPath = Path.Combine(parentOfParent.FullName, Path.GetFileName downloadedNupkgPath)
+                File.Move(downloadedNupkgPath, newNupkgPath)
+                newNupkgPath
+            else
+                downloadedNupkgPath
 
         use _ = Profile.startCategory Profile.Category.FileIO
         if isExtracted targetFolder packageName version then
             if verbose then
                 verbosefn "%O %O already extracted" packageName version
         else
-            use packageFileStream = System.IO.File.OpenRead fileName
+            use packageFileStream = System.IO.File.OpenRead downloadedNupkgPath
             let! ctok = Async.CancellationToken
-            let packageSource = source.Url
-            let identity = NuGet.Packaging.Core.PackageIdentity(packageName.Name, NuGet.Versioning.NuGetVersion version.AsString)
             // we already have the stream locally so we don't need the 'packagedownloader' overload of InstallFromSourceAsync
             let copier = fun stream -> packageFileStream.CopyToAsync(stream, 8192, ctok)
             let! extractedFiles = NuGet.Packaging.PackageExtractor.InstallFromSourceAsync(packageSource, identity, copier, pathResolver, extractionContext, ctok) |> Async.AwaitTask
-
-            let fi = FileInfo fileName
-            let targetPackageFileName = Path.Combine(targetFolder.FullName, fi.Name)
-            if normalizePath fileName <> normalizePath targetPackageFileName then
-                File.Copy(fileName,targetPackageFileName,true)
-
-            let cachedHashFile = Path.Combine(Constants.NuGetCacheFolder,fi.Name + ".sha512")
-            if not (File.Exists cachedHashFile) then
-                let packageHash = getSha512File fileName
-                File.WriteAllText(cachedHashFile,packageHash)
-            File.Copy(cachedHashFile,targetPackageFileName + ".sha512")
-
-            cleanup targetFolder
             if verbose then
                 verbosefn "%O %O unzipped to %s" packageName version targetFolder.FullName
 
