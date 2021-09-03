@@ -492,26 +492,27 @@ let rec ExtractPackageToUserFolder(source: PackageSource, downloadedNupkgPath:st
             ()
 
         let targetFolder = DirectoryInfo(dir)
-        let packageSource = source.Url
-        let identity = NuGet.Packaging.Core.PackageIdentity(packageName.Name, NuGet.Versioning.NuGetVersion version.AsString)
-        let installFolder = pathResolver.GetInstallPath(identity.Id, identity.Version) |> DirectoryInfo
-        let downloadedNupkgPath =
-            if downloadedNupkgPath.IndexOf(installFolder.FullName, StringComparison.OrdinalIgnoreCase) <> -1 then 
-                // red alert: about to extract the nupkg into the directory it already exists in.
-                // in this case we need to move it to a temp dir because of how nuget's API wants to clear things out first
-                let parentDirOfNupkg = Path.GetDirectoryName downloadedNupkgPath |> DirectoryInfo
-                let parentOfParent = parentDirOfNupkg.Parent
-                let newNupkgPath = Path.Combine(parentOfParent.FullName, Path.GetFileName downloadedNupkgPath)
-                File.Move(downloadedNupkgPath, newNupkgPath)
-                newNupkgPath
-            else
-                downloadedNupkgPath
 
         use _ = Profile.startCategory Profile.Category.FileIO
         if isExtracted targetFolder packageName version then
             if verbose then
                 verbosefn "%O %O already extracted" packageName version
         else
+            let packageSource = source.Url
+            let identity = NuGet.Packaging.Core.PackageIdentity(packageName.Name, NuGet.Versioning.NuGetVersion version.AsString)
+            let installFolder = pathResolver.GetInstallPath(identity.Id, identity.Version) |> DirectoryInfo
+            let downloadedNupkgPath =
+                if downloadedNupkgPath.IndexOf(installFolder.FullName, StringComparison.OrdinalIgnoreCase) <> -1 then 
+                    // red alert: about to extract the nupkg into the directory it already exists in.
+                    // in this case we need to move it to a temp dir because of how nuget's API wants to clear things out first
+                    let parentDirOfNupkg = Path.GetDirectoryName downloadedNupkgPath |> DirectoryInfo
+                    let parentOfParent = parentDirOfNupkg.Parent
+                    let newNupkgPath = Path.Combine(parentOfParent.FullName, Path.GetFileName downloadedNupkgPath)
+                    File.Move(downloadedNupkgPath, newNupkgPath)
+                    newNupkgPath
+                else
+                    downloadedNupkgPath
+
             use packageFileStream = System.IO.File.OpenRead downloadedNupkgPath
             let! ctok = Async.CancellationToken
             // we already have the stream locally so we don't need the 'packagedownloader' overload of InstallFromSourceAsync
