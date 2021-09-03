@@ -455,7 +455,7 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
         | Some res -> return res
     }
 
-let private pathResolver = NuGet.Packaging.PackagePathResolver(Constants.UserNuGetPackagesFolder, useSideBySidePaths = false)
+let private pathResolver = NuGet.Packaging.VersionFolderPathResolver(Constants.UserNuGetPackagesFolder)
 let private nugetSettings = { new NuGet.Configuration.ISettings with
                                     override this.AddOrUpdate(sectionName: string, item: NuGet.Configuration.SettingItem): unit = ()
                                     override this.GetConfigFilePaths(): Collections.Generic.IList<string> = ResizeArray() :> _
@@ -466,8 +466,19 @@ let private nugetSettings = { new NuGet.Configuration.ISettings with
                                     [<CLIEvent>]
                                     override this.SettingsChanged: IEvent<EventHandler,EventArgs> = Event<EventHandler,EventArgs>().Publish
                                     }
-let private signingContext = Signing.ClientPolicyContext.GetClientPolicy(nugetSettings, NuGet.Common.NullLogger.Instance)
-let private extractionContext = NuGet.Packaging.PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.Compress, signingContext, NuGet.Common.NullLogger.Instance)
+let private nugetLogger: NuGet.Common.ILogger =
+    let b =
+        { new NuGet.Common.LoggerBase() with
+            override x.Log(msg: NuGet.Common.ILogMessage): unit =
+                verbosefn "%s" msg.Message
+            override x.LogAsync(msg: NuGet.Common.ILogMessage): Task =
+                x.Log msg
+                Task.CompletedTask
+        }
+    b.VerbosityLevel <- NuGet.Common.LogLevel.Verbose
+    b :> NuGet.Common.ILogger
+let private signingContext = Signing.ClientPolicyContext.GetClientPolicy(nugetSettings, nugetLogger)
+let private extractionContext = NuGet.Packaging.PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.Compress, signingContext, nugetLogger)
 
 /// Extracts the given package to the user folder
 let rec ExtractPackageToUserFolder(source: PackageSource, fileName:string, packageName:PackageName, version:SemVerInfo, kind:PackageResolver.ResolvedPackageKind) =
@@ -488,8 +499,10 @@ let rec ExtractPackageToUserFolder(source: PackageSource, fileName:string, packa
             use packageFileStream = System.IO.File.OpenRead fileName
             let! ctok = Async.CancellationToken
             let packageSource = source.Url
-            let! _extractedFiles = NuGet.Packaging.PackageExtractor.ExtractPackageAsync(packageSource, packageFileStream, pathResolver, extractionContext, ctok) |> Async.AwaitTask
-            extractZipToDirectory fileName targetFolder.FullName
+            let identity = NuGet.Packaging.Core.PackageIdentity(packageName.Name, NuGet.Versioning.NuGetVersion version.AsString)
+            // we already have the stream locally so we don't need the 'packagedownloader' overload of InstallFromSourceAsync
+            let copier = fun stream -> packageFileStream.CopyToAsync(stream, 8192, ctok)
+            let! extractedFiles = NuGet.Packaging.PackageExtractor.InstallFromSourceAsync(packageSource, identity, copier, pathResolver, extractionContext, ctok) |> Async.AwaitTask
 
             let fi = FileInfo fileName
             let targetPackageFileName = Path.Combine(targetFolder.FullName, fi.Name)
