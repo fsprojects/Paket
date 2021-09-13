@@ -455,7 +455,8 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
         | Some res -> return res
     }
 
-let private pathResolver = NuGet.Packaging.PackagePathResolver(Constants.UserNuGetPackagesFolder, useSideBySidePaths = false)
+/// a path resolver that unzips packages to <root>/<package id>/<package version> directories
+let private pathResolver = NuGet.Packaging.VersionFolderPathResolver(Constants.UserNuGetPackagesFolder)
 let private nugetSettings = { new NuGet.Configuration.ISettings with
                                     override this.AddOrUpdate(sectionName: string, item: NuGet.Configuration.SettingItem): unit = ()
                                     override this.GetConfigFilePaths(): Collections.Generic.IList<string> = ResizeArray() :> _
@@ -466,16 +467,28 @@ let private nugetSettings = { new NuGet.Configuration.ISettings with
                                     [<CLIEvent>]
                                     override this.SettingsChanged: IEvent<EventHandler,EventArgs> = Event<EventHandler,EventArgs>().Publish
                                     }
-let private signingContext = Signing.ClientPolicyContext.GetClientPolicy(nugetSettings, NuGet.Common.NullLogger.Instance)
-let private extractionContext = NuGet.Packaging.PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.Compress, signingContext, NuGet.Common.NullLogger.Instance)
+let private nugetLogger: NuGet.Common.ILogger =
+    let b =
+        { new NuGet.Common.LoggerBase() with
+            override x.Log(msg: NuGet.Common.ILogMessage): unit =
+                verbosefn "%s" msg.Message
+            override x.LogAsync(msg: NuGet.Common.ILogMessage): Task =
+                x.Log msg
+                Task.CompletedTask
+        }
+    b.VerbosityLevel <- NuGet.Common.LogLevel.Verbose
+    b :> NuGet.Common.ILogger
+let private signingContext = Signing.ClientPolicyContext.GetClientPolicy(nugetSettings, nugetLogger)
+/// instructions package extraction to unzip the files in the package, copy the nupkg over, and keep the nuspec as well
+let private extractionContext = NuGet.Packaging.PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.Compress, signingContext, nugetLogger)
 
 /// Extracts the given package to the user folder
-let rec ExtractPackageToUserFolder(source: PackageSource, fileName:string, packageName:PackageName, version:SemVerInfo, kind:PackageResolver.ResolvedPackageKind) =
+let rec ExtractPackageToUserFolder(source: PackageSource, downloadedNupkgPath:string, packageName:PackageName, version:SemVerInfo, kind:PackageResolver.ResolvedPackageKind) =
     async {
         let dir = GetPackageUserFolderDir (packageName, version, kind)
 
         if kind = PackageResolver.ResolvedPackageKind.DotnetCliTool then
-            let! _ = ExtractPackageToUserFolder(source, fileName, packageName, version, PackageResolver.ResolvedPackageKind.Package)
+            let! _ = ExtractPackageToUserFolder(source, downloadedNupkgPath, packageName, version, PackageResolver.ResolvedPackageKind.Package)
             ()
 
         let targetFolder = DirectoryInfo(dir)
@@ -485,24 +498,26 @@ let rec ExtractPackageToUserFolder(source: PackageSource, fileName:string, packa
             if verbose then
                 verbosefn "%O %O already extracted" packageName version
         else
-            use packageFileStream = System.IO.File.OpenRead fileName
-            let! ctok = Async.CancellationToken
             let packageSource = source.Url
-            let! _extractedFiles = NuGet.Packaging.PackageExtractor.ExtractPackageAsync(packageSource, packageFileStream, pathResolver, extractionContext, ctok) |> Async.AwaitTask
-            extractZipToDirectory fileName targetFolder.FullName
+            let identity = NuGet.Packaging.Core.PackageIdentity(packageName.Name, NuGet.Versioning.NuGetVersion version.AsString)
+            let installFolder = pathResolver.GetInstallPath(identity.Id, identity.Version) |> DirectoryInfo
+            let downloadedNupkgPath =
+                if downloadedNupkgPath.IndexOf(installFolder.FullName, StringComparison.OrdinalIgnoreCase) <> -1 then 
+                    // red alert: about to extract the nupkg into the directory it already exists in.
+                    // in this case we need to move it to a temp dir because of how nuget's API wants to clear things out first
+                    let parentDirOfNupkg = Path.GetDirectoryName downloadedNupkgPath |> DirectoryInfo
+                    let parentOfParent = parentDirOfNupkg.Parent
+                    let newNupkgPath = Path.Combine(parentOfParent.FullName, Path.GetFileName downloadedNupkgPath)
+                    File.Move(downloadedNupkgPath, newNupkgPath)
+                    newNupkgPath
+                else
+                    downloadedNupkgPath
 
-            let fi = FileInfo fileName
-            let targetPackageFileName = Path.Combine(targetFolder.FullName, fi.Name)
-            if normalizePath fileName <> normalizePath targetPackageFileName then
-                File.Copy(fileName,targetPackageFileName,true)
-
-            let cachedHashFile = Path.Combine(Constants.NuGetCacheFolder,fi.Name + ".sha512")
-            if not (File.Exists cachedHashFile) then
-                let packageHash = getSha512File fileName
-                File.WriteAllText(cachedHashFile,packageHash)
-            File.Copy(cachedHashFile,targetPackageFileName + ".sha512")
-
-            cleanup targetFolder
+            use packageFileStream = System.IO.File.OpenRead downloadedNupkgPath
+            let! ctok = Async.CancellationToken
+            // we already have the stream locally so we don't need the 'packagedownloader' overload of InstallFromSourceAsync
+            let copier = fun stream -> packageFileStream.CopyToAsync(stream, 8192, ctok)
+            let! extractedFiles = NuGet.Packaging.PackageExtractor.InstallFromSourceAsync(packageSource, identity, copier, pathResolver, extractionContext, ctok) |> Async.AwaitTask
             if verbose then
                 verbosefn "%O %O unzipped to %s" packageName version targetFolder.FullName
 
