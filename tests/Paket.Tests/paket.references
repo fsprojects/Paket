@@ -6,4 +6,6 @@ Microsoft.NET.Test.Sdk
 NUnit
 NUnit3TestAdapter
 FsCheck
+Microsoft.NETFramework.ReferenceAssemblies.net461
+
 File:FsUnit.fs .

@@ -2,18 +2,9 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <PackageId>Paket</PackageId>
     <AssemblyName>paket</AssemblyName>
-    <!-- package metadata -->
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Description>A dependency manager for .NET with support for NuGet packages and git repositories.</Description>
-    <PackageProjectUrl>http://fsprojects.github.io/Paket</PackageProjectUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageIconUrl>https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png</PackageIconUrl>
-    <PackageTags>nuget;bundler;F#</PackageTags>
-    <RepositoryUrl>https://github.com/fsprojects/Paket.git</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(PackAsTool)' == 'true' ">
     <!-- .net tools support netcoreapp only -->
@@ -22,7 +13,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="\"/>
-    <Compile Include="AssemblyInfo.fs" />
+    <None Include="../../docs/files/img/logo.png" Pack="true" PackagePath="\"/>
     <Compile Include="Commands.fs" />
     <Compile Include="Program.fs" />
     <Content Include="App.config" Condition=" '$(TargetFramework)' == 'net461' " />

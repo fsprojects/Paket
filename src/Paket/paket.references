@@ -12,3 +12,4 @@ Nuget.Packaging
 Microsoft.Win32.Registry
 System.Diagnostics.Process
 System.Diagnostics.TraceSource
+DotNet.ReproducibleBuilds

@@ -21,7 +21,11 @@ type PaketExiter() =
                 tracen msg ; exit 0
             else traceError msg ; exit 1
 
-let paketVersion = AssemblyVersionInformation.AssemblyInformationalVersion
+let paketVersion =
+  let attrs = System.Reflection.Assembly.GetExecutingAssembly().GetCustomAttributes(false)
+
+  attrs
+  |> Seq.pick (fun a -> match a with | :? System.Reflection.AssemblyInformationalVersionAttribute as i -> Some i.InformationalVersion | _ -> None)
 
 let mutable tracedVersion = false
 

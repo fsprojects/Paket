@@ -7,7 +7,6 @@ System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
 
 open Fake
 open Fake.Git
-open Fake.AssemblyInfoFile
 open Fake.ReleaseNotesHelper
 open Fake.UserInputHelper
 open System
@@ -15,10 +14,6 @@ open System.IO
 open Fake.Testing.NUnit3
 open System.Security.Cryptography
 open System.Xml.Linq
-
-// --------------------------------------------------------------------------------------
-// START TODO: Provide project-specific details below
-// --------------------------------------------------------------------------------------
 
 // Information about the project are used
 //  - for version and project name in generated AssemblyInfo file
@@ -108,41 +103,6 @@ let runDotnet workingDir args =
 
 let testSuiteFilterFlakyTests = getEnvironmentVarAsBoolOrDefault "PAKET_TESTSUITE_FLAKYTESTS" false
 
-let genFSAssemblyInfo (projectPath: string) =
-    let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
-    let folderName = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(projectPath))
-    let basePath = "src" @@ folderName
-    let fileName = basePath @@ "AssemblyInfo.fs"
-    CreateFSharpAssemblyInfo fileName
-      [ Attribute.Title (projectName)
-        Attribute.Product project
-        Attribute.Company (authors |> String.concat ", ")
-        Attribute.Description summary
-        Attribute.Version release.AssemblyVersion
-        Attribute.FileVersion release.AssemblyVersion
-        Attribute.InformationalVersion release.NugetVersion ]
-
-let genCSAssemblyInfo (projectPath: string) =
-    let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
-    let folderName = System.IO.Path.GetDirectoryName(projectPath)
-    let basePath = folderName @@ "Properties"
-    let fileName = basePath @@ "AssemblyInfo.cs"
-    CreateCSharpAssemblyInfo fileName
-      [ Attribute.Title (projectName)
-        Attribute.Product project
-        Attribute.Description summary
-        Attribute.Version release.AssemblyVersion
-        Attribute.FileVersion release.AssemblyVersion
-        Attribute.InformationalVersion release.NugetVersion ]
-
-// Generate assembly info files with the right version & up-to-date information
-Target "AssemblyInfo" (fun _ ->
-    let fsProjs =  !! "src/**/*.fsproj"
-    let csProjs = !! "src/**/*.csproj"
-    fsProjs |> Seq.iter genFSAssemblyInfo
-    csProjs |> Seq.iter genCSAssemblyInfo
-)
-
 Target "InstallDotNetCore" (fun _ ->
     dotnetExePath <- DotNetCli.InstallDotNetSDK dotnetcliVersion
     Environment.SetEnvironmentVariable("DOTNET_EXE_PATH", dotnetExePath)
@@ -175,29 +135,14 @@ Target "CleanDocs" (fun _ ->
 // Build library & test project
 
 Target "Build" (fun _ ->
-    if isMono then
-        DotNetCli.Build (fun c ->
-            { c with
-                Project = solutionFile
-                ToolPath = dotnetExePath
-            })
-    else
-        DotNetCli.Build (fun c ->
-            { c with
-                Project = solutionFile
-                AdditionalArgs = [ "/p:SourceLinkCreate=true" ]
-                ToolPath = dotnetExePath
-            })
+    DotNetCli.Build (fun c ->
+        { c with
+            Project = solutionFile
+            ToolPath = dotnetExePath
+        })
 )
 
 Target "Restore" (fun _ ->
-    //WORKAROUND dotnet restore with paket doesnt restore the PackageReference of SourceLink
-    // ref https://github.com/fsprojects/Paket/issues/2930
-    //TODO check if is needed, because a full paket restore is done in the build.bat/sh before run this fsx
-    Paket.Restore (fun p ->
-        { p with
-            Group = "NetCoreTools" })
-
     DotNetCli.RunCommand (fun c ->
         { c with
             ToolPath = dotnetExePath
@@ -461,14 +406,17 @@ let releaseNotesProp releaseNotesLines =
     path
 
 Target "NuGet" (fun _ ->
-    Paket.Pack (fun p ->
-        { p with
-            ToolPath = "bin/merged/paket.exe"
-            Version = release.NugetVersion
-            TemplateFile = "src/Paket.Core/paket.template"
-            ReleaseNotes = toLines release.Notes })
-    // pack as .NET tools
     let releaseNotesPath = releaseNotesProp release.Notes
+
+    DotNetCli.Pack (fun c ->
+        { c with
+            Project = "src/Paket.Core/Paket.Core.fsproj"
+            OutputPath = tempDir
+            AdditionalArgs =
+                [ sprintf "/p:Version=%s" release.NugetVersion
+                  sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath ]
+            ToolPath = dotnetExePath
+        })
 
     DotNetCli.Pack (fun c ->
         { c with
@@ -731,7 +679,6 @@ Target "All" DoNothing
 "Clean"
   ==> "InstallDotNetCore"
   ==> "Restore"
-  ==> "AssemblyInfo"
   ==> "Build"
   ==> "Publish"
   =?> ("RunTests", unlessBuildParams [ "SkipTests"; "SkipUnitTests" ])
