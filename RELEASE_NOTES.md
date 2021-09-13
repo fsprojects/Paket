@@ -1,3 +1,7 @@
+#### 6.1.0 - 2021-09-13
+* Use a different nuget extraction routine to extract to versioned folders - https://github.com/fsprojects/Paket/pull/4081
+* Unified packaging strategy for Paket.Core - https://github.com/fsprojects/Paket/pull/4080
+
 #### 6.0.13 - 2021-08-31
 * Support for .NET 5.0
 * Support for .NET 6.0
