@@ -134,11 +134,36 @@ Target "CleanDocs" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build library & test project
 
+let releaseNotesProp releaseNotesLines =
+    let xn name = XName.Get(name)
+    let text = releaseNotesLines |> String.concat Environment.NewLine
+    let doc =
+        XDocument(
+            [ XComment("This document was automatically generated.") :> obj
+              XElement(xn "Project",
+                XElement(xn "PropertyGroup",
+                    XElement(xn "PackageReleaseNotes", text)
+                )
+              ) :> obj ]
+        )
+
+    let path = Path.GetTempFileName()
+    doc.Save(path)
+    path
+
+let releaseNotesPath = releaseNotesProp release.Notes
+
+let packageProps = [
+    sprintf "/p:Version=%s" release.NugetVersion
+    sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath
+]
+
 Target "Build" (fun _ ->
     DotNetCli.Build (fun c ->
         { c with
             Project = solutionFile
             ToolPath = dotnetExePath
+            AdditionalArgs = packageProps
         })
 )
 
@@ -156,13 +181,19 @@ Target "Restore" (fun _ ->
 )
 
 Target "Publish" (fun _ ->
+    let publishArgs =
+        [
+            "--no-build"
+        ] // since no build, we have to ensure that the build sets assemblyinfo correctly, especially because the publish output of this step
+          // is used in the ILRepack of the .net executable
+
     DotNetCli.Publish (fun c ->
         { c with
             Project = "src/Paket"
             Framework = "net461"
             Output = FullName (currentDirectory </> buildDirNet461)
             ToolPath = dotnetExePath
-            AdditionalArgs = ["--no-build"]
+            AdditionalArgs = publishArgs
         })
 
     DotNetCli.Publish (fun c ->
@@ -171,15 +202,16 @@ Target "Publish" (fun _ ->
             Framework = "netcoreapp2.1"
             Output = FullName (currentDirectory </> buildDirNetCore)
             ToolPath = dotnetExePath
-            AdditionalArgs = ["--no-build"]
+            AdditionalArgs = publishArgs
         })
+
     DotNetCli.Publish (fun c ->
         { c with
             Project = "src/Paket.Bootstrapper"
             Framework = "net461"
             Output = FullName (currentDirectory </> buildDirBootstrapperNet461)
             ToolPath = dotnetExePath
-            AdditionalArgs = ["--no-build"]
+            AdditionalArgs = publishArgs
         })
 
     DotNetCli.Publish (fun c ->
@@ -188,7 +220,7 @@ Target "Publish" (fun _ ->
             Framework = "netcoreapp2.1"
             Output = FullName (currentDirectory </> buildDirBootstrapperNetCore)
             ToolPath = dotnetExePath
-            AdditionalArgs = ["--no-build"]
+            AdditionalArgs = publishArgs
         })
 )
 "Clean" ==> "Build" ?=> "Publish"
@@ -286,7 +318,7 @@ Target "MergePaketTool" (fun _ ->
     let result =
         ExecProcess (fun info ->
             info.FileName <- currentDirectory </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
-            info.Arguments <- sprintf "/lib:%s /ver:%s /out:%s %s %s" buildDirNet461 release.AssemblyVersion paketFile primaryExe mergeLibs
+            info.Arguments <- sprintf "/copyattrs /lib:%s /ver:%s /out:%s %s %s" buildDirNet461 release.AssemblyVersion paketFile primaryExe mergeLibs
             ) (TimeSpan.FromMinutes 5.)
 
     if result <> 0 then failwithf "Error during ILRepack execution."
@@ -388,33 +420,12 @@ Target "AddIconToExe" (fun _ ->
     if result <> 0 then failwithf "Error during adding icon %s to %s with %s %s" paketExeIcon paketFile rhPath args
 )
 
-let releaseNotesProp releaseNotesLines =
-    let xn name = XName.Get(name)
-    let text = releaseNotesLines |> String.concat Environment.NewLine
-    let doc =
-        XDocument(
-            [ XComment("This document was automatically generated.") :> obj
-              XElement(xn "Project",
-                XElement(xn "PropertyGroup",
-                    XElement(xn "PackageReleaseNotes", text)
-                )
-              ) :> obj ]
-        )
-
-    let path = Path.GetTempFileName()
-    doc.Save(path)
-    path
-
 Target "NuGet" (fun _ ->
-    let releaseNotesPath = releaseNotesProp release.Notes
-
     DotNetCli.Pack (fun c ->
         { c with
             Project = "src/Paket.Core/Paket.Core.fsproj"
             OutputPath = tempDir
-            AdditionalArgs =
-                [ sprintf "/p:Version=%s" release.NugetVersion
-                  sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath ]
+            AdditionalArgs = packageProps
             ToolPath = dotnetExePath
         })
 
@@ -422,29 +433,21 @@ Target "NuGet" (fun _ ->
         { c with
             Project = "src/Paket/Paket.fsproj"
             OutputPath = tempDir
-            AdditionalArgs =
-                [ sprintf "/p:Version=%s" release.NugetVersion
-                  sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath
-                  "/p:PackAsTool=true" ]
+            AdditionalArgs = packageProps @ [ "/p:PackAsTool=true" ]
             ToolPath = dotnetExePath
         })
     DotNetCli.Pack (fun c ->
         { c with
             Project = "src/Paket.Bootstrapper/Paket.Bootstrapper.csproj"
             OutputPath = tempDir
-            AdditionalArgs =
-                [ sprintf "/p:Version=%s" release.NugetVersion
-                  sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath
-                  "/p:PackAsTool=true"]
+            AdditionalArgs = packageProps @ [ "/p:PackAsTool=true" ]
             ToolPath = dotnetExePath
         })
     DotNetCli.Pack (fun c ->
         { c with
             Project = "src/FSharp.DependencyManager.Paket/FSharp.DependencyManager.Paket.fsproj"
             OutputPath = tempDir
-            AdditionalArgs =
-                [ sprintf "/p:Version=%s" release.NugetVersion
-                  sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath ]
+            AdditionalArgs = packageProps
             ToolPath = dotnetExePath
         })
 )
