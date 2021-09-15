@@ -6,6 +6,13 @@ open Paket
 open FsUnit
 open NUnit.Framework
 
+let rec tryFindFileInHeirarchy (startDir: DirectoryInfo) (targetFileName: string): string option =
+    if isNull startDir then None
+    else
+        let testPath = Path.Combine(startDir.FullName, targetFileName)
+        if File.Exists testPath then Some (normalizePath testPath)
+        else tryFindFileInHeirarchy startDir.Parent targetFileName
+
 [<Test>]
 let ``Loading assembly metadata works``() =
     // When debugging CurrentDirectory is C:\Windows\system32
@@ -19,35 +26,31 @@ let ``Loading assembly metadata works``() =
         else curDir
 
     use _cd = TestHelpers.changeWorkingDir workingDir
+    let workingDir = DirectoryInfo workingDir
+    let projectFilePath =
+        tryFindFileInHeirarchy workingDir "Paket.Tests.fsproj"
+        |> Option.defaultWith (fun _ -> failwithf "%s does not exist in the directory heirarchy of %s." "Paket.Tests.fsproj" workingDir.FullName)
 
-    let fileName =
-        if File.Exists(Path.Combine(workingDir, "Paket.Tests.fsproj")) then
-            Path.Combine(workingDir, "Paket.Tests.fsproj")
-            |> normalizePath
-        elif File.Exists(Path.Combine(workingDir, "..", "..", "Paket.Tests.fsproj")) then
-            Path.Combine(workingDir, "..", "..", "Paket.Tests.fsproj")
-            |> normalizePath
-        else
-            Path.Combine(workingDir, "..", "..", "..", "Paket.Tests.fsproj")
-            |> normalizePath
-
-    if File.Exists fileName |> not then
-        failwithf "%s does not exist." fileName
-
-    let projFile = 
-        fileName
+    let projFile =
+        projectFilePath
         |> ProjectFile.LoadFromFile
 
-    let config = 
-        if workingDir.Contains "Debug" then "Debug"
+    let config =
+        if workingDir.FullName.Contains "Debug" then "Debug"
         elif assemblyLocation.Contains "Debug" then "Debug"
         else "Release"
-    
-    let assemblyReader,id,versionFromAssembly,fileName = PackageMetaData.readAssemblyFromProjFile config "" projFile
+
+    let paketReleaseNotesVersion =
+        tryFindFileInHeirarchy workingDir "RELEASE_NOTES.md"
+        |> Option.map (File.ReadLines >> Seq.head)
+        |> Option.map (fun line -> line.Split(' ').[1]) // format is ### <VERSION> - <DATE>, so taking second element of array is the version
+        |> Option.defaultWith (fun _ -> failwithf "unable to parse current version from RELEASE_NOTES.md in the directory heirarchy of %s" workingDir.FullName)
+
+    let assemblyReader, id, versionFromAssembly, _fileName = PackageMetaData.readAssemblyFromProjFile config "" projFile
     id |> shouldEqual "Paket.Tests"
-    
+
     let attribs = PackageMetaData.loadAssemblyAttributes assemblyReader
-    PackageMetaData.getVersion versionFromAssembly attribs |> shouldEqual <| Some(SemVer.Parse "1.0.0.0")
+    PackageMetaData.getVersion versionFromAssembly attribs |> shouldEqual <| Some(SemVer.Parse paketReleaseNotesVersion)
     let authors = PackageMetaData.getAuthors attribs
     authors.Value |> shouldEqual ["Two"; "Authors" ]
     PackageMetaData.getDescription attribs |> shouldEqual <| Some("A description")
