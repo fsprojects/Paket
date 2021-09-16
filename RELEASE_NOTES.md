@@ -1,4 +1,4 @@
-#### 6.1.1 - 2021-09-15
+#### 6.1.2 - 2021-09-16
 * Unify the setting of version + package metadata in the 461 and .net core builds of Paket - https://github.com/fsprojects/Paket/pull/4083
 
 #### 6.1.0 - 2021-09-13
