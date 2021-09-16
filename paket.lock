@@ -1,7 +1,7 @@
 STORAGE: NONE
 CONTENT: NONE
 NUGET
-  remote: https://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
     Argu (6.1.1)
       FSharp.Core (>= 4.3.2) - restriction: >= netstandard2.0
       System.Configuration.ConfigurationManager (>= 4.4) - restriction: >= netstandard2.0
@@ -951,7 +951,7 @@ GROUP Build
 CONTENT: NONE
 RESTRICTION: >= net461
 NUGET
-  remote: https://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
     0x53A.ReferenceAssemblies.Paket (0.2)
     FAKE (4.64.17)
     FSharp.Compiler.Service (17.0.1)
@@ -982,5 +982,5 @@ GITHUB
     rh/ResourceHacker.exe (e11eda501acea369ac2950beb34b8888495bf21f)
 GROUP FSharpDepManagerExtension
 NUGET
-  remote: https://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
     FSharp.Core (5.0) - redirects: force
