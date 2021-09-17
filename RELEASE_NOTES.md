@@ -1,5 +1,8 @@
+#### 6.1.3 - 2021-09-17
+* Added paket version to user-agent for nuget calls- https://github.com/fsprojects/Paket/pull/4087
+
 #### 6.1.2 - 2021-09-16
-* Unify the setting of version + package metadata in the 461 and .net core builds of Paket - https://github.com/fsprojects/Paket/pull/4083
+* Unified the setting of version + package metadata in the 461 and .net core builds of Paket - https://github.com/fsprojects/Paket/pull/4083
 
 #### 6.1.0 - 2021-09-13
 * Use a different nuget extraction routine to extract to versioned folders - https://github.com/fsprojects/Paket/pull/4081
