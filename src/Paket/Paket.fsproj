@@ -2,7 +2,6 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
-    <RollForward>LatestMajor</RollForward>
     <PackageId>Paket</PackageId>
     <AssemblyName>paket</AssemblyName>
     <IsPackable>true</IsPackable>

@@ -1,4 +1,4 @@
-#### 6.2.0 - 2021-10-13
+#### 6.2.1 - 2021-10-13
 * Roll forward for .NET tool - https://github.com/fsprojects/Paket/pull/4089
 
 #### 6.1.3 - 2021-09-17
