@@ -1,5 +1,8 @@
+#### 6.2.0 - 2021-10-13
+* Roll forward for .NET tool - https://github.com/fsprojects/Paket/pull/4089
+
 #### 6.1.3 - 2021-09-17
-* Added paket version to user-agent for nuget calls- https://github.com/fsprojects/Paket/pull/4087
+* Added paket version to user-agent for nuget calls - https://github.com/fsprojects/Paket/pull/4087
 
 #### 6.1.2 - 2021-09-16
 * Unified the setting of version + package metadata in the 461 and .net core builds of Paket - https://github.com/fsprojects/Paket/pull/4083
