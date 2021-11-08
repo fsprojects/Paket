@@ -1,3 +1,6 @@
+#### 7.0.0-alpha001 - 2021-11-08
+* Support as .NET 6.0 tool
+
 #### 6.1.2 - 2021-09-16
 * Unify the setting of version + package metadata in the 461 and .net core builds of Paket - https://github.com/fsprojects/Paket/pull/4083
 
