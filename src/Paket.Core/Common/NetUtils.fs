@@ -399,7 +399,6 @@ let createHttpHandlerRaw(url, auth: Auth option) : HttpMessageHandler =
     handler.UseProxy <- true
     handler :> _
 
-
 let createHttpHandler = 
     memoizeBy 
         // Truncates the url to only to host part, so there is only one handler per source/host.
@@ -408,7 +407,13 @@ let createHttpHandler =
         (fun (url : string, auth) -> url.Substring(0, url.IndexOf('/', 8) + 1), auth) 
         createHttpHandlerRaw 
 
-let createHttpClient (url,auth:Auth option) : HttpClient =
+let private paketVersion = 
+    let attrs = System.Reflection.Assembly.GetExecutingAssembly().GetCustomAttributes(false)
+
+    attrs
+    |> Seq.pick (fun a -> match a with | :? System.Reflection.AssemblyInformationalVersionAttribute as i -> Some i.InformationalVersion | _ -> None)
+
+let createHttpClient (url, auth:Auth option) : HttpClient =
     let handler = createHttpHandler (url, auth)
     let client = new HttpClient(handler)
     match auth with
@@ -432,7 +437,7 @@ let createHttpClient (url,auth:Auth option) : HttpClient =
     | Some(Token token) ->
         client.DefaultRequestHeaders.Authorization <-
             new System.Net.Http.Headers.AuthenticationHeaderValue("token", token)
-    client.DefaultRequestHeaders.Add("user-agent", "Paket")
+    client.DefaultRequestHeaders.Add("user-agent", sprintf "Paket (%s)" paketVersion)
     client
 
 #if USE_WEB_CLIENT_FOR_UPLOAD
