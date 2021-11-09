@@ -1198,6 +1198,35 @@ let ``should read config with target framework``() =
     |> getExplicitRestriction
     |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4)))
 
+let configNET5TargetFramework = """source https://www.nuget.org/api/v2
+
+framework: >= net5.0
+
+nuget System.Data.SQLite 1.0.98.1 content: none
+"""
+
+[<Test>]
+let ``should read config with .NET 5 target framework``() = 
+    let cfg = DependenciesFile.FromSource(configNET5TargetFramework)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
+    |> getExplicitRestriction
+    |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V5)))
+
+let configNET6TargetFramework = """source https://www.nuget.org/api/v2
+
+framework: >= net6.0
+
+nuget System.Data.SQLite 1.0.98.1 content: none
+"""
+
+[<Test>]
+let ``should read config with .NET 6 target framework``() = 
+    let cfg = DependenciesFile.FromSource(configNET6TargetFramework)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
+    |> getExplicitRestriction
+    |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V6)))
 
 let validFrameworks =
     let net40 = DotNetFramework(FrameworkVersion.V4)
