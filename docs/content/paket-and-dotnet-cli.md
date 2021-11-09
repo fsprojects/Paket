@@ -7,7 +7,7 @@ projects that are used with [the `dotnet` CLI](https://github.com/dotnet/cli)
 
 The general workflow is not very different from using Paket with traditional
 .NET projects which it is described in the
-["Getting started" tutorial](getting-started.html).
+["Getting started" tutorial](get-started.html).
 
 ## Setup
 
