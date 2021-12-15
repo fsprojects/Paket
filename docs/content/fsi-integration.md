@@ -28,6 +28,18 @@ In general, the process will explicitly list the folders it is currently checkin
 error FS3216: Package manager key 'paket' was not registered in [C:\Program Files\dotnet\sdk\5.0.100\FSharp; C:\Program Files\dotnet\sdk\5.0.100\FSharp\], []. Currently registered: nuget
 ```
 
+The locations to copy `FSharp.DependencyManager.Paket.dll`
+
+Dotnet SDK:
+ - Windows `C:\Program Files\dotnet\sdk\version number\FSharp`
+ - macOS `/usr/local/share/dotnet/sdk/<version number>/FSharp`
+ - Linux `/home/user/dotnet/sdk/<version number>/FSharp`
+
+Visual Studio:
+ - For Editor Support `C:\Program Files\Microsoft Visual Studio\<version number>\Community\Common7\IDE\CommonExtensions\Microsoft\FSharp`
+ - For Fsi Window Support `C:\Program Files\Microsoft Visual Studio\<version number>\Community\Common7\IDE\CommonExtensions\Microsoft\FSharp\Tools`
+
+
 ### Passing the folder of the extension as --compilertool flag
 
 Use the `--compilertool` flag when invoking F# Interactive or refer to the documentation of the host process.
