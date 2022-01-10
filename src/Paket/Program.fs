@@ -526,7 +526,7 @@ let pack (results : ParseResults<_>) =
         (results.TryGetResult PackArgs.Build_Platform,
          results.TryGetResult PackArgs.Build_Platform_Legacy)
         |> legacyOption results (ReplaceArgument("--build-platform", "buildplatform"))
-    let version =
+    let cliVersion =
         (results.TryGetResult PackArgs.Version,
          results.TryGetResult PackArgs.Version_Legacy)
         |> legacyOption results (ReplaceArgument("--version", "version"))
@@ -534,7 +534,7 @@ let pack (results : ParseResults<_>) =
         (results.GetResults PackArgs.Specific_Version,
          results.GetResults PackArgs.Specific_Version_Legacy)
         |> legacyList results (ReplaceArgument("--specific-version", "specific-version"))
-    let releaseNotes =
+    let cliReleaseNotes =
         (results.TryGetResult PackArgs.Release_Notes,
          results.TryGetResult PackArgs.Release_Notes_Legacy)
         |> legacyOption results (ReplaceArgument("--release-notes", "releaseNotes"))
@@ -583,6 +583,24 @@ let pack (results : ParseResults<_>) =
         (results.TryGetResult PackArgs.Project_Url,
          results.TryGetResult PackArgs.Project_Url_Legacy)
         |> legacyOption results (ReplaceArgument("--project-url", "project-url"))
+    let fileReleaseNotes =
+        match results.TryGetResult PackArgs.Release_Notes_File with
+        | Some file -> file |> Fake.Core.ReleaseNotes.load |> Some
+        | _ -> None
+    let releaseNotes =
+        match cliReleaseNotes with
+        | Some notes -> Some notes
+        | None -> 
+            match fileReleaseNotes with
+            | Some notes -> notes.Notes |> String.concat "\n" |> Some
+            | None -> None
+    let version =
+        match cliVersion with
+        | Some v -> Some v
+        | None ->   
+            match fileReleaseNotes with
+            | Some notes -> Some notes.NugetVersion
+            | None -> None
 
     Dependencies.Locate()
                 .Pack(outputPath,

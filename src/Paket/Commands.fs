@@ -532,6 +532,8 @@ type PackArgs =
 
     | [<Unique>] Project_Url of URL:string
     | [<Hidden;Unique;CustomCommandLine("project-url")>] Project_Url_Legacy of URL:string
+
+    | [<Unique>] Release_Notes_File of path:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -579,6 +581,8 @@ with
 
             | Project_Url _ -> "homepage URL for the package"
             | Project_Url_Legacy _ -> "[obsolete]"
+
+            | Release_Notes_File _ -> "path to release notes file"
 
 type PushArgs =
     | [<ExactlyOnce;MainCommand>] Package of path:string
