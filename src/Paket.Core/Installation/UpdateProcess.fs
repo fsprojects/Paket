@@ -231,6 +231,22 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, alternativeProjectRoot,
     let hasChanged = lockFile.Save()
     lockFile,hasChanged,updatedGroups
 
+let runDotnet arguments =
+    let result =
+        let p = new System.Diagnostics.Process()
+        p.StartInfo.UseShellExecute <- false
+        p.StartInfo.FileName <- "dotnet"
+        p.StartInfo.Arguments <- arguments
+        p.StartInfo.RedirectStandardOutput <- true
+        p.StartInfo.RedirectStandardError <- true
+        p.Start() |> ignore
+        let standardOutput, errorOutput = p.StandardOutput.ReadToEnd(), p.StandardError.ReadToEnd()
+        p.WaitForExit()
+        p.ExitCode
+
+    if result <> 0 then
+        failwithf "dotnet %s failed" arguments
+
 /// Smart install command
 let SmartInstall(dependenciesFile:DependenciesFile, updateMode, options : UpdaterOptions) =
     let lockFile,hasChanged,updatedGroups = SelectiveUpdate(dependenciesFile, options.Common.AlternativeProjectRoot, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)
@@ -267,6 +283,15 @@ let SmartInstall(dependenciesFile:DependenciesFile, updateMode, options : Update
         let scripts = LoadingScripts.ScriptGeneration.constructScriptsFromData depCache groupsToGenerate options.Common.ProvidedFrameworks options.Common.ProvidedScriptTypes
         for script in scripts do
             script.Save rootDir
+
+    if not options.NoInstall then
+        let mutable runDotNetRestore = false
+        for project, _ in projectsAndReferences do
+            let toolsVersion = project.GetToolsVersion()
+            if toolsVersion >= 15.0 then
+                runDotNetRestore <- true
+        if runDotNetRestore then
+            runDotnet "restore"
 
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =
