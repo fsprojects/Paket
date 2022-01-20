@@ -563,6 +563,8 @@ type MonoAndroidVersion =
     | V8_1
     | V9
     | V10
+    | V11
+    | V12
     member this.ShortString() =
         match this with
         | MonoAndroidVersion.V1    -> ""
@@ -582,6 +584,8 @@ type MonoAndroidVersion =
         | MonoAndroidVersion.V8_1   -> "8.1"
         | MonoAndroidVersion.V9   -> "9.0"
         | MonoAndroidVersion.V10 -> "10.0"
+        | MonoAndroidVersion.V11 -> "11.0"
+        | MonoAndroidVersion.V12 -> "12.0"
     override this.ToString() =
         match this with
         | MonoAndroidVersion.V1    -> "v1.0"
@@ -601,6 +605,8 @@ type MonoAndroidVersion =
         | MonoAndroidVersion.V8_1   -> "v8.1"
         | MonoAndroidVersion.V9   -> "v9.0"
         | MonoAndroidVersion.V10 -> "v10.0"
+        | MonoAndroidVersion.V11 -> "v11.0"
+        | MonoAndroidVersion.V12 -> "v12.0"
 
     static member TryParse s =
         match s with
@@ -625,6 +631,10 @@ type MonoAndroidVersion =
         | "9.0" -> Some MonoAndroidVersion.V9
         | "10"
         | "10.0" -> Some MonoAndroidVersion.V10
+        | "11"
+        | "11.0" -> Some MonoAndroidVersion.V11
+        | "12"
+        | "12.0" -> Some MonoAndroidVersion.V12
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -765,6 +775,8 @@ type FrameworkIdentifier =
         | MonoAndroid MonoAndroidVersion.V8_1 -> [ MonoAndroid MonoAndroidVersion.V8 ]
         | MonoAndroid MonoAndroidVersion.V9 -> [ MonoAndroid MonoAndroidVersion.V8_1 ]
         | MonoAndroid MonoAndroidVersion.V10 -> [ MonoAndroid MonoAndroidVersion.V9; DotNetStandard DotNetStandardVersion.V2_1 ]
+        | MonoAndroid MonoAndroidVersion.V11 -> [ MonoAndroid MonoAndroidVersion.V10 ]
+        | MonoAndroid MonoAndroidVersion.V12 -> [ MonoAndroid MonoAndroidVersion.V11 ]
         | MonoTouch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | MonoMac -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Native _ -> [ ]
@@ -801,7 +813,7 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_8 -> [ DotNetFramework FrameworkVersion.V4_7_2 ]
         | DotNetFramework FrameworkVersion.V5 -> [ DotNetCoreApp DotNetCoreAppVersion.V3_1; DotNetStandard DotNetStandardVersion.V2_1 ]
         | DotNetFramework FrameworkVersion.V6 -> [ DotNetFramework FrameworkVersion.V5 ]
-        | DotNet5WithOs Net5Os.Android -> [ DotNetFramework FrameworkVersion.V5; MonoAndroid MonoAndroidVersion.V10 ]
+        | DotNet5WithOs Net5Os.Android -> [ DotNetFramework FrameworkVersion.V5; MonoAndroid MonoAndroidVersion.V12 ]
         | DotNet5WithOs Net5Os.IOs -> [ DotNetFramework FrameworkVersion.V5; XamariniOS ]
         | DotNet5WithOs Net5Os.MacOs -> [ DotNetFramework FrameworkVersion.V5; XamarinMac ]
         | DotNet5WithOs Net5Os.TvOs -> [ DotNetFramework FrameworkVersion.V5; XamarinTV ]
@@ -811,7 +823,7 @@ type FrameworkIdentifier =
         | DotNet5Windows Net5WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V5; DotNet5Windows Net5WindowsVersion.V8_0 ]
         | DotNet5Windows Net5WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V5; DotNet5Windows Net5WindowsVersion.V10_0_17763_0 ]
         | DotNet5Windows Net5WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V5; DotNet5Windows Net5WindowsVersion.V10_0_18362_0 ]
-        | DotNet6WithOs  Net6Os.Android -> [ DotNetFramework FrameworkVersion.V6; MonoAndroid MonoAndroidVersion.V10 ]
+        | DotNet6WithOs  Net6Os.Android -> [ DotNetFramework FrameworkVersion.V6; MonoAndroid MonoAndroidVersion.V12 ]
         | DotNet6WithOs  Net6Os.IOs     -> [ DotNetFramework FrameworkVersion.V6; XamariniOS ]
         | DotNet6WithOs  Net6Os.MacOs   -> [ DotNetFramework FrameworkVersion.V6; XamarinMac ]
         | DotNet6WithOs  Net6Os.TvOs    -> [ DotNetFramework FrameworkVersion.V6; XamarinTV ]
@@ -1503,6 +1515,8 @@ module KnownTargetProfiles =
         MonoAndroidVersion.V8_1
         MonoAndroidVersion.V9
         MonoAndroidVersion.V10
+        MonoAndroidVersion.V11
+        MonoAndroidVersion.V12
     ]
 
     let MonoAndroidProfiles =
