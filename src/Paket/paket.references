@@ -13,3 +13,4 @@ Microsoft.Win32.Registry
 System.Diagnostics.Process
 System.Diagnostics.TraceSource
 DotNet.ReproducibleBuilds
+Fake.Core.ReleaseNotes
