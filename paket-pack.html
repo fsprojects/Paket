@@ -104,13 +104,17 @@
 <span class="l">43: </span>
 <span class="l">44: </span>
 <span class="l">45: </span>
+<span class="l">46: </span>
+<span class="l">47: </span>
+<span class="l">48: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="sh">paket pack [--help] [--build-config &lt;configuration&gt;] [--build-platform &lt;platform&gt;]
            [--version &lt;version&gt;] [--template &lt;path&gt;] [--exclude &lt;package ID&gt;]
            [--specific-version &lt;package ID&gt; &lt;version&gt;] [--release-notes &lt;text&gt;]
            [--lock-dependencies] [--minimum-from-lock-file] [--pin-project-references]
            [--interproject-references &lt;min|fix|keep-major|keep-minor|keep-patch&gt;] [--symbols]
-           [--include-referenced-projects] [--project-url &lt;URL&gt;] &lt;path&gt;
+           [--include-referenced-projects] [--project-url &lt;URL&gt;] [--release-notes-file &lt;path&gt;]
+           &lt;path&gt;
 
 OUTPUT:
 
@@ -146,6 +150,8 @@ OPTIONS:
     --include-referenced-projects
                           include symbols and source from referenced projects
     --project-url &lt;URL&gt;   homepage URL for the package
+    --release-notes-file &lt;path&gt;
+                          path to release notes file
     --silent, -s          suppress console output
     --verbose, -v         print detailed information to the console
     --log-file &lt;path&gt;     print output to a file
