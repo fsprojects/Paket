@@ -848,7 +848,7 @@ type Dependencies(dependenciesFileName: string) =
             use fileStream = File.Open (nuspecFile, FileMode.Create)
             doc.Save fileStream
 
-    static member FixNuspecs (projectFile, ProjectFile, referencesFile:ReferencesFile, nuspecFileList:string list) =
+    static member FixNuspecs (projectFile: ProjectFile, referencesFile:ReferencesFile, nuspecFileList:string list) =
         let attr (name: string) (node: XmlNode) =
             match node.Attributes.[name] with
             | null -> None
@@ -974,9 +974,6 @@ type Dependencies(dependenciesFileName: string) =
 
                         // Ignore unknown packages, see https://github.com/fsprojects/Paket/issues/2694
                         // Assert that the version we remove it not newer than what we have in our resolution!
-                        if known.Contains packName
-                           && not (projectReferences.Contains packageName)
-                           && not (directDeps.Contains (PackageName packageName)) then
                         match packName with
                         | Some IndirectDependency ->
                             tracefn "Package '%O' was not explicitly referenced in %s and will be removed" packName.Value referencesFile.FileName
