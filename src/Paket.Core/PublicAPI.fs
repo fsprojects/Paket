@@ -848,16 +848,35 @@ type Dependencies(dependenciesFileName: string) =
             use fileStream = File.Open (nuspecFile, FileMode.Create)
             doc.Save fileStream
 
-    static member FixNuspecs (projectFile: ProjectFile, referencesFile: ReferencesFile, nuspecFileList:string list) =
+    static member FixNuspecs (projectFile: ProjectFile, referencesFile:ReferencesFile, nuspecFileList:string list) =
+        let attr (name: string) (node: XmlNode) =
+            match node.Attributes.[name] with
+            | null -> None
+            | attr -> Some attr.InnerText
+
+        /// adjusts the given version requirement from a nuspec file using the 'locked' version of that same dependency
+        let adjustRangeToLockedVersion (VersionRequirement(range, prerelease)) (lockedVersion: SemVerInfo) =
+            let range' =
+                match range with
+                | VersionRange.Maximum max -> VersionRange.Between(VersionRangeBound.Including, lockedVersion, max, VersionRangeBound.Including)
+                | VersionRange.GreaterThan _ -> VersionRange.GreaterThan lockedVersion
+                | VersionRange.Minimum _ -> VersionRange.Minimum lockedVersion
+                | VersionRange.Specific _ -> VersionRange.Specific lockedVersion
+                | VersionRange.LessThan top -> VersionRange.Between(VersionRangeBound.Including, lockedVersion, top, VersionRangeBound.Excluding)
+                | VersionRange.OverrideAll _ -> VersionRange.OverrideAll lockedVersion
+                | VersionRange.Range(_, _, right, rightBound) -> VersionRange.Range(VersionRangeBound.Including, lockedVersion, right, rightBound)
+
+            VersionRequirement(range', prerelease)
         let deps = Dependencies.Locate(Path.GetDirectoryName(referencesFile.FileName))
         let locked = deps.GetLockFile()
         let projectReferences =
             projectFile.GetAllReferencedProjects(onlyWithOutput = true, cache = PackProcessCache.empty)
             |> List.map (fun proj -> proj.NameWithoutExtension)
             |> Set.ofList
+        let depsFile = deps.GetDependenciesFile()
 
         // NuGet has thrown away "group" association, so this is best effort.
-        let known =
+        let implicitOrExplictlyReferencedPackages =
             locked.GetPackageHull referencesFile
             |> Seq.map (fun kv -> kv.Key |> snd)
             |> Set.ofSeq
@@ -866,11 +885,76 @@ type Dependencies(dependenciesFileName: string) =
             if not (File.Exists nuspecFile) then
                 failwithf "Specified file '%s' does not exist." nuspecFile
 
-        let directDeps =
+        let projectReferencedDeps =
             referencesFile.Groups
-            |> Seq.collect (fun kv -> kv.Value.NugetPackages)
-            |> Seq.map (fun i -> i.Name)
-            |> Set.ofSeq
+            |> Seq.collect (fun (KeyValue(group, packages)) -> packages.NugetPackages |> Seq.map (fun p -> group, p))
+
+        let groupsForProjectReferencedDeps =
+            projectReferencedDeps
+            |> Seq.map (fun (grp, pkg) -> pkg.Name, grp)
+            |> Seq.groupBy fst
+            |> Seq.map (fun (key, items) -> key, (items |> Seq.map snd |> List.ofSeq))
+            |> Map.ofSeq
+
+        let allDepsFilePackages =
+            depsFile.Groups
+            |> Seq.map (fun (KeyValue(g, p)) -> g, p.Packages)
+
+        let allDepsFilePackageRequirements =
+            allDepsFilePackages
+            |> Seq.collect (fun (group, packages) ->
+                let depsFileRanges = depsFile.Groups.[group].Packages |> List.map (fun p -> p.Name, p.VersionRequirement) |> Map.ofList
+                packages
+                |> Seq.choose (fun p ->
+                    match depsFileRanges.TryFind p.Name with
+                    | Some req -> Some ((group, p.Name), req)
+                    | None -> None
+                )
+            )
+            |> Map.ofSeq
+
+        let allLockFileResolvedVersions =
+            allDepsFilePackages
+            |> Seq.collect (fun (group, packages) ->
+                let lockGroup = locked.Groups.[group].Resolution
+                packages
+                |> Seq.choose (fun p ->
+                    lockGroup.TryFind p.Name
+                    |> Option.map (fun p -> (group, p.Name), p.Version)
+                )
+            )
+            |> Map.ofSeq
+
+        let lockedPackageVersionRequirements =
+            projectReferencedDeps
+            |> Seq.map (fun (grp, pkg) -> grp, pkg.Name)
+            |> Seq.choose (fun groupAndPackage -> match allDepsFilePackageRequirements.TryFind groupAndPackage with | Some r -> Some(groupAndPackage, r) | None -> None)
+            |> Seq.map (fun (groupAndPackage, versionRequirement) ->
+                match allLockFileResolvedVersions |> Map.tryFind groupAndPackage with
+                | Some lockedVersion -> groupAndPackage, adjustRangeToLockedVersion versionRequirement lockedVersion
+                | None -> groupAndPackage, versionRequirement
+            )
+            |> Map.ofSeq
+
+        let (|IndirectDependency|DirectDependency|UnknownDependency|) (p: PackageName) =
+            if not (implicitOrExplictlyReferencedPackages.Contains p)
+            then
+                UnknownDependency
+            else
+                match groupsForProjectReferencedDeps.TryFind p with
+                | None -> IndirectDependency
+                | Some [] -> IndirectDependency
+                | Some [group] -> DirectDependency (group, p)
+                | Some (firstGroup::_) -> DirectDependency (firstGroup, p)
+
+        let (|MatchesRange|NeedsRangeUpdate|LockRangeNotFound|) (groupAndPackage: (GroupName * PackageName), nuspecVersionRequirement: VersionRequirement) =
+
+            match lockedPackageVersionRequirements.TryFind groupAndPackage with
+            | Some lockedFileRange ->
+                if lockedFileRange = nuspecVersionRequirement
+                then MatchesRange
+                else NeedsRangeUpdate lockedFileRange
+            | None -> LockRangeNotFound
 
         for nuspecFile in nuspecFileList do
             let nuspecText = File.ReadAllText nuspecFile
@@ -884,16 +968,39 @@ type Dependencies(dependenciesFileName: string) =
                 let nodesToRemove = ResizeArray()
                 for node in parent.ChildNodes do
                     if node.Name = "dependency" then
-                        let packageName =
-                            match node.Attributes.["id"] with null -> "" | x -> x.InnerText
-                        let packName = PackageName packageName
+                        let packName = attr "id" node |> Option.map PackageName
+                        let versionRange = attr "version" node |> Option.bind VersionRequirement.TryParse
+                        tracefn "Checking dependency status for package %O, version %O" packName versionRange
+
                         // Ignore unknown packages, see https://github.com/fsprojects/Paket/issues/2694
-                        // TODO: Add some version sanity check here.
                         // Assert that the version we remove it not newer than what we have in our resolution!
-                        if known.Contains packName
-                           && not (projectReferences.Contains packageName)
-                           && not (directDeps.Contains (PackageName packageName)) then
+                        match packName with
+                        | Some IndirectDependency ->
+                            tracefn "Package '%O' was not explicitly referenced in %s and will be removed" packName.Value referencesFile.FileName
                             nodesToRemove.Add node |> ignore
+                        | Some UnknownDependency ->
+                            tracefn "Package '%O' is not part of the explicit dependency tree in %s and so will be skipped" packName.Value referencesFile.FileName
+                            ()
+                        | Some (DirectDependency ((GroupName(grp, _)) as g, (PackageName.PackageName(pkg, _) as p))) ->
+                            match versionRange with
+                            | Some versionRange ->
+                                match (g, p), versionRange with
+                                | MatchesRange ->
+                                    tracefn "Package '%s' is a direct dependency and requires no version patching" pkg
+                                    ()
+                                | LockRangeNotFound ->
+                                    tracefn "Couldn't find a version range for package '%s' in group '%s', is this package in your paket.dependencies file?" pkg grp
+                                    ()
+                                | NeedsRangeUpdate newVersionRange ->
+                                    let oldVersionRangeString = versionRange.FormatInNuGetSyntax()
+                                    let nugetVersionRangeString = newVersionRange.FormatInNuGetSyntax()
+                                    tracefn "Package '%s' is a direct dependency and requires version patching from %s to %s"pkg oldVersionRangeString nugetVersionRangeString
+                                    node.Attributes.["version"].InnerText <- nugetVersionRangeString
+                            | None ->
+                                tracefn "Package '%s' is a direct dependency but no desired range was found, so it will be skipped" pkg
+                                ()
+                        | None ->
+                            raise (Exception(sprintf "Could not read dependency id for package node %O" node))
 
                 if nodesToRemove.Count = 0 then
                     for node in parent.ChildNodes do traverse node
