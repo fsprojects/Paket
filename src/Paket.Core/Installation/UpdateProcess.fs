@@ -290,7 +290,8 @@ let SmartInstall(dependenciesFile:DependenciesFile, updateMode, options : Update
             let toolsVersion = project.GetToolsVersion()
             if toolsVersion >= 15.0 then
                 runDotNetRestore <- true
-        if runDotNetRestore then
+        if runDotNetRestore then            
+            tracefn "Calling dotnet restore"
             runDotnet "restore"
 
 /// Update a single package command
