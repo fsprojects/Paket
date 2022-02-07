@@ -234,18 +234,9 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, alternativeProjectRoot,
 let runDotnet arguments =
     let result =
         let p = new System.Diagnostics.Process()
-        p.StartInfo.UseShellExecute <- false
         p.StartInfo.FileName <- "dotnet"
-        p.StartInfo.Arguments <- arguments
-        p.StartInfo.RedirectStandardOutput <- true
-        p.StartInfo.RedirectStandardError <- true
-        
-        p.ErrorDataReceived.Add(fun d ->
-            if not (isNull d.Data) then tracefn "%s" d.Data)
-        p.OutputDataReceived.Add(fun d ->
-            if not (isNull d.Data) then tracefn "%s" d.Data)
+        p.StartInfo.Arguments <- arguments        
         p.Start() |> ignore
-        let standardOutput, errorOutput = p.StandardOutput.ReadToEnd(), p.StandardError.ReadToEnd()
         p.WaitForExit()
         p.ExitCode
 
