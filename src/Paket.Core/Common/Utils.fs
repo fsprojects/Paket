@@ -451,8 +451,19 @@ type PackagesFolderGroupConfig =
             parentPath () |> ResolvedPackagesFolder.ResolvedFolder
     static member Default = DefaultPackagesFolder
 
+let runDotnet arguments =
+    let result =
+        let p = new System.Diagnostics.Process()
+        p.StartInfo.FileName <- "dotnet"
+        p.StartInfo.Arguments <- arguments        
+        p.Start() |> ignore
+        p.WaitForExit()
+        p.ExitCode
 
-let RunInLockedAccessMode(lockedFolder,action) =
+    if result <> 0 then
+        failwithf "dotnet %s failed" arguments
+
+let RunInLockedAccessMode(lockedFolder,lockedAction: unit -> bool) =
     if not (Directory.Exists lockedFolder) then
         Directory.CreateDirectory lockedFolder |> ignore
 
@@ -523,10 +534,12 @@ let RunInLockedAccessMode(lockedFolder,action) =
     try
         acquireLock DateTime.Now (TimeSpan.FromMinutes 10.) 100
 
-        let result = action()
+        let runDotNetRestore = lockedAction()
 
         releaseLock 5
-        result
+        if runDotNetRestore then            
+            tracefn "Calling dotnet restore"
+            runDotnet "restore"
     with
     | _ ->
         releaseLock 5

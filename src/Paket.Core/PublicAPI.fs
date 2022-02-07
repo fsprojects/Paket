@@ -35,6 +35,7 @@ type Dependencies(dependenciesFileName: string) =
                     fun () ->
                         emptyDir (Path.Combine(dependencies.RootPath,Constants.DefaultPackagesFolderName))
                         emptyDir (Path.Combine(dependencies.RootPath,Constants.PaketFilesFolderName))
+                        false
                 )
 
         emptyDir Constants.UserNuGetPackagesFolder
@@ -90,6 +91,7 @@ type Dependencies(dependenciesFileName: string) =
             fun () ->
                 PaketEnv.init directory
                 |> returnOrFail
+                false
         )
 
 #if !NO_BOOTSTRAPPER
@@ -106,6 +108,7 @@ type Dependencies(dependenciesFileName: string) =
             fun () ->
                 PaketEnv.initWithContent sources additional directory
                 |> returnOrFail
+                false
         )
 
 #if !NO_BOOTSTRAPPER
@@ -138,8 +141,8 @@ type Dependencies(dependenciesFileName: string) =
                 >>= PaketEnv.ensureNotInStrictMode
                 >>= Simplifier.simplify interactive
                 |> returnOrFail
-
                 |> Simplifier.updateEnvironment
+                false
         )
 
     /// Get path to dependencies file
@@ -199,7 +202,7 @@ type Dependencies(dependenciesFileName: string) =
         RunInLockedAccessMode(
             Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
             fun () ->
-                AddProcess.AddGithub(dependenciesFileName, groupName, repository, file, version, options))
+                AddProcess.AddGithub(dependenciesFileName, groupName, repository, file, version, options); false)
 
     /// Adds the given git repository to the dependencies file
     member this.AddGit(groupName, repository) =
@@ -214,7 +217,7 @@ type Dependencies(dependenciesFileName: string) =
         RunInLockedAccessMode(
             this.RootPath,
             fun () ->
-                AddProcess.AddGit(dependenciesFileName, groupName, repository, version, options))
+                AddProcess.AddGit(dependenciesFileName, groupName, repository, version, options); false)
 
    /// Adds the given package with the given version to the dependencies file.
     member this.AddToProject(groupName, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, projectName: string, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
@@ -237,19 +240,19 @@ type Dependencies(dependenciesFileName: string) =
     member this.AddCredentials(source: string, username: string, password : string, authType : string) : unit =
         RunInLockedAccessMode(
             Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
-            fun () -> ConfigFile.askAndAddAuth source username password authType false |> returnOrFail )
+            fun () -> ConfigFile.askAndAddAuth source username password authType false |> returnOrFail; false)
 
      /// Adds credentials for a Nuget feed
     member this.AddCredentials(source: string, username: string, password : string, authType : string, verify : bool) : unit =
         RunInLockedAccessMode(
             Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
-            fun () -> ConfigFile.askAndAddAuth source username password authType verify |> returnOrFail )
+            fun () -> ConfigFile.askAndAddAuth source username password authType verify |> returnOrFail; false)
 
     /// Adds a token for a source
     member this.AddToken(source : string, token : string) : unit =
         RunInLockedAccessMode(
             Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
-            fun () -> ConfigFile.AddToken(source, token) |> returnOrFail)
+            fun () -> ConfigFile.AddToken(source, token) |> returnOrFail; false)
 
     /// Installs all dependencies.
     member this.Install(force: bool) = this.Install(force, false, false, false, false, SemVerUpdateMode.NoRestriction, false, false, [], [], None)
@@ -456,20 +459,23 @@ type Dependencies(dependenciesFileName: string) =
                     if paketFileName.Exists then
                         paketFileName.Delete()
                     File.Move(bootStrapperFileName,paketFileName.FullName)
+                    false
                 with
-                | _ ->())
+                | _ ->
+                    false
+        )
 
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
     member this.TurnOnAutoRestore(): unit =
         RunInLockedAccessMode(
             Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
-            fun () -> VSIntegration.TurnOnAutoRestore |> this.Process)
+            fun () -> VSIntegration.TurnOnAutoRestore |> this.Process; false)
 
     /// Removes paket.targets file and Import section from project files.
     member this.TurnOffAutoRestore(): unit =
         RunInLockedAccessMode(
             Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
-            fun () -> VSIntegration.TurnOffAutoRestore |> this.Process)
+            fun () -> VSIntegration.TurnOffAutoRestore |> this.Process; false)
 
     /// Returns the installed version of the given package.
     member this.GetInstalledVersion(packageName: string): string option =

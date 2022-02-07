@@ -83,6 +83,7 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
                 tracefn "Resolved package '%s' to version %s" package.Name resolved.Version.AsString
             | None ->
                 traceWarnfn "Could not find package %s in group %s" package.Name groupName.Name
+    installAfter
 
 // Add a package with the option to add it to a specified project.
 let AddToProject(dependenciesFileName, groupName, package, version, options : InstallerOptions, projectName, installAfter, runResolver, packageKind) =
