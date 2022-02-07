@@ -241,9 +241,9 @@ let runDotnet arguments =
         p.StartInfo.RedirectStandardError <- true
         
         p.ErrorDataReceived.Add(fun d ->
-            if not (isNull d.Data) then tracefn d.Data)
+            if not (isNull d.Data) then tracefn "%s" d.Data)
         p.OutputDataReceived.Add(fun d ->
-            if not (isNull d.Data) then tracefn d.Data)
+            if not (isNull d.Data) then tracefn "%s" d.Data)
         p.Start() |> ignore
         let standardOutput, errorOutput = p.StandardOutput.ReadToEnd(), p.StandardError.ReadToEnd()
         p.WaitForExit()
