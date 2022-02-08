@@ -1,4 +1,4 @@
-#### 7.0.0-alpha011 - 2022-12-07
+#### 7.0.0-alpha013 - 2022-12-08
 * Support as .NET 6.0 tool
 * Auto-Restore after paket install an paket update
 

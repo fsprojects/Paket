@@ -229,11 +229,43 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, alternativeProjectRoot,
             updateMode
             semVerUpdateMode
     let hasChanged = lockFile.Save()
-    lockFile,hasChanged,updatedGroups
+    let touchedPackages = 
+        [
+            for group1 in oldLockFile.Groups do                
+                for package1 in group1.Value.Resolution do
+                    match lockFile.Groups |> Map.tryFind group1.Key with
+                    | None -> group1.Key, package1.Key
+                    | Some group2 ->
+                        match group2.Resolution |> Map.tryFind package1.Key with
+                        | Some package2 when package2.Version <> package1.Value.Version ->
+                            ()
+                        | _ -> 
+                            group1.Key, package1.Key
+            for group1 in lockFile.Groups do                
+                for package1 in group1.Value.Resolution do
+                    match oldLockFile.Groups |> Map.tryFind group1.Key with
+                    | None -> group1.Key, package1.Key
+                    | Some group2 ->
+                        match group2.Resolution |> Map.tryFind package1.Key with
+                        | Some package2 when package2.Version <> package1.Value.Version ->
+                            ()
+                        | _ -> 
+                            group1.Key, package1.Key
+        ]
+        |> List.distinct
+        |> List.sort
+
+    if not (List.isEmpty touchedPackages) then
+        tracefn "Updated packages:"
+        for g,packages in touchedPackages |> List.groupBy fst do
+            tracefn "  Group: %O" g
+            for p in packages do
+                tracefn "    - %O" p
+    lockFile,hasChanged,updatedGroups,touchedPackages
 
 /// Smart install command
 let SmartInstall(dependenciesFile:DependenciesFile, updateMode, options : UpdaterOptions) =
-    let lockFile,hasChanged,updatedGroups = SelectiveUpdate(dependenciesFile, options.Common.AlternativeProjectRoot, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)
+    let lockFile,hasChanged,updatedGroups,touchedPackages = SelectiveUpdate(dependenciesFile, options.Common.AlternativeProjectRoot, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)
 
     let root = Path.GetDirectoryName dependenciesFile.FileName
     let projectsAndReferences = RestoreProcess.findAllReferencesFiles root |> returnOrFail
@@ -241,7 +273,7 @@ let SmartInstall(dependenciesFile:DependenciesFile, updateMode, options : Update
     if not options.NoInstall then
         tracefn "Installing into projects:"
         let forceTouch = hasChanged && options.Common.TouchAffectedRefs
-        InstallProcess.InstallIntoProjects(options.Common, forceTouch, dependenciesFile, lockFile, projectsAndReferences, updatedGroups)
+        InstallProcess.InstallIntoProjects(options.Common, forceTouch, dependenciesFile, lockFile, projectsAndReferences, updatedGroups, Some touchedPackages)
         GarbageCollection.CleanUp(dependenciesFile, lockFile)
 
     let shouldGenerateScripts =

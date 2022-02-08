@@ -347,7 +347,7 @@ let installForDotnetSDK root (project:ProjectFile) =
     project.AddImportForPaketTargets(relativePath)
 
 /// Installs all packages from the lock file.
-let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups) =
+let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups, touchedPackages:((GroupName * PackageName) list) option) =
     let packagesToInstall =
         if options.OnlyReferenced then
             projectsAndReferences
@@ -361,6 +361,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             |> Seq.map (fun kv -> kv.Key)
         |> Set
 
+    let touchedProjects = System.Collections.Generic.HashSet<string>()
     tracefn "Created dependency graph (%d packages in total)" packagesToInstall.Count
     let root = Path.GetDirectoryName lockFile.FileName
     let model = CreateModel(options.AlternativeProjectRoot, root, options.Force, dependenciesFile, lockFile, packagesToInstall, updatedGroups) |> Map.ofArray
@@ -369,7 +370,6 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
     let prefix = dependenciesFile.Directory.Length + 1
     let norm (s:string) = (s.Substring prefix).Replace('\\', '/')
-
 
     if projectsAndReferences.Length > 0 then
         verbosefn " - Installing to %d projects" projectsAndReferences.Length
@@ -498,6 +498,18 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
         else // start the installation process
             if toolsVersion >= 15.0 then
                 installForDotnetSDK root project
+                if forceTouch then 
+                    touchedProjects.Add project.FileName |> ignore
+                else
+                    match touchedPackages with
+                    | Some touchedPackages ->
+                        let packageInstalled =
+                            touchedPackages
+                            |> Seq.exists project.HasPackageInstalled
+                        if packageInstalled then 
+                            touchedProjects.Add project.FileName |> ignore
+                    | _ ->
+                        touchedProjects.Add project.FileName |> ignore
             else
                 project.UpdateReferences(model, directDependencies, usedPackages)
 
@@ -589,12 +601,31 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
     // Lets see if users report issues
     Paket.RestoreProcess.writeRestoreCache restoreCacheFile { PackagesDownloadedHash = hash; ProjectsRestoredHash = hash }
     Paket.RestoreProcess.writeGitignore restoreCacheFile
-    ()
 
+    for project in touchedProjects do
+        let di = (FileInfo project).Directory
+        for objDir in Directory.EnumerateDirectories(di.FullName,"obj", SearchOption.AllDirectories) do
+            for file in Directory.EnumerateFiles(objDir,"project.assets.json", SearchOption.AllDirectories) do
+                try
+                    File.Delete file
+                with
+                | _ -> ()
+
+            for file in Directory.EnumerateFiles(objDir,"*.references", SearchOption.AllDirectories) do
+                try
+                    File.Delete file
+                with
+                | _ -> ()
+
+            for file in Directory.EnumerateFiles(objDir,"*.paket.*", SearchOption.AllDirectories) do
+                try
+                    File.Delete file
+                with
+                | _ -> ()
 
 /// Installs all packages from the lock file.
-let Install(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, updatedGroups) =
+let Install(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, updatedGroups, touchedPackages) =
     let root = FileInfo(lockFile.FileName).Directory.FullName
 
     let projects = RestoreProcess.findAllReferencesFiles root |> returnOrFail
-    InstallIntoProjects(options, forceTouch, dependenciesFile, lockFile, projects, updatedGroups)
+    InstallIntoProjects(options, forceTouch, dependenciesFile, lockFile, projects, updatedGroups,touchedPackages)

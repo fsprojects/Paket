@@ -1,7 +1,7 @@
 module Paket.IntegrationTests.PaketCoreSpecs
 
 open Fake
-open System
+open System 
 open NUnit.Framework
 open FsUnit
 open System
@@ -26,7 +26,7 @@ let ``#1251 full installer demo``() =
         // get from references file
         [GroupName "Main",PackageName "FAKE"
          GroupName "Main",PackageName "FSharp.Formatting"]
-    let lockFile,_,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, PackageResolver.UpdateMode.Install, SemVerUpdateMode.NoRestriction, force)
+    let lockFile,_,_,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, PackageResolver.UpdateMode.Install, SemVerUpdateMode.NoRestriction, force)
     let model = Paket.InstallProcess.CreateModel(alternativeProjectRoot, Path.GetDirectoryName dependenciesFile.FileName, force, dependenciesFile, lockFile, Set.ofSeq packagesToInstall, Map.empty) |> Map.ofArray
 
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "FAKE"].Version
@@ -44,7 +44,7 @@ let ``#1251 install FSharp.Collections.ParallelSeq``() =
         // get from references file
         [GroupName "Main",PackageName "FSharp.Collections.ParallelSeq"] 
 
-    let lockFile,_,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, PackageResolver.UpdateMode.Install, SemVerUpdateMode.NoRestriction, force)
+    let lockFile,_,_,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, PackageResolver.UpdateMode.Install, SemVerUpdateMode.NoRestriction, force)
 
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "FSharp.Collections.ParallelSeq"].Version
     |> shouldBeGreaterThan (SemVer.Parse "1.0.1")
