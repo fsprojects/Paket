@@ -361,7 +361,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             |> Seq.map (fun kv -> kv.Key)
         |> Set
 
-    let touchedProjects = System.Collections.Generic.HashSet<string>()
+    let touchedProjects = System.Collections.Generic.HashSet<_>()
     tracefn "Created dependency graph (%d packages in total)" packagesToInstall.Count
     let root = Path.GetDirectoryName lockFile.FileName
     let model = CreateModel(options.AlternativeProjectRoot, root, options.Force, dependenciesFile, lockFile, packagesToInstall, updatedGroups) |> Map.ofArray
@@ -499,7 +499,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             if toolsVersion >= 15.0 then
                 installForDotnetSDK root project
                 if forceTouch then 
-                    touchedProjects.Add project.FileName |> ignore
+                    touchedProjects.Add project |> ignore
                 else
                     match touchedPackages with
                     | Some touchedPackages ->
@@ -507,9 +507,9 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                             touchedPackages
                             |> Seq.exists (fun (g,p,_,_) -> project.HasPackageInstalled (g,p))
                         if packageInstalled then 
-                            touchedProjects.Add project.FileName |> ignore
+                            touchedProjects.Add project |> ignore
                     | _ ->
-                        touchedProjects.Add project.FileName |> ignore
+                        touchedProjects.Add project |> ignore
             else
                 project.UpdateReferences(model, directDependencies, usedPackages)
 
@@ -558,7 +558,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             project.Save forceTouch
             projectCache.[project.FileName] <- Some project
 
-            let first = ref true
+            let mutable first = true
 
             let allKnownLibNames =
                 model
@@ -585,7 +585,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
                     (snd kv.Value,packageRedirects))
                 |> applyBindingRedirects
-                    !first
+                    first
                     options.CreateNewBindingFiles
                     options.CleanBindingRedirects
                     (FileInfo project.FileName).Directory.FullName
@@ -593,7 +593,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     lockFile.GetAllDependenciesOf
                     allKnownLibNames
                     projectCache
-                first := false
+                first <- false
 
     let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
     let hash = Paket.RestoreProcess.getLockFileHashFromContent (lockFile.ToString())
@@ -602,8 +602,9 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
     Paket.RestoreProcess.writeRestoreCache restoreCacheFile { PackagesDownloadedHash = hash; ProjectsRestoredHash = hash }
     Paket.RestoreProcess.writeGitignore restoreCacheFile
 
-    for project in touchedProjects do
-        let di = (FileInfo project).Directory
+    for project in touchedProjects |> Seq.distinctBy (fun p -> p.FileName) |> Seq.sortBy (fun p -> p.FileName) do
+        tracefn " - Project %O needs to be restored" project.Name
+        let di = (FileInfo project.FileName).Directory
         for objDir in Directory.EnumerateDirectories(di.FullName,"obj", SearchOption.AllDirectories) do
             for file in Directory.EnumerateFiles(objDir,"project.assets.json", SearchOption.AllDirectories) do
                 try

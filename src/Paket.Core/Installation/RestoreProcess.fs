@@ -596,7 +596,8 @@ let RestoreNewSdkProject lockFile resolved groups (projectFile:ProjectFile) targ
 
     RunInLockedAccessMode (
         objDirectory.FullName,
-        (fun () ->
+        (fun () ->        
+            tracefn "Restoring %O" projectFile.FileName
             createAlternativeNuGetConfig (projectFileInfo, objDirectory)
             createProjectReferencesFiles lockFile projectFile referencesFile resolved groups targetFrameworks objDirectory            
             false
@@ -708,7 +709,11 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
     // fixup project specific changes (like an additional target framework or a changed references file)
 
     // Check if caching makes sense (even if we only can cache parts of it)
-    let canCacheRestore = not (hasLocalFile || force) && targetFrameworks = None && (projectFile = AllProjects || projectFile = NoProjects) && group = None
+    let canCacheRestore = 
+        not (hasLocalFile || force) && 
+            targetFrameworks = None && 
+            (projectFile = AllProjects || projectFile = NoProjects) && 
+            group = None
 
     if not skipRestoreTargetsExtraction && (projectFile = AllProjects || projectFile = NoProjects) then
         extractRestoreTargets root |> ignore
@@ -727,9 +732,9 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
             Some updatedCache, cache, lockFileHash, (isPackagesDownloadUpToDate && isProjectRestoreUpToDate) || (projectFile = NoProjects && isPackagesDownloadUpToDate)
 
     let _,_,_, canEarlyExit = readCache()
-
-    if canEarlyExit then
-        tracefn "The last restore is still up to date. Nothing left to do."
+    
+    if canEarlyExit then        
+        tracefn "The last full restore is still up to date. Nothing left to do."
     else
         let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
