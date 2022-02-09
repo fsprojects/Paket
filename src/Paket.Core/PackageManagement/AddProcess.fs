@@ -44,7 +44,9 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
                 existingDependenciesFile
                     .Add(groupName,package,version, Requirements.InstallSettings.Default, packageKind)
 
-        let projects = seq { for p in ProjectFile.FindAllProjects(Path.GetDirectoryName dependenciesFile.FileName) -> p } // lazy sequence in case no project install required
+        let projects = 
+            seq { for p in ProjectFile.FindAllProjects(Path.GetDirectoryName dependenciesFile.FileName) -> p } // lazy sequence in case no project install required
+            |> Seq.cache
 
         if not runResolver then 
             dependenciesFile.Save()
@@ -59,8 +61,17 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
                 match lockFile with
                 | None -> ()
                 | Some lockFile ->
+                    let newVersion =
+                        match lockFile.Groups |> Map.tryFind groupName with
+                        | None -> 
+                            None
+                        | Some group ->
+                            match group.Resolution |> Map.tryFind package with
+                            | Some package -> Some package.Version
+                            | None -> None
+
                     let touchedGroups = Map.empty.Add(groupName,"")
-                    InstallProcess.Install(options, false, dependenciesFile, lockFile, touchedGroups, Some [groupName, package])
+                    InstallProcess.Install(options, false, dependenciesFile, lockFile, touchedGroups, Some [groupName, package, None, newVersion])
                     GarbageCollection.CleanUp(dependenciesFile, lockFile)
         else
             let updateMode = PackageResolver.UpdateMode.InstallGroup groupName

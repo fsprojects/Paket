@@ -347,7 +347,7 @@ let installForDotnetSDK root (project:ProjectFile) =
     project.AddImportForPaketTargets(relativePath)
 
 /// Installs all packages from the lock file.
-let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups, touchedPackages:((GroupName * PackageName) list) option) =
+let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups, touchedPackages:((GroupName * PackageName * (SemVerInfo option) * (SemVerInfo option)) list) option) =
     let packagesToInstall =
         if options.OnlyReferenced then
             projectsAndReferences
@@ -505,7 +505,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     | Some touchedPackages ->
                         let packageInstalled =
                             touchedPackages
-                            |> Seq.exists project.HasPackageInstalled
+                            |> Seq.exists (fun (g,p,_,_) -> project.HasPackageInstalled (g,p))
                         if packageInstalled then 
                             touchedProjects.Add project.FileName |> ignore
                     | _ ->
