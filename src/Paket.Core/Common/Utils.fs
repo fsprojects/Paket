@@ -451,9 +451,10 @@ type PackagesFolderGroupConfig =
             parentPath () |> ResolvedPackagesFolder.ResolvedFolder
     static member Default = DefaultPackagesFolder
 
-let runDotnet arguments =
+let runDotnet workingDir arguments =
     let result =
         let p = new System.Diagnostics.Process()
+        p.StartInfo.WorkingDirectory <- workingDir
         p.StartInfo.FileName <- "dotnet"
         p.StartInfo.Arguments <- arguments        
         p.Start() |> ignore
@@ -467,6 +468,8 @@ let RunInLockedAccessMode(lockedFolder,lockedAction: unit -> bool) =
     if not (Directory.Exists lockedFolder) then
         Directory.CreateDirectory lockedFolder |> ignore
 
+    let rootFolder = DirectoryInfo(lockedFolder).Parent
+        
     let currentProcess = System.Diagnostics.Process.GetCurrentProcess()
     let fileName = Path.Combine(lockedFolder,Constants.AccessLockFileName)
     let pid = string currentProcess.Id
@@ -539,7 +542,7 @@ let RunInLockedAccessMode(lockedFolder,lockedAction: unit -> bool) =
         releaseLock 5
         if runDotNetRestore then            
             tracefn "Calling dotnet restore"
-            runDotnet "restore"
+            runDotnet rootFolder.FullName "restore"
     with
     | _ ->
         releaseLock 5
