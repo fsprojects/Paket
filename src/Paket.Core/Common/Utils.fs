@@ -540,9 +540,15 @@ let RunInLockedAccessMode(lockedFolder,lockedAction: unit -> bool) =
         let runDotNetRestore = lockedAction()
 
         releaseLock 5
-        if runDotNetRestore then            
-            tracefn "Calling dotnet restore"
-            runDotnet rootFolder.FullName "restore"
+        if runDotNetRestore then
+            let slnFiles = rootFolder.GetFiles("*.sln", SearchOption.TopDirectoryOnly)
+            if Array.isEmpty slnFiles then
+                tracefn "Calling dotnet restore"
+                runDotnet rootFolder.FullName "restore"
+            else
+                for sln in slnFiles do
+                    tracefn "Calling dotnet restore on %s" sln.Name
+                    runDotnet rootFolder.FullName (sprintf "restore \"%s\"" sln.Name)
     with
     | _ ->
         releaseLock 5
