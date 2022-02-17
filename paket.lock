@@ -991,4 +991,4 @@ GITHUB
 GROUP FSharpDepManagerExtension
 NUGET
   remote: https://api.nuget.org/v3/index.json
-    FSharp.Core (6.0.3) - redirects: force
+    FSharp.Core (5.0) - redirects: force
