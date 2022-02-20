@@ -213,6 +213,7 @@ let getTargetCondition (target:TargetProfile) =
     match target with
     | TargetProfile.SinglePlatform(platform) ->
         match platform with
+        | DotNetFramework(FrameworkVersion.V7) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", "$(TargetFrameworkVersion) == 'v7.0'"
         | DotNetFramework(FrameworkVersion.V6) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", "$(TargetFrameworkVersion) == 'v6.0'"
         | DotNetFramework(FrameworkVersion.V5) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", "$(TargetFrameworkVersion) == 'v5.0'"
         | DotNetFramework(version) ->"$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "$(TargetFrameworkVersion) == '%O'" version
