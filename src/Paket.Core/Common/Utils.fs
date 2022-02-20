@@ -543,8 +543,14 @@ let RunInLockedAccessMode(lockedFolder,lockedAction: unit -> bool) =
         if runDotNetRestore then
             let slnFiles = rootFolder.GetFiles("*.sln", SearchOption.TopDirectoryOnly)
             if Array.isEmpty slnFiles then
-                tracefn "Calling dotnet restore"
-                runDotnet rootFolder.FullName "restore"
+                let projFiles = rootFolder.GetFiles("*.*proj", SearchOption.TopDirectoryOnly)
+                if Array.isEmpty projFiles then
+                    tracefn "Calling dotnet restore"
+                    runDotnet rootFolder.FullName "restore"
+                else
+                    for sln in projFiles do
+                        tracefn "Calling dotnet restore on %s" sln.Name
+                        runDotnet rootFolder.FullName (sprintf "restore \"%s\"" sln.Name)
             else
                 for sln in slnFiles do
                     tracefn "Calling dotnet restore on %s" sln.Name
