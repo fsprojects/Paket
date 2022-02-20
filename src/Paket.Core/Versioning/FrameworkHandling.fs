@@ -193,11 +193,11 @@ type Net7Os =
            
     static member TryParse (s:string) =
         [
-            ("android",Net6Os.Android)
-            ("ios",Net6Os.IOs)
-            ("macos",Net6Os.MacOs)
-            ("tvos",Net6Os.TvOs)
-            ("watchos",Net6Os.WatchOs)
+            ("android",Net7Os.Android)
+            ("ios",Net7Os.IOs)
+            ("macos",Net7Os.MacOs)
+            ("tvos",Net7Os.TvOs)
+            ("watchos",Net7Os.WatchOs)
         ] |> Seq.tryFind(fun (k,_) -> s.StartsWith k)
             |> Option.map snd
               
@@ -1073,8 +1073,10 @@ module FrameworkDetection =
                 | "net35-Unity Full v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Full)
                 | MatchNetXDashWindows 5 Net5WindowsVersion.TryParse fm -> Some (DotNet5Windows fm)
                 | MatchNetXDashWindows 6 Net6WindowsVersion.TryParse fm -> Some (DotNet6Windows fm)
+                | MatchNetXDashWindows 7 Net7WindowsVersion.TryParse fm -> Some (DotNet7Windows fm)
                 | MatchNetXDashOs 5 Net5Os.TryParse fm -> Some (DotNet5WithOs fm)
                 | MatchNetXDashOs 6 Net6Os.TryParse fm -> Some (DotNet6WithOs fm)
+                | MatchNetXDashOs 7 Net7Os.TryParse fm -> Some (DotNet7WithOs fm)
                 | ModifyMatchTfm skipFullAndClient "net" FrameworkVersion.TryParse fm -> Some (DotNetFramework fm)
                 // Backwards compat quirk (2017-08-20).
                 | "uap101" -> Some (UAP UAPVersion.V10_1)

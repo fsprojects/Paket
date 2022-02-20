@@ -217,6 +217,9 @@ let getTargetCondition (target:TargetProfile) =
         | DotNetFramework(FrameworkVersion.V6) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", "$(TargetFrameworkVersion) == 'v6.0'"
         | DotNetFramework(FrameworkVersion.V5) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", "$(TargetFrameworkVersion) == 'v5.0'"
         | DotNetFramework(version) ->"$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "$(TargetFrameworkVersion) == '%O'" version
+        | DotNet7WithOs(os) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", sprintf "($(TargetFrameworkVersion) == 'v7.0' And '$(TargetPlatformIdentifier)' == '%O')" os
+        | DotNet7Windows(Net7WindowsVersion.V7_0) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", sprintf "($(TargetFrameworkVersion) == 'v7.0' And '$(TargetPlatformIdentifier)' == 'Windows')"
+        | DotNet7Windows(version) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", sprintf "($(TargetFrameworkVersion) == 'v7.0' And '$(TargetPlatformIdentifier)' == 'Windows' And '$(TargetPlatformVersion)' == '%O')" version
         | DotNet6WithOs(os) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", sprintf "($(TargetFrameworkVersion) == 'v6.0' And '$(TargetPlatformIdentifier)' == '%O')" os
         | DotNet6Windows(Net6WindowsVersion.V7_0) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", sprintf "($(TargetFrameworkVersion) == 'v6.0' And '$(TargetPlatformIdentifier)' == 'Windows')"
         | DotNet6Windows(version) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", sprintf "($(TargetFrameworkVersion) == 'v6.0' And '$(TargetPlatformIdentifier)' == 'Windows' And '$(TargetPlatformVersion)' == '%O')" version
