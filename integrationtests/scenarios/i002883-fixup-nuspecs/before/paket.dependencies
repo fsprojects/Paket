@@ -1,0 +1,75 @@
+version 5.244.0
+
+storage none
+framework auto-detect
+
+source ../.nuget
+source https://www.nuget.org/api/v2
+
+nuget System.Reactive
+nuget System.Interactive
+nuget System.ValueTuple
+nuget Microsoft.CSharp
+nuget System.Text.RegularExpressions
+nuget System.Collections.Immutable
+nuget System.Threading.Tasks.Dataflow
+nuget System.Runtime.Serialization.Primitives
+
+nuget Microsoft.Extensions.Logging
+nuget Microsoft.Extensions.Logging.Console
+nuget Microsoft.Extensions.Logging.Abstractions
+nuget Microsoft.Extensions.DependencyInjection.Abstractions
+nuget Microsoft.Extensions.Configuration
+nuget Microsoft.Extensions.Configuration.Abstractions
+nuget Microsoft.Extensions.Configuration.CommandLine
+nuget Microsoft.Extensions.Configuration.FileExtensions
+nuget Microsoft.Extensions.Configuration.Json
+nuget Microsoft.Extensions.Caching.Memory
+nuget Microsoft.Extensions.Caching.Abstractions
+nuget Microsoft.Extensions.Primitives
+
+nuget Microsoft.AspNetCore
+nuget Microsoft.AspNetCore.Authentication
+nuget Microsoft.AspNetCore.Mvc
+nuget Microsoft.AspNetCore.Hosting.Abstractions
+nuget Microsoft.AspNetCore.Http.Abstractions
+nuget System.IdentityModel.Tokens.Jwt
+
+nuget Microsoft.EntityFrameworkCore
+
+nuget Microsoft.NET.Test.Sdk
+
+nuget AWSSDK.DynamoDBv2
+nuget AWSSDK.CloudWatchLogs
+nuget AWSSDK.Extensions.NETCore.Setup
+nuget AWSSDK.SQS
+nuget AWSSDK.SimpleNotificationService
+nuget AWSSDK.SimpleSystemsManagement
+
+nuget Newtonsoft.Json
+nuget K4os.Json.KnownTypes
+
+nuget NLog.Web.AspNetCore
+nuget NLog
+
+nuget DryIoc.dll
+nuget DryIoc.MefAttributedModel.dll
+nuget DryIoc.Microsoft.DependencyInjection
+nuget Castle.Core
+
+nuget RestEase 1.4.7 # version freeze as 1.4.9 has breaking changes
+nuget Consul
+nuget NetMQ
+nuget Polly
+nuget MySqlConnector
+nuget Hangfire < 2 # lot of thing will become obsolete in 2.0.0 and we will need to adapt
+nuget Hangfire.Storage.MySql beta
+
+nuget IdentityServer4.AccessTokenValidation
+nuget Pomelo.EntityFrameworkCore.MySql
+
+# testing
+nuget Moq
+nuget xunit
+nuget xunit.runner.visualstudio
+nuget Microsoft.Reactive.Testing

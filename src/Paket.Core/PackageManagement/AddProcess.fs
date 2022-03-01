@@ -6,7 +6,7 @@ open System
 open System.IO
 open Paket.Domain
 open Paket.Logging
-
+ 
 let private matchGroupName groupName =
     match groupName with
         | None -> Constants.MainDependencyGroup
@@ -44,7 +44,9 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
                 existingDependenciesFile
                     .Add(groupName,package,version, Requirements.InstallSettings.Default, packageKind)
 
-        let projects = seq { for p in ProjectFile.FindAllProjects(Path.GetDirectoryName dependenciesFile.FileName) -> p } // lazy sequence in case no project install required
+        let projects = 
+            seq { for p in ProjectFile.FindAllProjects(Path.GetDirectoryName dependenciesFile.FileName) -> p } // lazy sequence in case no project install required
+            |> Seq.cache
 
         if not runResolver then 
             dependenciesFile.Save()
@@ -59,20 +61,29 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
                 match lockFile with
                 | None -> ()
                 | Some lockFile ->
+                    let newVersion =
+                        match lockFile.Groups |> Map.tryFind groupName with
+                        | None -> 
+                            None
+                        | Some group ->
+                            match group.Resolution |> Map.tryFind package with
+                            | Some package -> Some package.Version
+                            | None -> None
+
                     let touchedGroups = Map.empty.Add(groupName,"")
-                    InstallProcess.Install(options, false, dependenciesFile, lockFile, touchedGroups)
+                    InstallProcess.Install(options, false, dependenciesFile, lockFile, touchedGroups, Some [groupName, package, None, newVersion])
                     GarbageCollection.CleanUp(dependenciesFile, lockFile)
         else
             let updateMode = PackageResolver.UpdateMode.InstallGroup groupName
             let alternativeProjectRoot = None
-            let lockFile,hasChanged,updatedGroups = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, updateMode, options.SemVerUpdateMode, options.Force)
+            let lockFile,hasChanged,updatedGroups,updatedPackages = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, updateMode, options.SemVerUpdateMode, options.Force)
             
             dependenciesFile.Save()
             addToProjectsF projects groupName package
 
             if installAfter then
                 let forceTouch = hasChanged && options.TouchAffectedRefs
-                InstallProcess.Install(options, forceTouch, dependenciesFile, lockFile, updatedGroups)
+                InstallProcess.Install(options, forceTouch, dependenciesFile, lockFile, updatedGroups, Some updatedPackages)
                 GarbageCollection.CleanUp(dependenciesFile, lockFile)
 
         lockFileName.Refresh()
@@ -83,6 +94,7 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
                 tracefn "Resolved package '%s' to version %s" package.Name resolved.Version.AsString
             | None ->
                 traceWarnfn "Could not find package %s in group %s" package.Name groupName.Name
+    installAfter
 
 // Add a package with the option to add it to a specified project.
 let AddToProject(dependenciesFileName, groupName, package, version, options : InstallerOptions, projectName, installAfter, runResolver, packageKind) =
@@ -124,9 +136,9 @@ let AddGithub(dependenciesFileName, groupName, repository, file, version, option
     
     let updateMode = PackageResolver.UpdateMode.InstallGroup group
     let alternativeProjectRoot = None
-    let lockFile,_,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, updateMode, options.SemVerUpdateMode, options.Force)
+    let lockFile,_,_,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, updateMode, options.SemVerUpdateMode, options.Force)
     
-    InstallProcess.Install(options, false, dependenciesFile, lockFile, Map.empty)
+    InstallProcess.Install(options, false, dependenciesFile, lockFile, Map.empty, None)
     GarbageCollection.CleanUp(dependenciesFile, lockFile)
 
 let AddGit(dependenciesFileName, groupName, repository, version, options) =
@@ -141,7 +153,7 @@ let AddGit(dependenciesFileName, groupName, repository, version, options) =
     
     let updateMode = PackageResolver.UpdateMode.InstallGroup group
     let alternativeProjectRoot = None
-    let lockFile,_,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, updateMode, options.SemVerUpdateMode, options.Force)
+    let lockFile,_,_,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, updateMode, options.SemVerUpdateMode, options.Force)
     
-    InstallProcess.Install(options, false, dependenciesFile, lockFile, Map.empty)
+    InstallProcess.Install(options, false, dependenciesFile, lockFile, Map.empty, None)
     GarbageCollection.CleanUp(dependenciesFile, lockFile)

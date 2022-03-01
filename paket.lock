@@ -25,6 +25,14 @@ NUGET
       Microsoft.SourceLink.Bitbucket.Git (>= 1.0)
       Microsoft.SourceLink.GitHub (>= 1.0)
       Microsoft.SourceLink.GitLab (>= 1.0)
+    Fake.Core.ReleaseNotes (5.20.4)
+      Fake.Core.SemVer (>= 5.20.4) - restriction: >= netstandard2.0
+      Fake.Core.String (>= 5.20.4) - restriction: >= netstandard2.0
+      FSharp.Core (>= 4.7.2) - restriction: >= netstandard2.0
+    Fake.Core.SemVer (5.20.4) - restriction: >= netstandard2.0
+      FSharp.Core (>= 4.7.2) - restriction: >= netstandard2.0
+    Fake.Core.String (5.20.4) - restriction: >= netstandard2.0
+      FSharp.Core (>= 4.7.2) - restriction: >= netstandard2.0
     FsCheck (2.15.3)
       FSharp.Core (>= 4.0.0.1) - restriction: && (< net452) (>= netstandard1.0) (< netstandard1.6)
       FSharp.Core (>= 4.2.3) - restriction: || (>= net452) (>= netstandard1.6)
@@ -54,7 +62,7 @@ NUGET
       System.Threading.Tasks.Parallel (>= 4.3) - restriction: >= netstandard2.0
       System.Threading.Thread (>= 4.3) - restriction: >= netstandard2.0
       System.Threading.ThreadPool (>= 4.3) - restriction: >= netstandard2.0
-    FSharp.Core (5.0) - redirects: force
+    FSharp.Core (6.0.3) - redirects: force
     Microsoft.Build.Framework (16.7) - restriction: >= netstandard2.0
       System.Security.Permissions (>= 4.7) - restriction: && (< net472) (>= netstandard2.0)
     Microsoft.Build.Tasks.Core (16.7) - restriction: >= netstandard2.0

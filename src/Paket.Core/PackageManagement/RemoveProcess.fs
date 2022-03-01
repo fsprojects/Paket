@@ -6,7 +6,7 @@ open System.IO
 open Paket.Domain
 open Paket.Logging
 open InstallProcess
-
+ 
 let private removePackageFromProject (project : ProjectFile) groupName package = 
     project.FindOrCreateReferencesFile()
         .RemoveNuGetReference(groupName,package)
@@ -35,19 +35,20 @@ let private remove removeFromProjects (dependenciesFileName: string) alternative
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
         LockFile.LoadFrom(lockFileName.FullName)
 
-    let dependenciesFile,lockFile,_ =
+    let dependenciesFile,lockFile,_,updatedPackages =
         let exisitingDependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-        if stillInstalled then exisitingDependenciesFile,oldLockFile,false else
+        if stillInstalled then exisitingDependenciesFile,oldLockFile,false,None else
         let dependenciesFile = exisitingDependenciesFile.Remove(groupName,package)
         dependenciesFile.Save()
         
-        let lockFile,hasChanged,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, PackageResolver.UpdateMode.Install,SemVerUpdateMode.NoRestriction,force)
-        dependenciesFile,lockFile,hasChanged
+        let lockFile,hasChanged,_,updatedPackages = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, PackageResolver.UpdateMode.Install,SemVerUpdateMode.NoRestriction,force)
+        dependenciesFile,lockFile,hasChanged,Some updatedPackages
     
     if installAfter then
         let updatedGroups = Map.add groupName 0 Map.empty
-        InstallProcess.Install(InstallerOptions.CreateLegacyOptions(force, Requirements.BindingRedirectsSettings.Off, false, false, SemVerUpdateMode.NoRestriction, false, false, [], [], None), false, dependenciesFile, lockFile, updatedGroups)
+        InstallProcess.Install(InstallerOptions.CreateLegacyOptions(force, Requirements.BindingRedirectsSettings.Off, false, false, SemVerUpdateMode.NoRestriction, false, false, [], [], None), false, dependenciesFile, lockFile, updatedGroups, updatedPackages)
         GarbageCollection.CleanUp(dependenciesFile, lockFile)
+    installAfter
 
 /// Removes a package with the option to remove it from a specified project.
 let RemoveFromProject(dependenciesFileName, groupName, packageName:PackageName, force, projectName, installAfter) =

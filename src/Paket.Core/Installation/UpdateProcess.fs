@@ -229,19 +229,63 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, alternativeProjectRoot,
             updateMode
             semVerUpdateMode
     let hasChanged = lockFile.Save()
-    lockFile,hasChanged,updatedGroups
+    let touchedPackages = 
+        [
+            for group1 in oldLockFile.Groups do
+                for package1 in group1.Value.Resolution do
+                    match lockFile.Groups |> Map.tryFind group1.Key with
+                    | None -> 
+                        group1.Key, package1.Key, Some package1.Value.Version, None
+                    | Some group2 ->
+                        match group2.Resolution |> Map.tryFind package1.Key with
+                        | Some package2 when package2.Version = package1.Value.Version ->
+                            ()
+                        | Some package2 ->
+                            group1.Key, package1.Key, Some package1.Value.Version, Some package2.Version
+                        | _ -> 
+                            group1.Key, package1.Key, Some package1.Value.Version, None
+
+            for group1 in lockFile.Groups do
+                for package1 in group1.Value.Resolution do
+                    match oldLockFile.Groups |> Map.tryFind group1.Key with
+                    | None -> 
+                        group1.Key, package1.Key, None, Some package1.Value.Version
+                    | Some group2 ->
+                        match group2.Resolution |> Map.tryFind package1.Key with
+                        | Some package2 when package2.Version = package1.Value.Version ->
+                            ()
+                        | Some package2 ->
+                            group1.Key, package1.Key, Some package2.Version, Some package1.Value.Version
+                        | _ -> 
+                            group1.Key, package1.Key, None, Some package1.Value.Version
+        ]
+        |> List.distinct
+        |> List.sort
+
+    if not (List.isEmpty touchedPackages) then
+        tracefn "Updated packages:"
+        for g,packages in touchedPackages |> List.groupBy (fun (g,_,_,_) -> g) do
+            tracefn "  Group: %O" g
+            for _,p,oldVersion,newVersion in packages do
+                match oldVersion, newVersion with
+                | Some oldV, Some newV -> tracefn "    - %O: %O -> %O" p oldV newV
+                | None, Some newV -> tracefn "    - %O: %O (added)" p newV
+                | Some oldV, None -> tracefn "    - %O: %O (removed)" p oldV
+                | None, None -> tracefn "    - %O" p
+
+    lockFile,hasChanged,updatedGroups,touchedPackages
 
 /// Smart install command
 let SmartInstall(dependenciesFile:DependenciesFile, updateMode, options : UpdaterOptions) =
-    let lockFile,hasChanged,updatedGroups = SelectiveUpdate(dependenciesFile, options.Common.AlternativeProjectRoot, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)
+    let lockFile,hasChanged,updatedGroups,touchedPackages = SelectiveUpdate(dependenciesFile, options.Common.AlternativeProjectRoot, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)
 
     let root = Path.GetDirectoryName dependenciesFile.FileName
     let projectsAndReferences = RestoreProcess.findAllReferencesFiles root |> returnOrFail
 
-    if not options.NoInstall then
+    if not options.NoInstall then 
         tracefn "Installing into projects:"
         let forceTouch = hasChanged && options.Common.TouchAffectedRefs
-        InstallProcess.InstallIntoProjects(options.Common, forceTouch, dependenciesFile, lockFile, projectsAndReferences, updatedGroups)
+        InstallProcess.InstallIntoProjects(options.Common, forceTouch, dependenciesFile, lockFile, projectsAndReferences, updatedGroups, Some touchedPackages)
         GarbageCollection.CleanUp(dependenciesFile, lockFile)
 
     let shouldGenerateScripts =
@@ -267,6 +311,14 @@ let SmartInstall(dependenciesFile:DependenciesFile, updateMode, options : Update
         let scripts = LoadingScripts.ScriptGeneration.constructScriptsFromData depCache groupsToGenerate options.Common.ProvidedFrameworks options.Common.ProvidedScriptTypes
         for script in scripts do
             script.Save rootDir
+            
+    let mutable runDotNetRestore = false
+    if not options.NoInstall then
+        for project, _ in projectsAndReferences do
+            let toolsVersion = project.GetToolsVersion()
+            if toolsVersion >= 15.0 then
+                runDotNetRestore <- true
+    runDotNetRestore
 
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =

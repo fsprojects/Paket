@@ -1,5 +1,7 @@
-#### 7.0.0-alpha004 - 2022-01-18
+#### 7.0.0 - 2022-03-01
+* Support for .NET 7.0
 * Support as .NET 6.0 tool
+* Auto-Restore after paket install an paket update
 
 #### 6.2.1 - 2021-10-13
 * Roll forward for .NET tool - https://github.com/fsprojects/Paket/pull/4089

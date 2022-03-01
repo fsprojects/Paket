@@ -594,14 +594,16 @@ let RestoreNewSdkProject lockFile resolved groups (projectFile:ProjectFile) targ
     let projectFileInfo = FileInfo projectFile.FileName
     let objDirectory = objDirectory(projectFileInfo, outputPath)
 
-    RunInLockedAccessMode(
+    RunInLockedAccessMode (
         objDirectory.FullName,
-        (fun () ->
+        (fun () ->        
+            tracefn "Restoring %O" projectFile.FileName
             createAlternativeNuGetConfig (projectFileInfo, objDirectory)
-            createProjectReferencesFiles lockFile projectFile referencesFile resolved groups targetFrameworks objDirectory
-            referencesFile
+            createProjectReferencesFiles lockFile projectFile referencesFile resolved groups targetFrameworks objDirectory            
+            false
         )
-   )
+    )
+    referencesFile
 
 let internal getStringHash (s:string) =
     use sha256 = System.Security.Cryptography.SHA256.Create()
@@ -707,7 +709,11 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
     // fixup project specific changes (like an additional target framework or a changed references file)
 
     // Check if caching makes sense (even if we only can cache parts of it)
-    let canCacheRestore = not (hasLocalFile || force) && targetFrameworks = None && (projectFile = AllProjects || projectFile = NoProjects) && group = None
+    let canCacheRestore = 
+        not (hasLocalFile || force) && 
+            targetFrameworks = None && 
+            (projectFile = AllProjects || projectFile = NoProjects) && 
+            group = None
 
     if not skipRestoreTargetsExtraction && (projectFile = AllProjects || projectFile = NoProjects) then
         extractRestoreTargets root |> ignore
@@ -726,9 +732,9 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
             Some updatedCache, cache, lockFileHash, (isPackagesDownloadUpToDate && isProjectRestoreUpToDate) || (projectFile = NoProjects && isPackagesDownloadUpToDate)
 
     let _,_,_, canEarlyExit = readCache()
-
-    if canEarlyExit then
-        tracefn "The last restore is still up to date. Nothing left to do."
+    
+    if canEarlyExit then        
+        tracefn "The last full restore is still up to date. Nothing left to do."
     else
         let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
@@ -856,6 +862,7 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
                 let updatedCache, cache, lockFileHash, canEarlyExit = readCache()
                 if canEarlyExit then
                     tracefn "The last restore was successful. Nothing left to do."
+                    false
                 else
                     if verbose then
                         verbosefn "Checking if restore hash is up-to-date"
@@ -882,5 +889,7 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
                         let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
                         writeRestoreCache restoreCacheFile updatedCache
                         writeGitignore restoreCacheFile
-                    | None -> ())
+                    | None -> 
+                        ()
+                    false)
             )

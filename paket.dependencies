@@ -5,7 +5,7 @@ content: none
 
 nuget Newtonsoft.Json >= 10.0.3 redirects: force
 nuget Argu >= 5.1.0
-nuget FSharp.Core = 5.0.0 redirects: force
+nuget FSharp.Core = 6.0.3 redirects: force
 nuget Chessie >= 0.6
 nuget Mono.Cecil ~> 0.11.1
 
@@ -31,6 +31,8 @@ nuget FSharp.Compiler.Service
 nuget NUnit ~> 3.12.0
 nuget NUnit3TestAdapter ~> 3.13.0
 nuget Microsoft.NET.Test.Sdk ~> 16.2.0
+
+nuget Fake.Core.ReleaseNotes ~> 5.20.4
 
 github fsharp/FAKE:0341a2e614eb2a7f34607cec914eb0ed83ce9add src/app/FakeLib/Globbing/Globbing.fs
 github fsprojects/FSharp.TypeProviders.SDK:dc5ac01a1ac288eceb1fd6f12a5d388236f4f8e5 src/AssemblyReader.fs

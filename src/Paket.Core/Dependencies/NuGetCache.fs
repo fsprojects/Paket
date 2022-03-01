@@ -124,7 +124,7 @@ type NuGetPackageCache =
       Version: string
       CacheVersion: string }
 
-    static member CurrentCacheVersion = "5.226"
+    static member CurrentCacheVersion = "7.0"
 
     member this.WithDependencies (dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) list) =
         { this with
@@ -480,7 +480,7 @@ let private nugetLogger: NuGet.Common.ILogger =
     b :> NuGet.Common.ILogger
 let private signingContext = Signing.ClientPolicyContext.GetClientPolicy(nugetSettings, nugetLogger)
 /// instructions package extraction to unzip the files in the package, copy the nupkg over, and keep the nuspec as well
-let private extractionContext = NuGet.Packaging.PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.Compress, signingContext, nugetLogger)
+let private extractionContext = NuGet.Packaging.PackageExtractionContext(PackageSaveMode.Defaultv3, XmlDocFileSaveMode.None, signingContext, nugetLogger)
 
 /// Extracts the given package to the user folder
 let rec ExtractPackageToUserFolder(source: PackageSource, downloadedNupkgPath:string, packageName:PackageName, version:SemVerInfo, kind:PackageResolver.ResolvedPackageKind) =

@@ -451,11 +451,25 @@ type PackagesFolderGroupConfig =
             parentPath () |> ResolvedPackagesFolder.ResolvedFolder
     static member Default = DefaultPackagesFolder
 
+let runDotnet workingDir arguments =
+    let result =
+        let p = new System.Diagnostics.Process()
+        p.StartInfo.WorkingDirectory <- workingDir
+        p.StartInfo.FileName <- "dotnet"
+        p.StartInfo.Arguments <- arguments        
+        p.Start() |> ignore
+        p.WaitForExit()
+        p.ExitCode
 
-let RunInLockedAccessMode(lockedFolder,action) =
+    if result <> 0 then
+        failwithf "dotnet %s failed" arguments
+
+let RunInLockedAccessMode(lockedFolder,lockedAction: unit -> bool) =
     if not (Directory.Exists lockedFolder) then
         Directory.CreateDirectory lockedFolder |> ignore
 
+    let rootFolder = DirectoryInfo(lockedFolder).Parent
+        
     let currentProcess = System.Diagnostics.Process.GetCurrentProcess()
     let fileName = Path.Combine(lockedFolder,Constants.AccessLockFileName)
     let pid = string currentProcess.Id
@@ -523,10 +537,24 @@ let RunInLockedAccessMode(lockedFolder,action) =
     try
         acquireLock DateTime.Now (TimeSpan.FromMinutes 10.) 100
 
-        let result = action()
+        let runDotNetRestore = lockedAction()
 
         releaseLock 5
-        result
+        if runDotNetRestore then
+            let slnFiles = rootFolder.GetFiles("*.sln", SearchOption.TopDirectoryOnly)
+            if Array.isEmpty slnFiles then
+                let projFiles = rootFolder.GetFiles("*.*proj", SearchOption.TopDirectoryOnly)
+                if Array.isEmpty projFiles then
+                    tracefn "Calling dotnet restore"
+                    runDotnet rootFolder.FullName "restore"
+                else
+                    for sln in projFiles do
+                        tracefn "Calling dotnet restore on %s" sln.Name
+                        runDotnet rootFolder.FullName (sprintf "restore \"%s\"" sln.Name)
+            else
+                for sln in slnFiles do
+                    tracefn "Calling dotnet restore on %s" sln.Name
+                    runDotnet rootFolder.FullName (sprintf "restore \"%s\"" sln.Name)
     with
     | _ ->
         releaseLock 5
