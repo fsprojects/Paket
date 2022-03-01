@@ -456,7 +456,7 @@ let runDotnet workingDir arguments =
         let p = new System.Diagnostics.Process()
         p.StartInfo.WorkingDirectory <- workingDir
         p.StartInfo.FileName <- "dotnet"
-        p.StartInfo.Arguments <- arguments        
+        p.StartInfo.Arguments <- arguments
         p.Start() |> ignore
         p.WaitForExit()
         p.ExitCode
@@ -469,7 +469,7 @@ let RunInLockedAccessMode(lockedFolder,lockedAction: unit -> bool) =
         Directory.CreateDirectory lockedFolder |> ignore
 
     let rootFolder = DirectoryInfo(lockedFolder).Parent
-        
+
     let currentProcess = System.Diagnostics.Process.GetCurrentProcess()
     let fileName = Path.Combine(lockedFolder,Constants.AccessLockFileName)
     let pid = string currentProcess.Id
@@ -486,7 +486,7 @@ let RunInLockedAccessMode(lockedFolder,lockedAction: unit -> bool) =
                         let content = File.ReadAllText fileName
                         if content = pid then
                             skipUnlock <- true
-                        else 
+                        else
                             let hasRunningPaketProcess =
                                 Process.GetProcessesByName currentProcess.ProcessName
                                 |> Array.filter (fun p -> string p.Id <> pid)
@@ -497,11 +497,11 @@ let RunInLockedAccessMode(lockedFolder,lockedAction: unit -> bool) =
                                     failwith "timeout"
                                 else
                                     Thread.Sleep 100
-                            else 
+                            else
                                 skipUnlock <- true
                     else
                         skipUnlock <- true
-                    
+
                 File.WriteAllText(fileName, pid)
                 skip <- true
             with
@@ -544,13 +544,10 @@ let RunInLockedAccessMode(lockedFolder,lockedAction: unit -> bool) =
             let slnFiles = rootFolder.GetFiles("*.sln", SearchOption.TopDirectoryOnly)
             if Array.isEmpty slnFiles then
                 let projFiles = rootFolder.GetFiles("*.*proj", SearchOption.TopDirectoryOnly)
-                if Array.isEmpty projFiles then
-                    tracefn "Calling dotnet restore"
-                    runDotnet rootFolder.FullName "restore"
-                else
-                    for sln in projFiles do
-                        tracefn "Calling dotnet restore on %s" sln.Name
-                        runDotnet rootFolder.FullName (sprintf "restore \"%s\"" sln.Name)
+
+                for proj in projFiles do
+                    tracefn "Calling dotnet restore on %s" proj.Name
+                    runDotnet rootFolder.FullName (sprintf "restore \"%s\"" proj.Name)
             else
                 for sln in slnFiles do
                     tracefn "Calling dotnet restore on %s" sln.Name
@@ -770,7 +767,7 @@ let extractZipToDirectory (zipFileName:string) (directoryName:string) =
             if fi.Exists then
                 try fi.Delete() with | _ -> ()
             entry.ExtractToFile(destinationPath)
-            
+
 
 
 // adapted from MiniRx

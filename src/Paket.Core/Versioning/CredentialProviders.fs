@@ -55,7 +55,7 @@ type CredentialProviderUnknownStatusException =
 module CredentialProviders =
     open Logging
     open System.Collections.Concurrent
-    
+
     let patternExe = "CredentialProvider*.exe"
     let patternDll = "CredentialProvider*.dll"
     let envVar = "NUGET_CREDENTIALPROVIDERS_PATH"

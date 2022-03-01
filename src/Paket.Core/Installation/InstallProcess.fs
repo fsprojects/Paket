@@ -341,7 +341,7 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
 let installForDotnetSDK root (project:ProjectFile) =
     let paketTargetsPath = RestoreProcess.extractRestoreTargets root
     let relativePath = createRelativePath project.FileName paketTargetsPath
-        
+
     Paket.ProjectFile.removePaketNodes project
     project.RemoveImportForPaketTargets()
     project.AddImportForPaketTargets(relativePath)
@@ -498,7 +498,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
         else // start the installation process
             if toolsVersion >= 15.0 then
                 installForDotnetSDK root project
-                if forceTouch then 
+                if forceTouch then
                     touchedProjects.Add project |> ignore
                 else
                     match touchedPackages with
@@ -506,7 +506,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                         let packageInstalled =
                             touchedPackages
                             |> Seq.exists (fun (g,p,_,_) -> project.HasPackageInstalled (g,p))
-                        if packageInstalled then 
+                        if packageInstalled then
                             touchedProjects.Add project |> ignore
                     | _ ->
                         touchedProjects.Add project |> ignore
