@@ -293,6 +293,7 @@ Target "MergePaketTool" (fun _ ->
         [
             "Argu.dll"
             "Chessie.dll"
+            "Fake.Core.ReleaseNotes.dll"
             "FSharp.Core.dll"
             "Mono.Cecil.dll"
             "Newtonsoft.Json.dll"

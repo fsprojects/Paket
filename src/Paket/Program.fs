@@ -250,7 +250,7 @@ let add (results : ParseResults<_>) =
     match project with
     | Some projectName ->
         dependencies.AddToProject(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
-    | None ->        
+    | None ->
         let interactive = results.Contains AddArgs.Interactive
         dependencies.Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs, noResolve |> not, packageKind)
 
@@ -577,7 +577,7 @@ let pack (results : ParseResults<_>) =
         |> legacyBool results (ReplaceArgument("--symbols", "symbols"))
     let includeReferencedProjects =
         (results.Contains PackArgs.Include_Referenced_Projects,
-         results.Contains PackArgs.Include_Referenced_Projects_Legacy)
+         results.Contains PackArgs.Include_Referenced_Projects_Legacy) 
         |> legacyBool results (ReplaceArgument("--include-referenced-projects", "Include_Referenced_Projects"))
     let projectUrl =
         (results.TryGetResult PackArgs.Project_Url,
@@ -590,14 +590,14 @@ let pack (results : ParseResults<_>) =
     let releaseNotes =
         match cliReleaseNotes with
         | Some notes -> Some notes
-        | None -> 
+        | None ->
             match fileReleaseNotes with
             | Some notes -> notes.Notes |> String.concat "\n" |> Some
             | None -> None
     let version =
         match cliVersion with
         | Some v -> Some v
-        | None ->   
+        | None ->
             match fileReleaseNotes with
             | Some notes -> Some notes.NugetVersion
             | None -> None
