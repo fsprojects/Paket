@@ -1,3 +1,6 @@
+#### 7.1.2 - 2022-03-29
+* NuGet Cache: avoid duplicate nupkg file - https://github.com/fsprojects/Paket/pull/4135
+
 #### 7.0.2 - 2022-03-01
 * Support for .NET 7.0
 * Support as .NET 6.0 tool
