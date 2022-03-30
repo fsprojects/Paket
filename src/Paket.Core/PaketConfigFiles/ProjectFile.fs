@@ -1694,15 +1694,19 @@ module ProjectFile =
               Kind = NugetPackageKind.DotnetCliTool
               TargetFramework = None })
 
-    let getAutoGenerateBindingRedirects (project:ProjectFile) = getProperty "AutoGenerateBindingRedirects" project
     let setOrCreateAutoGenerateBindingRedirects (project:ProjectFile) =
-        match getAutoGenerateBindingRedirects project with
-        | Some _ -> project.Document
-                    |> getDescendants "AutoGenerateBindingRedirects"
-                    |> List.iter(fun x -> x.InnerText <- "true")
-        | _ -> match project.Document |> getDescendants "PropertyGroup" with
-               | x :: _ -> x.AppendChild (createNodeSet "AutoGenerateBindingRedirects" "true" project) |> ignore
-               | _ -> ()
+        let nodes = project.Document |> getDescendants "PropertyGroup"
+        let mutable found = false
+        for node in nodes do
+            for autoNode in node |> getDescendants "AutoGenerateBindingRedirects" do
+                found <- true
+                autoNode.InnerText <- "true"
+
+        if not found then
+            match nodes with
+            | x :: _ -> 
+                x.AppendChild (createNodeSet "AutoGenerateBindingRedirects" "true" project) |> ignore
+            | _ -> ()
 
         save false project
 
@@ -1799,8 +1803,6 @@ type ProjectFile with
     member this.GetOutputDirectory buildConfiguration buildPlatform targetFramework =  ProjectFile.getOutputDirectory buildConfiguration buildPlatform targetFramework this
 
     member this.GetAssemblyName () = ProjectFile.getAssemblyName this
-
-    member this.GetAutoGenerateBindingRedirects() = ProjectFile.getAutoGenerateBindingRedirects this
 
     member this.SetOrCreateAutoGenerateBindingRedirects() = ProjectFile.setOrCreateAutoGenerateBindingRedirects this
 

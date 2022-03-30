@@ -1,3 +1,6 @@
+#### 7.1.3 - 2022-03-30
+* Do not set binding redirects all the time - https://github.com/fsprojects/Paket/issues/4134
+
 #### 7.1.2 - 2022-03-29
 * NuGet Cache: avoid duplicate nupkg file - https://github.com/fsprojects/Paket/pull/4135
 
