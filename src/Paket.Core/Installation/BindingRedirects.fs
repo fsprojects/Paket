@@ -83,17 +83,6 @@ let internal indentAssemblyBindings config =
         if not parent.HasElements then
             parent.Remove()
 
-let private configFiles = [ "app"; "web" ] |> Set.ofList
-let private projectFiles = [ ".csproj"; ".vbproj"; ".fsproj"; ".wixproj"; ".nproj"; ".vcxproj"; ".pyproj"; ".sfproj"; ".sqlproj" ] |> Set.ofList
-let private toLower (s:string) = s.ToLower()
-let private isAppOrWebConfig =
-    configFiles.Contains << (fun (x : string) -> Path.GetFileNameWithoutExtension(x) |> toLower)
-
-let internal getConfig getFiles directory  =
-    getFiles(directory, "*.config", SearchOption.AllDirectories)
-    |> Seq.tryFind isAppOrWebConfig
-   
-
 let private baseConfig = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
 </configuration>
@@ -181,8 +170,8 @@ let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindin
     let applyBindingRedirects projectFile =
         let bindingRedirects = bindingRedirects projectFile |> Seq.toList
         let path = Path.GetDirectoryName projectFile.FileName
-        match getConfig Directory.GetFiles path with
-        | Some c -> Some c
+        match projectFile.TryFindConfigFile() with
+        | Some c -> Some c.FullName
         | None -> 
             match createNewBindingFiles, List.isEmpty bindingRedirects with
             | true, false ->
