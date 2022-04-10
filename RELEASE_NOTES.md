@@ -1,3 +1,6 @@
+#### 7.1.4 - 2022-04-10
+* Fix exception when searching for config file - https://github.com/fsprojects/Paket/pull/4138
+
 #### 7.1.3 - 2022-03-30
 * Do not set binding redirects all the time - https://github.com/fsprojects/Paket/issues/4134
 
