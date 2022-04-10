@@ -1889,17 +1889,17 @@ type ProjectFile with
 
     member this.FindOrCreateReferencesFile() = ProjectFile.FindOrCreateReferencesFile (FileInfo this.FileName)
 
-    /// Finds all project files
-    static member FindAllProjectFiles folder : FileInfo [] =
+    // searches directory and all subdirectories for the search pattern, skipping known problematic directories
+    static member SearchAllProjectRelatedFiles searchPattern folder : FileInfo [] =
         let paketPath = Path.Combine(folder,Constants.PaketFilesFolderName) |> normalizePath
 
         let findAllFiles folder =
             let rec search topLevel (di:DirectoryInfo) =
                 try
                     if verbose then
-                        verbosefn "Searching in %s" di.FullName
+                        verbosefn "Searching %s in %s" searchPattern di.FullName
 
-                    let files = di.GetFiles("*proj*", SearchOption.TopDirectoryOnly)
+                    let files = di.GetFiles(searchPattern, SearchOption.TopDirectoryOnly)
                     di.GetDirectories()
                     |> Array.filter (fun di ->
                         try
@@ -1934,6 +1934,10 @@ type ProjectFile with
             search true (DirectoryInfo folder)
 
         findAllFiles folder
+
+    /// Finds all project files
+    static member FindAllProjectFiles folder : FileInfo [] =
+        ProjectFile.SearchAllProjectRelatedFiles "*proj*" folder
         |> Array.filter ProjectFile.isSupportedFile
 
     /// Finds all project files
@@ -2112,3 +2116,11 @@ type ProjectFile with
         }
 
         (coreInfo, optionalInfo)
+
+    member self.TryFindConfigFile () =
+        let isAppOrWebConfig (fileInfo:FileInfo) =
+            let baseName = fileInfo.Name.ToLowerInvariant()
+            baseName = "app.config" || baseName = "web.config"
+
+        ProjectFile.SearchAllProjectRelatedFiles "*.config" (FileInfo self.FileName).DirectoryName
+        |> Array.tryFind isAppOrWebConfig
