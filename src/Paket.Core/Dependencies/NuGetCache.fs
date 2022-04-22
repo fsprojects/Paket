@@ -520,7 +520,10 @@ let rec ExtractPackageToUserFolder(source: PackageSource, downloadedNupkgPath:st
                 let newNupkgPath = Path.Combine(parentOfParent.FullName, Path.GetFileName downloadedNupkgPath)
                 File.Move(downloadedNupkgPath, newNupkgPath)
                 do! extract newNupkgPath
-                File.Delete(newNupkgPath)
+                if File.Exists(downloadedNupkgPath) then
+                    File.Delete(newNupkgPath)
+                else
+                    File.Move(newNupkgPath, downloadedNupkgPath)
             else
                 do! extract downloadedNupkgPath
 
