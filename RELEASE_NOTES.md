@@ -1,3 +1,6 @@
+#### 7.1.5 - 2022-04-22
+* NuGet Cache: ensure for clitool nupkg is there even after skipped 2nd extraction - https://github.com/fsprojects/Paket/pull/4145
+
 #### 7.1.4 - 2022-04-10
 * Fix exception when searching for config file - https://github.com/fsprojects/Paket/pull/4138
 
