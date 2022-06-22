@@ -1,3 +1,6 @@
+#### 7.2.0-alpha001 - 2022-06-22
+* Do not append TargetFramework subdirectory to OutputPath - https://github.com/fsprojects/Paket/pull/4159
+
 #### 7.1.5 - 2022-04-22
 * NuGet Cache: ensure for clitool nupkg is there even after skipped 2nd extraction - https://github.com/fsprojects/Paket/pull/4145
 
