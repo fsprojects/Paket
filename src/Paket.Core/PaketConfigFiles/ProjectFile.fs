@@ -1656,7 +1656,10 @@ module ProjectFile =
                         if String.IsNullOrWhiteSpace buildPlatform && attempted <> [] then
                             let tested = String.Join(", ", attempted)
                             traceWarnfn "No platform specified; found output path node for the %s platform after failing to find one for the following: %s" x tested
-                        Path.Combine(s.TrimEnd [|'\\'|] , targetFramework) |> normalizePath
+                        if (appendTargetFrameworkToOutputPath project) then
+                            Path.Combine(s.TrimEnd [|'\\'|] , targetFramework) |> normalizePath
+                        else
+                            s.TrimEnd [|'\\'|] |> normalizePath
 
         tryNextPlat platforms []
 
