@@ -152,6 +152,7 @@
     <TestAsset Include="ProjectFile\TestData\EmptyCsharpGuid.csprojtest" />
     <TestAsset Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFramework.csprojtest" />
     <TestAsset Include="ProjectFile\TestData\AnalyzerProject.csprojtest" />
+    <TestAsset Include="ProjectFile\TestData\MicrosoftNetSdkWithOutputPathAndAppendTargetFrameworkFalse.csprojtest" />
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
     <Compile Include="ProjectFile\TargetFrameworkSpecs.fs" />
     <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />
