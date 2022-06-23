@@ -93,6 +93,16 @@ let ``should detect output path for netsdk with outputPath csproj file``
     let expected = (System.IO.Path.Combine(@"bin", configuration,"netstandard1.4_bin", target) |> normalizePath)
     outPath.ToLowerInvariant() |> shouldEqual (expected.ToLowerInvariant())
 
+[<Test>]
+let ``should detect output path for netsdk with outputPath and appendTargetFrameworkToOutputPath false csproj file``
+        ([<Values("MicrosoftNetSdkWithOutputPathAndAppendTargetFrameworkFalse.csprojtest")>] project)
+        ([<Values("Release")>] configuration) =
+    ensureDir ()
+    let projectFile = ProjectFile.TryLoad(sprintf "./ProjectFile/TestData/%s" project).Value 
+    let target = projectFile.GetTargetProfiles().Head.ToString()
+    let outPath = projectFile.GetOutputDirectory configuration "" None
+    let expected = (System.IO.Path.Combine(@"bin", configuration,"netstandard1.4_bin") |> normalizePath)
+    outPath.ToLowerInvariant() |> shouldEqual (expected.ToLowerInvariant())
 
 [<Test>]
 let ``should detect framework profile for ProjectWithConditions file`` () =
