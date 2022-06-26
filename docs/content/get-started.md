@@ -44,7 +44,6 @@ Make sure to add the following entries to your `.gitignore`:
 
 ```
 # Paket dependency manager
-.paket/
 paket-files/
 ```
 
