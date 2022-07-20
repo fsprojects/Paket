@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net461;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net461;net6</TargetFrameworks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <!-- these two properties are set for some tests around assembly metadata parsing.
          they're written to the generated AssemblyInfo.fs -->
@@ -13,6 +13,7 @@
     <DefineConstants>WEBPROXY_NETSTANDARD;TESTSUITE_RUNS_ON_DOTNETCORE;NO_UNIT_PLATFORMATTRIBUTE;NO_UNIT_TIMEOUTATTRIBUTE;@(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="FsiExtension.fs" />
     <Compile Include="..\..\paket-files\forki\FsUnit\FsUnit.fs">
       <Paket>True</Paket>
       <Link>FsUnit.fs</Link>
@@ -224,6 +225,7 @@
   </Target>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\FSharp.DependencyManager.Paket\FSharp.DependencyManager.Paket.fsproj" />
     <ProjectReference Include="..\..\src\Paket.Core\Paket.Core.fsproj" />
     <ProjectReference Include="..\..\src\Paket\Paket.fsproj" />
   </ItemGroup>
