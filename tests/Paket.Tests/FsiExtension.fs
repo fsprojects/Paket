@@ -42,6 +42,9 @@ module FsiExtension =
             dirs
             |> Array.map (fun d -> d, d)
             |> ReferenceLoading.Internals.Logic.paketVersionSortForNugetCacheFolder
+            |> Seq.map snd
+            |> Seq.concat
+            |> Seq.map fst
             |> Seq.toArray
         Assert.AreEqual(expected, actual)
 
