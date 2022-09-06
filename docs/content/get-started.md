@@ -40,11 +40,10 @@ dotnet paket restore
 
 This will ensure Paket works in any .NET Core build environment.
 
-Make sure to add the following entries to your `.gitignore`:
+Make sure to add the following entry to your `.gitignore`:
 
 ```
 # Paket dependency manager
-.paket/
 paket-files/
 ```
 
