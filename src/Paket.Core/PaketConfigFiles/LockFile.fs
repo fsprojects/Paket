@@ -846,6 +846,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
         | exn ->
             raise (Exception (sprintf "Error during parsing of '%s'." lockFileName, exn))
 
+
     member this.GetPackageHull(referencesFile:ReferencesFile) =
         let usedPackages = Dictionary<_,_>()
 
@@ -854,7 +855,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
             for p in g.Value.NugetPackages do
                 let k = g.Key,p.Name
                 if usedPackages.ContainsKey k |> not then
-                    usedPackages.Add(k,p)
+                    usedPackages.Add(k,{p with Settings = lockGroup.Options.Settings})
 
             for r in g.Value.RemoteFiles do
                 let lockRemote = findRemoteFile  referencesFile.FileName lockGroup.RemoteFiles r.Name

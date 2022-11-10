@@ -1012,7 +1012,7 @@ let private scrapeDeps (nuspecPath: string) =
     doc.LoadXml text
 
     allDeps doc
-    |> Map.ofSeq
+
 
 [<Test>]
 let ``#2883 writes warning for missing direct dependencies``() =
@@ -1041,14 +1041,54 @@ let ``#2883 writes ranges for floating deps``() =
 
     let inputNuspecPath = Path.Combine(scenarioRoot, "before.nuspec")
     let inputDeps = scrapeDeps inputNuspecPath
+
     let dispose, messages = paket (sprintf "fix-nuspecs files %s project-file %s" inputNuspecPath fsprojPath) scenario
     use __ = dispose
     let outputDeps = scrapeDeps inputNuspecPath
 
-    match outputDeps |> Map.tryFind "FSharp.Compiler.Service" with
+    match outputDeps |> Map |> Map.tryFind "FSharp.Compiler.Service" with
     | Some "[35.0.0,36.0.0)" -> ()
     | _ ->
         failwithf "Expected to modify deps for FSharp.Compiler.Service package with floating version constraint.\nBefore:\t%A\nAfter:\t%A\nMessages:\t%A"
+            inputDeps
+            outputDeps
+            messages
+
+[<Test>]
+let ``#4183 writes ranges for floating deps``() =
+    let scenario = "i004183-apply-with-multiple-groups"
+    use __ = prepareSdk scenario
+    let scenarioRoot = scenarioTempPath scenario
+    let fsprojPath = Path.Combine(scenarioRoot, "before.fsproj")
+
+    let inputNuspecPath = Path.Combine(scenarioRoot, "before.nuspec")
+    let refFile = Path.Combine(scenarioRoot, "paket.references")
+    let inputDeps = scrapeDeps inputNuspecPath
+
+    let dispose, messages = paket (sprintf "fix-nuspecs files %s project-file %s" inputNuspecPath fsprojPath) scenario
+    use __ = dispose
+    let outputDeps = scrapeDeps inputNuspecPath
+
+    let actualPackages = outputDeps |> Seq.filter (fst>>(=)"FSharp.Core")
+    let expectedVersionRanges =
+        [
+            "[4.7.2,5.0.0)"
+            "[7.0.0,8.0.0)"
+        ]
+        |> Set.ofSeq
+
+    let actualVersionRanges =
+        actualPackages
+        |> Seq.map snd
+        |> Set.ofSeq
+
+    let diff = Set.difference expectedVersionRanges actualVersionRanges
+
+
+    if diff |> Seq.length = 0 then ()
+    else
+
+        failwithf "Expected to modify deps for FSharp.Core package with floating version constraint.\nBefore:\t%A\nAfter:\t%A\nMessages:\t%A"
             inputDeps
             outputDeps
             messages

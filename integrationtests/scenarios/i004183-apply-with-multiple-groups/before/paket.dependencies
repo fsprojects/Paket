@@ -1,0 +1,14 @@
+
+group testGroup1
+source https://api.nuget.org/v3/index.json
+storage: none
+nuget FSharp.Core ~> 4
+framework: netstandard2.0
+condition: netstandard2_0
+
+group testGroup2
+source https://api.nuget.org/v3/index.json
+storage: none
+nuget FSharp.Core ~> 7
+framework: netstandard2.1
+condition: netstandard2_1

@@ -1,0 +1,17 @@
+
+
+GROUP testGroup1
+STORAGE: NONE
+CONDITION: NETSTANDARD2_0
+RESTRICTION: == netstandard2.0
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    FSharp.Core (4.7.2)
+
+GROUP testGroup2
+STORAGE: NONE
+CONDITION: NETSTANDARD2_1
+RESTRICTION: == netstandard2.1
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    FSharp.Core (7.0)

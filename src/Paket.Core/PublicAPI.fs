@@ -880,12 +880,17 @@ type Dependencies(dependenciesFileName: string) =
             |> List.map (fun proj -> proj.NameWithoutExtension)
             |> Set.ofList
         let depsFile = deps.GetDependenciesFile()
+        let allFrameworkRestrictions = 
+            locked.GetPackageHull referencesFile 
+            |> Seq.map(fun kvp -> snd kvp.Key, fst kvp.Key, kvp.Value.Settings.FrameworkRestrictions.GetExplicitRestriction()) 
+
 
         // NuGet has thrown away "group" association, so this is best effort.
         let implicitOrExplictlyReferencedPackages =
             locked.GetPackageHull referencesFile
             |> Seq.map (fun kv -> kv.Key |> snd)
             |> Set.ofSeq
+
 
         for nuspecFile in nuspecFileList do
             if not (File.Exists nuspecFile) then
@@ -947,14 +952,16 @@ type Dependencies(dependenciesFileName: string) =
             then
                 UnknownDependency
             else
+
+                tracefn "Many groups detected %O" groupsForProjectReferencedDeps
                 match groupsForProjectReferencedDeps.TryFind p with
                 | None -> IndirectDependency
                 | Some [] -> IndirectDependency
-                | Some [group] -> DirectDependency (group, p)
-                | Some (firstGroup::_) -> DirectDependency (firstGroup, p)
+                // | Some [group] -> DirectDependency (group, p)
+                | Some (groups) ->
+                    DirectDependency (groups, p)
 
         let (|MatchesRange|NeedsRangeUpdate|LockRangeNotFound|) (groupAndPackage: (GroupName * PackageName), nuspecVersionRequirement: VersionRequirement) =
-
             match lockedPackageVersionRequirements.TryFind groupAndPackage with
             | Some lockedFileRange ->
                 if lockedFileRange = nuspecVersionRequirement
@@ -974,6 +981,22 @@ type Dependencies(dependenciesFileName: string) =
                 let nodesToRemove = ResizeArray()
                 for node in parent.ChildNodes do
                     if node.Name = "dependency" then
+                        let targetFramework = 
+                            attr "targetFramework" node.ParentNode
+                            |> Option.bind(fun tfm ->
+                                PlatformMatching.forceExtractPlatforms tfm |> fun p -> p.ToTargetProfile true
+                            )
+                        let results =
+                            targetFramework
+                            |> Option.map(fun tfm ->
+                                allFrameworkRestrictions
+                                |> Seq.filter(fun (_, _, fr) -> fr.IsMatch tfm)
+                                |> Seq.toList
+                                
+                            )
+                            |> Option.defaultValue []
+                        
+                        
                         let packName = attr "id" node |> Option.map PackageName
                         let versionRange = attr "version" node |> Option.bind VersionRequirement.TryParse
                         tracefn "Checking dependency status for package %O, version %O" packName versionRange
@@ -987,22 +1010,24 @@ type Dependencies(dependenciesFileName: string) =
                         | Some UnknownDependency ->
                             tracefn "Package '%O' is not part of the explicit dependency tree in %s and so will be skipped" packName.Value referencesFile.FileName
                             ()
-                        | Some (DirectDependency ((GroupName(grp, _)) as g, (PackageName.PackageName(pkg, _) as p))) ->
-                            match versionRange with
-                            | Some versionRange ->
-                                match (g, p), versionRange with
+                        | Some (DirectDependency (g, (PackageName.PackageName(pkg, _) as p))) ->
+                            let groupWithinFramework = results |> Seq.tryFind(fun (p1,g1,_) -> p = p1 && g |> Seq.exists(fun x -> x = g1)) |> Option.map(fun (_,g,_) -> g)
+                            match versionRange, groupWithinFramework with
+                            | Some versionRange, Some grp ->
+                                match (grp, p), versionRange with
                                 | MatchesRange ->
                                     tracefn "Package '%s' is a direct dependency and requires no version patching" pkg
                                     ()
                                 | LockRangeNotFound ->
-                                    tracefn "Couldn't find a version range for package '%s' in group '%s', is this package in your paket.dependencies file?" pkg grp
+                                    let grp = g |> List.map(fun (GroupName(name,_)) -> name) |> String.concat ", "
+                                    tracefn "Couldn't find a version range for package '%s' in any group '%s', is this package in your paket.dependencies file?" pkg grp
                                     ()
                                 | NeedsRangeUpdate newVersionRange ->
                                     let oldVersionRangeString = versionRange.FormatInNuGetSyntax()
                                     let nugetVersionRangeString = newVersionRange.FormatInNuGetSyntax()
                                     tracefn "Package '%s' is a direct dependency and requires version patching from %s to %s"pkg oldVersionRangeString nugetVersionRangeString
                                     node.Attributes.["version"].InnerText <- nugetVersionRangeString
-                            | None ->
+                            | _, _ ->
                                 tracefn "Package '%s' is a direct dependency but no desired range was found, so it will be skipped" pkg
                                 ()
                         | None ->

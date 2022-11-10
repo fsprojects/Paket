@@ -1,0 +1,5 @@
+group testGroup1
+    FSharp.Core
+
+group testGroup2
+    FSharp.Core
