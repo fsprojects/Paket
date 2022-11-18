@@ -10,7 +10,7 @@ A dependency manager for .NET with support for NuGet packages and git repositori
 
 ## Why Paket?
 
-NuGet does not separate out the concept of transitive dependencies.
+NuGet [did not]([url](https://devblogs.microsoft.com/nuget/announcing-nuget-6-3-transitive-dependencies-floating-versions-and-re-enabling-signed-package-verification/)) separate out the concept of transitive dependencies.
 If you install a package into your project and that package has further dependencies then all transitive packages are included in the packages.config.
 There is no way to tell which packages are only transitive dependencies.
 
