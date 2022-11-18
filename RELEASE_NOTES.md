@@ -1,4 +1,4 @@
-#### 7.2.0-alpha004 - 2022-11-18
+#### 7.2.0 - 2022-11-18
 * BUGFIX: Dependency manager looked up older tool version of paket - https://github.com/fsprojects/Paket/pull/4168
 
 #### 7.2.0-alpha003 - 2022-11-18
