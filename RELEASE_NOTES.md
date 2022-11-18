@@ -1,3 +1,6 @@
+#### 7.2.0-alpha003 - 2022-11-18
+* BUGFIX: dotnet publish multi-targeting was inferring incorrect versioning - https://github.com/fsprojects/Paket/pull/4184
+
 #### 7.2.0-alpha001 - 2022-06-22
 * Do not append TargetFramework subdirectory to OutputPath - https://github.com/fsprojects/Paket/pull/4159
 
