@@ -71,12 +71,14 @@ git https://uri/to/repo.git master build: "powershell build.ps1", OS: windows
 
 ## Using Git repositories as NuGet source
 
+### With pre-built, checked-in nupgks
+
 If you have NuGet packages inside a git repository you can easily use the
 repository as a NuGet source from the [`paket.dependencies`
 file](dependencies-file.html):
 
 ```paket
-git https://github.com/forki/nupkgtest.git master Packages: /source/
+git https://github.com/forki/nupkgtest.git master Packages: /bin/
 
 nuget Argu
 ```
@@ -85,16 +87,28 @@ The generated [`paket.lock` file](lock-file.html) will look like this:
 
 ```paket
 NUGET
-    remote: paket-files/github.com/forki/nupkgtest/source
+    remote: paket-files/github.com/forki/nupkgtest/bin
     Argu (1.1.3)
 GIT
     remote: https://github.com/forki/nupkgtest.git
         (05366e390e7552a569f3f328a0f3094249f3b93b)
 ```
 
+### Building nupkg on install
+
 It's also possible to
 [run build scripts](git-dependencies.html#Running-a-build-in-git-repositories)
-to create the NuGet packages:
+to create the NuGet packages when installing/restoring with paket:
+
+```paket
+git https://github.com/forki/nupkgtest.git master build: "dotnet pack", Packages: /bin/Debug
+
+nuget Argu
+```
+
+NOTE: this assumes that the name of the package is `Argu` which can't be inferred in this case since no `*.fsproj` or `.sln` file is present in the example repository
+
+### Arbitrary build scripts
 
 ```paket
 git https://github.com/forki/nupkgtest.git master build: "build.cmd", Packages: /source/, OS: windows
@@ -103,4 +117,8 @@ git https://github.com/forki/nupkgtest.git master build: "build.sh", Packages: /
 nuget Argu
 ```
 
-In this sample we have different build scripts for Mono and Windows.
+In this sample we have different build scripts for Mono and Windows. Both of the specified scripts simply cody the prebuilt nupkgs from `/bin` to `/source`
+
+### Actually using the package
+
+Don't forget to also add your dependency to the `paket.references` file.
