@@ -117,7 +117,7 @@ git https://github.com/forki/nupkgtest.git master build: "build.sh", Packages: /
 nuget Argu
 ```
 
-In this sample we have different build scripts for Mono and Windows. Both of the specified scripts simply cody the prebuilt nupkgs from `/bin` to `/source`
+In this sample we have different build scripts for Mono and Windows. Both of the specified scripts simply copy the prebuilt nupkgs from `/bin` to `/source`
 
 ### Actually using the package
 
