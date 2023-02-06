@@ -837,7 +837,7 @@ module InstallModel =
             let targetsFile = t.Path
             (String.endsWithIgnoreCase (sprintf "%s.props" installModel.PackageName.Name) targetsFile||
              String.endsWithIgnoreCase (sprintf "%s.targets" installModel.PackageName.Name) targetsFile)))
-    let filterBlackList = filterUnknownFiles
+    let filterIgnoreList = filterUnknownFiles
 
     let applyFrameworkRestrictions (restriction:FrameworkRestriction) (installModel:InstallModel) =
         match restriction with
@@ -960,7 +960,7 @@ module InstallModel =
     let createFromContent packageName packageVersion kind frameworkRestrictions content =
         emptyModel packageName packageVersion kind
         |> addNuGetFiles content
-        |> filterBlackList
+        |> filterIgnoreList
         |> applyFrameworkRestrictions frameworkRestrictions
         |> removeIfCompletelyEmpty
 
@@ -972,7 +972,7 @@ module InstallModel =
         |> addAnalyzerFiles analyzerFiles
         |> addPackageLoadScriptFiles packageLoadScriptFiles
         |> addFrameworkAssemblyReferences nuspec.FrameworkAssemblyReferences
-        |> filterBlackList
+        |> filterIgnoreList
         |> applyFrameworkRestrictions frameworkRestrictions
         |> removeIfCompletelyEmpty
         |> addLicense nuspec.LicenseUrl
@@ -1052,7 +1052,7 @@ type InstallModel with
 
     member this.AddFrameworkAssemblyReferences references = InstallModel.addFrameworkAssemblyReferences references this
 
-    member this.FilterBlackList () = InstallModel.filterBlackList this
+    member this.FilterIgnoreList () = InstallModel.filterIgnoreList this
 
     member this.FilterExcludes excludes = InstallModel.filterExcludes excludes this
 

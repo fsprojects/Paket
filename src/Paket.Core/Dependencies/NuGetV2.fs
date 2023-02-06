@@ -263,7 +263,7 @@ let parseODataEntryDetails (url,nugetURL,packageName:PackageName,version:SemVerI
 
 
 let getDetailsFromNuGetViaODataFast isVersionAssumed nugetSource (packageName:PackageName) (version:SemVerInfo) =
-    let doBlacklist = not isVersionAssumed
+    let doIgnore = not isVersionAssumed
     async {
         let normalizedVersion = version.Normalize()
         let urls =
@@ -377,7 +377,7 @@ let getDetailsFromNuGetViaODataFast isVersionAssumed nugetSource (packageName:Pa
             | Choice1Of2 _ -> false
             | _ -> true
 
-        let! result = NuGetCache.tryAndBlacklistUrl doBlacklist true nugetSource tryAgain handleUrl urls
+        let! result = NuGetCache.tryAndIgnoreUrl doIgnore true nugetSource tryAgain handleUrl urls
         match result with
         | Choice1Of2 res -> return res
         | Choice2Of2 ex -> return raise (exn("error", ex))
