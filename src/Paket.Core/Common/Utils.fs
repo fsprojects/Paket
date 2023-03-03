@@ -535,7 +535,7 @@ let RunInLockedAccessMode(lockedFolder,lockedAction: unit -> bool) =
                 skip <- true
 
     try
-        acquireLock DateTime.Now (TimeSpan.FromMinutes 10.) 100
+        acquireLock DateTime.Now (TimeSpan.FromMinutes 10.) 500
 
         let runDotNetRestore = lockedAction()
 
