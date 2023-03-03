@@ -1,3 +1,6 @@
+#### 7.2.1 - 2023-03-03
+* BUGFIX: Increase process lock trials from 100 to 500 to support dotnet restore on larger solutions - https://github.com/fsprojects/Paket/pull/4203
+
 #### 7.2.0 - 2022-11-18
 * BUGFIX: Dependency manager looked up older tool version of paket - https://github.com/fsprojects/Paket/pull/4168
 
