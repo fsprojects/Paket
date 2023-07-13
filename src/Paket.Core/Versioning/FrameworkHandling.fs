@@ -128,6 +128,24 @@ type Net7WindowsVersion =
         | _ -> None
 
 [<RequireQualifiedAccess>]
+type Net8WindowsVersion =
+    | V10_0_17763_0
+    | V10_0_18362_0
+    | V10_0_19041_0
+    override this.ToString() =
+        match this with
+        | V10_0_17763_0 -> "10.0.17763.0"
+        | V10_0_18362_0 -> "10.0.18362.0"
+        | V10_0_19041_0 -> "10.0.19041.0"
+
+    static member TryParse s =
+        match s with
+        | "10.0.17763.0" | "10.0.17763" -> Some Net8WindowsVersion.V10_0_17763_0
+        | "10.0.18362.0" | "10.0.18362" -> Some Net8WindowsVersion.V10_0_18362_0
+        | "10.0.19041.0" | "10.0.19041" -> Some Net8WindowsVersion.V10_0_19041_0
+        | _ -> None
+
+[<RequireQualifiedAccess>]
 type Net5Os =
     | Android
     | IOs
@@ -199,7 +217,33 @@ type Net7Os =
             ("tvos",Net7Os.TvOs)
             ("watchos",Net7Os.WatchOs)
         ] |> Seq.tryFind(fun (k,_) -> s.StartsWith k)
-            |> Option.map snd
+          |> Option.map snd
+          
+[<RequireQualifiedAccess>]
+type Net8Os =
+    | Android
+    | IOs
+    | MacOs
+    | TvOs
+    | WatchOs
+    override this.ToString() =
+        match this with
+        | Android -> "android"
+        | IOs -> "ios"
+        | MacOs -> "macos"
+        | TvOs -> "tvos"
+        | WatchOs -> "watchos"
+           
+    static member TryParse (s:string) =
+        [
+            "android",Net8Os.Android
+            "ios"    ,Net8Os.IOs
+            "macos"  ,Net8Os.MacOs
+            "tvos"   ,Net8Os.TvOs
+            "watchos",Net8Os.WatchOs
+        ]
+        |> Seq.tryFind(fun (k,_) -> s.StartsWith k)
+        |> Option.map snd
               
 
 [<RequireQualifiedAccess>]
@@ -228,6 +272,7 @@ type FrameworkVersion =
     | V5
     | V6
     | V7
+    | V8
     override this.ToString() =
         match this with
         | V1        -> "v1.0"
@@ -252,6 +297,7 @@ type FrameworkVersion =
         | V5        -> "v5.0"
         | V6        -> "v6.0"
         | V7        -> "v7.0"
+        | V8        -> "v8.0"
 
     member this.ShortString() =
         match this with
@@ -277,6 +323,7 @@ type FrameworkVersion =
         | FrameworkVersion.V5 -> "5.0"
         | FrameworkVersion.V6 -> "6.0"
         | FrameworkVersion.V7 -> "7.0"
+        | FrameworkVersion.V8 -> "8.0"
 
     static member TryParse s =
         match s with
@@ -302,6 +349,7 @@ type FrameworkVersion =
         | "5" -> Some FrameworkVersion.V5
         | "6" -> Some FrameworkVersion.V6
         | "7" -> Some FrameworkVersion.V7
+        | "8" -> Some FrameworkVersion.V8
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -737,6 +785,8 @@ type FrameworkIdentifier =
     | DotNet6Windows of Net6WindowsVersion
     | DotNet7WithOs of Net7Os
     | DotNet7Windows of Net7WindowsVersion
+    | DotNet8WithOs of Net8Os
+    | DotNet8Windows of Net8WindowsVersion
     | DotNet5WithOs of Net5Os
     | DotNet5Windows of Net5WindowsVersion
     | UAP of UAPVersion
@@ -762,7 +812,9 @@ type FrameworkIdentifier =
     override x.ToString() =
         match x with
         | DotNetFramework v -> "net" + v.ShortString()
-        | DotNet7WithOs o -> "net7.0-" + o.ToString()
+        | DotNet8WithOs o  -> "net8.0-" + o.ToString()
+        | DotNet8Windows v -> "net8.0-windows" + v.ToString()
+        | DotNet7WithOs o  -> "net7.0-" + o.ToString()
         | DotNet7Windows v -> "net7.0-windows" + v.ToString()
         | DotNet6WithOs o -> "net6.0-" + o.ToString()
         | DotNet6Windows v -> "net6.0-windows" + v.ToString()
@@ -870,6 +922,7 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V5 -> [ DotNetCoreApp DotNetCoreAppVersion.V3_1; DotNetStandard DotNetStandardVersion.V2_1 ]
         | DotNetFramework FrameworkVersion.V6 -> [ DotNetFramework FrameworkVersion.V5 ]
         | DotNetFramework FrameworkVersion.V7 -> [ DotNetFramework FrameworkVersion.V6 ]
+        | DotNetFramework FrameworkVersion.V8 -> [ DotNetFramework FrameworkVersion.V7 ]
         | DotNet5WithOs Net5Os.Android -> [ DotNetFramework FrameworkVersion.V5; MonoAndroid MonoAndroidVersion.V12 ]
         | DotNet5WithOs Net5Os.IOs -> [ DotNetFramework FrameworkVersion.V5; XamariniOS ]
         | DotNet5WithOs Net5Os.MacOs -> [ DotNetFramework FrameworkVersion.V5; XamarinMac ]
@@ -890,6 +943,11 @@ type FrameworkIdentifier =
         | DotNet7WithOs  Net7Os.MacOs   -> [ DotNetFramework FrameworkVersion.V7; XamarinMac ]
         | DotNet7WithOs  Net7Os.TvOs    -> [ DotNetFramework FrameworkVersion.V7; XamarinTV ]
         | DotNet7WithOs  Net7Os.WatchOs -> [ DotNetFramework FrameworkVersion.V7; XamarinWatch ]
+        | DotNet8WithOs  Net8Os.Android -> [ DotNetFramework FrameworkVersion.V8; MonoAndroid MonoAndroidVersion.V12 ]
+        | DotNet8WithOs  Net8Os.IOs     -> [ DotNetFramework FrameworkVersion.V8; XamariniOS ]
+        | DotNet8WithOs  Net8Os.MacOs   -> [ DotNetFramework FrameworkVersion.V8; XamarinMac ]
+        | DotNet8WithOs  Net8Os.TvOs    -> [ DotNetFramework FrameworkVersion.V8; XamarinTV ]
+        | DotNet8WithOs  Net8Os.WatchOs -> [ DotNetFramework FrameworkVersion.V8; XamarinWatch ]
         | DotNet6Windows Net6WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V6 ]
         | DotNet6Windows Net6WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V6; DotNet6Windows Net6WindowsVersion.V7_0 ]
         | DotNet6Windows Net6WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet6Windows Net6WindowsVersion.V8_0 ]
@@ -1014,6 +1072,7 @@ module FrameworkDetection =
                     | Some "5" when dotnetVersionX = 5 -> tryParseSecondPart parts.[1]
                     | Some "6" when dotnetVersionX = 6  -> tryParseSecondPart parts.[1]
                     | Some "7" when dotnetVersionX = 7  -> tryParseSecondPart parts.[1]
+                    | Some "8" when dotnetVersionX = 8  -> tryParseSecondPart parts.[1]
                     | _ -> None
                 else
                     None
@@ -1027,6 +1086,7 @@ module FrameworkDetection =
                     | Some "5"  when dotnetVersionX = 5 -> tryParseVersion winVersionPart
                     | Some "6"  when dotnetVersionX = 6 -> tryParseVersion winVersionPart
                     | Some "7"  when dotnetVersionX = 7 -> tryParseVersion winVersionPart
+                    | Some "8"  when dotnetVersionX = 8 -> tryParseVersion winVersionPart
                     | _ -> None
                 else
                     None
@@ -1066,17 +1126,19 @@ module FrameworkDetection =
             // http://nugettoolsdev.azurewebsites.net/4.0.0/parse-framework?framework=.NETPortable%2CVersion%3Dv0.0%2CProfile%3DProfile2
             let result =
                 match path with
+                | MatchNetXDashWindows 8 Net8WindowsVersion.TryParse fm -> Some (DotNet8Windows fm)
+                | MatchNetXDashWindows 7 Net7WindowsVersion.TryParse fm -> Some (DotNet7Windows fm)
+                | MatchNetXDashWindows 6 Net6WindowsVersion.TryParse fm -> Some (DotNet6Windows fm)
+                | MatchNetXDashWindows 5 Net5WindowsVersion.TryParse fm -> Some (DotNet5Windows fm)
+                | MatchNetXDashOs 8 Net8Os.TryParse fm -> Some (DotNet8WithOs fm)
+                | MatchNetXDashOs 7 Net7Os.TryParse fm -> Some (DotNet7WithOs fm)
+                | MatchNetXDashOs 6 Net6Os.TryParse fm -> Some (DotNet6WithOs fm)
+                | MatchNetXDashOs 5 Net5Os.TryParse fm -> Some (DotNet5WithOs fm)
                 | "netcoreapp5.0" -> Some (DotNetFramework FrameworkVersion.V5)
                 | "net35-Unity Web v3.5" ->  Some (DotNetUnity DotNetUnityVersion.V3_5_Web)
                 | "net35-Unity Micro v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Micro)
                 | "net35-Unity Subset v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Subset)
                 | "net35-Unity Full v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Full)
-                | MatchNetXDashWindows 5 Net5WindowsVersion.TryParse fm -> Some (DotNet5Windows fm)
-                | MatchNetXDashWindows 6 Net6WindowsVersion.TryParse fm -> Some (DotNet6Windows fm)
-                | MatchNetXDashWindows 7 Net7WindowsVersion.TryParse fm -> Some (DotNet7Windows fm)
-                | MatchNetXDashOs 5 Net5Os.TryParse fm -> Some (DotNet5WithOs fm)
-                | MatchNetXDashOs 6 Net6Os.TryParse fm -> Some (DotNet6WithOs fm)
-                | MatchNetXDashOs 7 Net7Os.TryParse fm -> Some (DotNet7WithOs fm)
                 | ModifyMatchTfm skipFullAndClient "net" FrameworkVersion.TryParse fm -> Some (DotNetFramework fm)
                 // Backwards compat quirk (2017-08-20).
                 | "uap101" -> Some (UAP UAPVersion.V10_1)
@@ -1450,6 +1512,7 @@ module KnownTargetProfiles =
         FrameworkVersion.V5
         FrameworkVersion.V6
         FrameworkVersion.V7
+        FrameworkVersion.V8
     ]
 
     let DotNetFrameworkIdentifiers =
@@ -1531,6 +1594,28 @@ module KnownTargetProfiles =
     let DotNet7WindowsProfiles = 
         DotNet7WindowsVersions
         |> List.map (DotNet7Windows >> TargetProfile.SinglePlatform)
+
+    let DotNet8OperatingSystems = [
+        Net8Os.Android
+        Net8Os.IOs
+        Net8Os.MacOs
+        Net8Os.TvOs
+        Net8Os.WatchOs
+    ]
+
+    let DotNet8WithOsProfiles =
+        DotNet8OperatingSystems
+        |> List.map (DotNet8WithOs >> TargetProfile.SinglePlatform)
+
+    let DotNet8WindowsVersions = [
+        Net8WindowsVersion.V10_0_17763_0
+        Net8WindowsVersion.V10_0_18362_0
+        Net8WindowsVersion.V10_0_19041_0
+    ]
+
+    let DotNet8WindowsProfiles = 
+        DotNet8WindowsVersions
+        |> List.map (DotNet8Windows >> TargetProfile.SinglePlatform)
 
     let DotNetStandardVersions = [
         DotNetStandardVersion.V1_0
@@ -1703,6 +1788,8 @@ module KnownTargetProfiles =
 
     let AllDotNetProfiles =
        DotNetFrameworkProfiles @
+       DotNet8WithOsProfiles @
+       DotNet8WindowsProfiles @
        DotNet7WithOsProfiles @
        DotNet7WindowsProfiles @
        DotNet6WithOsProfiles @
