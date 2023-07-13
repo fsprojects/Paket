@@ -267,7 +267,7 @@ let ``Can detect a bunch of net8 platforms``() =
       "net8.0-windows10.0.19041"   , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8Windows Net8WindowsVersion.V10_0_19041_0)
       "net8-windows10.0.19041"     , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8Windows Net8WindowsVersion.V10_0_19041_0)
       "net8000-windows10.0.19041"  , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8Windows Net8WindowsVersion.V10_0_19041_0)
-      "net8.0-android30.0"         , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8WithOs Net7Os.Android)
+      "net8.0-android30.0"         , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8WithOs Net8Os.Android)
     ]
 
   let errors = [
