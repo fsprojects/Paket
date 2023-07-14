@@ -140,7 +140,7 @@ type Net8WindowsVersion =
 
     static member TryParse s =
         match s with
-        | "10.0.17763.0" | "10.0.17763" -> Some Net8WindowsVersion.V10_0_17763_0
+        | "" | "10.0.17763.0" | "10.0.17763" -> Some Net8WindowsVersion.V10_0_17763_0
         | "10.0.18362.0" | "10.0.18362" -> Some Net8WindowsVersion.V10_0_18362_0
         | "10.0.19041.0" | "10.0.19041" -> Some Net8WindowsVersion.V10_0_19041_0
         | _ -> None
