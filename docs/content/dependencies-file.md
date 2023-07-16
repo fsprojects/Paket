@@ -472,7 +472,7 @@ Generated load scripts can be loaded like this:
 
 ### Simplify prevention
 
-This option gives paket a hint around your itention for the paket [simplify](commands/simplify.html).
+This option gives paket a hint around your itention for the paket [simplify](paket-simplify.html).
 The paket simplify is a heuristic simplification & can sometimes think a dependency is not required in your dependencies file.
 By adding this option, you can prevent the simplify command from removing the dependency.
 
