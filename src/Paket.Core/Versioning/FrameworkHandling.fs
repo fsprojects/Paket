@@ -923,7 +923,7 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_7_1 -> [ DotNetFramework FrameworkVersion.V4_7; DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetFramework FrameworkVersion.V4_7_2 -> [ DotNetFramework FrameworkVersion.V4_7_1 ]
         | DotNetFramework FrameworkVersion.V4_8 -> [ DotNetFramework FrameworkVersion.V4_7_2 ]
-        | DotNetFramework FrameworkVersion.V4_8_1 -> [ DotNetFramework FrameworkVersion.V4_7_2 ]
+        | DotNetFramework FrameworkVersion.V4_8_1 -> [ DotNetFramework FrameworkVersion.V4_8 ]
         | DotNetFramework FrameworkVersion.V5 -> [ DotNetCoreApp DotNetCoreAppVersion.V3_1; DotNetStandard DotNetStandardVersion.V2_1 ]
         | DotNetFramework FrameworkVersion.V6 -> [ DotNetFramework FrameworkVersion.V5 ]
         | DotNetFramework FrameworkVersion.V7 -> [ DotNetFramework FrameworkVersion.V6 ]
