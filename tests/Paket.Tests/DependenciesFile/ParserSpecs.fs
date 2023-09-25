@@ -1198,6 +1198,21 @@ let ``should read config with target framework``() =
     |> getExplicitRestriction
     |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4)))
 
+let configNET481TargetFramework = """source https://www.nuget.org/api/v2
+
+framework: >= net4.8.1
+
+nuget System.Data.SQLite 1.0.98.1 content: none
+"""
+
+[<Test>]
+let ``should read config with .NET 4.8.1 target framework``() = 
+    let cfg = DependenciesFile.FromSource(configNET481TargetFramework)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
+    |> getExplicitRestriction
+    |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_8_1)))
+
 let configNET5TargetFramework = """source https://www.nuget.org/api/v2
 
 framework: >= net5.0
