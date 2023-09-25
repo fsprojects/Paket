@@ -118,6 +118,7 @@ module PaketEnv =
         let sources = [PackageSources.DefaultNuGetV3Source]
         let additionalLines = [
             "storage: none"
-            "framework: net5.0, netstandard2.0, netstandard2.1"
+            "framework: auto-detect"
+            ""
         ]
         initWithContent sources additionalLines directory
