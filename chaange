@@ -1,0 +1,66 @@
+var tileContent = new TileContent()
+{
+    Visual = new TileVisual()
+    {
+        TileSmall = new TileBinding()
+        {
+            Content = new TileBindingContentAdaptive()
+            {
+                BackgroundImage = new TileBackgroundImage()
+                {
+                    Source = "Assets/Apps/Maps/TileLogoSmall.png"
+                },
+                PeekImage = new TilePeekImage()
+                {
+                    Source = "Assets/Apps/Maps/map.jpg",
+                    HintOverlay = 20
+                }
+            }
+        },
+        TileMedium = new TileBinding()
+        {
+            Content = new TileBindingContentAdaptive()
+            {
+                BackgroundImage = new TileBackgroundImage()
+                {
+                    Source = "Assets/Apps/Maps/TileLogoMedium.png"
+                },
+                PeekImage = new TilePeekImage()
+                {
+                    Source = "Assets/Apps/Maps/map.jpg",
+                    HintOverlay = 20
+                }
+            }
+        },
+        TileWide = new TileBinding()
+        {
+            Content = new TileBindingContentAdaptive()
+            {
+                BackgroundImage = new TileBackgroundImage()
+                {
+                    Source = "Assets/Apps/Maps/TileLogoWide.png"
+                },
+                PeekImage = new TilePeekImage()
+                {
+                    Source = "Assets/Apps/Maps/map.jpg",
+                    HintOverlay = 20
+                }
+            }
+        },
+        TileLarge = new TileBinding()
+        {
+            Content = new TileBindingContentAdaptive()
+            {
+                BackgroundImage = new TileBackgroundImage()
+                {
+                    Source = "Assets/Apps/Maps/TileLogoLarge.png"
+                },
+                PeekImage = new TilePeekImage()
+                {
+                    Source = "Assets/Apps/Maps/map.jpg",
+                    HintOverlay = 20
+                }
+            }
+        }
+    }
+};
