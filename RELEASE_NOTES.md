@@ -1,4 +1,4 @@
-#### 8.0.0-alpha004 - 2023-11-14
+#### 8.0.0 - 2023-11-14
 * Support for .NET 8.0
 * Support for net481 - https://github.com/fsprojects/Paket/pull/4227
 * paket init: Default framework restriction - https://github.com/fsprojects/Paket/pull/4228

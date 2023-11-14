@@ -719,14 +719,9 @@ Target "All" DoNothing
 "BuildPackage"
   ==> "PublishNuGet"
 
-"PublishNuGet"
-  ==> "ReleaseGitHub"
-  ==> "Release"
-
 "ReleaseGitHub"
-  ?=> "ReleaseDocs"
-
-"ReleaseDocs"
+  ==> "ReleaseDocs"
+  ==> "PublishNuGet"
   ==> "Release"
 
 "EnsurePackageSigned"
