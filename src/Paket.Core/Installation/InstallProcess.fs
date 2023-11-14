@@ -75,7 +75,7 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
             failwithf "Package directory for package %O was not found in %s. Storage mode is \"none\"." packageName d.FullName
         d
 
-let contentFileBlackList : list<FileInfo -> bool> = [
+let contentFileIgnoreList : list<FileInfo -> bool> = [
     fun f -> f.Name = "_._"
     fun f -> f.Name.EndsWith ".transform"
     fun f -> f.Name.EndsWith ".pp"
@@ -112,7 +112,7 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
             |> Seq.toList
 
         let copyContentFiles (project : ProjectFile, packagesWithContent) =
-            let onBlackList (fi : FileInfo) = contentFileBlackList |> List.exists (fun rule -> rule(fi))
+            let onIgnoreList (fi : FileInfo) = contentFileIgnoreList |> List.exists (fun rule -> rule(fi))
 
             let rec copyDirContents (fromDir : DirectoryInfo, contentCopySettings, toDir : Lazy<DirectoryInfo>) =
                 fromDir.GetDirectories() |> Array.toList
@@ -121,7 +121,7 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
                     (fromDir.GetFiles()
                         |> Array.toList
                         |> List.filter (fun file ->
-                            if onBlackList file then false else
+                            if onIgnoreList file then false else
                             if file.Name = "paket.references" then traceWarnfn "You can't use paket.references as a content file in the root of a project. Please take a look at %s" file.FullName; false else true)
                         |> List.map (fun file ->
                             let overwrite = contentCopySettings = ContentCopySettings.Overwrite

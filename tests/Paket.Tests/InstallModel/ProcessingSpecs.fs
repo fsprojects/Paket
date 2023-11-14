@@ -297,10 +297,10 @@ let ``should skip buckets which contain placeholder while adjusting upper versio
         |> Seq.map (fun f -> f.Path) |> shouldNotContain @"..\Rx-Main\lib\net20\Rx.dll"
 
 [<Test>]
-let ``should filter _._ when processing blacklist``() = 
+let ``should filter _._ when processing ignore list``() = 
     let model = 
         emptymodel.AddReferences([ @"..\Rx-Main\lib\net40\_._"; @"..\Rx-Main\lib\net20\_._" ] |> fromLegacyList @"..\Rx-Main\")
-            .FilterBlackList()
+            .FilterIgnoreList()
 
     model.GetLegacyReferences(TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V2))
         |> Seq.map (fun f -> f.Path) |> shouldNotContain @"..\Rx-Main\lib\net20\_._"
@@ -406,7 +406,7 @@ let ``should handle lib install of Microsoft.BCL for NET >= 40``() =
               @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll"
 
               @"..\Microsoft.Bcl\lib\net45\_._" ] |> fromLegacyList @"..\Microsoft.Bcl\")
-              .FilterBlackList()
+              .FilterIgnoreList()
 
     model.GetLegacyReferences(TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V3_5))
         |> Seq.map (fun f -> f.Path) |> shouldNotContain  @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
@@ -432,7 +432,7 @@ let ``should skip lib install of Microsoft.BCL for monotouch and monoandroid``()
               @"..\Microsoft.Bcl\lib\monoandroid\_._"
               @"..\Microsoft.Bcl\lib\monotouch\_._"
               @"..\Microsoft.Bcl\lib\net45\_._" ] |> fromLegacyList @"..\Microsoft.Bcl\")
-            .FilterBlackList()
+            .FilterIgnoreList()
 
     model.GetLegacyReferences(TargetProfile.SinglePlatform (MonoAndroid MonoAndroidVersion.V1)) |> shouldBeEmpty
     model.GetLegacyReferences(TargetProfile.SinglePlatform MonoTouch) |> shouldBeEmpty
@@ -611,7 +611,7 @@ let ``should handle lib install of MicrosoftBcl``() =
               @"..\Microsoft.Bcl\lib\wpa81\_._"
               @"..\Microsoft.Bcl\lib\portable-net451+win81\_._"
               @"..\Microsoft.Bcl\lib\portable-net451+win81+wpa81\_._"]
-             |> fromLegacyList @"..\Microsoft.Bcl\")).FilterBlackList()
+             |> fromLegacyList @"..\Microsoft.Bcl\")).FilterIgnoreList()
 
     model.GetLegacyReferences(TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.IO.dll"
@@ -726,7 +726,7 @@ let ``should only handle dll and exe files``() =
               @"..\Fantomas\lib\FSharp.Core.dll"
               @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList @"..\Fantomas\",
             NuspecReferences.All)
-            .FilterBlackList()
+            .FilterIgnoreList()
 
     model.GetLegacyReferences(TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V2))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Fantomas\lib\FantomasLib.dll" 
@@ -773,7 +773,7 @@ let ``should handle props files``() =
         InstallModel.EmptyModel(PackageName "xunit.runner.visualstudio",SemVer.Parse "0.1").AddTargetsFiles(
             [ @"..\xunit.runner.visualstudio\build\net20\xunit.runner.visualstudio.props"
               @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props" ] |> fromLegacyList @"..\xunit.runner.visualstudio\")
-            .FilterBlackList()
+            .FilterIgnoreList()
 
     model.GetTargetsFiles(TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V2))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\xunit.runner.visualstudio\build\net20\xunit.runner.visualstudio.props"
@@ -784,7 +784,7 @@ let ``should handle global props files``() =
         InstallModel.EmptyModel(PackageName "xunit.runner.visualstudio",SemVer.Parse "0.1").AddTargetsFiles(
             [ @"..\xunit.runner.visualstudio\build\xunit.runner.visualstudio.props"
               @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props" ] |> fromLegacyList @"..\xunit.runner.visualstudio\")
-            .FilterBlackList()
+            .FilterIgnoreList()
 
     model.GetTargetsFiles(TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V2))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\xunit.runner.visualstudio\build\xunit.runner.visualstudio.props"
@@ -794,7 +794,7 @@ let ``should handle Targets files``() =
     let model =
         InstallModel.EmptyModel(PackageName "StyleCop.MSBuild",SemVer.Parse "0.1").AddTargetsFiles(
             [ @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" ] |> fromLegacyList @"..\StyleCop.MSBuild\")
-            .FilterBlackList()
+            .FilterIgnoreList()
 
     model.GetTargetsFiles(TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V2))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets"
