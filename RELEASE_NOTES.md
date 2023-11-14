@@ -1,5 +1,6 @@
-#### 8.0.0-alpha002 - 2023-07-16
+#### 8.0.0-alpha003 - 2023-11-14
 * Support for .NET 8.0
+* Support for net481 - https://github.com/fsprojects/Paket/pull/4227
 
 #### 7.2.1 - 2023-03-03
 * BUGFIX: Increase process lock trials from 100 to 500 to support dotnet restore on larger solutions - https://github.com/fsprojects/Paket/pull/4203
