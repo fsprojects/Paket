@@ -645,20 +645,20 @@ type UrlToTry =
 type BlockedCacheEntry =
     { BlockedFormats : string list }
 
-let private tryUrlOrBlacklistI =
-    let tryUrlOrBlacklistInner (f : unit -> Async<obj>, isOk : obj -> bool) cacheKey =
+let private tryUrlOrIgnoreI =
+    let tryUrlOrIgnoreInner (f : unit -> Async<obj>, isOk : obj -> bool) cacheKey =
         async {
             //try
             let! res = f ()
             return isOk res, res
         }
-    let memoizedBlackList = memoizeAsyncEx tryUrlOrBlacklistInner
+    let memoizedIgnoreList = memoizeAsyncEx tryUrlOrIgnoreInner
     fun f isOk cacheKey ->
-            memoizedBlackList (f, isOk) cacheKey
+            memoizedIgnoreList (f, isOk) cacheKey
 
-let private tryUrlOrBlacklist (f: _ -> Async<'a>) (isOk : 'a -> bool) (source:NuGetSource, id:UrlId) =
+let private tryUrlOrIgnore (f: _ -> Async<'a>) (isOk : 'a -> bool) (source:NuGetSource, id:UrlId) =
     let res =
-        tryUrlOrBlacklistI
+        tryUrlOrIgnoreI
             (fun s -> async { let! r = f s in return box r })
             (fun s -> isOk (s :?> 'a))
             (source,id)
@@ -669,15 +669,15 @@ let private tryUrlOrBlacklist (f: _ -> Async<'a>) (isOk : 'a -> bool) (source:Nu
 
 type QueryResult = Choice<ODataSearchResult,System.Exception>
 
-let tryAndBlacklistUrl doBlackList doWarn (source:NuGetSource)
+let tryAndIgnoreUrl doIgnore doWarn (source:NuGetSource)
     (tryAgain : QueryResult -> bool) (f : string -> Async<QueryResult>) (urls: UrlToTry list) : Async<QueryResult>=
     async {
         let! tasks, resultIndex =
             urls
             |> Seq.map (fun url -> async {
                 let cached =
-                    if doBlackList then
-                        tryUrlOrBlacklist (fun () -> async { return! f url.InstanceUrl }) (tryAgain >> not) (source, url.UrlId)
+                    if doIgnore then
+                        tryUrlOrIgnore (fun () -> async { return! f url.InstanceUrl }) (tryAgain >> not) (source, url.UrlId)
                     else
                         async {
                             let! result = f url.InstanceUrl
@@ -690,12 +690,12 @@ let tryAndBlacklistUrl doBlackList doWarn (source:NuGetSource)
                         let! result = f url.InstanceUrl
                         return Choice1Of3 result
                     else
-                        return Choice3Of3 () // Url Blacklisted
+                        return Choice3Of3 () // Url Ignored
                 | FirstCall task ->
                     let! isOk, res = task |> Async.AwaitTask
                     if not isOk then
                         if doWarn then
-                            traceWarnIfNotBefore url.InstanceUrl "Possible Performance degradation, blacklist '%s'" url.InstanceUrl
+                            traceWarnIfNotBefore url.InstanceUrl "Possible Performance degradation, ignore '%s'" url.InstanceUrl
                         return Choice2Of3 res
                     else
                         return Choice1Of3 res
@@ -736,5 +736,5 @@ let tryAndBlacklistUrl doBlackList doWarn (source:NuGetSource)
                 | Some res -> res
                 | None ->
                     let urls = urls |> Seq.map (fun u -> u.InstanceUrl) |> fun s -> String.Join("\r\t - ", s)
-                    failwithf "All possible sources are already blacklisted. \r\t - %s" urls
+                    failwithf "All possible sources are already ignored. \r\t - %s" urls
     }
