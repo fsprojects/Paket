@@ -269,6 +269,7 @@ type FrameworkVersion =
     | V4_7_1
     | V4_7_2
     | V4_8
+    | V4_8_1
     | V5
     | V6
     | V7
@@ -294,6 +295,7 @@ type FrameworkVersion =
         | V4_7_1    -> "v4.7.1"
         | V4_7_2    -> "v4.7.2"
         | V4_8      -> "v4.8"
+        | V4_8_1      -> "v4.8.1"
         | V5        -> "v5.0"
         | V6        -> "v6.0"
         | V7        -> "v7.0"
@@ -320,6 +322,7 @@ type FrameworkVersion =
         | FrameworkVersion.V4_7_1 -> "471"
         | FrameworkVersion.V4_7_2 -> "472"
         | FrameworkVersion.V4_8 -> "48"
+        | FrameworkVersion.V4_8_1 -> "481"
         | FrameworkVersion.V5 -> "5.0"
         | FrameworkVersion.V6 -> "6.0"
         | FrameworkVersion.V7 -> "7.0"
@@ -346,6 +349,7 @@ type FrameworkVersion =
         | "4.7.1" -> Some FrameworkVersion.V4_7_1
         | "4.7.2" -> Some FrameworkVersion.V4_7_2
         | "4.8" -> Some FrameworkVersion.V4_8
+        | "4.8.1" -> Some FrameworkVersion.V4_8_1
         | "5" -> Some FrameworkVersion.V5
         | "6" -> Some FrameworkVersion.V6
         | "7" -> Some FrameworkVersion.V7
@@ -919,6 +923,7 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_7_1 -> [ DotNetFramework FrameworkVersion.V4_7; DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetFramework FrameworkVersion.V4_7_2 -> [ DotNetFramework FrameworkVersion.V4_7_1 ]
         | DotNetFramework FrameworkVersion.V4_8 -> [ DotNetFramework FrameworkVersion.V4_7_2 ]
+        | DotNetFramework FrameworkVersion.V4_8_1 -> [ DotNetFramework FrameworkVersion.V4_8 ]
         | DotNetFramework FrameworkVersion.V5 -> [ DotNetCoreApp DotNetCoreAppVersion.V3_1; DotNetStandard DotNetStandardVersion.V2_1 ]
         | DotNetFramework FrameworkVersion.V6 -> [ DotNetFramework FrameworkVersion.V5 ]
         | DotNetFramework FrameworkVersion.V7 -> [ DotNetFramework FrameworkVersion.V6 ]
@@ -1512,6 +1517,7 @@ module KnownTargetProfiles =
         FrameworkVersion.V4_7_1
         FrameworkVersion.V4_7_2
         FrameworkVersion.V4_8
+        FrameworkVersion.V4_8_1
         FrameworkVersion.V5
         FrameworkVersion.V6
         FrameworkVersion.V7

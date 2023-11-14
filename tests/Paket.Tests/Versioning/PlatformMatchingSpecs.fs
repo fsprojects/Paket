@@ -65,10 +65,6 @@ let ``Doesn't fail on profiles``() =
 let ``Can detect uap10.1``() =
     let p = PlatformMatching.forceExtractPlatforms "UAP10.1"
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.UAP UAPVersion.V10_1)))
-[<Test>]
-let ``Can detect net45``() =
-    let p = PlatformMatching.forceExtractPlatforms "net45"
-    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_5)))
 
 [<Test>]
 let ``Can detect MonoTouch0.0``() =
@@ -157,6 +153,41 @@ let ``Can detect 3.5``() =
 let ``Can detect net4.00.03``() =
     let p = PlatformMatching.forceExtractPlatforms "net4.00.03"
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_0_3)))
+
+[<Test>]
+let ``Can detect net45``() =
+    let p = PlatformMatching.forceExtractPlatforms "net45"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_5)))
+
+[<Test>]
+let ``Can detect net46``() =
+    let p = PlatformMatching.forceExtractPlatforms "net46"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_6)))
+
+[<Test>]
+let ``Can detect net461``() =
+    let p = PlatformMatching.forceExtractPlatforms "net461"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_6_1)))
+
+[<Test>]
+let ``Can detect net47``() =
+    let p = PlatformMatching.forceExtractPlatforms "net47"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_7)))
+
+[<Test>]
+let ``Can detect net471``() =
+    let p = PlatformMatching.forceExtractPlatforms "net471"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_7_1)))
+
+[<Test>]
+let ``Can detect net48``() =
+    let p = PlatformMatching.forceExtractPlatforms "net48"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_8)))
+
+[<Test>]
+let ``Can detect net481``() =
+    let p = PlatformMatching.forceExtractPlatforms "net481"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_8_1)))
 
 [<Test>]
 let ``Can detect net5.0``() =
