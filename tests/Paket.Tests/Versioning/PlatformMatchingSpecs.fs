@@ -292,8 +292,8 @@ let ``Can detect a bunch of net8 platforms``() =
   let testSet = [
       "net8"                       , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V8)
       "net8000"                    , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V8)
-      "net8.0-windows"             , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8Windows Net8WindowsVersion.V10_0_17763_0)
-      "net8-windows"               , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8Windows Net8WindowsVersion.V10_0_17763_0)
+      "net8.0-windows"             , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8Windows Net8WindowsVersion.V7_0)
+      "net8-windows"               , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8Windows Net8WindowsVersion.V7_0)
       "net8.0-windows10.0.19041.0" , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8Windows Net8WindowsVersion.V10_0_19041_0)
       "net8.0-windows10.0.19041"   , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8Windows Net8WindowsVersion.V10_0_19041_0)
       "net8-windows10.0.19041"     , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8Windows Net8WindowsVersion.V10_0_19041_0)
