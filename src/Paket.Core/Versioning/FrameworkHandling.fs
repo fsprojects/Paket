@@ -129,18 +129,24 @@ type Net7WindowsVersion =
 
 [<RequireQualifiedAccess>]
 type Net8WindowsVersion =
+    | V7_0
+    | V8_0
     | V10_0_17763_0
     | V10_0_18362_0
     | V10_0_19041_0
     override this.ToString() =
         match this with
+        | V7_0 -> "7.0"
+        | V8_0 -> "8.0"
         | V10_0_17763_0 -> "10.0.17763.0"
         | V10_0_18362_0 -> "10.0.18362.0"
         | V10_0_19041_0 -> "10.0.19041.0"
 
     static member TryParse s =
         match s with
-        | "" | "10.0.17763.0" | "10.0.17763" -> Some Net8WindowsVersion.V10_0_17763_0
+        | "" | "7.0" | "7" -> Some Net8WindowsVersion.V7_0
+        | "8.0" | "8" -> Some Net8WindowsVersion.V8_0
+        | "10.0.17763.0" | "10.0.17763" -> Some Net8WindowsVersion.V10_0_17763_0
         | "10.0.18362.0" | "10.0.18362" -> Some Net8WindowsVersion.V10_0_18362_0
         | "10.0.19041.0" | "10.0.19041" -> Some Net8WindowsVersion.V10_0_19041_0
         | _ -> None
@@ -963,7 +969,9 @@ type FrameworkIdentifier =
         | DotNet7Windows Net7WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet7Windows Net7WindowsVersion.V8_0 ]
         | DotNet7Windows Net7WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet7Windows Net7WindowsVersion.V10_0_17763_0 ]
         | DotNet7Windows Net7WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet7Windows Net7WindowsVersion.V10_0_18362_0 ]
-        | DotNet8Windows Net8WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V8; ]
+        | DotNet8Windows Net8WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V8; ]
+        | DotNet8Windows Net8WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V7_0]
+        | DotNet8Windows Net8WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V8_0]
         | DotNet8Windows Net8WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V10_0_17763_0 ]
         | DotNet8Windows Net8WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V10_0_18362_0 ]
         | DotNetStandard DotNetStandardVersion.V1_0 -> [  ]
