@@ -1,3 +1,6 @@
+#### 8.0.1 - 2024-01-15
+* Fixed net8.0-windows target issue - https://github.com/fsprojects/Paket/pull/4242
+
 #### 8.0.0 - 2023-11-14
 * Support for .NET 8.0
 * Support for net481 - https://github.com/fsprojects/Paket/pull/4227
