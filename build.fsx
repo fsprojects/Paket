@@ -602,7 +602,7 @@ Target "ReleaseDocs" (fun _ ->
     if disableDocs then () else
     let tempDocsDir = "temp/gh-pages"
     CleanDir tempDocsDir
-    Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
+    Repository.cloneSingleBranch "" "git@github.com:fsprojects/Paket.git" "gh-pages" tempDocsDir
 
     Git.CommandHelper.runSimpleGitCommand tempDocsDir "rm . -f -r" |> ignore
     CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"
