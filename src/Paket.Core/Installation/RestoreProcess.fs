@@ -446,6 +446,8 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                     let combinedCopyLocal = combineCopyLocal resolvedPackage.Settings packageSettings
                     let combinedOmitContent = combineOmitContent resolvedPackage.Settings packageSettings
                     let combinedImportTargets = combineImportTargets resolvedPackage.Settings packageSettings
+                    let aliases = if direct then packageSettings.Settings.Aliases |> Seq.tryHead else None
+                    
                     let privateAssetsAll =
                         match combinedCopyLocal with
                         | Some true -> "true"
@@ -465,6 +467,11 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                         match combinedImportTargets with
                         | Some false -> "false"
                         | _ -> "true"
+
+                    let alias =
+                        match aliases with
+                        | Some(x) -> x.Value
+                        | _ -> ""
                     let line =
                         [ packageName.ToString()
                           package.Version.ToString()
@@ -473,7 +480,8 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                           privateAssetsAll
                           copyLocal
                           omitContent
-                          importTargets ]
+                          importTargets
+                          alias]
                         |> String.concat ","
 
                     list.Add line
