@@ -128,6 +128,7 @@ command with the shell program to run as well, like this:</p>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">git</span> https://uri/to/repo.git master build: <span class="s">"powershell build.ps1"</span>, OS: windows
 </code></pre></td></tr></table>
 <h2><a name="Using-Git-repositories-as-NuGet-source" class="anchor" href="#Using-Git-repositories-as-NuGet-source">Using Git repositories as NuGet source</a></h2>
+<h3><a name="With-pre-built-checked-in-nupgks" class="anchor" href="#With-pre-built-checked-in-nupgks">With pre-built, checked-in nupgks</a></h3>
 <p>If you have NuGet packages inside a git repository you can easily use the
 repository as a NuGet source from the <a href="dependencies-file.html"><code>paket.dependencies</code>
 file</a>:</p>
@@ -135,7 +136,7 @@ file</a>:</p>
 <span class="l">2: </span>
 <span class="l">3: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">git</span> https://github.com/forki/nupkgtest.git master Packages: /source/
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">git</span> https://github.com/forki/nupkgtest.git master Packages: /bin/
 
 <span class="k">nuget</span> Argu
 </code></pre></td></tr></table>
@@ -148,15 +149,26 @@ file</a>:</p>
 <span class="l">6: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">NUGET</span>
-    <span class="k">remote</span>: paket-files/github.com/forki/nupkgtest/source
+    <span class="k">remote</span>: paket-files/github.com/forki/nupkgtest/bin
     Argu (<span class="n">1.1.3</span>)
 <span class="k">GIT</span>
     <span class="k">remote</span>: https://github.com/forki/nupkgtest.git
         (05366e390e7552a569f3f328a0f3094249f3b93b)
 </code></pre></td></tr></table>
+<h3><a name="Building-nupkg-on-install" class="anchor" href="#Building-nupkg-on-install">Building nupkg on install</a></h3>
 <p>It's also possible to
 <a href="git-dependencies.html#Running-a-build-in-git-repositories">run build scripts</a>
-to create the NuGet packages:</p>
+to create the NuGet packages when installing/restoring with paket:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">git</span> https://github.com/forki/nupkgtest.git master build: <span class="s">"dotnet pack"</span>, Packages: /bin/Debug
+
+<span class="k">nuget</span> Argu
+</code></pre></td></tr></table>
+<p>NOTE: this assumes that the name of the package is <code>Argu</code> which can't be inferred in this case since no <code>*.fsproj</code> or <code>.sln</code> file is present in the example repository</p>
+<h3><a name="Arbitrary-build-scripts" class="anchor" href="#Arbitrary-build-scripts">Arbitrary build scripts</a></h3>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -167,7 +179,9 @@ to create the NuGet packages:</p>
 
 <span class="k">nuget</span> Argu
 </code></pre></td></tr></table>
-<p>In this sample we have different build scripts for Mono and Windows.</p>
+<p>In this sample we have different build scripts for Mono and Windows. Both of the specified scripts simply copy the prebuilt nupkgs from <code>/bin</code> to <code>/source</code></p>
+<h3><a name="Actually-using-the-package" class="anchor" href="#Actually-using-the-package">Actually using the package</a></h3>
+<p>Don't forget to also add your dependency to the <code>paket.references</code> file.</p>
 
 
         </div>
