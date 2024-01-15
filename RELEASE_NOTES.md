@@ -1,4 +1,5 @@
-#### 8.0.1 - 2024-01-15
+#### 8.0.2 - 2024-01-15
+* Paket ignored the alias setting on SDK-based projects - https://github.com/fsprojects/Paket/pull/4238
 * Fixed net8.0-windows target issue - https://github.com/fsprojects/Paket/pull/4242
 
 #### 8.0.0 - 2023-11-14
