@@ -938,7 +938,8 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
             let groupName,_packageName = visitKey
             for dep in deps do
                 let deps = this.GetDirectDependenciesOfSafe(groupName,dep,referencesFile.FileName)
-                toVisit := Set.add ((groupName,dep),p,deps) !toVisit
+                let packagageSettings = { p with Settings = { p.Settings with Aliases = Map.empty }}
+                toVisit := Set.add ((groupName,dep),packagageSettings,deps) !toVisit
 
         let emitted = HashSet<_>()
         [while visited.Count > 0 do

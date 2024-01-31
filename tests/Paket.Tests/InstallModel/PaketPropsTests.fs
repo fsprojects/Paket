@@ -102,6 +102,43 @@ group Other1
     | l ->
         Assert.Fail(sprintf "expected one ItemGroup but was '%A'" l)
 
+
+[<Test>]
+let ``should not inherit alias settings``() = 
+
+    let lockFile = """NUGET
+  remote: https://api.nuget.org/v3/index.json
+    Argu (4.2.1)
+      FSharp.Core (>= 3.1.2)
+    FSharp.Core (3.1.2.5)
+      Newtonsoft.Json (>= 11.0.2) 
+    Newtonsoft.Json (11.0.5)
+"""
+
+    let refFileContent = """
+Argu
+  alias Argu.dll Argu_Alias
+
+"""
+
+    let lockFile = LockFile.Parse("", toLines lockFile)
+
+    let refFile = ReferencesFile.FromLines(toLines refFileContent)
+
+    let packages =
+        [ for kv in refFile.Groups do
+            let packagesInGroup,_ = lockFile.GetOrderedPackageHull(kv.Key, refFile)
+            yield! packagesInGroup ]
+
+    let (_, p, _) = packages[0]
+    Assert.Zero(p.Settings.Aliases.Count)
+
+    let (_, p, _) = packages[1]
+    Assert.Zero(p.Settings.Aliases.Count)
+
+    let (_, p, _) = packages[2]
+    Assert.AreEqual(1, p.Settings.Aliases.Count)
+
 [<Test>]
 let ``should create props file for design mode with group restrictions``() = 
 
