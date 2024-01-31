@@ -1,3 +1,6 @@
+#### 8.1.0-alpha001 - 2024-01-30
+* BUGFIX: Aliases should not be inherited - https://github.com/fsprojects/Paket/pull/4244
+
 #### 8.0.3 - 2024-01-15
 * Paket ignored the alias setting on SDK-based projects - https://github.com/fsprojects/Paket/pull/4238
 * Fixed net8.0-windows target issue - https://github.com/fsprojects/Paket/pull/4242

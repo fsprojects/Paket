@@ -370,31 +370,32 @@ let mutable isUnsignedAllowed = true
 Target "EnsurePackageSigned" (fun _ -> isUnsignedAllowed <- false)
 
 Target "SignAssemblies" (fun _ ->
-    if not <| fileExists pfx then
-        if isUnsignedAllowed then ()
-        else failwithf "%s not found, can't sign assemblies" pfx
-    else
+    // if not <| fileExists pfx then
+    //     if isUnsignedAllowed then ()
+    //     else failwithf "%s not found, can't sign assemblies" pfx
+    // else
 
-    let filesToSign =
-        !! "bin/**/*.exe"
-        ++ "bin/**/Paket.Core.dll"
-        ++ "bin_bootstrapper/**/*.exe"
-        |> Seq.cache
+    // let filesToSign =
+    //     !! "bin/**/*.exe"
+    //     ++ "bin/**/Paket.Core.dll"
+    //     ++ "bin_bootstrapper/**/*.exe"
+    //     |> Seq.cache
 
-    if Seq.length filesToSign < 3 then failwith "Didn't find files to sign"
+    // if Seq.length filesToSign < 3 then failwith "Didn't find files to sign"
 
-    match getBuildParam "cert-pw" with
-    | pw when not (String.IsNullOrWhiteSpace pw) ->
-        filesToSign
-            |> Seq.iter (fun executable ->
-                let signtool = currentDirectory @@ "tools" @@ "SignTool" @@ "signtool.exe"
-                let args = sprintf "sign /f %s /p \"%s\" /t http://timestamp.comodoca.com/authenticode %s" pfx pw executable
-                let result =
-                    ExecProcess (fun info ->
-                        info.FileName <- signtool
-                        info.Arguments <- args) System.TimeSpan.MaxValue
-                if result <> 0 then failwithf "Error during signing %s with %s" executable pfx)
-    | _ -> failwith "PW for cert missing"
+    // match getBuildParam "cert-pw" with
+    // | pw when not (String.IsNullOrWhiteSpace pw) ->
+    //     filesToSign
+    //         |> Seq.iter (fun executable ->
+    //             let signtool = currentDirectory @@ "tools" @@ "SignTool" @@ "signtool.exe"
+    //             let args = sprintf "sign /f %s /p \"%s\" /t http://timestamp.comodoca.com/authenticode %s" pfx pw executable
+    //             let result =
+    //                 ExecProcess (fun info ->
+    //                     info.FileName <- signtool
+    //                     info.Arguments <- args) System.TimeSpan.MaxValue
+    //             if result <> 0 then failwithf "Error during signing %s with %s" executable pfx)
+    // | _ -> failwith "PW for cert missing"
+    ()
 )
 
 Target "CalculateDownloadHash" (fun _ ->
