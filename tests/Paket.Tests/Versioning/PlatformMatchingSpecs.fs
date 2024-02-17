@@ -312,6 +312,30 @@ let ``Can detect a bunch of net8 platforms``() =
     failwith (String.concat "\n" errors)
 
 [<Test>]
+let ``Can detect a bunch of net9 platforms``() =
+  let testSet = [
+      "net9"                       , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V9)
+      "net9000"                    , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V9)
+      "net9.0-windows"             , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet9Windows Net9WindowsVersion.V7_0)
+      "net9-windows"               , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet9Windows Net9WindowsVersion.V7_0)
+      "net9.0-windows10.0.19041.0" , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet9Windows Net9WindowsVersion.V10_0_19041_0)
+      "net9.0-windows10.0.19041"   , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet9Windows Net9WindowsVersion.V10_0_19041_0)
+      "net9-windows10.0.19041"     , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet9Windows Net9WindowsVersion.V10_0_19041_0)
+      "net9000-windows10.0.19041"  , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet9Windows Net9WindowsVersion.V10_0_19041_0)
+      "net9.0-android30.0"         , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet9WithOs Net9Os.Android)
+    ]
+
+  let errors = [
+    for p, expected in testSet do
+      let parsed = (PlatformMatching.forceExtractPlatforms p).ToTargetProfile false
+      if parsed <> Some expected then
+        sprintf "%s resulted into %A instead of %A" p parsed expected
+  ]
+
+  if not (List.isEmpty errors) then
+    failwith (String.concat "\n" errors)
+
+[<Test>]
 let ``Can detect netstandard1.6``() =
     let p = PlatformMatching.forceExtractPlatforms "netstandard1.6"
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_6)))

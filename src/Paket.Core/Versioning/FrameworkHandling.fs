@@ -151,6 +151,8 @@ type Net8WindowsVersion =
         | "10.0.19041.0" | "10.0.19041" -> Some Net8WindowsVersion.V10_0_19041_0
         | _ -> None
 
+type Net9WindowsVersion = Net8WindowsVersion
+
 [<RequireQualifiedAccess>]
 type Net5Os =
     | Android
@@ -250,7 +252,8 @@ type Net8Os =
         ]
         |> Seq.tryFind(fun (k,_) -> s.StartsWith k)
         |> Option.map snd
-              
+         
+type Net9Os = Net8Os         
 
 [<RequireQualifiedAccess>]
 /// The Framework version.
@@ -280,6 +283,7 @@ type FrameworkVersion =
     | V6
     | V7
     | V8
+    | V9
     override this.ToString() =
         match this with
         | V1        -> "v1.0"
@@ -301,11 +305,12 @@ type FrameworkVersion =
         | V4_7_1    -> "v4.7.1"
         | V4_7_2    -> "v4.7.2"
         | V4_8      -> "v4.8"
-        | V4_8_1      -> "v4.8.1"
+        | V4_8_1    -> "v4.8.1"
         | V5        -> "v5.0"
         | V6        -> "v6.0"
         | V7        -> "v7.0"
         | V8        -> "v8.0"
+        | V9        -> "v9.0"
 
     member this.ShortString() =
         match this with
@@ -333,6 +338,7 @@ type FrameworkVersion =
         | FrameworkVersion.V6 -> "6.0"
         | FrameworkVersion.V7 -> "7.0"
         | FrameworkVersion.V8 -> "8.0"
+        | FrameworkVersion.V9 -> "9.0"
 
     static member TryParse s =
         match s with
@@ -360,6 +366,7 @@ type FrameworkVersion =
         | "6" -> Some FrameworkVersion.V6
         | "7" -> Some FrameworkVersion.V7
         | "8" -> Some FrameworkVersion.V8
+        | "9" -> Some FrameworkVersion.V9
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -791,14 +798,16 @@ type TizenVersion =
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 type FrameworkIdentifier =
     | DotNetFramework of FrameworkVersion
+    | DotNet5WithOs of Net5Os
+    | DotNet5Windows of Net5WindowsVersion
     | DotNet6WithOs of Net6Os
     | DotNet6Windows of Net6WindowsVersion
     | DotNet7WithOs of Net7Os
     | DotNet7Windows of Net7WindowsVersion
     | DotNet8WithOs of Net8Os
     | DotNet8Windows of Net8WindowsVersion
-    | DotNet5WithOs of Net5Os
-    | DotNet5Windows of Net5WindowsVersion
+    | DotNet9WithOs of Net9Os
+    | DotNet9Windows of Net9WindowsVersion
     | UAP of UAPVersion
     | DotNetStandard of DotNetStandardVersion
     | DotNetCoreApp of DotNetCoreAppVersion
@@ -822,6 +831,8 @@ type FrameworkIdentifier =
     override x.ToString() =
         match x with
         | DotNetFramework v -> "net" + v.ShortString()
+        | DotNet9WithOs o  -> "net9.0-" + o.ToString()
+        | DotNet9Windows v -> "net9.0-windows" + v.ToString()
         | DotNet8WithOs o  -> "net8.0-" + o.ToString()
         | DotNet8Windows v -> "net8.0-windows" + v.ToString()
         | DotNet7WithOs o  -> "net7.0-" + o.ToString()
@@ -934,6 +945,7 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V6 -> [ DotNetFramework FrameworkVersion.V5 ]
         | DotNetFramework FrameworkVersion.V7 -> [ DotNetFramework FrameworkVersion.V6 ]
         | DotNetFramework FrameworkVersion.V8 -> [ DotNetFramework FrameworkVersion.V7 ]
+        | DotNetFramework FrameworkVersion.V9 -> [ DotNetFramework FrameworkVersion.V8 ]
         | DotNet5WithOs Net5Os.Android -> [ DotNetFramework FrameworkVersion.V5; MonoAndroid MonoAndroidVersion.V12 ]
         | DotNet5WithOs Net5Os.IOs -> [ DotNetFramework FrameworkVersion.V5; XamariniOS ]
         | DotNet5WithOs Net5Os.MacOs -> [ DotNetFramework FrameworkVersion.V5; XamarinMac ]
@@ -974,6 +986,7 @@ type FrameworkIdentifier =
         | DotNet8Windows Net8WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V8_0]
         | DotNet8Windows Net8WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V10_0_17763_0 ]
         | DotNet8Windows Net8WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V10_0_18362_0 ]
+        // remark: for now, windows version for net 9 is alias to 8
         | DotNetStandard DotNetStandardVersion.V1_0 -> [  ]
         | DotNetStandard DotNetStandardVersion.V1_1 -> [ DotNetStandard DotNetStandardVersion.V1_0 ]
         | DotNetStandard DotNetStandardVersion.V1_2 -> [ DotNetStandard DotNetStandardVersion.V1_1 ]
@@ -1530,6 +1543,7 @@ module KnownTargetProfiles =
         FrameworkVersion.V6
         FrameworkVersion.V7
         FrameworkVersion.V8
+        FrameworkVersion.V9
     ]
 
     let DotNetFrameworkIdentifiers =
@@ -1633,6 +1647,11 @@ module KnownTargetProfiles =
     let DotNet8WindowsProfiles = 
         DotNet8WindowsVersions
         |> List.map (DotNet8Windows >> TargetProfile.SinglePlatform)
+
+    let DotNet9OperatingSystems = DotNet8OperatingSystems
+    let DotNet9WithOsProfiles = DotNet8WithOsProfiles
+    let DotNet9WindowsVersions = DotNet8WindowsVersions
+    let DotNet9WindowsProfiles = DotNet8WindowsProfiles
 
     let DotNetStandardVersions = [
         DotNetStandardVersion.V1_0
@@ -1805,6 +1824,8 @@ module KnownTargetProfiles =
 
     let AllDotNetProfiles =
        DotNetFrameworkProfiles @
+       DotNet9WithOsProfiles @
+       DotNet9WindowsProfiles @
        DotNet8WithOsProfiles @
        DotNet8WindowsProfiles @
        DotNet7WithOsProfiles @
