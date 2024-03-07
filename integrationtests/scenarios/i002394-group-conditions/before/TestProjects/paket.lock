@@ -1,0 +1,42 @@
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    FSharp.Core (8.0.200)
+  remote: ../Packages
+    PaketTest2394.PackageA (1.0.0)
+    PaketTest2394.PackageB (1.0.0)
+      PaketTest2394.PackageB.Transient (1.0) - restriction: >= net6.0
+    PaketTest2394.PackageB.Transient (1.0.0) - restriction: >= net6.0
+
+GROUP condition-x
+CONDITION: PROPERTYX
+NUGET
+  remote: ../Packages
+    PaketTest2394.PackageA (3.0.0)
+    PaketTest2394.PackageB (3.0.0)
+      PaketTest2394.PackageB.Transient (3.0) - restriction: >= net6.0
+    PaketTest2394.PackageB.Transient (3.0.0) - restriction: >= net6.0
+
+GROUP condition-y
+CONDITION: PROPERTYY
+NUGET
+  remote: ../Packages
+    PaketTest2394.PackageA (4.0.0)
+    PaketTest2394.PackageB (4.0.0)
+      PaketTest2394.PackageB.Transient (4.0) - restriction: >= net6.0
+    PaketTest2394.PackageB.Transient (4.0.0) - restriction: >= net6.0
+
+GROUP condition-z
+CONDITION: PROPERTYZ
+NUGET
+  remote: ../Packages
+    PaketTest2394.PackageB (5.0.0)
+      PaketTest2394.PackageB.Transient (5.0) - restriction: >= net6.0
+    PaketTest2394.PackageB.Transient (5.0.0) - restriction: >= net6.0
+
+GROUP no-condition
+NUGET
+  remote: ../Packages
+    PaketTest2394.PackageA (2.0.0)
+    PaketTest2394.PackageB (2.0.0)
+      PaketTest2394.PackageB.Transient (2.0) - restriction: >= net6.0
+    PaketTest2394.PackageB.Transient (2.0.0) - restriction: >= net6.0

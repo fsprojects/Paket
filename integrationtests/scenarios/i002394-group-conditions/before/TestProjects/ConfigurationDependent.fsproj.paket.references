@@ -1,0 +1,9 @@
+FSharp.Core
+
+group condition-x
+    PaketTest2394.PackageA
+    PaketTest2394.PackageB
+
+group condition-y
+    PaketTest2394.PackageA
+    PaketTest2394.PackageB
