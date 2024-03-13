@@ -1102,6 +1102,7 @@ module FrameworkDetection =
                     | Some "6" when dotnetVersionX = 6  -> tryParseSecondPart parts.[1]
                     | Some "7" when dotnetVersionX = 7  -> tryParseSecondPart parts.[1]
                     | Some "8" when dotnetVersionX = 8  -> tryParseSecondPart parts.[1]
+                    | Some "9" when dotnetVersionX = 9  -> tryParseSecondPart parts.[1]
                     | _ -> None
                 else
                     None
@@ -1116,6 +1117,7 @@ module FrameworkDetection =
                     | Some "6"  when dotnetVersionX = 6 -> tryParseVersion winVersionPart
                     | Some "7"  when dotnetVersionX = 7 -> tryParseVersion winVersionPart
                     | Some "8"  when dotnetVersionX = 8 -> tryParseVersion winVersionPart
+                    | Some "9"  when dotnetVersionX = 9 -> tryParseVersion winVersionPart
                     | _ -> None
                 else
                     None
@@ -1155,10 +1157,12 @@ module FrameworkDetection =
             // http://nugettoolsdev.azurewebsites.net/4.0.0/parse-framework?framework=.NETPortable%2CVersion%3Dv0.0%2CProfile%3DProfile2
             let result =
                 match path with
+                | MatchNetXDashWindows 9 Net9WindowsVersion.TryParse fm -> Some (DotNet9Windows fm)
                 | MatchNetXDashWindows 8 Net8WindowsVersion.TryParse fm -> Some (DotNet8Windows fm)
                 | MatchNetXDashWindows 7 Net7WindowsVersion.TryParse fm -> Some (DotNet7Windows fm)
                 | MatchNetXDashWindows 6 Net6WindowsVersion.TryParse fm -> Some (DotNet6Windows fm)
                 | MatchNetXDashWindows 5 Net5WindowsVersion.TryParse fm -> Some (DotNet5Windows fm)
+                | MatchNetXDashOs 9 Net9Os.TryParse fm -> Some (DotNet9WithOs fm)
                 | MatchNetXDashOs 8 Net8Os.TryParse fm -> Some (DotNet8WithOs fm)
                 | MatchNetXDashOs 7 Net7Os.TryParse fm -> Some (DotNet7WithOs fm)
                 | MatchNetXDashOs 6 Net6Os.TryParse fm -> Some (DotNet6WithOs fm)
