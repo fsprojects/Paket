@@ -1273,6 +1273,21 @@ let ``should read config with .NET 8 target framework``() =
     |> getExplicitRestriction
     |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V8)))
 
+let configNET9TargetFramework = """source https://www.nuget.org/api/v2
+
+framework: >= net9.0
+
+nuget System.Data.SQLite 1.0.98.1 content: none
+"""
+
+[<Test>]
+let ``should read config with .NET 9 target framework``() = 
+    let cfg = DependenciesFile.FromSource(configNET9TargetFramework)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
+    |> getExplicitRestriction
+    |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V9)))
+
 let validFrameworks =
     let net40 = DotNetFramework(FrameworkVersion.V4)
     let net45 = DotNetFramework(FrameworkVersion.V4_5)

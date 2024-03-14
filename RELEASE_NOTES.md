@@ -1,3 +1,6 @@
+#### 8.1.0-alpha002 - 2024-03-14
+* Preview support for .NET 9.0 - https://github.com/fsprojects/Paket/pull/4248
+
 #### 8.1.0-alpha001 - 2024-01-30
 * BUGFIX: Aliases should not be inherited - https://github.com/fsprojects/Paket/pull/4244
 
