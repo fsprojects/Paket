@@ -1,8 +1,5 @@
 Argu
 FSharp.Core
-Chessie
-
-# workaround for transitive of FSharp.Core not pulled when packaging as PackAsTool
 Newtonsoft.Json
 Mono.Cecil
 System.Security.Cryptography.ProtectedData
@@ -14,3 +11,4 @@ System.Diagnostics.Process
 System.Diagnostics.TraceSource
 DotNet.ReproducibleBuilds
 Fake.Core.ReleaseNotes
+FsToolkit.ErrorHandling
