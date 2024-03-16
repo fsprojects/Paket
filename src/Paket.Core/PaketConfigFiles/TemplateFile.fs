@@ -4,7 +4,7 @@ open Paket
 open System
 open System.IO
 open System.Text.RegularExpressions
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open Paket.Domain
 open Paket.InterprojectReferencesConstraint
 
@@ -283,7 +283,7 @@ module internal TemplateFile =
         | None -> failP file "No authors line in paket.template file."
         | Some m ->
             m.Split ',' |> Array.map String.trim
-            |> List.ofArray|> ok
+            |> List.ofArray|> Ok
 
     let private getDescription file map =
         Map.tryFind "description" map |> function

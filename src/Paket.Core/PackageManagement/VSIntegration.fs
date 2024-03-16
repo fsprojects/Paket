@@ -3,7 +3,7 @@
 open System.IO
 open Logging
 open System
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open Domain
 open Releases
 open InstallProcess

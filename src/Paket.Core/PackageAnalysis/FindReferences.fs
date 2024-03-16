@@ -1,7 +1,7 @@
 ﻿module Paket.FindReferences
 
 open Logging
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 
 let private findReferencesFor groupName package (lockFile: LockFile) projects = trial {
     let! referencedIn =

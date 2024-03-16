@@ -8,7 +8,7 @@ open System
 open System.IO
 open System.Diagnostics
 open Paket
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open Paket.Domain 
 
 let alternativeProjectRoot = None

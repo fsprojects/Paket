@@ -6,7 +6,7 @@ open System.IO
 open Paket.Logging
 open System.Collections.Generic
 open Paket.PackageMetaData
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 
 let private tryGenerateDescription packageId outputType =
     match packageId with

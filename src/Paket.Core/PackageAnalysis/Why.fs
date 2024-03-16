@@ -7,7 +7,7 @@ open Paket.Domain
 open Paket.Logging
 open Paket.Requirements
 
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 
 type AdjLblGraph<'a> = IDictionary<PackageName , IDictionary<PackageName, 'a>>
 

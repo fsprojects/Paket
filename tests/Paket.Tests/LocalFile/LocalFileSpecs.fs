@@ -1,6 +1,6 @@
 module Paket.LocalFileSpecs
 
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 
 open NUnit.Framework
 

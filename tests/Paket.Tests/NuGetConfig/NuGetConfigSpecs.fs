@@ -9,7 +9,7 @@ open PackageSources
 open System.Security.Cryptography
 open System.Text
 open System
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open System.Xml
 open TestHelpers
 

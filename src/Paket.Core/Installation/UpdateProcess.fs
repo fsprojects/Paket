@@ -5,7 +5,7 @@ open Paket
 open System.IO
 open Paket.Domain
 open Paket.PackageResolver
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open Paket.Logging
 
 let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGraphFromPackage (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode semVerUpdateMode =

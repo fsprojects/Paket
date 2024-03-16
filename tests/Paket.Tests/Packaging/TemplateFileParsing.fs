@@ -2,7 +2,7 @@
 
 open System.IO
 open Paket
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open FsUnit
 open NUnit.Framework
 open Paket.TestHelpers

@@ -10,7 +10,7 @@ open Paket.Logging
 open Paket.Xml
 open Paket.PackageSources
 open Paket.Requirements
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open Paket.PackagesConfigFile
 open InstallProcess
 
@@ -24,7 +24,7 @@ type CredsMigrationMode =
         | "encrypt" -> ok Encrypt
         | "plaintext" -> ok Plaintext
         | "selective" -> ok Selective
-        | _ ->  InvalidCredentialsMigrationMode s |> fail
+        | _ ->  InvalidCredentialsMigrationMode s |> Error
 
     static member ToAuthentication mode sourceName auth =
         match mode, auth with
@@ -82,11 +82,11 @@ type NugetConfig =
             let doc = XmlDocument()
             ( use f = File.OpenRead file.FullName
               doc.Load(f))
-            (doc |> getNode "configuration").Value |> ok
+            (doc |> getNode "configuration").Value |> Ok
         with _ ->
             file
             |> NugetConfigFileParseError
-            |> fail
+            |> Error
 
     static member OverrideConfig nugetConfig (configNode : XmlNode) =
         let getAuth key =
@@ -179,7 +179,7 @@ module NugetEnv =
                 { File = file
                   Type = if file.Directory.Name = ".nuget" then SolutionLevel else ProjectLevel
                   Packages = PackagesConfigFile.Read file.FullName }
-                |> ok
+                |> Ok
             with _ -> fail (NugetPackagesConfigParseError file)
 
         let readPackages (projectFile : ProjectFile) : Result<ProjectFile * option<NugetPackagesConfig>, DomainMessage> =
@@ -323,8 +323,8 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                 dependenciesFile.Add(groupName, packageName,versionRequirement.Range,installSettings, reqKind)) dependenciesFile
         try
             DependenciesFile.ReadFromFile dependenciesFileName
-            |> ok
-        with e -> DependenciesFileParseError (FileInfo dependenciesFileName, e) |> fail
+            |> Ok
+        with e -> DependenciesFileParseError (FileInfo dependenciesFileName, e) |> Error
         |> lift addPackages
 
     let create() =
@@ -337,8 +337,8 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.ToAuthentication mode n))
             |> List.filter (fun (key,v) -> key.Contains "NuGetFallbackFolder" |> not)
             |> List.map (fun (source, auth) ->
-                            try PackageSource.Parse(source,AuthProvider.ofFunction (fun _ -> auth)) |> ok
-                            with _ -> source |> PackageSourceParseError |> fail
+                            try PackageSource.Parse(source,AuthProvider.ofFunction (fun _ -> auth)) |> Ok
+                            with _ -> source |> PackageSourceParseError |> Error
                             |> successTee PackageSource.WarnIfNoConnection)
 
             |> collect

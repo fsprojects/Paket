@@ -4,7 +4,7 @@ open System.IO
 open System.Diagnostics
 open Logging
 open System
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open Paket.Domain
 
 

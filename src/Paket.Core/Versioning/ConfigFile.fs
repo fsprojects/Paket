@@ -6,7 +6,7 @@ open System.Security.Cryptography
 open System.Text
 open System.IO
 
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open Paket.Core.Common
 open Paket.Domain
 open Paket.Xml

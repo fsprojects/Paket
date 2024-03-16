@@ -3,7 +3,7 @@ module Paket.FindOutdated
 
 open Paket.Domain
 open Paket.Logging
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open System.IO
 
 let private adjustVersionRequirements strict includingPrereleases (dependenciesFile: DependenciesFile) =

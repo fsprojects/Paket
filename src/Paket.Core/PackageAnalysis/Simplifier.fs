@@ -6,7 +6,7 @@ open System.IO
 open Paket.Domain
 open Paket.Logging
 open Paket.PackageResolver
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 
 let private findTransitive (groupName, packages, flatLookup, nameF, failureF) =
     packages

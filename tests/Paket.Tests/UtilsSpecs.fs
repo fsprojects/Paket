@@ -6,7 +6,7 @@ open NUnit.Framework
 open FsUnit
 open System
 open System.Net
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open System.Xml
 
 [<Test>]

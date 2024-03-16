@@ -2,7 +2,7 @@
 
 open System.IO
 
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open Paket.Domain
 open InstallProcess
 
@@ -33,15 +33,15 @@ module PaketEnv =
                     try
                         ok (DependenciesFile.ReadFromFile(fi.FullName))
                     with e ->
-                        DependenciesFileParseError(fi,e) |> fail
+                        DependenciesFileParseError(fi,e) |> Error
 
             let! lockFile =
                 let fi = FileInfo(Path.Combine(directory.FullName, Constants.LockFileName))
                 if not fi.Exists then
-                    None |> ok
+                    None |> Ok
                 else
                     try
-                        LockFile.LoadFrom(fi.FullName) |> Some |> ok
+                        LockFile.LoadFrom(fi.FullName) |> Some |> Ok
                     with _ ->
                         fail (LockFileParseError fi)
 

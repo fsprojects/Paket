@@ -9,7 +9,7 @@ open System.Text
 open Paket
 open Paket.Logging
 open Paket.Constants
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open Paket.Domain
 open Paket.Utils
 open FSharp.Polyfill
@@ -653,13 +653,13 @@ let safeGetFromUrl (auth:AuthProvider, url : string, contentType : string) = asy
 
 let downloadStringSync (url : string) (client : HttpClient) =
     try
-        client.DownloadString url |> ok
+        client.DownloadString url |> Ok
     with _ ->
-        DownloadError url |> fail
+        DownloadError url |> Error
 
 let downloadFileSync (url : string) (fileName : string) (client : HttpClient) =
     tracefn "Downloading file from %s to %s" url fileName
     try
-        client.DownloadFile(url, fileName) |> ok
+        client.DownloadFile(url, fileName) |> Ok
     with _ ->
-        DownloadError url |> fail
+        DownloadError url |> Error

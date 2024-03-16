@@ -10,7 +10,7 @@ open Paket.PackageResolver
 open Paket.ModuleResolver
 open Paket.PackageSources
 open Paket.Requirements
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 
 type LockFileGroup =
   { Name: GroupName

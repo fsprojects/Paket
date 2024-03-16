@@ -7,7 +7,7 @@ open Paket.PackageSources
 open System
 open System.Xml
 open System.IO
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open PackageResolver
 open Requirements
 

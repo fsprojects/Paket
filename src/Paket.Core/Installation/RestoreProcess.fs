@@ -8,7 +8,7 @@ open Paket.Logging
 open Paket.PackageResolver
 open Paket.PackageSources
 open System
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open System.Reflection
 open Requirements
 
@@ -174,15 +174,16 @@ let findAllReferencesFiles root =
         match p.FindReferencesFile() with
         | Some fileName ->
             try
-                Some(ok (p, ReferencesFile.FromFile fileName))
+                Some(Ok (p, ReferencesFile.FromFile fileName))
             with e ->
-                Some(fail (ReferencesFileParseError (FileInfo fileName, e)))
+                Some(Error (ReferencesFileParseError (FileInfo fileName, e)))
         | None ->
             None
 
     ProjectFile.FindAllProjects root
     |> Array.choose findRefFile
-    |> collect
+    |> Array.toList
+    |> List.sequenceResultA
 
 let copiedElements = ref false
 
@@ -708,8 +709,15 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
             lockFile,lazy LocalFile.empty,false
         else
             let localFile =
-                lazy (LocalFile.readFile localFileName.FullName
-                      |> returnOrFail)
+                lazy (
+                    match LocalFile.readFile localFileName.FullName with
+                    | Ok x -> x
+                    | Error errors -> 
+                        errors
+                        |> Seq.map (sprintf "%O")
+                        |> String.concat (Environment.NewLine + "\t")
+                        |> failwith
+                    )
             lazy LocalFile.overrideLockFile localFile.Value lockFile.Value,localFile,true
 
     // Shortcut if we already restored before
