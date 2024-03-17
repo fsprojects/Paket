@@ -8,15 +8,14 @@ open Paket.Logging
 open Paket.PackageResolver
 open FsToolkit.ErrorHandling
 
-let private findTransitive (groupName, packages, flatLookup, nameF, failureF) =
+let private findTransitive (groupName, packages, (flatLookup: Map<'a * 'b, 'c Set>), nameF, failureF) =
     packages
     |> List.map (fun package ->
         flatLookup
         |> Map.tryFind (groupName, (nameF package))
-        |> failIfNone (failureF (nameF package)))
-    |> collect
-    |> lift Seq.distinct
-    |> lift Seq.concat
+        |> Result.requireSome (failureF (nameF package)))
+    |> List.sequenceResultA
+    |> Result.map (Seq.distinct >> Seq.concat >> Seq.toList)
 
 let private removePackage(packageName, hasPackageSettings, transitivePackages, fileName, interactive) =
     if transitivePackages |> Seq.exists (fun p -> p = packageName) && not(hasPackageSettings) then
@@ -28,7 +27,7 @@ let private removePackage(packageName, hasPackageSettings, transitivePackages, f
     else
         false
 
-let simplifyDependenciesFile (dependenciesFile : DependenciesFile, groupName, flatLookup, interactive) = trial {
+let simplifyDependenciesFile (dependenciesFile : DependenciesFile, groupName, flatLookup, interactive) = result {
     let packages = dependenciesFile.Groups.[groupName].Packages
     let! transitive = findTransitive(groupName, packages, flatLookup, (fun p -> p.Name), DependencyNotFoundInLockFile)
 
@@ -40,7 +39,7 @@ let simplifyDependenciesFile (dependenciesFile : DependenciesFile, groupName, fl
                 else d) dependenciesFile
 }
 
-let simplifyReferencesFile (refFile:ReferencesFile, groupName, flatLookup, interactive) = trial {
+let simplifyReferencesFile (refFile:ReferencesFile, groupName, flatLookup, interactive) = result {
     match refFile.Groups |> Map.tryFind groupName with
     | None -> return refFile
     | Some g ->
@@ -63,7 +62,7 @@ let beforeAndAfter environment dependenciesFile projects =
         DependenciesFile = dependenciesFile
         Projects = projects }
 
-let simplify interactive environment = trial {
+let simplify interactive environment = validation {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
 
     let flatLookup = lockFile.GetDependencyLookupTable()
@@ -80,7 +79,8 @@ let simplify interactive environment = trial {
         let! referencesFiles' =
             !referencesFilesRef
             |> List.map (fun refFile -> simplifyReferencesFile(refFile, groupName, flatLookup, interactive))
-            |> collect
+            |> List.sequenceResultA
+            |> Result.mapError List.concat
 
         referencesFilesRef := referencesFiles'
 

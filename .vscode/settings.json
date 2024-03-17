@@ -4,5 +4,6 @@
         "paket-files",
         "integrationtests/scenarios",
         "packages"
-    ]
+    ],
+    "editor.inlayHints.enabled": "offUnlessPressed"
 }

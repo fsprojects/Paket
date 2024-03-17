@@ -21,9 +21,9 @@ type CredsMigrationMode =
 
     static member Parse(s : string) =
         match s with
-        | "encrypt" -> ok Encrypt
-        | "plaintext" -> ok Plaintext
-        | "selective" -> ok Selective
+        | "encrypt" -> Ok Encrypt
+        | "plaintext" -> Ok Plaintext
+        | "selective" -> Ok Selective
         | _ ->  InvalidCredentialsMigrationMode s |> Error
 
     static member ToAuthentication mode sourceName auth =
@@ -167,11 +167,11 @@ module NugetEnv =
         |> List.filter (fun fi -> fi.Exists)
         |> List.fold (fun config file ->
                         config
-                        |> bind (fun config ->
+                        |> Result.bind (fun config ->
                             file
                             |> NugetConfig.GetConfigNode
-                            |> lift (NugetConfig.OverrideConfig config)))
-                        (ok NugetConfig.Empty)
+                            |> Result.map (NugetConfig.OverrideConfig config)))
+                        (Ok NugetConfig.Empty)
 
     let readNuGetPackages(rootDirectory : DirectoryInfo) =
         let readSingle(file : FileInfo) =
@@ -180,22 +180,24 @@ module NugetEnv =
                   Type = if file.Directory.Name = ".nuget" then SolutionLevel else ProjectLevel
                   Packages = PackagesConfigFile.Read file.FullName }
                 |> Ok
-            with _ -> fail (NugetPackagesConfigParseError file)
+            with _ -> Error (NugetPackagesConfigParseError file)
 
         let readPackages (projectFile : ProjectFile) : Result<ProjectFile * option<NugetPackagesConfig>, DomainMessage> =
             let path = Path.Combine(Path.GetDirectoryName(projectFile.FileName), Constants.PackagesConfigFile)
             if File.Exists path then
-                FileInfo(path) |> readSingle |> lift Some
+                FileInfo(path) |> readSingle |> Result.map Some
             else
-                Result.Succeed None
-            |> lift (fun configFile -> (projectFile,configFile))
+                Ok None
+            |> Result.map (fun configFile -> (projectFile,configFile))
 
         let projectFiles = ProjectFile.FindAllProjects rootDirectory.FullName
 
         projectFiles
         |> Array.map readPackages
-        |> collect
-    let read (rootDirectory : DirectoryInfo) = trial {
+        |> Array.toList
+        |> List.sequenceResultA
+
+    let read (rootDirectory : DirectoryInfo) = validation {
         let configs = FindAllFiles(rootDirectory.FullName, "nuget.config") |> Array.toList
         let targets = FindAllFiles(rootDirectory.FullName, "nuget.targets") |> Array.tryHead
         let exe = FindAllFiles(rootDirectory.FullName, "nuget.exe") |> Array.tryHead
@@ -325,7 +327,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             DependenciesFile.ReadFromFile dependenciesFileName
             |> Ok
         with e -> DependenciesFileParseError (FileInfo dependenciesFileName, e) |> Error
-        |> lift addPackages
+        |> Result.map addPackages
 
     let create() =
         let sources =
@@ -337,14 +339,18 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.ToAuthentication mode n))
             |> List.filter (fun (key,v) -> key.Contains "NuGetFallbackFolder" |> not)
             |> List.map (fun (source, auth) ->
-                            try PackageSource.Parse(source,AuthProvider.ofFunction (fun _ -> auth)) |> Ok
-                            with _ -> source |> PackageSourceParseError |> Error
-                            |> successTee PackageSource.WarnIfNoConnection)
-
-            |> collect
+                let x =
+                    try PackageSource.Parse(source,AuthProvider.ofFunction (fun _ -> auth)) |> Ok
+                    with _ -> 
+                        PackageSourceParseError source 
+                        |> Error
+                x
+                |> Result.tee PackageSource.WarnIfNoConnection
+            )
+            |> List.sequenceResultA
 
         sources
-        |> lift (fun sources ->
+        |> Result.map (fun sources ->
             let sourceLines = sources |> List.map (fun s -> DependenciesFileSerializer.sourceString(s.ToString()))
             let packageLines =
                 packages

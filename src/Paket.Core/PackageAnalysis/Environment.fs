@@ -21,17 +21,17 @@ module PaketEnv =
           LockFile = lockFile
           Projects = projects }
 
-    let fromRootDirectory (directory : DirectoryInfo) = trial {
+    let fromRootDirectory (directory : DirectoryInfo) = validation {
         if not directory.Exists then
-            return! fail (DirectoryDoesntExist directory)
+            return! Error (DirectoryDoesntExist directory)
         else
             let! dependenciesFile =
                 let fi = FileInfo(Path.Combine(directory.FullName, Constants.DependenciesFileName))
                 if not fi.Exists then
-                    fail (DependenciesFileNotFoundInDir directory)
+                    Error (DependenciesFileNotFoundInDir directory)
                 else
                     try
-                        ok (DependenciesFile.ReadFromFile(fi.FullName))
+                        Ok (DependenciesFile.ReadFromFile(fi.FullName))
                     with e ->
                         DependenciesFileParseError(fi,e) |> Error
 
@@ -43,7 +43,7 @@ module PaketEnv =
                     try
                         LockFile.LoadFrom(fi.FullName) |> Some |> Ok
                     with _ ->
-                        fail (LockFileParseError fi)
+                        Error (LockFileParseError fi)
 
             let! projects = RestoreProcess.findAllReferencesFiles(directory.FullName)
 
@@ -63,29 +63,29 @@ module PaketEnv =
 
     let ensureNotExists (directory : DirectoryInfo) =
         match fromRootDirectory directory with
-        | Result.Ok _ -> fail (PaketEnvAlreadyExistsInDirectory directory)
-        | Result.Bad(msgs) ->
+        | Ok _ -> Error [PaketEnvAlreadyExistsInDirectory directory]
+        | Error errors ->
             let filtered =
-                msgs
+                errors
                 |> List.filter (function
                     | DependenciesFileNotFoundInDir _ -> false
                     | _ -> true )
-            if filtered |> List.isEmpty then ok directory
-            else Result.Bad filtered
+            if filtered |> List.isEmpty then Ok directory
+            else Error filtered
 
     let ensureNotInStrictMode environment =
-        if not environment.DependenciesFile.Groups.[Constants.MainDependencyGroup].Options.Strict then ok environment
-        else fail StrictModeDetected
+        if not environment.DependenciesFile.Groups.[Constants.MainDependencyGroup].Options.Strict then Ok environment
+        else Error StrictModeDetected
 
     let ensureLockFileExists environment =
         environment.LockFile
-        |> failIfNone (LockFileNotFound environment.RootDirectory)
+        |> Result.requireSome (LockFileNotFound environment.RootDirectory)
 
     let initWithContent sources additional (directory : DirectoryInfo) =
         match locatePaketRootDirectory directory with
         | Some rootDirectory when rootDirectory.FullName = directory.FullName ->
             Logging.tracefn "Paket is already initialized in %s" rootDirectory.FullName
-            ok ()
+            Ok ()
         | _ ->
             let sourcesSerialized =
                 (sources

@@ -939,3 +939,15 @@ module Task =
 
     let Map<'TIn,'TOut> (mapper : 'TIn -> 'TOut) (t:Task<'TIn>) : Task<'TOut> =
         t.ContinueWith (fun (t:Task<'TIn>) -> mapper(t.Result))
+
+[<RequireQualifiedAccess>]
+module Result =
+
+    let returnOrFail =
+        function
+        | Ok x -> x
+        | Error errors -> 
+            errors
+            |> Seq.map (sprintf "%O")
+            |> String.concat (Environment.NewLine + "\t")
+            |> failwith

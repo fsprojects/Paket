@@ -3,10 +3,10 @@ source https://api.nuget.org/v3/index.json
 storage: none
 content: none
 
-nuget FsToolkit.ErrorHandling
+nuget FsToolkit.ErrorHandling > 4
 nuget Newtonsoft.Json >= 10.0.3 redirects: force
 nuget Argu >= 5.1.0
-nuget FSharp.Core = 6.0.3 redirects: force
+nuget FSharp.Core >= 6.0.3 redirects: force
 nuget Mono.Cecil ~> 0.11.1
 
 nuget System.Security.Cryptography.ProtectedData >= 4.4
