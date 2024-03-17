@@ -12,7 +12,7 @@ open InstallProcess
 let TurnOffAutoRestore environment = 
     let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
     
-    trial {
+    result {
         let paketTargetsPath = Path.Combine(exeDir, Constants.TargetsFileName)
         do! removeFile paketTargetsPath
 
@@ -30,7 +30,7 @@ let TurnOffAutoRestore environment =
 let TurnOnAutoRestore environment =
     let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
 
-    trial {
+    validation {
         do! TurnOffAutoRestore environment
 #if NO_BOOTSTRAPPER
         do! downloadLatestTargets environment 

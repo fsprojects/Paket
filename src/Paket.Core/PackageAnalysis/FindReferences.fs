@@ -15,6 +15,7 @@ let private findReferencesFor groupName package (lockFile: LockFile) projects = 
 
             return if referenced then Some project else None })
         |> List.sequenceResultA
+        |> Result.mapError List.concat
 
     return referencedIn |> List.choose id
 }
@@ -24,11 +25,12 @@ let FindReferencesForPackage groupName package environment = validation {
     return! findReferencesFor groupName package lockFile environment.Projects
 }
 
-let TouchReferencesOfPackages packages environment = result {
+let TouchReferencesOfPackages packages environment = validation {
     let! references =
         packages
         |> List.map (fun (group,package) -> FindReferencesForPackage group package environment)
         |> List.sequenceResultA
+        |> Result.mapError List.concat
 
     let projects =
         references
@@ -44,9 +46,10 @@ let ShowReferencesFor packages environment = validation {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
     let! projectsPerPackage =
         packages
-        |> List.map (fun (groupName,package) -> result {
+        |> List.map (fun (groupName,package) -> validation {
             let! projects = findReferencesFor groupName package lockFile environment.Projects
-            return groupName, package, projects })
+            return groupName, package, projects }
+        )
         |> List.sequenceResultA
         |> Result.mapError List.concat
 

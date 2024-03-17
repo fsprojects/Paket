@@ -9,7 +9,7 @@ open Paket.Domain
 
 
 let private download version (file:FileInfo) client = 
-    trial {
+    result {
         tracen (sprintf "%A" file)
 
         do! createDir(file.DirectoryName)
@@ -32,7 +32,7 @@ let private downloadLatestVersionOf files destDir =
 
     let client = createHttpClient(Constants.GitHubUrl, auth)
 
-    trial {
+    validation {
         let latest = "https://github.com/fsprojects/Paket/releases/latest";
         let! data = client |> downloadStringSync latest
         let title = data.Substring(data.IndexOf("<title>") + 7, (data.IndexOf("</title>") + 8 - data.IndexOf("<title>") + 7)) // grabs everything in the <title> tag
@@ -47,12 +47,11 @@ let private downloadLatestVersionOf files destDir =
             files
             |> List.exists (fun file -> doesNotExistsOrIsNewer file latestVersion)
 
-        let! downloads =
+        do!
             if isOudated then files else []
             |> List.map (fun file -> download latestVersion file client)
-            |> collect
-        
-        ()
+            |> List.sequenceResultA
+            |> Result.ignore
     }
 
 /// Downloads the latest version of the paket.bootstrapper and paket.targets to the .paket dir

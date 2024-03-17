@@ -328,24 +328,32 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             |> Ok
         with e -> DependenciesFileParseError (FileInfo dependenciesFileName, e) |> Error
         |> Result.map addPackages
+        |> Result.mapError List.singleton
 
     let create() =
-        let sources =
+        let sourceAndAuths =
             if nugetEnv.NuGetConfig.PackageSources = Map.empty then [ Constants.DefaultNuGetStream, None ]
             else
-                (nugetEnv.NuGetConfig.PackageSources
+                nugetEnv.NuGetConfig.PackageSources
                  |> Map.toList
-                 |> List.map snd)
-            |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.ToAuthentication mode n))
-            |> List.filter (fun (key,v) -> key.Contains "NuGetFallbackFolder" |> not)
-            |> List.map (fun (source, auth) ->
-                let x =
-                    try PackageSource.Parse(source,AuthProvider.ofFunction (fun _ -> auth)) |> Ok
-                    with _ -> 
-                        PackageSourceParseError source 
-                        |> Error
-                x
-                |> Result.tee PackageSource.WarnIfNoConnection
+                 |> List.map snd
+
+        let sources =
+            sourceAndAuths
+            |> List.choose (fun (source, auth) ->
+                if not <| source.Contains "NuGetFallbackFolder" then
+                    let auth = auth |> Option.map (CredsMigrationMode.ToAuthentication mode source)
+
+                    let parseResult =
+                        try 
+                            PackageSource.Parse(source,AuthProvider.ofFunction (fun _ -> auth)) |> Ok
+                        with _ -> 
+                            PackageSourceParseError source |> Error
+                        
+                    parseResult
+                    |> Result.tee PackageSource.WarnIfNoConnection
+                    |> Some
+                else None
             )
             |> List.sequenceResultA
 
@@ -367,7 +375,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             Paket.DependenciesFile(DependenciesFileParser.parseDependenciesFile dependenciesFileName false newLines))
 
     if File.Exists dependenciesFileName then read() else create()
-    |> lift (fun d -> d.SimplifyFrameworkRestrictions())
+    |> Result.map (fun d -> d.SimplifyFrameworkRestrictions())
 
 let convertPackagesConfigToReferencesFile projectFileName packagesConfig =
     let referencesFile = ProjectFile.FindOrCreateReferencesFile(FileInfo projectFileName)
@@ -443,7 +451,7 @@ let convertProjects nugetEnv =
 
         yield project, referencesFile]
 
-let createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
+let createPaketEnv rootDirectory nugetEnv credsMirationMode = result {
     let! depFile = createDependenciesFileR rootDirectory nugetEnv credsMirationMode
     let convertedProjects = convertProjects nugetEnv
     return PaketEnv.create rootDirectory depFile None convertedProjects
@@ -462,21 +470,21 @@ let updateSolutions (rootDirectory : DirectoryInfo) =
 
     solutions
 
-let createResult(rootDirectory, nugetEnv, credsMirationMode) = trial {
+let createResult(rootDirectory, nugetEnv, credsMirationMode) = result {
     let! paketEnv = createPaketEnv rootDirectory nugetEnv credsMirationMode
     return ConvertResultR.create nugetEnv paketEnv (updateSolutions rootDirectory)
 }
 
-let convertR rootDirectory force credsMigrationMode = trial {
+let convertR rootDirectory force credsMigrationMode = validation {
     let! credsMigrationMode =
         defaultArg
             (credsMigrationMode |> Option.map CredsMigrationMode.Parse)
-            (ok Encrypt)
+            (Ok Encrypt)
 
     let! nugetEnv = NugetEnv.read rootDirectory
 
     let! rootDirectory =
-        if force then ok rootDirectory
+        if force then Ok rootDirectory
         else PaketEnv.ensureNotExists rootDirectory
 
     return! createResult(rootDirectory, nugetEnv, credsMigrationMode)
@@ -522,7 +530,7 @@ let replaceNuGetWithPaket initAutoRestore installAfter result =
 
     if initAutoRestore && (autoVSPackageRestore || result.NuGetEnv.NuGetTargets.IsSome) then
         try
-            VSIntegration.TurnOnAutoRestore result.PaketEnv |> returnOrFail
+            VSIntegration.TurnOnAutoRestore result.PaketEnv |> Result.returnOrFail
         with
         | exn ->
             traceWarnfn "Could not enable auto restore%sMessage: %s" Environment.NewLine exn.Message

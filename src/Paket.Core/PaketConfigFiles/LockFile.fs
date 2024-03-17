@@ -1004,15 +1004,14 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
 
     member this.GetPackageHullSafe (referencesFile, groupName) =
         match referencesFile.Groups |> Map.tryFind groupName with
-        | None -> Result.Succeed Set.empty
+        | None -> Ok Set.empty
         | Some group ->
             group.NugetPackages
-            |> Seq.map (fun package ->
+            |> List.map (fun package ->
                 this.GetAllDependenciesOfSafe(groupName,package.Name)
-                |> failIfNone (ReferenceNotFoundInLockFile(referencesFile.FileName, groupName.ToString(), package.Name)))
-            |> collect
-            |> lift (Seq.concat >> Set.ofSeq)
-
+                |> Result.requireSome (ReferenceNotFoundInLockFile(referencesFile.FileName, groupName.ToString(), package.Name)))
+            |> List.sequenceResultA
+            |> Result.map (Seq.concat >> Set.ofSeq)
 
     member this.GetInstalledPackageModel (QualifiedPackageName(groupName, packageName)) =
         match this.Groups |> Map.tryFind groupName with

@@ -258,7 +258,7 @@ module internal TemplateFile =
             | ProjectInfo(core, optional) -> ProjectInfo(core, { optional with ProjectUrl = Some url })
         { templateFile with Contents = contents }
 
-    let private failP file str = fail (PackagingConfigParseError(file,str))
+    let private failP file str = Error (PackagingConfigParseError(file,str))
 
     type private PackageConfigType =
         | FileType
@@ -268,15 +268,15 @@ module internal TemplateFile =
         match Map.tryFind "type" map with
         | Some s ->
             match s with
-            | "file" -> ok FileType
-            | "project" -> ok ProjectType
+            | "file" -> Ok FileType
+            | "project" -> Ok ProjectType
             | s -> failP file (sprintf "Unknown package config type.")
         | None -> failP file (sprintf "First line of paket.template file had no 'type' declaration.")
 
     let private getId file map =
         match Map.tryFind "id" map with
         | None -> failP file "No id line in paket.template file."
-        | Some m -> ok m
+        | Some m -> Ok m
 
     let private getAuthors file (map : Map<string, string>) =
         match Map.tryFind "authors" map with
@@ -287,7 +287,7 @@ module internal TemplateFile =
 
     let private getDescription file map =
         Map.tryFind "description" map |> function
-        | Some m -> ok m
+        | Some m -> Ok m
         | None -> failP file "No description line in paket.template file."
 
     let private (|Framework|_|) (line:string) =
@@ -566,11 +566,11 @@ module internal TemplateFile =
           InterprojectReferencesConstraint = getInterprojectReferencesConstraint map}
 
     let Parse(file,lockFile,currentVersion,specificVersions,contentStream : Stream) =
-        trial {
+        result {
             use sr = new StreamReader(contentStream)
             let! map =
                 match TemplateParser.parse (sr.ReadToEnd()) with
-                | Choice1Of2 m -> ok m
+                | Choice1Of2 m -> Ok m
                 | Choice2Of2 f -> failP file f
             sr.Dispose()
 
@@ -619,7 +619,7 @@ module internal TemplateFile =
 
     let internal ParseFromFile(fileName,lockFile,currentVersion,specificVersions) =
         let fi = FileInfo fileName
-        let contents = Parse(fi.FullName,lockFile,currentVersion,specificVersions, File.OpenRead fileName) |> returnOrFail
+        let contents = Parse(fi.FullName,lockFile,currentVersion,specificVersions, File.OpenRead fileName) |> Result.mapError List.singleton |> Result.returnOrFail
 
         { FileName = fileName
           Contents = contents }
@@ -661,10 +661,10 @@ module internal TemplateFile =
     let IsProjectType (filename: string) : bool =
         match TemplateParser.parse (File.ReadAllText filename) with
         | Choice1Of2 m ->
-            let type' = parsePackageConfigType filename m
-            if type' |> failed then false
+            let type' = parsePackageConfigType filename m |> Result.mapError List.singleton
+            if type' |> Result.isError then false
             else
-                match (returnOrFail type') with
+                match (Result.returnOrFail type') with
                 | ProjectType -> true
                 | FileType -> false
         | Choice2Of2 f -> false

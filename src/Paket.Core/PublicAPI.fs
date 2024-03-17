@@ -90,7 +90,8 @@ type Dependencies(dependenciesFileName: string) =
             Path.Combine(directory.FullName,Constants.PaketFilesFolderName),
             fun () ->
                 PaketEnv.init directory
-                |> returnOrFail
+                |> Result.mapError List.singleton
+                |> Result.returnOrFail
                 false
         )
 
@@ -107,7 +108,8 @@ type Dependencies(dependenciesFileName: string) =
             Path.Combine(directory.FullName,Constants.PaketFilesFolderName),
             fun () ->
                 PaketEnv.initWithContent sources additional directory
-                |> returnOrFail
+                |> Result.mapError List.singleton
+                |> Result.returnOrFail
                 false
         )
 
@@ -128,7 +130,8 @@ type Dependencies(dependenciesFileName: string) =
             Path.Combine(rootDirectory.FullName,Constants.PaketFilesFolderName),
             fun () ->
                 NuGetConvert.convertR rootDirectory force credsMigrationMode
-                |> returnOrFail
+                |> Result.mapError List.singleton
+                |> Result.returnOrFail
                 |> NuGetConvert.replaceNuGetWithPaket initAutoRestore installAfter
         )
 
@@ -138,9 +141,9 @@ type Dependencies(dependenciesFileName: string) =
             Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
             fun () ->
                 PaketEnv.fromRootDirectory this.RootDirectory
-                >>= PaketEnv.ensureNotInStrictMode
-                >>= Simplifier.simplify interactive
-                |> returnOrFail
+                |> Validation.bind (PaketEnv.ensureNotInStrictMode >> Result.mapError List.singleton)
+                |> Validation.bind (Simplifier.simplify interactive)
+                |> Result.returnOrFail
                 |> Simplifier.updateEnvironment
                 false
         )
@@ -156,10 +159,10 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Binds the given processing ROP function to current environment and executes it.
     /// Throws on failure.
-    member private this.Process f =
+    member private this.Process (f: PaketEnv -> Validation<_, DomainMessage>) =
         PaketEnv.fromRootDirectory(this.RootDirectory)
-        >>= f
-        |> returnOrFail
+        |> Validation.bind f
+        |> Result.returnOrFail
 
     /// Adds the given package without version requirements to the dependencies file.
     member this.Add(groupName, package: string): unit = this.Add(groupName, package,"")
@@ -240,19 +243,19 @@ type Dependencies(dependenciesFileName: string) =
     member this.AddCredentials(source: string, username: string, password : string, authType : string) : unit =
         RunInLockedAccessMode(
             Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
-            fun () -> ConfigFile.askAndAddAuth source username password authType false |> returnOrFail; false)
+            fun () -> ConfigFile.askAndAddAuth source username password authType false |> Result.mapError List.singleton |> Result.returnOrFail; false)
 
      /// Adds credentials for a Nuget feed
     member this.AddCredentials(source: string, username: string, password : string, authType : string, verify : bool) : unit =
         RunInLockedAccessMode(
             Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
-            fun () -> ConfigFile.askAndAddAuth source username password authType verify |> returnOrFail; false)
+            fun () -> ConfigFile.askAndAddAuth source username password authType verify |> Result.mapError List.singleton |> Result.returnOrFail; false)
 
     /// Adds a token for a source
     member this.AddToken(source : string, token : string) : unit =
         RunInLockedAccessMode(
             Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
-            fun () -> ConfigFile.AddToken(source, token) |> returnOrFail; false)
+            fun () -> ConfigFile.AddToken(source, token) |> Result.mapError List.singleton |> Result.returnOrFail; false)
 
     /// Installs all dependencies.
     member this.Install(force: bool) = this.Install(force, false, false, false, false, SemVerUpdateMode.NoRestriction, false, false, [], [], None)
@@ -435,7 +438,8 @@ type Dependencies(dependenciesFileName: string) =
         this.ShowOutdated(strict, true, includePrereleases, groupName)
 
     member this.ShowOutdated(strict: bool, force: bool, includePrereleases: bool, groupName: string Option): unit =
-        FindOutdated.ShowOutdated strict force includePrereleases groupName |> this.Process
+        let f = FindOutdated.ShowOutdated strict force includePrereleases groupName >> Result.mapError List.singleton 
+        this.Process f
 
     /// Finds all outdated packages.
     [<Obsolete("Use FindOutdated with the force parameter set to true to get the old behavior")>]
@@ -443,8 +447,9 @@ type Dependencies(dependenciesFileName: string) =
         this.FindOutdated(strict, true, includePrereleases, groupName)
 
     member this.FindOutdated(strict: bool, force: bool, includePrereleases: bool, groupName: string Option): (string * string * SemVerInfo) list =
-        FindOutdated.FindOutdated strict force includePrereleases groupName
-        |> this.Process
+        let f = FindOutdated.FindOutdated strict force includePrereleases groupName >> Result.mapError List.singleton 
+        
+        this.Process f
         |> List.map (fun (g, p,_,newVersion) -> g.ToString(),p.ToString(),newVersion)
 
     /// Downloads the latest paket.bootstrapper into the .paket folder and try to rename it to paket.exe in order to activate magic mode.
@@ -475,7 +480,9 @@ type Dependencies(dependenciesFileName: string) =
     member this.TurnOffAutoRestore(): unit =
         RunInLockedAccessMode(
             Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
-            fun () -> VSIntegration.TurnOffAutoRestore |> this.Process; false)
+            fun () -> 
+                let f = VSIntegration.TurnOffAutoRestore >> Result.mapError List.singleton 
+                this.Process f; false)
 
     /// Returns the installed version of the given package.
     member this.GetInstalledVersion(packageName: string): string option =
@@ -509,7 +516,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.GetDefinedNuGetFeeds() : string list =
         let configured =
             match NuGetConvert.NugetEnv.readNugetConfig(this.RootDirectory) with
-            | Result.Ok(config,_) -> config.PackageSources |> Map.toList |> List.map (snd >> fst)
+            | Ok config -> config.PackageSources |> Map.toList |> List.map (snd >> fst)
             | _ -> []
         Constants.DefaultNuGetStream :: configured
         |> List.distinct
