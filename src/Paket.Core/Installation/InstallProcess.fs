@@ -626,14 +626,5 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
 let Install(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, updatedGroups, touchedPackages) =
     let root = FileInfo(lockFile.FileName).Directory.FullName
-
-    let projects = 
-        match RestoreProcess.findAllReferencesFiles root with
-        | Ok x -> x
-        | Error msgs -> 
-            msgs
-            |> Seq.map (sprintf "%O")
-            |> String.concat (Environment.NewLine + "\t")
-            |> failwithf "Error while finding references files: %s" 
-
+    let projects = RestoreProcess.findAllReferencesFiles root |> Result.returnOrFail
     InstallIntoProjects(options, forceTouch, dependenciesFile, lockFile, projects, updatedGroups,touchedPackages)

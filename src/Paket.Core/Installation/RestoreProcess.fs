@@ -708,16 +708,7 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
         if not localFileName.Exists then
             lockFile,lazy LocalFile.empty,false
         else
-            let localFile =
-                lazy (
-                    match LocalFile.readFile localFileName.FullName with
-                    | Ok x -> x
-                    | Error errors -> 
-                        errors
-                        |> Seq.map (sprintf "%O")
-                        |> String.concat (Environment.NewLine + "\t")
-                        |> failwith
-                    )
+            let localFile = lazy (LocalFile.readFile localFileName.FullName |> Result.returnOrFail)
             lazy LocalFile.overrideLockFile localFile.Value lockFile.Value,localFile,true
 
     // Shortcut if we already restored before
