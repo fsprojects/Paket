@@ -51,10 +51,9 @@ module LocalFile =
                             traceWarnfn "Exception: %O" exn
                         None
             
-            //let test : Result<PackageSource, DomainMessage> =
             try
-                let package = PackageSource.Parse source
-                LocalSourceOverride (nameGroup(source, group), package, v) |> Ok
+                let parsedSource = PackageSource.Parse source
+                LocalSourceOverride (nameGroup(package, group), parsedSource, v) |> Ok
             with _ ->
                 sprintf "Cannot parse source '%s'" source |> Error
         | Regex
