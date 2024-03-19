@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>net461;netcoreapp3.1</TargetFrameworks>
     <StartupObject>Paket.Bootstrapper.Program</StartupObject>
     <AssemblyName>paket.bootstrapper</AssemblyName>
     <ToolCommandName>paketbootstrapper</ToolCommandName>
@@ -16,7 +16,7 @@
 
   <PropertyGroup Condition=" '$(PackAsTool)' == 'true'">
     <TargetFrameworks></TargetFrameworks>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(PackAsTool)' == 'true'">
