@@ -8,6 +8,7 @@ open FsUnit
 open Paket.Domain
 open Paket.TestHelpers
 open Paket.InstallProcess
+open FsToolkit.ErrorHandling
 
 let dummyDir = System.IO.DirectoryInfo("C:/")
 let dummyProjectFile () = 
@@ -55,9 +56,9 @@ let ``should not remove dependencies with settings or version restrictions``() =
     let before = PaketEnv.create dummyDir depFile0 lockFile0 projects0
 
     match Simplifier.simplify false before with
-    | Chessie.ErrorHandling.Bad(msgs) ->
-        failwith (String.concat Environment.NewLine (msgs |> List.map string))
-    | Chessie.ErrorHandling.Ok((_,after),_) ->
+    | Error errors ->
+        failwith (String.concat Environment.NewLine (errors |> List.map string))
+    | Ok (_,after) ->
         let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
         depFile.Groups.[Constants.MainDependencyGroup].Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"C";PackageName"D";PackageName"E";PackageName"F"]
         refFiles.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |> shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("D")]
@@ -93,9 +94,9 @@ let ``should remove one level deep transitive dependencies from dep and ref file
     let before = PaketEnv.create dummyDir depFile1 lockFile1 projects1
     
     match Simplifier.simplify false before with
-    | Chessie.ErrorHandling.Bad(msgs) -> 
+    | Error msgs -> 
         failwith (String.concat Environment.NewLine (msgs |> List.map string))
-    | Chessie.ErrorHandling.Ok((_,after),_) ->
+    | Ok(_,after) ->
         let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
         depFile.Groups.[Constants.MainDependencyGroup].Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"D"]
         refFiles.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |> shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("D")]
@@ -136,9 +137,9 @@ let ``should remove all transitive dependencies from dep file recursively``() =
     let before = PaketEnv.create dummyDir depFile2 lockFile2 projects2
     
     match Simplifier.simplify false before with
-    | Chessie.ErrorHandling.Bad(msgs) -> 
+    | Error msgs -> 
         failwith (String.concat Environment.NewLine (msgs |> List.map string))
-    | Chessie.ErrorHandling.Ok((_,after),_) ->
+    | Ok (_,after) ->
         let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
         depFile.Groups.[Constants.MainDependencyGroup].Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"C"]
         refFiles.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |>  shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("C")]
@@ -214,9 +215,9 @@ let ``should remove all transitive dependencies from dep file with multiple grou
     let before = PaketEnv.create dummyDir depFile3 lockFile3 projects3
     
     match Simplifier.simplify false before with
-    | Chessie.ErrorHandling.Bad(msgs) -> 
+    | Error msgs -> 
         failwith (String.concat Environment.NewLine (msgs |> List.map string))
-    | Chessie.ErrorHandling.Ok((_,after),_) ->
+    | Ok (_,after) ->
         let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
         depFile.Groups.[Constants.MainDependencyGroup].Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"C"]
         refFiles.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |>  shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("C")]
@@ -278,9 +279,9 @@ let ``should remove all transitive dependencies from dep file and ref file with 
     let fooGroupName = (GroupName "Foo")
 
     match Simplifier.simplify false before with
-    | Chessie.ErrorHandling.Bad(msgs) -> 
+    | Error msgs -> 
         failwith (String.concat Environment.NewLine (msgs |> List.map string))
-    | Chessie.ErrorHandling.Ok((_,after),_) ->
+    | Ok (_,after) ->
         let depFile,refFiles = after.DependenciesFile, after.Projects |> List.map snd
         depFile.Groups.[fooGroupName].Packages |> List.map (fun p -> p.Name) |> shouldEqual [PackageName"A";PackageName"C"]
         refFiles.Head.Groups.[fooGroupName].NugetPackages |>  shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("C")]

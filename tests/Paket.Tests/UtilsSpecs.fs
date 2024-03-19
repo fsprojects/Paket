@@ -302,7 +302,7 @@ let ``saving new XML file should produce valid XML``() =
     try
         let doc = XmlDocument ()
         doc.AppendChild(doc.CreateElement("configuration")) |> ignore
-        saveNormalizedXml tempFile doc |> shouldEqual (ok ())
+        saveNormalizedXml tempFile doc |> shouldEqual (Ok ())
         let newDoc = XmlDocument ()
         use f = File.OpenRead(tempFile)
         newDoc.Load f

@@ -2,6 +2,7 @@
 
 open System.IO
 open Paket
+open Paket.Core
 open FsToolkit.ErrorHandling
 open FsUnit
 open NUnit.Framework
@@ -75,7 +76,8 @@ let strToStream (str : string) =
 let ``Parsing minimal file based packages works`` (fileContent, desc) =
     let result =
         TemplateFile.Parse("file1.template",LockFile.Parse("",[||]), None, Map.empty, strToStream fileContent)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
 
     match result with
     | ProjectInfo _ ->
@@ -105,7 +107,7 @@ description A short description
 [<TestCase(Invalid3)>]
 let ``Invalid file input recognised as invalid`` (fileContent : string) =
     TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream fileContent)
-    |> failed
+    |> Result.isError
     |> shouldEqual true
 
 [<Literal>]
@@ -183,14 +185,15 @@ description
 [<TestCase(FullTest)>]
 let ``Valid file input recognised as valid`` (fileContent : string) =
    TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream fileContent)
-    |> failed
+    |> Result.isError
     |> shouldEqual false
 
 [<TestCase(FullTest)>]
 let ``Optional fields are read`` (fileContent : string) =
     let sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream fileContent)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
@@ -233,7 +236,8 @@ dependencies
 let ``Detect dependencies correctly`` fileContent =
     let sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream fileContent)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
@@ -269,7 +273,8 @@ dependencies
 
     let sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream fileContent)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
@@ -320,7 +325,8 @@ dependencies
 
     shouldFail (fun _ ->
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream fileContent)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> ignore
     )
 
@@ -370,7 +376,8 @@ dependencies
     let content = fileContent.Replace("CURRENTVERSION", placeholder)
     let sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), Some(SemVer.Parse source), Map.empty, strToStream content)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
@@ -403,7 +410,8 @@ dependencies
     let customVersions = Map.ofList [("Project.C", specificVersion); ("Project.B", specificVersion)]
     let version,sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), Some(globalVersion), customVersions, strToStream fileContent)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> function
            | CompleteInfo (info, opt) -> info.Version, opt
            | ProjectInfo (info, opt) -> info.Version, opt
@@ -510,7 +518,8 @@ GITHUB
 
     let sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",toLines lockLines), Some(SemVer.Parse "2.1"), Map.empty, strToStream content)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
@@ -595,7 +604,8 @@ GITHUB
 
     let sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",toLines lockLines), Some(SemVer.Parse "2.1"), Map.empty, strToStream content)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
@@ -675,7 +685,8 @@ GITHUB
 
     let sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",toLines lockFile), Some(SemVer.Parse "2.1"), Map.empty, strToStream content)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
@@ -707,7 +718,8 @@ files
 """
     let sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
@@ -733,7 +745,8 @@ version
 """
     let sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
@@ -761,7 +774,8 @@ version
 """
     let sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
@@ -788,7 +802,8 @@ files
 """
     let sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
@@ -817,7 +832,8 @@ files
 """
     let sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
@@ -843,7 +859,8 @@ files
 """
     let sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
@@ -869,7 +886,8 @@ files
 """
     let sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
@@ -885,7 +903,8 @@ let ProjectType1 = """type project
 let ``Parsing minimal project based packages works`` fileContent =
     let result =
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream fileContent)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
 
     match result with
     | CompleteInfo _ ->
@@ -929,7 +948,8 @@ files
 """
     let sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
@@ -1002,7 +1022,8 @@ interproject-references keep-minor
 """
     let sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
@@ -1048,7 +1069,8 @@ excludeddependencies
 
     let sut =
         TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
-        |> returnOrFail
+        |> Result.mapError List.singleton
+        |> Result.returnOrFail
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt

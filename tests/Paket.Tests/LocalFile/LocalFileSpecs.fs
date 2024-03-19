@@ -22,7 +22,7 @@ let ``should parse single dev source override``() =
                  LocalNuGet ("./local_source", None),
                  None) 
         ]
-        |> Trial.ok
+        |> Ok
 
     let actual = LocalFile.parse (toLines contents |> Array.toList)
 
@@ -40,7 +40,7 @@ let ``should parse single dev source override in group``() =
                  LocalNuGet ("./local_source", None),
                  None) 
         ]
-        |> Trial.ok
+        |> Ok
 
     let actual = LocalFile.parse (toLines contents |> Array.toList)
 
@@ -59,7 +59,7 @@ let ``should parse single dev source override with version``() =
                  LocalNuGet ("./local_source", None),
                  Some SemVer.Zero) 
         ]
-        |> Trial.ok
+        |> Ok
 
     let actual = LocalFile.parse (toLines contents |> Array.toList)
 
@@ -77,7 +77,7 @@ let ``should ignore comments``() =
     let actual = LocalFile.parse (toLines contents |> Array.toList)
 
     match actual with
-    | Ok (LocalFile overrides, _) ->
+    | Ok (LocalFile overrides) ->
         overrides |> shouldHaveLength 2
-    | Bad msgs ->
+    | Error msgs ->
         Assert.Fail (msgs |> String.concat System.Environment.NewLine)
