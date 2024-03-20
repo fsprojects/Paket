@@ -65,6 +65,8 @@ group FSharpDepManagerExtension
 
 # Temporary until the integration code is updated to use the latest FSharp.Compiler.Service
 group IntegrationTests
+  content: none
+  storage: none
   source https://api.nuget.org/v3/index.json
-  nuget FSharp.Core = 5.0.0 redirects: force
-  nuget FSharp.Compiler.Service
+  nuget FSharp.Core ~> 5.0.0 redirects: force
+  nuget FSharp.Compiler.Service ~> 38
