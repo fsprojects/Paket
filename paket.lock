@@ -879,37 +879,37 @@ NUGET
       System.Threading.Tasks.Parallel (>= 4.3) - restriction: >= netstandard2.0
       System.Threading.Thread (>= 4.3) - restriction: >= netstandard2.0
       System.Threading.ThreadPool (>= 4.3) - restriction: >= netstandard2.0
-    FSharp.Core (5.0) - redirects: force
+    FSharp.Core (5.0)
     Microsoft.Build.Framework (17.9.5) - restriction: >= netstandard2.0
       Microsoft.Win32.Registry (>= 5.0) - restriction: && (< net472) (>= netstandard2.0)
       System.Memory (>= 4.5.5) - restriction: && (< net472) (>= netstandard2.0)
       System.Runtime.CompilerServices.Unsafe (>= 6.0) - restriction: >= netstandard2.0
       System.Security.Principal.Windows (>= 5.0) - restriction: && (< net472) (>= netstandard2.0)
     Microsoft.Build.Tasks.Core (17.9.5) - restriction: >= netstandard2.0
-      Microsoft.Build.Framework (>= 17.9.5)
-      Microsoft.Build.Utilities.Core (>= 17.9.5)
+      Microsoft.Build.Framework (>= 17.9.5) - restriction: >= netstandard2.0
+      Microsoft.Build.Utilities.Core (>= 17.9.5) - restriction: >= netstandard2.0
       Microsoft.IO.Redist (>= 6.0) - restriction: >= net472
-      Microsoft.NET.StringTools (>= 17.9.5)
+      Microsoft.NET.StringTools (>= 17.9.5) - restriction: >= netstandard2.0
       Microsoft.Win32.Registry (>= 5.0) - restriction: && (< net472) (>= netstandard2.0)
-      System.CodeDom (>= 7.0) - restriction: || (&& (< net472) (>= netstandard2.0)) (< netstandard2.0)
-      System.Collections.Immutable (>= 8.0)
-      System.Configuration.ConfigurationManager (>= 8.0)
+      System.CodeDom (>= 7.0) - restriction: && (< net472) (>= netstandard2.0)
+      System.Collections.Immutable (>= 8.0) - restriction: >= netstandard2.0
+      System.Configuration.ConfigurationManager (>= 8.0) - restriction: >= netstandard2.0
       System.Memory (>= 4.5.5) - restriction: >= netstandard2.0
       System.Reflection.Metadata (>= 8.0) - restriction: && (< net472) (>= netstandard2.0)
-      System.Resources.Extensions (>= 8.0)
+      System.Resources.Extensions (>= 8.0) - restriction: >= netstandard2.0
       System.Runtime.CompilerServices.Unsafe (>= 6.0) - restriction: >= netstandard2.0
-      System.Security.Cryptography.Pkcs (>= 7.0.2) - restriction: || (&& (< net472) (>= netstandard2.0)) (< netstandard2.0)
-      System.Security.Cryptography.Xml (>= 7.0.1) - restriction: || (&& (< net472) (>= netstandard2.0)) (< netstandard2.0)
+      System.Security.Cryptography.Pkcs (>= 7.0.2) - restriction: && (< net472) (>= netstandard2.0)
+      System.Security.Cryptography.Xml (>= 7.0.1) - restriction: && (< net472) (>= netstandard2.0)
       System.Security.Principal.Windows (>= 5.0) - restriction: && (< net472) (>= netstandard2.0)
       System.Text.Encoding.CodePages (>= 7.0) - restriction: && (< net472) (>= netstandard2.0)
       System.Threading.Tasks.Dataflow (>= 8.0) - restriction: >= netstandard2.0
     Microsoft.Build.Utilities.Core (17.9.5) - restriction: >= netstandard2.0
-      Microsoft.Build.Framework (>= 17.9.5)
+      Microsoft.Build.Framework (>= 17.9.5) - restriction: >= netstandard2.0
       Microsoft.IO.Redist (>= 6.0) - restriction: >= net472
-      Microsoft.NET.StringTools (>= 17.9.5)
+      Microsoft.NET.StringTools (>= 17.9.5) - restriction: >= netstandard2.0
       Microsoft.Win32.Registry (>= 5.0) - restriction: && (< net472) (>= netstandard2.0)
-      System.Collections.Immutable (>= 8.0)
-      System.Configuration.ConfigurationManager (>= 8.0)
+      System.Collections.Immutable (>= 8.0) - restriction: >= netstandard2.0
+      System.Configuration.ConfigurationManager (>= 8.0) - restriction: >= netstandard2.0
       System.Memory (>= 4.5.5) - restriction: >= netstandard2.0
       System.Runtime.CompilerServices.Unsafe (>= 6.0) - restriction: >= netstandard2.0
       System.Security.Principal.Windows (>= 5.0) - restriction: && (< net472) (>= netstandard2.0)
