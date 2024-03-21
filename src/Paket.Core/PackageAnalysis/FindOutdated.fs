@@ -3,7 +3,7 @@ module Paket.FindOutdated
 
 open Paket.Domain
 open Paket.Logging
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open System.IO
 
 let private adjustVersionRequirements strict includingPrereleases (dependenciesFile: DependenciesFile) =
@@ -25,7 +25,7 @@ let private adjustVersionRequirements strict includingPrereleases (dependenciesF
     DependenciesFile(dependenciesFile.FileName, groups, dependenciesFile.Lines)
 
 /// Finds all outdated packages.
-let FindOutdated strict force includingPrereleases groupNameFilter environment = trial {
+let FindOutdated strict force includingPrereleases groupNameFilter environment = result {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
 
     let dependenciesFile =
@@ -82,7 +82,7 @@ let private printOutdated changed =
                 tracefn "    * %O %O -> %O" packageName oldVersion newVersion
 
 /// Prints all outdated packages.
-let ShowOutdated strict force includingPrereleases groupName environment = trial {
+let ShowOutdated strict force includingPrereleases groupName environment = result {
     let! allOutdated = FindOutdated strict force includingPrereleases groupName environment
     printOutdated allOutdated
 }

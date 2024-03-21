@@ -2,7 +2,7 @@
 module Paket.InstallProcess
 
 open Paket
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open Paket.Domain
 open Paket.Logging
 open Paket.BindingRedirects
@@ -624,9 +624,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 with
                 | _ -> ()
 
-/// Installs all packages from the lock file.
 let Install(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, updatedGroups, touchedPackages) =
     let root = FileInfo(lockFile.FileName).Directory.FullName
-
-    let projects = RestoreProcess.findAllReferencesFiles root |> returnOrFail
+    let projects = RestoreProcess.findAllReferencesFiles root |> Result.returnOrFail
     InstallIntoProjects(options, forceTouch, dependenciesFile, lockFile, projects, updatedGroups,touchedPackages)

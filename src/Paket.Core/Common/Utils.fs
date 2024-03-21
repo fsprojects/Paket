@@ -10,7 +10,7 @@ open System.Text
 open Paket
 open Paket.Logging
 open Paket.Constants
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open Paket.Domain
 
 open System.Threading
@@ -167,9 +167,9 @@ let createDir path =
     try
         let dir = DirectoryInfo path
         if not dir.Exists then dir.Create()
-        ok ()
+        Ok ()
     with _ ->
-        DirectoryCreateError path |> fail
+        DirectoryCreateError path |> Error
 
 let rec emptyDir (dirInfo:DirectoryInfo) =
     if dirInfo.Exists then
@@ -355,9 +355,9 @@ let saveNormalizedXml (fileName:string) (doc:XmlDocument) =
     try
         use fstream = File.Create(fileName)
         use xmlTextWriter = XmlWriter.Create(fstream, settings)
-        doc.WriteTo(xmlTextWriter) |> ok
+        doc.WriteTo(xmlTextWriter) |> Ok
     with _ ->
-        FileSaveError fileName |> fail
+        FileSaveError fileName |> Error
 
 let mutable autoAnswer = None
 let readAnswer() =
@@ -681,18 +681,18 @@ let parseKeyValuePairs (s:string) : Dictionary<string,string> =
 let saveFile (fileName : string) (contents : string) =
     verbosefn "Saving file %s" fileName
     try
-        File.WriteAllText (fileName, contents) |> ok
+        File.WriteAllText (fileName, contents) |> Ok
     with _ ->
-        FileSaveError fileName |> fail
+        FileSaveError fileName |> Error
 
 let removeFile (fileName : string) =
     if File.Exists fileName then
         tracefn "Removing file %s" fileName
         try
-            File.Delete fileName |> ok
+            File.Delete fileName |> Ok
         with _ ->
-            FileDeleteError fileName |> fail
-    else ok ()
+            FileDeleteError fileName |> Error
+    else Ok ()
 
 let normalizeLineEndings (text : string) =
     text.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", Environment.NewLine)
@@ -939,3 +939,15 @@ module Task =
 
     let Map<'TIn,'TOut> (mapper : 'TIn -> 'TOut) (t:Task<'TIn>) : Task<'TOut> =
         t.ContinueWith (fun (t:Task<'TIn>) -> mapper(t.Result))
+
+[<RequireQualifiedAccess>]
+module Result =
+
+    let returnOrFail =
+        function
+        | Ok x -> x
+        | Error errors -> 
+            errors
+            |> Seq.map (sprintf "%O")
+            |> String.concat (Environment.NewLine + "\t")
+            |> failwith

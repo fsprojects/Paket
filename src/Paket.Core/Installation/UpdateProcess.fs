@@ -5,7 +5,7 @@ open Paket
 open System.IO
 open Paket.Domain
 open Paket.PackageResolver
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open Paket.Logging
 
 let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGraphFromPackage (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode semVerUpdateMode =
@@ -179,7 +179,7 @@ let detectProjectFrameworksForDependenciesFile (dependenciesFile:DependenciesFil
     let groups =
         let targetFrameworks = lazy (
             let rawRestrictions =
-                RestoreProcess.findAllReferencesFiles root |> returnOrFail
+                RestoreProcess.findAllReferencesFiles root |> Result.returnOrFail
                 |> List.collect (fun (p,_) ->
                     p.GetTargetProfiles()
                     |> List.map Requirements.FrameworkRestriction.ExactlyPlatform)
@@ -280,7 +280,7 @@ let SmartInstall(dependenciesFile:DependenciesFile, updateMode, options : Update
     let lockFile,hasChanged,updatedGroups,touchedPackages = SelectiveUpdate(dependenciesFile, options.Common.AlternativeProjectRoot, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)
 
     let root = Path.GetDirectoryName dependenciesFile.FileName
-    let projectsAndReferences = RestoreProcess.findAllReferencesFiles root |> returnOrFail
+    let projectsAndReferences = RestoreProcess.findAllReferencesFiles root |> Result.returnOrFail
 
     if not options.NoInstall then 
         tracefn "Installing into projects:"

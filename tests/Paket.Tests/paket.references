@@ -1,11 +1,10 @@
 FSharp.Core
 Argu
-Chessie
 Newtonsoft.Json
 Microsoft.NET.Test.Sdk
 NUnit
 NUnit3TestAdapter
 FsCheck
 Microsoft.NETFramework.ReferenceAssemblies.net461
-
+FsToolkit.ErrorHandling
 File:FsUnit.fs .

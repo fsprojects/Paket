@@ -3,13 +3,14 @@ source https://api.nuget.org/v3/index.json
 storage: none
 content: none
 
+nuget FsToolkit.ErrorHandling > 4
 nuget Newtonsoft.Json >= 10.0.3 redirects: force
 nuget Argu >= 5.1.0
-nuget FSharp.Core = 6.0.3 redirects: force
-nuget Chessie >= 0.6
+nuget FSharp.Core >= 6.0.3 redirects: force
 nuget Mono.Cecil ~> 0.11.1
 
 nuget System.Security.Cryptography.ProtectedData >= 4.4
+nuget System.Security.Permissions >= 6
 
 nuget NETStandard.Library ~> 2.0
 nuget Microsoft.NETCore.App ~> 2.1
@@ -61,3 +62,9 @@ group Build
 group FSharpDepManagerExtension
   source https://api.nuget.org/v3/index.json
   nuget FSharp.Core = 5.0.0 redirects: force
+
+# Temporary until the integration code is updated to use the latest FSharp.Compiler.Service
+group IntegrationTests
+  source https://api.nuget.org/v3/index.json
+  nuget FSharp.Core
+  nuget FSharp.Compiler.Service ~> 38.0.2

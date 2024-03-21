@@ -67,10 +67,10 @@ let mutable dotnetExePath = "dotnet"
 
 let buildDir = "bin"
 let buildDirNet461 = buildDir @@ "net461"
-let buildDirNetCore = buildDir @@ "netcoreapp2.1"
+let buildDirNetCore = buildDir @@ "netcoreapp3.1"
 let buildDirBootstrapper = "bin_bootstrapper"
 let buildDirBootstrapperNet461 = buildDirBootstrapper @@ "net461"
-let buildDirBootstrapperNetCore = buildDirBootstrapper @@ "netcoreapp2.1"
+let buildDirBootstrapperNetCore = buildDirBootstrapper @@ "netcoreapp3.1"
 let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
 let paketFile = buildMergedDir @@ "paket.exe"
@@ -199,7 +199,7 @@ Target "Publish" (fun _ ->
     DotNetCli.Publish (fun c ->
         { c with
             Project = "src/Paket"
-            Framework = "netcoreapp2.1"
+            Framework = "netcoreapp3.1"
             Output = FullName (currentDirectory </> buildDirNetCore)
             ToolPath = dotnetExePath
             AdditionalArgs = publishArgs
@@ -217,7 +217,7 @@ Target "Publish" (fun _ ->
     DotNetCli.Publish (fun c ->
         { c with
             Project = "src/Paket.Bootstrapper"
-            Framework = "netcoreapp2.1"
+            Framework = "netcoreapp3.1"
             Output = FullName (currentDirectory </> buildDirBootstrapperNetCore)
             ToolPath = dotnetExePath
             AdditionalArgs = publishArgs
@@ -248,10 +248,10 @@ Target "RunTests" (fun _ ->
             })
 
     runTest "net" "Paket.Tests" "net461"
-    runTest "netcore" "Paket.Tests" "netcoreapp3.0"
+    runTest "netcore" "Paket.Tests" "netcoreapp3.1"
 
     runTest "net" "Paket.Bootstrapper.Tests" "net461"
-    runTest "netcore" "Paket.Bootstrapper.Tests" "netcoreapp3.0"
+    runTest "netcore" "Paket.Bootstrapper.Tests" "netcoreapp3.1"
 )
 
 Target "QuickTest" (fun _ ->
@@ -292,7 +292,7 @@ Target "MergePaketTool" (fun _ ->
     let mergeLibs =
         [
             "Argu.dll"
-            "Chessie.dll"
+            "FsToolkit.ErrorHandling.dll"
             "Fake.Core.ReleaseNotes.dll"
             "FSharp.Core.dll"
             "Mono.Cecil.dll"

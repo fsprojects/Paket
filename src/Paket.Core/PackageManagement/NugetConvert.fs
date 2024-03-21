@@ -10,7 +10,7 @@ open Paket.Logging
 open Paket.Xml
 open Paket.PackageSources
 open Paket.Requirements
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open Paket.PackagesConfigFile
 open InstallProcess
 
@@ -21,10 +21,10 @@ type CredsMigrationMode =
 
     static member Parse(s : string) =
         match s with
-        | "encrypt" -> ok Encrypt
-        | "plaintext" -> ok Plaintext
-        | "selective" -> ok Selective
-        | _ ->  InvalidCredentialsMigrationMode s |> fail
+        | "encrypt" -> Ok Encrypt
+        | "plaintext" -> Ok Plaintext
+        | "selective" -> Ok Selective
+        | _ ->  InvalidCredentialsMigrationMode s |> Error
 
     static member ToAuthentication mode sourceName auth =
         match mode, auth with
@@ -82,11 +82,11 @@ type NugetConfig =
             let doc = XmlDocument()
             ( use f = File.OpenRead file.FullName
               doc.Load(f))
-            (doc |> getNode "configuration").Value |> ok
+            (doc |> getNode "configuration").Value |> Ok
         with _ ->
             file
             |> NugetConfigFileParseError
-            |> fail
+            |> Error
 
     static member OverrideConfig nugetConfig (configNode : XmlNode) =
         let getAuth key =
@@ -167,11 +167,11 @@ module NugetEnv =
         |> List.filter (fun fi -> fi.Exists)
         |> List.fold (fun config file ->
                         config
-                        |> bind (fun config ->
+                        |> Result.bind (fun config ->
                             file
                             |> NugetConfig.GetConfigNode
-                            |> lift (NugetConfig.OverrideConfig config)))
-                        (ok NugetConfig.Empty)
+                            |> Result.map (NugetConfig.OverrideConfig config)))
+                        (Ok NugetConfig.Empty)
 
     let readNuGetPackages(rootDirectory : DirectoryInfo) =
         let readSingle(file : FileInfo) =
@@ -179,23 +179,25 @@ module NugetEnv =
                 { File = file
                   Type = if file.Directory.Name = ".nuget" then SolutionLevel else ProjectLevel
                   Packages = PackagesConfigFile.Read file.FullName }
-                |> ok
-            with _ -> fail (NugetPackagesConfigParseError file)
+                |> Ok
+            with _ -> Error (NugetPackagesConfigParseError file)
 
         let readPackages (projectFile : ProjectFile) : Result<ProjectFile * option<NugetPackagesConfig>, DomainMessage> =
             let path = Path.Combine(Path.GetDirectoryName(projectFile.FileName), Constants.PackagesConfigFile)
             if File.Exists path then
-                FileInfo(path) |> readSingle |> lift Some
+                FileInfo(path) |> readSingle |> Result.map Some
             else
-                Result.Succeed None
-            |> lift (fun configFile -> (projectFile,configFile))
+                Ok None
+            |> Result.map (fun configFile -> (projectFile,configFile))
 
         let projectFiles = ProjectFile.FindAllProjects rootDirectory.FullName
 
         projectFiles
         |> Array.map readPackages
-        |> collect
-    let read (rootDirectory : DirectoryInfo) = trial {
+        |> Array.toList
+        |> List.sequenceResultA
+
+    let read (rootDirectory : DirectoryInfo) = validation {
         let configs = FindAllFiles(rootDirectory.FullName, "nuget.config") |> Array.toList
         let targets = FindAllFiles(rootDirectory.FullName, "nuget.targets") |> Array.tryHead
         let exe = FindAllFiles(rootDirectory.FullName, "nuget.exe") |> Array.tryHead
@@ -323,28 +325,40 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                 dependenciesFile.Add(groupName, packageName,versionRequirement.Range,installSettings, reqKind)) dependenciesFile
         try
             DependenciesFile.ReadFromFile dependenciesFileName
-            |> ok
-        with e -> DependenciesFileParseError (FileInfo dependenciesFileName, e) |> fail
-        |> lift addPackages
+            |> Ok
+        with e -> DependenciesFileParseError (FileInfo dependenciesFileName, e) |> Error
+        |> Result.map addPackages
+        |> Result.mapError List.singleton
 
     let create() =
-        let sources =
+        let sourceAndAuths =
             if nugetEnv.NuGetConfig.PackageSources = Map.empty then [ Constants.DefaultNuGetStream, None ]
             else
-                (nugetEnv.NuGetConfig.PackageSources
+                nugetEnv.NuGetConfig.PackageSources
                  |> Map.toList
-                 |> List.map snd)
-            |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.ToAuthentication mode n))
-            |> List.filter (fun (key,v) -> key.Contains "NuGetFallbackFolder" |> not)
-            |> List.map (fun (source, auth) ->
-                            try PackageSource.Parse(source,AuthProvider.ofFunction (fun _ -> auth)) |> ok
-                            with _ -> source |> PackageSourceParseError |> fail
-                            |> successTee PackageSource.WarnIfNoConnection)
+                 |> List.map snd
 
-            |> collect
+        let sources =
+            sourceAndAuths
+            |> List.choose (fun (source, auth) ->
+                if not <| source.Contains "NuGetFallbackFolder" then
+                    let auth = auth |> Option.map (CredsMigrationMode.ToAuthentication mode source)
+
+                    let parseResult =
+                        try 
+                            PackageSource.Parse(source,AuthProvider.ofFunction (fun _ -> auth)) |> Ok
+                        with _ -> 
+                            PackageSourceParseError source |> Error
+                        
+                    parseResult
+                    |> Result.tee PackageSource.WarnIfNoConnection
+                    |> Some
+                else None
+            )
+            |> List.sequenceResultA
 
         sources
-        |> lift (fun sources ->
+        |> Result.map (fun sources ->
             let sourceLines = sources |> List.map (fun s -> DependenciesFileSerializer.sourceString(s.ToString()))
             let packageLines =
                 packages
@@ -361,7 +375,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             Paket.DependenciesFile(DependenciesFileParser.parseDependenciesFile dependenciesFileName false newLines))
 
     if File.Exists dependenciesFileName then read() else create()
-    |> lift (fun d -> d.SimplifyFrameworkRestrictions())
+    |> Result.map (fun d -> d.SimplifyFrameworkRestrictions())
 
 let convertPackagesConfigToReferencesFile projectFileName packagesConfig =
     let referencesFile = ProjectFile.FindOrCreateReferencesFile(FileInfo projectFileName)
@@ -437,7 +451,7 @@ let convertProjects nugetEnv =
 
         yield project, referencesFile]
 
-let createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
+let createPaketEnv rootDirectory nugetEnv credsMirationMode = result {
     let! depFile = createDependenciesFileR rootDirectory nugetEnv credsMirationMode
     let convertedProjects = convertProjects nugetEnv
     return PaketEnv.create rootDirectory depFile None convertedProjects
@@ -456,21 +470,21 @@ let updateSolutions (rootDirectory : DirectoryInfo) =
 
     solutions
 
-let createResult(rootDirectory, nugetEnv, credsMirationMode) = trial {
+let createResult(rootDirectory, nugetEnv, credsMirationMode) = result {
     let! paketEnv = createPaketEnv rootDirectory nugetEnv credsMirationMode
     return ConvertResultR.create nugetEnv paketEnv (updateSolutions rootDirectory)
 }
 
-let convertR rootDirectory force credsMigrationMode = trial {
+let convertR rootDirectory force credsMigrationMode = validation {
     let! credsMigrationMode =
         defaultArg
             (credsMigrationMode |> Option.map CredsMigrationMode.Parse)
-            (ok Encrypt)
+            (Ok Encrypt)
 
     let! nugetEnv = NugetEnv.read rootDirectory
 
     let! rootDirectory =
-        if force then ok rootDirectory
+        if force then Ok rootDirectory
         else PaketEnv.ensureNotExists rootDirectory
 
     return! createResult(rootDirectory, nugetEnv, credsMigrationMode)
@@ -516,7 +530,7 @@ let replaceNuGetWithPaket initAutoRestore installAfter result =
 
     if initAutoRestore && (autoVSPackageRestore || result.NuGetEnv.NuGetTargets.IsSome) then
         try
-            VSIntegration.TurnOnAutoRestore result.PaketEnv |> returnOrFail
+            VSIntegration.TurnOnAutoRestore result.PaketEnv |> Result.returnOrFail
         with
         | exn ->
             traceWarnfn "Could not enable auto restore%sMessage: %s" Environment.NewLine exn.Message

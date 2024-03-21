@@ -6,7 +6,7 @@ open System.IO
 open Paket.Logging
 open System.Collections.Generic
 open Paket.PackageMetaData
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 
 let private tryGenerateDescription packageId outputType =
     match packageId with
@@ -115,7 +115,7 @@ let Pack(workingDir: string, dependenciesFile : DependenciesFile, packageOutputP
     let buildConfig = defaultArg buildConfig "Release"
     let buildPlatform = defaultArg buildPlatform ""
     let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(workingDir,packageOutputPath)
-    Utils.createDir packageOutputPath |> returnOrFail
+    Utils.createDir packageOutputPath |> Result.mapError List.singleton |> Result.returnOrFail
 
     let lockFile =
         let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName

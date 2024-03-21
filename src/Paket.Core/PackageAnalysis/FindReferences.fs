@@ -1,12 +1,12 @@
 ﻿module Paket.FindReferences
 
 open Logging
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 
-let private findReferencesFor groupName package (lockFile: LockFile) projects = trial {
+let private findReferencesFor groupName package (lockFile: LockFile) projects = validation {
     let! referencedIn =
         projects
-        |> Seq.map (fun (project : ProjectFile, referencesFile) -> trial {
+        |> List.map (fun (project : ProjectFile, referencesFile) -> result {
             let! installedPackages = lockFile.GetPackageHullSafe(referencesFile,groupName)
 
             let referenced =
@@ -14,22 +14,23 @@ let private findReferencesFor groupName package (lockFile: LockFile) projects = 
                 |> Set.contains package
 
             return if referenced then Some project else None })
-        |> collect
+        |> List.sequenceResultA
+        |> Result.mapError List.concat
 
     return referencedIn |> List.choose id
 }
 
-let FindReferencesForPackage groupName package environment = trial {
+let FindReferencesForPackage groupName package environment = validation {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
-
     return! findReferencesFor groupName package lockFile environment.Projects
 }
 
-let TouchReferencesOfPackages packages environment = trial {
+let TouchReferencesOfPackages packages environment = validation {
     let! references =
         packages
         |> List.map (fun (group,package) -> FindReferencesForPackage group package environment)
-        |> collect
+        |> List.sequenceResultA
+        |> Result.mapError List.concat
 
     let projects =
         references
@@ -41,14 +42,16 @@ let TouchReferencesOfPackages packages environment = trial {
         project.Save true
 }
 
-let ShowReferencesFor packages environment = trial {
+let ShowReferencesFor packages environment = validation {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
     let! projectsPerPackage =
         packages
-        |> Seq.map (fun (groupName,package) -> trial {
+        |> List.map (fun (groupName,package) -> validation {
             let! projects = findReferencesFor groupName package lockFile environment.Projects
-            return groupName, package, projects })
-        |> collect
+            return groupName, package, projects }
+        )
+        |> List.sequenceResultA
+        |> Result.mapError List.concat
 
     for g, k, vs in projectsPerPackage do
         tracefn "%O %O" g k

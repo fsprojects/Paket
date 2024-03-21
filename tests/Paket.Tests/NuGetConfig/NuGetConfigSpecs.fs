@@ -9,7 +9,7 @@ open PackageSources
 open System.Security.Cryptography
 open System.Text
 open System
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open System.Xml
 open TestHelpers
 
@@ -20,7 +20,8 @@ open System.Runtime.InteropServices
 let parse fileName = 
     FileInfo(fileName)
     |> NugetConfig.GetConfigNode
-    |> returnOrFail
+    |> Result.mapError List.singleton
+    |> Result.returnOrFail
     |> NugetConfig.OverrideConfig NugetConfig.Empty
 
 [<Test>]
@@ -98,7 +99,7 @@ let ``ignores disabled nuget feed from upstream`` () =
                 [ "MyGetDuality", ("https://www.myget.org/F/6416d9912a7c4d46bc983870fb440d25/", None) ]
                 |> Map.ofList }
     
-    let next = NugetConfig.GetConfigNode (FileInfo "NuGetConfig/ConfigWithDisabledFeedFromUpstream.xml") |> Trial.returnOrFail
+    let next = NugetConfig.GetConfigNode (FileInfo "NuGetConfig/ConfigWithDisabledFeedFromUpstream.xml") |> Result.mapError List.singleton |> Result.returnOrFail
     let overridden = NugetConfig.OverrideConfig upstream next
     overridden
     |> shouldEqual

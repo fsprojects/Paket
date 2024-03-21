@@ -7,7 +7,7 @@ open Paket.Domain
 open Paket.Logging
 open Paket.Requirements
 
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 
 type AdjLblGraph<'a> = IDictionary<PackageName , IDictionary<PackageName, 'a>>
 
@@ -136,7 +136,7 @@ module Reason =
         if not (group.Resolution.ContainsKey packageName) then
             inferError ()
             |> List.singleton
-            |> Result.Bad
+            |> Error
         else
             let graph = depGraph group.Resolution
             let topLevelDeps =
@@ -149,13 +149,13 @@ module Reason =
                 |> List.collect (fun p -> AdjLblGraph.paths p packageName (HashSet<_>()) graph)
             match Set.contains packageName directDeps, Set.contains packageName topLevelDeps with
             | true, true ->
-                Result.Ok ((TopLevel, group.Resolution), [])
+                Ok ((TopLevel, group.Resolution), [])
             | true, false ->
-                Result.Ok ((Direct chains, group.Resolution), [])
+                Ok ((Direct chains, group.Resolution), [])
             | false, false ->
-                Result.Ok ((Transitive chains, group.Resolution), [])
+                Ok ((Transitive chains, group.Resolution), [])
             | false, true ->
-                Result.Bad []
+                Error []
 
 let ohWhy (packageName,
            directDeps : Set<PackageName>,
@@ -165,9 +165,9 @@ let ohWhy (packageName,
            options) =
 
     match Reason.infer(packageName, groupName, directDeps, lockFile) with
-    | Result.Bad [NuGetNotInLockFile] ->
+    | Error [NuGetNotInLockFile] ->
         traceErrorfn "NuGet %O was not found in %s" packageName Constants.LockFileName
-    | Result.Bad [NuGetNotInGroup otherGroups] ->
+    | Error [NuGetNotInGroup otherGroups] ->
         traceWarnfn
             "NuGet %O was not found in %s group. However it was found in following groups: %A. Specify correct group."
             packageName
@@ -175,7 +175,7 @@ let ohWhy (packageName,
             (otherGroups |> List.map (fun pair -> pair.ToString()))
 
         usage |> traceWarn
-    | Result.Ok ((reason, resolution), []) ->
+    | Ok ((reason, resolution), []) ->
         reason
         |> Reason.format
         |> sprintf "NuGet %O - %s is a %s" packageName ((resolution.Item packageName).Version.ToString())

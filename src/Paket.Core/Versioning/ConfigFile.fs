@@ -6,7 +6,7 @@ open System.Security.Cryptography
 open System.Text
 open System.IO
 
-open Chessie.ErrorHandling
+open FsToolkit.ErrorHandling
 open Paket.Core.Common
 open Paket.Domain
 open Paket.Xml
@@ -15,35 +15,33 @@ open Paket.Utils
 
 let private rootElement = "configuration"
 
-let private getConfigNode (nodeName : string) =
-    let rootNode = 
+let private getConfigNode (nodeName : string) = result {
+    let! rootNode = 
         let doc = XmlDocument ()
         if File.Exists Constants.PaketConfigFile then 
             try 
                 use f = File.OpenRead(Constants.PaketConfigFile)
                 doc.Load f
-                ok doc.DocumentElement
-            with _ -> fail ConfigFileParseError
+                Ok doc.DocumentElement
+            with _ -> Error ConfigFileParseError
         else
             let element = doc.CreateElement rootElement
             doc.AppendChild element |> ignore
-            ok element
+            Ok element
 
-    trial {
-        let! root = rootNode
-        let node = 
-            match root |> getNode nodeName with
-            | None -> root.OwnerDocument.CreateElement nodeName
-                      |> root.AppendChild
-            | Some node -> node
-        return node
-    }
+    let node = 
+        match rootNode |> getNode nodeName with
+        | None -> 
+            rootNode.OwnerDocument.CreateElement nodeName
+            |> rootNode.AppendChild
+        | Some node -> node
+    return node
+}
 
-let private saveConfigNode (node : XmlNode) =
-    trial {
-        do! createDir Constants.PaketConfigFolder
-        do! saveNormalizedXml Constants.PaketConfigFile node.OwnerDocument
-    }
+let private saveConfigNode (node : XmlNode) = result {
+    do! createDir Constants.PaketConfigFolder
+    do! saveNormalizedXml Constants.PaketConfigFile node.OwnerDocument
+}
 
 let DecryptNuget (encrypted : string) = 
     ProtectedData.Unprotect(Convert.FromBase64String encrypted, Encoding.UTF8.GetBytes "NuGet", DataProtectionScope.CurrentUser)
@@ -121,7 +119,7 @@ let getSourceNodes (credentialsNode : XmlNode) source nodeType =
     |> Seq.filter (fun n -> n.Attributes.["source"].Value = source)
     |> Seq.toList
 
-let private getCredentialsNode = lazy(getConfigNode "credentials" |> returnOrFail)
+let private getCredentialsNode = lazy(getConfigNode "credentials" |> Result.mapError Seq.singleton |> Result.returnOrFail)
 
 /// Get the authentication from the authentication store for a specific source and validates against the url
 let GetAuthenticationForUrl =
@@ -140,7 +138,7 @@ let GetAuthenticationProvider (source : string) =
     AuthProvider.ofFunction (fun _ -> GetAuthenticationForUrl(source,source))
 
 let AddCredentials (source, username, password, authType) = 
-    trial { 
+    result { 
         let! credentialsNode = getConfigNode "credentials"
         let newCredentials = 
             match getSourceNodes credentialsNode source "credential" |> List.tryHead with
@@ -158,7 +156,7 @@ let AddCredentials (source, username, password, authType) =
     }
 
 let AddToken (source, token) =
-    trial {
+    result {
         let! credentialsNode = getConfigNode "credentials"
         let newToken = 
             match getSourceNodes credentialsNode source "token" |> List.tryHead with

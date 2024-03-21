@@ -18,7 +18,7 @@ type LocalFile = LocalFile of devSourceOverrides: LocalOverride list
 module LocalFile =
     open System
 
-    open Chessie.ErrorHandling
+    open FsToolkit.ErrorHandling
     open Logging
 
     let private (|Regex|_|) pattern input =
@@ -50,26 +50,32 @@ module LocalFile =
                         if verbose then
                             traceWarnfn "Exception: %O" exn
                         None
-            source
-            |> Trial.Catch PackageSource.Parse
-            |> Trial.mapFailure (fun _ -> [sprintf "Cannot parse source '%s'" source])
-            |> Trial.lift (fun s -> LocalSourceOverride (nameGroup(package, group), s, v))
+            
+            try
+                let parsedSource = PackageSource.Parse source
+                LocalSourceOverride (nameGroup(package, group), parsedSource, v) |> Ok
+            with _ ->
+                sprintf "Cannot parse source '%s'" source |> Error
         | Regex
             "nuget[ ]+(.*?)([ ]+group[ ]+(.*))?[ ]+->[ ]+git[ ]+(.*)"
             [package; _; group; gitSource] ->
             LocalGitOverride (nameGroup(package, group), gitSource)
-            |> Trial.ok
+            |> Ok
         | line ->
-            Trial.fail (sprintf "Cannot parse line '%s'" line)
+            sprintf "Cannot parse line '%s'" line |> Error
 
     let parse =
-        List.map String.trim
-        >> List.filter (not << String.IsNullOrWhiteSpace)
-        >> List.filter (not << String.startsWithIgnoreCase @"//")
-        >> List.filter (not << String.startsWithIgnoreCase @"#")
-        >> List.map parseLine
-        >> Trial.collect
-        >> Trial.lift LocalFile
+        List.choose (fun text ->
+            let text = String.trim text
+            if (not << String.IsNullOrWhiteSpace) text 
+                && (not << String.startsWithIgnoreCase @"//") text 
+                && (not << String.startsWithIgnoreCase @"#") text then
+                parseLine text |> Some
+            else
+                None
+        )
+        >> List.sequenceResultA
+        >> Result.map LocalFile
 
     let readFile =
         IO.File.ReadAllLines

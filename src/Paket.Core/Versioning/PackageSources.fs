@@ -179,7 +179,7 @@ type PackageSource =
 
     static member FromCache (cache:Cache) = LocalNuGet(cache.Location,Some cache)
 
-    static member WarnIfNoConnection (source,_) =
+    static member WarnIfNoConnection source =
         let n url (auth:AuthProvider) =
             let client = NetUtils.createHttpClient(url, auth.Retrieve true)
             try

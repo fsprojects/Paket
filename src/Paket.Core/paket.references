@@ -1,13 +1,12 @@
 Newtonsoft.Json
 FSharp.Core
 Mono.Cecil
-Chessie
 System.Security.Cryptography.ProtectedData
 System.Net.Http.WinHttpHandler
 System.Net.Http
 Microsoft.NETFramework.ReferenceAssemblies.net461
 Nuget.Packaging
 DotNet.ReproducibleBuilds
-
+FsToolkit.ErrorHandling
 File:Globbing.fs Common\
 File:AssemblyReader.fs Common\
