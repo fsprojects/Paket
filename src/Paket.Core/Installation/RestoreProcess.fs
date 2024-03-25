@@ -290,7 +290,7 @@ let createAlternativeNuGetConfig (projectFile:FileInfo, objDirectory:DirectoryIn
 
 let FSharpCore = PackageName "FSharp.Core"
 
-let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (packages:((GroupName * PackageName) * PackageInstallSettings * _)seq) (fileInfo:FileInfo) =
+let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (referencesFile:ReferencesFile) (packages:((GroupName * PackageName) * PackageInstallSettings * _)seq) (fileInfo:FileInfo) =
     let cliParts =
         if Seq.isEmpty cliTools then
             ""
@@ -299,6 +299,13 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
             |> Seq.map (fun cliTool -> sprintf """        <DotNetCliToolReference Include="%O" Version="%O" />""" cliTool.Name cliTool.Version)
             |> fun xs -> String.Join(Environment.NewLine,xs)
             |> fun s -> "    <ItemGroup>" + Environment.NewLine + s + Environment.NewLine + "    </ItemGroup>"
+
+
+    let allDirectPackages = 
+        referencesFile.Groups.Values
+        |> Seq.collect (fun g -> g.NugetPackages)
+        |> Seq.map (fun p -> p.Name)
+        |> Set.ofSeq
 
     let packagesParts =
         if Seq.isEmpty packages then
@@ -328,8 +335,13 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
                 let packageReferences =
                     packages
                     |> Seq.collect (fun (p,_,packageSettings) ->
-                        [yield sprintf """        <PackageReference Include="%O">""" p.Name
-                         yield sprintf """            <Version>%O</Version>""" p.Version
+                        let directReferenceCondition = 
+                            if not(allDirectPackages.Contains p.Name) then 
+                                "Condition=\" '$(ManagePackageVersionsCentrally)' != 'true' \""
+                            else ""
+
+                        [yield sprintf """        <PackageReference %s Include="%O">""" directReferenceCondition p.Name
+                         yield sprintf """            <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">%O</Version>""" p.Version
                          let excludeAssets =
                             [ if combineCopyLocal p.Settings packageSettings = Some false then yield "runtime"
                               if combineOmitContent p.Settings packageSettings = Some ContentCopySettings.Omit then yield "contentFiles"
@@ -338,10 +350,23 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (pac
                          match excludeAssets with
                          | [] -> ()
                          | tags -> yield sprintf """            <ExcludeAssets>%s</ExcludeAssets>""" (tags |> String.concat ";")
+
+                         match combineCopyLocal p.Settings packageSettings with
+                         | Some true -> yield sprintf """            <PrivateAssets>All</PrivateAssets>"""
+                         | _ -> ()
+
                          yield """        </PackageReference>"""])
+
+                let packageVersions =
+                    packages
+                    |> Seq.collect (fun (p,_,__) ->
+                        [yield sprintf """        <PackageVersion Include="%O">""" p.Name
+                         yield sprintf """            <Version>%O</Version>""" p.Version
+                         yield """        </PackageVersion>"""])
 
                 [yield sprintf "    <ItemGroup Condition=\"($(DesignTimeBuild) == true)%s\">" condition
                  yield! packageReferences
+                 yield! packageVersions
                  yield "    </ItemGroup>"])
             |> fun xs -> String.Join(Environment.NewLine,xs)
 
@@ -524,7 +549,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
     createPaketCLIToolsFile cliTools paketCLIToolsFileName
 
     let propsFile = FileInfo(Path.Combine(objDirFullName, projectFileInfo.Name + ".paket.props"))
-    let written,_ = createPaketPropsFile lockFile cliTools packages propsFile
+    let written,_ = createPaketPropsFile lockFile cliTools referencesFile packages propsFile
     if written then
         try
             let fi = FileInfo(Path.Combine(objDirFullName,"project.assets.json"))
