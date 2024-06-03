@@ -274,7 +274,10 @@ let ``Can detect a bunch of net7 platforms``() =
       "net7.0-windows10.0.19041"   , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet7Windows Net7WindowsVersion.V10_0_19041_0)
       "net7-windows10.0.19041"     , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet7Windows Net7WindowsVersion.V10_0_19041_0)
       "net7000-windows10.0.19041"  , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet7Windows Net7WindowsVersion.V10_0_19041_0)
+      "net7.0-windows10.0.20348"   , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet7Windows Net7WindowsVersion.V10_0_20348_0)
       "net7.0-android30.0"         , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet7WithOs Net7Os.Android)
+      "net7.0-maccatalyst16.1"     , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet7WithOs Net7Os.MacCatalyst)
+      "net7.0-tizen7.0"            , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet7WithOs Net7Os.Tizen)
     ]
 
   let errors = [
@@ -298,7 +301,11 @@ let ``Can detect a bunch of net8 platforms``() =
       "net8.0-windows10.0.19041"   , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8Windows Net8WindowsVersion.V10_0_19041_0)
       "net8-windows10.0.19041"     , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8Windows Net8WindowsVersion.V10_0_19041_0)
       "net8000-windows10.0.19041"  , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8Windows Net8WindowsVersion.V10_0_19041_0)
+      "net8.0-windows10.0.20348"   , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8Windows Net8WindowsVersion.V10_0_20348_0)
       "net8.0-android30.0"         , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8WithOs Net8Os.Android)
+      "net8.0-android30.0"         , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8WithOs Net8Os.Android)
+      "net8.0-maccatalyst16.1"     , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8WithOs Net8Os.MacCatalyst)
+      "net8.0-tizen7.0"            , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet8WithOs Net8Os.Tizen)
     ]
 
   let errors = [

@@ -259,7 +259,8 @@ let getTargetCondition (target:TargetProfile) =
         | Native(profile,bits) -> (sprintf "'$(Configuration)|$(Platform)'=='%s|%s'" profile.AsString bits.AsString), ""
         | Tizen version ->"$(TargetFrameworkIdentifier) == 'Tizen'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | XCode version ->"$(TargetFrameworkIdentifier) == 'XCode'", sprintf "$(TargetFrameworkVersion) == '%O'" version
-        | Unsupported s -> "", ""
+        | MacCatalyst
+        | Unsupported _ -> "", ""
     | TargetProfile.PortableProfile p -> sprintf "$(TargetFrameworkProfile) == '%O'" p.ProfileName,""
 
 let getCondition (referenceCondition:string option) (targets : TargetProfile Set) =

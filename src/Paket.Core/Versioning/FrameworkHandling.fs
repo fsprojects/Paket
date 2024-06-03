@@ -110,6 +110,7 @@ type Net7WindowsVersion =
     | V10_0_17763_0
     | V10_0_18362_0
     | V10_0_19041_0
+    | V10_0_20348_0
     override this.ToString() =
         match this with
         | V7_0 -> "7.0"
@@ -117,6 +118,7 @@ type Net7WindowsVersion =
         | V10_0_17763_0 -> "10.0.17763.0"
         | V10_0_18362_0 -> "10.0.18362.0"
         | V10_0_19041_0 -> "10.0.19041.0"
+        | V10_0_20348_0 -> "10.0.20348.0"
 
     static member TryParse s =
         match s with
@@ -125,6 +127,7 @@ type Net7WindowsVersion =
         | "10.0.17763.0" | "10.0.17763" -> Some Net7WindowsVersion.V10_0_17763_0
         | "10.0.18362.0" | "10.0.18362" -> Some Net7WindowsVersion.V10_0_18362_0
         | "10.0.19041.0" | "10.0.19041" -> Some Net7WindowsVersion.V10_0_19041_0
+        | "10.0.20348.0" | "10.0.20348" -> Some Net7WindowsVersion.V10_0_20348_0
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -134,6 +137,7 @@ type Net8WindowsVersion =
     | V10_0_17763_0
     | V10_0_18362_0
     | V10_0_19041_0
+    | V10_0_20348_0
     override this.ToString() =
         match this with
         | V7_0 -> "7.0"
@@ -141,6 +145,7 @@ type Net8WindowsVersion =
         | V10_0_17763_0 -> "10.0.17763.0"
         | V10_0_18362_0 -> "10.0.18362.0"
         | V10_0_19041_0 -> "10.0.19041.0"
+        | V10_0_20348_0 -> "10.0.20348.0"
 
     static member TryParse s =
         match s with
@@ -149,6 +154,7 @@ type Net8WindowsVersion =
         | "10.0.17763.0" | "10.0.17763" -> Some Net8WindowsVersion.V10_0_17763_0
         | "10.0.18362.0" | "10.0.18362" -> Some Net8WindowsVersion.V10_0_18362_0
         | "10.0.19041.0" | "10.0.19041" -> Some Net8WindowsVersion.V10_0_19041_0
+        | "10.0.20348.0" | "10.0.20348" -> Some Net8WindowsVersion.V10_0_20348_0
         | _ -> None
 
 type Net9WindowsVersion = Net8WindowsVersion
@@ -209,6 +215,8 @@ type Net7Os =
     | MacOs
     | TvOs
     | WatchOs
+    | MacCatalyst
+    | Tizen
     override this.ToString() =
         match this with
         | Android -> "android"
@@ -216,6 +224,8 @@ type Net7Os =
         | MacOs -> "macos"
         | TvOs -> "tvos"
         | WatchOs -> "watchos"
+        | MacCatalyst -> "maccatalyst"
+        | Tizen -> "tizen"
            
     static member TryParse (s:string) =
         [
@@ -224,6 +234,8 @@ type Net7Os =
             ("macos",Net7Os.MacOs)
             ("tvos",Net7Os.TvOs)
             ("watchos",Net7Os.WatchOs)
+            ("maccatalyst",Net7Os.MacCatalyst)
+            ("tizen",Net7Os.Tizen)
         ] |> Seq.tryFind(fun (k,_) -> s.StartsWith k)
           |> Option.map snd
           
@@ -234,6 +246,8 @@ type Net8Os =
     | MacOs
     | TvOs
     | WatchOs
+    | MacCatalyst
+    | Tizen
     override this.ToString() =
         match this with
         | Android -> "android"
@@ -241,6 +255,8 @@ type Net8Os =
         | MacOs -> "macos"
         | TvOs -> "tvos"
         | WatchOs -> "watchos"
+        | MacCatalyst -> "maccatalyst"
+        | Tizen -> "tizen"
            
     static member TryParse (s:string) =
         [
@@ -249,6 +265,8 @@ type Net8Os =
             "macos"  ,Net8Os.MacOs
             "tvos"   ,Net8Os.TvOs
             "watchos",Net8Os.WatchOs
+            "maccatalyst", Net8Os.MacCatalyst
+            "tizen", Net8Os.Tizen
         ]
         |> Seq.tryFind(fun (k,_) -> s.StartsWith k)
         |> Option.map snd
@@ -550,6 +568,7 @@ module KnownAliases =
     let Data =
         [".netframework", "net"
          ".netcore", "netcore"
+         ".netcoreapp", "net"
          ".netplatform", "dotnet"
          ".netportable", "portable"
          "netframework", "net"
@@ -779,19 +798,32 @@ type WindowsVersion =
 
 [<RequireQualifiedAccess>]
 type TizenVersion =
-    V3 | V4
+    | V3
+    | V4
+    | V7
+    | V8
+    | V9
     member this.ShortString() =
         match this with
         | V3 -> "3.0"
         | V4 -> "4.0"
+        | V7 -> "7.0"
+        | V8 -> "8.0"
+        | V9 -> "9.0"
     override this.ToString() =
         match this with
         | V3 -> "v3.0"
         | V4 -> "v4.0"
+        | V7 -> "v7.0"
+        | V8 -> "v8.0"
+        | V9 -> "v9.0"
     static member TryParse s =
         match s with
         | "" | "3" -> Some TizenVersion.V3
         | "4" -> Some TizenVersion.V4
+        | "7" -> Some TizenVersion.V7
+        | "8" -> Some TizenVersion.V8
+        | "9" -> Some TizenVersion.V9
         | _ -> None
 
 /// Framework Identifier type.
@@ -815,6 +847,7 @@ type FrameworkIdentifier =
     | MonoAndroid of MonoAndroidVersion
     | MonoTouch
     | MonoMac
+    | MacCatalyst
     | Native of BuildMode * Platform
     | XamarinTV
     | XamarinWatch
@@ -847,6 +880,7 @@ type FrameworkIdentifier =
         | MonoAndroid v -> "monoandroid" + v.ShortString()
         | MonoTouch -> "monotouch"
         | MonoMac -> "monomac"
+        | MacCatalyst -> "maccatalyst"
         | Native(BuildMode.NoBuildMode, Platform.NoPlatform) -> "native"
         | Native(mode, platform) -> sprintf "native(%s,%s)" mode.AsString platform.AsString
         | XamarinTV -> "xamarintvos"
@@ -966,11 +1000,22 @@ type FrameworkIdentifier =
         | DotNet7WithOs  Net7Os.MacOs   -> [ DotNetFramework FrameworkVersion.V7; XamarinMac ]
         | DotNet7WithOs  Net7Os.TvOs    -> [ DotNetFramework FrameworkVersion.V7; XamarinTV ]
         | DotNet7WithOs  Net7Os.WatchOs -> [ DotNetFramework FrameworkVersion.V7; XamarinWatch ]
+        | DotNet7WithOs  Net7Os.MacCatalyst -> [ DotNetFramework FrameworkVersion.V7; MacCatalyst ]
+        | DotNet7WithOs  Net7Os.Tizen -> [ DotNetFramework FrameworkVersion.V7; Tizen TizenVersion.V7 ]
         | DotNet8WithOs  Net8Os.Android -> [ DotNetFramework FrameworkVersion.V8; MonoAndroid MonoAndroidVersion.V12 ]
         | DotNet8WithOs  Net8Os.IOs     -> [ DotNetFramework FrameworkVersion.V8; XamariniOS ]
         | DotNet8WithOs  Net8Os.MacOs   -> [ DotNetFramework FrameworkVersion.V8; XamarinMac ]
         | DotNet8WithOs  Net8Os.TvOs    -> [ DotNetFramework FrameworkVersion.V8; XamarinTV ]
         | DotNet8WithOs  Net8Os.WatchOs -> [ DotNetFramework FrameworkVersion.V8; XamarinWatch ]
+        | DotNet8WithOs  Net8Os.MacCatalyst -> [ DotNetFramework FrameworkVersion.V8; MacCatalyst ]
+        | DotNet8WithOs  Net8Os.Tizen -> [ DotNetFramework FrameworkVersion.V8; Tizen TizenVersion.V8 ]
+        | DotNet9WithOs  Net9Os.Android -> [ DotNetFramework FrameworkVersion.V9; MonoAndroid MonoAndroidVersion.V12 ]
+        | DotNet9WithOs  Net9Os.IOs     -> [ DotNetFramework FrameworkVersion.V9; XamariniOS ]
+        | DotNet9WithOs  Net9Os.MacOs   -> [ DotNetFramework FrameworkVersion.V9; XamarinMac ]
+        | DotNet9WithOs  Net9Os.TvOs    -> [ DotNetFramework FrameworkVersion.V9; XamarinTV ]
+        | DotNet9WithOs  Net9Os.WatchOs -> [ DotNetFramework FrameworkVersion.V9; XamarinWatch ]
+        | DotNet9WithOs  Net9Os.MacCatalyst -> [ DotNetFramework FrameworkVersion.V9; MacCatalyst ]
+        | DotNet9WithOs  Net9Os.Tizen -> [ DotNetFramework FrameworkVersion.V9; Tizen TizenVersion.V9 ]
         | DotNet6Windows Net6WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V6 ]
         | DotNet6Windows Net6WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V6; DotNet6Windows Net6WindowsVersion.V7_0 ]
         | DotNet6Windows Net6WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet6Windows Net6WindowsVersion.V8_0 ]
@@ -981,11 +1026,19 @@ type FrameworkIdentifier =
         | DotNet7Windows Net7WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet7Windows Net7WindowsVersion.V8_0 ]
         | DotNet7Windows Net7WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet7Windows Net7WindowsVersion.V10_0_17763_0 ]
         | DotNet7Windows Net7WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet7Windows Net7WindowsVersion.V10_0_18362_0 ]
+        | DotNet7Windows Net7WindowsVersion.V10_0_20348_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet7Windows Net7WindowsVersion.V10_0_20348_0 ]
         | DotNet8Windows Net8WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V8; ]
         | DotNet8Windows Net8WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V7_0]
         | DotNet8Windows Net8WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V8_0]
         | DotNet8Windows Net8WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V10_0_17763_0 ]
         | DotNet8Windows Net8WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V10_0_18362_0 ]
+        | DotNet8Windows Net8WindowsVersion.V10_0_20348_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V10_0_20348_0 ]
+        | DotNet9Windows Net9WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V8; ]
+        | DotNet9Windows Net9WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V9; DotNet9Windows Net9WindowsVersion.V7_0]
+        | DotNet9Windows Net9WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V9; DotNet9Windows Net9WindowsVersion.V8_0]
+        | DotNet9Windows Net9WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V9; DotNet9Windows Net9WindowsVersion.V10_0_17763_0 ]
+        | DotNet9Windows Net9WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V9; DotNet9Windows Net9WindowsVersion.V10_0_18362_0 ]
+        | DotNet9Windows Net9WindowsVersion.V10_0_20348_0 -> [ DotNetFramework FrameworkVersion.V9; DotNet9Windows Net9WindowsVersion.V10_0_20348_0 ]
         // remark: for now, windows version for net 9 is alias to 8
         | DotNetStandard DotNetStandardVersion.V1_0 -> [  ]
         | DotNetStandard DotNetStandardVersion.V1_1 -> [ DotNetStandard DotNetStandardVersion.V1_0 ]
@@ -1021,8 +1074,12 @@ type FrameworkIdentifier =
         | WindowsPhone WindowsPhoneVersion.V8_1 -> [ WindowsPhone WindowsPhoneVersion.V8 ]
         | Tizen TizenVersion.V3 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Tizen TizenVersion.V4 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | Tizen TizenVersion.V7 -> [ DotNet7WithOs Net7Os.Tizen ]
+        | Tizen TizenVersion.V8 -> [ DotNet8WithOs Net8Os.Tizen ]
+        | Tizen TizenVersion.V9 -> [ DotNet8WithOs Net9Os.Tizen ]
         | XCode XCodeVersion.V10 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | XCode XCodeVersion.V11 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | MacCatalyst // ?
         | Unsupported _ -> []
 
 module FrameworkDetection =
@@ -1612,6 +1669,8 @@ module KnownTargetProfiles =
         Net7Os.MacOs
         Net7Os.TvOs
         Net7Os.WatchOs
+        Net7Os.MacCatalyst
+        Net7Os.Tizen
     ]
 
     let DotNet7WithOsProfiles =
@@ -1624,6 +1683,7 @@ module KnownTargetProfiles =
         Net7WindowsVersion.V10_0_17763_0
         Net7WindowsVersion.V10_0_18362_0
         Net7WindowsVersion.V10_0_19041_0
+        Net7WindowsVersion.V10_0_20348_0
     ]
 
     let DotNet7WindowsProfiles = 
@@ -1636,6 +1696,8 @@ module KnownTargetProfiles =
         Net8Os.MacOs
         Net8Os.TvOs
         Net8Os.WatchOs
+        Net8Os.MacCatalyst
+        Net8Os.Tizen
     ]
 
     let DotNet8WithOsProfiles =
@@ -1646,6 +1708,7 @@ module KnownTargetProfiles =
         Net8WindowsVersion.V10_0_17763_0
         Net8WindowsVersion.V10_0_18362_0
         Net8WindowsVersion.V10_0_19041_0
+        Net8WindowsVersion.V10_0_20348_0
     ]
 
     let DotNet8WindowsProfiles = 
