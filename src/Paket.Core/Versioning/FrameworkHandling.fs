@@ -190,6 +190,8 @@ type Net6Os =
     | MacOs
     | TvOs
     | WatchOs
+    | MacCatalyst
+    | Tizen
     override this.ToString() =
         match this with
         | Android -> "android"
@@ -197,7 +199,8 @@ type Net6Os =
         | MacOs -> "macos"
         | TvOs -> "tvos"
         | WatchOs -> "watchos"
-    
+        | MacCatalyst -> "maccatalyst"
+        | Tizen -> "tizen"
     static member TryParse (s:string) =
         [
            ("android",Net6Os.Android)
@@ -205,6 +208,8 @@ type Net6Os =
            ("macos",Net6Os.MacOs)
            ("tvos",Net6Os.TvOs)
            ("watchos",Net6Os.WatchOs)
+           ("maccatalyst",Net6Os.MacCatalyst)
+           ("tizen",Net6Os.Tizen)
          ] |> Seq.tryFind(fun (k,_) -> s.StartsWith k)
            |> Option.map snd
        
@@ -800,30 +805,30 @@ type WindowsVersion =
 type TizenVersion =
     | V3
     | V4
+    | V6_5
     | V7
     | V8
-    | V9
     member this.ShortString() =
         match this with
         | V3 -> "3.0"
         | V4 -> "4.0"
+        | V6_5 -> "6.5"
         | V7 -> "7.0"
         | V8 -> "8.0"
-        | V9 -> "9.0"
     override this.ToString() =
         match this with
         | V3 -> "v3.0"
         | V4 -> "v4.0"
+        | V6_5 -> "v6.5"
         | V7 -> "v7.0"
         | V8 -> "v8.0"
-        | V9 -> "v9.0"
     static member TryParse s =
         match s with
         | "" | "3" -> Some TizenVersion.V3
         | "4" -> Some TizenVersion.V4
+        | "6.5" -> Some TizenVersion.V6_5
         | "7" -> Some TizenVersion.V7
         | "8" -> Some TizenVersion.V8
-        | "9" -> Some TizenVersion.V9
         | _ -> None
 
 /// Framework Identifier type.
@@ -995,6 +1000,8 @@ type FrameworkIdentifier =
         | DotNet6WithOs  Net6Os.MacOs   -> [ DotNetFramework FrameworkVersion.V6; XamarinMac ]
         | DotNet6WithOs  Net6Os.TvOs    -> [ DotNetFramework FrameworkVersion.V6; XamarinTV ]
         | DotNet6WithOs  Net6Os.WatchOs -> [ DotNetFramework FrameworkVersion.V6; XamarinWatch ]
+        | DotNet6WithOs  Net6Os.MacCatalyst -> [ DotNetFramework FrameworkVersion.V6; MacCatalyst ]
+        | DotNet6WithOs  Net6Os.Tizen -> [ DotNetFramework FrameworkVersion.V6; Tizen TizenVersion.V6_5 ]
         | DotNet7WithOs  Net7Os.Android -> [ DotNetFramework FrameworkVersion.V7; MonoAndroid MonoAndroidVersion.V12 ]
         | DotNet7WithOs  Net7Os.IOs     -> [ DotNetFramework FrameworkVersion.V7; XamariniOS ]
         | DotNet7WithOs  Net7Os.MacOs   -> [ DotNetFramework FrameworkVersion.V7; XamarinMac ]
@@ -1015,7 +1022,7 @@ type FrameworkIdentifier =
         | DotNet9WithOs  Net9Os.TvOs    -> [ DotNetFramework FrameworkVersion.V9; XamarinTV ]
         | DotNet9WithOs  Net9Os.WatchOs -> [ DotNetFramework FrameworkVersion.V9; XamarinWatch ]
         | DotNet9WithOs  Net9Os.MacCatalyst -> [ DotNetFramework FrameworkVersion.V9; MacCatalyst ]
-        | DotNet9WithOs  Net9Os.Tizen -> [ DotNetFramework FrameworkVersion.V9; Tizen TizenVersion.V9 ]
+        | DotNet9WithOs  Net9Os.Tizen -> [ DotNetFramework FrameworkVersion.V9; Tizen TizenVersion.V8 ]
         | DotNet6Windows Net6WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V6 ]
         | DotNet6Windows Net6WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V6; DotNet6Windows Net6WindowsVersion.V7_0 ]
         | DotNet6Windows Net6WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet6Windows Net6WindowsVersion.V8_0 ]
@@ -1074,12 +1081,12 @@ type FrameworkIdentifier =
         | WindowsPhone WindowsPhoneVersion.V8_1 -> [ WindowsPhone WindowsPhoneVersion.V8 ]
         | Tizen TizenVersion.V3 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Tizen TizenVersion.V4 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
-        | Tizen TizenVersion.V7 -> [ DotNet7WithOs Net7Os.Tizen ]
-        | Tizen TizenVersion.V8 -> [ DotNet8WithOs Net8Os.Tizen ]
-        | Tizen TizenVersion.V9 -> [ DotNet8WithOs Net9Os.Tizen ]
+        | Tizen TizenVersion.V6_5 -> []
+        | Tizen TizenVersion.V7 -> []
+        | Tizen TizenVersion.V8 -> []
         | XCode XCodeVersion.V10 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | XCode XCodeVersion.V11 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
-        | MacCatalyst // ?
+        | MacCatalyst -> []
         | Unsupported _ -> []
 
 module FrameworkDetection =
