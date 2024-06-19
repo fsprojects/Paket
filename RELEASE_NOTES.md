@@ -1,4 +1,4 @@
-#### 8.1.0-alpha002 - 2024-03-14
+#### 8.1.0-alpha003 - 2024-06-19
 * Preview support for .NET 9.0 - https://github.com/fsprojects/Paket/pull/4248
 
 #### 8.1.0-alpha001 - 2024-01-30
