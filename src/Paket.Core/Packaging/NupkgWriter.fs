@@ -301,43 +301,42 @@ module internal NupkgWriter =
             normalizePath path = outputFolder || (exclusions |> List.exists (fun f -> f path))
 
         let ensureValidName (target: string) =
-            // Some characters that are considered reserved by RFC 2396
-            // and thus escaped by Uri.EscapeDataString, are valid in folder names.
-            // Concrete problem solved here:
+            // Some characters that are considered reserved by (obsolete) RFC 2396
+            // and thus escaped by Uri.EscapeDataString, are valid in folder names
+            // according to the current RFC 3986.
+            // In nuget packages this over-aggressive escaping does not hurt when
+            // unpacking using a nuget client. However, it makes the raw package content
+            // harder to read for humans and may confuse other tools.
+            // Concrete problem solved here (cf. #1348):
             // Creating deployable packages for javascript applications
             // that use javascript packages from NPM, where the @ char
             // is used in folder names to separate versions.
-            //
-            // Ref: https://msdn.microsoft.com/en-us/library/system.uri.escapedatastring(v=vs.110).aspx#Anchor_2
-            //      http://tools.ietf.org/html/rfc2396#section-2
-            let problemChars = ["@","~~at~~"; "+","~~plus~~"; "%","~~percent~~"]
 
-            let fakeEscapeProblemChars (source:string) =
-                problemChars
-                |> List.fold (fun (escaped:string) (problem, fakeEscape) ->
-                    escaped.Replace(problem,fakeEscape)) source
+            // For a maximum of comfort and compatibility, we unescape everything
+            // that is allowed by RFC 3986 for path segments (cf. §3.3 in the RFC):
+            //     pchar = unreserved / pct-encoded / sub-delims / ":" / "@"
+            let sub_delims = ['!'; '$'; '&'; '\''; '('; ')'; '*'; '+'; ','; ';'; '=']
+            let allowedPathSegmentChars = sub_delims @ [ ':'; '@']
+            let replacementMap =
+                allowedPathSegmentChars
+                |> List.map (fun c -> sprintf "%%%02X" ((int)c), (string)c)
 
-            let unFakeEscapeProblemChars (source:string) =
-                problemChars
-                |> List.fold (fun (escaped:string) (problem, fakeEscape) ->
-                    escaped.Replace(fakeEscape, problem)) source
+            let unescapeAllowedPathSegmentChars(source: string) =
+                replacementMap
+                |> List.fold (fun (escaped: string) (encoded, plain) ->
+                    escaped.Replace(encoded, plain)) source
 
-            let escapeTarget (target:string) =
-                let escapedTargetParts =
-                    target.Replace("\\", "/").Split('/')
-                    |> Array.map Uri.EscapeDataString
-                String.Join("/" ,escapedTargetParts)
+            let escapePathSegment segment =
+                segment
+                |> Uri.UnescapeDataString // ensure we really work on unescaped data, cf. #1837. Still needed?
+                |> Uri.EscapeDataString
+                |> unescapeAllowedPathSegmentChars
 
-            let toUri (escapedTarget:string) =
-                let uri1 = Uri(escapedTarget, UriKind.Relative)
-                let uri2 = Uri(uri1.GetComponents(UriComponents.SerializationInfoString, UriFormat.SafeUnescaped), UriKind.Relative)
-                uri2.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped)
+            let escapedTargetParts =
+                target.Replace("\\", "/").Split('/')
+                |> Array.map escapePathSegment
 
-            target
-            |> fakeEscapeProblemChars
-            |> escapeTarget
-            |> unFakeEscapeProblemChars
-            |> toUri
+            String.Join("/" , escapedTargetParts)
 
         let addEntry path writerF =
             if entries.Contains path then () else
