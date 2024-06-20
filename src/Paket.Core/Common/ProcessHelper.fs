@@ -68,9 +68,14 @@ let isValidPath (path:string) =
     |> Array.filter (fun char -> path.Contains(char.ToString()))
     |> Array.isEmpty
 
-/// Gets the list of valid directories included in the PATH environment variable.
+/// Gets the list of valid directories included in the DOTNET_ROOT and PATH environment variables.
 let pathDirectories =
-    splitEnvironVar "PATH"
+    let pathEnvVarItems = splitEnvironVar "PATH"
+    let allPaths =
+        match environVarOrNone "DOTNET_ROOT" with
+        | None -> pathEnvVarItems
+        | Some dotnetRootPath -> dotnetRootPath::pathEnvVarItems
+    allPaths
     |> Seq.map (fun value -> value.Trim())
     |> Seq.filter (fun value -> not (String.IsNullOrEmpty value) && isValidPath value)
 
@@ -84,6 +89,12 @@ let tryFindFileOnPath (file : string) : string option =
     |> Seq.append [ "." ]
     |> fun path -> tryFindFile path file
 
+let dotnetExe =
+    let exeName = if isUnix then "dotnet" else "dotnet.exe"
+    match tryFindFileOnPath exeName with
+    | Some exe -> exe
+    | None -> exeName
+
 /// Modifies the ProcessStartInfo according to the platform semantics
 let platformInfoAction (psi : ProcessStartInfo) =
     if isMonoRuntime && psi.FileName.EndsWith ".exe" then
@@ -92,11 +103,6 @@ let platformInfoAction (psi : ProcessStartInfo) =
 
     if psi.FileName.ToLowerInvariant().EndsWith(".dll") then
         // Run DotNetCore
-        let exeName = if isUnix then "dotnet" else "dotnet.exe"
-        let dotnetExe =
-            match tryFindFileOnPath exeName with
-            | Some exe -> exe
-            | None -> exeName
         psi.Arguments <- "\"" + psi.FileName + "\" " + psi.Arguments
         psi.FileName <- dotnetExe
 

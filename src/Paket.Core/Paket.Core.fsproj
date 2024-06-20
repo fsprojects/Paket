@@ -41,10 +41,10 @@
     <Compile Include="Common\Domain.fs" />
     <Compile Include="Common\Constants.fs" />
     <Compile Include="Common\Profile.fs" />
+    <Compile Include="Common\ProcessHelper.fs" />
     <Compile Include="Common\Utils.fs" />
     <Compile Include="Common\Encryption.fs" />
     <Compile Include="Common\Xml.fs" />
-    <Compile Include="Common\ProcessHelper.fs" />
     <Compile Include="Common\SymlinkUtils.fs" />
     <Compile Include="Common\NetUtils.fs" />
     <Compile Include="Versioning\SemVer.fs" />
