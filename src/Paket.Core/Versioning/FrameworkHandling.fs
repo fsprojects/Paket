@@ -573,7 +573,6 @@ module KnownAliases =
     let Data =
         [".netframework", "net"
          ".netcore", "netcore"
-         ".netcoreapp", "net"
          ".netplatform", "dotnet"
          ".netportable", "portable"
          "netframework", "net"
@@ -1033,19 +1032,19 @@ type FrameworkIdentifier =
         | DotNet7Windows Net7WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet7Windows Net7WindowsVersion.V8_0 ]
         | DotNet7Windows Net7WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet7Windows Net7WindowsVersion.V10_0_17763_0 ]
         | DotNet7Windows Net7WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet7Windows Net7WindowsVersion.V10_0_18362_0 ]
-        | DotNet7Windows Net7WindowsVersion.V10_0_20348_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet7Windows Net7WindowsVersion.V10_0_20348_0 ]
+        | DotNet7Windows Net7WindowsVersion.V10_0_20348_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet7Windows Net7WindowsVersion.V10_0_19041_0 ]
         | DotNet8Windows Net8WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V8; ]
         | DotNet8Windows Net8WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V7_0]
         | DotNet8Windows Net8WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V8_0]
         | DotNet8Windows Net8WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V10_0_17763_0 ]
         | DotNet8Windows Net8WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V10_0_18362_0 ]
-        | DotNet8Windows Net8WindowsVersion.V10_0_20348_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V10_0_20348_0 ]
-        | DotNet9Windows Net9WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V8; ]
+        | DotNet8Windows Net8WindowsVersion.V10_0_20348_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V10_0_19041_0 ]
+        | DotNet9Windows Net9WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V9; ]
         | DotNet9Windows Net9WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V9; DotNet9Windows Net9WindowsVersion.V7_0]
         | DotNet9Windows Net9WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V9; DotNet9Windows Net9WindowsVersion.V8_0]
         | DotNet9Windows Net9WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V9; DotNet9Windows Net9WindowsVersion.V10_0_17763_0 ]
         | DotNet9Windows Net9WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V9; DotNet9Windows Net9WindowsVersion.V10_0_18362_0 ]
-        | DotNet9Windows Net9WindowsVersion.V10_0_20348_0 -> [ DotNetFramework FrameworkVersion.V9; DotNet9Windows Net9WindowsVersion.V10_0_20348_0 ]
+        | DotNet9Windows Net9WindowsVersion.V10_0_20348_0 -> [ DotNetFramework FrameworkVersion.V9; DotNet9Windows Net9WindowsVersion.V10_0_19041_0 ]
         // remark: for now, windows version for net 9 is alias to 8
         | DotNetStandard DotNetStandardVersion.V1_0 -> [  ]
         | DotNetStandard DotNetStandardVersion.V1_1 -> [ DotNetStandard DotNetStandardVersion.V1_0 ]
@@ -1232,6 +1231,8 @@ module FrameworkDetection =
                 | MatchNetXDashOs 6 Net6Os.TryParse fm -> Some (DotNet6WithOs fm)
                 | MatchNetXDashOs 5 Net5Os.TryParse fm -> Some (DotNet5WithOs fm)
                 | "netcoreapp5.0" -> Some (DotNetFramework FrameworkVersion.V5)
+                | "netcoreapp8.0" -> Some (DotNetFramework FrameworkVersion.V8)
+                | "netcoreapp9.0" -> Some (DotNetFramework FrameworkVersion.V9)
                 | "net35-Unity Web v3.5" ->  Some (DotNetUnity DotNetUnityVersion.V3_5_Web)
                 | "net35-Unity Micro v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Micro)
                 | "net35-Unity Subset v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Subset)
