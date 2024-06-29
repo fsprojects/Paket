@@ -40,6 +40,7 @@
     <None Include="paket.references" />
     <Content Include="App.config" />
     <Compile Include="AddGithubSpecs.fs" />
+    <Compile Include="ConditionSpecs.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Paket.Core\Paket.Core.fsproj" />

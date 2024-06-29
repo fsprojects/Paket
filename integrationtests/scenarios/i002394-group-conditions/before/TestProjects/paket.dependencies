@@ -1,0 +1,41 @@
+source https://api.nuget.org/v3/index.json
+source ../Packages
+
+nuget FSharp.Core
+
+nuget PaketTest2394.PackageA ~> 1.0
+nuget PaketTest2394.PackageB ~> 1.0
+
+group no-condition
+    source https://api.nuget.org/v3/index.json
+    source ../Packages
+
+    nuget PaketTest2394.PackageA ~> 2.0
+    nuget PaketTest2394.PackageB ~> 2.0
+
+group condition-x
+    condition PropertyX
+    
+    source https://api.nuget.org/v3/index.json
+    source ../Packages
+
+    nuget PaketTest2394.PackageA ~> 3.0
+    nuget PaketTest2394.PackageB ~> 3.0
+
+group condition-y
+    condition PropertyY
+
+    source https://api.nuget.org/v3/index.json
+    source ../Packages
+
+    nuget PaketTest2394.PackageA ~> 4.0
+    nuget PaketTest2394.PackageB ~> 4.0
+
+group condition-z
+    condition PropertyZ
+
+    source https://api.nuget.org/v3/index.json
+    source ../Packages
+
+    nuget PaketTest2394.PackageB ~> 5.0
+

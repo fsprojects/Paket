@@ -412,6 +412,7 @@ type FixNuspecsArgs =
     | [<ExactlyOnce;CustomCommandLine("files")>] Files of nuspecPaths:string list
     | [<CustomCommandLine("references-file")>] ReferencesFile of referencePath:string
     | [<CustomCommandLine("project-file")>] ProjectFile of referencePath:string
+    | [<Unique>] Conditions of conditions:string list
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -419,6 +420,7 @@ with
             | Files _ -> ".nuspec files to fix transitive dependencies within"
             | ReferencesFile _ -> "paket.references to use"
             | ProjectFile _ -> "the project file to use"
+            | Conditions _ -> "group conditions to filter by"
 
 type GenerateNuspecArgs =
     | [<ExactlyOnce;CustomCommandLine "project">] Project of project:string
@@ -446,6 +448,12 @@ with
             | Project_Legacy _ -> "[obsolete]"
 
 type ShowGroupsArgs =
+    | [<Hidden;NoCommandLine>] NoArgs
+with
+    interface IArgParserTemplate with
+        member __.Usage = ""
+
+type ShowConditionsArgs =
     | [<Hidden;NoCommandLine>] NoArgs
 with
     interface IArgParserTemplate with
@@ -696,6 +704,7 @@ type Command =
     | [<CustomCommandLine("generate-nuspec")>]          GenerateNuspec of ParseResults<GenerateNuspecArgs>
     | [<CustomCommandLine("show-installed-packages")>]  ShowInstalledPackages of ParseResults<ShowInstalledPackagesArgs>
     | [<CustomCommandLine("show-groups")>]              ShowGroups of ParseResults<ShowGroupsArgs>
+    | [<CustomCommandLine("show-conditions")>]          ShowConditions of ParseResults<ShowConditionsArgs>
     | [<CustomCommandLine("pack")>]                     Pack of ParseResults<PackArgs>
     | [<CustomCommandLine("push")>]                     Push of ParseResults<PushArgs>
     | [<Hidden;CustomCommandLine("generate-include-scripts")>] GenerateIncludeScripts of ParseResults<GenerateLoadScriptsArgs>
@@ -729,6 +738,7 @@ with
             | GenerateNuspec _ -> "generate a default nuspec for a project including its direct dependencies"
             | ShowInstalledPackages _ -> "show installed top-level packages"
             | ShowGroups _ -> "show groups"
+            | ShowConditions _ -> "show conditions defined on groups"
             | Pack _ -> "create NuGet packages from paket.template files"
             | Push _ -> "push a NuGet package"
             | GenerateIncludeScripts _ -> "[obsolete]"
