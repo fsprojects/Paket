@@ -132,7 +132,12 @@ type PackageSource =
             else
                 parts.[1].Replace("\"","").TrimEnd([| '/' |])
 
-        let feed = normalizeFeedUrl source
+        let feed =
+            EnvironmentVariable.Create(source)
+            |> Option.map (fun var -> var.Value)
+            |> Option.defaultValue source
+            |> normalizeFeedUrl
+
         PackageSource.Parse(feed, parseAuth(line, feed))
 
     static member Parse(source,auth) =
