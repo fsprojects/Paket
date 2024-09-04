@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net461;net8</TargetFrameworks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <DefineConstants Condition=" '$(TargetFramework)' != 'net461'">PAKET_NETCORE;NO_UNIT_PLATFORMATTRIBUTE;TESTSUITE_KNOWN_FAILURE_DOTNETCORE_3005;FAKE_NETSTANDARD_API;@(DefineConstants)</DefineConstants>
   </PropertyGroup>
