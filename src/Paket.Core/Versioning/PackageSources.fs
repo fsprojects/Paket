@@ -126,21 +126,21 @@ type PackageSource =
     static member Parse(line : string) =
         let sourceRegex = Regex("source[ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
         let parts = line.Split ' '
+
         let source =
             if sourceRegex.IsMatch line then
                 sourceRegex.Match(line).Groups.[1].Value.TrimEnd([| '/' |])
             else
                 parts.[1].Replace("\"","").TrimEnd([| '/' |])
 
-        let feed =
-            EnvironmentVariable.Create(source)
-            |> Option.map (fun var -> var.Value)
-            |> Option.defaultValue source
-            |> normalizeFeedUrl
+        match EnvironmentVariable.Create(source) with
+        | None ->
+            let feed = normalizeFeedUrl source
+            PackageSource.Parse(feed, parseAuth(line, feed))
+        | Some var ->
+            PackageSource.Parse ("source " + var.Value)
 
-        PackageSource.Parse(feed, parseAuth(line, feed))
-
-    static member Parse(source,auth) =
+    static member Parse(source, auth) =
         match tryParseWindowsStyleNetworkPath source with
         | Some path -> PackageSource.Parse(path)
         | _ ->
