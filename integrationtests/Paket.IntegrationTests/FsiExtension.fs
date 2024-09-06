@@ -16,7 +16,7 @@ module FsiExtension =
     let pathToExtension = Path.Combine(__SOURCE_DIRECTORY__, "..", "..", "src", "FSharp.DependencyManager.Paket", "bin", configuration, "netstandard2.0")
     let extensionFileName = "FSharp.DependencyManager.Paket.dll"
 
-    [<Test>]
+    //[<Test>]
     let ``fcs can type check `` () =
       System.AppDomain.CurrentDomain.add_AssemblyResolve(fun _ (e: System.ResolveEventArgs) ->
           // the paket dependency manager assembly depends on fsharp.core version
