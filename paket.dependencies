@@ -9,7 +9,6 @@ nuget FSharp.Core >= 6.0.3 redirects: force
 nuget Chessie >= 0.6
 nuget Mono.Cecil ~> 0.11.1
 
-nuget System.Security.Cryptography.ProtectedData >= 4.4
 
 nuget NETStandard.Library ~> 2.0
 nuget Microsoft.NETCore.App ~> 2.1

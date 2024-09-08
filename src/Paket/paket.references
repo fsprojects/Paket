@@ -3,7 +3,6 @@ FSharp.Core
 Chessie
 Newtonsoft.Json
 Mono.Cecil
-System.Security.Cryptography.ProtectedData
 System.Net.Http.WinHttpHandler
 System.Net.Http
 Nuget.Packaging
