@@ -17,6 +17,7 @@ module FsiExtension =
     let extensionFileName = "FSharp.DependencyManager.Paket.dll"
 
     [<Test>]
+    [<Timeout(300000)>]
     let ``fcs can type check `` () =
       System.AppDomain.CurrentDomain.add_AssemblyResolve(fun _ (e: System.ResolveEventArgs) ->
           // the paket dependency manager assembly depends on fsharp.core version
