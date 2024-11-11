@@ -155,7 +155,7 @@ let releaseNotesPath = releaseNotesProp release.Notes
 
 let packageProps = [
     sprintf "/p:Version=%s" release.NugetVersion
-    sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath
+    sprintf "/p:PackageReleaseNotesFile=\"%s\"" releaseNotesPath
 ]
 
 Target "Build" (fun _ ->
