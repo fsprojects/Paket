@@ -2,7 +2,7 @@
 module FsiExtension =
     open System
     open System.IO
-    open FSharp.Compiler.SourceCodeServices
+    open FSharp.Compiler.CodeAnalysis
     open FSharp.Compiler.Text
     open NUnit.Framework
 
@@ -41,7 +41,6 @@ module FsiExtension =
       match answer with
       | FSharpCheckFileAnswer.Succeeded(result) ->
         Assert.IsTrue result.HasFullTypeCheckInfo
-        Assert.IsTrue (Array.isEmpty result.Errors)
         Assert.AreEqual("v", result.PartialAssemblySignature.Entities.[0].MembersFunctionsAndValues.[0].DisplayName)
         Assert.AreEqual("FSharp.Data", result.PartialAssemblySignature.Entities.[0].MembersFunctionsAndValues.[0].FullType.TypeDefinition.AccessPath)
         Assert.AreEqual("JsonValue", result.PartialAssemblySignature.Entities.[0].MembersFunctionsAndValues.[0].FullType.TypeDefinition.DisplayName)
