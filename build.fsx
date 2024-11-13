@@ -43,8 +43,6 @@ let tags = "nuget, bundler, F#"
 let solutionFile = "Paket.sln"
 
 // Pattern specifying assemblies to be tested using NUnit
-let testAssemblies = "tests/**/bin/Release/net461/*Tests*.dll"
-let integrationTestAssemblies = "integrationtests/Paket.IntegrationTests/bin/Release/net461/*Tests*.dll"
 
 // Git configuration (used for publishing documentation in gh-pages branch)
 // The profile where the project is posted
@@ -66,10 +64,8 @@ let mutable dotnetExePath = "dotnet"
 // --------------------------------------------------------------------------------------
 
 let buildDir = "bin"
-let buildDirNet461 = buildDir @@ "net461"
 let buildDirNet = buildDir @@ "net8"
 let buildDirBootstrapper = "bin_bootstrapper"
-let buildDirBootstrapperNet461 = buildDirBootstrapper @@ "net461"
 let buildDirBootstrapperNet = buildDirBootstrapper @@ "net8"
 let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
@@ -114,11 +110,8 @@ Target "InstallDotNetCore" (fun _ ->
 Target "Clean" (fun _ ->
     !! "src/**/bin"
     ++ "tests/**/bin"
-    ++ buildDir
-    ++ buildDirNet461
     ++ buildDirNet
     ++ buildDirBootstrapper
-    ++ buildDirBootstrapperNet461
     ++ buildDirBootstrapperNet
     ++ tempDir
     |> CleanDirs
@@ -190,26 +183,8 @@ Target "Publish" (fun _ ->
     DotNetCli.Publish (fun c ->
         { c with
             Project = "src/Paket"
-            Framework = "net461"
-            Output = FullName (currentDirectory </> buildDirNet461)
-            ToolPath = dotnetExePath
-            AdditionalArgs = publishArgs
-        })
-
-    DotNetCli.Publish (fun c ->
-        { c with
-            Project = "src/Paket"
             Framework = "net8"
             Output = FullName (currentDirectory </> buildDirNet)
-            ToolPath = dotnetExePath
-            AdditionalArgs = publishArgs
-        })
-
-    DotNetCli.Publish (fun c ->
-        { c with
-            Project = "src/Paket.Bootstrapper"
-            Framework = "net461"
-            Output = FullName (currentDirectory </> buildDirBootstrapperNet461)
             ToolPath = dotnetExePath
             AdditionalArgs = publishArgs
         })
@@ -247,10 +222,8 @@ Target "RunTests" (fun _ ->
                 ToolPath = dotnetExePath
             })
 
-    runTest "net" "Paket.Tests" "net461"
     runTest "netcore" "Paket.Tests" "net8"
 
-    runTest "net" "Paket.Bootstrapper.Tests" "net461"
     runTest "netcore" "Paket.Bootstrapper.Tests" "net8"
 )
 
@@ -283,46 +256,9 @@ Target "QuickIntegrationTests" (fun _ ->
 
 Target "MergePaketTool" (fun _ ->
     CreateDir buildMergedDir
-    let inBuildDirNet461 (file: string) = buildDirNet461 @@ file
 
-    // syntax for ilrepack requires the 'primary' assembly to be the first positional argument, so we enforce that by not making
-    // paket.exe part of the ordered 'component' libraries
-    let primaryExe = inBuildDirNet461 "paket.exe"
 
-    let mergeLibs =
-        [
-            "Argu.dll"
-            "Chessie.dll"
-            "Fake.Core.ReleaseNotes.dll"
-            "FSharp.Core.dll"
-            "Mono.Cecil.dll"
-            "Newtonsoft.Json.dll"
-            "NuGet.Common.dll"
-            "NuGet.Configuration.dll"
-            "NuGet.Frameworks.dll"
-            "NuGet.Packaging.dll"
-            "NuGet.Versioning.dll"
-            "Paket.Core.dll"
-            "System.Buffers.dll"
-            "System.Configuration.ConfigurationManager.dll"
-            "System.Memory.dll"
-            "System.Net.Http.WinHttpHandler.dll"
-            "System.Numerics.Vectors.dll"
-            "System.Runtime.CompilerServices.Unsafe.dll"
-            "System.Security.Cryptography.Cng.dll"
-            "System.Security.Cryptography.Pkcs.dll"
-            "System.Threading.Tasks.Extensions.dll"
-        ]
-        |> List.map inBuildDirNet461
-        |> separated " "
-
-    let result =
-        ExecProcess (fun info ->
-            info.FileName <- currentDirectory </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
-            info.Arguments <- sprintf "/copyattrs /lib:%s /ver:%s /out:%s %s %s" buildDirNet461 release.AssemblyVersion paketFile primaryExe mergeLibs
-            ) (TimeSpan.FromMinutes 5.)
-
-    if result <> 0 then failwithf "Error during ILRepack execution."
+    () // no more ILRepack
 )
 "Publish" ==> "MergePaketTool"
 
@@ -335,7 +271,7 @@ Target "RunIntegrationTestsNet" (fun _ ->
     DotNetCli.Test (fun c ->
         { c with
             Project = "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
-            Framework = "net461"
+            Framework = "net8"
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
                 sprintf "--logger:trx;LogFileName=%s" ("tests_result/net/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]
@@ -470,7 +406,7 @@ Target "PublishNuGet" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Generate the documentation
 
-let disableDocs = false // https://github.com/fsprojects/FSharp.Formatting/issues/461
+let disableDocs = true // https://github.com/fsprojects/FSharp.Formatting/issues/461
 
 let fakePath = __SOURCE_DIRECTORY__ @@ "packages" @@ "build" @@ "FAKE" @@ "tools" @@ "FAKE.exe"
 let fakeStartInfo fsiargs script workingDirectory args environmentVars =
@@ -657,7 +593,6 @@ Target "ReleaseGitHub" (fun _ ->
     |> uploadFile "./bin/merged/paket.exe"
     |> uploadFile "./bin/merged/paket-sha256.txt"
     |> uploadFile "./src/FSharp.DependencyManager.Paket/bin/Release/netstandard2.0/FSharp.DependencyManager.Paket.dll"
-    |> uploadFile "./bin_bootstrapper/net461/paket.bootstrapper.exe"
     |> uploadFile ".paket/paket.targets"
     |> uploadFile ".paket/Paket.Restore.targets"
     |> uploadFile (tempDir </> sprintf "Paket.%s.nupkg" (release.NugetVersion))

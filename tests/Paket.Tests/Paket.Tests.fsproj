@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net461;net8</TargetFrameworks>
+    <TargetFrameworks>net8</TargetFrameworks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <!-- these two properties are set for some tests around assembly metadata parsing.
          they're written to the generated AssemblyInfo.fs -->
