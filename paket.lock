@@ -855,3 +855,7 @@ GITHUB
       Octokit (>= 0.20)
   remote: enricosada/add_icon_to_exe
     rh/ResourceHacker.exe (e11eda501acea369ac2950beb34b8888495bf21f)
+GROUP FSharpDepManagerExtension
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    FSharp.Core (5.0) - redirects: force

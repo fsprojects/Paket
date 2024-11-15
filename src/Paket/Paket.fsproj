@@ -2,14 +2,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net461;net8</TargetFrameworks>
+    <TargetFrameworks>net461;netcoreapp3.1</TargetFrameworks>
     <PackageId>Paket</PackageId>
     <AssemblyName>paket</AssemblyName>
     <IsPackable>true</IsPackable>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(PackAsTool)' == 'true' ">
-    <TargetFramework>net8</TargetFramework>
+    <!-- .net tools support netcoreapp only -->
+    <TargetFrameworks>
+    </TargetFrameworks>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="\" />

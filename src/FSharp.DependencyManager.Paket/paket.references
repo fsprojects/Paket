@@ -1,2 +1,5 @@
 ﻿DotNet.ReproducibleBuilds
+
+group FSharpDepManagerExtension
+
 FSharp.Core

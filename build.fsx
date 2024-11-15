@@ -67,10 +67,10 @@ let mutable dotnetExePath = "dotnet"
 
 let buildDir = "bin"
 let buildDirNet461 = buildDir @@ "net461"
-let buildDirNet = buildDir @@ "net8"
+let buildDirNetCore = buildDir @@ "netcoreapp3.1"
 let buildDirBootstrapper = "bin_bootstrapper"
 let buildDirBootstrapperNet461 = buildDirBootstrapper @@ "net461"
-let buildDirBootstrapperNet = buildDirBootstrapper @@ "net8"
+let buildDirBootstrapperNetCore = buildDirBootstrapper @@ "netcoreapp2.1"
 let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
 let paketFile = buildMergedDir @@ "paket.exe"
@@ -116,10 +116,10 @@ Target "Clean" (fun _ ->
     ++ "tests/**/bin"
     ++ buildDir
     ++ buildDirNet461
-    ++ buildDirNet
+    ++ buildDirNetCore
     ++ buildDirBootstrapper
     ++ buildDirBootstrapperNet461
-    ++ buildDirBootstrapperNet
+    ++ buildDirBootstrapperNetCore
     ++ tempDir
     |> CleanDirs
 
@@ -199,8 +199,8 @@ Target "Publish" (fun _ ->
     DotNetCli.Publish (fun c ->
         { c with
             Project = "src/Paket"
-            Framework = "net8"
-            Output = FullName (currentDirectory </> buildDirNet)
+            Framework = "netcoreapp3.1"
+            Output = FullName (currentDirectory </> buildDirNetCore)
             ToolPath = dotnetExePath
             AdditionalArgs = publishArgs
         })
@@ -217,8 +217,8 @@ Target "Publish" (fun _ ->
     DotNetCli.Publish (fun c ->
         { c with
             Project = "src/Paket.Bootstrapper"
-            Framework = "net8"
-            Output = FullName (currentDirectory </> buildDirBootstrapperNet)
+            Framework = "netcoreapp2.1"
+            Output = FullName (currentDirectory </> buildDirBootstrapperNetCore)
             ToolPath = dotnetExePath
             AdditionalArgs = publishArgs
         })
@@ -248,10 +248,10 @@ Target "RunTests" (fun _ ->
             })
 
     runTest "net" "Paket.Tests" "net461"
-    runTest "netcore" "Paket.Tests" "net8"
+    runTest "netcore" "Paket.Tests" "netcoreapp3.0"
 
     runTest "net" "Paket.Bootstrapper.Tests" "net461"
-    runTest "netcore" "Paket.Bootstrapper.Tests" "net8"
+    runTest "netcore" "Paket.Bootstrapper.Tests" "netcoreapp3.0"
 )
 
 Target "QuickTest" (fun _ ->
@@ -355,7 +355,7 @@ Target "RunIntegrationTestsNetCore" (fun _ ->
     DotNetCli.Test (fun c ->
         { c with
             Project = "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
-            Framework = "net8"
+            Framework = "netcoreapp3.1"
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
                 sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]

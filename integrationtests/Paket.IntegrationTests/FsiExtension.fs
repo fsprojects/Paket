@@ -25,18 +25,18 @@ module FsiExtension =
               printfn "binding redirect for FSharp.Core..."
               typedefof<Map<_,_>>.Assembly
           else
-              e.RequestingAssembly  
+              e.RequestingAssembly
       )
       let checker = FSharpChecker.Create(suggestNamesForErrors=true, keepAssemblyContents=true)
       let sourceText = """
       #r "paket: nuget FSharp.Data"
       let v = FSharp.Data.JsonValue.Boolean true
       """
-      let projectOptions = 
+      let projectOptions =
         checker.GetProjectOptionsFromScript("test.fsx", SourceText.ofString sourceText, otherFlags = [| "/langversion:preview"; sprintf "/compilertool:%s" pathToExtension |] )
         |> Async.RunSynchronously
         |> fst
-      
+
       let _, answer = checker.ParseAndCheckFileInProject("test.fsx", 0, SourceText.ofString sourceText, projectOptions) |> Async.RunSynchronously
       match answer with
       | FSharpCheckFileAnswer.Succeeded(result) ->
@@ -67,7 +67,7 @@ module FsiExtension =
             p.WaitForExit()
             standardOutput, errorOutput
         { file = fsxFile; stdOut = standardOutput; errOut = errorOutput; arguments = arguments }
-        
+
     let runSingleFsxTest (fsxFile: FileInfo) =
 
         let expectedOutput =
@@ -78,7 +78,7 @@ module FsiExtension =
                 File.Create goldenFile |> ignore
                 ""
         let result = runSingleFsxTestForOutput fsxFile
-        
+
         let actualOutput =
             (result.stdOut + result.errOut).Split([|System.Environment.NewLine|], System.StringSplitOptions.None)
             |> Array.filter (fun s -> not (s.StartsWith ":paket>"))
@@ -89,25 +89,25 @@ module FsiExtension =
         let actualOutput = normalizeCR actualOutput
         let expectedOutput = normalizeCR expectedOutput
         if actualOutput = expectedOutput then
-            Pass fsxFile.FullName 
-        else 
+            Pass fsxFile.FullName
+        else
             Failed(fsxFile.FullName, expectedOutput, actualOutput, result.arguments)
 
     [<Test>]
     let ``run fsi integration tests that have deterministic output`` () =
         let fsxFiles = DirectoryInfo(fsxsFolder).GetFiles("*.fsx", SearchOption.AllDirectories)
-        let failures = 
+        let failures =
             [|
                 for fsx in fsxFiles do
                     if not (fsx.Name.StartsWith "skip.") then
-                        
+
                         match runSingleFsxTest fsx with
                         | Pass _ -> printfn "OK: %s" fsx.FullName
                         | Failed(file,_,_,commandArguments) ->
                             printfn "KO: %s" fsx.FullName
                             yield file, commandArguments
             |]
-        
+
         if failures.Length > 0 then
             failures
             |> Array.map (fun (fsxFile, arguments) -> sprintf "file: %s\ncommand: %s" fsxFile arguments)

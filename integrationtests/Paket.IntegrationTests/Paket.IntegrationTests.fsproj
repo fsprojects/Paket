@@ -15,11 +15,11 @@
     <Compile Include="NugetDownloadSpecs.fs" />
     <Compile Include="InitSpecs.fs" />
     <Compile Include="InfoSpecs.fs" />
-    <Compile Include="OutdatedSpecs.fs" />
     <Compile Include="NuGetV3Specs.fs" />
     <Compile Include="UpdatePackageSpecs.fs" />
     <Compile Include="UpdateGroupsSpecs.fs" />
     <Compile Include="AddSpecs.fs" />
+    <Compile Include="OutdatedSpecs.fs" />
     <Compile Include="PackSpecs.fs" />
     <Compile Include="InstallSpecs.fs" />
     <Compile Include="RestoreSpecs.fs" />
