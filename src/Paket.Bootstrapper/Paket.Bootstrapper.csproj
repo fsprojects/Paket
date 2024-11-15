@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net8</TargetFrameworks>
+    <TargetFrameworks>net461;net8</TargetFrameworks>
     <StartupObject>Paket.Bootstrapper.Program</StartupObject>
     <AssemblyName>paket.bootstrapper</AssemblyName>
     <ToolCommandName>paketbootstrapper</ToolCommandName>
@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(PackAsTool)' == 'true'">
-    <Content Include="..\..\bin_bootstrapper\net8\paket.bootstrapper.exe">
+    <Content Include="..\..\bin_bootstrapper\net461\paket.bootstrapper.exe">
       <Pack>true</Pack>
       <PackagePath>tools</PackagePath>
       <Visible>true</Visible>
