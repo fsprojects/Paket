@@ -470,7 +470,7 @@ Target "PublishNuGet" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Generate the documentation
 
-let disableDocs = true // https://github.com/fsprojects/FSharp.Formatting/issues/461
+let disableDocs = false // https://github.com/fsprojects/FSharp.Formatting/issues/461
 
 let fakePath = __SOURCE_DIRECTORY__ @@ "packages" @@ "build" @@ "FAKE" @@ "tools" @@ "FAKE.exe"
 let fakeStartInfo fsiargs script workingDirectory args environmentVars =
