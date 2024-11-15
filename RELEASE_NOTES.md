@@ -1,3 +1,6 @@
+#### 9.0.1 - 2024-11-15
+* Bring back boostrapper - even for .NET 9
+
 #### 9.0.0 - 2024-11-13
 * Support for .NET 9.0 - https://github.com/fsprojects/Paket/pull/4248
 * Added support for central package managments to fix issue about [references: strict either does not work, or does not work as expected](https://github.com/fsprojects/Paket/issues/2257)
