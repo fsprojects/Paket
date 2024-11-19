@@ -971,6 +971,12 @@ type FrameworkIdentifier =
         | DotNet8WithOs  Net8Os.MacOs   -> [ DotNetFramework FrameworkVersion.V8; XamarinMac ]
         | DotNet8WithOs  Net8Os.TvOs    -> [ DotNetFramework FrameworkVersion.V8; XamarinTV ]
         | DotNet8WithOs  Net8Os.WatchOs -> [ DotNetFramework FrameworkVersion.V8; XamarinWatch ]
+        // remark: for now, os versions for net 9 is alias to 8
+        | DotNet9WithOs  Net8Os.Android -> [ DotNetFramework FrameworkVersion.V9; MonoAndroid MonoAndroidVersion.V12 ]
+        | DotNet9WithOs  Net8Os.IOs     -> [ DotNetFramework FrameworkVersion.V9; XamariniOS ]
+        | DotNet9WithOs  Net8Os.MacOs   -> [ DotNetFramework FrameworkVersion.V9; XamarinMac ]
+        | DotNet9WithOs  Net8Os.TvOs    -> [ DotNetFramework FrameworkVersion.V9; XamarinTV ]
+        | DotNet9WithOs  Net8Os.WatchOs -> [ DotNetFramework FrameworkVersion.V9; XamarinWatch ]
         | DotNet6Windows Net6WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V6 ]
         | DotNet6Windows Net6WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V6; DotNet6Windows Net6WindowsVersion.V7_0 ]
         | DotNet6Windows Net6WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet6Windows Net6WindowsVersion.V8_0 ]
@@ -987,6 +993,11 @@ type FrameworkIdentifier =
         | DotNet8Windows Net8WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V10_0_17763_0 ]
         | DotNet8Windows Net8WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V10_0_18362_0 ]
         // remark: for now, windows version for net 9 is alias to 8
+        | DotNet9Windows Net8WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V8; ]
+        | DotNet9Windows Net8WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V8; DotNet9Windows Net8WindowsVersion.V7_0]
+        | DotNet9Windows Net8WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet9Windows Net8WindowsVersion.V8_0]
+        | DotNet9Windows Net8WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet9Windows Net8WindowsVersion.V10_0_17763_0 ]
+        | DotNet9Windows Net8WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet9Windows Net8WindowsVersion.V10_0_18362_0 ]
         | DotNetStandard DotNetStandardVersion.V1_0 -> [  ]
         | DotNetStandard DotNetStandardVersion.V1_1 -> [ DotNetStandard DotNetStandardVersion.V1_0 ]
         | DotNetStandard DotNetStandardVersion.V1_2 -> [ DotNetStandard DotNetStandardVersion.V1_1 ]
@@ -1024,6 +1035,7 @@ type FrameworkIdentifier =
         | XCode XCodeVersion.V10 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | XCode XCodeVersion.V11 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Unsupported _ -> []
+        
 
 module FrameworkDetection =
 
