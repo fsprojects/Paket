@@ -145,6 +145,7 @@ type OptionalPackagingInfo =
       Language : string option
       ProjectUrl : string option
       IconUrl : string option
+      Icon : string option
       LicenseExpression : string option
       LicenseUrl : string option
       RepositoryUrl : string option
@@ -183,6 +184,7 @@ type OptionalPackagingInfo =
           RepositoryBranch = None
           RepositoryCommit = None
           IconUrl = None
+          Icon = None
           Copyright = None
           RequireLicenseAcceptance = false
           Tags = []
@@ -543,6 +545,7 @@ module internal TemplateFile =
           Language = get "language"
           ProjectUrl = get "projectUrl"
           IconUrl = get "iconUrl"
+          Icon = get "icon"
           RepositoryType = get "repositoryType"
           RepositoryUrl = get "repositoryUrl"
           RepositoryBranch = get "repositoryBranch"

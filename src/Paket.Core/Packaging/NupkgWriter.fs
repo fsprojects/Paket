@@ -186,6 +186,7 @@ module internal NupkgWriter =
 
         (!!?) "projectUrl" optional.ProjectUrl
         (!!?) "iconUrl" optional.IconUrl
+        (!!?) "icon" optional.Icon
         if optional.RequireLicenseAcceptance then
             !! "requireLicenseAcceptance" "true"
         !! "description" core.Description
