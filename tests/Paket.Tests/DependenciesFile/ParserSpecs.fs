@@ -750,7 +750,7 @@ nuget Rx-Main
 let ``should read config with password in env variable``() = 
     Environment.SetEnvironmentVariable("FEED_USERNAME", "user XYZ", EnvironmentVariableTarget.Process)
     Environment.SetEnvironmentVariable("FEED_PASSWORD", "pw Love", EnvironmentVariableTarget.Process)
-    let cfg = DependenciesFile.FromSource( configWithPasswordInEnvVariable)
+    let cfg = DependenciesFile.FromSource(configWithPasswordInEnvVariable)
     
     cfg.Groups.[Constants.MainDependencyGroup].Sources 
     |> shouldEqual [ 
@@ -769,13 +769,50 @@ nuget Rx-Main
 let ``should read config with password in env variable and auth type specified``() = 
     Environment.SetEnvironmentVariable("FEED_USERNAME", "user XYZ", EnvironmentVariableTarget.Process)
     Environment.SetEnvironmentVariable("FEED_PASSWORD", "pw Love", EnvironmentVariableTarget.Process)
-    let cfg = DependenciesFile.FromSource( configWithPasswordInEnvVariableAndAuthType)
+    let cfg = DependenciesFile.FromSource(configWithPasswordInEnvVariableAndAuthType)
     
     cfg.Groups.[Constants.MainDependencyGroup].Sources 
     |> shouldEqual [ 
         PackageSource.NuGetV2 { 
             Url = "http://www.nuget.org/api/v2"
             Authentication = AuthProvider.empty } ]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth.Retrieve true
+        |> shouldEqual (Some (Credentials{ Username = "user XYZ"; Password = "pw Love"; Type = NetUtils.AuthType.NTLM}))
+
+let configWithSourceInEnvVariable = """
+source %FEED_URL%
+nuget Rx-Main
+"""
+
+[<Test>]
+let ``should read config with source in env variable``() = 
+    Environment.SetEnvironmentVariable("FEED_URL", "http://www.nuget.org/api/v2", EnvironmentVariableTarget.Process)
+    let cfg = DependenciesFile.FromSource(configWithSourceInEnvVariable)
+    
+    cfg.Groups.[Constants.MainDependencyGroup].Sources 
+    |> shouldEqual [ 
+        PackageSource.NuGetV2 { 
+            Url = "http://www.nuget.org/api/v2"
+            Authentication = AuthProvider.empty} ]
+
+
+let configWithSourceAndCredentialsInEnvVariable = """
+source %FEED_URL%
+nuget Rx-Main
+"""
+
+[<Test>]
+let ``should read config with source and credentials in env variable``() = 
+    Environment.SetEnvironmentVariable("FEED_USERNAME", "user XYZ", EnvironmentVariableTarget.Process)
+    Environment.SetEnvironmentVariable("FEED_PASSWORD", "pw Love", EnvironmentVariableTarget.Process)
+    Environment.SetEnvironmentVariable("FEED_URL", "http://www.nuget.org/api/v2 username: \"%FEED_USERNAME%\" password: \"%FEED_PASSWORD%\" authtype: \"nTlM\"", EnvironmentVariableTarget.Process)
+    let cfg = DependenciesFile.FromSource(configWithSourceAndCredentialsInEnvVariable)
+    
+    cfg.Groups.[Constants.MainDependencyGroup].Sources 
+    |> shouldEqual [ 
+        PackageSource.NuGetV2 { 
+            Url = "http://www.nuget.org/api/v2"
+            Authentication = AuthProvider.empty} ]
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth.Retrieve true
         |> shouldEqual (Some (Credentials{ Username = "user XYZ"; Password = "pw Love"; Type = NetUtils.AuthType.NTLM}))
 
