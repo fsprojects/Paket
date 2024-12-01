@@ -455,7 +455,7 @@ let runDotnet workingDir arguments =
     let result =
         let p = new System.Diagnostics.Process()
         p.StartInfo.WorkingDirectory <- workingDir
-        p.StartInfo.FileName <- "dotnet"
+        p.StartInfo.FileName <- ProcessHelper.dotnetExe
         p.StartInfo.Arguments <- arguments
         p.Start() |> ignore
         p.WaitForExit()
