@@ -1,0 +1,35 @@
+version: "3"
+services:
+  klondike:
+    image: aitraders/klondike:2.1.1-mono-4.6.1.3
+    networks:
+    - default
+    ports:
+    - "8888:8080"
+    volumes:
+    - ./config/klondike/Settings.config:/app/Settings.config
+  sonatype:
+    image: clearent/nexus:3.4.0-02
+    networks:
+    - default
+    ports:
+    - "8889:8081"
+    volumes:
+    - ./config/sonatype:/nexus-data
+    command: "bin/nexus run & sleep 20; curl -X POST -u admin:admin123 http://localhost:8081/service/siesta/rest/v1/script -d @script/nugetApiKey.json"
+  simple:
+    image: sunside/simple-nuget-server:0.5
+    environment:
+      NUGET_API_KEY: test
+    networks:
+    - default
+    ports:
+    - "5000:80"
+  artifactory:
+    image: docker.bintray.io/jfrog/artifactory-oss:5.4.5
+    networks:
+    - default
+    ports:
+    - "8890:8081"
+networks:
+  default:

@@ -1,0 +1,5 @@
+{
+	"name": "test",
+	"type": "groovy",
+	"content": "import org.sonatype.nexus.security.authc.apikey.ApiKeyStore\nimport org.sonatype.nexus.security.realm.RealmManager\n\nimport org.apache.shiro.subject.SimplePrincipalCollection\ndef getOrCreateNuGetApiKey(String userName) {\n    realmName = 'NexusAuthenticatingRealm'\n    apiKeyDomain = 'NuGetApiKey'\n    principal = new SimplePrincipalCollection(userName, realmName)\n    keyStore = container.lookup(ApiKeyStore.class.getName())\n    apiKey = keyStore.getApiKey(apiKeyDomain, principal)\n    if (apiKey == null) {\n        apiKey = keyStore.createApiKey(apiKeyDomain, principal)\n    }\n    return apiKey.toString()\n}\nrealmManager = container.lookup(RealmManager.class.getName())\nrealmManager.enableRealm('NuGetApiKey')\nadminNuGetApiKey = getOrCreateNuGetApiKey('admin')\nreturn adminNuGetApiKey"
+}
