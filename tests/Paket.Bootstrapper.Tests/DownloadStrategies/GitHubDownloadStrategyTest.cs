@@ -89,7 +89,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         {
             //arrange
             var content = Guid.NewGuid().ToByteArray();
-            var sha = new SHA256Managed();
+            var sha = SHA256.Create();
             var checksum = sha.ComputeHash(new MemoryStream(content));
             var hash = BitConverter.ToString(checksum).Replace("-", String.Empty);
             mockFileProxy.Setup(x => x.OpenRead(It.IsAny<string>())).Returns(() => new MemoryStream(Guid.NewGuid().ToByteArray()));
@@ -109,7 +109,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         {
             //arrange
             var content = Guid.NewGuid().ToByteArray();
-            var sha = new SHA256Managed();
+            var sha = SHA256.Create();
             var checksum = sha.ComputeHash(new MemoryStream(content));
             var hash = BitConverter.ToString(checksum).Replace("-", String.Empty);
             mockFileProxy.Setup(x => x.OpenRead(It.IsAny<string>())).Returns(new MemoryStream(content));

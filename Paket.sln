@@ -114,6 +114,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1C9A57E4-9D94-44D1-A106-FC588B7B72DE}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		global.json = global.json
 	EndProjectSection
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FSharp.DependencyManager.Paket", "src\FSharp.DependencyManager.Paket\FSharp.DependencyManager.Paket.fsproj", "{6C531B7C-B52D-48FA-9EDD-519CCE151F19}"

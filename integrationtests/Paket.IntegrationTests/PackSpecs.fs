@@ -738,7 +738,7 @@ let ``#4003 dotnet pack of a global tool with p2p``() =
 let ``#4004 dotnet pack using different versions``() =
     let project = "lib1"
     let scenario = "i004004-pack-version"
-    use __ = prepareSdk scenario
+    use _ = prepareSdk scenario
 
     let rootPath = scenarioTempPath scenario
 
@@ -763,7 +763,7 @@ let ``#4004 dotnet pack using different versions``() =
 let ``#3599 dotnet pack should work with build metadata``() =
     let project = "lib1"
     let scenario = "i003599-pack-build-meta"
-    prepareSdk scenario
+    use _ = prepareSdk scenario
 
     let rootPath = scenarioTempPath scenario
     let outPath = Path.Combine(rootPath, "out")
