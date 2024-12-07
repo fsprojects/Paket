@@ -217,7 +217,7 @@ let getTargetDir (project : ProjectFile) targetProfile =
             | Some targetProfile -> sprintf "lib/%O/" targetProfile
             | None -> "lib/"
 
-let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences interprojectReferencesConstraint (projectWithTemplates : Map<string, Lazy<'TemplateFile> * ProjectFile * bool>) includeReferencedProjects (version :SemVerInfo option) cache =
+let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences interprojectReferencesConstraint (projectWithTemplates : Map<string, Lazy<_> * ProjectFile * bool>) includeReferencedProjects (version :SemVerInfo option) cache =
     let includeReferencedProjects = template.IncludeReferencedProjects || includeReferencedProjects
 
     let interprojectReferencesConstraint =
