@@ -1354,7 +1354,15 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                 conflictingWithOpen
                                 |> Seq.append conflictingWithClosed)
 
+                        let conflictingFramework =
+                            exploredPackage.AvailableFrameworks
+                            |> Seq.exists (fun framework -> exploredPackage.Settings.FrameworkRestrictions.IsSupersetOf(FrameworkRestriction.Exactly(framework)))
+                            |> function
+                                | false -> [exploredPackage.Name, VersionRequirement (VersionRange.Maximum exploredPackage.Version, PreReleaseStatus.All)]
+                                | true -> []
+                            
                         let canTakePackage =
+                            Seq.isEmpty conflictingFramework &&
                             Seq.isEmpty conflictingResolvedPackages &&
                             Seq.isEmpty conflictingDepsRanges
 
@@ -1384,9 +1392,13 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                 getVersionsBlock ResolverStrategy.Max (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName) currentStep
 
                             let conflictingPackageName,vr =
-                                match Seq.tryHead conflictingResolvedPackages with
-                                | Some (conflictingPackage,(_,vr,_)) -> conflictingPackage.Name,vr
-                                | None -> Seq.head conflictingDepsRanges
+                                conflictingFramework
+                                |> Seq.tryHead
+                                |> Option.defaultWith (fun () ->
+                                    match Seq.tryHead conflictingResolvedPackages with
+                                    | Some (conflictingPackage,(_,vr,_)) -> conflictingPackage.Name,vr
+                                    | None -> Seq.head conflictingDepsRanges
+                                )
 
                             let currentConflict =
                                 { currentConflict with
