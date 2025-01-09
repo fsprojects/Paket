@@ -33,6 +33,20 @@ let ``#1251 full installer demo``() =
     |> shouldBeGreaterThan (SemVer.Parse "4")
 
 [<Test>]
+let ``apply framework restriction``() = 
+    use __ = prepare "i001251-installer-demo"
+    let deps = """source https://nuget.org/api/v2
+    framework: =net8.0
+    nuget Microsoft.AspNetCore.WebUtilities"""
+
+    let dependenciesFile = DependenciesFile.FromSource(scenarioTempPath "i001251-installer-demo",deps)
+    let force = false
+    let lockFile,_,_,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, PackageResolver.UpdateMode.Install, SemVerUpdateMode.NoRestriction, force)
+
+    let version = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Microsoft.AspNetCore.WebUtilities"].Version
+    Assert.Less(version, SemVer.Parse "9")
+    
+[<Test>]
 let ``#1251 install FSharp.Collections.ParallelSeq``() = 
     use __ = prepare "i001251-installer-demo"
     let deps = """source https://nuget.org/api/v2
