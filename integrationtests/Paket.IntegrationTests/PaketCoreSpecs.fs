@@ -33,14 +33,13 @@ let ``#1251 full installer demo``() =
     |> shouldBeGreaterThan (SemVer.Parse "4")
 
 [<Test>]
-let ``apply framework restriction``() = 
+let ``apply framework restriction`` ([<Values>] force, [<Values("https://nuget.org/api/v2", "https://api.nuget.org/v3/index.json")>] source: string) = 
     use __ = prepare "i001251-installer-demo"
-    let deps = """source https://nuget.org/api/v2
+    let deps = $"""source {source}
     framework: =net8.0
     nuget Microsoft.AspNetCore.WebUtilities"""
 
     let dependenciesFile = DependenciesFile.FromSource(scenarioTempPath "i001251-installer-demo",deps)
-    let force = false
     let lockFile,_,_,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, PackageResolver.UpdateMode.Install, SemVerUpdateMode.NoRestriction, force)
 
     let version = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Microsoft.AspNetCore.WebUtilities"].Version

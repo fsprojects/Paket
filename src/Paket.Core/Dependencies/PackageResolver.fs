@@ -1355,11 +1355,14 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                 |> Seq.append conflictingWithClosed)
 
                         let conflictingFramework =
-                            exploredPackage.AvailableFrameworks
-                            |> Seq.exists (fun framework -> exploredPackage.Settings.FrameworkRestrictions.IsSupersetOf(FrameworkRestriction.Exactly(framework)))
-                            |> function
-                                | false -> [exploredPackage.Name, VersionRequirement (VersionRange.Maximum exploredPackage.Version, PreReleaseStatus.All)]
-                                | true -> []
+                            match exploredPackage.AvailableFrameworks with
+                            | [] -> []
+                            | _ ->
+                                exploredPackage.AvailableFrameworks
+                                |> Seq.exists (fun framework -> exploredPackage.Settings.FrameworkRestrictions.IsSupersetOf(FrameworkRestriction.Exactly(framework)))
+                                |> function
+                                    | false -> [exploredPackage.Name, VersionRequirement (VersionRange.Maximum exploredPackage.Version, PreReleaseStatus.All)]
+                                    | true -> []
                             
                         let canTakePackage =
                             Seq.isEmpty conflictingFramework &&
