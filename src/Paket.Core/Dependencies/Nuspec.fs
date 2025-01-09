@@ -65,11 +65,12 @@ type Nuspec =
       OfficialName : string
       // Currently only used for testing
       Version : string
+      AvailableFramework: FrameworkIdentifier list
       LicenseUrl : string
       IsDevelopmentDependency : bool
       FrameworkAssemblyReferences : FrameworkAssemblyReference list }
-    static member All = { Version = ""; References = NuspecReferences.All; Dependencies = lazy []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false }
-    static member Explicit references = { Version = ""; References = NuspecReferences.Explicit references; Dependencies = lazy []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false }
+    static member All = { Version = ""; References = NuspecReferences.All; Dependencies = lazy []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false; AvailableFramework = [] }
+    static member Explicit references = { Version = ""; References = NuspecReferences.Explicit references; Dependencies = lazy []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false; AvailableFramework = [] }
 
     /// load the file from an XmlDocument. The fileName is only used for error reporting.
     static member private Load(fileName:string, doc:XmlDocument) =
@@ -126,6 +127,7 @@ type Nuspec =
             match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "developmentDependency" with
             | Some link -> String.equalsIgnoreCase link.InnerText "true"
             | None -> false
+          AvailableFramework = []
           FrameworkAssemblyReferences = 
             let grouped =
                 doc

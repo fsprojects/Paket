@@ -121,6 +121,7 @@ type NuGetPackageCache =
       Unlisted : bool
       DownloadUrl : string
       LicenseUrl : string
+      AvailableFrameworks: FrameworkIdentifier list
       Version: string
       CacheVersion: string }
 
@@ -390,6 +391,7 @@ let getCacheDataFromExtractedPackage (packageName:PackageName) (version:SemVerIn
               CacheVersion = NuGetPackageCache.CurrentCacheVersion
               LicenseUrl = nuspec.LicenseUrl
               Version = version.Normalize()
+              AvailableFrameworks = nuspec.AvailableFramework
               Unlisted = false }
                .WithDependencies nuspec.Dependencies.Value
             |> Some
@@ -406,6 +408,7 @@ let getCacheDataFromExtractedPackage (packageName:PackageName) (version:SemVerIn
                   SourceUrl = targetFolder.FullName
                   CacheVersion = NuGetPackageCache.CurrentCacheVersion
                   LicenseUrl = nuspec.LicenseUrl
+                  AvailableFrameworks = nuspec.AvailableFramework
                   Version = version.Normalize()
                   Unlisted = false }
                    .WithDependencies nuspec.Dependencies.Value

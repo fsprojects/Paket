@@ -37,6 +37,7 @@ let ``can detect explicit dependencies for Fantomas``() =
           LicenseUrl = "http://github.com/dungpa/fantomas/blob/master/LICENSE.md"
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           Version = "1.6.0"
+          AvailableFrameworks = []
           SourceUrl = fakeUrl }
 
 [<Test>]
@@ -57,6 +58,7 @@ let ``can detect explicit dependencies for Rx-PlaformServices``() =
           LicenseUrl = "http://go.microsoft.com/fwlink/?LinkID=261272"
           Version = "2.3.0"
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
+          AvailableFrameworks = []
           SourceUrl = fakeUrl }
         |> ODataSearchResult.Match)
 
@@ -72,6 +74,7 @@ let ``can detect explicit dependencies for EasyNetQ``() =
           LicenseUrl = "https://github.com/mikehadlow/EasyNetQ/blob/master/licence.txt"
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           Version = "0.40.3.352"
+          AvailableFrameworks = []
           SourceUrl = fakeUrl }
         |> ODataSearchResult.Match)
 
@@ -90,6 +93,7 @@ let ``can detect explicit dependencies for Fleece``() =
              PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"),"true"
              PackageName "ReadOnlyCollectionExtensions",DependenciesFileParser.parseVersionRequirement(">= 1.2.0"),"true"
              PackageName "System.Json",DependenciesFileParser.parseVersionRequirement(">= 4.0.20126.16343"),"true"]
+          AvailableFrameworks = []
           SourceUrl = fakeUrl }
 
 [<Test>]
@@ -106,6 +110,7 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
           SerializedDependencies = 
             [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), "&& (>= net20) (< net35)"
              PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), ">= net20"]
+          AvailableFrameworks = []
           SourceUrl = fakeUrl }
 
 [<Test>]
@@ -120,6 +125,7 @@ let ``can detect explicit dependencies for Math.Numerics``() =
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           SerializedDependencies = 
             [PackageName "TaskParallelLibrary",DependenciesFileParser.parseVersionRequirement(">= 1.0.2856"), "&& (>= net35) (< net40)" ]
+          AvailableFrameworks = []
           SourceUrl = fakeUrl }
         |> ODataSearchResult.Match)
 
@@ -166,4 +172,5 @@ let ``can ignore unknown frameworks``() =
           LicenseUrl = "https://github.com/dotnet/BenchmarkDotNet/blob/master/LICENSE.md"
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           Version = "0.10.1"
+          AvailableFrameworks = []
           SourceUrl = fakeUrl }

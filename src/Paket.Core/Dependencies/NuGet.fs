@@ -525,6 +525,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (parameters:
               DownloadLink = encodeURL nugetObject.DownloadUrl
               Unlisted = nugetObject.Unlisted
               LicenseUrl = nugetObject.LicenseUrl
+              AvailableFrameworks = nugetObject.AvailableFrameworks
               DirectDependencies = nugetObject.GetDependencies() } }
 
 let rec GetPackageDetails alternativeProjectRoot root force (parameters:GetPackageDetailsParameters): Async<PackageResolver.PackageDetails> =

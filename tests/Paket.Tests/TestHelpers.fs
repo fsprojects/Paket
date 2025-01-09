@@ -60,6 +60,7 @@ let PackageDetailsFromGraph (graph : DependencyGraph) (parameters:GetPackageDeta
       DownloadLink = ""
       LicenseUrl = ""
       Unlisted = false
+      AvailableFrameworks = []
       DirectDependencies = Set.ofList dependencies }
     |> async.Return
 

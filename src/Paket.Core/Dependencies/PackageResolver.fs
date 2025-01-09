@@ -23,6 +23,7 @@ type PackageDetails = {
     DownloadLink       : string
     LicenseUrl         : string
     Unlisted           : bool
+    AvailableFrameworks: FrameworkIdentifier list
     DirectDependencies : DependencySet
 }
 
@@ -65,6 +66,7 @@ type ResolvedPackage = {
     Kind                : ResolvedPackageKind
     Settings            : InstallSettings
     Source              : PackageSource
+    AvailableFrameworks : FrameworkIdentifier list
 } with
     override this.ToString () = sprintf "%O %O" this.Name this.Version
 
@@ -506,6 +508,7 @@ let private explorePackageConfig (getPackageDetailsBlock:PackageDetailsSyncFunc)
               Kind                = if Set.contains packageDetails.Name pkgConfig.CliTools then ResolvedPackageKind.DotnetCliTool
                                     else ResolvedPackageKind.Package
               IsRuntimeDependency = false
+              AvailableFrameworks = packageDetails.AvailableFrameworks
             }
     with
     | exn ->
