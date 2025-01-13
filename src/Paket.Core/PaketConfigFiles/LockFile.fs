@@ -920,8 +920,12 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                     usedPackageKeys.Add k |> ignore
 
                     let deps = this.GetDirectDependenciesOfSafe(groupName,p.Name,referencesFile.FileName)
-                    toVisit := List.append toVisit.contents [(k,p,deps)]
+                    toVisit := List.append toVisit.contents [(k,p,deps)] 
         | None -> ()
+
+        toVisit := toVisit.Value 
+                    |> Seq.distinctBy (fun ((groupName,dep),packagageSettings,deps2) -> ( groupName, dep )) 
+                    |> List.ofSeq
 
         let visited = Dictionary<_,_>()
 
