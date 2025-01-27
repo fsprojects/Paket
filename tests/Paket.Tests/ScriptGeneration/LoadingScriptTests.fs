@@ -51,6 +51,34 @@ let ``generateFSharpScript generates load script``() =
     | Generate [ ReferenceType.LoadScript _ ] -> ()
     | _ -> Assert.Fail("generated script was expected to be a single load script")
 
+[<Test>]
+let ``generateFSharpScript not generates load script for FSharp.Core``() =
+    let output = ScriptGeneration.generateScript ScriptType.FSharp {
+        PackageName                  = Paket.Domain.PackageName "FSharp.Core"
+        DependentScripts             = List.empty
+        FrameworkReferences          = List.empty
+        OrderedDllReferences         = List.empty
+        PackageLoadScripts           = ["foo.fsx"]
+    }
+
+    match output with
+    | DoNotGenerate -> ()
+    | _ -> Assert.Fail("generated script was expected to be a single load script")
+
+[<Test>]
+let ``generateFSharpScript generates load script if contains FSharp.Core but not FSharp.Core``() =
+    let output = ScriptGeneration.generateScript ScriptType.FSharp {
+        PackageName                  = Paket.Domain.PackageName "Company.FSharp.Core"
+        DependentScripts             = List.empty
+        FrameworkReferences          = List.empty
+        OrderedDllReferences         = List.empty
+        PackageLoadScripts           = ["foo.fsx"]
+    }
+
+    match output with
+    | Generate [ ReferenceType.LoadScript _ ] -> ()
+    | _ -> Assert.Fail("generated script was expected to be a single load script")
+
 
 
 let lockFileData = """NUGET
