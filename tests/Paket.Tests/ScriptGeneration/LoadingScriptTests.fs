@@ -65,10 +65,21 @@ let ``generateFSharpScript not generates load script for FSharp.Core``() =
     | DoNotGenerate -> ()
     | _ -> Assert.Fail("generated script was expected to be a single load script")
 
+let ``generateFSharpScript generates load script if contains FSharp.Core but not FSharp.Core - case`` () =
+    [
+        "Company.FSharp.Core"
+        "CompanyFSharp.Core"
+        "FSharp.Core.Company"
+        "FSharp.CoreCompany"
+        "CompanyFsharp.Core.Company"
+        "Company.Fsharp.CoreCompany"
+    ]
+
 [<Test>]
-let ``generateFSharpScript generates load script if contains FSharp.Core but not FSharp.Core``() =
+[<TestCaseSource(nameof(``generateFSharpScript generates load script if contains FSharp.Core but not FSharp.Core - case``))>]
+let ``generateFSharpScript generates load script if contains FSharp.Core but not FSharp.Core`` packageName =
     let output = ScriptGeneration.generateScript ScriptType.FSharp {
-        PackageName                  = Paket.Domain.PackageName "Company.FSharp.Core"
+        PackageName                  = Paket.Domain.PackageName packageName
         DependentScripts             = List.empty
         FrameworkReferences          = List.empty
         OrderedDllReferences         = List.empty
@@ -78,8 +89,6 @@ let ``generateFSharpScript generates load script if contains FSharp.Core but not
     match output with
     | Generate [ ReferenceType.LoadScript _ ] -> ()
     | _ -> Assert.Fail("generated script was expected to be a single load script")
-
-
 
 let lockFileData = """NUGET
   remote: http://www.nuget.org/api/v2
