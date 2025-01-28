@@ -12,7 +12,6 @@ nuget Mono.Cecil ~> 0.11.1
 nuget System.Security.Cryptography.ProtectedData >= 4.4
 
 nuget NETStandard.Library ~> 2.0
-nuget Microsoft.NETCore.App ~> 2.1
 nuget System.Net.Http.WinHttpHandler >= 4.5
 nuget Nuget.Packaging
 nuget Microsoft.Win32.Registry
