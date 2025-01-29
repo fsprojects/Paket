@@ -763,7 +763,7 @@ let ``#4004 dotnet pack using different versions``() =
 let ``#3599 dotnet pack should work with build metadata``() =
     let project = "lib1"
     let scenario = "i003599-pack-build-meta"
-    prepareSdk scenario
+    prepareSdk scenario |> ignore
 
     let rootPath = scenarioTempPath scenario
     let outPath = Path.Combine(rootPath, "out")

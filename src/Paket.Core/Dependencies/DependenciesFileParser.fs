@@ -255,7 +255,6 @@ module DependenciesFileParser =
             | name :: version :: rest when isVersion version ->
                 Some (Package(name,version,String.Join(" ",rest) |> removeComment))
             | name :: rest -> Some (Package(name,">= 0", String.Join(" ",rest) |> removeComment))
-            | [name] -> Some (Package(name,">= 0",""))
             | _ -> failwithf "could not retrieve NuGet package from %s" trimmed
         | _ -> None
 
@@ -278,7 +277,6 @@ module DependenciesFileParser =
             | name :: version :: rest when isVersion version ->
                 Some (CliTool(name,version,String.Join(" ",rest) |> removeComment))
             | name :: rest -> Some (CliTool(name,">= 0", String.Join(" ",rest) |> removeComment))
-            | [name] -> Some (CliTool(name,">= 0",""))
             | _ -> failwithf "could not retrieve cli tool from %s" trimmed
         | _ -> None
 

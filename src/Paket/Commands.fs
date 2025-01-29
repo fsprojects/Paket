@@ -121,7 +121,7 @@ with
             | Username _ -> "provide username"
             | Password _ -> "provide password"
             | AuthType _ -> "specify authentication type: basic|ntlm (default: basic)"
-            | Verify _ -> "specify in case you want to verify the credentials"
+            | Verify -> "specify in case you want to verify the credentials"
 
 type ConvertFromNugetArgs =
     | [<Unique;AltCommandLine("-f")>] Force
@@ -563,21 +563,21 @@ with
             | Release_Notes_Legacy _ -> "[obsolete]"
 
             | Lock_Dependencies -> "use version constraints from paket.lock instead of paket.dependencies"
-            | Lock_Dependencies_Legacy _ -> "[obsolete]"
+            | Lock_Dependencies_Legacy -> "[obsolete]"
 
             | Lock_Dependencies_To_Minimum -> "use version constraints from paket.lock instead of paket.dependencies and add them as a minimum version; --lock-dependencies overrides this option"
-            | Lock_Dependencies_To_Minimum_Legacy _ -> "[obsolete]"
+            | Lock_Dependencies_To_Minimum_Legacy -> "[obsolete]"
 
             | Pin_Project_References -> "pin dependencies generated from project references to exact versions (=) instead of using minimum versions (>=); with --lock-dependencies project references will be pinned even if this option is not specified"
-            | Pin_Project_References_Legacy _ -> "[obsolete]"
+            | Pin_Project_References_Legacy -> "[obsolete]"
 
             | Interproject_References _ -> "set constraints for referenced project versions"
 
             | Symbols -> "create symbol and source packages in addition to library and content packages"
-            | Symbols_Legacy _ -> "[obsolete]"
+            | Symbols_Legacy -> "[obsolete]"
 
             | Include_Referenced_Projects -> "include symbols and source from referenced projects"
-            | Include_Referenced_Projects_Legacy _ -> "[obsolete]"
+            | Include_Referenced_Projects_Legacy -> "[obsolete]"
 
             | Project_Url _ -> "homepage URL for the package"
             | Project_Url_Legacy _ -> "[obsolete]"
