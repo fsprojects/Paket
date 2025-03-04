@@ -1682,6 +1682,17 @@ let ``parsing generate load scripts`` () =
             printfn "case %A expected %A got %A" case expectation result
         failwith "failed"
 
+let generatePathPropertyConfig = """
+generate_path_property: true
+source https://www.nuget.org/api/v2
+
+nuget FAKE
+"""
+
+[<Test>]
+let ``should read generate_path_property config``() =
+    let cfg = DependenciesFile.FromSource(generatePathPropertyConfig)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.GeneratePathProperty |> shouldEqual (Some true)
 
 let configWithCLitTool = """
 source https://www.nuget.org/api/v2
