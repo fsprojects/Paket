@@ -22,6 +22,11 @@ let private combineOmitContent (resolvedSettings: InstallSettings) (packageInsta
     packageInstallSettings.Settings.OmitContent
     |> Option.orElse resolvedSettings.OmitContent
 
+/// Combines the generate path property settings from the lock file and a project's references file, so that the project settings take priority
+let private combineGeneratePathProperty (resolvedSettings: InstallSettings) (packageInstallSettings: PackageInstallSettings) =
+    packageInstallSettings.Settings.GeneratePathProperty
+    |> Option.orElse resolvedSettings.GeneratePathProperty
+
 // "copy_local: true" is being used to set the "PrivateAssets=All" setting for a package.
 // "copy_local: false" in new SDK format is defined as "ExcludeAssets=runtime".
 /// Combines the copy_local settings from the lock file and a project's references file
@@ -339,8 +344,12 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (ref
                             if not(allDirectPackages.Contains p.Name) then 
                                 "Condition=\" '$(ManagePackageVersionsCentrally)' != 'true' \""
                             else ""
+                        let generatePathPropertyAttribute =
+                            match combineGeneratePathProperty p.Settings packageSettings with
+                            | Some true -> "GeneratePathProperty=\"true\""
+                            | _ -> ""
 
-                        [yield sprintf """        <PackageReference %s Include="%O">""" directReferenceCondition p.Name
+                        [yield sprintf """        <PackageReference %s %s Include="%O">""" directReferenceCondition generatePathPropertyAttribute p.Name
                          yield sprintf """            <Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">%O</Version>""" p.Version
                          let excludeAssets =
                             [ if combineCopyLocal p.Settings packageSettings = Some false then yield "runtime"
@@ -471,6 +480,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                     let combinedCopyLocal = combineCopyLocal resolvedPackage.Settings packageSettings
                     let combinedOmitContent = combineOmitContent resolvedPackage.Settings packageSettings
                     let combinedImportTargets = combineImportTargets resolvedPackage.Settings packageSettings
+                    let combinedGeneratePathProperty = combineGeneratePathProperty resolvedPackage.Settings packageSettings
                     let aliases = if direct then packageSettings.Settings.Aliases |> Seq.tryHead else None
                     
                     let privateAssetsAll =
@@ -492,11 +502,15 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                         match combinedImportTargets with
                         | Some false -> "false"
                         | _ -> "true"
-
                     let alias =
                         match aliases with
                         | Some(x) -> x.Value
                         | _ -> ""
+                    let generatePathProperty =
+                        match combinedGeneratePathProperty with
+                        | Some true -> "true"
+                        | _ -> "false"
+
                     let line =
                         [ packageName.ToString()
                           package.Version.ToString()
@@ -506,7 +520,8 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                           copyLocal
                           omitContent
                           importTargets
-                          alias]
+                          alias
+                          generatePathProperty]
                         |> String.concat ","
 
                     list.Add line
