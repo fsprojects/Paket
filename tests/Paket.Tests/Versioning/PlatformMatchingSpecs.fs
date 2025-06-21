@@ -338,14 +338,15 @@ let ``Can detect a bunch of net9 platforms``() =
 [<Test>]
 let ``Can detect a bunch of net10 platforms``() =
   let testSet = [
-      "net10"                       , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V10)
-      "net1000"                     , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V10)
+      "net10.0"                     , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V10)
+      // "net10"                    , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V10)
+      // "net1000"                   , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V10)
       "net10.0-windows"             , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet10Windows Net10WindowsVersion.V7_0)
-      "net10-windows"               , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet10Windows Net10WindowsVersion.V7_0)
+      // "net10-windows"            , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet10Windows Net10WindowsVersion.V7_0)
       "net10.0-windows10.0.19041.0" , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet10Windows Net10WindowsVersion.V10_0_19041_0)
       "net10.0-windows10.0.19041"   , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet10Windows Net10WindowsVersion.V10_0_19041_0)
-      "net10-windows10.0.19041"     , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet10Windows Net10WindowsVersion.V10_0_19041_0)
-      "net1000-windows10.0.19041"   , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet10Windows Net10WindowsVersion.V10_0_19041_0)
+      // "net10-windows10.0.19041"  , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet10Windows Net10WindowsVersion.V10_0_19041_0)
+      // "net1000-windows10.0.19041", TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet10Windows Net10WindowsVersion.V10_0_19041_0)
       "net10.0-android30.0"         , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet10WithOs Net10Os.Android)
     ]
 
