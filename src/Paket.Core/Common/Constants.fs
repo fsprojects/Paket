@@ -114,12 +114,9 @@ let GitRepoCacheFolder = Path.Combine(LocalRootForTempData,".paket","git","db")
 let [<Literal>] GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES"
 
 let UserNuGetPackagesFolder =
-    getEnVar GlobalPackagesFolderEnvironmentKey
-    |> Option.map (fun path ->
-        path.Replace (Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
-    ) |> Option.defaultWith (fun _ ->
-        Path.Combine (LocalRootForTempData,".nuget","packages")
-    )
+
+    NuGet.Configuration.Settings.LoadDefaultSettings(null)
+    |> NuGet.Configuration.SettingsUtility.GetGlobalPackagesFolder
 
 /// The magic unpublished date is 1900-01-01T00:00:00
 let MagicUnlistingDate = DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.FromHours(-8.)).DateTime
