@@ -39,18 +39,21 @@ type NugetV3SourceRootJSON =
 type NugetV3ResourceType =
     | AutoComplete
     | AllVersionsAPI
+    | SearchQueryService
     | PackageIndex
-    static member All = [ AutoComplete; AllVersionsAPI; PackageIndex ]
+    static member All = [ AutoComplete; AllVersionsAPI; PackageIndex; SearchQueryService ]
     member this.AsString =
         match this with
         | AutoComplete -> "SearchAutoCompleteService"
         | AllVersionsAPI -> "PackageBaseAddress"
+        | SearchQueryService -> "SearchQueryService"
         | PackageIndex -> "RegistrationsBaseUrl"
 
     member this.AcceptedVersions =
         match this with
         | AutoComplete -> ([ "3.0.0-rc"; "3.0.0-beta" ] |> List.map (SemVer.Parse >> Some)) @ [None]
-        | AllVersionsAPI -> [ Some (SemVer.Parse "3.0.0") ] @ [None]
+        | AllVersionsAPI
+        | SearchQueryService -> [ Some (SemVer.Parse "3.0.0") ] @ [None]
         // prefer 3.6.0 as it includes semver packages.
         | PackageIndex -> ([ "3.6.0"; "3.4.0"; "3.0.0-rc"; "3.0.0-beta" ] |> List.map (SemVer.Parse >> Some)) @ [None]
 
@@ -59,7 +62,7 @@ type ResourceIndex = Map<NugetV3ResourceType,string>
 let private nugetV3Resources = System.Collections.Concurrent.ConcurrentDictionary<NuGetV3Source,Task<ResourceIndex>>()
 let private rnd = Random()
 
-let getNuGetV3Resource (source : NuGetV3Source) (resourceType : NugetV3ResourceType) : Async<string> =
+let tryGetNuGetV3Resource (source : NuGetV3Source) (resourceType : NugetV3ResourceType) : Async<string option> =
     let key = source
     let getResourcesRaw () =
         async {
@@ -140,10 +143,17 @@ let getNuGetV3Resource (source : NuGetV3Source) (resourceType : NugetV3ResourceT
     async {
         let t = nugetV3Resources.GetOrAdd(key, (fun _ -> getResourcesRaw()))
         let! res = t |> Async.AwaitTask
-        return
-            match res.TryFind resourceType with
-            | Some s -> s
-            | None -> failwithf "could not find an %s endpoint for %s" (resourceType.ToString()) source.Url
+        return res.TryFind resourceType
+            
+    }
+
+let getNuGetV3Resource (source : NuGetV3Source) (resourceType : NugetV3ResourceType) : Async<string> =
+    async {
+        match! tryGetNuGetV3Resource source resourceType with
+        | Some s -> return s
+        | None ->
+            failwithf "could not find an %s endpoint for %s" (resourceType.ToString()) source.Url
+            return Unchecked.defaultof<string>
     }
 
 /// [omit]
@@ -155,6 +165,22 @@ type JSONResource =
 type JSONVersionData =
     { Data : string []
       Versions : string [] }
+
+/// [omit]
+type JSONSearchResultVersion = {
+    [<JsonProperty("@id")>]
+    Id: string
+    Version: string
+}
+
+/// [omit]
+type JSONSearchResult = {
+    Id: string
+    Versions: JSONSearchResultVersion []
+}
+
+/// [omit]
+type JSONSearchData = { Data:  JSONSearchResult[] }
 
 /// [omit]
 type JSONRootData =
@@ -477,6 +503,8 @@ let extractAutoCompleteVersions(response:string) =
 let extractVersions(response:string) =
     JsonConvert.DeserializeObject<JSONVersionData>(response).Versions
 
+let extractSearchVersion(response:string) =
+    JsonConvert.DeserializeObject<JSONSearchData>(response)
 
 let internal findAutoCompleteVersionsForPackage(v3Url, auth, packageName:Domain.PackageName, includingPrereleases, maxResults) =
     async {
@@ -502,6 +530,25 @@ let FindAutoCompleteVersionsForPackage(nugetURL, auth, package, includingPrerele
         return raw
     }
 
+let internal findVersionForPackageFromSearch(v3Url, auth, packageName:Domain.PackageName) =
+    let url = $"{v3Url}?q={packageName.Name}&semVerLevel=2.0.0&prerelease=true"
+    NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
+        async {
+            let! response = safeGetFromUrl(auth,url,acceptJson) // NuGet is showing old versions first
+            return
+                response
+                |> SafeWebResult.map (fun text ->
+                    let versions = extractSearchVersion text
+                    let entry =
+                        versions.Data
+                        |> Seq.tryFind(fun x -> String.Equals(x.Id, packageName.Name, StringComparison.OrdinalIgnoreCase))
+                        |> Option.map (fun x -> x.Versions |> Array.map _.Version)
+                        |> Option.defaultValue [||]
+                    
+                    let result = SemVer.SortVersions entry
+                    result
+                    )
+        })
 
 let internal findVersionsForPackage(v3Url, auth, packageName:Domain.PackageName) =
     // Comment from http://api.nuget.org/v3/index.json

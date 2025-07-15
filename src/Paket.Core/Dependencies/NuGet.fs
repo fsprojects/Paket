@@ -380,6 +380,8 @@ let GetAnalyzerFiles targetFolder = getFilesMatching targetFolder "*.dll" "analy
 let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
     NuGetV3.findVersionsForPackage(nugetV3Url, auth, package)
 
+let tryNugetV3Search (auth, nugetV3Url, package:PackageName) =
+    NuGetV3.findVersionForPackageFromSearch(nugetV3Url, auth, package)
 
 let rec private getPackageDetails alternativeProjectRoot root force (parameters:GetPackageDetailsParameters) : Async<PackageResolver.PackageDetails> =
     let sources = parameters.Package.Sources
@@ -624,8 +626,15 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
 
                                 return v2Feeds
                        | NuGetV3 source ->
-                            let! versionsAPI = NuGetV3.getNuGetV3Resource source NuGetV3.AllVersionsAPI
-                            return [ getVersionsCached "V3" tryNuGetV3 (nugetSource, source.Authentication, versionsAPI, packageName) ]
+                            
+                            let! allVersionApi = NuGetV3.tryGetNuGetV3Resource source NuGetV3.AllVersionsAPI
+                            match allVersionApi with
+                            | Some api -> 
+                                return [ getVersionsCached "V3" tryNuGetV3 (nugetSource, source.Authentication, api, packageName) ] 
+                            | None ->
+                                let! searchApi = NuGetV3.getNuGetV3Resource source NuGetV3.SearchQueryService
+                                return [ getVersionsCached "V3" tryNugetV3Search (nugetSource, source.Authentication, searchApi, packageName) ]
+                            
                        | LocalNuGet(path,Some _) ->
                             return [ NuGetLocal.getAllVersionsFromLocalPath (true, path, packageName, alternativeProjectRoot, root) ]
                        | LocalNuGet(path,None) ->
@@ -648,6 +657,7 @@ let GetVersions force alternativeProjectRoot root (parameters:GetPackageVersions
             |> Async.Parallel
 
         let! result = versionResponse
+         
         let allResults =
             result
             |> Array.zip sources
