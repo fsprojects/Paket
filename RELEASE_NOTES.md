@@ -1,4 +1,4 @@
-#### 10.0.0-alpha003 - 2025-11-11
+#### 10.0.0-alpha004 - 2025-11-11
 * Preview support for .NET 10.0 - https://github.com/fsprojects/Paket/pull/4297
 
 #### 9.0.2 - 2024-11-19
