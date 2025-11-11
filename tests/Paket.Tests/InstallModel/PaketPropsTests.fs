@@ -150,7 +150,7 @@ group Other1
             yield! packagesInGroup ]
 
     let outPath = System.IO.Path.GetTempFileName()
-    Paket.RestoreProcess.createPaketPropsFile lockFile Seq.empty refFile packages (FileInfo outPath)
+    Paket.RestoreProcess.createPaketPropsFile lockFile Seq.empty refFile packages (FileInfo outPath) |> ignore
 
     let doc = XDocument.Load(outPath, LoadOptions.PreserveWhitespace)
 
@@ -198,7 +198,7 @@ group Other1
             yield! packagesInGroup ]
 
     let outPath = System.IO.Path.GetTempFileName()
-    Paket.RestoreProcess.createPaketPropsFile lockFile Seq.empty refFile packages (FileInfo outPath)
+    Paket.RestoreProcess.createPaketPropsFile lockFile Seq.empty refFile packages (FileInfo outPath) |> ignore
 
     let doc = XDocument.Load(outPath, LoadOptions.PreserveWhitespace)
 
@@ -254,7 +254,7 @@ group Other1
             yield! packagesInGroup ]
 
     let outPath = System.IO.Path.GetTempFileName()
-    Paket.RestoreProcess.createPaketPropsFile lockFile Seq.empty refFile packages (FileInfo outPath)
+    Paket.RestoreProcess.createPaketPropsFile lockFile Seq.empty refFile packages (FileInfo outPath) |> ignore
 
     let doc = XDocument.Load(outPath, LoadOptions.PreserveWhitespace)
 
@@ -344,7 +344,7 @@ group Other1
             yield! packagesInGroup ]
 
     let outPath = System.IO.Path.GetTempFileName()
-    Paket.RestoreProcess.createPaketPropsFile lockFile Seq.empty refFile packages (FileInfo outPath)
+    Paket.RestoreProcess.createPaketPropsFile lockFile Seq.empty refFile packages (FileInfo outPath) |> ignore
 
     let doc = XDocument.Load(outPath, LoadOptions.PreserveWhitespace)
 
@@ -401,7 +401,7 @@ group Other2
             yield! packagesInGroup ]
 
     let outPath = System.IO.Path.GetTempFileName()
-    Paket.RestoreProcess.createPaketPropsFile lockFile Seq.empty refFile packages (FileInfo outPath)
+    Paket.RestoreProcess.createPaketPropsFile lockFile Seq.empty refFile packages (FileInfo outPath) |> ignore
 
     let doc = XDocument.Load(outPath, LoadOptions.PreserveWhitespace)
 
@@ -448,7 +448,7 @@ Newtonsoft.Json
             yield! packagesInGroup ]
 
     let outPath = System.IO.Path.GetTempFileName()
-    Paket.RestoreProcess.createPaketPropsFile lockFile Seq.empty refFile packages (FileInfo outPath)
+    Paket.RestoreProcess.createPaketPropsFile lockFile Seq.empty refFile packages (FileInfo outPath) |> ignore
 
     let doc = XDocument.Load(outPath, LoadOptions.PreserveWhitespace)
 

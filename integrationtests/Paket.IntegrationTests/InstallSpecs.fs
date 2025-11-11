@@ -442,6 +442,12 @@ let ``#4012 Support .net 6 (part 1)``() =
     use __ = cleanup
     newLockFile.Groups.[GroupName "main"].Resolution.ContainsKey (PackageName "Argu") |> shouldEqual true
 
+[<Test>]
+let ``#4278 Support net 9 windows platform`` () =
+    let cleanup, newLockFile = install "i004278-net90-windows-fails"
+    use _ = cleanup
+    newLockFile.Groups.[GroupName "main"].Resolution.ContainsKey (PackageName "CsvHelper") |> shouldEqual true
+
 #if INTERACTIVE
 ;;
 

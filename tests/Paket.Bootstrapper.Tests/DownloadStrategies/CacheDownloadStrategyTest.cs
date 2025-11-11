@@ -184,7 +184,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         {
             //arrange
             var content = Guid.NewGuid().ToByteArray();
-            var sha = new SHA256Managed();
+            var sha = SHA256.Create();
             var checksum = sha.ComputeHash(new MemoryStream(content));
             var hash = BitConverter.ToString(checksum).Replace("-", String.Empty);
             var hashFile = new PaketHashFile(new List<string> { hash + " paket.exe" });
@@ -212,7 +212,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         {
             //arrange
             var content = Guid.NewGuid().ToByteArray();
-            var sha = new SHA256Managed();
+            var sha = SHA256.Create();
             var checksum = sha.ComputeHash(new MemoryStream(content));
             var hash = BitConverter.ToString(checksum).Replace("-", String.Empty);
             var hashFile = new PaketHashFile(new List<string> { hash + " paket.exe" });
