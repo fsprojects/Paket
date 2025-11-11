@@ -1,5 +1,6 @@
-#### 10.0.0-alpha005 - 2025-11-11
+#### 10.0.0-alpha006 - 2025-11-11
 * Preview support for .NET 10.0 - https://github.com/fsprojects/Paket/pull/4297
+* Use NuGet.Configuration to get the path to the NuGet global - https://github.com/fsprojects/Paket/pull/4301
 
 #### 9.0.2 - 2024-11-19
 * paket restore on projects with targetframework net9.0-windows - https://github.com/fsprojects/Paket/pull/4279
