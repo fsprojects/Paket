@@ -362,6 +362,7 @@ let ``should not serialize all properties``() =
     <license type="expression">MIT</license>
     <projectUrl>http://www.somewhere.com</projectUrl>
     <iconUrl>http://www.somewhere.com/Icon</iconUrl>
+    <icon>some/icon.png</icon>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>A description</description>
     <summary>summary</summary>
@@ -397,6 +398,7 @@ second line</releaseNotes>
               ProjectUrl = Some "http://www.somewhere.com"
               LicenseExpression = Some "MIT"
               IconUrl = Some "http://www.somewhere.com/Icon"
+              Icon = Some "some/icon.png"
               Copyright = Some "Paket owners 2015"
               RequireLicenseAcceptance = true
               References = ["file1.dll";"file2.dll"]
