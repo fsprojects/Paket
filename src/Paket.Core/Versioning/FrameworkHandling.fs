@@ -372,7 +372,7 @@ type FrameworkVersion =
         | "7" -> Some FrameworkVersion.V7
         | "8" -> Some FrameworkVersion.V8
         | "9" -> Some FrameworkVersion.V9
-        | "10" -> Some FrameworkVersion.V10
+        | "10.0" -> Some FrameworkVersion.V10
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -1085,15 +1085,20 @@ module FrameworkDetection =
         memoize
           (fun (path:string) ->
             let path = KnownAliases.normalizeFramework path
-            let rec removeTrailingZeros (s:string) =
-                if s.EndsWith ".0" then removeTrailingZeros (s.Substring(0, s.Length - 2))
-                else s
-            let tryNormalizeVersion (s:string) =
+            let tryNormalizeVersion (s:string) (isNet: bool) =
                 // XYZ -> X.Y.Z
                 // XX.Y.Z -> XX.Y.Z
                 // XX.Y.0 -> XX.Y
+                // X.0 -> X
                 // 0X.Y.Z -> X.Y.Z
                 // 0X.0Y.Z -> X.Y.Z
+                // netXX.0 -> netXX.0
+                let isTwoDigitNet (s:string) = 
+                    isNet && s.Length = 4 && s.EndsWith ".0"
+                let rec removeTrailingZeros (s:string) =
+                    if isTwoDigitNet s then s
+                    elif s.EndsWith ".0" then removeTrailingZeros (s.Substring(0, s.Length - 2))
+                    else s
                 let isValid = s |> Seq.forall(fun d -> (d >= '0' && d <= '9') || d = '.')
                 let simplify s =
                     s
@@ -1104,7 +1109,7 @@ module FrameworkDetection =
                         if s.Contains "." then
                             s
                         else
-                            if s.Length = 1 || s.Length = 0 then s
+                            if s.Length = 1 || s.Length = 0 || isTwoDigitNet s then s
                             else
                                 s
                                 |> Seq.map(fun d -> d.ToString() + ".")
@@ -1121,7 +1126,7 @@ module FrameworkDetection =
             let (|MatchTfm|_|) (tfmStart: string) tryParseVersion (s:string) =
                 if s.StartsWith tfmStart then
                     let versionPart = s.Substring tfmStart.Length
-                    tryNormalizeVersion versionPart
+                    tryNormalizeVersion versionPart false
                     |> Option.bind tryParseVersion
                 else
                     None
@@ -1129,14 +1134,14 @@ module FrameworkDetection =
                 let parts = s.Split('-')
                 if parts.Length = 2 && s.StartsWith "net" then
                     let versionPart = parts.[0].Substring 3
-                    tryNormalizeVersion versionPart
+                    tryNormalizeVersion versionPart true
                     |> function
                     | Some "5" when dotnetVersionX = 5 -> tryParseSecondPart parts.[1]
                     | Some "6" when dotnetVersionX = 6  -> tryParseSecondPart parts.[1]
                     | Some "7" when dotnetVersionX = 7  -> tryParseSecondPart parts.[1]
                     | Some "8" when dotnetVersionX = 8  -> tryParseSecondPart parts.[1]
                     | Some "9" when dotnetVersionX = 9  -> tryParseSecondPart parts.[1]
-                    | Some "10" when dotnetVersionX = 10  -> tryParseSecondPart parts.[1]
+                    | Some "10.0" when dotnetVersionX = 10  -> tryParseSecondPart parts.[1]
                     | _ -> None
                 else
                     None
@@ -1145,14 +1150,14 @@ module FrameworkDetection =
                 if parts.Length = 2 && s.StartsWith "net" && parts.[1].StartsWith "win" then
                     let netVersionPart = parts.[0].Substring 3
                     let winVersionPart = parts.[1].Substring 3
-                    tryNormalizeVersion netVersionPart
+                    tryNormalizeVersion netVersionPart true
                     |> function
                     | Some "5"  when dotnetVersionX = 5 -> tryParseVersion winVersionPart
                     | Some "6"  when dotnetVersionX = 6 -> tryParseVersion winVersionPart
                     | Some "7"  when dotnetVersionX = 7 -> tryParseVersion winVersionPart
                     | Some "8"  when dotnetVersionX = 8 -> tryParseVersion winVersionPart
                     | Some "9"  when dotnetVersionX = 9 -> tryParseVersion winVersionPart
-                    | Some "10"  when dotnetVersionX = 10 -> tryParseVersion winVersionPart
+                    | Some "10.0"  when dotnetVersionX = 10 -> tryParseVersion winVersionPart
                     | _ -> None
                 else
                     None
@@ -1162,15 +1167,19 @@ module FrameworkDetection =
                     match s with
                     | MatchTfm tfmStart (tryParseVersion tfmStart) fw -> Some fw
                     | _ -> None)
-            let (|ModifyMatchTfm|_|) f tfmStart tryParseVersion (s:string) =
-                match f s with
-                | MatchTfm tfmStart tryParseVersion fw -> Some fw
-                | _ -> None
+            let (|MatchNet|_|) (s:string) =
+                let skipFullAndClient (s:string) =
+                    if s.EndsWith "-full" then s.Substring(0, s.Length - 5)
+                    elif s.EndsWith "-client" then s.Substring(0, s.Length - 7)
+                    else s
+                let ss = skipFullAndClient s
+                if ss.StartsWith "net" then
+                    let versionPart = ss.Substring 3
+                    tryNormalizeVersion versionPart true
+                    |> Option.bind FrameworkVersion.TryParse
+                else
+                    None
             let Bind f = (fun _ -> f)
-            let skipFullAndClient (s:string) =
-                if s.EndsWith "-full" then s.Substring(0, s.Length - 5)
-                elif s.EndsWith "-client" then s.Substring(0, s.Length - 7)
-                else s
             let parseWindows tfmStart v =
                 match tfmStart with
                 | "win" | "windows" ->
@@ -1209,7 +1218,7 @@ module FrameworkDetection =
                 | "net35-Unity Micro v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Micro)
                 | "net35-Unity Subset v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Subset)
                 | "net35-Unity Full v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Full)
-                | ModifyMatchTfm skipFullAndClient "net" FrameworkVersion.TryParse fm -> Some (DotNetFramework fm)
+                | MatchNet fm -> Some (DotNetFramework fm)
                 // Backwards compat quirk (2017-08-20).
                 | "uap101" -> Some (UAP UAPVersion.V10_1)
                 | MatchTfm "uap" UAPVersion.TryParse fm -> Some (UAP fm)
