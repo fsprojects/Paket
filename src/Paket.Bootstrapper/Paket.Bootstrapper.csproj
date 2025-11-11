@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>net461;net8</TargetFrameworks>
     <StartupObject>Paket.Bootstrapper.Program</StartupObject>
     <AssemblyName>paket.bootstrapper</AssemblyName>
     <ToolCommandName>paketbootstrapper</ToolCommandName>
