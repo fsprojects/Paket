@@ -1087,12 +1087,12 @@ module FrameworkDetection =
             let path = KnownAliases.normalizeFramework path
             let tryNormalizeVersion (s:string) (isNet: bool) =
                 // XYZ -> X.Y.Z
-                // XX.0 -> XX.0
                 // XX.Y.Z -> XX.Y.Z
                 // XX.Y.0 -> XX.Y
                 // X.0 -> X
                 // 0X.Y.Z -> X.Y.Z
                 // 0X.0Y.Z -> X.Y.Z
+                // netXX.0 -> netXX.0
                 let isTwoDigitNet (s:string) = 
                     isNet && s.Length = 4 && s.EndsWith ".0"
                 let rec removeTrailingZeros (s:string) =
