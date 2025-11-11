@@ -1,4 +1,4 @@
-#### 10.0.0-alpha010 - 2025-11-11
+#### 10.0.0-alpha011 - 2025-11-11
 * Preview support for .NET 10.0 - https://github.com/fsprojects/Paket/pull/4297
 * Use NuGet.Configuration to get the path to the NuGet global - https://github.com/fsprojects/Paket/pull/4301
 * Add support for Artifactory by using the SearchQueryService as a fallback when AllVersionsAPI is not available - https://github.com/fsprojects/Paket/pull/4303
