@@ -31,6 +31,7 @@ let ``should generate Xml for Rx-XAML 2.2.4 with correct framework assembly refe
                  Dependencies = lazy []
                  LicenseUrl = ""
                  IsDevelopmentDependency = false
+                 AvailableFramework = []
                  FrameworkAssemblyReferences =
                  [{ AssemblyName = "WindowsBase"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(DotNetFramework FrameworkVersion.V4_5)] }
                   { AssemblyName = "WindowsBase"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(DotNetFramework FrameworkVersion.V4)] }

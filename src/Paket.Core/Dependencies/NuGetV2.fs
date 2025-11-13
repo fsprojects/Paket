@@ -228,6 +228,7 @@ let private handleODataEntry nugetURL packageName version entry =
       SourceUrl = nugetURL
       CacheVersion = NuGetPackageCache.CurrentCacheVersion
       LicenseUrl = licenseUrl
+      AvailableFrameworks = []
       Version = (SemVer.Parse v).Normalize()
       Unlisted = publishDate = Constants.MagicUnlistingDate }
         .WithDependencies dependencies

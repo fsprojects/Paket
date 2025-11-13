@@ -74,6 +74,7 @@ let getDetailsFromLocalNuGetPackage isCache alternativeProjectRoot root localNuG
               CacheVersion = NuGetPackageCache.CurrentCacheVersion
               LicenseUrl = nuspec.LicenseUrl
               Version = version.Normalize()
+              AvailableFrameworks = nuspec.AvailableFramework
               Unlisted = isCache }
                .WithDependencies nuspec.Dependencies.Value
             |> ODataSearchResult.Match

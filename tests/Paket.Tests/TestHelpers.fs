@@ -37,7 +37,7 @@ let OfGraphWithRestriction (g:seq<string * string * (string * VersionRequirement
 let GraphOfNuspecs (g:seq<string>) : DependencyGraph =
   g
   |> Seq.map (fun nuspecText ->
-    let nspec = Nuspec.Load("in-memory", nuspecText)
+    let nspec = Nuspec.Load("in-memory", nuspecText, [||])
     nspec.OfficialName, nspec.Version, nspec.Dependencies.Value |> List.map (fun (a,b,c) -> a.CompareString, b, c), RuntimeGraph.Empty)
   |> Seq.toList
 
@@ -60,6 +60,7 @@ let PackageDetailsFromGraph (graph : DependencyGraph) (parameters:GetPackageDeta
       DownloadLink = ""
       LicenseUrl = ""
       Unlisted = false
+      AvailableFrameworks = []
       DirectDependencies = Set.ofList dependencies }
     |> async.Return
 
