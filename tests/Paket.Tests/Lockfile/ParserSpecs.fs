@@ -347,7 +347,7 @@ let frameworkRestricted' = """NUGET
       ReadOnlyCollectionInterfaces (1.0.0) - framework: >= net40
       System.Json (>= 4.0.20126.16343)
     FsControl (1.0.9)
-    FSharpPlus (0.0.4)
+    FSharpPlus (0.0.4) - generate_path_property: true
       FsControl (>= 1.0.9)
     LinqBridge (1.3.0) - import_targets: false, content: none, version_in_path: true, framework: >= net20 < net35, copy_content_to_output_dir: never
     ReadOnlyCollectionExtensions (1.2.0)
@@ -370,6 +370,8 @@ let ``should parse framework restricted lock file in new syntax``() =
 
     packages.[0].Settings.LicenseDownload |> shouldEqual (Some true)
 
+    packages.[2].Settings.GeneratePathProperty |> shouldEqual (Some true)
+
     packages.[3].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
@@ -383,6 +385,7 @@ let ``should parse framework restricted lock file in new syntax``() =
     packages.[3].Settings.IncludeVersionInPath |> shouldEqual (Some true)
     packages.[3].Settings.LicenseDownload |> shouldEqual None
     packages.[3].Settings.OmitContent |> shouldEqual (Some ContentCopySettings.Omit)
+    packages.[3].Settings.GeneratePathProperty |> shouldEqual None
 
     let dependencies4 =
         packages.[4].Dependencies |> Set.toList |> List.map (fun (_, _, r) -> r)
@@ -588,6 +591,7 @@ let groupsLockFile = """REDIRECTS: ON
 COPY-LOCAL: TRUE
 IMPORT-TARGETS: TRUE
 LICENSE-DOWNLOAD: TRUE
+GENERATE-PATH-PROPERTY: TRUE
 NUGET
   remote: "D:\code\temp with space"
     Castle.Windsor (2.1)
@@ -614,6 +618,7 @@ let ``should parse lock file with groups``() =
     lockFile1.Options.Settings.LicenseDownload |> shouldEqual (Some true)
     lockFile1.Options.Settings.CopyLocal |> shouldEqual (Some true)
     lockFile1.Options.Settings.ReferenceCondition |> shouldEqual None
+    lockFile1.Options.Settings.GeneratePathProperty |> shouldEqual (Some true)
 
     packages1.Head.Source.Url |> shouldEqual "D:\code\\temp with space"
     packages1.[0].Name |> shouldEqual (PackageName "Castle.Windsor")

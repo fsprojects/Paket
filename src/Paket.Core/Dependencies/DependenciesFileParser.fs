@@ -216,6 +216,7 @@ module DependenciesFileParser =
     | SpecificVersion of bool
     | CopyContentToOutputDir of CopyToOutputDirectorySettings
     | GenerateLoadScripts of bool option
+    | GeneratePathProperty of bool
     | ReferenceCondition of string
     | Redirects of BindingRedirectsSettings option
     | ResolverStrategyForTransitives of ResolverStrategy option
@@ -392,6 +393,7 @@ module DependenciesFileParser =
                 | String.EqualsIC "off" | String.EqualsIC "false" -> Some false
                 | _ -> None
             Some (ParserOptions (ParserOption.GenerateLoadScripts setting))
+        | String.RemovePrefix "generate_path_property" trimmed -> (Some (ParserOptions (ParserOption.GeneratePathProperty(trimmed.Replace(":","").Trim() = "true"))))
         | _ -> None
 
     let private (|SourceFile|_|) (line:string) =
@@ -486,6 +488,7 @@ module DependenciesFileParser =
         | OmitContent omit                               -> { current.Options with Settings = { current.Options.Settings with OmitContent = Some omit } }
         | ReferenceCondition condition                   -> { current.Options with Settings = { current.Options.Settings with ReferenceCondition = Some condition } }
         | GenerateLoadScripts mode                       -> { current.Options with Settings = { current.Options.Settings with GenerateLoadScripts = mode }}
+        | GeneratePathProperty mode                      -> { current.Options with Settings = { current.Options.Settings with GeneratePathProperty = Some mode }}
 
     let private parseLine fileName checkDuplicates (lineNo, state: DependenciesGroup list) line =
         match state with

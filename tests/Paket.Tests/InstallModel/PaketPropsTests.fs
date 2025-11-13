@@ -116,6 +116,43 @@ let checkContainsPackageRefsCondition pkgRefs (group: XElement) =
         | None ->
             Assert.Fail(sprintf "expected package '%s' with condition '%O' not found in '%A' group" pkgName pkgCondition group)
 
+let checkHasGeneratePathPropertyAttribute pkgRefs (group: XElement) =
+    let isPackageReference name (x: XElement) =
+        if x.Name = (xname "PackageReference") then
+            match x.Attribute(XName.Get "Include") with
+            | null -> false
+            | v -> v.Value = name
+        else
+            false
+
+    let hasVersion version (x: XElement) =
+        x.Elements(xname "Version")
+        |> Seq.tryHead
+        |> Option.map (fun x -> x.Value = version)
+        |> Option.exists id
+
+    let hasGeneratePathProperty (x: XElement) =
+        if x.Name = (xname "PackageReference") then
+            match x.Attribute(XName.Get "GeneratePathProperty") with
+            | null -> false
+            | v -> v.Value = "true"
+        else
+            false
+
+    let packageRefs = group.Elements(xname "PackageReference") |> Seq.toList
+    Assert.AreEqual(pkgRefs |> List.length, packageRefs |> Seq.length, (sprintf "%A" group))
+    for pkgName, pkgVersion in pkgRefs do
+        let pkg =
+            packageRefs
+            |> List.filter (isPackageReference pkgName)
+            |> List.filter (hasVersion pkgVersion)
+            |> List.filter (hasGeneratePathProperty)
+            |> List.tryHead
+        match pkg with
+        | Some p -> ()
+        | None ->
+            Assert.Fail(sprintf "expected package '%s' with GeneratePathProperty=true not found in '%A' group" pkgName group)
+
 [<Test>]
 let ``should create props file for design mode``() = 
 
@@ -460,5 +497,41 @@ Newtonsoft.Json
         |> checkTargetFrameworkRestriction lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[Domain.PackageName "Newtonsoft.Json"].Settings.FrameworkRestrictions
         groupMain
         |> checkContainsPackageRefs [ "Newtonsoft.Json","11.0.2" ] 
+    | l ->
+        Assert.Fail(sprintf "expected one ItemGroup but was '%A'" l)
+
+
+[<Test>]
+let ``should create props file with GeneratePathProperty``() =
+
+    let lockFile = """NUGET
+  remote: https://api.nuget.org/v3/index.json
+    Newtonsoft.Json (11.0.2) - generate_path_property: true
+"""
+
+    let refFileContent = """
+Newtonsoft.Json
+"""
+
+    let lockFile = LockFile.Parse("", toLines lockFile)
+
+    let refFile = ReferencesFile.FromLines(toLines refFileContent)
+
+    let packages =
+        [ for kv in refFile.Groups do
+            let packagesInGroup,_ = lockFile.GetOrderedPackageHull(kv.Key, refFile)
+            yield! packagesInGroup ]
+
+    let outPath = System.IO.Path.GetTempFileName()
+    Paket.RestoreProcess.createPaketPropsFile lockFile Seq.empty refFile packages (FileInfo outPath)
+
+    let doc = XDocument.Load(outPath, LoadOptions.PreserveWhitespace)
+
+    let itemGroups = doc.Root.Elements (xname "ItemGroup") |> Seq.toList
+
+    match itemGroups with
+    | [groupMain] ->
+        groupMain
+        |> checkHasGeneratePathPropertyAttribute [ "Newtonsoft.Json","11.0.2" ]
     | l ->
         Assert.Fail(sprintf "expected one ItemGroup but was '%A'" l)

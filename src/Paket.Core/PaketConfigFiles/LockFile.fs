@@ -91,7 +91,11 @@ module LockFileSerializer =
 
         match options.Settings.FrameworkRestrictions |> getExplicitRestriction with
         | FrameworkRestriction.HasNoRestriction -> ()
-        | list  -> yield "RESTRICTION: " + list.ToString() ]
+        | list  -> yield "RESTRICTION: " + list.ToString()
+
+        match options.Settings.GeneratePathProperty with
+        | Some x -> yield "GENERATE-PATH-PROPERTY: " + x.ToString().ToUpper()
+        | None -> () ]
 
     /// [omit]
     let serializePackages options (resolved : PackageResolution) =
@@ -268,6 +272,7 @@ module LockFileParser =
     | ImportTargets of bool
     | LicenseDownload of bool
     | GenerateLoadScripts of bool option
+    | GeneratePathProperty of bool
     | FrameworkRestrictions of FrameworkRestrictions
     | CopyLocal of bool
     | SpecificVersion of bool
@@ -322,6 +327,7 @@ module LockFileParser =
                 | _ -> None
 
             InstallOption (GenerateLoadScripts setting)
+        | _, String.RemovePrefix "GENERATE-PATH-PROPERTY:" trimmed -> InstallOption(GeneratePathProperty(trimmed.Trim() = "TRUE"))
         | _, String.RemovePrefix "COPY-CONTENT-TO-OUTPUT-DIR:" trimmed ->
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
@@ -411,6 +417,7 @@ module LockFileParser =
         | CopyContentToOutputDir mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyContentToOutputDirectory = Some mode }}
         | FrameworkRestrictions r -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with FrameworkRestrictions = r }}
         | OmitContent omit -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with OmitContent = Some omit }}
+        | GeneratePathProperty mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with GeneratePathProperty = Some mode }}
         | GenerateLoadScripts mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with GenerateLoadScripts = mode }}
         | ReferenceCondition condition -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition }}
         | DirectDependenciesResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForDirectDependencies = strategy }
