@@ -321,20 +321,21 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (ref
                     | ExplicitRestriction fw -> ExplicitRestriction fw
                     | _ -> group.Options.Settings.FrameworkRestrictions
                 let condition = getExplicitRestriction restrictions
-                p,condition,packageSettings)
-            |> Seq.groupBy (fun (_,c,__) -> c)
-            |> Seq.collect (fun (condition,packages) ->
-                let condition =
+                p,condition,packageSettings,group.Options.Settings.ReferenceCondition)
+            |> Seq.groupBy (fun (_,c,__,rc) -> c,rc)
+            |> Seq.collect (fun ((condition,referenceCondition),packages) ->
+                let targets =
                     match condition with
-                    | FrameworkRestriction.HasNoRestriction -> ""
-                    | restrictions -> restrictions.ToMSBuildCondition()
+                    | FrameworkRestriction.HasNoRestriction -> Set.empty
+                    | restrictions -> restrictions.RepresentedFrameworks
+                let condition = PlatformMatching.getCondition referenceCondition targets
                 let condition =
                     if condition = "" || condition = "true" then "" else
                     sprintf " AND (%s)" condition
 
                 let packageReferences =
                     packages
-                    |> Seq.collect (fun (p,_,packageSettings) ->
+                    |> Seq.collect (fun (p,_,packageSettings, __) ->
                         let directReferenceCondition = 
                             if not(allDirectPackages.Contains p.Name) then 
                                 "Condition=\" '$(ManagePackageVersionsCentrally)' != 'true' \""
@@ -350,16 +351,13 @@ let createPaketPropsFile (lockFile:LockFile) (cliTools:ResolvedPackage seq) (ref
                          match excludeAssets with
                          | [] -> ()
                          | tags -> yield sprintf """            <ExcludeAssets>%s</ExcludeAssets>""" (tags |> String.concat ";")
-
                          match combineCopyLocal p.Settings packageSettings with
                          | Some true -> yield sprintf """            <PrivateAssets>All</PrivateAssets>"""
                          | _ -> ()
-
                          yield """        </PackageReference>"""])
-
                 let packageVersions =
                     packages
-                    |> Seq.collect (fun (p,_,__) ->
+                    |> Seq.collect (fun (p,_,__,___) ->
                         [yield sprintf """        <PackageVersion Include="%O">""" p.Name
                          yield sprintf """            <Version>%O</Version>""" p.Version
                          yield """        </PackageVersion>"""])
@@ -472,6 +470,7 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                     let combinedOmitContent = combineOmitContent resolvedPackage.Settings packageSettings
                     let combinedImportTargets = combineImportTargets resolvedPackage.Settings packageSettings
                     let aliases = if direct then packageSettings.Settings.Aliases |> Seq.tryHead else None
+                    let condition = kv.Value.Options.Settings.ReferenceCondition |> Option.defaultValue "true"
                     
                     let privateAssetsAll =
                         match combinedCopyLocal with
@@ -506,7 +505,8 @@ let createProjectReferencesFiles (lockFile:LockFile) (projectFile:ProjectFile) (
                           copyLocal
                           omitContent
                           importTargets
-                          alias]
+                          alias
+                          condition]
                         |> String.concat ","
 
                     list.Add line

@@ -1,0 +1,5 @@
+FSharp.Core
+
+group no-condition
+    PaketTest2394.PackageA
+    PaketTest2394.PackageB
