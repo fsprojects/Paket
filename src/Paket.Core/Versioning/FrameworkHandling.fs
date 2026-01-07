@@ -62,6 +62,7 @@ type Net5WindowsVersion =
     | V10_0_17763_0
     | V10_0_18362_0
     | V10_0_19041_0
+    | V10_0_20348_0
     override this.ToString() =
         match this with
         | V7_0 -> "7.0"
@@ -69,6 +70,7 @@ type Net5WindowsVersion =
         | V10_0_17763_0 -> "10.0.17763.0"
         | V10_0_18362_0 -> "10.0.18362.0"
         | V10_0_19041_0 -> "10.0.19041.0"
+        | V10_0_20348_0 -> "10.0.20348.0"
 
     static member TryParse s =
         match s with
@@ -77,6 +79,7 @@ type Net5WindowsVersion =
         | "10.0.17763.0" | "10.0.17763" -> Some Net5WindowsVersion.V10_0_17763_0
         | "10.0.18362.0" | "10.0.18362" -> Some Net5WindowsVersion.V10_0_18362_0
         | "10.0.19041.0" | "10.0.19041" -> Some Net5WindowsVersion.V10_0_19041_0
+        | "10.0.20348.0" | "10.0.20348" -> Some Net5WindowsVersion.V10_0_20348_0
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -86,6 +89,11 @@ type Net6WindowsVersion =
     | V10_0_17763_0
     | V10_0_18362_0
     | V10_0_19041_0
+    | V10_0_20348_0
+    | V10_0_22000_0
+    | V10_0_22621_0
+    | V10_0_26100_0
+
     override this.ToString() =
         match this with
         | V7_0 -> "7.0"
@@ -93,6 +101,10 @@ type Net6WindowsVersion =
         | V10_0_17763_0 -> "10.0.17763.0"
         | V10_0_18362_0 -> "10.0.18362.0"
         | V10_0_19041_0 -> "10.0.19041.0"
+        | V10_0_20348_0 -> "10.0.20348.0"
+        | V10_0_22000_0 -> "10.0.22000.0"
+        | V10_0_22621_0 -> "10.0.22621.0"
+        | V10_0_26100_0 -> "10.0.26100.0"
 
     static member TryParse s =
         match s with
@@ -101,6 +113,10 @@ type Net6WindowsVersion =
         | "10.0.17763.0" | "10.0.17763" -> Some Net6WindowsVersion.V10_0_17763_0
         | "10.0.18362.0" | "10.0.18362" -> Some Net6WindowsVersion.V10_0_18362_0
         | "10.0.19041.0" | "10.0.19041" -> Some Net6WindowsVersion.V10_0_19041_0
+        | "10.0.20348.0" | "10.0.20348" -> Some Net6WindowsVersion.V10_0_20348_0
+        | "10.0.22000.0" | "10.0.22000" -> Some Net6WindowsVersion.V10_0_22000_0
+        | "10.0.22621.0" | "10.0.22621" -> Some Net6WindowsVersion.V10_0_22621_0
+        | "10.0.26100.0" | "10.0.26100" -> Some Net6WindowsVersion.V10_0_26100_0
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -110,6 +126,9 @@ type Net7WindowsVersion =
     | V10_0_17763_0
     | V10_0_18362_0
     | V10_0_19041_0
+    | V10_0_20348_0
+    | V10_0_22000_0
+    | V10_0_22621_0
     override this.ToString() =
         match this with
         | V7_0 -> "7.0"
@@ -117,6 +136,9 @@ type Net7WindowsVersion =
         | V10_0_17763_0 -> "10.0.17763.0"
         | V10_0_18362_0 -> "10.0.18362.0"
         | V10_0_19041_0 -> "10.0.19041.0"
+        | V10_0_20348_0 -> "10.0.20348.0"
+        | V10_0_22000_0 -> "10.0.22000.0"
+        | V10_0_22621_0 -> "10.0.22621.0"
 
     static member TryParse s =
         match s with
@@ -125,6 +147,9 @@ type Net7WindowsVersion =
         | "10.0.17763.0" | "10.0.17763" -> Some Net7WindowsVersion.V10_0_17763_0
         | "10.0.18362.0" | "10.0.18362" -> Some Net7WindowsVersion.V10_0_18362_0
         | "10.0.19041.0" | "10.0.19041" -> Some Net7WindowsVersion.V10_0_19041_0
+        | "10.0.20348.0" | "10.0.20348" -> Some Net7WindowsVersion.V10_0_20348_0
+        | "10.0.22000.0" | "10.0.22000" -> Some Net7WindowsVersion.V10_0_22000_0
+        | "10.0.22621.0" | "10.0.22621" -> Some Net7WindowsVersion.V10_0_22621_0
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -134,6 +159,11 @@ type Net8WindowsVersion =
     | V10_0_17763_0
     | V10_0_18362_0
     | V10_0_19041_0
+    | V10_0_20348_0
+    | V10_0_22000_0
+    | V10_0_22621_0
+    | V10_0_26100_0
+
     override this.ToString() =
         match this with
         | V7_0 -> "7.0"
@@ -141,6 +171,10 @@ type Net8WindowsVersion =
         | V10_0_17763_0 -> "10.0.17763.0"
         | V10_0_18362_0 -> "10.0.18362.0"
         | V10_0_19041_0 -> "10.0.19041.0"
+        | V10_0_20348_0 -> "10.0.20348.0"
+        | V10_0_22000_0 -> "10.0.22000.0"
+        | V10_0_22621_0 -> "10.0.22621.0"
+        | V10_0_26100_0 -> "10.0.26100.0"
 
     static member TryParse s =
         match s with
@@ -149,6 +183,10 @@ type Net8WindowsVersion =
         | "10.0.17763.0" | "10.0.17763" -> Some Net8WindowsVersion.V10_0_17763_0
         | "10.0.18362.0" | "10.0.18362" -> Some Net8WindowsVersion.V10_0_18362_0
         | "10.0.19041.0" | "10.0.19041" -> Some Net8WindowsVersion.V10_0_19041_0
+        | "10.0.20348.0" | "10.0.20348" -> Some Net8WindowsVersion.V10_0_20348_0
+        | "10.0.22000.0" | "10.0.22000" -> Some Net8WindowsVersion.V10_0_22000_0
+        | "10.0.22621.0" | "10.0.22621" -> Some Net8WindowsVersion.V10_0_22621_0
+        | "10.0.26100.0" | "10.0.26100" -> Some Net8WindowsVersion.V10_0_26100_0
         | _ -> None
 
 type Net9WindowsVersion = Net8WindowsVersion
@@ -967,6 +1005,7 @@ type FrameworkIdentifier =
         | DotNet5Windows Net5WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V5; DotNet5Windows Net5WindowsVersion.V8_0 ]
         | DotNet5Windows Net5WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V5; DotNet5Windows Net5WindowsVersion.V10_0_17763_0 ]
         | DotNet5Windows Net5WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V5; DotNet5Windows Net5WindowsVersion.V10_0_18362_0 ]
+        | DotNet5Windows Net5WindowsVersion.V10_0_20348_0 -> [ DotNetFramework FrameworkVersion.V5; DotNet5Windows Net5WindowsVersion.V10_0_19041_0 ]
         | DotNet6WithOs  Net6Os.Android -> [ DotNetFramework FrameworkVersion.V6; MonoAndroid MonoAndroidVersion.V12 ]
         | DotNet6WithOs  Net6Os.IOs     -> [ DotNetFramework FrameworkVersion.V6; XamariniOS ]
         | DotNet6WithOs  Net6Os.MacOs   -> [ DotNetFramework FrameworkVersion.V6; XamarinMac ]
@@ -993,32 +1032,51 @@ type FrameworkIdentifier =
         | DotNet10WithOs  Net8Os.MacOs   -> [ DotNetFramework FrameworkVersion.V10; XamarinMac ]
         | DotNet10WithOs  Net8Os.TvOs    -> [ DotNetFramework FrameworkVersion.V10; XamarinTV ]
         | DotNet10WithOs  Net8Os.WatchOs -> [ DotNetFramework FrameworkVersion.V10; XamarinWatch ]
-        | DotNet6Windows Net6WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V6 ]
-        | DotNet6Windows Net6WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V6; DotNet6Windows Net6WindowsVersion.V7_0 ]
-        | DotNet6Windows Net6WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet6Windows Net6WindowsVersion.V8_0 ]
-        | DotNet6Windows Net6WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet6Windows Net6WindowsVersion.V10_0_17763_0 ]
-        | DotNet6Windows Net6WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet6Windows Net6WindowsVersion.V10_0_18362_0 ]
-        | DotNet7Windows Net7WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V7 ]
-        | DotNet7Windows Net7WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V7; DotNet7Windows Net7WindowsVersion.V7_0 ]
-        | DotNet7Windows Net7WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet7Windows Net7WindowsVersion.V8_0 ]
-        | DotNet7Windows Net7WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet7Windows Net7WindowsVersion.V10_0_17763_0 ]
-        | DotNet7Windows Net7WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet7Windows Net7WindowsVersion.V10_0_18362_0 ]
-        | DotNet8Windows Net8WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V8; ]
-        | DotNet8Windows Net8WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V7_0]
-        | DotNet8Windows Net8WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V8_0]
-        | DotNet8Windows Net8WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V10_0_17763_0 ]
-        | DotNet8Windows Net8WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet8Windows Net8WindowsVersion.V10_0_18362_0 ]
+        | DotNet6Windows Net6WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V6; DotNet5Windows Net5WindowsVersion.V7_0                                                           ]
+        | DotNet6Windows Net6WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V6; DotNet5Windows Net5WindowsVersion.V8_0         ; DotNet6Windows Net6WindowsVersion.V7_0          ]
+        | DotNet6Windows Net6WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet5Windows Net5WindowsVersion.V10_0_17763_0; DotNet6Windows Net6WindowsVersion.V8_0          ]
+        | DotNet6Windows Net6WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet5Windows Net5WindowsVersion.V10_0_18362_0; DotNet6Windows Net6WindowsVersion.V10_0_17763_0 ]
+        | DotNet6Windows Net6WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet5Windows Net5WindowsVersion.V10_0_19041_0; DotNet6Windows Net6WindowsVersion.V10_0_18362_0 ]
+        | DotNet6Windows Net6WindowsVersion.V10_0_20348_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet5Windows Net5WindowsVersion.V10_0_20348_0; DotNet6Windows Net6WindowsVersion.V10_0_19041_0 ]
+        | DotNet6Windows Net6WindowsVersion.V10_0_22000_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet5Windows Net5WindowsVersion.V10_0_20348_0; DotNet6Windows Net6WindowsVersion.V10_0_20348_0 ]
+        | DotNet6Windows Net6WindowsVersion.V10_0_22621_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet5Windows Net5WindowsVersion.V10_0_20348_0; DotNet6Windows Net6WindowsVersion.V10_0_22000_0 ]
+        | DotNet6Windows Net6WindowsVersion.V10_0_26100_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet5Windows Net5WindowsVersion.V10_0_20348_0; DotNet6Windows Net6WindowsVersion.V10_0_22621_0 ]
+        | DotNet7Windows Net7WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V7; DotNet6Windows Net6WindowsVersion.V7_0                                                           ]
+        | DotNet7Windows Net7WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V7; DotNet6Windows Net6WindowsVersion.V8_0         ; DotNet7Windows Net7WindowsVersion.V7_0          ]
+        | DotNet7Windows Net7WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet6Windows Net6WindowsVersion.V10_0_17763_0; DotNet7Windows Net7WindowsVersion.V8_0          ]
+        | DotNet7Windows Net7WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet6Windows Net6WindowsVersion.V10_0_18362_0; DotNet7Windows Net7WindowsVersion.V10_0_17763_0 ]
+        | DotNet7Windows Net7WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet6Windows Net6WindowsVersion.V10_0_19041_0; DotNet7Windows Net7WindowsVersion.V10_0_18362_0 ]
+        | DotNet7Windows Net7WindowsVersion.V10_0_20348_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet6Windows Net6WindowsVersion.V10_0_20348_0; DotNet7Windows Net7WindowsVersion.V10_0_19041_0 ]
+        | DotNet7Windows Net7WindowsVersion.V10_0_22000_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet6Windows Net6WindowsVersion.V10_0_22000_0; DotNet7Windows Net7WindowsVersion.V10_0_20348_0 ]
+        | DotNet7Windows Net7WindowsVersion.V10_0_22621_0 -> [ DotNetFramework FrameworkVersion.V7; DotNet6Windows Net6WindowsVersion.V10_0_22621_0; DotNet7Windows Net7WindowsVersion.V10_0_22000_0 ]
+        | DotNet8Windows Net8WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V8; DotNet7Windows Net7WindowsVersion.V7_0                                                           ]
+        | DotNet8Windows Net8WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V8; DotNet7Windows Net7WindowsVersion.V8_0         ; DotNet8Windows Net8WindowsVersion.V7_0          ]
+        | DotNet8Windows Net8WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet7Windows Net7WindowsVersion.V10_0_17763_0; DotNet8Windows Net8WindowsVersion.V8_0          ]
+        | DotNet8Windows Net8WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet7Windows Net7WindowsVersion.V10_0_18362_0; DotNet8Windows Net8WindowsVersion.V10_0_17763_0 ]
+        | DotNet8Windows Net8WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet7Windows Net7WindowsVersion.V10_0_19041_0; DotNet8Windows Net8WindowsVersion.V10_0_18362_0 ]
+        | DotNet8Windows Net8WindowsVersion.V10_0_20348_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet7Windows Net7WindowsVersion.V10_0_20348_0; DotNet8Windows Net8WindowsVersion.V10_0_19041_0 ]
+        | DotNet8Windows Net8WindowsVersion.V10_0_22000_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet7Windows Net7WindowsVersion.V10_0_22000_0; DotNet8Windows Net8WindowsVersion.V10_0_20348_0 ]
+        | DotNet8Windows Net8WindowsVersion.V10_0_22621_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet7Windows Net7WindowsVersion.V10_0_22621_0; DotNet8Windows Net8WindowsVersion.V10_0_22000_0 ]
+        | DotNet8Windows Net8WindowsVersion.V10_0_26100_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet7Windows Net7WindowsVersion.V10_0_22621_0; DotNet6Windows Net6WindowsVersion.V10_0_26100_0; DotNet8Windows Net8WindowsVersion.V10_0_22621_0 ]
         // remark: for now, windows version for net 9 is alias to 8
-        | DotNet9Windows Net8WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V8; ]
-        | DotNet9Windows Net8WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V8; DotNet9Windows Net8WindowsVersion.V7_0]
-        | DotNet9Windows Net8WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet9Windows Net8WindowsVersion.V8_0]
-        | DotNet9Windows Net8WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet9Windows Net8WindowsVersion.V10_0_17763_0 ]
-        | DotNet9Windows Net8WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet9Windows Net8WindowsVersion.V10_0_18362_0 ]
-        | DotNet10Windows Net8WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V8; ]
-        | DotNet10Windows Net8WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V8; DotNet10Windows Net8WindowsVersion.V7_0]
-        | DotNet10Windows Net8WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet10Windows Net8WindowsVersion.V8_0]
-        | DotNet10Windows Net8WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet10Windows Net8WindowsVersion.V10_0_17763_0 ]
-        | DotNet10Windows Net8WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V8; DotNet10Windows Net8WindowsVersion.V10_0_18362_0 ]
+        | DotNet9Windows Net8WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V9; DotNet8Windows Net8WindowsVersion.V7_0                                                           ]
+        | DotNet9Windows Net8WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V9; DotNet8Windows Net8WindowsVersion.V8_0         ; DotNet9Windows Net8WindowsVersion.V7_0          ]
+        | DotNet9Windows Net8WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V9; DotNet8Windows Net8WindowsVersion.V10_0_17763_0; DotNet9Windows Net8WindowsVersion.V8_0          ]
+        | DotNet9Windows Net8WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V9; DotNet8Windows Net8WindowsVersion.V10_0_18362_0; DotNet9Windows Net8WindowsVersion.V10_0_17763_0 ]
+        | DotNet9Windows Net8WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V9; DotNet8Windows Net8WindowsVersion.V10_0_19041_0; DotNet9Windows Net8WindowsVersion.V10_0_18362_0 ]
+        | DotNet9Windows Net8WindowsVersion.V10_0_20348_0 -> [ DotNetFramework FrameworkVersion.V9; DotNet8Windows Net8WindowsVersion.V10_0_20348_0; DotNet9Windows Net8WindowsVersion.V10_0_19041_0 ]
+        | DotNet9Windows Net8WindowsVersion.V10_0_22000_0 -> [ DotNetFramework FrameworkVersion.V9; DotNet8Windows Net8WindowsVersion.V10_0_22000_0; DotNet9Windows Net8WindowsVersion.V10_0_20348_0 ]
+        | DotNet9Windows Net8WindowsVersion.V10_0_22621_0 -> [ DotNetFramework FrameworkVersion.V9; DotNet8Windows Net8WindowsVersion.V10_0_22621_0; DotNet9Windows Net8WindowsVersion.V10_0_22000_0 ]
+        | DotNet9Windows Net8WindowsVersion.V10_0_26100_0 -> [ DotNetFramework FrameworkVersion.V9; DotNet8Windows Net8WindowsVersion.V10_0_26100_0; DotNet9Windows Net8WindowsVersion.V10_0_22621_0 ]
+        | DotNet10Windows Net8WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V10; DotNet9Windows Net8WindowsVersion.V7_0                                                            ]
+        | DotNet10Windows Net8WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V10; DotNet9Windows Net8WindowsVersion.V8_0         ; DotNet10Windows Net8WindowsVersion.V7_0          ]
+        | DotNet10Windows Net8WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V10; DotNet9Windows Net8WindowsVersion.V10_0_17763_0; DotNet10Windows Net8WindowsVersion.V8_0          ]
+        | DotNet10Windows Net8WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V10; DotNet9Windows Net8WindowsVersion.V10_0_18362_0; DotNet10Windows Net8WindowsVersion.V10_0_17763_0 ]
+        | DotNet10Windows Net8WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V10; DotNet9Windows Net8WindowsVersion.V10_0_19041_0; DotNet10Windows Net8WindowsVersion.V10_0_18362_0 ]
+        | DotNet10Windows Net8WindowsVersion.V10_0_20348_0 -> [ DotNetFramework FrameworkVersion.V10; DotNet9Windows Net8WindowsVersion.V10_0_20348_0; DotNet10Windows Net8WindowsVersion.V10_0_19041_0 ]
+        | DotNet10Windows Net8WindowsVersion.V10_0_22000_0 -> [ DotNetFramework FrameworkVersion.V10; DotNet9Windows Net8WindowsVersion.V10_0_22000_0; DotNet10Windows Net8WindowsVersion.V10_0_20348_0 ]
+        | DotNet10Windows Net8WindowsVersion.V10_0_22621_0 -> [ DotNetFramework FrameworkVersion.V10; DotNet9Windows Net8WindowsVersion.V10_0_22621_0; DotNet10Windows Net8WindowsVersion.V10_0_22000_0 ]
+        | DotNet10Windows Net8WindowsVersion.V10_0_26100_0 -> [ DotNetFramework FrameworkVersion.V10; DotNet9Windows Net8WindowsVersion.V10_0_26100_0; DotNet10Windows Net8WindowsVersion.V10_0_22621_0 ]
         | DotNetStandard DotNetStandardVersion.V1_0 -> [  ]
         | DotNetStandard DotNetStandardVersion.V1_1 -> [ DotNetStandard DotNetStandardVersion.V1_0 ]
         | DotNetStandard DotNetStandardVersion.V1_2 -> [ DotNetStandard DotNetStandardVersion.V1_1 ]
@@ -1623,6 +1681,7 @@ module KnownTargetProfiles =
         Net5WindowsVersion.V10_0_17763_0
         Net5WindowsVersion.V10_0_18362_0
         Net5WindowsVersion.V10_0_19041_0
+        Net5WindowsVersion.V10_0_20348_0
     ]
 
     let DotNet5WindowsProfiles = 
@@ -1647,6 +1706,10 @@ module KnownTargetProfiles =
         Net6WindowsVersion.V10_0_17763_0
         Net6WindowsVersion.V10_0_18362_0
         Net6WindowsVersion.V10_0_19041_0
+        Net6WindowsVersion.V10_0_20348_0
+        Net6WindowsVersion.V10_0_22000_0
+        Net6WindowsVersion.V10_0_22621_0
+        Net6WindowsVersion.V10_0_26100_0
     ]
 
     let DotNet6WindowsProfiles = 
@@ -1671,6 +1734,9 @@ module KnownTargetProfiles =
         Net7WindowsVersion.V10_0_17763_0
         Net7WindowsVersion.V10_0_18362_0
         Net7WindowsVersion.V10_0_19041_0
+        Net7WindowsVersion.V10_0_20348_0
+        Net7WindowsVersion.V10_0_22000_0
+        Net7WindowsVersion.V10_0_22621_0
     ]
 
     let DotNet7WindowsProfiles = 
@@ -1693,6 +1759,10 @@ module KnownTargetProfiles =
         Net8WindowsVersion.V10_0_17763_0
         Net8WindowsVersion.V10_0_18362_0
         Net8WindowsVersion.V10_0_19041_0
+        Net8WindowsVersion.V10_0_20348_0
+        Net8WindowsVersion.V10_0_22000_0
+        Net8WindowsVersion.V10_0_22621_0
+        Net8WindowsVersion.V10_0_26100_0
     ]
 
     let DotNet8WindowsProfiles = 
@@ -1702,12 +1772,16 @@ module KnownTargetProfiles =
     let DotNet9OperatingSystems = DotNet8OperatingSystems
     let DotNet9WithOsProfiles = DotNet8WithOsProfiles
     let DotNet9WindowsVersions = DotNet8WindowsVersions
-    let DotNet9WindowsProfiles = DotNet8WindowsProfiles
+    let DotNet9WindowsProfiles =
+        DotNet9WindowsVersions
+        |> List.map (DotNet9Windows >> TargetProfile.SinglePlatform)
 
     let DotNet10OperatingSystems = DotNet9OperatingSystems
     let DotNet10WithOsProfiles = DotNet9WithOsProfiles
     let DotNet10WindowsVersions = DotNet9WindowsVersions
-    let DotNet10WindowsProfiles = DotNet9WindowsProfiles
+    let DotNet10WindowsProfiles =
+        DotNet10WindowsVersions
+        |> List.map (DotNet10Windows >> TargetProfile.SinglePlatform)
 
     let DotNetStandardVersions = [
         DotNetStandardVersion.V1_0
