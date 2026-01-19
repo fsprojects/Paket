@@ -58,7 +58,6 @@
         <div class="span9" id="main">
           
 <h1><a name="paket-restore" class="anchor" href="#paket-restore">paket restore</a></h1>
-<p>Download the computed dependency graph.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
 <span class="l"> 2: </span>
 <span class="l"> 3: </span>
@@ -84,33 +83,51 @@
 <span class="l">23: </span>
 <span class="l">24: </span>
 <span class="l">25: </span>
+<span class="l">26: </span>
+<span class="l">27: </span>
+<span class="l">28: </span>
+<span class="l">29: </span>
+<span class="l">30: </span>
+<span class="l">31: </span>
+<span class="l">32: </span>
+<span class="l">33: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket restore [--help] [--force] [--only-referenced] [--touch-affected-refs] [--ignore-checks]
-              [--fail-on-checks] [--group &lt;name&gt;] [--project &lt;path&gt;] [--references-file &lt;path&gt;]
-              [--target-framework &lt;framework&gt;] [--output-path &lt;path&gt;]
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="id">Paket</span> <span class="id">version</span> <span class="n">10.0</span><span class="pn">.</span><span class="n">0</span><span class="o">+</span><span class="id">e9f2e5e77803051139eade0869d8cf7a5a905ef0</span>
+<span class="id">Help</span> <span class="id">was</span> <span class="id">requested</span><span class="pn">:</span>
+<span class="id">USAGE</span><span class="pn">:</span> <span class="id">paket</span> <span class="id">restore</span> <span class="pn">[</span><span class="o">--</span><span class="id">help</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">force</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">only</span><span class="o">-</span><span class="id">referenced</span><span class="pn">]</span>
+                     <span class="pn">[</span><span class="o">--</span><span class="id">touch</span><span class="o">-</span><span class="id">affected</span><span class="o">-</span><span class="id">refs</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="id">ignore</span><span class="o">-</span><span class="id">checks</span><span class="pn">]</span>
+                     <span class="pn">[</span><span class="o">--</span><span class="id">fail</span><span class="o">-</span><span class="id">on</span><span class="o">-</span><span class="id">checks</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">group</span> <span class="pn">&lt;</span><span class="id">name</span><span class="pn">&gt;]</span> <span class="pn">[</span><span class="o">--</span><span class="id">project</span> <span class="pn">&lt;</span><span class="id">path</span><span class="pn">&gt;]</span>
+                     <span class="pn">[</span><span class="o">--</span><span class="id">references</span><span class="o">-</span><span class="id">file</span> <span class="pn">&lt;</span><span class="id">path</span><span class="pn">&gt;]</span> <span class="pn">[</span><span class="o">--</span><span class="id">target</span><span class="o">-</span><span class="id">framework</span> <span class="pn">&lt;</span><span class="id">framework</span><span class="pn">&gt;]</span>
+                     <span class="pn">[</span><span class="o">--</span><span class="id">output</span><span class="o">-</span><span class="id">path</span> <span class="pn">&lt;</span><span class="id">path</span><span class="pn">&gt;]</span>
 
-OPTIONS:
+<span class="id">OPTIONS</span><span class="pn">:</span>
 
-    --force, -f           force download and reinstallation of all dependencies
-    --only-referenced     only restore packages that are referenced by paket.references files
-    --touch-affected-refs touch project files referencing affected dependencies to help incremental
-                          build tools detecting the change
-    --ignore-checks       do not check if paket.dependencies and paket.lock are in sync
-    --fail-on-checks      abort if any checks fail
-    --group, -g &lt;name&gt;    restore dependencies of a single group
-    --project, -p &lt;path&gt;  restore dependencies of a single project
-    --references-file &lt;path&gt;
-                          restore packages from a paket.references file; may be repeated
-    --target-framework &lt;framework&gt;
-                          restore only for the specified target framework
-    --output-path &lt;path&gt;  Output path directory of MSBuild. When used in combination with the new
-                          dotnet cli based sdk, paket will write supporting files (nuget.config,
-                          paket.resolved) there
-    --silent, -s          suppress console output
-    --verbose, -v         print detailed information to the console
-    --log-file &lt;path&gt;     print output to a file
-    --help                display this list of options.
-</code></pre></td></tr></table>
+    <span class="o">--</span><span class="id">force</span><span class="pn">,</span> <span class="o">-</span><span class="id">f</span>           <span class="id">force</span> <span class="id">download</span> <span class="k">and</span> <span class="id">reinstallation</span> <span class="k">of</span> <span class="id">all</span> <span class="id">dependencies</span>
+    <span class="o">--</span><span class="id">only</span><span class="o">-</span><span class="id">referenced</span>     <span class="id">only</span> <span class="id">restore</span> <span class="id">packages</span> <span class="id">that</span> <span class="id">are</span> <span class="id">referenced</span> <span class="id">by</span>
+                          <span class="id">paket</span><span class="pn">.</span><span class="id">references</span> <span class="id">files</span>
+    <span class="o">--</span><span class="id">touch</span><span class="o">-</span><span class="id">affected</span><span class="o">-</span><span class="id">refs</span> <span class="id">touch</span> <span class="id">project</span> <span class="id">files</span> <span class="id">referencing</span> <span class="id">affected</span> <span class="id">dependencies</span>
+                          <span class="k">to</span> <span class="id">help</span> <span class="id">incremental</span> <span class="id">build</span> <span class="id">tools</span> <span class="id">detecting</span> <span class="id">the</span> <span class="id">change</span>
+    <span class="o">--</span><span onmouseout="hideTip(event, 'fs1', 2)" onmouseover="showTip(event, 'fs1', 2)" class="id">ignore</span><span class="o">-</span><span class="id">checks</span>       <span class="k">do</span> <span onmouseout="hideTip(event, 'fs2', 3)" onmouseover="showTip(event, 'fs2', 3)" class="id">not</span> <span class="id">check</span> <span class="k">if</span> <span class="id">paket</span><span class="pn">.</span><span class="id">dependencies</span> <span class="k">and</span> <span class="id">paket</span><span class="pn">.</span><span class="id">lock</span> <span class="id">are</span>
+                          <span class="k">in</span> <span class="id">sync</span>
+    <span class="o">--</span><span class="id">fail</span><span class="o">-</span><span class="id">on</span><span class="o">-</span><span class="id">checks</span>      <span class="id">abort</span> <span class="k">if</span> <span class="id">any</span> <span class="id">checks</span> <span class="id">fail</span>
+    <span class="o">--</span><span class="id">group</span><span class="pn">,</span> <span class="o">-</span><span class="id">g</span> <span class="pn">&lt;</span><span class="id">name</span><span class="pn">&gt;</span>    <span class="id">restore</span> <span class="id">dependencies</span> <span class="k">of</span> <span class="id">a</span> <span onmouseout="hideTip(event, 'fs3', 4)" onmouseover="showTip(event, 'fs3', 4)" class="id">single</span> <span class="id">group</span>
+    <span class="o">--</span><span class="id">project</span><span class="pn">,</span> <span class="o">-</span><span class="id">p</span> <span class="pn">&lt;</span><span class="id">path</span><span class="pn">&gt;</span>  <span class="id">restore</span> <span class="id">dependencies</span> <span class="k">of</span> <span class="id">a</span> <span onmouseout="hideTip(event, 'fs3', 5)" onmouseover="showTip(event, 'fs3', 5)" class="id">single</span> <span class="id">project</span>
+    <span class="o">--</span><span class="id">references</span><span class="o">-</span><span class="id">file</span> <span class="pn">&lt;</span><span class="id">path</span><span class="pn">&gt;</span>
+                          <span class="id">restore</span> <span class="id">packages</span> <span class="id">from</span> <span class="id">a</span> <span class="id">paket</span><span class="pn">.</span><span class="id">references</span> <span class="id">file</span><span class="pn">;</span> <span class="id">may</span> <span class="id">be</span>
+                          <span class="id">repeated</span>
+    <span class="o">--</span><span class="id">target</span><span class="o">-</span><span class="id">framework</span> <span class="pn">&lt;</span><span class="id">framework</span><span class="pn">&gt;</span>
+                          <span class="id">restore</span> <span class="id">only</span> <span class="k">for</span> <span class="id">the</span> <span class="id">specified</span> <span class="id">target</span> <span class="id">framework</span>
+    <span class="o">--</span><span class="id">output</span><span class="o">-</span><span class="id">path</span> <span class="pn">&lt;</span><span class="id">path</span><span class="pn">&gt;</span>  <span class="id">Output</span> <span class="id">path</span> <span class="id">directory</span> <span class="k">of</span> <span class="id">MSBuild</span><span class="pn">.</span> <span class="id">When</span> <span class="id">used</span> <span class="k">in</span>
+                          <span class="id">combination</span> <span class="k">with</span> <span class="id">the</span> <span class="k">new</span> <span class="id">dotnet</span> <span class="id">cli</span> <span class="id">based</span> <span class="id">sdk</span><span class="pn">,</span> <span class="id">paket</span>
+                          <span class="id">will</span> <span class="id">write</span> <span class="id">supporting</span> <span class="id">files</span> <span class="pn">(</span><span class="id">nuget</span><span class="pn">.</span><span class="id">config</span><span class="pn">,</span>
+                          <span class="id">paket</span><span class="pn">.</span><span class="id">resolved</span><span class="pn">)</span> <span class="id">there</span>
+    <span class="o">--</span><span class="id">silent</span><span class="pn">,</span> <span class="o">-</span><span class="id">s</span>          <span class="id">suppress</span> <span class="id">console</span> <span class="id">output</span>
+    <span class="o">--</span><span class="id">verbose</span><span class="pn">,</span> <span class="o">-</span><span class="id">v</span>         <span class="id">print</span> <span class="id">detailed</span> <span class="id">information</span> <span class="k">to</span> <span class="id">the</span> <span class="id">console</span>
+    <span class="o">--</span><span onmouseout="hideTip(event, 'fs4', 6)" onmouseover="showTip(event, 'fs4', 6)" class="id">log</span><span class="o">-</span><span class="id">file</span> <span class="pn">&lt;</span><span class="id">path</span><span class="pn">&gt;</span>     <span class="id">print</span> <span class="id">output</span> <span class="k">to</span> <span class="id">a</span> <span class="id">file</span>
+    <span class="o">--</span><span class="id">help</span>                <span class="id">display</span> <span class="id">this</span> <span onmouseout="hideTip(event, 'fs5', 7)" onmouseover="showTip(event, 'fs5', 7)" class="id">list</span> <span class="k">of</span> <span class="id">options</span><span class="pn">.</span>
+</code></pre></td>
+</tr>
+</table>
 <p>If you add the <code>--verbose</code> flag Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [path]</code> you can trace the logged information into a file.</p>
 <h2><a name="Requires-a-valid-file" class="anchor" href="#Requires-a-valid-file">Requires a valid <a href="lock-file.html"><code>paket.lock</code> file</a></a></h2>
@@ -119,6 +136,11 @@ does not exist. No packages are downloaded in that case. Please see
 <a href="paket-install.html"><code>paket install</code></a> and <a href="paket-update.html"><code>paket update</code></a> to
 learn how to create the <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
 
+<div class="tip" id="fs1">val ignore : value:&#39;T -&gt; unit</div>
+<div class="tip" id="fs2">val not : value:bool -&gt; bool</div>
+<div class="tip" id="fs3">Multiple items<br />val single : value:&#39;T -&gt; single (requires member op_Explicit)<br /><br />--------------------<br />type single = System.Single</div>
+<div class="tip" id="fs4">val log : value:&#39;T -&gt; &#39;T (requires member Log)</div>
+<div class="tip" id="fs5">type &#39;T list = List&lt;&#39;T&gt;</div>
 
         </div>
         <div class="span3">

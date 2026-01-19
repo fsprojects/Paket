@@ -58,7 +58,6 @@
         <div class="span9" id="main">
           
 <h1><a name="paket-add" class="anchor" href="#paket-add">paket add</a></h1>
-<p>Add a new dependency.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
 <span class="l"> 2: </span>
 <span class="l"> 3: </span>
@@ -93,42 +92,54 @@
 <span class="l">32: </span>
 <span class="l">33: </span>
 <span class="l">34: </span>
+<span class="l">35: </span>
+<span class="l">36: </span>
+<span class="l">37: </span>
+<span class="l">38: </span>
+<span class="l">39: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket add [--help] [--version &lt;version constraint&gt;] [--project &lt;path&gt;] [--group &lt;name&gt;]
-          [--create-new-binding-files] [--force] [--interactive] [--redirects] [--clean-redirects]
-          [--no-install] [--no-resolve] [--keep-major] [--keep-minor] [--keep-patch]
-          [--touch-affected-refs] [--type &lt;packageType&gt;] &lt;package ID&gt;
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="id">Paket</span> <span class="id">version</span> <span class="n">10.0</span><span class="pn">.</span><span class="n">0</span><span class="o">+</span><span class="id">e9f2e5e77803051139eade0869d8cf7a5a905ef0</span>
+<span class="id">Help</span> <span class="id">was</span> <span class="id">requested</span><span class="pn">:</span>
+<span class="id">USAGE</span><span class="pn">:</span> <span class="id">paket</span> <span class="id">add</span> <span class="pn">[</span><span class="o">--</span><span class="id">help</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">version</span> <span class="pn">&lt;</span><span class="id">version</span> <span class="id">constraint</span><span class="pn">&gt;]</span> <span class="pn">[</span><span class="o">--</span><span class="id">project</span> <span class="pn">&lt;</span><span class="id">path</span><span class="pn">&gt;]</span>
+                 <span class="pn">[</span><span class="o">--</span><span class="id">group</span> <span class="pn">&lt;</span><span class="id">name</span><span class="pn">&gt;]</span> <span class="pn">[</span><span class="o">--</span><span class="id">create</span><span class="o">-</span><span class="k">new</span><span class="o">-</span><span class="id">binding</span><span class="o">-</span><span class="id">files</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">force</span><span class="pn">]</span>
+                 <span class="pn">[</span><span class="o">--</span><span class="id">interactive</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">redirects</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">clean</span><span class="o">-</span><span class="id">redirects</span><span class="pn">]</span>
+                 <span class="pn">[</span><span class="o">--</span><span class="id">no</span><span class="o">-</span><span class="id">install</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">no</span><span class="o">-</span><span class="id">resolve</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">keep</span><span class="o">-</span><span class="id">major</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">keep</span><span class="o">-</span><span class="id">minor</span><span class="pn">]</span>
+                 <span class="pn">[</span><span class="o">--</span><span class="id">keep</span><span class="o">-</span><span class="id">patch</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">touch</span><span class="o">-</span><span class="id">affected</span><span class="o">-</span><span class="id">refs</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="k">type</span> <span class="pn">&lt;</span><span class="id">packageType</span><span class="pn">&gt;]</span>
+                 <span class="pn">&lt;</span><span class="id">package</span> <span class="id">ID</span><span class="pn">&gt;</span>
 
-NUGET:
+<span class="id">NUGET</span><span class="pn">:</span>
 
-    &lt;package ID&gt;          NuGet package ID
+    <span class="pn">&lt;</span><span class="id">package</span> <span class="id">ID</span><span class="pn">&gt;</span>          <span class="id">NuGet</span> <span class="id">package</span> <span class="id">ID</span>
 
-OPTIONS:
+<span class="id">OPTIONS</span><span class="pn">:</span>
 
-    --version, -V &lt;version constraint&gt;
-                          dependency version constraint
-    --project, -p &lt;path&gt;  add the dependency to a single project only
-    --group, -g &lt;name&gt;    add the dependency to a group (default: Main group)
-    --create-new-binding-files
-                          create binding redirect files if needed
-    --force, -f           force download and reinstallation of all dependencies
-    --interactive, -i     ask for every project whether to add the dependency
-    --redirects           create binding redirects
-    --clean-redirects     remove binding redirects that were not created by Paket
-    --no-install          do not modify projects
-    --no-resolve          do not resolve
-    --keep-major          only allow updates that preserve the major version
-    --keep-minor          only allow updates that preserve the minor version
-    --keep-patch          only allow updates that preserve the patch version
-    --touch-affected-refs touch project files referencing affected dependencies to help incremental
-                          build tools detecting the change
-    --type, -t &lt;packageType&gt;
-                          the type of dependency: nuget|clitool (default: nuget)
-    --silent, -s          suppress console output
-    --verbose, -v         print detailed information to the console
-    --log-file &lt;path&gt;     print output to a file
-    --help                display this list of options.
-</code></pre></td></tr></table>
+    <span class="o">--</span><span class="id">version</span><span class="pn">,</span> <span class="o">-</span><span class="id">V</span> <span class="pn">&lt;</span><span class="id">version</span> <span class="id">constraint</span><span class="pn">&gt;</span>
+                          <span class="id">dependency</span> <span class="id">version</span> <span class="id">constraint</span>
+    <span class="o">--</span><span class="id">project</span><span class="pn">,</span> <span class="o">-</span><span class="id">p</span> <span class="pn">&lt;</span><span class="id">path</span><span class="pn">&gt;</span>  <span class="id">add</span> <span class="id">the</span> <span class="id">dependency</span> <span class="k">to</span> <span class="id">a</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="id">single</span> <span class="id">project</span> <span class="id">only</span>
+    <span class="o">--</span><span class="id">group</span><span class="pn">,</span> <span class="o">-</span><span class="id">g</span> <span class="pn">&lt;</span><span class="id">name</span><span class="pn">&gt;</span>    <span class="id">add</span> <span class="id">the</span> <span class="id">dependency</span> <span class="k">to</span> <span class="id">a</span> <span class="id">group</span> <span class="pn">(</span><span class="k">default</span><span class="pn">:</span> <span class="id">Main</span> <span class="id">group</span><span class="pn">)</span>
+    <span class="o">--</span><span class="id">create</span><span class="o">-</span><span class="k">new</span><span class="o">-</span><span class="id">binding</span><span class="o">-</span><span class="id">files</span>
+                          <span class="id">create</span> <span class="id">binding</span> <span class="id">redirect</span> <span class="id">files</span> <span class="k">if</span> <span class="id">needed</span>
+    <span class="o">--</span><span class="id">force</span><span class="pn">,</span> <span class="o">-</span><span class="id">f</span>           <span class="id">force</span> <span class="id">download</span> <span class="k">and</span> <span class="id">reinstallation</span> <span class="k">of</span> <span class="id">all</span> <span class="id">dependencies</span>
+    <span class="o">--</span><span class="id">interactive</span><span class="pn">,</span> <span class="o">-</span><span class="id">i</span>     <span class="id">ask</span> <span class="k">for</span> <span class="id">every</span> <span class="id">project</span> <span class="id">whether</span> <span class="k">to</span> <span class="id">add</span> <span class="id">the</span> <span class="id">dependency</span>
+    <span class="o">--</span><span class="id">redirects</span>           <span class="id">create</span> <span class="id">binding</span> <span class="id">redirects</span>
+    <span class="o">--</span><span class="id">clean</span><span class="o">-</span><span class="id">redirects</span>     <span class="id">remove</span> <span class="id">binding</span> <span class="id">redirects</span> <span class="id">that</span> <span class="id">were</span> <span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="id">not</span> <span class="id">created</span> <span class="id">by</span>
+                          <span class="id">Paket</span>
+    <span class="o">--</span><span class="id">no</span><span class="o">-</span><span class="id">install</span>          <span class="k">do</span> <span onmouseout="hideTip(event, 'fs2', 3)" onmouseover="showTip(event, 'fs2', 3)" class="id">not</span> <span class="id">modify</span> <span class="id">projects</span>
+    <span class="o">--</span><span class="id">no</span><span class="o">-</span><span class="id">resolve</span>          <span class="k">do</span> <span onmouseout="hideTip(event, 'fs2', 4)" onmouseover="showTip(event, 'fs2', 4)" class="id">not</span> <span class="id">resolve</span>
+    <span class="o">--</span><span class="id">keep</span><span class="o">-</span><span class="id">major</span>          <span class="id">only</span> <span class="id">allow</span> <span class="id">updates</span> <span class="id">that</span> <span class="id">preserve</span> <span class="id">the</span> <span class="id">major</span> <span class="id">version</span>
+    <span class="o">--</span><span class="id">keep</span><span class="o">-</span><span class="id">minor</span>          <span class="id">only</span> <span class="id">allow</span> <span class="id">updates</span> <span class="id">that</span> <span class="id">preserve</span> <span class="id">the</span> <span class="id">minor</span> <span class="id">version</span>
+    <span class="o">--</span><span class="id">keep</span><span class="o">-</span><span class="id">patch</span>          <span class="id">only</span> <span class="id">allow</span> <span class="id">updates</span> <span class="id">that</span> <span class="id">preserve</span> <span class="id">the</span> <span class="id">patch</span> <span class="id">version</span>
+    <span class="o">--</span><span class="id">touch</span><span class="o">-</span><span class="id">affected</span><span class="o">-</span><span class="id">refs</span> <span class="id">touch</span> <span class="id">project</span> <span class="id">files</span> <span class="id">referencing</span> <span class="id">affected</span> <span class="id">dependencies</span>
+                          <span class="k">to</span> <span class="id">help</span> <span class="id">incremental</span> <span class="id">build</span> <span class="id">tools</span> <span class="id">detecting</span> <span class="id">the</span> <span class="id">change</span>
+    <span class="o">--</span><span class="k">type</span><span class="pn">,</span> <span class="o">-</span><span class="id">t</span> <span class="pn">&lt;</span><span class="id">packageType</span><span class="pn">&gt;</span>
+                          <span class="id">the</span> <span class="k">type</span> <span class="k">of</span> <span class="id">dependency</span><span class="pn">:</span> <span class="id">nuget</span><span class="pn">|</span><span class="id">clitool</span> <span class="pn">(</span><span class="k">default</span><span class="pn">:</span> <span class="id">nuget</span><span class="pn">)</span>
+    <span class="o">--</span><span class="id">silent</span><span class="pn">,</span> <span class="o">-</span><span class="id">s</span>          <span class="id">suppress</span> <span class="id">console</span> <span class="id">output</span>
+    <span class="o">--</span><span class="id">verbose</span><span class="pn">,</span> <span class="o">-</span><span class="id">v</span>         <span class="id">print</span> <span class="id">detailed</span> <span class="id">information</span> <span class="k">to</span> <span class="id">the</span> <span class="id">console</span>
+    <span class="o">--</span><span onmouseout="hideTip(event, 'fs3', 5)" onmouseover="showTip(event, 'fs3', 5)" class="id">log</span><span class="o">-</span><span class="id">file</span> <span class="pn">&lt;</span><span class="id">path</span><span class="pn">&gt;</span>     <span class="id">print</span> <span class="id">output</span> <span class="k">to</span> <span class="id">a</span> <span class="id">file</span>
+    <span class="o">--</span><span class="id">help</span>                <span class="id">display</span> <span class="id">this</span> <span onmouseout="hideTip(event, 'fs4', 6)" onmouseover="showTip(event, 'fs4', 6)" class="id">list</span> <span class="k">of</span> <span class="id">options</span><span class="pn">.</span>
+</code></pre></td>
+</tr>
+</table>
 <p>If you add the <code>--verbose</code> flag Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [path]</code> you can trace the logged information into a file.</p>
 <h2><a name="Adding-to-a-project" class="anchor" href="#Adding-to-a-project">Adding to a project</a></h2>
@@ -222,6 +233,10 @@ constraint specified the in the above command was preserved.</p>
 <span class="k">nuget</span> NUnit <span class="o">~&gt;</span> <span class="n">2.6</span>
 </code></pre></td></tr></table>
 
+<div class="tip" id="fs1">Multiple items<br />val single : value:&#39;T -&gt; single (requires member op_Explicit)<br /><br />--------------------<br />type single = System.Single</div>
+<div class="tip" id="fs2">val not : value:bool -&gt; bool</div>
+<div class="tip" id="fs3">val log : value:&#39;T -&gt; &#39;T (requires member Log)</div>
+<div class="tip" id="fs4">type &#39;T list = List&lt;&#39;T&gt;</div>
 
         </div>
         <div class="span3">

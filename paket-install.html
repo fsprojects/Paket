@@ -58,7 +58,6 @@
         <div class="span9" id="main">
           
 <h1><a name="paket-install" class="anchor" href="#paket-install">paket install</a></h1>
-<p>Compute dependency graph, download dependencies and update projects.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
 <span class="l"> 2: </span>
 <span class="l"> 3: </span>
@@ -90,39 +89,57 @@
 <span class="l">29: </span>
 <span class="l">30: </span>
 <span class="l">31: </span>
+<span class="l">32: </span>
+<span class="l">33: </span>
+<span class="l">34: </span>
+<span class="l">35: </span>
+<span class="l">36: </span>
+<span class="l">37: </span>
+<span class="l">38: </span>
+<span class="l">39: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket install [--help] [--force] [--redirects] [--create-new-binding-files] [--clean-redirects]
-              [--keep-major] [--keep-minor] [--keep-patch] [--only-referenced]
-              [--touch-affected-refs] [--generate-load-scripts]
-              [--load-script-framework &lt;framework&gt;] [--load-script-type &lt;csx|fsx&gt;]
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="id">Paket</span> <span class="id">version</span> <span class="n">10.0</span><span class="pn">.</span><span class="n">0</span><span class="o">+</span><span class="id">e9f2e5e77803051139eade0869d8cf7a5a905ef0</span>
+<span class="id">Help</span> <span class="id">was</span> <span class="id">requested</span><span class="pn">:</span>
+<span class="id">USAGE</span><span class="pn">:</span> <span class="id">paket</span> <span class="id">install</span> <span class="pn">[</span><span class="o">--</span><span class="id">help</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">force</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">redirects</span><span class="pn">]</span>
+                     <span class="pn">[</span><span class="o">--</span><span class="id">create</span><span class="o">-</span><span class="k">new</span><span class="o">-</span><span class="id">binding</span><span class="o">-</span><span class="id">files</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">clean</span><span class="o">-</span><span class="id">redirects</span><span class="pn">]</span>
+                     <span class="pn">[</span><span class="o">--</span><span class="id">keep</span><span class="o">-</span><span class="id">major</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">keep</span><span class="o">-</span><span class="id">minor</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">keep</span><span class="o">-</span><span class="id">patch</span><span class="pn">]</span>
+                     <span class="pn">[</span><span class="o">--</span><span class="id">only</span><span class="o">-</span><span class="id">referenced</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">touch</span><span class="o">-</span><span class="id">affected</span><span class="o">-</span><span class="id">refs</span><span class="pn">]</span>
+                     <span class="pn">[</span><span class="o">--</span><span class="id">generate</span><span class="o">-</span><span class="id">load</span><span class="o">-</span><span class="id">scripts</span><span class="pn">]</span>
+                     <span class="pn">[</span><span class="o">--</span><span class="id">load</span><span class="o">-</span><span class="id">script</span><span class="o">-</span><span class="id">framework</span> <span class="pn">&lt;</span><span class="id">framework</span><span class="pn">&gt;]</span>
+                     <span class="pn">[</span><span class="o">--</span><span class="id">load</span><span class="o">-</span><span class="id">script</span><span class="o">-</span><span class="k">type</span> <span class="pn">&lt;</span><span class="id">csx</span><span class="pn">|</span><span class="id">fsx</span><span class="pn">&gt;]</span>
 
-OPTIONS:
+<span class="id">OPTIONS</span><span class="pn">:</span>
 
-    --force, -f           force download and reinstallation of all dependencies
-    --redirects           create binding redirects
-    --create-new-binding-files
-                          create binding redirect files if needed
-    --clean-redirects     remove binding redirects that were not created by Paket
-    --keep-major          only allow updates that preserve the major version
-    --keep-minor          only allow updates that preserve the minor version
-    --keep-patch          only allow updates that preserve the patch version
-    --only-referenced     only install dependencies listed in paket.references files, instead of
-                          all packages in paket.dependencies
-    --touch-affected-refs touch project files referencing affected dependencies to help incremental
-                          build tools detecting the change
-    --generate-load-scripts
-                          generate F# and C# include scripts that reference installed packages in a
-                          interactive environment like F# Interactive or ScriptCS
-    --load-script-framework &lt;framework&gt;
-                          framework identifier to generate scripts for, such as net45 or
-                          netstandard1.6; may be repeated
-    --load-script-type &lt;csx|fsx&gt;
-                          language to generate scripts for; may be repeated; may be repeated
-    --silent, -s          suppress console output
-    --verbose, -v         print detailed information to the console
-    --log-file &lt;path&gt;     print output to a file
-    --help                display this list of options.
-</code></pre></td></tr></table>
+    <span class="o">--</span><span class="id">force</span><span class="pn">,</span> <span class="o">-</span><span class="id">f</span>           <span class="id">force</span> <span class="id">download</span> <span class="k">and</span> <span class="id">reinstallation</span> <span class="k">of</span> <span class="id">all</span> <span class="id">dependencies</span>
+    <span class="o">--</span><span class="id">redirects</span>           <span class="id">create</span> <span class="id">binding</span> <span class="id">redirects</span>
+    <span class="o">--</span><span class="id">create</span><span class="o">-</span><span class="k">new</span><span class="o">-</span><span class="id">binding</span><span class="o">-</span><span class="id">files</span>
+                          <span class="id">create</span> <span class="id">binding</span> <span class="id">redirect</span> <span class="id">files</span> <span class="k">if</span> <span class="id">needed</span>
+    <span class="o">--</span><span class="id">clean</span><span class="o">-</span><span class="id">redirects</span>     <span class="id">remove</span> <span class="id">binding</span> <span class="id">redirects</span> <span class="id">that</span> <span class="id">were</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="id">not</span> <span class="id">created</span> <span class="id">by</span>
+                          <span class="id">Paket</span>
+    <span class="o">--</span><span class="id">keep</span><span class="o">-</span><span class="id">major</span>          <span class="id">only</span> <span class="id">allow</span> <span class="id">updates</span> <span class="id">that</span> <span class="id">preserve</span> <span class="id">the</span> <span class="id">major</span> <span class="id">version</span>
+    <span class="o">--</span><span class="id">keep</span><span class="o">-</span><span class="id">minor</span>          <span class="id">only</span> <span class="id">allow</span> <span class="id">updates</span> <span class="id">that</span> <span class="id">preserve</span> <span class="id">the</span> <span class="id">minor</span> <span class="id">version</span>
+    <span class="o">--</span><span class="id">keep</span><span class="o">-</span><span class="id">patch</span>          <span class="id">only</span> <span class="id">allow</span> <span class="id">updates</span> <span class="id">that</span> <span class="id">preserve</span> <span class="id">the</span> <span class="id">patch</span> <span class="id">version</span>
+    <span class="o">--</span><span class="id">only</span><span class="o">-</span><span class="id">referenced</span>     <span class="id">only</span> <span class="id">install</span> <span class="id">dependencies</span> <span class="id">listed</span> <span class="k">in</span> <span class="id">paket</span><span class="pn">.</span><span class="id">references</span>
+                          <span class="id">files</span><span class="pn">,</span> <span class="id">instead</span> <span class="k">of</span> <span class="id">all</span> <span class="id">packages</span> <span class="k">in</span> <span class="id">paket</span><span class="pn">.</span><span class="id">dependencies</span>
+    <span class="o">--</span><span class="id">touch</span><span class="o">-</span><span class="id">affected</span><span class="o">-</span><span class="id">refs</span> <span class="id">touch</span> <span class="id">project</span> <span class="id">files</span> <span class="id">referencing</span> <span class="id">affected</span> <span class="id">dependencies</span>
+                          <span class="k">to</span> <span class="id">help</span> <span class="id">incremental</span> <span class="id">build</span> <span class="id">tools</span> <span class="id">detecting</span> <span class="id">the</span> <span class="id">change</span>
+    <span class="o">--</span><span class="id">generate</span><span class="o">-</span><span class="id">load</span><span class="o">-</span><span class="id">scripts</span>
+                          <span class="id">generate</span> <span class="id">F#</span> <span class="k">and</span> <span class="id">C#</span> <span class="id">include</span> <span class="id">scripts</span> <span class="id">that</span> <span class="id">reference</span>
+                          <span class="id">installed</span> <span class="id">packages</span> <span class="k">in</span> <span class="id">a</span> <span class="id">interactive</span> <span class="id">environment</span> <span class="id">like</span>
+                          <span class="id">F#</span> <span class="id">Interactive</span> <span class="k">or</span> <span class="id">ScriptCS</span>
+    <span class="o">--</span><span class="id">load</span><span class="o">-</span><span class="id">script</span><span class="o">-</span><span class="id">framework</span> <span class="pn">&lt;</span><span class="id">framework</span><span class="pn">&gt;</span>
+                          <span class="id">framework</span> <span class="id">identifier</span> <span class="k">to</span> <span class="id">generate</span> <span class="id">scripts</span> <span class="k">for</span><span class="pn">,</span> <span class="id">such</span> <span class="k">as</span>
+                          <span class="id">net45</span> <span class="k">or</span> <span class="id">netstandard1</span><span class="pn">.</span><span class="n">6</span><span class="pn">;</span> <span class="id">may</span> <span class="id">be</span> <span class="id">repeated</span>
+    <span class="o">--</span><span class="id">load</span><span class="o">-</span><span class="id">script</span><span class="o">-</span><span class="k">type</span> <span class="pn">&lt;</span><span class="id">csx</span><span class="pn">|</span><span class="id">fsx</span><span class="pn">&gt;</span>
+                          <span class="id">language</span> <span class="k">to</span> <span class="id">generate</span> <span class="id">scripts</span> <span class="k">for</span><span class="pn">;</span> <span class="id">may</span> <span class="id">be</span> <span class="id">repeated</span><span class="pn">;</span>
+                          <span class="id">may</span> <span class="id">be</span> <span class="id">repeated</span>
+    <span class="o">--</span><span class="id">silent</span><span class="pn">,</span> <span class="o">-</span><span class="id">s</span>          <span class="id">suppress</span> <span class="id">console</span> <span class="id">output</span>
+    <span class="o">--</span><span class="id">verbose</span><span class="pn">,</span> <span class="o">-</span><span class="id">v</span>         <span class="id">print</span> <span class="id">detailed</span> <span class="id">information</span> <span class="k">to</span> <span class="id">the</span> <span class="id">console</span>
+    <span class="o">--</span><span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="id">log</span><span class="o">-</span><span class="id">file</span> <span class="pn">&lt;</span><span class="id">path</span><span class="pn">&gt;</span>     <span class="id">print</span> <span class="id">output</span> <span class="k">to</span> <span class="id">a</span> <span class="id">file</span>
+    <span class="o">--</span><span class="id">help</span>                <span class="id">display</span> <span class="id">this</span> <span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="id">list</span> <span class="k">of</span> <span class="id">options</span><span class="pn">.</span>
+</code></pre></td>
+</tr>
+</table>
 <p>If you add the <code>--verbose</code> flag Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [path]</code> you can trace the logged information into a file.</p>
 <h2><a name="Notes-on-changes-to" class="anchor" href="#Notes-on-changes-to">Notes on changes to <a href="dependencies-file.html"><code>paket.dependencies</code></a></a></h2>
@@ -137,6 +154,9 @@ dependencies that have been modified in
 <a href="dependencies-file.html"><code>paket.dependencies</code></a> and use the version from
 <a href="lock-file.html"><code>paket.lock</code></a> for all other dependencies.</p>
 
+<div class="tip" id="fs1">val not : value:bool -&gt; bool</div>
+<div class="tip" id="fs2">val log : value:&#39;T -&gt; &#39;T (requires member Log)</div>
+<div class="tip" id="fs3">type &#39;T list = List&lt;&#39;T&gt;</div>
 
         </div>
         <div class="span3">

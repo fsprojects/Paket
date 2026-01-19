@@ -58,7 +58,6 @@
         <div class="span9" id="main">
           
 <h1><a name="paket-generate-load-scripts" class="anchor" href="#paket-generate-load-scripts">paket generate-load-scripts</a></h1>
-<p>Generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
 <span class="l"> 2: </span>
 <span class="l"> 3: </span>
@@ -72,21 +71,31 @@
 <span class="l">11: </span>
 <span class="l">12: </span>
 <span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket generate-load-scripts [--help] [--group &lt;name&gt;] [--framework &lt;framework&gt;] [--type &lt;csx|fsx&gt;]
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="id">Paket</span> <span class="id">version</span> <span class="n">10.0</span><span class="pn">.</span><span class="n">0</span><span class="o">+</span><span class="id">e9f2e5e77803051139eade0869d8cf7a5a905ef0</span>
+<span class="id">Help</span> <span class="id">was</span> <span class="id">requested</span><span class="pn">:</span>
+<span class="id">USAGE</span><span class="pn">:</span> <span class="id">paket</span> <span class="id">generate</span><span class="o">-</span><span class="id">load</span><span class="o">-</span><span class="id">scripts</span> <span class="pn">[</span><span class="o">--</span><span class="id">help</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">group</span> <span class="pn">&lt;</span><span class="id">name</span><span class="pn">&gt;]</span>
+                                   <span class="pn">[</span><span class="o">--</span><span class="id">framework</span> <span class="pn">&lt;</span><span class="id">framework</span><span class="pn">&gt;]</span> <span class="pn">[</span><span class="o">--</span><span class="k">type</span> <span class="pn">&lt;</span><span class="id">csx</span><span class="pn">|</span><span class="id">fsx</span><span class="pn">&gt;]</span>
 
-OPTIONS:
+<span class="id">OPTIONS</span><span class="pn">:</span>
 
-    --group, -g &lt;name&gt;    groups to generate scripts for (default: all groups); may be repeated
-    --framework, -f &lt;framework&gt;
-                          framework identifier to generate scripts for, such as net45 or
-                          netstandard1.6; may be repeated
-    --type, -t &lt;csx|fsx&gt;  language to generate scripts for; may be repeated
-    --silent, -s          suppress console output
-    --verbose, -v         print detailed information to the console
-    --log-file &lt;path&gt;     print output to a file
-    --help                display this list of options.
-</code></pre></td></tr></table>
+    <span class="o">--</span><span class="id">group</span><span class="pn">,</span> <span class="o">-</span><span class="id">g</span> <span class="pn">&lt;</span><span class="id">name</span><span class="pn">&gt;</span>    <span class="id">groups</span> <span class="k">to</span> <span class="id">generate</span> <span class="id">scripts</span> <span class="k">for</span> <span class="pn">(</span><span class="k">default</span><span class="pn">:</span> <span class="id">all</span> <span class="id">groups</span><span class="pn">)</span><span class="pn">;</span>
+                          <span class="id">may</span> <span class="id">be</span> <span class="id">repeated</span>
+    <span class="o">--</span><span class="id">framework</span><span class="pn">,</span> <span class="o">-</span><span class="id">f</span> <span class="pn">&lt;</span><span class="id">framework</span><span class="pn">&gt;</span>
+                          <span class="id">framework</span> <span class="id">identifier</span> <span class="k">to</span> <span class="id">generate</span> <span class="id">scripts</span> <span class="k">for</span><span class="pn">,</span> <span class="id">such</span> <span class="k">as</span>
+                          <span class="id">net45</span> <span class="k">or</span> <span class="id">netstandard1</span><span class="pn">.</span><span class="n">6</span><span class="pn">;</span> <span class="id">may</span> <span class="id">be</span> <span class="id">repeated</span>
+    <span class="o">--</span><span class="k">type</span><span class="pn">,</span> <span class="o">-</span><span class="id">t</span> <span class="pn">&lt;</span><span class="id">csx</span><span class="pn">|</span><span class="id">fsx</span><span class="pn">&gt;</span>  <span class="id">language</span> <span class="k">to</span> <span class="id">generate</span> <span class="id">scripts</span> <span class="k">for</span><span class="pn">;</span> <span class="id">may</span> <span class="id">be</span> <span class="id">repeated</span>
+    <span class="o">--</span><span class="id">silent</span><span class="pn">,</span> <span class="o">-</span><span class="id">s</span>          <span class="id">suppress</span> <span class="id">console</span> <span class="id">output</span>
+    <span class="o">--</span><span class="id">verbose</span><span class="pn">,</span> <span class="o">-</span><span class="id">v</span>         <span class="id">print</span> <span class="id">detailed</span> <span class="id">information</span> <span class="k">to</span> <span class="id">the</span> <span class="id">console</span>
+    <span class="o">--</span><span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="id">log</span><span class="o">-</span><span class="id">file</span> <span class="pn">&lt;</span><span class="id">path</span><span class="pn">&gt;</span>     <span class="id">print</span> <span class="id">output</span> <span class="k">to</span> <span class="id">a</span> <span class="id">file</span>
+    <span class="o">--</span><span class="id">help</span>                <span class="id">display</span> <span class="id">this</span> <span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="id">list</span> <span class="k">of</span> <span class="id">options</span><span class="pn">.</span>
+</code></pre></td>
+</tr>
+</table>
 <p>If you add the <code>--verbose</code> flag Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [path]</code> you can trace the logged information into a file.</p>
 <h2><a name="Generate-load-scripts-for-all-NuGet-packages" class="anchor" href="#Generate-load-scripts-for-all-NuGet-packages">Generate load scripts for all NuGet packages</a></h2>
@@ -155,6 +164,8 @@ scripts.</p>
 </tr>
 </table>
 
+<div class="tip" id="fs1">val log : value:&#39;T -&gt; &#39;T (requires member Log)</div>
+<div class="tip" id="fs2">type &#39;T list = List&lt;&#39;T&gt;</div>
 
         </div>
         <div class="span3">

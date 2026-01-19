@@ -58,7 +58,6 @@
         <div class="span9" id="main">
           
 <h1><a name="paket-outdated" class="anchor" href="#paket-outdated">paket outdated</a></h1>
-<p>Find dependencies that have newer versions available.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
 <span class="l"> 2: </span>
 <span class="l"> 3: </span>
@@ -72,21 +71,31 @@
 <span class="l">11: </span>
 <span class="l">12: </span>
 <span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket outdated [--help] [--force] [--ignore-constraints] [--group &lt;name&gt;] [--include-prereleases]
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="id">Paket</span> <span class="id">version</span> <span class="n">10.0</span><span class="pn">.</span><span class="n">0</span><span class="o">+</span><span class="id">e9f2e5e77803051139eade0869d8cf7a5a905ef0</span>
+<span class="id">Help</span> <span class="id">was</span> <span class="id">requested</span><span class="pn">:</span>
+<span class="id">USAGE</span><span class="pn">:</span> <span class="id">paket</span> <span class="id">outdated</span> <span class="pn">[</span><span class="o">--</span><span class="id">help</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">force</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="id">ignore</span><span class="o">-</span><span class="id">constraints</span><span class="pn">]</span> <span class="pn">[</span><span class="o">--</span><span class="id">group</span> <span class="pn">&lt;</span><span class="id">name</span><span class="pn">&gt;]</span>
+                      <span class="pn">[</span><span class="o">--</span><span class="id">include</span><span class="o">-</span><span class="id">prereleases</span><span class="pn">]</span>
 
-OPTIONS:
+<span class="id">OPTIONS</span><span class="pn">:</span>
 
-    --force, -f           force download and reinstallation of all dependencies
-    --ignore-constraints  ignore version constraints in the paket.dependencies file
-    --group, -g &lt;name&gt;    specify dependency group (default: all groups)
-    --include-prereleases, --pre
-                          consider prerelease versions as updates
-    --silent, -s          suppress console output
-    --verbose, -v         print detailed information to the console
-    --log-file &lt;path&gt;     print output to a file
-    --help                display this list of options.
-</code></pre></td></tr></table>
+    <span class="o">--</span><span class="id">force</span><span class="pn">,</span> <span class="o">-</span><span class="id">f</span>           <span class="id">force</span> <span class="id">download</span> <span class="k">and</span> <span class="id">reinstallation</span> <span class="k">of</span> <span class="id">all</span> <span class="id">dependencies</span>
+    <span class="o">--</span><span onmouseout="hideTip(event, 'fs1', 2)" onmouseover="showTip(event, 'fs1', 2)" class="id">ignore</span><span class="o">-</span><span class="id">constraints</span>  <span onmouseout="hideTip(event, 'fs1', 3)" onmouseover="showTip(event, 'fs1', 3)" class="id">ignore</span> <span class="id">version</span> <span class="id">constraints</span> <span class="k">in</span> <span class="id">the</span> <span class="id">paket</span><span class="pn">.</span><span class="id">dependencies</span>
+                          <span class="id">file</span>
+    <span class="o">--</span><span class="id">group</span><span class="pn">,</span> <span class="o">-</span><span class="id">g</span> <span class="pn">&lt;</span><span class="id">name</span><span class="pn">&gt;</span>    <span class="id">specify</span> <span class="id">dependency</span> <span class="id">group</span> <span class="pn">(</span><span class="k">default</span><span class="pn">:</span> <span class="id">all</span> <span class="id">groups</span><span class="pn">)</span>
+    <span class="o">--</span><span class="id">include</span><span class="o">-</span><span class="id">prereleases</span><span class="pn">,</span> <span class="o">--</span><span class="id">pre</span>
+                          <span class="id">consider</span> <span class="id">prerelease</span> <span class="id">versions</span> <span class="k">as</span> <span class="id">updates</span>
+    <span class="o">--</span><span class="id">silent</span><span class="pn">,</span> <span class="o">-</span><span class="id">s</span>          <span class="id">suppress</span> <span class="id">console</span> <span class="id">output</span>
+    <span class="o">--</span><span class="id">verbose</span><span class="pn">,</span> <span class="o">-</span><span class="id">v</span>         <span class="id">print</span> <span class="id">detailed</span> <span class="id">information</span> <span class="k">to</span> <span class="id">the</span> <span class="id">console</span>
+    <span class="o">--</span><span onmouseout="hideTip(event, 'fs2', 4)" onmouseover="showTip(event, 'fs2', 4)" class="id">log</span><span class="o">-</span><span class="id">file</span> <span class="pn">&lt;</span><span class="id">path</span><span class="pn">&gt;</span>     <span class="id">print</span> <span class="id">output</span> <span class="k">to</span> <span class="id">a</span> <span class="id">file</span>
+    <span class="o">--</span><span class="id">help</span>                <span class="id">display</span> <span class="id">this</span> <span onmouseout="hideTip(event, 'fs3', 5)" onmouseover="showTip(event, 'fs3', 5)" class="id">list</span> <span class="k">of</span> <span class="id">options</span><span class="pn">.</span>
+</code></pre></td>
+</tr>
+</table>
 <p>If you add the <code>--verbose</code> flag Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [path]</code> you can trace the logged information into a file.</p>
 <h2><a name="Example" class="anchor" href="#Example">Example</a></h2>
@@ -164,6 +173,9 @@ Performance:
  - Runtime: 4 seconds
 </code></pre></td></tr></table>
 
+<div class="tip" id="fs1">val ignore : value:&#39;T -&gt; unit</div>
+<div class="tip" id="fs2">val log : value:&#39;T -&gt; &#39;T (requires member Log)</div>
+<div class="tip" id="fs3">type &#39;T list = List&lt;&#39;T&gt;</div>
 
         </div>
         <div class="span3">
