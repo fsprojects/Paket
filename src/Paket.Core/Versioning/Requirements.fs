@@ -316,44 +316,24 @@ type FrameworkRestriction =
         PlatformMatching.getCondition None x.RepresentedFrameworks
 
     override x.Equals(y) =
-        match y with 
+        match y with
         | :? FrameworkRestriction as r ->
-            // Fast path: reference equality
-            if System.Object.ReferenceEquals(x, r) then true
-            else
-                // Check structural equality of OrFormulas first (cheapest check)
-                // This avoids expensive ToString() and RepresentedFrameworks computation
-                if x.OrFormulas = r.OrFormulas then true
-                else
-                    // Try string comparison if either has cached string representation
-                    match !x.PrivateStringRepresentation, !r.PrivateStringRepresentation with
-                    | Some xs, Some rs when xs = rs -> true
-                    | _ ->
-                        // Fall back to RepresentedFrameworks comparison
-                        // This is cached, so not too expensive
-                        x.RepresentedFrameworks = r.RepresentedFrameworks
+            // Cannot delegate because we cache RepresentedFrameworks -> optimization
+            //x.RawFormular.Equals(r.RawFormular)
+            if System.Object.ReferenceEquals(x, y) then true
+            elif (x.ToString() = y.ToString()) then true
+            else r.RepresentedFrameworks = x.RepresentedFrameworks
         | _ -> false
     override x.GetHashCode() = x.RepresentedFrameworks.GetHashCode()
     interface System.IComparable with
-        member x.CompareTo(y) = 
-            match y with 
+        member x.CompareTo(y) =
+            match y with
             | :? FrameworkRestriction as r ->
-                // Fast path: reference equality
-                if System.Object.ReferenceEquals(x, r) then 0
-                else
-                    // Check structural equality of OrFormulas first (cheapest check)
-                    let orFormulasComparison = compare x.OrFormulas r.OrFormulas
-                    if orFormulasComparison <> 0 then orFormulasComparison
-                    else
-                        // Try string comparison if either has cached string representation
-                        match !x.PrivateStringRepresentation, !r.PrivateStringRepresentation with
-                        | Some xs, Some rs -> 
-                            let stringComparison = compare xs rs
-                            if stringComparison <> 0 then stringComparison
-                            else 0
-                        | _ ->
-                            // Fall back to RepresentedFrameworks comparison
-                            compare x.RepresentedFrameworks r.RepresentedFrameworks
+                // Cannot delegate because we cache RepresentedFrameworks -> optimization
+                //compare x.RawFormular r.RawFormular
+                if System.Object.ReferenceEquals(x, y) then 0
+                elif (x.ToString() = y.ToString()) then 0
+                else compare x.RepresentedFrameworks r.RepresentedFrameworks
             | _ -> failwith "wrong type"
 
 module FrameworkRestriction =
@@ -400,29 +380,19 @@ module FrameworkRestriction =
         let removeSubsetLiteralsInAndClause (fr:FrameworkRestriction) =
             let simplifyAndClause (andClause:FrameworkRestrictionAndList) =
                 let literals = andClause.Literals
-                match literals with
-                | [] | [_] -> false, andClause  // Short-circuit: nothing to simplify
-                | _ ->
-                    // Cache RawFormular to avoid repeated computation (O(n) instead of O(n²))
-                    let literalsWithRaw = literals |> List.map (fun l -> l, l.RawFormular)
-                    
-                    let newLiterals =
-                        literalsWithRaw
-                        |> List.filter (fun (literal, rawFormular) ->
-                            // we filter out literals, for which another literal exists which is a STRICT subset
-                            // (subset but not equal - to handle duplicates correctly)
-                            // Use List.exists instead of Seq.filter to avoid allocation
-                            literalsWithRaw
-                            |> List.exists (fun (otherLiteral, otherRaw) ->
-                                not (obj.ReferenceEquals(literal, otherLiteral)) &&
-                                otherRaw.IsSubsetOf rawFormular &&
-                                not (rawFormular.IsSubsetOf otherRaw))  // strict subset: otherRaw ⊂ rawFormular
-                            |> not)
-                        |> List.map fst
-                    
-                    if newLiterals.Length <> literals.Length
-                    then true, {Literals = newLiterals}
-                    else false, andClause
+                let newLiterals =
+                    literals
+                    |> List.filter (fun literal ->
+                        // we filter out literals, for which another literal exists which is a subset
+                        literals
+                        |> Seq.filter (fun l -> l <> literal)
+                        |> Seq.exists (fun otherLiteral ->
+                            otherLiteral.RawFormular.IsSubsetOf literal.RawFormular)
+                        |> not)
+                if newLiterals.Length <> literals.Length
+                then true, {Literals = newLiterals}
+                else false, andClause
+                //andClause
             let wasChanged, newOrList =
                 fr.OrFormulas
                 |> List.fold (fun (oldWasChanged, newList) andList ->
@@ -439,23 +409,14 @@ module FrameworkRestriction =
             let simpleOrLiterals =
                 fr.OrFormulas
                 |> List.choose (function { Literals = [h] } -> Some h | _ -> None)
-            
-            // Cache RawFormular for all simple literals to avoid recomputation
-            let simpleOrLiteralsWithRaw =
-                simpleOrLiterals |> List.map (fun l -> l, l.RawFormular)
-            
             let newOrList =
                 fr.OrFormulas
                 |> List.filter (function
                     | { Literals = [h] } ->
-                        let hRaw = h.RawFormular
-                        // Use List.exists instead of Seq.filter + Seq.exists
-                        // Check for STRICT subset (not equal) to handle duplicates
-                        simpleOrLiteralsWithRaw
-                        |> List.exists (fun (otherLiteral, otherRaw) ->
-                            not (obj.ReferenceEquals(h, otherLiteral)) &&
-                            hRaw.IsSubsetOf otherRaw &&
-                            not (otherRaw.IsSubsetOf hRaw))  // strict subset
+                        simpleOrLiterals
+                        |> Seq.filter (fun l -> l <> h)
+                        |> Seq.exists (fun otherLiteral ->
+                            h.RawFormular.IsSubsetOf otherLiteral.RawFormular)
                         |> not
                     | _ -> true)
             if newOrList.Length < fr.OrFormulas.Length then
@@ -469,15 +430,13 @@ module FrameworkRestriction =
             let isContained (andList:FrameworkRestrictionAndList) (item:FrameworkRestrictionAndList) =
                 if item.Literals.Length >= andList.Literals.Length then false
                 else
-                    // Convert to Set for O(1) lookup instead of O(n) Seq.contains
-                    let andListLiteralsSet = Set.ofList andList.Literals
                     item.Literals
-                    |> List.forall (fun lit -> andListLiteralsSet.Contains lit)
+                    |> Seq.forall (fun lit -> andList.Literals |> Seq.contains lit)
 
             let newOrList =
                 fr.OrFormulas
                 |> List.filter (fun orClause ->
-                    orClauses |> List.exists (isContained orClause) |> not)
+                    orClauses |> Seq.exists (isContained orClause) |> not)
 
             if newOrList.Length < fr.OrFormulas.Length then
                 FrameworkRestriction.WithOrListInternal newOrList fr
