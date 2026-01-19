@@ -1,9 +1,10 @@
-#### 10.0.0-alpha011 - 2025-11-11
-* Preview support for .NET 10.0 - https://github.com/fsprojects/Paket/pull/4297
+#### 10.0.0 - 2026-01-19
+* Support for .NET 10.0 - https://github.com/fsprojects/Paket/pull/4297
 * Use NuGet.Configuration to get the path to the NuGet global - https://github.com/fsprojects/Paket/pull/4301
 * Add support for Artifactory by using the SearchQueryService as a fallback when AllVersionsAPI is not available - https://github.com/fsprojects/Paket/pull/4303
 * Fix script generation if package contains FSharp.Core name - https://github.com/fsprojects/Paket/pull/4287
 * Support for icon in paket.template - https://github.com/fsprojects/Paket/pull/4280
+* Reduced memory allocations in Requirements.simplify - https://github.com/fsprojects/Paket/pull/4314
 
 #### 9.0.2 - 2024-11-19
 * paket restore on projects with targetframework net9.0-windows - https://github.com/fsprojects/Paket/pull/4279
