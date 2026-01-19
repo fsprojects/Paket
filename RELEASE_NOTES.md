@@ -1,4 +1,4 @@
-#### 10.1.0 - 2026-01-19
+#### 10.1.1 - 2026-01-19
 * Implemented group conditions for SDK-style projects - https://github.com/fsprojects/Paket/pull/4247
 
 #### 10.0.1 - 2026-01-19
