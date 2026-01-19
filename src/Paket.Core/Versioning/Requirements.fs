@@ -936,6 +936,7 @@ type InstallSettings =
       Aliases : Map<string,string>
       CopyContentToOutputDirectory : CopyToOutputDirectorySettings option
       GenerateLoadScripts : bool option
+      GeneratePathProperty : bool option
       Simplify : bool option }
 
     static member Default =
@@ -954,6 +955,7 @@ type InstallSettings =
           CopyContentToOutputDirectory = None
           OmitContent = None
           GenerateLoadScripts = None
+          GeneratePathProperty = None
           Simplify = None }
 
     member this.ToString(groupSettings:InstallSettings,asLines) =
@@ -1005,6 +1007,10 @@ type InstallSettings =
               match this.GenerateLoadScripts with
               | Some true when groupSettings.GenerateLoadScripts <> this.GenerateLoadScripts -> yield "generate_load_scripts: true"
               | Some false when groupSettings.GenerateLoadScripts <> this.GenerateLoadScripts  -> yield "generate_load_scripts: false"
+              | _ -> ()
+              match this.GeneratePathProperty with
+              | Some true when groupSettings.GeneratePathProperty <> this.GeneratePathProperty -> yield "generate_path_property: true"
+              | Some false when groupSettings.GeneratePathProperty <> this.GeneratePathProperty -> yield "generate_path_property: false"
               | _ -> ()
               match this.Simplify with
               | Some false -> yield "simplify: false"
@@ -1114,6 +1120,11 @@ type InstallSettings =
                 | _ -> None
               GenerateLoadScripts =
                 match getPair "generate_load_scripts" with
+                | Some "on"  | Some "true" -> Some true
+                | Some "off" | Some "false" -> Some true
+                | _ -> None
+              GeneratePathProperty =
+                match getPair "generate_path_property" with
                 | Some "on"  | Some "true" -> Some true
                 | Some "off" | Some "false" -> Some true
                 | _ -> None

@@ -130,7 +130,7 @@ type ReferencesFile =
             { ReferencesFile.FromLines lines with FileName = fileName }
         with e -> raise (new Exception(sprintf "Could not parse reference file '%s': %s" fileName e.Message, e))
 
-    member this.AddNuGetReference(groupName, packageName : PackageName, embedInteropTypes: bool, copyLocal: bool, specificVersion: bool, importTargets: bool, frameworkRestrictions, includeVersionInPath, downloadLicense, omitContent : bool, createBindingRedirects, referenceCondition) =
+    member this.AddNuGetReference(groupName, packageName : PackageName, embedInteropTypes: bool, copyLocal: bool, specificVersion: bool, importTargets: bool, frameworkRestrictions, includeVersionInPath, downloadLicense, omitContent : bool, createBindingRedirects, referenceCondition, generatePathProperty) =
         let package: PackageInstallSettings =
             { Name = packageName
               Settings =
@@ -149,6 +149,7 @@ type ReferencesFile =
                     Aliases = Map.empty
                     OmitContent = if omitContent then Some ContentCopySettings.Omit else None
                     GenerateLoadScripts = None
+                    GeneratePathProperty = if generatePathProperty then Some generatePathProperty else None
                     Simplify = None } }
 
         match this.Groups |> Map.tryFind groupName with
@@ -175,7 +176,7 @@ type ReferencesFile =
                 { this with Groups = newGroups }
 
     member this.AddNuGetReference(groupName, packageName : PackageName) =
-        this.AddNuGetReference(groupName, packageName, false, true, true, true, ExplicitRestriction FrameworkRestriction.NoRestriction, false, false, false, None, null)
+        this.AddNuGetReference(groupName, packageName, false, true, true, true, ExplicitRestriction FrameworkRestriction.NoRestriction, false, false, false, None, null, false)
 
     member this.RemoveNuGetReference(groupName, packageName : PackageName) =
         let group = this.Groups.[groupName]
