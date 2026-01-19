@@ -600,6 +600,13 @@ type Dependencies(dependenciesFileName: string) =
         |> Seq.map (fun kv -> kv.Key.ToString())
         |> Seq.toList
 
+    member __.GetConditions(): string list =
+        let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
+        dependenciesFile.Groups
+        |> Seq.choose (fun kv -> kv.Value.Options.Settings.ReferenceCondition)
+        |> Seq.distinct
+        |> Seq.toList
+
     /// Returns the direct dependencies for the given package.
     member this.GetDirectDependenciesForPackage(groupName,packageName:string): (string * string * string) list =
         let resolvedPackages = this.GetLockFile().GetGroupedResolution()
@@ -855,6 +862,9 @@ type Dependencies(dependenciesFileName: string) =
             doc.Save fileStream
 
     static member FixNuspecs (projectFile: ProjectFile, referencesFile:ReferencesFile, nuspecFileList:string list) =
+        Dependencies.FixNuspecs (projectFile, referencesFile, nuspecFileList, [])
+
+    static member FixNuspecs (projectFile: ProjectFile, referencesFile:ReferencesFile, nuspecFileList:string list, conditions:string list) =
         let attr (name: string) (node: XmlNode) =
             match node.Attributes.[name] with
             | null -> None
@@ -880,8 +890,14 @@ type Dependencies(dependenciesFileName: string) =
             |> List.map (fun proj -> proj.NameWithoutExtension)
             |> Set.ofList
         let depsFile = deps.GetDependenciesFile()
+        let groupMatchesConditions groupName = 
+            let group = depsFile.GetGroup(groupName)
+            match group.Options.Settings.ReferenceCondition with
+            | None -> true
+            | Some condition -> conditions |> List.contains condition
         let allFrameworkRestrictions = 
             locked.GetPackageHull referencesFile 
+            |> Seq.filter (fun kvp -> fst kvp.Key |> groupMatchesConditions)
             |> Seq.map(fun kvp -> snd kvp.Key, fst kvp.Key, kvp.Value.Settings.FrameworkRestrictions.GetExplicitRestriction()) 
 
 
@@ -898,6 +914,7 @@ type Dependencies(dependenciesFileName: string) =
 
         let projectReferencedDeps =
             referencesFile.Groups
+            |> Seq.filter (fun (KeyValue(group, _)) -> group |> groupMatchesConditions)
             |> Seq.collect (fun (KeyValue(group, packages)) -> packages.NugetPackages |> Seq.map (fun p -> group, p))
 
         let groupsForProjectReferencedDeps =
