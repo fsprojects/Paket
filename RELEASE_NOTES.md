@@ -1,3 +1,6 @@
+#### 10.1.0 - 2026-01-19
+* Implemented group conditions for SDK-style projects - https://github.com/fsprojects/Paket/pull/4247
+
 #### 10.0.1 - 2026-01-19
 * Support for .NET 10.0 - https://github.com/fsprojects/Paket/pull/4297
 * Use NuGet.Configuration to get the path to the NuGet global - https://github.com/fsprojects/Paket/pull/4301
