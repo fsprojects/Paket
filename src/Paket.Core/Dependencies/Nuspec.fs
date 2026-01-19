@@ -65,14 +65,15 @@ type Nuspec =
       OfficialName : string
       // Currently only used for testing
       Version : string
+      AvailableFramework: FrameworkIdentifier list
       LicenseUrl : string
       IsDevelopmentDependency : bool
       FrameworkAssemblyReferences : FrameworkAssemblyReference list }
-    static member All = { Version = ""; References = NuspecReferences.All; Dependencies = lazy []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false }
-    static member Explicit references = { Version = ""; References = NuspecReferences.Explicit references; Dependencies = lazy []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false }
+    static member All = { Version = ""; References = NuspecReferences.All; Dependencies = lazy []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false; AvailableFramework = [] }
+    static member Explicit references = { Version = ""; References = NuspecReferences.Explicit references; Dependencies = lazy []; FrameworkAssemblyReferences = []; OfficialName = ""; LicenseUrl = ""; IsDevelopmentDependency = false; AvailableFramework = [] }
 
     /// load the file from an XmlDocument. The fileName is only used for error reporting.
-    static member private Load(fileName:string, doc:XmlDocument) =
+    static member private Load(fileName:string, doc:XmlDocument, allPackageFiles: string[]) =
         let frameworks =
             doc 
             |> getDescendants "group"
@@ -126,6 +127,11 @@ type Nuspec =
             match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "developmentDependency" with
             | Some link -> String.equalsIgnoreCase link.InnerText "true"
             | None -> false
+          AvailableFramework =
+              allPackageFiles
+              |> Seq.choose FrameworkDetection.DetectFromPath
+              |> Seq.distinct
+              |> Seq.toList
           FrameworkAssemblyReferences = 
             let grouped =
                 doc
@@ -142,30 +148,31 @@ type Nuspec =
                                 |> List.fold FrameworkRestriction.combineRestrictionsWithOr FrameworkRestriction.EmptySet) } ] }
 
     /// load the file from an nuspec text stream. The fileName is only used for error reporting.
-    static member internal Load(fileName:string, f:Stream) =
+    static member internal Load(fileName:string, f:Stream, allPackageFiles) =
         let doc = new XmlDocument()
         doc.Load f
-        Nuspec.Load (fileName, doc)
+        Nuspec.Load (fileName, doc, allPackageFiles)
         
     /// load the file from an xml text. The fileName is only used for error reporting.
-    static member internal Load(fileName:string, text:string) =
+    static member internal Load(fileName:string, text:string, allPackageFiles) =
         let doc = new XmlDocument()
         doc.LoadXml text
-        Nuspec.Load (fileName, doc)
+        Nuspec.Load (fileName, doc, allPackageFiles)
 
     /// load the file from a given file.
-    static member Load(fileName : string) = 
+    static member Load(fileName: string) = 
         let fi = FileInfo(fileName)
         if not fi.Exists then Nuspec.All
         else
+            let allPackageFiles = fi.Directory.EnumerateFiles("*", SearchOption.AllDirectories) |> Seq.map _.FullName |> Seq.toArray
             try
                 use f = File.OpenRead(fi.FullName)
-                Nuspec.Load(fileName, f)
+                Nuspec.Load(fileName, f, allPackageFiles)
             with
             | exn ->
                 try
                     let text = File.ReadAllText(fi.FullName)  // work around mono bug https://github.com/fsprojects/Paket/issues/1189
-                    Nuspec.Load(fileName, text)
+                    Nuspec.Load(fileName, text, allPackageFiles)
                 with
                 | ex ->
                     raise (IOException("Cannot load " + fileName + Environment.NewLine + "Message: " + ex.Message))

@@ -121,6 +121,7 @@ type NuGetPackageCache =
       Unlisted : bool
       DownloadUrl : string
       LicenseUrl : string
+      AvailableFrameworks: FrameworkIdentifier list
       Version: string
       CacheVersion: string }
 
@@ -375,7 +376,7 @@ let getNuSpecFromNupkg (fileName:string) =
         use zip = new ZipArchive(zipToCreate, ZipArchiveMode.Read)
         let zippedNuspec = zip.Entries |> Seq.find (fun f -> f.FullName.EndsWith ".nuspec")
         use stream = zippedNuspec.Open()
-        Nuspec.Load(Path.Combine(fileName, Path.GetFileName zippedNuspec.FullName), stream)
+        Nuspec.Load(Path.Combine(fileName, Path.GetFileName zippedNuspec.FullName), stream, zip.Entries |> Seq.map _.FullName |> Seq.toArray)
 
 let getCacheDataFromExtractedPackage (packageName:PackageName) (version:SemVerInfo) = async {
     match TryGetFallbackNupkg packageName version with
@@ -390,6 +391,7 @@ let getCacheDataFromExtractedPackage (packageName:PackageName) (version:SemVerIn
               CacheVersion = NuGetPackageCache.CurrentCacheVersion
               LicenseUrl = nuspec.LicenseUrl
               Version = version.Normalize()
+              AvailableFrameworks = nuspec.AvailableFramework
               Unlisted = false }
                .WithDependencies nuspec.Dependencies.Value
             |> Some
@@ -406,6 +408,7 @@ let getCacheDataFromExtractedPackage (packageName:PackageName) (version:SemVerIn
                   SourceUrl = targetFolder.FullName
                   CacheVersion = NuGetPackageCache.CurrentCacheVersion
                   LicenseUrl = nuspec.LicenseUrl
+                  AvailableFrameworks = nuspec.AvailableFramework
                   Version = version.Normalize()
                   Unlisted = false }
                    .WithDependencies nuspec.Dependencies.Value

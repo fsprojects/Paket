@@ -140,6 +140,7 @@ let ``__unknowntfm__ should not match everything`` () =
                      Dependencies = lazy []
                      LicenseUrl = ""
                      IsDevelopmentDependency = false
+                     AvailableFramework = []
                      FrameworkAssemblyReferences = []})
         let target = TargetProfile.PortableProfile PortableProfileType.Profile344
         let newModel = model.ApplyFrameworkRestrictions (FrameworkRestriction.ExactlyPlatform target)
