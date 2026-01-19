@@ -1,4 +1,4 @@
-#### 10.2.0 - 2026-01-19
+#### 10.2.1 - 2026-01-19
 * FIx NullReferenceException when doing paket.exe update by bumping Cache version - https://github.com/fsprojects/Paket/issues/4315
 
 #### 10.1.1 - 2026-01-19
