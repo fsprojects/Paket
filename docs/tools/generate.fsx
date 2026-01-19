@@ -1,29 +1,70 @@
 /// Getting help docs from Paket.exe
-#r "../../src/Paket/bin/Release/net461/Argu.dll"
-#r "../../src/Paket/bin/Release/net461/paket.exe"
+open System
 open System.IO
+open System.Diagnostics
 
+let paketExePath = Path.Combine(__SOURCE_DIRECTORY__, "../../src/Paket/bin/Release/net461/paket.exe")
 
 #if COMMANDS
-let MaxCodeWidth = 100
+// Get list of commands by parsing paket --help output
+let runPaket args =
+    let psi = ProcessStartInfo(paketExePath, args)
+    psi.RedirectStandardOutput <- true
+    psi.RedirectStandardError <- true
+    psi.UseShellExecute <- false
+    psi.CreateNoWindow <- true
+    use p = Process.Start(psi)
+    let output = p.StandardOutput.ReadToEnd()
+    p.WaitForExit()
+    output
 
-Paket.Commands.getAllCommands()
-|> List.iter (fun command ->
-    let metadata = command.ParentInfo |> Option.get
-    let additionalText =
-        let verboseOption = """
+// Parse command names from help output
+let helpOutput = runPaket "--help"
+let commandLines =
+    helpOutput.Split([|'\n'|], StringSplitOptions.RemoveEmptyEntries)
+    |> Array.skipWhile (fun l -> not (l.Contains("SUBCOMMANDS")))
+    |> Array.skip 1
+    |> Array.takeWhile (fun l -> not (l.Trim().StartsWith("Use")))
+    |> Array.filter (fun l -> l.Trim().Length > 0)
+
+let commands =
+    commandLines
+    |> Array.choose (fun line ->
+        let trimmed = line.Trim()
+        if trimmed.Length > 0 && not (trimmed.StartsWith("--")) then
+            let parts = trimmed.Split([|' '|], 2, StringSplitOptions.RemoveEmptyEntries)
+            if parts.Length > 0 && not (parts.[0].StartsWith("-")) then
+                Some parts.[0]
+            else None
+        else None)
+    |> Array.filter (fun cmd -> cmd <> "<options>")
+    |> Array.distinct
+
+// Generate markdown for each command
+for commandName in commands do
+    let commandHelp = runPaket (sprintf "%s --help" commandName)
+
+    let verboseOption = """
 
 If you add the `--verbose` flag Paket will run in verbose mode and show detailed information.
 
 With `--log-file [path]` you can trace the logged information into a file.
 
 """
-        let optFile = sprintf "../content/commands/%s.md" metadata.Name.Value
+    let optFile = sprintf "../content/commands/%s.md" commandName
+    let additionalText =
         if File.Exists optFile
         then verboseOption + File.ReadAllText optFile
         else verboseOption
 
-    File.WriteAllText(sprintf "../content/paket-%s.md" metadata.Name.Value, Paket.Commands.markdown command MaxCodeWidth additionalText))
+    // Create markdown content
+    let markdown =
+        "# paket " + commandName + "\n\n```\n" +
+        commandHelp.Trim() + "\n```\n" +
+        additionalText
+
+    File.WriteAllText(sprintf "../content/paket-%s.md" commandName, markdown)
+    printfn "Generated docs for: %s" commandName
 #endif
 
 

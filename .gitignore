@@ -217,3 +217,4 @@ integrationtests/scenarios/*/before/**/obj
 /bin_netcore
 /bin_bootstrapper/
 .claude/settings.local.json
+nul

@@ -85,8 +85,8 @@ Commands are defined in `src/Paket/Commands.fs` using Argu. Each command has cor
 ## Target Frameworks
 
 - **Paket.Core**: `net461` and `netstandard2.0`
-- **Paket CLI**: `net461` and `net8`
-- **Tests**: `net461` and `net8` (some tests may be framework-specific via `#if` directives)
+- **Paket CLI**: `net461` and `net9`
+- **Tests**: `net461` and `net9` (some tests may be framework-specific via `#if` directives)
 
 ## Conditional Compilation
 
