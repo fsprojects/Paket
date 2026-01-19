@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Include="build/PaketTest2394.PackageA.targets" Pack="true" PackagePath="build\PaketTest2394.PackageA.targets" />
+    </ItemGroup>
+    <Target Name="UpdateTargetsFile" BeforeTargets="Build">
+        <PropertyGroup>
+            <NewDefineConstants>%24(DefineConstants)%3BPACKAGEA_$(Version.Split('.')[0])</NewDefineConstants>
+        </PropertyGroup>
+        <XmlPoke XmlInputPath="build/PaketTest2394.PackageA.targets" Query="//DefineConstants" Value="$(NewDefineConstants)"/>
+    </Target>
+</Project>
