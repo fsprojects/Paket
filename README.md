@@ -35,20 +35,6 @@ For more reasons see the [FAQ][10].
 
  - Found a bug or missing a feature? Feed the [issue tracker][4].
  - Announcements and related miscellanea through Twitter ([@PaketManager][5])
- 
-
-## Prerequisites
-
-### Windows
- - As of https://github.com/fsprojects/Paket/pull/2664, paket now automatically bootstraps all required dependencies and builds on a clean windows installation.
-
-### Linux
-
- - up-to-date Mono (>= 5.0 required, >= 5.2 recommended, just install the latest nightly)
- - up-to-date MSBuild (>= 15.0, support for "Directory.Build.props" required)
-
- On most distros, it should be enough to follow [this guide](http://www.mono-project.com/docs/getting-started/install/linux/) and install ``mono-devel``, which contains MSBuild.
- Note: if the paket build script fails at ``paket restore`` just rerun it a few times until it succeeds.
 
 ## Quick contributing guide
 
