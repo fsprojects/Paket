@@ -1357,12 +1357,33 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                         let conflictingFramework =
                             match exploredPackage.AvailableFrameworks with
                             | [] -> []
-                            | _ ->
-                                exploredPackage.AvailableFrameworks
-                                |> Seq.exists (fun framework -> exploredPackage.Settings.FrameworkRestrictions.IsSupersetOf(FrameworkRestriction.Exactly(framework)))
-                                |> function
-                                    | false -> [exploredPackage.Name, VersionRequirement (VersionRange.Maximum exploredPackage.Version, PreReleaseStatus.All)]
-                                    | true -> []
+                            | availableFrameworks ->
+                                // Get the requested target profiles from FrameworkRestrictions
+                                let requestedProfiles =
+                                    match exploredPackage.Settings.FrameworkRestrictions with
+                                    | ExplicitRestriction restriction -> restriction.RepresentedFrameworks
+                                    | AutoDetectFramework -> Set.empty  // Can't check, assume compatible
+
+                                // Convert available frameworks to ParsedPlatformPaths for compatibility check
+                                let availablePaths : PlatformMatching.ParsedPlatformPath list =
+                                    availableFrameworks
+                                    |> List.map (fun fw -> { Name = fw.ToString(); Platforms = [fw] })
+
+                                // Check if there's at least one requested profile that has a compatible available framework
+                                let hasAnyCompatibleFramework =
+                                    if Set.isEmpty requestedProfiles then
+                                        true  // No restrictions -> always compatible
+                                    else
+                                        requestedProfiles
+                                        |> Seq.exists (fun requestedProfile ->
+                                            availablePaths
+                                            |> List.exists (fun path ->
+                                                PlatformMatching.getPathPenalty(path, requestedProfile) < PlatformMatching.MaxPenalty))
+
+                                if hasAnyCompatibleFramework then
+                                    []
+                                else
+                                    [exploredPackage.Name, VersionRequirement (VersionRange.Maximum exploredPackage.Version, PreReleaseStatus.All)]
                             
                         let canTakePackage =
                             Seq.isEmpty conflictingFramework &&
