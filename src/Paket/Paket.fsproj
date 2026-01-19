@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net461;net8</TargetFrameworks>
+    <TargetFrameworks>net461;net9</TargetFrameworks>
     <PackageId>Paket</PackageId>
     <AssemblyName>paket</AssemblyName>
     <IsPackable>true</IsPackable>
@@ -12,7 +12,7 @@
     <!-- .net tools support netcoreapp only -->
     <TargetFrameworks>
     </TargetFrameworks>
-    <TargetFramework>net8</TargetFramework>
+    <TargetFramework>net9</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="\" />
