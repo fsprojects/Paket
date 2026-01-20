@@ -1,5 +1,8 @@
+#### 10.3.0 - 2026-01-20
+* REVERT: https://github.com/fsprojects/Paket/pull/4284
+
 #### 10.2.1 - 2026-01-19
-* FIx NullReferenceException when doing paket.exe update by bumping Cache version - https://github.com/fsprojects/Paket/issues/4315
+* Fix NullReferenceException when doing paket.exe update by bumping Cache version - https://github.com/fsprojects/Paket/issues/4315
 
 #### 10.1.1 - 2026-01-19
 * Implemented group conditions for SDK-style projects - https://github.com/fsprojects/Paket/pull/4247

@@ -243,7 +243,7 @@
 				<Aliases Condition="%(PaketReferencesFileLinesInfo.Splits) &gt;= 9">$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[8])</Aliases>
 				<ReferenceCondition Condition="%(PaketReferencesFileLinesInfo.Splits) &gt;= 10">$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[9])</ReferenceCondition>
 			</PaketReferencesFileLinesInfo>
-			<PackageReference Condition=" ('$(ManagePackageVersionsCentrally)' != 'true' Or '%(PaketReferencesFileLinesInfo.Reference)' == 'Direct') AND ('%(PaketReferencesFileLinesInfo.ReferenceCondition)' == 'true' Or $(%(PaketReferencesFileLinesInfo.ReferenceCondition)) == 'true')" Include="%(PaketReferencesFileLinesInfo.PackageName)">
+			<PackageReference Condition=" ('$(ManagePackageVersionsCentrally)' != 'true' Or '%(PaketReferencesFileLinesInfo.Reference)' == 'Direct') AND ('%(PaketReferencesFileLinesInfo.ReferenceCondition)' == 'true' Or '%(PaketReferencesFileLinesInfo.ReferenceCondition)' == '' Or $(%(PaketReferencesFileLinesInfo.ReferenceCondition)) == 'true')" Include="%(PaketReferencesFileLinesInfo.PackageName)">
 				<Version Condition=" '$(ManagePackageVersionsCentrally)' != 'true' ">%(PaketReferencesFileLinesInfo.PackageVersion)</Version>
 				<PrivateAssets Condition=" ('%(PaketReferencesFileLinesInfo.AllPrivateAssets)' == 'true') Or ('$(PackAsTool)' == 'true') ">All</PrivateAssets>
 				<ExcludeAssets Condition=" %(PaketReferencesFileLinesInfo.CopyLocal) == 'false' or %(PaketReferencesFileLinesInfo.AllPrivateAssets) == 'exclude'">runtime</ExcludeAssets>
@@ -253,7 +253,7 @@
 				<Publish Condition=" '$(PackAsTool)' == 'true' ">true</Publish>
 				<AllowExplicitVersion>true</AllowExplicitVersion>
 			</PackageReference>
-			<PackageVersion Condition="('$(ManagePackageVersionsCentrally)' != 'true' Or '%(PaketReferencesFileLinesInfo.Reference)' == 'Direct') AND ('%(PaketReferencesFileLinesInfo.ReferenceCondition)' == 'true' Or $(%(PaketReferencesFileLinesInfo.ReferenceCondition)) == 'true')" Include="%(PaketReferencesFileLinesInfo.PackageName)">
+			<PackageVersion Condition="('$(ManagePackageVersionsCentrally)' != 'true' Or '%(PaketReferencesFileLinesInfo.Reference)' == 'Direct') AND ('%(PaketReferencesFileLinesInfo.ReferenceCondition)' == 'true' Or '%(PaketReferencesFileLinesInfo.ReferenceCondition)' == '' Or $(%(PaketReferencesFileLinesInfo.ReferenceCondition)) == 'true')" Include="%(PaketReferencesFileLinesInfo.PackageName)">
 				<Version>%(PaketReferencesFileLinesInfo.PackageVersion)</Version>
 			</PackageVersion>
 		</ItemGroup>
