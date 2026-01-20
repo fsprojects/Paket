@@ -121,11 +121,10 @@ type NuGetPackageCache =
       Unlisted : bool
       DownloadUrl : string
       LicenseUrl : string
-      AvailableFrameworks: FrameworkIdentifier list
       Version: string
       CacheVersion: string }
 
-    static member CurrentCacheVersion = "8.0"
+    static member CurrentCacheVersion = "8.1"
 
     member this.WithDependencies (dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) list) =
         { this with
@@ -391,7 +390,6 @@ let getCacheDataFromExtractedPackage (packageName:PackageName) (version:SemVerIn
               CacheVersion = NuGetPackageCache.CurrentCacheVersion
               LicenseUrl = nuspec.LicenseUrl
               Version = version.Normalize()
-              AvailableFrameworks = nuspec.AvailableFramework
               Unlisted = false }
                .WithDependencies nuspec.Dependencies.Value
             |> Some
@@ -408,7 +406,6 @@ let getCacheDataFromExtractedPackage (packageName:PackageName) (version:SemVerIn
                   SourceUrl = targetFolder.FullName
                   CacheVersion = NuGetPackageCache.CurrentCacheVersion
                   LicenseUrl = nuspec.LicenseUrl
-                  AvailableFrameworks = nuspec.AvailableFramework
                   Version = version.Normalize()
                   Unlisted = false }
                    .WithDependencies nuspec.Dependencies.Value

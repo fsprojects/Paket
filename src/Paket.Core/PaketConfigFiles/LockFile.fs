@@ -499,7 +499,6 @@ module LockFileParser =
                                       Settings = settings
                                       Version = SemVer.Parse version
                                       Kind = kind
-                                      AvailableFrameworks = []
                                       // TODO: write stuff into the lockfile and read it here
                                       IsRuntimeDependency = isRuntimeDependency } :: currentGroup.Packages }::otherGroups
                     | None -> failwith "no source has been specified."

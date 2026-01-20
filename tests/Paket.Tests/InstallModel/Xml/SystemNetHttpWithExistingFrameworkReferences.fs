@@ -68,7 +68,6 @@ let ``should generate Xml for System.Net.Http 2.2.8``() =
                  Dependencies = lazy []
                  LicenseUrl = ""
                  IsDevelopmentDependency = false
-                 AvailableFramework = []
                  FrameworkAssemblyReferences =
                  [{ AssemblyName = "System.Net.Http"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }
                   { AssemblyName = "System.Net.Http.WebRequest"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }]})

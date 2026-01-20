@@ -23,7 +23,6 @@ type PackageDetails = {
     DownloadLink       : string
     LicenseUrl         : string
     Unlisted           : bool
-    AvailableFrameworks: FrameworkIdentifier list
     DirectDependencies : DependencySet
 }
 
@@ -66,7 +65,6 @@ type ResolvedPackage = {
     Kind                : ResolvedPackageKind
     Settings            : InstallSettings
     Source              : PackageSource
-    AvailableFrameworks : FrameworkIdentifier list
 } with
     override this.ToString () = sprintf "%O %O" this.Name this.Version
 
@@ -508,7 +506,6 @@ let private explorePackageConfig (getPackageDetailsBlock:PackageDetailsSyncFunc)
               Kind                = if Set.contains packageDetails.Name pkgConfig.CliTools then ResolvedPackageKind.DotnetCliTool
                                     else ResolvedPackageKind.Package
               IsRuntimeDependency = false
-              AvailableFrameworks = packageDetails.AvailableFrameworks
             }
     with
     | exn ->
@@ -1354,39 +1351,7 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                 conflictingWithOpen
                                 |> Seq.append conflictingWithClosed)
 
-                        let conflictingFramework =
-                            match exploredPackage.AvailableFrameworks with
-                            | [] -> []
-                            | availableFrameworks ->
-                                // Get the requested target profiles from FrameworkRestrictions
-                                let requestedProfiles =
-                                    match exploredPackage.Settings.FrameworkRestrictions with
-                                    | ExplicitRestriction restriction -> restriction.RepresentedFrameworks
-                                    | AutoDetectFramework -> Set.empty  // Can't check, assume compatible
-
-                                // Convert available frameworks to ParsedPlatformPaths for compatibility check
-                                let availablePaths : PlatformMatching.ParsedPlatformPath list =
-                                    availableFrameworks
-                                    |> List.map (fun fw -> { Name = fw.ToString(); Platforms = [fw] })
-
-                                // Check if there's at least one requested profile that has a compatible available framework
-                                let hasAnyCompatibleFramework =
-                                    if Set.isEmpty requestedProfiles then
-                                        true  // No restrictions -> always compatible
-                                    else
-                                        requestedProfiles
-                                        |> Seq.exists (fun requestedProfile ->
-                                            availablePaths
-                                            |> List.exists (fun path ->
-                                                PlatformMatching.getPathPenalty(path, requestedProfile) < PlatformMatching.MaxPenalty))
-
-                                if hasAnyCompatibleFramework then
-                                    []
-                                else
-                                    [exploredPackage.Name, VersionRequirement (VersionRange.Maximum exploredPackage.Version, PreReleaseStatus.All)]
-                            
                         let canTakePackage =
-                            Seq.isEmpty conflictingFramework &&
                             Seq.isEmpty conflictingResolvedPackages &&
                             Seq.isEmpty conflictingDepsRanges
 
@@ -1416,13 +1381,9 @@ let Resolve (getVersionsRaw : PackageVersionsFunc, getPreferredVersionsRaw : Pre
                                 getVersionsBlock ResolverStrategy.Max (GetPackageVersionsParameters.ofParams currentRequirement.Sources groupName packName) currentStep
 
                             let conflictingPackageName,vr =
-                                conflictingFramework
-                                |> Seq.tryHead
-                                |> Option.defaultWith (fun () ->
-                                    match Seq.tryHead conflictingResolvedPackages with
-                                    | Some (conflictingPackage,(_,vr,_)) -> conflictingPackage.Name,vr
-                                    | None -> Seq.head conflictingDepsRanges
-                                )
+                                match Seq.tryHead conflictingResolvedPackages with
+                                | Some (conflictingPackage,(_,vr,_)) -> conflictingPackage.Name,vr
+                                | None -> Seq.head conflictingDepsRanges
 
                             let currentConflict =
                                 { currentConflict with
