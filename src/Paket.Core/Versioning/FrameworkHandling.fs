@@ -545,6 +545,7 @@ type DotNetCoreAppVersion =
         | _ when s = "3.1" -> Some DotNetCoreAppVersion.V3_1
         | _ -> None
 
+[<RequireQualifiedAccess>]
 type NativeVersion =
     | NoVersion
     | Major of major:int
@@ -1316,14 +1317,14 @@ module FrameworkDetection =
                 | MatchTfm "xamarinwatchos" (allowVersions ["";"1"]) () -> Some XamarinWatch
                 | MatchTfm "xamarintvos" (allowVersions ["";"1"]) () -> Some XamarinTV
                 | MatchTfm "xamarinmac" (allowVersions ["";"1";"2"]) () -> Some XamarinMac
-                | "native/x86/debug" -> Some(Native(Debug,Win32,NoVersion))
-                | "native/x64/debug" -> Some(Native(Debug,X64,NoVersion))
-                | "native/arm/debug" -> Some(Native(Debug,Arm,NoVersion))
-                | "native/x86/release" -> Some(Native(Release,Win32,NoVersion))
-                | "native/x64/release" -> Some(Native(Release,X64,NoVersion))
-                | "native/arm/release" -> Some(Native(Release,Arm,NoVersion))
-                | "native/address-model-32" -> Some(Native(NoBuildMode,Win32,NoVersion))
-                | "native/address-model-64" -> Some(Native(NoBuildMode,X64,NoVersion))
+                | "native/x86/debug" -> Some(Native(Debug,Win32,NativeVersion.NoVersion))
+                | "native/x64/debug" -> Some(Native(Debug,X64,NativeVersion.NoVersion))
+                | "native/arm/debug" -> Some(Native(Debug,Arm,NativeVersion.NoVersion))
+                | "native/x86/release" -> Some(Native(Release,Win32,NativeVersion.NoVersion))
+                | "native/x64/release" -> Some(Native(Release,X64,NativeVersion.NoVersion))
+                | "native/arm/release" -> Some(Native(Release,Arm,NativeVersion.NoVersion))
+                | "native/address-model-32" -> Some(Native(NoBuildMode,Win32,NativeVersion.NoVersion))
+                | "native/address-model-64" -> Some(Native(NoBuildMode,X64,NativeVersion.NoVersion))
                 | MatchNative nv -> Some(Native(NoBuildMode,NoPlatform,nv))
                 | MatchTfm "sl" SilverlightVersion.TryParse fm -> Some (Silverlight fm)
                 | MatchTfms ["win"; "windows"; "netcore"; "winv"] parseWindows fm -> Some (Windows fm)
@@ -2018,16 +2019,16 @@ module KnownTargetProfiles =
        //[SinglePlatform (DNXCore FrameworkVersion.V5_0)]
 
     let AllNativeProfiles =
-        [ Native(NoBuildMode,NoPlatform,NoVersion)
-          Native(NoBuildMode,Win32,NoVersion)
-          Native(NoBuildMode,X64,NoVersion)
-          Native(NoBuildMode,Arm,NoVersion)
-          Native(Debug,Win32,NoVersion)
-          Native(Debug,Arm,NoVersion)
-          Native(Debug,X64,NoVersion)
-          Native(Release,Win32,NoVersion)
-          Native(Release,X64,NoVersion)
-          Native(Release,Arm,NoVersion)]
+        [ Native(NoBuildMode,NoPlatform,NativeVersion.NoVersion)
+          Native(NoBuildMode,Win32,NativeVersion.NoVersion)
+          Native(NoBuildMode,X64,NativeVersion.NoVersion)
+          Native(NoBuildMode,Arm,NativeVersion.NoVersion)
+          Native(Debug,Win32,NativeVersion.NoVersion)
+          Native(Debug,Arm,NativeVersion.NoVersion)
+          Native(Debug,X64,NativeVersion.NoVersion)
+          Native(Release,Win32,NativeVersion.NoVersion)
+          Native(Release,X64,NativeVersion.NoVersion)
+          Native(Release,Arm,NativeVersion.NoVersion)]
 
     let isSupportedProfile profile =
         match profile with

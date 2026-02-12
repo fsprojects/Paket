@@ -489,7 +489,7 @@ module InstallModel =
                     if path.Contains "/release/" then Release else
                     if path.Contains "/debug/" then Debug else
                     NoBuildMode
-                { Path = { l with Platforms = [ FrameworkIdentifier.Native(newBuildMode,newPlatform,NoVersion) ]}; File = p; Runtime = None }
+                { Path = { l with Platforms = [ FrameworkIdentifier.Native(newBuildMode,newPlatform,NativeVersion.NoVersion) ]}; File = p; Runtime = None }
             else
             { Path = l; File = p; Runtime = None })
         |> Option.orElseWith (fun _ ->

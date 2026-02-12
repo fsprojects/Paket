@@ -240,10 +240,10 @@ let ``Simplify <|| (&& (net452) (native)) (native)>`` () =
         (FrameworkRestriction.Or[
             FrameworkRestriction.And[
                 FrameworkRestriction.Exactly (DotNetFramework FrameworkVersion.V4_5_2)
-                FrameworkRestriction.Exactly (Native(NoBuildMode,NoPlatform,NoVersion))]
-            FrameworkRestriction.Exactly (Native(NoBuildMode,NoPlatform,NoVersion))])
+                FrameworkRestriction.Exactly (Native(NoBuildMode,NoPlatform,NativeVersion.NoVersion))]
+            FrameworkRestriction.Exactly (Native(NoBuildMode,NoPlatform,NativeVersion.NoVersion))])
     toSimplify
-    |> shouldEqual (FrameworkRestriction.Exactly (Native(NoBuildMode,NoPlatform,NoVersion)))
+    |> shouldEqual (FrameworkRestriction.Exactly (Native(NoBuildMode,NoPlatform,NativeVersion.NoVersion)))
 
 [<Test>]
 let ``Simplify (>=net20) && (>=net20)``() = 
