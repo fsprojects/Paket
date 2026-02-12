@@ -545,6 +545,11 @@ type DotNetCoreAppVersion =
         | _ when s = "3.1" -> Some DotNetCoreAppVersion.V3_1
         | _ -> None
 
+type NativeVersion =
+    | NoVersion
+    | Major of major:int
+    | MajorMinor of major:int * minor:int
+
 [<RequireQualifiedAccess>]
 /// The Framework version.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
