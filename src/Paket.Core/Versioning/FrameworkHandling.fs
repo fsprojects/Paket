@@ -1242,6 +1242,30 @@ module FrameworkDetection =
                     |> Option.bind FrameworkVersion.TryParse
                 else
                     None
+            let (|MatchNative|_|) (s:string) =
+                if not (s.StartsWith("native")) then
+                    None
+                elif s.Length = 6 then
+                    Some NativeVersion.NoVersion
+                else
+                    let versions = s.Substring 6 // expected # or #.#
+                    let parts = versions.Split('.')
+
+                    match parts with
+                    | [| majorPart |] ->
+                        match Int32.TryParse majorPart with
+                        | true, major -> Some (NativeVersion.Major major)
+                        | false, _ -> None
+
+                    | [| majorPart; minorPart |] ->
+                        match Int32.TryParse majorPart, Int32.TryParse minorPart with
+                        | (true, major), (true, minor) ->
+                            Some (NativeVersion.MajorMinor (major, minor))
+                        | _ ->
+                            None
+
+                    | _ ->
+                        None
             let Bind f = (fun _ -> f)
             let parseWindows tfmStart v =
                 match tfmStart with
