@@ -147,7 +147,7 @@ The supported framework identifiers include:
 * Mono for Android: `monoandroid{version}`
 * Mono for Mac: `monomac`
 * MonoTouch: `monotouch`
-* Native: `native` or `native({buildmode},{platform})`
+* Native: `native` or `native({buildmode},{platform})` or `native{version}`
 * Xamarin for Mac: `xamarinmac`
 * Xamarin for iOS: `xamarinios`
 * Xamarin for watchOS: `xamarinwatchos`
