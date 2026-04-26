@@ -1,0 +1,15 @@
+<Project>
+
+  <PropertyGroup>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/obj/**/*</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/bin/**/*</DefaultItemExcludes>
+    
+    <PaketDisableGlobalRestore>true</PaketDisableGlobalRestore>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>$(MSBuildProjectDirectory)/obj/custom/</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(MSBuildProjectDirectory)/bin/custom/</BaseOutputPath>
+  </PropertyGroup>
+
+</Project>
