@@ -164,6 +164,7 @@
     <Compile Include="ProjectFile\LocalizationSpecs.fs" />
     <Compile Include="ProjectFile\UpdateFromNugetSpecs.fs" />
     <Compile Include="ProjectFile\ReadPropertySpecs.fs" />
+    <Compile Include="ProjectFile\SymlinkLoopSpecs.fs" />
     <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
     <None Include="InstallModel\runtimeJsonMsNetCorePlatforms2_2_1.json" />
     <None Include="InstallModel\runtimeJsonMsNetCoreTargets2_1_0.json" />

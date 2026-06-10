@@ -296,6 +296,47 @@ let isWindows =
 #endif
 
 
+/// Native interop used to resolve a path to its canonical, symlink-followed form
+/// so that directory tree walks can detect cycles created by self-referential or
+/// looping symbolic links.
+module internal NativePath =
+    open System.Runtime.InteropServices
+
+    // POSIX realpath: on Linux/macOS libc resolves `path`, following every symbolic
+    // link, into the caller-provided `resolved` buffer (which must be at least
+    // PATH_MAX bytes), returning that buffer on success or NULL on failure. We pass
+    // UTF-8 bytes so non-ASCII paths round-trip, and a 4096-byte buffer (>= PATH_MAX
+    // on Linux (4096) and macOS (1024)), so no manual free is required.
+    [<DllImport("libc", EntryPoint = "realpath", SetLastError = true)>]
+    extern nativeint realpath(byte[] path, byte[] resolved)
+
+    /// Resolve `path` via libc realpath; None on any failure (incl. platforms
+    /// without libc), so callers can fall back to a lexical path.
+    let tryResolve (path: string) : string option =
+        try
+            let pathBytes = Array.append (Text.Encoding.UTF8.GetBytes path) [| 0uy |]
+            let buffer = Array.zeroCreate<byte> 4096
+            if realpath (pathBytes, buffer) = IntPtr.Zero then
+                None
+            else
+                let nullIndex = System.Array.IndexOf(buffer, 0uy)
+                let length = if nullIndex < 0 then buffer.Length else nullIndex
+                Some(Text.Encoding.UTF8.GetString(buffer, 0, length))
+        with _ -> None
+
+/// Resolves `path` to a canonical form suitable for detecting cycles while walking
+/// a directory tree. On Unix this follows symbolic links (via `realpath`); on
+/// Windows, or whenever native resolution is unavailable or fails, it falls back to
+/// a lexical full path.
+let realPath (path: string) : string =
+    let lexical () = try Path.GetFullPath path with _ -> path
+    if isWindows then lexical ()
+    else
+        match NativePath.tryResolve path with
+        | Some resolved -> resolved
+        | None -> lexical ()
+
+
 /// Determines if the current system is a mono system
 /// Todo: Detect mono on windows
 [<Obsolete("use either isMonoRuntime or isUnix, this flag is always false when compiled for NETSTANDARD")>]
