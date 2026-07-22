@@ -29,7 +29,6 @@ namespace Paket.Bootstrapper.Tests.HelperProxies
             using (new DisposableEnvVar("https_proxy"))
             {
                 var envProxy = TestHelper.NoSingletonProxyProvider.EnvProxy;
-                IWebProxy proxy;
                 Assert.IsFalse(envProxy.TryGetProxyFor(new Uri("http://github.com"), out _));
                 Assert.IsFalse(envProxy.TryGetProxyFor(new Uri("https://github.com"), out _));
             }

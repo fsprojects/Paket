@@ -55,9 +55,9 @@ module ScriptGeneration =
         refls |> List.filter ( fun ref ->
             if scriptType = ScriptType.FSharp then 
                 match ref with 
-                | Assembly info -> not (String.containsIgnoreCase "FSharp.Core" info.Name)
-                | Framework info -> not (String.containsIgnoreCase "FSharp.Core" info)
-                | LoadScript info -> not (String.containsIgnoreCase "FSharp.Core" info)
+                | Assembly info -> not (String.startsWithIgnoreCase "FSharp.Core" info.Name)
+                | Framework info -> not (String.startsWithIgnoreCase "FSharp.Core" info)
+                | LoadScript info -> not (String.startsWithIgnoreCase "FSharp.Core" info)
             else true
         )
 

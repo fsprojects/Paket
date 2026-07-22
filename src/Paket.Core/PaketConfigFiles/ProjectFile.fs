@@ -2095,6 +2095,7 @@ type ProjectFile with
             Language = prop "Langauge"
             ProjectUrl = prop "ProjectUrl"
             IconUrl = prop "IconUrl"
+            Icon = prop "Icon"
             LicenseExpression = prop "LicenseExpression"
             LicenseUrl = prop "LicenseUrl"
             Copyright = prop "Copyright"

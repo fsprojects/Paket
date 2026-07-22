@@ -1,4 +1,31 @@
-#### 8.1.0-alpha002 - 2024-03-14
+#### 10.3.1 - 2026-01-20
+* REVERT: https://github.com/fsprojects/Paket/pull/4284
+
+#### 10.2.1 - 2026-01-19
+* Fix NullReferenceException when doing paket.exe update by bumping Cache version - https://github.com/fsprojects/Paket/issues/4315
+
+#### 10.1.1 - 2026-01-19
+* Implemented group conditions for SDK-style projects - https://github.com/fsprojects/Paket/pull/4247
+
+#### 10.0.1 - 2026-01-19
+* Support for .NET 10.0 - https://github.com/fsprojects/Paket/pull/4297
+* Use NuGet.Configuration to get the path to the NuGet global - https://github.com/fsprojects/Paket/pull/4301
+* Add support for Artifactory by using the SearchQueryService as a fallback when AllVersionsAPI is not available - https://github.com/fsprojects/Paket/pull/4303
+* Fix script generation if package contains FSharp.Core name - https://github.com/fsprojects/Paket/pull/4287
+* Support for icon in paket.template - https://github.com/fsprojects/Paket/pull/4280
+* Reduced memory allocations in Requirements.simplify - https://github.com/fsprojects/Paket/pull/4314
+
+#### 9.0.2 - 2024-11-19
+* paket restore on projects with targetframework net9.0-windows - https://github.com/fsprojects/Paket/pull/4279
+
+#### 9.0.1 - 2024-11-15
+* Bring back boostrapper - even for .NET 9
+
+#### 9.0.0 - 2024-11-13
+* Support for .NET 9.0 - https://github.com/fsprojects/Paket/pull/4248
+* Added support for central package managments to fix issue about [references: strict either does not work, or does not work as expected](https://github.com/fsprojects/Paket/issues/2257)
+
+#### 8.1.0-alpha004 - 2024-06-19
 * Preview support for .NET 9.0 - https://github.com/fsprojects/Paket/pull/4248
 
 #### 8.1.0-alpha001 - 2024-01-30

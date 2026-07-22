@@ -333,3 +333,14 @@ let ``combineOr needs to consider partly disjunct sets``() =
                         FrameworkRestriction.AtLeast (DotNetStandard DotNetStandardVersion.V1_3)])
 
 
+[<Test>]
+[<TestCase("|| (&& (>= net45) (< netstandard2.0)) (&& (< net45) (>= netstandard2.0) (< netstandard2.1)) (>= net47) (&& (< net5.0) (>= netstandard2.1))")>]
+[<TestCase("|| (&& (>= net45) (< netstandard2.0)) (&& (< net45) (>= netstandard2.0) (< netstandard2.1)) (>= net47)")>]
+[<TestCase("&& (>= net45) (< net47) (< netstandard2.0)")>]
+[<TestCase("|| (&& (< net45) (>= netstandard2.0) (< netstandard2.1)) (>= net47)")>]
+[<TestCase("|| (&& (< net20) (>= netstandard1.0) (< netstandard1.3)) (&& (< net20) (>= netstandard1.3) (< netstandard2.0))")>]
+let ``parseRestrictions returns correct result`` frameworkRestrictionString =
+    let parsed, errors = Requirements.parseRestrictions frameworkRestrictionString
+    parsed.ToString() |> shouldEqual frameworkRestrictionString
+    errors |> Seq.toList |> shouldEqual []
+    

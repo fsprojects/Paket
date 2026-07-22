@@ -2,12 +2,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>net461;net9</TargetFrameworks>
     <StartupObject>Paket.Bootstrapper.Program</StartupObject>
     <AssemblyName>paket.bootstrapper</AssemblyName>
     <ToolCommandName>paketbootstrapper</ToolCommandName>
     <DefineConstants Condition=" '$(TargetFramework)' != 'net461'">NO_SYSTEMWEBPROXY;PAKET_BOOTSTRAP_NO_CACHE;PAKET_BOOTSTRAP_WORKAROUND_MSBUILD_URLS;$(DefineConstants)</DefineConstants>
-    <IsPackable>true</IsPackable>
+    <IsPackable>true</IsPackable
+    ><WarningsNotAsErrors>$(WarningsNotAsErrors);SYSLIB0014</WarningsNotAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(PaketUseLocalGithub)' == 'true' ">

@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);PACKAGEA_5</DefineConstants>
+  </PropertyGroup>
+</Project>

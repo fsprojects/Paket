@@ -121,7 +121,7 @@ with
             | Username _ -> "provide username"
             | Password _ -> "provide password"
             | AuthType _ -> "specify authentication type: basic|ntlm (default: basic)"
-            | Verify _ -> "specify in case you want to verify the credentials"
+            | Verify -> "specify in case you want to verify the credentials"
 
 type ConvertFromNugetArgs =
     | [<Unique;AltCommandLine("-f")>] Force
@@ -412,6 +412,7 @@ type FixNuspecsArgs =
     | [<ExactlyOnce;CustomCommandLine("files")>] Files of nuspecPaths:string list
     | [<CustomCommandLine("references-file")>] ReferencesFile of referencePath:string
     | [<CustomCommandLine("project-file")>] ProjectFile of referencePath:string
+    | [<Unique>] Conditions of conditions:string list
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -419,6 +420,7 @@ with
             | Files _ -> ".nuspec files to fix transitive dependencies within"
             | ReferencesFile _ -> "paket.references to use"
             | ProjectFile _ -> "the project file to use"
+            | Conditions _ -> "group conditions to filter by"
 
 type GenerateNuspecArgs =
     | [<ExactlyOnce;CustomCommandLine "project">] Project of project:string
@@ -446,6 +448,12 @@ with
             | Project_Legacy _ -> "[obsolete]"
 
 type ShowGroupsArgs =
+    | [<Hidden;NoCommandLine>] NoArgs
+with
+    interface IArgParserTemplate with
+        member __.Usage = ""
+
+type ShowConditionsArgs =
     | [<Hidden;NoCommandLine>] NoArgs
 with
     interface IArgParserTemplate with
@@ -563,21 +571,21 @@ with
             | Release_Notes_Legacy _ -> "[obsolete]"
 
             | Lock_Dependencies -> "use version constraints from paket.lock instead of paket.dependencies"
-            | Lock_Dependencies_Legacy _ -> "[obsolete]"
+            | Lock_Dependencies_Legacy -> "[obsolete]"
 
             | Lock_Dependencies_To_Minimum -> "use version constraints from paket.lock instead of paket.dependencies and add them as a minimum version; --lock-dependencies overrides this option"
-            | Lock_Dependencies_To_Minimum_Legacy _ -> "[obsolete]"
+            | Lock_Dependencies_To_Minimum_Legacy -> "[obsolete]"
 
             | Pin_Project_References -> "pin dependencies generated from project references to exact versions (=) instead of using minimum versions (>=); with --lock-dependencies project references will be pinned even if this option is not specified"
-            | Pin_Project_References_Legacy _ -> "[obsolete]"
+            | Pin_Project_References_Legacy -> "[obsolete]"
 
             | Interproject_References _ -> "set constraints for referenced project versions"
 
             | Symbols -> "create symbol and source packages in addition to library and content packages"
-            | Symbols_Legacy _ -> "[obsolete]"
+            | Symbols_Legacy -> "[obsolete]"
 
             | Include_Referenced_Projects -> "include symbols and source from referenced projects"
-            | Include_Referenced_Projects_Legacy _ -> "[obsolete]"
+            | Include_Referenced_Projects_Legacy -> "[obsolete]"
 
             | Project_Url _ -> "homepage URL for the package"
             | Project_Url_Legacy _ -> "[obsolete]"
@@ -696,6 +704,7 @@ type Command =
     | [<CustomCommandLine("generate-nuspec")>]          GenerateNuspec of ParseResults<GenerateNuspecArgs>
     | [<CustomCommandLine("show-installed-packages")>]  ShowInstalledPackages of ParseResults<ShowInstalledPackagesArgs>
     | [<CustomCommandLine("show-groups")>]              ShowGroups of ParseResults<ShowGroupsArgs>
+    | [<CustomCommandLine("show-conditions")>]          ShowConditions of ParseResults<ShowConditionsArgs>
     | [<CustomCommandLine("pack")>]                     Pack of ParseResults<PackArgs>
     | [<CustomCommandLine("push")>]                     Push of ParseResults<PushArgs>
     | [<Hidden;CustomCommandLine("generate-include-scripts")>] GenerateIncludeScripts of ParseResults<GenerateLoadScriptsArgs>
@@ -729,6 +738,7 @@ with
             | GenerateNuspec _ -> "generate a default nuspec for a project including its direct dependencies"
             | ShowInstalledPackages _ -> "show installed top-level packages"
             | ShowGroups _ -> "show groups"
+            | ShowConditions _ -> "show conditions defined on groups"
             | Pack _ -> "create NuGet packages from paket.template files"
             | Push _ -> "push a NuGet package"
             | GenerateIncludeScripts _ -> "[obsolete]"

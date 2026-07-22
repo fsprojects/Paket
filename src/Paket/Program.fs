@@ -577,7 +577,7 @@ let pack (results : ParseResults<_>) =
         |> legacyBool results (ReplaceArgument("--symbols", "symbols"))
     let includeReferencedProjects =
         (results.Contains PackArgs.Include_Referenced_Projects,
-         results.Contains PackArgs.Include_Referenced_Projects_Legacy) 
+         results.Contains PackArgs.Include_Referenced_Projects_Legacy)
         |> legacyBool results (ReplaceArgument("--include-referenced-projects", "Include_Referenced_Projects"))
     let projectUrl =
         (results.TryGetResult PackArgs.Project_Url,
@@ -680,12 +680,17 @@ let fixNuspecs silent (results : ParseResults<_>) =
         results.GetResult FixNuspecsArgs.Files
         |> List.collect (fun s -> s.Split([|';'|], StringSplitOptions.RemoveEmptyEntries) |> Array.toList)
         |> List.map (fun s -> s.Trim())
+    let conditions =
+        results.TryGetResult FixNuspecsArgs.Conditions
+        |> Option.defaultValue []
+        |> List.collect (fun s -> s.Split([|';'|], StringSplitOptions.RemoveEmptyEntries) |> Array.toList)
+        |> List.map (fun s -> s.Trim())
 
     match results.TryGetResult FixNuspecsArgs.ProjectFile with
     | Some projectFile ->
         let projectFile = Paket.ProjectFile.LoadFromFile(projectFile)
         let refFile = RestoreProcess.FindOrCreateReferencesFile projectFile
-        Dependencies.FixNuspecs (projectFile, refFile, nuspecFiles)
+        Dependencies.FixNuspecs (projectFile, refFile, nuspecFiles, conditions)
     | None ->
         match results.TryGetResult FixNuspecsArgs.ReferencesFile with
         | Some referenceFile ->
@@ -735,6 +740,11 @@ let showGroups (results : ParseResults<ShowGroupsArgs>) =
     let dependenciesFile = Dependencies.Locate()
     for groupName in dependenciesFile.GetGroups() do
         tracefn "%s" groupName
+
+let showConditions (results : ParseResults<ShowConditionsArgs>) =
+    let dependenciesFile = Dependencies.Locate()
+    for condition in dependenciesFile.GetConditions() do
+        tracefn "%s" condition
 
 let findPackageVersions (results : ParseResults<_>) =
     let maxResults =
@@ -894,6 +904,7 @@ let handleCommand silent command =
     | FixNuspecs r -> processCommand silent (fixNuspecs silent) r
     | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
     | ShowGroups r -> processCommand silent showGroups r
+    | ShowConditions r -> processCommand silent showConditions r
     | Pack r -> processCommand silent pack r
     | Push r -> processCommand silent (push paketVersion) r
     | GenerateIncludeScripts r ->

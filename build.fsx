@@ -67,10 +67,10 @@ let mutable dotnetExePath = "dotnet"
 
 let buildDir = "bin"
 let buildDirNet461 = buildDir @@ "net461"
-let buildDirNetCore = buildDir @@ "netcoreapp2.1"
+let buildDirNetCore = buildDir @@ "net9"
 let buildDirBootstrapper = "bin_bootstrapper"
 let buildDirBootstrapperNet461 = buildDirBootstrapper @@ "net461"
-let buildDirBootstrapperNetCore = buildDirBootstrapper @@ "netcoreapp2.1"
+let buildDirBootstrapperNetCore = buildDirBootstrapper @@ "net9"
 let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
 let paketFile = buildMergedDir @@ "paket.exe"
@@ -155,7 +155,7 @@ let releaseNotesPath = releaseNotesProp release.Notes
 
 let packageProps = [
     sprintf "/p:Version=%s" release.NugetVersion
-    sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath
+    sprintf "/p:PackageReleaseNotesFile=\"%s\"" releaseNotesPath
 ]
 
 Target "Build" (fun _ ->
@@ -199,7 +199,7 @@ Target "Publish" (fun _ ->
     DotNetCli.Publish (fun c ->
         { c with
             Project = "src/Paket"
-            Framework = "netcoreapp2.1"
+            Framework = "net9"
             Output = FullName (currentDirectory </> buildDirNetCore)
             ToolPath = dotnetExePath
             AdditionalArgs = publishArgs
@@ -217,7 +217,7 @@ Target "Publish" (fun _ ->
     DotNetCli.Publish (fun c ->
         { c with
             Project = "src/Paket.Bootstrapper"
-            Framework = "netcoreapp2.1"
+            Framework = "net9"
             Output = FullName (currentDirectory </> buildDirBootstrapperNetCore)
             ToolPath = dotnetExePath
             AdditionalArgs = publishArgs
@@ -355,7 +355,7 @@ Target "RunIntegrationTestsNetCore" (fun _ ->
     DotNetCli.Test (fun c ->
         { c with
             Project = "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
-            Framework = "netcoreapp3.1"
+            Framework = "net9"
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
                 sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]

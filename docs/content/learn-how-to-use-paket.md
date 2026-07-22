@@ -8,7 +8,7 @@ You can refer to a [minimal sample codebase](https://github.com/cartermp/Minimal
 
 Paket manages your dependencies with three core file types:
 
-* [`paket.dependencies`](dependencies.file.html), where you specify your dependencies and their versions for your entire codebase.
+* [`paket.dependencies`](dependencies-file.html), where you specify your dependencies and their versions for your entire codebase.
 * [`paket.references`](references-files.html), a file that specifies a subset of your dependencies for every project in a solution.
 * [`paket.lock`](lock-file.html), a lock file that Paket generates when it runs. When you check it into source control, you get reproducible builds.
 

@@ -213,12 +213,15 @@ let getTargetCondition (target:TargetProfile) =
     match target with
     | TargetProfile.SinglePlatform(platform) ->
         match platform with
+        | DotNetFramework(FrameworkVersion.V10) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", "$(TargetFrameworkVersion) == 'v10.0'"
         | DotNetFramework(FrameworkVersion.V9) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", "$(TargetFrameworkVersion) == 'v9.0'"
         | DotNetFramework(FrameworkVersion.V8) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", "$(TargetFrameworkVersion) == 'v8.0'"
         | DotNetFramework(FrameworkVersion.V7) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", "$(TargetFrameworkVersion) == 'v7.0'"
         | DotNetFramework(FrameworkVersion.V6) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", "$(TargetFrameworkVersion) == 'v6.0'"
         | DotNetFramework(FrameworkVersion.V5) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", "$(TargetFrameworkVersion) == 'v5.0'"
         | DotNetFramework(version) ->"$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "$(TargetFrameworkVersion) == '%O'" version
+        | DotNet10WithOs(os) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", sprintf "($(TargetFrameworkVersion) == 'v10.0' And '$(TargetPlatformIdentifier)' == '%O')" os
+        | DotNet10Windows(version) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", sprintf "($(TargetFrameworkVersion) == 'v10.0' And '$(TargetPlatformIdentifier)' == 'Windows' And '$(TargetPlatformVersion)' == '%O')" version
         | DotNet9WithOs(os) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", sprintf "($(TargetFrameworkVersion) == 'v9.0' And '$(TargetPlatformIdentifier)' == '%O')" os
         | DotNet9Windows(version) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", sprintf "($(TargetFrameworkVersion) == 'v9.0' And '$(TargetPlatformIdentifier)' == 'Windows' And '$(TargetPlatformVersion)' == '%O')" version
         | DotNet8WithOs(os) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", sprintf "($(TargetFrameworkVersion) == 'v8.0' And '$(TargetPlatformIdentifier)' == '%O')" os
