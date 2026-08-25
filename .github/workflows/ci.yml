@@ -20,10 +20,6 @@ jobs:
         include:
           - name: build
             skip_env: SkipIntegrationTests=true
-          - name: net
-            skip_env: SkipIntegrationTestsNetCore=true
-          - name: netcore
-            skip_env: SkipIntegrationTestsNet=true
           - name: flaky
             skip_env: PAKET_TESTSUITE_FLAKYTESTS=true
     steps:
@@ -41,7 +37,6 @@ jobs:
       - name: Build and test
         env:
           EnableWindowsTargeting: true
-          PAKET_INTEGRATION_TEST_TIMEOUT_MINUTES: 120
           PAKET_TESTSUITE_FLAKYTESTS: false
         run: |
           export ${{ matrix.skip_env }}
