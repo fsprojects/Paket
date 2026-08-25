@@ -18,6 +18,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - name: build
+            skip_env: SkipIntegrationTests=true
           - name: net
             skip_env: SkipIntegrationTestsNetCore=true
           - name: netcore
@@ -44,7 +46,7 @@ jobs:
         run: |
           export ${{ matrix.skip_env }}
           ./build.sh BuildPackage < /dev/null
-        continue-on-error: ${{ matrix.name == 'flaky' }}
+        continue-on-error: ${{ matrix.name != 'build' }}
 
   windows:
     name: Windows (.NET)
