@@ -31,8 +31,13 @@ jobs:
           global-json-file: global.json
       - name: Install Mono
         run: sudo apt-get update && sudo apt-get install --yes mono-complete
+      - name: Install .NET 8 runtime for integration tests
+        run: |
+          curl --fail --silent --show-error --location https://dot.net/v1/dotnet-install.sh --output /tmp/dotnet-install.sh
+          bash /tmp/dotnet-install.sh --channel 8.0 --runtime dotnet --install-dir "$HOME/.local/share/dotnetcore"
       - name: Build and test
         env:
+          EnableWindowsTargeting: true
           PAKET_TESTSUITE_FLAKYTESTS: false
         run: |
           export ${{ matrix.skip_env }}
