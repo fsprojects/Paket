@@ -29,6 +29,8 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+      - name: Install Mono
+        run: sudo apt-get update && sudo apt-get install --yes mono-complete
       - name: Build and test
         env:
           PAKET_TESTSUITE_FLAKYTESTS: false
@@ -50,7 +52,7 @@ jobs:
         with:
           global-json-file: global.json
       - name: Build
-        run: build.cmd BuildPackage
+        run: .\build.cmd BuildPackage
       - name: Upload build artifacts
         if: always()
         uses: actions/upload-artifact@v4
