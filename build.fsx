@@ -103,7 +103,7 @@ let runDotnet workingDir args =
 
 let testSuiteFilterFlakyTests = getEnvironmentVarAsBoolOrDefault "PAKET_TESTSUITE_FLAKYTESTS" false
 let integrationTestTimeout =
-    getEnvironmentVarOrDefault "PAKET_INTEGRATION_TEST_TIMEOUT_MINUTES" "60"
+    environVarOrDefault "PAKET_INTEGRATION_TEST_TIMEOUT_MINUTES" "60"
     |> Double.Parse
     |> TimeSpan.FromMinutes
 
