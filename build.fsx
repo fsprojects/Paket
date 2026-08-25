@@ -102,6 +102,10 @@ let runDotnet workingDir args =
         failwithf "dotnet %s failed" args
 
 let testSuiteFilterFlakyTests = getEnvironmentVarAsBoolOrDefault "PAKET_TESTSUITE_FLAKYTESTS" false
+let integrationTestTimeout =
+    getEnvironmentVarOrDefault "PAKET_INTEGRATION_TEST_TIMEOUT_MINUTES" "60"
+    |> Double.Parse
+    |> TimeSpan.FromMinutes
 
 Target "InstallDotNetCore" (fun _ ->
     dotnetExePath <- DotNetCli.InstallDotNetSDK dotnetcliVersion
@@ -339,7 +343,7 @@ Target "RunIntegrationTestsNet" (fun _ ->
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
                 sprintf "--logger:trx;LogFileName=%s" ("tests_result/net/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]
-            TimeOut = TimeSpan.FromMinutes 60.
+            TimeOut = integrationTestTimeout
             ToolPath = dotnetExePath
         })
 
@@ -359,7 +363,7 @@ Target "RunIntegrationTestsNetCore" (fun _ ->
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
                 sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]
-            TimeOut = TimeSpan.FromMinutes 60.
+            TimeOut = integrationTestTimeout
             ToolPath = dotnetExePath
         })
 )

@@ -39,6 +39,7 @@ jobs:
       - name: Build and test
         env:
           EnableWindowsTargeting: true
+          PAKET_INTEGRATION_TEST_TIMEOUT_MINUTES: 120
           PAKET_TESTSUITE_FLAKYTESTS: false
         run: |
           export ${{ matrix.skip_env }}
