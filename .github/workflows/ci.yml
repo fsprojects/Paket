@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+    tags-ignore:
+      - '**'
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  linux:
+    name: Linux (.NET)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: build
+            skip_env: SkipIntegrationTests=true
+          - name: flaky
+            skip_env: PAKET_TESTSUITE_FLAKYTESTS=true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Install Mono
+        run: sudo apt-get update && sudo apt-get install --yes mono-complete
+      - name: Install build SDK and integration test runtime
+        run: |
+          curl --fail --silent --show-error --location https://dot.net/v1/dotnet-install.sh --output /tmp/dotnet-install.sh
+          bash /tmp/dotnet-install.sh --version 9.0.309 --install-dir "$HOME/.local/share/dotnetcore"
+          bash /tmp/dotnet-install.sh --channel 8.0 --runtime dotnet --install-dir "$HOME/.local/share/dotnetcore"
+      - name: Build and test
+        env:
+          EnableWindowsTargeting: true
+          PAKET_TESTSUITE_FLAKYTESTS: false
+        run: |
+          export ${{ matrix.skip_env }}
+          ./build.sh BuildPackage < /dev/null
+
+  windows:
+    name: Windows (.NET)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Configure git autocrlf
+        run: git config --global core.autocrlf input
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Build
+        run: .\build.cmd BuildPackage
+      - name: Upload build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bin
+          path: bin
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TestResults
+          path: tests_result/**/*.trx
