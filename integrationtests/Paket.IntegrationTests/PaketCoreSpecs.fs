@@ -37,7 +37,7 @@ let ``apply framework restriction`` ([<Values>] force, [<Values("https://nuget.o
     use __ = prepare "i001251-installer-demo"
     let deps = $"""source {source}
     framework: =net8.0
-    nuget Microsoft.AspNetCore.WebUtilities"""
+    nuget Microsoft.AspNetCore.WebUtilities < 9"""
 
     let dependenciesFile = DependenciesFile.FromSource(scenarioTempPath "i001251-installer-demo",deps)
     let lockFile,_,_,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, alternativeProjectRoot, PackageResolver.UpdateMode.Install, SemVerUpdateMode.NoRestriction, force)
