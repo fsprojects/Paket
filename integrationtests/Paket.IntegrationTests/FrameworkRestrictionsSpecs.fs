@@ -18,9 +18,8 @@ let ``#140 windsor should resolve framework dependent dependencies``() =
     |> getExplicitRestriction
     |> shouldEqual (FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V3_5), DotNetFramework(FrameworkVersion.V4)))
 
-[<Test>]
+[<Test; Ignore("See https://github.com/fsprojects/Paket/issues/4347")>]
 #if NO_UNIT_PLATFORMATTRIBUTE
-[<Ignore "PlatformAttribute not supported by netstandard NUnit">]
 #else
 [<Platform("Mono")>] // PATH TOO LONG on Windows...
 [<Flaky>] // failure on assert
