@@ -157,19 +157,19 @@ NUGET
       System.Runtime.Serialization.Formatters (>= 4.3) - restriction: && (< net20) (>= netstandard1.3) (< netstandard2.0)
       System.Runtime.Serialization.Primitives (>= 4.3) - restriction: || (&& (< net20) (>= netstandard1.0) (< netstandard1.3)) (&& (< net20) (>= netstandard1.3) (< netstandard2.0))
       System.Xml.XmlDocument (>= 4.3) - restriction: && (< net20) (>= netstandard1.3) (< netstandard2.0)
-    NuGet.Common (5.11.6) - restriction: >= netstandard2.0
-      NuGet.Frameworks (>= 5.11.6) - restriction: || (>= net45) (>= netstandard2.0)
-    NuGet.Configuration (5.11.6) - restriction: >= netstandard2.0
-      NuGet.Common (>= 5.11.6) - restriction: || (>= net45) (>= netstandard2.0)
+    NuGet.Common (5.11.7) - restriction: >= netstandard2.0
+      NuGet.Frameworks (>= 5.11.7) - restriction: || (>= net45) (>= netstandard2.0)
+    NuGet.Configuration (5.11.7) - restriction: >= netstandard2.0
+      NuGet.Common (>= 5.11.7) - restriction: || (>= net45) (>= netstandard2.0)
       System.Security.Cryptography.ProtectedData (>= 4.4) - restriction: && (< net45) (>= netstandard2.0)
-    NuGet.Frameworks (5.11.6) - restriction: || (&& (>= net451) (>= netcoreapp1.0) (>= uap10.0)) (>= netstandard2.0)
-    NuGet.Packaging (5.11.6)
+    NuGet.Frameworks (5.11.7) - restriction: || (&& (>= net451) (>= netcoreapp1.0) (>= uap10.0)) (>= netstandard2.0)
+    NuGet.Packaging (5.11.7)
       Newtonsoft.Json (>= 9.0.1) - restriction: >= netstandard2.0
-      NuGet.Configuration (>= 5.11.6) - restriction: >= netstandard2.0
-      NuGet.Versioning (>= 5.11.6) - restriction: >= netstandard2.0
+      NuGet.Configuration (>= 5.11.7) - restriction: >= netstandard2.0
+      NuGet.Versioning (>= 5.11.7) - restriction: >= netstandard2.0
       System.Security.Cryptography.Cng (>= 5.0) - restriction: || (&& (< net472) (>= netstandard2.0)) (>= net5.0)
       System.Security.Cryptography.Pkcs (>= 5.0) - restriction: || (&& (< net472) (>= netstandard2.0)) (>= net5.0)
-    NuGet.Versioning (5.11.6) - restriction: >= netstandard2.0
+    NuGet.Versioning (5.11.7) - restriction: >= netstandard2.0
     NUnit (3.12)
       NETStandard.Library (>= 1.6.1) - restriction: && (< net35) (>= netstandard1.4) (< netstandard2.0)
       NETStandard.Library (>= 2.0) - restriction: && (< net35) (>= netstandard2.0)
