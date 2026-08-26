@@ -107,3 +107,26 @@ Reviewed #3081 (stale integration test issue from 2018, low value), #3110 (cache
 
 ### General
 - Open PR backlog still includes prior repo-assist fix branches: repo-assist/fix-issue-3129-source-path-spaces-*, repo-assist/fix-issue-4346-webutilities-version-pin-*, repo-assist/ci-github-actions-* — check status/merge in a future Task 6 run.
+
+## Run 2026-08-26 14:44 UTC — 32981752353 (tasks: 2, 8, 1)
+
+### Task 1 - Labels applied (no:label search now reaches #3236)
+- #3068 -> enhancement
+- #3141 -> question
+- #3226 -> enhancement, help wanted
+- #3228 -> bug, needs investigation
+- #3232 -> bug
+- #3236 -> performance, enhancement
+
+### Task 2 - Comment made
+- #3228: root-cause analysis - git clone hangs on non-interactive build agents (VSTS) because Paket shells out to git.exe with no credential provider (TODO comment in RemoteDownload.fs) and no default timeout (gitTimeOut = TimeSpan.MaxValue); git falls back to interactive prompt which blocks forever. Suggested GIT_TERMINAL_PROMPT=0 and pre-configured credentials as workarounds.
+
+### Task 8 - Performance/reliability fix implemented and PR'd
+Root cause identified while investigating #3228/#3236: git subprocess calls via `Paket.Git.CommandHelper.runGitCommand` (src/Paket.Core/Dependencies/GitCommandHelper.fs) had no GIT_TERMINAL_PROMPT=0 set, so an auth-requiring clone could hang indefinitely on CI waiting for an interactive prompt nobody can answer.
+Fix: set `info.EnvironmentVariables.["GIT_TERMINAL_PROMPT"] <- "0"` in `runGitCommand`. Minimal, single-line change (plus comment).
+Branch: `repo-assist/perf-git-terminal-prompt-2026-08-26`. Draft PR created.
+Validated: `dotnet build src/Paket.Core/Paket.Core.fsproj -f netstandard2.0` succeeded 0 errors. `dotnet test tests/Paket.Tests/Paket.Tests.fsproj -f net9 --filter "FullyQualifiedName~Git"` = 35/36 passed; the 1 failure (GitInfoPlanterSpecs, path-separator/URL-encoding mismatch on Linux) is pre-existing and unrelated (reproduces on main without this patch).
+**Network note**: this run, `dotnet restore src/Paket.Core/Paket.Core.fsproj -p:PaketDisableGlobalRestore=true` succeeded fully (paket-files git downloads worked) — unlike a prior run blocked on ci.appveyor.com. Network availability appears to vary between sandbox runs; retry Task 4 dependency-bump work in future runs since restore worked this time.
+**Status: PR open, awaiting maintainer review.**
+
+### Task 11 - updated issue #4344 (2026-08 monthly activity), added new PR/comment to suggested actions and run history (reverse-chron). No maintainer comments found on the issue yet.
