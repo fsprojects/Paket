@@ -125,12 +125,24 @@ type PackageSource =
         | _ -> KnownNuGetSources.UnknownNuGetServer
     static member Parse(line : string) =
         let sourceRegex = Regex("source[ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
-        let parts = line.Split ' '
         let source =
             if sourceRegex.IsMatch line then
                 sourceRegex.Match(line).Groups.[1].Value.TrimEnd([| '/' |])
             else
-                parts.[1].Replace("\"","").TrimEnd([| '/' |])
+                // Unquoted source line: everything after "source" up to (but excluding) any
+                // trailing "username:"/"password:"/"authtype:" attribute is the source path.
+                // Splitting on the first space would truncate paths containing spaces
+                // (e.g. "source C:\Program Files\dotnet\sdk\NuGetFallbackFolder").
+                let afterSourceIdx = (Regex.Match(line, "source", RegexOptions.IgnoreCase)).Index + "source".Length
+                let afterSource = line.Substring(afterSourceIdx).TrimStart()
+                let attributeKeywords = [| "username:"; "password:"; "authtype:" |]
+                let stopIdx =
+                    attributeKeywords
+                    |> Array.choose (fun kw ->
+                        let i = afterSource.IndexOf(kw, StringComparison.OrdinalIgnoreCase)
+                        if i >= 0 then Some i else None)
+                    |> fun xs -> if xs.Length = 0 then afterSource.Length else Array.min xs
+                afterSource.Substring(0, stopIdx).Trim().Replace("\"","").TrimEnd([| '/' |])
 
         let feed = normalizeFeedUrl source
         PackageSource.Parse(feed, parseAuth(line, feed))
