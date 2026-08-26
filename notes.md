@@ -157,3 +157,31 @@ Validated: dotnet build src/Paket.Core/Paket.Core.fsproj -f netstandard2.0 succe
 ### General
 - Network restore worked fine again this run (dotnet restore src/Paket.Core succeeded, no ci.appveyor.com block encountered this time).
 - Still 3 open repo-assist PRs to check in a future Task 6 run: fix-issue-3129-source-path-spaces, perf-git-terminal-prompt-2026-08-26, fix-issue-3250-skip-dot-folders (new), plus older ones (webutilities-version-pin, ci-github-actions).
+
+## Run 2026-08-26 16:43 UTC — 32989808243 (tasks: 1, 2, 9)
+
+### Task 1 - Labels applied (no:label search advanced to #3277)
+- #3263 -> bug
+- #3264 -> bug, needs investigation
+- #3266 -> enhancement, help wanted
+- #3268 -> question
+- #3271 -> enhancement, good first issue
+- #3272 -> bug, needs investigation
+- #3274 -> question
+- #3277 -> enhancement, good first issue
+
+### Task 2 - Comment made
+- #3271: implementation pointer for bootstrapper download-progress feature (WebRequestProxy.cs / WebClient.DownloadProgressChanged + IWebRequestProxy interface change needed).
+
+### Task 9 - Testing improvement + bug fix implemented and PR'd
+Investigated `createRelativePath` (src/Paket.Core/Common/Utils.fs) while looking for test gaps. Found it only unescapes `%20` (spaces) from the URI-encoded relative path returned by `Uri.MakeRelativeUri`, so paths containing `#`, `%`, `&`, etc. come back with escaped sequences embedded (e.g. `some#file` -> `some%23file`). Verified with a standalone fsi repro.
+Fix: replaced the space-only `.Replace("%20"," ")` with `Uri.UnescapeDataString(...)` on the whole relative string, which handles all percent-encoded characters generically.
+Added 3 new tests to tests/Paket.Tests/UtilsSpecs.fs (`#`, `&`, `%` characters), alongside the existing "handle spaces" test.
+Branch: `repo-assist/fix-createrelativepath-special-chars`. Draft PR created.
+Validated: dotnet build src/Paket.Core/Paket.Core.fsproj -f netstandard2.0 succeeded 0 errors. createRelativePath tests 4/4 passed. ParserSpecs+SaveSpecs 172/172 passed (no regressions). Full UtilsSpecs run showed the same 4 pre-existing proxy-env-var failures as prior runs (unrelated, reproduce on main).
+**Status: PR open, awaiting maintainer review.**
+
+### General
+- Network restore worked fine again this run (dotnet tool restore + dotnet paket restore --group Main succeeded without ci.appveyor.com issues).
+- Now 4 open repo-assist fix/improvement PRs to check in a future Task 6 run: fix-issue-3129-source-path-spaces, perf-git-terminal-prompt-2026-08-26, fix-issue-3250-skip-dot-folders, fix-createrelativepath-special-chars (new).
+- Task 11: updated issue #4344 (2026-08 monthly activity) via full body replace — refreshed suggested actions (added new PR + #3271 comment) and prepended new run history entry. No maintainer comments found on the issue yet.
