@@ -72,6 +72,13 @@ let ``Can detect MonoTouch0.0``() =
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform FrameworkIdentifier.MonoTouch))
 
 [<Test>]
+let ``Can detect native0.0``() =
+    let p = PlatformMatching.extractPlatforms false "native0.0"
+    p |> Option.isSome |> shouldEqual true
+    p.Value.Platforms
+    |> shouldEqual [FrameworkIdentifier.Native(BuildMode.NoBuildMode, Platform.NoPlatform, NativeVersion.MajorMinor(0,0))]
+
+[<Test>]
 let ``Can detect netcore1.0``() =
     // Currently required for backwards compat (2017-08-20), as we wrote these incorrectly in previous versions.
     let p = PlatformMatching.forceExtractPlatforms "netcore1.0"
