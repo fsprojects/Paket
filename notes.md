@@ -209,3 +209,32 @@ Note: mid-session, an errant `git checkout -- .` accidentally reverted both unco
 - Now 5 open repo-assist fix/improvement PRs to check in a future Task 6 run: fix-issue-3129-source-path-spaces, perf-git-terminal-prompt-2026-08-26, fix-issue-3250-skip-dot-folders, fix-createrelativepath-special-chars, fix-issue-3195-packageid (new).
 - Backlog cursor (no:label issues) now past #3285.
 - Task 11: to be updated this run - issue #4344 (2026-08 monthly activity), adding new PR + labels + comment to suggested actions and run history.
+
+## Run 2026-08-26 18:xx UTC — 33003623805 (tasks: 10, 4, 1)
+
+### Task 1 - Labels applied (no:label search)
+- #3287 -> bug, enhancement
+- #3289 -> bug
+- #3292 -> enhancement, performance
+- #3295 -> enhancement
+
+### Task 4 - Dependency bump PR
+Bumped Newtonsoft.Json 13.0.1->13.0.4 and Mono.Cecil 0.11.3->0.11.6 via `dotnet paket update <pkg> --group Main --no-install` (one package per invocation - multi-package syntax fails). Both already within paket.dependencies constraints, no dependencies-file edit needed.
+Branch: `repo-assist/eng-bump-newtonsoft-cecil-20260826`. Draft PR created.
+Validated: restore + build (netstandard2.0) succeeded 0 errors; full test suite 1238 passed/16 skipped/6 failed - all 6 pre-existing (proxy env-var tests, net461-only assembly-metadata test, FSharp.Data.SqlClient XML test), confirmed same on master.
+**Status: PR open, awaiting maintainer review.**
+
+### Task 10 - Fix implemented and PR'd for #3238 (restore doesn't regenerate deleted load scripts)
+Root cause (identified in a prior run's Task 2 comment): RestoreProcess.fs's `readCache`/`canEarlyExit` only compares a SHA256 hash of paket.lock; it never checks whether `.paket/load/` actually exists on disk. Deleting `load/` without touching paket.lock made restore silently skip regeneration.
+Fix: added `loadScriptsMissing` helper (checks `Directory.Exists ".paket/load"` when any group has `GenerateLoadScripts = Some true`) and folded it into the `canEarlyExit` condition in `readCache`.
+Branch: `repo-assist/fix-issue-3238-load-script-cache`. Draft PR created (Closes #3238). No new automated test added (documented in PR as a gap - the logic lives inside `Restore`'s private closure and needs a full integration-test scenario with an on-disk load folder, not a simple unit test); flagged for maintainer/future-run follow-up.
+Validated: dotnet restore + build src/Paket.Core (netstandard2.0) succeeded 0 errors. Full test suite: 1238 passed/16 skipped/6 failed - same 6 pre-existing failures as always (proxy env vars, net461 assembly metadata, FSharp.Data.SqlClient XML), confirmed no regressions vs master.
+**Status: PR open, awaiting maintainer review.**
+
+### Prior issues now resolved
+#3129, #3250, #3195 all confirmed CLOSED by maintainer dsyme (merged via #4354, #4358, #4360) - no longer need repo-assist follow-up; removed from Suggested Actions in monthly issue.
+
+### General
+- Backlog cursor (no:label issues) now past #3295.
+- Now 7 open repo-assist fix/improvement PRs: fix-issue-3129* (merged - remove from tracking next run if confirmed), perf-git-terminal-prompt-2026-08-26, fix-issue-3250-skip-dot-folders, fix-createrelativepath-special-chars, fix-issue-3195-packageid, eng-bump-newtonsoft-cecil-20260826 (new), fix-issue-3238-load-script-cache (new). NOTE: next run's Task 6 should re-verify actual open/closed state via github MCP rather than trusting this list, since some may have merged.
+- Task 11: updated issue #4344 (2026-08 monthly activity) via full body replace - added 2 new PRs to suggested actions, removed #3129/#3250/#3195-related entries (now closed/merged), updated future-work section, prepended new run history entry. No maintainer comments found on the issue yet.
