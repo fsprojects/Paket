@@ -72,3 +72,38 @@ This should be used for validating any future Task 3/4/5/8/9 fixes without needi
 ### Task 4 - not attempted this run (time prioritized on Task 3 fix). Candidate bumps from prior run still pending (see above), still blocked pending either network access or Main-group-only bump strategy validation.
 
 ### Task 11 - updated existing issue #4344 (2026-08 monthly activity) with this run's history entry, refreshed backlog/suggested-actions sections.
+
+## Run 2026-08-26 13:44 UTC — 32975801244 (tasks: 1, 3, 2)
+
+### Task 1 - Labels applied (backlog cursor now past #3221)
+- #3149 -> enhancement, good first issue
+- #3152 -> enhancement
+- #3155 -> bug, needs investigation
+- #3162 -> bug
+- #3163 -> enhancement
+- #3166 -> bug, performance
+- #3167 -> enhancement
+- #3171 -> bug
+- #3172 -> bug, needs investigation
+- #3182 -> enhancement, help wanted
+- #3193 -> bug
+- #3195 -> bug
+- #3198 -> bug, needs investigation
+- #3202 -> bug
+- #3203 -> bug
+- #3207 -> bug
+- #3209 -> bug
+- #3220 -> bug, needs investigation
+- #3221 -> performance, needs investigation
+
+### Task 2 - Comments made
+- #3149: noted `paket init` already defaults to NuGet v3 (`DefaultNuGetV3Source`) since v5.231.0 per RELEASE_NOTES.md; suggested closing if confirmed by reporter. Confirmed via `git log` on PackageAnalysis/Environment.fs.
+- #3195: suggested `paket pack` should read MSBuild `PackageId` property (via `ProjectFile.GetProperty "PackageId"`) as fallback before assembly name, matching `dotnet pack` behavior.
+
+### Task 3 - not completed this run
+Reviewed #3081 (stale integration test issue from 2018, low value), #3110 (cache staleness, hard to repro), #3117 (duplicate System.Net.Http refs, complex resolver/binding-redirect interaction), #3140 (large output not fully read), #3142 (local-source-priority resolver bug, complex), #3160 (dotnet pack path error, needs live repro). None were confident, low-risk, verifiable fixes without a live repro environment. Deferred — do not re-review #3081/#3110/#3117/#3142/#3160 unless new info emerges; consider deeper dive on #3195 (PackageId) as an actual implementable fix in a future run since root cause is now understood.
+
+### Task 11 - updated issue #4344 (2026-08 monthly activity), refreshed suggested actions and run history (reverse-chron).
+
+### General
+- Open PR backlog still includes prior repo-assist fix branches: repo-assist/fix-issue-3129-source-path-spaces-*, repo-assist/fix-issue-4346-webutilities-version-pin-*, repo-assist/ci-github-actions-* — check status/merge in a future Task 6 run.
