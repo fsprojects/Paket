@@ -151,6 +151,8 @@ projectUrl
     http://github.com/fsprojects/Chessie
 iconUrl
     https://raw.githubusercontent.com/fsprojects/Chessie/master/docs/files/img/logo.png
+icon
+    some/icon.png
 licenseExpression
     Unlicense
 requireLicenseAcceptance
@@ -199,6 +201,7 @@ let ``Optional fields are read`` (fileContent : string) =
     sut.Summary |> shouldEqual (Some "Railway-oriented programming for .NET")
     sut.Readme |> shouldEqual (Some "README.md")
     sut.IconUrl |> shouldEqual (Some "https://raw.githubusercontent.com/fsprojects/Chessie/master/docs/files/img/logo.png")
+    sut.Icon |> shouldEqual (Some "some/icon.png")
     sut.LicenseExpression |> shouldEqual (Some "Unlicense")
     sut.ProjectUrl |> shouldEqual (Some "http://github.com/fsprojects/Chessie")
     sut.Tags |> shouldEqual ["rop";"fsharp";"F#"]

@@ -54,3 +54,44 @@ let ``Loading assembly metadata works``() =
     let authors = PackageMetaData.getAuthors attribs
     authors.Value |> shouldEqual ["Two"; "Authors" ]
     PackageMetaData.getDescription attribs |> shouldEqual <| Some("A description")
+
+[<Test>]
+let ``#3195 resolveProjectId prefers the MSBuild PackageId property over the assembly name``() =
+    let projectFileContents = """
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>My.Custom.PackageId</PackageId>
+  </PropertyGroup>
+</Project>
+"""
+    let projFile = ProjectFile.LoadFromString("dummy.fsproj", projectFileContents)
+    Paket.PackageProcess.resolveProjectId projFile "AssemblyName" None
+    |> shouldEqual (Some "My.Custom.PackageId")
+
+[<Test>]
+let ``#3195 resolveProjectId falls back to the assembly name when PackageId is not set``() =
+    let projectFileContents = """
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+</Project>
+"""
+    let projFile = ProjectFile.LoadFromString("dummy.fsproj", projectFileContents)
+    Paket.PackageProcess.resolveProjectId projFile "AssemblyName" None
+    |> shouldEqual (Some "AssemblyName")
+
+[<Test>]
+let ``#3195 resolveProjectId does not override an id already present in the template``() =
+    let projectFileContents = """
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>My.Custom.PackageId</PackageId>
+  </PropertyGroup>
+</Project>
+"""
+    let projFile = ProjectFile.LoadFromString("dummy.fsproj", projectFileContents)
+    Paket.PackageProcess.resolveProjectId projFile "AssemblyName" (Some "Template.Id")
+    |> shouldEqual (Some "Template.Id")

@@ -113,7 +113,8 @@ field of the same name in the `.nupkg`.
 * `readme`: This is a path to a readme file *in* the package. It should be added with the `files` block (see below).
 * `language`
 * `projectUrl`
-* `iconUrl`
+* `iconUrl` (deprecated by NuGet)
+* `icon` This is a path to an image file *in* the package. It should be added with the `files` block (see below).
 * `licenseExpression`: More info on what you can specify: <https://docs.microsoft.com/de-de/nuget/reference/nuspec#license>  
 * `licenseUrl` (deprecated by NuGet)
 * `repositoryType`
@@ -124,6 +125,7 @@ field of the same name in the `.nupkg`.
 * `requireLicenseAcceptance` (`true` or `false`)
 * `tags`
 * `developmentDependency` (`true` or `false`)
+* `packageTypes`: More info on what you can specify: <https://learn.microsoft.com/en-us/nuget/create-packages/set-package-type>
 
 ### Dependencies and files
 

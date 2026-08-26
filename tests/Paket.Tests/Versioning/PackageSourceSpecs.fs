@@ -38,3 +38,27 @@ let ``should parse known nuget3 source``(feed : string) =
             source |> shouldEqual qsource
         | _ -> failwith quoted
     | _ -> failwith feed  
+
+[<Test>]
+let ``should parse unquoted local source path containing spaces``() =
+    let path = @"C:\Program Files\dotnet\sdk\NuGetFallbackFolder"
+    let line = sprintf "source %s" path
+    match PackageSource.Parse(line) with
+    | LocalNuGet(source, _) -> source |> shouldEqual path
+    | other -> failwithf "expected LocalNuGet but got %A" other
+
+[<Test>]
+let ``should parse unquoted local source path containing spaces with trailing slash``() =
+    let path = @"C:\My directory\NuGet"
+    let line = sprintf "source %s/" path
+    match PackageSource.Parse(line) with
+    | LocalNuGet(source, _) -> source |> shouldEqual path
+    | other -> failwithf "expected LocalNuGet but got %A" other
+
+[<Test>]
+let ``should parse unquoted source with space in path and credentials on same line``() =
+    let path = @"C:\My directory\NuGet"
+    let line = sprintf "source %s username: \"user\" password: \"pass\"" path
+    match PackageSource.Parse(line) with
+    | LocalNuGet(source, _) -> source |> shouldEqual path
+    | other -> failwithf "expected LocalNuGet but got %A" other

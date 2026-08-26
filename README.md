@@ -1,5 +1,4 @@
-[![Travis build status](https://api.travis-ci.org/fsprojects/Paket.svg?branch=master)](https://travis-ci.org/fsprojects/Paket?branch=master)
-[![Appveyor Build status](https://ci.appveyor.com/api/projects/status/f77ejdp6mtkris2u/branch/master?svg=true)](https://ci.appveyor.com/project/paket/paket/branch/master)
+[![CI Build status](https://github.com/fsprojects/Paket/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/fsprojects/Paket/actions/workflows/ci.yml)
 [![NuGet Status](https://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
 [![Join the chat at https://gitter.im/fsprojects/Paket](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/fsprojects/Paket?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Twitter](https://img.shields.io/badge/Twitter-PaketManager-blue.svg)](https://twitter.com/PaketManager)
@@ -35,20 +34,6 @@ For more reasons see the [FAQ][10].
 
  - Found a bug or missing a feature? Feed the [issue tracker][4].
  - Announcements and related miscellanea through Twitter ([@PaketManager][5])
- 
-
-## Prerequisites
-
-### Windows
- - As of https://github.com/fsprojects/Paket/pull/2664, paket now automatically bootstraps all required dependencies and builds on a clean windows installation.
-
-### Linux
-
- - up-to-date Mono (>= 5.0 required, >= 5.2 recommended, just install the latest nightly)
- - up-to-date MSBuild (>= 15.0, support for "Directory.Build.props" required)
-
- On most distros, it should be enough to follow [this guide](http://www.mono-project.com/docs/getting-started/install/linux/) and install ``mono-devel``, which contains MSBuild.
- Note: if the paket build script fails at ``paket restore`` just rerun it a few times until it succeeds.
 
 ## Quick contributing guide
 

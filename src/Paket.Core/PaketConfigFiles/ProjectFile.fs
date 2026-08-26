@@ -1146,45 +1146,63 @@ module ProjectFile =
         let findInsertSpot() =
             // nuget inserts properties directly at the top, and targets directly at the end.
             // our inserts depend on $(TargetFrameworkVersion), which may be set either from another import, or directly in the project file.
+
+            // perf analysis shows this function is called many times and allocates several GB of memory in large projects.
+            // this function is intentionally written imperatively to reduce memory allocs.
             let mutable iProp = 0
-            while iProp < project.ProjectNode.ChildNodes.Count && String.startsWithIgnoreCase  "<import" (project.ProjectNode.ChildNodes.[iProp].OuterXml.ToString()) do
-                iProp <- iProp + 1
+            while iProp < project.ProjectNode.ChildNodes.Count
+                    && project.ProjectNode.ChildNodes[iProp].Name.Equals("Import", StringComparison.OrdinalIgnoreCase) do
+                    iProp <- iProp + 1
 
             let mutable iTarget = iProp
-            while iTarget < project.ProjectNode.ChildNodes.Count &&
-                (String.startsWithIgnoreCase  "<PropertyGroup" (project.ProjectNode.ChildNodes.[iTarget].OuterXml.ToString()) ||
-                 (String.startsWithIgnoreCase  "<import" (project.ProjectNode.ChildNodes.[iTarget].OuterXml.ToString()) &&
-                  not (String.containsIgnoreCase "label" (project.ProjectNode.ChildNodes.[iTarget].OuterXml.ToString()) &&
-                       String.containsIgnoreCase "paket" (project.ProjectNode.ChildNodes.[iTarget].OuterXml.ToString())))) do
-                iTarget <- iTarget + 1
+            let mutable continueLooping = iTarget < project.ProjectNode.ChildNodes.Count
+            while continueLooping do
+                if project.ProjectNode.ChildNodes[iTarget].Name.Equals("PropertyGroup", StringComparison.OrdinalIgnoreCase)
+                then
+                    iTarget <- iTarget + 1
+                    continueLooping <- iTarget < project.ProjectNode.ChildNodes.Count
+                elif project.ProjectNode.ChildNodes[iTarget].Name.Equals("Import", StringComparison.OrdinalIgnoreCase)
+                then
+                    let node = project.ProjectNode.ChildNodes.[iTarget].OuterXml.ToString()
+                    if not (String.containsIgnoreCase "label" node &&
+                            String.containsIgnoreCase "paket" node)
+                    then
+                        iTarget <- iTarget + 1
+                        continueLooping <- iTarget < project.ProjectNode.ChildNodes.Count
+                    else
+                        continueLooping <- false
+                else
+                    continueLooping <- false
+
 
             let mutable l = iTarget
             while l < project.ProjectNode.ChildNodes.Count do
-                let node = project.ProjectNode.ChildNodes.[l].OuterXml.ToString()
-                if String.startsWithIgnoreCase  "<import" node &&
-                   (String.containsIgnoreCase "microsoft.csharp.targets" node ||
-                     String.containsIgnoreCase "microsoft.fsharp.targets" node ||
-                     //List of xamarin csharp targets generated with following bash command inside $(MSBuildExtensionsPath)\Xamarin
-                     //find . -name "*.CSharp.targets" | sed 's#.*/##'   | tr '[:upper:]' '[:lower:]' | xargs printf '                     String.containsIgnoreCase "%s" node ||\n'
-                     String.containsIgnoreCase "xamarin.android.csharp.targets" node ||
-                     String.containsIgnoreCase "xamarin.android.csharp.targets" node ||
-                     String.containsIgnoreCase "xamarin.ios.appextension.csharp.targets" node ||
-                     String.containsIgnoreCase "xamarin.ios.csharp.targets" node ||
-                     String.containsIgnoreCase "xamarin.ios.objcbinding.csharp.targets" node ||
-                     String.containsIgnoreCase "xamarin.ios.watchapp.csharp.targets" node ||
-                     String.containsIgnoreCase "xamarin.monotouch.csharp.targets" node ||
-                     String.containsIgnoreCase "xamarin.mac.appextension.csharp.targets" node ||
-                     String.containsIgnoreCase "xamarin.mac.csharp.targets" node ||
-                     String.containsIgnoreCase "xamarin.mac.objcbinding.csharp.targets" node ||
-                     String.containsIgnoreCase "xamarin.tvos.appextension.csharp.targets" node ||
-                     String.containsIgnoreCase "xamarin.tvos.csharp.targets" node ||
-                     String.containsIgnoreCase "xamarin.tvos.objcbinding.csharp.targets" node ||
-                     String.containsIgnoreCase "xamarin.watchos.app.csharp.targets" node ||
-                     String.containsIgnoreCase "xamarin.watchos.appextension.csharp.targets" node ||
-                     String.containsIgnoreCase "xamarin.watchos.csharp.targets" node ||
-                     String.containsIgnoreCase "fsharptargetspath" node)
+                if project.ProjectNode.ChildNodes.[l].Name.Equals("Import", StringComparison.OrdinalIgnoreCase)
                 then
-                    iTarget <- l + 1
+                    let node = project.ProjectNode.ChildNodes.[l].OuterXml.ToString()
+                    if (String.containsIgnoreCase "microsoft.csharp.targets" node ||
+                        String.containsIgnoreCase "microsoft.fsharp.targets" node ||
+                        //List of xamarin csharp targets generated with following bash command inside $(MSBuildExtensionsPath)\Xamarin
+                        //find . -name "*.CSharp.targets" | sed 's#.*/##'   | tr '[:upper:]' '[:lower:]' | xargs printf '                     String.containsIgnoreCase "%s" node ||\n'
+                        String.containsIgnoreCase "xamarin.android.csharp.targets" node ||
+                        String.containsIgnoreCase "xamarin.android.csharp.targets" node ||
+                        String.containsIgnoreCase "xamarin.ios.appextension.csharp.targets" node ||
+                        String.containsIgnoreCase "xamarin.ios.csharp.targets" node ||
+                        String.containsIgnoreCase "xamarin.ios.objcbinding.csharp.targets" node ||
+                        String.containsIgnoreCase "xamarin.ios.watchapp.csharp.targets" node ||
+                        String.containsIgnoreCase "xamarin.monotouch.csharp.targets" node ||
+                        String.containsIgnoreCase "xamarin.mac.appextension.csharp.targets" node ||
+                        String.containsIgnoreCase "xamarin.mac.csharp.targets" node ||
+                        String.containsIgnoreCase "xamarin.mac.objcbinding.csharp.targets" node ||
+                        String.containsIgnoreCase "xamarin.tvos.appextension.csharp.targets" node ||
+                        String.containsIgnoreCase "xamarin.tvos.csharp.targets" node ||
+                        String.containsIgnoreCase "xamarin.tvos.objcbinding.csharp.targets" node ||
+                        String.containsIgnoreCase "xamarin.watchos.app.csharp.targets" node ||
+                        String.containsIgnoreCase "xamarin.watchos.appextension.csharp.targets" node ||
+                        String.containsIgnoreCase "xamarin.watchos.csharp.targets" node ||
+                        String.containsIgnoreCase "fsharptargetspath" node)
+                    then
+                        iTarget <- l + 1
                 l <- l + 1
             iProp,iTarget
 
@@ -1707,7 +1725,7 @@ module ProjectFile =
 
         if not found then
             match nodes with
-            | x :: _ -> 
+            | x :: _ ->
                 x.AppendChild (createNodeSet "AutoGenerateBindingRedirects" "true" project) |> ignore
             | _ -> ()
 
@@ -2095,6 +2113,7 @@ type ProjectFile with
             Language = prop "Langauge"
             ProjectUrl = prop "ProjectUrl"
             IconUrl = prop "IconUrl"
+            Icon = prop "Icon"
             LicenseExpression = prop "LicenseExpression"
             LicenseUrl = prop "LicenseUrl"
             Copyright = prop "Copyright"
