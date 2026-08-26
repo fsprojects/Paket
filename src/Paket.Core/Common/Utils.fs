@@ -400,8 +400,18 @@ let inline normalizePath(path:string) =
       .Replace(dirSeparator + "." + dirSeparator, dirSeparator)
 
 let inline windowsPath (path:string) = path.Replace(Path.DirectorySeparatorChar, '\\')
-/// Gets all files with the given pattern
-let inline FindAllFiles(folder, pattern) = DirectoryInfo(folder).GetFiles(pattern, SearchOption.AllDirectories)
+/// Gets all files with the given pattern, skipping directories whose name starts with a dot
+/// (e.g. .git, .vs, .localhistory) since these are not expected to contain relevant project files
+/// and can be large or contain unrelated backup/history data (see issue #3250).
+let FindAllFiles(folder, pattern) : FileInfo [] =
+    let rec allFiles (dir: DirectoryInfo) =
+        seq {
+            yield! dir.GetFiles(pattern, SearchOption.TopDirectoryOnly)
+            for subDir in dir.GetDirectories() do
+                if not (subDir.Name.StartsWith ".") then
+                    yield! allFiles subDir
+        }
+    allFiles (DirectoryInfo(folder)) |> Seq.toArray
 
 type ResolvedPackagesFolder =
     /// No "packages" folder for the current package

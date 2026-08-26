@@ -327,3 +327,22 @@ let ``startsWithIgnoreCase handles shorter strings correct``() =
 let ``containsIgnoreCase handles shorter strings correct``() =
     let actual = Paket.Utils.String.containsIgnoreCase "long_long" "short"
     Assert.False(actual)
+
+[<Test>]
+let ``FindAllFiles should not descend into dot folders``() =
+    let root = Path.Combine(Path.GetTempPath(), "paket_findallfiles_" + Guid.NewGuid().ToString("N"))
+    let dotFolder = Path.Combine(root, ".localhistory")
+    let normalFolder = Path.Combine(root, "src")
+    try
+        Directory.CreateDirectory(dotFolder) |> ignore
+        Directory.CreateDirectory(normalFolder) |> ignore
+        File.WriteAllText(Path.Combine(root, "root.sln"), "")
+        File.WriteAllText(Path.Combine(dotFolder, "backup.sln"), "")
+        File.WriteAllText(Path.Combine(normalFolder, "nested.sln"), "")
+
+        let files = FindAllFiles(root, "*.sln") |> Array.map (fun fi -> fi.Name) |> Array.sort
+
+        files |> shouldEqual [| "nested.sln"; "root.sln" |]
+    finally
+        if Directory.Exists(root) then
+            Directory.Delete(root, true)
