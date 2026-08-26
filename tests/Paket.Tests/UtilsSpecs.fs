@@ -14,6 +14,24 @@ let ``createRelativePath should handle spaces``() =
     "C:/some file" 
     |> createRelativePath "C:/a/b" 
     |> shouldEqual "..\\some file"
+
+[<Test>]
+let ``createRelativePath should handle hash characters``() =
+    "C:/some#file"
+    |> createRelativePath "C:/a/b"
+    |> shouldEqual "..\\some#file"
+
+[<Test>]
+let ``createRelativePath should handle ampersand characters``() =
+    "C:/some&file"
+    |> createRelativePath "C:/a/b"
+    |> shouldEqual "..\\some&file"
+
+[<Test>]
+let ``createRelativePath should handle percent characters``() =
+    "C:/some%file"
+    |> createRelativePath "C:/a/b"
+    |> shouldEqual "..\\some%file"
         
 [<Test>]
 let ``normalize path with home directory``() =

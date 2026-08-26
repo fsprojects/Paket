@@ -228,7 +228,9 @@ let createRelativePath root (path:string) =
         else Path.GetFullPath root
 
     let uri = Uri basePath
-    let relative = uri.MakeRelativeUri(Uri path).ToString().Replace("/", "\\").Replace("%20", " ")
+    // MakeRelativeUri percent-encodes reserved/special characters (spaces, #, %, &, etc.).
+    // Unescape the whole result so special characters in file/directory names round-trip correctly.
+    let relative = Uri.UnescapeDataString(uri.MakeRelativeUri(Uri path).ToString()).Replace("/", "\\")
     relative
 
 /// The path of the "Program Files" folder - might be x64 on x64 machine
