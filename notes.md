@@ -371,3 +371,52 @@ To be updated this run — issue #4344 still current month (2026-08).
 - #3281 comment is awaiting a possible human reply with exact error output — check for new comments before re-engaging.
 - Growing list of ~11 open repo-assist PRs — strongly consider Task 6 next available run to verify actual merge/close state, since memory may be stale (#3129/#3250/#3195 previously confirmed merged/closed by dsyme in an earlier run per notes above, but the full list needs re-verification).
 - #3320: maintainer (forki/matthid, 2018) leaned toward making version-pinning default behavior in `paket init`, calling it a breaking change. Not implemented — could be a good Task 3/5 candidate in a future run if a maintainer confirms desired behavior, but requires threading `paketVersion` (currently computed in `src/Paket/Program.fs`, reflection-based, but also available internally via `NetUtils.paketVersion` in Paket.Core) through `Dependencies.Init` → `Environment.init`/`initWithContent` to prepend a `version X.Y.Z` line.
+
+---
+
+## Run 33023990997 (2026-08-27, tasks: 1, 2, 3, 11)
+
+### Task 1 (Labelling)
+Labelled 14 previously-unlabelled issues (fresh `no:label is:open` search, continuing past #3320 cursor):
+#3321 (bug), #3322 (enhancement, help wanted), #3325 (enhancement), #3331 (bug), #3332 (bug),
+#3343 (security, enhancement), #3345 (bug), #3346 (question), #3348 (bug), #3351 (bug),
+#3353 (bug), #3358 (question), #3360 (bug), #3361 (enhancement).
+
+### Task 2 (Comment)
+- Commented on #3332 (`--filter` regex issue): confirmed behavior is by-design/documented (anchored `^...$` regex), cited `docs/content/commands/update.md` lines 30-32 and `Commands.fs` help text; suggested docs clarification, flagged for maintainer to confirm/close.
+- Commented on #3351 (Artifactory v3 feed detection): confirmed via git blame/log that `PackageSources.fs` was already fixed by commits e479a53f5/0f2778e79/7b9e061e9 (detection now checks `Contains("/v3/") || EndsWith("index.json")`). Asked reporter to confirm on current version; candidate for closing.
+
+### Task 3 (Fix)
+Fixed #3193 (custom build targets not excludable via `exclude` in paket.references).
+- Root cause: `InstallModel.filterExcludes` (src/Paket.Core/PaketConfigFiles/InstallModel.fs) only filtered `CompileLibFolders` (assembly refs) and framework references — never `TargetsFileFolders` (the `.targets`/`.props` files). So `exclude <Package>` stopped assembly references but not build-targets import.
+- Fix: added a `mapTargetsFiles` filter step matching both `MsBuildFile.Name` and `.Path` against each exclude pattern, same substring-`Contains` semantics as the existing filters.
+- Added unit test `should exclude targets files when filtering excludes` in `tests/Paket.Tests/InstallModel/ProcessingSpecs.fs`.
+- Branch: `repo-assist/fix-issue-3193-exclude-targets`. Build succeeded (`dotnet build src/Paket.Core/Paket.Core.fsproj -f netstandard2.0`, 0 errors). Tests: `dotnet test ... --filter "FullyQualifiedName~InstallModel.ProcessingSpecs"` → 45/45 passed (net9).
+- PR created (draft, title auto-prefixed "[repo-assist] Fix exclude directive not suppressing build targets/props import (#3193)"). Closes #3193.
+- Posted linking comment on #3193.
+
+### Task 11 (Monthly Activity Summary)
+Updated issue #4344 (still August 2026, same month) — replaced body with new Suggested Actions (added #3193 PR, added #3332/#3351 "consider closing" items, marked #3202 checked-off per maintainer close), Future Work, and prepended new Run History entry for this run (33023990997).
+No new maintainer comments/instructions found on #4344 body itself since last update (footer text unchanged aside from run-history additions).
+
+### Open repo-assist PRs tracked (STILL STALE — re-verify via Task 6 next available run; list keeps growing, now ~12)
+- fix #3209 (Paket.Restore.targets import moved)
+- fix #3129 (unquoted local NuGet source paths)
+- git subprocess hang prevention (#3228/#3236)
+- fix #3250 (skip dot folders in FindAllFiles)
+- fix createRelativePath special chars
+- fix #3195 (paket pack PackageId fallback)
+- eng: bump Newtonsoft.Json/Mono.Cecil
+- fix #3238 (restore cache load folder detection)
+- fix #3277 (lockfile error message)
+- refactor: dedupe lockfile error construction
+- fix #3272 (nuspec glob / semicolon path)
+- fix #3193 (exclude directive / build targets) — NEW this run
+
+### Notes for next run
+- Backlog cursor for unlabelled issues: continue past #3361 (oldest-first, fresh `no:label` search each time — do not trust a raw number, always re-query).
+- #3332 and #3351: both likely closeable/already-fixed; check for reporter/maintainer response before re-engaging.
+- #3202 confirmed closed by dsyme (maintainer) — already reflected in monthly issue checkbox.
+- The open repo-assist PR list is now ~12 items and has not had a Task 6 verification pass in several runs — this should be strongly prioritized next time Task 6 is selected or as a substitution target.
+- #3320 (paket init pin version): still unimplemented, same status as prior notes — awaiting maintainer confirmation of desired behavior (breaking change per 2018 discussion).
+- Possible follow-up to #3193 fix: check whether `import_targets: false` handling has an analogous gap for legacy (non-SDK) projects — not investigated this run since #3193's specific `exclude`-directive bug was already confirmed and scoped.
