@@ -472,10 +472,11 @@ module InstallModel =
         // %s because 'native' uses subfolders...
         (trySscanf "lib/%A{tfm}/%s" p : (Tfm * string) option)
         |> Option.map (fun (l,path) ->
-            if l.Name = "native" && (match l.Platforms with
-                                     | [ FrameworkIdentifier.Native(NoBuildMode,NoPlatform,_) ] -> true
-                                     | _ -> false)
-            then
+            let isNative =
+                match l.Platforms with
+                | [ FrameworkIdentifier.Native(NoBuildMode,NoPlatform,_) ] -> true
+                | _ -> false
+            if l.Name.StartsWith("native") && isNative then
                 // We need some special logic to detect the platform
                 let path = path.ToLowerInvariant()
                 let newPlatform =
