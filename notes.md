@@ -39,3 +39,36 @@ Created new issue "[repo-assist] Monthly Activity 2026-08" this run (no prior mo
 - 500 open issues total as of 2026-08-24, only ~16 labelled at start of run.
 - Open PRs snapshot at start of run: #4334, #4331, #4330, #4323, #4322, #4321, #4292, #4271 — none from Repo Assist.
 - gh CLI unauthenticated in this sandbox; all GitHub writes go through safeoutputs tools; all GitHub reads go through github MCP tools.
+
+## Run 2026-08-24 (later) — 32973902060
+
+### Task 1 - Labels applied (backlog cursor now past #3147)
+- #2672 -> help wanted, question
+- #3064 -> bug
+- #3068 -> enhancement, help wanted
+- #3117 -> bug
+- #3129 -> bug
+- #3130 -> bug
+- #3140 -> bug
+- #3141 -> question
+- #3142 -> bug
+- #3144 -> bug, needs investigation
+- #3147 -> bug
+
+### Task 3 - Fix completed for #3129
+Root cause: `PackageSource.Parse` in `src/Paket.Core/Versioning/PackageSources.fs` used `line.Split(' ').[1]` for unquoted source lines, truncating paths with spaces (e.g. `source C:\Program Files\...` -> `C:\Program`). Quoted paths already worked correctly (regex-based).
+Fix: for unquoted lines, take everything after `source` up to any trailing `username:`/`password:`/`authtype:` attribute, instead of splitting on first space.
+Added 3 new tests in `tests/Paket.Tests/Versioning/PackageSourceSpecs.fs`.
+Branch: `repo-assist/fix-issue-3129-source-path-spaces`. Draft PR created and linked from issue #3129 via comment.
+Validated: build 0 errors, PackageSourceSpecs 14/14 pass, ParserSpecs+SaveSpecs 172/172 pass (no regressions).
+**Status: PR open, awaiting maintainer review — do not re-attempt this fix in future runs unless PR is closed without merge.**
+
+### Build/test workaround discovered (IMPORTANT for future runs)
+Full `dotnet paket install`/`restore` and any `dotnet build`/`test` that triggers Paket's MSBuild restore target fail in this sandbox because the `Build` dependency group needs `ci.appveyor.com` (blocked, 403). Workaround:
+1. `dotnet paket restore --group Main` (Main group only, standalone) works.
+2. For building/testing a project: `dotnet restore <proj> -p:PaketDisableGlobalRestore=true` THEN `dotnet build/test <proj> -f net9 --no-restore -p:PaketDisableGlobalRestore=true`. Both steps need the flag; skipping the restore step and only using it on build fails with NETSDK1004.
+This should be used for validating any future Task 3/4/5/8/9 fixes without needing full paket install.
+
+### Task 4 - not attempted this run (time prioritized on Task 3 fix). Candidate bumps from prior run still pending (see above), still blocked pending either network access or Main-group-only bump strategy validation.
+
+### Task 11 - updated existing issue #4344 (2026-08 monthly activity) with this run's history entry, refreshed backlog/suggested-actions sections.
