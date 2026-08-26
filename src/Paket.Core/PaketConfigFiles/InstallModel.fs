@@ -818,6 +818,7 @@ module InstallModel =
             model
             |> mapCompileLibReferences (Set.filter (fun n -> n.PathWithinPackage |> excluded fileName |> not))
             |> mapCompileLibFrameworkReferences (Set.filter (fun r -> r.Name |> excluded fileName |> not))
+            |> mapTargetsFiles (Set.filter (fun (m: MsBuildFile) -> (excluded fileName m.Name || excluded fileName m.Path) |> not))
           ) installModel
 
     let filterUnknownFiles (installModel:InstallModel) =
