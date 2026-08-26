@@ -130,3 +130,30 @@ Validated: `dotnet build src/Paket.Core/Paket.Core.fsproj -f netstandard2.0` suc
 **Status: PR open, awaiting maintainer review.**
 
 ### Task 11 - updated issue #4344 (2026-08 monthly activity), added new PR/comment to suggested actions and run history (reverse-chron). No maintainer comments found on the issue yet.
+
+## Run 2026-08-26 15:58 UTC — 32986402206 (tasks: 1, 2, 3)
+
+### Task 1 - Labels applied (no:label search advanced to #3262)
+- #3147 -> enhancement, help wanted
+- #3063 -> enhancement
+- #3238 -> bug
+- #3250 -> bug, good first issue
+- #3254 -> enhancement
+- #3255 -> enhancement
+- #3258 -> bug
+- #3262 -> bug
+
+### Task 2 - Comment made
+- #3238: root-cause analysis - restore early-exit is purely lock-file-hash based (RestoreProcess.fs `canEarlyExit`), unaware of whether `load/` scripts still exist on disk. Deleting load/ without changing paket.lock causes restore to report "up to date" and skip regeneration. Flagged as needing a cache-invalidation fix; did not attempt PR since it touches the restore cache format.
+
+### Task 3 - Fix implemented and PR'd for #3250
+Root cause: `FindAllFiles` in src/Paket.Core/Common/Utils.fs used `GetFiles(pattern, SearchOption.AllDirectories)`, recursing into dot-folders (.git, .vs, .localhistory, etc.) and picking up stray backup files (e.g. .sln backups as reported in the issue).
+Fix: rewrote FindAllFiles as a manual recursive walk skipping directories whose name starts with `.`.
+Added test `FindAllFiles should not descend into dot folders` in tests/Paket.Tests/UtilsSpecs.fs.
+Branch: `repo-assist/fix-issue-3250-skip-dot-folders`. Draft PR created (not yet linked with issue comment - PR body contains `Closes #3250`).
+Validated: dotnet build src/Paket.Core/Paket.Core.fsproj -f netstandard2.0 succeeded 0 errors. New test 1/1 passed. Broader UtilsSpecs: 25 passed/2 skipped/4 pre-existing proxy-env-var failures unrelated to this change (reproduce on main).
+**Status: PR open, awaiting maintainer review.**
+
+### General
+- Network restore worked fine again this run (dotnet restore src/Paket.Core succeeded, no ci.appveyor.com block encountered this time).
+- Still 3 open repo-assist PRs to check in a future Task 6 run: fix-issue-3129-source-path-spaces, perf-git-terminal-prompt-2026-08-26, fix-issue-3250-skip-dot-folders (new), plus older ones (webutilities-version-pin, ci-github-actions).
