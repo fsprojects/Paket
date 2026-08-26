@@ -185,3 +185,27 @@ Validated: dotnet build src/Paket.Core/Paket.Core.fsproj -f netstandard2.0 succe
 - Network restore worked fine again this run (dotnet tool restore + dotnet paket restore --group Main succeeded without ci.appveyor.com issues).
 - Now 4 open repo-assist fix/improvement PRs to check in a future Task 6 run: fix-issue-3129-source-path-spaces, perf-git-terminal-prompt-2026-08-26, fix-issue-3250-skip-dot-folders, fix-createrelativepath-special-chars (new).
 - Task 11: updated issue #4344 (2026-08 monthly activity) via full body replace — refreshed suggested actions (added new PR + #3271 comment) and prepended new run history entry. No maintainer comments found on the issue yet.
+
+## Run 2026-08-26 17:xx UTC — 32997796455 (tasks: 3, 2, 1)
+
+### Task 1 - Labels applied (no:label search advanced past #3285)
+- #3278 -> enhancement
+- #3281 -> bug
+- #3282 -> bug
+- #3284 -> bug, breaking change
+- #3285 -> question
+
+### Task 3 - Fix implemented and PR'd for #3195 (paket pack ignores PackageId)
+Root cause (already identified in a prior run's Task 2 comment): `paket pack` derives the package id solely from the compiled assembly name via `PackageMetaData.readAssemblyFromProjFile`/`getId`, never consulting the MSBuild `PackageId` project property, unlike `dotnet pack`.
+Fix: added `PackageProcess.resolveProjectId` (internal, in src/Paket.Core/Packaging/PackageProcess.fs) which resolves id in priority: existing template id > MSBuild `PackageId` property (via `ProjectFile.GetProperty "PackageId"`) > assembly name fallback. Changed `merge`'s call site and visibility (private -> internal, needed for InternalsVisibleTo test access).
+Added 3 new tests in tests/Paket.Tests/Packaging/PackageProcessSpecs.fs covering: prefers PackageId, falls back to assembly name, does not override existing template id.
+Branch: `repo-assist/fix-issue-3195-packageid`. Draft PR created (Closes #3195). Posted a brief follow-up comment on #3195 linking the PR (did not re-explain root cause, already covered by prior comment).
+Validated: dotnet build src/Paket.Core/Paket.Core.fsproj -f netstandard2.0 succeeded 0 errors. New tests 3/3 passed via `--filter "FullyQualifiedName~PackagingProcess"`. Only failure was the known pre-existing `Loading assembly metadata works` test (missing net461 build output in this sandbox — reproduces on main, unrelated).
+**Status: PR open, awaiting maintainer review.**
+
+Note: mid-session, an errant `git checkout -- .` accidentally reverted both uncommitted files; edits were reconstructed via the edit tool and re-verified with a fresh build+test before committing. Lesson for future runs: avoid `git checkout -- .`; use `git status`/`git diff` to inspect instead, and commit early.
+
+### General
+- Now 5 open repo-assist fix/improvement PRs to check in a future Task 6 run: fix-issue-3129-source-path-spaces, perf-git-terminal-prompt-2026-08-26, fix-issue-3250-skip-dot-folders, fix-createrelativepath-special-chars, fix-issue-3195-packageid (new).
+- Backlog cursor (no:label issues) now past #3285.
+- Task 11: to be updated this run - issue #4344 (2026-08 monthly activity), adding new PR + labels + comment to suggested actions and run history.
