@@ -53,6 +53,7 @@ network:
   - rust
   - java
   - "ci.appveyor.com" # for appveyor packages
+  - "appveyorcidata.blob.core.windows.net" # for appveyor packages
 
 checkout:
   fetch: ["*"]     # fetch all remote branches to allow working on PR branches
