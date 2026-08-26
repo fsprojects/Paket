@@ -215,6 +215,9 @@
 		<!-- Compute current paket.lock hash here even if Step 1 was disabled
 		     (e.g. PaketDisableGlobalRestore=true) so the per-project check
 		     still works. -->
+		<PropertyGroup Condition=" '$(PaketProjectLockHashCurrent)' == '' AND '$(PaketRestoreLockFileHash)' != '' ">
+			<PaketProjectLockHashCurrent>$(PaketRestoreLockFileHash)</PaketProjectLockHashCurrent>
+		</PropertyGroup>
 		<GetFileHash Condition=" '$(MSBuildSupportsHashing)' == 'true' AND Exists('$(PaketLockFilePath)') AND '$(PaketProjectLockHashCurrent)' == '' " Files="$(PaketLockFilePath)" Algorithm="SHA256" HashEncoding="hex">
 			<Output TaskParameter="Hash" PropertyName="PaketProjectLockHashCurrent" />
 		</GetFileHash>
