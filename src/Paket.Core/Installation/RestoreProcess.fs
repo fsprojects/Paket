@@ -698,6 +698,17 @@ let private readRestoreCache (lockFileName:FileInfo) =
     let restoreCacheFile = Path.Combine(root, Constants.PaketRestoreHashFilePath)
     tryReadRestoreCache restoreCacheFile
 
+/// Returns true if any group in the lock file requests load script generation but the
+/// ".paket/load" folder is missing (e.g. it was deleted by the user). In that case a
+/// restore hash cache hit must not short-circuit the restore, otherwise the load scripts
+/// would never be regenerated (see https://github.com/fsprojects/Paket/issues/3238).
+let private loadScriptsMissing (root:string) (groups:Map<GroupName,LockFileGroup>) =
+    let anyGroupWantsLoadScripts =
+        groups
+        |> Seq.exists (fun kvp -> kvp.Value.Options.Settings.GenerateLoadScripts = Some true)
+    anyGroupWantsLoadScripts &&
+        not (Directory.Exists(Path.Combine(root, Constants.PaketFolderName, "load")))
+
 let internal writeGitignore restoreCacheFile =
     let folder = FileInfo(restoreCacheFile).Directory
     let rec isGitManaged (folder:DirectoryInfo) =
@@ -762,7 +773,12 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
                   ProjectsRestoredHash = if projectFile = AllProjects then lockFileHash else cache.ProjectsRestoredHash }
             let isPackagesDownloadUpToDate = cache.IsPackagesDownloadUpToDate lockFileHash
             let isProjectRestoreUpToDate = cache.IsProjectRestoreUpToDate lockFileHash
-            Some updatedCache, cache, lockFileHash, (isPackagesDownloadUpToDate && isProjectRestoreUpToDate) || (projectFile = NoProjects && isPackagesDownloadUpToDate)
+            let isUpToDate = (isPackagesDownloadUpToDate && isProjectRestoreUpToDate) || (projectFile = NoProjects && isPackagesDownloadUpToDate)
+            // Even if the hash-based cache says we're up to date, don't skip the restore if the
+            // ".paket/load" folder is missing but is required by a group's `generate_load_scripts`
+            // setting - otherwise deleting that folder and re-running restore would be a silent no-op.
+            let canEarlyExit = isUpToDate && not (loadScriptsMissing root lockFile.Value.Groups)
+            Some updatedCache, cache, lockFileHash, canEarlyExit
 
     let _,_,_, canEarlyExit = readCache()
     
