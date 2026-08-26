@@ -238,3 +238,40 @@ Validated: dotnet restore + build src/Paket.Core (netstandard2.0) succeeded 0 er
 - Backlog cursor (no:label issues) now past #3295.
 - Now 7 open repo-assist fix/improvement PRs: fix-issue-3129* (merged - remove from tracking next run if confirmed), perf-git-terminal-prompt-2026-08-26, fix-issue-3250-skip-dot-folders, fix-createrelativepath-special-chars, fix-issue-3195-packageid, eng-bump-newtonsoft-cecil-20260826 (new), fix-issue-3238-load-script-cache (new). NOTE: next run's Task 6 should re-verify actual open/closed state via github MCP rather than trusting this list, since some may have merged.
 - Task 11: updated issue #4344 (2026-08 monthly activity) via full body replace - added 2 new PRs to suggested actions, removed #3129/#3250/#3195-related entries (now closed/merged), updated future-work section, prepended new run history entry. No maintainer comments found on the issue yet.
+
+## Run 2026-08-26 (latest) — 33008409123 (tasks: 1, 2, 3)
+
+### Task 1 - Labels applied (no:label search, resumed from cursor past #3295)
+- #3064 -> enhancement, help wanted
+- #3144 -> bug, needs investigation
+- #3155 -> bug
+- #3162 -> enhancement
+- #3166 -> bug, performance
+- #3171 -> bug
+- #3172 -> bug, needs investigation
+- #3193 -> bug
+- #3198 -> bug, needs investigation
+- #3202 -> bug
+- #3203 -> bug
+- #3209 -> bug
+Backlog cursor now past #3209 (note: overlaps slightly with an earlier oldest-first pass since `no:label` results shift as issues get labelled across runs — always re-query `no:label` fresh rather than trusting a raw issue-number cursor).
+
+### Task 3 - Fix implemented and PR'd for #3209 (Paket.Restore.targets import moved to end of project file)
+Root cause: `installForDotnetSDK` (src/Paket.Core/Installation/InstallProcess.fs) unconditionally called `RemoveImportForPaketTargets()` then `AddImportForPaketTargets(relativePath)` on every install/restore. `AddImportForPaketTargets` always appends at the end of the project XML, so any project whose import wasn't already last got reordered on every run.
+Fix: added a check (`getDescendants "Import" |> List.exists (withAttributeValue "Project" relativePath)`) before the remove/re-add; skip both calls if an Import with the same path already exists, preserving position. Added `open Paket.Xml` to InstallProcess.fs (needed for `getDescendants`/`withAttributeValue`).
+Branch: `repo-assist/fix-issue-3209-import-reorder`. Draft PR created (Closes #3209). Posted a follow-up comment on #3209 linking the PR.
+Validated: dotnet build src/Paket.Core (netstandard2.0) succeeded 0 errors. Full ProjectFile test suite: 109/109 passed via `--filter "FullyQualifiedName~ProjectFile"`. No dedicated new unit test added (documented in PR as a trade-off — `installForDotnetSDK`/full ProjectFile fixture scaffolding needed for a targeted test).
+**Status: PR open, awaiting maintainer review.**
+
+### Task 2 - Comment on #3202 (self-update fails with Access is denied on Windows)
+Investigated GitHubDownloadStrategy.SelfUpdateCore (src/Paket.Bootstrapper/DownloadStrategies/GitHubDownloadStrategy.cs) and NugetDownloadStrategy's equivalent — both do `MoveFile(exePath, renamedPath)` to rename the currently-running exe in place, which fails on Windows when the file is locked (AV scanner, OS loader, etc.). Posted root-cause analysis with workaround (close AV/IDE processes holding a handle) and a suggested more-robust fix direction (retry policy, or `MoveFileEx` with `MOVEFILE_DELAY_UNTIL_REBOOT`). Did not attempt a code fix — Windows-specific file-locking semantics, higher risk, deferred to future run if a maintainer wants it prioritized.
+
+### Task 3 (secondary investigation, not completed) - #3166 (clitool defeats install noop-check)
+Explored DependencyChangeDetection.fs, UpdateProcess.fs (SmartInstall/SelectiveUpdate), PackageResolver.fs (DotnetCliTool Kind assignment), RestoreProcess.fs (canEarlyExit — confirmed this is restore-specific, not relevant to install noop). Leading hypothesis: `Settings` for clitool packages as re-derived from the dependencies file at runtime never compares equal to what's stored/round-tripped in the lock file, forcing `SettingsChanged`/full resolve every `paket install` when a clitool package is present. NOT confirmed — need to trace `findNuGetChangesInDependenciesFile`/`hasChangedSettings` comparison logic further with a live repro in a future run before attempting a fix.
+
+### Task 11 - Updated issue #4344 (2026-08 monthly activity)
+Full body replace: added #3209 PR to suggested actions, added #3202 comment note, updated backlog labelling count/list, added #3166 investigation note to future work, prepended new run history entry linking run 33008409123. No new maintainer comments found on the issue.
+
+### General
+- Now 8 open repo-assist fix/improvement PRs to check in a future Task 6 run: perf-git-terminal-prompt-2026-08-26, fix-issue-3250-skip-dot-folders, fix-createrelativepath-special-chars, fix-issue-3195-packageid, eng-bump-newtonsoft-cecil-20260826, fix-issue-3238-load-script-cache, fix-issue-3209-import-reorder (new). Re-verify actual open/closed/merged state via github MCP in the next Task 6 run rather than trusting this list.
+- Network/build: `dotnet tool restore` + `dotnet paket restore --group Main` succeeded fine this run; targeted netstandard2.0 build of Paket.Core succeeded; net9 build of Paket.Core fails in this sandbox with NETSDK1005 (obj/project.assets.json missing net9 target) even after PaketDisableGlobalRestore restore — netstandard2.0 remains the reliable target framework to validate Paket.Core changes against. Test project restore+build+test on net9 works fine though (used successfully for ProjectFile test filter).
