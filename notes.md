@@ -275,3 +275,55 @@ Full body replace: added #3209 PR to suggested actions, added #3202 comment note
 ### General
 - Now 8 open repo-assist fix/improvement PRs to check in a future Task 6 run: perf-git-terminal-prompt-2026-08-26, fix-issue-3250-skip-dot-folders, fix-createrelativepath-special-chars, fix-issue-3195-packageid, eng-bump-newtonsoft-cecil-20260826, fix-issue-3238-load-script-cache, fix-issue-3209-import-reorder (new). Re-verify actual open/closed/merged state via github MCP in the next Task 6 run rather than trusting this list.
 - Network/build: `dotnet tool restore` + `dotnet paket restore --group Main` succeeded fine this run; targeted netstandard2.0 build of Paket.Core succeeded; net9 build of Paket.Core fails in this sandbox with NETSDK1005 (obj/project.assets.json missing net9 target) even after PaketDisableGlobalRestore restore — netstandard2.0 remains the reliable target framework to validate Paket.Core changes against. Test project restore+build+test on net9 works fine though (used successfully for ProjectFile test filter).
+
+## Run 2026-08-26 21:xx UTC — 33014486355 (tasks: 1, 5, 3)
+
+### Task 1 (Labelling)
+Labelled 15 previously-unlabelled issues:
+- #3081 → bug, needs investigation
+- #3110 → bug, needs investigation
+- #3160 → bug
+- #3198 → bug, needs investigation
+- #3220 → bug
+- #3221 → performance, needs investigation
+- #3222 → enhancement
+- #3268 → enhancement
+- #3272 → bug
+- #3277 → enhancement
+- #3281 → bug
+- #3282 → bug
+- #3285 → question
+- #3287 → bug
+- #3289 → bug
+
+### Task 3 (Fix)
+Fixed #3277: `CheckIfPackageExistsInAnyGroup` in `src/Paket.Core/PaketConfigFiles/LockFile.fs` returned an empty string when a package wasn't found in any lock file group, making the failure message unhelpful ("...but it was not found in the paket.lock file in group X." with nothing after the period). Changed the `None` branch to return an actionable hint: "This usually means paket.lock is out of sync with paket.dependencies/paket.references. Try running 'paket install' or 'paket update' to regenerate paket.lock."
+- Added test `should give actionable error message when package is missing from lock file in any group` in `tests/Paket.Tests/Lockfile/QuerySpecs.fs`.
+- Branch: `repo-assist/fix-issue-3277-lockfile-error-message`. Build succeeded (netstandard2.0), 5/5 QuerySpecs tests passed (4 pre-existing + 1 new).
+- PR created (draft, title auto-prefixed "[repo-assist] Improve error message when package missing from paket.lock", labeled `bug`). Status: open, awaiting maintainer review.
+- Commented on #3277 linking the fix.
+
+### Task 5 (Coding Improvement)
+Deduplicated the "package not found in paket.lock" `failwithf` error construction, which was copy-pasted verbatim across 3 call sites in `LockFile.fs` (`GetAllNormalizedDependenciesOf`, `GetAllDependenciesOf`, `GetDirectDependenciesOfSafe`). Extracted into a new member `FailPackageNotFoundInLockFile(package, context, groupName)`. Pure refactor, no behavior change.
+- Branch: `repo-assist/improve-lockfile-error-dedup` (created fresh off `master`, NOT off the #3277 fix branch — kept independent so it can merge in any order).
+- Build succeeded (netstandard2.0), 4/4 pre-existing QuerySpecs tests passed (no new test needed since behavior unchanged).
+- PR created (draft, title auto-prefixed "[repo-assist] Reduce duplication in paket.lock 'package not found' error construction", labeled `refactor`). Status: open, awaiting maintainer review.
+
+### Task 11 (Monthly Activity Summary)
+Updated issue #4344 "[repo-assist] Monthly Activity 2026-08" (still current month, still open) — replaced body with fresh Suggested Actions (added the 2 new PRs from this run), Future Work, and prepended a new Run History entry for this run. No new maintainer comments/instructions found on the issue at time of update.
+
+### Open repo-assist PRs tracked (not independently re-verified this run — a future Task 6 pass should confirm actual state)
+- fix #3209 (Paket.Restore.targets import moved)
+- fix #3129 (unquoted local NuGet source paths)
+- git subprocess hang prevention (#3228/#3236)
+- fix #3250 (skip dot folders in FindAllFiles)
+- fix createRelativePath special chars
+- fix #3195 (paket pack PackageId fallback)
+- eng: bump Newtonsoft.Json/Mono.Cecil
+- fix #3238 (restore cache load folder detection)
+- fix #3277 (lockfile error message) — NEW this run
+- refactor: dedupe lockfile error construction — NEW this run
+
+### Notes for next run
+- Backlog cursor for unlabelled issues: continue past #3289 (oldest-first, `no:label` search).
+- Consider selecting Task 6 (Maintain Repo Assist PRs) soon to verify/consolidate the growing list of ~10 open repo-assist PRs above (some may already be merged/closed — memory could be stale).
