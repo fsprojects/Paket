@@ -327,3 +327,47 @@ Updated issue #4344 "[repo-assist] Monthly Activity 2026-08" (still current mont
 ### Notes for next run
 - Backlog cursor for unlabelled issues: continue past #3289 (oldest-first, `no:label` search).
 - Consider selecting Task 6 (Maintain Repo Assist PRs) soon to verify/consolidate the growing list of ~10 open repo-assist PRs above (some may already be merged/closed — memory could be stale).
+
+## Run 2026-08-27 (approx) UTC — 33019514507 (tasks: 3, 1, 2)
+
+### Task 1 (Labelling)
+Labelled 6 previously-unlabelled issues:
+- #3296 → enhancement, help wanted (GAC support request)
+- #3297 → bug, needs investigation (credential provider error)
+- #3312 → enhancement, performance (unsolvable conflict detection)
+- #3313 → question (paket.lock differs by framework restriction)
+- #3316 → enhancement, help wanted (paket.local git override)
+- #3320 → enhancement, breaking change (paket init should pin itself — maintainer discussion favors making pinning default, described as breaking)
+
+### Task 2 (Comment)
+- Commented on #3272: shared root-cause analysis (nuspec glob matching multiple files) ahead of opening the PR.
+- Commented on #3281 (credential username with backslash on Linux): explained likely shell-quoting cause, suggested single-quoting workaround, asked for exact error output to confirm whether it's Argu-related.
+
+### Task 3 (Fix)
+Fixed #3272 / #3160 (duplicate): `dotnet pack --include-symbols`/`--include-source` produces both a `.nuspec` and `.symbols.nuspec` file; `PaketOverrideNuspec`'s `_NuspecFiles` glob matched both, and `ConvertToAbsolutePath` joined them with `;` into `NuspecFileAbsolutePath`, breaking `PackTask` with a "syntax is incorrect" error.
+- Fix: added `_PrimaryNuspecFile` item (excludes `*.symbols.nuspec`, falls back to unfiltered list if empty) in `src/Paket.Core/embedded/Paket.Restore.targets`; `NuspecFileAbsolutePath` now derived from it. `fix-nuspecs` still runs against the full `_NuspecFiles` list.
+- Branch: `repo-assist/fix-issue-3272-nuspec-glob`. Build succeeded (netstandard2.0); verified via `strings` on built DLL that the updated targets content is embedded correctly. Could NOT run a live `dotnet pack --include-symbols` repro in sandbox — documented as a trade-off in the PR.
+- PR created (draft, title auto-prefixed "[repo-assist] Fix dotnet pack failure with --include-symbols due to multiple nuspec files"). Status: open, awaiting maintainer review/manual verification.
+- No separate issue comment needed beyond the analysis comment already posted (which now references the fix direction); PR itself links Closes #3272.
+
+### Task 11 (Monthly Activity Summary)
+To be updated this run — issue #4344 still current month (2026-08).
+
+### Open repo-assist PRs tracked (STALE LIST — re-verify via Task 6 in a future run)
+- fix #3209 (Paket.Restore.targets import moved)
+- fix #3129 (unquoted local NuGet source paths)
+- git subprocess hang prevention (#3228/#3236)
+- fix #3250 (skip dot folders in FindAllFiles)
+- fix createRelativePath special chars
+- fix #3195 (paket pack PackageId fallback)
+- eng: bump Newtonsoft.Json/Mono.Cecil
+- fix #3238 (restore cache load folder detection)
+- fix #3277 (lockfile error message)
+- refactor: dedupe lockfile error construction
+- fix #3272 (nuspec glob / semicolon path) — NEW this run
+
+### Notes for next run
+- Backlog cursor for unlabelled issues: continue past #3320 (oldest-first, `no:label` search).
+- #3281 comment is awaiting a possible human reply with exact error output — check for new comments before re-engaging.
+- Growing list of ~11 open repo-assist PRs — strongly consider Task 6 next available run to verify actual merge/close state, since memory may be stale (#3129/#3250/#3195 previously confirmed merged/closed by dsyme in an earlier run per notes above, but the full list needs re-verification).
+- #3320: maintainer (forki/matthid, 2018) leaned toward making version-pinning default behavior in `paket init`, calling it a breaking change. Not implemented — could be a good Task 3/5 candidate in a future run if a maintainer confirms desired behavior, but requires threading `paketVersion` (currently computed in `src/Paket/Program.fs`, reflection-based, but also available internally via `NetUtils.paketVersion` in Paket.Core) through `Dependencies.Init` → `Environment.init`/`initWithContent` to prepend a `version X.Y.Z` line.
