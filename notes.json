@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "cursors": {
+    "labelling_after": null,
+    "investigation_after": null
+  },
+  "issues": [
+    {
+      "number": 3281,
+      "state": "awaiting_clarification",
+      "updated_at": "2026-08-26",
+      "note": "Asked for exact add-credentials error output; wait for new human details before re-engaging."
+    },
+    {
+      "number": 3289,
+      "state": "deferred",
+      "updated_at": "2026-08-27",
+      "note": "Needs a repro and deeper trace of grouped nuspec references versus project reference writing."
+    },
+    {
+      "number": 3220,
+      "state": "deferred",
+      "updated_at": "2026-08-27",
+      "note": "Framework-conditional transitive version conflict; no confident resolver root cause yet."
+    },
+    {
+      "number": 3313,
+      "state": "commented",
+      "updated_at": "2026-08-27",
+      "note": "Explained that a smaller lock file under a framework restriction is expected; await new activity."
+    },
+    {
+      "number": 3320,
+      "state": "awaiting_approval",
+      "updated_at": "2026-08-26",
+      "note": "paket init version pinning needs maintainer choice because changing the default is breaking."
+    },
+    {
+      "number": 3321,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-27",
+      "note": "Repo Assist found the recursive lock retry fixed by commit e53cb3675; await confirmation or closure."
+    },
+    {
+      "number": 3332,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-26",
+      "note": "Anchored filter regex is documented behavior; consider clarifying docs and closing after review."
+    },
+    {
+      "number": 3351,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-26",
+      "note": "Artifactory v3 detection appears fixed by later commits; await reporter confirmation or closure."
+    },
+    {
+      "number": 3360,
+      "state": "deferred",
+      "updated_at": "2026-08-27",
+      "note": "Needs an SDK-style repro to isolate suspected assembly output-path handling in paket pack."
+    },
+    {
+      "number": 3365,
+      "state": "awaiting_approval",
+      "updated_at": "2026-08-27",
+      "note": "Warning approach scoped in PackageResolver; maintainer input needed on UX and false-positive tolerance."
+    },
+    {
+      "number": 3405,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-27",
+      "note": "Read-only Paket.Restore.targets overwrite appears fixed by commit 08df1996f; await confirmation or closure."
+    }
+  ],
+  "fixes": [
+    {
+      "issue": 3193,
+      "pr": 4368,
+      "branch": "repo-assist/fix-issue-3193-exclude-targets-8afa7e42915a11bc",
+      "status": "open",
+      "updated_at": "2026-08-27",
+      "note": "Draft fix makes exclude patterns filter package targets and props files."
+    },
+    {
+      "issue": 3209,
+      "pr": 4364,
+      "branch": "repo-assist/fix-issue-3209-import-reorder-05182a8ef02c2820",
+      "status": "open",
+      "updated_at": "2026-08-26",
+      "note": "CI-green fix preserves Paket.Restore.targets import position; no longer draft."
+    },
+    {
+      "issue": 3238,
+      "pr": 4363,
+      "branch": "repo-assist/fix-issue-3238-load-script-cache-eabd62044299d330",
+      "status": "open",
+      "updated_at": "2026-08-26",
+      "note": "CI-green fix detects missing .paket/load scripts in the restore cache; no longer draft."
+    },
+    {
+      "issue": 3272,
+      "pr": 4367,
+      "branch": "repo-assist/fix-issue-3272-nuspec-glob-37cae442663359ec",
+      "status": "open",
+      "updated_at": "2026-08-26",
+      "note": "Draft fix selects a non-symbols primary nuspec for dotnet pack --include-symbols."
+    },
+    {
+      "issue": 3389,
+      "pr": 4370,
+      "branch": "repo-assist/fix-issue-3389-gitbash-add-credentials-2b00bf7b1fc00cf7",
+      "status": "open",
+      "updated_at": "2026-08-27",
+      "note": "Draft fix supports redirected stdin in add-credentials without Console.ReadKey failure."
+    },
+    {
+      "issue": 3592,
+      "pr": 4369,
+      "branch": "repo-assist/fix-issue-3592-trailing-slash-ed472f7dbee570bb",
+      "status": "open",
+      "updated_at": "2026-08-27",
+      "note": "Draft fix normalizes trailing slashes during credential and token source lookup."
+    }
+  ],
+  "checks": [
+    {
+      "area": "repo_assist_prs",
+      "checked_at": "2026-08-27",
+      "result": "Six open Repo Assist PRs verified: 4363, 4364, 4367, 4368, 4369, and 4370; 4363 and 4364 are CI-green and no longer draft.",
+      "follow_up": null
+    }
+  ],
+  "completed_actions": [
+    {
+      "key": "issue:3202",
+      "completed_at": "2026-08-27"
+    }
+  ],
+  "priorities": [
+    {
+      "task": 2,
+      "item": "old-fixed-issue-sweep",
+      "note": "Continue verifying old bug reports against current code and recommend closure only with concrete evidence."
+    },
+    {
+      "task": 2,
+      "item": "issues:3376,3388",
+      "note": "Ask whether these 2018 NuGet v2-era reports reproduce with current Paket and NuGet v3 before investigating."
+    },
+    {
+      "task": 3,
+      "item": "issue:3360",
+      "note": "Build an SDK-style repro before changing paket pack assembly-path resolution."
+    },
+    {
+      "task": 3,
+      "item": "issues:3220,3289",
+      "note": "Resume only with focused resolver or grouped-nuspec repro evidence; neither has a confident root cause."
+    }
+  ]
+}
