@@ -83,6 +83,7 @@
     <TestAsset Include="NuGetOData\Rx-PlatformServices.xml" />
     <TestAsset Include="NuGetOData\EasyNetQ.xml" />
     <TestAsset Include="NuGetOData\BenchmarkDotNet-UnknownFramework.xml" />
+    <TestAsset Include="NuGetOData\NoDependenciesNode.xml" />
     <Compile Include="NuGetOData\ODataSpecs.fs" />
     <TestAsset Include="NuGetConfig\ClearTextPasswordConfig.xml" />
     <TestAsset Include="NuGetConfig\PasswordConfig.xml" />
