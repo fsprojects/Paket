@@ -115,10 +115,11 @@ let checkCredentials(url, cred) =
             true
         with _ -> false
 
-let getSourceNodes (credentialsNode : XmlNode) source nodeType = 
+let getSourceNodes (credentialsNode : XmlNode) (source : string) nodeType = 
+    let source = source.TrimEnd([|'/'|])
     sprintf "//%s" nodeType |> credentialsNode.SelectNodes
     |> Seq.cast<XmlElement>
-    |> Seq.filter (fun n -> n.Attributes.["source"].Value = source)
+    |> Seq.filter (fun n -> n.Attributes.["source"].Value.TrimEnd([|'/'|]) = source)
     |> Seq.toList
 
 let private getCredentialsNode = lazy(getConfigNode "credentials" |> returnOrFail)
