@@ -664,6 +664,9 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
         | Some group -> sprintf "%sHowever, %O was found in group %O." Environment.NewLine packageName group.Value.Name
         | None -> sprintf "%sThis usually means paket.lock is out of sync with paket.dependencies/paket.references. Try running 'paket install' or 'paket update' to regenerate paket.lock." Environment.NewLine
 
+    /// Raises the standard "package not found in paket.lock" error, including a hint about where else the package might be.
+    member this.FailPackageNotFoundInLockFile(package:PackageName,context,groupName:GroupName) : 'a =
+        failwithf "Package %O was referenced in %s, but it was not found in the paket.lock file in group %O.%s" package context groupName (this.CheckIfPackageExistsInAnyGroup package)
 
     /// Gets all dependencies of the given package
     member this.GetAllNormalizedDependenciesOf(groupName,package:PackageName,context) =
@@ -678,7 +681,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                         for d,_,_ in package.Dependencies do
                             addPackage d
             | None ->
-                failwithf "Package %O was referenced in %s, but it was not found in the paket.lock file in group %O.%s" identity context groupName (this.CheckIfPackageExistsInAnyGroup package)
+                this.FailPackageNotFoundInLockFile(identity,context,groupName)
 
         addPackage package
 
@@ -689,7 +692,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
         match this.GetAllDependenciesOfSafe(groupName,package) with
         | Some packages -> packages
         | None ->
-            failwithf "Package %O was referenced in %s, but it was not found in the paket.lock file in group %O.%s" package context groupName (this.CheckIfPackageExistsInAnyGroup package)
+            this.FailPackageNotFoundInLockFile(package,context,groupName)
 
     /// Gets all dependencies of the given package in the given group.
     member __.GetAllDependenciesOfSafe(groupName:GroupName,package) =
@@ -739,7 +742,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                     usedPackages.Add d |> ignore
 
             usedPackages |> Set.ofSeq
-        | None -> failwithf "Package %O was referenced in %s, but it was not found in the paket.lock file in group %O.%s" package context groupName (this.CheckIfPackageExistsInAnyGroup package)
+        | None -> this.FailPackageNotFoundInLockFile(package,context,groupName)
 
     member __.GetTransitiveDependencies(groupName) =
         let collectDependenciesForGroup group =
