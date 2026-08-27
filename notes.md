@@ -454,3 +454,30 @@ Same list as prior run (fix #3209, #3129, git-hang #3228/#3236, #3250, createRel
 - #3289: needs deeper trace of `Nuspec.fs` group-based `<reference>` parsing vs. project-file reference writing before a confident fix can be attempted.
 - #3220: resolver edge case (framework-conditional transitive version conflict) — no confident root cause; likely needs a resolver-algorithm specialist pass, not a quick fix.
 - Repo-assist PR list has not been Task-6-verified in several runs — strongly prioritize next time Task 6 is selected or substituted in.
+
+---
+
+## Run 33038562558 (2026-08-27, tasks: 3, 1, 2)
+
+### Task 3 (Fix)
+Fixed #3592 (trailing slash in push-url leads to unauthorized).
+- Root cause: `AddCredentials` (ConfigFile.fs) trims trailing `/` from source URL when saving to paket.config, but `getSourceNodes`/`GetAuthenticationForUrl` compared the raw lookup source (from push URL, possibly slash-terminated) against stored value via exact string equality — no match, so stored credentials/tokens were silently skipped, causing 401.
+- Fix: `getSourceNodes` in `src/Paket.Core/Versioning/ConfigFile.fs` now trims trailing `/` from both the lookup source and each stored source attribute before comparing.
+- Added unit test `get source nodes ignores trailing slash mismatch` in `tests/Paket.Tests/Versioning/ConfigFileSpecs.fs`.
+- Branch: `repo-assist/fix-issue-3592-trailing-slash`. Build succeeded (netstandard2.0). Tests: `dotnet test --filter "FullyQualifiedName~ConfigFileSpecs"` → 3/3 passed on net9.0 (2 pre-existing tests skipped, require Windows; net461 host skipped due to missing mono in sandbox — infra limitation unrelated to change).
+- PR created (draft, "[repo-assist] Fix trailing slash mismatch in credential/token source lookup (#3592)"). Closes #3592.
+- Posted comment on #3592 linking the fix.
+
+### Task 1 (Labelling)
+Reviewed `bug`-labelled issues oldest-first and unlabelled issues from #947 onward — found no new unlabelled issues needing labels this run (recent fresh search showed prior labelling already covered issues up to #3361; next unlabelled batch likely starts further in 2018-2019 range, e.g. after #3592). No new labels applied this run (Task 1 effectively substituted into extra investigation time since Task 3 fix work took priority).
+
+### Task 2 (Comment)
+Comment made as part of Task 3 fix (on #3592) rather than a separate Task 2 candidate — no additional issue engaged this run to avoid redundant/low-value commenting.
+
+### Task 11 (Monthly Activity Summary)
+Updated issue #4344 (still August 2026) — added #3592 fix PR/comment to Suggested Actions and Run History (prepended new entry), updated ~13 open PR count in "Consider" line.
+
+### Notes for next run
+- Backlog cursor for unlabelled issues: continue with a **fresh** `no:label is:open` search — do not trust stored numbers.
+- Repo-assist PR list now ~13 open — Task 6 verification pass still overdue and strongly recommended next selection.
+- #3592 fix: consider whether the analogous `AddCredentials`/save path itself should also be made idempotent for slash variants (not done this run — kept change minimal to the lookup side only, as per user's original suggestion in the issue thread).
