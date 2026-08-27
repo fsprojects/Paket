@@ -760,6 +760,28 @@ let ``#4004 dotnet pack using different versions``() =
 
 
 [<Test>]
+let ``#3272 dotnet pack should work with --include-symbols``() =
+    let project = "libsym1"
+    let scenario = "i004367-pack-include-symbols"
+    use _ = prepareSdk scenario
+
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+
+    directPaket "restore" scenario
+    |> ignore
+
+    directDotnet true (sprintf "pack -o \"%s\" --include-symbols" outPath) rootPath
+    |> ignore
+
+    let nupkgPath = Path.Combine(outPath, project + ".1.0.0.nupkg")
+    Assert.True(File.Exists nupkgPath, sprintf "Expected '%s' to exist" nupkgPath)
+
+    let symbolsNupkgPath = Path.Combine(outPath, project + ".1.0.0.symbols.nupkg")
+    Assert.True(File.Exists symbolsNupkgPath, sprintf "Expected '%s' to exist" symbolsNupkgPath)
+
+
+[<Test>]
 let ``#3599 dotnet pack should work with build metadata``() =
     let project = "lib1"
     let scenario = "i003599-pack-build-meta"
