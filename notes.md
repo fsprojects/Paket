@@ -514,3 +514,36 @@ Updated issue #4344 (still August 2026) — added #3389 fix PR + comment, added 
 - Repo-assist PR list now ~14 open — Task 6 verification pass still overdue, strongly recommended next selection.
 - #3365: implementation approach scoped, ready to build if a maintainer confirms desired UX/thresholds for the warning.
 - #3376/#3388: both from 2018 against NuGet v2 API defaults; consider asking reporters if still reproducible on current version (NuGet v3 is default now) before further investigation.
+
+## Run 33064090436 (2026-08-27, tasks: 2, 3, 1)
+
+### Task 1 (Labelling)
+Labelled 13 previously-unlabelled issues (fresh `no:label is:open` search, continuing past #3412):
+- #3390 (enhancement) - git-bash colorized output request
+- #3391 (enhancement) - conflict output improvement
+- #3392 (security) - OData CVE-2018-8269
+- #3393 (enhancement) - offline bootstrapper support
+- #3397 (bug) - duplicate script refs after convert-from-nuget
+- #3401 (bug) - CLI text forced white
+- #3402 (question)
+- #3403 (question) - Rider plugin
+- #3405 (bug) - Paket.Restore.targets overwrite on read-only file
+- #3406 (question)
+- #3408 (documentation) - poor reference-files docs
+- #3409 (enhancement) - restore fail-on-checks default
+- #3412 (bug, needs investigation) - paket hangs without output
+
+### Task 2/3 (Comment / Investigation)
+- #3405: traced `RestoreProcess.fs` saveToFile/extractElement — already fixed by commit `08df1996f` ("Remove ReadOnly flag before writing to files - fixes #3410"). Posted comment asking reporter to confirm/close. No PR needed (no duplicate fix).
+- #3321: traced `Utils.fs` acquireLock/releaseLock — already fixed by commit `e53cb3675` ("Remove recursion from lock access test") which replaced recursive retry with `while` loops. Posted comment asking reporter to confirm/close.
+- #3360 ("paket pack could not find .exe file"): investigated `PackageMetaData.fs` (readAssembly/readAssemblyFromProjFile) and `ProjectFile.fs` (outputType/getAssemblyName/getOutputDirectory) assembly-path resolution. Did not reach a confident root cause this run (likely SDK-style/netcoreapp output-path edge case) — deferred per "only attempt fixes you are confident about". No fix/PR made.
+- No new PR created this run (both fix candidates found already fixed in history; #3360 not confident enough).
+
+### Task 11 (Monthly Activity Summary)
+Updated issue #4344 (still August 2026) — added 13 new labels to run history, added #3405/#3321 to Suggested Actions as "Consider closing" + "Check comment" entries, added #3360 investigation note to Future Work.
+
+### Notes for next run
+- Backlog cursor: continue with a **fresh** `no:label is:open` search past #3412 — do not trust stored numbers.
+- #3360 remains a deferred Task 3 candidate — needs a repro project to pin down exact netcoreapp/SDK-style output-path mismatch before attempting a fix.
+- Repo-assist PR list still ~14 open — Task 6 verification pass still overdue, strongly recommended next selection.
+- Recurring pattern: several very old (2018-era) `bug` issues turn out already-fixed by later commits (#3405, #3321, #3351 previously). Consider a bulk "confirm/close old fixed issues" sweep as a future Task 5/10 idea.
