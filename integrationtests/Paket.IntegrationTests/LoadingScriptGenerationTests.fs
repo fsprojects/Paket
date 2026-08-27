@@ -249,6 +249,27 @@ let ``generates script on install`` () =
     nHibernate35Expectations |> assertExpectations scenario ExpectationType.ShouldContain
 
 [<Test; Category("scriptgen dependencies")>]
+let ``#3238 restore regenerates load scripts when .paket/load folder is missing`` () =
+    let scenario = "dependencies-file-flag"
+    use __ = paket "install" scenario |> fst
+
+    nHibernate35Expectations |> assertExpectations scenario ExpectationType.ShouldContain
+
+    // Simulate a user deleting the generated load scripts without touching paket.lock.
+    let loadDir = scriptRoot scenario
+    loadDir.Refresh()
+    Assert.IsTrue(loadDir.Exists, "load scripts folder should exist after install")
+    Directory.Delete(loadDir.FullName, true)
+    loadDir.Refresh()
+    Assert.IsFalse(loadDir.Exists, "load scripts folder should have been deleted")
+
+    // Restore should detect the missing load scripts and not early-exit,
+    // regenerating them even though the lock file hash is unchanged.
+    directPaket "restore" scenario |> ignore<string>
+
+    nHibernate35Expectations |> assertExpectations scenario ExpectationType.ShouldContain
+
+[<Test; Category("scriptgen dependencies")>]
 let ``issue 2156 netstandard`` () =
     let scenario = "issue-2156"
     use __ = paket "install" scenario |> fst
