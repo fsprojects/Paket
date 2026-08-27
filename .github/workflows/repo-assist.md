@@ -65,7 +65,86 @@ tools:
     toolsets: [all]
     min-integrity: none # This workflow is allowed to examine and comment on any issues or PRs
   bash: true
-  repo-memory: true
+  repo-memory:
+    max-file-size: 65536
+    max-patch-size: 65536
+    max-file-count: 1
+    format-json: true
+    allowed-extensions: [".json"]
+    validation:
+      timeout-minutes: 1
+      script: |
+        const fail = message => { throw new Error(`notes.json: ${message}`); };
+        const data = JSON.parse(fs.readFileSync(path.join(memoryRoot, "notes.json"), "utf8"));
+        const isObject = value => value !== null && typeof value === "object" && !Array.isArray(value);
+        const exactKeys = (value, keys) => isObject(value) && Object.keys(value).sort().join(",") === [...keys].sort().join(",");
+        const validDate = value => typeof value === "string" && /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(value);
+        const validText = (value, maximum) => typeof value === "string" && value.length > 0 && value.length <= maximum;
+        const unique = (entries, key, label) => {
+          const values = entries.map(key);
+          if (new Set(values).size !== values.length) fail(`${label} must be unique`);
+        };
+
+        if (!exactKeys(data, ["version", "cursors", "issues", "fixes", "checks", "completed_actions", "priorities"])) fail("must contain exactly version, cursors, issues, fixes, checks, completed_actions, and priorities");
+        if (data.version !== 1) fail("version must be 1");
+        if (!exactKeys(data.cursors, ["labelling_after", "investigation_after"])) fail("cursors must contain exactly labelling_after and investigation_after");
+        for (const [name, value] of Object.entries(data.cursors)) {
+          if (value !== null && (!Number.isInteger(value) || value < 1)) fail(`${name} must be null or a positive issue number`);
+        }
+
+        const issueStates = new Set(["commented", "awaiting_clarification", "resolution_recommended", "deferred", "awaiting_approval"]);
+        if (!Array.isArray(data.issues) || data.issues.length > 100) fail("issues must be an array of at most 100 entries");
+        for (const [index, entry] of data.issues.entries()) {
+          if (!exactKeys(entry, ["number", "state", "updated_at", "note"])) fail(`invalid issues entry at index ${index}`);
+          if (!Number.isInteger(entry.number) || entry.number < 1) fail(`invalid issue number at index ${index}`);
+          if (!issueStates.has(entry.state)) fail(`invalid issue state at index ${index}`);
+          if (!validDate(entry.updated_at)) fail(`invalid issue date at index ${index}`);
+          if (!validText(entry.note, 300)) fail(`invalid issue note at index ${index}`);
+        }
+        unique(data.issues, entry => entry.number, "issue numbers");
+
+        const fixStates = new Set(["open", "merged", "closed", "blocked"]);
+        if (!Array.isArray(data.fixes) || data.fixes.length > 50) fail("fixes must be an array of at most 50 entries");
+        for (const [index, entry] of data.fixes.entries()) {
+          if (!exactKeys(entry, ["issue", "pr", "branch", "status", "updated_at", "note"])) fail(`invalid fixes entry at index ${index}`);
+          if (!Number.isInteger(entry.issue) || entry.issue < 1) fail(`invalid fix issue at index ${index}`);
+          if (entry.pr !== null && (!Number.isInteger(entry.pr) || entry.pr < 1)) fail(`invalid fix PR at index ${index}`);
+          if (entry.branch !== null && !validText(entry.branch, 120)) fail(`invalid fix branch at index ${index}`);
+          if (!fixStates.has(entry.status)) fail(`invalid fix status at index ${index}`);
+          if (!validDate(entry.updated_at)) fail(`invalid fix date at index ${index}`);
+          if (!validText(entry.note, 300)) fail(`invalid fix note at index ${index}`);
+        }
+        unique(data.fixes, entry => entry.issue, "fix issue numbers");
+        unique(data.fixes.filter(entry => entry.pr !== null), entry => entry.pr, "fix PR numbers");
+
+        const checkAreas = new Set(["dependencies", "ci", "tooling", "build", "code", "docs", "qa", "hygiene", "performance", "tests", "release", "repo_assist_prs"]);
+        if (!Array.isArray(data.checks) || data.checks.length > checkAreas.size) fail("checks must contain at most one entry per area");
+        for (const [index, entry] of data.checks.entries()) {
+          if (!exactKeys(entry, ["area", "checked_at", "result", "follow_up"])) fail(`invalid checks entry at index ${index}`);
+          if (!checkAreas.has(entry.area)) fail(`invalid check area at index ${index}`);
+          if (!validDate(entry.checked_at)) fail(`invalid check date at index ${index}`);
+          if (!validText(entry.result, 300)) fail(`invalid check result at index ${index}`);
+          if (entry.follow_up !== null && !validText(entry.follow_up, 300)) fail(`invalid check follow_up at index ${index}`);
+        }
+        unique(data.checks, entry => entry.area, "check areas");
+
+        if (!Array.isArray(data.completed_actions) || data.completed_actions.length > 100) fail("completed_actions must be an array of at most 100 entries");
+        for (const [index, entry] of data.completed_actions.entries()) {
+          if (!exactKeys(entry, ["key", "completed_at"])) fail(`invalid completed_actions entry at index ${index}`);
+          if (!validText(entry.key, 100)) fail(`invalid completed action key at index ${index}`);
+          if (!validDate(entry.completed_at)) fail(`invalid completed action date at index ${index}`);
+        }
+        unique(data.completed_actions, entry => entry.key, "completed action keys");
+
+        if (!Array.isArray(data.priorities) || data.priorities.length > 20) fail("priorities must be an array of at most 20 entries");
+        for (const [index, entry] of data.priorities.entries()) {
+          if (!exactKeys(entry, ["task", "item", "note"])) fail(`invalid priorities entry at index ${index}`);
+          if (!Number.isInteger(entry.task) || entry.task < 1 || entry.task > 10) fail(`invalid priority task at index ${index}`);
+          if (!validText(entry.item, 100)) fail(`invalid priority item at index ${index}`);
+          if (!validText(entry.note, 300)) fail(`invalid priority note at index ${index}`);
+        }
+        unique(data.priorities, entry => `${entry.task}:${entry.item}`, "priority task/item pairs");
+        console.log("repo-assist notes.json conforms to schema");
 
 safe-outputs:
   messages:
@@ -224,14 +303,18 @@ Always be:
 
 ## Memory
 
-Use persistent repo memory to track:
+Repo memory contains exactly one schema-validated file, `notes.json`. Read it at the **start** of every run, using `jq` to select only the fields needed for the selected tasks. Update it at the **end** whenever state changed.
 
-- issues already commented on (with timestamps to detect new human activity)
-- fix attempts and outcomes, improvement ideas already submitted, a short to-do list
-- a **backlog cursor** so each run continues where the previous one left off
-- previously checked off items (checked off by maintainer) in the Monthly Activity Summary to maintain an accurate pending actions list for maintainers
+The schema stores only:
 
-Read memory at the **start** of every run; update it at the **end**.
+- `cursors`: the last issue reached by Tasks 1 and 2, or `null` when a fresh search is required
+- `issues`: the latest still-actionable Repo Assist interaction or investigation state for an issue
+- `fixes`: one record per attempted issue fix, including its PR or branch when known
+- `checks`: only the latest result for each engineering, documentation, QA, testing, release, or maintenance area
+- `completed_actions`: Monthly Activity actions checked off by a maintainer, so they are not proposed again
+- `priorities`: a short queue of concrete follow-up work
+
+Keep notes terse and current. Replace superseded entries, remove resolved issue records and closed fix records once they are no longer needed for duplicate prevention, and never store run-by-run narration, exhaustive label histories, stale PR inventories, copied GitHub content, or facts that can be cheaply queried again. Stay within the schema's array and text limits; do not create another memory file.
 
 **Important**: Memory may not be 100% accurate. Issues may have been created, closed, or commented on; PRs may have been created, merged, commented on, or closed since the last run. Always verify memory against current repository state — reviewing recent activity since your last run is wise before acting on stale assumptions.
 
