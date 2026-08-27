@@ -76,7 +76,7 @@ let private followODataLink auth url =
                 let mutable uri = null // warn once per specific API endpoint, but try to cut the query
                 let baseUrl = if Uri.TryCreate(url, UriKind.Absolute, &uri) then uri.AbsolutePath else url
                 traceWarnIfNotBefore baseUrl
-                    "At least one 'next' link (index %d) returned a empty result (noticed on '%O'): ['%s']" 
+                    "At least one 'next' link (index %d) returned a empty result (noticed on '%O'): ['%s']"
                     i url (System.String.Join("' ; '", linksToFollow))
             | None -> ()
             return
@@ -179,10 +179,11 @@ let private handleODataEntry nugetURL packageName version entry =
         | Some node -> node.InnerText
         | _ -> ""
 
+    // If a package has no dependencies, JFrog Artifactory will return an XML structure without the Dependencies node.
     let dependencies =
         match entry |> getNode "properties" |> optGetNode "Dependencies" with
         | Some node -> node.InnerText
-        | None -> failwithf "unable to find dependencies for package %O %O" packageName version
+        | None -> ""
 
     let rawPackages =
         let split (d : string) =
@@ -195,7 +196,7 @@ let private handleODataEntry nugetURL packageName version entry =
                 | Some p ->
                     Some p
                 | None ->
-                    if not (restriction.StartsWith "_") then 
+                    if not (restriction.StartsWith "_") then
                         Logging.traceWarnIfNotBefore ("Package", restriction, packageName, version) "Could not detect any platforms from '%s' in package %O %O, please tell the package authors" restriction packageName version
                     None
              else Some PlatformMatching.ParsedPlatformPath.Empty)
@@ -480,5 +481,3 @@ let FindPackages(auth, nugetURL, packageNamePrefix, maxResults) =
         with e ->
             return FSharp.Core.Result.Error (ExceptionDispatchInfo.Capture e)
     }
-
-
