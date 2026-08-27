@@ -201,6 +201,41 @@
 			<PaketRestoreRequired Condition=" '$(PaketRestoreReferencesFileHash)' == '$(PaketRestoreCachedHash)' ">false</PaketRestoreRequired>
 		</PropertyGroup>
 
+		<!-- Step 2 a-bis Detect changes in paket.lock since this project's
+		     last per-project restore. Step 2a alone misses the case where
+		     paket.references content is unchanged but paket.lock has been
+		     updated (e.g. a merge that bumps a transitive package version).
+		     Without this, the per-project paket.props under a redirected
+		     BaseIntermediateOutputPath stays stale and NuGet keeps resolving
+		     to the old version. The cache file recording the lock hash is
+		     written after a successful per-project restore, see Step 3. -->
+		<PropertyGroup>
+			<PaketProjectLockHashCacheFilePath>$(PaketIntermediateOutputPath)\$(MSBuildProjectFile).paket.lock.hash</PaketProjectLockHashCacheFilePath>
+		</PropertyGroup>
+		<!-- Compute current paket.lock hash here even if Step 1 was disabled
+		     (e.g. PaketDisableGlobalRestore=true) so the per-project check
+		     still works. -->
+		<PropertyGroup Condition=" '$(PaketProjectLockHashCurrent)' == '' AND '$(PaketRestoreLockFileHash)' != '' ">
+			<PaketProjectLockHashCurrent>$(PaketRestoreLockFileHash)</PaketProjectLockHashCurrent>
+		</PropertyGroup>
+		<GetFileHash Condition=" '$(MSBuildSupportsHashing)' == 'true' AND Exists('$(PaketLockFilePath)') AND '$(PaketProjectLockHashCurrent)' == '' " Files="$(PaketLockFilePath)" Algorithm="SHA256" HashEncoding="hex">
+			<Output TaskParameter="Hash" PropertyName="PaketProjectLockHashCurrent" />
+		</GetFileHash>
+		<PropertyGroup Condition=" '$(MSBuildSupportsHashing)' == 'true' AND Exists('$(PaketLockFilePath)') AND Exists('$(PaketProjectLockHashCacheFilePath)') ">
+			<PaketProjectLockHashCached>$([System.IO.File]::ReadAllText('$(PaketProjectLockHashCacheFilePath)').Trim())</PaketProjectLockHashCached>
+			<PaketRestoreRequired Condition=" '$(PaketProjectLockHashCurrent)' != '' AND '$(PaketProjectLockHashCached)' != '$(PaketProjectLockHashCurrent)' ">true</PaketRestoreRequired>
+			<PaketRestoreRequiredReason Condition=" '$(PaketProjectLockHashCurrent)' != '' AND '$(PaketProjectLockHashCached)' != '$(PaketProjectLockHashCurrent)' ">paket.lock content changed since last per-project restore</PaketRestoreRequiredReason>
+		</PropertyGroup>
+		<!-- First encounter: hash file does not exist but paket.lock does.
+		     This catches checkouts that have legacy per-project state from
+		     before this check was introduced (so Step 2b may not fire) but
+		     where paket.lock has since been bumped. After the per-project
+		     restore runs, Step 3 a-bis writes the cache file. -->
+		<PropertyGroup Condition=" '$(MSBuildSupportsHashing)' == 'true' AND Exists('$(PaketLockFilePath)') AND !Exists('$(PaketProjectLockHashCacheFilePath)') ">
+			<PaketRestoreRequired>true</PaketRestoreRequired>
+			<PaketRestoreRequiredReason>per-project paket.lock hash cache missing</PaketRestoreRequiredReason>
+		</PropertyGroup>
+
 		<PropertyGroup Condition="!Exists('$(PaketOriginalReferencesFilePath)') AND !Exists('$(PaketReferencesCachedFilePath)') ">
 			<!-- If both don't exist there is nothing to do. -->
 			<PaketRestoreRequired>false</PaketRestoreRequired>
@@ -217,6 +252,11 @@
 		<Error Text="Stop build because of PAKET_ERROR_ON_MSBUILD_EXEC and we detected a change ('$(PaketRestoreRequiredReason)') in the project file '$(MSBuildProjectFullPath)'" Condition=" '$(PAKET_ERROR_ON_MSBUILD_EXEC)' == 'true' AND '$(PaketRestoreRequired)' == 'true' " />
 		<Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --output-path "$(PaketIntermediateOutputPath)" --target-framework "$(TargetFrameworks)"' Condition=" '$(PaketRestoreRequired)' == 'true' AND '$(TargetFramework)' == '' " ContinueOnError="false" />
 		<Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" --output-path "$(PaketIntermediateOutputPath)" --target-framework "$(TargetFramework)"' Condition=" '$(PaketRestoreRequired)' == 'true' AND '$(TargetFramework)' != '' " ContinueOnError="false" />
+
+		<!-- Step 3 a-bis After a successful per-project restore, stamp the
+		     paket.lock hash next to the per-project paket files. Step 2 a-bis
+		     reads this on the next call to detect lock-content changes. -->
+		<WriteLinesToFile Condition=" '$(MSBuildSupportsHashing)' == 'true' AND '$(PaketRestoreRequired)' == 'true' AND '$(PaketProjectLockHashCurrent)' != '' " File="$(PaketProjectLockHashCacheFilePath)" Lines="$(PaketProjectLockHashCurrent)" Overwrite="true" />
 
 		<!-- This shouldn't actually happen, but just to be sure. -->
 		<PropertyGroup>
