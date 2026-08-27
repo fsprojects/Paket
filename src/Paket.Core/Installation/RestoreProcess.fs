@@ -930,6 +930,16 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
                     else
                         tracefn "Finished restoring projects."
 
+                        // Packages were already up to date, but if the ".paket/load" folder is
+                        // missing (e.g. a user deleted it) we still need to (re)generate the load
+                        // scripts, otherwise they would never come back until the lock file changes.
+                        // See https://github.com/fsprojects/Paket/issues/3238.
+                        if loadScriptsMissing root groups then
+                            if verbose then
+                                verbosefn "Creating script files for all groups (missing load scripts)"
+
+                            CreateScriptsForGroups lockFile.Value groups
+
                     match updatedCache with
                     | Some updatedCache ->
                         if verbose then
