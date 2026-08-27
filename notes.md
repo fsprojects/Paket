@@ -420,3 +420,37 @@ No new maintainer comments/instructions found on #4344 body itself since last up
 - The open repo-assist PR list is now ~12 items and has not had a Task 6 verification pass in several runs — this should be strongly prioritized next time Task 6 is selected or as a substitution target.
 - #3320 (paket init pin version): still unimplemented, same status as prior notes — awaiting maintainer confirmation of desired behavior (breaking change per 2018 discussion).
 - Possible follow-up to #3193 fix: check whether `import_targets: false` handling has an analogous gap for legacy (non-SDK) projects — not investigated this run since #3193's specific `exclude`-directive bug was already confirmed and scoped.
+
+---
+
+## Run 33032071354 (2026-08-27, tasks: 3, 1, 2, 11)
+
+### Task 1 (Labelling)
+Labelled 18 previously-unlabelled issues (fresh `no:label is:open` search):
+#3081 (bug), #3110 (bug), #3160 (bug, duplicate), #3198 (bug), #3220 (bug, needs investigation),
+#3221 (performance, needs investigation), #3268 (question), #3272 (bug), #3277 (bug), #3281 (bug),
+#3282 (bug, needs investigation), #3285 (question), #3287 (bug), #3289 (bug), #3297 (bug, needs investigation),
+#3313 (question), #3358 (question), #3361 (enhancement).
+Note: #3272/#3277 already had open PRs from prior runs (#4367/#4365) — labelled only, no re-fix.
+
+### Task 2 (Comment)
+- Commented on #3313 (paket.lock much smaller with `framework:` restriction): explained this is expected — Paket resolves the dependency graph only for the restricted framework, so unrelated framework-conditional deps are correctly omitted from the lock file; cited `LockFile.fs` RESTRICTION parsing.
+- Checked #3358 and #3268 for comment candidacy but both already have maintainer answers (forki/baronfel) — skipped to avoid redundancy.
+
+### Task 3 (Fix)
+No fix completed this run — investigated two candidates but neither reached sufficient confidence:
+- **#3289** (missing project references from nuspec for some packages): traced `InstallModel.fs` filtering (`addPackageLegacyLibFile` etc.) — already handles multiple `NuspecReferences.Explicit` files via `List.exists`, so likely NOT the bug site. Suspect areas not yet confirmed: nuspec `<group targetFramework>`-based reference grouping in `Nuspec.fs` (flat `getDescendants "reference"` may not handle grouped refs correctly), or project-file reference-writing taking only one file per package. Deferred — needs more tracing in a future run before attempting a fix.
+- **#3220** (resolver applies wrong package version when two target frameworks in one project have mutually-exclusive transitive version constraints): reviewed, this is a restriction-intersection resolver edge case; no confident root cause found. Deferred.
+Per "only attempt fixes you are confident about" guidance, no PR was opened this run.
+
+### Task 11 (Monthly Activity Summary)
+Updated issue #4344 (still August 2026) — added this run's 18 labels, #3313 comment note, #3289/#3220 investigation-deferred notes to Future Work, and prepended new Run History entry (33032071354). No new maintainer comments/instructions found on #4344.
+
+### Open repo-assist PRs tracked (STILL STALE — Task 6 verification pass overdue, list unchanged at ~12, not modified this run)
+Same list as prior run (fix #3209, #3129, git-hang #3228/#3236, #3250, createRelativePath, #3195, Newtonsoft/Cecil bump, #3238, #3277, lockfile-error-dedupe refactor, #3272, #3193).
+
+### Notes for next run
+- Backlog cursor for unlabelled issues: continue with a **fresh** `no:label is:open` search (do not trust any stored issue number — confirmed again this run that fresh queries are required since already-labelled issues age out of results unpredictably).
+- #3289: needs deeper trace of `Nuspec.fs` group-based `<reference>` parsing vs. project-file reference writing before a confident fix can be attempted.
+- #3220: resolver edge case (framework-conditional transitive version conflict) — no confident root cause; likely needs a resolver-algorithm specialist pass, not a quick fix.
+- Repo-assist PR list has not been Task-6-verified in several runs — strongly prioritize next time Task 6 is selected or substituted in.
