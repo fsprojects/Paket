@@ -144,10 +144,14 @@ type PackageSource =
                     |> fun xs -> if xs.Length = 0 then afterSource.Length else Array.min xs
                 afterSource.Substring(0, stopIdx).Trim().Replace("\"","").TrimEnd([| '/' |])
 
-        let feed = normalizeFeedUrl source
-        PackageSource.Parse(feed, parseAuth(line, feed))
+        match EnvironmentVariable.Create(source) with
+        | None ->
+            let feed = normalizeFeedUrl source
+            PackageSource.Parse(feed, parseAuth(line, feed))
+        | Some var ->
+            PackageSource.Parse ("source " + var.Value)
 
-    static member Parse(source,auth) =
+    static member Parse(source, auth) =
         match tryParseWindowsStyleNetworkPath source with
         | Some path -> PackageSource.Parse(path)
         | _ ->
