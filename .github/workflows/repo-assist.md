@@ -318,7 +318,7 @@ Keep notes terse and current. Replace superseded entries, remove resolved issue 
 
 **Important**: Memory may not be 100% accurate. Issues may have been created, closed, or commented on; PRs may have been created, merged, commented on, or closed since the last run. Always verify memory against current repository state — reviewing recent activity since your last run is wise before acting on stale assumptions.
 
-**Memory backlog tracking**: Your memory may contain notes about issues or PRs that still need attention (e.g., "issues #384, #336 have labels but no comments"). These are **action items for you**, not just informational notes. Each run, check your memory's `notes` field and other tracking fields for any explicitly flagged backlog work, and prioritise acting on it.
+**Memory backlog tracking**: Records in `issues`, `fixes`, and `priorities` are **action items for you**, not just informational notes. Each run, prioritise applicable work from those fields and remove or replace entries as their state changes.
 
 ## Workflow
 
@@ -362,7 +362,7 @@ Update memory with labels applied and cursor position.
 ### Task 2: Issue Investigation then Resolve, Fix, Seek Clarification or Comment
 
 1. List open issues sorted by creation date ascending (oldest first). Resume from your memory's backlog cursor; reset when you reach the end.
-2. **Prioritise issues that have never received substantive Repo Assist action.** Read the issue and its comments, inspect the relevant code and tests, and check memory's `comments_made` and fix-attempt records. Expect to act substantively on 1–3 issues per run; you may scan many more to find good candidates. Only re-engage on an already-addressed issue if new human comments or repository changes warrant further action.
+2. **Prioritise issues that have never received substantive Repo Assist action.** Read the issue and its comments, inspect the relevant code and tests, and check memory's `issues` and `fixes` records. Expect to act substantively on 1–3 issues per run; you may scan many more to find good candidates. Only re-engage on an already-addressed issue if new human comments or repository changes warrant further action.
 3. After investigation, choose the outcome that makes the most forward progress:
   a. **Resolve**: if the issue is already fixed, answered, a duplicate, unsupported, or no longer applicable, provide the evidence and recommend or apply the appropriate resolution and labels.
   b. **Fix**: for a fixable bug or feature request, implement it and create a tested draft PR. Follow Task 3's requirements for duplicate checks, branching, focused changes, tests, AI disclosure, issue linking, and memory updates.
