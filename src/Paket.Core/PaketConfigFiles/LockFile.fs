@@ -662,7 +662,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
     member this.CheckIfPackageExistsInAnyGroup (packageName:PackageName) =
         match groups |> Seq.tryFind (fun g -> g.Value.Resolution.ContainsKey packageName) with
         | Some group -> sprintf "%sHowever, %O was found in group %O." Environment.NewLine packageName group.Value.Name
-        | None -> ""
+        | None -> sprintf "%sThis usually means paket.lock is out of sync with paket.dependencies/paket.references. Try running 'paket install' or 'paket update' to regenerate paket.lock." Environment.NewLine
 
 
     /// Gets all dependencies of the given package

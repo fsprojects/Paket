@@ -52,3 +52,11 @@ let ``should detect transitive dependencies``() =
 let ``should detect when packages are unrelated``() = 
     isDependencyOf(lockFile,PackageName "log",(Constants.MainDependencyGroup,PackageName "Rx-Core"))
     |> shouldEqual false
+
+[<Test>]
+let ``should give actionable error message when package is missing from lock file in any group``() =
+    let ex =
+        Assert.Throws<System.Exception>(fun () ->
+            lockFile.GetAllDependenciesOf(Constants.MainDependencyGroup,PackageName "DoesNotExist","test") |> ignore)
+    ex.Message.Contains "paket install" |> shouldEqual true
+    ex.Message.Contains "paket update" |> shouldEqual true
