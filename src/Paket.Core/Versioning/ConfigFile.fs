@@ -51,6 +51,12 @@ let DecryptNuget (encrypted : string) =
 
 let private readPassword (message : string) : string = 
     Console.Write message
+    // Console.ReadKey requires an interactive console. When input is redirected
+    // (e.g. piped input, or some shells like Git Bash on Windows), it throws
+    // InvalidOperationException. Fall back to a plain ReadLine in that case.
+    if Console.IsInputRedirected then
+        Console.ReadLine()
+    else
     let mutable continueLooping = true
     let mutable password = ""
     while continueLooping do
@@ -115,10 +121,11 @@ let checkCredentials(url, cred) =
             true
         with _ -> false
 
-let getSourceNodes (credentialsNode : XmlNode) source nodeType = 
+let getSourceNodes (credentialsNode : XmlNode) (source : string) nodeType = 
+    let source = source.TrimEnd([|'/'|])
     sprintf "//%s" nodeType |> credentialsNode.SelectNodes
     |> Seq.cast<XmlElement>
-    |> Seq.filter (fun n -> n.Attributes.["source"].Value = source)
+    |> Seq.filter (fun n -> n.Attributes.["source"].Value.TrimEnd([|'/'|]) = source)
     |> Seq.toList
 
 let private getCredentialsNode = lazy(getConfigNode "credentials" |> returnOrFail)
