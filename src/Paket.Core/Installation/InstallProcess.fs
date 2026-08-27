@@ -9,6 +9,7 @@ open Paket.BindingRedirects
 open System.IO
 open Paket.PackageSources
 open Paket.Requirements
+open Paket.Xml
 open System.Collections.Generic
 open System
 open ProviderImplementation.AssemblyReader
@@ -343,8 +344,18 @@ let installForDotnetSDK root (project:ProjectFile) =
     let relativePath = createRelativePath project.FileName paketTargetsPath
 
     Paket.ProjectFile.removePaketNodes project
-    project.RemoveImportForPaketTargets()
-    project.AddImportForPaketTargets(relativePath)
+
+    // Only remove+re-add the targets import if it doesn't already exist with the same path.
+    // Otherwise we would needlessly move it to the end of the file on every install/restore,
+    // which breaks projects that rely on a specific import order (see #3209).
+    let alreadyImported =
+        project.Document
+        |> getDescendants "Import"
+        |> List.exists (withAttributeValue "Project" relativePath)
+
+    if not alreadyImported then
+        project.RemoveImportForPaketTargets()
+        project.AddImportForPaketTargets(relativePath)
 
 /// Installs all packages from the lock file.
 let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups, touchedPackages:((GroupName * PackageName * (SemVerInfo option) * (SemVerInfo option)) list) option) =
