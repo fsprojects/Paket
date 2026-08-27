@@ -481,3 +481,36 @@ Updated issue #4344 (still August 2026) — added #3592 fix PR/comment to Sugges
 - Backlog cursor for unlabelled issues: continue with a **fresh** `no:label is:open` search — do not trust stored numbers.
 - Repo-assist PR list now ~13 open — Task 6 verification pass still overdue and strongly recommended next selection.
 - #3592 fix: consider whether the analogous `AddCredentials`/save path itself should also be made idempotent for slash variants (not done this run — kept change minimal to the lookup side only, as per user's original suggestion in the issue thread).
+
+---
+
+## Run 33046674850 (2026-08-27, tasks: 2, 1, 3)
+
+### Task 1 (Labelling)
+Labelled 5 previously-unlabelled issues (fresh `no:label is:open` search):
+- #3365 (enhancement) - warning log for framework restriction mismatch
+- #3374 (enhancement, good first issue) - indent transitive deps in paket update output
+- #3376 (bug, needs investigation) - NuGet v2 GetVersions repeated failures (2018, may be stale vs current v3 default)
+- #3388 (bug, needs investigation) - paket restore doesn't populate NuGet cache in a way dotnet restore reuses offline
+- #3389 (bug) - add-credentials crashes under Git Bash
+
+### Task 3 (Fix)
+Fixed #3389 (`paket config add-credentials` throws `InvalidOperationException` under Git Bash / any redirected stdin).
+- Root cause: `readPassword` in `src/Paket.Core/Versioning/ConfigFile.fs` unconditionally calls `Console.ReadKey(true)` to mask password input; `ReadKey` requires an interactive console and throws when stdin is redirected, even though the username prompt (uses `Console.ReadLine()`) works fine in the same environment.
+- Fix: added a `Console.IsInputRedirected` check; falls back to plain `Console.ReadLine()` when redirected (password not masked in that case, but command succeeds instead of crashing). Interactive path unchanged.
+- Branch: `repo-assist/fix-issue-3389-gitbash-add-credentials`. Build succeeded (netstandard2.0, 0 errors). `readPassword` is `private` and reads real `Console`, not unit-testable without a console abstraction — ran `ConfigFileSpecs.fs` (2 passed/2 pre-existing skipped) to confirm no regression in public ConfigFile/AddCredentials behavior. No new automated test added (documented as trade-off in PR).
+- PR created (draft, title auto-prefixed "[repo-assist] Fix add-credentials failing when input is redirected (Git Bash)", labeled `bug`). Closes #3389.
+- Posted comment on #3389 linking the fix.
+**Status: PR open, awaiting maintainer review.**
+
+### Task 2 (Comment)
+- Commented on #3365 (framework-restriction warning log request): scoped a concrete implementation approach (trace warning when a package's resolved deps for a project's framework end up empty due to group `FrameworkRestrictions`, code pointers into `PackageResolver.fs` `filterByRestrictions`/`isIncluded`/`calcOpenRequirements`); flagged false-positive risk, asked for maintainer sign-off before implementing.
+
+### Task 11 (Monthly Activity Summary)
+Updated issue #4344 (still August 2026) — added #3389 fix PR + comment, added new labels (#3365/#3374/#3376/#3388/#3389) to run history, added #3365 to Suggested Actions ("Discuss") and Future Work. Repo-assist PR count now ~14 open (list not independently re-verified — Task 6 still overdue).
+
+### Notes for next run
+- Backlog cursor for unlabelled issues: continue with a **fresh** `no:label is:open` search — do not trust stored numbers (confirmed again: search results shift as issues get labelled).
+- Repo-assist PR list now ~14 open — Task 6 verification pass still overdue, strongly recommended next selection.
+- #3365: implementation approach scoped, ready to build if a maintainer confirms desired UX/thresholds for the warning.
+- #3376/#3388: both from 2018 against NuGet v2 API defaults; consider asking reporters if still reproducible on current version (NuGet v3 is default now) before further investigation.
