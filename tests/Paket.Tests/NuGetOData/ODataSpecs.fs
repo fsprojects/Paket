@@ -150,6 +150,19 @@ let ``can detect explicit dependencies for Microsoft.AspNet.WebApi.Client``() =
             |> ExplicitRestriction)
 
 [<Test>]
+let ``can parse package without Dependencies node as no dependencies``() =
+    parseEntry "NuGetOData/NoDependenciesNode.xml"
+    |> shouldEqual
+        { PackageName = "NoDeps"
+          DownloadUrl = "http://doesntmatter/package/NoDeps/1.0.0"
+          SerializedDependencies = []
+          Unlisted = false
+          LicenseUrl = "http://doesntmatter/license"
+          CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
+          Version = "1.0.0"
+          SourceUrl = fakeUrl }
+
+[<Test>]
 let ``can ignore unknown frameworks``() = 
     let parsed = parseList "NuGetOData/BenchmarkDotNet-UnknownFramework.xml" |> ODataSearchResult.get
     parsed

@@ -83,6 +83,7 @@
     <TestAsset Include="NuGetOData\Rx-PlatformServices.xml" />
     <TestAsset Include="NuGetOData\EasyNetQ.xml" />
     <TestAsset Include="NuGetOData\BenchmarkDotNet-UnknownFramework.xml" />
+    <TestAsset Include="NuGetOData\NoDependenciesNode.xml" />
     <Compile Include="NuGetOData\ODataSpecs.fs" />
     <TestAsset Include="NuGetConfig\ClearTextPasswordConfig.xml" />
     <TestAsset Include="NuGetConfig\PasswordConfig.xml" />
@@ -164,6 +165,7 @@
     <Compile Include="ProjectFile\LocalizationSpecs.fs" />
     <Compile Include="ProjectFile\UpdateFromNugetSpecs.fs" />
     <Compile Include="ProjectFile\ReadPropertySpecs.fs" />
+    <Compile Include="ProjectFile\InstallForDotnetSDKSpecs.fs" />
     <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
     <None Include="InstallModel\runtimeJsonMsNetCorePlatforms2_2_1.json" />
     <None Include="InstallModel\runtimeJsonMsNetCoreTargets2_1_0.json" />

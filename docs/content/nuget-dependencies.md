@@ -56,6 +56,21 @@ The [`paket.lock` file](lock-file.html) will also reflect these settings.
 values are `basic` and `ntlm`. If no authentication type is specified, basic
 authentication will be used.
 
+It's also possible to specify the entire source line as an environment variable.
+This is useful if you don't want the feed URL (or its credentials) to appear in
+source control at all:
+
+```paket
+source %FEED_URL%
+```
+
+Here, the `FEED_URL` environment variable must contain everything that would
+normally follow the `source` keyword, for example:
+
+```
+http://myserver/nuget/api/v2 username: "%PRIVATE_FEED_USER%" password: "%PRIVATE_FEED_PASS%" authtype: "ntlm"
+```
+
 **Note:** If [`paket.dependencies` file](dependencies-file.html) exists while
 running the [`convert-from-nuget` command](paket-convert-from-nuget.html), the
 `PRIVATE_FEED_USER` and `PRIVATE_FEED_PASS` will *not* be expanded. Please see
