@@ -52,6 +52,7 @@ network:
   - python
   - rust
   - java
+  - github
   - "ci.appveyor.com" # for appveyor packages
   - "appveyorcidata.blob.core.windows.net" # for appveyor packages
 
