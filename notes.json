@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 4338,
+    "labelling_after": 3462,
     "investigation_after": null
   },
   "issues": [
@@ -88,6 +88,12 @@
       "state": "resolution_recommended",
       "updated_at": "2026-08-28",
       "note": "Repo Assist confirmed McAfee .locked antivirus issue fixed by commit c0bcc69f1 renaming to paket.processlock; await confirmation or closure."
+    },
+    {
+      "number": 3110,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-28",
+      "note": "Recommended closing as unreproducible/likely disk-space related; 2018 report, no repro despite maintainer follow-up."
     }
   ],
   "fixes": [
