@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3401,
+    "labelling_after": 3535,
     "investigation_after": null
   },
   "issues": [
@@ -76,6 +76,18 @@
       "state": "commented",
       "updated_at": "2026-08-28",
       "note": "Explained groups aren't tied to MSBuild configuration/conditional symbols; suggested per-target project split."
+    },
+    {
+      "number": 3376,
+      "state": "awaiting_clarification",
+      "updated_at": "2026-08-28",
+      "note": "Asked whether legacy NuGet v2 API warning still reproduces given move to v3 default; wait for confirmation."
+    },
+    {
+      "number": 3535,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-28",
+      "note": "Repo Assist confirmed McAfee .locked antivirus issue fixed by commit c0bcc69f1 renaming to paket.processlock; await confirmation or closure."
     }
   ],
   "fixes": [
