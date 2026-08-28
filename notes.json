@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3422,
+    "labelling_after": 3455,
     "investigation_after": 4268
   },
   "issues": [
@@ -106,6 +106,12 @@
       "state": "resolution_recommended",
       "updated_at": "2026-08-28",
       "note": "Verified via manual end-to-end repro (built paket.dll, clitool+nuget deps) that second install run correctly skips resolver and produces byte-identical lock file. Appears already fixed. Opened PR adding CliToolNoopSpecs.fs regression test; await confirmation or closure."
+    },
+    {
+      "number": 3268,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-28",
+      "note": "Explained per-project per-group-version references unsupported by current model; suggested project-split/conditional-ItemGroup workaround; recommended closing as out-of-scope enhancement."
     }
   ],
   "fixes": [
