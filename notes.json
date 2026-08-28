@@ -120,6 +120,14 @@
       "status": "open",
       "updated_at": "2026-08-27",
       "note": "Draft fix normalizes trailing slashes during credential and token source lookup."
+    },
+    {
+      "issue": 1903,
+      "pr": null,
+      "branch": "repo-assist/fix-issue-1903-file-url-slashes",
+      "status": "open",
+      "updated_at": "2026-08-27",
+      "note": "Draft fix strips only file:// scheme, preserving absolute path leading slash for local git deps."
     }
   ],
   "checks": [
