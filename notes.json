@@ -100,6 +100,12 @@
       "state": "resolution_recommended",
       "updated_at": "2026-08-29",
       "note": "Investigated FSharp.Core nuspec 'exact version' report. Confirmed bare version attr in nuspec is valid NuGet minimum-inclusive syntax (Paket's FormatInNuGetSyntax is correct); not a Paket bug. Asked reporter for concrete repro/tool showing exact-pin behavior."
+    },
+    {
+      "number": 3166,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-28",
+      "note": "Verified via manual end-to-end repro (built paket.dll, clitool+nuget deps) that second install run correctly skips resolver and produces byte-identical lock file. Appears already fixed. Opened PR adding CliToolNoopSpecs.fs regression test; await confirmation or closure."
     }
   ],
   "fixes": [
@@ -187,6 +193,11 @@
       "task": 3,
       "item": "issues:3220,3289",
       "note": "Resume only with focused resolver or grouped-nuspec repro evidence; neither has a confident root cause."
+    },
+    {
+      "task": 6,
+      "item": "prs:4368,4364,4363,4367,4370,4369",
+      "note": "Re-verify open/merged state next run before trusting fixes[]; several may already be merged or closed."
     }
   ]
 }
