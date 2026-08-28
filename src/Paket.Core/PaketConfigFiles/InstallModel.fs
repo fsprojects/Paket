@@ -677,6 +677,10 @@ module InstallModel =
     let addAnalyzerFiles (analyzerFiles:NuGet.UnparsedPackageFile seq) (installModel:InstallModel)  : InstallModel =
         let analyzerLibs =
             analyzerFiles
+            // Only .dll files are actual analyzer assemblies. Some packages ship
+            // additional files (e.g. .xml docs) in the analyzers folder which must
+            // not be added as analyzer references, or MSBuild will fail.
+            |> Seq.filter (fun file -> String.equalsIgnoreCase (Path.GetExtension file.FullPath) ".dll")
             |> Seq.map (fun file -> FileInfo file.FullPath |> AnalyzerLib.FromFile)
             |> List.ofSeq
 
