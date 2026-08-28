@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": null,
+    "labelling_after": 3401,
     "investigation_after": null
   },
   "issues": [
@@ -70,6 +70,12 @@
       "state": "resolution_recommended",
       "updated_at": "2026-08-27",
       "note": "Read-only Paket.Restore.targets overwrite appears fixed by commit 08df1996f; await confirmation or closure."
+    },
+    {
+      "number": 3358,
+      "state": "commented",
+      "updated_at": "2026-08-28",
+      "note": "Explained groups aren't tied to MSBuild configuration/conditional symbols; suggested per-target project split."
     }
   ],
   "fixes": [
@@ -130,14 +136,7 @@
       "note": "Draft fix strips only file:// scheme, preserving absolute path leading slash for local git deps."
     }
   ],
-  "checks": [
-    {
-      "area": "repo_assist_prs",
-      "checked_at": "2026-08-27",
-      "result": "Six open Repo Assist PRs verified: 4363, 4364, 4367, 4368, 4369, and 4370; 4363 and 4364 are CI-green and no longer draft.",
-      "follow_up": null
-    }
-  ],
+  "checks": [],
   "completed_actions": [
     {
       "key": "issue:3202",
