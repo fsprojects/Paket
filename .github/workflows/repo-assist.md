@@ -160,13 +160,21 @@ safe-outputs:
     draft: true
     title-prefix: "[repo-assist] "
     labels: [automation, repo-assist]
-    protected-files: fallback-to-issue
+    protected-files:
+      policy: request_review
+      exclude:
+      - CHANGELOG.md
+      - README.md
     max: 4
   push-to-pull-request-branch:
     target: "*"
     required-title-prefix: "[repo-assist] "
     max: 4
-    protected-files: fallback-to-issue
+    protected-files:
+      policy: allowed
+      exclude:
+      - CHANGELOG.md
+      - README.md
   create-issue:
     title-prefix: "[repo-assist] "
     labels: [automation, repo-assist]
