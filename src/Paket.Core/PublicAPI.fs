@@ -363,18 +363,34 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Updates the given package.
     member this.UpdatePackage(groupName: string option, package: string, version: string option, force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
-        let groupName =
-            match groupName with
-            | None -> Constants.MainDependencyGroup
-            | Some name -> GroupName name
         let withBindingRedirects = if withBindingRedirects then BindingRedirectsSettings.On else BindingRedirectsSettings.Off
+        let options =
+            { UpdaterOptions.Default with
+                Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None)
+                NoInstall = installAfter |> not }
+
+        let groupNames =
+            match groupName with
+            | Some name -> [GroupName name]
+            | None ->
+                // No group was specified explicitly. Preserve the historic default of updating
+                // the main group, but if the package isn't referenced there, fall back to
+                // updating it in every group that does reference it (see issue #3476).
+                let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
+                let packageName = PackageName package
+                if dependenciesFile.HasPackage(Constants.MainDependencyGroup, packageName) then
+                    [Constants.MainDependencyGroup]
+                else
+                    match dependenciesFile.GetGroupsContainingPackage(packageName) with
+                    | [] -> [Constants.MainDependencyGroup] // let UpdateProcess raise the usual "not found" error
+                    | groups -> groups
 
         RunInLockedAccessMode(
             Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
-            fun () -> UpdateProcess.UpdatePackage(dependenciesFileName, groupName, PackageName package, version,
-                                                  { UpdaterOptions.Default with
-                                                      Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None)
-                                                      NoInstall = installAfter |> not }))
+            fun () ->
+                for groupName in groupNames do
+                    UpdateProcess.UpdatePackage(dependenciesFileName, groupName, PackageName package, version, options) |> ignore
+                true)
 
     /// Restores all dependencies.
     member this.Restore(ignoreChecks): unit = this.Restore(false,None,[],false,ignoreChecks,false,None,None)

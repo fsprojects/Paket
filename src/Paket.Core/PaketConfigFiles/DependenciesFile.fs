@@ -142,6 +142,13 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         | Some group -> sprintf "%sHowever, %O was found in group %O." Environment.NewLine packageName group.Value.Name
         | None -> ""
 
+    /// Returns the names of all groups that directly reference the given package.
+    member __.GetGroupsContainingPackage (packageName:PackageName) =
+        groups
+        |> Seq.filter (fun g -> g.Value.Packages |> List.exists (fun p -> p.Name = packageName))
+        |> Seq.map (fun g -> g.Value.Name)
+        |> Seq.toList
+
     member this.SimplifyFrameworkRestrictions() =
         let transform (dependenciesFile:DependenciesFile) (group:DependenciesGroup) =
             let getRestrictionList =
