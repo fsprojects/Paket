@@ -2,7 +2,7 @@
   "version": 1,
   "cursors": {
     "labelling_after": 3455,
-    "investigation_after": 4268
+    "investigation_after": 4346
   },
   "issues": [
     {
@@ -170,6 +170,14 @@
       "status": "open",
       "updated_at": "2026-08-28",
       "note": "Draft fix makes update without --group search all groups for the package, not just Main."
+    },
+    {
+      "issue": 4346,
+      "pr": null,
+      "branch": "repo-assist/ci-enable-scriptgen-integration-tests",
+      "status": "open",
+      "updated_at": "2026-08-28",
+      "note": "Added linux-integration-scriptgen CI job running QuickIntegrationTests (TestCategory=scriptgen); verified 12/12 locally. Posted full remaining-work plan (6 clusters) as issue comment."
     }
   ],
   "checks": [],
