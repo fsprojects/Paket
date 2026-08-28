@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3462,
+    "labelling_after": 3504,
     "investigation_after": null
   },
   "issues": [
@@ -160,6 +160,14 @@
       "status": "open",
       "updated_at": "2026-08-28",
       "note": "Draft fix filters analyzers folder to .dll only, preventing MSBuild breakage from stray xml docs."
+    },
+    {
+      "issue": 3476,
+      "pr": null,
+      "branch": "repo-assist/fix-issue-3476-update-all-groups",
+      "status": "open",
+      "updated_at": "2026-08-28",
+      "note": "Draft fix makes update without --group search all groups for the package, not just Main."
     }
   ],
   "checks": [],
