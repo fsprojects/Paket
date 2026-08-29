@@ -72,9 +72,20 @@ namespace Paket.Bootstrapper
         private static void WriteConsoleCore(string message, ConsoleColor consoleColor)
         {
             var oldColor = Console.ForegroundColor;
-            Console.ForegroundColor = consoleColor;
+            // Only touch Console.ForegroundColor when it actually needs to change. On some
+            // terminals (e.g. Mono on Linux/macOS) assigning the property - even to the value
+            // it already holds - forces an explicit ANSI color code, which can override the
+            // terminal's default foreground color (see #3401).
+            var needsColorChange = oldColor != consoleColor;
+            if (needsColorChange)
+            {
+                Console.ForegroundColor = consoleColor;
+            }
             Console.WriteLine(message);
-            Console.ForegroundColor = oldColor;
+            if (needsColorChange)
+            {
+                Console.ForegroundColor = oldColor;
+            }
         }
     }
 
