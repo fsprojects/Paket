@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3685,
+    "labelling_after": 4260,
     "investigation_after": 3557
   },
   "issues": [
@@ -200,6 +200,14 @@
       "status": "open",
       "updated_at": "2026-08-29",
       "note": "Draft PR #4405 opened: tryMatchPackageLine now matches clitool lines too."
+    },
+    {
+      "issue": 3562,
+      "branch": "repo-assist/fix-issue-3562-user-env-vars",
+      "pr": null,
+      "status": "open",
+      "updated_at": "2026-08-29",
+      "note": "Fixed EnvironmentVariable.Create to fall back to User/Machine scoped env vars. PR created run 33276999511 (branch repo-assist/fix-issue-3562-user-env-vars); PR number unknown at write-time, verify next run."
     }
   ],
   "checks": [],
@@ -224,6 +232,16 @@
       "task": 3,
       "item": "review-old-bug-cohort",
       "note": "Old (2016) bug-labelled issues #1504, #1498, #1512+ scanned; pattern shows many are stale w/ no repro since ~2018 - favor resolution-recommendation over fix attempts for this cohort in future runs."
+    },
+    {
+      "task": 6,
+      "item": "verify-ci-open-prs",
+      "note": "Verify CI status on PRs #4405, #4396, #4395, and the new #3562-fix PR (branch repo-assist/fix-issue-3562-user-env-vars) next run."
+    },
+    {
+      "task": 1,
+      "item": "labelling-continue-2",
+      "note": "Continue labelling no:label backlog beyond #4260-#4324 range (recent issues) and older 2019 backlog beyond #3685."
     }
   ]
 }
