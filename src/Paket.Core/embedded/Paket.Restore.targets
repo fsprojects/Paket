@@ -432,7 +432,10 @@
               PackageLicenseExpression="$(PackageLicenseExpression)"
               PackageLicenseExpressionVersion="$(PackageLicenseExpressionVersion)"
               Readme="$(PackageReadmeFile)"
-              NoDefaultExcludes="$(NoDefaultExcludes)"/>
+              NoDefaultExcludes="$(NoDefaultExcludes)"
+              NoWarn="$(NoWarn)"
+              TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
+              WarningsAsErrors="$(WarningsAsErrors)"/>
 
 		<PackTask Condition="$(UseMSBuild16_0_Pack)"
 				  PackItem="$(PackProjectInputFile)"
