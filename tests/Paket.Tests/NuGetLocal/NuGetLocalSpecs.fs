@@ -16,6 +16,8 @@ let ``package file name split to id and version correctly``() =
         "package.name.with.dots.1.2.3-alpha2.nupkg", Some (PackageName "package.name.with.dots", SemVer.Parse "1.2.3-alpha2")
         "package.1.2.3.nupkg.back", None
         "package.name.without.version.nupkg", None
+        "package.1.2.3.symbols.nupkg", Some (PackageName "package", SemVer.Parse "1.2.3")
+        "package.name.with.dots.1.2.3-alpha2.symbols.nupkg", Some (PackageName "package.name.with.dots", SemVer.Parse "1.2.3-alpha2")
     ]
     |> List.iter
         (fun (input, expectedResult) ->
