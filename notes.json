@@ -160,6 +160,12 @@
       "state": "awaiting_approval",
       "updated_at": "2026-08-29",
       "note": "SDK-style dotnet pack loses exact pin in nuspec because PackTask needs bracket [x] Version syntax; Paket's restore targets emit plain version. Proposed opt-in fix; needs maintainer design decision (changes restore+pack Version semantics)."
+    },
+    {
+      "number": 2370,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-29",
+      "note": "PrivateAssets/developmentDependency already supported via copy_local + NuGet developmentDependency nuspec handling; commented recommending closure."
     }
   ],
   "fixes": [
@@ -178,6 +184,14 @@
       "status": "open",
       "updated_at": "2026-08-29",
       "note": "Forwarded NoWarn/TreatWarningsAsErrors/WarningsAsErrors MSBuild properties to PackTask in Paket.Restore.targets (UseMSBuild16_10_Pack path only). XML validated; full build/restore unavailable in sandbox (network). Draft PR opened, comment posted."
+    },
+    {
+      "issue": 1857,
+      "branch": "repo-assist/fix-issue-1857-fsharpcore-redirects-warning",
+      "status": "open",
+      "updated_at": "2026-08-29",
+      "note": "Extended FSharp.Core check in InstallProcess.fs to warn when redirects: force is missing. XML/type validated manually; full build/restore unavailable in sandbox (network). Draft PR opened.",
+      "pr": null
     }
   ],
   "checks": [],
@@ -190,13 +204,13 @@
   "priorities": [
     {
       "task": 6,
-      "item": "verify-new-prs",
-      "note": "Verify CI status/review on newly opened repo-assist PR #4393 (NoWarn/TreatWarningsAsErrors/WarningsAsErrors PackTask fix, issue #3504)."
+      "item": "push-1857-doc-fix",
+      "note": "Optional: push follow-up commit f72bd224f (doc anchor fix) to the #1857 PR branch once its PR number is known."
     },
     {
-      "task": 2,
-      "item": "memory-fixes-audit",
-      "note": "Keep re-verifying fixes[] against live PR/issue state each run; prior fixes[] batch (#4346,#3549,#3401,#3637,#1587,#4306,#3422) all confirmed merged+closed and removed this run."
+      "task": 6,
+      "item": "verify-new-prs",
+      "note": "Verify CI status/review on PR for #1857 (FSharp.Core redirects warning) and PR #4393 (NoWarn/TreatWarningsAsErrors PackTask fix)."
     },
     {
       "task": 1,
