@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3784,
+    "labelling_after": 4324,
     "investigation_after": 3557
   },
   "issues": [
@@ -172,16 +172,22 @@
       "state": "commented",
       "updated_at": "2026-08-29",
       "note": "Explained resolver stack overflow is unsatisfiable-constraint search-space explosion (Microsoft.Extensions.Logging conflict); suggested reframing as resolver-robustness enhancement."
+    },
+    {
+      "number": 4262,
+      "state": "commented",
+      "updated_at": "2026-08-29",
+      "note": "Explained dotnet clean triggers PaketRestore via CollectPackageReferences evaluation chain; gave PaketRestoreDisabled workaround; not proposing invasive BeforeTargets rework."
     }
   ],
   "fixes": [
     {
       "issue": 3654,
-      "branch": "repo-assist/fix-issue-3654-clitool-remove",
-      "pr": null,
+      "branch": "repo-assist/fix-issue-3654-clitool-remove-64c1e5a15986895e",
+      "pr": 4405,
       "status": "open",
       "updated_at": "2026-08-29",
-      "note": "Fixed tryMatchPackageLine in DependenciesFile.fs to also match clitool lines (was nuget-only), so RemovePackage now finds and deletes clitool lines. Added regression test. 9/9 RemovePackageSpecs tests passed on net9. Draft PR opened, comment posted."
+      "note": "Draft PR #4405 opened: tryMatchPackageLine now matches clitool lines too."
     }
   ],
   "checks": [],
@@ -195,12 +201,12 @@
     {
       "task": 1,
       "item": "labelling-continue",
-      "note": "Labelled through #3784 (no:label search); continue from there next run, re-querying no:label since new issues may appear."
+      "note": "Labelled through recent no:label batch (#4243-#4324); re-query no:label next run since new issues appear."
     },
     {
       "task": 6,
-      "item": "verify-pr-3654",
-      "note": "Verify CI status/review on new draft PR for #3654 (clitool remove fix)."
+      "item": "verify-pr-4405",
+      "note": "Verify CI status/review on draft PR #4405 (clitool remove fix, closes #3654)."
     }
   ]
 }
