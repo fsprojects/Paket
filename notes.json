@@ -1,8 +1,8 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3647,
-    "investigation_after": 4346
+    "labelling_after": 3684,
+    "investigation_after": 1707
   },
   "issues": [
     {
@@ -136,16 +136,22 @@
       "state": "resolution_recommended",
       "updated_at": "2026-08-29",
       "note": "Segfault is Mono JIT crash on retired Azure Pipelines Hosted Ubuntu 1604 agent; recommended closing unless reproducible on current images."
+    },
+    {
+      "number": 1707,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-29",
+      "note": "Core complaint (lock not auto-updated) is by-design per 2016 maintainer explanation already in thread; recommended closing. Unfiled secondary idea: warn on lock/deps mismatch."
     }
   ],
   "fixes": [
     {
       "issue": 4346,
       "pr": null,
-      "branch": "repo-assist/ci-enable-scriptgen-integration-tests",
+      "branch": "repo-assist/ci-enable-scriptgen-integration-tests-2",
       "status": "open",
-      "updated_at": "2026-08-28",
-      "note": "Scriptgen CI job attempt never pushed (branch had no diff vs master); PR creation fell back to issue #4383 with manual recreation instructions. Needs re-attempt on a fresh branch."
+      "updated_at": "2026-08-29",
+      "note": "Scriptgen CI job re-implemented and pushed successfully this time (prior branch had no diff). Draft PR opened adding Linux (Integration - scriptgen) job to ci.yml. Build verified locally; full scriptgen run to be exercised by CI on the PR."
     },
     {
       "issue": 3549,
@@ -182,13 +188,13 @@
   "priorities": [
     {
       "task": 6,
-      "item": "prs:4382,4384,4385",
-      "note": "Verify CI status and maintainer review on the 3 open repo-assist PRs (incl. new #3637 fix)."
+      "item": "prs:4382,4384,4385,4386,scriptgen-ci",
+      "note": "Verify CI status/review on 5 open repo-assist PRs, including the new scriptgen CI job PR for #4346."
     },
     {
-      "task": 4,
-      "item": "issue:4346",
-      "note": "Scriptgen CI job never actually landed; re-implement and push properly on a fresh branch."
+      "task": 6,
+      "item": "prs:4382,4384,4385",
+      "note": "Verify CI status and maintainer review on the 3 open repo-assist PRs (incl. new #3637 fix)."
     },
     {
       "task": 2,
