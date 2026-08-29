@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3697,
+    "labelling_after": 3562,
     "investigation_after": 3557
   },
   "issues": [
@@ -170,6 +170,14 @@
       "status": "open",
       "updated_at": "2026-08-29",
       "note": "Fixed NO_PROXY wildcard bypass entries never matching (Regex.Escape order bug in envProxies). Build+tests succeeded (targeted proxy tests pass; 4 pre-existing unrelated env-var-pollution failures confirmed present on master too). Draft PR opened, comment posted."
+    },
+    {
+      "issue": 3504,
+      "branch": "repo-assist/fix-issue-3504-nowarn-pack",
+      "pr": 4393,
+      "status": "open",
+      "updated_at": "2026-08-29",
+      "note": "Forwarded NoWarn/TreatWarningsAsErrors/WarningsAsErrors MSBuild properties to PackTask in Paket.Restore.targets (UseMSBuild16_10_Pack path only). XML validated; full build/restore unavailable in sandbox (network). Draft PR opened, comment posted."
     }
   ],
   "checks": [],
@@ -183,7 +191,7 @@
     {
       "task": 6,
       "item": "verify-new-prs",
-      "note": "Verify CI status/review on newly opened repo-assist PR for #3548 (NO_PROXY wildcard bypass fix)."
+      "note": "Verify CI status/review on newly opened repo-assist PR #4393 (NoWarn/TreatWarningsAsErrors/WarningsAsErrors PackTask fix, issue #3504)."
     },
     {
       "task": 2,
