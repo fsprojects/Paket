@@ -1,8 +1,8 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3548,
-    "investigation_after": 3422
+    "labelling_after": 3562,
+    "investigation_after": 3548
   },
   "issues": [
     {
@@ -13,9 +13,9 @@
     },
     {
       "number": 3289,
-      "state": "deferred",
-      "updated_at": "2026-08-27",
-      "note": "Needs a repro and deeper trace of grouped nuspec references versus project reference writing."
+      "state": "commented",
+      "updated_at": "2026-08-29",
+      "note": "Original repro fixed upstream (case mismatch); commented clarifying remaining case-insensitivity enhancement ask, labelled enhancement."
     },
     {
       "number": 3220,
@@ -158,60 +158,12 @@
   ],
   "fixes": [
     {
-      "issue": 4346,
+      "issue": 3548,
       "pr": null,
-      "branch": "repo-assist/ci-enable-scriptgen-integration-tests-2",
+      "branch": "repo-assist/fix-issue-3548-no-proxy",
       "status": "open",
       "updated_at": "2026-08-29",
-      "note": "Scriptgen CI job re-implemented and pushed successfully this time (prior branch had no diff). Draft PR opened adding Linux (Integration - scriptgen) job to ci.yml. Build verified locally; full scriptgen run to be exercised by CI on the PR."
-    },
-    {
-      "issue": 3549,
-      "pr": null,
-      "branch": "repo-assist/issue-3549-pack-no-template",
-      "status": "open",
-      "updated_at": "2026-08-29",
-      "note": "Added traceWarnfn warning in PackageProcess.Pack when no packagable templates found. Build succeeded; targeted tests 3/4 passed (1 pre-existing unrelated env failure)."
-    },
-    {
-      "issue": 3401,
-      "pr": null,
-      "branch": "repo-assist/fix-issue-3401-console-color",
-      "status": "open",
-      "updated_at": "2026-08-29",
-      "note": "Fixed ConsoleImpl.WriteConsoleCore forcing Console.ForegroundColor even when unchanged (Mono terminal color override). Build succeeded; 156/162 bootstrapper tests passed (6 pre-existing proxy-env-var failures)."
-    },
-    {
-      "issue": 3637,
-      "pr": null,
-      "branch": "repo-assist/fix-issue-3637-invalid-option-warning",
-      "status": "open",
-      "updated_at": "2026-08-29",
-      "note": "Added traceWarnfn warnings for unknown redirects/storage/strategy/lowest_matching values in DependenciesFileParser. Build succeeded; 155/155 ParserSpecs passed on net9."
-    },
-    {
-      "issue": 1587,
-      "pr": null,
-      "branch": "repo-assist/fix-issue-1587-symbols-local-source",
-      "status": "open",
-      "updated_at": "2026-08-29",
-      "note": "Fixed local NuGet source ignoring .symbols.nupkg-only packages (parsePackageInfoFromFileName + getAllVersionsFromLocalPath now strip .symbols suffix). Build succeeded; net9 NuGetLocalSpecs 2/2 passed, net461 skipped (no mono in sandbox)."
-    },
-    {
-      "issue": 4306,
-      "pr": null,
-      "branch": "repo-assist/fix-issue-4306-home-dir-deletion",
-      "status": "open",
-      "updated_at": "2026-08-29",
-      "note": "Critical fix: malformed 'github owner/repo:branch ~>' spec caused computeFilePath to expand '~>' into home dir, deleting it via CleanDir. Fix rejects rooted resolved names. Regression test added; 155/155 ParserSpecs pass on net9. Draft PR opened, comment posted."
-    },
-    {
-      "issue": 3422,
-      "pr": null,
-      "branch": "repo-assist/fix-issue-3422-local-git-version-restriction",
-      "status": "open",
-      "updated_at": "2026-08-29",
-      "note": "Fixed local git file:// version-requirement resolution (mirrored RemoteGitOrigin tag-scanning logic for LocalGitOrigin). Build succeeded; 36/36 net9 Git unit tests passed. Draft PR opened, comment posted."
+      "note": "Fixed NO_PROXY wildcard bypass entries never matching (Regex.Escape order bug in envProxies). Build+tests succeeded (targeted proxy tests pass; 4 pre-existing unrelated env-var-pollution failures confirmed present on master too). Draft PR opened, comment posted."
     }
   ],
   "checks": [],
@@ -224,23 +176,18 @@
   "priorities": [
     {
       "task": 6,
-      "item": "prs:4382,4384,4385,4386,4388,4389,4390,eng-ci-cache",
-      "note": "Verify CI status/review on all open repo-assist PRs, including new CI-cache PR and critical fix for #4306 (home dir deletion)."
+      "item": "verify-new-prs",
+      "note": "Verify CI status/review on newly opened repo-assist PR for #3548 (NO_PROXY wildcard bypass fix)."
     },
     {
       "task": 2,
       "item": "memory-fixes-audit",
-      "note": "Keep re-verifying fixes[] against live PR state each run before reporting."
-    },
-    {
-      "task": 4,
-      "item": "eng-ci-cache",
-      "note": "Added actions/cache@v4 for ~/.nuget/packages and packages/ in linux+windows CI jobs. Draft PR opened; verify cache hit-rate improvement once CI runs."
+      "note": "Keep re-verifying fixes[] against live PR/issue state each run; prior fixes[] batch (#4346,#3549,#3401,#3637,#1587,#4306,#3422) all confirmed merged+closed and removed this run."
     },
     {
       "task": 1,
       "item": "labelling-continue",
-      "note": "Labelled 28 issues up through #3548 (no:label search); continue from there next run, re-querying no:label since new issues may appear."
+      "note": "Labelled 29 more issues up through #3562 (no:label search); continue from there next run, re-querying no:label since new issues may appear."
     }
   ]
 }
