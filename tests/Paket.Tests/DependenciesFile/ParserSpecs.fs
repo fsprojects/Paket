@@ -65,6 +65,15 @@ let ``should read simple config with prerelease and comment``() =
     packageDefinition.Range |> shouldEqual (VersionRange.AtLeast("3.2"))
     packageDefinition.PreReleases |> shouldEqual PreReleaseStatus.All
 
+let configWithTabBeforePrerelease = "source \"http://www.nuget.org/api/v2\"\n\nnuget System.Composition 1.1.0-beta-25104-02\tprerelease\n"
+
+[<Test>]
+let ``should read config with tab between version and prerelease``() =
+    let cfg = DependenciesFile.FromSource(configWithTabBeforePrerelease)
+    let packageDefinition = cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "System.Composition"]
+    packageDefinition.Range |> shouldEqual (VersionRange.Exactly("1.1.0-beta-25104-02"))
+    packageDefinition.PreReleases |> shouldEqual PreReleaseStatus.All
+
 let configWithVersionLine = """
 version 1.2.3 --prefer-nuget
 source "http://www.nuget.org/api/v2"
