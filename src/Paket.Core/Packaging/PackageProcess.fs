@@ -242,6 +242,11 @@ let Pack(workingDir: string, dependenciesFile : DependenciesFile, packageOutputP
         | None ->   templatesWithVersion
         | Some r -> templatesWithVersion |> List.map (TemplateFile.setReleaseNotes r)
 
+    if processedTemplates |> List.isEmpty then
+        match templateFile with
+        | Some template -> traceWarnfn "No paket.template file was found at %s." template
+        | None -> traceWarnfn "No paket.template files were found in %s or below. Nothing was packaged. See https://fsprojects.github.io/Paket/paket-pack.html for details on how to create one." workingDir
+
     // Package all templates
     processedTemplates
     |> List.map (fun templateFile ->
