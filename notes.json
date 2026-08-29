@@ -1,8 +1,8 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 4260,
-    "investigation_after": 3557
+    "labelling_after": 4304,
+    "investigation_after": 3412
   },
   "issues": [
     {
@@ -190,6 +190,18 @@
       "state": "resolution_recommended",
       "updated_at": "2026-08-29",
       "note": "Sprawling 2016 framework-mismatch-warning thread, no repro since 2018; recommended closing as stale."
+    },
+    {
+      "number": 3388,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-29",
+      "note": "Offline NuGet-cache-not-used-by-dotnet-restore issue tied to obsolete SDK 2.1.x implicit-package model; no repro since 2018; recommended closing as stale."
+    },
+    {
+      "number": 3412,
+      "state": "commented",
+      "updated_at": "2026-08-29",
+      "note": "Long-standing 'paket hangs silently' reports across years/environments; reviewed Program.fs/ProcessHelper.fs, no confident root cause; asked for a process dump to progress."
     }
   ],
   "fixes": [
@@ -220,28 +232,13 @@
   "priorities": [
     {
       "task": 1,
-      "item": "labelling-continue",
-      "note": "Labelled old 2019 no:label backlog through #3685; also labelled through #4324 previously. Re-query no:label next run (two overlapping pools: old backlog + newly created)."
-    },
-    {
-      "task": 6,
-      "item": "verify-pr-4405",
-      "note": "PR #4405 (clitool remove fix, closes #3654) is open/draft with mergeable_state=unstable - needs investigation (possible conflict/CI failure) in a future Task 6 run."
+      "item": "labelling-continue-3",
+      "note": "Labelled through #4304. Continue no:label query beyond #4304 next run; also re-check older 2019-era backlog periodically for stragglers."
     },
     {
       "task": 3,
-      "item": "review-old-bug-cohort",
-      "note": "Old (2016) bug-labelled issues #1504, #1498, #1512+ scanned; pattern shows many are stale w/ no repro since ~2018 - favor resolution-recommendation over fix attempts for this cohort in future runs."
-    },
-    {
-      "task": 6,
-      "item": "verify-ci-open-prs",
-      "note": "Verify CI status on PRs #4405, #4396, #4395, and the new #3562-fix PR (branch repo-assist/fix-issue-3562-user-env-vars) next run."
-    },
-    {
-      "task": 1,
-      "item": "labelling-continue-2",
-      "note": "Continue labelling no:label backlog beyond #4260-#4324 range (recent issues) and older 2019 backlog beyond #3685."
+      "item": "candidate-fixes-batch",
+      "note": "Newly labelled bug candidates worth a Task 3 fix attempt: #4260 (FSharp.Core strict version restriction should be >=), #4266 (intermittent git dependency restore failures), #4304 (targets-file import mismatch vs VS for native/build dual-targets packages)."
     }
   ]
 }
