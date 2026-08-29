@@ -205,6 +205,20 @@ let ``should read config with no redirects``() =
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
 
+let invalidRedirectsConfig = """
+redirects maybe
+source "http://www.nuget.org/api/v2" // first source
+
+nuget "FAKE" "~> 3.0"
+"""
+
+[<Test>]
+let ``should warn and ignore unknown redirects setting``() =
+    let cfg = DependenciesFile.FromSource(invalidRedirectsConfig)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Redirects |> shouldEqual None
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
+
 let noneContentConfig = """
 content none
 source "http://www.nuget.org/api/v2" // first source
