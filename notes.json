@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3620,
+    "labelling_after": 3647,
     "investigation_after": 4346
   },
   "issues": [
@@ -130,6 +130,12 @@
       "state": "resolution_recommended",
       "updated_at": "2026-08-29",
       "note": "UAP10.0.16300 platform detection was fixed by commit 0ce1827d3 shortly after filing; posted comment recommending closure."
+    },
+    {
+      "number": 3628,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-29",
+      "note": "Segfault is Mono JIT crash on retired Azure Pipelines Hosted Ubuntu 1604 agent; recommended closing unless reproducible on current images."
     }
   ],
   "fixes": [
@@ -156,6 +162,14 @@
       "status": "open",
       "updated_at": "2026-08-29",
       "note": "Fixed ConsoleImpl.WriteConsoleCore forcing Console.ForegroundColor even when unchanged (Mono terminal color override). Build succeeded; 156/162 bootstrapper tests passed (6 pre-existing proxy-env-var failures)."
+    },
+    {
+      "issue": 3637,
+      "pr": null,
+      "branch": "repo-assist/fix-issue-3637-invalid-option-warning",
+      "status": "open",
+      "updated_at": "2026-08-29",
+      "note": "Added traceWarnfn warnings for unknown redirects/storage/strategy/lowest_matching values in DependenciesFileParser. Build succeeded; 155/155 ParserSpecs passed on net9."
     }
   ],
   "checks": [],
@@ -167,24 +181,19 @@
   ],
   "priorities": [
     {
-      "task": 4,
-      "item": "issue:4346",
-      "note": "Scriptgen CI job never actually landed (branch had empty diff vs master); re-implement and push properly on a fresh branch."
+      "task": 6,
+      "item": "prs:4382,4384,4385",
+      "note": "Verify CI status and maintainer review on the 3 open repo-assist PRs (incl. new #3637 fix)."
     },
     {
-      "task": 6,
-      "item": "prs:4384,4382",
-      "note": "Verify CI status and maintainer review; these are the only 2 open repo-assist PRs remaining."
+      "task": 4,
+      "item": "issue:4346",
+      "note": "Scriptgen CI job never actually landed; re-implement and push properly on a fresh branch."
     },
     {
       "task": 2,
       "item": "memory-fixes-audit",
-      "note": "6 fixes entries were stale/merged and 1 rejected this run; keep re-verifying fixes[] against live PR state each run before reporting."
-    },
-    {
-      "task": 6,
-      "item": "prs:4384,4382,3401-fix",
-      "note": "Verify CI status and maintainer review on open repo-assist PRs, including new #3401 color fix."
+      "note": "Keep re-verifying fixes[] against live PR state each run before reporting."
     }
   ]
 }
