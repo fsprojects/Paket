@@ -27,6 +27,15 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nuget/packages
+            packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('paket.lock', 'paket.dependencies', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
       - name: Install Mono
         run: sudo apt-get update && sudo apt-get install --yes mono-complete
       - name: Install build SDK and integration test runtime
@@ -54,6 +63,15 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nuget/packages
+            packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('paket.lock', 'paket.dependencies', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
       - name: Build
         run: .\build.cmd BuildPackage
       - name: Upload build artifacts
