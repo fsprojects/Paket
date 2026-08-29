@@ -1,8 +1,8 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3562,
-    "investigation_after": 3548
+    "labelling_after": 3697,
+    "investigation_after": 3557
   },
   "issues": [
     {
@@ -154,6 +154,12 @@
       "state": "resolution_recommended",
       "updated_at": "2026-08-29",
       "note": "2016 Ubuntu 14.04/Mono 3.2.8 bootstrapper cert failure; unsupported EOL platform, not reproducible on current Paket. Recommended closing."
+    },
+    {
+      "number": 3557,
+      "state": "awaiting_approval",
+      "updated_at": "2026-08-29",
+      "note": "SDK-style dotnet pack loses exact pin in nuspec because PackTask needs bracket [x] Version syntax; Paket's restore targets emit plain version. Proposed opt-in fix; needs maintainer design decision (changes restore+pack Version semantics)."
     }
   ],
   "fixes": [
@@ -187,7 +193,7 @@
     {
       "task": 1,
       "item": "labelling-continue",
-      "note": "Labelled 29 more issues up through #3562 (no:label search); continue from there next run, re-querying no:label since new issues may appear."
+      "note": "Labelled through #3697 (no:label search); continue from there next run, re-querying no:label since new issues may appear."
     }
   ]
 }
