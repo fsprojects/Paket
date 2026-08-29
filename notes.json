@@ -2,7 +2,7 @@
   "version": 1,
   "cursors": {
     "labelling_after": 4338,
-    "investigation_after": 1809
+    "investigation_after": 3422
   },
   "issues": [
     {
@@ -204,6 +204,14 @@
       "status": "open",
       "updated_at": "2026-08-29",
       "note": "Critical fix: malformed 'github owner/repo:branch ~>' spec caused computeFilePath to expand '~>' into home dir, deleting it via CleanDir. Fix rejects rooted resolved names. Regression test added; 155/155 ParserSpecs pass on net9. Draft PR opened, comment posted."
+    },
+    {
+      "issue": 3422,
+      "pr": null,
+      "branch": "repo-assist/fix-issue-3422-local-git-version-restriction",
+      "status": "open",
+      "updated_at": "2026-08-29",
+      "note": "Fixed local git file:// version-requirement resolution (mirrored RemoteGitOrigin tag-scanning logic for LocalGitOrigin). Build succeeded; 36/36 net9 Git unit tests passed. Draft PR opened, comment posted."
     }
   ],
   "checks": [],
