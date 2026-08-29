@@ -1,8 +1,8 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3268,
-    "investigation_after": 1707
+    "labelling_after": 4338,
+    "investigation_after": 1809
   },
   "issues": [
     {
@@ -142,6 +142,18 @@
       "state": "resolution_recommended",
       "updated_at": "2026-08-29",
       "note": "Core complaint (lock not auto-updated) is by-design per 2016 maintainer explanation already in thread; recommended closing. Unfiled secondary idea: warn on lock/deps mismatch."
+    },
+    {
+      "number": 1804,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-29",
+      "note": "2016 git /dev/tty credential prompt; current Paket sets GIT_TERMINAL_PROMPT=0, fixing this failure mode. Recommended closing."
+    },
+    {
+      "number": 1809,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-29",
+      "note": "2016 Ubuntu 14.04/Mono 3.2.8 bootstrapper cert failure; unsupported EOL platform, not reproducible on current Paket. Recommended closing."
     }
   ],
   "fixes": [
@@ -184,6 +196,14 @@
       "status": "open",
       "updated_at": "2026-08-29",
       "note": "Fixed local NuGet source ignoring .symbols.nupkg-only packages (parsePackageInfoFromFileName + getAllVersionsFromLocalPath now strip .symbols suffix). Build succeeded; net9 NuGetLocalSpecs 2/2 passed, net461 skipped (no mono in sandbox)."
+    },
+    {
+      "issue": 4306,
+      "pr": null,
+      "branch": "repo-assist/fix-issue-4306-home-dir-deletion",
+      "status": "open",
+      "updated_at": "2026-08-29",
+      "note": "Critical fix: malformed 'github owner/repo:branch ~>' spec caused computeFilePath to expand '~>' into home dir, deleting it via CleanDir. Fix rejects rooted resolved names. Regression test added; 155/155 ParserSpecs pass on net9. Draft PR opened, comment posted."
     }
   ],
   "checks": [],
@@ -196,13 +216,8 @@
   "priorities": [
     {
       "task": 6,
-      "item": "prs:4382,4384,4385,4386,scriptgen-ci",
-      "note": "Verify CI status/review on 5 open repo-assist PRs, including the new scriptgen CI job PR for #4346."
-    },
-    {
-      "task": 6,
-      "item": "prs:4382,4384,4385",
-      "note": "Verify CI status and maintainer review on the 3 open repo-assist PRs (incl. new #3637 fix)."
+      "item": "prs:4382,4384,4386,4387,4388,fix-4306",
+      "note": "Verify CI status/review on open repo-assist PRs, including new critical fix for #4306 (home dir deletion)."
     },
     {
       "task": 2,
