@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3520,
+    "labelling_after": 3563,
     "investigation_after": 4346
   },
   "issues": [
@@ -105,7 +105,7 @@
       "number": 3166,
       "state": "resolution_recommended",
       "updated_at": "2026-08-28",
-      "note": "Verified via manual end-to-end repro (built paket.dll, clitool+nuget deps) that second install run correctly skips resolver and produces byte-identical lock file. Appears already fixed. Opened PR adding CliToolNoopSpecs.fs regression test; await confirmation or closure."
+      "note": "Verified via manual end-to-end repro that second install run correctly skips resolver and produces byte-identical lock file. Appears already fixed. Opened PR #4382 adding CliToolNoopSpecs.fs regression test; await confirmation or closure."
     },
     {
       "number": 3268,
@@ -118,6 +118,12 @@
       "state": "resolution_recommended",
       "updated_at": "2026-08-28",
       "note": "Confirmed resolver search-space explosion (System.* transitive conflicts) with min strategy; maintainer workaround already in-thread; recommended closing."
+    },
+    {
+      "number": 3549,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-29",
+      "note": "Fixed: paket pack now warns via traceWarnfn when no paket.template files are found instead of silently doing nothing. PR opened; awaiting review/merge."
     }
   ],
   "fixes": [
@@ -183,7 +189,15 @@
       "branch": "repo-assist/ci-enable-scriptgen-integration-tests",
       "status": "open",
       "updated_at": "2026-08-28",
-      "note": "Added linux-integration-scriptgen CI job running QuickIntegrationTests (TestCategory=scriptgen); verified 12/12 locally. Posted full remaining-work plan (6 clusters) as issue comment."
+      "note": "Added linux-integration-scriptgen CI job running QuickIntegrationTests (TestCategory=scriptgen); verified 12/12 locally. PR #4383."
+    },
+    {
+      "issue": 3549,
+      "pr": null,
+      "branch": "repo-assist/issue-3549-pack-no-template",
+      "status": "open",
+      "updated_at": "2026-08-29",
+      "note": "Added traceWarnfn warning in PackageProcess.Pack when no packagable templates found. Build succeeded; targeted tests 3/4 passed (1 pre-existing unrelated env failure)."
     }
   ],
   "checks": [],
@@ -216,7 +230,7 @@
     },
     {
       "task": 6,
-      "item": "prs:4368,4364,4363,4367,4370,4369",
+      "item": "prs:4368,4364,4363,4367,4370,4369,4382,4383",
       "note": "Re-verify open/merged state next run before trusting fixes[]; several may already be merged or closed."
     }
   ]
