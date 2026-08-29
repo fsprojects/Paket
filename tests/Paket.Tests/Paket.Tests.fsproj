@@ -97,6 +97,7 @@
     <Compile Include="DependenciesFile\AddPackageSpecs.fs" />
     <Compile Include="DependenciesFile\RemovePackageSpecs.fs" />
     <Compile Include="DependenciesFile\DependencyChangesSpecs.fs" />
+    <Compile Include="DependenciesFile\CliToolNoopSpecs.fs" />
     <Compile Include="DependenciesFile\GroupNameSpecs.fs" />
     <Compile Include="DependenciesFile\AddGithubFilesSpecs.fs" />
     <Compile Include="DependenciesFile\AddGitFilesSpecs.fs" />
