@@ -76,10 +76,18 @@ let envProxies () =
         if isNull v then Environment.GetEnvironmentVariable(name.ToLowerInvariant()) else v
     let bypassList =
         let noproxyString = getEnvValue "NO_PROXY"
-        let noproxy = if not (String.IsNullOrEmpty noproxyString) then System.Text.RegularExpressions.Regex.Escape(noproxyString).Replace(@"*", ".*")  else noproxyString
-
-        if String.IsNullOrEmpty noproxy then [||] else
-        noproxy.Split([| ',' |], StringSplitOptions.RemoveEmptyEntries)
+        if String.IsNullOrEmpty noproxyString then [||] else
+        // Each comma-separated entry may contain '*' as a wildcard. We escape the entry as a
+        // regex, but must treat '*' specially: escaping the whole string first (as was done
+        // previously) turns '*' into the literal '\*', so a later ".Replace(\"*\", \".*\")" has
+        // no effect and wildcard bypass entries (e.g. "*.internal.company.com") never match.
+        // Instead, split on '*', escape each literal segment, and re-join with ".*".
+        let escapeWithWildcard (entry:string) =
+            entry.Split('*')
+            |> Array.map System.Text.RegularExpressions.Regex.Escape
+            |> String.concat ".*"
+        noproxyString.Split([| ',' |], StringSplitOptions.RemoveEmptyEntries)
+        |> Array.map escapeWithWildcard
     let getCredentials (uri:Uri) =
         let userPass = uri.UserInfo.Split([| ':' |], 2)
         if userPass.Length <> 2 || userPass.[0].Length = 0 then None else
