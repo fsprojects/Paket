@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3684,
+    "labelling_after": 3268,
     "investigation_after": 1707
   },
   "issues": [
@@ -176,6 +176,14 @@
       "status": "open",
       "updated_at": "2026-08-29",
       "note": "Added traceWarnfn warnings for unknown redirects/storage/strategy/lowest_matching values in DependenciesFileParser. Build succeeded; 155/155 ParserSpecs passed on net9."
+    },
+    {
+      "issue": 1587,
+      "pr": null,
+      "branch": "repo-assist/fix-issue-1587-symbols-local-source",
+      "status": "open",
+      "updated_at": "2026-08-29",
+      "note": "Fixed local NuGet source ignoring .symbols.nupkg-only packages (parsePackageInfoFromFileName + getAllVersionsFromLocalPath now strip .symbols suffix). Build succeeded; net9 NuGetLocalSpecs 2/2 passed, net461 skipped (no mono in sandbox)."
     }
   ],
   "checks": [],
