@@ -496,12 +496,17 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
         if toolsVersion >= 15.0 then
             // HACK: just validate that the list of packages contains one named FSharp.Core, if it is a *.fsproj
             if project.Name.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase) then
-                let hasFSharpCore =
-                    usedPackages |> Seq.exists (fun kv ->
+                let fsharpCoreEntry =
+                    usedPackages |> Seq.tryFind (fun kv ->
                         let _, x = kv.Key
                         x.CompareString = "fsharp.core")
-                if not hasFSharpCore then
+                match fsharpCoreEntry with
+                | None ->
                     traceWarnfn "F# project %s does not reference FSharp.Core." project.FileName
+                | Some kv ->
+                    let _, settings = kv.Value
+                    if settings.CreateBindingRedirects <> Some BindingRedirectsSettings.Force then
+                        traceWarnfn "F# project %s references FSharp.Core without specifying \"redirects: force\" in paket.dependencies. This can lead to \"Could not load file or assembly 'FSharp.Core'\" errors at runtime. See https://fsprojects.github.io/Paket/dependencies-file.html#redirects-settings for details." project.FileName
 
         // if any errors have been found during the installation process thus far, fail and print all errors collected
         if not (Seq.isEmpty errorMessages) then
