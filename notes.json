@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3562,
+    "labelling_after": 3772,
     "investigation_after": 3557
   },
   "issues": [
@@ -192,6 +192,14 @@
       "updated_at": "2026-08-29",
       "note": "Extended FSharp.Core check in InstallProcess.fs to warn when redirects: force is missing. XML/type validated manually; full build/restore unavailable in sandbox (network). Draft PR opened.",
       "pr": null
+    },
+    {
+      "issue": 2172,
+      "branch": "repo-assist/fix-issue-2172-tab-parsing",
+      "pr": null,
+      "status": "open",
+      "updated_at": "2026-08-29",
+      "note": "Fixed tab-vs-space token splitting bug in DependenciesFileParser.fs (4 call sites: parseVersionRequirement, Package/CliTool/ExternalLock patterns). Added regression test. 157/157 net9.0 tests passed (net461 untestable, no mono). Draft PR opened."
     }
   ],
   "checks": [],
@@ -215,7 +223,7 @@
     {
       "task": 1,
       "item": "labelling-continue",
-      "note": "Labelled through #3697 (no:label search); continue from there next run, re-querying no:label since new issues may appear."
+      "note": "Labelled through #3772 (no:label search); continue from there next run, re-querying no:label since new issues may appear."
     }
   ]
 }
