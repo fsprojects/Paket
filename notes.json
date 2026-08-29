@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3657,
+    "labelling_after": 3784,
     "investigation_after": 3557
   },
   "issues": [
@@ -176,36 +176,12 @@
   ],
   "fixes": [
     {
-      "issue": 3548,
-      "pr": null,
-      "branch": "repo-assist/fix-issue-3548-no-proxy",
-      "status": "open",
-      "updated_at": "2026-08-29",
-      "note": "Fixed NO_PROXY wildcard bypass entries never matching (Regex.Escape order bug in envProxies). Build+tests succeeded (targeted proxy tests pass; 4 pre-existing unrelated env-var-pollution failures confirmed present on master too). Draft PR opened, comment posted."
-    },
-    {
-      "issue": 3504,
-      "branch": "repo-assist/fix-issue-3504-nowarn-pack",
-      "pr": 4393,
-      "status": "open",
-      "updated_at": "2026-08-29",
-      "note": "Forwarded NoWarn/TreatWarningsAsErrors/WarningsAsErrors MSBuild properties to PackTask in Paket.Restore.targets (UseMSBuild16_10_Pack path only). XML validated; full build/restore unavailable in sandbox (network). Draft PR opened, comment posted."
-    },
-    {
-      "issue": 1857,
-      "branch": "repo-assist/fix-issue-1857-fsharpcore-redirects-warning",
-      "status": "open",
-      "updated_at": "2026-08-29",
-      "note": "Extended FSharp.Core check in InstallProcess.fs to warn when redirects: force is missing. XML/type validated manually; full build/restore unavailable in sandbox (network). Draft PR opened.",
-      "pr": null
-    },
-    {
-      "issue": 2172,
-      "branch": "repo-assist/fix-issue-2172-tab-parsing",
+      "issue": 3654,
+      "branch": "repo-assist/fix-issue-3654-clitool-remove",
       "pr": null,
       "status": "open",
       "updated_at": "2026-08-29",
-      "note": "Fixed tab-vs-space token splitting bug in DependenciesFileParser.fs (4 call sites: parseVersionRequirement, Package/CliTool/ExternalLock patterns). Added regression test. 157/157 net9.0 tests passed (net461 untestable, no mono). Draft PR opened."
+      "note": "Fixed tryMatchPackageLine in DependenciesFile.fs to also match clitool lines (was nuget-only), so RemovePackage now finds and deletes clitool lines. Added regression test. 9/9 RemovePackageSpecs tests passed on net9. Draft PR opened, comment posted."
     }
   ],
   "checks": [],
@@ -217,19 +193,14 @@
   ],
   "priorities": [
     {
-      "task": 6,
-      "item": "push-1857-doc-fix",
-      "note": "Optional: push follow-up commit f72bd224f (doc anchor fix) to the #1857 PR branch once its PR number is known."
-    },
-    {
-      "task": 6,
-      "item": "verify-new-prs",
-      "note": "Verify CI status/review on PR for #1857 (FSharp.Core redirects warning) and PR #4393 (NoWarn/TreatWarningsAsErrors PackTask fix)."
-    },
-    {
       "task": 1,
       "item": "labelling-continue",
-      "note": "Labelled through #3772 (no:label search); continue from there next run, re-querying no:label since new issues may appear."
+      "note": "Labelled through #3784 (no:label search); continue from there next run, re-querying no:label since new issues may appear."
+    },
+    {
+      "task": 6,
+      "item": "verify-pr-3654",
+      "note": "Verify CI status/review on new draft PR for #3654 (clitool remove fix)."
     }
   ]
 }
