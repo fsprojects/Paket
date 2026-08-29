@@ -59,7 +59,7 @@ module DependenciesFileParser =
 
             if String.IsNullOrWhiteSpace text then VersionRequirement(VersionRange.AtLeast "0",PreReleaseStatus.No) else
 
-            match text.Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Array.toList with
+            match text.Split([|' '; '\t'|],StringSplitOptions.RemoveEmptyEntries) |> Array.toList with
             |  ">=" :: v1 :: "<" :: v2 :: rest ->
                 let v1 = SemVer.Parse v1
                 let v2 = SemVer.Parse v2
@@ -240,7 +240,7 @@ module DependenciesFileParser =
     let private (|Package|_|) (line:string) =
         match line.Trim() with
         | String.RemovePrefix "nuget" trimmed ->
-            let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
+            let parts = trimmed.Trim().Replace("\"", "").Split([|' '; '\t'|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
             let isVersion(text:string) =
                 let result,_ = Int32.TryParse(text.[0].ToString()) in result
@@ -262,7 +262,7 @@ module DependenciesFileParser =
     let private (|CliTool|_|) (line:string) =
         match line.Trim() with
         | String.RemovePrefix "clitool" trimmed ->
-            let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
+            let parts = trimmed.Trim().Replace("\"", "").Split([|' '; '\t'|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
             let isVersion(text:string) =
                 let result,_ = Int32.TryParse(text.[0].ToString())
@@ -286,7 +286,7 @@ module DependenciesFileParser =
     let private (|ExternalLock|_|) (line:string) =
         match line.Trim() with
         | String.RemovePrefix "external_lock" trimmed ->
-            let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
+            let parts = trimmed.Trim().Replace("\"", "").Split([|' '; '\t'|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
             match parts with
             | [fileName] -> Some (ExternalLock(fileName))
