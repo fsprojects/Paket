@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3455,
+    "labelling_after": 3520,
     "investigation_after": 4346
   },
   "issues": [
@@ -112,6 +112,12 @@
       "state": "resolution_recommended",
       "updated_at": "2026-08-28",
       "note": "Explained per-project per-group-version references unsupported by current model; suggested project-split/conditional-ItemGroup workaround; recommended closing as out-of-scope enhancement."
+    },
+    {
+      "number": 3520,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-28",
+      "note": "Confirmed resolver search-space explosion (System.* transitive conflicts) with min strategy; maintainer workaround already in-thread; recommended closing."
     }
   ],
   "fixes": [
