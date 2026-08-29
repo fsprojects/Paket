@@ -401,6 +401,21 @@ let ``should read github source file from config without quotes``() =
             AuthKey = Some "github" }]
 
 [<Test>]
+let ``should not compute a file path outside paket-files for a malformed github source spec``() =
+    // Regression test for https://github.com/fsprojects/Paket/issues/4306 :
+    // "github myorg/repo:main ~>" (a missing version after "~>") used to be parsed
+    // such that the "~>" ended up as the remote file's Name, which normalizePath then
+    // expanded into an absolute path rooted at the user's home directory. This made
+    // Path.Combine discard the paket-files root entirely, so a subsequent CleanDir
+    // wiped out the user's home directory instead of a paket-files subfolder.
+    let config = """github myorg/repo:main ~>"""
+    let dependencies = DependenciesFile.FromSource(config)
+    let remoteFile = dependencies.Groups.[Constants.MainDependencyGroup].RemoteFiles.Head
+    remoteFile.Name |> shouldEqual "~>"
+    (fun () -> remoteFile.FilePath("/some/root", Constants.MainDependencyGroup) |> ignore)
+    |> shouldFail
+
+[<Test>]
 let ``should read github source file from config with quotes``() =
     let config = """github fsharp/FAKE:master  "src/app/FAKE/Cli.fs"
                     github fsharp/FAKE:bla123zxc "src/app/FAKE/FileWith Space.fs" 
