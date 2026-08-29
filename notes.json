@@ -124,72 +124,22 @@
       "state": "resolution_recommended",
       "updated_at": "2026-08-29",
       "note": "Fixed: paket pack now warns via traceWarnfn when no paket.template files are found instead of silently doing nothing. PR opened; awaiting review/merge."
+    },
+    {
+      "number": 3081,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-29",
+      "note": "UAP10.0.16300 platform detection was fixed by commit 0ce1827d3 shortly after filing; posted comment recommending closure."
     }
   ],
   "fixes": [
-    {
-      "issue": 3193,
-      "pr": 4368,
-      "branch": "repo-assist/fix-issue-3193-exclude-targets-8afa7e42915a11bc",
-      "status": "open",
-      "updated_at": "2026-08-27",
-      "note": "Draft fix makes exclude patterns filter package targets and props files."
-    },
-    {
-      "issue": 3209,
-      "pr": 4364,
-      "branch": "repo-assist/fix-issue-3209-import-reorder-05182a8ef02c2820",
-      "status": "open",
-      "updated_at": "2026-08-26",
-      "note": "CI-green fix preserves Paket.Restore.targets import position; no longer draft."
-    },
-    {
-      "issue": 3238,
-      "pr": 4363,
-      "branch": "repo-assist/fix-issue-3238-load-script-cache-eabd62044299d330",
-      "status": "open",
-      "updated_at": "2026-08-26",
-      "note": "CI-green fix detects missing .paket/load scripts in the restore cache; no longer draft."
-    },
-    {
-      "issue": 3272,
-      "pr": 4367,
-      "branch": "repo-assist/fix-issue-3272-nuspec-glob-37cae442663359ec",
-      "status": "open",
-      "updated_at": "2026-08-26",
-      "note": "Draft fix selects a non-symbols primary nuspec for dotnet pack --include-symbols."
-    },
-    {
-      "issue": 3389,
-      "pr": 4370,
-      "branch": "repo-assist/fix-issue-3389-gitbash-add-credentials-2b00bf7b1fc00cf7",
-      "status": "open",
-      "updated_at": "2026-08-27",
-      "note": "Draft fix supports redirected stdin in add-credentials without Console.ReadKey failure."
-    },
-    {
-      "issue": 3592,
-      "pr": 4369,
-      "branch": "repo-assist/fix-issue-3592-trailing-slash-ed472f7dbee570bb",
-      "status": "open",
-      "updated_at": "2026-08-27",
-      "note": "Draft fix normalizes trailing slashes during credential and token source lookup."
-    },
-    {
-      "issue": 3476,
-      "pr": null,
-      "branch": "repo-assist/fix-issue-3476-update-all-groups",
-      "status": "open",
-      "updated_at": "2026-08-28",
-      "note": "Draft fix makes update without --group search all groups for the package, not just Main."
-    },
     {
       "issue": 4346,
       "pr": null,
       "branch": "repo-assist/ci-enable-scriptgen-integration-tests",
       "status": "open",
       "updated_at": "2026-08-28",
-      "note": "Added linux-integration-scriptgen CI job running QuickIntegrationTests (TestCategory=scriptgen); verified 12/12 locally. PR #4383."
+      "note": "Scriptgen CI job attempt never pushed (branch had no diff vs master); PR creation fell back to issue #4383 with manual recreation instructions. Needs re-attempt on a fresh branch."
     },
     {
       "issue": 3549,
@@ -209,29 +159,19 @@
   ],
   "priorities": [
     {
-      "task": 2,
-      "item": "old-fixed-issue-sweep",
-      "note": "Continue verifying old bug reports against current code and recommend closure only with concrete evidence."
-    },
-    {
-      "task": 2,
-      "item": "issues:3376,3388",
-      "note": "Ask whether these 2018 NuGet v2-era reports reproduce with current Paket and NuGet v3 before investigating."
-    },
-    {
-      "task": 3,
-      "item": "issue:3360",
-      "note": "Build an SDK-style repro before changing paket pack assembly-path resolution."
-    },
-    {
-      "task": 3,
-      "item": "issues:3220,3289",
-      "note": "Resume only with focused resolver or grouped-nuspec repro evidence; neither has a confident root cause."
+      "task": 4,
+      "item": "issue:4346",
+      "note": "Scriptgen CI job never actually landed (branch had empty diff vs master); re-implement and push properly on a fresh branch."
     },
     {
       "task": 6,
-      "item": "prs:4368,4364,4363,4367,4370,4369,4382,4383",
-      "note": "Re-verify open/merged state next run before trusting fixes[]; several may already be merged or closed."
+      "item": "prs:4384,4382",
+      "note": "Verify CI status and maintainer review; these are the only 2 open repo-assist PRs remaining."
+    },
+    {
+      "task": 2,
+      "item": "memory-fixes-audit",
+      "note": "6 fixes entries were stale/merged and 1 rejected this run; keep re-verifying fixes[] against live PR state each run before reporting."
     }
   ]
 }
