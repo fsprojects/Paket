@@ -505,7 +505,16 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     traceWarnfn "F# project %s does not reference FSharp.Core." project.FileName
                 | Some kv ->
                     let _, settings = kv.Value
-                    if settings.CreateBindingRedirects <> Some BindingRedirectsSettings.Force then
+                    // Binding redirects (and the App.config files they live in) are only relevant for
+                    // projects that target the classic .NET Framework. .NET Core/.NET 5+ and
+                    // netstandard-only projects use assembly unification via deps.json instead, so there
+                    // is nothing for "redirects: force" to fix there and the warning would be noise.
+                    let targetsDotNetFramework =
+                        project.GetTargetProfiles()
+                        |> List.exists (fun profile ->
+                            profile.Frameworks
+                            |> List.exists (function FrameworkIdentifier.DotNetFramework _ -> true | _ -> false))
+                    if targetsDotNetFramework && settings.CreateBindingRedirects <> Some BindingRedirectsSettings.Force then
                         traceWarnfn "F# project %s references FSharp.Core without specifying \"redirects: force\" in paket.dependencies. This can lead to \"Could not load file or assembly 'FSharp.Core'\" errors at runtime. See https://fsprojects.github.io/Paket/dependencies-file.html#redirects-settings for details." project.FileName
 
         // if any errors have been found during the installation process thus far, fail and print all errors collected
