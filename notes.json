@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3563,
+    "labelling_after": 3620,
     "investigation_after": 4346
   },
   "issues": [
@@ -148,6 +148,14 @@
       "status": "open",
       "updated_at": "2026-08-29",
       "note": "Added traceWarnfn warning in PackageProcess.Pack when no packagable templates found. Build succeeded; targeted tests 3/4 passed (1 pre-existing unrelated env failure)."
+    },
+    {
+      "issue": 3401,
+      "pr": null,
+      "branch": "repo-assist/fix-issue-3401-console-color",
+      "status": "open",
+      "updated_at": "2026-08-29",
+      "note": "Fixed ConsoleImpl.WriteConsoleCore forcing Console.ForegroundColor even when unchanged (Mono terminal color override). Build succeeded; 156/162 bootstrapper tests passed (6 pre-existing proxy-env-var failures)."
     }
   ],
   "checks": [],
@@ -172,6 +180,11 @@
       "task": 2,
       "item": "memory-fixes-audit",
       "note": "6 fixes entries were stale/merged and 1 rejected this run; keep re-verifying fixes[] against live PR state each run before reporting."
+    },
+    {
+      "task": 6,
+      "item": "prs:4384,4382,3401-fix",
+      "note": "Verify CI status and maintainer review on open repo-assist PRs, including new #3401 color fix."
     }
   ]
 }
