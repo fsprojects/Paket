@@ -339,6 +339,21 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
 
     applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root allKnownLibNames bindingRedirects
 
+/// Determines whether the "FSharp.Core references without redirects: force" warning
+/// should be emitted for a project that targets the given profiles and has the given
+/// resolved binding-redirect settings for its FSharp.Core reference.
+/// Binding redirects (and the App.config files they live in) are only relevant for
+/// projects that target the classic .NET Framework - .NET Core/.NET 5+ and
+/// netstandard-only projects use assembly unification via deps.json instead, so the
+/// warning would be noise there.
+let shouldWarnAboutFSharpCoreRedirects (targetProfiles: TargetProfile list) (createBindingRedirects: BindingRedirectsSettings option) =
+    let targetsDotNetFramework =
+        targetProfiles
+        |> List.exists (fun profile ->
+            profile.Frameworks
+            |> List.exists (function FrameworkIdentifier.DotNetFramework _ -> true | _ -> false))
+    targetsDotNetFramework && createBindingRedirects <> Some BindingRedirectsSettings.Force
+
 let installForDotnetSDK root (project:ProjectFile) =
     let paketTargetsPath = RestoreProcess.extractRestoreTargets root
     let relativePath = createRelativePath project.FileName paketTargetsPath
@@ -496,12 +511,17 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
         if toolsVersion >= 15.0 then
             // HACK: just validate that the list of packages contains one named FSharp.Core, if it is a *.fsproj
             if project.Name.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase) then
-                let hasFSharpCore =
-                    usedPackages |> Seq.exists (fun kv ->
+                let fsharpCoreEntry =
+                    usedPackages |> Seq.tryFind (fun kv ->
                         let _, x = kv.Key
                         x.CompareString = "fsharp.core")
-                if not hasFSharpCore then
+                match fsharpCoreEntry with
+                | None ->
                     traceWarnfn "F# project %s does not reference FSharp.Core." project.FileName
+                | Some kv ->
+                    let _, settings = kv.Value
+                    if shouldWarnAboutFSharpCoreRedirects (project.GetTargetProfiles()) settings.CreateBindingRedirects then
+                        traceWarnfn "F# project %s references FSharp.Core without specifying \"redirects: force\" in paket.dependencies. This can lead to \"Could not load file or assembly 'FSharp.Core'\" errors at runtime. See https://fsprojects.github.io/Paket/dependencies-file.html#redirects-settings for details." project.FileName
 
         // if any errors have been found during the installation process thus far, fail and print all errors collected
         if not (Seq.isEmpty errorMessages) then
