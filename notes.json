@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 4338,
+    "labelling_after": 3548,
     "investigation_after": 3422
   },
   "issues": [
@@ -224,13 +224,23 @@
   "priorities": [
     {
       "task": 6,
-      "item": "prs:4382,4384,4386,4387,4388,fix-4306",
-      "note": "Verify CI status/review on open repo-assist PRs, including new critical fix for #4306 (home dir deletion)."
+      "item": "prs:4382,4384,4385,4386,4388,4389,4390,eng-ci-cache",
+      "note": "Verify CI status/review on all open repo-assist PRs, including new CI-cache PR and critical fix for #4306 (home dir deletion)."
     },
     {
       "task": 2,
       "item": "memory-fixes-audit",
       "note": "Keep re-verifying fixes[] against live PR state each run before reporting."
+    },
+    {
+      "task": 4,
+      "item": "eng-ci-cache",
+      "note": "Added actions/cache@v4 for ~/.nuget/packages and packages/ in linux+windows CI jobs. Draft PR opened; verify cache hit-rate improvement once CI runs."
+    },
+    {
+      "task": 1,
+      "item": "labelling-continue",
+      "note": "Labelled 28 issues up through #3548 (no:label search); continue from there next run, re-querying no:label since new issues may appear."
     }
   ]
 }
