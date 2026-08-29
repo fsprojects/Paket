@@ -327,7 +327,14 @@ let tryGetDetailsFromCache force nugetURL (packageName:PackageName) (version:Sem
         None
 
 /// Reads packageName and version from .nupkg file name
-let parsePackageInfoFromFileName fileName : (PackageName * SemVerInfo) option =
+let parsePackageInfoFromFileName (fileName:string) : (PackageName * SemVerInfo) option =
+    // Symbol packages are named "<name>.<version>.symbols.nupkg" - strip the ".symbols"
+    // suffix before parsing so symbol-only local feeds are still recognized.
+    let fileName =
+        if fileName.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase) then
+            fileName.Substring(0, fileName.Length - ".symbols.nupkg".Length) + ".nupkg"
+        else
+            fileName
     let regex = Regex ("^(?<name>.*?)\.(?<version>\d.*)\.nupkg$", RegexOptions.IgnoreCase)
     match regex.Match fileName with
     | matchResult when matchResult.Success && matchResult.Groups.Count = 3 ->
