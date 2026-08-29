@@ -59,15 +59,29 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
             // Strip only the "file://" scheme prefix, keeping the leading slash of the
             // absolute path intact (e.g. "file:///tmp/x" -> "/tmp/x", not "tmp/x").
             let path = path.Replace(@"file://", "")
-            let branch =
-                match versionRestriction with
-                | VersionRestriction.NoVersionRestriction -> "master"
-                | VersionRestriction.Concrete branch      -> branch
-                | _ -> failwith "unexpected version restriction"
-
-            match Git.Handling.getHash path branch with
+            match versionRestriction with
+            | VersionRestriction.NoVersionRestriction ->
+                match Git.Handling.getHash path "master" with
+                | Some hash -> return hash
+                | None -> return failwithf "Could not find hash for master in '%s'" path
+            | VersionRestriction.Concrete branch ->
+                match Git.Handling.getHash path branch with
                 | Some hash -> return hash
                 | None -> return failwithf "Could not find hash for %s in '%s'" branch path
+            | VersionRestriction.VersionRequirement vr ->
+                let tags = Git.CommandHelper.runFullGitCommand path "tag"
+                let matchingVersions =
+                    tags
+                    |> Array.choose (fun s -> try Some(SemVer.Parse s) with | _ -> None)
+                    |> Array.filter vr.IsInRange
+
+                match matchingVersions with
+                | [||] -> return failwithf "No tags in %s match %O. Tags: %A" path vr tags
+                | _ ->
+                    let tag = matchingVersions |> Array.max |> string
+                    match Git.Handling.getHash path tag with
+                    | None -> return failwithf "Could not resolve hash for tag %s in %s." tag path
+                    | Some hash -> return hash
         | ModuleResolver.Origin.GitLink (RemoteGitOrigin url) ->
             return
                 match versionRestriction with
