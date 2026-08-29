@@ -14,11 +14,32 @@ type EnvironmentVariable =
     static member Create(variable) =
         if envVarRegex.IsMatch(variable) then
             let trimmed = envVarRegex.Match(variable).Groups.[1].Value
-            match Environment.GetEnvironmentVariable(trimmed) with
-            | null ->
+            // `Environment.GetEnvironmentVariable(name)` only looks at the current process's
+            // environment block, which is populated once at process start. Variables set at the
+            // User or Machine level (e.g. via `[Environment]::SetEnvironmentVariable(name, value,
+            // 'User')`) are not visible until a new process is started, even though they are
+            // already persisted. Fall back to explicitly reading the User and Machine scopes so
+            // such variables are picked up without requiring a process restart.
+            let tryTarget (target: EnvironmentVariableTarget) =
+                try
+                    match Environment.GetEnvironmentVariable(trimmed, target) with
+                    | null -> None
+                    | expanded -> Some expanded
+                with
+                // User/Machine scoped environment variables are a Windows-only concept; querying
+                // them on other platforms raises PlatformNotSupportedException.
+                | :? PlatformNotSupportedException -> None
+
+            let expanded =
+                tryTarget EnvironmentVariableTarget.Process
+                |> Option.orElseWith (fun () -> tryTarget EnvironmentVariableTarget.User)
+                |> Option.orElseWith (fun () -> tryTarget EnvironmentVariableTarget.Machine)
+
+            match expanded with
+            | None ->
                 traceWarnfn "environment variable '%s' not found" variable
                 Some { Variable = variable; Value = ""}
-            | expanded ->
+            | Some expanded ->
                 Some { Variable = variable; Value = expanded }
         else
             None
