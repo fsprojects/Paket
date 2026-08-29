@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3772,
+    "labelling_after": 3657,
     "investigation_after": 3557
   },
   "issues": [
@@ -166,6 +166,12 @@
       "state": "resolution_recommended",
       "updated_at": "2026-08-29",
       "note": "PrivateAssets/developmentDependency already supported via copy_local + NuGet developmentDependency nuspec handling; commented recommending closure."
+    },
+    {
+      "number": 3690,
+      "state": "commented",
+      "updated_at": "2026-08-29",
+      "note": "Explained resolver stack overflow is unsatisfiable-constraint search-space explosion (Microsoft.Extensions.Logging conflict); suggested reframing as resolver-robustness enhancement."
     }
   ],
   "fixes": [
