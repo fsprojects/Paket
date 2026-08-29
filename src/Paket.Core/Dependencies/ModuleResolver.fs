@@ -16,6 +16,14 @@ type Origin =
 
 let internal computeFilePath(owner,project,root,groupName:GroupName,name : string) =
     let path = normalizePath (name.TrimStart('/'))
+    // A malformed dependency spec (e.g. a missing version after "~>") can cause the
+    // "file name" part to be parsed as "~>", which normalizePath then expands into an
+    // absolute path rooted at the user's home directory. Path.Combine silently discards
+    // the preceding (root-relative) segments whenever a later segment is rooted, which
+    // would otherwise make the computed destination point outside of the intended
+    // paket-files directory - see https://github.com/fsprojects/Paket/issues/4306
+    if Path.IsPathRooted path then
+        failwithf "Invalid remote file specification '%s' for %s/%s - the resolved file name must not be an absolute path" name owner project
     let owner = if String.IsNullOrWhiteSpace owner then "localhost" else owner
     let dir =
         if groupName = Constants.MainDependencyGroup then
