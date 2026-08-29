@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 4324,
+    "labelling_after": 3685,
     "investigation_after": 3557
   },
   "issues": [
@@ -178,6 +178,18 @@
       "state": "commented",
       "updated_at": "2026-08-29",
       "note": "Explained dotnet clean triggers PaketRestore via CollectPackageReferences evaluation chain; gave PaketRestoreDisabled workaround; not proposing invasive BeforeTargets rework."
+    },
+    {
+      "number": 3685,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-29",
+      "note": "NU5005 snupkg pack failure same root cause as #3272, already fixed by commit 4f7e1f07a; recommended closing as duplicate."
+    },
+    {
+      "number": 1455,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-29",
+      "note": "Sprawling 2016 framework-mismatch-warning thread, no repro since 2018; recommended closing as stale."
     }
   ],
   "fixes": [
@@ -201,12 +213,17 @@
     {
       "task": 1,
       "item": "labelling-continue",
-      "note": "Labelled through recent no:label batch (#4243-#4324); re-query no:label next run since new issues appear."
+      "note": "Labelled old 2019 no:label backlog through #3685; also labelled through #4324 previously. Re-query no:label next run (two overlapping pools: old backlog + newly created)."
     },
     {
       "task": 6,
       "item": "verify-pr-4405",
-      "note": "Verify CI status/review on draft PR #4405 (clitool remove fix, closes #3654)."
+      "note": "PR #4405 (clitool remove fix, closes #3654) is open/draft with mergeable_state=unstable - needs investigation (possible conflict/CI failure) in a future Task 6 run."
+    },
+    {
+      "task": 3,
+      "item": "review-old-bug-cohort",
+      "note": "Old (2016) bug-labelled issues #1504, #1498, #1512+ scanned; pattern shows many are stale w/ no repro since ~2018 - favor resolution-recommendation over fix attempts for this cohort in future runs."
     }
   ]
 }
