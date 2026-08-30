@@ -352,7 +352,7 @@ module DependenciesFileParser =
             Some (ParserOptions (ParserOption.ResolverStrategyForDirectDependencies setting))
         | String.RemovePrefix "frameworks" trimmed
         | String.RemovePrefix "framework" trimmed ->
-            let text = trimmed.Replace(":", "").Trim()
+            let text = trimmed.Replace(":", "").Trim() |> removeComment
 
             if text = "auto-detect" then
                 Some (ParserOptions ParserOption.AutodetectFrameworkRestrictions)
@@ -364,7 +364,7 @@ module DependenciesFileParser =
                 let options = ParserOption.FrameworkRestrictions (ExplicitRestriction restrictions)
                 Some (ParserOptions options)
         | String.RemovePrefix "restriction" trimmed ->
-            let text = trimmed.Replace(":", "").Trim()
+            let text = trimmed.Replace(":", "").Trim() |> removeComment
 
             if text = "auto-detect" then
                 Some (ParserOptions ParserOption.AutodetectFrameworkRestrictions)

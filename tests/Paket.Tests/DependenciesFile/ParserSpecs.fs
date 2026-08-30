@@ -1404,7 +1404,10 @@ let validFrameworks =
       TestCaseData("framework: >= net40 <= net45").Returns(between net40 net45)
       TestCaseData("framework: >=net40<=net45").Returns(between net40 net45)
       TestCaseData("framework: >= net40 < net45").Returns(between net40 net45)
-      TestCaseData("framework: >=net40<net45").Returns(between net40 net45)]
+      TestCaseData("framework: >=net40<net45").Returns(between net40 net45)
+      TestCaseData("framework: net40 // comment").Returns(exactly net40)
+      TestCaseData("framework: net40 # comment").Returns(exactly net40)
+      TestCaseData("framework: net40, net45 // comment").Returns(any [exactly net40; exactly net45])]
 
 [<Test>]
 [<TestCaseSource("validFrameworks")>]
