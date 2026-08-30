@@ -244,9 +244,24 @@
       "state": "commented",
       "updated_at": "2026-08-30",
       "note": "Draft PR opened (branch repo-assist/fix-issue-3799-conditional-target-frameworks) fixing conditional TargetFramework(s) PropertyGroup evaluation in getOutputDirectory; await review/merge."
+    },
+    {
+      "number": 3603,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-30",
+      "note": "Fixed via draft PR on branch repo-assist/fix-issue-3603-package-release-notes; awaiting review/merge."
     }
   ],
-  "fixes": [],
+  "fixes": [
+    {
+      "issue": 3603,
+      "pr": null,
+      "branch": "repo-assist/fix-issue-3603-package-release-notes",
+      "status": "open",
+      "updated_at": "2026-08-30",
+      "note": "Added Package-prefixed MSBuild property fallback in GetTemplateMetadata; draft PR + regression tests opened."
+    }
+  ],
   "checks": [],
   "completed_actions": [
     {
