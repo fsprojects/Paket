@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3767,
+    "labelling_after": 3795,
     "investigation_after": 4324
   },
   "issues": [
@@ -208,6 +208,12 @@
       "state": "awaiting_clarification",
       "updated_at": "2026-08-30",
       "note": "V9->V10 missing deps; reviewed PR #4247 ReferenceCondition/getCondition, feature shouldn't matter when unused; asked reporter for pre/post version and generated paket.props content."
+    },
+    {
+      "number": 3041,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-30",
+      "note": "Opened FAQ doc PR documenting magic-mode caching per 2018 maintainer request; commented on issue; recommend closing once PR merged."
     }
   ],
   "fixes": [
@@ -252,6 +258,11 @@
     }
   ],
   "priorities": [
+    {
+      "task": 7,
+      "item": "faq-magic-mode-3041",
+      "note": "Draft PR opened adding FAQ entry on magic-mode caching (branch repo-assist/basics-faq-magic-mode-version); monitor for merge/feedback."
+    },
     {
       "task": 1,
       "item": "labelling-continue-4",
