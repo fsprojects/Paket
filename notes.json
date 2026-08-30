@@ -1,8 +1,8 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 4304,
-    "investigation_after": 3446
+    "labelling_after": 3767,
+    "investigation_after": 4324
   },
   "issues": [
     {
@@ -202,6 +202,12 @@
       "state": "commented",
       "updated_at": "2026-08-29",
       "note": "Long-standing 'paket hangs silently' reports across years/environments; reviewed Program.fs/ProcessHelper.fs, no confident root cause; asked for a process dump to progress."
+    },
+    {
+      "number": 4324,
+      "state": "awaiting_clarification",
+      "updated_at": "2026-08-30",
+      "note": "V9->V10 missing deps; reviewed PR #4247 ReferenceCondition/getCondition, feature shouldn't matter when unused; asked reporter for pre/post version and generated paket.props content."
     }
   ],
   "fixes": [
@@ -248,18 +254,23 @@
   "priorities": [
     {
       "task": 1,
-      "item": "labelling-continue-3",
-      "note": "Labelled through #4304. Continue no:label query beyond #4304 next run; also re-check older 2019-era backlog periodically for stragglers."
+      "item": "labelling-continue-4",
+      "note": "Labelled through #3767 (old 2019 no:label backlog cleared). Continue no:label query for any remaining stragglers next run."
     },
     {
       "task": 3,
       "item": "candidate-fixes-batch",
-      "note": "Remaining Task 3 fix candidates: #4260 (FSharp.Core strict version restriction should be >=, root cause not yet pinned down in PackageMetaData.fs findDependencies/pack logic), #4304 (targets-file import mismatch vs VS for native/build dual-targets packages, not yet investigated in code)."
+      "note": "Remaining Task 3 fix candidates: #4260 (FSharp.Core strict version restriction should be >=, root cause not pinned down), #4304 (targets-file import mismatch, not yet investigated in code)."
     },
     {
       "task": 4,
       "item": "dependency-audit-followups",
-      "note": "System.Formats.Asn1 CVE-2024-38095 fixed this run (PR pending, branch repo-assist/eng-fix-asn1-vulnerability-2026-08-30). Still deferred: NuGet.* packages (5.11.7->7.9.0) and Build-group tool major bumps (FAKE/FSharp.Formatting/Octokit) need careful eval before proposing."
+      "note": "Fixed ci.yml hardcoded SDK version dup of global.json (draft PR, branch repo-assist/eng-ci-sdk-version-dedupe-2026-08-29). Still deferred: NuGet.* (5.11.7->7.9.0) and Build-group tool major bumps (FAKE/FSharp.Formatting/Octokit); no network access to nuget.org this run."
+    },
+    {
+      "task": 2,
+      "item": "new-issues-followup",
+      "note": "Worth deeper look: #3719 (File: x . ignored, InstallProcess.fs gitRemoteItems/file.Link), #3614 (Paket.Restore.targets version mismatch), #3727 (~> LOCKEDVERSION x.y.0), #3757 (resolver picks unlisted version)."
     }
   ]
 }
