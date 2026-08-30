@@ -2,7 +2,7 @@
   "version": 1,
   "cursors": {
     "labelling_after": 4304,
-    "investigation_after": 3412
+    "investigation_after": 3446
   },
   "issues": [
     {
@@ -228,6 +228,14 @@
       "status": "open",
       "updated_at": "2026-08-30",
       "note": "Wrapped fetchCache calls in getSHA1OfBranch and downloadRemoteFiles with RunInLockedAccessMode to serialize access to shared git cache folder across processes. Draft PR created this run; verify PR number next run."
+    },
+    {
+      "issue": 3446,
+      "branch": "repo-assist/fix-issue-3446-conflict-message",
+      "pr": null,
+      "status": "open",
+      "updated_at": "2026-08-30",
+      "note": "buildConflictReport now takes a header param; single-requirement path says 'Package not found' instead of 'Conflict detected'. Draft PR created this run; verify PR number next run."
     }
   ],
   "checks": [],
@@ -247,6 +255,11 @@
       "task": 3,
       "item": "candidate-fixes-batch",
       "note": "Remaining Task 3 fix candidates: #4260 (FSharp.Core strict version restriction should be >=, root cause not yet pinned down in PackageMetaData.fs findDependencies/pack logic), #4304 (targets-file import mismatch vs VS for native/build dual-targets packages, not yet investigated in code)."
+    },
+    {
+      "task": 4,
+      "item": "dependency-audit-followups",
+      "note": "System.Formats.Asn1 CVE-2024-38095 fixed this run (PR pending, branch repo-assist/eng-fix-asn1-vulnerability-2026-08-30). Still deferred: NuGet.* packages (5.11.7->7.9.0) and Build-group tool major bumps (FAKE/FSharp.Formatting/Octokit) need careful eval before proposing."
     }
   ]
 }
