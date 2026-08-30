@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 4193,
+    "labelling_after": 3594,
     "investigation_after": 3810
   },
   "issues": [
@@ -223,15 +223,15 @@
     },
     {
       "number": 3802,
-      "state": "deferred",
+      "state": "resolution_recommended",
       "updated_at": "2026-08-30",
-      "note": "Paket dependencies not added to build; labelled needs investigation, not yet investigated in code."
+      "note": "Root cause (unsupported TFM) already explained in-thread 2020; commented recommending closure, noted separate paket init moniker nuance."
     },
     {
       "number": 3809,
       "state": "deferred",
       "updated_at": "2026-08-30",
-      "note": "Does not produce a compatible lock file; labelled needs investigation, not yet investigated in code."
+      "note": "Enhancement ask: warn when lock creation silently drops a framework-incompatible package. No comments since 2020; needs resolver/lock-file code review before Fix vs Comment decision."
     },
     {
       "number": 4231,
@@ -256,6 +256,12 @@
       "state": "resolution_recommended",
       "updated_at": "2026-08-30",
       "note": "Root-caused: RestoreProcess.fs extractElement/extractRestoreTargets always overwrite .paket/Paket.Restore.targets from embedded resource (env PAKET_SKIP_RESTORE_TARGETS=true to skip). Recommended closing as by-design unless same-version mismatch reproduced."
+    },
+    {
+      "number": 4304,
+      "state": "commented",
+      "updated_at": "2026-08-30",
+      "note": "Root cause found: InstallModel.fs has no build/native/ special case (unlike lib/native/), so build/native/*.targets is dropped while build/*.targets is always imported unconditionally. Posted root-cause + design suggestion comment; too risky for surgical fix without maintainer sign-off."
     }
   ],
   "fixes": [
@@ -284,7 +290,7 @@
     {
       "task": 3,
       "item": "candidate-fixes-batch",
-      "note": "Remaining Task 3 candidates: #4260 (FSharp.Core '=' vs '>='; confirmed reproducible via #4034 thread, but exact SDK/PackageReference-driven code path emitting the pin still not located — Paket.Core has no paket.template deps block), #4304 (targets-file import mismatch, not yet investigated)."
+      "note": "Remaining Task 3 candidates: #4260 (FSharp.Core '=' vs '>='; confirmed reproducible, exact emit path still not located), #4304 (targets-file import mismatch - commented with root-cause analysis, needs maintainer-approved design before fix)."
     },
     {
       "task": 4,
@@ -294,7 +300,7 @@
     {
       "task": 2,
       "item": "new-issues-followup",
-      "note": "Worth deeper look: #3719 (File: x . ignored, InstallProcess.fs gitRemoteItems/file.Link), #3757 (resolver picks unlisted version). #3614 actioned this run (resolution_recommended)."
+      "note": "Worth deeper look: #3719 (File: x . ignored, InstallProcess.fs gitRemoteItems/file.Link), #3757 (resolver picks unlisted version), #3809 (warn on incompatible lock file, no code investigation yet)."
     },
     {
       "task": 6,
@@ -304,7 +310,7 @@
     {
       "task": 1,
       "item": "labelling-continue-5",
-      "note": "Labelled 4304..4193 (22 issues, mostly bug/question, 1 enhancement). Continue no:label query below #4193 next run."
+      "note": "Labelled #3594..#3813 (18 issues: mostly bug/question/enhancement). Continue no:label query below #3594 next run (era ~2019-2020)."
     },
     {
       "task": 3,
