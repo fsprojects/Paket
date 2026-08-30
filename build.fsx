@@ -67,10 +67,10 @@ let mutable dotnetExePath = "dotnet"
 
 let buildDir = "bin"
 let buildDirNet461 = buildDir @@ "net461"
-let buildDirNetCore = buildDir @@ "net9"
+let buildDirNetCore = buildDir @@ "net10.0"
 let buildDirBootstrapper = "bin_bootstrapper"
 let buildDirBootstrapperNet461 = buildDirBootstrapper @@ "net461"
-let buildDirBootstrapperNetCore = buildDirBootstrapper @@ "net9"
+let buildDirBootstrapperNetCore = buildDirBootstrapper @@ "net10.0"
 let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
 let paketFile = buildMergedDir @@ "paket.exe"
@@ -199,7 +199,7 @@ Target "Publish" (fun _ ->
     DotNetCli.Publish (fun c ->
         { c with
             Project = "src/Paket"
-            Framework = "net9"
+            Framework = "net10.0"
             Output = FullName (currentDirectory </> buildDirNetCore)
             ToolPath = dotnetExePath
             AdditionalArgs = publishArgs
@@ -217,7 +217,7 @@ Target "Publish" (fun _ ->
     DotNetCli.Publish (fun c ->
         { c with
             Project = "src/Paket.Bootstrapper"
-            Framework = "net9"
+            Framework = "net10.0"
             Output = FullName (currentDirectory </> buildDirBootstrapperNetCore)
             ToolPath = dotnetExePath
             AdditionalArgs = publishArgs
@@ -355,7 +355,7 @@ Target "RunIntegrationTestsNetCore" (fun _ ->
     DotNetCli.Test (fun c ->
         { c with
             Project = "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
-            Framework = "net9"
+            Framework = "net10.0"
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
                 sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]
