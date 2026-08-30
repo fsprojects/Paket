@@ -10,6 +10,8 @@ nuget Chessie >= 0.6
 nuget Mono.Cecil ~> 0.11.1
 
 nuget System.Security.Cryptography.ProtectedData >= 4.4
+# Pin transitive System.Formats.Asn1 to a version patched against CVE-2024-38095 (GHSA-447r-wph3-92pm)
+nuget System.Formats.Asn1 >= 8.0.1
 
 nuget NETStandard.Library ~> 2.0
 nuget System.Net.Http.WinHttpHandler >= 4.5
