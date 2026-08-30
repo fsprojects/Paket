@@ -126,6 +126,18 @@ nuget Castle.Windsor ~> 3.2"""
     |> shouldEqual (normalizeLineEndings expected)
 
 [<Test>]
+let ``should remove a clitool package``() = 
+    let config = """source http://www.nuget.org/api/v2
+clitool Invoke-Build"""
+
+    let cfg = DependenciesFile.FromSource(config).Remove(Constants.MainDependencyGroup, PackageName "Invoke-Build")
+
+    let expected = "source http://www.nuget.org/api/v2"
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
 let ``should not remove group if only contains remote files``() = 
     let config = """source http://www.nuget.org/api/v2
 

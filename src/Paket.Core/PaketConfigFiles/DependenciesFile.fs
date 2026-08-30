@@ -63,7 +63,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
     let tryMatchPackageLine packageNamePredicate (line : string) =
         let tokens = line.Split([|' '|], StringSplitOptions.RemoveEmptyEntries) |> Array.map (fun s -> s.ToLowerInvariant().Trim())
         match List.ofArray tokens with
-        | "nuget"::packageName::_ when packageNamePredicate packageName -> Some packageName
+        | ("nuget" | "clitool")::packageName::_ when packageNamePredicate packageName -> Some packageName
         | _ -> None
 
     let isPackageLine name line = tryMatchPackageLine ((=) name) line |> Option.isSome
