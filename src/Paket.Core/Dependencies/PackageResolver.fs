@@ -184,7 +184,7 @@ module ResolutionRaw =
             |> Set.union (currentStep.OpenRequirements |> Set.filter (fun x -> x.Name = lastPackageRequirement.Name))
             |> Set.add lastPackageRequirement
 
-    let buildConflictReport (errorReport:StringBuilder) (conflicts:PackageRequirement Set) =
+    let buildConflictReport (errorReport:StringBuilder) (header:string) (conflicts:PackageRequirement Set) =
         let formatVR (vr:VersionRequirement) =
             vr.ToString()
             |> fun s -> if String.IsNullOrWhiteSpace s then ">= 0" else sprintf "%O" vr
@@ -200,7 +200,7 @@ module ResolutionRaw =
         | s when s.IsEmpty -> errorReport
         | conflicts ->
 
-            errorReport.AddLine (sprintf "  Conflict detected:")
+            errorReport.AddLine (sprintf "  %s:" header)
 
             let getConflictMessage (req:PackageRequirement) =
                 let vr = formatVR req.VersionRequirement
@@ -240,14 +240,17 @@ module ResolutionRaw =
                         (Seq.head currentStep.OpenRequirements)
             | cfs when cfs.Count = 1 ->
                 let c = cfs.MinimumElement
-                let errorText = buildConflictReport errorText cfs
+                // A single requirement means there's nothing else constraining the resolution -
+                // the requested package/version range simply wasn't found, which is different
+                // from a genuine conflict between multiple contradictory requirements.
+                let errorText = buildConflictReport errorText "Package not found" cfs
                 match getVersionF c.Name |> Seq.toList with
                 | [] -> errorText.AppendLinef  "   - No versions available."
                 | avalaibleVersions ->
                     ( errorText.AppendLinef  "   - Available versions:"
                     , avalaibleVersions )
                     ||> List.fold (fun sb elem -> sb.AppendLinef "     - %O" elem)
-            | conflicts -> buildConflictReport errorText conflicts
+            | conflicts -> buildConflictReport errorText "Conflict detected" conflicts
             |> string
 
     let isDone (res:ResolutionRaw) =
