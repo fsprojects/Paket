@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3809,
+    "labelling_after": 4304,
     "investigation_after": 4324
   },
   "issues": [
@@ -238,42 +238,15 @@
       "state": "deferred",
       "updated_at": "2026-08-30",
       "note": "Does not produce a compatible lock file; labelled needs investigation, not yet investigated in code."
+    },
+    {
+      "number": 4231,
+      "state": "commented",
+      "updated_at": "2026-08-30",
+      "note": "Root-caused CRLF churn in committed Paket.Restore.targets to git checkout normalization (not Paket write behavior); recommended .gitattributes -text/eol=lf fix; no code change needed."
     }
   ],
-  "fixes": [
-    {
-      "issue": 3654,
-      "branch": "repo-assist/fix-issue-3654-clitool-remove-64c1e5a15986895e",
-      "pr": 4405,
-      "status": "open",
-      "updated_at": "2026-08-29",
-      "note": "Draft PR #4405 opened: tryMatchPackageLine now matches clitool lines too."
-    },
-    {
-      "issue": 3562,
-      "branch": "repo-assist/fix-issue-3562-user-env-vars",
-      "pr": 4406,
-      "status": "open",
-      "updated_at": "2026-08-29",
-      "note": "Fixed EnvironmentVariable.Create to fall back to User/Machine scoped env vars. PR #4406 open."
-    },
-    {
-      "issue": 4266,
-      "branch": "repo-assist/fix-issue-4266-git-cache-race",
-      "pr": null,
-      "status": "open",
-      "updated_at": "2026-08-30",
-      "note": "Wrapped fetchCache calls in getSHA1OfBranch and downloadRemoteFiles with RunInLockedAccessMode to serialize access to shared git cache folder across processes. Draft PR created this run; verify PR number next run."
-    },
-    {
-      "issue": 3446,
-      "branch": "repo-assist/fix-issue-3446-conflict-message",
-      "pr": null,
-      "status": "open",
-      "updated_at": "2026-08-30",
-      "note": "buildConflictReport now takes a header param; single-requirement path says 'Package not found' instead of 'Conflict detected'. Draft PR created this run; verify PR number next run."
-    }
-  ],
+  "fixes": [],
   "checks": [],
   "completed_actions": [
     {
@@ -306,6 +279,11 @@
       "task": 2,
       "item": "new-issues-followup",
       "note": "Worth deeper look: #3719 (File: x . ignored, InstallProcess.fs gitRemoteItems/file.Link), #3614 (Paket.Restore.targets version mismatch), #3727 (~> LOCKEDVERSION x.y.0), #3757 (resolver picks unlisted version)."
+    },
+    {
+      "task": 6,
+      "item": "#4396 vs #4395",
+      "note": "Near-duplicate PRs both adding scriptgen CI job; both have failing scriptgen integration job. Consolidate/close one, fix the failing job, next time Task 6 selected."
     }
   ]
 }
