@@ -528,6 +528,42 @@ GITHUB
 
     | _ -> Assert.Fail()
 
+// regression test for https://github.com/fsprojects/Paket/issues/3727
+// "~> LOCKEDVERSION" should behave consistently regardless of whether the locked
+// version text omits trailing zero segments (e.g. "0.68" vs "0.68.0" vs "0.68.1").
+[<TestCase("0.68", "[0.68.0,0.69.0)")>]
+[<TestCase("0.68.0", "[0.68.0,0.69.0)")>]
+[<TestCase("0.68.1", "[0.68.1,0.69.0)")>]
+let ``LOCKEDVERSION twiddle is consistent regardless of source segment count`` source target =
+    let fileContent = """type file
+id My.Thing
+authors Bob McBob
+description
+    A longer description
+    on two lines.
+version
+    1.0
+dependencies
+     My.OtherThing ~> LOCKEDVERSION
+"""
+
+    let lockFile = sprintf """NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    My.OtherThing (%s) - redirects: on""" source
+
+    let sut =
+        TemplateFile.Parse("file1.template", LockFile.Parse("",toLines lockFile), Some(SemVer.Parse "2.1"), Map.empty, strToStream fileContent)
+        |> returnOrFail
+        |> function
+           | CompleteInfo (_, opt)
+           | ProjectInfo (_, opt) -> opt
+    match sut.DependencyGroups.Head.Dependencies with
+    | [name1,range1] ->
+        name1 |> shouldEqual (PackageName "My.OtherThing")
+        range1.FormatInNuGetSyntax() |> shouldEqual target
+    | _ -> Assert.Fail()
+
 
 [<TestCase("!~> LOCKED:Major", "1.2.3-pre.3", "[1.0.0,2.0.0)")>]
 [<TestCase("@~> LOCKED:Build", "1.2.3.1-pre.3", "[1.2.3.1,1.2.4)")>]
