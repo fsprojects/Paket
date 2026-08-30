@@ -41,7 +41,7 @@ jobs:
       - name: Install build SDK and integration test runtime
         run: |
           curl --fail --silent --show-error --location https://dot.net/v1/dotnet-install.sh --output /tmp/dotnet-install.sh
-          bash /tmp/dotnet-install.sh --version 9.0.309 --install-dir "$HOME/.local/share/dotnetcore"
+          bash /tmp/dotnet-install.sh --version 10.0.400 --install-dir "$HOME/.local/share/dotnetcore"
           bash /tmp/dotnet-install.sh --channel 8.0 --runtime dotnet --install-dir "$HOME/.local/share/dotnetcore"
       - name: Build and test
         env:
