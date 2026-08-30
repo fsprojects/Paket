@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3795,
+    "labelling_after": 3809,
     "investigation_after": 4324
   },
   "issues": [
@@ -214,6 +214,30 @@
       "state": "resolution_recommended",
       "updated_at": "2026-08-30",
       "note": "Opened FAQ doc PR documenting magic-mode caching per 2018 maintainer request; commented on issue; recommend closing once PR merged."
+    },
+    {
+      "number": 3798,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-30",
+      "note": "Labelled enhancement+help wanted; posted concrete implementation approach (analyzers:false InstallSettings field) for a contributor to pick up."
+    },
+    {
+      "number": 3799,
+      "state": "deferred",
+      "updated_at": "2026-08-30",
+      "note": "paket pack fails on conditional target frameworks; labelled bug, not yet investigated in code."
+    },
+    {
+      "number": 3802,
+      "state": "deferred",
+      "updated_at": "2026-08-30",
+      "note": "Paket dependencies not added to build; labelled needs investigation, not yet investigated in code."
+    },
+    {
+      "number": 3809,
+      "state": "deferred",
+      "updated_at": "2026-08-30",
+      "note": "Does not produce a compatible lock file; labelled needs investigation, not yet investigated in code."
     }
   ],
   "fixes": [
