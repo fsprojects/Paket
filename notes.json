@@ -263,7 +263,7 @@
     {
       "task": 3,
       "item": "candidate-fixes-batch",
-      "note": "Remaining Task 3 fix candidates: #4260 (FSharp.Core strict version restriction should be >=, root cause not pinned down), #4304 (targets-file import mismatch, not yet investigated in code)."
+      "note": "Remaining Task 3 candidates: #4260 (FSharp.Core '=' vs '>='; root cause traced to PackageMetaData.fs addDependency but exact path unconfirmed, needs more digging), #4304 (targets-file import mismatch, not yet investigated)."
     },
     {
       "task": 4,
@@ -273,7 +273,7 @@
     {
       "task": 2,
       "item": "new-issues-followup",
-      "note": "Worth deeper look: #3719 (File: x . ignored, InstallProcess.fs gitRemoteItems/file.Link), #3614 (Paket.Restore.targets version mismatch), #3727 (~> LOCKEDVERSION x.y.0), #3757 (resolver picks unlisted version)."
+      "note": "Worth deeper look: #3719 (File: x . ignored, InstallProcess.fs gitRemoteItems/file.Link), #3614 (Paket.Restore.targets version mismatch), #3757 (resolver picks unlisted version)."
     },
     {
       "task": 6,
@@ -294,6 +294,11 @@
       "task": 8,
       "item": "perf-review-2026-08",
       "note": "Scanned List.length/append-in-loop patterns in Paket.Core; no low-risk actionable perf win found without profiling data."
+    },
+    {
+      "task": 3,
+      "item": "fix-3727-lockedversion",
+      "note": "Draft PR opened on branch repo-assist/fix-issue-3727-lockedversion-twiddle fixing ~> LOCKEDVERSION segment-count inconsistency. Awaiting review/merge."
     }
   ]
 }
