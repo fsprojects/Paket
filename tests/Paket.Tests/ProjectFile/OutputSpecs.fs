@@ -104,6 +104,15 @@ let ``should detect output path for netsdk with outputPath and appendTargetFrame
     outPath.ToLowerInvariant() |> shouldEqual (expected.ToLowerInvariant())
 
 [<Test>]
+let ``should detect output path for netsdk with conditional target frameworks csproj file``
+        ([<Values("Debug", "Release")>] configuration) =
+    ensureDir ()
+    let projectFile = ProjectFile.TryLoad("./ProjectFile/TestData/MicrosoftNetSdkWithConditionalTargetFrameworks.csprojtest").Value
+    // Should not throw "Unable to find <configuration> output path node" (see issue #3799)
+    let outPath = projectFile.GetOutputDirectory configuration "" None
+    outPath |> shouldNotEqual ""
+
+[<Test>]
 let ``should detect framework profile for ProjectWithConditions file`` () =
     ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/ProjectWithConditions.fsprojtest").Value.GetTargetProfiles()
