@@ -222,12 +222,6 @@
       "note": "Labelled enhancement+help wanted; posted concrete implementation approach (analyzers:false InstallSettings field) for a contributor to pick up."
     },
     {
-      "number": 3799,
-      "state": "deferred",
-      "updated_at": "2026-08-30",
-      "note": "paket pack fails on conditional target frameworks; labelled bug, not yet investigated in code."
-    },
-    {
       "number": 3802,
       "state": "deferred",
       "updated_at": "2026-08-30",
@@ -244,6 +238,12 @@
       "state": "commented",
       "updated_at": "2026-08-30",
       "note": "Root-caused CRLF churn in committed Paket.Restore.targets to git checkout normalization (not Paket write behavior); recommended .gitattributes -text/eol=lf fix; no code change needed."
+    },
+    {
+      "number": 3799,
+      "state": "commented",
+      "updated_at": "2026-08-30",
+      "note": "Draft PR opened (branch repo-assist/fix-issue-3799-conditional-target-frameworks) fixing conditional TargetFramework(s) PropertyGroup evaluation in getOutputDirectory; await review/merge."
     }
   ],
   "fixes": [],
