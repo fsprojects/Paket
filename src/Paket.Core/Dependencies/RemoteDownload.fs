@@ -89,7 +89,7 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
                 | VersionRestriction.Concrete branch -> Git.Handling.getHashFromRemote url branch
                 | VersionRestriction.VersionRequirement vr ->
                     let repoCacheFolder = Path.Combine(Constants.GitRepoCacheFolder,project)
-                    Paket.Git.Handling.fetchCache repoCacheFolder url
+                    RunInLockedAccessMode(repoCacheFolder, (fun () -> Paket.Git.Handling.fetchCache repoCacheFolder url; false))
 
                     let tags = Git.CommandHelper.runFullGitCommand repoCacheFolder "tag"
                     let matchingVersions =
@@ -215,7 +215,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         let repoFolder = Path.Combine(destination,remoteFile.Project)
         let cacheCloneUrl = "file:///" + repoCacheFolder
 
-        Paket.Git.Handling.fetchCache repoCacheFolder cloneUrl
+        RunInLockedAccessMode(repoCacheFolder, (fun () -> Paket.Git.Handling.fetchCache repoCacheFolder cloneUrl; false))
         Paket.Git.Handling.checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl remoteFile.Commit
 
         match remoteFile.Command with
