@@ -62,3 +62,22 @@ let ``should parse unquoted source with space in path and credentials on same li
     match PackageSource.Parse(line) with
     | LocalNuGet(source, _) -> source |> shouldEqual path
     | other -> failwithf "expected LocalNuGet but got %A" other
+
+[<Test>]
+let ``should resolve process-level environment variable``() =
+    let varName = "PAKET_TEST_ENV_VAR_PROCESS"
+    System.Environment.SetEnvironmentVariable(varName, "processValue")
+    try
+        match EnvironmentVariable.Create(sprintf "%%%s%%" varName) with
+        | Some ev -> ev.Value |> shouldEqual "processValue"
+        | None -> failwith "expected Some"
+    finally
+        System.Environment.SetEnvironmentVariable(varName, null)
+
+[<Test>]
+let ``should warn and return empty value for unknown environment variable``() =
+    let varName = "PAKET_TEST_ENV_VAR_DOES_NOT_EXIST"
+    System.Environment.SetEnvironmentVariable(varName, null)
+    match EnvironmentVariable.Create(sprintf "%%%s%%" varName) with
+    | Some ev -> ev.Value |> shouldEqual ""
+    | None -> failwith "expected Some"
