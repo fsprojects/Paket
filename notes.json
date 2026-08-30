@@ -1,8 +1,8 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 4304,
-    "investigation_after": 4324
+    "labelling_after": 4232,
+    "investigation_after": 3810
   },
   "issues": [
     {
@@ -261,11 +261,6 @@
       "note": "Draft PR opened adding FAQ entry on magic-mode caching (branch repo-assist/basics-faq-magic-mode-version); monitor for merge/feedback."
     },
     {
-      "task": 1,
-      "item": "labelling-continue-4",
-      "note": "Labelled through #3767 (old 2019 no:label backlog cleared). Continue no:label query for any remaining stragglers next run."
-    },
-    {
       "task": 3,
       "item": "candidate-fixes-batch",
       "note": "Remaining Task 3 fix candidates: #4260 (FSharp.Core strict version restriction should be >=, root cause not pinned down), #4304 (targets-file import mismatch, not yet investigated in code)."
@@ -284,6 +279,21 @@
       "task": 6,
       "item": "#4396 vs #4395",
       "note": "Near-duplicate PRs both adding scriptgen CI job; both have failing scriptgen integration job. Consolidate/close one, fix the failing job, next time Task 6 selected."
+    },
+    {
+      "task": 1,
+      "item": "labelling-continue-5",
+      "note": "Labelled 4294..4232 (20 issues, mostly bug/needs investigation). Continue no:label query below #4232 next run."
+    },
+    {
+      "task": 3,
+      "item": "fix-3785-pr-open",
+      "note": "PR opened for #3785 on branch repo-assist/fix-issue-3785-framework-comment (framework/restriction inline comment stripping). Awaiting review/merge."
+    },
+    {
+      "task": 8,
+      "item": "perf-review-2026-08",
+      "note": "Scanned List.length/append-in-loop patterns in Paket.Core; no low-risk actionable perf win found without profiling data."
     }
   ]
 }
