@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 4232,
+    "labelling_after": 4193,
     "investigation_after": 3810
   },
   "issues": [
@@ -250,6 +250,12 @@
       "state": "resolution_recommended",
       "updated_at": "2026-08-30",
       "note": "Fixed via draft PR on branch repo-assist/fix-issue-3603-package-release-notes; awaiting review/merge."
+    },
+    {
+      "number": 3614,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-30",
+      "note": "Root-caused: RestoreProcess.fs extractElement/extractRestoreTargets always overwrite .paket/Paket.Restore.targets from embedded resource (env PAKET_SKIP_RESTORE_TARGETS=true to skip). Recommended closing as by-design unless same-version mismatch reproduced."
     }
   ],
   "fixes": [
@@ -278,7 +284,7 @@
     {
       "task": 3,
       "item": "candidate-fixes-batch",
-      "note": "Remaining Task 3 candidates: #4260 (FSharp.Core '=' vs '>='; root cause traced to PackageMetaData.fs addDependency but exact path unconfirmed, needs more digging), #4304 (targets-file import mismatch, not yet investigated)."
+      "note": "Remaining Task 3 candidates: #4260 (FSharp.Core '=' vs '>='; confirmed reproducible via #4034 thread, but exact SDK/PackageReference-driven code path emitting the pin still not located — Paket.Core has no paket.template deps block), #4304 (targets-file import mismatch, not yet investigated)."
     },
     {
       "task": 4,
@@ -288,7 +294,7 @@
     {
       "task": 2,
       "item": "new-issues-followup",
-      "note": "Worth deeper look: #3719 (File: x . ignored, InstallProcess.fs gitRemoteItems/file.Link), #3614 (Paket.Restore.targets version mismatch), #3757 (resolver picks unlisted version)."
+      "note": "Worth deeper look: #3719 (File: x . ignored, InstallProcess.fs gitRemoteItems/file.Link), #3757 (resolver picks unlisted version). #3614 actioned this run (resolution_recommended)."
     },
     {
       "task": 6,
@@ -298,7 +304,7 @@
     {
       "task": 1,
       "item": "labelling-continue-5",
-      "note": "Labelled 4294..4232 (20 issues, mostly bug/needs investigation). Continue no:label query below #4232 next run."
+      "note": "Labelled 4304..4193 (22 issues, mostly bug/question, 1 enhancement). Continue no:label query below #4193 next run."
     },
     {
       "task": 3,
