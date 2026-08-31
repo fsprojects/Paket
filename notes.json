@@ -2,7 +2,7 @@
   "version": 1,
   "cursors": {
     "labelling_after": 3594,
-    "investigation_after": 3810
+    "investigation_after": 3843
   },
   "issues": [
     {
@@ -272,6 +272,14 @@
       "status": "open",
       "updated_at": "2026-08-30",
       "note": "Added Package-prefixed MSBuild property fallback in GetTemplateMetadata; draft PR + regression tests opened."
+    },
+    {
+      "issue": 3843,
+      "pr": null,
+      "branch": "repo-assist/fix-issue-3843-nuget-url-normalization",
+      "status": "open",
+      "updated_at": "2026-08-31",
+      "note": "Normalized www. prefix in ConfigFile.getSourceNodes so nuget.org/www.nuget.org credential lookups match; draft PR + regression test opened; commented on issue."
     }
   ],
   "checks": [],
@@ -313,11 +321,6 @@
       "note": "Labelled #3594..#3813 (18 issues: mostly bug/question/enhancement). Continue no:label query below #3594 next run (era ~2019-2020)."
     },
     {
-      "task": 3,
-      "item": "fix-3785-pr-open",
-      "note": "PR opened for #3785 on branch repo-assist/fix-issue-3785-framework-comment (framework/restriction inline comment stripping). Awaiting review/merge."
-    },
-    {
       "task": 8,
       "item": "perf-review-2026-08",
       "note": "Scanned List.length/append-in-loop patterns in Paket.Core; no low-risk actionable perf win found without profiling data."
@@ -326,6 +329,11 @@
       "task": 3,
       "item": "fix-3727-lockedversion",
       "note": "Draft PR opened on branch repo-assist/fix-issue-3727-lockedversion-twiddle fixing ~> LOCKEDVERSION segment-count inconsistency. Awaiting review/merge."
+    },
+    {
+      "task": 2,
+      "item": "reviewed-not-actionable-3839-3861-3893",
+      "note": "#3839 (proxy pw env var UX, enhancement not fix), #3861 (Windows MSBuild internal error, no repro), #3893 (omnisharp-specific lock warning noise) reviewed; none confident/actionable this run."
     }
   ]
 }
