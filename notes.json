@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3825,
+    "labelling_after": 3926,
     "investigation_after": 3843
   },
   "issues": [
@@ -274,6 +274,12 @@
       "state": "resolution_recommended",
       "updated_at": "2026-08-31",
       "note": "2016 legacy-csproj EmbeddedResource duplicate-content issue; no repro in 7+ years, unlikely on modern SDK-style projects. Recommended closing as stale."
+    },
+    {
+      "number": 3906,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-31",
+      "note": "Bracket escaping already works in current NupkgWriter.fs; opened regression-test PR (repo-assist/fix-issue-3906-bracket-escape-test) and commented asking for repro details/version."
     }
   ],
   "fixes": [
@@ -292,6 +298,14 @@
       "status": "open",
       "updated_at": "2026-08-31",
       "note": "Normalized www. prefix in ConfigFile.getSourceNodes so nuget.org/www.nuget.org credential lookups match; draft PR + regression test opened; commented on issue."
+    },
+    {
+      "issue": 3906,
+      "branch": "repo-assist/fix-issue-3906-bracket-escape-test",
+      "status": "open",
+      "note": "Test-only PR; no prod code change since bug not reproducible in current code.",
+      "pr": null,
+      "updated_at": "2026-08-31"
     }
   ],
   "checks": [],
@@ -320,7 +334,7 @@
     {
       "task": 2,
       "item": "new-issues-followup",
-      "note": "Worth deeper look: #3719 (File: x . ignored, InstallProcess.fs gitRemoteItems/file.Link), #3757 (resolver picks unlisted version), #3809 (warn on incompatible lock file, no code investigation yet)."
+      "note": "Still worth deeper look: #3719 (file link ignore), #3757 (resolver picks unlisted version, no network access to verify), #3809 (warn on incompatible lock, no investigation yet)."
     },
     {
       "task": 6,
