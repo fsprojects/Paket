@@ -120,7 +120,18 @@ let testCategoryFilter =
     if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky"
 
 Target.create "InstallDotNetCore" (fun _ ->
-    dotnetCli <- DotNet.install (fun c -> { c with Version = DotNet.CliVersion.Version dotnetcliVersion })
+    // FAKE 6 would install into ~/.dotnet, and its lookup can also settle on a dotnet from PATH that
+    // lacks the runtimes the CI installs for the integration tests. Pin the root FAKE 4 used, which
+    // is the one .github/workflows/ci.yml feeds.
+    let installDir =
+        System.Environment.GetFolderPath System.Environment.SpecialFolder.LocalApplicationData
+        </> "dotnetcore"
+
+    dotnetCli <-
+        DotNet.install (fun c ->
+            { c with
+                Version = DotNet.CliVersion.Version dotnetcliVersion
+                CustomInstallDir = Some installDir })
     // Read back by the integration tests, see integrationtests/Paket.IntegrationTests/TestHelper.fs
     System.Environment.SetEnvironmentVariable("DOTNET_EXE_PATH", (dotnetCli (DotNet.Options.Create())).DotNetCliPath)
 )
