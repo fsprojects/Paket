@@ -114,4 +114,4 @@ Each scenario in `integrationtests/scenarios/` typically has:
 
 ## Release Process
 
-The build script reads `RELEASE_NOTES.md` for version info. Release builds use ILRepack to merge assemblies into a single `paket.exe`. The merged executable goes to `bin/merged/`.
+The build script reads `RELEASE_NOTES.md` for version info. Release builds use the `dotnet-ilrepack` tool to merge assemblies into a single `paket.exe`. The merged executable goes to `bin/merged/`.
