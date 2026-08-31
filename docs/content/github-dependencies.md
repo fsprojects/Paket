@@ -52,9 +52,15 @@ and run [`paket install` command](paket-install.html). This will reference the
 linked file directly into your project and by default, be visible under
 `paket-files` directory in project.
 
+Note that the file is always downloaded to and stored under the `paket-files`
+directory on disk (this directory is expected to be excluded from source
+control). The directory you specify here only controls where the file *appears*
+as a linked item inside your project (e.g. in Visual Studio's Solution
+Explorer) - it does not change the file's actual location on disk.
+
 ![GitHub file referenced in project with default link](img/github_ref_default_link.png "GitHub file referenced in project with default link")
 
-You can specify custom directory for the file:
+You can specify a custom directory for the project link:
 
 ```paket
 File: FsUnit.fs Tests\FsUnit
@@ -62,7 +68,8 @@ File: FsUnit.fs Tests\FsUnit
 
 ![GitHub file referenced in project with custom link](img/github_ref_custom_link.png "GitHub file referenced in project with custom link")
 
-Or if you use `.` for the directory, the file will be placed under the root of the project:
+Or if you use `.` for the directory, the link will be placed under the root of the project
+(the file itself still resides in `paket-files` on disk):
 
 ```paket
 File: FsUnit.fs .
