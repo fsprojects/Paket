@@ -34,10 +34,13 @@ for arg in commandLineArgs do
     | _ -> ()
 
 // Outside of the FAKE runner the target module has no execution context of its own, so give it one.
-Context.FakeExecutionContext.Create false "build.fsx"
-    [ match commandLineArgs |> Array.tryFind (fun a -> a.IndexOf '=' < 0) with
-      | Some target -> yield! [ "--target"; target ]
-      | None -> () ]
+let private targetArgs =
+    match commandLineArgs |> Array.filter (fun a -> a.IndexOf '=' < 0) with
+    | [||] -> []
+    | [| target |] -> [ "--target"; target ]
+    | targets -> failwithf "build.fsx expects at most one target name, got: %s" (System.String.Join(" ", targets))
+
+Context.FakeExecutionContext.Create false "build.fsx" targetArgs
 |> Context.RuntimeContext.Fake
 |> Context.setExecutionContext
 
