@@ -41,7 +41,7 @@ For more reasons see the [FAQ][10].
  - Build the solution with Visual Studio, `build.cmd` or `build.sh`.
  - Create a topic specific branch in git. Add a nice feature in the code. Do not
    forget to add tests and/or docs.
- - Run `build.cmd` (`build.sh` on Mono) to make sure all tests are still
+ - Run `build.cmd` (`build.sh` on Linux/macOS) to make sure all tests are still
    passing.
  - When built, you'll find the binaries in `./bin` which you can then test
    with locally, to ensure the bug or feature has been successfully implemented.

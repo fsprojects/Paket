@@ -51,7 +51,7 @@ Repository build targets:
 ./build.sh
 ```
 
-On Windows, use the corresponding `build.cmd` commands. The full build restores tools and dependencies, builds all projects, and runs broad test suites; on Linux it also depends on Mono and system tooling. If those prerequisites are unavailable, run the relevant `dotnet test` command and report what was not validated.
+On Windows, use the corresponding `build.cmd` commands. Both scripts run `build.fsx` with `dotnet fsi`, so the build script itself only needs the .NET SDK declared in `global.json`. The full build restores tools and dependencies, builds all projects, and runs broad test suites; on Linux it still depends on Mono for the targets that run .NET Framework binaries, namely `MergePaketTool` (ILRepack) and the `net461` test passes. If those prerequisites are unavailable, run the relevant `dotnet test` command and report what was not validated.
 
 ## Tests
 

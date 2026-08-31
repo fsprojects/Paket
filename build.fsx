@@ -15,6 +15,19 @@ open Fake.Testing.NUnit3
 open System.Security.Cryptography
 open System.Xml.Linq
 
+// This script is run with `dotnet fsi`, so there is no FAKE.exe runner to parse the
+// command line for us. The runner used to turn `build.sh <Target> key=value ...` into
+// environment variables, which FAKE then reads back through getBuildParam/hasBuildParam.
+// Do that translation here, before any value below reads a build parameter.
+let private commandLineArgs =
+    let all = Environment.GetCommandLineArgs()
+    if all.Length > 2 then all.[2..] else [||] // skip fsi.dll and build.fsx
+
+for arg in commandLineArgs do
+    match arg.IndexOf '=' with
+    | i when i > 0 -> Environment.SetEnvironmentVariable(arg.Substring(0, i), arg.Substring(i + 1))
+    | _ -> Environment.SetEnvironmentVariable("target", arg)
+
 // Information about the project are used
 //  - for version and project name in generated AssemblyInfo file
 //  - by the generated NuGet package
@@ -76,8 +89,6 @@ let buildMergedDir = buildDir @@ "merged"
 let paketFile = buildMergedDir @@ "paket.exe"
 
 Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
-
-System.Net.ServicePointManager.SecurityProtocol <- unbox 192 ||| unbox 768 ||| unbox 3072 ||| unbox 48
 
 // Read additional information from the release notes document
 let releaseNotesData =
