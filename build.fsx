@@ -239,9 +239,12 @@ Target.create "RunTests" (fun _ ->
 )
 
 Target.create "QuickTest" (fun _ ->
+    // This target builds the test assembly itself, so it has to inject the same version the Build
+    // target does: `Loading assembly metadata works` compares the version baked into Paket.Tests.dll
+    // with the one in RELEASE_NOTES.md.
     DotNet.test (fun c ->
         { c with
-            Common = dotnetCli c.Common
+            Common = withArgs packageProps c.Common
             Configuration = DotNet.BuildConfiguration.Release
             Filter = Some testCategoryFilter
         }) "tests/Paket.Tests/Paket.Tests.fsproj"
