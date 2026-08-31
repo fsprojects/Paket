@@ -58,3 +58,23 @@ group Build
 
   # add icon to exe
   github enricosada/add_icon_to_exe:e11eda501acea369ac2950beb34b8888495bf21f rh/ResourceHacker.exe
+
+# The modules build.fsx is written against. They are loaded through the scripts that
+# `paket generate-load-scripts` writes to .paket/load/net10.0/BuildScript/, so this group has to
+# resolve for the framework `dotnet fsi` runs on, not for the net461 of the Build group.
+#
+# `generate_load_scripts: true` is deliberately not used here: the restore would then generate one
+# folder per framework represented by *all* the groups of the lock file, and the main group carries
+# no restriction at all.
+group BuildScript
+  content: none
+  framework: net10.0
+  source https://api.nuget.org/v3/index.json
+
+  nuget Fake.Core.Target 6.1.4
+  nuget Fake.Core.ReleaseNotes 6.1.4
+  nuget Fake.Core.UserInput 6.1.4
+  nuget Fake.IO.FileSystem 6.1.4
+  nuget Fake.DotNet.Cli 6.1.4
+  nuget Fake.DotNet.Paket 6.1.4
+  nuget Fake.Tools.Git 6.1.4
