@@ -824,7 +824,6 @@ NUGET
     FSharp.Compiler.Service (17.0.1)
       System.Collections.Immutable (>= 1.3.1)
       System.Reflection.Metadata (>= 1.4.2)
-    ILRepack (2.0.18)
     Microsoft.AspNet.Razor (3.2.4)
     Microsoft.NETCore.Platforms (2.0) - restriction: || (&& (>= monotouch) (>= net461)) (&& (< net45) (>= net461) (>= netstandard1.5) (< netstandard1.6)) (&& (< net45) (>= net461) (< netstandard1.5)) (&& (>= net461) (< netstandard1.0)) (&& (>= net461) (< netstandard1.3)) (&& (>= net461) (< netstandard1.4)) (&& (>= net461) (< netstandard1.5) (>= uap10.0)) (&& (>= net461) (< netstandard2.0)) (&& (>= net461) (< portable-net45+win8+wpa81)) (&& (>= net461) (< portable-net451+win81+wpa81)) (&& (>= net461) (>= uap10.1))
     NETStandard.Library (2.0) - restriction: && (>= net461) (< netstandard2.0)
@@ -843,12 +842,11 @@ NUGET
       System.ValueTuple (>= 4.4 < 5.0)
 GITHUB
   remote: fsharp/FAKE
-    modules/Octokit/Octokit.fsx (13eee5a7b990fa310813f9760094aa3cfebeb33f)
+    modules/Octokit/Octokit.fsx (e8e1cae79e3573167d7421c622b51adc8c536004)
       Octokit (>= 0.20)
   remote: enricosada/add_icon_to_exe
     rh/ResourceHacker.exe (e11eda501acea369ac2950beb34b8888495bf21f)
 GROUP BuildScript
-GENERATE-LOAD-SCRIPTS: ON
 CONTENT: NONE
 RESTRICTION: == net10.0
 NUGET

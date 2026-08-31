@@ -49,7 +49,6 @@ group Build
   nuget FSharp.Formatting prerelease
   nuget System.ValueTuple
   nuget Microsoft.AspNet.Razor
-  nuget ILRepack
 
   github fsharp/FAKE modules/Octokit/Octokit.fsx
 

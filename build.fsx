@@ -327,10 +327,17 @@ Target "MergePaketTool" (fun _ ->
         |> List.map inBuildDirNet461
         |> separated " "
 
+    // The .NET Framework reference assemblies used to come for free from the Mono that ran
+    // ILRepack.exe. The dotnet-ilrepack tool runs on .NET, so point it at the same directory
+    // MSBuild resolves net461 against (see TargetFrameworkRootPath in Directory.Build.props).
+    let referenceAssemblies =
+        "packages" </> "build" </> "0x53A.ReferenceAssemblies.Paket" </> "tools" </> "framework" </> ".NETFramework" </> "v4.5"
+
     let result =
         ExecProcess (fun info ->
-            info.FileName <- currentDirectory </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
-            info.Arguments <- sprintf "/copyattrs /lib:%s /ver:%s /out:%s %s %s" buildDirNet461 release.AssemblyVersion paketFile primaryExe mergeLibs
+            info.FileName <- "dotnet"
+            info.Arguments <-
+                $"ilrepack /copyattrs /targetplatform:v4,%s{referenceAssemblies} /lib:%s{referenceAssemblies} /lib:%s{buildDirNet461} /ver:%s{release.AssemblyVersion} /out:%s{paketFile} %s{primaryExe} %s{mergeLibs}"
             ) (TimeSpan.FromMinutes 5.)
 
     if result <> 0 then failwithf "Error during ILRepack execution."
