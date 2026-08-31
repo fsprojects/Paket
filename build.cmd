@@ -9,6 +9,6 @@ if errorlevel 1 (
 setlocal
 
 
-packages\build\FAKE\tools\FAKE.exe build.fsx %*
+dotnet fsi build.fsx %*
 
 endlocal
