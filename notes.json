@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3594,
+    "labelling_after": 3825,
     "investigation_after": 3843
   },
   "issues": [
@@ -262,6 +262,18 @@
       "state": "commented",
       "updated_at": "2026-08-30",
       "note": "Root cause found: InstallModel.fs has no build/native/ special case (unlike lib/native/), so build/native/*.targets is dropped while build/*.targets is always imported unconditionally. Posted root-cause + design suggestion comment; too risky for surgical fix without maintainer sign-off."
+    },
+    {
+      "number": 3719,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-31",
+      "note": "Not a bug: File: dir override only affects project link location, file always stored in paket-files. Opened doc-clarity PR (branch repo-assist/docs-clarify-github-file-link-3719); commented recommending closure."
+    },
+    {
+      "number": 1584,
+      "state": "resolution_recommended",
+      "updated_at": "2026-08-31",
+      "note": "2016 legacy-csproj EmbeddedResource duplicate-content issue; no repro in 7+ years, unlikely on modern SDK-style projects. Recommended closing as stale."
     }
   ],
   "fixes": [
@@ -334,6 +346,11 @@
       "task": 2,
       "item": "reviewed-not-actionable-3839-3861-3893",
       "note": "#3839 (proxy pw env var UX, enhancement not fix), #3861 (Windows MSBuild internal error, no repro), #3893 (omnisharp-specific lock warning noise) reviewed; none confident/actionable this run."
+    },
+    {
+      "task": 3,
+      "item": "issue-2094-remove-last-group-member",
+      "note": "paket remove of last pkg in non-main group prunes group from paket.dependencies but not paket.lock, causing 'Group X was not found' on next resolve. Root cause traced to RemovePackage vs LockFile.GetGroup mismatch; exact throw site unpinned. Needs more trace before fix."
     }
   ]
 }
