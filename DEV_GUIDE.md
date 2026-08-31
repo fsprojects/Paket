@@ -4,6 +4,18 @@ Please contribute any notes that made your contributions easier here.
 
 Note that historically, the bulk of the development occured on Windows before dotnet got cross platform, for now, the tooling to target .NET Framework is still required for some areas.
 
+# Notes about the build script
+
+`build.cmd` and `build.sh` run `build.fsx` with `dotnet fsi`. FAKE is used as a library only: there
+is no FAKE runner to install, and its version no longer has to match the .NET SDK. Targets and
+parameters are unchanged, so `./build.sh <Target> [key=value ...]` keeps working as before — the
+script translates those arguments into environment variables itself, which is what the FAKE runner
+used to do.
+
+Mono is still needed on Linux for the targets that execute .NET Framework binaries: `MergePaketTool`
+(which runs `ILRepack.exe`) and the `net461` test passes. Removing that is tracked separately in
+[#4348](https://github.com/fsprojects/Paket/issues/4348).
+
 # Notes about the Paket F# Interactive extension
 
 Some pointers to help efforts to foster the F# Interactive extension ecosystem:
