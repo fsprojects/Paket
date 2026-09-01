@@ -322,17 +322,25 @@ Target.create "MergePaketTool" (fun _ ->
     // in Directory.Build.props. The package only ships v4.5, which is enough for the
     // /targetplatform:v4 merge.
     let referenceAssemblies =
-        let props = XDocument.Load "Directory.Build.props"
+        let propsFile = "Directory.Build.props"
+        let props = XDocument.Load propsFile
         let root =
-            (props.Descendants(XName.Get "TargetFrameworkRootPath") |> Seq.exactlyOne).Value
-                .Replace("$(MSBuildThisFileDirectory)", "")
-                .Replace('\\', System.IO.Path.DirectorySeparatorChar)
-        root </> ".NETFramework" </> "v4.5"
+            match props.Descendants(XName.Get "TargetFrameworkRootPath") |> Seq.tryHead with
+            | Some node ->
+                node.Value
+                    .Replace("$(MSBuildThisFileDirectory)", "")
+                    .Replace('\\', System.IO.Path.DirectorySeparatorChar)
+            | None ->
+                failwithf $"%s{propsFile} defines no TargetFrameworkRootPath; MergePaketTool needs it to locate the .NET Framework reference assemblies."
+
+        let dir = root </> ".NETFramework" </> "v4.5"
+        if not (System.IO.Directory.Exists dir) then
+            failwithf $"No .NET Framework reference assemblies at %s{dir}, derived from TargetFrameworkRootPath in %s{propsFile}. Check that the value resolves without MSBuild properties and that the 0x53A.ReferenceAssemblies.Paket package is restored."
+        dir
 
     let result =
         DotNet.exec (fun c -> { dotnetCli c with Timeout = Some (TimeSpan.FromMinutes 5.) }) "ilrepack"
-            (sprintf "/copyattrs /targetplatform:v4,%s /lib:%s /lib:%s /ver:%s /out:%s %s %s"
-                referenceAssemblies referenceAssemblies buildDirNet461 release.AssemblyVersion paketFile primaryExe mergeLibs)
+            $"/copyattrs /targetplatform:v4,%s{referenceAssemblies} /lib:%s{referenceAssemblies} /lib:%s{buildDirNet461} /ver:%s{release.AssemblyVersion} /out:%s{paketFile} %s{primaryExe} %s{mergeLibs}"
 
     if not result.OK then failwithf "Error during ILRepack execution."
 )
