@@ -177,6 +177,15 @@ let ``should maintain order when updating project file items`` () =
     CollectionAssert.AreEqual(expected, actual)
 
 [<Test>]
+let ``should not fail on Compile Remove entry without Include or Update attribute`` () =
+    ensureDir ()
+    let projFile = ProjectFile.TryLoad("./ProjectFile/TestData/CompileRemoveOnly.csprojtest").Value
+    let cache = PackProcessCache.empty
+    projFile.GetCompileItems false cache
+    |> Seq.toList
+    |> shouldEqual []
+
+[<Test>]
 let ``should remove missing files that exist in the project`` () = 
     ensureDir ()
     
