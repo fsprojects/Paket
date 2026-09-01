@@ -1,8 +1,8 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3926,
-    "investigation_after": 3843
+    "labelling_after": 3836,
+    "investigation_after": 3781
   },
   "issues": [
     {
@@ -280,6 +280,30 @@
       "state": "resolution_recommended",
       "updated_at": "2026-08-31",
       "note": "Bracket escaping already works in current NupkgWriter.fs; opened regression-test PR (repo-assist/fix-issue-3906-bracket-escape-test) and commented asking for repro details/version."
+    },
+    {
+      "number": 3781,
+      "state": "commented",
+      "updated_at": "2026-09-01",
+      "note": "Root-caused clean-cache breaking local dotnet-tool installs (shares global NuGet packages folder); recommended docs-only fix, posted workaround."
+    },
+    {
+      "number": 3728,
+      "state": "resolution_recommended",
+      "updated_at": "2026-09-01",
+      "note": "No repro since maintainer's 2019 request; recommended closing as stale/needs-more-info."
+    },
+    {
+      "number": 3816,
+      "state": "commented",
+      "updated_at": "2026-09-01",
+      "note": "Same root cause as #3703: build/ TFM scanner warns on non-TFM subfolder names (XCODE10 etc). Proposed skip-not-warn fix direction; needs maintainer sign-off."
+    },
+    {
+      "number": 3703,
+      "state": "commented",
+      "updated_at": "2026-09-01",
+      "note": "Consolidated with #3816 as same build/ TFM scanner false-positive warning root cause."
     }
   ],
   "fixes": [
@@ -290,14 +314,6 @@
       "status": "open",
       "updated_at": "2026-08-30",
       "note": "Added Package-prefixed MSBuild property fallback in GetTemplateMetadata; draft PR + regression tests opened."
-    },
-    {
-      "issue": 3843,
-      "pr": null,
-      "branch": "repo-assist/fix-issue-3843-nuget-url-normalization",
-      "status": "open",
-      "updated_at": "2026-08-31",
-      "note": "Normalized www. prefix in ConfigFile.getSourceNodes so nuget.org/www.nuget.org credential lookups match; draft PR + regression test opened; commented on issue."
     },
     {
       "issue": 3906,
@@ -342,11 +358,6 @@
       "note": "Near-duplicate PRs both adding scriptgen CI job; both have failing scriptgen integration job. Consolidate/close one, fix the failing job, next time Task 6 selected."
     },
     {
-      "task": 1,
-      "item": "labelling-continue-5",
-      "note": "Labelled #3594..#3813 (18 issues: mostly bug/question/enhancement). Continue no:label query below #3594 next run (era ~2019-2020)."
-    },
-    {
       "task": 8,
       "item": "perf-review-2026-08",
       "note": "Scanned List.length/append-in-loop patterns in Paket.Core; no low-risk actionable perf win found without profiling data."
@@ -365,6 +376,16 @@
       "task": 3,
       "item": "issue-2094-remove-last-group-member",
       "note": "paket remove of last pkg in non-main group prunes group from paket.dependencies but not paket.lock, causing 'Group X was not found' on next resolve. Root cause traced to RemovePackage vs LockFile.GetGroup mismatch; exact throw site unpinned. Needs more trace before fix."
+    },
+    {
+      "task": 1,
+      "item": "labelling-continue-6",
+      "note": "Labelled #3594..#3836 (28 issues) this run. Continue no:label query from #3836 onward next run."
+    },
+    {
+      "task": 3,
+      "item": "candidate-fixes-2026-09",
+      "note": "#3781/#3728/#3816/#3703 commented this run (no PR - need maintainer input or repro). #3810 (copy_local netstandard) and #3820 (macOS MonoAndroid resolve) investigation incomplete, worth resuming."
     }
   ]
 }
