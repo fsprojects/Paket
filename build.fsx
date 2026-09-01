@@ -85,9 +85,6 @@ let dotnetcliVersion = DotNet.getSDKVersionFromGlobalJson()
 /// Applies the SDK installed by the InstallDotNetCore target to a dotnet invocation.
 let mutable dotnetCli : DotNet.Options -> DotNet.Options = id
 
-let private withArgs args (o: DotNet.Options) =
-    { dotnetCli o with CustomParams = Some (String.separated " " args) }
-
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps
 // --------------------------------------------------------------------------------------
@@ -190,13 +187,13 @@ let releaseNotesPath = releaseNotesProp release.Notes
 
 let packageProps = [
     sprintf "/p:Version=%s" release.NugetVersion
-    sprintf "/p:PackageReleaseNotesFile=\"%s\"" releaseNotesPath
+    sprintf "/p:PackageReleaseNotesFile=%s" releaseNotesPath
 ]
 
 Target.create "Build" (fun _ ->
     DotNet.build (fun c ->
         { c with
-            Common = withArgs packageProps c.Common
+            Common = c.Common |> dotnetCli |> DotNet.Options.withAdditionalArgs packageProps
         }) solutionFile
 )
 
@@ -263,7 +260,7 @@ Target.create "QuickTest" (fun _ ->
     // with the one in RELEASE_NOTES.md.
     DotNet.test (fun c ->
         { c with
-            Common = withArgs packageProps c.Common
+            Common = c.Common |> dotnetCli |> DotNet.Options.withAdditionalArgs packageProps
             Configuration = DotNet.BuildConfiguration.Release
             Filter = Some testCategoryFilter
         }) "tests/Paket.Tests/Paket.Tests.fsproj"
@@ -431,7 +428,7 @@ Target.create "NuGet" (fun _ ->
     let pack project args =
         DotNet.pack (fun c ->
             { c with
-                Common = withArgs args c.Common
+                Common = c.Common |> dotnetCli |> DotNet.Options.withAdditionalArgs args
                 OutputPath = Some tempDir
             }) project
 
