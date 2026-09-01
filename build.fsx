@@ -317,10 +317,17 @@ Target.create "MergePaketTool" (fun _ ->
         |> String.separated " "
 
     // The .NET Framework reference assemblies used to come for free from the Mono that ran
-    // ILRepack.exe. The dotnet-ilrepack tool runs on .NET, so point it at the same directory
-    // MSBuild resolves net461 against (see TargetFrameworkRootPath in Directory.Build.props).
+    // ILRepack.exe. The dotnet-ilrepack tool runs on .NET, so point it at the reference assemblies
+    // of the 0x53A.ReferenceAssemblies.Paket package, whose root is owned by TargetFrameworkRootPath
+    // in Directory.Build.props. The package only ships v4.5, which is enough for the
+    // /targetplatform:v4 merge.
     let referenceAssemblies =
-        "packages" </> "build" </> "0x53A.ReferenceAssemblies.Paket" </> "tools" </> "framework" </> ".NETFramework" </> "v4.5"
+        let props = XDocument.Load "Directory.Build.props"
+        let root =
+            (props.Descendants(XName.Get "TargetFrameworkRootPath") |> Seq.exactlyOne).Value
+                .Replace("$(MSBuildThisFileDirectory)", "")
+                .Replace('\\', System.IO.Path.DirectorySeparatorChar)
+        root </> ".NETFramework" </> "v4.5"
 
     let result =
         DotNet.exec dotnetCli "ilrepack"
