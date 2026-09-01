@@ -30,6 +30,7 @@ let private commandLineArgs =
 
 for arg in commandLineArgs do
     match arg.IndexOf '=' with
+    | 0 -> failwithf "build.fsx got an argument with an empty parameter name: %s" arg
     | i when i > 0 -> System.Environment.SetEnvironmentVariable(arg.Substring(0, i), arg.Substring(i + 1))
     | _ -> ()
 
