@@ -118,6 +118,9 @@ let stable =
 
 let DoNothing = ignore
 
+/// FAKE 4's hasBuildParam semantics: an unset or empty variable counts as not set.
+let hasBuildParam name = Environment.environVarOrDefault name "" <> ""
+
 let testSuiteFilterFlakyTests = Environment.environVarAsBoolOrDefault "PAKET_TESTSUITE_FLAKYTESTS" false
 
 let testCategoryFilter =
@@ -438,7 +441,7 @@ Target.create "NuGet" (fun _ ->
 )
 
 Target.create "PublishNuGet" (fun _ ->
-    if Environment.hasEnvironVar "PublishBootstrapper" |> not then
+    if hasBuildParam "PublishBootstrapper" |> not then
         !! (tempDir </> "*bootstrapper*")
         |> File.deleteAll
 
@@ -632,8 +635,7 @@ Target.create "BuildPackage" DoNothing
 
 let hasBuildParams buildParams =
     buildParams
-    |> List.map Environment.hasEnvironVar
-    |> List.exists id
+    |> List.exists hasBuildParam
 let unlessBuildParams buildParams =
     not (hasBuildParams buildParams)
 
@@ -645,10 +647,10 @@ Target.create "All" DoNothing
   ==> "Build"
   ==> "Publish"
   =?> ("RunTests", unlessBuildParams [ "SkipTests"; "SkipUnitTests" ])
-  =?> ("GenerateReferenceDocs",BuildServer.isLocalBuild && Environment.isWindows && not (Environment.hasEnvironVar "SkipDocs"))
-  =?> ("GenerateDocs",BuildServer.isLocalBuild && Environment.isWindows && not (Environment.hasEnvironVar "SkipDocs"))
+  =?> ("GenerateReferenceDocs",BuildServer.isLocalBuild && Environment.isWindows && not (hasBuildParam "SkipDocs"))
+  =?> ("GenerateDocs",BuildServer.isLocalBuild && Environment.isWindows && not (hasBuildParam "SkipDocs"))
   ==> "All"
-  =?> ("ReleaseDocs",BuildServer.isLocalBuild && Environment.isWindows && not (Environment.hasEnvironVar "SkipDocs"))
+  =?> ("ReleaseDocs",BuildServer.isLocalBuild && Environment.isWindows && not (hasBuildParam "SkipDocs"))
   |> ignore
 
 "All"
