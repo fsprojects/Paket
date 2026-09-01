@@ -206,6 +206,7 @@
     <Compile Include="InstallModel\InstallNuGetContentsTests.fs" />
     <Compile Include="InstallModel\PaketPropsTests.fs" />
     <Compile Include="Packaging\PackageProcessSpecs.fs" />
+    <Compile Include="Packaging\NupkgWriterSpecs.fs" />
     <Compile Include="Packaging\NuspecWriterSpecs.fs" />
     <Compile Include="Packaging\TemplateFileParsing.fs" />
     <Compile Include="Packaging\RemotePushUrlSpecs.fs" />
