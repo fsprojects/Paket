@@ -51,6 +51,26 @@ jobs:
           export ${{ matrix.skip_env }}
           ./build.sh BuildPackage < /dev/null
 
+  linux-integration-scriptgen:
+    name: Linux (integration tests, scriptgen)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Install Mono
+        run: sudo apt-get update && sudo apt-get install --yes mono-complete
+      - name: Install build SDK and integration test runtime
+        run: |
+          curl --fail --silent --show-error --location https://dot.net/v1/dotnet-install.sh --output /tmp/dotnet-install.sh
+          bash /tmp/dotnet-install.sh --version 9.0.309 --install-dir "$HOME/.local/share/dotnetcore"
+          bash /tmp/dotnet-install.sh --channel 8.0 --runtime dotnet --install-dir "$HOME/.local/share/dotnetcore"
+      - name: Run scriptgen integration tests
+        env:
+          EnableWindowsTargeting: true
+        run: ./build.sh QuickIntegrationTests < /dev/null
+
   windows:
     name: Windows (.NET)
     runs-on: windows-latest
