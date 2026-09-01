@@ -330,7 +330,7 @@ Target.create "MergePaketTool" (fun _ ->
         root </> ".NETFramework" </> "v4.5"
 
     let result =
-        DotNet.exec dotnetCli "ilrepack"
+        DotNet.exec (fun c -> { dotnetCli c with Timeout = Some (TimeSpan.FromMinutes 5.) }) "ilrepack"
             (sprintf "/copyattrs /targetplatform:v4,%s /lib:%s /lib:%s /ver:%s /out:%s %s %s"
                 referenceAssemblies referenceAssemblies buildDirNet461 release.AssemblyVersion paketFile primaryExe mergeLibs)
 
