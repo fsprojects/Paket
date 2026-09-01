@@ -44,7 +44,7 @@ let ``should generate Xml for FSharp.Data.SqlClient 1.4.4``() =
                 |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\FSharp.Data.SqlClient\",
                   [],
                   [],
-                  Nuspec.Load(__SOURCE_DIRECTORY__ + @"\..\..\Nuspec\FSharp.Data.SqlClient.nuspec"))
+                  Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__, "..", "..", "Nuspec", "FSharp.Data.SqlClient.nuspec")))
 
         let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
         let currentXML = ctx.ChooseNodes.Head.OuterXml |> normalizeXml
