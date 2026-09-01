@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 4212,
+    "labelling_after": 4304,
     "investigation_after": 3781
   },
   "issues": [
@@ -310,6 +310,24 @@
       "state": "resolution_recommended",
       "updated_at": "2026-09-01",
       "note": "Global NuGet packages folder ignored - confirmed fixed by commit 3e84a7742 referencing this issue; recommended closing."
+    },
+    {
+      "number": 4222,
+      "state": "commented",
+      "updated_at": "2026-09-02",
+      "note": "Fixed via draft PR (see fixes); pack --symbols crash on Compile Remove-only items."
+    },
+    {
+      "number": 4215,
+      "state": "commented",
+      "updated_at": "2026-09-02",
+      "note": "paket.exe hangs, related to #4216/#3412; no confident root cause, labelled bug+needs investigation."
+    },
+    {
+      "number": 4216,
+      "state": "commented",
+      "updated_at": "2026-09-02",
+      "note": "See #4215."
     }
   ],
   "fixes": [
@@ -336,6 +354,14 @@
       "pr": null,
       "status": "open",
       "updated_at": "2026-09-01"
+    },
+    {
+      "issue": 4222,
+      "branch": "repo-assist/fix-issue-4222-compile-remove",
+      "pr": null,
+      "status": "open",
+      "updated_at": "2026-09-02",
+      "note": "GetCompileItems threw on <Compile Remove> items lacking Include/Update; now returns None via Seq.choose. Draft PR + regression test in OutputSpecs.fs, 38/38 passed."
     }
   ],
   "checks": [],
@@ -398,8 +424,8 @@
     },
     {
       "task": 1,
-      "item": "labelling-continue-9",
-      "note": "Labelled 30 issues #4158-#4212 this run. Still unlabelled: #4213, #4285, #4304 - label next run."
+      "item": "labelling-continue-10",
+      "note": "Labelled #4213-#4304 this run (11 issues). Resume unlabelled search from #4305 next time."
     }
   ]
 }
