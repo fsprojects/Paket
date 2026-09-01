@@ -131,6 +131,7 @@
     <Compile Include="Simplifier\BasicScenarioSpecs.fs" />
     <TestAsset Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFrameworkAndOutputPath.csprojtest" />
     <TestAsset Include="ProjectFile\TestData\MicrosoftNetSdkWithConditionalTargetFrameworks.csprojtest" />
+    <TestAsset Include="ProjectFile\TestData\MicrosoftNetSdkWithConditionalTargetFrameworksOnly.csprojtest" />
     <TestAsset Include="ProjectFile\TestData\EmptyFsharpGuid.fsprojtest" />
     <TestAsset Include="ProjectFile\TestData\EmptyVbGuid.vbprojtest" />
     <TestAsset Include="ProjectFile\TestData\EmptyPyGuid.pyprojtest" />

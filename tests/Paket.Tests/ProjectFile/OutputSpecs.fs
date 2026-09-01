@@ -105,12 +105,45 @@ let ``should detect output path for netsdk with outputPath and appendTargetFrame
 
 [<Test>]
 let ``should detect output path for netsdk with conditional target frameworks csproj file``
-        ([<Values("Debug", "Release")>] configuration) =
+        ([<Values("Debug", "Release", "dEbUg", "rElEaSe")>] configuration) =
     ensureDir ()
     let projectFile = ProjectFile.TryLoad("./ProjectFile/TestData/MicrosoftNetSdkWithConditionalTargetFrameworks.csprojtest").Value
     // Should not throw "Unable to find <configuration> output path node" (see issue #3799)
     let outPath = projectFile.GetOutputDirectory configuration "" None
     outPath |> shouldNotEqual ""
+
+[<Test>]
+let ``should detect output path for netsdk with only conditional target frameworks (no unconditional fallback) csproj file``
+        ([<Values("Debug", "Release")>] configuration) =
+    ensureDir ()
+    // Reproduces the exact shape from issue #3799: no unconditional TargetFramework/TargetFrameworks
+    // element exists at all, only Configuration-conditioned PropertyGroups.
+    let projectFile = ProjectFile.TryLoad("./ProjectFile/TestData/MicrosoftNetSdkWithConditionalTargetFrameworksOnly.csprojtest").Value
+    let outPath = projectFile.GetOutputDirectory configuration "" None
+    outPath |> shouldNotEqual ""
+
+[<Test>]
+let ``should pick the conditional target frameworks matching the requested configuration for netsdk csproj file``
+        ([<Values("Debug", "Release")>] configuration) =
+    ensureDir ()
+    let projectFile = ProjectFile.TryLoad("./ProjectFile/TestData/MicrosoftNetSdkWithConditionalTargetFrameworksOnly.csprojtest").Value
+    let outPath = projectFile.GetOutputDirectory configuration "" None
+    // Debug config only lists netstandard2.0;net45, Release additionally lists net47;
+    // the first framework in each list is netstandard2.0, and it should be selected as the default.
+    let expected = (System.IO.Path.Combine(@"bin", configuration, "netstandard2.0") |> normalizePath)
+    outPath.ToLowerInvariant() |> shouldEqual (expected.ToLowerInvariant())
+
+[<Test>]
+let ``should detect output path for a specific target profile in a conditional target frameworks csproj file``
+        ([<Values("Debug", "Release")>] configuration) =
+    ensureDir ()
+    let projectFile = ProjectFile.TryLoad("./ProjectFile/TestData/MicrosoftNetSdkWithConditionalTargetFrameworksOnly.csprojtest").Value
+    let targetProfile =
+        FrameworkDetection.internalExtract "net45"
+        |> Option.map TargetProfile.SinglePlatform
+    let outPath = projectFile.GetOutputDirectory configuration "" targetProfile
+    let expected = (System.IO.Path.Combine(@"bin", configuration, "net45") |> normalizePath)
+    outPath.ToLowerInvariant() |> shouldEqual (expected.ToLowerInvariant())
 
 [<Test>]
 let ``should detect framework profile for ProjectWithConditions file`` () =
