@@ -250,10 +250,10 @@ Target.create "RunTests" (fun _ ->
             }) "tests/Paket.Tests/Paket.Tests.fsproj"
 
     runTest "net" "Paket.Tests" "net461"
-    runTest "netcore" "Paket.Tests" "netcoreapp3.0"
+    runTest "netcore" "Paket.Tests" "net10.0"
 
     runTest "net" "Paket.Bootstrapper.Tests" "net461"
-    runTest "netcore" "Paket.Bootstrapper.Tests" "netcoreapp3.0"
+    runTest "netcore" "Paket.Bootstrapper.Tests" "net10.0"
 )
 
 Target.create "QuickTest" (fun _ ->
