@@ -105,3 +105,19 @@ let ``get token from node``() =
    let (Token token) = getAuthFromNode node
 
    token |> shouldEqual "demotoken"
+
+[<Test>]
+let ``get source nodes ignores www prefix mismatch for nuget.org``() =
+    let doc = sampleDoc()
+    let node = doc.CreateElement("credential")
+    node.SetAttribute("source", "https://www.nuget.org")
+    doc.DocumentElement.AppendChild(node) |> ignore
+
+    // a token stored for https://www.nuget.org (as documented via `paket config add-token`)
+    // should be found when looking up the default push URL https://nuget.org (no www)
+    // and vice versa. See https://github.com/fsprojects/Paket/issues/3843
+    let nodesWithoutWww = getSourceNodes doc "https://nuget.org" "credential"
+    let nodesWithWww = getSourceNodes doc "https://www.nuget.org" "credential"
+
+    nodesWithoutWww.Length |> shouldEqual 1
+    nodesWithWww.Length |> shouldEqual 1
