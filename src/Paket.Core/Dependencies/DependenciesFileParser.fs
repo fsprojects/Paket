@@ -59,7 +59,7 @@ module DependenciesFileParser =
 
             if String.IsNullOrWhiteSpace text then VersionRequirement(VersionRange.AtLeast "0",PreReleaseStatus.No) else
 
-            match text.Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Array.toList with
+            match text.Split([|' '; '\t'|],StringSplitOptions.RemoveEmptyEntries) |> Array.toList with
             |  ">=" :: v1 :: "<" :: v2 :: rest ->
                 let v1 = SemVer.Parse v1
                 let v2 = SemVer.Parse v2
@@ -240,7 +240,7 @@ module DependenciesFileParser =
     let private (|Package|_|) (line:string) =
         match line.Trim() with
         | String.RemovePrefix "nuget" trimmed ->
-            let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
+            let parts = trimmed.Trim().Replace("\"", "").Split([|' '; '\t'|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
             let isVersion(text:string) =
                 let result,_ = Int32.TryParse(text.[0].ToString()) in result
@@ -262,7 +262,7 @@ module DependenciesFileParser =
     let private (|CliTool|_|) (line:string) =
         match line.Trim() with
         | String.RemovePrefix "clitool" trimmed ->
-            let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
+            let parts = trimmed.Trim().Replace("\"", "").Split([|' '; '\t'|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
             let isVersion(text:string) =
                 let result,_ = Int32.TryParse(text.[0].ToString())
@@ -286,7 +286,7 @@ module DependenciesFileParser =
     let private (|ExternalLock|_|) (line:string) =
         match line.Trim() with
         | String.RemovePrefix "external_lock" trimmed ->
-            let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
+            let parts = trimmed.Trim().Replace("\"", "").Split([|' '; '\t'|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
             match parts with
             | [fileName] -> Some (ExternalLock(fileName))
@@ -305,42 +305,54 @@ module DependenciesFileParser =
         match line.Trim() with
         | String.RemovePrefix "references" trimmed -> Some (ParserOptions (ParserOption.ReferencesMode (trimmed.Replace(":","").Trim() = "strict")))
         | String.RemovePrefix "redirects" trimmed ->
+            let value = trimmed.Replace(":","").Trim()
             let setting =
-                match trimmed.Replace(":","").Trim() with
+                match value with
                 | String.EqualsIC "on" -> Some BindingRedirectsSettings.On
                 | String.EqualsIC "force" -> Some BindingRedirectsSettings.Force
                 | String.EqualsIC "off" -> Some BindingRedirectsSettings.Off
-                | _ -> None
+                | _ ->
+                    traceWarnfn "Unknown redirects setting \"%s\" - expected \"on\", \"off\" or \"force\"" value
+                    None
 
             Some (ParserOptions (ParserOption.Redirects setting))
         | String.RemovePrefix "storage" trimmed ->
+            let value = trimmed.Replace(":","").Trim()
             let setting =
-                match trimmed.Replace(":","").Trim() with
+                match value with
                 | String.EqualsIC "none" -> Some PackagesFolderGroupConfig.NoPackagesFolder
                 | String.EqualsIC "symlink" -> Some PackagesFolderGroupConfig.SymbolicLink
                 | String.EqualsIC "packages" -> Some PackagesFolderGroupConfig.DefaultPackagesFolder
-                | _ -> None
+                | _ ->
+                    traceWarnfn "Unknown storage setting \"%s\" - expected \"none\", \"symlink\" or \"packages\"" value
+                    None
 
             Some (ParserOptions (ParserOption.StorageConfig setting))
         | String.RemovePrefix "strategy" trimmed ->
+            let value = trimmed.Replace(":","").Trim()
             let setting =
-                match trimmed.Replace(":","").Trim() with
+                match value with
                 | String.EqualsIC "max" -> Some ResolverStrategy.Max
                 | String.EqualsIC "min" -> Some ResolverStrategy.Min
-                | _ -> None
+                | _ ->
+                    traceWarnfn "Unknown strategy setting \"%s\" - expected \"min\" or \"max\"" value
+                    None
 
             Some (ParserOptions (ParserOption.ResolverStrategyForTransitives setting))
         | String.RemovePrefix "lowest_matching" trimmed ->
+            let value = trimmed.Replace(":","").Trim()
             let setting =
-                match trimmed.Replace(":","").Trim() with
+                match value with
                 | String.EqualsIC "false" -> Some ResolverStrategy.Max
                 | String.EqualsIC "true" -> Some ResolverStrategy.Min
-                | _ -> None
+                | _ ->
+                    traceWarnfn "Unknown lowest_matching setting \"%s\" - expected \"true\" or \"false\"" value
+                    None
 
             Some (ParserOptions (ParserOption.ResolverStrategyForDirectDependencies setting))
         | String.RemovePrefix "frameworks" trimmed
         | String.RemovePrefix "framework" trimmed ->
-            let text = trimmed.Replace(":", "").Trim()
+            let text = trimmed.Replace(":", "").Trim() |> removeComment
 
             if text = "auto-detect" then
                 Some (ParserOptions ParserOption.AutodetectFrameworkRestrictions)
@@ -352,7 +364,7 @@ module DependenciesFileParser =
                 let options = ParserOption.FrameworkRestrictions (ExplicitRestriction restrictions)
                 Some (ParserOptions options)
         | String.RemovePrefix "restriction" trimmed ->
-            let text = trimmed.Replace(":", "").Trim()
+            let text = trimmed.Replace(":", "").Trim() |> removeComment
 
             if text = "auto-detect" then
                 Some (ParserOptions ParserOption.AutodetectFrameworkRestrictions)

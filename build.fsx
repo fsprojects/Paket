@@ -15,6 +15,19 @@ open Fake.Testing.NUnit3
 open System.Security.Cryptography
 open System.Xml.Linq
 
+// This script is run with `dotnet fsi`, so there is no FAKE.exe runner to parse the
+// command line for us. The runner used to turn `build.sh <Target> key=value ...` into
+// environment variables, which FAKE then reads back through getBuildParam/hasBuildParam.
+// Do that translation here, before any value below reads a build parameter.
+let private commandLineArgs =
+    let all = Environment.GetCommandLineArgs()
+    if all.Length > 2 then all.[2..] else [||] // skip fsi.dll and build.fsx
+
+for arg in commandLineArgs do
+    match arg.IndexOf '=' with
+    | i when i > 0 -> Environment.SetEnvironmentVariable(arg.Substring(0, i), arg.Substring(i + 1))
+    | _ -> Environment.SetEnvironmentVariable("target", arg)
+
 // Information about the project are used
 //  - for version and project name in generated AssemblyInfo file
 //  - by the generated NuGet package
@@ -67,17 +80,15 @@ let mutable dotnetExePath = "dotnet"
 
 let buildDir = "bin"
 let buildDirNet461 = buildDir @@ "net461"
-let buildDirNetCore = buildDir @@ "net9"
+let buildDirNetCore = buildDir @@ "net10.0"
 let buildDirBootstrapper = "bin_bootstrapper"
 let buildDirBootstrapperNet461 = buildDirBootstrapper @@ "net461"
-let buildDirBootstrapperNetCore = buildDirBootstrapper @@ "net9"
+let buildDirBootstrapperNetCore = buildDirBootstrapper @@ "net10.0"
 let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
 let paketFile = buildMergedDir @@ "paket.exe"
 
 Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
-
-System.Net.ServicePointManager.SecurityProtocol <- unbox 192 ||| unbox 768 ||| unbox 3072 ||| unbox 48
 
 // Read additional information from the release notes document
 let releaseNotesData =
@@ -199,7 +210,7 @@ Target "Publish" (fun _ ->
     DotNetCli.Publish (fun c ->
         { c with
             Project = "src/Paket"
-            Framework = "net9"
+            Framework = "net10.0"
             Output = FullName (currentDirectory </> buildDirNetCore)
             ToolPath = dotnetExePath
             AdditionalArgs = publishArgs
@@ -217,7 +228,7 @@ Target "Publish" (fun _ ->
     DotNetCli.Publish (fun c ->
         { c with
             Project = "src/Paket.Bootstrapper"
-            Framework = "net9"
+            Framework = "net10.0"
             Output = FullName (currentDirectory </> buildDirBootstrapperNetCore)
             ToolPath = dotnetExePath
             AdditionalArgs = publishArgs
@@ -355,7 +366,7 @@ Target "RunIntegrationTestsNetCore" (fun _ ->
     DotNetCli.Test (fun c ->
         { c with
             Project = "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
-            Framework = "net9"
+            Framework = "net10.0"
             AdditionalArgs =
               [ "--filter"; (if testSuiteFilterFlakyTests then "TestCategory=Flaky" else "TestCategory!=Flaky")
                 sprintf "--logger:trx;LogFileName=%s" ("tests_result/netcore/Paket.IntegrationTests/TestResult.trx" |> Path.GetFullPath) ]
@@ -482,7 +493,6 @@ let fakeStartInfo fsiargs script workingDirectory args environmentVars =
             info.EnvironmentVariables.[k] <- v
         for (k, v) in environmentVars do
             setVar k v
-        setVar "MSBuild" msBuildExe
         setVar "GIT" Git.CommandHelper.gitPath
         setVar "FSI" fsiPath)
 

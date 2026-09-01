@@ -65,6 +65,15 @@ let ``should read simple config with prerelease and comment``() =
     packageDefinition.Range |> shouldEqual (VersionRange.AtLeast("3.2"))
     packageDefinition.PreReleases |> shouldEqual PreReleaseStatus.All
 
+let configWithTabBeforePrerelease = "source \"http://www.nuget.org/api/v2\"\n\nnuget System.Composition 1.1.0-beta-25104-02\tprerelease\n"
+
+[<Test>]
+let ``should read config with tab between version and prerelease``() =
+    let cfg = DependenciesFile.FromSource(configWithTabBeforePrerelease)
+    let packageDefinition = cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "System.Composition"]
+    packageDefinition.Range |> shouldEqual (VersionRange.Exactly("1.1.0-beta-25104-02"))
+    packageDefinition.PreReleases |> shouldEqual PreReleaseStatus.All
+
 let configWithVersionLine = """
 version 1.2.3 --prefer-nuget
 source "http://www.nuget.org/api/v2"
@@ -202,6 +211,20 @@ let ``should read config with no redirects``() =
     let cfg = DependenciesFile.FromSource(noRedirectsConfig)
     cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
     cfg.Groups.[Constants.MainDependencyGroup].Options.Redirects |> shouldEqual (Some BindingRedirectsSettings.Off)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
+
+let invalidRedirectsConfig = """
+redirects maybe
+source "http://www.nuget.org/api/v2" // first source
+
+nuget "FAKE" "~> 3.0"
+"""
+
+[<Test>]
+let ``should warn and ignore unknown redirects setting``() =
+    let cfg = DependenciesFile.FromSource(invalidRedirectsConfig)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Redirects |> shouldEqual None
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
 
@@ -385,6 +408,21 @@ let ``should read github source file from config without quotes``() =
             OperatingSystemRestriction = None
             PackagePath = None
             AuthKey = Some "github" }]
+
+[<Test>]
+let ``should not compute a file path outside paket-files for a malformed github source spec``() =
+    // Regression test for https://github.com/fsprojects/Paket/issues/4306 :
+    // "github myorg/repo:main ~>" (a missing version after "~>") used to be parsed
+    // such that the "~>" ended up as the remote file's Name, which normalizePath then
+    // expanded into an absolute path rooted at the user's home directory. This made
+    // Path.Combine discard the paket-files root entirely, so a subsequent CleanDir
+    // wiped out the user's home directory instead of a paket-files subfolder.
+    let config = """github myorg/repo:main ~>"""
+    let dependencies = DependenciesFile.FromSource(config)
+    let remoteFile = dependencies.Groups.[Constants.MainDependencyGroup].RemoteFiles.Head
+    remoteFile.Name |> shouldEqual "~>"
+    (fun () -> remoteFile.FilePath("/some/root", Constants.MainDependencyGroup) |> ignore)
+    |> shouldFail
 
 [<Test>]
 let ``should read github source file from config with quotes``() =
@@ -776,6 +814,43 @@ let ``should read config with password in env variable and auth type specified``
         PackageSource.NuGetV2 { 
             Url = "http://www.nuget.org/api/v2"
             Authentication = AuthProvider.empty } ]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth.Retrieve true
+        |> shouldEqual (Some (Credentials{ Username = "user XYZ"; Password = "pw Love"; Type = NetUtils.AuthType.NTLM}))
+
+let configWithSourceInEnvVariable = """
+source %FEED_URL%
+nuget Rx-Main
+"""
+
+[<Test>]
+let ``should read config with source in env variable``() = 
+    Environment.SetEnvironmentVariable("FEED_URL", "http://www.nuget.org/api/v2", EnvironmentVariableTarget.Process)
+    let cfg = DependenciesFile.FromSource(configWithSourceInEnvVariable)
+    
+    cfg.Groups.[Constants.MainDependencyGroup].Sources 
+    |> shouldEqual [ 
+        PackageSource.NuGetV2 { 
+            Url = "http://www.nuget.org/api/v2"
+            Authentication = AuthProvider.empty} ]
+
+
+let configWithSourceAndCredentialsInEnvVariable = """
+source %FEED_URL%
+nuget Rx-Main
+"""
+
+[<Test>]
+let ``should read config with source and credentials in env variable``() = 
+    Environment.SetEnvironmentVariable("FEED_USERNAME", "user XYZ", EnvironmentVariableTarget.Process)
+    Environment.SetEnvironmentVariable("FEED_PASSWORD", "pw Love", EnvironmentVariableTarget.Process)
+    Environment.SetEnvironmentVariable("FEED_URL", "http://www.nuget.org/api/v2 username: \"%FEED_USERNAME%\" password: \"%FEED_PASSWORD%\" authtype: \"nTlM\"", EnvironmentVariableTarget.Process)
+    let cfg = DependenciesFile.FromSource(configWithSourceAndCredentialsInEnvVariable)
+    
+    cfg.Groups.[Constants.MainDependencyGroup].Sources 
+    |> shouldEqual [ 
+        PackageSource.NuGetV2 { 
+            Url = "http://www.nuget.org/api/v2"
+            Authentication = AuthProvider.empty} ]
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Auth.Retrieve true
         |> shouldEqual (Some (Credentials{ Username = "user XYZ"; Password = "pw Love"; Type = NetUtils.AuthType.NTLM}))
 
@@ -1329,7 +1404,10 @@ let validFrameworks =
       TestCaseData("framework: >= net40 <= net45").Returns(between net40 net45)
       TestCaseData("framework: >=net40<=net45").Returns(between net40 net45)
       TestCaseData("framework: >= net40 < net45").Returns(between net40 net45)
-      TestCaseData("framework: >=net40<net45").Returns(between net40 net45)]
+      TestCaseData("framework: >=net40<net45").Returns(between net40 net45)
+      TestCaseData("framework: net40 // comment").Returns(exactly net40)
+      TestCaseData("framework: net40 # comment").Returns(exactly net40)
+      TestCaseData("framework: net40, net45 // comment").Returns(any [exactly net40; exactly net45])]
 
 [<Test>]
 [<TestCaseSource("validFrameworks")>]

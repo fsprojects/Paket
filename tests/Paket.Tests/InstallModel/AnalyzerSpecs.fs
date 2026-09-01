@@ -34,3 +34,17 @@ let ``Can create analyzer lib``() =
     
     lib.Language |> shouldEqual AnalyzerLanguage.CSharp
     lib.Path |> shouldEqual fileInfo.FullName
+
+[<Test>]
+let ``AddAnalyzerFiles ignores non-dll files in analyzers folder``() =
+    let model = InstallModel.EmptyModel(Domain.PackageName "Foo", SemVer.Parse "1.0", InstallModelKind.Package)
+    let dllPath = Path.Combine("foo", "bar", "analyzers", "dotnet", "cs", "Foo.Analyzer.dll")
+    let xmlPath = Path.Combine("foo", "bar", "analyzers", "dotnet", "cs", "Foo.Analyzer.xml")
+    let analyzerFiles : NuGet.UnparsedPackageFile seq =
+        [ { FullPath = dllPath; PathWithinPackage = "analyzers/dotnet/cs/Foo.Analyzer.dll" }
+          { FullPath = xmlPath; PathWithinPackage = "analyzers/dotnet/cs/Foo.Analyzer.xml" } ]
+
+    let result = model.AddAnalyzerFiles analyzerFiles
+
+    result.Analyzers |> List.length |> shouldEqual 1
+    result.Analyzers |> List.head |> fun a -> a.Path |> shouldEqual (FileInfo(dllPath).FullName)

@@ -18,6 +18,11 @@ let private tryGenerateDescription packageId outputType =
         Some (sprintf "%s %s." id outputType)
     | _ -> None
 
+/// Resolves the package id, preferring the MSBuild `PackageId` property (matches `dotnet pack`
+/// behavior) over the assembly name when the template doesn't already specify one. See #3195.
+let internal resolveProjectId (projectFile:ProjectFile) (assemblyId:string) (existingId:string option) =
+    existingId ++ (projectFile.GetProperty "PackageId") ++ Some assemblyId
+
 let private merge buildConfig buildPlatform versionFromAssembly specificVersions (projectFile:ProjectFile) templateFile =
     let withVersion =
         match versionFromAssembly with
@@ -37,7 +42,7 @@ let private merge buildConfig buildPlatform versionFromAssembly specificVersions
         match md with
         | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, mergedOpt) }
         | _ ->
-            let md = { md with Id = md.Id ++ Some id }
+            let md = { md with Id = resolveProjectId projectFile id md.Id }
 
             match md with
             | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, mergedOpt) }
@@ -236,6 +241,11 @@ let Pack(workingDir: string, dependenciesFile : DependenciesFile, packageOutputP
         match releaseNotes with
         | None ->   templatesWithVersion
         | Some r -> templatesWithVersion |> List.map (TemplateFile.setReleaseNotes r)
+
+    if processedTemplates |> List.isEmpty then
+        match templateFile with
+        | Some template -> traceWarnfn "No paket.template file was found at %s." template
+        | None -> traceWarnfn "No paket.template files were found in %s or below. Nothing was packaged. See https://fsprojects.github.io/Paket/paket-pack.html for details on how to create one." workingDir
 
     // Package all templates
     processedTemplates

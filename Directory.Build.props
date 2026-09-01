@@ -3,6 +3,7 @@
     <TargetFrameworkRootPath>$(MSBuildThisFileDirectory)packages\build\0x53A.ReferenceAssemblies.Paket\tools\framework</TargetFrameworkRootPath>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!--
+    NU1510: PackageReference 'xxx' will not be pruned. Raised by the .NET 10 SDK for framework-provided packages; here they come from Paket's transitive resolution of NETStandard.Library, not from hand-written references.
     NU1902: Package 'xxx' X.Y.Z has a known moderate severity vulnerability, https://URI
     NU1903: Package 'xxx' X.Y.Z has a known high severity vulnerability, https://URI
     NU1904: Package 'xxx' X.Y.Z has a known critical severity vulnerability, https://URI
@@ -10,7 +11,7 @@
     FS0040: This and other recursive references to the object(s) being defined will be checked for initialization-soundness at runtime through the use of a delayed reference. This is because you are defining one or more recursive objects, rather than recursive functions.
     FS0044: This construct is deprecated.
     -->
-   <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1902;NU1903;NU1904;FS0086;FS0040;FS0044</WarningsNotAsErrors>
+   <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1510;NU1902;NU1903;NU1904;FS0086;FS0040;FS0044</WarningsNotAsErrors>
   </PropertyGroup>
   <Import Project="$(PackageReleaseNotesFile)" Condition=" Exists('$(PackageReleaseNotesFile)') " />
 </Project>

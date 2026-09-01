@@ -62,6 +62,49 @@ let ``#3527 BaseIntermediateOutputPath``() =
     customObjDir.GetFiles().Length |> shouldBeGreaterThan 0
 
 [<Test>]
+let ``#4333 paket.lock content change invalidates per-project restore skip``() =
+    // Step 2a's "skip per-project restore" optimisation only invalidates on
+    // paket.references content change. When a merge bumps a transitive
+    // package version, paket.lock/paket.resolved change but paket.references
+    // does not, and (with BaseIntermediateOutputPath redirected) the
+    // platform-specific obj/<rid>/<proj>.fsproj.paket.props is left stale —
+    // NuGet then resolves to the previous version forever. This test pins
+    // the lock-content invalidation that fixes that case.
+    let project = "project"
+    let scenario = "i4333-lock-content-invalidates-project-props"
+    use __ = prepareSdk scenario
+
+    let wd = (scenarioTempPath scenario) @@ project
+
+    // Set up steady state with an initial dotnet restore. This drives
+    // MSBuild's PaketRestore target which writes platform-specific
+    // obj/custom/<proj>.fsproj.<tfm>.paket.resolved (paket-CLI on its own
+    // doesn't know about BaseIntermediateOutputPath).
+    directDotnet true (sprintf "restore %s.fsproj" project) wd
+        |> ignore
+
+    // Sanity: in steady state, dotnet restore does not invoke per-project
+    // paket restore. PAKET_ERROR_ON_MSBUILD_EXEC=true would error if it did.
+    // (Mirrors the assertion in #2684 fast-restore.)
+    directDotnetEx [ "PAKET_ERROR_ON_MSBUILD_EXEC", "true" ] true (sprintf "restore %s.fsproj" project) wd
+        |> ignore
+
+    // Mutate paket.lock content (simulates a merge that bumps a transitive
+    // version while paket.references stays unchanged — the case Step 2a's
+    // hash-based skip misses).
+    let lockPath = (scenarioTempPath scenario) @@ "paket.lock"
+    File.AppendAllText(lockPath, Environment.NewLine + "// trivial content change to invalidate lock hash" + Environment.NewLine)
+
+    // The next dotnet restore should now detect the lock-content change and
+    // request a per-project restore. PAKET_ERROR_ON_MSBUILD_EXEC=true causes
+    // that to fail with a message identifying the reason.
+    let failure = Assert.Throws<ProcessFailedWithExitCode>(fun () ->
+        directDotnetEx [ "PAKET_ERROR_ON_MSBUILD_EXEC", "true" ] true (sprintf "restore %s.fsproj" project) wd
+            |> ignore)
+    let message = failure.ToString()
+    Assert.IsTrue(message.Contains "paket.lock content changed", sprintf "expected the restore to fail with a 'paket.lock content changed' reason, got:\n%s" message)
+
+[<Test>]
 let ``#3000-a dotnet restore``() =
     let scenario = "i003000-netcoreapp2"
     let projectName = "c1"

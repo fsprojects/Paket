@@ -125,6 +125,7 @@ field of the same name in the `.nupkg`.
 * `requireLicenseAcceptance` (`true` or `false`)
 * `tags`
 * `developmentDependency` (`true` or `false`)
+* `packageTypes`: More info on what you can specify: <https://learn.microsoft.com/en-us/nuget/create-packages/set-package-type>
 
 ### Dependencies and files
 

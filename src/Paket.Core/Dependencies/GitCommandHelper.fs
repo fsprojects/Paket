@@ -30,7 +30,11 @@ let runGitCommand repositoryDir command =
         ProcessHelper.ExecProcessAndReturnMessages (fun info ->
           info.FileName <- gitPath
           info.WorkingDirectory <- repositoryDir
-          info.Arguments <- command) gitTimeOut
+          info.Arguments <- command
+          // Prevent git from blocking indefinitely on an interactive credential prompt when
+          // running on non-interactive build agents (e.g. CI). Without this, a git clone/fetch
+          // that requires authentication can hang forever instead of failing with a clear error.
+          info.EnvironmentVariables.["GIT_TERMINAL_PROMPT"] <- "0") gitTimeOut
 
     processResult.OK,processResult.Messages,ProcessHelper.toLines processResult.Errors
 

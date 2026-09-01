@@ -81,6 +81,21 @@ let ``get source nodes``() =
     nodes.Length |> shouldEqual 1
     nodes.Head.Attributes.["source"].Value |> shouldEqual  "goodnode"
 
+[<Test>]
+let ``get source nodes ignores trailing slash mismatch``() = 
+    let doc = sampleDoc()
+    let node = doc.CreateElement("credential")
+    node.SetAttribute("source", "https://example.com/feed")
+    doc.DocumentElement.AppendChild(node) |> ignore
+
+    // stored source has no trailing slash, lookup source has one (and vice versa)
+    let nodesWithSlash = getSourceNodes doc "https://example.com/feed/" "credential"
+    let nodesWithoutSlash = getSourceNodes doc "https://example.com/feed" "credential"
+
+    // Assert
+    nodesWithSlash.Length |> shouldEqual 1
+    nodesWithoutSlash.Length |> shouldEqual 1
+
    
 [<Test>]
 let ``get token from node``() = 

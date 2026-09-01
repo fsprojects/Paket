@@ -14,6 +14,24 @@ let ``createRelativePath should handle spaces``() =
     "C:/some file" 
     |> createRelativePath "C:/a/b" 
     |> shouldEqual "..\\some file"
+
+[<Test>]
+let ``createRelativePath should handle hash characters``() =
+    "C:/some#file"
+    |> createRelativePath "C:/a/b"
+    |> shouldEqual "..\\some#file"
+
+[<Test>]
+let ``createRelativePath should handle ampersand characters``() =
+    "C:/some&file"
+    |> createRelativePath "C:/a/b"
+    |> shouldEqual "..\\some&file"
+
+[<Test>]
+let ``createRelativePath should handle percent characters``() =
+    "C:/some%file"
+    |> createRelativePath "C:/a/b"
+    |> shouldEqual "..\\some%file"
         
 [<Test>]
 let ``normalize path with home directory``() =
@@ -279,9 +297,25 @@ let ``get http env proxy with bypass list containing wildcards``() =
     p.BypassList.Length |> shouldEqual 3
     p.BypassList.[0] |> shouldEqual "\\.local"
     p.BypassList.[1] |> shouldEqual "localhost"
-    p.BypassList.[2] |> shouldEqual "\\.*\\.asdf\\.com"
+    p.BypassList.[2] |> shouldEqual ".*\\.asdf\\.com"
 #endif
     p.Credentials |> shouldEqual null
+
+[<Test>]
+let ``no_proxy wildcard bypass entry actually bypasses matching subdomain``() =
+    use v = new DisposableEnvVar("http_proxy", "http://proxy.local:8080")
+    use w = new DisposableEnvVar("no_proxy", "*.internal.company.com")
+    let pOpt = envProxies().TryFind "http"
+    Option.isSome pOpt |> shouldEqual true
+    let p = Option.get pOpt
+#if WEBPROXY_NETSTANDARD
+    ignore p //TODO readd check
+#else
+    // were escaped incorrectly and therefore never matched any host, even though they should
+    // bypass the proxy for matching subdomains.
+    p.IsBypassed(new Uri("http://nuget.internal.company.com")) |> shouldEqual true
+    p.IsBypassed(new Uri("http://example.com")) |> shouldEqual false
+#endif
 
 [<Test>]
 let ``should simplify path``() =
@@ -327,3 +361,22 @@ let ``startsWithIgnoreCase handles shorter strings correct``() =
 let ``containsIgnoreCase handles shorter strings correct``() =
     let actual = Paket.Utils.String.containsIgnoreCase "long_long" "short"
     Assert.False(actual)
+
+[<Test>]
+let ``FindAllFiles should not descend into dot folders``() =
+    let root = Path.Combine(Path.GetTempPath(), "paket_findallfiles_" + Guid.NewGuid().ToString("N"))
+    let dotFolder = Path.Combine(root, ".localhistory")
+    let normalFolder = Path.Combine(root, "src")
+    try
+        Directory.CreateDirectory(dotFolder) |> ignore
+        Directory.CreateDirectory(normalFolder) |> ignore
+        File.WriteAllText(Path.Combine(root, "root.sln"), "")
+        File.WriteAllText(Path.Combine(dotFolder, "backup.sln"), "")
+        File.WriteAllText(Path.Combine(normalFolder, "nested.sln"), "")
+
+        let files = FindAllFiles(root, "*.sln") |> Array.map (fun fi -> fi.Name) |> Array.sort
+
+        files |> shouldEqual [| "nested.sln"; "root.sln" |]
+    finally
+        if Directory.Exists(root) then
+            Directory.Delete(root, true)

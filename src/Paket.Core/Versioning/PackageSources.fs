@@ -14,11 +14,32 @@ type EnvironmentVariable =
     static member Create(variable) =
         if envVarRegex.IsMatch(variable) then
             let trimmed = envVarRegex.Match(variable).Groups.[1].Value
-            match Environment.GetEnvironmentVariable(trimmed) with
-            | null ->
+            // `Environment.GetEnvironmentVariable(name)` only looks at the current process's
+            // environment block, which is populated once at process start. Variables set at the
+            // User or Machine level (e.g. via `[Environment]::SetEnvironmentVariable(name, value,
+            // 'User')`) are not visible until a new process is started, even though they are
+            // already persisted. Fall back to explicitly reading the User and Machine scopes so
+            // such variables are picked up without requiring a process restart.
+            let tryTarget (target: EnvironmentVariableTarget) =
+                try
+                    match Environment.GetEnvironmentVariable(trimmed, target) with
+                    | null -> None
+                    | expanded -> Some expanded
+                with
+                // User/Machine scoped environment variables are a Windows-only concept; querying
+                // them on other platforms raises PlatformNotSupportedException.
+                | :? PlatformNotSupportedException -> None
+
+            let expanded =
+                tryTarget EnvironmentVariableTarget.Process
+                |> Option.orElseWith (fun () -> tryTarget EnvironmentVariableTarget.User)
+                |> Option.orElseWith (fun () -> tryTarget EnvironmentVariableTarget.Machine)
+
+            match expanded with
+            | None ->
                 traceWarnfn "environment variable '%s' not found" variable
                 Some { Variable = variable; Value = ""}
-            | expanded ->
+            | Some expanded ->
                 Some { Variable = variable; Value = expanded }
         else
             None
@@ -125,17 +146,33 @@ type PackageSource =
         | _ -> KnownNuGetSources.UnknownNuGetServer
     static member Parse(line : string) =
         let sourceRegex = Regex("source[ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
-        let parts = line.Split ' '
         let source =
             if sourceRegex.IsMatch line then
                 sourceRegex.Match(line).Groups.[1].Value.TrimEnd([| '/' |])
             else
-                parts.[1].Replace("\"","").TrimEnd([| '/' |])
+                // Unquoted source line: everything after "source" up to (but excluding) any
+                // trailing "username:"/"password:"/"authtype:" attribute is the source path.
+                // Splitting on the first space would truncate paths containing spaces
+                // (e.g. "source C:\Program Files\dotnet\sdk\NuGetFallbackFolder").
+                let afterSourceIdx = (Regex.Match(line, "source", RegexOptions.IgnoreCase)).Index + "source".Length
+                let afterSource = line.Substring(afterSourceIdx).TrimStart()
+                let attributeKeywords = [| "username:"; "password:"; "authtype:" |]
+                let stopIdx =
+                    attributeKeywords
+                    |> Array.choose (fun kw ->
+                        let i = afterSource.IndexOf(kw, StringComparison.OrdinalIgnoreCase)
+                        if i >= 0 then Some i else None)
+                    |> fun xs -> if xs.Length = 0 then afterSource.Length else Array.min xs
+                afterSource.Substring(0, stopIdx).Trim().Replace("\"","").TrimEnd([| '/' |])
 
-        let feed = normalizeFeedUrl source
-        PackageSource.Parse(feed, parseAuth(line, feed))
+        match EnvironmentVariable.Create(source) with
+        | None ->
+            let feed = normalizeFeedUrl source
+            PackageSource.Parse(feed, parseAuth(line, feed))
+        | Some var ->
+            PackageSource.Parse ("source " + var.Value)
 
-    static member Parse(source,auth) =
+    static member Parse(source, auth) =
         match tryParseWindowsStyleNetworkPath source with
         | Some path -> PackageSource.Parse(path)
         | _ ->

@@ -21,10 +21,16 @@ let getAllVersionsFromLocalPath (isCache, localNugetPath, package:PackageName, a
 
             let versions =
                 Directory.EnumerateFiles(di.FullName,"*.nupkg",SearchOption.AllDirectories)
-                |> Seq.filter (fun fi -> fi.EndsWith ".symbols.nupkg" |> not)
                 |> Seq.choose (fun fileName ->
                                 let fi = FileInfo(fileName)
-                                let _match = Regex(sprintf @"^%O\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fi.Name)
+                                // Symbol packages are named "<name>.<version>.symbols.nupkg" - strip the
+                                // ".symbols" suffix before matching so symbol-only local feeds still resolve.
+                                let name =
+                                    if fi.Name.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase) then
+                                        fi.Name.Substring(0, fi.Name.Length - ".symbols.nupkg".Length) + ".nupkg"
+                                    else
+                                        fi.Name
+                                let _match = Regex(sprintf @"^%O\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(name)
                                 if _match.Groups.Count > 1 then Some _match.Groups.[1].Value else None)
                 |> Seq.toArray
             return SuccessResponse(versions)

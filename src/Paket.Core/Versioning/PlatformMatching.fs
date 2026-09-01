@@ -257,9 +257,9 @@ let getTargetCondition (target:TargetProfile) =
         | XamarinWatch -> "$(TargetFrameworkIdentifier) == 'Xamarin.watchOS'", ""
         | UAP(version) -> "$(TargetFrameworkIdentifier) == '.NETCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version.NetCoreVersion
         | XamarinMac -> "$(TargetFrameworkIdentifier) == 'Xamarin.Mac'", ""
-        | Native(NoBuildMode,NoPlatform) -> "true", ""
-        | Native(NoBuildMode,bits) -> (sprintf "'$(Platform)'=='%s'" bits.AsString), ""
-        | Native(profile,bits) -> (sprintf "'$(Configuration)|$(Platform)'=='%s|%s'" profile.AsString bits.AsString), ""
+        | Native(NoBuildMode,NoPlatform,_) -> "true", ""
+        | Native(NoBuildMode,bits,_) -> (sprintf "'$(Platform)'=='%s'" bits.AsString), ""
+        | Native(profile,bits,_) -> (sprintf "'$(Configuration)|$(Platform)'=='%s|%s'" profile.AsString bits.AsString), ""
         | Tizen version ->"$(TargetFrameworkIdentifier) == 'Tizen'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | XCode version ->"$(TargetFrameworkIdentifier) == 'XCode'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | Unsupported s -> "", ""
@@ -288,12 +288,15 @@ let getCondition (referenceCondition:string option) (targets : TargetProfile Set
         |> CheckIfFullyInGroupS "WindowsPhone" (function TargetProfile.SinglePlatform (WindowsPhone _) -> true | _ -> false)
 
     let conditions =
-        if targets.Count = 1 && targets |> Set.minElement = TargetProfile.SinglePlatform(Native(NoBuildMode,NoPlatform)) then
+        if targets.Count = 1 && (match targets |> Set.minElement with
+                                 | TargetProfile.SinglePlatform(Native(NoBuildMode,NoPlatform,_)) -> true
+                                 | _ -> false)
+        then
             targets
         else
             targets
             |> Set.filter (function
-                           | TargetProfile.SinglePlatform(Native(NoBuildMode,NoPlatform)) -> false
+                           | TargetProfile.SinglePlatform(Native(NoBuildMode,NoPlatform,_)) -> false
                            | _ -> true)
         |> Seq.map getTargetCondition
         |> Seq.filter (fun (_, v) -> v <> "false")

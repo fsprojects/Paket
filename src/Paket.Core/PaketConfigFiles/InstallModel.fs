@@ -472,7 +472,11 @@ module InstallModel =
         // %s because 'native' uses subfolders...
         (trySscanf "lib/%A{tfm}/%s" p : (Tfm * string) option)
         |> Option.map (fun (l,path) ->
-            if l.Name = "native" && l.Platforms = [ FrameworkIdentifier.Native(NoBuildMode,NoPlatform) ] then
+            let isNative =
+                match l.Platforms with
+                | [ FrameworkIdentifier.Native(NoBuildMode,NoPlatform,_) ] -> true
+                | _ -> false
+            if l.Name.StartsWith("native") && isNative then
                 // We need some special logic to detect the platform
                 let path = path.ToLowerInvariant()
                 let newPlatform =
@@ -486,7 +490,8 @@ module InstallModel =
                     if path.Contains "/release/" then Release else
                     if path.Contains "/debug/" then Debug else
                     NoBuildMode
-                { Path = { l with Platforms = [ FrameworkIdentifier.Native(newBuildMode,newPlatform) ]}; File = p; Runtime = None }
+                let newVersion = NoVersion
+                { Path = { l with Platforms = [ FrameworkIdentifier.Native(newBuildMode,newPlatform,newVersion) ]}; File = p; Runtime = None }
             else
             { Path = l; File = p; Runtime = None })
         |> Option.orElseWith (fun _ ->
@@ -672,6 +677,10 @@ module InstallModel =
     let addAnalyzerFiles (analyzerFiles:NuGet.UnparsedPackageFile seq) (installModel:InstallModel)  : InstallModel =
         let analyzerLibs =
             analyzerFiles
+            // Only .dll files are actual analyzer assemblies. Some packages ship
+            // additional files (e.g. .xml docs) in the analyzers folder which must
+            // not be added as analyzer references, or MSBuild will fail.
+            |> Seq.filter (fun file -> String.equalsIgnoreCase (Path.GetExtension file.FullPath) ".dll")
             |> Seq.map (fun file -> FileInfo file.FullPath |> AnalyzerLib.FromFile)
             |> List.ofSeq
 
@@ -818,6 +827,7 @@ module InstallModel =
             model
             |> mapCompileLibReferences (Set.filter (fun n -> n.PathWithinPackage |> excluded fileName |> not))
             |> mapCompileLibFrameworkReferences (Set.filter (fun r -> r.Name |> excluded fileName |> not))
+            |> mapTargetsFiles (Set.filter (fun (m: MsBuildFile) -> (excluded fileName m.Name || excluded fileName m.Path) |> not))
           ) installModel
 
     let filterUnknownFiles (installModel:InstallModel) =

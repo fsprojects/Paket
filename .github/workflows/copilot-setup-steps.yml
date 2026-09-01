@@ -1,0 +1,26 @@
+name: "Copilot Setup Steps"
+
+# This workflow configures the environment for GitHub Copilot Agent with gh-aw MCP server
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  # The job MUST be called 'copilot-setup-steps' to be recognized by GitHub Copilot Agent
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+
+    # Set minimal permissions for setup steps
+    # Copilot Agent receives its own token with appropriate permissions
+    permissions:
+      contents: read
+
+    steps:
+      - name: Install gh-aw extension
+        run: |
+          mkdir -p /tmp/gh-aw
+          curl -fsSL https://raw.githubusercontent.com/github/gh-aw/e95e552c9383da07df1cf6f2bbf0ca1fdce1336e/install-gh-aw.sh -o /tmp/gh-aw/install-gh-aw.sh
+          echo "248ccebcb998c6a506548156e1bf9f02429cbbaec407d5adbdfd316ab0f866a0  /tmp/gh-aw/install-gh-aw.sh" | sha256sum -c -
+          bash /tmp/gh-aw/install-gh-aw.sh

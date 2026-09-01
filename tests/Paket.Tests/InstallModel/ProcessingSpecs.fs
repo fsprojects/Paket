@@ -800,6 +800,17 @@ let ``should handle Targets files``() =
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets"
 
 [<Test>]
+let ``should exclude targets files when filtering excludes``() =
+    let model =
+        InstallModel.EmptyModel(PackageName "StyleCop.MSBuild",SemVer.Parse "0.1").AddTargetsFiles(
+            [ @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" ] |> fromLegacyList @"..\StyleCop.MSBuild\")
+            .FilterIgnoreList()
+            .FilterExcludes(["StyleCop.MSBuild.Targets"])
+
+    model.GetTargetsFiles(TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V2))
+        |> Seq.map (fun f -> f.Path) |> shouldNotContain @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets"
+
+[<Test>]
 let ``should filter .NET 4.0 dlls for System.Net.Http 2.2.8``() = 
     let expected =
         [ @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"

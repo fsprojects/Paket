@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net461;net9</TargetFrameworks>
+    <TargetFrameworks>net461;net10.0</TargetFrameworks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <!-- these two properties are set for some tests around assembly metadata parsing.
          they're written to the generated AssemblyInfo.fs -->
@@ -83,6 +83,7 @@
     <TestAsset Include="NuGetOData\Rx-PlatformServices.xml" />
     <TestAsset Include="NuGetOData\EasyNetQ.xml" />
     <TestAsset Include="NuGetOData\BenchmarkDotNet-UnknownFramework.xml" />
+    <TestAsset Include="NuGetOData\NoDependenciesNode.xml" />
     <Compile Include="NuGetOData\ODataSpecs.fs" />
     <TestAsset Include="NuGetConfig\ClearTextPasswordConfig.xml" />
     <TestAsset Include="NuGetConfig\PasswordConfig.xml" />
@@ -96,6 +97,7 @@
     <Compile Include="DependenciesFile\AddPackageSpecs.fs" />
     <Compile Include="DependenciesFile\RemovePackageSpecs.fs" />
     <Compile Include="DependenciesFile\DependencyChangesSpecs.fs" />
+    <Compile Include="DependenciesFile\CliToolNoopSpecs.fs" />
     <Compile Include="DependenciesFile\GroupNameSpecs.fs" />
     <Compile Include="DependenciesFile\AddGithubFilesSpecs.fs" />
     <Compile Include="DependenciesFile\AddGitFilesSpecs.fs" />
@@ -165,6 +167,8 @@
     <Compile Include="ProjectFile\UpdateFromNugetSpecs.fs" />
     <Compile Include="ProjectFile\ReadPropertySpecs.fs" />
     <Compile Include="ProjectFile\SymlinkLoopSpecs.fs" />
+    <Compile Include="ProjectFile\InstallForDotnetSDKSpecs.fs" />
+    <Compile Include="InstallProcess\FSharpCoreRedirectsWarningSpecs.fs" />
     <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
     <None Include="InstallModel\runtimeJsonMsNetCorePlatforms2_2_1.json" />
     <None Include="InstallModel\runtimeJsonMsNetCoreTargets2_1_0.json" />
