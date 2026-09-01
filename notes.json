@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3836,
+    "labelling_after": 3853,
     "investigation_after": 3781
   },
   "issues": [
@@ -304,6 +304,12 @@
       "state": "commented",
       "updated_at": "2026-09-01",
       "note": "Consolidated with #3816 as same build/ TFM scanner false-positive warning root cause."
+    },
+    {
+      "number": 3853,
+      "state": "resolution_recommended",
+      "updated_at": "2026-09-01",
+      "note": "Global NuGet packages folder ignored - confirmed fixed by commit 3e84a7742 referencing this issue; recommended closing."
     }
   ],
   "fixes": [
@@ -379,13 +385,13 @@
     },
     {
       "task": 1,
-      "item": "labelling-continue-6",
-      "note": "Labelled #3594..#3836 (28 issues) this run. Continue no:label query from #3836 onward next run."
+      "item": "labelling-continue-7",
+      "note": "Labelled #3594..#3853 (30 issues) this run. Continue no:label query from #3853 onward next run."
     },
     {
       "task": 3,
-      "item": "candidate-fixes-2026-09",
-      "note": "#3781/#3728/#3816/#3703 commented this run (no PR - need maintainer input or repro). #3810 (copy_local netstandard) and #3820 (macOS MonoAndroid resolve) investigation incomplete, worth resuming."
+      "item": "candidate-fixes-2026-09b",
+      "note": "#3810 (copy_local netstandard) reviewed, no confident fix without repro. #3820 (macOS MonoAndroid) still worth resuming."
     }
   ]
 }
