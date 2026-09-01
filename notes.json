@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 4304,
+    "labelling_after": 4212,
     "investigation_after": 3781
   },
   "issues": [
@@ -328,6 +328,14 @@
       "note": "Test-only PR; no prod code change since bug not reproducible in current code.",
       "pr": null,
       "updated_at": "2026-08-31"
+    },
+    {
+      "issue": 4239,
+      "branch": "repo-assist/fix-issue-4239-netcoreapp-monikers",
+      "note": "Draft PR: added netcoreapp6.0-10.0 moniker special cases in FrameworkHandling.fs + 6 new tests; 58/58 net10.0 tests passed.",
+      "pr": null,
+      "status": "open",
+      "updated_at": "2026-09-01"
     }
   ],
   "checks": [],
@@ -390,8 +398,8 @@
     },
     {
       "task": 1,
-      "item": "labelling-continue-8",
-      "note": "Labelled ~30 issues #4170..#4304 this run (hit 30-call add_labels cap); remaining unlabelled from earlier batch (#4164-#4169, #4179, #4187, #4194, #4200, #4213 approx) still need labels next run before moving cursor past #4304."
+      "item": "labelling-continue-9",
+      "note": "Labelled 30 issues #4158-#4212 this run. Still unlabelled: #4213, #4285, #4304 - label next run."
     }
   ]
 }
