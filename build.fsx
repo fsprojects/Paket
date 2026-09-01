@@ -234,7 +234,8 @@ Target.create "Publish" (fun _ ->
 
 Target.create "RunTests" (fun _ ->
 
-    let runTest fw proj tfm =
+    let runTest fw (projFile: string) tfm =
+        let proj = System.IO.Path.GetFileNameWithoutExtension projFile
         Directory.create (sprintf "tests_result/%s/%s" fw proj)
 
         let logFilePath = (sprintf "tests_result/%s/%s/TestResult.trx" fw proj) |> Path.getFullName
@@ -247,13 +248,13 @@ Target.create "RunTests" (fun _ ->
                 Filter = Some testCategoryFilter
                 Logger = Some (sprintf "trx;LogFileName=%s" logFilePath)
                 NoBuild = true
-            }) "tests/Paket.Tests/Paket.Tests.fsproj"
+            }) projFile
 
-    runTest "net" "Paket.Tests" "net461"
-    runTest "netcore" "Paket.Tests" "net10.0"
+    runTest "net" "tests/Paket.Tests/Paket.Tests.fsproj" "net461"
+    runTest "netcore" "tests/Paket.Tests/Paket.Tests.fsproj" "net10.0"
 
-    runTest "net" "Paket.Bootstrapper.Tests" "net461"
-    runTest "netcore" "Paket.Bootstrapper.Tests" "net10.0"
+    runTest "net" "tests/Paket.Bootstrapper.Tests/Paket.Bootstrapper.Tests.csproj" "net461"
+    runTest "netcore" "tests/Paket.Bootstrapper.Tests/Paket.Bootstrapper.Tests.csproj" "net10.0"
 )
 
 Target.create "QuickTest" (fun _ ->
