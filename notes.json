@@ -362,6 +362,14 @@
       "status": "open",
       "updated_at": "2026-09-02",
       "note": "GetCompileItems threw on <Compile Remove> items lacking Include/Update; now returns None via Seq.choose. Draft PR + regression test in OutputSpecs.fs, 38/38 passed."
+    },
+    {
+      "issue": 4243,
+      "branch": "repo-assist/fix-issue-4243-tilde-path",
+      "pr": null,
+      "status": "open",
+      "note": "Fixed FindPackagesByNameAsync missing Utils.normalizeLocalPath for LocalNuGet paths; PR created via safe-output tool this run.",
+      "updated_at": "2026-09-02"
     }
   ],
   "checks": [],
@@ -398,11 +406,6 @@
       "note": "Near-duplicate PRs both adding scriptgen CI job; both have failing scriptgen integration job. Consolidate/close one, fix the failing job, next time Task 6 selected."
     },
     {
-      "task": 8,
-      "item": "perf-review-2026-08",
-      "note": "Scanned List.length/append-in-loop patterns in Paket.Core; no low-risk actionable perf win found without profiling data."
-    },
-    {
       "task": 3,
       "item": "fix-3727-lockedversion",
       "note": "Draft PR opened on branch repo-assist/fix-issue-3727-lockedversion-twiddle fixing ~> LOCKEDVERSION segment-count inconsistency. Awaiting review/merge."
@@ -423,9 +426,14 @@
       "note": "#3820 macOS MonoAndroid: no OS-conditional path in FrameworkHandling/PlatformMatching; likely nuspec dep-group parsing diff, unlocated. #4260 FSharp.Core pin: Paket self-builds via dotnet pack not paket pack; culprit likely RestoreProcess.fs Version emit, same class as #3557."
     },
     {
+      "task": 8,
+      "item": "perf-review-2026-09",
+      "note": "Re-scanned; still no low-risk actionable perf win without profiling data."
+    },
+    {
       "task": 1,
-      "item": "labelling-continue-10",
-      "note": "Labelled #4213-#4304 this run (11 issues). Resume unlabelled search from #4305 next time."
+      "item": "labelling-continue-11",
+      "note": "Labelled #4179-#4304 batch this run (29 issues). Some gaps in #4164-4304 range may remain; continue scanning no:label query next time."
     }
   ]
 }
