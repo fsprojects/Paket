@@ -448,7 +448,9 @@ Target.create "PublishNuGet" (fun _ ->
 
     Paket.push (fun p ->
         { p with
-            ToolPath = "bin/merged/paket.exe"
+            // absolute path: FAKE starts the push with WorkingDir below as the child's cwd,
+            // and mono resolves a relative assembly path against that cwd, not ours
+            ToolPath = Path.getFullName paketFile
             // paket.exe is a .NET Framework binary, so it goes through Mono outside of Windows
             ToolType = ToolType.CreateFullFramework()
             ApiKey = Environment.environVarOrDefault "NugetKey" ""
