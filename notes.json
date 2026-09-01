@@ -1,7 +1,7 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3853,
+    "labelling_after": 4304,
     "investigation_after": 3781
   },
   "issues": [
@@ -384,14 +384,14 @@
       "note": "paket remove of last pkg in non-main group prunes group from paket.dependencies but not paket.lock, causing 'Group X was not found' on next resolve. Root cause traced to RemovePackage vs LockFile.GetGroup mismatch; exact throw site unpinned. Needs more trace before fix."
     },
     {
-      "task": 1,
-      "item": "labelling-continue-7",
-      "note": "Labelled #3594..#3853 (30 issues) this run. Continue no:label query from #3853 onward next run."
-    },
-    {
       "task": 3,
       "item": "candidate-fixes-2026-09b",
-      "note": "#3810 (copy_local netstandard) reviewed, no confident fix without repro. #3820 (macOS MonoAndroid) still worth resuming."
+      "note": "#3820 macOS MonoAndroid: no OS-conditional path in FrameworkHandling/PlatformMatching; likely nuspec dep-group parsing diff, unlocated. #4260 FSharp.Core pin: Paket self-builds via dotnet pack not paket pack; culprit likely RestoreProcess.fs Version emit, same class as #3557."
+    },
+    {
+      "task": 1,
+      "item": "labelling-continue-8",
+      "note": "Labelled ~30 issues #4170..#4304 this run (hit 30-call add_labels cap); remaining unlabelled from earlier batch (#4164-#4169, #4179, #4187, #4194, #4200, #4213 approx) still need labels next run before moving cursor past #4304."
     }
   ]
 }
