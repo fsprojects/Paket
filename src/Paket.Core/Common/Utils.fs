@@ -310,7 +310,7 @@ module internal NativePath =
     // UTF-8 bytes so non-ASCII paths round-trip, and a 4096-byte buffer (>= PATH_MAX
     // on Linux (4096) and macOS (1024)), so no manual free is required.
     [<DllImport("libc", EntryPoint = "realpath", SetLastError = true)>]
-    extern nativeint realpath(byte[] path, byte[] resolved)
+    extern nativeint realpath(byte[] path, [<Out>] byte[] resolved)
 
     /// Resolve `path` via libc realpath; None on any failure (incl. platforms
     /// without libc), so callers can fall back to a lexical path.
