@@ -1915,7 +1915,9 @@ type ProjectFile with
         let paketPath = Path.Combine(folder,Constants.PaketFilesFolderName) |> normalizePath
 
         let findAllFiles folder =
-            let rec search topLevel (di:DirectoryInfo) =
+            let visited = HashSet<string>(StringComparer.Ordinal)
+            let rec search topLevel canonical (di:DirectoryInfo) =
+                if not (visited.Add canonical) then Array.empty else
                 try
                     if verbose then
                         verbosefn "Searching %s in %s" searchPattern di.FullName
@@ -1941,20 +1943,18 @@ type ProjectFile with
                             if topLevel && isLinux && di.FullName = "/sbin" then false else
                             if topLevel && isLinux && di.FullName = "/etc" then false else
                             if path = paketPath then false else
-                            // never recurse into symlinks: a cyclic one loops forever
-                            if di.Attributes.HasFlag FileAttributes.ReparsePoint then false else
                             Path.Combine(path, Constants.DependenciesFileName)
                             |> File.Exists
                             |> not
                         with
                         | _ -> false)
-                    |> Array.collect (search false)
+                    |> Array.collect (fun sub -> search false (canonicalPath (Path.Combine(canonical, sub.Name)) sub) sub)
                     |> Array.append files
                 with
                 | _ -> Array.empty
 
-
-            search true (DirectoryInfo folder)
+            let root = DirectoryInfo folder
+            search true (canonicalPath root.FullName root) root
 
         findAllFiles folder
 
