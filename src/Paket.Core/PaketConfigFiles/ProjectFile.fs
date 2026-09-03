@@ -1915,16 +1915,7 @@ type ProjectFile with
         let paketPath = Path.Combine(folder,Constants.PaketFilesFolderName) |> normalizePath
 
         let findAllFiles folder =
-            // Canonical (symlink-resolved) directory paths already visited, so a
-            // self-referential or cyclic symlink (e.g. the macOS SDK ncurses symlink
-            // loops inside a Nix `.devenv` profile) cannot drive this walk into
-            // infinite recursion. Symlinks are still followed; only repeats are pruned.
-            let visited = HashSet<string>(StringComparer.Ordinal)
-
             let rec search topLevel (di:DirectoryInfo) =
-                if not (visited.Add(realPath di.FullName)) then
-                    Array.empty
-                else
                 try
                     if verbose then
                         verbosefn "Searching %s in %s" searchPattern di.FullName
@@ -1934,6 +1925,8 @@ type ProjectFile with
                     |> Array.filter (fun di ->
                         try
                             let path = normalizePath di.FullName
+                            // never recurse into symlinks: a cyclic one loops forever
+                            if SymlinkUtils.isDirectoryLink di.FullName then false else
                             if di.Name = Constants.DefaultPackagesFolderName then false else
                             if di.Name = ".git" then false else
                             if di.Name = ".fable" then false else
