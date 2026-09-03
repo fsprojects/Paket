@@ -410,7 +410,8 @@ let FindAllFiles(folder, pattern) : FileInfo [] =
         seq {
             yield! dir.GetFiles(pattern, SearchOption.TopDirectoryOnly)
             for subDir in dir.GetDirectories() do
-                if not (subDir.Name.StartsWith ".") then
+                // never recurse into symlinks: a cyclic one loops forever
+                if not (subDir.Name.StartsWith "." || subDir.Attributes.HasFlag FileAttributes.ReparsePoint) then
                     yield! allFiles subDir
         }
     allFiles (DirectoryInfo(folder)) |> Seq.toArray

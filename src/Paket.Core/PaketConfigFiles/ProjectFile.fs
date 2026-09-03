@@ -1925,8 +1925,6 @@ type ProjectFile with
                     |> Array.filter (fun di ->
                         try
                             let path = normalizePath di.FullName
-                            // never recurse into symlinks: a cyclic one loops forever
-                            if SymlinkUtils.isDirectoryLink di.FullName then false else
                             if di.Name = Constants.DefaultPackagesFolderName then false else
                             if di.Name = ".git" then false else
                             if di.Name = ".fable" then false else
@@ -1943,6 +1941,8 @@ type ProjectFile with
                             if topLevel && isLinux && di.FullName = "/sbin" then false else
                             if topLevel && isLinux && di.FullName = "/etc" then false else
                             if path = paketPath then false else
+                            // never recurse into symlinks: a cyclic one loops forever
+                            if di.Attributes.HasFlag FileAttributes.ReparsePoint then false else
                             Path.Combine(path, Constants.DependenciesFileName)
                             |> File.Exists
                             |> not
