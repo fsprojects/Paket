@@ -357,9 +357,11 @@ Target.create "RunIntegrationTestsNet" (fun _ ->
             // Normal verbosity reports every test as it finishes. Without it only failures are
             // printed, and a run that hangs leaves no trace of which test never returned -- the
             // timeout kills the run before the trx is written.
+            // The suite takes a few minutes when it is healthy, so 30 minutes is already a wide
+            // margin, and a hung run gives its diagnosis back twice as fast.
             Common =
                 { dotnetCli c.Common with
-                    Timeout = Some (TimeSpan.FromMinutes 60.)
+                    Timeout = Some (TimeSpan.FromMinutes 30.)
                     Verbosity = Some DotNet.Verbosity.Normal }
             Configuration = DotNet.BuildConfiguration.Release
             Framework = Some "net461"
@@ -379,7 +381,7 @@ Target.create "RunIntegrationTestsNetCore" (fun _ ->
 
     DotNet.test (fun c ->
         { c with
-            Common = { dotnetCli c.Common with Timeout = Some (TimeSpan.FromMinutes 60.) }
+            Common = { dotnetCli c.Common with Timeout = Some (TimeSpan.FromMinutes 30.) }
             Configuration = DotNet.BuildConfiguration.Release
             Framework = Some "net10.0"
             Filter = Some testCategoryFilter
