@@ -139,6 +139,7 @@ let ``#1703 resolves locally``() =
     ignore __
 
 [<Test>]
+[<Flaky>] // asserts on a specific 401 from myget.org, so any network hiccup yields a different message
 let ``#1635 should tell about auth issue``() =
     try
         use __ = update "i001635-wrong-pw" |> fst

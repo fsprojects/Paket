@@ -8,6 +8,13 @@
         "paket"
       ],
       "rollForward": false
+    },
+    "dotnet-ilrepack": {
+      "version": "2.0.47",
+      "commands": [
+        "ilrepack"
+      ],
+      "rollForward": false
     }
   }
 }

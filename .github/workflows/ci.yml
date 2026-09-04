@@ -73,7 +73,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
       - name: Build
-        run: .\build.cmd BuildPackage
+        shell: cmd
+        run: .\build.cmd BuildPackage < NUL
       - name: Upload build artifacts
         if: always()
         uses: actions/upload-artifact@v4
