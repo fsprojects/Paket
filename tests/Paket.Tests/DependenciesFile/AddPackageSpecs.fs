@@ -570,7 +570,7 @@ group Build
   nuget ILRepack
 
   github fsharp/FAKE modules/Octokit/Octokit.fsx
-nuget FSharp.Compiler.Service 1.4.0.1
+  nuget FSharp.Compiler.Service 1.4.0.1
 
 group Test
 
@@ -645,7 +645,7 @@ group Test
   nuget NUnit.Runners.Net4
   nuget NUnit
   github forki/FsUnit FsUnit.fs
-nuget FSharp.Compiler.Service 1.4.0.1"""
+  nuget FSharp.Compiler.Service 1.4.0.1"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
@@ -896,6 +896,44 @@ clitool dotnet-fable 1.3.7
 nuget Rx-Main ~> 2.0
 nuget FAKE = 1.1
 nuget SignalR = 3.3.2"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should preserve indentation when adding package to an indented group``() =
+    let config = """source https://www.nuget.org/api/v2
+
+group Build
+  source https://www.nuget.org/api/v2
+  nuget Moq"""
+
+    let cfg = DependenciesFile.FromSource(config).Add(GroupName "Build", PackageName "Microsoft.AspNet.WebApi","")
+
+    let expected = """source https://www.nuget.org/api/v2
+
+group Build
+  source https://www.nuget.org/api/v2
+  nuget Microsoft.AspNet.WebApi
+  nuget Moq"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should not add indentation when adding package to a non-indented group``() =
+    let config = """source https://www.nuget.org/api/v2
+
+group Build
+nuget Moq"""
+
+    let cfg = DependenciesFile.FromSource(config).Add(GroupName "Build", PackageName "Microsoft.AspNet.WebApi","")
+
+    let expected = """source https://www.nuget.org/api/v2
+
+group Build
+nuget Microsoft.AspNet.WebApi
+nuget Moq"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
