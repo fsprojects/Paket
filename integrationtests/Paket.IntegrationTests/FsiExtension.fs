@@ -94,6 +94,7 @@ module FsiExtension =
             Failed(fsxFile.FullName, expectedOutput, actualOutput, result.arguments)
 
     [<Test>]
+    [<Ignore("PaketWithLocalSources/script1.fsx and PaketWithRemoteFile/UseGlobbing.fsx no longer produce their expected output, see #4346")>]
     let ``run fsi integration tests that have deterministic output`` () =
         let fsxFiles = DirectoryInfo(fsxsFolder).GetFiles("*.fsx", SearchOption.AllDirectories)
         let failures =

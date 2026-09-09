@@ -11,6 +11,7 @@ open Paket
 open Paket.Domain
 
 [<Test>]
+[<Flaky>] // hits api.github.com, which rate-limits unauthenticated callers to 60 requests an hour per IP
 let ``#3014 paket github add clitool``() =
     let scenario = "i003014-add-github"
     use __ = prepare scenario

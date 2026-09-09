@@ -17,7 +17,7 @@ If you're having trouble with the [NuGet.org](https://www.nuget.org) Website, sp
  - Fork and clone locally.
  - Build the solution with Visual Studio, `build.cmd` or `build.sh`.
  - Create a topic specific branch in git. Add a nice feature in the code or fix a bug. Do not forget to add tests and/or docs.
- - Run `build.cmd` (`build.sh` on Mono) to make sure all tests are still passing.
+ - Run `build.cmd` (`build.sh` on Linux/macOS) to make sure all tests are still passing.
  - Send a Pull Request.
 
 If you want to contribute to the [docs](https://fsprojects.github.io/Paket/) then please modify the markdown files in [`/docs/content`](https://github.com/fsprojects/Paket/tree/master/docs/content) and send a pull request.

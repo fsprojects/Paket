@@ -7,13 +7,21 @@ Note that historically, the bulk of the development occured on Windows before do
 # Notes about the build script
 
 `build.cmd` and `build.sh` run `build.fsx` with `dotnet fsi`. FAKE is used as a library only: there
-is no FAKE runner to install, and its version no longer has to match the .NET SDK. Targets and
-parameters are unchanged, so `./build.sh <Target> [key=value ...]` keeps working as before — the
-script translates those arguments into environment variables itself, which is what the FAKE runner
-used to do.
+is no FAKE runner to install, and its version no longer has to match the .NET SDK. The FAKE modules
+come from the `BuildScript` group of `paket.dependencies` and are loaded through the scripts that
+the `paket generate-load-scripts` call in `build.cmd` / `build.sh` writes to
+`.paket/load/net10.0/BuildScript/`, so running `dotnet fsi build.fsx` directly assumes one of those
+entry points has been run at least once.
 
-Mono is still needed on Linux for the targets that execute .NET Framework binaries: `MergePaketTool`
-(which runs `ILRepack.exe`) and the `net461` test passes. Removing that is tracked separately in
+Targets and parameters are unchanged, so `./build.sh <Target> [key=value ...]` keeps working as
+before: the script turns the `key=value` arguments into environment variables itself, which is what
+the FAKE runner used to do, and passes the target name to FAKE as `--target` through the execution
+context it creates. Only one target name is accepted.
+
+Mono is still needed on Linux for the targets that execute .NET Framework binaries: the `net461`
+test passes and `PublishNuGet`, which pushes with the merged `net461` `paket.exe`. `MergePaketTool`
+no longer needs it, it repacks through the `dotnet-ilrepack` tool of `.config/dotnet-tools.json`.
+Removing the remaining Mono dependency is tracked separately in
 [#4348](https://github.com/fsprojects/Paket/issues/4348).
 
 # Notes about the Paket F# Interactive extension

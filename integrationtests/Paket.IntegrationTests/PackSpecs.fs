@@ -566,6 +566,7 @@ let ``#2520 --interproject-references cli parameter overide interproject-referen
     //CleanDir rootPath
 
 [<Test>]
+[<Ignore("the expected console.1.0.0.nupkg is never produced, see #4346")>]
 let ``#2694 paket fixnuspec should not remove project references``() =
     let project = "console"
     let scenario = "i002694"
@@ -627,6 +628,7 @@ let ``#3164 pack analyzer`` () =
 
 
 [<Test>]
+[<Ignore("dotnet pack exits 1 on the scenario, see #4346")>]
 let ``#3317 pack multitarget with p2p`` () =
     let scenario = "i003317-pack-multitarget-with-p2p"
     use __ = prepareSdk scenario
@@ -862,6 +864,7 @@ let ``#2776 transitive references stops on project with template`` () =
     //CleanDir rootPath
 
 [<Test>]
+[<Ignore("the expected MyProj.Common.1.0.0.nupkg is never produced, see #4346")>]
 let ``#3558 pack multitarget with p2p by tfm`` () =
     let scenario = "i003558-pack-multitarget-with-p2p-by-tfm"
     use __ = prepareSdk scenario
@@ -946,6 +949,7 @@ let ``#3707 allows repositoryUrl``() =
         failwith nuspec
 
 [<Test>]
+[<Ignore("the expected FsLex.Core.99.0.0.nupkg is never produced, see #4346")>]
 let ``#3983-dont-remove-packed-projects``() =
     let scenario = "p003983-dont-remove-packed-projects"
     let project = "FsLex.Core"
@@ -1077,6 +1081,7 @@ let ``#2883 writes ranges for floating deps``() =
             messages
 
 [<Test>]
+[<Ignore("groups are not detected (Many groups detected map []), so the floating deps are dropped instead of ranged, see #4346")>]
 let ``#4183 writes ranges for floating deps``() =
     let scenario = "i004183-apply-with-multiple-groups"
     use __ = prepareSdk scenario

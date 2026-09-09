@@ -8,8 +8,11 @@ Paket is a dependency manager for .NET with support for NuGet packages and git r
 
 ## Build Commands
 
-Both scripts run `build.fsx` with `dotnet fsi`; FAKE is used as a library, there is no FAKE runner
-to install.
+Both scripts run `build.fsx` with `dotnet fsi`; FAKE 6 is used as a library, there is no FAKE runner
+to install. Its modules come from the `BuildScript` group of `paket.dependencies`, and the scripts
+that load them are written by the `paket generate-load-scripts` call in `build.sh` / `build.cmd`.
+Running `dotnet fsi build.fsx <Target>` directly therefore assumes one of those entry points has
+been run at least once.
 
 ```bash
 # Full build (restores, builds, runs tests)
@@ -30,8 +33,9 @@ build.cmd BuildPackage SkipTests=true            # Skip all tests
 build.cmd BuildPackage SkipIntegrationTests=true # Skip integration tests only
 ```
 
-Mono is still required on Linux for the targets that run .NET Framework binaries: `MergePaketTool`
-(ILRepack) and the `net461` test passes.
+Mono is still required on Linux for the targets that run .NET Framework binaries: the `net461`
+test passes and `PublishNuGet`, which pushes with the merged `net461` `paket.exe`.
+`MergePaketTool` no longer needs it: it repacks through the `dotnet-ilrepack` tool.
 
 ## Testing
 
@@ -111,4 +115,4 @@ Each scenario in `integrationtests/scenarios/` typically has:
 
 ## Release Process
 
-The build script reads `RELEASE_NOTES.md` for version info. Release builds use ILRepack to merge assemblies into a single `paket.exe`. The merged executable goes to `bin/merged/`.
+The build script reads `RELEASE_NOTES.md` for version info. Release builds use the `dotnet-ilrepack` tool to merge assemblies into a single `paket.exe`. The merged executable goes to `bin/merged/`.
