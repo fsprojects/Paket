@@ -1,8 +1,8 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 4304,
-    "investigation_after": 3781
+    "labelling_after": 3861,
+    "investigation_after": 3784
   },
   "issues": [
     {
@@ -328,6 +328,12 @@
       "state": "commented",
       "updated_at": "2026-09-02",
       "note": "See #4215."
+    },
+    {
+      "number": 3784,
+      "state": "resolution_recommended",
+      "updated_at": "2026-09-09",
+      "note": "Root-caused missing group indentation on paket add (AddAdditionalPackage never preserved indented group formatting). Opened fix PR on branch repo-assist/fix-issue-3784-group-indentation with regression tests; commented linking issue to PR."
     }
   ],
   "fixes": [
@@ -370,6 +376,14 @@
       "status": "open",
       "note": "Fixed FindPackagesByNameAsync missing Utils.normalizeLocalPath for LocalNuGet paths; PR created via safe-output tool this run.",
       "updated_at": "2026-09-02"
+    },
+    {
+      "issue": 3784,
+      "branch": "repo-assist/fix-issue-3784-group-indentation",
+      "pr": null,
+      "status": "open",
+      "updated_at": "2026-09-09",
+      "note": "Added groupIndentation helper to preserve indented group formatting when adding packages. Updated 2 tests that encoded the bug; added 2 regressions. 237/237 targeted tests passed; full suite pre-existing failures unrelated (verified via stash)."
     }
   ],
   "checks": [],
