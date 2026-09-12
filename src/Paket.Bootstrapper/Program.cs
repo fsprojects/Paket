@@ -60,6 +60,12 @@ namespace Paket.Bootstrapper
             }
 
             ConsoleImpl.Verbosity = options.Verbosity;
+
+            // WriteAlways, not WriteWarning: the latter is dropped by the verbosity filter as soon
+            // as '-s' is passed, and transparent magic mode adds a '-s' of its own, which is exactly
+            // the population that has to see this.
+            ConsoleImpl.WriteAlways(BootstrapperHelper.DeprecationNotice);
+
             if (options.UnprocessedCommandArgs.Any())
                 ConsoleImpl.WriteWarning("Ignoring the following unknown argument(s): {0}", String.Join(", ", options.UnprocessedCommandArgs));
 

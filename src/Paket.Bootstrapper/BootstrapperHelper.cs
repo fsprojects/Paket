@@ -10,7 +10,17 @@ namespace Paket.Bootstrapper
 {
     internal static class BootstrapperHelper
     {
-        public static string HelpText = @"The paket.bootstrapper downloads the latest version of paket.
+        /// <summary>
+        /// Printed on every run, whatever the verbosity. Paket 12.0 and later ship the .NET tool
+        /// only, and their releases carry no paket.exe asset for the bootstrapper to download.
+        /// </summary>
+        public const string DeprecationNotice =
+            "paket.bootstrapper.exe and paket.exe are deprecated and will no longer be published from Paket 12.0 onwards. " +
+            "The .NET tool is now the only supported way to run Paket: dotnet tool install paket";
+
+        public static string HelpText = DeprecationNotice + @"
+
+The paket.bootstrapper downloads the latest version of paket.
 Usage for paket bootstrapper:
 paket.bootstrapper [OPTIONS] [prerelease|<version>]
 
