@@ -1,5 +1,6 @@
 #### 11.0.0-alpha001 - 2026-08-30
 * Upgrade to .NET 10: SDK 10.0.400 and target frameworks from net9 to net10.0. The `paket` .NET tool now requires the .NET 10 runtime; the merged `paket.exe` still targets net461.
+* Fix paket pack on Linux and macOS for projects using group conditions, where the second condition was run as a shell command of its own
 
 #### 10.3.1 - 2026-01-20
 * REVERT: https://github.com/fsprojects/Paket/pull/4284

@@ -32,10 +32,21 @@ module FsiExtension =
       #r "paket: nuget FSharp.Data"
       let v = FSharp.Data.JsonValue.Boolean true
       """
-      let projectOptions =
-        checker.GetProjectOptionsFromScript("test.fsx", SourceText.ofString sourceText, otherFlags = [| "/langversion:preview"; sprintf "/compilertool:%s" pathToExtension |] )
+      let projectOptions, diagnostics =
+        // "--", not "/": the compiler only honours slash-prefixed options on Windows, since
+        // elsewhere "/compilertool:..." is indistinguishable from a path. Passing them with a
+        // slash on Linux left the paket package manager unregistered.
+        checker.GetProjectOptionsFromScript("test.fsx", SourceText.ofString sourceText, otherFlags = [| "--langversion:preview"; $"--compilertool:%s{pathToExtension}" |] )
         |> Async.RunSynchronously
-        |> fst
+
+      // Without this the `#r "paket:"` resolution failing shows up further down as an
+      // unrelated type assertion ("FSharp.Data" vs "Microsoft.FSharp.Core"), which says
+      // nothing about why the package manager did not run.
+      if not (List.isEmpty diagnostics) then
+          diagnostics
+          |> List.map _.ToString()
+          |> String.concat Environment.NewLine
+          |> failwithf "Resolving '#r \"paket: nuget FSharp.Data\"' through %s reported:%s%s" pathToExtension Environment.NewLine
 
       let _, answer = checker.ParseAndCheckFileInProject("test.fsx", 0, SourceText.ofString sourceText, projectOptions) |> Async.RunSynchronously
       match answer with
