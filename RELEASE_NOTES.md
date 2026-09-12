@@ -1,5 +1,43 @@
-#### 11.0.0-alpha001 - 2026-08-30
+#### 11.0.0-alpha001 - 2026-09-12
 * Upgrade to .NET 10: SDK 10.0.400 and target frameworks from net9 to net10.0. The `paket` .NET tool now requires the .NET 10 runtime; the merged `paket.exe` still targets net461.
+* Allow a whole `source` line in paket.dependencies to come from an environment variable (`source %FEED_URL%`) - https://github.com/fsprojects/Paket/pull/4374
+* Fall back to User/Machine scoped environment variables in paket.dependencies - https://github.com/fsprojects/Paket/pull/4406
+* Parse `native0.0` as a valid TFM, removing the "Could not detect any platforms" warning for packages such as Microsoft.NET.Test.Sdk - https://github.com/fsprojects/Paket/pull/4323
+* Prefer the MSBuild `PackageId` property when resolving the pack id - https://github.com/fsprojects/Paket/pull/4360
+* Forward NoWarn/TreatWarningsAsErrors/WarningsAsErrors to PackTask - https://github.com/fsprojects/Paket/pull/4393
+* Warn when `paket pack` finds no template files - https://github.com/fsprojects/Paket/pull/4384
+* Warn on unknown option values in paket.dependencies - https://github.com/fsprojects/Paket/pull/4386
+* Warn when an F# project references FSharp.Core without `redirects: force` - https://github.com/fsprojects/Paket/pull/4394
+* Improve the error message when a package is missing from paket.lock - https://github.com/fsprojects/Paket/pull/4365
+* Distinguish "package not found" from real conflicts in resolver errors - https://github.com/fsprojects/Paket/pull/4408
+* Invalidate the per-project restore skip when paket.lock content changes - https://github.com/fsprojects/Paket/pull/4334
+* Fix restore cache not regenerating deleted `.paket/load` scripts - https://github.com/fsprojects/Paket/pull/4363
+* Preserve the position of the Paket.Restore.targets import in project files - https://github.com/fsprojects/Paket/pull/4364
+* Fix `dotnet pack --include-symbols` failing because of multiple nuspec files - https://github.com/fsprojects/Paket/pull/4367
+* Fix `exclude` directive not suppressing build targets/props import - https://github.com/fsprojects/Paket/pull/4368
+* Filter non-DLL files from the analyzers folder to prevent MSBuild breakage - https://github.com/fsprojects/Paket/pull/4379
+* Fix `paket remove` not removing clitool packages from paket.dependencies - https://github.com/fsprojects/Paket/pull/4405
+* Fix tab characters in paket.dependencies causing resolution failure - https://github.com/fsprojects/Paket/pull/4398
+* Strip inline comments from framework/restriction lines in paket.dependencies - https://github.com/fsprojects/Paket/pull/4414
+* Fix inconsistent `~> LOCKEDVERSION` range for short version strings - https://github.com/fsprojects/Paket/pull/4416
+* Fix local git dependency version restriction failure - https://github.com/fsprojects/Paket/pull/4390
+* Fix intermittent git dependency restore failures via cross-process locking - https://github.com/fsprojects/Paket/pull/4407
+* Fix local `file:///` git URL handling to preserve the absolute path slash - https://github.com/fsprojects/Paket/pull/4377
+* Prevent git subprocess hangs on non-interactive build agents - https://github.com/fsprojects/Paket/pull/4357
+* Prevent home directory deletion from a malformed github/git source spec - https://github.com/fsprojects/Paket/pull/4389
+* Fix unquoted local NuGet source paths containing spaces - https://github.com/fsprojects/Paket/pull/4354
+* Fix local NuGet source not recognizing `.symbols.nupkg` packages - https://github.com/fsprojects/Paket/pull/4388
+* Fix createRelativePath mangling paths with special characters (#, %, &) - https://github.com/fsprojects/Paket/pull/4359
+* Skip dot folders (e.g. `.localhistory`, `.git`) when scanning for files - https://github.com/fsprojects/Paket/pull/4358
+* Treat a missing `Dependencies` node in OData feeds (e.g. Artifactory) as no dependencies - https://github.com/fsprojects/Paket/pull/4373
+* Fix credential lookup for `www.nuget.org` / `nuget.org` mismatch - https://github.com/fsprojects/Paket/pull/4418
+* Fix trailing slash mismatch in credential/token source lookup - https://github.com/fsprojects/Paket/pull/4369
+* Fix `add-credentials` failing when input is redirected (Git Bash) - https://github.com/fsprojects/Paket/pull/4370
+* Fix NO_PROXY wildcard entries not matching subdomains - https://github.com/fsprojects/Paket/pull/4392
+* Fix bootstrapper unconditionally forcing the console foreground color - https://github.com/fsprojects/Paket/pull/4385
+* Remove msbuild.exe lookup that crashed after RoslynTools.MSBuild removal - https://github.com/fsprojects/Paket/pull/4330
+* Reduced memory allocations in ProjectFile.findInsertSpot - https://github.com/fsprojects/Paket/pull/4322
+* Bump Newtonsoft.Json and Mono.Cecil, pin System.Formats.Asn1 to a patched version (CVE-2024-38095) - https://github.com/fsprojects/Paket/pull/4362 https://github.com/fsprojects/Paket/pull/4409
 
 #### 10.3.1 - 2026-01-20
 * REVERT: https://github.com/fsprojects/Paket/pull/4284
