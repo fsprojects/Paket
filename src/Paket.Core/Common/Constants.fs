@@ -67,9 +67,13 @@ module Environment =
         if isWindows then
             let res = Environment.GetEnvironmentVariable(envVar)
             if System.String.IsNullOrEmpty res then
+                if System.String.IsNullOrEmpty homePath then
+                    failwithf "Could not determine a home directory because neither the 'USERPROFILE' nor the 'HOME' environment variable is set. Please set one of these environment variables and try again."
                 System.IO.Path.Combine(homePath, monoPathSuffix)
             else res
         else
+            if System.String.IsNullOrEmpty homePath then
+                failwithf "Could not determine a home directory because the 'HOME' environment variable is not set. Please set the 'HOME' environment variable and try again."
             System.IO.Path.Combine(homePath, monoPathSuffix)
 #endif
 
