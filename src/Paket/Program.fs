@@ -934,6 +934,15 @@ let main() =
         Environment.SetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
 
+#if PAKET_LEGACY_EXE
+    // Only the .NET Framework build carries this: it is the paket.exe the bootstrapper downloads,
+    // and the one committed into .paket for magic mode. Users of the .NET tool are already on the
+    // supported path and must not see it.
+    // It has to sit here: earlier and the trace event has no subscriber yet, later and the restore
+    // and install fast routes below would skip it.
+    traceWarnfn "paket.exe is deprecated and will no longer be published from Paket 12.0 onwards. The .NET tool is now the only supported way to run Paket: dotnet tool install paket"
+#endif
+
     try
     let args = Environment.GetCommandLineArgs()
     match args with
