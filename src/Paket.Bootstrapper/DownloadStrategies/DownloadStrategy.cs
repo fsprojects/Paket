@@ -52,7 +52,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             if (parsed.Major <= LastSupportedMajorVersion)
                 return version;
 
-            ConsoleImpl.WriteAlways(
+            ConsoleImpl.WriteWarning(
                 "Paket {0} is available, but it is published as a .NET tool only and cannot be downloaded by the bootstrapper. Staying on {1}. To move on, run: dotnet tool install paket",
                 version, LastSupportedVersion);
 

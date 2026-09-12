@@ -11,7 +11,7 @@ namespace Paket.Bootstrapper
     internal static class BootstrapperHelper
     {
         /// <summary>
-        /// Printed on every run, whatever the verbosity. Paket 12.0 and later ship the .NET tool
+        /// Printed on every run that isn't silent. Paket 12.0 and later ship the .NET tool
         /// only, and their releases carry no paket.exe asset for the bootstrapper to download.
         /// </summary>
         public const string DeprecationNotice =
