@@ -375,7 +375,10 @@
 		</ItemGroup>
 		<PropertyGroup>
 			<_ConditionsParameter></_ConditionsParameter>
-			<_ConditionsParameter Condition="@(_DefinedConditionProperties) != ''">--conditions @(_DefinedConditionProperties)</_ConditionsParameter>
+			<!-- Quoted like "@(_NuspecFiles)" below, and for the same reason: MSBuild joins an item
+			     list with ";", and Exec runs its command through /bin/sh on Unix, where ";" ends the
+			     command. Unquoted, a second condition was run as a shell command of its own. -->
+			<_ConditionsParameter Condition="@(_DefinedConditionProperties) != ''">--conditions "@(_DefinedConditionProperties)"</_ConditionsParameter>
 		</PropertyGroup>
 		<Exec Condition="@(_NuspecFiles) != ''" Command='$(PaketCommand) fix-nuspecs files "@(_NuspecFiles)" project-file "$(PaketProjectFile)" $(_ConditionsParameter)' />
 		<Error Condition="@(_NuspecFiles) == ''" Text='Could not find nuspec files in "$(AdjustedNuspecOutputPath)" (Version: "$(PackageVersion)"), therefore we cannot call "paket fix-nuspecs" and have to error out!' />
