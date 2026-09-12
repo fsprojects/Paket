@@ -48,6 +48,22 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         }
 
         [Test]
+        public void DefaultApi_GetLatestVersion_SkipsVersionsPastTheLastSupportedMajor()
+        {
+            //arrange
+            CreateSystemUnderTestWithDefaultApi();
+            mockWebRequestProxy.Setup(x => x.DownloadString(It.IsAny<string>())).Returns("[\"12.0.0\",\"11.1.0\",\"10.3.1\"]");
+
+            //act
+            var version = sut.GetLatestVersion(true);
+
+            //assert
+            // This strategy sees the whole list, so it picks the best supported version rather
+            // than the constant the base class clamps to.
+            Assert.That(version, Is.EqualTo("11.1.0"));
+        }
+
+        [Test]
         public void DefaultApi_GetLatestVersion_WithPrerelease_ChoosePrelease()
         {
             //arrange
@@ -238,13 +254,13 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             CreateSystemUnderTestWithNugetFolder();
             mockFileProxy.Setup(
                 x => x.EnumerateFiles(It.IsAny<string>(), "paket.*.nupkg", SearchOption.TopDirectoryOnly))
-                .Returns(new[] { "paket.111.nupkg" });
+                .Returns(new[] { "paket.1.1.1.nupkg" });
 
             //act
             sut.DownloadVersion(null, "paket", null);
 
             //assert
-            mockFileProxy.Verify(x => x.CopyFile(It.Is<string>(s => s.StartsWith("anyNugetFolder") && s.EndsWith("paket.111.nupkg")), It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.latest.nupkg")), false));
+            mockFileProxy.Verify(x => x.CopyFile(It.Is<string>(s => s.StartsWith("anyNugetFolder") && s.EndsWith("paket.1.1.1.nupkg")), It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.latest.nupkg")), false));
 
             mockFileProxy.Verify(x => x.ExtractToDirectory(It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.latest.nupkg")), It.IsAny<string>()));
             mockFileProxy.Verify(x => x.CopyFile(It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.exe")), "paket", true));
