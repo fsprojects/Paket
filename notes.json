@@ -2,7 +2,7 @@
   "version": 1,
   "cursors": {
     "labelling_after": 3861,
-    "investigation_after": 3784
+    "investigation_after": 3877
   },
   "issues": [
     {
@@ -334,6 +334,12 @@
       "state": "resolution_recommended",
       "updated_at": "2026-09-09",
       "note": "Root-caused missing group indentation on paket add (AddAdditionalPackage never preserved indented group formatting). Opened fix PR on branch repo-assist/fix-issue-3784-group-indentation with regression tests; commented linking issue to PR."
+    },
+    {
+      "number": 3877,
+      "state": "resolution_recommended",
+      "updated_at": "2026-09-12",
+      "note": "PDB/non-dll files added to csproj from analyzers folder already fixed by commit 4ea69060a (same root cause as #4336); commented recommending closure."
     }
   ],
   "fixes": [
@@ -384,6 +390,14 @@
       "status": "open",
       "updated_at": "2026-09-09",
       "note": "Added groupIndentation helper to preserve indented group formatting when adding packages. Updated 2 tests that encoded the bug; added 2 regressions. 237/237 targeted tests passed; full suite pre-existing failures unrelated (verified via stash)."
+    },
+    {
+      "issue": 3791,
+      "branch": "repo-assist/fix-issue-3791-home-env-var",
+      "pr": null,
+      "status": "open",
+      "updated_at": "2026-09-12",
+      "note": "Added null/empty check + clear failwithf error in Constants.fs Environment.GetFolderPath when HOME/USERPROFILE unset, per maintainer's own suggested fix. Regression test added; 1/1 passed, no new UtilsSpecs regressions (4 pre-existing unrelated failures confirmed via git stash)."
     }
   ],
   "checks": [],
@@ -407,7 +421,7 @@
     {
       "task": 4,
       "item": "dependency-audit-followups",
-      "note": "Fixed ci.yml hardcoded SDK version dup of global.json (draft PR, branch repo-assist/eng-ci-sdk-version-dedupe-2026-08-29). Still deferred: NuGet.* (5.11.7->7.9.0) and Build-group tool major bumps (FAKE/FSharp.Formatting/Octokit); no network access to nuget.org this run."
+      "note": "Bumped dotnet-ilrepack tool 2.0.47->2.0.48 (draft PR, branch repo-assist/eng-ilrepack-bump-2026-09-12). Still deferred: NuGet.* (5.11.7->7.9.0) and Build-group tool major bumps (FAKE/FSharp.Formatting/Octokit); no network access to nuget.org this run either."
     },
     {
       "task": 2,
