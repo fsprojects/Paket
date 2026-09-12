@@ -381,7 +381,12 @@ Target.create "RunIntegrationTestsNetCore" (fun _ ->
 
     DotNet.test (fun c ->
         { c with
-            Common = { dotnetCli c.Common with Timeout = Some (TimeSpan.FromMinutes 30.) }
+            // Normal verbosity for the same reason as the net461 pass above: a hung run has to
+            // name the test that never returned.
+            Common =
+                { dotnetCli c.Common with
+                    Timeout = Some (TimeSpan.FromMinutes 30.)
+                    Verbosity = Some DotNet.Verbosity.Normal }
             Configuration = DotNet.BuildConfiguration.Release
             Framework = Some "net10.0"
             Filter = Some testCategoryFilter

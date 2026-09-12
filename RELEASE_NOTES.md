@@ -38,6 +38,7 @@
 * Remove msbuild.exe lookup that crashed after RoslynTools.MSBuild removal - https://github.com/fsprojects/Paket/pull/4330
 * Reduced memory allocations in ProjectFile.findInsertSpot - https://github.com/fsprojects/Paket/pull/4322
 * Bump Newtonsoft.Json and Mono.Cecil, pin System.Formats.Asn1 to a patched version (CVE-2024-38095) - https://github.com/fsprojects/Paket/pull/4362 https://github.com/fsprojects/Paket/pull/4409
+* Fix paket pack on Linux and macOS for projects using group conditions, where the second condition was run as a shell command of its own
 
 #### 10.3.1 - 2026-01-20
 * REVERT: https://github.com/fsprojects/Paket/pull/4284
