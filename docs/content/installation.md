@@ -40,7 +40,11 @@ dotnet paket --help
 
 ## Installation per repository
 
-The most common use of Paket is as a command line tool inside your project
+> **Deprecated.** This route relies on `paket.bootstrapper.exe` and `paket.exe`, neither of which
+> will be published from Paket 12.0 onwards. Use the [local tool](#Local-tool) instead, which gives
+> you the same per-repository pinning.
+
+Paket used to be most commonly used as a command line tool inside your project
 repository.
 
 1. Create a `.paket` directory in the root of your solution.
@@ -112,7 +116,8 @@ utility.
 
 ### Installation on Windows
 
-Please [install per repository](installation.html#Installation-per-repository).
+Please install the [.NET tool](#Installation-on-NET-Core). The
+[per-repository](#Installation-per-repository) route still works, but it is deprecated.
 
 ### Post installation
 
