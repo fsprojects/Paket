@@ -30,6 +30,15 @@ The exact F# compile order is declared in each `.fsproj`. When adding or moving 
 - Do not edit generated artifacts or integration-test `temp/` output.
 - Keep documentation examples synchronized with actual CLI behavior and file formats.
 
+## Release Notes
+
+`RELEASE_NOTES.md` is shipped to users: `build.fsx` reads the first entry for the version number and embeds its bullets as `PackageReleaseNotes` in the published packages.
+
+- Every change to shipped behavior (bug fix, feature, performance improvement, change to a dependency of the published packages) adds one bullet to the **topmost** entry. Keep the entry's version line; only maintainers bump the version.
+- Internal changes get no entry: build scripts, CI and workflows, tests-only, docs-only, tooling, warning cleanups.
+- Format: `* <one-line summary> - <link>`. Link to the issue being fixed (`https://github.com/fsprojects/Paket/issues/<N>`), or to the pull request when there is no issue and its number is known; omit the link otherwise. Match the wording of the existing entries: imperative summary, no trailing period.
+- If the topmost entry has already been published (a git tag or GitHub release with that version exists), add a new entry above it: `#### <next patch version> - <YYYY-MM-DD>`.
+
 ## Build and Test
 
 Use the narrowest validation that covers the change:
