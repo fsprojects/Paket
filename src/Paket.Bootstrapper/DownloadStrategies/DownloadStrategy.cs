@@ -8,10 +8,55 @@ namespace Paket.Bootstrapper.DownloadStrategies
         public abstract string Name { get; }
         public abstract bool CanDownloadHashFile { get; }
 
+        /// <summary>
+        /// Paket 12.0 and later are published as a .NET tool only: their releases carry no
+        /// paket.exe asset and their NuGet package no longer holds tools/paket.exe. Resolving one
+        /// would end in a 404, then a FileNotFoundException on the NuGet fallback, and an exit
+        /// code of 1 wherever paket.exe isn't already on disk. Stay on the last release we can
+        /// actually download instead.
+        /// </summary>
+        internal const int LastSupportedMajorVersion = 11;
+
+        internal const string LastSupportedVersion = "11.0.0";
+
         public IDownloadStrategy FallbackStrategy { get; set; }
         public string GetLatestVersion(bool ignorePrerelease)
         {
-            return Wrap(() => GetLatestVersionCore(ignorePrerelease), "GetLatestVersion");
+            var version = Wrap(() => GetLatestVersionCore(ignorePrerelease), "GetLatestVersion");
+            return CapToLastSupportedVersion(version);
+        }
+
+        /// <summary>
+        /// Applied here rather than in the individual strategies because this method is the single
+        /// non-virtual entry point every strategy goes through, and the decorating strategies call
+        /// it on the strategy they wrap. That also covers the version sources that never touch the
+        /// network: the on-disk cache, the --max-file-age fast path and a local NuGet folder.
+        /// </summary>
+        internal static string CapToLastSupportedVersion(string version)
+        {
+            if (String.IsNullOrWhiteSpace(version))
+                return version;
+
+            SemVer parsed;
+            try
+            {
+                parsed = SemVer.Create(version);
+            }
+            catch (Exception)
+            {
+                // Never let an unparseable version break the bootstrapper; let the caller deal
+                // with it as it did before.
+                return version;
+            }
+
+            if (parsed.Major <= LastSupportedMajorVersion)
+                return version;
+
+            ConsoleImpl.WriteWarning(
+                "Paket {0} is available, but it is published as a .NET tool only and cannot be downloaded by the bootstrapper. Staying on {1}. To move on, run: dotnet tool install paket",
+                version, LastSupportedVersion);
+
+            return LastSupportedVersion;
         }
 
         public void DownloadVersion(string latestVersion, string target, PaketHashFile hashfile)

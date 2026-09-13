@@ -60,6 +60,12 @@ namespace Paket.Bootstrapper
             }
 
             ConsoleImpl.Verbosity = options.Verbosity;
+
+            // WriteWarning, not WriteAlways: it goes to stdout, and under '-s' (which transparent
+            // magic mode adds on its own) that stream is parsed by Paket.Restore.targets
+            // ('show-conditions -s'), where any extra line breaks the build.
+            ConsoleImpl.WriteWarning(BootstrapperHelper.DeprecationNotice);
+
             if (options.UnprocessedCommandArgs.Any())
                 ConsoleImpl.WriteWarning("Ignoring the following unknown argument(s): {0}", String.Join(", ", options.UnprocessedCommandArgs));
 

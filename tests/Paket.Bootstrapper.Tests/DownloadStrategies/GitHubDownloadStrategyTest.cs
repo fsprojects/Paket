@@ -40,6 +40,22 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         }
 
         [Test]
+        public void GetLatestVersion_CapsAVersionWeCanNoLongerDownload()
+        {
+            //arrange
+            mockWebProxy.Setup(x => x.DownloadString(GitHubDownloadStrategy.Constants.PaketReleasesLatestUrl)).Returns("<title>Release 12.0.0 · fsprojects/Paket</title>").Verifiable();
+
+            //act
+            var result = sut.GetLatestVersion(true);
+
+            //assert
+            // The releases page only ever yields the single newest version, so there is no older
+            // one to fall back to here; the base class clamps to the constant instead.
+            Assert.That(result, Is.EqualTo(DownloadStrategy.LastSupportedVersion));
+            mockWebProxy.Verify();
+        }
+
+        [Test]
         public void GetLatestVersion_Prerelease()
         {
             //arrange

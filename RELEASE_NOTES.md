@@ -1,4 +1,6 @@
 #### 11.0.0-alpha001 - 2026-09-12
+* DEPRECATION: `paket.exe` and `paket.bootstrapper.exe` are deprecated and will no longer be published from Paket 12.0 onwards. The `paket` .NET tool becomes the only supported way to run Paket: `dotnet tool install paket`. Both binaries now print a notice on every run unless `-s` is passed.
+* The bootstrapper shipped with this release never resolves a version past 11.x, so it keeps working once 12.0 ships without a `paket.exe` asset instead of failing the build. An explicitly pinned version is unaffected.
 * Upgrade to .NET 10: SDK 10.0.400 and target frameworks from net9 to net10.0. The `paket` .NET tool now requires the .NET 10 runtime; the merged `paket.exe` still targets net461.
 * Allow a whole `source` line in paket.dependencies to come from an environment variable (`source %FEED_URL%`) - https://github.com/fsprojects/Paket/pull/4374
 * Fall back to User/Machine scoped environment variables in paket.dependencies - https://github.com/fsprojects/Paket/pull/4406
