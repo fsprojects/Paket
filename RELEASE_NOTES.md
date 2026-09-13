@@ -3,7 +3,9 @@
 * Allow a whole `source` line in paket.dependencies to come from an environment variable (`source %FEED_URL%`) - https://github.com/fsprojects/Paket/pull/4374
 * Fall back to User/Machine scoped environment variables in paket.dependencies - https://github.com/fsprojects/Paket/pull/4406
 * Parse `native0.0` as a valid TFM, removing the "Could not detect any platforms" warning for packages such as Microsoft.NET.Test.Sdk - https://github.com/fsprojects/Paket/pull/4323
+* Recognize the `netcoreapp6.0` to `netcoreapp10.0` monikers when detecting platforms - https://github.com/fsprojects/Paket/issues/4239
 * Prefer the MSBuild `PackageId` property when resolving the pack id - https://github.com/fsprojects/Paket/pull/4360
+* Read the `Package`-prefixed metadata of SDK-style projects (`PackageReleaseNotes`, `PackageProjectUrl`, `PackageIconUrl`, `PackageLicenseExpression`, `PackageLicenseUrl`) in `paket pack` - https://github.com/fsprojects/Paket/issues/3603
 * Forward NoWarn/TreatWarningsAsErrors/WarningsAsErrors to PackTask - https://github.com/fsprojects/Paket/pull/4393
 * Warn when `paket pack` finds no template files - https://github.com/fsprojects/Paket/pull/4384
 * Warn on unknown option values in paket.dependencies - https://github.com/fsprojects/Paket/pull/4386
