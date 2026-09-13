@@ -1,8 +1,8 @@
 {
   "version": 1,
   "cursors": {
-    "labelling_after": 3861,
-    "investigation_after": 3877
+    "labelling_after": 3910,
+    "investigation_after": 3907
   },
   "issues": [
     {
@@ -340,17 +340,21 @@
       "state": "resolution_recommended",
       "updated_at": "2026-09-12",
       "note": "PDB/non-dll files added to csproj from analyzers folder already fixed by commit 4ea69060a (same root cause as #4336); commented recommending closure."
+    },
+    {
+      "number": 4255,
+      "state": "resolution_recommended",
+      "updated_at": "2026-09-13",
+      "note": "net8.0-windows10.0.22621.0 missing platform handler already fixed by commit bb509b8db; opened test-only PR adding regression test; commented recommending closure."
+    },
+    {
+      "number": 3907,
+      "state": "resolution_recommended",
+      "updated_at": "2026-09-13",
+      "note": "StackOverflowException in resolver fuseConflicts already fixed by merged PR #4059 (confirmed by earlier commenter); recommended closing."
     }
   ],
   "fixes": [
-    {
-      "issue": 3603,
-      "pr": null,
-      "branch": "repo-assist/fix-issue-3603-package-release-notes",
-      "status": "open",
-      "updated_at": "2026-08-30",
-      "note": "Added Package-prefixed MSBuild property fallback in GetTemplateMetadata; draft PR + regression tests opened."
-    },
     {
       "issue": 3906,
       "branch": "repo-assist/fix-issue-3906-bracket-escape-test",
@@ -358,14 +362,6 @@
       "note": "Test-only PR; no prod code change since bug not reproducible in current code.",
       "pr": null,
       "updated_at": "2026-08-31"
-    },
-    {
-      "issue": 4239,
-      "branch": "repo-assist/fix-issue-4239-netcoreapp-monikers",
-      "note": "Draft PR: added netcoreapp6.0-10.0 moniker special cases in FrameworkHandling.fs + 6 new tests; 58/58 net10.0 tests passed.",
-      "pr": null,
-      "status": "open",
-      "updated_at": "2026-09-01"
     },
     {
       "issue": 4222,
@@ -398,6 +394,14 @@
       "status": "open",
       "updated_at": "2026-09-12",
       "note": "Added null/empty check + clear failwithf error in Constants.fs Environment.GetFolderPath when HOME/USERPROFILE unset, per maintainer's own suggested fix. Regression test added; 1/1 passed, no new UtilsSpecs regressions (4 pre-existing unrelated failures confirmed via git stash)."
+    },
+    {
+      "issue": 4255,
+      "branch": "repo-assist/fix-issue-4255-net8-windows-22621-test",
+      "pr": null,
+      "status": "open",
+      "updated_at": "2026-09-13",
+      "note": "Test-only PR; bug already fixed in code by commit bb509b8db. Added regression test in FrameworkIdentifierSpecs.fs; 11/11 net10.0 tests passed."
     }
   ],
   "checks": [],
@@ -461,7 +465,7 @@
     {
       "task": 1,
       "item": "labelling-continue-11",
-      "note": "Labelled #4179-#4304 batch this run (29 issues). Some gaps in #4164-4304 range may remain; continue scanning no:label query next time."
+      "note": "Labelled #3862-#3910 batch this run (16 issues). Continue scanning no:label query from #3910 onward next time."
     }
   ]
 }
