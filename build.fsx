@@ -101,7 +101,6 @@ let releaseNotesData =
         |> Option.defaultWith (fun () -> failwith "RELEASE_NOTES.md has no released version heading")
 
     lines.[firstRelease..]
-    |> String.concat Environment.NewLine
     |> ReleaseNotes.parseAll
 
 let release = List.head releaseNotesData
