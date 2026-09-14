@@ -29,7 +29,7 @@ on:
     pull-requests: read
   steps:
     - id: check
-      env: 
+      env:
         GH_TOKEN: ${{ github.token }}
       run: |
         MAX_OPEN_PRS=8
@@ -37,6 +37,9 @@ on:
         COUNT=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --search 'in:title "[repo-assist]"' --json number --jq 'length')
         [[ "$COUNT" -lt "$MAX_OPEN_PRS" ]]
       # exits 0 if not scheduled or <MAX_OPEN_PRS open PRs, 1 if ≥MAX_OPEN_PRS
+
+concurrency:
+  job-discriminator: ${{ github.event_name == 'schedule' && 'scheduled' || github.run_id }}
 
 if: needs.pre_activation.outputs.check_result == 'success'
 
@@ -75,8 +78,12 @@ tools:
     validation:
       timeout-minutes: 1
       script: |
+        const fs = require("node:fs");
+        const path = require("node:path");
         const fail = message => { throw new Error(`notes.json: ${message}`); };
-        const data = JSON.parse(fs.readFileSync(path.join(memoryRoot, "notes.json"), "utf8"));
+        const notesPath = path.join(memoryRoot, "notes.json");
+        if (!fs.existsSync(notesPath)) fail("missing (create an initial notes.json that matches schema version 1)");
+        const data = JSON.parse(fs.readFileSync(notesPath, "utf8"));
         const isObject = value => value !== null && typeof value === "object" && !Array.isArray(value);
         const exactKeys = (value, keys) => isObject(value) && Object.keys(value).sort().join(",") === [...keys].sort().join(",");
         const validDate = value => typeof value === "string" && /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(value);
@@ -187,11 +194,11 @@ safe-outputs:
   add-labels:
     allowed: [bug, enhancement, "help wanted", "good first issue", "spam", "off topic", documentation, question, duplicate, wontfix, "needs triage", "needs investigation", "breaking change", performance, security, refactor]
     max: 30
-    target: "*" 
+    target: "*"
   remove-labels:
     allowed: [bug, enhancement, "help wanted", "good first issue", "spam", "off topic", documentation, question, duplicate, wontfix, "needs triage", "needs investigation", "breaking change", performance, security, refactor]
     max: 5
-    target: "*" 
+    target: "*"
 
 steps:
   - name: Fetch repo data for task weighting
@@ -285,7 +292,7 @@ steps:
           json.dump(result, f, indent=2)
       EOF
 
-source: githubnext/agentics/workflows/repo-assist.md@ae8d551f07c7ed7619f8c58c7bb4c3ac89395d38
+source: githubnext/agentics/workflows/repo-assist.md@4bc8419fad05e6b032741cbfd189986700bcf71c
 ---
 
 # Repo Assist
@@ -313,8 +320,6 @@ Always be:
 ## Memory
 
 Repo memory contains exactly one schema-validated file, `notes.json`. Read it at the **start** of every run, using `jq` to select only the fields needed for the selected tasks. Update it at the **end** whenever state changed.
-
-The schema stores only:
 
 - `cursors`: the last issue reached by Tasks 1 and 2, or `null` when a fresh search is required
 - `issues`: the latest still-actionable Repo Assist interaction or investigation state for an issue
@@ -358,7 +363,7 @@ The weighting scheme naturally adapts to repo state:
 
 **Progress Imperative**: Your primary purpose is to make forward progress on the repository. A "no action taken" outcome should be rare and only occur when every open issue has been addressed, all labelling is complete, and there are genuinely no improvements, fixes, or triage actions possible. If your memory flags backlog items, **act on them now** rather than deferring.
 
-Always do Task 11 (Update Monthly Activity Summary Issue) every run. In all comments and PR descriptions, identify yourself as "Repo Assist".
+Always do Task 11 (Update Monthly Activity Summary Issue) after performing work in non-command mode, including when manually dispatched without a command. Command-mode and no-op runs do not update the issue. In all comments and PR descriptions, identify yourself as "Repo Assist".
 
 ### Task 1: Issue Labelling
 
@@ -456,7 +461,7 @@ Maintain a single open issue titled `[repo-assist] Monthly Activity {YYYY}-{MM}`
 
    ## Suggested Actions for Maintainer
 
-   **Comprehensive list** of all pending actions requiring maintainer attention (excludes items already actioned and checked off). 
+   **Comprehensive list** of all pending actions requiring maintainer attention (excludes items already actioned and checked off).
    - Reread the issue you're updating before you update it  -  there may be new checkbox adjustments since your last update that require you to adjust the suggested actions.
    - List **all** the comments, PRs, and issues that need attention
    - Exclude **all** items that have either
