@@ -673,6 +673,10 @@ type Dependencies(dependenciesFileName: string) =
                 |> Async.map (FSharp.Core.Result.mapError (fun err -> s.Url, err))
             | LocalNuGet(s,_) ->
                 async {
+                    let s =
+                        match Utils.normalizeLocalPath s with
+                        | Utils.AbsolutePath path -> path
+                        | Utils.RelativePath path -> path
                     return
                         Fake.Globbing.search s (sprintf "**/*%s*" searchTerm)
                         |> List.distinctBy (fun s ->

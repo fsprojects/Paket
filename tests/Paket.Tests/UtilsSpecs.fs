@@ -2,6 +2,7 @@
 
 open System.IO
 open Paket
+open Paket.PackageSources
 open NUnit.Framework
 open FsUnit
 open System
@@ -380,3 +381,34 @@ let ``FindAllFiles should not descend into dot folders``() =
     finally
         if Directory.Exists(root) then
             Directory.Delete(root, true)
+
+[<Test>]
+let ``FindPackagesByName expands home directory (~) for local NuGet feed``() =
+    let home = GetHomeDirectory()
+    let feedDir = Path.Combine(home, "paket_test_feed_" + Guid.NewGuid().ToString("N"))
+    try
+        Directory.CreateDirectory feedDir |> ignore
+        let nupkgPath = Path.Combine(feedDir, "MyTestPackage.1.0.0.nupkg")
+        do
+            use zipStream = new FileStream(nupkgPath, FileMode.Create)
+            use archive = new System.IO.Compression.ZipArchive(zipStream, System.IO.Compression.ZipArchiveMode.Create)
+            let nuspecEntry = archive.CreateEntry("MyTestPackage.nuspec")
+            use entryStream = nuspecEntry.Open()
+            use writer = new StreamWriter(entryStream)
+            writer.Write("""<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>MyTestPackage</id>
+    <version>1.0.0</version>
+    <authors>Test</authors>
+    <description>Test</description>
+  </metadata>
+</package>""")
+
+        let source = PackageSource.Parse("source ~/" + Path.GetFileName feedDir)
+        let result = Dependencies.FindPackagesByName([source], "MyTestPackage")
+
+        result |> shouldContain "MyTestPackage"
+    finally
+        if Directory.Exists(feedDir) then
+            Directory.Delete(feedDir, true)
