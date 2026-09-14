@@ -33,9 +33,8 @@ build.cmd BuildPackage SkipTests=true            # Skip all tests
 build.cmd BuildPackage SkipIntegrationTests=true # Skip integration tests only
 ```
 
-Mono is still required on Linux for the targets that run .NET Framework binaries: the `net461`
-test passes and `PublishNuGet`, which pushes with the merged `net461` `paket.exe`.
-`MergePaketTool` no longer needs it: it repacks through the `dotnet-ilrepack` tool.
+Mono is still required on Linux for the `net461` test passes. `MergePaketTool` no longer needs it:
+it repacks through the `dotnet-ilrepack` tool.
 
 ## Testing
 

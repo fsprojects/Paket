@@ -1,0 +1,160 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - RELEASE_NOTES.md
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  detect-release:
+    name: Detect new release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      is-release: ${{ steps.release.outputs.is-release }}
+      version: ${{ steps.release.outputs.version }}
+      prerelease: ${{ steps.release.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Compare release headings
+        id: release
+        shell: pwsh
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          $headingPattern = '^####\s+(\S+)'
+          $currentHeading = Get-Content RELEASE_NOTES.md | Select-String -Pattern $headingPattern | Select-Object -First 1
+          if (-not $currentHeading) {
+            throw 'RELEASE_NOTES.md has no #### release heading.'
+          }
+
+          $version = $currentHeading.Matches[0].Groups[1].Value
+          $previousVersion = $null
+          if ($env:BEFORE_SHA -and $env:BEFORE_SHA -notmatch '^0+$') {
+            $previousNotes = git show "${env:BEFORE_SHA}:RELEASE_NOTES.md" 2>$null
+            if ($LASTEXITCODE -eq 0) {
+              $previousHeading = $previousNotes | Select-String -Pattern $headingPattern | Select-Object -First 1
+              if ($previousHeading) {
+                $previousVersion = $previousHeading.Matches[0].Groups[1].Value
+              }
+            }
+          }
+
+          $isRelease = $version -ne $previousVersion
+          "is-release=$($isRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "prerelease=$($version.Contains('-').ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          Write-Host "Current release: $version; previous release: $previousVersion; publish: $isRelease"
+
+  release:
+    name: Build and publish ${{ needs.detect-release.outputs.version }}
+    needs: detect-release
+    if: needs.detect-release.outputs.is-release == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Configure git autocrlf
+        run: git config --global core.autocrlf input
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nuget/packages
+            packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('paket.lock', 'paket.dependencies', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+      - name: Build release artifacts
+        shell: cmd
+        run: .\build.cmd BuildPackage < NUL
+      - name: Verify release artifacts
+        shell: pwsh
+        env:
+          VERSION: ${{ needs.detect-release.outputs.version }}
+        run: |
+          $requiredFiles = @(
+            'bin/merged/paket.exe',
+            'bin/merged/paket-sha256.txt',
+            'bin_bootstrapper/net461/paket.bootstrapper.exe',
+            'src/FSharp.DependencyManager.Paket/bin/Release/netstandard2.0/FSharp.DependencyManager.Paket.dll',
+            '.paket/paket.targets',
+            '.paket/Paket.Restore.targets',
+            "temp/Paket.$env:VERSION.nupkg",
+            "temp/Paket.Core.$env:VERSION.nupkg",
+            "temp/Paket.Bootstrapper.$env:VERSION.nupkg",
+            "temp/FSharp.DependencyManager.Paket.$env:VERSION.nupkg"
+          )
+          $missingFiles = $requiredFiles | Where-Object { -not (Test-Path $_ -PathType Leaf) }
+          if ($missingFiles) {
+            throw "Missing release artifacts:`n$($missingFiles -join "`n")"
+          }
+      - name: Obtain NuGet key
+        id: login
+        # NuGet/login v1.1.0
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841
+        with:
+          user: dsyme
+      - name: Publish NuGet packages
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: dotnet nuget push 'temp/*.nupkg' --source https://api.nuget.org/v3/index.json --api-key $env:NUGET_API_KEY --skip-duplicate
+      - name: Create release notes body
+        shell: pwsh
+        run: |
+          $lines = Get-Content RELEASE_NOTES.md
+          $start = 0..($lines.Count - 1) | Where-Object { $lines[$_] -match '^####\s+' } | Select-Object -First 1
+          $end = (($start + 1)..($lines.Count - 1) | Where-Object { $lines[$_] -match '^####\s+' } | Select-Object -First 1)
+          if ($null -eq $end) { $end = $lines.Count }
+          $body = $lines[($start + 1)..($end - 1)] -join "`n"
+          $body.Trim() | Set-Content release-notes-body.md
+      - name: Create GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.detect-release.outputs.version }}
+          PRERELEASE: ${{ needs.detect-release.outputs.prerelease }}
+        run: |
+          $assets = @(
+            'bin/merged/paket.exe',
+            'bin/merged/paket-sha256.txt',
+            'bin_bootstrapper/net461/paket.bootstrapper.exe',
+            'src/FSharp.DependencyManager.Paket/bin/Release/netstandard2.0/FSharp.DependencyManager.Paket.dll',
+            '.paket/paket.targets',
+            '.paket/Paket.Restore.targets'
+          ) + @(Get-ChildItem temp/*.nupkg | ForEach-Object FullName)
+
+          gh release view $env:VERSION *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:VERSION $assets --clobber
+          } else {
+            $arguments = @(
+              'release', 'create', $env:VERSION
+            ) + $assets + @(
+              '--target', '${{ github.sha }}',
+              '--title', $env:VERSION,
+              '--notes-file', 'release-notes-body.md'
+            )
+            if ($env:PRERELEASE -eq 'true') {
+              $arguments += '--prerelease'
+            }
+            & gh @arguments
+          }

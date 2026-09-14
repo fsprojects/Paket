@@ -3,11 +3,8 @@ System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
 
 #load ".paket/load/net10.0/BuildScript/Fake.Core.Target.fsx"
 #load ".paket/load/net10.0/BuildScript/Fake.Core.ReleaseNotes.fsx"
-#load ".paket/load/net10.0/BuildScript/Fake.Core.UserInput.fsx"
 #load ".paket/load/net10.0/BuildScript/Fake.IO.FileSystem.fsx"
 #load ".paket/load/net10.0/BuildScript/Fake.DotNet.Cli.fsx"
-#load ".paket/load/net10.0/BuildScript/Fake.DotNet.Paket.fsx"
-#load ".paket/load/net10.0/BuildScript/Fake.Tools.Git.fsx"
 
 open System
 open System.Security.Cryptography
@@ -72,14 +69,6 @@ let tags = "nuget, bundler, F#"
 // File system information
 let solutionFile = "Paket.sln"
 
-// Git configuration (used for publishing documentation in gh-pages branch)
-// The profile where the project is posted
-let gitOwner = "fsprojects"
-let gitHome = "https://github.com/" + gitOwner
-
-// The name of the project on GitHub
-let gitName = "Paket"
-
 let dotnetcliVersion = DotNet.getSDKVersionFromGlobalJson()
 
 /// Applies the SDK installed by the InstallDotNetCore target to a dotnet invocation.
@@ -107,11 +96,6 @@ let releaseNotesData =
     |> ReleaseNotes.parseAll
 
 let release = List.head releaseNotesData
-
-let stable =
-    match releaseNotesData |> List.tryFind (fun r -> r.NugetVersion.Contains("-") |> not) with
-    | Some stable -> stable
-    | _ -> release
 
 let DoNothing = ignore
 
@@ -395,38 +379,6 @@ Target.create "RunIntegrationTestsNetCore" (fun _ ->
 )
 "Clean" ==> "Publish" ==> "RunIntegrationTestsNetCore" |> ignore
 
-let pfx = "code-sign.pfx"
-let mutable isUnsignedAllowed = true
-Target.create "EnsurePackageSigned" (fun _ -> isUnsignedAllowed <- false)
-
-Target.create "SignAssemblies" (fun _ ->
-    // if not <| File.exists pfx then
-    //     if isUnsignedAllowed then ()
-    //     else failwithf "%s not found, can't sign assemblies" pfx
-    // else
-
-    // let filesToSign =
-    //     !! "bin/**/*.exe"
-    //     ++ "bin/**/Paket.Core.dll"
-    //     ++ "bin_bootstrapper/**/*.exe"
-    //     |> Seq.cache
-
-    // if Seq.length filesToSign < 3 then failwith "Didn't find files to sign"
-
-    // match Environment.environVarOrDefault "cert-pw" "" with
-    // | pw when not (System.String.IsNullOrWhiteSpace pw) ->
-    //     filesToSign
-    //         |> Seq.iter (fun executable ->
-    //             let signtool = Shell.pwd () @@ "tools" @@ "SignTool" @@ "signtool.exe"
-    //             let args = sprintf "sign /f %s /p \"%s\" /t http://timestamp.comodoca.com/authenticode %s" pfx pw executable
-    //             let result =
-    //                 CreateProcess.fromRawCommandLine signtool args
-    //                 |> Proc.run
-    //             if result.ExitCode <> 0 then failwithf "Error during signing %s with %s" executable pfx)
-    // | _ -> failwith "PW for cert missing"
-    ()
-)
-
 Target.create "CalculateDownloadHash" (fun _ ->
     use stream = System.IO.File.OpenRead(paketFile)
     use sha = new SHA256Managed()
@@ -464,22 +416,6 @@ Target.create "NuGet" (fun _ ->
     pack "src/Paket/Paket.fsproj" (packageProps @ [ "/p:PackAsTool=true" ])
     pack "src/Paket.Bootstrapper/Paket.Bootstrapper.csproj" (packageProps @ [ "/p:PackAsTool=true" ])
     pack "src/FSharp.DependencyManager.Paket/FSharp.DependencyManager.Paket.fsproj" packageProps
-)
-
-Target.create "PublishNuGet" (fun _ ->
-    if hasBuildParam "PublishBootstrapper" |> not then
-        !! (tempDir </> "*bootstrapper*")
-        |> File.deleteAll
-
-    Paket.push (fun p ->
-        { p with
-            // absolute path: FAKE starts the push with WorkingDir below as the child's cwd,
-            // and mono resolves a relative assembly path against that cwd, not ours
-            ToolPath = Path.getFullName paketFile
-            // paket.exe is a .NET Framework binary, so it goes through Mono outside of Windows
-            ToolType = ToolType.CreateFullFramework()
-            ApiKey = Environment.environVarOrDefault "NugetKey" ""
-            WorkingDir = tempDir })
 )
 
 
@@ -584,79 +520,6 @@ Target.create "KeepRunning" (fun _ ->
 )
 
 Target.create "GenerateDocs" DoNothing
-
-// --------------------------------------------------------------------------------------
-// Release Scripts
-
-Target.create "ReleaseDocs" (fun _ ->
-    if disableDocs then () else
-    let tempDocsDir = "temp/gh-pages"
-    Shell.cleanDir tempDocsDir
-    Git.Repository.cloneSingleBranch "" "git@github.com:fsprojects/Paket.git" "gh-pages" tempDocsDir
-
-    Git.CommandHelper.runSimpleGitCommand tempDocsDir "rm . -f -r" |> ignore
-    Shell.copyRecursive "docs/output" tempDocsDir true |> Trace.tracefn "%A"
-
-    File.writeString false "temp/gh-pages/latest" (sprintf "https://github.com/fsprojects/Paket/releases/download/%s/paket.exe" release.NugetVersion)
-    File.writeString false "temp/gh-pages/stable" (sprintf "https://github.com/fsprojects/Paket/releases/download/%s/paket.exe" stable.NugetVersion)
-
-    Git.Staging.stageAll tempDocsDir
-    Git.Commit.exec tempDocsDir (sprintf "Update generated documentation for version %s" release.NugetVersion)
-    Git.Branches.push tempDocsDir
-)
-
-#load "paket-files/build/fsharp/FAKE/modules/Octokit/Octokit.fsx"
-open Octokit
-
-Target.create "ReleaseGitHub" (fun _ ->
-    let user =
-        match Environment.environVarOrDefault "github_user" "" with
-        | s when not (System.String.IsNullOrWhiteSpace s) -> s
-        | _ ->
-            eprintfn "Please update your release script to set 'github_user'!"
-            match Environment.environVarOrDefault "github-user" "" with
-            | s when not (System.String.IsNullOrWhiteSpace s) -> s
-            | _ -> UserInput.getUserInput "Username: "
-    let pw =
-        match Environment.environVarOrDefault "github_password" "" with
-        | s when not (System.String.IsNullOrWhiteSpace s) -> s
-        | _ ->
-            eprintfn "Please update your release script to set 'github_password'!"
-            match Environment.environVarOrDefault "github_pw" "", Environment.environVarOrDefault "github-pw" "" with
-            | s, _ | _, s when not (System.String.IsNullOrWhiteSpace s) -> s
-            | _ -> UserInput.getUserPassword "Password: "
-    let remote =
-        Git.CommandHelper.getGitResult "" "remote -v"
-        |> Seq.filter (fun (s: string) -> s.EndsWith("(push)"))
-        |> Seq.tryFind (fun (s: string) -> s.Contains(gitOwner + "/" + gitName))
-        |> function None -> gitHome + "/" + gitName | Some (s: string) -> s.Split().[0]
-
-    Git.Staging.stageAll ""
-    Git.Commit.exec "" (sprintf "Bump version to %s" release.NugetVersion)
-    Git.Branches.pushBranch "" remote (Git.Information.getBranchName "")
-
-    Git.Branches.tag "" release.NugetVersion
-    Git.Branches.pushTag "" remote release.NugetVersion
-
-    Trace.tracefn "Creating gihub release"
-
-    // release on github
-    createClient user pw
-    |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
-    |> uploadFile "./bin/merged/paket.exe"
-    |> uploadFile "./bin/merged/paket-sha256.txt"
-    |> uploadFile "./src/FSharp.DependencyManager.Paket/bin/Release/netstandard2.0/FSharp.DependencyManager.Paket.dll"
-    |> uploadFile "./bin_bootstrapper/net461/paket.bootstrapper.exe"
-    |> uploadFile ".paket/paket.targets"
-    |> uploadFile ".paket/Paket.Restore.targets"
-    |> uploadFile (tempDir </> sprintf "Paket.%s.nupkg" (release.NugetVersion))
-    |> uploadFile (tempDir </> sprintf "FSharp.DependencyManager.Paket.%s.nupkg" (release.NugetVersion))
-    |> releaseDraft
-    |> Async.RunSynchronously
-)
-
-
-Target.create "Release" DoNothing
 Target.create "BuildPackage" DoNothing
 // --------------------------------------------------------------------------------------
 // Run all targets by default. Invoke 'build <Target>' to override
@@ -678,7 +541,6 @@ Target.create "All" DoNothing
   =?> ("GenerateReferenceDocs",BuildServer.isLocalBuild && Environment.isWindows && not (hasBuildParam "SkipDocs"))
   =?> ("GenerateDocs",BuildServer.isLocalBuild && Environment.isWindows && not (hasBuildParam "SkipDocs"))
   ==> "All"
-  =?> ("ReleaseDocs",BuildServer.isLocalBuild && Environment.isWindows && not (hasBuildParam "SkipDocs"))
   |> ignore
 
 "All"
@@ -686,14 +548,9 @@ Target.create "All" DoNothing
   =?> ("AddIconToExe", Environment.isWindows)
   =?> ("RunIntegrationTestsNet", unlessBuildParams [ "SkipTests"; "SkipIntegrationTests"; "SkipIntegrationTestsNet" ] )
   =?> ("RunIntegrationTestsNetCore", unlessBuildParams [ "SkipTests"; "SkipIntegrationTests"; "SkipIntegrationTestsNetCore" ] )
-  ==> "SignAssemblies"
   ==> "CalculateDownloadHash"
   =?> ("NuGet", unlessBuildParams [ "SkipNuGet" ])
   ==> "BuildPackage"
-  |> ignore
-
-"EnsurePackageSigned"
-  ?=> "SignAssemblies"
   |> ignore
 
 
@@ -709,20 +566,6 @@ Target.create "All" DoNothing
 
 "GenerateHelp"
   ==> "KeepRunning"
-  |> ignore
-
-"BuildPackage"
-  ==> "PublishNuGet"
-  |> ignore
-
-"ReleaseGitHub"
-  ==> "ReleaseDocs"
-  ==> "PublishNuGet"
-  ==> "Release"
-  |> ignore
-
-"EnsurePackageSigned"
-  ==> "Release"
   |> ignore
 
 Target.runOrDefaultWithArguments "All"
