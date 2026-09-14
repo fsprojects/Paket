@@ -51,3 +51,8 @@ let ``should understand xamarinmac``() =
 [<Test>]
 let ``should serialize xamarinmac``() =
     XamarinMac.ToString() |> shouldEqual "xamarinmac"
+
+[<Test>]
+let ``should understand net8.0-windows10.0.22621.0`` () =
+    FrameworkDetection.Extract("net8.0-windows10.0.22621.0").Value
+    |> shouldEqual (DotNet8Windows Net8WindowsVersion.V10_0_22621_0)
