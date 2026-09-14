@@ -91,7 +91,17 @@ System.Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
 
 // Read additional information from the release notes document
 let releaseNotesData =
-    File.read "RELEASE_NOTES.md"
+    let lines = System.IO.File.ReadAllLines "RELEASE_NOTES.md"
+    let firstRelease =
+        lines
+        |> Array.tryFindIndex (fun line ->
+            line.StartsWith("#### ", StringComparison.Ordinal)
+            && line.Length > 5
+            && Char.IsDigit line.[5])
+        |> Option.defaultWith (fun () -> failwith "RELEASE_NOTES.md has no released version heading")
+
+    lines.[firstRelease..]
+    |> String.concat Environment.NewLine
     |> ReleaseNotes.parseAll
 
 let release = List.head releaseNotesData

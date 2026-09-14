@@ -32,12 +32,12 @@ The exact F# compile order is declared in each `.fsproj`. When adding or moving 
 
 ## Release Notes
 
-`RELEASE_NOTES.md` is shipped to users: `build.fsx` reads the first entry for the version number and embeds its bullets as `PackageReleaseNotes` in the published packages.
+`RELEASE_NOTES.md` is shipped to users: `build.fsx` reads the first versioned entry after the optional `#### Unreleased` section and embeds its bullets as `PackageReleaseNotes` in the published packages.
 
-- Every change to shipped behavior (bug fix, feature, performance improvement, change to a dependency of the published packages) adds one bullet to the **topmost** entry. Keep the entry's version line; only maintainers bump the version.
+- Every change to shipped behavior (bug fix, feature, performance improvement, change to a dependency of the published packages) adds one bullet to `#### Unreleased`. Maintainers move those bullets into a versioned section to trigger a release.
 - Internal changes get no entry: build scripts, CI and workflows, tests-only, docs-only, tooling, warning cleanups.
 - Format: `* <one-line summary> - <link>`. Link to the issue being fixed (`https://github.com/fsprojects/Paket/issues/<N>`), or to the pull request when there is no issue and its number is known; omit the link otherwise. Match the wording of the existing entries: imperative summary, no trailing period.
-- If the topmost entry has already been published (a git tag or GitHub release with that version exists), add a new entry above it: `#### <next patch version> - <YYYY-MM-DD>`.
+- To release, add or update the first versioned entry below `#### Unreleased` as `#### <version> - <YYYY-MM-DD>`. A change to that version or its section content triggers publication.
 
 ## Build and Test
 

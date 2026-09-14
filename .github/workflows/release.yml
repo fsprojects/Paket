@@ -31,29 +31,40 @@ jobs:
         env:
           BEFORE_SHA: ${{ github.event.before }}
         run: |
-          $headingPattern = '^####\s+(\S+)'
-          $currentHeading = Get-Content RELEASE_NOTES.md | Select-String -Pattern $headingPattern | Select-Object -First 1
-          if (-not $currentHeading) {
-            throw 'RELEASE_NOTES.md has no #### release heading.'
-          }
+          function Get-CurrentRelease([string[]] $lines) {
+            $releasePattern = '^####\s+(?<version>\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?)\b'
+            $headingPattern = '^####\s+'
+            $start = 0..($lines.Count - 1) | Where-Object { $lines[$_] -match $releasePattern } | Select-Object -First 1
+            if ($null -eq $start) {
+              throw 'RELEASE_NOTES.md has no versioned #### release heading.'
+            }
 
-          $version = $currentHeading.Matches[0].Groups[1].Value
-          $previousVersion = $null
-          if ($env:BEFORE_SHA -and $env:BEFORE_SHA -notmatch '^0+$') {
-            $previousNotes = git show "${env:BEFORE_SHA}:RELEASE_NOTES.md" 2>$null
-            if ($LASTEXITCODE -eq 0) {
-              $previousHeading = $previousNotes | Select-String -Pattern $headingPattern | Select-Object -First 1
-              if ($previousHeading) {
-                $previousVersion = $previousHeading.Matches[0].Groups[1].Value
-              }
+            $match = [regex]::Match($lines[$start], $releasePattern)
+            $end = (($start + 1)..($lines.Count - 1) | Where-Object { $lines[$_] -match $headingPattern } | Select-Object -First 1)
+            if ($null -eq $end) { $end = $lines.Count }
+
+            return [pscustomobject]@{
+              Version = $match.Groups['version'].Value
+              Content = ($lines[$start..($end - 1)] -join "`n").TrimEnd()
             }
           }
 
-          $isRelease = $version -ne $previousVersion
+          $currentRelease = Get-CurrentRelease (Get-Content RELEASE_NOTES.md)
+          $previousRelease = $null
+          if ($env:BEFORE_SHA -and $env:BEFORE_SHA -notmatch '^0+$') {
+            $previousNotes = git show "${env:BEFORE_SHA}:RELEASE_NOTES.md" 2>$null
+            if ($LASTEXITCODE -eq 0) {
+              $previousRelease = Get-CurrentRelease $previousNotes
+            }
+          }
+
+          $isRelease = $null -eq $previousRelease -or
+            $currentRelease.Version -cne $previousRelease.Version -or
+            $currentRelease.Content -cne $previousRelease.Content
           "is-release=$($isRelease.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
-          "version=$version" >> $env:GITHUB_OUTPUT
-          "prerelease=$($version.Contains('-').ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
-          Write-Host "Current release: $version; previous release: $previousVersion; publish: $isRelease"
+          "version=$($currentRelease.Version)" >> $env:GITHUB_OUTPUT
+          "prerelease=$($currentRelease.Version.Contains('-').ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          Write-Host "Current release: $($currentRelease.Version); previous release: $($previousRelease.Version); publish: $isRelease"
 
   release:
     name: Build and publish ${{ needs.detect-release.outputs.version }}
@@ -121,7 +132,7 @@ jobs:
         shell: pwsh
         run: |
           $lines = Get-Content RELEASE_NOTES.md
-          $start = 0..($lines.Count - 1) | Where-Object { $lines[$_] -match '^####\s+' } | Select-Object -First 1
+          $start = 0..($lines.Count - 1) | Where-Object { $lines[$_] -match '^####\s+\d+\.\d+\.\d+' } | Select-Object -First 1
           $end = (($start + 1)..($lines.Count - 1) | Where-Object { $lines[$_] -match '^####\s+' } | Select-Object -First 1)
           if ($null -eq $end) { $end = $lines.Count }
           $body = $lines[($start + 1)..($end - 1)] -join "`n"
