@@ -15,7 +15,6 @@ open Fake.DotNet
 open Fake.IO
 open Fake.IO.FileSystemOperators
 open Fake.IO.Globbing.Operators
-open Fake.Tools
 
 // This script is run with `dotnet fsi`, so there is no FAKE.exe runner to parse the
 // command line for us. The runner used to turn `build.sh <Target> key=value ...` into
