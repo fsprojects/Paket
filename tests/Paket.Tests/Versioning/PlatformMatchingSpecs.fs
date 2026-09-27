@@ -212,6 +212,31 @@ let ``Can detect net5000``() =
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V5)))
 
 [<Test>]
+let ``Can detect .netcoreapp8.0``() =
+    let p = PlatformMatching.forceExtractPlatforms ".netcoreapp8.0"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V8)))
+
+[<Test>]
+let ``Can detect .netcoreapp9.0``() =
+    let p = PlatformMatching.forceExtractPlatforms ".netcoreapp9.0"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V9)))
+
+[<Test>]
+let ``Can detect .netcoreapp10.0``() =
+    let p = PlatformMatching.forceExtractPlatforms ".netcoreapp10.0"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V10)))
+
+[<Test>]
+let ``Can detect .netcoreapp6.0``() =
+    let p = PlatformMatching.forceExtractPlatforms ".netcoreapp6.0"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V6)))
+
+[<Test>]
+let ``Can detect .netcoreapp7.0``() =
+    let p = PlatformMatching.forceExtractPlatforms ".netcoreapp7.0"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V7)))
+
+[<Test>]
 let ``Can detect net5.0-windows``() =
     let p = PlatformMatching.forceExtractPlatforms "net5.0-windows"
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet5Windows Net5WindowsVersion.V7_0)))

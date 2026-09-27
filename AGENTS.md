@@ -30,6 +30,15 @@ The exact F# compile order is declared in each `.fsproj`. When adding or moving 
 - Do not edit generated artifacts or integration-test `temp/` output.
 - Keep documentation examples synchronized with actual CLI behavior and file formats.
 
+## Release Notes
+
+`RELEASE_NOTES.md` is shipped to users: `build.fsx` reads the first versioned entry after the optional `#### Unreleased` section and embeds its bullets as `PackageReleaseNotes` in the published packages.
+
+- Every change to shipped behavior (bug fix, feature, performance improvement, change to a dependency of the published packages) adds one bullet to `#### Unreleased`. Maintainers move those bullets into a versioned section to trigger a release.
+- Internal changes get no entry: build scripts, CI and workflows, tests-only, docs-only, tooling, warning cleanups.
+- Format: `* <one-line summary> - <link>`. Link to the issue being fixed (`https://github.com/fsprojects/Paket/issues/<N>`), or to the pull request when there is no issue and its number is known; omit the link otherwise. Match the wording of the existing entries: imperative summary, no trailing period.
+- To release, add or update the first versioned entry below `#### Unreleased` as `#### <version> - <YYYY-MM-DD>`. A change to that version or its section content triggers publication.
+
 ## Build and Test
 
 Use the narrowest validation that covers the change:
@@ -51,7 +60,7 @@ Repository build targets:
 ./build.sh
 ```
 
-On Windows, use the corresponding `build.cmd` commands. Both scripts run `build.fsx` with `dotnet fsi`, so the build script itself only needs the .NET SDK declared in `global.json`. The full build restores tools and dependencies, builds all projects, and runs broad test suites; on Linux it still depends on Mono for the targets that run .NET Framework binaries, namely the `net461` test passes and `PublishNuGet`. If those prerequisites are unavailable, run the relevant `dotnet test` command and report what was not validated.
+On Windows, use the corresponding `build.cmd` commands. Both scripts run `build.fsx` with `dotnet fsi`, so the build script itself only needs the .NET SDK declared in `global.json`. The full build restores tools and dependencies, builds all projects, and runs broad test suites; on Linux it still depends on Mono for the `net461` test passes. If those prerequisites are unavailable, run the relevant `dotnet test` command and report what was not validated.
 
 ## Tests
 

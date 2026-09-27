@@ -2087,11 +2087,23 @@ type ProjectFile with
     member self.GetTemplateMetadata () =
         let prop name = self.GetProperty name
 
+        // SDK-style projects (new csproj format) expose several pack-related
+        // properties under a "Package" prefix (e.g. PackageReleaseNotes,
+        // PackageProjectUrl). Fall back to the "Package"-prefixed name when the
+        // plain property isn't present, so both old- and new-style projects work.
+        let propOrPackage name =
+            match prop name with
+            | Some _ as v -> v
+            | None -> prop ("Package" + name)
+
         let propOr name value =
             defaultArg (self.GetProperty name) value
 
         let propMap name value fn =
             defaultArg (self.GetProperty name|>Option.map fn) value
+
+        let propMapOrPackage name value fn =
+            defaultArg (propOrPackage name|>Option.map fn) value
 
         let tryBool (s: string) = Boolean.TryParse s |> function true, value -> value | _ -> false
 
@@ -2107,22 +2119,22 @@ type ProjectFile with
         let optionalInfo =  {
             Title = prop "Title"
             Owners = propMap "Owners" [] splitString
-            ReleaseNotes = prop "ReleaseNotes"
+            ReleaseNotes = propOrPackage "ReleaseNotes"
             Summary = prop "Summary"
             Readme = prop "Readme"
             Language = prop "Langauge"
-            ProjectUrl = prop "ProjectUrl"
-            IconUrl = prop "IconUrl"
+            ProjectUrl = propOrPackage "ProjectUrl"
+            IconUrl = propOrPackage "IconUrl"
             Icon = prop "Icon"
-            LicenseExpression = prop "LicenseExpression"
-            LicenseUrl = prop "LicenseUrl"
+            LicenseExpression = propOrPackage "LicenseExpression"
+            LicenseUrl = propOrPackage "LicenseUrl"
             Copyright = prop "Copyright"
             RepositoryType = prop "RepositoryType"
             RepositoryUrl = prop "RepositoryUrl"
             RepositoryBranch = prop "RepositoryBranch"
             RepositoryCommit = prop "RepositoryCommit"
-            RequireLicenseAcceptance = propMap "RequireLicenseAcceptance" false tryBool
-            Tags = propMap "Tags" [] splitString
+            RequireLicenseAcceptance = propMapOrPackage "RequireLicenseAcceptance" false tryBool
+            Tags = propMapOrPackage "Tags" [] splitString
             DevelopmentDependency = propMap "DevelopmentDependency" false tryBool
             DependencyGroups = []
             ExcludedDependencies = Set.empty //propOr "ExcludedDependencies"

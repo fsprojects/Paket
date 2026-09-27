@@ -18,9 +18,8 @@ before: the script turns the `key=value` arguments into environment variables it
 the FAKE runner used to do, and passes the target name to FAKE as `--target` through the execution
 context it creates. Only one target name is accepted.
 
-Mono is still needed on Linux for the targets that execute .NET Framework binaries: the `net461`
-test passes and `PublishNuGet`, which pushes with the merged `net461` `paket.exe`. `MergePaketTool`
-no longer needs it, it repacks through the `dotnet-ilrepack` tool of `.config/dotnet-tools.json`.
+Mono is still needed on Linux for the `net461` test passes. `MergePaketTool` no longer needs it; it
+repacks through the `dotnet-ilrepack` tool of `.config/dotnet-tools.json`.
 Removing the remaining Mono dependency is tracked separately in
 [#4348](https://github.com/fsprojects/Paket/issues/4348).
 
