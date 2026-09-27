@@ -19,12 +19,12 @@ let ``#140 windsor should resolve framework dependent dependencies``() =
     |> shouldEqual (FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V3_5), DotNetFramework(FrameworkVersion.V4)))
 
 [<Test>]
+[<Flaky>] // failure on assert
 #if NO_UNIT_PLATFORMATTRIBUTE
 #else
 [<Platform("Mono")>] // PATH TOO LONG on Windows...
-[<Flaky>] // failure on assert
 #endif
-let ``#1190 paket add nuget should handle transitive dependencies``() = 
+let ``#1190 paket add nuget should handle transitive dependencies``() =
     use __ = paket "add nuget xunit version 2.1.0" "i001190-transitive-dependencies-with-restr" |> fst
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-dependencies-with-restr","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "xunit.abstractions"].Settings.FrameworkRestrictions
