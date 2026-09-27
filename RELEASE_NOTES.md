@@ -1,5 +1,8 @@
 #### Unreleased
 
+#### 11.0.0-alpha002 - 2026-09-27
+* Attempt to republish now package permissions are in place
+
 #### 11.0.0-alpha001 - 2026-09-12
 * Fix NuGet package publication from the Windows release workflow
 * Automate GitHub and NuGet releases from RELEASE_NOTES.md using NuGet trusted publishing - https://github.com/fsprojects/Paket/pull/4436
