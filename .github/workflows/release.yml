@@ -84,6 +84,13 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+      - name: Install integration test runtime
+        shell: pwsh
+        run: |
+          $installScript = Join-Path $env:RUNNER_TEMP 'dotnet-install.ps1'
+          Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile $installScript
+          & $installScript -Channel 8.0 -Runtime dotnet -InstallDir (Join-Path $env:LOCALAPPDATA 'dotnetcore')
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Cache NuGet packages
         uses: actions/cache@v4
         with:
