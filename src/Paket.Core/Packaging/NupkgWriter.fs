@@ -313,12 +313,26 @@ module internal NupkgWriter =
             //      http://tools.ietf.org/html/rfc2396#section-2
             let problemChars = ["@","~~at~~"; "+","~~plus~~"; "%","~~percent~~"]
 
+            // "[" and "]" get percent-encoded by Uri.EscapeDataString below, but the
+            // subsequent Uri round-trip in toUri (which unescapes "safe" characters and
+            // re-escapes them) treats brackets inconsistently across runtimes: some
+            // consider them safe/unreserved and leave them unescaped, others don't.
+            // To get a deterministic, always-escaped result we hide them from that
+            // round-trip and substitute their percent-encoded form back in afterwards
+            // (see #3906).
+            let bracketChars = ["[","~~lbracket~~"; "]","~~rbracket~~"]
+            let bracketEscapes = ["~~lbracket~~","%5B"; "~~rbracket~~","%5D"]
+
             let fakeEscapeProblemChars (source:string) =
-                problemChars
+                (problemChars @ bracketChars)
                 |> List.fold (fun (escaped:string) (problem, fakeEscape) ->
                     escaped.Replace(problem,fakeEscape)) source
 
             let unFakeEscapeProblemChars (source:string) =
+                let source =
+                    bracketEscapes
+                    |> List.fold (fun (escaped:string) (fakeEscape, real) ->
+                        escaped.Replace(fakeEscape, real)) source
                 problemChars
                 |> List.fold (fun (escaped:string) (problem, fakeEscape) ->
                     escaped.Replace(fakeEscape, problem)) source
