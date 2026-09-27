@@ -42,8 +42,8 @@ let ``Loading assembly metadata works``() =
 
     let paketReleaseNotesVersion =
         tryFindFileInHeirarchy workingDir "RELEASE_NOTES.md"
-        |> Option.map (File.ReadLines >> Seq.head)
-        |> Option.map (fun line -> line.Split(' ').[1]) // format is ### <VERSION> - <DATE>, so taking second element of array is the version
+      |> Option.bind (File.ReadLines >> Seq.tryFind (fun line -> line.Length > 5 && line.StartsWith("#### ") && System.Char.IsDigit line.[5]))
+      |> Option.map (fun line -> line.Split(' ').[1]) // format is #### <VERSION> - <DATE>, so taking second element of array is the version
         |> Option.defaultWith (fun _ -> failwithf "unable to parse current version from RELEASE_NOTES.md in the directory heirarchy of %s" workingDir.FullName)
 
     let assemblyReader, id, versionFromAssembly, _fileName = PackageMetaData.readAssemblyFromProjFile config "" projFile
