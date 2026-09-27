@@ -21,14 +21,14 @@ let dotnetToolPath =
 
 let paketToolPath =
 #if PAKET_NETCORE
-    dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin/net9/paket.dll")
+    dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin/net10.0/paket.dll")
 #else
     "", FullName(__SOURCE_DIRECTORY__ + "../../../bin/net461/paket.exe")
 #endif
 
 let paketBootstrapperToolPath =
 #if PAKET_NETCORE
-    dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin_bootstrapper/net9/paket.bootstrapper.dll")
+    dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin_bootstrapper/net10.0/paket.bootstrapper.dll")
 #else
     "", FullName(__SOURCE_DIRECTORY__ + "../../../bin_bootstrapper/net461/paket.bootstrapper.exe")
 #endif
@@ -139,6 +139,11 @@ let directToolEx env isPaket toolInfo commands workingDir =
     #else
     Environment.SetEnvironmentVariable("PAKET_DETAILED_ERRORS", "true")
     Environment.SetEnvironmentVariable("PAKET_DETAILED_WARNINGS", "true")
+    // ExecProcessWithLambdas ends with an unbounded WaitForExit(), which returns only once the
+    // redirected streams reach EOF -- the timeout below does not cover it. With node reuse on,
+    // `dotnet build/run/pack` leaves MSBuild worker nodes behind that inherit those handles, so
+    // EOF never comes and the run hangs silently. Children inherit this variable.
+    Environment.SetEnvironmentVariable("MSBUILDDISABLENODEREUSE", "1")
     printfn "%s> %s %s" workingDir (if isPaket then "paket" else processFilename) processArgs
     let perfMessages = ResizeArray()
     let msgs = ResizeArray<OutputMsg>()

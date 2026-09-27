@@ -121,11 +121,24 @@ let checkCredentials(url, cred) =
             true
         with _ -> false
 
-let getSourceNodes (credentialsNode : XmlNode) (source : string) nodeType = 
+/// Normalizes a source URL for credential-lookup comparisons only (does not change what URL is
+/// actually used for requests). Strips a trailing slash and a "www." host prefix so that e.g.
+/// credentials stored for "https://www.nuget.org" are found when looking up "https://nuget.org"
+/// and vice versa (see https://github.com/fsprojects/Paket/issues/3843).
+let private normalizeSourceForComparison (source : string) =
     let source = source.TrimEnd([|'/'|])
+    let wwwPrefix = "://www."
+    let idx = source.IndexOf(wwwPrefix, StringComparison.OrdinalIgnoreCase)
+    if idx >= 0 then
+        source.Remove(idx + 3, 4) // remove "www." while keeping the leading "://"
+    else
+        source
+
+let getSourceNodes (credentialsNode : XmlNode) (source : string) nodeType = 
+    let source = normalizeSourceForComparison source
     sprintf "//%s" nodeType |> credentialsNode.SelectNodes
     |> Seq.cast<XmlElement>
-    |> Seq.filter (fun n -> n.Attributes.["source"].Value.TrimEnd([|'/'|]) = source)
+    |> Seq.filter (fun n -> normalizeSourceForComparison n.Attributes.["source"].Value = source)
     |> Seq.toList
 
 let private getCredentialsNode = lazy(getConfigNode "credentials" |> returnOrFail)

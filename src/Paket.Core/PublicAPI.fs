@@ -558,7 +558,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.GetLibraries(groupName,packageName,frameworkIdentifier:TargetProfile) =
         this
           .GetInstalledPackageModel(groupName,packageName)
-          .GetLibReferences(frameworkIdentifier)
+          .GetLegacyReferences(frameworkIdentifier)
 
     /// Returns the installed versions of all direct dependencies which are referenced in the references file.
     member this.GetDirectDependencies(referencesFile:ReferencesFile): (string * string * string) list =

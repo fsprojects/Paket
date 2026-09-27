@@ -258,6 +258,35 @@ Short answer: Yes. For information about Paket with .NET SDK, .NET Core and the
 `dotnet` CLI see the
 ["Paket and the .NET SDK / .NET Core CLI tools" guide](paket-and-dotnet-cli.html).
 
+## I updated Paket but "magic mode" still runs the old version. Why?
+
+In ["magic mode"](bootstrapper.html#Magic-mode), `paket.exe` is actually the
+renamed bootstrapper. To avoid slowing down every Paket invocation (which can
+happen dozens of times during a build) with a network round-trip, the
+bootstrapper forces a default `--max-file-age` of `12` hours: if it finds a
+locally cached `paket.exe` newer than that, it uses it as-is without checking
+for a newer release.
+
+There is also a separate cache used only by magic mode, distinct from the
+regular NuGet package cache, so a version you already downloaded through
+another route (e.g. `paket.bootstrapper.exe` directly) may not be picked up
+immediately.
+
+If you want magic mode to always check for the latest version, add this line
+to your [`paket.dependencies` file](dependencies-file.html):
+
+```
+version --max-file-age=0
+```
+
+For reproducible builds we recommend pinning an explicit version instead of
+relying on the floating latest version, for the same reasons you would commit
+a [`paket.lock` file](lock-file.html):
+
+```
+version 5.136.0
+```
+
 ## The download of packages times out, is there a way to prevent this?
 
 Since version 5.190.0 there are three environment variables you can set to try to prevent this:
