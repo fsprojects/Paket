@@ -42,8 +42,8 @@ let ``Loading assembly metadata works``() =
 
     let paketReleaseNotesVersion =
         tryFindFileInHeirarchy workingDir "RELEASE_NOTES.md"
-        |> Option.map (File.ReadLines >> Seq.head)
-        |> Option.map (fun line -> line.Split(' ').[1]) // format is ### <VERSION> - <DATE>, so taking second element of array is the version
+      |> Option.bind (File.ReadLines >> Seq.tryFind (fun line -> line.Length > 5 && line.StartsWith("#### ") && System.Char.IsDigit line.[5]))
+      |> Option.map (fun line -> line.Split(' ').[1]) // format is #### <VERSION> - <DATE>, so taking second element of array is the version
         |> Option.defaultWith (fun _ -> failwithf "unable to parse current version from RELEASE_NOTES.md in the directory heirarchy of %s" workingDir.FullName)
 
     let assemblyReader, id, versionFromAssembly, _fileName = PackageMetaData.readAssemblyFromProjFile config "" projFile
@@ -95,3 +95,32 @@ let ``#3195 resolveProjectId does not override an id already present in the temp
     let projFile = ProjectFile.LoadFromString("dummy.fsproj", projectFileContents)
     Paket.PackageProcess.resolveProjectId projFile "AssemblyName" (Some "Template.Id")
     |> shouldEqual (Some "Template.Id")
+
+[<Test>]
+let ``#3603 GetTemplateMetadata reads PackageReleaseNotes from an SDK-style csproj``() =
+    let projectFileContents = """
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageReleaseNotes>Fixed some bugs.</PackageReleaseNotes>
+  </PropertyGroup>
+</Project>
+"""
+    let projFile = ProjectFile.LoadFromString("dummy.fsproj", projectFileContents)
+    let _, optionalInfo = projFile.GetTemplateMetadata()
+    optionalInfo.ReleaseNotes |> shouldEqual (Some "Fixed some bugs.")
+
+[<Test>]
+let ``#3603 GetTemplateMetadata prefers plain ReleaseNotes over PackageReleaseNotes``() =
+    let projectFileContents = """
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <ReleaseNotes>Plain wins.</ReleaseNotes>
+    <PackageReleaseNotes>Package loses.</PackageReleaseNotes>
+  </PropertyGroup>
+</Project>
+"""
+    let projFile = ProjectFile.LoadFromString("dummy.fsproj", projectFileContents)
+    let _, optionalInfo = projFile.GetTemplateMetadata()
+    optionalInfo.ReleaseNotes |> shouldEqual (Some "Plain wins.")

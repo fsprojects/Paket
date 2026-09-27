@@ -381,7 +381,17 @@ module internal TemplateFile =
                 let targetVersion =
                     match segmentCount with
                     | 1 | 2 | 3 | 4 -> String.Join(".", versionParts, 0, Math.Min(versionParts.Length, Math.Max(0, segmentCount)))
-                    | _ -> sourceVersion.AsString
+                    | _ ->
+                        // Pad to at least Major.Minor.Patch so that operators like "~>" that infer the
+                        // pessimistic segment from the number of version fragments behave consistently,
+                        // regardless of whether the original text omitted a trailing zero segment (e.g. "1.2" vs "1.2.0").
+                        // Any pre-release/build metadata suffix from the original source text is preserved.
+                        let suffixStart = sourceVersion.AsString.IndexOfAny([|'-';'+'|])
+                        let suffix = if suffixStart >= 0 then sourceVersion.AsString.Substring(suffixStart) else ""
+                        let paddedParts =
+                            if versionParts.Length >= 3 then versionParts
+                            else Array.append versionParts (Array.create (3 - versionParts.Length) "0")
+                        String.Join(".", paddedParts) + suffix
 
                 let targetReplaced = m.Result(sprintf "$`%s$'" targetVersion).Trim("@!".ToCharArray())
                 versionReplace targetReplaced
