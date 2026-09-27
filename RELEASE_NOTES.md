@@ -3,7 +3,7 @@
 * DEPRECATION: `paket.exe` and `paket.bootstrapper.exe` are deprecated and will no longer be published from Paket 12.0 onwards. The `paket` .NET tool becomes the only supported way to run Paket: `dotnet tool install paket`. Both binaries now print a notice on every run unless `-s` is passed.
 * The bootstrapper shipped with this release never resolves a version past 11.x, so it keeps working once 12.0 ships without a `paket.exe` asset instead of failing the build. An explicitly pinned version is unaffected.
 
-#### 11.0.0-alpha002 - 2026-09-27
+#### 11.0.0-alpha003 - 2026-09-27
 * Attempt to republish now package permissions are in place
 
 #### 11.0.0-alpha001 - 2026-09-12
