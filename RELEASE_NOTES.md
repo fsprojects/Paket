@@ -1,4 +1,11 @@
+#### Unreleased
+
+#### 11.0.0-alpha002 - 2026-09-27
+* Attempt to republish now package permissions are in place
+
 #### 11.0.0-alpha001 - 2026-09-12
+* Fix NuGet package publication from the Windows release workflow
+* Automate GitHub and NuGet releases from RELEASE_NOTES.md using NuGet trusted publishing - https://github.com/fsprojects/Paket/pull/4436
 * Upgrade to .NET 10: SDK 10.0.400 and target frameworks from net9 to net10.0. The `paket` .NET tool now requires the .NET 10 runtime; the merged `paket.exe` still targets net461.
 * Allow a whole `source` line in paket.dependencies to come from an environment variable (`source %FEED_URL%`) - https://github.com/fsprojects/Paket/pull/4374
 * Fall back to User/Machine scoped environment variables in paket.dependencies - https://github.com/fsprojects/Paket/pull/4406
