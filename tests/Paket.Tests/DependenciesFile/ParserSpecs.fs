@@ -1378,6 +1378,21 @@ let ``should read config with .NET 10 target framework``() =
     |> getExplicitRestriction
     |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V10)))
 
+let configNET11TargetFramework = """source https://www.nuget.org/api/v2
+
+framework: >= net11.0
+
+nuget System.Data.SQLite 1.0.98.1 content: none
+"""
+
+[<Test>]
+let ``should read config with .NET 11 target framework``() =
+    let cfg = DependenciesFile.FromSource(configNET11TargetFramework)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
+    |> getExplicitRestriction
+    |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V11)))
+
 let validFrameworks =
     let net40 = DotNetFramework(FrameworkVersion.V4)
     let net45 = DotNetFramework(FrameworkVersion.V4_5)

@@ -191,6 +191,7 @@ type Net8WindowsVersion =
 
 type Net9WindowsVersion = Net8WindowsVersion
 type Net10WindowsVersion = Net9WindowsVersion
+type Net11WindowsVersion = Net10WindowsVersion
 
 [<RequireQualifiedAccess>]
 type Net5Os =
@@ -294,6 +295,7 @@ type Net8Os =
          
 type Net9Os = Net8Os 
 type Net10Os = Net9Os
+type Net11Os = Net10Os
 
 [<RequireQualifiedAccess>]
 /// The Framework version.
@@ -325,6 +327,7 @@ type FrameworkVersion =
     | V8
     | V9
     | V10
+    | V11
     override this.ToString() =
         match this with
         | V1        -> "v1.0"
@@ -353,6 +356,7 @@ type FrameworkVersion =
         | V8        -> "v8.0"
         | V9        -> "v9.0"
         | V10       -> "v10.0"
+        | V11       -> "v11.0"
 
     member this.ShortString() =
         match this with
@@ -382,6 +386,7 @@ type FrameworkVersion =
         | FrameworkVersion.V8 -> "8.0"
         | FrameworkVersion.V9 -> "9.0"
         | FrameworkVersion.V10 -> "10.0"
+        | FrameworkVersion.V11 -> "11.0"
 
     static member TryParse s =
         match s with
@@ -411,6 +416,7 @@ type FrameworkVersion =
         | "8" -> Some FrameworkVersion.V8
         | "9" -> Some FrameworkVersion.V9
         | "10.0" -> Some FrameworkVersion.V10
+        | "11.0" -> Some FrameworkVersion.V11
         | _ -> None
 
 [<RequireQualifiedAccess>]
@@ -859,6 +865,8 @@ type FrameworkIdentifier =
     | DotNet9Windows of Net9WindowsVersion
     | DotNet10WithOs of Net10Os
     | DotNet10Windows of Net10WindowsVersion
+    | DotNet11WithOs of Net11Os
+    | DotNet11Windows of Net11WindowsVersion
     | UAP of UAPVersion
     | DotNetStandard of DotNetStandardVersion
     | DotNetCoreApp of DotNetCoreAppVersion
@@ -882,6 +890,8 @@ type FrameworkIdentifier =
     override x.ToString() =
         match x with
         | DotNetFramework v -> "net" + v.ShortString()
+        | DotNet11WithOs o  -> "net11.0-" + o.ToString()
+        | DotNet11Windows v -> "net11.0-windows" + v.ToString()
         | DotNet10WithOs o  -> "net10.0-" + o.ToString()
         | DotNet10Windows v -> "net10.0-windows" + v.ToString()
         | DotNet9WithOs o  -> "net9.0-" + o.ToString()
@@ -1000,6 +1010,7 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V8 -> [ DotNetFramework FrameworkVersion.V7 ]
         | DotNetFramework FrameworkVersion.V9 -> [ DotNetFramework FrameworkVersion.V8 ]
         | DotNetFramework FrameworkVersion.V10 -> [ DotNetFramework FrameworkVersion.V9 ]
+        | DotNetFramework FrameworkVersion.V11 -> [ DotNetFramework FrameworkVersion.V10 ]
         | DotNet5WithOs Net5Os.Android -> [ DotNetFramework FrameworkVersion.V5; MonoAndroid MonoAndroidVersion.V12 ]
         | DotNet5WithOs Net5Os.IOs -> [ DotNetFramework FrameworkVersion.V5; XamariniOS ]
         | DotNet5WithOs Net5Os.MacOs -> [ DotNetFramework FrameworkVersion.V5; XamarinMac ]
@@ -1037,6 +1048,11 @@ type FrameworkIdentifier =
         | DotNet10WithOs  Net8Os.MacOs   -> [ DotNetFramework FrameworkVersion.V10; XamarinMac ]
         | DotNet10WithOs  Net8Os.TvOs    -> [ DotNetFramework FrameworkVersion.V10; XamarinTV ]
         | DotNet10WithOs  Net8Os.WatchOs -> [ DotNetFramework FrameworkVersion.V10; XamarinWatch ]
+        | DotNet11WithOs  Net8Os.Android -> [ DotNetFramework FrameworkVersion.V11; MonoAndroid MonoAndroidVersion.V12 ]
+        | DotNet11WithOs  Net8Os.IOs     -> [ DotNetFramework FrameworkVersion.V11; XamariniOS ]
+        | DotNet11WithOs  Net8Os.MacOs   -> [ DotNetFramework FrameworkVersion.V11; XamarinMac ]
+        | DotNet11WithOs  Net8Os.TvOs    -> [ DotNetFramework FrameworkVersion.V11; XamarinTV ]
+        | DotNet11WithOs  Net8Os.WatchOs -> [ DotNetFramework FrameworkVersion.V11; XamarinWatch ]
         | DotNet6Windows Net6WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V6; DotNet5Windows Net5WindowsVersion.V7_0                                                           ]
         | DotNet6Windows Net6WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V6; DotNet5Windows Net5WindowsVersion.V8_0         ; DotNet6Windows Net6WindowsVersion.V7_0          ]
         | DotNet6Windows Net6WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet5Windows Net5WindowsVersion.V10_0_17763_0; DotNet6Windows Net6WindowsVersion.V8_0          ]
@@ -1082,6 +1098,15 @@ type FrameworkIdentifier =
         | DotNet10Windows Net8WindowsVersion.V10_0_22000_0 -> [ DotNetFramework FrameworkVersion.V10; DotNet9Windows Net8WindowsVersion.V10_0_22000_0; DotNet10Windows Net8WindowsVersion.V10_0_20348_0 ]
         | DotNet10Windows Net8WindowsVersion.V10_0_22621_0 -> [ DotNetFramework FrameworkVersion.V10; DotNet9Windows Net8WindowsVersion.V10_0_22621_0; DotNet10Windows Net8WindowsVersion.V10_0_22000_0 ]
         | DotNet10Windows Net8WindowsVersion.V10_0_26100_0 -> [ DotNetFramework FrameworkVersion.V10; DotNet9Windows Net8WindowsVersion.V10_0_26100_0; DotNet10Windows Net8WindowsVersion.V10_0_22621_0 ]
+        | DotNet11Windows Net8WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V11; DotNet10Windows Net8WindowsVersion.V7_0                                                            ]
+        | DotNet11Windows Net8WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V11; DotNet10Windows Net8WindowsVersion.V8_0         ; DotNet11Windows Net8WindowsVersion.V7_0          ]
+        | DotNet11Windows Net8WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V11; DotNet10Windows Net8WindowsVersion.V10_0_17763_0; DotNet11Windows Net8WindowsVersion.V8_0          ]
+        | DotNet11Windows Net8WindowsVersion.V10_0_18362_0 -> [ DotNetFramework FrameworkVersion.V11; DotNet10Windows Net8WindowsVersion.V10_0_18362_0; DotNet11Windows Net8WindowsVersion.V10_0_17763_0 ]
+        | DotNet11Windows Net8WindowsVersion.V10_0_19041_0 -> [ DotNetFramework FrameworkVersion.V11; DotNet10Windows Net8WindowsVersion.V10_0_19041_0; DotNet11Windows Net8WindowsVersion.V10_0_18362_0 ]
+        | DotNet11Windows Net8WindowsVersion.V10_0_20348_0 -> [ DotNetFramework FrameworkVersion.V11; DotNet10Windows Net8WindowsVersion.V10_0_20348_0; DotNet11Windows Net8WindowsVersion.V10_0_19041_0 ]
+        | DotNet11Windows Net8WindowsVersion.V10_0_22000_0 -> [ DotNetFramework FrameworkVersion.V11; DotNet10Windows Net8WindowsVersion.V10_0_22000_0; DotNet11Windows Net8WindowsVersion.V10_0_20348_0 ]
+        | DotNet11Windows Net8WindowsVersion.V10_0_22621_0 -> [ DotNetFramework FrameworkVersion.V11; DotNet10Windows Net8WindowsVersion.V10_0_22621_0; DotNet11Windows Net8WindowsVersion.V10_0_22000_0 ]
+        | DotNet11Windows Net8WindowsVersion.V10_0_26100_0 -> [ DotNetFramework FrameworkVersion.V11; DotNet10Windows Net8WindowsVersion.V10_0_26100_0; DotNet11Windows Net8WindowsVersion.V10_0_22621_0 ]
         | DotNetStandard DotNetStandardVersion.V1_0 -> [  ]
         | DotNetStandard DotNetStandardVersion.V1_1 -> [ DotNetStandard DotNetStandardVersion.V1_0 ]
         | DotNetStandard DotNetStandardVersion.V1_2 -> [ DotNetStandard DotNetStandardVersion.V1_1 ]
@@ -1205,6 +1230,7 @@ module FrameworkDetection =
                     | Some "8" when dotnetVersionX = 8  -> tryParseSecondPart parts.[1]
                     | Some "9" when dotnetVersionX = 9  -> tryParseSecondPart parts.[1]
                     | Some "10.0" when dotnetVersionX = 10  -> tryParseSecondPart parts.[1]
+                    | Some "11.0" when dotnetVersionX = 11  -> tryParseSecondPart parts.[1]
                     | _ -> None
                 else
                     None
@@ -1221,6 +1247,7 @@ module FrameworkDetection =
                     | Some "8"  when dotnetVersionX = 8 -> tryParseVersion winVersionPart
                     | Some "9"  when dotnetVersionX = 9 -> tryParseVersion winVersionPart
                     | Some "10.0"  when dotnetVersionX = 10 -> tryParseVersion winVersionPart
+                    | Some "11.0"  when dotnetVersionX = 11 -> tryParseVersion winVersionPart
                     | _ -> None
                 else
                     None
@@ -1288,12 +1315,14 @@ module FrameworkDetection =
             // http://nugettoolsdev.azurewebsites.net/4.0.0/parse-framework?framework=.NETPortable%2CVersion%3Dv0.0%2CProfile%3DProfile2
             let result =
                 match path with
+                | MatchNetXDashWindows 11 Net11WindowsVersion.TryParse fm -> Some (DotNet11Windows fm)
                 | MatchNetXDashWindows 10 Net10WindowsVersion.TryParse fm -> Some (DotNet10Windows fm)
                 | MatchNetXDashWindows 9 Net9WindowsVersion.TryParse fm -> Some (DotNet9Windows fm)
                 | MatchNetXDashWindows 8 Net8WindowsVersion.TryParse fm -> Some (DotNet8Windows fm)
                 | MatchNetXDashWindows 7 Net7WindowsVersion.TryParse fm -> Some (DotNet7Windows fm)
                 | MatchNetXDashWindows 6 Net6WindowsVersion.TryParse fm -> Some (DotNet6Windows fm)
                 | MatchNetXDashWindows 5 Net5WindowsVersion.TryParse fm -> Some (DotNet5Windows fm)
+                | MatchNetXDashOs 11 Net11Os.TryParse fm -> Some (DotNet11WithOs fm)
                 | MatchNetXDashOs 10 Net10Os.TryParse fm -> Some (DotNet10WithOs fm)
                 | MatchNetXDashOs 9 Net9Os.TryParse fm -> Some (DotNet9WithOs fm)
                 | MatchNetXDashOs 8 Net8Os.TryParse fm -> Some (DotNet8WithOs fm)
@@ -1306,6 +1335,7 @@ module FrameworkDetection =
                 | "netcoreapp8.0" -> Some (DotNetFramework FrameworkVersion.V8)
                 | "netcoreapp9.0" -> Some (DotNetFramework FrameworkVersion.V9)
                 | "netcoreapp10.0" -> Some (DotNetFramework FrameworkVersion.V10)
+                | "netcoreapp11.0" -> Some (DotNetFramework FrameworkVersion.V11)
                 | "net35-Unity Web v3.5" ->  Some (DotNetUnity DotNetUnityVersion.V3_5_Web)
                 | "net35-Unity Micro v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Micro)
                 | "net35-Unity Subset v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Subset)
@@ -1687,6 +1717,7 @@ module KnownTargetProfiles =
         FrameworkVersion.V8
         FrameworkVersion.V9
         FrameworkVersion.V10
+        FrameworkVersion.V11
     ]
 
     let DotNetFrameworkIdentifiers =
@@ -1816,6 +1847,13 @@ module KnownTargetProfiles =
     let DotNet10WindowsProfiles =
         DotNet10WindowsVersions
         |> List.map (DotNet10Windows >> TargetProfile.SinglePlatform)
+
+    let DotNet11OperatingSystems = DotNet10OperatingSystems
+    let DotNet11WithOsProfiles = DotNet10WithOsProfiles
+    let DotNet11WindowsVersions = DotNet10WindowsVersions
+    let DotNet11WindowsProfiles =
+        DotNet11WindowsVersions
+        |> List.map (DotNet11Windows >> TargetProfile.SinglePlatform)
 
     let DotNetStandardVersions = [
         DotNetStandardVersion.V1_0
@@ -1987,32 +2025,36 @@ module KnownTargetProfiles =
         PortableProfileType.Profile344 ]
 
     let AllDotNetProfiles =
-       DotNetFrameworkProfiles @
-       DotNet10WithOsProfiles @
-       DotNet10WindowsProfiles @
-       DotNet9WithOsProfiles @
-       DotNet9WindowsProfiles @
-       DotNet8WithOsProfiles @
-       DotNet8WindowsProfiles @
-       DotNet7WithOsProfiles @
-       DotNet7WindowsProfiles @
-       DotNet6WithOsProfiles @
-       DotNet6WindowsProfiles @
-       DotNet5WithOsProfiles @
-       DotNet5WindowsProfiles @
-       DotNetUnityProfiles @
-       WindowsProfiles @
-       WindowsPhoneAppProfiles @
-       UAPProfiles @
-       SilverlightProfiles @
-       WindowsPhoneSilverlightProfiles @
-       MonoAndroidProfiles @
-       [TargetProfile.SinglePlatform(MonoTouch)
-        TargetProfile.SinglePlatform(XamariniOS)
-        TargetProfile.SinglePlatform(XamarinMac)
-        TargetProfile.SinglePlatform(XamarinTV)
-        TargetProfile.SinglePlatform(XamarinWatch)] @
-       (AllPortableProfiles |> List.map TargetProfile.PortableProfile)
+        List.concat [
+            DotNetFrameworkProfiles
+            DotNet11WithOsProfiles
+            DotNet11WindowsProfiles
+            DotNet10WithOsProfiles
+            DotNet10WindowsProfiles
+            DotNet9WithOsProfiles
+            DotNet9WindowsProfiles
+            DotNet8WithOsProfiles
+            DotNet8WindowsProfiles
+            DotNet7WithOsProfiles
+            DotNet7WindowsProfiles
+            DotNet6WithOsProfiles
+            DotNet6WindowsProfiles
+            DotNet5WithOsProfiles
+            DotNet5WindowsProfiles
+            DotNetUnityProfiles
+            WindowsProfiles
+            WindowsPhoneAppProfiles
+            UAPProfiles
+            SilverlightProfiles
+            WindowsPhoneSilverlightProfiles
+            MonoAndroidProfiles
+            [TargetProfile.SinglePlatform(MonoTouch)
+             TargetProfile.SinglePlatform(XamariniOS)
+             TargetProfile.SinglePlatform(XamarinMac)
+             TargetProfile.SinglePlatform(XamarinTV)
+             TargetProfile.SinglePlatform(XamarinWatch)]
+            AllPortableProfiles |> List.map TargetProfile.PortableProfile
+        ]
 
     let AllDotNetStandardAndCoreProfiles =
        DotNetStandardProfiles @
