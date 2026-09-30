@@ -3,7 +3,7 @@
 This guide shows how to get started with Paket in various ways, depending on your scenario:
 
 * [Get started with .NET Core (preferred)](#net-core-preferred)
-* [Get started with the paket bootstrapper (legacy)](#install-the-paket-bootstrapper-legacy)
+* [Get started with the paket bootstrapper (deprecated)](#install-the-paket-bootstrapper-deprecated)
 * [Convert from legacy NuGet](#convert-from-nuget)
 
 ## .NET Core (preferred)
@@ -49,7 +49,11 @@ paket-files/
 
 Next, [learn how to use Paket](learn-how-to-use-paket.html)
 
-## Install the Paket bootstrapper (legacy)
+## Install the Paket bootstrapper (deprecated)
+
+> **Deprecated.** `paket.bootstrapper.exe` and `paket.exe` will no longer be published from Paket
+> 12.0 onwards, and the bootstrapper shipped with Paket 11 will never resolve past the 11.x
+> releases. Prefer the .NET tool above; `dotnet tool install paket` is the supported route.
 
 If you're not using .NET Core, or you're stuck on .NET Core 2.2 or lower, you can use the paket bootstrapper.
 

@@ -8,6 +8,10 @@
     <IsPackable>true</IsPackable>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net461' ">
+    <!-- This build is the paket.exe the bootstrapper downloads; it is deprecated. -->
+    <DefineConstants>PAKET_LEGACY_EXE;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(PackAsTool)' == 'true' ">
     <!-- .net tools support netcoreapp only -->
     <TargetFrameworks>

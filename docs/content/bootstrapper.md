@@ -1,5 +1,10 @@
 # The Paket bootstrapper (paket.bootstrapper.exe)
 
+> **Deprecated.** `paket.bootstrapper.exe` and `paket.exe` will no longer be published from Paket
+> 12.0 onwards, and the bootstrapper shipped with Paket 11 will never resolve past the 11.x
+> releases. Install Paket as a [.NET tool](installation.html#Installation-on-NET-Core) instead:
+> `dotnet tool install paket`.
+
 The bootstrapper downloads the latest stable `paket.exe`. By default, the
 bootstrapper caches downloaded versions of `paket.exe` for the current user
 across all projects. If the requested version is not present in the cache, it is
