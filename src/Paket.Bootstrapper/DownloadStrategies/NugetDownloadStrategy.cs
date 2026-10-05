@@ -102,6 +102,10 @@ namespace Paket.Bootstrapper.DownloadStrategies
             var latestVersion = allVersions.
                     Select(SemVer.Create).
                     Where(x => !ignorePrerelease || (x.PreRelease == null)).
+                    // This is the only strategy that sees every published version, so it can pick
+                    // the best one we still support instead of falling back to the constant the
+                    // base class clamps to.
+                    Where(x => x.Major <= LastSupportedMajorVersion).
                     OrderBy(x => x).
                     LastOrDefault(x => !String.IsNullOrWhiteSpace(x.Original));
             return latestVersion != null ? latestVersion.Original : String.Empty;
