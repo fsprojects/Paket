@@ -87,8 +87,8 @@ tools:
   repo-memory:
     max-file-size: 65536
     max-patch-size: 65536
-    # Allows the one-time removal of five legacy memory files plus notes.json.
-    # The validation script below still enforces exactly one persisted file.
+    # Allow one migration commit to delete up to five legacy entries while
+    # notes.json remains the only persisted file accepted by validation.
     max-file-count: 6
     format-json: true
     allowed-extensions: [".json"]
@@ -99,12 +99,9 @@ tools:
         const path = require("node:path");
         const fail = message => { throw new Error(`notes.json: ${message}`); };
         const notesPath = path.join(memoryRoot, "notes.json");
-        for (const legacyFile of ["memory.json", "state.json"]) {
-          fs.rmSync(path.join(memoryRoot, legacyFile), { force: true });
-        }
         const memoryEntries = fs.readdirSync(memoryRoot, { withFileTypes: true });
         if (memoryEntries.length !== 1 || !memoryEntries[0].isFile() || memoryEntries[0].name !== "notes.json") {
-          fail("must be the only file in repo memory");
+          fail(`must be the only file in repo memory; found: ${memoryEntries.map(entry => entry.name).join(", ") || "(none)"}`);
         }
         if (!fs.existsSync(notesPath)) fail("missing (create an initial notes.json that matches schema version 1)");
         const data = JSON.parse(fs.readFileSync(notesPath, "utf8"));
@@ -225,6 +222,21 @@ safe-outputs:
     target: "*"
 
 steps:
+  - name: Migrate legacy Repo Assist memory
+    env:
+      MEMORY_DIR: /tmp/gh-aw/repo-memory/default
+    run: |
+      node <<'EOF'
+      const fs = require("node:fs");
+      const path = require("node:path");
+      const memoryDir = process.env.MEMORY_DIR;
+      for (const entry of fs.readdirSync(memoryDir, { withFileTypes: true })) {
+        if (entry.name !== ".git" && entry.name !== "notes.json") {
+          fs.rmSync(path.join(memoryDir, entry.name), { recursive: true, force: true });
+        }
+      }
+      EOF
+
   - name: Fetch repo data for task weighting
     env:
       GH_TOKEN: ${{ github.token }}
@@ -316,7 +328,7 @@ steps:
           json.dump(result, f, indent=2)
       EOF
 
-source: githubnext/agentics/workflows/repo-assist.md@5d11aa2a05ce2c943c085acb7b12b583f83ed375
+source: githubnext/agentics/workflows/repo-assist.md@055e90108e3d3c40e842f8aa40288f8a19204c4e
 ---
 
 # Repo Assist
