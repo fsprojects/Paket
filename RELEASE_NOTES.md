@@ -1,4 +1,5 @@
 #### Unreleased
+* Fix `paket pack` producing inconsistent nupkg entry names for files with square brackets (`[`/`]`) across .NET runtimes - https://github.com/fsprojects/Paket/issues/3906
 
 
 #### 11.0.0 - 2026-10-05
