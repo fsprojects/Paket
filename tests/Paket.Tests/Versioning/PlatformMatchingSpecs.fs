@@ -380,6 +380,10 @@ let ``Can detect a bunch of net10 platforms``() =
       // "net10-windows10.0.19041"  , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet10Windows Net10WindowsVersion.V10_0_19041_0)
       // "net1000-windows10.0.19041", TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet10Windows Net10WindowsVersion.V10_0_19041_0)
       "net10.0-android30.0"         , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet10WithOs Net10Os.Android)
+      "net11.0"                     , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V11)
+      "net11.0-windows"             , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet11Windows Net11WindowsVersion.V7_0)
+      "net11.0-windows10.0.19041.0" , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet11Windows Net11WindowsVersion.V10_0_19041_0)
+      "net11.0-android30.0"         , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet11WithOs Net11Os.Android)
     ]
 
   let errors = [

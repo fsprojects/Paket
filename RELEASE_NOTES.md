@@ -1,5 +1,6 @@
 #### Unreleased
 
+* Support the `net11.0` target framework moniker (including `-windows` and OS-specific variants) - https://github.com/fsprojects/Paket/issues/4442
 
 #### 11.0.0 - 2026-10-05
 
