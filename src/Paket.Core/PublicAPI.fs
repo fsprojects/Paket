@@ -95,7 +95,7 @@ type Dependencies(dependenciesFileName: string) =
         )
 
     /// Initialize paket.dependencies file in the given directory
-    static member Init(directory, sources, additional, downloadBootstrapper) =
+    static member Init(directory, sources, additional) =
         let directory = DirectoryInfo(directory)
 
         RunInLockedAccessMode(
@@ -105,8 +105,6 @@ type Dependencies(dependenciesFileName: string) =
                 |> returnOrFail
                 false
         )
-
-        ignore downloadBootstrapper
 
     /// Converts the solution from NuGet to Paket.
     static member ConvertFromNuget(force: bool,installAfter: bool, initAutoRestore: bool,credsMigrationMode: string option, ?directory: DirectoryInfo) : unit =
@@ -435,24 +433,6 @@ type Dependencies(dependenciesFileName: string) =
         FindOutdated.FindOutdated strict force includePrereleases groupName
         |> this.Process
         |> List.map (fun (g, p,_,newVersion) -> g.ToString(),p.ToString(),newVersion)
-
-    /// Downloads the latest paket.bootstrapper into the .paket folder and try to rename it to paket.exe in order to activate magic mode.
-    member this.DownloadLatestBootstrapper() : unit =
-        RunInLockedAccessMode(
-            Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
-            fun () ->
-                this.Process Releases.downloadLatestBootstrapperAndTargets
-                let bootStrapperFileName = Path.Combine(this.RootPath,Constants.PaketFolderName, Constants.BootstrapperFileName)
-                let paketFileName = FileInfo(Path.Combine(this.RootPath,Constants.PaketFolderName, Constants.PaketFileName))
-                try
-                    if paketFileName.Exists then
-                        paketFileName.Delete()
-                    File.Move(bootStrapperFileName,paketFileName.FullName)
-                    false
-                with
-                | _ ->
-                    false
-        )
 
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
     member this.TurnOnAutoRestore(): unit =
