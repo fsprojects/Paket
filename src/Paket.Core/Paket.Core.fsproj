@@ -19,6 +19,9 @@
     <EmbeddedResource Include="embedded\Paket.Restore.targets">
       <LogicalName>Paket.Restore.targets</LogicalName>
     </EmbeddedResource>
+    <EmbeddedResource Include="embedded\paket.targets">
+      <LogicalName>paket.targets</LogicalName>
+    </EmbeddedResource>
     <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.SDK\src\AssemblyReader.fs">
       <Paket>True</Paket>
       <Link>Common/AssemblyReader.fs</Link>
@@ -92,7 +95,6 @@
     <Compile Include="PackageAnalysis\DependencyModel.fs" />
     <Compile Include="PackageAnalysis\Simplifier.fs" />
     <Compile Include="PackageAnalysis\Why.fs" />
-    <Compile Include="PackageManagement\Releases.fs" />
     <Compile Include="PackageManagement\VSIntegration.fs" />
     <Compile Include="PackageManagement\AddProcess.fs" />
     <Compile Include="PackageManagement\NugetConvert.fs" />

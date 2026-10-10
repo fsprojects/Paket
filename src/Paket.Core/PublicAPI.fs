@@ -434,7 +434,7 @@ type Dependencies(dependenciesFileName: string) =
         |> this.Process
         |> List.map (fun (g, p,_,newVersion) -> g.ToString(),p.ToString(),newVersion)
 
-    /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
+    /// Writes paket.targets into the .paket folder and imports it into the projects without the .NET SDK.
     member this.TurnOnAutoRestore(): unit =
         RunInLockedAccessMode(
             Path.Combine(this.RootPath,Constants.PaketFilesFolderName),

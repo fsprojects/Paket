@@ -106,7 +106,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{62D18A
 	ProjectSection(SolutionItems) = preProject
 		.paket\paket.exe.config = .paket\paket.exe.config
 		.paket\Paket.Restore.targets = .paket\Paket.Restore.targets
-		.paket\paket.targets = .paket\paket.targets
+		src\Paket.Core\embedded\paket.targets = src\Paket.Core\embedded\paket.targets
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1C9A57E4-9D94-44D1-A106-FC588B7B72DE}"
