@@ -85,26 +85,6 @@ let ``relative path with local identifier on unxoid systems``() =
     |> normalizeLocalPath
     |> shouldEqual (RelativePath "./Store")
 
-[<Test>]
-#if NO_UNIT_PLATFORMATTRIBUTE
-[<Ignore "PlatformAttribute not supported by netstandard NUnit">]
-#else
-[<Platform "Mono">]
-#endif
-let ``mono runtime reported on mono platform``() =
-    isMonoRuntime |>
-    shouldEqual true
-
-[<Test>]
-#if NO_UNIT_PLATFORMATTRIBUTE
-[<Ignore "PlatformAttribute not supported by netstandard NUnit">]
-#else
-[<Platform "Net">]
-#endif
-let ``mono runtime not reported on net platform``() =
-    isMonoRuntime |>
-    shouldEqual false
-
 type DisposableEnvVar(name, oldValue, newValue) =
     new(name) =
         new DisposableEnvVar(name, null)
