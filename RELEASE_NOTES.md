@@ -1,5 +1,11 @@
 #### Unreleased
 
+* BREAKING: Paket only ships as a .NET tool: `dotnet tool install paket`. `paket.exe` and `paket.bootstrapper.exe` are no longer published, and Paket no longer runs on Mono or the .NET Framework. See https://fsprojects.github.io/Paket/installation.html#Moving-from-paket-exe-and-the-bootstrapper
+* BREAKING: The release and `tools/paket.exe` of the Paket package carry a `paket.exe` stub instead, so that bootstrappers older than 11.0 explain how to move on: it prints the steps and exits with code 1. To stay on `paket.exe`, pin Paket 11 with a `version 11.0.0` line in paket.dependencies.
+* BREAKING: `Paket.Restore.targets` and `paket.targets` no longer run the bootstrapper or run `paket.exe` through mono. They find Paket installed with `--tool-path` (in `.paket` or the root), as a local tool, or on the `PATH` like a global tool.
+* BREAKING: Paket.Core targets netstandard2.0 only. `Dependencies.DownloadLatestBootstrapper` and the `downloadBootstrapper` parameter of `Dependencies.Init` are removed, along with `isMonoRuntime` and `monoPath`.
+* `paket auto-restore on` writes `paket.targets` from Paket itself instead of downloading it from the latest GitHub release, so it works offline and matches the running Paket
+* `#r "paket:"` in F# scripts finds the Paket .NET tool: installed with `--tool-path`, as a local tool of the manifest, as a global tool, or restored in the NuGet packages folder
 * The `paket` .NET tool now honours `no_proxy` and the system proxy settings, as `paket.exe` already did; as in curl, a `no_proxy` entry matches the host and its subdomains
 
 #### 11.0.0 - 2026-10-05
