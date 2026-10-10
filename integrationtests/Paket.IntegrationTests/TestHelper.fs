@@ -21,11 +21,7 @@ let dotnetToolPath =
     | s -> s
 
 let paketToolPath =
-#if PAKET_NETCORE
     dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin/net10.0/paket.dll")
-#else
-    "", FullName(__SOURCE_DIRECTORY__ + "../../../bin/net461/paket.exe")
-#endif
 
 let integrationTestPath = FullName(__SOURCE_DIRECTORY__ + "../../../integrationtests/scenarios")
 let scenarioTempPath scenario = Path.Combine(integrationTestPath,scenario,"temp")

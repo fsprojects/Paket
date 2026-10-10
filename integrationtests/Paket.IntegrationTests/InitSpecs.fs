@@ -22,10 +22,8 @@ let ``init creates paket.dependencies``() =
     let scenario = "init-creates-dependencies-file"
     use __ = paket "init" scenario |> fst
     File.Exists(Path.Combine(scenarioTempPath scenario, "paket.dependencies")) |> shouldEqual true
-#if PAKET_NETCORE
-    // only the legacy paket.exe downloads the bootstrapper into .paket
+    // the paket.exe of Paket 11 and earlier also downloaded the bootstrapper into .paket
     File.Exists(Path.Combine(scenarioTempPath scenario, ".paket", "paket.exe")) |> shouldEqual false
-#endif
 
 [<Test>]
 let ``#1041 init api``() =

@@ -78,7 +78,6 @@ let mutable dotnetCli : DotNet.Options -> DotNet.Options = id
 // --------------------------------------------------------------------------------------
 
 let buildDir = "bin"
-let buildDirNet461 = buildDir @@ "net461"
 let buildDirNetCore = buildDir @@ "net10.0"
 let tempDir = "temp"
 let buildLegacyStubDir = buildDir @@ "legacy-stub"
@@ -136,7 +135,6 @@ Target.create "Clean" (fun _ ->
     !! "src/**/bin"
     ++ "tests/**/bin"
     ++ buildDir
-    ++ buildDirNet461
     ++ buildDirNetCore
     ++ tempDir
     |> Shell.cleanDirs
@@ -205,7 +203,6 @@ Target.create "Publish" (fun _ ->
                 NoBuild = true
             }) project
 
-    publish "src/Paket" "net461" buildDirNet461
     publish "src/Paket" "net10.0" buildDirNetCore
     publish "src/Paket.LegacyStub" "net461" buildLegacyStubDir
 )
