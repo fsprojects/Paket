@@ -109,8 +109,8 @@ jobs:
           VERSION: ${{ needs.detect-release.outputs.version }}
         run: |
           $requiredFiles = @(
-            'bin/merged/paket.exe',
-            'bin/merged/paket-sha256.txt',
+            'bin/legacy-stub/paket.exe',
+            'bin/legacy-stub/paket-sha256.txt',
             'src/FSharp.DependencyManager.Paket/bin/Release/netstandard2.0/FSharp.DependencyManager.Paket.dll',
             '.paket/paket.targets',
             '.paket/Paket.Restore.targets',
@@ -154,8 +154,8 @@ jobs:
           PRERELEASE: ${{ needs.detect-release.outputs.prerelease }}
         run: |
           $assets = @(
-            'bin/merged/paket.exe',
-            'bin/merged/paket-sha256.txt',
+            'bin/legacy-stub/paket.exe',
+            'bin/legacy-stub/paket-sha256.txt',
             'src/FSharp.DependencyManager.Paket/bin/Release/netstandard2.0/FSharp.DependencyManager.Paket.dll',
             '.paket/paket.targets',
             '.paket/Paket.Restore.targets'

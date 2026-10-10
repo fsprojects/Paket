@@ -27,8 +27,8 @@
     <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackAsTool)' == 'true' ">
-    <!-- include the merged paket.exe inside the package, in tools dir -->
-    <Content Include="..\..\bin\merged\paket.exe">
+    <!-- the paket.exe stub, for the bootstrappers that look for tools/paket.exe in the package -->
+    <Content Include="..\..\bin\legacy-stub\paket.exe">
       <Pack>true</Pack>
       <PackagePath>tools</PackagePath>
       <Visible>true</Visible>

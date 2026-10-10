@@ -833,8 +833,6 @@ GITHUB
   remote: fsharp/FAKE
     modules/Octokit/Octokit.fsx (e8e1cae79e3573167d7421c622b51adc8c536004)
       Octokit (>= 0.20)
-  remote: enricosada/add_icon_to_exe
-    rh/ResourceHacker.exe (e11eda501acea369ac2950beb34b8888495bf21f)
 GROUP BuildScript
 CONTENT: NONE
 RESTRICTION: == net10.0
