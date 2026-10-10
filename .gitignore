@@ -213,8 +213,6 @@ integrationtests/scenarios/*/before/**/obj
 
 # artifacts
 /src/Paket/Properties/launchSettings.json
-/bin_bootstrapper/
 /bin_netcore
-/bin_bootstrapper/
 .claude/settings.local.json
 nul

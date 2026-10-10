@@ -111,13 +111,11 @@ jobs:
           $requiredFiles = @(
             'bin/merged/paket.exe',
             'bin/merged/paket-sha256.txt',
-            'bin_bootstrapper/net461/paket.bootstrapper.exe',
             'src/FSharp.DependencyManager.Paket/bin/Release/netstandard2.0/FSharp.DependencyManager.Paket.dll',
             '.paket/paket.targets',
             '.paket/Paket.Restore.targets',
             "temp/Paket.$env:VERSION.nupkg",
             "temp/Paket.Core.$env:VERSION.nupkg",
-            "temp/Paket.Bootstrapper.$env:VERSION.nupkg",
             "temp/FSharp.DependencyManager.Paket.$env:VERSION.nupkg"
           )
           $missingFiles = $requiredFiles | Where-Object { -not (Test-Path $_ -PathType Leaf) }
@@ -158,7 +156,6 @@ jobs:
           $assets = @(
             'bin/merged/paket.exe',
             'bin/merged/paket-sha256.txt',
-            'bin_bootstrapper/net461/paket.bootstrapper.exe',
             'src/FSharp.DependencyManager.Paket/bin/Release/netstandard2.0/FSharp.DependencyManager.Paket.dll',
             '.paket/paket.targets',
             '.paket/Paket.Restore.targets'
