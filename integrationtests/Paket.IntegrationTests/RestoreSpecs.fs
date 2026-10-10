@@ -134,12 +134,8 @@ let ``#3012 Paket restore silently fails when TargetFramework(s) are specified i
     directDotnet false "build" projectDir |> ignore
 
 [<Test>]
-#if NO_UNIT_PLATFORMATTRIBUTE
-[<Ignore "PlatformAttribute not supported by netstandard NUnit">]
-#else
-[<Platform "Win">] // read-only filesystem entries are really only a Windows thing
-#endif
 let ``#3410 Paket restore fails when obj files are readonly`` () =
+    if not isWindows then Assert.Ignore "read-only filesystem entries are really only a Windows thing"
     let scenario = "i003410-readonly-obj"
     let projectName = "dotnet"
     let packageName = "AutoMapper"

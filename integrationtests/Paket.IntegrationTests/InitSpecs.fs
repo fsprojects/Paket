@@ -21,17 +21,24 @@ let ``#1040 init should download release version of bootstrapper``() =
     productVersion.Contains("-") |> shouldEqual false
 
 [<Test>]
-#if PAKET_NETCORE
-[<Ignore(".net core paket doesnt init the boostrapper")>]
-#endif
 let ``#1743 empty log file``() =
     try
-        use __ = paket "init --log-file" "i001040-init-downloads-bootstrapper" |> fst
+        use __ = paket "init --log-file" "i001743-empty-log-file" |> fst
         failwith "expected error"
     with
     | ProcessFailedWithExitCode(_, _, msgs) ->
         (msgs.Errors |> Seq.head).Contains "--log-file"
             |> shouldEqual true
+
+[<Test>]
+let ``init creates paket.dependencies``() =
+    let scenario = "init-creates-dependencies-file"
+    use __ = paket "init" scenario |> fst
+    File.Exists(Path.Combine(scenarioTempPath scenario, "paket.dependencies")) |> shouldEqual true
+#if PAKET_NETCORE
+    // only the legacy paket.exe downloads the bootstrapper into .paket
+    File.Exists(Path.Combine(scenarioTempPath scenario, ".paket", "paket.exe")) |> shouldEqual false
+#endif
 
 [<Test>]
 #if PAKET_NETCORE
