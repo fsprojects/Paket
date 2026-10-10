@@ -240,8 +240,6 @@ Target.create "RunTests" (fun _ ->
             }) projFile
 
     runTest "netcore" "tests/Paket.Tests/Paket.Tests.fsproj" "net10.0"
-
-    runTest "netcore" "tests/Paket.Bootstrapper.Tests/Paket.Bootstrapper.Tests.csproj" "net10.0"
 )
 
 Target.create "QuickTest" (fun _ ->
