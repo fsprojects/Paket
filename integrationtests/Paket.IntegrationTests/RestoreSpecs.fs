@@ -134,12 +134,8 @@ let ``#3012 Paket restore silently fails when TargetFramework(s) are specified i
     directDotnet false "build" projectDir |> ignore
 
 [<Test>]
-#if NO_UNIT_PLATFORMATTRIBUTE
-[<Ignore "PlatformAttribute not supported by netstandard NUnit">]
-#else
-[<Platform "Win">] // read-only filesystem entries are really only a Windows thing
-#endif
 let ``#3410 Paket restore fails when obj files are readonly`` () =
+    if not isWindows then Assert.Ignore "read-only filesystem entries are really only a Windows thing"
     let scenario = "i003410-readonly-obj"
     let projectName = "dotnet"
     let packageName = "AutoMapper"
@@ -162,7 +158,7 @@ let ``#3410 Paket restore fails when obj files are readonly`` () =
         cachedReferencesFile.IsReadOnly <- false
 
 let private excludeAssetsForFSharpCore (propsPath: string) =
-    let propsXml = System.Xml.Linq.XDocument.Load(System.IO.File.OpenRead propsPath)
+    let propsXml = System.Xml.Linq.XDocument.Load propsPath
     let fsharpCorePackageRef =
         propsXml.Descendants()
         |> Seq.find (fun elem -> elem.Name.LocalName = "PackageReference")

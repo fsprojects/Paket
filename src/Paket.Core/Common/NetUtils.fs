@@ -65,10 +65,6 @@ let normalizeFeedUrl (source:string) =
     | "http://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
     | source -> source
 
-#if CUSTOM_WEBPROXY
-type WebProxy = IWebProxy
-#endif
-
 let envProxies () =
     let getEnvValue (name:string) =
         let v = Environment.GetEnvironmentVariable(name.ToUpperInvariant())
@@ -77,17 +73,32 @@ let envProxies () =
     let bypassList =
         let noproxyString = getEnvValue "NO_PROXY"
         if String.IsNullOrEmpty noproxyString then [||] else
-        // Each comma-separated entry may contain '*' as a wildcard. We escape the entry as a
-        // regex, but must treat '*' specially: escaping the whole string first (as was done
-        // previously) turns '*' into the literal '\*', so a later ".Replace(\"*\", \".*\")" has
-        // no effect and wildcard bypass entries (e.g. "*.internal.company.com") never match.
-        // Instead, split on '*', escape each literal segment, and re-join with ".*".
-        let escapeWithWildcard (entry:string) =
-            entry.Split('*')
-            |> Array.map System.Text.RegularExpressions.Regex.Escape
-            |> String.concat ".*"
+        // As in curl, an entry matches the host and its subdomains, and "*" alone matches every
+        // host. WebProxy matches each regex against "scheme://host[:port]", so it is anchored
+        // there: "corp.com" must not bypass "notcorp.com" nor "corp.com.example.org".
+        // A leading "." or "*." only says "and its subdomains", which every entry already does.
+        // A '*' left inside the entry is a wildcard within the host: split on it, escape each
+        // literal segment, and re-join.
+        // A trailing "." (fully qualified name) is dropped, and a bare IPv6 address gets the
+        // brackets it has in a url.
+        let toBypassRegex (entry:string) =
+            let domain =
+                let domain =
+                    if entry.StartsWith "*." then entry.Substring 2
+                    elif entry.StartsWith "." then entry.Substring 1
+                    else entry
+                let domain = domain.TrimEnd('.')
+                let isBareIPv6 = not (domain.StartsWith "[") && domain.Split(':').Length > 2
+                if isBareIPv6 then "[" + domain + "]" else domain
+            let pattern =
+                domain.Split('*')
+                |> Array.map System.Text.RegularExpressions.Regex.Escape
+                |> String.concat "[^/:]*"
+            sprintf @"^[a-z][a-z0-9+.-]*://([^/:]+\.)?%s(:\d+)?$" pattern
         noproxyString.Split([| ',' |], StringSplitOptions.RemoveEmptyEntries)
-        |> Array.map escapeWithWildcard
+        |> Array.map (fun entry -> entry.Trim())
+        |> Array.filter (fun entry -> entry <> "")
+        |> Array.map (fun entry -> if entry = "*" then ".*" else toBypassRegex entry)
     let getCredentials (uri:Uri) =
         let userPass = uri.UserInfo.Split([| ':' |], 2)
         if userPass.Length <> 2 || userPass.[0].Length = 0 then None else
@@ -100,24 +111,11 @@ let envProxies () =
         if isNull envVarValue then None else
         match Uri.TryCreate(envVarValue, UriKind.Absolute) with
         | true, envUri ->
-#if CUSTOM_WEBPROXY
-            Some
-                { new IWebProxy with
-                    member __.Credentials
-                        with get () = (Option.toObj (getCredentials envUri)) :> ICredentials
-                        and set value = ()
-                    member __.GetProxy _ =
-                        Uri (sprintf "http://%s:%d" envUri.Host envUri.Port)
-                    member __.IsBypassed (host : Uri) =
-                        Array.contains (string host) bypassList
-                }
-#else
             let proxy = WebProxy (Uri (sprintf "http://%s:%d" envUri.Host envUri.Port))
             proxy.Credentials <- Option.toObj (getCredentials envUri)
             proxy.BypassProxyOnLocal <- true
             proxy.BypassList <- bypassList
             Some proxy
-#endif
         | _ -> None
 
     let addProxy (map:Map<string, WebProxy>) scheme =
@@ -130,37 +128,35 @@ let envProxies () =
 
 let calcEnvProxies = lazy (envProxies())
 
-let getDefaultProxyFor =
-    memoize
-      (fun (url:string) ->
-            let uri = Uri url
-            let getDefault () =
-#if CUSTOM_WEBPROXY
-                let result =
-                    { new IWebProxy with
-                        member __.Credentials
-                            with get () = null
-                            and set _value = ()
-                        member __.GetProxy _ = null
-                        member __.IsBypassed (_host : Uri) = true
-                    }
-#else
-                let result = WebRequest.GetSystemWebProxy()
-#endif
-#if CUSTOM_WEBPROXY
-                let proxy = result
-#else
-                let address = result.GetProxy uri
-                if address = uri then null else
-                let proxy = WebProxy address
-                proxy.BypassProxyOnLocal <- true
-#endif
-                proxy.Credentials <- CredentialCache.DefaultCredentials
-                proxy
+/// The proxy for this url: the one of the env vars, whose bypass list sends the no_proxy hosts
+/// direct, or else the system one, with the default credentials when it has none of its own
+let proxyFor (envProxies:Map<string, WebProxy>) (systemProxy:IWebProxy) (uri:Uri) : IWebProxy =
+    match envProxies.TryFind uri.Scheme with
+    | Some p -> p :> IWebProxy
+    | None ->
+        // Delegating keeps the bypass rules and the credentials of the system proxy, such as
+        // the user and password of ALL_PROXY
+        { new IWebProxy with
+            member _.Credentials
+                with get () =
+                    if isNull systemProxy.Credentials then CredentialCache.DefaultCredentials
+                    else systemProxy.Credentials
+                and set _ = ()
+            member _.GetProxy destination =
+                // .NET Core answers null when no proxy applies: answer the destination, as a
+                // bypassed WebProxy does
+                match systemProxy.GetProxy destination with
+                | null -> destination
+                | proxy -> proxy
+            member _.IsBypassed destination =
+                // The Windows system proxy is never "bypassed": it answers null when nothing applies
+                systemProxy.IsBypassed destination
+                || (match systemProxy.GetProxy destination with
+                    | null -> true
+                    | proxy -> proxy = destination) }
 
-            match calcEnvProxies.Force().TryFind uri.Scheme with
-            | Some p -> if p.GetProxy uri <> uri then p else getDefault()
-            | None -> getDefault())
+let getDefaultProxyFor =
+    memoize (fun (url:string) -> proxyFor (calcEnvProxies.Force()) (WebRequest.GetSystemWebProxy()) (Uri url))
 
 
 type RequestFailedInfo =
@@ -378,11 +374,8 @@ let createHttpHandlerRaw(url, auth: Auth option) : HttpMessageHandler =
         | Some(Token token) ->
             // handled via defaultrequestheaders
             ()
-        // from https://github.com/dotnet/corefx/blob/b6b9a1ad24339266a27fef826233dbbe192cf254/src/System.Net.Http/src/System/Net/Http/HttpClientHandler.Windows.cs#L454-L477
-        if isNull handler.Proxy then
-            handler.WindowsProxyUsePolicy <- WindowsProxyUsePolicy.UseWinInetProxy
-        else
-            handler.WindowsProxyUsePolicy <- WindowsProxyUsePolicy.UseCustomProxy
+        // getDefaultProxyFor always answers a proxy, delegating to the system one when no env var applies
+        handler.WindowsProxyUsePolicy <- WindowsProxyUsePolicy.UseCustomProxy
         handler :> _
     else
     let handler =

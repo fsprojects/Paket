@@ -116,6 +116,16 @@ type DisposableEnvVar(name, oldValue, newValue) =
         member this.Dispose () =
             Environment.SetEnvironmentVariable(name, oldValue)
 
+/// envProxies reads the upper case variable first: on Linux it would win over the one of the test
+let proxyEnvVar (name: string) value =
+    // Windows has a single variable for both names: clear it, then set it, and restore in reverse
+    let upper = new DisposableEnvVar(name.ToUpperInvariant())
+    let lower = new DisposableEnvVar(name.ToLowerInvariant(), value)
+    { new IDisposable with
+        member __.Dispose() =
+            (lower :> IDisposable).Dispose()
+            (upper :> IDisposable).Dispose() }
+
 [<Test>]
 let ``disposable env var should set value``() =
     let name = Guid.NewGuid().ToString()
@@ -152,95 +162,75 @@ let ``disposable env var should restore previous value``() =
 
 [<Test>]
 let ``no env proxy without http_proxy env var``() =
-    use v = new DisposableEnvVar("http_proxy")
+    use v = proxyEnvVar "http_proxy" null
     envProxies().TryFind "http" |>
     shouldEqual None
 
 [<Test>]
 let ``no env proxy without https_proxy env var``() =
-    use v = new DisposableEnvVar("https_proxy")
+    use v = proxyEnvVar "https_proxy" null
     envProxies().TryFind "https" |>
     shouldEqual None
 
 [<Test>]
 let ``get http env proxy no port nor credentials``() =
-    use v = new DisposableEnvVar("http_proxy", "http://proxy.local")
-    use w = new DisposableEnvVar("no_proxy")
+    use v = proxyEnvVar "http_proxy" "http://proxy.local"
+    use w = proxyEnvVar "no_proxy" null
     let pOpt = envProxies().TryFind "http"
     Option.isSome pOpt |> shouldEqual true
     let p = Option.get pOpt
-#if WEBPROXY_NETSTANDARD
-    //TODO readd check
-#else
     p.Address |> shouldEqual (new Uri("http://proxy.local"))
     p.BypassProxyOnLocal |> shouldEqual true
     p.BypassList.Length |> shouldEqual 0
-#endif
     p.Credentials |> shouldEqual null
 
 [<Test>]
 let ``get https env proxy no port nor credentials``() =
-    use v = new DisposableEnvVar("https_proxy", "https://proxy.local")
-    use w = new DisposableEnvVar("no_proxy")
+    use v = proxyEnvVar "https_proxy" "https://proxy.local"
+    use w = proxyEnvVar "no_proxy" null
     let pOpt = envProxies().TryFind "https"
     Option.isSome pOpt |> shouldEqual true
     let p = Option.get pOpt
-#if WEBPROXY_NETSTANDARD
-    //TODO readd check
-#else
     p.Address |> shouldEqual (new Uri("http://proxy.local:443"))
     p.BypassProxyOnLocal |> shouldEqual true
     p.BypassList.Length |> shouldEqual 0
-#endif
     p.Credentials |> shouldEqual null
 
 [<Test>]
 let ``get http env proxy with port no credentials``() =
-    use v = new DisposableEnvVar("http_proxy", "http://proxy.local:8080")
-    use w = new DisposableEnvVar("no_proxy")
+    use v = proxyEnvVar "http_proxy" "http://proxy.local:8080"
+    use w = proxyEnvVar "no_proxy" null
     let pOpt = envProxies().TryFind "http"
     Option.isSome pOpt |> shouldEqual true
     let p = Option.get pOpt
-#if WEBPROXY_NETSTANDARD
-    //TODO readd check
-#else
     p.Address |> shouldEqual (new Uri("http://proxy.local:8080"))
     p.BypassProxyOnLocal |> shouldEqual true
     p.BypassList.Length |> shouldEqual 0
-#endif
     p.Credentials |> shouldEqual null
 
 [<Test>]
 let ``get https env proxy with port no credentials``() =
-    use v = new DisposableEnvVar("https_proxy", "https://proxy.local:8080")
-    use w = new DisposableEnvVar("no_proxy")
+    use v = proxyEnvVar "https_proxy" "https://proxy.local:8080"
+    use w = proxyEnvVar "no_proxy" null
     let pOpt = envProxies().TryFind "https"
     Option.isSome pOpt |> shouldEqual true
     let p = Option.get pOpt
-#if WEBPROXY_NETSTANDARD
-    //TODO readd check
-#else
     p.Address |> shouldEqual (new Uri("http://proxy.local:8080"))
     p.BypassProxyOnLocal |> shouldEqual true
     p.BypassList.Length |> shouldEqual 0
-#endif
     p.Credentials |> shouldEqual null
 
 [<Test>]
 let ``get http env proxy with port and credentials``() =
     let password = "p@ssw0rd:"
-    use v = new DisposableEnvVar("http_proxy", sprintf "http://user:%s@proxy.local:8080" (Uri.EscapeDataString password))
-    use w = new DisposableEnvVar("no_proxy")
+    use v = proxyEnvVar "http_proxy" (sprintf "http://user:%s@proxy.local:8080" (Uri.EscapeDataString password))
+    use w = proxyEnvVar "no_proxy" null
     let pOpt = envProxies().TryFind "http"
     Option.isSome pOpt |> shouldEqual true
     let p = Option.get pOpt
-#if WEBPROXY_NETSTANDARD
-    //TODO readd check
-#else
     p.Address |> shouldEqual (new Uri("http://proxy.local:8080"))
     p.BypassProxyOnLocal |> shouldEqual true
     p.BypassList.Length |> shouldEqual 0
-#endif
     let credentials = p.Credentials :?> NetworkCredential
     credentials.UserName |> shouldEqual "user"
     credentials.Password |> shouldEqual password
@@ -248,74 +238,159 @@ let ``get http env proxy with port and credentials``() =
 [<Test>]
 let ``get https env proxy with port and credentials``() =
     let password = "p@ssw0rd:"
-    use v = new DisposableEnvVar("https_proxy", sprintf "https://user:%s@proxy.local:8080" (Uri.EscapeDataString password))
-    use w = new DisposableEnvVar("no_proxy")
+    use v = proxyEnvVar "https_proxy" (sprintf "https://user:%s@proxy.local:8080" (Uri.EscapeDataString password))
+    use w = proxyEnvVar "no_proxy" null
     let pOpt = envProxies().TryFind "https"
     Option.isSome pOpt |> shouldEqual true
     let p = Option.get pOpt
-#if WEBPROXY_NETSTANDARD
-    //TODO readd check
-#else
     p.Address |> shouldEqual (new Uri("http://proxy.local:8080"))
     p.BypassProxyOnLocal |> shouldEqual true
     p.BypassList.Length |> shouldEqual 0
-#endif
     let credentials = p.Credentials :?> NetworkCredential
     credentials.UserName |> shouldEqual "user"
     credentials.Password |> shouldEqual password
 
 [<Test>]
 let ``get http env proxy with bypass list``() =
-    use v = new DisposableEnvVar("http_proxy", "http://proxy.local:8080")
-    use w = new DisposableEnvVar("no_proxy", ".local,localhost")
+    use v = proxyEnvVar "http_proxy" "http://proxy.local:8080"
+    use w = proxyEnvVar "no_proxy" ".local,localhost"
     let pOpt = envProxies().TryFind "http"
     Option.isSome pOpt |> shouldEqual true
     let p = Option.get pOpt
-#if WEBPROXY_NETSTANDARD
-    //TODO readd check
-#else
     p.Address |> shouldEqual (new Uri("http://proxy.local:8080"))
     p.BypassProxyOnLocal |> shouldEqual true
     p.BypassList.Length |> shouldEqual 2
-    p.BypassList.[0] |> shouldEqual "\\.local"
-    p.BypassList.[1] |> shouldEqual "localhost"
-#endif
+    p.IsBypassed(new Uri("http://feed.local")) |> shouldEqual true
+    p.IsBypassed(new Uri("http://feed.example.com")) |> shouldEqual false
     p.Credentials |> shouldEqual null
 
 [<Test>]
 let ``get http env proxy with bypass list containing wildcards``() =
-    use v = new DisposableEnvVar("http_proxy", "http://proxy.local:8080")
-    use w = new DisposableEnvVar("no_proxy", ".local,localhost,*.asdf.com")
+    use v = proxyEnvVar "http_proxy" "http://proxy.local:8080"
+    use w = proxyEnvVar "no_proxy" ".local,localhost,*.asdf.com"
     let pOpt = envProxies().TryFind "http"
     Option.isSome pOpt |> shouldEqual true
     let p = Option.get pOpt
-#if WEBPROXY_NETSTANDARD
-    //TODO readd check
-#else
     p.Address |> shouldEqual (new Uri("http://proxy.local:8080"))
     p.BypassProxyOnLocal |> shouldEqual true
     p.BypassList.Length |> shouldEqual 3
-    p.BypassList.[0] |> shouldEqual "\\.local"
-    p.BypassList.[1] |> shouldEqual "localhost"
-    p.BypassList.[2] |> shouldEqual ".*\\.asdf\\.com"
-#endif
+    p.IsBypassed(new Uri("http://feed.asdf.com")) |> shouldEqual true
     p.Credentials |> shouldEqual null
 
 [<Test>]
 let ``no_proxy wildcard bypass entry actually bypasses matching subdomain``() =
-    use v = new DisposableEnvVar("http_proxy", "http://proxy.local:8080")
-    use w = new DisposableEnvVar("no_proxy", "*.internal.company.com")
+    use v = proxyEnvVar "http_proxy" "http://proxy.local:8080"
+    use w = proxyEnvVar "no_proxy" "*.internal.company.com"
     let pOpt = envProxies().TryFind "http"
     Option.isSome pOpt |> shouldEqual true
     let p = Option.get pOpt
-#if WEBPROXY_NETSTANDARD
-    ignore p //TODO readd check
-#else
     // were escaped incorrectly and therefore never matched any host, even though they should
     // bypass the proxy for matching subdomains.
     p.IsBypassed(new Uri("http://nuget.internal.company.com")) |> shouldEqual true
     p.IsBypassed(new Uri("http://example.com")) |> shouldEqual false
-#endif
+
+[<Test>]
+let ``no_proxy host entry bypasses that host and its subdomains only``() =
+    use v = proxyEnvVar "http_proxy" "http://proxy.local:8080"
+    use w = proxyEnvVar "no_proxy" "nuget.internal"
+    let p = envProxies().TryFind "http" |> Option.get
+    p.IsBypassed(new Uri("http://nuget.internal/v3/index.json")) |> shouldEqual true
+    p.IsBypassed(new Uri("http://nuget.internal:8080")) |> shouldEqual true
+    p.IsBypassed(new Uri("http://feed.nuget.internal")) |> shouldEqual true
+    p.IsBypassed(new Uri("http://mynuget.internal")) |> shouldEqual false
+    p.IsBypassed(new Uri("http://nuget.internal.example.com")) |> shouldEqual false
+    p.GetProxy(new Uri("http://mynuget.internal")) |> shouldEqual (new Uri("http://proxy.local:8080"))
+
+[<Test>]
+let ``no_proxy entries are trimmed``() =
+    use v = proxyEnvVar "http_proxy" "http://proxy.local:8080"
+    use w = proxyEnvVar "no_proxy" "localhost, nuget.internal ,"
+    let p = envProxies().TryFind "http" |> Option.get
+    p.BypassList.Length |> shouldEqual 2
+    p.IsBypassed(new Uri("http://nuget.internal")) |> shouldEqual true
+
+[<Test>]
+let ``no_proxy star alone bypasses every host``() =
+    use v = proxyEnvVar "http_proxy" "http://proxy.local:8080"
+    use w = proxyEnvVar "no_proxy" "*"
+    let p = envProxies().TryFind "http" |> Option.get
+    p.IsBypassed(new Uri("http://feed.example.com")) |> shouldEqual true
+
+[<Test>]
+let ``no_proxy entry with a trailing dot bypasses the host``() =
+    use v = proxyEnvVar "http_proxy" "http://proxy.local:8080"
+    use w = proxyEnvVar "no_proxy" "corp.com."
+    let p = envProxies().TryFind "http" |> Option.get
+    p.IsBypassed(new Uri("http://corp.com")) |> shouldEqual true
+
+[<Test>]
+let ``no_proxy bare IPv6 entry bypasses that address``() =
+    use v = proxyEnvVar "http_proxy" "http://proxy.local:8080"
+    use w = proxyEnvVar "no_proxy" "fe80::1,[fe80::2]"
+    let p = envProxies().TryFind "http" |> Option.get
+    p.IsBypassed(new Uri("http://[fe80::1]:8080")) |> shouldEqual true
+    p.IsBypassed(new Uri("http://[fe80::2]")) |> shouldEqual true
+    p.IsBypassed(new Uri("http://[fe80::3]")) |> shouldEqual false
+
+/// A system proxy that sends every url through http://system.proxy:3128
+let systemProxy credentials =
+    { new IWebProxy with
+        member __.Credentials
+            with get () = credentials
+            and set _ = ()
+        member __.GetProxy _ = Uri "http://system.proxy:3128"
+        member __.IsBypassed _ = false }
+
+[<Test>]
+let ``proxyFor sends a no_proxy host direct, not through the system proxy``() =
+    use v = proxyEnvVar "http_proxy" "http://proxy.local:8080"
+    use w = proxyEnvVar "no_proxy" "nuget.internal"
+    let uri = Uri "http://nuget.internal/v3/index.json"
+    let proxy = proxyFor (envProxies()) (systemProxy null) uri
+    proxy.IsBypassed uri |> shouldEqual true
+    proxy.GetProxy uri |> shouldEqual uri
+
+[<Test>]
+let ``proxyFor sends the other hosts through the env proxy``() =
+    use v = proxyEnvVar "http_proxy" "http://proxy.local:8080"
+    use w = proxyEnvVar "no_proxy" "nuget.internal"
+    let uri = Uri "http://feed.example.com/v3/index.json"
+    let proxy = proxyFor (envProxies()) (systemProxy null) uri
+    proxy.IsBypassed uri |> shouldEqual false
+    proxy.GetProxy uri |> shouldEqual (Uri "http://proxy.local:8080")
+
+[<Test>]
+let ``proxyFor keeps the credentials of the system proxy``() =
+    use v = proxyEnvVar "https_proxy" null
+    let credentials = NetworkCredential("user", "password")
+    let uri = Uri "https://feed.example.com/v3/index.json"
+    let proxy = proxyFor (envProxies()) (systemProxy credentials) uri
+    proxy.GetProxy uri |> shouldEqual (Uri "http://system.proxy:3128")
+    proxy.Credentials |> shouldEqual (credentials :> ICredentials)
+
+[<Test>]
+let ``proxyFor gives the default credentials to a system proxy without any``() =
+    use v = proxyEnvVar "https_proxy" null
+    let uri = Uri "https://feed.example.com/v3/index.json"
+    let proxy = proxyFor (envProxies()) (systemProxy null) uri
+    proxy.GetProxy uri |> shouldEqual (Uri "http://system.proxy:3128")
+    proxy.Credentials |> shouldEqual CredentialCache.DefaultCredentials
+
+[<Test>]
+let ``proxyFor goes direct when the system proxy answers no proxy``() =
+    use v = proxyEnvVar "https_proxy" null
+    // what the Windows system proxy answers when nothing applies: never bypassed, but no proxy
+    let noProxy =
+        { new IWebProxy with
+            member _.Credentials
+                with get () = null
+                and set _ = ()
+            member _.GetProxy _ = null
+            member _.IsBypassed _ = false }
+    let uri = Uri "https://feed.example.com/v3/index.json"
+    let proxy = proxyFor (envProxies()) noProxy uri
+    proxy.IsBypassed uri |> shouldEqual true
+    proxy.GetProxy uri |> shouldEqual uri
 
 [<Test>]
 let ``should simplify path``() =

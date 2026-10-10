@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net461;net10.0</TargetFrameworks>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <DefineConstants Condition=" '$(TargetFramework)' != 'net461'">PAKET_NETCORE;NO_UNIT_PLATFORMATTRIBUTE;TESTSUITE_KNOWN_FAILURE_DOTNETCORE_3005;FAKE_NETSTANDARD_API;@(DefineConstants)</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' != 'net461'">PAKET_NETCORE;@(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="FsiExtension.fs" />
@@ -23,6 +23,7 @@
     <Compile Include="PackSpecs.fs" />
     <Compile Include="InstallSpecs.fs" />
     <Compile Include="RestoreSpecs.fs" />
+    <Compile Include="DotnetToolSpecs.fs" />
     <Compile Include="FrameworkRestrictionsSpecs.fs" />
     <Compile Include="HttpSpecs.fs" />
     <Compile Include="PaketCoreSpecs.fs" />
