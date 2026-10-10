@@ -808,7 +808,6 @@ CONTENT: NONE
 RESTRICTION: >= net461
 NUGET
   remote: https://api.nuget.org/v3/index.json
-    0x53A.ReferenceAssemblies.Paket (0.2)
     FAKE (4.64.17)
     FSharp.Compiler.Service (17.0.1)
       System.Collections.Immutable (>= 1.3.1)
