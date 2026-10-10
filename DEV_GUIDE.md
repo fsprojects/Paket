@@ -2,7 +2,7 @@
 
 Please contribute any notes that made your contributions easier here.
 
-Note that historically, the bulk of the development occured on Windows before dotnet got cross platform, for now, the tooling to target .NET Framework is still required for some areas.
+Note that historically, the bulk of the development occured on Windows before dotnet got cross platform. Since Paket 12 only the .NET SDK is required, on every OS.
 
 # Notes about the build script
 
@@ -18,10 +18,8 @@ before: the script turns the `key=value` arguments into environment variables it
 the FAKE runner used to do, and passes the target name to FAKE as `--target` through the execution
 context it creates. Only one target name is accepted.
 
-Mono is still needed on Linux for the `net461` test passes. `MergePaketTool` no longer needs it; it
-repacks through the `dotnet-ilrepack` tool of `.config/dotnet-tools.json`.
-Removing the remaining Mono dependency is tracked separately in
-[#4348](https://github.com/fsprojects/Paket/issues/4348).
+The build no longer needs Mono: Paket 12 runs as a .NET tool only, and the `paket.exe` stub of
+`src/Paket.LegacyStub` builds against the .NET Framework reference assemblies package.
 
 # Notes about the Paket F# Interactive extension
 
