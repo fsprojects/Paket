@@ -54,9 +54,6 @@ group Build
   # Note: this package was produced using https://github.com/jaredpar/xcopy-msbuild and contains the two directories ".NETFramework\v4.5" and ".NETPortable\v4.5"
   nuget 0x53A.ReferenceAssemblies.Paket 0.2.0
 
-  # add icon to exe
-  github enricosada/add_icon_to_exe:e11eda501acea369ac2950beb34b8888495bf21f rh/ResourceHacker.exe
-
 # The modules build.fsx is written against. They are loaded through the scripts that
 # `paket generate-load-scripts` writes to .paket/load/net10.0/BuildScript/, so this group has to
 # resolve for the framework `dotnet fsi` runs on, not for the net461 of the Build group.

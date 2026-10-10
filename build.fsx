@@ -81,8 +81,8 @@ let buildDir = "bin"
 let buildDirNet461 = buildDir @@ "net461"
 let buildDirNetCore = buildDir @@ "net10.0"
 let tempDir = "temp"
-let buildMergedDir = buildDir @@ "merged"
-let paketFile = buildMergedDir @@ "paket.exe"
+let buildLegacyStubDir = buildDir @@ "legacy-stub"
+let paketFile = buildLegacyStubDir @@ "paket.exe"
 
 System.Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
 
@@ -195,7 +195,7 @@ Target.create "Restore" (fun _ ->
 
 Target.create "Publish" (fun _ ->
     // since no build, we have to ensure that the build sets assemblyinfo correctly, especially because the publish output of this step
-    // is used in the ILRepack of the .net executable
+    // is the paket.exe stub that the old bootstrappers compare with the latest release
     let publish project framework output =
         DotNet.publish (fun c ->
             { c with
@@ -207,6 +207,7 @@ Target.create "Publish" (fun _ ->
 
     publish "src/Paket" "net461" buildDirNet461
     publish "src/Paket" "net10.0" buildDirNetCore
+    publish "src/Paket.LegacyStub" "net461" buildLegacyStubDir
 )
 "Clean" ==> "Build" ?=> "Publish" |> ignore
 
@@ -261,71 +262,6 @@ Target.create "QuickIntegrationTests" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
 
-Target.create "MergePaketTool" (fun _ ->
-    Directory.create buildMergedDir
-    let inBuildDirNet461 (file: string) = buildDirNet461 @@ file
-
-    // syntax for ilrepack requires the 'primary' assembly to be the first positional argument, so we enforce that by not making
-    // paket.exe part of the ordered 'component' libraries
-    let primaryExe = inBuildDirNet461 "paket.exe"
-
-    let mergeLibs =
-        [
-            "Argu.dll"
-            "Chessie.dll"
-            "Fake.Core.ReleaseNotes.dll"
-            "FSharp.Core.dll"
-            "Mono.Cecil.dll"
-            "Newtonsoft.Json.dll"
-            "NuGet.Common.dll"
-            "NuGet.Configuration.dll"
-            "NuGet.Frameworks.dll"
-            "NuGet.Packaging.dll"
-            "NuGet.Versioning.dll"
-            "Paket.Core.dll"
-            "System.Buffers.dll"
-            "System.Configuration.ConfigurationManager.dll"
-            "System.Memory.dll"
-            "System.Net.Http.WinHttpHandler.dll"
-            "System.Numerics.Vectors.dll"
-            "System.Runtime.CompilerServices.Unsafe.dll"
-            "System.Security.Cryptography.Cng.dll"
-            "System.Security.Cryptography.Pkcs.dll"
-            "System.Threading.Tasks.Extensions.dll"
-        ]
-        |> List.map inBuildDirNet461
-        |> String.separated " "
-
-    // The .NET Framework reference assemblies used to come for free from the Mono that ran
-    // ILRepack.exe. The dotnet-ilrepack tool runs on .NET, so point it at the reference assemblies
-    // of the 0x53A.ReferenceAssemblies.Paket package, whose root is owned by TargetFrameworkRootPath
-    // in Directory.Build.props. The package only ships v4.5, which is enough for the
-    // /targetplatform:v4 merge.
-    let referenceAssemblies =
-        let propsFile = "Directory.Build.props"
-        let props = XDocument.Load propsFile
-        let root =
-            match props.Descendants(XName.Get "TargetFrameworkRootPath") |> Seq.tryHead with
-            | Some node ->
-                node.Value
-                    .Replace("$(MSBuildThisFileDirectory)", "")
-                    .Replace('\\', System.IO.Path.DirectorySeparatorChar)
-            | None ->
-                failwithf $"%s{propsFile} defines no TargetFrameworkRootPath; MergePaketTool needs it to locate the .NET Framework reference assemblies."
-
-        let dir = root </> ".NETFramework" </> "v4.5"
-        if not (System.IO.Directory.Exists dir) then
-            failwithf $"No .NET Framework reference assemblies at %s{dir}, derived from TargetFrameworkRootPath in %s{propsFile}. Check that the value resolves without MSBuild properties and that the 0x53A.ReferenceAssemblies.Paket package is restored."
-        dir
-
-    let result =
-        DotNet.exec (fun c -> { dotnetCli c with Timeout = Some (TimeSpan.FromMinutes 5.) }) "ilrepack"
-            $"/copyattrs /targetplatform:v4,%s{referenceAssemblies} /lib:%s{referenceAssemblies} /lib:%s{buildDirNet461} /ver:%s{release.AssemblyVersion} /out:%s{paketFile} %s{primaryExe} %s{mergeLibs}"
-
-    if not result.OK then failwithf "Error during ILRepack execution."
-)
-"Publish" ==> "MergePaketTool" |> ignore
-
 Target.create "RunIntegrationTestsNetCore" (fun _ ->
     Directory.create "tests_result/netcore/Paket.IntegrationTests"
 
@@ -356,24 +292,7 @@ Target.create "CalculateDownloadHash" (fun _ ->
     use sha = new SHA256Managed()
     let checksum = sha.ComputeHash(stream)
     let hash = BitConverter.ToString(checksum).Replace("-", String.Empty)
-    File.writeString false (buildMergedDir @@ "paket-sha256.txt") (sprintf "%s paket.exe" hash)
-)
-
-Target.create "AddIconToExe" (fun _ ->
-    // add icon to paket.exe
-    // workaround https://github.com/dotnet/fsharp/issues/1172
-    let paketExeIcon = "src" @@ "Paket" @@ "paket.ico"
-
-    // use resourcehacker to add the icon
-    let rhPath = "paket-files" @@ "build" @@ "enricosada" @@ "add_icon_to_exe" @@ "rh" @@ "ResourceHacker.exe"
-    let args = sprintf """-open "%s" -save "%s" -action addskip -res "%s" -mask ICONGROUP,MAINICON,""" paketFile paketFile paketExeIcon
-
-    let result =
-        CreateProcess.fromRawCommandLine rhPath args
-        |> CreateProcess.withTimeout (TimeSpan.FromMinutes 1.)
-        |> Proc.run
-
-    if result.ExitCode <> 0 then failwithf "Error during adding icon %s to %s with %s %s" paketExeIcon paketFile rhPath args
+    File.writeString false (buildLegacyStubDir @@ "paket-sha256.txt") (sprintf "%s paket.exe" hash)
 )
 
 Target.create "NuGet" (fun _ ->
@@ -515,8 +434,6 @@ Target.create "All" DoNothing
   |> ignore
 
 "All"
-  ==> "MergePaketTool"
-  =?> ("AddIconToExe", Environment.isWindows)
   =?> ("RunIntegrationTestsNetCore", unlessBuildParams [ "SkipTests"; "SkipIntegrationTests"; "SkipIntegrationTestsNetCore" ] )
   ==> "CalculateDownloadHash"
   =?> ("NuGet", unlessBuildParams [ "SkipNuGet" ])
