@@ -80,9 +80,6 @@ let mutable dotnetCli : DotNet.Options -> DotNet.Options = id
 let buildDir = "bin"
 let buildDirNet461 = buildDir @@ "net461"
 let buildDirNetCore = buildDir @@ "net10.0"
-let buildDirBootstrapper = "bin_bootstrapper"
-let buildDirBootstrapperNet461 = buildDirBootstrapper @@ "net461"
-let buildDirBootstrapperNetCore = buildDirBootstrapper @@ "net10.0"
 let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
 let paketFile = buildMergedDir @@ "paket.exe"
@@ -141,9 +138,6 @@ Target.create "Clean" (fun _ ->
     ++ buildDir
     ++ buildDirNet461
     ++ buildDirNetCore
-    ++ buildDirBootstrapper
-    ++ buildDirBootstrapperNet461
-    ++ buildDirBootstrapperNetCore
     ++ tempDir
     |> Shell.cleanDirs
 
@@ -213,8 +207,6 @@ Target.create "Publish" (fun _ ->
 
     publish "src/Paket" "net461" buildDirNet461
     publish "src/Paket" "net10.0" buildDirNetCore
-    publish "src/Paket.Bootstrapper" "net461" buildDirBootstrapperNet461
-    publish "src/Paket.Bootstrapper" "net10.0" buildDirBootstrapperNetCore
 )
 "Clean" ==> "Build" ?=> "Publish" |> ignore
 
@@ -394,7 +386,6 @@ Target.create "NuGet" (fun _ ->
 
     pack "src/Paket.Core/Paket.Core.fsproj" packageProps
     pack "src/Paket/Paket.fsproj" (packageProps @ [ "/p:PackAsTool=true" ])
-    pack "src/Paket.Bootstrapper/Paket.Bootstrapper.csproj" (packageProps @ [ "/p:PackAsTool=true" ])
     pack "src/FSharp.DependencyManager.Paket/FSharp.DependencyManager.Paket.fsproj" packageProps
 )
 
