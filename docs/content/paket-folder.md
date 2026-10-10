@@ -1,22 +1,24 @@
 # The .paket directory
 
-The [`.paket` directory](https://github.com/fsprojects/Paket/tree/master/.paket) is
-used the same way a `.nuget` directory is used for the
-[NuGet package restore](http://docs.nuget.org/docs/workflows/using-nuget-without-committing-packages).
+Paket writes the `.paket` directory into the root of your repository, next to the
+[`paket.dependencies` file](dependencies-file.html). It holds:
 
-Place this directory into the root of your repository. It should include the
-`paket.targets` and [`paket.bootstrapper.exe`](bootstrapper.html) files which
-can be downloaded from
-[GitHub](https://github.com/fsprojects/Paket/releases/latest). The
-[bootstrapper](bootstrapper.html) will always download the latest version of the
-`paket.exe` file and it will be placed into the same directory.
+* `Paket.Restore.targets`, which [`paket install`](paket-install.html) adds to
+  the projects that use the .NET SDK, so that they restore their packages.
+* `paket.targets`, which [`paket auto-restore on`](paket-auto-restore.html) adds
+  to the projects that don't use the .NET SDK, for the same purpose.
+* The `load` scripts of
+  [`paket generate-load-scripts`](paket-generate-load-scripts.html).
+* Paket itself, when you install the .NET tool with
+  `dotnet tool install paket --tool-path .paket`. A
+  [local tool](installation.html#Local-tool) is usually the better choice.
 
-Now, to install all the packages from the
+To install all the packages from the
 [`paket.dependencies` file](dependencies-file.html), just run the following
 command.
 
 ```sh
-.paket/paket.exe install
+dotnet paket install
 ```
 
 The location of `.paket` directory and Paket related files is not bound to
@@ -25,7 +27,7 @@ solution files. If you have multiple solutions in subdirectories of some root
 directory, then that root directory is a good place to create `.paket` directory
 and put the [`paket.dependencies` file](dependencies-file.html).
 
-The [`.paket/paket.exe install` command](paket-install.html) processes all
+The [`paket install` command](paket-install.html) processes all
 directories under the root recursively and touch only those projects which have
 a respective [`paket.references` files](references-files.html). When Paket
 encounters [`paket.dependencies` files](dependencies-file.html) in

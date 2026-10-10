@@ -2,8 +2,7 @@
 
 Paket provides support for [.NET SDK](https://github.com/dotnet/sdk)-based
 projects that are used with [the `dotnet` CLI](https://github.com/dotnet/cli)
-(running with [.NET Core](https://github.com/dotnet/core)) or with MSBuild 15
-(Visual Studio 2017 and Mono 5).
+or with MSBuild 15 and later (Visual Studio 2017 and later).
 
 The general workflow is not very different from using Paket with traditional
 .NET projects which it is described in the
@@ -11,23 +10,18 @@ The general workflow is not very different from using Paket with traditional
 
 ## Setup
 
-### Downloading Paket's Bootstrapper
+### Installing Paket
 
-For `dotnet` CLI to work properly Paket needs to be used in
-["magic mode"](bootstrapper.html#Magic-mode).
+Install Paket as a [local tool](installation.html#Local-tool) in the root of
+your solution:
 
-1. Create a `.paket` directory in the root of your solution.
-1. Download the latest
-   [`paket.bootstrapper.exe`](https://github.com/fsprojects/Paket/releases/latest)
-   into that directory.
-1. Rename `.paket/paket.bootstrapper.exe` to `.paket/paket.exe`.
-   [Read more about "magic mode"](bootstrapper.html#Magic-mode).
-1. Commit `.paket/paket.exe` to your repository.
-1. After the first `.paket/paket.exe` invocation Paket will create a couple of
-   files in `.paket` — commit those as well.
+```sh
+dotnet new tool-manifest
+dotnet tool install paket
+```
 
 There are already a couple of `dotnet` [templates available](https://github.com/dotnet/templating/wiki/Available-templates-for-dotnet-new#f-templates) that ship with Paket
-support. In that case you don't need to setup the bootstrapper manually.
+support. In that case you don't need to install Paket manually.
 
 ### Specifying dependencies
 
@@ -37,7 +31,7 @@ root and specify all your dependencies in it.
 To create an empty `paket.dependencies` file, just run:
 
 ```sh
-.paket/paket.exe init
+dotnet paket init
 ```
 
 This step is the same as with traditional .NET projects.
@@ -60,7 +54,7 @@ CLI tools are only available for .NET SDK-based projects.
 Install all required packages with:
 
 ```sh
-.paket/paket.exe install
+dotnet paket install
 ```
 
 This step is the same as with traditional .NET projects.
@@ -100,7 +94,7 @@ In traditional .NET projects you were used to invoke the
   dotnet restore
   ```
 
-* With MSBuild 15 (Developer Command Prompt for VS2017 or Mono 5) you can now
+* With MSBuild 15 and later (Developer Command Prompt for Visual Studio) you can now
   run:
 
   ```sh
@@ -136,7 +130,7 @@ If you want to update packages you can use the
 [`paket update` command](paket-update.html):
 
 ```sh
-.paket/paket.exe update
+dotnet paket update
 ```
 
 This step is the same as with traditional .NET projects.
@@ -159,7 +153,7 @@ dependency information from the
   dotnet pack
   ```
 
-* With MSBuild 15 (Developer Command Prompt for VS2017 or Mono 5) you can now
+* With MSBuild 15 and later (Developer Command Prompt for Visual Studio) you can now
   run:
 
   ```sh
