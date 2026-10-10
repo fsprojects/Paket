@@ -25,7 +25,6 @@ nuget Microsoft.NETFramework.ReferenceAssemblies.net461 copy_local: true
 nuget DotNet.ReproducibleBuilds copy_local: true
 
 # tests
-nuget Moq
 nuget FSCheck
 nuget FSharp.Compiler.Service
 
