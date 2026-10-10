@@ -1,6 +1,6 @@
 #### Unreleased
 
-* The `paket` .NET tool now honours `no_proxy` and the system proxy settings, as `paket.exe` already did
+* The `paket` .NET tool now honours `no_proxy` and the system proxy settings, as `paket.exe` already did; as in curl, a `no_proxy` entry matches the host and its subdomains
 
 #### 11.0.0 - 2026-10-05
 
