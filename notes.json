@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "cursors": {
+    "labelling_after": null,
+    "investigation_after": null
+  },
+  "issues": [],
+  "fixes": [],
+  "checks": [],
+  "completed_actions": [],
+  "priorities": []
+}
