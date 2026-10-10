@@ -20,8 +20,6 @@ let [<Literal>] RestoreHashFile           = "paket.restore.cached"
 let [<Literal>] DependenciesFileName      = "paket.dependencies"
 /// '.paket'
 let [<Literal>] PaketFolderName           = ".paket"
-let [<Literal>] BootstrapperFileName      = "paket.bootstrapper.exe"
-let [<Literal>] PaketFileName             = "paket.exe"
 let [<Literal>] TargetsFileName           = "paket.targets"
 let [<Literal>] ReferencesFile            = "paket.references"
 let [<Literal>] AccessLockFileName        = "paket.processlock"

@@ -372,8 +372,7 @@ let createHttpHandler =
         (fun (url : string, auth) -> url.Substring(0, url.IndexOf('/', 8) + 1), auth) 
         createHttpHandlerRaw 
 
-/// The informational version of the running Paket, with the commit as build metadata (`11.0.0+<sha>`)
-let paketVersion =
+let private paketVersion =
     let attrs = System.Reflection.Assembly.GetExecutingAssembly().GetCustomAttributes(false)
 
     attrs
