@@ -284,17 +284,9 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
                     verbosefn "Downloading license for %O %O to %s" packageName version targetFileName
 
                 let request = HttpWebRequest.Create(Uri licenseUrl) :?> HttpWebRequest
-#if NETSTANDARD1_6 || NETSTANDARD2_0
-                // Note: this code is not working on regular non-dotnetcore
-                // "This header must be modified with the appropriate property."
-                // But we don't have the UserAgent API available.
-                // We should just switch to HttpClient everywhere.
-                request.Headers.[HttpRequestHeader.UserAgent] <- "Paket"
-#else
                 request.UserAgent <- "Paket"
                 request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
                 request.Timeout <- 3000
-#endif
 
                 request.UseDefaultCredentials <- true
                 request.Proxy <- NetUtils.getDefaultProxyFor licenseUrl

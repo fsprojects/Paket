@@ -1,24 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
-    <AutoGenerateBindingRedirects Condition=" '$(TargetFramework)' == 'net461' ">true</AutoGenerateBindingRedirects>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Version Condition="'$(PAKET_PROJ_VERSION)' != ''">$(PAKET_PROJ_VERSION)</Version>
     <PackageVersion Condition="'$(PAKET_PROJ_VERSION)' != ''">$(PAKET_PROJ_VERSION)</PackageVersion>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>TRACE</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' != 'net461' ">
-    <DefineConstants>NO_BOOTSTRAPPER;NO_CONFIGURATIONMANAGER;$(DefineConstants)</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <DefineConstants>USE_WEB_CLIENT_FOR_UPLOAD;NO_MAXCONNECTIONPERSERVER</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
@@ -110,18 +102,8 @@
     <Compile Include="Packaging\PackageProcess.fs" />
     <Compile Include="PublicAPI.fs" />
     <None Include="paket.template" />
-    <Content Include="app.config" Condition=" '$(TargetFramework)' == 'net461' " />
     <None Include="Prototypes\script-generation.fsx" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net461'">
-    <Reference Include="System.Configuration, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-    <Reference Include="System.IO.Compression, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-    <Reference Include="System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-    <Reference Include="System.Security, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  </ItemGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' != 'net461' ">
-    <DefineConstants>$(DefineConstants);DOTNETCORE;NETSTANDARD1_5;NETSTANDARD1_6;USE_HTTP_CLIENT</DefineConstants>
-  </PropertyGroup>
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
     <_Parameter1>Paket.Tests</_Parameter1>

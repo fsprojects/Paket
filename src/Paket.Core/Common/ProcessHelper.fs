@@ -107,13 +107,7 @@ let platformInfoAction (psi : ProcessStartInfo) =
 let appSettings (key : string) (fallbackValue : string) =
     let value =
         let setting =
-#if NO_CONFIGURATIONMANAGER
             ""
-#else
-            try
-                System.Configuration.ConfigurationManager.AppSettings.[key]
-            with exn -> ""
-#endif
         if not (String.IsNullOrWhiteSpace setting) then setting
         else fallbackValue
     value.Split([| ';' |], StringSplitOptions.RemoveEmptyEntries)

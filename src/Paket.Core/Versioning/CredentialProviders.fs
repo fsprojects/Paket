@@ -39,18 +39,10 @@ type CredentialProviderParameters =
       Verbosity : CredentialProviderVerbosity }
 
 /// Exception for request errors
-#if !NETSTANDARD1_6
-[<System.Serializable>]
-#endif
 type CredentialProviderUnknownStatusException =
     inherit Exception
     new (msg:string, inner:exn) = {
       inherit Exception(msg, inner) }
-#if !NETSTANDARD1_5
-    new (info:System.Runtime.Serialization.SerializationInfo, context:System.Runtime.Serialization.StreamingContext) = {
-      inherit Exception(info, context)
-    }
-#endif
 
 module CredentialProviders =
     open Logging
