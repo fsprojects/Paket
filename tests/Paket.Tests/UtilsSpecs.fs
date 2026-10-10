@@ -316,6 +316,33 @@ let ``no_proxy star alone bypasses every host``() =
     let p = envProxies().TryFind "http" |> Option.get
     p.IsBypassed(new Uri("http://feed.example.com")) |> shouldEqual true
 
+/// A system proxy that sends every url through http://system.proxy:3128
+let systemProxy credentials =
+    { new IWebProxy with
+        member __.Credentials
+            with get () = credentials
+            and set _ = ()
+        member __.GetProxy _ = Uri "http://system.proxy:3128"
+        member __.IsBypassed _ = false }
+
+[<Test>]
+let ``proxyFor sends a no_proxy host direct, not through the system proxy``() =
+    use v = proxyEnvVar "http_proxy" "http://proxy.local:8080"
+    use w = proxyEnvVar "no_proxy" "nuget.internal"
+    let uri = Uri "http://nuget.internal/v3/index.json"
+    let proxy = proxyFor (envProxies()) (systemProxy null) uri
+    proxy.IsBypassed uri |> shouldEqual true
+    proxy.GetProxy uri |> shouldEqual uri
+
+[<Test>]
+let ``proxyFor sends the other hosts through the env proxy``() =
+    use v = proxyEnvVar "http_proxy" "http://proxy.local:8080"
+    use w = proxyEnvVar "no_proxy" "nuget.internal"
+    let uri = Uri "http://feed.example.com/v3/index.json"
+    let proxy = proxyFor (envProxies()) (systemProxy null) uri
+    proxy.IsBypassed uri |> shouldEqual false
+    proxy.GetProxy uri |> shouldEqual (Uri "http://proxy.local:8080")
+
 [<Test>]
 let ``should simplify path``() =
     let p0 = "/Users/dna/Downloads/test/aa/src/bb"

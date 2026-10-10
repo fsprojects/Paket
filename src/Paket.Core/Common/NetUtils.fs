@@ -122,23 +122,22 @@ let envProxies () =
 
 let calcEnvProxies = lazy (envProxies())
 
-let getDefaultProxyFor =
-    memoize
-      (fun (url:string) ->
-            let uri = Uri url
-            let getDefault () =
-                let result = WebRequest.GetSystemWebProxy()
-                let address = result.GetProxy uri
-                // .NET Core answers null when no proxy applies, .NET Framework answers the url itself
-                if isNull address || address = uri then null else
-                let proxy = WebProxy address
-                proxy.BypassProxyOnLocal <- true
-                proxy.Credentials <- CredentialCache.DefaultCredentials
-                proxy
+/// The proxy for this url: the one of the env vars, whose bypass list sends the no_proxy hosts
+/// direct, or else the system one
+let proxyFor (envProxies:Map<string, WebProxy>) (systemProxy:IWebProxy) (uri:Uri) : IWebProxy =
+    match envProxies.TryFind uri.Scheme with
+    | Some p -> p :> IWebProxy
+    | None ->
+        let address = systemProxy.GetProxy uri
+        // .NET Core answers null when no proxy applies, .NET Framework answers the url itself
+        if isNull address || address = uri then null else
+        let proxy = WebProxy address
+        proxy.BypassProxyOnLocal <- true
+        proxy.Credentials <- CredentialCache.DefaultCredentials
+        proxy :> IWebProxy
 
-            match calcEnvProxies.Force().TryFind uri.Scheme with
-            | Some p -> if p.GetProxy uri <> uri then p else getDefault()
-            | None -> getDefault())
+let getDefaultProxyFor =
+    memoize (fun (url:string) -> proxyFor (calcEnvProxies.Force()) (WebRequest.GetSystemWebProxy()) (Uri url))
 
 
 type RequestFailedInfo =
