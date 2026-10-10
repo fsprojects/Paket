@@ -158,7 +158,7 @@ let ``#3410 Paket restore fails when obj files are readonly`` () =
         cachedReferencesFile.IsReadOnly <- false
 
 let private excludeAssetsForFSharpCore (propsPath: string) =
-    let propsXml = System.Xml.Linq.XDocument.Load(System.IO.File.OpenRead propsPath)
+    let propsXml = System.Xml.Linq.XDocument.Load propsPath
     let fsharpCorePackageRef =
         propsXml.Descendants()
         |> Seq.find (fun elem -> elem.Name.LocalName = "PackageReference")
