@@ -31,9 +31,6 @@ let GetUrlWithEndpoint (url: string option) (endPoint: string option) =
 
 let Push maxTrials url apiKey clientVersion packageFileName ignoreConflicts =
     let tracefnVerbose m = Printf.kprintf traceVerbose m
-#if USE_WEB_CLIENT_FOR_UPLOAD
-    let useHttpClient = Environment.GetEnvironmentVariable "PAKET_PUSH_HTTPCLIENT" = "true"
-#endif
     let rec push trial =
         if not (File.Exists packageFileName) then
             failwithf "The package file %s does not exist." packageFileName
@@ -56,19 +53,7 @@ let Push maxTrials url apiKey clientVersion packageFileName ignoreConflicts =
                 client.UploadFileAsMultipart (new Uri(url)) packageFileName
                     |> ignore
 
-#if !USE_WEB_CLIENT_FOR_UPLOAD
             uploadWithHttpClient()
-#else
-            if useHttpClient then
-                uploadWithHttpClient()
-            else
-                let client = NetUtils.createWebClient(url, authOpt)
-                client.Headers.Add ("X-NuGet-ApiKey", apiKey)
-                client.Headers.Add ("X-NuGet-Protocol-Version", Constants.NuGetProtocolVersion) // see https://github.com/NuGet/Announcements/issues/10
-
-                client.UploadFileAsMultipart (new Uri(url)) packageFileName
-                |> ignore
-#endif
             tracefn "Pushing %s complete." packageFileName
         with
         | :? RequestFailedException as rfe when rfe.Info.IsSome && rfe.Info.Value.StatusCode = HttpStatusCode.Conflict && ignoreConflicts ->
@@ -81,13 +66,6 @@ let Push maxTrials url apiKey clientVersion packageFileName ignoreConflicts =
             failwithf "Package %s already exists." packageFileName
         | exn when trial < maxTrials ->
             match exn with
-#if USE_WEB_CLIENT_FOR_UPLOAD
-            | :? WebException as we when not (isNull we.Response) ->
-                let response = (exn :?> WebException).Response
-                use reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8)
-                let text = reader.ReadToEnd()
-                tracefnVerbose "Response body was: %s" text
-#endif
             | :? RequestFailedException as rfe ->
                 match rfe.Info with
                 | Some info ->

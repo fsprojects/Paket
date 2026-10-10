@@ -117,14 +117,7 @@ let TimeSpanToReadableString(span:TimeSpan) =
     else "0 milliseconds"
 
 let GetHomeDirectory() =
-#if DOTNETCORE
     Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
-#else
-    if  Environment.OSVersion.Platform = PlatformID.Unix || Environment.OSVersion.Platform = PlatformID.MacOSX then
-        Environment.GetEnvironmentVariable "HOME"
-    else
-        Environment.ExpandEnvironmentVariables "%HOMEDRIVE%%HOMEPATH%"
-#endif
 
 type PathReference =
     | AbsolutePath of string
@@ -252,67 +245,27 @@ let ProgramFilesX86 =
 /// The system root environment variable. Typically "C:\Windows"
 let SystemRoot = Environment.GetEnvironmentVariable "SystemRoot"
 
-let isMonoRuntime =
-    not (Object.ReferenceEquals(Type.GetType "Mono.Runtime", null))
-
 /// Determines if the current system is an Unix system
 let isUnix =
-#if NETSTANDARD1_6 || NETSTANDARD2_0
     System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
         System.Runtime.InteropServices.OSPlatform.Linux) ||
     System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
         System.Runtime.InteropServices.OSPlatform.OSX)
-#else
-    int Environment.OSVersion.Platform |> fun p -> (p = 4) || (p = 6) || (p = 128)
-#endif
 
 /// Determines if the current system is a MacOs system
 let isMacOS =
-#if NETSTANDARD1_6 || NETSTANDARD2_0
     System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
         System.Runtime.InteropServices.OSPlatform.OSX)
-#else
-    (Environment.OSVersion.Platform = PlatformID.MacOSX) ||
-        // osascript is the AppleScript interpreter on OS X
-        File.Exists "/usr/bin/osascript"
-#endif
 
 /// Determines if the current system is a Linux system
 let isLinux =
-#if NETSTANDARD1_6 || NETSTANDARD2_0
     System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
         System.Runtime.InteropServices.OSPlatform.Linux)
-#else
-    isUnix && not isMacOS
-#endif
 
 /// Determines if the current system is a Windows system
 let isWindows =
-#if NETSTANDARD1_6 || NETSTANDARD2_0
     System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
         System.Runtime.InteropServices.OSPlatform.Windows)
-#else
-    match Environment.OSVersion.Platform with
-    | PlatformID.Win32NT | PlatformID.Win32S | PlatformID.Win32Windows | PlatformID.WinCE -> true
-    | _ -> false
-#endif
-
-
-/// Determines if the current system is a mono system
-/// Todo: Detect mono on windows
-[<Obsolete("use either isMonoRuntime or isUnix, this flag is always false when compiled for NETSTANDARD")>]
-let isMono =
-#if NETSTANDARD1_6 || NETSTANDARD2_0
-    false
-#else
-    isUnix
-#endif
-
-let monoPath =
-    if isMacOS && File.Exists "/Library/Frameworks/Mono.framework/Commands/mono" then
-        "/Library/Frameworks/Mono.framework/Commands/mono"
-    else
-        "mono"
 
 let isMatchingOperatingSystem (operatingSystemFilter : string option) =
     let aliasesForOs =
@@ -329,13 +282,8 @@ let isMatchingOperatingSystem (operatingSystemFilter : string option) =
 let isMatchingPlatform (operatingSystemFilter : string option) =
     match operatingSystemFilter with
     | None -> true
-#if NETSTANDARD1_6 || NETSTANDARD2_0
     | Some filter when filter = "mono" -> isMacOS || isUnix
     | Some filter when filter = "windows" -> isWindows
-#else
-    | Some filter when filter = "mono" -> isMonoRuntime
-    | Some filter when filter = "windows" -> not isMonoRuntime
-#endif
     | _ -> isMatchingOperatingSystem operatingSystemFilter
 
 /// [omit]
@@ -743,14 +691,9 @@ let fixDatesInArchive fileName =
     with
     | exn -> traceWarnfn "Could not fix timestamps in %s. Error: %s" fileName exn.Message
 
-let fixArchive fileName =
-    if isMonoRuntime then
-        fixDatesInArchive fileName
-
 let extractZipToDirectory (zipFileName:string) (directoryName:string) =
     Directory.CreateDirectory directoryName |> ignore
     try
-        fixArchive zipFileName
         ZipFile.ExtractToDirectory(zipFileName, directoryName)
     with
     | exn ->

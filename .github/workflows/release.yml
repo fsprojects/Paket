@@ -109,15 +109,13 @@ jobs:
           VERSION: ${{ needs.detect-release.outputs.version }}
         run: |
           $requiredFiles = @(
-            'bin/merged/paket.exe',
-            'bin/merged/paket-sha256.txt',
-            'bin_bootstrapper/net461/paket.bootstrapper.exe',
+            'bin/legacy-stub/paket.exe',
+            'bin/legacy-stub/paket-sha256.txt',
             'src/FSharp.DependencyManager.Paket/bin/Release/netstandard2.0/FSharp.DependencyManager.Paket.dll',
-            '.paket/paket.targets',
-            '.paket/Paket.Restore.targets',
+            'src/Paket.Core/embedded/paket.targets',
+            'src/Paket.Core/embedded/Paket.Restore.targets',
             "temp/Paket.$env:VERSION.nupkg",
             "temp/Paket.Core.$env:VERSION.nupkg",
-            "temp/Paket.Bootstrapper.$env:VERSION.nupkg",
             "temp/FSharp.DependencyManager.Paket.$env:VERSION.nupkg"
           )
           $missingFiles = $requiredFiles | Where-Object { -not (Test-Path $_ -PathType Leaf) }
@@ -156,12 +154,11 @@ jobs:
           PRERELEASE: ${{ needs.detect-release.outputs.prerelease }}
         run: |
           $assets = @(
-            'bin/merged/paket.exe',
-            'bin/merged/paket-sha256.txt',
-            'bin_bootstrapper/net461/paket.bootstrapper.exe',
+            'bin/legacy-stub/paket.exe',
+            'bin/legacy-stub/paket-sha256.txt',
             'src/FSharp.DependencyManager.Paket/bin/Release/netstandard2.0/FSharp.DependencyManager.Paket.dll',
-            '.paket/paket.targets',
-            '.paket/Paket.Restore.targets'
+            'src/Paket.Core/embedded/paket.targets',
+            'src/Paket.Core/embedded/Paket.Restore.targets'
           ) + @(Get-ChildItem temp/*.nupkg | ForEach-Object FullName)
 
           gh release view $env:VERSION *> $null

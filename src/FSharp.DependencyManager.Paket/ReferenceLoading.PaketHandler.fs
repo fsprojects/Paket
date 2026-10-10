@@ -81,37 +81,60 @@ module internal PaketHandler =
             yield! allParents directory
         }
 
-    let runningOnMono = 
-    #if ENABLE_MONO_SUPPORT
-    // Officially supported way to detect if we are running on Mono.
-    // See http://www.mono-project.com/FAQ:_Technical
-    // "How can I detect if am running in Mono?" section
-        try
-            System.Type.GetType("Mono.Runtime") <> null
-        with e-> 
-            // Must be robust in the case that someone else has installed a handler into System.AppDomain.OnTypeResolveEvent
-            // that is not reliable.
-            // This is related to bug 5506--the issue is actually a bug in VSTypeResolutionService.EnsurePopulated which is  
-            // called by OnTypeResolveEvent. The function throws a NullReferenceException. I'm working with that team to get 
-            // their issue fixed but we need to be robust here anyway.
-            false  
-    #else
-        false
-    #endif
+    let isWindows =
+        System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)
 
-    /// Walks up directory structure and tries to find paket.exe
+    /// The executable `dotnet tool install paket --tool-path` writes
+    let toolPathExecutable = if isWindows then "paket.exe" else "paket"
+
+    /// Walks up directory structure and tries to find paket installed with --tool-path
     let findPaketExe (prioritizedSearchPaths: string seq) (baseDir: DirectoryInfo) =
         let dirs = [
             yield! Seq.map DirectoryInfo prioritizedSearchPaths
             yield! getDirectoryAndAllParentDirectories baseDir
         ]
 
-        // for each given directory, we look for {paket,paket.exe} and .paket/{paket,paket.exe}
+        // for each given directory, we look for paket and .paket/paket
         dirs
         |> Seq.collect (fun dir -> [dir; yield! dir.GetDirectories(PM_DIR)])
-        |> Seq.allPairs ["paket"; "paket.exe"]
-        |> Seq.map (fun (name, dir) -> Path.Combine(dir.FullName, name))
+        |> Seq.map (fun dir -> Path.Combine(dir.FullName, toolPathExecutable))
         |> Seq.tryFind File.Exists
+
+    let nugetPackagesFolder =
+        match Environment.GetEnvironmentVariable "NUGET_PACKAGES" with
+        | null | "" -> Path.Combine(userProfile, ".nuget", "packages")
+        | folder -> folder
+
+    /// paket.dll of a version of the Paket .NET tool restored into the NuGet packages folder
+    let tryFindToolDll (versionFolder: DirectoryInfo) =
+        let tools = DirectoryInfo(Path.Combine(versionFolder.FullName, "tools"))
+        if not tools.Exists then None else
+        tools.GetDirectories()
+        |> Seq.map (fun frameworkFolder -> Path.Combine(frameworkFolder.FullName, "any", "paket.dll"))
+        |> Seq.tryFind File.Exists
+
+    /// The first tool manifest up from the directory that has paket, with the version of paket
+    let findLocalTool (baseDir: DirectoryInfo) =
+        let paketVersion =
+            System.Text.RegularExpressions.Regex(
+                "\"paket\"\\s*:\\s*\\{[^}]*?\"version\"\\s*:\\s*\"([^\"]+)\"",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase)
+        getDirectoryAndAllParentDirectories baseDir
+        |> Seq.collect (fun dir ->
+            [ Path.Combine(dir.FullName, ".config", "dotnet-tools.json")
+              Path.Combine(dir.FullName, "dotnet-tools.json") ])
+        |> Seq.filter File.Exists
+        |> Seq.tryPick (fun manifest ->
+            let m = paketVersion.Match(File.ReadAllText manifest)
+            if m.Success then Some(manifest, m.Groups.[1].Value) else None)
+
+    /// Runs a framework-dependent paket.dll with the dotnet that runs the script
+    let dotnetCommand (paketDll: string) =
+        let dotnet =
+            match Environment.GetEnvironmentVariable "DOTNET_HOST_PATH" with
+            | null | "" -> "dotnet"
+            | path -> path
+        dotnet, sprintf "\"%s\" " paketDll
 
     /// Resolves absolute load script location: something like
     /// baseDir/.paket/load/scriptName
@@ -131,7 +154,7 @@ module internal PaketHandler =
     /// <remarks>This function will throw if the resolution is not successful or the tool wasn't found</remarks>
     /// <param name="fileType">A string given to paket command to select the output language. Can be `fsx` or `csx`</param>
     /// <param name="targetFramework">A string given to paket command to fix the framework.</param>
-    /// <param name="prioritizedSearchPaths">List of directories which are checked first to resolve `paket.exe`.</param>
+    /// <param name="prioritizedSearchPaths">List of directories which are checked first to resolve paket installed with --tool-path.</param>
     /// <param name="scriptDir"The folder containing the script</param>
     /// <param name="scriptName">filename for the script (not necessarily existing if interactive evaluation)</param>
     /// <param name="packageManagerTextLinesFromScript">Package manager text lines from script, those are meant to be just the inner part, without `#r "paket:` prefix</param>
@@ -207,53 +230,60 @@ module internal PaketHandler =
         then 
             (loadScript,additionalIncludeFolders())
         else 
-            let toolPath = 
-                // we try to resolve .paket/paket.exe any place up in the folder structure from current script
+            let toolPath, toolArguments =
+                // we try to resolve paket installed with --tool-path any place up in the folder structure from current script
                 match findPaketExe prioritizedSearchPaths (DirectoryInfo scriptDir) with
-                | Some paketExe -> paketExe
+                | Some paketExe -> paketExe, ""
                 | None ->
 
-                  let nugetDirs =
-                    let nugetDir = DirectoryInfo(Path.Combine(userProfile, ".nuget", "packages", "paket"))
-                    if not nugetDir.Exists then
-                      Seq.empty 
+                match findLocalTool (DirectoryInfo scriptDir) with
+                | Some (manifest, version) ->
+                    match tryFindToolDll (DirectoryInfo(Path.Combine(nugetPackagesFolder, "paket", version.ToLowerInvariant()))) with
+                    | Some paketDll -> dotnetCommand paketDll
+                    | None ->
+                        failwithf "Paket %s, the local tool of '%s', is not restored. Please run 'dotnet tool restore'." version manifest
+                | None ->
+
+                  let globalTools =
+                    [
+                      Path.Combine(userProfile, ".dotnet", "tools")
+                      Path.Combine(userProfile, PM_DIR)
+                    ]
+                    |> List.map (fun dir -> Path.Combine(dir, toolPathExecutable))
+
+                  match globalTools |> List.tryFind File.Exists with
+                  | Some paketExe -> paketExe, ""
+                  | None ->
+
+                  // the newest Paket .NET tool restored in the NuGet packages folder
+                  let nugetDir = DirectoryInfo(Path.Combine(nugetPackagesFolder, "paket"))
+                  let restoredTool =
+                    if not nugetDir.Exists then None
                     else
-                      nugetDir.GetDirectories() 
+                      nugetDir.GetDirectories()
                       |> Seq.map (fun d -> d, d.Name)
                       |> Internals.Logic.paketVersionSortForNugetCacheFolder
                       |> Seq.map snd
                       |> Seq.concat
                       |> Seq.map fst
-                      |> Seq.map (fun d -> Path.Combine(d.FullName, "tools"))
+                      |> Seq.tryPick tryFindToolDll
 
-                  let locations =
-                    [
-                      Path.Combine(userProfile, PM_DIR)
-                      Path.Combine(userProfile, ".dotnet", "tools")
-                      yield! nugetDirs
-                    ]
-                    |> Seq.allPairs ["paket"; "paket.exe"]
-                    |> Seq.map (fun (name, dir) -> Path.Combine(dir, name))
-
-                  let result = locations |> Seq.tryFind File.Exists
-                  match result with
-                  | Some paketExe -> paketExe 
-                  | None -> 
+                  match restoredTool with
+                  | Some paketDll -> dotnetCommand paketDll
+                  | None ->
                     let foldersTried =
-                      locations 
-                      |> Seq.map FileInfo
-                      |> Seq.map (fun f -> sprintf " - %s" f.DirectoryName)
+                      [ yield! globalTools; nugetDir.FullName ]
+                      |> List.map (fun f -> sprintf " - %s" f)
                       |> String.concat Environment.NewLine
-                    failwithf "Paket was not found in '%s' or a parent directory, or in those folders:\n\n%s\n\nPlease download the tool and place it in one of the locations."
+                    failwithf "Paket was not found in '%s' or a parent directory, as a local tool, or in those locations:\n\n%s\n\nPlease install the Paket .NET tool: dotnet tool install paket"
                         scriptDir foldersTried
-        
+
             Console.ForegroundColor <- ConsoleColor.Green
             Console.Write ":paket>"
             Console.ResetColor()
-            Console.WriteLine(sprintf " using %s" toolPath)
+            Console.WriteLine(sprintf " using %s" ((toolPath + " " + toolArguments).TrimEnd()))
         
             try File.Delete(loadScript) with _ -> ()
-            let toolPath = if runningOnMono then "mono " + toolPath else toolPath
             File.WriteAllLines(workingDirSpecFile.FullName, packageManagerTextLines)
             let startInfo = 
                 System.Diagnostics.ProcessStartInfo(
@@ -261,7 +291,7 @@ module internal PaketHandler =
                     WorkingDirectory = workingDir, 
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
-                    Arguments = MakeDependencyManagerCommand fileType targetFramework rootDir,
+                    Arguments = toolArguments + MakeDependencyManagerCommand fileType targetFramework rootDir,
                     CreateNoWindow = true,
                     UseShellExecute = false)
                 

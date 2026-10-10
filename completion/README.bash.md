@@ -54,20 +54,15 @@ to override the default download root URL which is
 
 ### `paket` alias
 
-For easier consumption of Paket (without `paket.sh` or `paket.cmd`) it is
-advised to create an alias and always run Paket from the repository root.
-
-Also have a look at
-[Paket's magic mode](https://fsprojects.github.io/Paket/bootstrapper.html#Magic-mode).
+Paket is a .NET tool. When it is a
+[local tool](https://fsprojects.github.io/Paket/installation.html#Local-tool) of
+the repository, it is advised to create an alias and always run Paket from the
+repository root.
 
 Somewhere in your `~/.bashrc`:
 
 ```sh
-if [[ "$OS" != Windows* ]]; then
-  alias paket='mono ./.paket/paket.exe'
-else
-  alias paket='./.paket/paket.exe'
-fi
+alias paket='dotnet paket'
 
 # Complete the paket alias using the _paket function.
 complete -F _paket paket

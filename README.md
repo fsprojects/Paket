@@ -27,8 +27,7 @@ For more reasons see the [FAQ][10].
  - [Source code][1]
  - [Documentation][2]
  - [Getting started guide](https://fsprojects.github.io/Paket/get-started.html)
- - Download [paket.exe][3]
- - Download [paket.bootstrapper.exe][3]
+ - Install the [Paket .NET tool](https://fsprojects.github.io/Paket/installation.html): `dotnet tool install paket`
 
 ## Troubleshooting and support
 
@@ -67,7 +66,6 @@ The default maintainer account for projects under "fsprojects" is [@fsprojectsgi
 
  [1]: https://github.com/fsprojects/Paket/
  [2]: https://fsprojects.github.io/Paket/
- [3]: https://github.com/fsprojects/Paket/releases/latest
  [4]: https://github.com/fsprojects/Paket/issues
  [5]: https://twitter.com/PaketManager
  [6]: https://github.com/fsprojects/Paket/blob/master/LICENSE.txt

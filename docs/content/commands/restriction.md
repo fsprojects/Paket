@@ -14,7 +14,6 @@ OPTIONS:
     --silent, -s          suppress console output
     --verbose, -v         print detailed information to the console
     --log-file <path>     print output to a file
-    --from-bootstrapper   call coming from the '--run' feature of the bootstrapper
     --help                display this list of options.
 ```
 
@@ -23,7 +22,7 @@ OPTIONS:
 ## Example
 
 ```
-$ ./paket.exe restriction "|| (== netcoreapp2.0) (&& (== netstandard2.0) (>= netcoreapp2.0))"
+$ dotnet paket restriction "|| (== netcoreapp2.0) (&& (== netstandard2.0) (>= netcoreapp2.0))"
 Paket version 5.145.1
 Restriction: || (== netcoreapp2.0) (&& (== netstandard2.0) (>= netcoreapp2.0))
 Simplified: || (== netcoreapp2.0) (&& (== netstandard2.0) (>= netcoreapp2.0))

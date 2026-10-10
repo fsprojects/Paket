@@ -21,9 +21,9 @@ jobs:
           - name: build
             skip_env: SkipIntegrationTests=true
           - name: integration
-            skip_env: SkipIntegrationTestsNet=true
+            skip_env: ''
           - name: flaky
-            skip_env: SkipIntegrationTestsNet=true PAKET_TESTSUITE_FLAKYTESTS=true
+            skip_env: PAKET_TESTSUITE_FLAKYTESTS=true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -38,8 +38,6 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('paket.lock', 'paket.dependencies', 'global.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
-      - name: Install Mono
-        run: sudo apt-get update && sudo apt-get install --yes mono-complete
       - name: Install build SDK and integration test runtime
         run: |
           curl --fail --silent --show-error --location https://dot.net/v1/dotnet-install.sh --output /tmp/dotnet-install.sh
@@ -50,7 +48,7 @@ jobs:
           EnableWindowsTargeting: true
           PAKET_TESTSUITE_FLAKYTESTS: false
         run: |
-          export ${{ matrix.skip_env }}
+          [ -z "${{ matrix.skip_env }}" ] || export ${{ matrix.skip_env }}
           ./build.sh BuildPackage < /dev/null
       - name: Upload test results
         if: always()

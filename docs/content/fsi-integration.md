@@ -4,15 +4,17 @@ F# Interactive v5 and above ships with [extensions mechanism](https://github.com
 
 FSharp.DependencyManager.Paket implements this extension mechanism to hook same power as [paket.dependencies](dependencies-file.html) file right inside .fsx scripts.
 
-## Making sure paket.exe is found
+## Making sure Paket is found
 
-The extension is searching for paket.exe in the folder hierarchy containing the script, checking for a `.paket` folder containing `paket.exe`.
+The extension runs the Paket .NET tool. It looks for, in order:
 
-It falls back to those user directories if it can't find it in the parent folders:
-
-*  `~/.paket/paket.exe`
-*  `~/.dotnet/tools/paket.exe`
-*  `~/.nuget/packages/paket/{most-recent-version}/tools/paket.exe`
+* Paket installed with `dotnet tool install paket --tool-path`, in the folder
+  hierarchy containing the script, directly or in a `.paket` folder,
+* the local tool of the first `.config/dotnet-tools.json` up from the script
+  that has Paket (run `dotnet tool restore` first),
+* a global tool, in `~/.dotnet/tools` or `~/.paket`,
+* the most recent Paket .NET tool restored in the NuGet packages folder
+  (`~/.nuget/packages/paket`).
 
 ## Install the extension
 
