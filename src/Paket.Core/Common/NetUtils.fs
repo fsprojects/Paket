@@ -123,18 +123,26 @@ let envProxies () =
 let calcEnvProxies = lazy (envProxies())
 
 /// The proxy for this url: the one of the env vars, whose bypass list sends the no_proxy hosts
-/// direct, or else the system one
+/// direct, or else the system one, with the default credentials when it has none of its own
 let proxyFor (envProxies:Map<string, WebProxy>) (systemProxy:IWebProxy) (uri:Uri) : IWebProxy =
     match envProxies.TryFind uri.Scheme with
     | Some p -> p :> IWebProxy
     | None ->
-        let address = systemProxy.GetProxy uri
-        // .NET Core answers null when no proxy applies, .NET Framework answers the url itself
-        if isNull address || address = uri then null else
-        let proxy = WebProxy address
-        proxy.BypassProxyOnLocal <- true
-        proxy.Credentials <- CredentialCache.DefaultCredentials
-        proxy :> IWebProxy
+        // Delegating keeps the bypass rules and the credentials of the system proxy, such as
+        // the user and password of ALL_PROXY
+        { new IWebProxy with
+            member _.Credentials
+                with get () =
+                    if isNull systemProxy.Credentials then CredentialCache.DefaultCredentials
+                    else systemProxy.Credentials
+                and set _ = ()
+            member _.GetProxy destination =
+                // .NET Core answers null when no proxy applies: answer the destination, as a
+                // bypassed WebProxy does
+                match systemProxy.GetProxy destination with
+                | null -> destination
+                | proxy -> proxy
+            member _.IsBypassed destination = systemProxy.IsBypassed destination }
 
 let getDefaultProxyFor =
     memoize (fun (url:string) -> proxyFor (calcEnvProxies.Force()) (WebRequest.GetSystemWebProxy()) (Uri url))
@@ -355,11 +363,8 @@ let createHttpHandlerRaw(url, auth: Auth option) : HttpMessageHandler =
         | Some(Token token) ->
             // handled via defaultrequestheaders
             ()
-        // from https://github.com/dotnet/corefx/blob/b6b9a1ad24339266a27fef826233dbbe192cf254/src/System.Net.Http/src/System/Net/Http/HttpClientHandler.Windows.cs#L454-L477
-        if isNull handler.Proxy then
-            handler.WindowsProxyUsePolicy <- WindowsProxyUsePolicy.UseWinInetProxy
-        else
-            handler.WindowsProxyUsePolicy <- WindowsProxyUsePolicy.UseCustomProxy
+        // getDefaultProxyFor always answers a proxy, delegating to the system one when no env var applies
+        handler.WindowsProxyUsePolicy <- WindowsProxyUsePolicy.UseCustomProxy
         handler :> _
     else
     let handler =

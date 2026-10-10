@@ -344,6 +344,23 @@ let ``proxyFor sends the other hosts through the env proxy``() =
     proxy.GetProxy uri |> shouldEqual (Uri "http://proxy.local:8080")
 
 [<Test>]
+let ``proxyFor keeps the credentials of the system proxy``() =
+    use v = proxyEnvVar "https_proxy" null
+    let credentials = NetworkCredential("user", "password")
+    let uri = Uri "https://feed.example.com/v3/index.json"
+    let proxy = proxyFor (envProxies()) (systemProxy credentials) uri
+    proxy.GetProxy uri |> shouldEqual (Uri "http://system.proxy:3128")
+    proxy.Credentials |> shouldEqual (credentials :> ICredentials)
+
+[<Test>]
+let ``proxyFor gives the default credentials to a system proxy without any``() =
+    use v = proxyEnvVar "https_proxy" null
+    let uri = Uri "https://feed.example.com/v3/index.json"
+    let proxy = proxyFor (envProxies()) (systemProxy null) uri
+    proxy.GetProxy uri |> shouldEqual (Uri "http://system.proxy:3128")
+    proxy.Credentials |> shouldEqual CredentialCache.DefaultCredentials
+
+[<Test>]
 let ``should simplify path``() =
     let p0 = "/Users/dna/Downloads/test/aa/src/bb"
     let p1 = "/Users/dna/Downloads/test/aa/src/bb/../cc/D3D.csproj"
