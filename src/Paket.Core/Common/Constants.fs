@@ -37,7 +37,6 @@ let [<Literal>] ProjectDefaultNameSpace   = "http://schemas.microsoft.com/develo
 let [<Literal>] ProjectDefaultNameSpaceCore  = "http://schemas.microsoft.com/developer/msbuild/2003"
 let [<Literal>] NuGetProtocolVersion  = "4.1.0"
 
-#if DOTNETCORE
 module Environment =
     type SpecialFolder =
         | ApplicationData
@@ -71,7 +70,6 @@ module Environment =
             else res
         else
             System.IO.Path.Combine(homePath, monoPathSuffix)
-#endif
 
 let MainDependencyGroup = GroupName "Main"
 

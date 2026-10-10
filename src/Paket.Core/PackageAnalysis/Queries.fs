@@ -86,15 +86,7 @@ let resolveFrameworkForScriptGeneration (dependencies: DependenciesFile) = lazy 
 let resolveEnvironmentFrameworkForScriptGeneration = lazy (
     // HACK: resolve .net version based on environment
     // list of match is incomplete / inaccurate
-#if DOTNETCORE
     // Environment.Version is not supported
     //dunno what is used for, using a default
     DotNetFramework FrameworkVersion.V4_5
-#else
-    let version = System.Environment.Version
-    match version.Major, version.Minor, version.Build, version.Revision with
-    | 4, 0, 30319, 42000 -> DotNetFramework FrameworkVersion.V4_6
-    | 4, 0, 30319, _ -> DotNetFramework FrameworkVersion.V4_5
-    | _ -> DotNetFramework FrameworkVersion.V4_5 // paket.exe is compiled for framework 4.5
-#endif
     )
