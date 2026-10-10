@@ -23,6 +23,7 @@
     <Compile Include="PackSpecs.fs" />
     <Compile Include="InstallSpecs.fs" />
     <Compile Include="RestoreSpecs.fs" />
+    <Compile Include="DotnetToolSpecs.fs" />
     <Compile Include="FrameworkRestrictionsSpecs.fs" />
     <Compile Include="HttpSpecs.fs" />
     <Compile Include="PaketCoreSpecs.fs" />

@@ -86,18 +86,75 @@ let prepare scenario =
         if not (isNull shouldDispose) then shouldDispose.Dispose()
 
 
-let prepareSdk scenario =
+let private copyRestoreTargets scenario =
     let tmpPaketFolder = (scenarioTempPath scenario) @@ ".paket"
     let targetsFile = FullName(__SOURCE_DIRECTORY__ + "../../../src/Paket.Core/embedded/Paket.Restore.targets")
-    let paketExe = snd paketToolPath
-
-    setEnvironVar "PaketExePath" paketExe
-    let cleanup = prepare scenario
     if (not (Directory.Exists tmpPaketFolder)) then
         Directory.CreateDirectory tmpPaketFolder |> ignore
 
     FileHelper.CopyFile tmpPaketFolder targetsFile
+
+let prepareSdk scenario =
+    let paketExe = snd paketToolPath
+
+    setEnvironVar "PaketExePath" paketExe
+    let cleanup = prepare scenario
+    copyRestoreTargets scenario
     cleanup
+
+/// The Paket .NET tool package the NuGet build target packs into temp/, as (folder, version).
+let paketToolPackage =
+    let folder = FullName(__SOURCE_DIRECTORY__ + "../../../temp")
+    let fileName = System.Text.RegularExpressions.Regex @"^Paket\.(\d+\.\d+\.\d+.*)\.nupkg$"
+    if not (Directory.Exists folder) then None else
+    Directory.GetFiles(folder, "Paket.*.nupkg")
+    |> Array.filter (fun file -> not (file.EndsWith ".symbols.nupkg"))
+    |> Array.choose (fun file ->
+        let m = fileName.Match(Path.GetFileName file)
+        if m.Success then Some(FileInfo file, m.Groups.[1].Value) else None)
+    |> Array.sortByDescending (fun (file, _) -> file.LastWriteTimeUtc)
+    |> Array.tryHead
+    |> Option.map (fun (file, version) -> file.DirectoryName, version)
+
+/// Like prepareSdk, but lets Paket.Restore.targets find paket on its own, the way it does
+/// for a user of the Paket .NET tool. Returns the cleanup, the version of the packed tool,
+/// and the environment to run dotnet with.
+/// The tool is installed from temp/ only, into a packages folder of the scenario: the
+/// global one may hold the nuget.org package of the same version.
+let prepareSdkForTool scenario =
+    let folder, version =
+        match paketToolPackage with
+        | Some package -> package
+        | None ->
+            let message = "No Paket .NET tool package in temp/, run the NuGet build target first"
+            // the CI always packs it, so a missing package there is a broken build, not a local run
+            if String.IsNullOrEmpty(Environment.GetEnvironmentVariable "CI") then Assert.Ignore message
+            else Assert.Fail message
+            failwith "unreachable"
+
+    let cleanup = prepare scenario
+    copyRestoreTargets scenario
+    let scenarioPath = scenarioTempPath scenario
+    File.WriteAllText(
+        scenarioPath @@ "nuget.config",
+        sprintf """<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key="paket-build" value="%s" />
+  </packageSources>
+</configuration>
+""" folder)
+    // A manifest of its own, so that dotnet doesn't walk up to the one of the Paket repository,
+    // neither to run `dotnet paket` nor to install a local tool
+    Directory.CreateDirectory(scenarioPath @@ ".config") |> ignore
+    File.WriteAllText(scenarioPath @@ ".config" @@ "dotnet-tools.json", """{ "version": 1, "isRoot": true, "tools": {} }""")
+
+    let env =
+        [ "NUGET_PACKAGES", scenarioPath @@ "nuget-packages"
+          // prepareSdk sets it for the whole test process
+          "PaketExePath", "" ]
+    cleanup, version, env
 
 type OutputMsg =
   { IsError : bool; Message : string }
