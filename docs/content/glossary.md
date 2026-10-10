@@ -22,10 +22,7 @@ create new NuGet packages by using the [`paket pack` command](paket-pack.html).
 
 ## .paket directory
 
-This directory is used the same way a `.nuget` directory is used for the NuGet
-package restore, that is to cache package archives for reference by the
-development project. Place this directory into the root of your repository. It
-should include the paket.targets and
-[`paket.bootstrapper.exe`](https://github.com/fsprojects/Paket/releases/latest)
-files which can be downloaded from GitHub. The bootstrapper executable will
-always download the latest version of the `paket.exe` file into this directory.
+This directory sits in the root of your repository, next to the
+`paket.dependencies` file. It holds the MSBuild files that restore packages
+before a build, `Paket.Restore.targets` and `paket.targets`, and the load
+scripts Paket generates. See [the .paket directory](paket-folder.html).
