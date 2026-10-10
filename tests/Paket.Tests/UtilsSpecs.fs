@@ -260,8 +260,8 @@ let ``get http env proxy with bypass list``() =
     p.Address |> shouldEqual (new Uri("http://proxy.local:8080"))
     p.BypassProxyOnLocal |> shouldEqual true
     p.BypassList.Length |> shouldEqual 2
-    p.BypassList.[0] |> shouldEqual "\\.local"
-    p.BypassList.[1] |> shouldEqual "localhost"
+    p.IsBypassed(new Uri("http://feed.local")) |> shouldEqual true
+    p.IsBypassed(new Uri("http://feed.example.com")) |> shouldEqual false
     p.Credentials |> shouldEqual null
 
 [<Test>]
@@ -274,9 +274,7 @@ let ``get http env proxy with bypass list containing wildcards``() =
     p.Address |> shouldEqual (new Uri("http://proxy.local:8080"))
     p.BypassProxyOnLocal |> shouldEqual true
     p.BypassList.Length |> shouldEqual 3
-    p.BypassList.[0] |> shouldEqual "\\.local"
-    p.BypassList.[1] |> shouldEqual "localhost"
-    p.BypassList.[2] |> shouldEqual ".*\\.asdf\\.com"
+    p.IsBypassed(new Uri("http://feed.asdf.com")) |> shouldEqual true
     p.Credentials |> shouldEqual null
 
 [<Test>]
@@ -292,14 +290,31 @@ let ``no_proxy wildcard bypass entry actually bypasses matching subdomain``() =
     p.IsBypassed(new Uri("http://example.com")) |> shouldEqual false
 
 [<Test>]
-let ``no_proxy host entry bypasses that host only``() =
+let ``no_proxy host entry bypasses that host and its subdomains only``() =
     use v = proxyEnvVar "http_proxy" "http://proxy.local:8080"
-    use w = proxyEnvVar "no_proxy" "localhost,nuget.internal"
+    use w = proxyEnvVar "no_proxy" "nuget.internal"
     let p = envProxies().TryFind "http" |> Option.get
     p.IsBypassed(new Uri("http://nuget.internal/v3/index.json")) |> shouldEqual true
-    p.IsBypassed(new Uri("http://localhost:8080")) |> shouldEqual true
-    p.IsBypassed(new Uri("http://example.com")) |> shouldEqual false
-    p.GetProxy(new Uri("http://example.com")) |> shouldEqual (new Uri("http://proxy.local:8080"))
+    p.IsBypassed(new Uri("http://nuget.internal:8080")) |> shouldEqual true
+    p.IsBypassed(new Uri("http://feed.nuget.internal")) |> shouldEqual true
+    p.IsBypassed(new Uri("http://mynuget.internal")) |> shouldEqual false
+    p.IsBypassed(new Uri("http://nuget.internal.example.com")) |> shouldEqual false
+    p.GetProxy(new Uri("http://mynuget.internal")) |> shouldEqual (new Uri("http://proxy.local:8080"))
+
+[<Test>]
+let ``no_proxy entries are trimmed``() =
+    use v = proxyEnvVar "http_proxy" "http://proxy.local:8080"
+    use w = proxyEnvVar "no_proxy" "localhost, nuget.internal ,"
+    let p = envProxies().TryFind "http" |> Option.get
+    p.BypassList.Length |> shouldEqual 2
+    p.IsBypassed(new Uri("http://nuget.internal")) |> shouldEqual true
+
+[<Test>]
+let ``no_proxy star alone bypasses every host``() =
+    use v = proxyEnvVar "http_proxy" "http://proxy.local:8080"
+    use w = proxyEnvVar "no_proxy" "*"
+    let p = envProxies().TryFind "http" |> Option.get
+    p.IsBypassed(new Uri("http://feed.example.com")) |> shouldEqual true
 
 [<Test>]
 let ``should simplify path``() =

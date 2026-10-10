@@ -73,17 +73,26 @@ let envProxies () =
     let bypassList =
         let noproxyString = getEnvValue "NO_PROXY"
         if String.IsNullOrEmpty noproxyString then [||] else
-        // Each comma-separated entry may contain '*' as a wildcard. We escape the entry as a
-        // regex, but must treat '*' specially: escaping the whole string first (as was done
-        // previously) turns '*' into the literal '\*', so a later ".Replace(\"*\", \".*\")" has
-        // no effect and wildcard bypass entries (e.g. "*.internal.company.com") never match.
-        // Instead, split on '*', escape each literal segment, and re-join with ".*".
-        let escapeWithWildcard (entry:string) =
-            entry.Split('*')
-            |> Array.map System.Text.RegularExpressions.Regex.Escape
-            |> String.concat ".*"
+        // As in curl, an entry matches the host and its subdomains, and "*" alone matches every
+        // host. WebProxy matches each regex against "scheme://host[:port]", so it is anchored
+        // there: "corp.com" must not bypass "notcorp.com" nor "corp.com.example.org".
+        // A leading "." or "*." only says "and its subdomains", which every entry already does.
+        // A '*' left inside the entry is a wildcard within the host: split on it, escape each
+        // literal segment, and re-join.
+        let toBypassRegex (entry:string) =
+            let domain =
+                if entry.StartsWith "*." then entry.Substring 2
+                elif entry.StartsWith "." then entry.Substring 1
+                else entry
+            let pattern =
+                domain.Split('*')
+                |> Array.map System.Text.RegularExpressions.Regex.Escape
+                |> String.concat "[^/:]*"
+            sprintf @"^[a-z][a-z0-9+.-]*://([^/:]+\.)?%s(:\d+)?$" pattern
         noproxyString.Split([| ',' |], StringSplitOptions.RemoveEmptyEntries)
-        |> Array.map escapeWithWildcard
+        |> Array.map (fun entry -> entry.Trim())
+        |> Array.filter (fun entry -> entry <> "")
+        |> Array.map (fun entry -> if entry = "*" then ".*" else toBypassRegex entry)
     let getCredentials (uri:Uri) =
         let userPass = uri.UserInfo.Split([| ':' |], 2)
         if userPass.Length <> 2 || userPass.[0].Length = 0 then None else
