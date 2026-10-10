@@ -142,7 +142,12 @@ let proxyFor (envProxies:Map<string, WebProxy>) (systemProxy:IWebProxy) (uri:Uri
                 match systemProxy.GetProxy destination with
                 | null -> destination
                 | proxy -> proxy
-            member _.IsBypassed destination = systemProxy.IsBypassed destination }
+            member _.IsBypassed destination =
+                // The Windows system proxy is never "bypassed": it answers null when nothing applies
+                systemProxy.IsBypassed destination
+                || (match systemProxy.GetProxy destination with
+                    | null -> true
+                    | proxy -> proxy = destination) }
 
 let getDefaultProxyFor =
     memoize (fun (url:string) -> proxyFor (calcEnvProxies.Force()) (WebRequest.GetSystemWebProxy()) (Uri url))

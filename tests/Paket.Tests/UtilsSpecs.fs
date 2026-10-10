@@ -361,6 +361,22 @@ let ``proxyFor gives the default credentials to a system proxy without any``() =
     proxy.Credentials |> shouldEqual CredentialCache.DefaultCredentials
 
 [<Test>]
+let ``proxyFor goes direct when the system proxy answers no proxy``() =
+    use v = proxyEnvVar "https_proxy" null
+    // what the Windows system proxy answers when nothing applies: never bypassed, but no proxy
+    let noProxy =
+        { new IWebProxy with
+            member _.Credentials
+                with get () = null
+                and set _ = ()
+            member _.GetProxy _ = null
+            member _.IsBypassed _ = false }
+    let uri = Uri "https://feed.example.com/v3/index.json"
+    let proxy = proxyFor (envProxies()) noProxy uri
+    proxy.IsBypassed uri |> shouldEqual true
+    proxy.GetProxy uri |> shouldEqual uri
+
+[<Test>]
 let ``should simplify path``() =
     let p0 = "/Users/dna/Downloads/test/aa/src/bb"
     let p1 = "/Users/dna/Downloads/test/aa/src/bb/../cc/D3D.csproj"
