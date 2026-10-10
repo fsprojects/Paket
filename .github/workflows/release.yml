@@ -113,7 +113,7 @@ jobs:
             'bin/legacy-stub/paket-sha256.txt',
             'src/FSharp.DependencyManager.Paket/bin/Release/netstandard2.0/FSharp.DependencyManager.Paket.dll',
             'src/Paket.Core/embedded/paket.targets',
-            '.paket/Paket.Restore.targets',
+            'src/Paket.Core/embedded/Paket.Restore.targets',
             "temp/Paket.$env:VERSION.nupkg",
             "temp/Paket.Core.$env:VERSION.nupkg",
             "temp/FSharp.DependencyManager.Paket.$env:VERSION.nupkg"
@@ -158,7 +158,7 @@ jobs:
             'bin/legacy-stub/paket-sha256.txt',
             'src/FSharp.DependencyManager.Paket/bin/Release/netstandard2.0/FSharp.DependencyManager.Paket.dll',
             'src/Paket.Core/embedded/paket.targets',
-            '.paket/Paket.Restore.targets'
+            'src/Paket.Core/embedded/Paket.Restore.targets'
           ) + @(Get-ChildItem temp/*.nupkg | ForEach-Object FullName)
 
           gh release view $env:VERSION *> $null
