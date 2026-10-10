@@ -79,11 +79,17 @@ let envProxies () =
         // A leading "." or "*." only says "and its subdomains", which every entry already does.
         // A '*' left inside the entry is a wildcard within the host: split on it, escape each
         // literal segment, and re-join.
+        // A trailing "." (fully qualified name) is dropped, and a bare IPv6 address gets the
+        // brackets it has in a url.
         let toBypassRegex (entry:string) =
             let domain =
-                if entry.StartsWith "*." then entry.Substring 2
-                elif entry.StartsWith "." then entry.Substring 1
-                else entry
+                let domain =
+                    if entry.StartsWith "*." then entry.Substring 2
+                    elif entry.StartsWith "." then entry.Substring 1
+                    else entry
+                let domain = domain.TrimEnd('.')
+                let isBareIPv6 = not (domain.StartsWith "[") && domain.Split(':').Length > 2
+                if isBareIPv6 then "[" + domain + "]" else domain
             let pattern =
                 domain.Split('*')
                 |> Array.map System.Text.RegularExpressions.Regex.Escape

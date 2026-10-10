@@ -316,6 +316,22 @@ let ``no_proxy star alone bypasses every host``() =
     let p = envProxies().TryFind "http" |> Option.get
     p.IsBypassed(new Uri("http://feed.example.com")) |> shouldEqual true
 
+[<Test>]
+let ``no_proxy entry with a trailing dot bypasses the host``() =
+    use v = proxyEnvVar "http_proxy" "http://proxy.local:8080"
+    use w = proxyEnvVar "no_proxy" "corp.com."
+    let p = envProxies().TryFind "http" |> Option.get
+    p.IsBypassed(new Uri("http://corp.com")) |> shouldEqual true
+
+[<Test>]
+let ``no_proxy bare IPv6 entry bypasses that address``() =
+    use v = proxyEnvVar "http_proxy" "http://proxy.local:8080"
+    use w = proxyEnvVar "no_proxy" "fe80::1,[fe80::2]"
+    let p = envProxies().TryFind "http" |> Option.get
+    p.IsBypassed(new Uri("http://[fe80::1]:8080")) |> shouldEqual true
+    p.IsBypassed(new Uri("http://[fe80::2]")) |> shouldEqual true
+    p.IsBypassed(new Uri("http://[fe80::3]")) |> shouldEqual false
+
 /// A system proxy that sends every url through http://system.proxy:3128
 let systemProxy credentials =
     { new IWebProxy with
