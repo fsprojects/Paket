@@ -82,11 +82,3 @@ let resolveFrameworkForScriptGeneration (dependencies: DependenciesFile) = lazy 
           )
         |> Seq.concat
     )
-
-let resolveEnvironmentFrameworkForScriptGeneration = lazy (
-    // HACK: resolve .net version based on environment
-    // list of match is incomplete / inaccurate
-    // Environment.Version is not supported
-    //dunno what is used for, using a default
-    DotNetFramework FrameworkVersion.V4_5
-    )

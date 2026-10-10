@@ -1123,14 +1123,8 @@ type FrameworkIdentifier =
 
 module FrameworkDetection =
 
-    /// Used for script generation
-    let resolveEnvironmentFramework = lazy (
-        // HACK: resolve .net version based on environment
-        // list of match is incomplete / inaccurate
-        // Environment.Version is not supported
-        //dunno what is used for, using a default
-        DotNetFramework FrameworkVersion.V4_5
-        )
+    /// The framework of the generated scripts when neither the command nor paket.lock gives one
+    let defaultScriptFramework = DotNetFramework FrameworkVersion.V4_5
 
 
     open Logging
