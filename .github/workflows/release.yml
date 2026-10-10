@@ -112,7 +112,7 @@ jobs:
             'bin/legacy-stub/paket.exe',
             'bin/legacy-stub/paket-sha256.txt',
             'src/FSharp.DependencyManager.Paket/bin/Release/netstandard2.0/FSharp.DependencyManager.Paket.dll',
-            '.paket/paket.targets',
+            'src/Paket.Core/embedded/paket.targets',
             '.paket/Paket.Restore.targets',
             "temp/Paket.$env:VERSION.nupkg",
             "temp/Paket.Core.$env:VERSION.nupkg",
@@ -157,7 +157,7 @@ jobs:
             'bin/legacy-stub/paket.exe',
             'bin/legacy-stub/paket-sha256.txt',
             'src/FSharp.DependencyManager.Paket/bin/Release/netstandard2.0/FSharp.DependencyManager.Paket.dll',
-            '.paket/paket.targets',
+            'src/Paket.Core/embedded/paket.targets',
             '.paket/Paket.Restore.targets'
           ) + @(Get-ChildItem temp/*.nupkg | ForEach-Object FullName)
 
