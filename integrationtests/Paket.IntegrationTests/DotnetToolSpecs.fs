@@ -21,12 +21,16 @@ let restoreShouldUseTool version env =
     output |> shouldContainText $"Paket version %s{version}"
     File.Exists(scenarioPath @@ "paket-files" @@ "paket.restore.cached") |> shouldEqual true
 
+/// Installs the packed tool into the scenario, at the location the arguments give
+let installTool env version location =
+    directDotnetEx env false $"tool install paket %s{location} --version %s{version} --configfile nuget.config" (scenarioTempPath scenario)
+    |> ignore
+
 [<Test>]
 let ``restore finds paket as a local tool of the manifest``() =
     let cleanup, version, env = prepareSdkForTool scenario
     use __ = cleanup
-    let scenarioPath = scenarioTempPath scenario
-    directDotnetEx env false $"tool install paket --local --version %s{version} --configfile nuget.config" scenarioPath |> ignore
+    installTool env version "--local"
 
     restoreShouldUseTool version env
 
@@ -34,8 +38,7 @@ let ``restore finds paket as a local tool of the manifest``() =
 let ``restore finds paket installed with --tool-path .paket``() =
     let cleanup, version, env = prepareSdkForTool scenario
     use __ = cleanup
-    let scenarioPath = scenarioTempPath scenario
-    directDotnetEx env false $"tool install paket --tool-path .paket --version %s{version} --configfile nuget.config" scenarioPath |> ignore
+    installTool env version "--tool-path .paket"
 
     restoreShouldUseTool version env
 
@@ -43,9 +46,8 @@ let ``restore finds paket installed with --tool-path .paket``() =
 let ``restore finds paket on the PATH like a global tool``() =
     let cleanup, version, env = prepareSdkForTool scenario
     use __ = cleanup
-    let scenarioPath = scenarioTempPath scenario
-    let toolPath = scenarioPath @@ "global-tools"
-    directDotnetEx env false $"tool install paket --tool-path \"%s{toolPath}\" --version %s{version} --configfile nuget.config" scenarioPath |> ignore
+    let toolPath = scenarioTempPath scenario @@ "global-tools"
+    installTool env version $"--tool-path \"%s{toolPath}\""
 
     let path = toolPath + string Path.PathSeparator + Environment.GetEnvironmentVariable "PATH"
     restoreShouldUseTool version (("PATH", path) :: env)
