@@ -7,7 +7,7 @@ open NUnit.Framework
 open FsUnit
 
 // Paket.Restore.targets has to find the Paket .NET tool on its own: these tests install the
-// package the build just packed and leave PaketExePath unset.
+// paket under test as a .NET tool and leave PaketExePath unset.
 
 let scenario = "dotnet-tool-locator"
 
@@ -22,15 +22,15 @@ let restoreShouldUseTool version env =
     File.Exists(scenarioPath @@ "paket-files" @@ "paket.restore.cached") |> shouldEqual true
 
 /// Installs the packed tool into the scenario, at the location the arguments give
-let installTool env version location =
-    directDotnetEx env false $"tool install paket %s{location} --version %s{version} --configfile nuget.config" (scenarioTempPath scenario)
+let installTool env location =
+    directDotnetEx env false $"tool install paket %s{location} --version %s{paketToolPackageVersion} --configfile nuget.config" (scenarioTempPath scenario)
     |> ignore
 
 [<Test>]
 let ``restore finds paket as a local tool of the manifest``() =
     let cleanup, version, env = prepareSdkForTool scenario
     use __ = cleanup
-    installTool env version "--local"
+    installTool env "--local"
 
     restoreShouldUseTool version env
 
@@ -38,7 +38,7 @@ let ``restore finds paket as a local tool of the manifest``() =
 let ``restore finds paket installed with --tool-path .paket``() =
     let cleanup, version, env = prepareSdkForTool scenario
     use __ = cleanup
-    installTool env version "--tool-path .paket"
+    installTool env "--tool-path .paket"
 
     restoreShouldUseTool version env
 
@@ -47,7 +47,7 @@ let ``restore finds paket on the PATH like a global tool``() =
     let cleanup, version, env = prepareSdkForTool scenario
     use __ = cleanup
     let toolPath = scenarioTempPath scenario @@ "global-tools"
-    installTool env version $"--tool-path \"%s{toolPath}\""
+    installTool env $"--tool-path \"%s{toolPath}\""
 
     let path = toolPath + string Path.PathSeparator + Environment.GetEnvironmentVariable "PATH"
     restoreShouldUseTool version (("PATH", path) :: env)

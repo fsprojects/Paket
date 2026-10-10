@@ -551,14 +551,13 @@ Target.create "All" DoNothing
   ==> "All"
   |> ignore
 
-// NuGet runs before the integration tests: DotnetToolSpecs installs the Paket tool it packs into temp/.
 "All"
   ==> "MergePaketTool"
   =?> ("AddIconToExe", Environment.isWindows)
-  ==> "CalculateDownloadHash"
-  =?> ("NuGet", unlessBuildParams [ "SkipNuGet" ])
   =?> ("RunIntegrationTestsNet", unlessBuildParams [ "SkipTests"; "SkipIntegrationTests"; "SkipIntegrationTestsNet" ] )
   =?> ("RunIntegrationTestsNetCore", unlessBuildParams [ "SkipTests"; "SkipIntegrationTests"; "SkipIntegrationTestsNetCore" ] )
+  ==> "CalculateDownloadHash"
+  =?> ("NuGet", unlessBuildParams [ "SkipNuGet" ])
   ==> "BuildPackage"
   |> ignore
 

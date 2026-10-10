@@ -8,6 +8,7 @@ open NUnit.Framework
 open FsUnit
 open System
 open System.IO
+open System.IO.Compression
 open Paket.Logging
 
 let disableScenarioCleanup = false // change to true to debug a single test temporarily.
@@ -102,26 +103,57 @@ let prepareSdk scenario =
     copyRestoreTargets scenario
     cleanup
 
+/// The version of the Paket tool package packTool makes. Any version does: the package is made
+/// again for each test, from the build under test, and installed into a scenario folder.
+let paketToolPackageVersion = "0.0.0-integrationtest"
+
+/// Packs the paket of bin/net10.0 as a .NET tool into the folder, the way PackAsTool lays it out
+let private packTool folder =
+    let toolDir = FullName(__SOURCE_DIRECTORY__ + "../../../bin/net10.0")
+    Directory.CreateDirectory folder |> ignore
+    use zip = ZipFile.Open(folder @@ $"Paket.%s{paketToolPackageVersion}.nupkg", ZipArchiveMode.Create)
+    let addText (name:string) (text:string) =
+        use writer = new StreamWriter(zip.CreateEntry(name).Open())
+        writer.Write text
+    addText "Paket.nuspec" (sprintf """<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Paket</id>
+    <version>%s</version>
+    <authors>Paket</authors>
+    <description>The paket under test, packed as a .NET tool</description>
+    <packageTypes>
+      <packageType name="DotnetTool" />
+    </packageTypes>
+  </metadata>
+</package>
+""" paketToolPackageVersion)
+    addText "tools/net10.0/any/DotnetToolSettings.xml" """<?xml version="1.0" encoding="utf-8"?>
+<DotNetCliTool Version="1">
+  <Commands>
+    <Command Name="paket" EntryPoint="paket.dll" Runner="dotnet" />
+  </Commands>
+</DotNetCliTool>
+"""
+    for file in Directory.GetFiles(toolDir, "*", SearchOption.AllDirectories) do
+        let relativePath = file.Substring(toolDir.Length).TrimStart(Path.DirectorySeparatorChar).Replace('\\', '/')
+        zip.CreateEntryFromFile(file, "tools/net10.0/any/" + relativePath) |> ignore
+
 /// Like prepareSdk, but lets Paket.Restore.targets find paket on its own, the way it does
-/// for a user of the Paket .NET tool. Returns the cleanup, the version of the packed tool,
-/// and the environment to run dotnet with.
-/// The tool is installed from temp/ only, into a packages folder of the scenario: the
-/// global one may hold the nuget.org package of the same version.
-/// Only the package of the paket under test is installed, never one left by an earlier build.
+/// for a user of the Paket .NET tool. Returns the cleanup, the full version of the paket
+/// under test (with its "+<commit>"), and the environment to run dotnet with.
+/// The tool is packed from bin/net10.0 into a feed of the scenario, the only source of its
+/// nuget.config, and installed into a packages folder of the scenario: the global one may
+/// hold a package of the same version.
 let prepareSdkForTool scenario =
-    // the folder the NuGet build target packs into
-    let folder = FullName(__SOURCE_DIRECTORY__ + "../../../temp")
-    // the informational version, without the "+<commit>" the SDK appends
-    let version = Diagnostics.FileVersionInfo.GetVersionInfo(snd paketToolPath).ProductVersion.Split('+').[0]
-    if not (File.Exists(folder @@ $"Paket.%s{version}.nupkg")) then
-        let message = $"No Paket.%s{version}.nupkg in temp/, run the NuGet build target first"
-        // the CI always packs it, so a missing package there is a broken build, not a local run
-        if String.IsNullOrEmpty(Environment.GetEnvironmentVariable "CI") then Assert.Ignore message
-        else Assert.Fail message
+    let productVersion =
+        Diagnostics.FileVersionInfo.GetVersionInfo(FullName(__SOURCE_DIRECTORY__ + "../../../bin/net10.0/paket.dll")).ProductVersion
 
     let cleanup = prepare scenario
     copyRestoreTargets scenario
     let scenarioPath = scenarioTempPath scenario
+    let feed = scenarioPath @@ "tool-feed"
+    packTool feed
     File.WriteAllText(
         scenarioPath @@ "nuget.config",
         sprintf """<?xml version="1.0" encoding="utf-8"?>
@@ -131,7 +163,7 @@ let prepareSdkForTool scenario =
     <add key="paket-build" value="%s" />
   </packageSources>
 </configuration>
-""" folder)
+""" feed)
     // A manifest of its own, so that dotnet doesn't walk up to the one of the Paket repository,
     // neither to run `dotnet paket` nor to install a local tool
     Directory.CreateDirectory(scenarioPath @@ ".config") |> ignore
@@ -145,7 +177,7 @@ let prepareSdkForTool scenario =
         // which the feed of the scenario doesn't have
         "EnableWindowsTargeting", "false"
     ]
-    cleanup, version, env
+    cleanup, productVersion, env
 
 type OutputMsg =
   { IsError : bool; Message : string }
