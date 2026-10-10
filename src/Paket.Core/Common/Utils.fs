@@ -245,9 +245,6 @@ let ProgramFilesX86 =
 /// The system root environment variable. Typically "C:\Windows"
 let SystemRoot = Environment.GetEnvironmentVariable "SystemRoot"
 
-let isMonoRuntime =
-    not (Object.ReferenceEquals(Type.GetType "Mono.Runtime", null))
-
 /// Determines if the current system is an Unix system
 let isUnix =
     System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
@@ -269,19 +266,6 @@ let isLinux =
 let isWindows =
     System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
         System.Runtime.InteropServices.OSPlatform.Windows)
-
-
-/// Determines if the current system is a mono system
-/// Todo: Detect mono on windows
-[<Obsolete("use either isMonoRuntime or isUnix, this flag is always false when compiled for NETSTANDARD")>]
-let isMono =
-    false
-
-let monoPath =
-    if isMacOS && File.Exists "/Library/Frameworks/Mono.framework/Commands/mono" then
-        "/Library/Frameworks/Mono.framework/Commands/mono"
-    else
-        "mono"
 
 let isMatchingOperatingSystem (operatingSystemFilter : string option) =
     let aliasesForOs =
@@ -707,14 +691,9 @@ let fixDatesInArchive fileName =
     with
     | exn -> traceWarnfn "Could not fix timestamps in %s. Error: %s" fileName exn.Message
 
-let fixArchive fileName =
-    if isMonoRuntime then
-        fixDatesInArchive fileName
-
 let extractZipToDirectory (zipFileName:string) (directoryName:string) =
     Directory.CreateDirectory directoryName |> ignore
     try
-        fixArchive zipFileName
         ZipFile.ExtractToDirectory(zipFileName, directoryName)
     with
     | exn ->

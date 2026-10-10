@@ -89,8 +89,7 @@ let ``simple dependencies generates expected scripts``() =
             "nunit.fsx"
         ] |> Set.ofList
   
-    if not isMonoRuntime then // TODO: Fix me
-        Assert.AreEqual(expectedFiles,actualFiles)
+    Assert.AreEqual(expectedFiles,actualFiles)
 
 
 [<Test; Category("scriptgen")>]

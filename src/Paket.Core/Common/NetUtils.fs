@@ -68,7 +68,7 @@ let normalizeFeedUrl (source:string) =
 let envProxies () =
     let getEnvValue (name:string) =
         let v = Environment.GetEnvironmentVariable(name.ToUpperInvariant())
-        // under mono, env vars are case sensitive
+        // env vars are case sensitive outside Windows
         if isNull v then Environment.GetEnvironmentVariable(name.ToLowerInvariant()) else v
     let bypassList =
         let noproxyString = getEnvValue "NO_PROXY"
