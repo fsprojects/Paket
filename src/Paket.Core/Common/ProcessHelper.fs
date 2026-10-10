@@ -5,9 +5,6 @@ open System.IO
 open System
 open System.Collections.Generic
 
-/// Arguments on the Mono executable
-let mutable monoArguments = ""
-
 
 /// Searches the given directories for all occurrences of the given file name
 /// [omit]
@@ -86,10 +83,6 @@ let tryFindFileOnPath (file : string) : string option =
 
 /// Modifies the ProcessStartInfo according to the platform semantics
 let platformInfoAction (psi : ProcessStartInfo) =
-    if isMonoRuntime && psi.FileName.EndsWith ".exe" then
-        psi.Arguments <- monoArguments + " \"" + psi.FileName + "\" " + psi.Arguments
-        psi.FileName <- monoPath
-
     if psi.FileName.ToLowerInvariant().EndsWith(".dll") then
         // Run DotNetCore
         let exeName = if isUnix then "dotnet" else "dotnet.exe"
