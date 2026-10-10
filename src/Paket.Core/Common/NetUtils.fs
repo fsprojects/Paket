@@ -65,10 +65,6 @@ let normalizeFeedUrl (source:string) =
     | "http://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
     | source -> source
 
-#if CUSTOM_WEBPROXY
-type WebProxy = IWebProxy
-#endif
-
 let envProxies () =
     let getEnvValue (name:string) =
         let v = Environment.GetEnvironmentVariable(name.ToUpperInvariant())
@@ -100,24 +96,11 @@ let envProxies () =
         if isNull envVarValue then None else
         match Uri.TryCreate(envVarValue, UriKind.Absolute) with
         | true, envUri ->
-#if CUSTOM_WEBPROXY
-            Some
-                { new IWebProxy with
-                    member __.Credentials
-                        with get () = (Option.toObj (getCredentials envUri)) :> ICredentials
-                        and set value = ()
-                    member __.GetProxy _ =
-                        Uri (sprintf "http://%s:%d" envUri.Host envUri.Port)
-                    member __.IsBypassed (host : Uri) =
-                        Array.contains (string host) bypassList
-                }
-#else
             let proxy = WebProxy (Uri (sprintf "http://%s:%d" envUri.Host envUri.Port))
             proxy.Credentials <- Option.toObj (getCredentials envUri)
             proxy.BypassProxyOnLocal <- true
             proxy.BypassList <- bypassList
             Some proxy
-#endif
         | _ -> None
 
     let addProxy (map:Map<string, WebProxy>) scheme =
@@ -135,26 +118,12 @@ let getDefaultProxyFor =
       (fun (url:string) ->
             let uri = Uri url
             let getDefault () =
-#if CUSTOM_WEBPROXY
-                let result =
-                    { new IWebProxy with
-                        member __.Credentials
-                            with get () = null
-                            and set _value = ()
-                        member __.GetProxy _ = null
-                        member __.IsBypassed (_host : Uri) = true
-                    }
-#else
                 let result = WebRequest.GetSystemWebProxy()
-#endif
-#if CUSTOM_WEBPROXY
-                let proxy = result
-#else
                 let address = result.GetProxy uri
-                if address = uri then null else
+                // .NET Core answers null when no proxy applies, .NET Framework answers the url itself
+                if isNull address || address = uri then null else
                 let proxy = WebProxy address
                 proxy.BypassProxyOnLocal <- true
-#endif
                 proxy.Credentials <- CredentialCache.DefaultCredentials
                 proxy
 

@@ -10,7 +10,7 @@
     <Description>A description</Description>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' != 'net461'">
-    <DefineConstants>WEBPROXY_NETSTANDARD;TESTSUITE_RUNS_ON_DOTNETCORE;NO_UNIT_PLATFORMATTRIBUTE;@(DefineConstants)</DefineConstants>
+    <DefineConstants>TESTSUITE_RUNS_ON_DOTNETCORE;NO_UNIT_PLATFORMATTRIBUTE;@(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="FsiExtension.fs" />

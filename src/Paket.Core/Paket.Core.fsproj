@@ -15,7 +15,7 @@
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' != 'net461' ">
-    <DefineConstants>NO_BOOTSTRAPPER;NO_CONFIGURATIONMANAGER;CUSTOM_WEBPROXY;$(DefineConstants)</DefineConstants>
+    <DefineConstants>NO_BOOTSTRAPPER;NO_CONFIGURATIONMANAGER;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <DefineConstants>USE_WEB_CLIENT_FOR_UPLOAD;NO_MAXCONNECTIONPERSERVER</DefineConstants>

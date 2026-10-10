@@ -1,5 +1,6 @@
 #### Unreleased
 
+* The `paket` .NET tool now honours `no_proxy` and the system proxy settings, as `paket.exe` already did
 
 #### 11.0.0 - 2026-10-05
 
