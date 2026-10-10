@@ -137,10 +137,14 @@ let prepareSdkForTool scenario =
     Directory.CreateDirectory(scenarioPath @@ ".config") |> ignore
     File.WriteAllText(scenarioPath @@ ".config" @@ "dotnet-tools.json", """{ "version": 1, "isRoot": true, "tools": {} }""")
 
-    let env =
-        [ "NUGET_PACKAGES", scenarioPath @@ "nuget-packages"
-          // prepareSdk sets it for the whole test process
-          "PaketExePath", "" ]
+    let env = [
+        "NUGET_PACKAGES", scenarioPath @@ "nuget-packages"
+        // prepareSdk sets it for the whole test process
+        "PaketExePath", ""
+        // The Linux CI sets it, and it makes the restore ask for Microsoft.WindowsDesktop.App.Ref,
+        // which the feed of the scenario doesn't have
+        "EnableWindowsTargeting", "false"
+    ]
     cleanup, version, env
 
 type OutputMsg =
