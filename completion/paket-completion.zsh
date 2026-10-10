@@ -43,19 +43,12 @@
 #
 # PAKET ALIAS
 #
-# For easier consumption of Paket (without paket.sh or paket.cmd) it is advised
+# Paket is a .NET tool. When it is a local tool of the repository, it is advised
 # to create an alias and always run Paket from the repository root.
-#
-# Also have a look at Paket's magic mode.
-# https://fsprojects.github.io/Paket/bootstrapper.html#Magic-mode
 #
 # Somewhere in your ~/.zshrc:
 #
-#   if [[ "$OS" != Windows* ]]; then
-#     alias paket='mono ./.paket/paket.exe'
-#   else
-#     alias paket='./.paket/paket.exe'
-#   fi
+#   alias paket='dotnet paket'
 #
 # Also ensure that zsh completes aliases based on the expanded alias contents.
 # http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETEALIASES
@@ -69,42 +62,27 @@
 #   compdef _paket paket
 #
 #
-# MONO
-#
-# If you use Mono (e.g. on Linux or macOS) and do not have Mono completion
-# installed, you need to define that mono invokes other programs:
-#
-#   compdef _precommand mono
-#
-# This is similar to `nohup` invoking the "real" program that needs to be
-# completed. More details: https://unix.stackexchange.com/a/178054/72946
-#
-# For an exemplar mono completion, have a look here:
-# https://github.com/agross/dotfiles/tree/master/mono/functions/_mono
-#
-#
 # CONFIGURATION
 #
 # You can configure some aspects of Paket completion. Add these to your
 # ~/.zshrc.
 #
-# Define where to look for paket.exe
+# Define where to look for paket
 #
 #   Depending on what should be completed the Paket executable will be run by
-#   the completion script. The completion script searches for a local
-#   installation at ./.paket/paket.exe first. Local installs will be prepended
-#   with mono unless you are running Windows. Global installations will be
-#   looked at last (i.e. paket in the $PATH). They are not prepended with
-#   mono.
+#   the completion script. The completion script searches for paket installed
+#   with `dotnet tool install paket --tool-path .paket` first, then for a local
+#   tool of ./.config/dotnet-tools.json (run with `dotnet paket`), then for a
+#   global tool (i.e. paket in the $PATH).
 #
-#   To override the list of possible locations for local installations of
-#   paket.exe, define the following `paket-executable` style. The list of values
-#   will be searched as defined.
+#   To override the list of possible locations for paket installed with
+#   --tool-path, define the following `paket-executable` style. The list of
+#   values will be searched as defined.
 #
 #     # This is the default.
-#     zstyle ':completion::complete:paket:*' paket-executable './.paket/paket.exe'
+#     zstyle ':completion::complete:paket:*' paket-executable './.paket/paket'
 #     # Useful for Paket developers: Prefer the locally built version in bin over the one in .paket.
-#     zstyle ':completion::complete:paket:*' paket-executable './bin/paket.exe' './.paket/paket.exe'
+#     zstyle ':completion::complete:paket:*' paket-executable './bin/net10.0/paket' './.paket/paket'
 #
 #
 # Enable infix matching for package IDs
@@ -1417,14 +1395,14 @@ _paket_executable() {
     locations=(./.paket/$service)
   fi
 
-  if [[ $OS != Windows* ]]; then
-    local mono=mono
-  fi
-
   local location
   for location in $locations; do
-    [[ -f "$location" ]] && printf '%s "%s"' "$mono" "$location" && return
+    [[ -f "$location" ]] && printf '"%s"' "$location" && return
   done
+
+  if [[ -f .config/dotnet-tools.json ]] && grep -q '"paket"' .config/dotnet-tools.json; then
+    printf 'dotnet paket' && return
+  fi
 
   if (($+commands[paket])); then
     printf '"%s"' "$commands[paket]" && return
