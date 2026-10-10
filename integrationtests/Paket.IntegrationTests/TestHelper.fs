@@ -102,35 +102,22 @@ let prepareSdk scenario =
     copyRestoreTargets scenario
     cleanup
 
-/// The Paket .NET tool package the NuGet build target packs into temp/, as (folder, version).
-let paketToolPackage =
-    let folder = FullName(__SOURCE_DIRECTORY__ + "../../../temp")
-    let fileName = System.Text.RegularExpressions.Regex @"^Paket\.(\d+\.\d+\.\d+.*)\.nupkg$"
-    if not (Directory.Exists folder) then None else
-    Directory.GetFiles(folder, "Paket.*.nupkg")
-    |> Array.filter (fun file -> not (file.EndsWith ".symbols.nupkg"))
-    |> Array.choose (fun file ->
-        let m = fileName.Match(Path.GetFileName file)
-        if m.Success then Some(FileInfo file, m.Groups.[1].Value) else None)
-    |> Array.sortByDescending (fun (file, _) -> file.LastWriteTimeUtc)
-    |> Array.tryHead
-    |> Option.map (fun (file, version) -> file.DirectoryName, version)
-
 /// Like prepareSdk, but lets Paket.Restore.targets find paket on its own, the way it does
 /// for a user of the Paket .NET tool. Returns the cleanup, the version of the packed tool,
 /// and the environment to run dotnet with.
 /// The tool is installed from temp/ only, into a packages folder of the scenario: the
 /// global one may hold the nuget.org package of the same version.
+/// Only the package of the paket under test is installed, never one left by an earlier build.
 let prepareSdkForTool scenario =
-    let folder, version =
-        match paketToolPackage with
-        | Some package -> package
-        | None ->
-            let message = "No Paket .NET tool package in temp/, run the NuGet build target first"
-            // the CI always packs it, so a missing package there is a broken build, not a local run
-            if String.IsNullOrEmpty(Environment.GetEnvironmentVariable "CI") then Assert.Ignore message
-            else Assert.Fail message
-            failwith "unreachable"
+    // the folder the NuGet build target packs into
+    let folder = FullName(__SOURCE_DIRECTORY__ + "../../../temp")
+    // the informational version, without the "+<commit>" the SDK appends
+    let version = Diagnostics.FileVersionInfo.GetVersionInfo(snd paketToolPath).ProductVersion.Split('+').[0]
+    if not (File.Exists(folder @@ $"Paket.%s{version}.nupkg")) then
+        let message = $"No Paket.%s{version}.nupkg in temp/, run the NuGet build target first"
+        // the CI always packs it, so a missing package there is a broken build, not a local run
+        if String.IsNullOrEmpty(Environment.GetEnvironmentVariable "CI") then Assert.Ignore message
+        else Assert.Fail message
 
     let cleanup = prepare scenario
     copyRestoreTargets scenario
