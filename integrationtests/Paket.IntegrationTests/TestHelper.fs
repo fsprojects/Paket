@@ -27,13 +27,6 @@ let paketToolPath =
     "", FullName(__SOURCE_DIRECTORY__ + "../../../bin/net461/paket.exe")
 #endif
 
-let paketBootstrapperToolPath =
-#if PAKET_NETCORE
-    dotnetToolPath, FullName(__SOURCE_DIRECTORY__ + "../../../bin_bootstrapper/net10.0/paket.bootstrapper.dll")
-#else
-    "", FullName(__SOURCE_DIRECTORY__ + "../../../bin_bootstrapper/net461/paket.bootstrapper.exe")
-#endif
-
 let integrationTestPath = FullName(__SOURCE_DIRECTORY__ + "../../../integrationtests/scenarios")
 let scenarioTempPath scenario = Path.Combine(integrationTestPath,scenario,"temp")
 let originalScenarioPath scenario = Path.Combine(integrationTestPath,scenario,"before")
