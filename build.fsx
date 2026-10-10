@@ -239,10 +239,8 @@ Target.create "RunTests" (fun _ ->
                 NoBuild = true
             }) projFile
 
-    runTest "net" "tests/Paket.Tests/Paket.Tests.fsproj" "net461"
     runTest "netcore" "tests/Paket.Tests/Paket.Tests.fsproj" "net10.0"
 
-    runTest "net" "tests/Paket.Bootstrapper.Tests/Paket.Bootstrapper.Tests.csproj" "net461"
     runTest "netcore" "tests/Paket.Bootstrapper.Tests/Paket.Bootstrapper.Tests.csproj" "net10.0"
 )
 
@@ -338,8 +336,8 @@ Target.create "MergePaketTool" (fun _ ->
 )
 "Publish" ==> "MergePaketTool" |> ignore
 
-Target.create "RunIntegrationTestsNet" (fun _ ->
-    Directory.create "tests_result/net/Paket.IntegrationTests"
+Target.create "RunIntegrationTestsNetCore" (fun _ ->
+    Directory.create "tests_result/netcore/Paket.IntegrationTests"
 
     // improves the speed of the test-suite by disabling the runtime resolution.
     System.Environment.SetEnvironmentVariable("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
@@ -351,30 +349,6 @@ Target.create "RunIntegrationTestsNet" (fun _ ->
             // timeout kills the run before the trx is written.
             // The suite takes a few minutes when it is healthy, so 30 minutes is already a wide
             // margin, and a hung run gives its diagnosis back twice as fast.
-            Common =
-                { dotnetCli c.Common with
-                    Timeout = Some (TimeSpan.FromMinutes 30.)
-                    Verbosity = Some DotNet.Verbosity.Normal }
-            Configuration = DotNet.BuildConfiguration.Release
-            Framework = Some "net461"
-            Filter = Some testCategoryFilter
-            Logger = Some (sprintf "trx;LogFileName=%s" ("tests_result/net/Paket.IntegrationTests/TestResult.trx" |> Path.getFullName))
-        }) "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
-
-)
-"Clean" ==> "Publish" ==> "RunIntegrationTestsNet" |> ignore
-
-
-Target.create "RunIntegrationTestsNetCore" (fun _ ->
-    Directory.create "tests_result/netcore/Paket.IntegrationTests"
-
-    // improves the speed of the test-suite by disabling the runtime resolution.
-    System.Environment.SetEnvironmentVariable("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
-
-    DotNet.test (fun c ->
-        { c with
-            // Normal verbosity for the same reason as the net461 pass above: a hung run has to
-            // name the test that never returned.
             Common =
                 { dotnetCli c.Common with
                     Timeout = Some (TimeSpan.FromMinutes 30.)
@@ -554,7 +528,6 @@ Target.create "All" DoNothing
 "All"
   ==> "MergePaketTool"
   =?> ("AddIconToExe", Environment.isWindows)
-  =?> ("RunIntegrationTestsNet", unlessBuildParams [ "SkipTests"; "SkipIntegrationTests"; "SkipIntegrationTestsNet" ] )
   =?> ("RunIntegrationTestsNetCore", unlessBuildParams [ "SkipTests"; "SkipIntegrationTests"; "SkipIntegrationTestsNetCore" ] )
   ==> "CalculateDownloadHash"
   =?> ("NuGet", unlessBuildParams [ "SkipNuGet" ])
