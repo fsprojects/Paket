@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Paket.Bootstrapper.DownloadStrategies
 {
@@ -34,8 +36,18 @@ namespace Paket.Bootstrapper.DownloadStrategies
         /// </summary>
         internal static string CapToLastSupportedVersion(string version)
         {
-            if (String.IsNullOrWhiteSpace(version))
+            if (!IsPastLastSupportedVersion(version))
                 return version;
+
+            WarnUnsupportedVersion(version, LastSupportedVersion);
+
+            return LastSupportedVersion;
+        }
+
+        internal static bool IsPastLastSupportedVersion(string version)
+        {
+            if (String.IsNullOrWhiteSpace(version))
+                return false;
 
             SemVer parsed;
             try
@@ -46,17 +58,32 @@ namespace Paket.Bootstrapper.DownloadStrategies
             {
                 // Never let an unparseable version break the bootstrapper; let the caller deal
                 // with it as it did before.
-                return version;
+                return false;
             }
 
-            if (parsed.Major <= LastSupportedMajorVersion)
-                return version;
+            return parsed.Major > LastSupportedMajorVersion;
+        }
 
+        internal static void WarnUnsupportedVersion(string version, string stayingOn)
+        {
             ConsoleImpl.WriteWarning(
                 "Paket {0} is available, but it is published as a .NET tool only and cannot be downloaded by the bootstrapper. Staying on {1}. To move on, run: dotnet tool install paket",
-                version, LastSupportedVersion);
+                version, stayingOn);
+        }
 
-            return LastSupportedVersion;
+        /// <summary>
+        /// Picks the best version we can still download among every published one, rather than
+        /// falling back to the constant the base class clamps to.
+        /// </summary>
+        internal static string LatestSupportedVersion(IEnumerable<string> versions, bool ignorePrerelease)
+        {
+            var latestVersion = versions.
+                    Select(SemVer.Create).
+                    Where(x => !ignorePrerelease || (x.PreRelease == null)).
+                    Where(x => x.Major <= LastSupportedMajorVersion).
+                    OrderBy(x => x).
+                    LastOrDefault(x => !String.IsNullOrWhiteSpace(x.Original));
+            return latestVersion != null ? latestVersion.Original : String.Empty;
         }
 
         public void DownloadVersion(string latestVersion, string target, PaketHashFile hashfile)

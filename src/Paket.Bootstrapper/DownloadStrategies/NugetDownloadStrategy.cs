@@ -37,6 +37,14 @@ namespace Paket.Bootstrapper.DownloadStrategies
                 return request;
             }
 
+            internal static IEnumerable<string> ParseVersions(string versions)
+            {
+                return versions.
+                    Trim('[', ']').
+                    Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).
+                    Select(x => x.Trim('"'));
+            }
+
             internal string GetLatestPackage()
             {
                 return String.Format(GetLatestFromNugetUrlTemplate, nugetSource, packageName);
@@ -93,22 +101,9 @@ namespace Paket.Bootstrapper.DownloadStrategies
             {
                 var apiHelper = new NugetApiHelper(PaketNugetPackageName, NugetSource);
                 var versionRequestUrl = apiHelper.GetAllPackageVersions(!ignorePrerelease);
-                var versions = WebRequestProxy.DownloadString(versionRequestUrl);
-                allVersions = versions.
-                    Trim('[', ']').
-                    Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).
-                    Select(x => x.Trim('"'));
+                allVersions = NugetApiHelper.ParseVersions(WebRequestProxy.DownloadString(versionRequestUrl));
             }
-            var latestVersion = allVersions.
-                    Select(SemVer.Create).
-                    Where(x => !ignorePrerelease || (x.PreRelease == null)).
-                    // This is the only strategy that sees every published version, so it can pick
-                    // the best one we still support instead of falling back to the constant the
-                    // base class clamps to.
-                    Where(x => x.Major <= LastSupportedMajorVersion).
-                    OrderBy(x => x).
-                    LastOrDefault(x => !String.IsNullOrWhiteSpace(x.Original));
-            return latestVersion != null ? latestVersion.Original : String.Empty;
+            return LatestSupportedVersion(allVersions, ignorePrerelease);
         }
 
         protected override void DownloadVersionCore(string latestVersion, string target, PaketHashFile hashfile)
