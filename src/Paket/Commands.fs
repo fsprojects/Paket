@@ -680,6 +680,7 @@ type Command =
     | [<AltCommandLine("-s");Inherit>]                  Silent
     | [<AltCommandLine("-v");Inherit>]                  Verbose
     | [<Inherit>]                                       Log_File of path:string
+    // Passed by the bootstrappers that run Paket, including the .NET tool they install with --as-tool
     | [<Hidden;Inherit>]                                From_Bootstrapper
     // subcommands
     | [<CustomCommandLine("add")>]                      Add of ParseResults<AddArgs>

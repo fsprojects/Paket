@@ -24,8 +24,7 @@ build.cmd Build              # Build only
 build.cmd QuickTest          # Run unit tests without full build
 build.cmd RunTests           # Run all unit tests
 build.cmd QuickIntegrationTests  # Run quick integration tests (scriptgen category)
-build.cmd RunIntegrationTestsNet # Run full .NET Framework integration tests
-build.cmd RunIntegrationTestsNetCore # Run full .NET Core integration tests
+build.cmd RunIntegrationTestsNetCore # Run full integration tests
 
 # Skip specific stages: these are build parameters, so they take a value and
 # come after the target name (they can also be passed as environment variables)
@@ -33,8 +32,8 @@ build.cmd BuildPackage SkipTests=true            # Skip all tests
 build.cmd BuildPackage SkipIntegrationTests=true # Skip integration tests only
 ```
 
-Mono is still required on Linux for the `net461` test passes. `MergePaketTool` no longer needs it:
-it repacks through the `dotnet-ilrepack` tool.
+The build only needs the .NET SDK, on every OS: Paket is a .NET tool since 12.0, and neither Mono nor
+.NET Framework tooling is required.
 
 ## Testing
 
@@ -58,7 +57,7 @@ Tests use NUnit. Integration tests have scenario folders under `integrationtests
 
 - **src/Paket.Core/** - Core library with all dependency management logic (F#)
 - **src/Paket/** - CLI executable (F#, references Paket.Core)
-- **src/Paket.Bootstrapper/** - Downloads paket.exe on first run (C#)
+- **src/Paket.LegacyStub/** - The `paket.exe` stub shipped for bootstrappers older than 11.0 (C#, net461)
 - **src/FSharp.DependencyManager.Paket/** - F# Interactive integration (`#r "paket:"` support)
 
 ### Paket.Core Organization
@@ -94,16 +93,11 @@ Commands are defined in `src/Paket/Commands.fs` using Argu. Each command has cor
 
 ## Target Frameworks
 
-- **Paket.Core**: `net461` and `netstandard2.0`
-- **Paket CLI**: `net461` and `net10.0`
-- **Tests**: `net461` and `net10.0` (some tests may be framework-specific via `#if` directives)
-
-## Conditional Compilation
-
-Key symbols used:
-- `DOTNETCORE` / `NETSTANDARD1_5` / `NETSTANDARD1_6` - .NET Core builds
-- `NO_BOOTSTRAPPER` - Exclude bootstrapper code paths
-- `USE_WEB_CLIENT_FOR_UPLOAD` - Use WebClient on .NET Framework for uploads
+- **Paket.Core**: `netstandard2.0`
+- **Paket CLI**: `net10.0`, packed as the `paket` .NET tool
+- **FSharp.DependencyManager.Paket**: `netstandard2.0`
+- **Tests**: `net10.0`
+- **Paket.LegacyStub**: `net461`, the only .NET Framework project
 
 ## Integration Test Scenarios
 
@@ -114,4 +108,4 @@ Each scenario in `integrationtests/scenarios/` typically has:
 
 ## Release Process
 
-The build script reads `RELEASE_NOTES.md` for version info. Release builds use the `dotnet-ilrepack` tool to merge assemblies into a single `paket.exe`. The merged executable goes to `bin/merged/`.
+The build script reads `RELEASE_NOTES.md` for version info. Releases publish the NuGet packages, with the `paket` .NET tool, and the `paket.exe` stub of `bin/legacy-stub/` as a GitHub release asset, along with `paket.targets` for the auto-restore of Paket 11 and earlier.

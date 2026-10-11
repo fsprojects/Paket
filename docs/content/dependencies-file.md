@@ -62,10 +62,11 @@ Paket supports the following source types:
 
 ### Required Paket version
 
-It is possible to require a specific Paket version for a
-[`paket.dependencies` file](dependencies-file.html). This can be achieved by a
-line which starts with `version` followed by a requested `paket.exe` version and
-optionally [bootstrapper command line](bootstrapper.html) arguments:
+Up to Paket 11, `paket.bootstrapper.exe` read a line which starts with `version`
+followed by the requested `paket.exe` version and optionally bootstrapper
+command line arguments. Paket itself ignores this line: with the .NET tool, pin
+the version of Paket in `.config/dotnet-tools.json` instead, see
+[installation](installation.html#Local-tool).
 
 ```paket
 version 3.24.1

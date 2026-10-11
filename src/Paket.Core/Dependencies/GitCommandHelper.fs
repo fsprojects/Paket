@@ -21,7 +21,7 @@ let gitPath =
         "git"
     else
         let ev = Environment.GetEnvironmentVariable "GIT"
-        if not (String.IsNullOrWhiteSpace ev) then ev else ProcessHelper.findPath "GitPath" GitPath "git.exe"
+        if not (String.IsNullOrWhiteSpace ev) then ev else ProcessHelper.findPath GitPath "git.exe"
 
 
 /// Runs git.exe with the given command in the given repository directory.

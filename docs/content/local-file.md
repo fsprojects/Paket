@@ -65,7 +65,7 @@ The line can be translated to:
 Now when running [`paket restore`](paket-restore.html), we get the following:
 
 ```sh
-$ .paket\paket.exe restore
+$ dotnet paket restore
 Paket version 3.0.0.0
 paket.local override: nuget Argu group main ->
     file:///c:\github\Argu feature_branch build:"build.cmd NuGet", Packages: /bin/
