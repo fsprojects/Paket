@@ -170,33 +170,31 @@ let ``Xamarin.Mac should be compatible with netstandard2.0``() =
     |> shouldEqual true
 
 [<Test>]
-let ``net9.0-ios should be compatible with net8.0-ios``() =
-    let ``net8.0-ios`` = TargetProfile.SinglePlatform (DotNet8WithOs Net8Os.IOs)
-    let ``net9.0-ios`` = TargetProfile.SinglePlatform (DotNet9WithOs Net9Os.IOs)
+let ``net9.0 to net11.0 OS-specific frameworks fall back to the previous version for the same OS``() =
+    let withOs version os =
+        match version with
+        | 8 -> DotNet8WithOs os
+        | 9 -> DotNet9WithOs os
+        | 10 -> DotNet10WithOs os
+        | 11 -> DotNet11WithOs os
+        | _ -> failwithf "no OS-specific framework for net%d.0" version
+        |> TargetProfile.SinglePlatform
 
-    ``net9.0-ios``.IsAtLeast ``net8.0-ios``
-    |> shouldEqual true
+    let oses = KnownTargetProfiles.DotNet8OperatingSystems
+    let errors = [
+        for os in oses do
+            for version in 9 .. 11 do
+                let current = withOs version os
+                let previous = withOs (version - 1) os
+                if not (current.IsAtLeast previous) then sprintf "%O should be at least %O" current previous
+                if not (previous.IsSupportedBy current) then sprintf "%O should support %O" current previous
+                if previous.IsAtLeast current then sprintf "%O should not be at least %O" previous current
+                for other in oses |> List.filter ((<>) os) do
+                    let otherPrevious = withOs (version - 1) other
+                    if otherPrevious.IsSupportedBy current then sprintf "%O should not support %O" current otherPrevious
+            // transitively, down to .NET 8
+            if not ((withOs 8 os).IsSupportedBy (withOs 11 os)) then sprintf "net11.0-%O should support net8.0-%O" os os
+    ]
 
-    ``net8.0-ios``.IsSupportedBy ``net9.0-ios``
-    |> shouldEqual true
-
-    ``net8.0-ios``.IsSmallerThan ``net9.0-ios``
-    |> shouldEqual true
-
-[<Test>]
-let ``net11.0-android should be compatible with net8.0-android``() =
-    let ``net8.0-android`` = TargetProfile.SinglePlatform (DotNet8WithOs Net8Os.Android)
-    let ``net10.0-android`` = TargetProfile.SinglePlatform (DotNet10WithOs Net10Os.Android)
-    let ``net11.0-android`` = TargetProfile.SinglePlatform (DotNet11WithOs Net11Os.Android)
-
-    ``net11.0-android``.IsAtLeast ``net10.0-android``
-    |> shouldEqual true
-
-    ``net10.0-android``.IsSupportedBy ``net11.0-android``
-    |> shouldEqual true
-
-    ``net8.0-android``.IsSupportedBy ``net11.0-android``
-    |> shouldEqual true
-
-    ``net10.0-android``.IsSmallerThan ``net11.0-android``
-    |> shouldEqual true
+    if not (List.isEmpty errors) then
+        failwith (String.concat "\n" errors)
