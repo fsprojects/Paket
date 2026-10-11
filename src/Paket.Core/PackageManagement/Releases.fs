@@ -25,19 +25,22 @@ let private doesNotExistsOrIsNewer (file : FileInfo) latest =
     let currentVersion = SemVer.Parse verInfo.FileVersion
     currentVersion < latest
 
-/// Downloads the latest version of the given files to the destination dir
-let private downloadLatestVersionOf files destDir =
+/// The release of the given informational version: its tag is the version without the build metadata.
+let releaseVersion (informationalVersion : string) =
+    let plus = informationalVersion.IndexOf '+'
+    SemVer.Parse(if plus < 0 then informationalVersion else informationalVersion.Substring(0, plus))
+
+/// Downloads the given files of the running Paket's release to the destination dir.
+/// Not the latest release: from Paket 12 on, it no longer carries paket.bootstrapper.exe, and its
+/// paket.targets looks for the .NET tool instead of paket.exe.
+let private downloadReleaseVersionOf files destDir =
     let auth = Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN"
                |> fun x -> if isNull(x) then None else Some(Token(x))
 
     let client = createHttpClient(Constants.GitHubUrl, auth)
 
     trial {
-        let latest = "https://github.com/fsprojects/Paket/releases/latest";
-        let! data = client |> downloadStringSync latest
-        let title = data.Substring(data.IndexOf("<title>") + 7, (data.IndexOf("</title>") + 8 - data.IndexOf("<title>") + 7)) // grabs everything in the <title> tag
-        let version = title.Split(' ').[1] // Release, 1.34.0, etc, etc, etc <-- the release number is the second part fo this split string
-        let latestVersion = SemVer.Parse version
+        let version = releaseVersion paketVersion
 
         let files =
             files
@@ -45,23 +48,23 @@ let private downloadLatestVersionOf files destDir =
 
         let isOudated =
             files
-            |> List.exists (fun file -> doesNotExistsOrIsNewer file latestVersion)
+            |> List.exists (fun file -> doesNotExistsOrIsNewer file version)
 
         let! downloads =
             if isOudated then files else []
-            |> List.map (fun file -> download latestVersion file client)
+            |> List.map (fun file -> download version file client)
             |> collect
         
         ()
     }
 
-/// Downloads the latest version of the paket.bootstrapper and paket.targets to the .paket dir
+/// Downloads the paket.bootstrapper and paket.targets of the running Paket's release to the .paket dir
 let downloadLatestBootstrapperAndTargets environment =
     let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
-    downloadLatestVersionOf [Constants.TargetsFileName; Constants.BootstrapperFileName] exeDir
+    downloadReleaseVersionOf [Constants.TargetsFileName; Constants.BootstrapperFileName] exeDir
 
-/// Downloads the latest version of the paket.bootstrapper and paket.targets to the .paket dir
+/// Downloads the paket.targets of the running Paket's release to the .paket dir
 let downloadLatestTargets environment =
     let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
-    downloadLatestVersionOf [Constants.TargetsFileName] exeDir
+    downloadReleaseVersionOf [Constants.TargetsFileName] exeDir
 

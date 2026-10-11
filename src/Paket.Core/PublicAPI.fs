@@ -447,7 +447,7 @@ type Dependencies(dependenciesFileName: string) =
         |> this.Process
         |> List.map (fun (g, p,_,newVersion) -> g.ToString(),p.ToString(),newVersion)
 
-    /// Downloads the latest paket.bootstrapper into the .paket folder and try to rename it to paket.exe in order to activate magic mode.
+    /// Downloads the paket.bootstrapper of the running Paket's release into the .paket folder and try to rename it to paket.exe in order to activate magic mode.
     member this.DownloadLatestBootstrapper() : unit =
         RunInLockedAccessMode(
             Path.Combine(this.RootPath,Constants.PaketFilesFolderName),
