@@ -7,6 +7,7 @@
 * The release carries the `paket.targets` and `paket.bootstrapper.exe` of the latest Paket 11 release, for Paket 11.0.0 and earlier, which download them from the latest release on `auto-restore on`, `convert-from-nuget` and `init`, and for the `--self` of the bootstrappers older than 11.0
 * `paket auto-restore on` writes `paket.targets` from Paket itself instead of downloading it from the latest GitHub release, so it works offline and matches the running Paket
 * `#r "paket:"` in F# scripts finds the Paket .NET tool: installed with `--tool-path`, as a local tool of the manifest, as a global tool, or restored in the NuGet packages folder
+* Recognize the .NET 11 monikers: `net11.0`, `net11.0-windows...`, `net11.0-android` and the other OS-specific ones, and `netcoreapp11.0` - https://github.com/fsprojects/Paket/pull/4439
 * The conditions written in project files now list the OS-specific frameworks of .NET 9 to 11 (`net9.0-android`, `net10.0-ios`, `net11.0-macos`...), which were left out in favour of their .NET 8 counterparts
 * The OS-specific frameworks of .NET 9 to 11 fall back to the previous .NET version for the same OS, as the Windows ones do: a `net11.0-android` project can use the `net10.0-android` assets and dependencies of a package
 
