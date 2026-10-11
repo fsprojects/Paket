@@ -28,6 +28,13 @@ module FsiExtension =
               e.RequestingAssembly
       )
       let checker = FSharpChecker.Create(suggestNamesForErrors=true, keepAssemblyContents=true)
+      // The package manager looks for a paket.dependencies from the folder of the script up.
+      // A script inside the repository would pull in the one of Paket itself, whose github
+      // dependencies hit the rate-limited api.github.com. The folder name stays fixed, since
+      // the package manager keeps its work in a temp folder named after it.
+      let scriptDir = Path.Combine(Path.GetTempPath(), "paket-fsi-extension-test")
+      Directory.CreateDirectory scriptDir |> ignore
+      let scriptPath = Path.Combine(scriptDir, "test.fsx")
       let sourceText = """
       #r "paket: nuget FSharp.Data"
       let v = FSharp.Data.JsonValue.Boolean true
@@ -36,7 +43,7 @@ module FsiExtension =
         // "--", not "/": the compiler only honours slash-prefixed options on Windows, since
         // elsewhere "/compilertool:..." is indistinguishable from a path. Passing them with a
         // slash on Linux left the paket package manager unregistered.
-        checker.GetProjectOptionsFromScript("test.fsx", SourceText.ofString sourceText, otherFlags = [| "--langversion:preview"; $"--compilertool:%s{pathToExtension}" |] )
+        checker.GetProjectOptionsFromScript(scriptPath, SourceText.ofString sourceText, otherFlags = [| "--langversion:preview"; $"--compilertool:%s{pathToExtension}" |] )
         |> Async.RunSynchronously
 
       // Without this the `#r "paket:"` resolution failing shows up further down as an
@@ -48,7 +55,7 @@ module FsiExtension =
           |> String.concat Environment.NewLine
           |> failwithf "Resolving '#r \"paket: nuget FSharp.Data\"' through %s reported:%s%s" pathToExtension Environment.NewLine
 
-      let _, answer = checker.ParseAndCheckFileInProject("test.fsx", 0, SourceText.ofString sourceText, projectOptions) |> Async.RunSynchronously
+      let _, answer = checker.ParseAndCheckFileInProject(scriptPath, 0, SourceText.ofString sourceText, projectOptions) |> Async.RunSynchronously
       match answer with
       | FSharpCheckFileAnswer.Succeeded(result) ->
         Assert.IsTrue result.HasFullTypeCheckInfo

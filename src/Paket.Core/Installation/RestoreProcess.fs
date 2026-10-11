@@ -255,6 +255,10 @@ let extractRestoreTargets root =
         verbosefn "Skipping extraction of Paket.Restore.targets - if it was enabled, it would have been extracted to: %s (Can be re-enabled with PAKET_SKIP_RESTORE_TARGETS=false or deleting the environment variable to revert to default behavior)" path
         path
 
+/// Extracts the paket.targets that `paket auto-restore on` imports into the projects without the SDK
+let extractPaketTargets root =
+    extractElement root Constants.TargetsFileName |> snd
+
 let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package) =
     async {
         let! package, content = ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package, false)

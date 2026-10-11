@@ -65,29 +65,40 @@ let normalizeFeedUrl (source:string) =
     | "http://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
     | source -> source
 
-#if CUSTOM_WEBPROXY
-type WebProxy = IWebProxy
-#endif
-
 let envProxies () =
     let getEnvValue (name:string) =
         let v = Environment.GetEnvironmentVariable(name.ToUpperInvariant())
-        // under mono, env vars are case sensitive
+        // env vars are case sensitive outside Windows
         if isNull v then Environment.GetEnvironmentVariable(name.ToLowerInvariant()) else v
     let bypassList =
         let noproxyString = getEnvValue "NO_PROXY"
         if String.IsNullOrEmpty noproxyString then [||] else
-        // Each comma-separated entry may contain '*' as a wildcard. We escape the entry as a
-        // regex, but must treat '*' specially: escaping the whole string first (as was done
-        // previously) turns '*' into the literal '\*', so a later ".Replace(\"*\", \".*\")" has
-        // no effect and wildcard bypass entries (e.g. "*.internal.company.com") never match.
-        // Instead, split on '*', escape each literal segment, and re-join with ".*".
-        let escapeWithWildcard (entry:string) =
-            entry.Split('*')
-            |> Array.map System.Text.RegularExpressions.Regex.Escape
-            |> String.concat ".*"
+        // As in curl, an entry matches the host and its subdomains, and "*" alone matches every
+        // host. WebProxy matches each regex against "scheme://host[:port]", so it is anchored
+        // there: "corp.com" must not bypass "notcorp.com" nor "corp.com.example.org".
+        // A leading "." or "*." only says "and its subdomains", which every entry already does.
+        // A '*' left inside the entry is a wildcard within the host: split on it, escape each
+        // literal segment, and re-join.
+        // A trailing "." (fully qualified name) is dropped, and a bare IPv6 address gets the
+        // brackets it has in a url.
+        let toBypassRegex (entry:string) =
+            let domain =
+                let domain =
+                    if entry.StartsWith "*." then entry.Substring 2
+                    elif entry.StartsWith "." then entry.Substring 1
+                    else entry
+                let domain = domain.TrimEnd('.')
+                let isBareIPv6 = not (domain.StartsWith "[") && domain.Split(':').Length > 2
+                if isBareIPv6 then "[" + domain + "]" else domain
+            let pattern =
+                domain.Split('*')
+                |> Array.map System.Text.RegularExpressions.Regex.Escape
+                |> String.concat "[^/:]*"
+            sprintf @"^[a-z][a-z0-9+.-]*://([^/:]+\.)?%s(:\d+)?$" pattern
         noproxyString.Split([| ',' |], StringSplitOptions.RemoveEmptyEntries)
-        |> Array.map escapeWithWildcard
+        |> Array.map (fun entry -> entry.Trim())
+        |> Array.filter (fun entry -> entry <> "")
+        |> Array.map (fun entry -> if entry = "*" then ".*" else toBypassRegex entry)
     let getCredentials (uri:Uri) =
         let userPass = uri.UserInfo.Split([| ':' |], 2)
         if userPass.Length <> 2 || userPass.[0].Length = 0 then None else
@@ -100,24 +111,11 @@ let envProxies () =
         if isNull envVarValue then None else
         match Uri.TryCreate(envVarValue, UriKind.Absolute) with
         | true, envUri ->
-#if CUSTOM_WEBPROXY
-            Some
-                { new IWebProxy with
-                    member __.Credentials
-                        with get () = (Option.toObj (getCredentials envUri)) :> ICredentials
-                        and set value = ()
-                    member __.GetProxy _ =
-                        Uri (sprintf "http://%s:%d" envUri.Host envUri.Port)
-                    member __.IsBypassed (host : Uri) =
-                        Array.contains (string host) bypassList
-                }
-#else
             let proxy = WebProxy (Uri (sprintf "http://%s:%d" envUri.Host envUri.Port))
             proxy.Credentials <- Option.toObj (getCredentials envUri)
             proxy.BypassProxyOnLocal <- true
             proxy.BypassList <- bypassList
             Some proxy
-#endif
         | _ -> None
 
     let addProxy (map:Map<string, WebProxy>) scheme =
@@ -130,37 +128,35 @@ let envProxies () =
 
 let calcEnvProxies = lazy (envProxies())
 
-let getDefaultProxyFor =
-    memoize
-      (fun (url:string) ->
-            let uri = Uri url
-            let getDefault () =
-#if CUSTOM_WEBPROXY
-                let result =
-                    { new IWebProxy with
-                        member __.Credentials
-                            with get () = null
-                            and set _value = ()
-                        member __.GetProxy _ = null
-                        member __.IsBypassed (_host : Uri) = true
-                    }
-#else
-                let result = WebRequest.GetSystemWebProxy()
-#endif
-#if CUSTOM_WEBPROXY
-                let proxy = result
-#else
-                let address = result.GetProxy uri
-                if address = uri then null else
-                let proxy = WebProxy address
-                proxy.BypassProxyOnLocal <- true
-#endif
-                proxy.Credentials <- CredentialCache.DefaultCredentials
-                proxy
+/// The proxy for this url: the one of the env vars, whose bypass list sends the no_proxy hosts
+/// direct, or else the system one, with the default credentials when it has none of its own
+let proxyFor (envProxies:Map<string, WebProxy>) (systemProxy:IWebProxy) (uri:Uri) : IWebProxy =
+    match envProxies.TryFind uri.Scheme with
+    | Some p -> p :> IWebProxy
+    | None ->
+        // Delegating keeps the bypass rules and the credentials of the system proxy, such as
+        // the user and password of ALL_PROXY
+        { new IWebProxy with
+            member _.Credentials
+                with get () =
+                    if isNull systemProxy.Credentials then CredentialCache.DefaultCredentials
+                    else systemProxy.Credentials
+                and set _ = ()
+            member _.GetProxy destination =
+                // .NET Core answers null when no proxy applies: answer the destination, as a
+                // bypassed WebProxy does
+                match systemProxy.GetProxy destination with
+                | null -> destination
+                | proxy -> proxy
+            member _.IsBypassed destination =
+                // The Windows system proxy is never "bypassed": it answers null when nothing applies
+                systemProxy.IsBypassed destination
+                || (match systemProxy.GetProxy destination with
+                    | null -> true
+                    | proxy -> proxy = destination) }
 
-            match calcEnvProxies.Force().TryFind uri.Scheme with
-            | Some p -> if p.GetProxy uri <> uri then p else getDefault()
-            | None -> getDefault())
+let getDefaultProxyFor =
+    memoize (fun (url:string) -> proxyFor (calcEnvProxies.Force()) (WebRequest.GetSystemWebProxy()) (Uri url))
 
 
 type RequestFailedInfo =
@@ -193,9 +189,6 @@ type RequestFailedInfo =
         sprintf "Request to '%s' failed with: %i %A — %s" x.Url (int x.StatusCode) x.StatusCode contents
 
 /// Exception for request errors
-#if !NETSTANDARD1_6
-[<System.Serializable>]
-#endif
 type RequestFailedException =
     val private info : RequestFailedInfo option
     inherit Exception
@@ -205,12 +198,6 @@ type RequestFailedException =
     new (info:RequestFailedInfo, inner:exn) = {
       inherit Exception(info.ToString(), inner)
       info = Some info }
-#if !NETSTANDARD1_5
-    new (info:System.Runtime.Serialization.SerializationInfo, context:System.Runtime.Serialization.StreamingContext) = {
-      inherit Exception(info, context)
-      info = None
-    }
-#endif
     member x.Info with get () = x.info
     member x.Wrap() =
         match x.info with
@@ -250,31 +237,6 @@ let (|RequestStatus|_|) (ex:Object) =
     | null -> None
     | _ -> None
 
-
-#if USE_WEB_CLIENT_FOR_UPLOAD
-type System.Net.WebClient with
-    member x.UploadFileAsMultipart (url : Uri) filename =
-        let fileTemplate =
-            "--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n\r\n"
-        let boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x", System.Globalization.CultureInfo.InvariantCulture)
-        let fileInfo = (new FileInfo(Path.GetFullPath(filename)))
-        let fileHeaderBytes =
-            System.String.Format
-                (System.Globalization.CultureInfo.InvariantCulture, fileTemplate, boundary, "package", "package", "application/octet-stream")
-            |> Encoding.UTF8.GetBytes
-        // we use a windows-style newline rather than Environment.NewLine for compatibility
-        let newlineBytes = "\r\n" |> Encoding.UTF8.GetBytes
-        let trailerbytes = String.Format(System.Globalization.CultureInfo.InvariantCulture, "--{0}--", boundary) |> Encoding.UTF8.GetBytes
-        x.Headers.Add(HttpRequestHeader.ContentType, "multipart/form-data; boundary=" + boundary)
-        use stream = x.OpenWrite(url, "PUT")
-        stream.Write(fileHeaderBytes, 0, fileHeaderBytes.Length)
-        use fileStream = File.OpenRead fileInfo.FullName
-        fileStream.CopyTo(stream, (4 * 1024))
-        stream.Write(newlineBytes, 0, newlineBytes.Length)
-        stream.Write(trailerbytes, 0, trailerbytes.Length)
-        stream.Write(newlineBytes, 0, newlineBytes.Length)
-        ()
-#endif
 
 type HttpClient with
     member x.DownloadFileTaskAsync (uri : Uri, tok : CancellationToken, filePath : string) =
@@ -378,11 +340,8 @@ let createHttpHandlerRaw(url, auth: Auth option) : HttpMessageHandler =
         | Some(Token token) ->
             // handled via defaultrequestheaders
             ()
-        // from https://github.com/dotnet/corefx/blob/b6b9a1ad24339266a27fef826233dbbe192cf254/src/System.Net.Http/src/System/Net/Http/HttpClientHandler.Windows.cs#L454-L477
-        if isNull handler.Proxy then
-            handler.WindowsProxyUsePolicy <- WindowsProxyUsePolicy.UseWinInetProxy
-        else
-            handler.WindowsProxyUsePolicy <- WindowsProxyUsePolicy.UseCustomProxy
+        // getDefaultProxyFor always answers a proxy, delegating to the system one when no env var applies
+        handler.WindowsProxyUsePolicy <- WindowsProxyUsePolicy.UseCustomProxy
         handler :> _
     else
     let handler =
@@ -390,9 +349,7 @@ let createHttpHandlerRaw(url, auth: Auth option) : HttpMessageHandler =
             UseProxy = true,
             Proxy = getDefaultProxyFor url)
     handler.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
-#if !NO_MAXCONNECTIONPERSERVER
     handler.MaxConnectionsPerServer <- 4
-#endif
     match auth with
     | None -> handler.UseDefaultCredentials <- true
     | Some(Credentials({Username = username; Password = password; Type = AuthType.Basic})) ->
@@ -415,7 +372,7 @@ let createHttpHandler =
         (fun (url : string, auth) -> url.Substring(0, url.IndexOf('/', 8) + 1), auth) 
         createHttpHandlerRaw 
 
-let private paketVersion = 
+let private paketVersion =
     let attrs = System.Reflection.Assembly.GetExecutingAssembly().GetCustomAttributes(false)
 
     attrs
@@ -447,41 +404,6 @@ let createHttpClient (url, auth:Auth option) : HttpClient =
             new System.Net.Http.Headers.AuthenticationHeaderValue("token", token)
     client.DefaultRequestHeaders.Add("user-agent", sprintf "Paket (%s)" paketVersion)
     client
-
-#if USE_WEB_CLIENT_FOR_UPLOAD
-type CustomTimeoutWebClient(timeout) =
-    inherit WebClient()
-    override x.GetWebRequest (uri:Uri) =
-        let w = base.GetWebRequest(uri)
-        w.Timeout <- timeout
-        w
-
-let createWebClient (url,auth:Auth option) =
-    let client = new CustomTimeoutWebClient(uploadRequestTimeoutInMs)
-    client.Headers.Add("User-Agent", "Paket")
-    client.Proxy <- getDefaultProxyFor url
-
-    match auth with
-    | Some (Credentials({Username = username; Password = password; Type = AuthType.Basic})) ->
-        // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
-        //this works ONLY if the server returns 401 first
-        //client DOES NOT send credentials on first request
-        //ONLY after a 401
-        //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
-
-        //so use THIS instead to send credentials RIGHT AWAY
-        let credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(username + ":" + password))
-        client.Headers.[HttpRequestHeader.Authorization] <- sprintf "Basic %s" credentials
-        client.Credentials <- new NetworkCredential(username,password)
-    | Some (Credentials{Username = username; Password = password; Type = AuthType.NTLM}) ->
-        let cred = NetworkCredential(username,password)
-        client.Credentials <- cred.GetCredential(new Uri(url), "NTLM")
-    | Some (Token token) ->
-        client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" token
-    | None ->
-        client.UseDefaultCredentials <- true
-    client
-#endif
 
 #nowarn "40"
 

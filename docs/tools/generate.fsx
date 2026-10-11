@@ -1,14 +1,14 @@
-/// Getting help docs from Paket.exe
+/// Getting help docs from paket.dll
 open System
 open System.IO
 open System.Diagnostics
 
-let paketExePath = Path.Combine(__SOURCE_DIRECTORY__, "../../src/Paket/bin/Release/net461/paket.exe")
+let paketDllPath = Path.Combine(__SOURCE_DIRECTORY__, "../../src/Paket/bin/Release/net10.0/paket.dll")
 
 #if COMMANDS
 // Get list of commands by parsing paket --help output
 let runPaket args =
-    let psi = ProcessStartInfo(paketExePath, args)
+    let psi = ProcessStartInfo("dotnet", sprintf "\"%s\" %s" paketDllPath args)
     psi.RedirectStandardOutput <- true
     psi.RedirectStandardError <- true
     psi.UseShellExecute <- false

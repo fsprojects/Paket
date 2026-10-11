@@ -115,11 +115,8 @@ we will help to fix this in the affected packages.
 
 ## What files should I commit?
 
-There are two main ways to incorporate paket in your repository which are
-outlined in the [get started section](get-started.html). .NET Core 3.0+ or
-the legacy ["magic mode" approach](bootstrapper.html#Magic-mode). The first
-has the least files to commit, but to be clear here are first what you should
-always commit to source control no matter the approach:
+Paket runs as a .NET tool, see the [get started section](get-started.html).
+Here is what you should commit to source control:
 
 * [`paket.dependencies`](dependencies-file.html) specifies your application's
   dependencies, and how they should be fulfilled.
@@ -137,14 +134,12 @@ always commit to source control no matter the approach:
   [`paket.template` file](template-files.html) that specifies package metadata.
   Each of these files should be committed to source control.
 
-When using legacy ["magic mode" approach](bootstrapper.html#Magic-mode) the
-following files should also be committed:
-
-* [`.paket/paket.targets`](paket-folder.html) allows you to enable automatic
-  package restore in Visual Studio.
-* [`.paket/paket.exe`](bootstrapper.html) should really be the renamed
-  paket.bootstrapper.exe which will automatically download the latest version
-  of `paket.exe` and redirect the calls to that file instead.
+* `.config/dotnet-tools.json`, when Paket is a
+  [local tool](installation.html#Local-tool), so that `dotnet tool restore`
+  installs the same version everywhere.
+* [`.paket/paket.targets`](paket-folder.html), when you use
+  [`paket auto-restore on`](paket-auto-restore.html) to restore the packages of
+  projects that don't use the .NET SDK before their build.
 
 The following files should *not* be committed to your version control system,
 and should be added to any ignore files:
@@ -152,9 +147,7 @@ and should be added to any ignore files:
 * `paket-files` directory, as [`paket install`](paket-install.html) will restore
   this.
 * Same applies to the `packages` directory.
-* `.paket/paket.bootstrapper.exe`, if you have this in your repo, you have not
-  yet updated to the recommended ["magic mode" approach](bootstrapper.html#Magic-mode),
-  when running legacy (pre .NET Core 3.0) applications.
+* Paket itself, if you install it with `--tool-path .paket`.
 
 ## Why should I commit the lock file?
 
@@ -257,35 +250,6 @@ set NO_PROXY=.company.com,localhost
 Short answer: Yes. For information about Paket with .NET SDK, .NET Core and the
 `dotnet` CLI see the
 ["Paket and the .NET SDK / .NET Core CLI tools" guide](paket-and-dotnet-cli.html).
-
-## I updated Paket but "magic mode" still runs the old version. Why?
-
-In ["magic mode"](bootstrapper.html#Magic-mode), `paket.exe` is actually the
-renamed bootstrapper. To avoid slowing down every Paket invocation (which can
-happen dozens of times during a build) with a network round-trip, the
-bootstrapper forces a default `--max-file-age` of `12` hours: if it finds a
-locally cached `paket.exe` newer than that, it uses it as-is without checking
-for a newer release.
-
-There is also a separate cache used only by magic mode, distinct from the
-regular NuGet package cache, so a version you already downloaded through
-another route (e.g. `paket.bootstrapper.exe` directly) may not be picked up
-immediately.
-
-If you want magic mode to always check for the latest version, add this line
-to your [`paket.dependencies` file](dependencies-file.html):
-
-```
-version --max-file-age=0
-```
-
-For reproducible builds we recommend pinning an explicit version instead of
-relying on the floating latest version, for the same reasons you would commit
-a [`paket.lock` file](lock-file.html):
-
-```
-version 5.136.0
-```
 
 ## The download of packages times out, is there a way to prevent this?
 

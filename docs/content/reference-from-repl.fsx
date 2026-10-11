@@ -3,12 +3,10 @@
 
 This page demonstrates how to use Paket from the F# Interactive.
 
-## Download latest `paket.exe` (optional)
+## Reference Paket.Core
 
-As first step we need to download and reference the latest Paket executable.
-This boilerplate code allows F# scripts to work self-contained without an
-installed `paket.exe`. Alternativly you can just reference any paket.exe that
-you have on your system.
+As first step we need to reference Paket.Core, the library the Paket .NET tool
+is built on.
 *)
 
 open System
@@ -16,15 +14,7 @@ open System.IO
 
 Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
 
-if not (File.Exists "paket.exe") then
-    let url = "http://fsprojects.github.io/Paket/stable"
-    use wc = new Net.WebClient()
-    let tmp = Path.GetTempFileName()
-    let stable = wc.DownloadString(url)
-    wc.DownloadFile(stable, tmp)
-    File.Move(tmp,Path.GetFileName stable)
-
-#r "paket.exe"
+#r "nuget: Paket.Core"
 
 (**
 ## Configure which `paket.dependencies` file to use

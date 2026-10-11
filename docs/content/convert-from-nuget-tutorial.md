@@ -6,18 +6,12 @@ Paket comes with a command that helps to convert existing solution from NuGet's
 `packages.config` format to Paket's format.
 
 1. Please start by making a **backup of your repository**
-1. Download Paket and it's bootstrapper as described in the
+1. Install Paket as described in the
    ["Get started" tutorial](get-started.html)
 1. Run the [`convert-from-nuget`](paket-convert-from-nuget.html) command:
 
 ```sh
 $ dotnet paket convert-from-nuget
-```
-
-Or if you're not using .NET Core:
-
-```sh
-$ .paket/paket.exe convert-from-nuget
 ```
 
 Read more about the details and parameters for
@@ -57,8 +51,6 @@ After running the conversion from the root directory:
 ```text
 .
 ├── .paket
-│   ├── paket.bootstrapper.exe
-│   ├── paket.exe
 │   └── paket.targets
 ├── packages
 ├── Build

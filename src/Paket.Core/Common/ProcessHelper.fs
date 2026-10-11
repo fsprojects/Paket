@@ -5,9 +5,6 @@ open System.IO
 open System
 open System.Collections.Generic
 
-/// Arguments on the Mono executable
-let mutable monoArguments = ""
-
 
 /// Searches the given directories for all occurrences of the given file name
 /// [omit]
@@ -86,10 +83,6 @@ let tryFindFileOnPath (file : string) : string option =
 
 /// Modifies the ProcessStartInfo according to the platform semantics
 let platformInfoAction (psi : ProcessStartInfo) =
-    if isMonoRuntime && psi.FileName.EndsWith ".exe" then
-        psi.Arguments <- monoArguments + " \"" + psi.FileName + "\" " + psi.Arguments
-        psi.FileName <- monoPath
-
     if psi.FileName.ToLowerInvariant().EndsWith(".dll") then
         // Run DotNetCore
         let exeName = if isUnix then "dotnet" else "dotnet.exe"
@@ -102,34 +95,17 @@ let platformInfoAction (psi : ProcessStartInfo) =
 
 
 
-/// Returns the AppSettings for the key - Splitted on ;
+/// Tries to find the tool in the given paths, separated by ;. If no path has the right tool we are trying the PATH system variable.
 /// [omit]
-let appSettings (key : string) (fallbackValue : string) =
-    let value =
-        let setting =
-#if NO_CONFIGURATIONMANAGER
-            ""
-#else
-            try
-                System.Configuration.ConfigurationManager.AppSettings.[key]
-            with exn -> ""
-#endif
-        if not (String.IsNullOrWhiteSpace setting) then setting
-        else fallbackValue
-    value.Split([| ';' |], StringSplitOptions.RemoveEmptyEntries)
-
-/// Tries to find the tool via AppSettings. If no path has the right tool we are trying the PATH system variable.
-/// [omit]
-let tryFindPath settingsName fallbackValue tool =
-    let paths = appSettings settingsName fallbackValue
-    match tryFindFile paths tool with
+let tryFindPath (paths : string) tool =
+    match tryFindFile (paths.Split([| ';' |], StringSplitOptions.RemoveEmptyEntries)) tool with
     | Some path -> Some path
     | None -> tryFindFileOnPath tool
 
-/// Tries to find the tool via AppSettings. If no path has the right tool we are trying the PATH system variable.
+/// Tries to find the tool in the given paths, separated by ;. If no path has the right tool we are trying the PATH system variable.
 /// [omit]
-let findPath settingsName fallbackValue tool =
-    match tryFindPath settingsName fallbackValue tool with
+let findPath paths tool =
+    match tryFindPath paths tool with
     | Some file -> file
     | None -> tool
 

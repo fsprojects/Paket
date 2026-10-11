@@ -279,7 +279,7 @@ module ScriptGeneration =
     let constructScriptsFromData (depCache:DependencyCache) (groups:GroupName list) providedFrameworks providedScriptTypes =
         let lockFile = depCache.LockFile
         let frameworksForDependencyGroups = lockFile.ResolveFrameworksForScriptGeneration()
-        let environmentFramework = FrameworkDetection.resolveEnvironmentFramework
+        let environmentFramework = FrameworkDetection.defaultScriptFramework
         
         let groups = 
             if List.isEmpty groups then 
@@ -321,7 +321,7 @@ module ScriptGeneration =
                 frameworksForDependencyGroups.Value 
                 |> Seq.map (fun f -> f, isDefaultFramework)
             else // environment framework is default
-                Seq.singleton (environmentFramework.Value, true)
+                Seq.singleton (environmentFramework, true)
             |> Seq.distinct
 
         let frameworks = frameworksToGenerate |> Seq.map fst |> List.ofSeq

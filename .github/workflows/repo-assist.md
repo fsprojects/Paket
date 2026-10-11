@@ -45,7 +45,22 @@ if: needs.pre_activation.outputs.check_result == 'success'
 
 timeout-minutes: 60
 
-permissions: read-all
+permissions:
+  actions: read
+  attestations: read
+  checks: read
+  code-quality: read
+  contents: read
+  deployments: read
+  issues: read
+  discussions: read
+  packages: read
+  pages: read
+  pull-requests: read
+  security-events: read
+  statuses: read
+  vulnerability-alerts: read
+  copilot-requests: none # change to 'write' to use org-based billing
 
 network:
   allowed:
@@ -70,6 +85,7 @@ tools:
     min-integrity: none # This workflow is allowed to examine and comment on any issues or PRs
   bash: true
   repo-memory:
+    branch-name: memory/repo-assist-memory
     max-file-size: 65536
     max-patch-size: 65536
     max-file-count: 1
@@ -82,6 +98,11 @@ tools:
         const path = require("node:path");
         const fail = message => { throw new Error(`notes.json: ${message}`); };
         const notesPath = path.join(memoryRoot, "notes.json");
+        const memoryEntries = fs.readdirSync(memoryRoot, { withFileTypes: true })
+          .filter(entry => entry.name !== ".git");
+        if (memoryEntries.length !== 1 || !memoryEntries[0].isFile() || memoryEntries[0].name !== "notes.json") {
+          fail(`must be the only file in repo memory; found: ${memoryEntries.map(entry => entry.name).join(", ") || "(none)"}`);
+        }
         if (!fs.existsSync(notesPath)) fail("missing (create an initial notes.json that matches schema version 1)");
         const data = JSON.parse(fs.readFileSync(notesPath, "utf8"));
         const isObject = value => value !== null && typeof value === "object" && !Array.isArray(value);
@@ -201,6 +222,27 @@ safe-outputs:
     target: "*"
 
 steps:
+  - name: Initialize Repo Assist memory
+    env:
+      MEMORY_DIR: /tmp/gh-aw/repo-memory/default
+    run: |
+      if [[ ! -f "$MEMORY_DIR/notes.json" ]]; then
+        cat > "$MEMORY_DIR/notes.json" <<'EOF'
+      {
+        "version": 1,
+        "cursors": {
+          "labelling_after": null,
+          "investigation_after": null
+        },
+        "issues": [],
+        "fixes": [],
+        "checks": [],
+        "completed_actions": [],
+        "priorities": []
+      }
+      EOF
+      fi
+
   - name: Fetch repo data for task weighting
     env:
       GH_TOKEN: ${{ github.token }}
@@ -292,7 +334,7 @@ steps:
           json.dump(result, f, indent=2)
       EOF
 
-source: githubnext/agentics/workflows/repo-assist.md@4bc8419fad05e6b032741cbfd189986700bcf71c
+source: githubnext/agentics/workflows/repo-assist.md@b4e175bab6674279e0fe158f7dc877b77bc9d92f
 ---
 
 # Repo Assist
@@ -329,6 +371,8 @@ Repo memory contains exactly one schema-validated file, `notes.json`. Read it at
 - `priorities`: a short queue of concrete follow-up work
 
 Keep notes terse and current. Replace superseded entries, remove resolved issue records and closed fix records once they are no longer needed for duplicate prevention, and never store run-by-run narration, exhaustive label histories, stale PR inventories, copied GitHub content, or facts that can be cheaply queried again. Stay within the schema's array and text limits; do not create another memory file.
+
+After every change to `notes.json`, run `jq empty /tmp/gh-aw/repo-memory/default/notes.json`, then call `push_repo_memory`. A successful tool result is required before finishing the run. If either check reports an error, repair `notes.json` and retry both checks. Prefer `jq` with a temporary file and atomic rename over manual partial JSON edits.
 
 **Important**: Memory may not be 100% accurate. Issues may have been created, closed, or commented on; PRs may have been created, merged, commented on, or closed since the last run. Always verify memory against current repository state — reviewing recent activity since your last run is wise before acting on stale assumptions.
 

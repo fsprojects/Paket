@@ -7,10 +7,6 @@ open NUnit.Framework
 open System.Xml
 open FsUnit
 
-#if TESTSUITE_RUNS_ON_DOTNETCORE
-open System.Runtime.InteropServices
-#endif
-
 #nowarn "25"
 
 let sampleDoc() =
@@ -23,11 +19,6 @@ let sampleDoc() =
 
 [<Test>]
 let ``get username, password, and auth type from node``() = 
-
-#if TESTSUITE_RUNS_ON_DOTNETCORE
-    if not(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) then
-        Assert.Ignore("Encrypt use ProtectedData.Protect that is supported only on windows")
-#endif
 
     let doc = sampleDoc()
     let node = doc.CreateElement("credential")
@@ -45,11 +36,6 @@ let ``get username, password, and auth type from node``() =
 
 [<Test>]
 let ``get username and password from node without auth type``() = 
-
-#if TESTSUITE_RUNS_ON_DOTNETCORE
-    if not(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) then
-        Assert.Ignore("Encrypt use ProtectedData.Protect that is supported only on windows")
-#endif
 
     let doc = sampleDoc()
     let node = doc.CreateElement("credential")

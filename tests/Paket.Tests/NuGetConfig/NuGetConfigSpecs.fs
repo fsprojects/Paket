@@ -13,9 +13,7 @@ open Chessie.ErrorHandling
 open System.Xml
 open TestHelpers
 
-#if TESTSUITE_RUNS_ON_DOTNETCORE
 open System.Runtime.InteropServices
-#endif
 
 let parse fileName = 
     FileInfo(fileName)
@@ -26,11 +24,9 @@ let parse fileName =
 [<Test>]
 let ``can detect encrypted passwords in nuget.config``() = 
 
-#if TESTSUITE_RUNS_ON_DOTNETCORE
     if not(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) then
         //TODO not create a secrect, just check the parse fails with an error
         Assert.Ignore("ProtectedData.Protect is supported only on windows")
-#endif
 
     ensureDir()
     // encrypted password is machine-specific, thus cannot be hardcoded in test file and needs to be generated dynamically

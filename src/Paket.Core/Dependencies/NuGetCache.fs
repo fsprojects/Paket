@@ -377,7 +377,6 @@ let getNuSpecFromNupkg (fileName:string) =
     if nuspecFile.Exists then
         Nuspec.Load(nuspecFile.FullName)
     else
-        fixArchive fileName
         use zipToCreate = new FileStream(fileName, FileMode.Open, FileAccess.Read)
         use zip = new ZipArchive(zipToCreate, ZipArchiveMode.Read)
         let zippedNuspec = zip.Entries |> Seq.find (fun f -> f.FullName.EndsWith ".nuspec")

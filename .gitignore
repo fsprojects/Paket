@@ -195,7 +195,6 @@ docs/content/paket-*.md
 System.Management.Automation.dll
 .fake
 docs/tools/FSharp.Formatting.svclog
-docs/content/paket.exe
 TestResult.xml
 *.trx
 tests/Paket.Tests/NuGetConfig/PasswordConfig.xml
@@ -213,8 +212,6 @@ integrationtests/scenarios/*/before/**/obj
 
 # artifacts
 /src/Paket/Properties/launchSettings.json
-/bin_bootstrapper/
 /bin_netcore
-/bin_bootstrapper/
 .claude/settings.local.json
 nul
