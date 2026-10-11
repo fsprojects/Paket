@@ -30,9 +30,43 @@ let releaseVersion (informationalVersion : string) =
     let plus = informationalVersion.IndexOf '+'
     SemVer.Parse(if plus < 0 then informationalVersion else informationalVersion.Substring(0, plus))
 
-/// Downloads the given files of the running Paket's release to the destination dir.
+let private lastSupportedMajor = 11u
+
+let private lastSupportedFallback = SemVer.Parse "11.0.0"
+
+let private paketVersionsUrl = "https://api.nuget.org/v3-flatcontainer/paket/index.json"
+
+/// The release to download files from: the latest published one up to the running Paket.
 /// Not the latest release: from Paket 12 on, it no longer carries paket.bootstrapper.exe, and its
 /// paket.targets looks for the .NET tool instead of paket.exe.
+/// Nor the running Paket's own release, which doesn't exist yet while the release build runs its
+/// tests. A running version below Paket 11 is a build without a version, which bounds nothing.
+let releaseToDownload (running : SemVerInfo) (published : SemVerInfo seq) =
+    let isVersioned = running.Major = lastSupportedMajor
+    let candidates =
+        published
+        |> Seq.filter (fun v ->
+            v.Major <= lastSupportedMajor
+            && (v.PreRelease.IsNone || (isVersioned && running.PreRelease.IsSome))
+            && (not isVersioned || v <= running))
+        |> Seq.toList
+    match candidates with
+    | [] -> if isVersioned then running else lastSupportedFallback
+    | _ -> List.max candidates
+
+/// The Paket versions published on NuGet, which the release publishes on GitHub too.
+let private publishedVersions () =
+    // A client of its own, so that PAKET_GITHUB_API_TOKEN never reaches NuGet.
+    let client = createHttpClient(paketVersionsUrl, None)
+    try
+        Newtonsoft.Json.Linq.JObject.Parse(client.DownloadString paketVersionsUrl).["versions"]
+        |> Seq.choose (fun v -> try Some (SemVer.Parse(string v)) with _ -> None)
+        |> Seq.toList
+    with exn ->
+        verbosefn "Could not list the Paket versions from %s: %s" paketVersionsUrl exn.Message
+        []
+
+/// Downloads the given files of the release to download to the destination dir.
 let private downloadReleaseVersionOf files destDir =
     let auth = Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN"
                |> fun x -> if isNull(x) then None else Some(Token(x))
@@ -40,7 +74,7 @@ let private downloadReleaseVersionOf files destDir =
     let client = createHttpClient(Constants.GitHubUrl, auth)
 
     trial {
-        let version = releaseVersion paketVersion
+        let version = releaseToDownload (releaseVersion paketVersion) (publishedVersions ())
 
         let files =
             files
@@ -58,12 +92,12 @@ let private downloadReleaseVersionOf files destDir =
         ()
     }
 
-/// Downloads the paket.bootstrapper and paket.targets of the running Paket's release to the .paket dir
+/// Downloads the paket.bootstrapper and paket.targets of the latest Paket 11 release up to the running one to the .paket dir
 let downloadLatestBootstrapperAndTargets environment =
     let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
     downloadReleaseVersionOf [Constants.TargetsFileName; Constants.BootstrapperFileName] exeDir
 
-/// Downloads the paket.targets of the running Paket's release to the .paket dir
+/// Downloads the paket.targets of the latest Paket 11 release up to the running one to the .paket dir
 let downloadLatestTargets environment =
     let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
     downloadReleaseVersionOf [Constants.TargetsFileName] exeDir
