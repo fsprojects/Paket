@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Paket.Bootstrapper.DownloadStrategies
 {
@@ -52,11 +54,31 @@ namespace Paket.Bootstrapper.DownloadStrategies
             if (parsed.Major <= LastSupportedMajorVersion)
                 return version;
 
-            ConsoleImpl.WriteWarning(
-                "Paket {0} is available, but it is published as a .NET tool only and cannot be downloaded by the bootstrapper. Staying on {1}. To move on, run: dotnet tool install paket",
-                version, LastSupportedVersion);
+            WarnUnsupportedVersion(version, LastSupportedVersion);
 
             return LastSupportedVersion;
+        }
+
+        internal static void WarnUnsupportedVersion(string version, string stayingOn)
+        {
+            ConsoleImpl.WriteWarning(
+                "Paket {0} is available, but it is published as a .NET tool only and cannot be downloaded by the bootstrapper. Staying on {1}. To move on, run: dotnet tool install paket",
+                version, stayingOn);
+        }
+
+        /// <summary>
+        /// Picks the best version we can still download among every published one, rather than
+        /// falling back to the constant the base class clamps to.
+        /// </summary>
+        internal static string LatestSupportedVersion(IEnumerable<string> versions, bool ignorePrerelease)
+        {
+            var latestVersion = versions.
+                    Select(SemVer.Create).
+                    Where(x => !ignorePrerelease || (x.PreRelease == null)).
+                    Where(x => x.Major <= LastSupportedMajorVersion).
+                    OrderBy(x => x).
+                    LastOrDefault(x => !String.IsNullOrWhiteSpace(x.Original));
+            return latestVersion != null ? latestVersion.Original : String.Empty;
         }
 
         public void DownloadVersion(string latestVersion, string target, PaketHashFile hashfile)
