@@ -5,7 +5,16 @@
     "investigation_after": null
   },
   "issues": [],
-  "fixes": [],
+  "fixes": [
+    {
+      "issue": 4443,
+      "pr": null,
+      "branch": "repo-assist/fix-issue-4443-slnx-restore",
+      "status": "open",
+      "updated_at": "2026-10-11",
+      "note": "slnx restore PR opened; build unverified (no network)"
+    }
+  ],
   "checks": [],
   "completed_actions": [],
   "priorities": []
