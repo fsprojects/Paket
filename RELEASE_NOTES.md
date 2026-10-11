@@ -1,4 +1,5 @@
 #### Unreleased
+* Fix `paket pack` producing inconsistent nupkg entry names for files with square brackets (`[`/`]`) across .NET runtimes - https://github.com/fsprojects/Paket/issues/3906
 
 * BREAKING: Paket only ships as a .NET tool: `dotnet tool install paket`. `paket.exe` and `paket.bootstrapper.exe` are no longer built, and Paket no longer runs on Mono or the .NET Framework. See https://fsprojects.github.io/Paket/installation.html#Moving-from-paket-exe-and-the-bootstrapper
 * BREAKING: The release and `tools/paket.exe` of the Paket package carry a `paket.exe` stub instead, so that bootstrappers older than 11.0 explain how to move on: it prints the steps and exits with code 1. To stay on `paket.exe`, move to the bootstrapper of Paket 11, which stays on the latest 11.x: remove the `version` line from paket.dependencies, then run `paket.bootstrapper.exe --self`.
