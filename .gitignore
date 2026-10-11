@@ -198,6 +198,7 @@ docs/tools/FSharp.Formatting.svclog
 TestResult.xml
 *.trx
 tests/Paket.Tests/NuGetConfig/PasswordConfig.xml
+tests/Paket.Tests/**/*.actual.xml
 paket.local
 dotnetcore
 .idea
