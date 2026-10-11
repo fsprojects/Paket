@@ -1069,6 +1069,20 @@ module ProjectFile =
         |> Array.map (fun x -> x.Trim())
         |> Array.toList
 
+    // Same as getTargetFramework/getTargetFrameworksParsed above but evaluates conditional
+    // PropertyGroups (e.g. `Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'"`)
+    // using the given Configuration/Platform, instead of an empty property map.
+    let getTargetFrameworkWithDefaults defaultProperties (project:ProjectFile) =
+        getPropertyWithDefaults "TargetFramework" defaultProperties project
+
+    let getTargetFrameworksParsedWithDefaults defaultProperties (project:ProjectFile) =
+        getPropertyWithDefaults "TargetFrameworks" defaultProperties project
+        |> Option.map (fun x -> x.Split([|';'|],StringSplitOptions.RemoveEmptyEntries))
+        |> Option.toArray
+        |> Array.concat
+        |> Array.map (fun x -> x.Trim())
+        |> Array.toList
+
     let getToolsVersion (project:ProjectFile) =
         let adjustIfWeHaveSDK v =
             try
@@ -1622,22 +1636,28 @@ module ProjectFile =
         sprintf "%s.%s" assemblyName ending
 
     let getOutputDirectory buildConfiguration buildPlatform (targetProfile : TargetProfile option) (project:ProjectFile) =
+        // Some projects put TargetFramework(s) inside a conditional PropertyGroup keyed on
+        // Configuration/Platform (e.g. `Condition="'$(Configuration)'=='Release'"`), so we must
+        // evaluate the property map with the requested Configuration/Platform, not an empty one,
+        // or the frameworks won't be found at all (see issue #3799).
+        let defaultProperties =
+            Map.ofList [("Configuration", buildConfiguration); ("Platform", buildPlatform)]
         let targetFramework =
             match targetProfile with
             | Some targetProfile ->
                 let targetProfile = targetProfile.ToString()
-                match getTargetFramework project with
+                match getTargetFrameworkWithDefaults defaultProperties project with
                 | Some x -> if x = targetProfile then x else ""
                 | None ->
-                    let parsedTargetFrameworks = getTargetFrameworksParsed project
+                    let parsedTargetFrameworks = getTargetFrameworksParsedWithDefaults defaultProperties project
                     match List.tryFind ((=) targetProfile) parsedTargetFrameworks with
                     | Some x -> x
                     | None -> ""
             | None ->
-                match getTargetFramework project with
+                match getTargetFrameworkWithDefaults defaultProperties project with
                 | Some x -> x
                 | None ->
-                    match getTargetFrameworksParsed project with
+                    match getTargetFrameworksParsedWithDefaults defaultProperties project with
                     | fwk :: _ -> fwk
                     | [] -> ""
 
