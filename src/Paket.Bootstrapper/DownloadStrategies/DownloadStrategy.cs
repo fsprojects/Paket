@@ -36,8 +36,18 @@ namespace Paket.Bootstrapper.DownloadStrategies
         /// </summary>
         internal static string CapToLastSupportedVersion(string version)
         {
-            if (String.IsNullOrWhiteSpace(version))
+            if (!IsPastLastSupportedVersion(version))
                 return version;
+
+            WarnUnsupportedVersion(version, LastSupportedVersion);
+
+            return LastSupportedVersion;
+        }
+
+        internal static bool IsPastLastSupportedVersion(string version)
+        {
+            if (String.IsNullOrWhiteSpace(version))
+                return false;
 
             SemVer parsed;
             try
@@ -48,15 +58,10 @@ namespace Paket.Bootstrapper.DownloadStrategies
             {
                 // Never let an unparseable version break the bootstrapper; let the caller deal
                 // with it as it did before.
-                return version;
+                return false;
             }
 
-            if (parsed.Major <= LastSupportedMajorVersion)
-                return version;
-
-            WarnUnsupportedVersion(version, LastSupportedVersion);
-
-            return LastSupportedVersion;
+            return parsed.Major > LastSupportedMajorVersion;
         }
 
         internal static void WarnUnsupportedVersion(string version, string stayingOn)

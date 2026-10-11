@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
 using Moq;
@@ -49,10 +50,69 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             var result = sut.GetLatestVersion(true);
 
             //assert
-            // The releases page only ever yields the single newest version, so there is no older
-            // one to fall back to here; the base class clamps to the constant instead.
+            // NuGet lists no version here, so there is no older one to fall back to; the base
+            // class clamps to the constant instead.
             Assert.That(result, Is.EqualTo(DownloadStrategy.LastSupportedVersion));
             mockWebProxy.Verify();
+        }
+
+        [Test]
+        public void GetLatestVersion_TakesTheLatestSupportedVersionFromNuGet()
+        {
+            //arrange
+            mockWebProxy.Setup(x => x.DownloadString(GitHubDownloadStrategy.Constants.PaketReleasesLatestUrl)).Returns("<title>Release 12.0.0 · fsprojects/Paket</title>");
+            mockWebProxy.Setup(x => x.DownloadString(It.Is<string>(url => url.EndsWith("/package-versions/Paket")))).Returns("[\"10.3.1\",\"11.0.0\",\"11.0.1\",\"12.0.0\"]").Verifiable();
+
+            //act
+            var result = sut.GetLatestVersion(true);
+
+            //assert
+            Assert.That(result, Is.EqualTo("11.0.1"));
+            mockWebProxy.Verify();
+        }
+
+        [Test]
+        public void GetLatestVersion_Prerelease_TakesTheLatestSupportedPrereleaseFromNuGet()
+        {
+            //arrange
+            mockWebProxy.Setup(x => x.DownloadString(GitHubDownloadStrategy.Constants.PaketReleasesLatestUrl)).Returns("<title>Release 12.0.0 · fsprojects/Paket</title>");
+            mockWebProxy.Setup(x => x.DownloadString(GitHubDownloadStrategy.Constants.PaketReleasesUrl)).Returns("Paket/tree/12.1.0-alpha001\"Paket/tree/12.0.0\"");
+            mockWebProxy.Setup(x => x.DownloadString(It.Is<string>(url => url.EndsWith("/package-versions/Paket?includePrerelease=true")))).Returns("[\"11.0.1\",\"11.1.0-alpha001\",\"12.0.0\",\"12.1.0-alpha001\"]").Verifiable();
+
+            //act
+            var result = sut.GetLatestVersion(false);
+
+            //assert
+            Assert.That(result, Is.EqualTo("11.1.0-alpha001"));
+            mockWebProxy.Verify();
+        }
+
+        [Test]
+        public void GetLatestVersion_FallsBackToTheConstantWhenNuGetFails()
+        {
+            //arrange
+            mockWebProxy.Setup(x => x.DownloadString(GitHubDownloadStrategy.Constants.PaketReleasesLatestUrl)).Returns("<title>Release 12.0.0 · fsprojects/Paket</title>");
+            mockWebProxy.Setup(x => x.DownloadString(It.Is<string>(url => url.Contains("/package-versions/")))).Throws(new WebException("unreachable"));
+
+            //act
+            var result = sut.GetLatestVersion(true);
+
+            //assert
+            Assert.That(result, Is.EqualTo(DownloadStrategy.LastSupportedVersion));
+        }
+
+        [Test]
+        public void GetLatestVersion_DoesNotAskNuGetForASupportedVersion()
+        {
+            //arrange
+            mockWebProxy.Setup(x => x.DownloadString(GitHubDownloadStrategy.Constants.PaketReleasesLatestUrl)).Returns("<title>Release 11.0.0 · fsprojects/Paket</title>");
+
+            //act
+            var result = sut.GetLatestVersion(true);
+
+            //assert
+            Assert.That(result, Is.EqualTo("11.0.0"));
+            mockWebProxy.Verify(x => x.DownloadString(It.Is<string>(url => url.Contains("/package-versions/"))), Times.Never);
         }
 
         [Test]

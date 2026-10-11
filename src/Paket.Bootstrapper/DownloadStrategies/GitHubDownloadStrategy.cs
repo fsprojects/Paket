@@ -22,6 +22,8 @@ namespace Paket.Bootstrapper.DownloadStrategies
             public const string PaketCheckSumDownloadUrlTemplate = PaketReleasesUrl + "/download/{0}/paket-sha256.txt";
         }
 
+        private const string PaketNugetPackageName = "Paket";
+
         protected IWebRequestProxy WebRequestProxy { get; set; }
         protected IFileSystemProxy FileSystemProxy { get; set; }
         public override string Name { get { return "Github"; } }
@@ -40,10 +42,39 @@ namespace Paket.Bootstrapper.DownloadStrategies
         protected override string GetLatestVersionCore(bool ignorePrerelease)
         {
             var latestStable = GetLatestStable();
-            if (ignorePrerelease)
-                return latestStable;
-            else
-                return Max(GetLatestPrerelease(), latestStable);
+            var latest = ignorePrerelease ? latestStable : Max(GetLatestPrerelease(), latestStable);
+            if (!IsPastLastSupportedVersion(latest))
+                return latest;
+
+            var latestSupported = GetLatestSupported(ignorePrerelease);
+            if (String.IsNullOrEmpty(latestSupported))
+                return latest;
+
+            WarnUnsupportedVersion(latest, latestSupported);
+            return latestSupported;
+        }
+
+        /// <summary>
+        /// GitHub only tells us about the latest release, which is past what we can download once
+        /// Paket 12 is out. Ask NuGet for every published version, as the release publishes the
+        /// same versions to both; the files still come from the GitHub release of that version.
+        /// When NuGet can't tell, the base class clamps to its constant.
+        /// </summary>
+        private string GetLatestSupported(bool ignorePrerelease)
+        {
+            try
+            {
+                var apiHelper = new NugetDownloadStrategy.NugetApiHelper(PaketNugetPackageName, null);
+                var versions = WebRequestProxy.DownloadString(apiHelper.GetAllPackageVersions(!ignorePrerelease));
+                if (String.IsNullOrEmpty(versions))
+                    return String.Empty;
+                return LatestSupportedVersion(NugetDownloadStrategy.NugetApiHelper.ParseVersions(versions), ignorePrerelease);
+            }
+            catch (Exception exception)
+            {
+                ConsoleImpl.WriteTrace("Could not list the Paket versions on NuGet: {0}", exception.Message);
+                return String.Empty;
+            }
         }
 
         private string Max(string prerelease, string latestStable)
