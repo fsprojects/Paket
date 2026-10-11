@@ -1,5 +1,7 @@
 #### Unreleased
 
+#### 12.0.0-alpha001 - 2026-10-11
+
 Paket 12 only ships as the `paket` .NET tool, which needs the .NET 10 runtime: `paket.exe`, `paket.bootstrapper.exe` and Mono are no longer supported. To upgrade, install Paket as a local tool (`dotnet new tool-manifest` if the repository has none, then `dotnet tool install paket`), delete `.paket/paket.exe` and `.paket/paket.bootstrapper.exe`, call `dotnet paket` instead of `.paket/paket.exe` in your build scripts, and run `dotnet paket auto-restore on` again if you use auto-restore. The steps are detailed in https://fsprojects.github.io/Paket/installation.html#Moving-from-paket-exe-and-the-bootstrapper. To keep `paket.exe` for now, remove the `version` line from paket.dependencies and run `.paket/paket.bootstrapper.exe --self`: you get the bootstrapper of Paket 11, which stays on the latest 11.x.
 
 This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NET 9 to 11 (`net9.0-android`, `net10.0-ios`...), so the next `paket update` may rewrite some framework restrictions in paket.lock.
