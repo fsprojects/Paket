@@ -1,5 +1,7 @@
 #### Unreleased
 
+* `paket init`, `paket auto-restore on` and `paket convert-from-nuget` download `paket.targets` and `paket.bootstrapper.exe` from the release of the running Paket instead of the latest GitHub release, so they keep working with Paket 11 once 12.0 ships
+* The bootstrapper, when it downloads from GitHub, now finds the latest 11.x release once 12.0 ships, for `paket.exe` and for `--self`, instead of staying on 11.0.0
 * The `paket` .NET tool now honours `no_proxy` and the system proxy settings, as `paket.exe` already did; as in curl, a `no_proxy` entry matches the host and its subdomains
 
 #### 11.0.0 - 2026-10-05
