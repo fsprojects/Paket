@@ -227,6 +227,11 @@ let ``Can detect .netcoreapp10.0``() =
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V10)))
 
 [<Test>]
+let ``Can detect .netcoreapp11.0``() =
+    let p = PlatformMatching.forceExtractPlatforms ".netcoreapp11.0"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V11)))
+
+[<Test>]
 let ``Can detect .netcoreapp6.0``() =
     let p = PlatformMatching.forceExtractPlatforms ".netcoreapp6.0"
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V6)))

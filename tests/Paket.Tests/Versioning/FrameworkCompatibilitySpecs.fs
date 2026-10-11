@@ -168,3 +168,33 @@ let ``Xamarin.Mac should be compatible with netstandard2.0``() =
 
     ``netstandard2.0``.IsSmallerThan ``xamarinmac``
     |> shouldEqual true
+
+[<Test>]
+let ``net9.0 to net11.0 OS-specific frameworks fall back to the previous version for the same OS``() =
+    let withOs version os =
+        match version with
+        | 8 -> DotNet8WithOs os
+        | 9 -> DotNet9WithOs os
+        | 10 -> DotNet10WithOs os
+        | 11 -> DotNet11WithOs os
+        | _ -> failwithf "no OS-specific framework for net%d.0" version
+        |> TargetProfile.SinglePlatform
+
+    let oses = KnownTargetProfiles.DotNet8OperatingSystems
+    let errors = [
+        for os in oses do
+            for version in 9 .. 11 do
+                let current = withOs version os
+                let previous = withOs (version - 1) os
+                if not (current.IsAtLeast previous) then sprintf "%O should be at least %O" current previous
+                if not (previous.IsSupportedBy current) then sprintf "%O should support %O" current previous
+                if previous.IsAtLeast current then sprintf "%O should not be at least %O" previous current
+                for other in oses |> List.filter ((<>) os) do
+                    let otherPrevious = withOs (version - 1) other
+                    if otherPrevious.IsSupportedBy current then sprintf "%O should not support %O" current otherPrevious
+            // transitively, down to .NET 8
+            if not ((withOs 8 os).IsSupportedBy (withOs 11 os)) then sprintf "net11.0-%O should support net8.0-%O" os os
+    ]
+
+    if not (List.isEmpty errors) then
+        failwith (String.concat "\n" errors)

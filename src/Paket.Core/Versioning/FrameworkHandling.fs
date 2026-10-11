@@ -1038,21 +1038,21 @@ type FrameworkIdentifier =
         | DotNet8WithOs  Net8Os.TvOs    -> [ DotNetFramework FrameworkVersion.V8; XamarinTV ]
         | DotNet8WithOs  Net8Os.WatchOs -> [ DotNetFramework FrameworkVersion.V8; XamarinWatch ]
         // remark: for now, os versions for net 9 is alias to 8
-        | DotNet9WithOs  Net8Os.Android -> [ DotNetFramework FrameworkVersion.V9; MonoAndroid MonoAndroidVersion.V12 ]
-        | DotNet9WithOs  Net8Os.IOs     -> [ DotNetFramework FrameworkVersion.V9; XamariniOS ]
-        | DotNet9WithOs  Net8Os.MacOs   -> [ DotNetFramework FrameworkVersion.V9; XamarinMac ]
-        | DotNet9WithOs  Net8Os.TvOs    -> [ DotNetFramework FrameworkVersion.V9; XamarinTV ]
-        | DotNet9WithOs  Net8Os.WatchOs -> [ DotNetFramework FrameworkVersion.V9; XamarinWatch ]
-        | DotNet10WithOs  Net8Os.Android -> [ DotNetFramework FrameworkVersion.V10; MonoAndroid MonoAndroidVersion.V12 ]
-        | DotNet10WithOs  Net8Os.IOs     -> [ DotNetFramework FrameworkVersion.V10; XamariniOS ]
-        | DotNet10WithOs  Net8Os.MacOs   -> [ DotNetFramework FrameworkVersion.V10; XamarinMac ]
-        | DotNet10WithOs  Net8Os.TvOs    -> [ DotNetFramework FrameworkVersion.V10; XamarinTV ]
-        | DotNet10WithOs  Net8Os.WatchOs -> [ DotNetFramework FrameworkVersion.V10; XamarinWatch ]
-        | DotNet11WithOs  Net8Os.Android -> [ DotNetFramework FrameworkVersion.V11; MonoAndroid MonoAndroidVersion.V12 ]
-        | DotNet11WithOs  Net8Os.IOs     -> [ DotNetFramework FrameworkVersion.V11; XamariniOS ]
-        | DotNet11WithOs  Net8Os.MacOs   -> [ DotNetFramework FrameworkVersion.V11; XamarinMac ]
-        | DotNet11WithOs  Net8Os.TvOs    -> [ DotNetFramework FrameworkVersion.V11; XamarinTV ]
-        | DotNet11WithOs  Net8Os.WatchOs -> [ DotNetFramework FrameworkVersion.V11; XamarinWatch ]
+        | DotNet9WithOs  Net8Os.Android -> [ DotNetFramework FrameworkVersion.V9; DotNet8WithOs Net8Os.Android; MonoAndroid MonoAndroidVersion.V12 ]
+        | DotNet9WithOs  Net8Os.IOs     -> [ DotNetFramework FrameworkVersion.V9; DotNet8WithOs Net8Os.IOs; XamariniOS ]
+        | DotNet9WithOs  Net8Os.MacOs   -> [ DotNetFramework FrameworkVersion.V9; DotNet8WithOs Net8Os.MacOs; XamarinMac ]
+        | DotNet9WithOs  Net8Os.TvOs    -> [ DotNetFramework FrameworkVersion.V9; DotNet8WithOs Net8Os.TvOs; XamarinTV ]
+        | DotNet9WithOs  Net8Os.WatchOs -> [ DotNetFramework FrameworkVersion.V9; DotNet8WithOs Net8Os.WatchOs; XamarinWatch ]
+        | DotNet10WithOs  Net8Os.Android -> [ DotNetFramework FrameworkVersion.V10; DotNet9WithOs Net8Os.Android; MonoAndroid MonoAndroidVersion.V12 ]
+        | DotNet10WithOs  Net8Os.IOs     -> [ DotNetFramework FrameworkVersion.V10; DotNet9WithOs Net8Os.IOs; XamariniOS ]
+        | DotNet10WithOs  Net8Os.MacOs   -> [ DotNetFramework FrameworkVersion.V10; DotNet9WithOs Net8Os.MacOs; XamarinMac ]
+        | DotNet10WithOs  Net8Os.TvOs    -> [ DotNetFramework FrameworkVersion.V10; DotNet9WithOs Net8Os.TvOs; XamarinTV ]
+        | DotNet10WithOs  Net8Os.WatchOs -> [ DotNetFramework FrameworkVersion.V10; DotNet9WithOs Net8Os.WatchOs; XamarinWatch ]
+        | DotNet11WithOs  Net8Os.Android -> [ DotNetFramework FrameworkVersion.V11; DotNet10WithOs Net8Os.Android; MonoAndroid MonoAndroidVersion.V12 ]
+        | DotNet11WithOs  Net8Os.IOs     -> [ DotNetFramework FrameworkVersion.V11; DotNet10WithOs Net8Os.IOs; XamariniOS ]
+        | DotNet11WithOs  Net8Os.MacOs   -> [ DotNetFramework FrameworkVersion.V11; DotNet10WithOs Net8Os.MacOs; XamarinMac ]
+        | DotNet11WithOs  Net8Os.TvOs    -> [ DotNetFramework FrameworkVersion.V11; DotNet10WithOs Net8Os.TvOs; XamarinTV ]
+        | DotNet11WithOs  Net8Os.WatchOs -> [ DotNetFramework FrameworkVersion.V11; DotNet10WithOs Net8Os.WatchOs; XamarinWatch ]
         | DotNet6Windows Net6WindowsVersion.V7_0          -> [ DotNetFramework FrameworkVersion.V6; DotNet5Windows Net5WindowsVersion.V7_0                                                           ]
         | DotNet6Windows Net6WindowsVersion.V8_0          -> [ DotNetFramework FrameworkVersion.V6; DotNet5Windows Net5WindowsVersion.V8_0         ; DotNet6Windows Net6WindowsVersion.V7_0          ]
         | DotNet6Windows Net6WindowsVersion.V10_0_17763_0 -> [ DotNetFramework FrameworkVersion.V6; DotNet5Windows Net5WindowsVersion.V10_0_17763_0; DotNet6Windows Net6WindowsVersion.V8_0          ]
@@ -1821,21 +1821,27 @@ module KnownTargetProfiles =
         |> List.map (DotNet8Windows >> TargetProfile.SinglePlatform)
 
     let DotNet9OperatingSystems = DotNet8OperatingSystems
-    let DotNet9WithOsProfiles = DotNet8WithOsProfiles
+    let DotNet9WithOsProfiles =
+        DotNet9OperatingSystems
+        |> List.map (DotNet9WithOs >> TargetProfile.SinglePlatform)
     let DotNet9WindowsVersions = DotNet8WindowsVersions
     let DotNet9WindowsProfiles =
         DotNet9WindowsVersions
         |> List.map (DotNet9Windows >> TargetProfile.SinglePlatform)
 
     let DotNet10OperatingSystems = DotNet9OperatingSystems
-    let DotNet10WithOsProfiles = DotNet9WithOsProfiles
+    let DotNet10WithOsProfiles =
+        DotNet10OperatingSystems
+        |> List.map (DotNet10WithOs >> TargetProfile.SinglePlatform)
     let DotNet10WindowsVersions = DotNet9WindowsVersions
     let DotNet10WindowsProfiles =
         DotNet10WindowsVersions
         |> List.map (DotNet10Windows >> TargetProfile.SinglePlatform)
 
     let DotNet11OperatingSystems = DotNet10OperatingSystems
-    let DotNet11WithOsProfiles = DotNet10WithOsProfiles
+    let DotNet11WithOsProfiles =
+        DotNet11OperatingSystems
+        |> List.map (DotNet11WithOs >> TargetProfile.SinglePlatform)
     let DotNet11WindowsVersions = DotNet10WindowsVersions
     let DotNet11WindowsProfiles =
         DotNet11WindowsVersions
