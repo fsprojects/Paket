@@ -8,6 +8,7 @@
 * `paket auto-restore on` writes `paket.targets` from Paket itself instead of downloading it from the latest GitHub release, so it works offline and matches the running Paket
 * `#r "paket:"` in F# scripts finds the Paket .NET tool: installed with `--tool-path`, as a local tool of the manifest, as a global tool, or restored in the NuGet packages folder
 * The conditions written in project files now list the OS-specific frameworks of .NET 9 to 11 (`net9.0-android`, `net10.0-ios`, `net11.0-macos`...), which were left out in favour of their .NET 8 counterparts
+* The OS-specific frameworks of .NET 9 to 11 fall back to the previous .NET version for the same OS, as the Windows ones do: a `net11.0-android` project can use the `net10.0-android` assets and dependencies of a package
 
 #### 11.0.1 - 2026-10-11
 

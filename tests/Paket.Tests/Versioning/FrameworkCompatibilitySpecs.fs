@@ -168,3 +168,35 @@ let ``Xamarin.Mac should be compatible with netstandard2.0``() =
 
     ``netstandard2.0``.IsSmallerThan ``xamarinmac``
     |> shouldEqual true
+
+[<Test>]
+let ``net9.0-ios should be compatible with net8.0-ios``() =
+    let ``net8.0-ios`` = TargetProfile.SinglePlatform (DotNet8WithOs Net8Os.IOs)
+    let ``net9.0-ios`` = TargetProfile.SinglePlatform (DotNet9WithOs Net9Os.IOs)
+
+    ``net9.0-ios``.IsAtLeast ``net8.0-ios``
+    |> shouldEqual true
+
+    ``net8.0-ios``.IsSupportedBy ``net9.0-ios``
+    |> shouldEqual true
+
+    ``net8.0-ios``.IsSmallerThan ``net9.0-ios``
+    |> shouldEqual true
+
+[<Test>]
+let ``net11.0-android should be compatible with net8.0-android``() =
+    let ``net8.0-android`` = TargetProfile.SinglePlatform (DotNet8WithOs Net8Os.Android)
+    let ``net10.0-android`` = TargetProfile.SinglePlatform (DotNet10WithOs Net10Os.Android)
+    let ``net11.0-android`` = TargetProfile.SinglePlatform (DotNet11WithOs Net11Os.Android)
+
+    ``net11.0-android``.IsAtLeast ``net10.0-android``
+    |> shouldEqual true
+
+    ``net10.0-android``.IsSupportedBy ``net11.0-android``
+    |> shouldEqual true
+
+    ``net8.0-android``.IsSupportedBy ``net11.0-android``
+    |> shouldEqual true
+
+    ``net10.0-android``.IsSmallerThan ``net11.0-android``
+    |> shouldEqual true
