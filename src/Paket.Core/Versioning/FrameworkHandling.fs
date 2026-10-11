@@ -1821,21 +1821,27 @@ module KnownTargetProfiles =
         |> List.map (DotNet8Windows >> TargetProfile.SinglePlatform)
 
     let DotNet9OperatingSystems = DotNet8OperatingSystems
-    let DotNet9WithOsProfiles = DotNet8WithOsProfiles
+    let DotNet9WithOsProfiles =
+        DotNet9OperatingSystems
+        |> List.map (DotNet9WithOs >> TargetProfile.SinglePlatform)
     let DotNet9WindowsVersions = DotNet8WindowsVersions
     let DotNet9WindowsProfiles =
         DotNet9WindowsVersions
         |> List.map (DotNet9Windows >> TargetProfile.SinglePlatform)
 
     let DotNet10OperatingSystems = DotNet9OperatingSystems
-    let DotNet10WithOsProfiles = DotNet9WithOsProfiles
+    let DotNet10WithOsProfiles =
+        DotNet10OperatingSystems
+        |> List.map (DotNet10WithOs >> TargetProfile.SinglePlatform)
     let DotNet10WindowsVersions = DotNet9WindowsVersions
     let DotNet10WindowsProfiles =
         DotNet10WindowsVersions
         |> List.map (DotNet10Windows >> TargetProfile.SinglePlatform)
 
     let DotNet11OperatingSystems = DotNet10OperatingSystems
-    let DotNet11WithOsProfiles = DotNet10WithOsProfiles
+    let DotNet11WithOsProfiles =
+        DotNet11OperatingSystems
+        |> List.map (DotNet11WithOs >> TargetProfile.SinglePlatform)
     let DotNet11WindowsVersions = DotNet10WindowsVersions
     let DotNet11WindowsProfiles =
         DotNet11WindowsVersions
