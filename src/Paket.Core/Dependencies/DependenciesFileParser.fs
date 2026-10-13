@@ -228,13 +228,16 @@ module DependenciesFileParser =
     let private (|Remote|_|) (line:string) =
         match line.Trim()  with
         | String.RemovePrefix "source" _ as trimmed ->
+            let trimmed = trimmed |> removeComment
             try
                 let source = PackageSource.Parse trimmed
                 Some (Remote (RemoteParserOption.PackageSource source))
             with e ->
                 traceWarnfn "could not parse package source %s (%s)" trimmed e.Message
                 reraise ()
-        | String.RemovePrefix "cache" _ as trimmed -> Some (Remote (RemoteParserOption.Cache (Cache.Parse trimmed)))
+        | String.RemovePrefix "cache" _ as trimmed ->
+            let trimmed = trimmed |> removeComment
+            Some (Remote (RemoteParserOption.Cache (Cache.Parse trimmed)))
         | _ -> None
 
     let private (|Package|_|) (line:string) =
