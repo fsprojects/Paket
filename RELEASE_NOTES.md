@@ -1,5 +1,7 @@
 #### Unreleased
 
+* Do not warn about missing "redirects: force" for FSharp.Core in projects targeting net5.0 and later - https://github.com/fsprojects/Paket/issues/4455
+
 #### 12.0.0-alpha001 - 2026-10-11
 
 Paket 12 only ships as the `paket` .NET tool, which needs the .NET 10 runtime: `paket.exe`, `paket.bootstrapper.exe` and Mono are no longer supported. To upgrade, install Paket as a local tool (`dotnet new tool-manifest` if the repository has none, then `dotnet tool install paket`), delete `.paket/paket.exe` and `.paket/paket.bootstrapper.exe`, call `dotnet paket` instead of `.paket/paket.exe` in your build scripts, and run `dotnet paket auto-restore on` again if you use auto-restore. The steps are detailed in https://fsprojects.github.io/Paket/installation.html#Moving-from-paket-exe-and-the-bootstrapper. To keep `paket.exe` for now, remove the `version` line from paket.dependencies and run `.paket/paket.bootstrapper.exe --self`: you get the bootstrapper of Paket 11, which stays on the latest 11.x.

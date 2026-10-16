@@ -6,6 +6,7 @@ open FsUnit
 
 let private net48 = TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_8)
 let private netcoreapp31 = TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetCoreApp DotNetCoreAppVersion.V3_1)
+let private net80 = TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V8)
 let private netstandard20 = TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V2_0)
 
 [<Test>]
@@ -37,3 +38,13 @@ let ``warns when multi-targeting includes a .NET Framework leg without redirects
 let ``does not warn when there are no target profiles``() =
     InstallProcess.shouldWarnAboutFSharpCoreRedirects [] None
     |> shouldEqual false
+
+[<Test>]
+let ``does not warn for a net8.0 project without redirects: force``() =
+    InstallProcess.shouldWarnAboutFSharpCoreRedirects [ net80 ] None
+    |> shouldEqual false
+
+[<Test>]
+let ``warns when multi-targeting net48 and net8.0 without redirects: force``() =
+    InstallProcess.shouldWarnAboutFSharpCoreRedirects [ net48; net80 ] None
+    |> shouldEqual true
