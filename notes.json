@@ -13,6 +13,14 @@
       "status": "open",
       "updated_at": "2026-10-11",
       "note": "slnx restore PR opened; build unverified (no network)"
+    },
+    {
+      "issue": 4455,
+      "pr": null,
+      "branch": "repo-assist/fix-issue-4455-fsharpcore-redirects-warning",
+      "status": "open",
+      "updated_at": "2026-10-16",
+      "note": "PR opened; unbuilt (no network)"
     }
   ],
   "checks": [],
