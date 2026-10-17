@@ -353,8 +353,7 @@ let shouldWarnAboutFSharpCoreRedirects (targetProfiles: TargetProfile list) (cre
         |> List.exists (fun profile ->
             profile.Frameworks
             |> List.exists (function
-                | FrameworkIdentifier.DotNetFramework (FrameworkVersion.V5 | FrameworkVersion.V6 | FrameworkVersion.V7 | FrameworkVersion.V8 | FrameworkVersion.V9 | FrameworkVersion.V10 | FrameworkVersion.V11) -> false
-                | FrameworkIdentifier.DotNetFramework _ -> true
+                | FrameworkIdentifier.DotNetFramework v -> v.IsLegacyVersion
                 | _ -> false))
     targetsDotNetFramework && createBindingRedirects <> Some BindingRedirectsSettings.Force
 
