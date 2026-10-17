@@ -501,7 +501,10 @@ let RunInLockedAccessMode(lockedFolder,lockedAction: unit -> bool) =
 
         releaseLock 5
         if runDotNetRestore then
-            let slnFiles = rootFolder.GetFiles("*.sln", SearchOption.TopDirectoryOnly)
+            let slnFiles =
+                [| yield! rootFolder.GetFiles("*.sln", SearchOption.TopDirectoryOnly)
+                   yield! rootFolder.GetFiles("*.slnx", SearchOption.TopDirectoryOnly) |]
+                |> Array.distinctBy (fun f -> f.FullName)
             if Array.isEmpty slnFiles then
                 let projFiles = rootFolder.GetFiles("*.*proj", SearchOption.TopDirectoryOnly)
 
