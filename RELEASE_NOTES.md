@@ -1,5 +1,7 @@
 #### Unreleased
 
+#### 12.0.0-alpha002 - 2026-10-17
+
 * Add support for `.slnx` solution files - https://github.com/fsprojects/Paket/issues/4443
 * Do not warn about missing "redirects: force" for FSharp.Core in projects targeting net5.0 and later - https://github.com/fsprojects/Paket/issues/4455
 
