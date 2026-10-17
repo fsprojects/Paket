@@ -300,6 +300,8 @@ type Net11Os = Net10Os
 [<RequireQualifiedAccess>]
 /// The Framework version.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
+// The cases are declared in version order, and IsLegacyVersion compares them:
+// add a new version after the last one.
 type FrameworkVersion =
     | V1
     | V1_1
@@ -387,6 +389,9 @@ type FrameworkVersion =
         | FrameworkVersion.V9 -> "9.0"
         | FrameworkVersion.V10 -> "10.0"
         | FrameworkVersion.V11 -> "11.0"
+
+    /// true for the .NET Framework (v4.8.1 and earlier); V5 and later are .NET 5+, not the .NET Framework.
+    member this.IsLegacyVersion = this < FrameworkVersion.V5
 
     static member TryParse s =
         match s with
