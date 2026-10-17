@@ -35,7 +35,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D5255-776D-4B61-85F9-73C37AA1FB9A}"
 	ProjectSection(SolutionItems) = preProject
 		docs\content\analyzers.md = docs\content\analyzers.md
-		docs\content\bootstrapper.md = docs\content\bootstrapper.md
 		docs\content\caches.md = docs\content\caches.md
 		docs\content\controlling-nuget-resolution.md = docs\content\controlling-nuget-resolution.md
 		docs\content\convert-from-nuget-tutorial.md = docs\content\convert-from-nuget-tutorial.md
@@ -72,9 +71,9 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Paket.Tests", "tests\Paket.
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Paket", "src\Paket\Paket.fsproj", "{09B32F18-0C20-4489-8C83-5106D5C04C93}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paket.Bootstrapper", "src\Paket.Bootstrapper\Paket.Bootstrapper.csproj", "{CE3F8B87-1ABD-462E-A35B-CDCEC695898B}"
-EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Paket.Core", "src\Paket.Core\Paket.Core.fsproj", "{7BAB0AE2-089F-4761-B138-A717AA2F86C5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paket.LegacyStub", "src\Paket.LegacyStub\Paket.LegacyStub.csproj", "{3F6C0A52-5D1E-4B7A-9C25-8E4D6B1A2C70}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "commands", "commands", "{4425A246-BD18-4622-86B5-0154F19165E4}"
 	ProjectSection(SolutionItems) = preProject
@@ -97,8 +96,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "commands", "commands", "{44
 		docs\content\commands\why.md = docs\content\commands\why.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Paket.Bootstrapper.Tests", "tests\Paket.Bootstrapper.Tests\Paket.Bootstrapper.Tests.csproj", "{7C622582-E281-4EAB-AADA-B5893BB89B45}"
-EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Paket.IntegrationTests", "integrationtests\Paket.IntegrationTests\Paket.IntegrationTests.fsproj", "{7234B9B4-8CF5-4E68-AA29-050C087B9246}"
 	ProjectSection(ProjectDependencies) = postProject
 		{6C531B7C-B52D-48FA-9EDD-519CCE151F19} = {6C531B7C-B52D-48FA-9EDD-519CCE151F19}
@@ -106,9 +103,8 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Paket.IntegrationTests", "i
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{62D18A14-5240-4CB1-AA8A-762D3EB0E19A}"
 	ProjectSection(SolutionItems) = preProject
-		.paket\paket.exe.config = .paket\paket.exe.config
 		.paket\Paket.Restore.targets = .paket\Paket.Restore.targets
-		.paket\paket.targets = .paket\paket.targets
+		src\Paket.Core\embedded\paket.targets = src\Paket.Core\embedded\paket.targets
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1C9A57E4-9D94-44D1-A106-FC588B7B72DE}"
@@ -133,18 +129,14 @@ Global
 		{09B32F18-0C20-4489-8C83-5106D5C04C93}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{09B32F18-0C20-4489-8C83-5106D5C04C93}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{09B32F18-0C20-4489-8C83-5106D5C04C93}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CE3F8B87-1ABD-462E-A35B-CDCEC695898B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CE3F8B87-1ABD-462E-A35B-CDCEC695898B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CE3F8B87-1ABD-462E-A35B-CDCEC695898B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CE3F8B87-1ABD-462E-A35B-CDCEC695898B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7BAB0AE2-089F-4761-B138-A717AA2F86C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7BAB0AE2-089F-4761-B138-A717AA2F86C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BAB0AE2-089F-4761-B138-A717AA2F86C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7BAB0AE2-089F-4761-B138-A717AA2F86C5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7C622582-E281-4EAB-AADA-B5893BB89B45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7C622582-E281-4EAB-AADA-B5893BB89B45}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7C622582-E281-4EAB-AADA-B5893BB89B45}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7C622582-E281-4EAB-AADA-B5893BB89B45}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F6C0A52-5D1E-4B7A-9C25-8E4D6B1A2C70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F6C0A52-5D1E-4B7A-9C25-8E4D6B1A2C70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F6C0A52-5D1E-4B7A-9C25-8E4D6B1A2C70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F6C0A52-5D1E-4B7A-9C25-8E4D6B1A2C70}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7234B9B4-8CF5-4E68-AA29-050C087B9246}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7234B9B4-8CF5-4E68-AA29-050C087B9246}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7234B9B4-8CF5-4E68-AA29-050C087B9246}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -162,7 +154,6 @@ Global
 		{8E6D5255-776D-4B61-85F9-73C37AA1FB9A} = {A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}
 		{E789C72A-5CFD-436B-8EF1-61AA2852A89F} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 		{4425A246-BD18-4622-86B5-0154F19165E4} = {8E6D5255-776D-4B61-85F9-73C37AA1FB9A}
-		{7C622582-E281-4EAB-AADA-B5893BB89B45} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 		{7234B9B4-8CF5-4E68-AA29-050C087B9246} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

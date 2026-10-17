@@ -1,6 +1,29 @@
 #### Unreleased
 
-* `paket restore` now runs `dotnet restore` on `.slnx` solution files - https://github.com/fsprojects/Paket/issues/4443
+* Add support for `.slnx` solution files - https://github.com/fsprojects/Paket/issues/4443
+* Do not warn about missing "redirects: force" for FSharp.Core in projects targeting net5.0 and later - https://github.com/fsprojects/Paket/issues/4455
+
+#### 12.0.0-alpha001 - 2026-10-11
+
+Paket 12 only ships as the `paket` .NET tool, which needs the .NET 10 runtime: `paket.exe`, `paket.bootstrapper.exe` and Mono are no longer supported. To upgrade, install Paket as a local tool (`dotnet new tool-manifest` if the repository has none, then `dotnet tool install paket`), delete `.paket/paket.exe` and `.paket/paket.bootstrapper.exe`, call `dotnet paket` instead of `.paket/paket.exe` in your build scripts, and run `dotnet paket auto-restore on` again if you use auto-restore. The steps are detailed in https://fsprojects.github.io/Paket/installation.html#Moving-from-paket-exe-and-the-bootstrapper. To keep `paket.exe` for now, remove the `version` line from paket.dependencies and run `.paket/paket.bootstrapper.exe --self`: you get the bootstrapper of Paket 11, which stays on the latest 11.x.
+
+This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NET 9 to 11 (`net9.0-android`, `net10.0-ios`...), so the next `paket update` may rewrite some framework restrictions in paket.lock.
+
+* BREAKING: Paket only ships as a .NET tool: `dotnet tool install paket`. `paket.exe` and `paket.bootstrapper.exe` are no longer built, and Paket no longer runs on Mono or the .NET Framework. See https://fsprojects.github.io/Paket/installation.html#Moving-from-paket-exe-and-the-bootstrapper
+* BREAKING: The release and `tools/paket.exe` of the Paket package carry a `paket.exe` stub instead, so that bootstrappers older than 11.0 explain how to move on: it prints the steps and exits with code 1. To stay on `paket.exe`, move to the bootstrapper of Paket 11, which stays on the latest 11.x: remove the `version` line from paket.dependencies, then run `paket.bootstrapper.exe --self`.
+* BREAKING: `Paket.Restore.targets` and `paket.targets` no longer run the bootstrapper or run `paket.exe` through mono. They find Paket installed with `--tool-path` (in `.paket` or the root), as a local tool, or on the `PATH` like a global tool. The `MonoPath` and `PaketBootStrapper*` properties are gone; the `PaketBootstrapping` target is kept, empty, for the projects that depend on it.
+* BREAKING: Paket.Core targets netstandard2.0 only. `Dependencies.DownloadLatestBootstrapper` and the `downloadBootstrapper` parameter of `Dependencies.Init` are removed, along with the `Releases` module, `Utils.isMonoRuntime`, `Utils.isMono`, `Utils.monoPath`, `Utils.fixArchive`, `ProcessHelper.monoArguments`, `ProcessHelper.appSettings`, `FrameworkDetection.resolveEnvironmentFramework` (replaced by `defaultScriptFramework`), `Queries.resolveEnvironmentFrameworkForScriptGeneration` and the `BootstrapperFileName`, `PaketFileName` and `GithubReleaseDownloadUrl` constants. `ProcessHelper.tryFindPath` and `findPath` take the `;`-separated paths instead of an app setting name. The `PAKET_PUSH_HTTPCLIENT` variable is gone: `paket push` always uses HttpClient.
+* The release carries the `paket.targets` and `paket.bootstrapper.exe` of the latest Paket 11 release, for Paket 11.0.0 and earlier, which download them from the latest release on `auto-restore on`, `convert-from-nuget` and `init`, and for the `--self` of the bootstrappers older than 11.0
+* `paket auto-restore on` writes `paket.targets` from Paket itself instead of downloading it from the latest GitHub release, so it works offline and matches the running Paket
+* `#r "paket:"` in F# scripts finds the Paket .NET tool: installed with `--tool-path`, as a local tool of the manifest, as a global tool, or restored in the NuGet packages folder
+* Recognize the .NET 11 monikers: `net11.0`, `net11.0-windows...`, `net11.0-android` and the other OS-specific ones, and `netcoreapp11.0` - https://github.com/fsprojects/Paket/pull/4439
+* The conditions written in project files now list the OS-specific frameworks of .NET 9 to 11 (`net9.0-android`, `net10.0-ios`, `net11.0-macos`...), which were left out in favour of their .NET 8 counterparts
+* The OS-specific frameworks of .NET 9 to 11 fall back to the previous .NET version for the same OS, as the Windows ones do: a `net11.0-android` project can use the `net10.0-android` assets and dependencies of a package
+
+#### 11.0.1 - 2026-10-11
+
+* `paket auto-restore on` and `paket convert-from-nuget` download `paket.targets` from the latest Paket 11 release up to the running version instead of the latest GitHub release, so that they keep working once 12.0 ships; so does `paket.exe` for `paket.bootstrapper.exe`, which it also downloads on `paket init`
+* The bootstrapper, when it downloads from GitHub, now finds the latest 11.x release once 12.0 ships, for `paket.exe` and for `--self`, instead of staying on 11.0.0
 * The `paket` .NET tool now honours `no_proxy` and the system proxy settings, as `paket.exe` already did; as in curl, a `no_proxy` entry matches the host and its subdomains
 
 #### 11.0.0 - 2026-10-05

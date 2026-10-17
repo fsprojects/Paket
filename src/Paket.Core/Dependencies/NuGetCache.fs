@@ -124,7 +124,7 @@ type NuGetPackageCache =
       Version: string
       CacheVersion: string }
 
-    static member CurrentCacheVersion = "8.1"
+    static member CurrentCacheVersion = "8.2"
 
     member this.WithDependencies (dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) list) =
         { this with
@@ -377,7 +377,6 @@ let getNuSpecFromNupkg (fileName:string) =
     if nuspecFile.Exists then
         Nuspec.Load(nuspecFile.FullName)
     else
-        fixArchive fileName
         use zipToCreate = new FileStream(fileName, FileMode.Open, FileAccess.Read)
         use zip = new ZipArchive(zipToCreate, ZipArchiveMode.Read)
         let zippedNuspec = zip.Entries |> Seq.find (fun f -> f.FullName.EndsWith ".nuspec")

@@ -103,21 +103,37 @@ jobs:
       - name: Build release artifacts
         shell: cmd
         run: .\build.cmd BuildPackage < NUL
+      # Paket 11.0.0 and earlier download paket.targets and paket.bootstrapper.exe from the latest
+      # release, and so does the --self of the bootstrappers older than 11.0. Republish the ones
+      # of the latest Paket 11 release: they still run paket.exe, and that bootstrapper never goes
+      # past 11.x.
+      - name: Fetch the Paket 11 assets
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $release = gh release list --limit 200 --exclude-drafts --exclude-pre-releases --json tagName |
+            ConvertFrom-Json |
+            Where-Object { $_.tagName -match '^11\.\d+\.\d+$' } |
+            Sort-Object { [version]$_.tagName } |
+            Select-Object -Last 1
+          if (-not $release) { throw 'No Paket 11 release found' }
+          gh release download $release.tagName --pattern paket.targets --pattern paket.bootstrapper.exe --dir bin/paket-11
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Verify release artifacts
         shell: pwsh
         env:
           VERSION: ${{ needs.detect-release.outputs.version }}
         run: |
           $requiredFiles = @(
-            'bin/merged/paket.exe',
-            'bin/merged/paket-sha256.txt',
-            'bin_bootstrapper/net461/paket.bootstrapper.exe',
+            'bin/legacy-stub/paket.exe',
+            'bin/legacy-stub/paket-sha256.txt',
             'src/FSharp.DependencyManager.Paket/bin/Release/netstandard2.0/FSharp.DependencyManager.Paket.dll',
-            '.paket/paket.targets',
+            'bin/paket-11/paket.targets',
+            'bin/paket-11/paket.bootstrapper.exe',
             '.paket/Paket.Restore.targets',
             "temp/Paket.$env:VERSION.nupkg",
             "temp/Paket.Core.$env:VERSION.nupkg",
-            "temp/Paket.Bootstrapper.$env:VERSION.nupkg",
             "temp/FSharp.DependencyManager.Paket.$env:VERSION.nupkg"
           )
           $missingFiles = $requiredFiles | Where-Object { -not (Test-Path $_ -PathType Leaf) }
@@ -156,11 +172,11 @@ jobs:
           PRERELEASE: ${{ needs.detect-release.outputs.prerelease }}
         run: |
           $assets = @(
-            'bin/merged/paket.exe',
-            'bin/merged/paket-sha256.txt',
-            'bin_bootstrapper/net461/paket.bootstrapper.exe',
+            'bin/legacy-stub/paket.exe',
+            'bin/legacy-stub/paket-sha256.txt',
             'src/FSharp.DependencyManager.Paket/bin/Release/netstandard2.0/FSharp.DependencyManager.Paket.dll',
-            '.paket/paket.targets',
+            'bin/paket-11/paket.targets',
+            'bin/paket-11/paket.bootstrapper.exe',
             '.paket/Paket.Restore.targets'
           ) + @(Get-ChildItem temp/*.nupkg | ForEach-Object FullName)
 

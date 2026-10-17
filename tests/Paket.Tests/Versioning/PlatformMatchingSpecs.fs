@@ -227,6 +227,11 @@ let ``Can detect .netcoreapp10.0``() =
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V10)))
 
 [<Test>]
+let ``Can detect .netcoreapp11.0``() =
+    let p = PlatformMatching.forceExtractPlatforms ".netcoreapp11.0"
+    p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V11)))
+
+[<Test>]
 let ``Can detect .netcoreapp6.0``() =
     let p = PlatformMatching.forceExtractPlatforms ".netcoreapp6.0"
     p.ToTargetProfile false |> shouldEqual (Some (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V6)))
@@ -391,6 +396,26 @@ let ``Can detect a bunch of net10 platforms``() =
 
   if not (List.isEmpty errors) then
     failwith (String.concat "\n" errors)
+
+[<Test>]
+let ``Can detect a bunch of net11 platforms``() =
+    let testSet = [
+            "net11.0"                     , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V11)
+            "net11.0-windows"             , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet11Windows Net11WindowsVersion.V7_0)
+            "net11.0-windows10.0.19041.0" , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet11Windows Net11WindowsVersion.V10_0_19041_0)
+            "net11.0-windows10.0.19041"   , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet11Windows Net11WindowsVersion.V10_0_19041_0)
+            "net11.0-android30.0"         , TargetProfile.SinglePlatform (FrameworkIdentifier.DotNet11WithOs Net11Os.Android)
+        ]
+
+    let errors = [
+        for p, expected in testSet do
+            let parsed = (PlatformMatching.forceExtractPlatforms p).ToTargetProfile false
+            if parsed <> Some expected then
+                sprintf "%s resulted into %A instead of %A" p parsed expected
+    ]
+
+    if not (List.isEmpty errors) then
+        failwith (String.concat "\n" errors)
 
 [<Test>]
 let ``Can detect netstandard1.6``() =

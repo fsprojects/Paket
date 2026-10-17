@@ -2,15 +2,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFrameworks>net461;net10.0</TargetFrameworks>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFramework>net10.0</TargetFramework>
     <!-- these two properties are set for some tests around assembly metadata parsing.
          they're written to the generated AssemblyInfo.fs -->
     <Authors>Two,Authors</Authors>
     <Description>A description</Description>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' != 'net461'">
-    <DefineConstants>TESTSUITE_RUNS_ON_DOTNETCORE;NO_UNIT_PLATFORMATTRIBUTE;@(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="FsiExtension.fs" />
@@ -213,7 +209,6 @@
     <Compile Include="Performance\EventBoundarySpecs.fs" />
     <Compile Include="Performance\BackgroundMapBuilder.fs" />
     <Compile Include="CommandsCheck.fs" />
-    <Content Include="App.config" />
   </ItemGroup>
 
   <Target Name="AddTestAssetAsNoneItems" BeforeTargets="PrepareForBuild">

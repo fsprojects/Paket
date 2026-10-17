@@ -61,12 +61,6 @@ Once you have a `paket.references` file alongside every project in your codebase
 dotnet paket install
 ```
 
-Or if you're not using .NET Core,
-
-```sh
-.paket/paket.exe install
-```
-
 The [`paket install` command](paket-install.html) will analyze your dependencies and automatically generate the [`paket.lock` file](lock-file.html). It's often quite large!
 
 This file shows all direct and [transitive dependencies](faq.html#transitive) and pins every dependency to a concrete version. You'll want to commit this file to your version control system ([read why](faq.html#Why-should-I-commit-the-lock-file)).
@@ -79,22 +73,10 @@ If you want to check if your dependencies have updates you can run the [`paket o
 dotnet paket outdated
 ```
 
-Or if you're not using .NET Core:
-
-```sh
-.paket/paket.exe outdated
-```
-
 If you want to update all packages you can use the [`paket update` command](paket-update.html):
 
 ```sh
 dotnet paket update
-```
-
-Or if you're not using .NET Core:
-
-```sh
-.paket/paket.exe update
 ```
 
 This command will analyze your [`paket.dependencies` file](dependencies-file.html) and update the [`paket.lock` file](lock-file.html) to specify all of the updated dependencies.

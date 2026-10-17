@@ -343,7 +343,8 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
 /// should be emitted for a project that targets the given profiles and has the given
 /// resolved binding-redirect settings for its FSharp.Core reference.
 /// Binding redirects (and the App.config files they live in) are only relevant for
-/// projects that target the classic .NET Framework - .NET Core/.NET 5+ and
+/// projects that target the classic .NET Framework (net5.0 and later is modelled as
+/// DotNetFramework V5+ but is not .NET Framework) - .NET Core/.NET 5+ and
 /// netstandard-only projects use assembly unification via deps.json instead, so the
 /// warning would be noise there.
 let shouldWarnAboutFSharpCoreRedirects (targetProfiles: TargetProfile list) (createBindingRedirects: BindingRedirectsSettings option) =
@@ -351,7 +352,9 @@ let shouldWarnAboutFSharpCoreRedirects (targetProfiles: TargetProfile list) (cre
         targetProfiles
         |> List.exists (fun profile ->
             profile.Frameworks
-            |> List.exists (function FrameworkIdentifier.DotNetFramework _ -> true | _ -> false))
+            |> List.exists (function
+                | FrameworkIdentifier.DotNetFramework v -> v.IsLegacyVersion
+                | _ -> false))
     targetsDotNetFramework && createBindingRedirects <> Some BindingRedirectsSettings.Force
 
 let installForDotnetSDK root (project:ProjectFile) =

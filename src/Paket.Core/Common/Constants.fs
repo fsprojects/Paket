@@ -9,7 +9,6 @@ let [<Literal>] GitHubUrl                 = "https://github.com"
 let [<Literal>] DefaultNuGetStream        = "https://www.nuget.org/api/v2"
 let [<Literal>] DefaultNuGetV3Stream      = "https://api.nuget.org/v3/index.json"
 let [<Literal>] GitHubReleasesUrl         = "https://api.github.com/repos/fsprojects/Paket/releases"
-let [<Literal>] GithubReleaseDownloadUrl  = "https://github.com/fsprojects/Paket/releases/download"
 /// 'paket.lock'
 let [<Literal>] LockFileName              = "paket.lock"
 /// 'paket.local'
@@ -20,8 +19,6 @@ let [<Literal>] RestoreHashFile           = "paket.restore.cached"
 let [<Literal>] DependenciesFileName      = "paket.dependencies"
 /// '.paket'
 let [<Literal>] PaketFolderName           = ".paket"
-let [<Literal>] BootstrapperFileName      = "paket.bootstrapper.exe"
-let [<Literal>] PaketFileName             = "paket.exe"
 let [<Literal>] TargetsFileName           = "paket.targets"
 let [<Literal>] ReferencesFile            = "paket.references"
 let [<Literal>] AccessLockFileName        = "paket.processlock"
@@ -37,7 +34,6 @@ let [<Literal>] ProjectDefaultNameSpace   = "http://schemas.microsoft.com/develo
 let [<Literal>] ProjectDefaultNameSpaceCore  = "http://schemas.microsoft.com/developer/msbuild/2003"
 let [<Literal>] NuGetProtocolVersion  = "4.1.0"
 
-#if DOTNETCORE
 module Environment =
     type SpecialFolder =
         | ApplicationData
@@ -71,7 +67,6 @@ module Environment =
             else res
         else
             System.IO.Path.Combine(homePath, monoPathSuffix)
-#endif
 
 let MainDependencyGroup = GroupName "Main"
 
