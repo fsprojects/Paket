@@ -350,18 +350,43 @@ let inline normalizePath(path:string) =
       .Replace(dirSeparator + "." + dirSeparator, dirSeparator)
 
 let inline windowsPath (path:string) = path.Replace(Path.DirectorySeparatorChar, '\\')
+
+/// Key for `dir` in a tree walk's visited set: its resolved target if it is a symlink,
+/// otherwise `parentKey` plus its name (its FullName for the walk's root). A cyclic
+/// symlink resolves to a key already visited, so the walk enters it once.
+let visitKey : string option -> DirectoryInfo -> string =
+    // `FileSystemInfo.ResolveLinkTarget` (.NET 6+), bound once at run time because Paket.Core
+    // compiles for netstandard2.0. Paket itself runs on .NET 10, where it is always present.
+    let resolveLinkTarget : Func<FileSystemInfo, bool, FileSystemInfo> =
+        match typeof<FileSystemInfo>.GetMethod("ResolveLinkTarget", [| typeof<bool> |]) with
+        | null -> Func<_, _, _>(fun _ _ -> null)
+        | m -> Delegate.CreateDelegate(typeof<Func<FileSystemInfo, bool, FileSystemInfo>>, m) :?> _
+    fun parentKey dir ->
+        let lexical () =
+            match parentKey with
+            | Some parent -> Path.Combine(parent, dir.Name)
+            | None -> dir.FullName
+        if dir.Attributes &&& FileAttributes.ReparsePoint = FileAttributes.ReparsePoint then
+            match resolveLinkTarget.Invoke(dir, true) with
+            | null -> lexical ()
+            | target -> target.FullName
+        else lexical ()
+
 /// Gets all files with the given pattern, skipping directories whose name starts with a dot
 /// (e.g. .git, .vs, .localhistory) since these are not expected to contain relevant project files
 /// and can be large or contain unrelated backup/history data (see issue #3250).
 let FindAllFiles(folder, pattern) : FileInfo [] =
-    let rec allFiles (dir: DirectoryInfo) =
+    let visited = HashSet<string>(StringComparer.Ordinal)
+    let rec allFiles parentKey (dir: DirectoryInfo) =
         seq {
-            yield! dir.GetFiles(pattern, SearchOption.TopDirectoryOnly)
-            for subDir in dir.GetDirectories() do
-                if not (subDir.Name.StartsWith ".") then
-                    yield! allFiles subDir
+            let key = visitKey parentKey dir
+            if visited.Add key then
+                yield! dir.GetFiles(pattern, SearchOption.TopDirectoryOnly)
+                for subDir in dir.GetDirectories() do
+                    if not (subDir.Name.StartsWith ".") then
+                        yield! allFiles (Some key) subDir
         }
-    allFiles (DirectoryInfo(folder)) |> Seq.toArray
+    allFiles None (DirectoryInfo folder) |> Seq.toArray
 
 type ResolvedPackagesFolder =
     /// No "packages" folder for the current package

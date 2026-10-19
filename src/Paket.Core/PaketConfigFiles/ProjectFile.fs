@@ -1915,7 +1915,10 @@ type ProjectFile with
         let paketPath = Path.Combine(folder,Constants.PaketFilesFolderName) |> normalizePath
 
         let findAllFiles folder =
-            let rec search topLevel (di:DirectoryInfo) =
+            let visited = HashSet<string>(StringComparer.Ordinal)
+            let rec search topLevel parentKey (di:DirectoryInfo) =
+                let key = visitKey parentKey di
+                if not (visited.Add key) then Array.empty else
                 try
                     if verbose then
                         verbosefn "Searching %s in %s" searchPattern di.FullName
@@ -1946,13 +1949,12 @@ type ProjectFile with
                             |> not
                         with
                         | _ -> false)
-                    |> Array.collect (search false)
+                    |> Array.collect (search false (Some key))
                     |> Array.append files
                 with
                 | _ -> Array.empty
 
-
-            search true (DirectoryInfo folder)
+            search true None (DirectoryInfo folder)
 
         findAllFiles folder
 
