@@ -1916,8 +1916,9 @@ type ProjectFile with
 
         let findAllFiles folder =
             let visited = HashSet<string>(StringComparer.Ordinal)
-            let rec search topLevel canonical (di:DirectoryInfo) =
-                if not (visited.Add canonical) then Array.empty else
+            let rec search topLevel parentKey (di:DirectoryInfo) =
+                let key = visitKey parentKey di
+                if not (visited.Add key) then Array.empty else
                 try
                     if verbose then
                         verbosefn "Searching %s in %s" searchPattern di.FullName
@@ -1948,13 +1949,12 @@ type ProjectFile with
                             |> not
                         with
                         | _ -> false)
-                    |> Array.collect (fun sub -> search false (canonicalPath (Path.Combine(canonical, sub.Name)) sub) sub)
+                    |> Array.collect (search false (Some key))
                     |> Array.append files
                 with
                 | _ -> Array.empty
 
-            let root = DirectoryInfo folder
-            search true (canonicalPath root.FullName root) root
+            search true None (DirectoryInfo folder)
 
         findAllFiles folder
 
