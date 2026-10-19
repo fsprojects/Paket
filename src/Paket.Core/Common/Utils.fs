@@ -350,18 +350,40 @@ let inline normalizePath(path:string) =
       .Replace(dirSeparator + "." + dirSeparator, dirSeparator)
 
 let inline windowsPath (path:string) = path.Replace(Path.DirectorySeparatorChar, '\\')
+
+/// `FileSystemInfo.ResolveLinkTarget` (.NET 6+), bound at run time because Paket.Core
+/// compiles for netstandard2.0. Paket itself runs on .NET 10, where it is always present.
+let private resolveLinkTarget : Func<FileSystemInfo, bool, FileSystemInfo> option =
+    typeof<FileSystemInfo>.GetMethod("ResolveLinkTarget", [| typeof<bool> |])
+    |> Option.ofObj
+    |> Option.map (fun m -> Delegate.CreateDelegate(typeof<Func<FileSystemInfo, bool, FileSystemInfo>>, m) :?> _)
+
+/// Canonical (symlink-resolved) path of `dir`; `lexical` is its path if it is not a
+/// link: the parent's canonical path plus its name, or its own FullName for a walk's
+/// root. Tree walks key a visited set on it so a cyclic symlink is entered once.
+let canonicalPath lexical (dir: DirectoryInfo) =
+    match resolveLinkTarget with
+    | Some resolve ->
+        match resolve.Invoke(dir, true) with
+        | null -> lexical
+        | target -> target.FullName
+    | None -> lexical
+
 /// Gets all files with the given pattern, skipping directories whose name starts with a dot
 /// (e.g. .git, .vs, .localhistory) since these are not expected to contain relevant project files
 /// and can be large or contain unrelated backup/history data (see issue #3250).
 let FindAllFiles(folder, pattern) : FileInfo [] =
-    let rec allFiles (dir: DirectoryInfo) =
+    let visited = HashSet<string>(StringComparer.Ordinal)
+    let rec allFiles canonical (dir: DirectoryInfo) =
         seq {
-            yield! dir.GetFiles(pattern, SearchOption.TopDirectoryOnly)
-            for subDir in dir.GetDirectories() do
-                if not (subDir.Name.StartsWith ".") then
-                    yield! allFiles subDir
+            if visited.Add canonical then
+                yield! dir.GetFiles(pattern, SearchOption.TopDirectoryOnly)
+                for subDir in dir.GetDirectories() do
+                    if not (subDir.Name.StartsWith ".") then
+                        yield! allFiles (canonicalPath (Path.Combine(canonical, subDir.Name)) subDir) subDir
         }
-    allFiles (DirectoryInfo(folder)) |> Seq.toArray
+    let root = DirectoryInfo folder
+    allFiles (canonicalPath root.FullName root) root |> Seq.toArray
 
 type ResolvedPackagesFolder =
     /// No "packages" folder for the current package
