@@ -69,7 +69,8 @@ let bruteForce ((g,deps):ResolverPuzzle) =
                               Settings = InstallSettings.Default
                               Source = PackageSources.DefaultNuGetSource
                               Kind = ResolvedPackageKind.Package
-                              IsRuntimeDependency = false }
+                              IsRuntimeDependency = false
+                              DependenciesLockOnly = false }
 
                         let deps' = packageDeps @ deps
                         if createsError (g,deps') resolved then None else

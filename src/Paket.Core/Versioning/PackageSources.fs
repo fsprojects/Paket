@@ -54,6 +54,12 @@ let RemoveOutsideQuotes(path : string) =
     let trimChars = [|'\"'|]
     path.Trim(trimChars)
 
+let private stripInlineComment (text : string) =
+    let idx = text.IndexOf('#')
+    if idx < 0 then text
+    elif idx = 0 || Char.IsWhiteSpace(text.[idx - 1]) then text.Substring(0, idx).TrimEnd()
+    else text
+
 let urlSimilarToTfsOrVsts url =
     String.containsIgnoreCase "visualstudio.com" url || (String.containsIgnoreCase "/_packaging/" url && String.containsIgnoreCase "/nuget/v" url)
 
@@ -145,6 +151,7 @@ type PackageSource =
         | _ when urlSimilarToTfsOrVsts x.Url -> KnownNuGetSources.TfsOrVsts
         | _ -> KnownNuGetSources.UnknownNuGetServer
     static member Parse(line : string) =
+        let line = stripInlineComment line
         let sourceRegex = Regex("source[ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
         let source =
             if sourceRegex.IsMatch line then
