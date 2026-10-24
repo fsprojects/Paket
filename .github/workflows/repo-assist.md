@@ -261,10 +261,6 @@ steps:
       }
       EOF
       fi
-      jq '
-        .fixes |= map(.note |= gsub("\\(no network\\)"; "(previous run; retry build/tests now)"))
-      ' "$MEMORY_DIR/notes.json" > "$MEMORY_DIR/notes.json.tmp"
-      mv "$MEMORY_DIR/notes.json.tmp" "$MEMORY_DIR/notes.json"
 
   - name: Fetch repo data for task weighting
     env:
