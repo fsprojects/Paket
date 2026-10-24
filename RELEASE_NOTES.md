@@ -1,5 +1,7 @@
 #### Unreleased
 
+* Ignore assembly self-references when ordering DLLs for load scripts, and keep unorderable assemblies instead of dropping them - https://github.com/fsprojects/Paket/issues/4458
+
 #### 12.0.0-alpha002 - 2026-10-17
 
 * Add support for `.slnx` solution files - https://github.com/fsprojects/Paket/issues/4443

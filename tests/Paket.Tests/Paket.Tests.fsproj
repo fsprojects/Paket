@@ -206,6 +206,7 @@
     <Compile Include="Packaging\TemplateFileParsing.fs" />
     <Compile Include="Packaging\RemotePushUrlSpecs.fs" />
     <Compile Include="ScriptGeneration\LoadingScriptTests.fs" />
+    <Compile Include="ScriptGeneration\DependencyOrderTests.fs" />
     <Compile Include="Performance\EventBoundarySpecs.fs" />
     <Compile Include="Performance\BackgroundMapBuilder.fs" />
     <Compile Include="CommandsCheck.fs" />
