@@ -71,15 +71,26 @@ network:
   - rust
   - java
   - github
+  - "www.nuget.org" # NuGet v2 integration scenarios
+  - "globalcdn.nuget.org" # NuGet v2 package download redirects
+  - "aka.ms" # .NET installer redirects
+  - "dotnetcli.azureedge.net" # .NET SDK/runtime download fallback
+  - "download.visualstudio.microsoft.com" # .NET SDK/runtime downloads
+  - "www.myget.org" # integration scenarios, including expected feed errors
   - "ci.appveyor.com" # for appveyor packages
   - "appveyorcidata.blob.core.windows.net" # for appveyor packages
+
+env:
+  CI: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_NOLOGO: "1"
+  EnableWindowsTargeting: "true"
 
 checkout:
   fetch: ["*"]     # fetch all remote branches to allow working on PR branches
   fetch-depth: 0   # fetch full history
 
 tools:
-  web-fetch:
   github:
     toolsets: [all]
     min-integrity: none # This workflow is allowed to examine and comment on any issues or PRs
@@ -190,7 +201,7 @@ safe-outputs:
     title-prefix: "[repo-assist] "
     labels: [automation, repo-assist]
     protected-files:
-      policy: request_review
+      policy: request-review
       exclude:
       - CHANGELOG.md
       - README.md
@@ -222,6 +233,14 @@ safe-outputs:
     target: "*"
 
 steps:
+  - name: Install build SDK and integration test runtime
+    uses: actions/setup-dotnet@v6
+    env:
+      DOTNET_INSTALL_DIR: ${{ runner.temp }}/dotnet
+    with:
+      global-json-file: global.json
+      dotnet-version: "8.0.x"
+
   - name: Initialize Repo Assist memory
     env:
       MEMORY_DIR: /tmp/gh-aw/repo-memory/default
@@ -339,6 +358,19 @@ source: githubnext/agentics/workflows/repo-assist.md@b4e175bab6674279e0fe158f7dc
 
 # Repo Assist
 
+## Build and test readiness (all modes)
+
+Apply this section in both command mode and scheduled mode, before creating or updating a code PR.
+
+- The workflow installs the SDK selected by `global.json` and .NET 8 for integration scenarios. The sandbox has **allowlisted network access**, not an offline environment: NuGet v2/v3 and its package CDN, GitHub source files, the locked AppVeyor feed and its blob downloads, and .NET SDK/runtime downloads are allowed.
+- Read `AGENTS.md` and `DEV_GUIDE.md`. Check `dotnet --info`, then run `dotnet tool restore` and `dotnet paket restore` from the repository root. Preserve the configured proxy and certificate environment; do not bypass or disable the firewall.
+- Use `curl --fail --show-error --location --max-time 30` through the configured proxy for web reads and to probe a failing download URL. Copilot's native web-fetch tool is unavailable in the engine's offline/BYOK mode; that does not disable shell networking.
+- Build with `./build.sh Build < /dev/null`. Run the smallest relevant NUnit selection with `dotnet test tests/Paket.Tests/Paket.Tests.fsproj --filter "<relevant filter>" < /dev/null`, then broaden with `./build.sh QuickTest < /dev/null` when appropriate; this target supplies the release version expected by assembly-metadata tests. For integration changes, run `./build.sh QuickIntegrationTests < /dev/null` (the `scriptgen` category). For a different integration selection, first run `./build.sh Publish < /dev/null` to create `bin/net10.0/paket.dll`; the Build target alone does not create the published CLI expected by the test harness.
+- A failure of the legacy AppVeyor feed or a particular integration scenario does not mean all validation is blocked. For core/CLI/unit-test work, try `dotnet paket restore --group Main < /dev/null` followed by the relevant `dotnet test` command; this builds the referenced projects without the legacy documentation/build-script packages. Report exactly which broader checks remain blocked.
+- Diagnose actual failures: distinguish SDK/tool availability, proxy/TLS errors, HTTP status and failing hostname, unavailable external feeds, and code/test failures. Retry a transient failure once and attempt the narrower validation path where applicable. Never infer "the sandbox has no network" from a single failed command, CLI offline-mode banner, an earlier PR, or repo memory.
+- Do not ask for permission to run ordinary restore/build/test commands or wait for a maintainer to run them. They are expected unattended work. Keep commands non-interactive with stdin redirected from `/dev/null`; never use interactive restore or authentication.
+- In each PR's Test Status, list commands actually attempted, their results and test counts, and any precise remaining blocker. Only rely on CI for checks that really could not run after diagnosis and narrower attempts; never reuse an earlier run's infrastructure excuse.
+
 ## Command Mode
 
 Take heed of **instructions**: "${{ steps.sanitized.outputs.text || inputs.command }}"
@@ -375,6 +407,8 @@ Keep notes terse and current. Replace superseded entries, remove resolved issue 
 After every change to `notes.json`, run `jq empty /tmp/gh-aw/repo-memory/default/notes.json`, then call `push_repo_memory`. A successful tool result is required before finishing the run. If either check reports an error, repair `notes.json` and retry both checks. Prefer `jq` with a temporary file and atomic rename over manual partial JSON edits.
 
 **Important**: Memory may not be 100% accurate. Issues may have been created, closed, or commented on; PRs may have been created, merged, commented on, or closed since the last run. Always verify memory against current repository state — reviewing recent activity since your last run is wise before acting on stale assumptions.
+
+Build/network limitations in old memory are historical results, not current capabilities or permission to skip validation. Recheck them using the readiness procedure above on every code-changing run. Replace obsolete environment claims with the current commands/results when updating memory; never persist a blanket "no network" or "cannot build/test" assumption.
 
 **Memory backlog tracking**: Records in `issues`, `fixes`, and `priorities` are **action items for you**, not just informational notes. Each run, prioritise applicable work from those fields and remove or replace entries as their state changes.
 
