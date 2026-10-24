@@ -12,7 +12,7 @@
       "branch": "repo-assist/fix-issue-4443-slnx-restore",
       "status": "open",
       "updated_at": "2026-10-11",
-      "note": "slnx restore PR opened; build unverified (no network)"
+      "note": "slnx restore PR opened; build unverified in that run; retry restore/build/tests with current network policy"
     },
     {
       "issue": 4455,
@@ -20,7 +20,7 @@
       "branch": "repo-assist/fix-issue-4455-fsharpcore-redirects-warning",
       "status": "open",
       "updated_at": "2026-10-16",
-      "note": "PR opened; unbuilt (no network)"
+      "note": "PR opened; unbuilt in that run; retry restore/build/tests with current network policy"
     }
   ],
   "checks": [],
