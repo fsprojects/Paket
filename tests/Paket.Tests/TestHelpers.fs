@@ -163,5 +163,18 @@ let withTempDir (test: string -> 'a) : 'a =
         if Directory.Exists root then
             Directory.Delete(root, true)
 
+/// The lines of a solution folder of a .sln, holding the given solution items
+let slnSolutionFolder (name: string) (guid: string) (items: string list) =
+    [ yield sprintf "Project(\"{2150E333-8FDC-42A3-9474-1A3956D46DE8}\") = \"%s\", \"%s\", \"{%s}\"" name name guid
+      yield "\tProjectSection(SolutionItems) = preProject"
+      for item in items do
+          yield sprintf "\t\t%s = %s" item item
+      yield "\tEndProjectSection"
+      yield "EndProject" ]
+
+/// The lines of a .sln made of the given lines
+let slnLines (lines: string list) =
+    "Microsoft Visual Studio Solution File, Format Version 12.00" :: lines @ [ "Global"; "EndGlobal" ]
+
 [<AttributeUsage(AttributeTargets.Method, AllowMultiple=false)>]
 type FlakyAttribute() = inherit NUnit.Framework.CategoryAttribute()

@@ -488,7 +488,8 @@ let createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
     return PaketEnv.create rootDirectory depFile None convertedProjects
 }
 
-let updateSolutions (rootDirectory : DirectoryInfo) =
+/// Updates the solutions of the root directory, nugetFiles being the full paths of the NuGet files convert-from-nuget deletes
+let updateSolutions (rootDirectory : DirectoryInfo) (nugetFiles : string list) =
     let dependenciesFileName = Path.Combine(rootDirectory.FullName, Constants.DependenciesFileName)
     let solutions =
         FindAllFiles(rootDirectory.FullName, "*.sln")
@@ -496,14 +497,15 @@ let updateSolutions (rootDirectory : DirectoryInfo) =
 
     for solution in solutions do
         let dependenciesFileRef = createRelativePath solution.FileName dependenciesFileName
-        solution.RemoveNuGetEntries()
+        solution.RemoveNuGetEntries nugetFiles
         solution.AddPaketFolder(dependenciesFileRef, None)
 
     solutions
 
 let createResult(rootDirectory, nugetEnv, credsMirationMode) = trial {
     let! paketEnv = createPaketEnv rootDirectory nugetEnv credsMirationMode
-    return ConvertResultR.create nugetEnv paketEnv (updateSolutions rootDirectory)
+    let nugetFiles = NugetEnv.filesToRemove nugetEnv |> List.map (fun fi -> fi.FullName)
+    return ConvertResultR.create nugetEnv paketEnv (updateSolutions rootDirectory nugetFiles)
 }
 
 let convertR rootDirectory force credsMigrationMode = trial {
@@ -531,6 +533,7 @@ let replaceNuGetWithPaket initAutoRestore installAfter result =
         tracefn "Removing %s" fi.FullName
         fi.Delete()
 
+    // the same list gives the solution entries updateSolutions removed
     for f in NugetEnv.filesToRemove result.NuGetEnv do
         remove f
 

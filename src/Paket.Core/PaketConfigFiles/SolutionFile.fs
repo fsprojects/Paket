@@ -4,6 +4,28 @@ open System.IO
 open Logging
 open System
 
+/// Tells the solution items that are files convert-from-nuget deletes
+module internal SolutionItems =
+
+    // the file system of Linux tells NuGet.Config from nuget.config, the ones of Windows and macOS do not
+    let private pathComparison = if isLinux then StringComparison.Ordinal else StringComparison.OrdinalIgnoreCase
+
+    /// Whether the path of an item, relative to the solution directory, is one of the given full paths
+    let isOneOf (solutionDirectory: string) (files: string list) (path: string) =
+        let path = path.Replace('\\', '/')
+        let name = path.Substring(path.LastIndexOf '/' + 1)
+        // only the paths named like one of the files are resolved, the others cannot be one
+        files |> List.exists (fun file -> String.equalsIgnoreCase (Path.GetFileName file) name)
+        &&
+        try
+            // a rooted path is never resolved: on Windows, resolving one such as //server/share/a~1 could reach that server
+            not (Path.IsPathRooted path)
+            && (let fullPath = Path.GetFullPath(Path.Combine(solutionDirectory, path))
+                files |> List.exists (fun file -> String.Equals(file, fullPath, pathComparison)))
+        with
+        // on .NET Framework, a path with characters such as | is invalid
+        | :? ArgumentException | :? NotSupportedException | :? PathTooLongException -> false
+
 /// Contains methods to read and manipulate solution files.
 type SolutionFile(fileName: string) =
    
@@ -76,12 +98,23 @@ type SolutionFile(fileName: string) =
 
     member __.FileName = fileName
 
-    member __.RemoveNuGetEntries() =
-        for file in ["nuget.targets"; Constants.PackagesConfigFile; "nuget.exe"; "nuget.config"] do
-            match content |> Seq.tryFindIndex (fun line -> String.containsIgnoreCase (sprintf ".nuget\\%s" file)line) with
-            | Some(index) -> content.RemoveAt(index)
-            | None -> ()            
-        
+    member __.RemoveNuGetEntries(nugetFiles: string list) =
+        let solutionDirectory = Path.GetDirectoryName(Path.GetFullPath fileName)
+        // the items of a solution folder are the "path = path" lines of its ProjectSection(SolutionItems)
+        let nugetItems = ResizeArray()
+        let mutable inSolutionItems = false
+        for index in 0 .. content.Count - 1 do
+            let line = content.[index].Trim()
+            if line.StartsWith "ProjectSection(SolutionItems)" then inSolutionItems <- true
+            elif line.StartsWith "EndProjectSection" then inSolutionItems <- false
+            elif inSolutionItems then
+                match line.Split([| '=' |]) with
+                | [| item; _ |] when SolutionItems.isOneOf solutionDirectory nugetFiles (item.Trim()) -> nugetItems.Add index
+                | _ -> ()
+
+        for index in Seq.rev nugetItems do
+            content.RemoveAt index
+
         removeNugetSlnFolderIfEmpty()
 
     member __.AddPaketFolder(dependenciesFile, lockFile) =

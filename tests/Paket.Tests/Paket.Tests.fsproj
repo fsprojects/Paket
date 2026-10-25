@@ -124,6 +124,7 @@
     <Compile Include="Lockfile\QuerySpecs.fs" />
     <Compile Include="Lockfile\ParserWithMultipleSourcesSpecs.fs" />
     <Compile Include="ReferencesFile\ReferencesFileSpecs.fs" />
+    <Compile Include="PaketConfigFiles\SolutionFileSpecs.fs" />
     <Compile Include="LocalFile\LocalFileSpecs.fs" />
     <Compile Include="Simplifier\BasicScenarioSpecs.fs" />
     <TestAsset Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFrameworkAndOutputPath.csprojtest" />
