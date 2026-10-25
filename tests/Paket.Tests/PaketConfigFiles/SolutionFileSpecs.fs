@@ -2,6 +2,7 @@ module Paket.SolutionFileSpecs
 
 open System
 open System.IO
+open System.Text
 open Paket
 open NUnit.Framework
 open FsUnit
@@ -51,3 +52,18 @@ let ``should remove the .nuget folder of a sln once its entries are removed``() 
     let saved = removeSlnEntries lines (fun root -> [ Path.Combine(root, ".nuget", "NuGet.Config"); Path.Combine(root, ".nuget", "NuGet.targets") ])
 
     saved |> Array.exists (fun line -> line.Contains ".nuget") |> shouldEqual false
+
+[<Test>]
+let ``should keep the non-ASCII characters of a sln without a BOM``() =
+    withTempDir (fun root ->
+        let fileName = Path.Combine(root, "App.sln")
+        let lines = slnLines [ "Project(\"{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}\") = \"Café\", \"Café\\Café.csproj\", \"{7A8B9C0D-1E2F-4A3B-8C4D-5E6F7A8B9C0D}\""; "EndProject" ]
+        File.WriteAllLines(fileName, lines, UTF8Encoding false)
+
+        let solution = SolutionFile fileName
+        solution.AddPaketFolder("paket.dependencies", None)
+        solution.Save()
+
+        let bytes = File.ReadAllBytes fileName
+        bytes.[0] |> shouldEqual (byte 'M')
+        StringAssert.Contains("\"Café\\Café.csproj\"", UTF8Encoding(false, true).GetString bytes))

@@ -211,7 +211,8 @@ let getFileEncoding path =
     | [| 0xffuy ; 0xfeuy ; _      ; _      |] -> Encoding.Unicode //UTF-16LE
     | [| 0xfeuy ; 0xffuy ; _      ; _      |] -> Encoding.BigEndianUnicode //UTF-16BE
     | [| 0uy    ; 0uy    ; 0xfeuy ; 0xffuy |] -> Encoding.UTF32
-    | _ -> Encoding.ASCII
+    // File.ReadAllLines reads a file without a BOM as UTF-8
+    | _ -> UTF8Encoding false :> Encoding
 
 /// [omit]
 let createRelativePath root (path:string) =
