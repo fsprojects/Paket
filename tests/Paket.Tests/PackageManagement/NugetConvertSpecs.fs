@@ -43,6 +43,36 @@ let ``NugetEnv.read should find the files of the .nuget folder and list the file
              |> List.map (fun path -> path.ToLowerInvariant())))
 
 [<Test>]
+let ``updateSolutions should update the .sln and .slnx solutions and leave them unchanged on a second run``() =
+    withTempDir (fun root ->
+        Directory.CreateDirectory(Path.Combine(root, "sub")) |> ignore
+        let sln, slnx, subSlnx = Path.Combine(root, "App.sln"), Path.Combine(root, "App.slnx"), Path.Combine(root, "sub", "Sub.slnx")
+        File.WriteAllText(sln, "Microsoft Visual Studio Solution File, Format Version 12.00\nGlobal\nEndGlobal\n")
+        File.WriteAllText(slnx, "<Solution>\n  <Project Path=\"App.csproj\" />\n</Solution>\n")
+        File.WriteAllText(subSlnx, "<Solution />\n")
+        let files = [ sln; slnx; subSlnx ]
+        // found by the *.sln* search, but not solutions
+        let otherFiles = [ Path.Combine(root, "App.sln.DotSettings"); Path.Combine(root, "App.slnf") ]
+        for otherFile in otherFiles do
+            File.WriteAllText(otherFile, "not a solution")
+
+        let solutions = NuGetConvert.updateSolutions (DirectoryInfo root) []
+        for solution in solutions do
+            solution.Save()
+
+        solutions |> Array.map (fun solution -> solution.FileName) |> Array.sort |> shouldEqual (Array.sort (Array.ofList files))
+        otherFiles |> List.map File.ReadAllText |> shouldEqual [ "not a solution"; "not a solution" ]
+        StringAssert.Contains("paket.dependencies = paket.dependencies", File.ReadAllText sln)
+        StringAssert.Contains("<File Path=\"paket.dependencies\" />", File.ReadAllText slnx)
+        StringAssert.Contains("<File Path=\"../paket.dependencies\" />", File.ReadAllText subSlnx)
+
+        let converted = files |> List.map File.ReadAllBytes
+        for solution in NuGetConvert.updateSolutions (DirectoryInfo root) [] do
+            solution.Save()
+
+        files |> List.map File.ReadAllBytes |> shouldEqual converted)
+
+[<Test>]
 let ``NugetEnv.read should read the sources of .nuget/NuGet.Config``() =
     withTempDir (fun root ->
         let nugetFolder = Path.Combine(root, ".nuget")

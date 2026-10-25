@@ -253,7 +253,7 @@ module NugetEnv =
 type ConvertResultR =
     { NuGetEnv : NugetEnv
       PaketEnv : PaketEnv
-      SolutionFiles : SolutionFile [] }
+      SolutionFiles : ISolutionFile [] }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module ConvertResultR =
@@ -491,16 +491,18 @@ let createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
 /// Updates the solutions of the root directory, nugetFiles being the full paths of the NuGet files convert-from-nuget deletes
 let updateSolutions (rootDirectory : DirectoryInfo) (nugetFiles : string list) =
     let dependenciesFileName = Path.Combine(rootDirectory.FullName, Constants.DependenciesFileName)
-    let solutions =
-        FindAllFiles(rootDirectory.FullName, "*.sln")
-        |> Array.map (fun fi -> SolutionFile(fi.FullName))
-
-    for solution in solutions do
-        let dependenciesFileRef = createRelativePath solution.FileName dependenciesFileName
+    let update (fi : FileInfo) (load : string -> ISolutionFile) =
+        let solution = load fi.FullName
         solution.RemoveNuGetEntries nugetFiles
-        solution.AddPaketFolder(dependenciesFileRef, None)
+        solution.AddPaketFolder(createRelativePath solution.FileName dependenciesFileName, None)
+        Some solution
 
-    solutions
+    FindAllFiles(rootDirectory.FullName, "*.sln*")
+    |> Array.choose (fun fi ->
+        match fi.Extension.ToLowerInvariant() with
+        | ".sln" -> update fi (fun fileName -> SolutionFile fileName :> ISolutionFile)
+        | ".slnx" -> update fi (fun fileName -> SlnxSolutionFile fileName :> ISolutionFile)
+        | _ -> None)
 
 let createResult(rootDirectory, nugetEnv, credsMirationMode) = trial {
     let! paketEnv = createPaketEnv rootDirectory nugetEnv credsMirationMode
