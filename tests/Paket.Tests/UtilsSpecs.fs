@@ -431,3 +431,18 @@ let ``FindAllFiles should not descend into dot folders``() =
         let files = FindAllFiles(root, "*.sln") |> Array.map (fun fi -> fi.Name) |> Array.sort
 
         files |> shouldEqual [| "nested.sln"; "root.sln" |])
+
+[<Test>]
+let ``FindAllFiles should not descend into the folders that are links``() =
+    TestHelpers.withTempDir (fun root ->
+        let outside = Path.Combine(root, "outside")
+        let repository = Path.Combine(root, "repository")
+        Directory.CreateDirectory(outside) |> ignore
+        Directory.CreateDirectory(repository) |> ignore
+        File.WriteAllText(Path.Combine(outside, "linked.sln"), "")
+        File.WriteAllText(Path.Combine(repository, "root.sln"), "")
+        TestHelpers.createDirectoryLinkOrIgnore (Path.Combine(repository, "linked")) outside
+
+        let files = FindAllFiles(repository, "*.sln") |> Array.map (fun fi -> fi.Name)
+
+        files |> shouldEqual [| "root.sln" |])

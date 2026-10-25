@@ -147,12 +147,24 @@ type NugetEnv =
 
 let private nugetFolderOf (rootDirectory : DirectoryInfo) = DirectoryInfo(Path.Combine(rootDirectory.FullName, ".nuget"))
 
-/// The .nuget folder whose NuGet files convert-from-nuget deletes
+/// The .nuget folder whose NuGet files convert-from-nuget deletes: none when it is a link, which may lead
+/// out of the repository; readNugetConfig still reads its nuget.config, as NuGet does
 let private tryNuGetFolder rootDirectory =
     let nugetFolder = nugetFolderOf rootDirectory
-    if nugetFolder.Exists
+    if nugetFolder.Exists && not (isLink nugetFolder)
     then Some nugetFolder
     else None
+
+/// The folders that are links below the root directory, where FindAllFiles stops
+let private findLinkedFolders (rootDirectory : DirectoryInfo) =
+    let rec linkedFolders (directory : DirectoryInfo) =
+        seq {
+            for subDirectory in directory.GetDirectories() do
+                if not (subDirectory.Name.StartsWith ".") then
+                    if isLink subDirectory then yield subDirectory
+                    else yield! linkedFolders subDirectory
+        }
+    linkedFolders rootDirectory |> Seq.toList
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module NugetEnv =
@@ -208,12 +220,34 @@ module NugetEnv =
                 Result.Succeed None
             |> lift (fun configFile -> (projectFile,configFile))
 
-        let projectFiles = ProjectFile.FindAllProjects rootDirectory.FullName
+        // a project reached through a link may be out of the repository, like the files FindAllFiles skips;
+        // read warns about the folders that are links, so only the project files that are links get a warning
+        let root = rootDirectory.FullName.TrimEnd(Path.DirectorySeparatorChar)
+        let rec isBelowLink (directory : DirectoryInfo) =
+            not (isNull directory)
+            && directory.FullName.TrimEnd(Path.DirectorySeparatorChar) <> root
+            && (isLink directory || isBelowLink directory.Parent)
+
+        let projectFiles =
+            ProjectFile.FindAllProjects rootDirectory.FullName
+            |> Array.filter (fun projectFile ->
+                let file = FileInfo projectFile.FileName
+                if isBelowLink file.Directory then false
+                elif isLink file then
+                    traceWarnfn $"%s{file.FullName} is a link: convert-from-nuget leaves it unchanged."
+                    false
+                else true)
 
         projectFiles
         |> Array.map readPackages
         |> collect
     let read (rootDirectory : DirectoryInfo) = trial {
+        let rootNuGetFolder = nugetFolderOf rootDirectory
+        if isLink rootNuGetFolder
+        then traceWarnfn $"%s{rootNuGetFolder.FullName} is a link: convert-from-nuget reads its nuget.config, if any, but leaves its files in place."
+        for linkedFolder in findLinkedFolders rootDirectory do
+            traceWarnfn $"%s{linkedFolder.FullName} is a link: convert-from-nuget converts and removes nothing through it."
+
         // FindAllFiles skips the dot folders, so the solution-level .nuget folder is searched on its own
         let nugetFolder = tryNuGetFolder rootDirectory
         let findNuGetFiles name =
@@ -225,7 +259,7 @@ module NugetEnv =
                 yield! FindAllFiles(rootDirectory.FullName, name)
             |]
 
-        // the nuget.config files to delete: the ones of the .nuget folder and of the root,
+        // the nuget.config files to delete: the ones of the .nuget folder (unless it is a link) and of the root,
         // which readNugetConfig reads, and the ones of the subfolders, which it does not
         let root = rootDirectory.FullName.TrimEnd(Path.DirectorySeparatorChar)
         let configs =
@@ -500,6 +534,9 @@ let updateSolutions (rootDirectory : DirectoryInfo) (nugetFiles : string list) =
     FindAllFiles(rootDirectory.FullName, "*.sln*")
     |> Array.choose (fun fi ->
         match fi.Extension.ToLowerInvariant() with
+        | ".sln" | ".slnx" when isLink fi ->
+            traceWarnfn $"%s{fi.FullName} is a link: convert-from-nuget leaves it unchanged, so it may still list the NuGet files it deletes and does not get the .paket folder."
+            None
         | ".sln" -> update fi (fun fileName -> SolutionFile fileName :> ISolutionFile)
         | ".slnx" -> update fi (fun fileName -> SlnxSolutionFile fileName :> ISolutionFile)
         | _ -> None)
@@ -516,18 +553,19 @@ let convertR rootDirectory force credsMigrationMode = trial {
             (credsMigrationMode |> Option.map CredsMigrationMode.Parse)
             (ok Encrypt)
 
-    let! nugetEnv = NugetEnv.read rootDirectory
-
+    // checked first, so that NugetEnv.read does not warn about a conversion that is refused anyway
     let! rootDirectory =
         if force then ok rootDirectory
         else PaketEnv.ensureNotExists rootDirectory
 
+    let! nugetEnv = NugetEnv.read rootDirectory
+
     return! createResult(rootDirectory, nugetEnv, credsMigrationMode)
 }
 
-/// Deletes a folder that convert-from-nuget has emptied
+/// Deletes a folder that convert-from-nuget has emptied, unless it is a link
 let internal deleteIfEmpty (directory : DirectoryInfo) =
-    if directory.Exists && Seq.isEmpty (directory.EnumerateFileSystemInfos()) then
+    if directory.Exists && not (isLink directory) && Seq.isEmpty (directory.EnumerateFileSystemInfos()) then
         directory.Delete()
 
 let replaceNuGetWithPaket initAutoRestore installAfter result =

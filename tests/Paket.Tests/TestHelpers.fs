@@ -163,6 +163,25 @@ let withTempDir (test: string -> 'a) : 'a =
         if Directory.Exists root then
             Directory.Delete(root, true)
 
+// ERROR_PRIVILEGE_NOT_HELD, of Windows without the privilege to create symbolic links
+let private privilegeNotHeld = 0x80070522
+
+let private linkOrIgnore (createLink: unit -> unit) =
+    try
+        createLink ()
+    with
+    // on Unix, EPERM or EACCES, e.g. on a file system without links; on Windows, the missing privilege
+    | exn when (exn :? UnauthorizedAccessException) || (exn :? IOException && exn.HResult = privilegeNotHeld) ->
+        NUnit.Framework.Assert.Ignore("Cannot create a symbolic link: " + exn.Message)
+
+/// Creates a symbolic link to a directory, or ignores the test where links cannot be created
+let createDirectoryLinkOrIgnore (link: string) (target: string) =
+    linkOrIgnore (fun () -> Directory.CreateSymbolicLink(link, target) |> ignore)
+
+/// Creates a symbolic link to a file, or ignores the test where links cannot be created
+let createFileLinkOrIgnore (link: string) (target: string) =
+    linkOrIgnore (fun () -> File.CreateSymbolicLink(link, target) |> ignore)
+
 /// The lines of a solution folder of a .sln, holding the given solution items
 let slnSolutionFolder (name: string) (guid: string) (items: string list) =
     [ yield sprintf "Project(\"{2150E333-8FDC-42A3-9474-1A3956D46DE8}\") = \"%s\", \"%s\", \"{%s}\"" name name guid
@@ -175,6 +194,19 @@ let slnSolutionFolder (name: string) (guid: string) (items: string list) =
 /// The lines of a .sln made of the given lines
 let slnLines (lines: string list) =
     "Microsoft Visual Studio Solution File, Format Version 12.00" :: lines @ [ "Global"; "EndGlobal" ]
+
+/// The content of a .sln with a .nuget solution folder holding the given items
+let slnWithNuGetFolder (items: string list) =
+    slnSolutionFolder ".nuget" "6A9DE8E5-3F35-4C0F-9F6B-0E2C46E3C0A1" items |> slnLines |> List.map (fun line -> line + "\n") |> String.concat ""
+
+/// Runs the action and returns its result with the warnings it traced
+let collectWarnings (action: unit -> 'a) =
+    let warnings = ResizeArray()
+    use _ =
+        Logging.event.Publish
+        |> Observable.subscribe (fun trace -> if trace.Level = System.Diagnostics.TraceLevel.Warning then warnings.Add trace.Text)
+    let result = action ()
+    result, List.ofSeq warnings
 
 [<AttributeUsage(AttributeTargets.Method, AllowMultiple=false)>]
 type FlakyAttribute() = inherit NUnit.Framework.CategoryAttribute()

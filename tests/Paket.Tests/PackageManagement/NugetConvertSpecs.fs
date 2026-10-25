@@ -104,6 +104,124 @@ let ``NugetEnv.read should prefer the files of the .nuget folder``() =
         |> shouldEqual [ Path.Combine(nugetFolder, "nuget.config").ToLowerInvariant(); Path.Combine(root, "nuget.config").ToLowerInvariant() ])
 
 [<Test>]
+let ``NugetEnv.read should only read the nuget.config of a .nuget folder that is a symbolic link``() =
+    withTempDir (fun root ->
+        let outside = Path.Combine(root, "outside")
+        Directory.CreateDirectory outside |> ignore
+        File.WriteAllText(Path.Combine(outside, "NuGet.exe"), "")
+        File.WriteAllText(Path.Combine(outside, "NuGet.Config"), configWithSource "outside")
+        let repository = Path.Combine(root, "repository")
+        Directory.CreateDirectory repository |> ignore
+        File.WriteAllText(Path.Combine(repository, "nuget.config"), configWithSource "repository")
+        createDirectoryLinkOrIgnore (Path.Combine(repository, ".nuget")) outside
+
+        let nugetEnv, warnings = collectWarnings (fun () -> NuGetConvert.NugetEnv.read (DirectoryInfo repository) |> returnOrFail)
+
+        warnings |> List.exists (fun warning -> warning.Contains(Path.Combine(repository, ".nuget")) && warning.Contains "is a link") |> shouldEqual true
+        nugetEnv.NuGetExe |> shouldEqual None
+        nugetEnv.NuGetConfigFiles |> List.map (fun fi -> fi.FullName) |> shouldEqual [ Path.Combine(repository, "nuget.config") ]
+        nugetEnv.NuGetConfig.PackageSources |> Map.containsKey "outside" |> shouldEqual true
+        nugetEnv.NuGetConfig.PackageSources |> Map.containsKey "repository" |> shouldEqual true)
+
+[<Test>]
+let ``NugetEnv.read and updateSolutions should skip the files, projects and solutions of the folders that are links``() =
+    withTempDir (fun root ->
+        let outside = Path.Combine(root, "outside")
+        Directory.CreateDirectory outside |> ignore
+        File.WriteAllText(Path.Combine(outside, "nuget.config"), configWithSource "outside")
+        File.WriteAllText(Path.Combine(outside, "nuget.exe"), "")
+        File.WriteAllText(Path.Combine(outside, "Shared.slnx"), "<Solution />")
+        File.WriteAllText(Path.Combine(outside, "Lib.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk\" />")
+        File.WriteAllText(Path.Combine(outside, "packages.config"), "<packages />")
+        let repository = Path.Combine(root, "repository")
+        Directory.CreateDirectory repository |> ignore
+        createDirectoryLinkOrIgnore (Path.Combine(repository, "shared")) outside
+
+        let nugetEnv, warnings = collectWarnings (fun () -> NuGetConvert.NugetEnv.read (DirectoryInfo repository) |> returnOrFail)
+        let solutions = NuGetConvert.updateSolutions (DirectoryInfo repository) []
+
+        nugetEnv.NuGetProjectFiles |> shouldBeEmpty
+        // one warning for the folder, none for each of its files
+        warnings |> List.filter (fun warning -> warning.Contains(Path.Combine(repository, "shared"))) |> List.length |> shouldEqual 1
+        NuGetConvert.NugetEnv.filesToRemove nugetEnv |> shouldBeEmpty
+        solutions |> shouldBeEmpty)
+
+[<Test>]
+let ``NugetEnv.read should skip the project files that are links``() =
+    withTempDir (fun root ->
+        let outside = Path.Combine(root, "Outside.csproj")
+        File.WriteAllText(outside, "<Project Sdk=\"Microsoft.NET.Sdk\" />")
+        let repository = Path.Combine(root, "repository")
+        Directory.CreateDirectory repository |> ignore
+        File.WriteAllText(Path.Combine(repository, "packages.config"), "<packages />")
+        createFileLinkOrIgnore (Path.Combine(repository, "Lib.csproj")) outside
+
+        let nugetEnv, warnings = collectWarnings (fun () -> NuGetConvert.NugetEnv.read (DirectoryInfo repository) |> returnOrFail)
+
+        nugetEnv.NuGetProjectFiles |> shouldBeEmpty
+        warnings |> List.exists (fun warning -> warning.Contains(Path.Combine(repository, "Lib.csproj"))) |> shouldEqual true)
+
+[<Test>]
+let ``NugetEnv.read should warn once about a folder link that makes a cycle``() =
+    withTempDir (fun root ->
+        let app = Path.Combine(root, "app")
+        Directory.CreateDirectory app |> ignore
+        File.WriteAllText(Path.Combine(app, "App.csproj"), "<Project Sdk=\"Microsoft.NET.Sdk\" />")
+        createDirectoryLinkOrIgnore (Path.Combine(app, "cycle")) app
+
+        let nugetEnv, warnings = collectWarnings (fun () -> NuGetConvert.NugetEnv.read (DirectoryInfo root) |> returnOrFail)
+
+        nugetEnv.NuGetProjectFiles |> List.map (fun (project, _) -> project.FileName) |> shouldEqual [ Path.Combine(app, "App.csproj") ]
+        warnings |> List.filter (fun warning -> warning.Contains(Path.Combine(app, "cycle"))) |> List.length |> shouldEqual 1)
+
+[<TestCase("App.sln", false)>]
+[<TestCase("App.sln", true)>]
+[<TestCase("App.slnx", false)>]
+[<TestCase("App.slnx", true)>]
+let ``updateSolutions should remove the entries of the deleted NuGet files only``(solutionName: string, nugetFolderIsLink: bool) =
+    let content, entry =
+        if solutionName.EndsWith ".slnx" then
+            "<Solution>\n  <Folder Name=\"/.nuget/\">\n    <File Path=\".nuget/NuGet.Config\" />\n  </Folder>\n</Solution>\n", "<File Path=\".nuget/NuGet.Config\" />"
+        else
+            slnWithNuGetFolder [ @".nuget\NuGet.Config" ], @".nuget\NuGet.Config"
+    withTempDir (fun root ->
+        let nugetFolder = Path.Combine(root, if nugetFolderIsLink then "outside" else Path.Combine("repository", ".nuget"))
+        Directory.CreateDirectory nugetFolder |> ignore
+        File.WriteAllText(Path.Combine(nugetFolder, "NuGet.Config"), "<configuration />")
+        let repository = Path.Combine(root, "repository")
+        Directory.CreateDirectory repository |> ignore
+        if nugetFolderIsLink then
+            createDirectoryLinkOrIgnore (Path.Combine(repository, ".nuget")) nugetFolder
+        let solutionFile = Path.Combine(repository, solutionName)
+        File.WriteAllText(solutionFile, content)
+        let nugetFiles =
+            NuGetConvert.NugetEnv.read (DirectoryInfo repository) |> returnOrFail
+            |> NuGetConvert.NugetEnv.filesToRemove
+            |> List.map (fun fi -> fi.FullName)
+
+        for solution in NuGetConvert.updateSolutions (DirectoryInfo repository) nugetFiles do
+            solution.Save()
+
+        // the files of a .nuget folder that is a link are not deleted, so their entries stay
+        File.ReadAllText(solutionFile).Contains entry |> shouldEqual nugetFolderIsLink)
+
+[<TestCase("App.sln")>]
+[<TestCase("App.slnx")>]
+let ``updateSolutions should leave the solutions that are symbolic links``(solutionName: string) =
+    let content = if solutionName.EndsWith ".slnx" then "<Solution />" else slnWithNuGetFolder []
+    withTempDir (fun root ->
+        let outside = Path.Combine(root, "outside")
+        File.WriteAllText(outside, content)
+        let repository = Path.Combine(root, "repository")
+        Directory.CreateDirectory repository |> ignore
+        createFileLinkOrIgnore (Path.Combine(repository, solutionName)) outside
+
+        let solutions, warnings = collectWarnings (fun () -> NuGetConvert.updateSolutions (DirectoryInfo repository) [])
+
+        solutions |> shouldBeEmpty
+        warnings |> List.exists (fun warning -> warning.Contains(Path.Combine(repository, solutionName))) |> shouldEqual true)
+
+[<Test>]
 let ``NugetEnv.read should read and remove the NuGet.Config of the root``() =
     withTempDir (fun root ->
         File.WriteAllText(Path.Combine(root, "NuGet.Config"), configWithSource "corp")
@@ -149,3 +267,17 @@ let ``deleteIfEmpty should keep a folder that is not empty``() =
         NuGetConvert.deleteIfEmpty (DirectoryInfo(Path.Combine(root, ".nuget")))
 
         File.Exists(Path.Combine(root, ".nuget", "packages.config")) |> shouldEqual true)
+
+[<Test>]
+let ``deleteIfEmpty should keep a folder that is a symbolic link``() =
+    withTempDir (fun root ->
+        let outside = Path.Combine(root, "outside")
+        Directory.CreateDirectory outside |> ignore
+        let repository = Path.Combine(root, "repository")
+        Directory.CreateDirectory repository |> ignore
+        createDirectoryLinkOrIgnore (Path.Combine(repository, ".nuget")) outside
+
+        NuGetConvert.deleteIfEmpty (DirectoryInfo(Path.Combine(repository, ".nuget")))
+
+        Directory.Exists(Path.Combine(repository, ".nuget")) |> shouldEqual true
+        Directory.Exists outside |> shouldEqual true)
