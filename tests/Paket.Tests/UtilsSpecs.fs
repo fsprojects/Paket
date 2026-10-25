@@ -419,10 +419,9 @@ let ``containsIgnoreCase handles shorter strings correct``() =
 
 [<Test>]
 let ``FindAllFiles should not descend into dot folders``() =
-    let root = Path.Combine(Path.GetTempPath(), "paket_findallfiles_" + Guid.NewGuid().ToString("N"))
-    let dotFolder = Path.Combine(root, ".localhistory")
-    let normalFolder = Path.Combine(root, "src")
-    try
+    TestHelpers.withTempDir (fun root ->
+        let dotFolder = Path.Combine(root, ".localhistory")
+        let normalFolder = Path.Combine(root, "src")
         Directory.CreateDirectory(dotFolder) |> ignore
         Directory.CreateDirectory(normalFolder) |> ignore
         File.WriteAllText(Path.Combine(root, "root.sln"), "")
@@ -431,7 +430,4 @@ let ``FindAllFiles should not descend into dot folders``() =
 
         let files = FindAllFiles(root, "*.sln") |> Array.map (fun fi -> fi.Name) |> Array.sort
 
-        files |> shouldEqual [| "nested.sln"; "root.sln" |]
-    finally
-        if Directory.Exists(root) then
-            Directory.Delete(root, true)
+        files |> shouldEqual [| "nested.sln"; "root.sln" |])

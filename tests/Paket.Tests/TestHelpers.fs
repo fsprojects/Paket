@@ -153,5 +153,15 @@ let changeWorkingDir newPath =
             System.Environment.CurrentDirectory <- oldPath
     }
 
+/// Runs the test in a new temporary directory, deleted afterwards, and returns its result
+let withTempDir (test: string -> 'a) : 'a =
+    // the full name of the created directory, like the FileInfo.FullName the expected paths are compared with
+    let root = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "paket_" + Guid.NewGuid().ToString("N"))).FullName
+    try
+        test root
+    finally
+        if Directory.Exists root then
+            Directory.Delete(root, true)
+
 [<AttributeUsage(AttributeTargets.Method, AllowMultiple=false)>]
 type FlakyAttribute() = inherit NUnit.Framework.CategoryAttribute()
