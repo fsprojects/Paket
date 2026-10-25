@@ -150,6 +150,11 @@ let fetchCache repoCacheFolder cloneUrl =
                 Directory.CreateDirectory Constants.GitRepoCacheFolder |> ignore
             tracefn "Cloning %s to %s" cloneUrl repoCacheFolder
             CommandHelper.runSimpleGitCommand Constants.GitRepoCacheFolder ("clone --mirror " + quote cloneUrl + " " + quote repoCacheFolder) |> ignore
+        elif not (Directory.Exists (Path.Combine(repoCacheFolder, "objects"))) then
+            // the folder only holds the process lock file, so "clone --mirror" would refuse it
+            tracefn "Cloning %s to %s" cloneUrl repoCacheFolder
+            CommandHelper.runSimpleGitCommand repoCacheFolder "init --bare" |> ignore
+            CommandHelper.runSimpleGitCommand repoCacheFolder ("remote add --mirror=fetch origin " + quote cloneUrl) |> ignore
         else
             CommandHelper.runSimpleGitCommand repoCacheFolder ("remote set-url origin " + quote cloneUrl) |> ignore
             if verbose then

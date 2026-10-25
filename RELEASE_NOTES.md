@@ -1,5 +1,7 @@
 #### Unreleased
 
+* Fix restore of git dependencies from a cold git cache - https://github.com/fsprojects/Paket/issues/4461
+
 #### 12.0.0-alpha002 - 2026-10-17
 
 * Add support for `.slnx` solution files - https://github.com/fsprojects/Paket/issues/4443
