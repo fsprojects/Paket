@@ -525,11 +525,16 @@ let createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
 /// Updates the solutions of the root directory, nugetFiles being the full paths of the NuGet files convert-from-nuget deletes
 let updateSolutions (rootDirectory : DirectoryInfo) (nugetFiles : string list) =
     let dependenciesFileName = Path.Combine(rootDirectory.FullName, Constants.DependenciesFileName)
+    // A solution that cannot be read or updated is left as it is, so that it does not stop the conversion.
     let update (fi : FileInfo) (load : string -> ISolutionFile) =
-        let solution = load fi.FullName
-        solution.RemoveNuGetEntries nugetFiles
-        solution.AddPaketFolder(createRelativePath solution.FileName dependenciesFileName, None)
-        Some solution
+        try
+            let solution = load fi.FullName
+            solution.RemoveNuGetEntries nugetFiles
+            solution.AddPaketFolder(createRelativePath solution.FileName dependenciesFileName, None)
+            Some solution
+        with exn ->
+            traceWarnfn $"Could not update %s{fi.FullName}: convert-from-nuget leaves it unchanged, so it may still list the NuGet files it deletes and does not get the .paket folder.%s{Environment.NewLine}%s{exn.Message}"
+            None
 
     FindAllFiles(rootDirectory.FullName, "*.sln*")
     |> Array.choose (fun fi ->

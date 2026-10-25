@@ -250,6 +250,18 @@ let ``NugetEnv.read should only read and remove the nuget.config that NuGet read
         nugetEnv.NuGetConfigFiles |> List.map (fun fi -> fi.FullName) |> shouldEqual [ Path.Combine(nugetFolder, "nuget.config") ])
 
 [<Test>]
+let ``updateSolutions should leave the slnx files it cannot read``() =
+    withTempDir (fun root ->
+        let slnx, broken = Path.Combine(root, "App.slnx"), Path.Combine(root, "broken.slnx")
+        File.WriteAllText(slnx, "<Solution />")
+        File.WriteAllText(broken, "not xml")
+
+        let solutions, warnings = collectWarnings (fun () -> NuGetConvert.updateSolutions (DirectoryInfo root) [])
+
+        warnings |> List.exists (fun warning -> warning.Contains broken && warning.Contains "leaves it unchanged") |> shouldEqual true
+        solutions |> Array.map (fun solution -> solution.FileName) |> shouldEqual [| slnx |])
+
+[<Test>]
 let ``deleteIfEmpty should delete an empty folder``() =
     withTempDir (fun root ->
         Directory.CreateDirectory(Path.Combine(root, ".nuget")) |> ignore
@@ -281,3 +293,17 @@ let ``deleteIfEmpty should keep a folder that is a symbolic link``() =
 
         Directory.Exists(Path.Combine(repository, ".nuget")) |> shouldEqual true
         Directory.Exists outside |> shouldEqual true)
+
+[<Test>]
+let ``updateSolutions should leave the sln files it cannot update``() =
+    withTempDir (fun root ->
+        let slnx, truncated = Path.Combine(root, "App.slnx"), Path.Combine(root, "Truncated.sln")
+        File.WriteAllText(slnx, "<Solution />")
+        // ends on the line of the .paket solution folder, without its EndProject: adding paket.dependencies
+        // to the folder cannot find its end, which makes the update fail
+        File.WriteAllText(truncated, "Microsoft Visual Studio Solution File, Format Version 12.00\nProject(\"{2150E333-8FDC-42A3-9474-1A3956D46DE8}\") = \".paket\", \".paket\", \"{6A9DE8E5-3F35-4C0F-9F6B-0E2C46E3C0A1}\"\n")
+
+        let solutions, warnings = collectWarnings (fun () -> NuGetConvert.updateSolutions (DirectoryInfo root) [])
+
+        warnings |> List.exists (fun warning -> warning.Contains truncated) |> shouldEqual true
+        solutions |> Array.map (fun solution -> solution.FileName) |> shouldEqual [| slnx |])

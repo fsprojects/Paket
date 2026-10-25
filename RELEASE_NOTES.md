@@ -2,7 +2,7 @@
 
 * `paket convert-from-nuget` now updates `.slnx` solution files, as it does `.sln` ones - https://github.com/fsprojects/Paket/issues/4443
 * `paket convert-from-nuget` removes the `NuGet.Config`, `NuGet.targets` and `NuGet.exe` files of the root `.nuget` folder again, as well as the folder once it is empty: Paket 11.0 had stopped finding them. It reads and removes the `NuGet.Config` of the root and of the `.nuget` folder under the names NuGet looks for, `nuget.config`, `NuGet.config` or `NuGet.Config`, and the `NuGet.targets` and `NuGet.exe` of the `.nuget` folder whatever the case of their name, where Linux only found lowercase names
-* `paket convert-from-nuget` converts and removes nothing through a link: it skips the projects, NuGet files and solutions of the folders that are links, with a warning for each such folder, so these projects are not converted. It leaves in place a `.nuget` folder that is a link and the solutions that are links
+* `paket convert-from-nuget` converts and removes nothing through a link: it skips the projects, NuGet files and solutions of the folders that are links, with a warning for each such folder, so these projects are not converted. It leaves in place a `.nuget` folder that is a link and the solutions that are links, and skips with a warning the solutions it cannot read or update, instead of failing
 * `paket convert-from-nuget` only removes the solution items of a `.sln` that are files it deletes, found by their path in any solution folder. It removed the first line naming a NuGet file of `.nuget`, even a project or a `packages.config` it kept
 * `paket convert-from-nuget` keeps the non-ASCII characters of a `.sln` without a BOM, which it saved in ASCII
 
