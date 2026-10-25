@@ -446,3 +446,35 @@ let ``FindAllFiles should not descend into the folders that are links``() =
         let files = FindAllFiles(repository, "*.sln") |> Array.map (fun fi -> fi.Name)
 
         files |> shouldEqual [| "root.sln" |])
+
+[<Test>]
+let ``isDirectoryLink should tell a link given with a trailing separator``() =
+    TestHelpers.withTempDir (fun root ->
+        let target = Path.Combine(root, "target")
+        Directory.CreateDirectory(target) |> ignore
+        let link = Path.Combine(root, "link")
+        TestHelpers.createDirectoryLinkOrIgnore link target
+
+        // only Linux and macOS read "link/" as the folder it leads to: Windows drops the separator itself
+        SymlinkUtils.isDirectoryLink (link + string Path.DirectorySeparatorChar) |> shouldEqual true
+        SymlinkUtils.isDirectoryLink (target + string Path.DirectorySeparatorChar) |> shouldEqual false)
+
+[<Test>]
+let ``SymlinkUtils.delete should delete a link given with a trailing separator``() =
+    TestHelpers.withTempDir (fun root ->
+        let target = Path.Combine(root, "target")
+        Directory.CreateDirectory(target) |> ignore
+        File.WriteAllText(Path.Combine(target, "file.txt"), "")
+        let link = Path.Combine(root, "link")
+        TestHelpers.createDirectoryLinkOrIgnore link target
+
+        SymlinkUtils.delete (link + string Path.DirectorySeparatorChar)
+
+        Directory.Exists link |> shouldEqual false
+        File.Exists(Path.Combine(target, "file.txt")) |> shouldEqual true)
+
+[<Test>]
+let ``isDirectoryLink should keep the separators of a root``() =
+    if not isUnix then
+        Assert.Ignore "A path made of separators is a root only on Unix"
+    SymlinkUtils.isDirectoryLink "//" |> shouldEqual false
