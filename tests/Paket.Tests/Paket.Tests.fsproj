@@ -86,6 +86,7 @@
     <Compile Include="NuGetConfig\NuGetConfigSpecs.fs" />
     <TestAsset Include="NuGetConfig\ConfigWithDisabledFeed.xml" />
     <TestAsset Include="NuGetConfig\ConfigWithDisabledFeedFromUpstream.xml" />
+    <Compile Include="PackageManagement\NugetConvertSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRangeSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRequirementSpecs.fs" />
     <Compile Include="DependenciesFile\ParserSpecs.fs" />

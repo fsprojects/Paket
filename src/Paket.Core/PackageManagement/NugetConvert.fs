@@ -145,6 +145,15 @@ type NugetEnv =
       NuGetTargets : FileInfo option
       NuGetExe : FileInfo option }
 
+let private nugetFolderOf (rootDirectory : DirectoryInfo) = DirectoryInfo(Path.Combine(rootDirectory.FullName, ".nuget"))
+
+/// The .nuget folder whose NuGet files convert-from-nuget deletes
+let private tryNuGetFolder rootDirectory =
+    let nugetFolder = nugetFolderOf rootDirectory
+    if nugetFolder.Exists
+    then Some nugetFolder
+    else None
+
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module NugetEnv =
     let create rootDirectory configFiles targets exe config packagesFiles =
@@ -156,12 +165,21 @@ module NugetEnv =
           NuGetExe = exe
         }
 
+    /// The nuget.config of a folder: file names are case-sensitive on Linux, so the names NuGet looks for are tried in its order
+    let private tryFindNuGetConfig (directory : DirectoryInfo) =
+        [ "nuget.config"; "NuGet.config"; "NuGet.Config" ]
+        |> List.tryPick (fun name ->
+            let fi = FileInfo(Path.Combine(directory.FullName, name))
+            if fi.Exists then Some fi else None
+        )
+
     let readNugetConfig(rootDirectory : DirectoryInfo) =
-        DirectoryInfo(Path.Combine(rootDirectory.FullName, ".nuget"))
+        nugetFolderOf rootDirectory
         |> List.unfold (fun di ->
                 match di with
                 | null -> None
-                | _ -> Some(FileInfo(Path.Combine(di.FullName, "nuget.config")), di.Parent))
+                | _ -> Some(tryFindNuGetConfig di, di.Parent))
+        |> List.choose id
         |> List.rev
         |> List.append [FileInfo(Path.Combine(Constants.AppDataFolder, "nuget", "nuget.config"))]
         |> List.filter (fun fi -> fi.Exists)
@@ -196,14 +214,41 @@ module NugetEnv =
         |> Array.map readPackages
         |> collect
     let read (rootDirectory : DirectoryInfo) = trial {
-        let configs = FindAllFiles(rootDirectory.FullName, "nuget.config") |> Array.toList
-        let targets = FindAllFiles(rootDirectory.FullName, "nuget.targets") |> Array.tryHead
-        let exe = FindAllFiles(rootDirectory.FullName, "nuget.exe") |> Array.tryHead
+        // FindAllFiles skips the dot folders, so the solution-level .nuget folder is searched on its own
+        let nugetFolder = tryNuGetFolder rootDirectory
+        let findNuGetFiles name =
+            [|
+                // the solution-level files come first, before the copies found in the packages folders
+                match nugetFolder with
+                | Some nugetFolder -> yield! nugetFolder.GetFiles() |> Array.filter (fun fi -> String.equalsIgnoreCase fi.Name name)
+                | None -> ()
+                yield! FindAllFiles(rootDirectory.FullName, name)
+            |]
+
+        // the nuget.config files to delete: the ones of the .nuget folder and of the root,
+        // which readNugetConfig reads, and the ones of the subfolders, which it does not
+        let root = rootDirectory.FullName.TrimEnd(Path.DirectorySeparatorChar)
+        let configs =
+            [
+              yield! nugetFolder |> Option.bind tryFindNuGetConfig |> Option.toList
+              yield! Option.toList (tryFindNuGetConfig rootDirectory)
+              yield! FindAllFiles(rootDirectory.FullName, "nuget.config")
+                     |> Array.filter (fun fi -> fi.Directory.FullName.TrimEnd(Path.DirectorySeparatorChar) <> root)
+            ]
+        let targets = findNuGetFiles "nuget.targets" |> Array.tryHead
+        let exe = findNuGetFiles "nuget.exe" |> Array.tryHead
         let! config = readNugetConfig rootDirectory
         let! packages = readNuGetPackages rootDirectory
 
         return create rootDirectory configs targets exe config packages
     }
+
+    /// The NuGet files convert-from-nuget deletes
+    let filesToRemove nugetEnv =
+        [ yield! nugetEnv.NuGetConfigFiles
+          yield! nugetEnv.NuGetProjectFiles |> List.choose (snd >> Option.map (fun packagesConfig -> packagesConfig.File))
+          yield! Option.toList nugetEnv.NuGetTargets
+          yield! Option.toList nugetEnv.NuGetExe ]
 
 type ConvertResultR =
     { NuGetEnv : NugetEnv
@@ -476,31 +521,27 @@ let convertR rootDirectory force credsMigrationMode = trial {
     return! createResult(rootDirectory, nugetEnv, credsMigrationMode)
 }
 
+/// Deletes a folder that convert-from-nuget has emptied
+let internal deleteIfEmpty (directory : DirectoryInfo) =
+    if directory.Exists && Seq.isEmpty (directory.EnumerateFileSystemInfos()) then
+        directory.Delete()
+
 let replaceNuGetWithPaket initAutoRestore installAfter result =
     let remove (fi : FileInfo) =
         tracefn "Removing %s" fi.FullName
         fi.Delete()
 
-    for f in result.NuGetEnv.NuGetConfigFiles do
+    for f in NugetEnv.filesToRemove result.NuGetEnv do
         remove f
 
-    result.NuGetEnv.NuGetProjectFiles
-    |> List.map (fun (_,n) -> n |> Option.map (fun x -> x.File))
-    |> List.choose id
-    |> List.iter remove
-
-    result.NuGetEnv.NuGetTargets |> Option.iter remove
     result.NuGetEnv.NuGetExe
     |> Option.iter
             (fun nugetExe ->
-            remove nugetExe
             traceWarnfn "Removed %s and added %s as dependency instead. Please check all paths."
                 nugetExe.FullName "NuGet.CommandLine")
 
-    match result.NuGetEnv.NuGetTargets ++ result.NuGetEnv.NuGetExe with
-    | Some fi when fi.Directory.EnumerateFileSystemInfos() |> Seq.isEmpty ->
-        fi.Directory.Delete()
-    | _ -> ()
+    result.NuGetEnv.NuGetTargets ++ result.NuGetEnv.NuGetExe |> Option.iter (fun fi -> deleteIfEmpty fi.Directory)
+    deleteIfEmpty (nugetFolderOf result.NuGetEnv.RootDirectory)
 
     result.PaketEnv.DependenciesFile.Save()
     for project, referencesFile in result.PaketEnv.Projects do

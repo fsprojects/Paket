@@ -1,5 +1,7 @@
 #### Unreleased
 
+* `paket convert-from-nuget` removes the `NuGet.Config`, `NuGet.targets` and `NuGet.exe` files of the root `.nuget` folder again, as well as the folder once it is empty: Paket 11.0 had stopped finding them. It reads and removes the `NuGet.Config` of the root and of the `.nuget` folder under the names NuGet looks for, `nuget.config`, `NuGet.config` or `NuGet.Config`, and the `NuGet.targets` and `NuGet.exe` of the `.nuget` folder whatever the case of their name, where Linux only found lowercase names
+
 #### 12.0.0-alpha002 - 2026-10-17
 
 * Add support for `.slnx` solution files - https://github.com/fsprojects/Paket/issues/4443
