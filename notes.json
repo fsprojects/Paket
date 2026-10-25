@@ -21,6 +21,14 @@
       "status": "open",
       "updated_at": "2026-10-16",
       "note": "PR opened; unbuilt in that run; retry restore/build/tests with current network policy"
+    },
+    {
+      "issue": 4461,
+      "pr": null,
+      "branch": "repo-assist/fix-issue-4461-cold-git-cache",
+      "status": "open",
+      "updated_at": "2026-10-25",
+      "note": "PR opened; Paket.Core builds after dotnet tool restore + paket restore --group Main"
     }
   ],
   "checks": [],
