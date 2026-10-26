@@ -86,6 +86,7 @@
     <Compile Include="NuGetConfig\NuGetConfigSpecs.fs" />
     <TestAsset Include="NuGetConfig\ConfigWithDisabledFeed.xml" />
     <TestAsset Include="NuGetConfig\ConfigWithDisabledFeedFromUpstream.xml" />
+    <Compile Include="PackageManagement\NugetConvertSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRangeSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRequirementSpecs.fs" />
     <Compile Include="DependenciesFile\ParserSpecs.fs" />
@@ -123,6 +124,7 @@
     <Compile Include="Lockfile\QuerySpecs.fs" />
     <Compile Include="Lockfile\ParserWithMultipleSourcesSpecs.fs" />
     <Compile Include="ReferencesFile\ReferencesFileSpecs.fs" />
+    <Compile Include="PaketConfigFiles\SolutionFileSpecs.fs" />
     <Compile Include="LocalFile\LocalFileSpecs.fs" />
     <Compile Include="Simplifier\BasicScenarioSpecs.fs" />
     <TestAsset Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFrameworkAndOutputPath.csprojtest" />

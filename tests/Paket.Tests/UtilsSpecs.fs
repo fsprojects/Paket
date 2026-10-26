@@ -419,10 +419,9 @@ let ``containsIgnoreCase handles shorter strings correct``() =
 
 [<Test>]
 let ``FindAllFiles should not descend into dot folders``() =
-    let root = Path.Combine(Path.GetTempPath(), "paket_findallfiles_" + Guid.NewGuid().ToString("N"))
-    let dotFolder = Path.Combine(root, ".localhistory")
-    let normalFolder = Path.Combine(root, "src")
-    try
+    TestHelpers.withTempDir (fun root ->
+        let dotFolder = Path.Combine(root, ".localhistory")
+        let normalFolder = Path.Combine(root, "src")
         Directory.CreateDirectory(dotFolder) |> ignore
         Directory.CreateDirectory(normalFolder) |> ignore
         File.WriteAllText(Path.Combine(root, "root.sln"), "")
@@ -431,7 +430,51 @@ let ``FindAllFiles should not descend into dot folders``() =
 
         let files = FindAllFiles(root, "*.sln") |> Array.map (fun fi -> fi.Name) |> Array.sort
 
-        files |> shouldEqual [| "nested.sln"; "root.sln" |]
-    finally
-        if Directory.Exists(root) then
-            Directory.Delete(root, true)
+        files |> shouldEqual [| "nested.sln"; "root.sln" |])
+
+[<Test>]
+let ``FindAllFiles should not descend into the folders that are links``() =
+    TestHelpers.withTempDir (fun root ->
+        let outside = Path.Combine(root, "outside")
+        let repository = Path.Combine(root, "repository")
+        Directory.CreateDirectory(outside) |> ignore
+        Directory.CreateDirectory(repository) |> ignore
+        File.WriteAllText(Path.Combine(outside, "linked.sln"), "")
+        File.WriteAllText(Path.Combine(repository, "root.sln"), "")
+        TestHelpers.createDirectoryLinkOrIgnore (Path.Combine(repository, "linked")) outside
+
+        let files = FindAllFiles(repository, "*.sln") |> Array.map (fun fi -> fi.Name)
+
+        files |> shouldEqual [| "root.sln" |])
+
+[<Test>]
+let ``isDirectoryLink should tell a link given with a trailing separator``() =
+    TestHelpers.withTempDir (fun root ->
+        let target = Path.Combine(root, "target")
+        Directory.CreateDirectory(target) |> ignore
+        let link = Path.Combine(root, "link")
+        TestHelpers.createDirectoryLinkOrIgnore link target
+
+        // only Linux and macOS read "link/" as the folder it leads to: Windows drops the separator itself
+        SymlinkUtils.isDirectoryLink (link + string Path.DirectorySeparatorChar) |> shouldEqual true
+        SymlinkUtils.isDirectoryLink (target + string Path.DirectorySeparatorChar) |> shouldEqual false)
+
+[<Test>]
+let ``SymlinkUtils.delete should delete a link given with a trailing separator``() =
+    TestHelpers.withTempDir (fun root ->
+        let target = Path.Combine(root, "target")
+        Directory.CreateDirectory(target) |> ignore
+        File.WriteAllText(Path.Combine(target, "file.txt"), "")
+        let link = Path.Combine(root, "link")
+        TestHelpers.createDirectoryLinkOrIgnore link target
+
+        SymlinkUtils.delete (link + string Path.DirectorySeparatorChar)
+
+        Directory.Exists link |> shouldEqual false
+        File.Exists(Path.Combine(target, "file.txt")) |> shouldEqual true)
+
+[<Test>]
+let ``isDirectoryLink should keep the separators of a root``() =
+    if not isUnix then
+        Assert.Ignore "A path made of separators is a root only on Unix"
+    SymlinkUtils.isDirectoryLink "//" |> shouldEqual false

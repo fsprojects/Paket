@@ -4,12 +4,16 @@ open System
 open Paket
 open System.Diagnostics
 
-let isDirectoryLink directory =
-    let di = IO.DirectoryInfo(directory)
-    di.Exists && di.Attributes.HasFlag(IO.FileAttributes.ReparsePoint)
+// "link/" stands for the folder the link leads to, which is no link and cannot be deleted as one;
+// a root, such as "/" or "C:\", keeps its separators
+let private withoutTrailingSeparators (directory: string) =
+    let trimmed = directory.TrimEnd(IO.Path.DirectorySeparatorChar, IO.Path.AltDirectorySeparatorChar)
+    if trimmed.Length <= (IO.Path.GetPathRoot directory).Length then directory else trimmed
+
+let isDirectoryLink (directory: string) = isLink (IO.DirectoryInfo(withoutTrailingSeparators directory))
 
 /// delete the symlink only (do not remove files before)
-let delete directory = if isDirectoryLink directory then IO.Directory.Delete directory
+let delete directory = if isDirectoryLink directory then IO.Directory.Delete(withoutTrailingSeparators directory)
 
 let makeDirectoryLink target source =
     let mklink (p:ProcessStartInfo) =

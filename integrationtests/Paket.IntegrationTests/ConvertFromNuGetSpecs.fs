@@ -7,6 +7,7 @@ open FsUnit
 open System
 open System.IO
 open System.Diagnostics
+open System.Xml.Linq
 open Paket
 open Paket.Domain
 open Paket.Requirements
@@ -117,6 +118,21 @@ let ``#2512 should put paket.dependencies inside the .paket folder when it's abs
 [<Test>]
 let ``#2512 should put paket.dependencies inside the .paket folder that already has files in it``() =
     testPaketDependenciesFileInSolution "i002512-2" ["paket.dependencies"; "SomeFile"]
+
+[<Test>]
+let ``#4443 should put paket.dependencies inside the .paket folder of the slnx file and remove the .nuget files``() =
+    let scenario = "i004443-convert-slnx"
+    use __ = paket "convert-from-nuget" scenario |> fst
+
+    let folders =
+        XDocument.Load(Path.Combine(scenarioTempPath scenario, "sln.slnx")).Root.Elements(XName.Get "Folder")
+        |> Seq.map (fun folder ->
+            folder.Attribute(XName.Get "Name").Value,
+            folder.Elements(XName.Get "File") |> Seq.map (fun file -> file.Attribute(XName.Get "Path").Value) |> Seq.toList)
+        |> Seq.toList
+
+    folders |> shouldEqual [ "/.paket/", [ "paket.dependencies" ] ]
+    Directory.Exists(Path.Combine(scenarioTempPath scenario, ".nuget")) |> shouldEqual false
 
 [<Test>]
 let ``#2528 sdk-2: convert-from-nuget should add explicit FSharp.Core``() =
