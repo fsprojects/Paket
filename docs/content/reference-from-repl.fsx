@@ -76,7 +76,7 @@ dependencies.GetDirectDependencies()
 // [fsi:   ("Main", "FsUnit", "1.3.0.1")]]
 
 // List direct dependencies for the given package.
-dependencies.GetDirectDependenciesForPackage("Main", "FSharp.Compiler.Service")
+dependencies.GetDirectDependenciesForPackage(Domain.GroupName "Main", "FSharp.Compiler.Service")
 // [fsi:val it : (string * string * string) list =]
 // [fsi:  ...]
 

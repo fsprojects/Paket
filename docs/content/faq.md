@@ -191,7 +191,7 @@ In case of the command's failure, you can fallback to manual approach:
 
 In this case it's okay to use the `--force` flag for the
 [`convert-from-nuget` command](paket-convert-from-nuget.html) as described in
-[partial NuGet conversion](getting-started.html#Partial-NuGet-conversion). Paket
+[partial NuGet conversion](convert-from-nuget-tutorial.html#Partial-NuGet-conversion). Paket
 will then go through your solution and convert all new NuGet projects to Paket.
 
 ## Paket stores `paket.dependencies` and `paket.lock` files in the root of a repository. How can I change that?
