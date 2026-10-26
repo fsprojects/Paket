@@ -97,7 +97,7 @@ GIT
 ### Building nupkg on install
 
 It's also possible to
-[run build scripts](git-dependencies.html#Running-a-build-in-git-repositories)
+[run build scripts](git-dependencies.html#Running-a-build-in-Git-repositories)
 to create the NuGet packages when installing/restoring with paket:
 
 ```paket

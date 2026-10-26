@@ -378,7 +378,7 @@ nuget FSharp.Core redirects: off
 ```
 
 You can also override the redirects settings per project, from its
-[`paket.references` file](references-files.html#Redirects-settings).
+[`paket.references` file](references-files.html#Overriding-settings-from).
 
 ### Referencing specific versions in projects
 
@@ -477,7 +477,7 @@ Note, however, that all [transitive dependencies](faq.html#transitive) will
 still get their *latest matching versions*, no matter the value of the
 `lowest_matching` modifier. If you want to influence the resolution of [transitive
 dependencies](faq.html#transitive) then read about the [`strategy`
-option](dependencies-file.html##Resolver-strategy-for-transitive-dependencies).
+option](dependencies-file.html#Resolver-strategy-for-transitive-dependencies).
 
 To request Paket to override the resolver strategy for a package, use the
 `lowest_matching: true` modifier:

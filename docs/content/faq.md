@@ -82,7 +82,7 @@ Paket tries to embrace [semantic versioning](http://semver.org/) while NuGet
 uses a pessimistic version resolution strategy. You can prefix your
 [version constraints](nuget-dependencies.html#Version-constraints) with
 [`!`](nuget-dependencies.html#Strategy-modifiers) if you need to
-[stay compatible to NuGet](dependencies-file.html#Strategy-option).
+[stay compatible to NuGet](dependencies-file.html#Resolver-strategy-for-transitive-dependencies).
 [Read about more about Paket's resolver algorithm.](resolver.html)
 
 <div id="paket-vs-powershell-install-scripts"></div>

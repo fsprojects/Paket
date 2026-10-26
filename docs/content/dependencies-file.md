@@ -33,7 +33,7 @@ The file specifies that Paket's NuGet dependencies should be downloaded from
 * [FAKE](http://fsharp.github.io/FAKE/) version
   [3.4 <= x < 4.0](nuget-dependencies.html#Pessimistic-version-constraint)
 * [DotNetZip](http://dotnetzip.codeplex.com/) with a version that is at
-  [least 1.9](nuget-dependencies.html#Greater-than-or-equal-version-constraint)
+  [least 1.9](nuget-dependencies.html#Further-version-constraints)
 * [FSUnit.fs](https://github.com/forki/FsUnit) from GitHub
 * [GitHub Gist](https://gist.github.com) number
   [1972349](https://gist.github.com/Thorium/1972349)
@@ -442,7 +442,7 @@ Note, however, that all [transitive dependencies](faq.html#transitive) will
 still get their *latest matching versions*, no matter the value of the
 `lowest_matching` option. If you want to influence the resolution of
 [transitive dependencies](faq.html#transitive) then read about the
-[strategy option](dependencies-file.html#Strategy-option).
+[strategy option](dependencies-file.html#Resolver-strategy-for-transitive-dependencies).
 
 The global option may be
 [overridden per package](nuget-dependencies.html#Resolver-strategy-for-direct-dependencies).

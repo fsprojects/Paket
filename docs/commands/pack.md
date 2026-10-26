@@ -82,7 +82,7 @@ add project output to the package for inter-project dependencies that don't have
 
 1. It recursively iterates referenced projects and adds their project output to
    the package (as long as the working directory contains the other projects).
-1. When combined with the [symbols switch](#Symbol-Packages), it
+1. When combined with the [symbols switch](#Symbol-packages), it
    will also include the source code of the referenced projects.  Also
    recursively.
 1. Any projects that are encountered in this search that have their own project
