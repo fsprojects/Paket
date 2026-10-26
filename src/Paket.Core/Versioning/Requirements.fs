@@ -277,6 +277,11 @@ type FrameworkRestrictionAndList =
     member internal x.RawFormular =
         FrameworkRestrictionP.AndP (x.Literals |> List.map (fun literal -> literal.RawFormular))
 
+// The frameworks of a formula, shared by the restrictions built again and again from the same formula,
+// e.g. by every And and Or of the resolver or by filterRestrictions for each dependency of a lock file
+let private representedFrameworksCache =
+    System.Collections.Concurrent.ConcurrentDictionary<FrameworkRestrictionAndList list, TargetProfile Set>()
+
 [<CustomEquality; CustomComparison>]
 type FrameworkRestriction =
     private { OrFormulas : FrameworkRestrictionAndList list
@@ -306,7 +311,7 @@ type FrameworkRestriction =
         match !x.PrivateRepresentedFrameworks with
         | Some s -> s
         | None ->
-            let set = x.RawFormular.RepresentedFrameworks
+            let set = representedFrameworksCache.GetOrAdd(x.OrFormulas, fun _ -> x.RawFormular.RepresentedFrameworks)
             x.PrivateRepresentedFrameworks := Some set
             set
     member x.IsMatch tp =
