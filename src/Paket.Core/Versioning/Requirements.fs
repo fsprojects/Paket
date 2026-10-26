@@ -533,15 +533,16 @@ module FrameworkRestriction =
         newFormula
 
     // Equals and Hashcode means semantic equality, for memoize we need "exactly the same"
-    // (ie not only a different formula describing the same set, but the same exact formula)        
-    let private simplify'', cacheSimple = memoizeByExt (fun (fr:FrameworkRestriction) -> fr.ToString()) simplify'
+    // (ie not only a different formula describing the same set, but the same exact formula):
+    // the formula itself, whose equality is structural, without building its text
+    let private simplify'', cacheSimple = memoizeByExt (fun (fr:FrameworkRestriction) -> fr.OrFormulas) simplify'
 
     let internal simplify (fr:FrameworkRestriction) =
         if fr.IsSimple then fr
         else 
             let simpleFormula = simplify'' fr
             // Add simple formula to cache just in case we construct the same in the future
-            cacheSimple (simpleFormula.ToString(), simpleFormula)
+            cacheSimple (simpleFormula.OrFormulas, simpleFormula)
             simpleFormula
 
     let rec private And2 (left : FrameworkRestriction) (right : FrameworkRestriction) =
