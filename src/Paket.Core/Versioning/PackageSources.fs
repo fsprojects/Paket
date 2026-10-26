@@ -11,7 +11,7 @@ type EnvironmentVariable =
     { Variable : string
       Value    : string }
 
-    static member Create(variable) =
+    static member Create(variable: string) =
         if envVarRegex.IsMatch(variable) then
             let trimmed = envVarRegex.Match(variable).Groups.[1].Value
             // `Environment.GetEnvironmentVariable(name)` only looks at the current process's

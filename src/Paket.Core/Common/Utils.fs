@@ -69,10 +69,10 @@ type MemoizeAsyncExResult<'TResult, 'TCached> =
 let internal memoizeAsyncEx (f: 'iext -> 'i -> Async<'o * 'oext>) =
     let cache = ConcurrentDictionary<'i, Task<'o>>()
     let handle (ex:'iext) (x:'i) : MemoizeAsyncExResult<'oext, 'o> =
-        let mutable tcs_result = null
+        let mutable tcs_result : TaskCompletionSource<'o * 'oext> = null
         let task_cached = cache.GetOrAdd(x, fun x ->
-            tcs_result <- TaskCompletionSource()
-            let tcs = TaskCompletionSource()
+            tcs_result <- TaskCompletionSource<'o * 'oext>()
+            let tcs = TaskCompletionSource<'o>()
 
             Async.Start (async {
                 try
@@ -597,7 +597,7 @@ module String =
     let inline trim (text:string) = text.Trim()
     let inline trimChars (chs: char[]) (text:string) = text.Trim chs
     let inline trimStart (pre: char[]) (text:string) = text.TrimStart pre
-    let inline split sep (text:string) = text.Split sep
+    let inline split (sep: char[]) (text:string) = text.Split sep
 
 // MonadPlus - "or else"
 let inline (++) x y =
@@ -852,10 +852,10 @@ module ObservableExtensions =
 
 type StringBuilder with
 
-    member self.AddLine text =
+    member self.AddLine (text: string) =
         self.AppendLine text |> ignore
 
-    member self.AppendLinef text = Printf.kprintf self.AppendLine text
+    member self.AppendLinef text = Printf.kprintf (fun (line: string) -> self.AppendLine line) text
 
 [<RequireQualifiedAccess>]
 module Seq =

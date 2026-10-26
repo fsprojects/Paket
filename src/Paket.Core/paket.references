@@ -4,7 +4,6 @@ Mono.Cecil
 Chessie
 System.Security.Cryptography.ProtectedData
 System.Net.Http.WinHttpHandler
-System.Net.Http
 Nuget.Packaging
 DotNet.ReproducibleBuilds
 

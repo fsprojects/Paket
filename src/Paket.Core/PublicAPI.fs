@@ -259,7 +259,7 @@ type Dependencies(dependenciesFileName: string) =
                             { UpdaterOptions.Default with Common = options }))
 
     /// Creates a paket.dependencies file with the given text in the current directory and installs it.
-    static member Install(dependencies, ?path: string, ?force, ?withBindingRedirects, ?cleanBindingRedirects, ?createNewBindingFiles, ?onlyReferenced, ?semVerUpdateMode, ?touchAffectedRefs, ?generateLoadScripts, ?providedFrameworks, ?providedScriptTypes) =
+    static member Install(dependencies: string, ?path: string, ?force, ?withBindingRedirects, ?cleanBindingRedirects, ?createNewBindingFiles, ?onlyReferenced, ?semVerUpdateMode, ?touchAffectedRefs, ?generateLoadScripts, ?providedFrameworks, ?providedScriptTypes) =
         let path = defaultArg path (Directory.GetCurrentDirectory())
         let fileName = Path.Combine(path, Constants.DependenciesFileName)
         File.WriteAllText(fileName, dependencies)
