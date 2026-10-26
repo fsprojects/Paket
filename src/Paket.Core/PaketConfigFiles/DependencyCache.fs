@@ -25,16 +25,8 @@ type ReferenceType =
         | Framework info -> sprintf "Framework: '%s'" info
         | LoadScript info -> sprintf "LoadScript: '%s'" info
 
-type DependencyCache (lockFile:LockFile) =
-    let loadedGroups = HashSet<GroupName>()
-    let mutable nuspecCache = ConcurrentDictionary<PackageName*SemVerInfo, System.Threading.Tasks.Task<Nuspec>>()
-    let mutable installModelCache = ConcurrentDictionary<GroupName * PackageName,System.Threading.Tasks.Task<InstallModel>>()
-    let mutable orderedGroupCache = ConcurrentDictionary<GroupName,PackageInfo list>()
-    let mutable orderedGroupReferences = ConcurrentDictionary<GroupName * FrameworkIdentifier,ReferenceType list>()
-    let mutable finishedSetup = false
-
-
-    let getLeafPackagesGeneric getPackageName getDependencies (knownPackages:Set<_>) openList =
+module internal DependencyOrder =
+    let private getLeafPackagesGeneric getPackageName getDependencies (knownPackages:Set<_>) openList =
 
         let leafPackages =
             openList
@@ -65,9 +57,27 @@ type DependencyCache (lockFile:LockFile) =
         step [] Set.empty packages
         |> List.rev
 
+    let getDllOrder (dllFiles : AssemblyDefinition list) =
+        // this check saves looking at assembly metadata when we know this is not needed
+        if List.length dllFiles = 1 then dllFiles else
+        // we ignore all unknown references as they are most likely resolved on package level
+        let known = dllFiles |> Seq.map (fun a -> a.FullName) |> Set.ofSeq
+        getPackageOrderGeneric
+            (fun (p:AssemblyDefinition) -> p.FullName)
+            (fun p -> p.MainModule.AssemblyReferences |> Seq.map (fun r -> r.FullName) |> Seq.filter known.Contains)
+            dllFiles
+
+type DependencyCache (lockFile:LockFile) =
+    let loadedGroups = HashSet<GroupName>()
+    let mutable nuspecCache = ConcurrentDictionary<PackageName*SemVerInfo, System.Threading.Tasks.Task<Nuspec>>()
+    let mutable installModelCache = ConcurrentDictionary<GroupName * PackageName,System.Threading.Tasks.Task<InstallModel>>()
+    let mutable orderedGroupCache = ConcurrentDictionary<GroupName,PackageInfo list>()
+    let mutable orderedGroupReferences = ConcurrentDictionary<GroupName * FrameworkIdentifier,ReferenceType list>()
+    let mutable finishedSetup = false
+
 
     let getPackageOrderResolvedPackage =
-        getPackageOrderGeneric
+        DependencyOrder.getPackageOrderGeneric
             (fun (p:PackageResolver.PackageInfo) -> p.Name)
             (fun p -> p.Dependencies |> Seq.map (fun (n,_,_) -> n))
 
@@ -84,17 +94,6 @@ type DependencyCache (lockFile:LockFile) =
         |> ignore
 
     do loadPackages ()
-
-    let getDllOrder (dllFiles : AssemblyDefinition list) =
-        // this check saves looking at assembly metadata when we know this is not needed
-        if List.length dllFiles = 1 then dllFiles else
-        // we ignore all unknown references as they are most likely resolved on package level
-        let known = dllFiles |> Seq.map (fun a -> a.FullName) |> Set.ofSeq
-        getPackageOrderGeneric
-            (fun (p:AssemblyDefinition) -> p.FullName)
-            (fun p -> p.MainModule.AssemblyReferences |> Seq.map (fun r -> r.FullName) |> Seq.filter known.Contains)
-            dllFiles
-
 
     let getPackageLoadScriptsWithinPackage scriptTypeExtension  (installModel :InstallModel) =
         installModel.PackageLoadScripts
@@ -114,7 +113,7 @@ type DependencyCache (lockFile:LockFile) =
             )
             |> dict
 
-        getDllOrder (dllFiles.Keys |> Seq.toList)
+        DependencyOrder.getDllOrder (dllFiles.Keys |> Seq.toList)
         |> List.map (fun a -> dllFiles.[a])
 
     let referencesForGroup group (framework:FrameworkIdentifier) =
@@ -144,7 +143,7 @@ type DependencyCache (lockFile:LockFile) =
 
             let assemblies =
                 assemblyFilePerAssemblyDef.Keys
-                |> Seq.toList |> getDllOrder
+                |> Seq.toList |> DependencyOrder.getDllOrder
                 |> Seq.map (assemblyFilePerAssemblyDef.TryGetValue >> snd)
 
             let assemblyRefs =
