@@ -283,14 +283,20 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
                 if verbose then
                     verbosefn "Downloading license for %O %O to %s" packageName version targetFileName
 
-                // Without auth, the handler sends the default credentials through the proxy of the url
-                let client = NetUtils.createHttpClient(licenseUrl, None)
-                use _ = Profile.startCategory Profile.Category.NuGetRequest
-                let! tok = Async.CancellationToken
-                do! client.DownloadFileTaskAsync(Uri licenseUrl, tok, targetFileName) |> Async.AwaitTaskWithoutAggregate
+                let uri = Uri licenseUrl
+                // A package must not copy a local file, e.g. file:///home/me/.ssh/id_rsa, as its license
+                if uri.Scheme <> Uri.UriSchemeHttp && uri.Scheme <> Uri.UriSchemeHttps then
+                    if verboseRequest then
+                        traceWarnfn $"Could not download license for {packageName} {version} from %s{licenseUrl}: only http and https urls are downloaded."
+                else
+                    // Without auth, the handler sends the default credentials through the proxy of the url
+                    let client = NetUtils.createHttpClient(licenseUrl, None)
+                    use _ = Profile.startCategory Profile.Category.NuGetRequest
+                    let! tok = Async.CancellationToken
+                    do! client.DownloadFileTaskAsync(uri, tok, targetFileName) |> Async.AwaitTaskWithoutAggregate
 
-                if verbose then
-                    verbosefn "License for %O %O downloaded from %s." packageName version licenseUrl
+                    if verbose then
+                        verbosefn $"License for {packageName} {version} downloaded from %s{licenseUrl}."
             with
             | exn ->
                 if verboseRequest then
