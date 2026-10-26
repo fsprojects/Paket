@@ -196,3 +196,13 @@ jobs:
             }
             & gh @arguments
           }
+  docs:
+    name: Publish the documentation of ${{ needs.detect-release.outputs.version }}
+    needs: [detect-release, release]
+    # The site documents the latest stable release: a prerelease must not replace it
+    if: needs.detect-release.outputs.prerelease == 'false'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/docs.yml
+    with:
+      version: ${{ needs.detect-release.outputs.version }}
