@@ -1664,8 +1664,9 @@ type TargetProfile =
             match y with
             | :? TargetProfile as r ->
                 // Every set of profiles is ordered by this comparison, so it has to be fast: ignoring the
-                // case keeps the order of the culture-sensitive comparison used before, e.g. "arm" before "Win32",
-                // and the ordinal tie-break keeps it consistent with Equals
+                // case keeps, for all the known profiles, the order of the culture-sensitive comparison used
+                // before, e.g. "arm" before "Win32", which also depended on the culture of the machine;
+                // the ordinal tie-break keeps it consistent with Equals
                 match String.Compare(x.CompareString, r.CompareString, StringComparison.OrdinalIgnoreCase) with
                 | 0 -> String.CompareOrdinal(x.CompareString, r.CompareString)
                 | c -> c
