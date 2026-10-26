@@ -524,7 +524,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 | Some kv ->
                     let _, settings = kv.Value
                     if shouldWarnAboutFSharpCoreRedirects (project.GetTargetProfiles()) settings.CreateBindingRedirects then
-                        traceWarnfn "F# project %s references FSharp.Core without specifying \"redirects: force\" in paket.dependencies. This can lead to \"Could not load file or assembly 'FSharp.Core'\" errors at runtime. See https://fsprojects.github.io/Paket/dependencies-file.html#redirects-settings for details." project.FileName
+                        traceWarnfn "F# project %s references FSharp.Core without specifying \"redirects: force\" in paket.dependencies. This can lead to \"Could not load file or assembly 'FSharp.Core'\" errors at runtime. See https://fsprojects.github.io/Paket/dependencies-file.html#Controlling-assembly-binding-redirects for details." project.FileName
 
         // if any errors have been found during the installation process thus far, fail and print all errors collected
         if not (Seq.isEmpty errorMessages) then

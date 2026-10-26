@@ -1,5 +1,7 @@
 #### Unreleased
 
+* The warning about the FSharp.Core binding redirects of F# projects links to an existing section of the documentation
+
 #### 12.0.0-alpha003 - 2026-10-26
 
 * BREAKING: Paket.Core targets net10.0 instead of netstandard2.0: the projects and scripts that reference it must target net10.0 or later, as the `paket` .NET tool already needs the .NET 10 runtime. FSharp.DependencyManager.Paket stays on netstandard2.0 - https://github.com/fsprojects/Paket/issues/4317
