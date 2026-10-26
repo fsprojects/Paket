@@ -8,9 +8,7 @@ framework: net10.0, netstandard2.0, net461
 
 nuget Newtonsoft.Json >= 10.0.3 redirects: force
 nuget Argu >= 5.1.0
-# FSharp.DependencyManager.Paket runs inside fsi, which loads its own FSharp.Core: a newer one
-# than the fsi of the SDK, e.g. 11.0 for the 10.1 of SDK 10.0.400, would keep it from loading
-nuget FSharp.Core >= 6.0.3 < 10
+nuget FSharp.Core >= 6.0.3
 nuget Chessie >= 0.6
 nuget Mono.Cecil ~> 0.11.1
 
@@ -26,7 +24,10 @@ nuget DotNet.ReproducibleBuilds copy_local: true
 
 # tests
 nuget FSCheck ~> 2.15
-nuget FSharp.Compiler.Service
+# FSharp.DependencyManager.Paket runs inside fsi, which loads its own FSharp.Core: a newer one than
+# the fsi of the SDK, e.g. 11.0 for the 10.1 of SDK 10.0.400, would keep it from loading. FCS 43.9 pins
+# FSharp.Core to 9.0, without the upper bound a FSharp.Core constraint would write in the nuspecs.
+nuget FSharp.Compiler.Service < 43.10
 
 nuget NUnit ~> 3.12.0
 nuget NUnit3TestAdapter ~> 3.13.0
