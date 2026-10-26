@@ -15,7 +15,7 @@
   <ItemGroup>
     <None Include="paket.references" />
     <None Include="../../README.md" Pack="true" PackagePath="\" />
-    <None Include="../../docs/files/img/logo.png" Pack="true" PackagePath="\" />
+    <None Include="../../docs/content/img/logo.png" Pack="true" PackagePath="\" />
     <EmbeddedResource Include="embedded\Paket.Restore.targets">
       <LogicalName>Paket.Restore.targets</LogicalName>
     </EmbeddedResource>

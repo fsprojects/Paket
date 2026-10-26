@@ -20,7 +20,7 @@ With `--log-file [path]` you can trace the logged information into a file.
 
 for command in Paket.Commands.getAllCommands () do
     let name = (command.ParentInfo |> Option.get).Name.Value
-    let optFile = Path.Combine(content, "commands", name + ".md")
+    let optFile = Path.Combine(__SOURCE_DIRECTORY__, "../commands", name + ".md")
     let additionalText =
         if File.Exists optFile
         then verboseOption + File.ReadAllText optFile

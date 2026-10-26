@@ -9,7 +9,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="\"/>
-    <None Include="../../docs/files/img/logo.png" Pack="true" PackagePath="\"/>
+    <None Include="../../docs/content/img/logo.png" Pack="true" PackagePath="\"/>
     <Compile Include="ReferenceLoading.PaketHandler.fs" />
     <Compile Include="PaketDependencyManager.fs" />
   </ItemGroup>
