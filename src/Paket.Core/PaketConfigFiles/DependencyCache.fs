@@ -60,11 +60,14 @@ module internal DependencyOrder =
     let getDllOrder (dllFiles : AssemblyDefinition list) =
         // this check saves looking at assembly metadata when we know this is not needed
         if List.length dllFiles = 1 then dllFiles else
-        // we ignore all unknown references as they are most likely resolved on package level
+        // we ignore self-references (e.g. System.Reactive 7.0) and unknown references, which are most likely resolved on package level
         let known = dllFiles |> Seq.map (fun a -> a.FullName) |> Set.ofSeq
         getPackageOrderGeneric
             (fun (p:AssemblyDefinition) -> p.FullName)
-            (fun p -> p.MainModule.AssemblyReferences |> Seq.map (fun r -> r.FullName) |> Seq.filter known.Contains)
+            (fun p ->
+                p.MainModule.AssemblyReferences
+                |> Seq.map (fun r -> r.FullName)
+                |> Seq.filter (fun n -> n <> p.FullName && known.Contains n))
             dllFiles
 
 type DependencyCache (lockFile:LockFile) =
