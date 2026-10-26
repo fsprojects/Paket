@@ -67,7 +67,7 @@ source %FEED_URL%
 Here, the `FEED_URL` environment variable must contain everything that would
 normally follow the `source` keyword, for example:
 
-```
+```text
 http://myserver/nuget/api/v2 username: "%PRIVATE_FEED_USER%" password: "%PRIVATE_FEED_PASS%" authtype: "ntlm"
 ```
 

@@ -43,7 +43,7 @@ don't use the .NET SDK, such as .NET Framework projects built by Visual Studio, 
 
 Make sure to add the following entry to your `.gitignore`:
 
-```
+```text
 # Paket dependency manager
 paket-files/
 ```
