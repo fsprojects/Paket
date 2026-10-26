@@ -368,29 +368,7 @@ RESTRICTION: >= net461
 NUGET
   remote: https://api.nuget.org/v3/index.json
     FAKE (4.64.17)
-    FSharp.Compiler.Service (17.0.1)
-      System.Collections.Immutable (>= 1.3.1)
-      System.Reflection.Metadata (>= 1.4.2)
-    Microsoft.AspNet.Razor (3.2.4)
-    Microsoft.NETCore.Platforms (2.0) - restriction: || (&& (>= monotouch) (>= net461)) (&& (< net45) (>= net461) (>= netstandard1.5) (< netstandard1.6)) (&& (< net45) (>= net461) (< netstandard1.5)) (&& (>= net461) (< netstandard1.0)) (&& (>= net461) (< netstandard1.3)) (&& (>= net461) (< netstandard1.4)) (&& (>= net461) (< netstandard1.5) (>= uap10.0)) (&& (>= net461) (< netstandard2.0)) (&& (>= net461) (< portable-net45+win8+wpa81)) (&& (>= net461) (< portable-net451+win81+wpa81)) (&& (>= net461) (>= uap10.1))
-    NETStandard.Library (2.0) - restriction: && (>= net461) (< netstandard2.0)
-      Microsoft.NETCore.Platforms (>= 1.1)
-    Octokit (0.29)
-    System.Collections.Immutable (1.4)
-      NETStandard.Library (>= 1.6.1) - restriction: && (>= net461) (< netstandard2.0)
-    System.Reflection.Metadata (1.5)
-      NETStandard.Library (>= 1.6.1) - restriction: && (>= net461) (< netstandard2.0)
-      System.Collections.Immutable (>= 1.4)
-    System.ValueTuple (4.4)
-  remote: https://ci.appveyor.com/nuget/fsharp-formatting
-    FSharp.Formatting (3.0.0-beta09)
-      FSharp.Compiler.Service (>= 17.0.1 < 18.0)
-      Microsoft.AspNet.Razor (>= 3.2.3 < 4.0)
-      System.ValueTuple (>= 4.4 < 5.0)
-GITHUB
-  remote: fsharp/FAKE
-    modules/Octokit/Octokit.fsx (e8e1cae79e3573167d7421c622b51adc8c536004)
-      Octokit (>= 0.20)
+
 GROUP BuildScript
 CONTENT: NONE
 RESTRICTION: == net10.0
