@@ -2,10 +2,15 @@ source https://api.nuget.org/v3/index.json
 
 storage: none
 content: none
+# net10.0 for Paket.Core, the CLI and the tests, netstandard2.0 for FSharp.DependencyManager.Paket,
+# net461 for Paket.LegacyStub
+framework: net10.0, netstandard2.0, net461
 
 nuget Newtonsoft.Json >= 10.0.3 redirects: force
 nuget Argu >= 5.1.0
-nuget FSharp.Core >= 6.0.3
+# FSharp.DependencyManager.Paket runs inside fsi, which loads its own FSharp.Core: a newer one
+# than the fsi of the SDK, e.g. 11.0 for the 10.1 of SDK 10.0.400, would keep it from loading
+nuget FSharp.Core >= 6.0.3 < 10
 nuget Chessie >= 0.6
 nuget Mono.Cecil ~> 0.11.1
 
@@ -25,7 +30,7 @@ nuget Microsoft.NETFramework.ReferenceAssemblies.net461 copy_local: true
 nuget DotNet.ReproducibleBuilds copy_local: true
 
 # tests
-nuget FSCheck
+nuget FSCheck ~> 2.15
 nuget FSharp.Compiler.Service
 
 nuget NUnit ~> 3.12.0
