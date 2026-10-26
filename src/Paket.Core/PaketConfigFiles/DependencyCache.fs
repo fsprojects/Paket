@@ -46,11 +46,24 @@ module internal DependencyOrder =
         leafPackages, newKnownPackages, newState
 
 
-    let getPackageOrderGeneric getPackageName getDependencies packages =
+    let getPackageOrderGeneric getPackageName getDependencies warnUnordered packages =
 
         let rec step finalList knownPackages currentPackages =
             match currentPackages |> getLeafPackagesGeneric getPackageName getDependencies knownPackages with
-            | [], _, _ -> finalList
+            | [], _, [] -> finalList
+            | [], _, (first :: _ as remaining) ->
+                // force the items of a name lying on a cycle, or whose dependencies are missing, and order the rest after them
+                let tryRemaining name = remaining |> List.tryFind (fun p -> getPackageName p = name)
+                let rec onCycle seen p =
+                    let name = getPackageName p
+                    if Set.contains name seen then p else
+                    match getDependencies p |> Seq.tryPick tryRemaining with
+                    | Some next -> onCycle (Set.add name seen) next
+                    | None -> p
+                let name = getPackageName (onCycle Set.empty first)
+                let forced, rest = remaining |> List.partition (fun p -> getPackageName p = name)
+                warnUnordered forced.Head
+                step (List.rev forced @ finalList) (Set.add name knownPackages) rest
             | leafPackages, newKnownPackages, newState ->
                 step (leafPackages @ finalList) newKnownPackages newState
 
@@ -68,6 +81,9 @@ module internal DependencyOrder =
                 p.MainModule.AssemblyReferences
                 |> Seq.map (fun r -> r.FullName)
                 |> Seq.filter (fun n -> n <> p.FullName && known.Contains n))
+            (fun p ->
+                traceWarnfn $"Could not order the assembly '%s{p.Name.Name}' after all the assemblies it references: some of them reference it back, directly or indirectly"
+            )
             dllFiles
 
 type DependencyCache (lockFile:LockFile) =
@@ -79,17 +95,20 @@ type DependencyCache (lockFile:LockFile) =
     let mutable finishedSetup = false
 
 
-    let getPackageOrderResolvedPackage =
+    let getPackageOrderResolvedPackage (groupName:GroupName) =
         DependencyOrder.getPackageOrderGeneric
             (fun (p:PackageResolver.PackageInfo) -> p.Name)
             (fun p -> p.Dependencies |> Seq.map (fun (n,_,_) -> n))
+            (fun p ->
+                traceWarnfn $"Could not order the package '{p.Name}' of the group '{groupName}' after all its dependencies: some of them depend on it, directly or indirectly, or are missing from the group"
+            )
 
 
     let loadPackages () =
         let packs =
             lockFile.GetResolvedPackages() |> Seq.map (fun kvp -> async {
                 let groupName, packages = kvp.Key,kvp.Value
-                let orderedPackages = getPackageOrderResolvedPackage kvp.Value
+                let orderedPackages = getPackageOrderResolvedPackage groupName packages
                 orderedGroupCache.TryAdd (groupName,orderedPackages) |> ignore
             }) |> Array.ofSeq
         Async.Parallel packs

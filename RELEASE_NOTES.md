@@ -8,7 +8,7 @@
 * `paket convert-from-nuget` converts and removes nothing through a link: it skips the projects, NuGet files and solutions of the folders that are links, with a warning for each such folder, so these projects are not converted. It leaves in place a `.nuget` folder that is a link and the solutions that are links, and skips with a warning the solutions it cannot read or update, instead of failing
 * `paket convert-from-nuget` only removes the solution items of a `.sln` that are files it deletes, found by their path in any solution folder. It removed the first line naming a NuGet file of `.nuget`, even a project or a `packages.config` it kept
 * `paket convert-from-nuget` keeps the non-ASCII characters of a `.sln` without a BOM, which it saved in ASCII
-* `paket generate-load-scripts` keeps in the group scripts the assemblies that reference themselves, like System.Reactive 7.0, which it dropped - https://github.com/fsprojects/Paket/issues/4458
+* `paket generate-load-scripts` keeps in the group scripts the assemblies that reference themselves, like System.Reactive 7.0, which it dropped. It also keeps, with a warning, the assemblies and packages that depend on each other, which it dropped too - https://github.com/fsprojects/Paket/issues/4458
 
 #### 12.0.0-alpha002 - 2026-10-17
 
