@@ -6,7 +6,8 @@ This page demonstrates how to use Paket from the F# Interactive.
 ## Reference Paket.Core
 
 As first step we need to reference Paket.Core, the library the Paket .NET tool
-is built on.
+is built on. It targets net10.0, so the script needs the F# Interactive of the
+.NET 10 SDK or later (`dotnet fsi`).
 *)
 
 open System
