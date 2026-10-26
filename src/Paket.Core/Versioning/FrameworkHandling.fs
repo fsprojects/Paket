@@ -1662,7 +1662,13 @@ type TargetProfile =
     interface System.IComparable with
         member x.CompareTo(y) =
             match y with
-            | :? TargetProfile as r -> x.CompareString.CompareTo(r.CompareString)
+            | :? TargetProfile as r ->
+                // Every set of profiles is ordered by this comparison, so it has to be fast: ignoring the
+                // case keeps the order of the culture-sensitive comparison used before, e.g. "arm" before "Win32",
+                // and the ordinal tie-break keeps it consistent with Equals
+                match String.Compare(x.CompareString, r.CompareString, StringComparison.OrdinalIgnoreCase) with
+                | 0 -> String.CompareOrdinal(x.CompareString, r.CompareString)
+                | c -> c
             | _ -> failwith "wrong type"
 
 module TargetProfile =
