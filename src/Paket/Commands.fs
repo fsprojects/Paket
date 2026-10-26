@@ -746,7 +746,7 @@ with
             | GenerateLoadScripts _ -> "generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS"
             | Why _ -> "determine why a dependency is required"
             | Restriction _ -> "resolve a framework restriction and show details"
-            | Info _ -> "info"
+            | Info _ -> "show information about the current project"
             | Log_File _ -> "print output to a file"
             | Silent -> "suppress console output"
             | Verbose -> "print detailed information to the console"
