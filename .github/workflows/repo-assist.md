@@ -63,8 +63,6 @@ network:
   - "dotnetcli.azureedge.net" # .NET SDK/runtime download fallback
   - "download.visualstudio.microsoft.com" # .NET SDK/runtime downloads
   - "www.myget.org" # integration scenarios, including expected feed errors
-  - "ci.appveyor.com" # for appveyor packages
-  - "appveyorcidata.blob.core.windows.net" # for appveyor packages
 
 env:
   CI: "true"
@@ -402,11 +400,12 @@ source: githubnext/agentics/workflows/repo-assist.md@139fa09ef17cde4135e696ff8e7
 
 Apply this section in both command mode and scheduled mode, before creating or updating a code PR.
 
-- The workflow installs the SDK selected by `global.json` and .NET 8 for integration scenarios. The sandbox has **allowlisted network access**, not an offline environment: NuGet v2/v3 and its package CDN, GitHub source files, the locked AppVeyor feed and its blob downloads, and .NET SDK/runtime downloads are allowed.
+- The workflow installs the SDK selected by `global.json` and .NET 8 for integration scenarios. The sandbox has **allowlisted network access**, not an offline environment: NuGet v2/v3 and its package CDN, GitHub source files, and .NET SDK/runtime downloads are allowed.
 - Read `AGENTS.md` and `DEV_GUIDE.md`. Check `dotnet --info`, then run `dotnet tool restore` and `dotnet paket restore` from the repository root. Preserve the configured proxy and certificate environment; do not bypass or disable the firewall.
 - Use `curl --fail --show-error --location --max-time 30` through the configured proxy for web reads and to probe a failing download URL. Copilot's native web-fetch tool is unavailable in the engine's offline/BYOK mode; that does not disable shell networking.
 - Build with `./build.sh Build < /dev/null`. Run the smallest relevant NUnit selection with `dotnet test tests/Paket.Tests/Paket.Tests.fsproj --filter "<relevant filter>" < /dev/null`, then broaden with `./build.sh QuickTest < /dev/null` when appropriate; this target supplies the release version expected by assembly-metadata tests. For integration changes, run `./build.sh QuickIntegrationTests < /dev/null` (the `scriptgen` category). For a different integration selection, first run `./build.sh Publish < /dev/null` to create `bin/net10.0/paket.dll`; the Build target alone does not create the published CLI expected by the test harness.
-- A failure of the legacy AppVeyor feed or a particular integration scenario does not mean all validation is blocked. For core/CLI/unit-test work, try `dotnet paket restore --group Main < /dev/null` followed by the relevant `dotnet test` command; this builds the referenced projects without the legacy documentation/build-script packages. Report exactly which broader checks remain blocked.
+- For documentation changes, run `SkipTests=true ./build.sh GenerateDocs < /dev/null`. It writes the command pages from the Argu definitions of `src/Paket/Commands.fs`, completed by `docs/commands/<command>.md`, and builds the site from `docs/content` into `docs/output` with fsdocs. Check its output for errors in the `.fsx` pages.
+- A failure of a particular integration scenario does not mean all validation is blocked. For core/CLI/unit-test work, try `dotnet paket restore --group Main < /dev/null` followed by the relevant `dotnet test` command; this builds the referenced projects without the build-script packages. Report exactly which broader checks remain blocked.
 - Diagnose actual failures: distinguish SDK/tool availability, proxy/TLS errors, HTTP status and failing hostname, unavailable external feeds, and code/test failures. Retry a transient failure once and attempt the narrower validation path where applicable. Never infer "the sandbox has no network" from a single failed command, CLI offline-mode banner, an earlier PR, or repo memory.
 - Do not ask for permission to run ordinary restore/build/test commands or wait for a maintainer to run them. They are expected unattended work. Keep commands non-interactive with stdin redirected from `/dev/null`; never use interactive restore or authentication.
 - In each PR's Test Status, list commands actually attempted, their results and test counts, and any precise remaining blocker. Only rely on CI for checks that really could not run after diagnosis and narrower attempts; never reuse an earlier run's infrastructure excuse.
