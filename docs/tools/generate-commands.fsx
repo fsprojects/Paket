@@ -18,7 +18,8 @@ With `--log-file [path]` you can trace the logged information into a file.
 
 """
 
-for command in Paket.Commands.getAllCommands () do
+// the hidden commands are the obsolete ones, which paket --help doesn't list either
+for command in Paket.Commands.getAllCommands () |> List.filter (fun c -> not (c.ParentInfo |> Option.get).IsHidden.Value) do
     let name = (command.ParentInfo |> Option.get).Name.Value
     let optFile = Path.Combine(__SOURCE_DIRECTORY__, "../commands", name + ".md")
     let additionalText =
