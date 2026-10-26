@@ -1,5 +1,7 @@
 #### Unreleased
 
+#### 12.0.0-alpha003 - 2026-10-26
+
 * BREAKING: Paket.Core targets net10.0 instead of netstandard2.0: the projects and scripts that reference it must target net10.0 or later, as the `paket` .NET tool already needs the .NET 10 runtime. FSharp.DependencyManager.Paket stays on netstandard2.0 - https://github.com/fsprojects/Paket/issues/4317
 * Update the NuGet client libraries from 5.11 to 7.9, along with System.Net.Http.WinHttpHandler and System.Security.Cryptography.ProtectedData
 * Faster framework restrictions: writing the lock files of large repositories takes a quarter of the time and allocates less than 40% of the memory it did - https://github.com/fsprojects/Paket/issues/4317
