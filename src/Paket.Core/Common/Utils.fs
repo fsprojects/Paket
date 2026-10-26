@@ -352,17 +352,13 @@ let inline normalizePath(path:string) =
 
 let inline windowsPath (path:string) = path.Replace(Path.DirectorySeparatorChar, '\\')
 
-// FileSystemInfo.LinkTarget, of .NET 6 and later, is only set for the symbolic links and the junctions
-let private linkTarget = typeof<FileSystemInfo>.GetProperty "LinkTarget"
-
 /// Whether the file or directory is a symbolic link or a junction, unlike the other reparse points
-/// such as a OneDrive or deduplicated file; on the .NET Framework, any reparse point is taken for a link,
-/// as is one whose target cannot be read, e.g. when its access is denied
+/// such as a OneDrive or deduplicated file, which have no LinkTarget; a reparse point whose target
+/// cannot be read, e.g. when its access is denied, is taken for a link
 let isLink (fileSystemInfo: FileSystemInfo) =
     fileSystemInfo.Exists
     && fileSystemInfo.Attributes.HasFlag(FileAttributes.ReparsePoint)
-    && (isNull linkTarget
-        || (try not (isNull (linkTarget.GetValue fileSystemInfo)) with _ -> true))
+    && (try not (isNull fileSystemInfo.LinkTarget) with _ -> true)
 
 /// Gets all files with the given pattern, skipping directories whose name starts with a dot
 /// (e.g. .git, .vs, .localhistory) since these are not expected to contain relevant project files
