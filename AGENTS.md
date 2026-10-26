@@ -25,7 +25,7 @@ The exact F# compile order is declared in each `.fsproj`. When adding or moving 
 - Fix root causes and preserve existing public APIs unless the task explicitly requires an API change.
 - Add or update focused tests for behavior changes and bug fixes when feasible.
 - Do not introduce a dependency unless its value clearly outweighs the compatibility and maintenance cost.
-- Keep changes compatible with all target frameworks declared by the touched project: `netstandard2.0` for Paket.Core and the F# Interactive extension, `net10.0` for the CLI and the tests.
+- Keep changes compatible with all target frameworks declared by the touched project: `netstandard2.0` for the F# Interactive extension, `net10.0` for Paket.Core, the CLI and the tests.
 - Treat warnings as errors. Do not suppress a warning globally to accommodate a local change.
 - Do not edit generated artifacts or integration-test `temp/` output.
 - Keep documentation examples synchronized with actual CLI behavior and file formats.

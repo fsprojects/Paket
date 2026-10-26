@@ -274,8 +274,8 @@ module internal NupkgWriter =
         let entries = System.Collections.Generic.List<_>()
 
         let fixRelativePath (p:string) =
-            let isWinDrive = Regex(@"^\w:\\.*", RegexOptions.Compiled).IsMatch
-            let isNixRoot = Regex(@"^\/.*", RegexOptions.Compiled).IsMatch
+            let isWinDrive : string -> bool = Regex(@"^\w:\\.*", RegexOptions.Compiled).IsMatch
+            let isNixRoot : string -> bool = Regex(@"^\/.*", RegexOptions.Compiled).IsMatch
 
             let prepend,path =
                 match p with

@@ -2,22 +2,22 @@ source https://api.nuget.org/v3/index.json
 
 storage: none
 content: none
+# net10.0 for Paket.Core, the CLI and the tests, netstandard2.0 for FSharp.DependencyManager.Paket,
+# net461 for Paket.LegacyStub
+framework: net10.0, netstandard2.0, net461
 
 nuget Newtonsoft.Json >= 10.0.3 redirects: force
-nuget Argu >= 5.1.0
+# Argu 6.1.5 enforces the ExactlyOnce of the main commands of subcommands, which Paket declares on
+# optional ones, e.g. the package id of paket update; 6.1.2 to 6.1.4 break the parsing of #127
+nuget Argu >= 5.1.0 < 6.1.2
 nuget FSharp.Core >= 6.0.3
 nuget Chessie >= 0.6
 nuget Mono.Cecil ~> 0.11.1
 
 nuget System.Security.Cryptography.ProtectedData >= 4.4
-# Pin transitive System.Formats.Asn1 to a version patched against CVE-2024-38095 (GHSA-447r-wph3-92pm)
-nuget System.Formats.Asn1 >= 8.0.1
 
-nuget NETStandard.Library ~> 2.0
 nuget System.Net.Http.WinHttpHandler >= 4.5
 nuget Nuget.Packaging
-nuget Microsoft.Win32.Registry
-nuget System.Diagnostics.TraceSource
 
 # these two are not public dependencies, they're used for build-time only
 # therefore, treat them as private.
@@ -25,8 +25,11 @@ nuget Microsoft.NETFramework.ReferenceAssemblies.net461 copy_local: true
 nuget DotNet.ReproducibleBuilds copy_local: true
 
 # tests
-nuget FSCheck
-nuget FSharp.Compiler.Service
+nuget FSCheck ~> 2.15
+# FSharp.DependencyManager.Paket runs inside fsi, which loads its own FSharp.Core: a newer one than
+# the fsi of the SDK, e.g. 11.0 for the 10.1 of SDK 10.0.400, would keep it from loading. FCS 43.9 pins
+# FSharp.Core to 9.0, without the upper bound a FSharp.Core constraint would write in the nuspecs.
+nuget FSharp.Compiler.Service < 43.10
 
 nuget NUnit ~> 3.12.0
 nuget NUnit3TestAdapter ~> 3.13.0

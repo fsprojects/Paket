@@ -53,7 +53,11 @@ let inline tryGet (key:^k) this =
 let inline internal memoizeByExt (getKey : 'a -> 'key) (f: 'a -> 'b) : ('a -> 'b) * ('key * 'b -> unit) =
     let cache = System.Collections.Concurrent.ConcurrentDictionary<'key, 'b>()
     (fun (x: 'a) ->
-        cache.GetOrAdd(getKey x, fun _ -> f x)),
+        let key = getKey x
+        // look the key up first, so that a hit allocates no closure
+        match cache.TryGetValue key with
+        | true, value -> value
+        | _ -> cache.GetOrAdd(key, fun _ -> f x)),
     (fun (key, c) ->
         cache.TryAdd(key, c) |> ignore)
 
@@ -69,10 +73,10 @@ type MemoizeAsyncExResult<'TResult, 'TCached> =
 let internal memoizeAsyncEx (f: 'iext -> 'i -> Async<'o * 'oext>) =
     let cache = ConcurrentDictionary<'i, Task<'o>>()
     let handle (ex:'iext) (x:'i) : MemoizeAsyncExResult<'oext, 'o> =
-        let mutable tcs_result = null
+        let mutable tcs_result : TaskCompletionSource<'o * 'oext> = null
         let task_cached = cache.GetOrAdd(x, fun x ->
-            tcs_result <- TaskCompletionSource()
-            let tcs = TaskCompletionSource()
+            tcs_result <- TaskCompletionSource<'o * 'oext>()
+            let tcs = TaskCompletionSource<'o>()
 
             Async.Start (async {
                 try
@@ -352,17 +356,13 @@ let inline normalizePath(path:string) =
 
 let inline windowsPath (path:string) = path.Replace(Path.DirectorySeparatorChar, '\\')
 
-// FileSystemInfo.LinkTarget, of .NET 6 and later, is only set for the symbolic links and the junctions
-let private linkTarget = typeof<FileSystemInfo>.GetProperty "LinkTarget"
-
 /// Whether the file or directory is a symbolic link or a junction, unlike the other reparse points
-/// such as a OneDrive or deduplicated file; on the .NET Framework, any reparse point is taken for a link,
-/// as is one whose target cannot be read, e.g. when its access is denied
+/// such as a OneDrive or deduplicated file, which have no LinkTarget; a reparse point whose target
+/// cannot be read, e.g. when its access is denied, is taken for a link
 let isLink (fileSystemInfo: FileSystemInfo) =
     fileSystemInfo.Exists
     && fileSystemInfo.Attributes.HasFlag(FileAttributes.ReparsePoint)
-    && (isNull linkTarget
-        || (try not (isNull (linkTarget.GetValue fileSystemInfo)) with _ -> true))
+    && (try not (isNull fileSystemInfo.LinkTarget) with _ -> true)
 
 /// Gets all files with the given pattern, skipping directories whose name starts with a dot
 /// (e.g. .git, .vs, .localhistory) since these are not expected to contain relevant project files
@@ -597,7 +597,7 @@ module String =
     let inline trim (text:string) = text.Trim()
     let inline trimChars (chs: char[]) (text:string) = text.Trim chs
     let inline trimStart (pre: char[]) (text:string) = text.TrimStart pre
-    let inline split sep (text:string) = text.Split sep
+    let inline split (sep: char[]) (text:string) = text.Split sep
 
 // MonadPlus - "or else"
 let inline (++) x y =
@@ -852,10 +852,10 @@ module ObservableExtensions =
 
 type StringBuilder with
 
-    member self.AddLine text =
+    member self.AddLine (text: string) =
         self.AppendLine text |> ignore
 
-    member self.AppendLinef text = Printf.kprintf self.AppendLine text
+    member self.AppendLinef text = Printf.kprintf (fun (line: string) -> self.AppendLine line) text
 
 [<RequireQualifiedAccess>]
 module Seq =

@@ -93,7 +93,7 @@ Commands are defined in `src/Paket/Commands.fs` using Argu. Each command has cor
 
 ## Target Frameworks
 
-- **Paket.Core**: `netstandard2.0`
+- **Paket.Core**: `net10.0`
 - **Paket CLI**: `net10.0`, packed as the `paket` .NET tool
 - **FSharp.DependencyManager.Paket**: `netstandard2.0`
 - **Tests**: `net10.0`
