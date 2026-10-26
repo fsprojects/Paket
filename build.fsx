@@ -352,9 +352,12 @@ let generateHelp' commands fail debug =
     !! "packages/**/FSharp.Compiler.Service.MSBuild.*.dll"
     |> File.deleteAll
 
+    if commands then
+        let result = DotNet.exec dotnetCli "fsi" "docs/tools/generate-commands.fsx"
+        if not result.OK then failwith "generating the command pages failed"
+
     let args =
         [ if not debug then yield "--define:RELEASE"
-          if commands then yield "--define:COMMANDS"
           yield "--define:HELP"]
     let argLine = System.String.Join(" ", args)
     execute
@@ -437,6 +440,11 @@ Target.create "All" DoNothing
   ==> "BuildPackage"
   |> ignore
 
+
+// generate-commands.fsx reads the paket.dll of the Publish output
+"Publish"
+  ==> "GenerateHelp"
+  |> ignore
 
 "CleanDocs"
   ==> "GenerateHelp"
