@@ -53,7 +53,11 @@ let inline tryGet (key:^k) this =
 let inline internal memoizeByExt (getKey : 'a -> 'key) (f: 'a -> 'b) : ('a -> 'b) * ('key * 'b -> unit) =
     let cache = System.Collections.Concurrent.ConcurrentDictionary<'key, 'b>()
     (fun (x: 'a) ->
-        cache.GetOrAdd(getKey x, fun _ -> f x)),
+        let key = getKey x
+        // look the key up first, so that a hit allocates no closure
+        match cache.TryGetValue key with
+        | true, value -> value
+        | _ -> cache.GetOrAdd(key, fun _ -> f x)),
     (fun (key, c) ->
         cache.TryAdd(key, c) |> ignore)
 
