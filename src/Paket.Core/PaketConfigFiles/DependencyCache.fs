@@ -25,16 +25,8 @@ type ReferenceType =
         | Framework info -> sprintf "Framework: '%s'" info
         | LoadScript info -> sprintf "LoadScript: '%s'" info
 
-type DependencyCache (lockFile:LockFile) =
-    let loadedGroups = HashSet<GroupName>()
-    let mutable nuspecCache = ConcurrentDictionary<PackageName*SemVerInfo, System.Threading.Tasks.Task<Nuspec>>()
-    let mutable installModelCache = ConcurrentDictionary<GroupName * PackageName,System.Threading.Tasks.Task<InstallModel>>()
-    let mutable orderedGroupCache = ConcurrentDictionary<GroupName,PackageInfo list>()
-    let mutable orderedGroupReferences = ConcurrentDictionary<GroupName * FrameworkIdentifier,ReferenceType list>()
-    let mutable finishedSetup = false
-
-
-    let getLeafPackagesGeneric getPackageName getDependencies (knownPackages:Set<_>) openList =
+module internal DependencyOrder =
+    let private getLeafPackagesGeneric getPackageName getDependencies (knownPackages:Set<_>) openList =
 
         let leafPackages =
             openList
@@ -54,29 +46,69 @@ type DependencyCache (lockFile:LockFile) =
         leafPackages, newKnownPackages, newState
 
 
-    let getPackageOrderGeneric getPackageName getDependencies packages =
+    let getPackageOrderGeneric getPackageName getDependencies warnUnordered packages =
 
         let rec step finalList knownPackages currentPackages =
             match currentPackages |> getLeafPackagesGeneric getPackageName getDependencies knownPackages with
-            | [], _, _ -> finalList
+            | [], _, [] -> finalList
+            | [], _, (first :: _ as remaining) ->
+                // force the items of a name lying on a cycle, or whose dependencies are missing, and order the rest after them
+                let tryRemaining name = remaining |> List.tryFind (fun p -> getPackageName p = name)
+                let rec onCycle seen p =
+                    let name = getPackageName p
+                    if Set.contains name seen then p else
+                    match getDependencies p |> Seq.tryPick tryRemaining with
+                    | Some next -> onCycle (Set.add name seen) next
+                    | None -> p
+                let name = getPackageName (onCycle Set.empty first)
+                let forced, rest = remaining |> List.partition (fun p -> getPackageName p = name)
+                warnUnordered forced.Head
+                step (List.rev forced @ finalList) (Set.add name knownPackages) rest
             | leafPackages, newKnownPackages, newState ->
                 step (leafPackages @ finalList) newKnownPackages newState
 
         step [] Set.empty packages
         |> List.rev
 
-
-    let getPackageOrderResolvedPackage =
+    let getDllOrder (dllFiles : AssemblyDefinition list) =
+        // this check saves looking at assembly metadata when we know this is not needed
+        if List.length dllFiles = 1 then dllFiles else
+        // we ignore self-references (e.g. System.Reactive 7.0) and unknown references, which are most likely resolved on package level
+        let known = dllFiles |> Seq.map (fun a -> a.FullName) |> Set.ofSeq
         getPackageOrderGeneric
+            (fun (p:AssemblyDefinition) -> p.FullName)
+            (fun p ->
+                p.MainModule.AssemblyReferences
+                |> Seq.map (fun r -> r.FullName)
+                |> Seq.filter (fun n -> n <> p.FullName && known.Contains n))
+            (fun p ->
+                traceWarnfn $"Could not order the assembly '%s{p.Name.Name}' after all the assemblies it references: some of them reference it back, directly or indirectly"
+            )
+            dllFiles
+
+type DependencyCache (lockFile:LockFile) =
+    let loadedGroups = HashSet<GroupName>()
+    let mutable nuspecCache = ConcurrentDictionary<PackageName*SemVerInfo, System.Threading.Tasks.Task<Nuspec>>()
+    let mutable installModelCache = ConcurrentDictionary<GroupName * PackageName,System.Threading.Tasks.Task<InstallModel>>()
+    let mutable orderedGroupCache = ConcurrentDictionary<GroupName,PackageInfo list>()
+    let mutable orderedGroupReferences = ConcurrentDictionary<GroupName * FrameworkIdentifier,ReferenceType list>()
+    let mutable finishedSetup = false
+
+
+    let getPackageOrderResolvedPackage (groupName:GroupName) =
+        DependencyOrder.getPackageOrderGeneric
             (fun (p:PackageResolver.PackageInfo) -> p.Name)
             (fun p -> p.Dependencies |> Seq.map (fun (n,_,_) -> n))
+            (fun p ->
+                traceWarnfn $"Could not order the package '{p.Name}' of the group '{groupName}' after all its dependencies: some of them depend on it, directly or indirectly, or are missing from the group"
+            )
 
 
     let loadPackages () =
         let packs =
             lockFile.GetResolvedPackages() |> Seq.map (fun kvp -> async {
                 let groupName, packages = kvp.Key,kvp.Value
-                let orderedPackages = getPackageOrderResolvedPackage kvp.Value
+                let orderedPackages = getPackageOrderResolvedPackage groupName packages
                 orderedGroupCache.TryAdd (groupName,orderedPackages) |> ignore
             }) |> Array.ofSeq
         Async.Parallel packs
@@ -84,17 +116,6 @@ type DependencyCache (lockFile:LockFile) =
         |> ignore
 
     do loadPackages ()
-
-    let getDllOrder (dllFiles : AssemblyDefinition list) =
-        // this check saves looking at assembly metadata when we know this is not needed
-        if List.length dllFiles = 1 then dllFiles else
-        // we ignore all unknown references as they are most likely resolved on package level
-        let known = dllFiles |> Seq.map (fun a -> a.FullName) |> Set.ofSeq
-        getPackageOrderGeneric
-            (fun (p:AssemblyDefinition) -> p.FullName)
-            (fun p -> p.MainModule.AssemblyReferences |> Seq.map (fun r -> r.FullName) |> Seq.filter known.Contains)
-            dllFiles
-
 
     let getPackageLoadScriptsWithinPackage scriptTypeExtension  (installModel :InstallModel) =
         installModel.PackageLoadScripts
@@ -114,7 +135,7 @@ type DependencyCache (lockFile:LockFile) =
             )
             |> dict
 
-        getDllOrder (dllFiles.Keys |> Seq.toList)
+        DependencyOrder.getDllOrder (dllFiles.Keys |> Seq.toList)
         |> List.map (fun a -> dllFiles.[a])
 
     let referencesForGroup group (framework:FrameworkIdentifier) =
@@ -144,7 +165,7 @@ type DependencyCache (lockFile:LockFile) =
 
             let assemblies =
                 assemblyFilePerAssemblyDef.Keys
-                |> Seq.toList |> getDllOrder
+                |> Seq.toList |> DependencyOrder.getDllOrder
                 |> Seq.map (assemblyFilePerAssemblyDef.TryGetValue >> snd)
 
             let assemblyRefs =
