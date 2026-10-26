@@ -283,27 +283,11 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
                 if verbose then
                     verbosefn "Downloading license for %O %O to %s" packageName version targetFileName
 
-                let request = HttpWebRequest.Create(Uri licenseUrl) :?> HttpWebRequest
-                request.UserAgent <- "Paket"
-                request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
-
-                request.UseDefaultCredentials <- true
-                request.Proxy <- NetUtils.getDefaultProxyFor licenseUrl
+                // Without auth, the handler sends the default credentials through the proxy of the url
+                let client = NetUtils.createHttpClient(licenseUrl, None)
                 use _ = Profile.startCategory Profile.Category.NuGetRequest
-                use! httpResponse = request.AsyncGetResponse()
-
-                use httpResponseStream = httpResponse.GetResponseStream()
-
-                let bufferSize = 4096
-                let buffer : byte [] = Array.zeroCreate bufferSize
-                let bytesRead = ref -1
-
-                use fileStream = File.Create(targetFileName)
-
-                while !bytesRead <> 0 do
-                    let! bytes = httpResponseStream.AsyncRead(buffer, 0, bufferSize)
-                    bytesRead := bytes
-                    do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
+                let! tok = Async.CancellationToken
+                do! client.DownloadFileTaskAsync(Uri licenseUrl, tok, targetFileName) |> Async.AwaitTaskWithoutAggregate
 
                 if verbose then
                     verbosefn "License for %O %O downloaded from %s." packageName version licenseUrl
