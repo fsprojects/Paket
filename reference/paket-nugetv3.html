@@ -1,0 +1,2262 @@
+<!DOCTYPE html>
+<html lang="en" data-root="https://fsprojects.github.io/Paket/">
+<head>
+    <meta charset="UTF-8">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Paket team" name="author">
+    <!-- Opengraph properties (https://ogp.me/) -->
+    <meta property="og:site_name" content="Paket">
+    <meta property="og:title" content="NuGetV3 (Paket)" />
+    <meta property="og:url" content="https://fsprojects.github.io/Paket/{{fsdocs-source-basename}}.html">
+    <meta property="og:type" content="website" />
+    <!-- Twitter cards (https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/summary-card-with-large-image) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="https://fsprojects.github.io/Paket/">
+    <meta name="twitter:title" content="NuGetV3 (Paket)">
+    
+    <title>NuGetV3 (Paket) | Paket</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="https://fsprojects.github.io/Paket/img/logo.png" rel="icon" sizes="32x32" type="image/png"/>
+    <script type="application/javascript" src="https://fsprojects.github.io/Paket/content/fsdocs-theme-set-dark.js"></script>
+    <script type="application/javascript" src="https://fsprojects.github.io/Paket/content/fsdocs-details-set-expanded.js"></script>
+    <link href="https://fsprojects.github.io/Paket/content/fsdocs-default.css" rel="stylesheet" type="text/css"/>
+    <link href="https://fsprojects.github.io/Paket/content/fsdocs-theme.css" rel="stylesheet" type="text/css"/>
+    
+    
+</head>
+<body class="api-docs">
+<header>
+    <div class="start">
+        <div id="menu-toggle">
+            <iconify-icon class="icon closed" height="22" icon="eva:menu-fill" width="22"></iconify-icon>
+            <iconify-icon class="icon open" height="22" icon="mi:close" width="22"></iconify-icon>
+            <input type="checkbox" name="mobile-menu" />
+            <ul class="menu">
+                <li class="nav-header">Paket</li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/index.html">Home page</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/get-started.html">Get started</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/learn-how-to-use-paket.html">Learn how to use paket</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/convert-from-nuget-tutorial.html">Convert from legacy NuGet</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-and-dotnet-cli.html">Paket with .NET SDK</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/faq.html">FAQ</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/release-notes.html">Release Notes</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/contact.html">Contact</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/testimonials.html">Testimonials</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/license.html">License</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/glossary.html">Glossary</a></li>
+                <li class="nav-header">Download Paket</li>
+                <li class="nav-item"><a class="nav-link" href="https://www.nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+                <li class="nav-header">GitHub</li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+                <li class="nav-header">Documentation</li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/dependencies-file.html">paket.dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/lock-file.html">paket.lock</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/references-files.html">paket.references</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/template-files.html">paket.template</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/local-file.html">paket.local</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-folder.html">.paket folder</a></li>
+                <li class="divider"></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/resolver.html">Package resolution algorithm</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/groups.html">Dependency Groups</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/caches.html">Additional Caches</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/nuget-dependencies.html">NuGet dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/git-dependencies.html">Git dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/github-dependencies.html">GitHub dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/http-dependencies.html">HTTP dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/analyzers.html">Analyzers</a></li>
+                <li class="divider"></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/installation.html">Installation</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference-from-repl.html">Using Paket from F# Interactive</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/fsi-integration.html">F# Interactive integration</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/editor-support.html">Editor support</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/shell-completion.html">Shell completion</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/credential-providers.html">Credential Providers</a></li>
+                <li class="divider"></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference/index.html">API Reference</a></li>
+                <li class="nav-header">Paket commands</li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-add.html">paket add</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-auto-restore.html">paket auto-restore</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-clear-cache.html">paket clear-cache</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-config.html">paket config</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-refs.html">paket find-refs</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-packages.html">paket find-packages</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-package-versions.html">paket find-package-versions</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-fix-nuspecs.html">paket fix-nuspecs</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-nuspec.html">paket generate-nuspec</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-git.html">paket git</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-github.html">paket github</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-info.html">paket info</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-init.html">paket init</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-install.html">paket install</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-outdated.html">paket outdated</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-pack.html">paket pack</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-push.html">paket push</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-remove.html">paket remove</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restore.html">paket restore</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-simplify.html">paket simplify</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-conditions.html">paket show-conditions</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-groups.html">paket show-groups</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-installed-packages.html">paket show-installed-packages</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-update.html">paket update</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-why.html">paket why</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restriction.html">paket restriction</a></li>
+            </ul>
+        </div>
+        <a href="https://fsprojects.github.io/Paket/">
+            <img alt="Logo" src="https://fsprojects.github.io/Paket/img/logo.png">
+            <strong>Paket</strong>
+        </a>
+    </div>
+    <div class="end">
+        <a href="https://github.com/fsprojects/Paket" target="_blank">
+            <iconify-icon icon="uil:github" width="26" height="26"></iconify-icon>
+        </a>
+        <iconify-icon id="search-btn" icon="carbon:search" class="search" width="24" height="24"></iconify-icon>
+        <fsdocs-theme-toggle></fsdocs-theme-toggle>
+    </div>
+</header>
+<aside id="fsdocs-main-menu">
+    <ul class="menu">
+        <li class="nav-header">Paket</li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/index.html">Home page</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/get-started.html">Get started</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/learn-how-to-use-paket.html">Learn how to use paket</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/convert-from-nuget-tutorial.html">Convert from legacy NuGet</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-and-dotnet-cli.html">Paket with .NET SDK</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/faq.html">FAQ</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/release-notes.html">Release Notes</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/contact.html">Contact</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/testimonials.html">Testimonials</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/license.html">License</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/glossary.html">Glossary</a></li>
+        <li class="nav-header">Download Paket</li>
+        <li class="nav-item"><a class="nav-link" href="https://www.nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+        <li class="nav-header">GitHub</li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+        <li class="nav-header">Documentation</li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/dependencies-file.html">paket.dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/lock-file.html">paket.lock</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/references-files.html">paket.references</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/template-files.html">paket.template</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/local-file.html">paket.local</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-folder.html">.paket folder</a></li>
+        <li class="divider"></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/resolver.html">Package resolution algorithm</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/groups.html">Dependency Groups</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/caches.html">Additional Caches</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/nuget-dependencies.html">NuGet dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/git-dependencies.html">Git dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/github-dependencies.html">GitHub dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/http-dependencies.html">HTTP dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/analyzers.html">Analyzers</a></li>
+        <li class="divider"></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/installation.html">Installation</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference-from-repl.html">Using Paket from F# Interactive</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/fsi-integration.html">F# Interactive integration</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/editor-support.html">Editor support</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/shell-completion.html">Shell completion</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/credential-providers.html">Credential Providers</a></li>
+        <li class="divider"></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference/index.html">API Reference</a></li>
+        <li class="nav-header">Paket commands</li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-add.html">paket add</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-auto-restore.html">paket auto-restore</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-clear-cache.html">paket clear-cache</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-config.html">paket config</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-refs.html">paket find-refs</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-packages.html">paket find-packages</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-package-versions.html">paket find-package-versions</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-fix-nuspecs.html">paket fix-nuspecs</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-nuspec.html">paket generate-nuspec</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-git.html">paket git</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-github.html">paket github</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-info.html">paket info</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-init.html">paket init</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-install.html">paket install</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-outdated.html">paket outdated</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-pack.html">paket pack</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-push.html">paket push</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-remove.html">paket remove</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restore.html">paket restore</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-simplify.html">paket simplify</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-conditions.html">paket show-conditions</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-groups.html">paket show-groups</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-installed-packages.html">paket show-installed-packages</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-update.html">paket update</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-why.html">paket why</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restriction.html">paket restriction</a></li>
+    </ul>
+</aside>
+<main>
+    <div id="content">
+        <div>
+  <h2>
+    NuGetV3 Module
+  </h2>
+  <dl class="fsdocs-metadata">
+    <dt>
+      Namespace: 
+      <a href="https://fsprojects.github.io/Paket/reference/paket.html">
+        Paket
+      </a>
+    </dt>
+    <dt>
+      Assembly: Paket.Core.dll
+    </dt>
+  </dl>
+  <div class="fsdocs-xmldoc">
+    <div>
+      <div class="fsdocs-summary-contents">
+        <p class="fsdocs-summary">
+           Contains NuGet support.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div>
+    <h3>
+      Types
+    </h3>
+    <table class="table outer-list fsdocs-entity-list">
+      <thead>
+        <tr>
+          <td>
+            Type
+          </td>
+          <td>
+            Description
+          </td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="fsdocs-entity-name">
+            <p>
+              <a name="Catalog">
+                <a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-catalog.html">
+                  Catalog
+                </a>
+              </a>
+            </p>
+          </td>
+          <td class="fsdocs-entity-xmldoc">
+            <div>
+              <div class="fsdocs-summary-contents">
+                <p class="fsdocs-summary">
+                  
+                </p>
+              </div>
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+                <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'T:Paket.NuGetV3.Catalog\'/>')">
+                  <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                </div>
+                <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:T:Paket.NuGetV3.Catalog`')">
+                  <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-entity-name">
+            <p>
+              <a name="CatalogDependency">
+                <a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-catalogdependency.html">
+                  CatalogDependency
+                </a>
+              </a>
+            </p>
+          </td>
+          <td class="fsdocs-entity-xmldoc">
+            <div>
+              <div class="fsdocs-summary-contents">
+                <p class="fsdocs-summary">
+                  
+                </p>
+              </div>
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+                <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'T:Paket.NuGetV3.CatalogDependency\'/>')">
+                  <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                </div>
+                <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:T:Paket.NuGetV3.CatalogDependency`')">
+                  <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-entity-name">
+            <p>
+              <a name="CatalogDependencyGroup">
+                <a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-catalogdependencygroup.html">
+                  CatalogDependencyGroup
+                </a>
+              </a>
+            </p>
+          </td>
+          <td class="fsdocs-entity-xmldoc">
+            <div>
+              <div class="fsdocs-summary-contents">
+                <p class="fsdocs-summary">
+                  
+                </p>
+              </div>
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+                <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'T:Paket.NuGetV3.CatalogDependencyGroup\'/>')">
+                  <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                </div>
+                <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:T:Paket.NuGetV3.CatalogDependencyGroup`')">
+                  <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-entity-name">
+            <p>
+              <a name="NugetV3CatalogIndexItem">
+                <a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3catalogindexitem.html">
+                  NugetV3CatalogIndexItem
+                </a>
+              </a>
+            </p>
+          </td>
+          <td class="fsdocs-entity-xmldoc">
+            <div>
+              <div class="fsdocs-summary-contents">
+                <p class="fsdocs-summary">
+                  
+                </p>
+              </div>
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+                <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'T:Paket.NuGetV3.NugetV3CatalogIndexItem\'/>')">
+                  <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                </div>
+                <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:T:Paket.NuGetV3.NugetV3CatalogIndexItem`')">
+                  <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-entity-name">
+            <p>
+              <a name="NugetV3CatalogPage">
+                <a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3catalogpage.html">
+                  NugetV3CatalogPage
+                </a>
+              </a>
+            </p>
+          </td>
+          <td class="fsdocs-entity-xmldoc">
+            <div>
+              <div class="fsdocs-summary-contents">
+                <p class="fsdocs-summary">
+                  
+                </p>
+              </div>
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+                <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'T:Paket.NuGetV3.NugetV3CatalogPage\'/>')">
+                  <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                </div>
+                <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:T:Paket.NuGetV3.NugetV3CatalogPage`')">
+                  <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-entity-name">
+            <p>
+              <a name="NugetV3CatalogPageItem">
+                <a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3catalogpageitem.html">
+                  NugetV3CatalogPageItem
+                </a>
+              </a>
+            </p>
+          </td>
+          <td class="fsdocs-entity-xmldoc">
+            <div>
+              <div class="fsdocs-summary-contents">
+                <p class="fsdocs-summary">
+                   large unused fields are commented-out
+                </p>
+              </div>
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+                <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'T:Paket.NuGetV3.NugetV3CatalogPageItem\'/>')">
+                  <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                </div>
+                <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:T:Paket.NuGetV3.NugetV3CatalogPageItem`')">
+                  <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-entity-name">
+            <p>
+              <a name="NugetV3PackageCatalog">
+                <a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3packagecatalog.html">
+                  NugetV3PackageCatalog
+                </a>
+              </a>
+            </p>
+          </td>
+          <td class="fsdocs-entity-xmldoc">
+            <div>
+              <div class="fsdocs-summary-contents">
+                <p class="fsdocs-summary">
+                  
+                </p>
+              </div>
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+                <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'T:Paket.NuGetV3.NugetV3PackageCatalog\'/>')">
+                  <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                </div>
+                <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:T:Paket.NuGetV3.NugetV3PackageCatalog`')">
+                  <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-entity-name">
+            <p>
+              <a name="NugetV3ResourceType">
+                <a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3resourcetype.html">
+                  NugetV3ResourceType
+                </a>
+              </a>
+            </p>
+          </td>
+          <td class="fsdocs-entity-xmldoc">
+            <div>
+              <div class="fsdocs-summary-contents">
+                <p class="fsdocs-summary">
+                  
+                </p>
+              </div>
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+                <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'T:Paket.NuGetV3.NugetV3ResourceType\'/>')">
+                  <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                </div>
+                <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:T:Paket.NuGetV3.NugetV3ResourceType`')">
+                  <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-entity-name">
+            <p>
+              <a name="NugetV3SourceResourceJSON">
+                <a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3sourceresourcejson.html">
+                  NugetV3SourceResourceJSON
+                </a>
+              </a>
+            </p>
+          </td>
+          <td class="fsdocs-entity-xmldoc">
+            <div>
+              <div class="fsdocs-summary-contents">
+                <p class="fsdocs-summary">
+                  
+                </p>
+              </div>
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+                <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'T:Paket.NuGetV3.NugetV3SourceResourceJSON\'/>')">
+                  <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                </div>
+                <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:T:Paket.NuGetV3.NugetV3SourceResourceJSON`')">
+                  <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-entity-name">
+            <p>
+              <a name="NugetV3SourceRootJSON">
+                <a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3sourcerootjson.html">
+                  NugetV3SourceRootJSON
+                </a>
+              </a>
+            </p>
+          </td>
+          <td class="fsdocs-entity-xmldoc">
+            <div>
+              <div class="fsdocs-summary-contents">
+                <p class="fsdocs-summary">
+                  
+                </p>
+              </div>
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+                <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'T:Paket.NuGetV3.NugetV3SourceRootJSON\'/>')">
+                  <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                </div>
+                <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:T:Paket.NuGetV3.NugetV3SourceRootJSON`')">
+                  <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-entity-name">
+            <p>
+              <a name="PackageIndex">
+                <a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-packageindex.html">
+                  PackageIndex
+                </a>
+              </a>
+            </p>
+          </td>
+          <td class="fsdocs-entity-xmldoc">
+            <div>
+              <div class="fsdocs-summary-contents">
+                <p class="fsdocs-summary">
+                  
+                </p>
+              </div>
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+                <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'T:Paket.NuGetV3.PackageIndex\'/>')">
+                  <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                </div>
+                <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:T:Paket.NuGetV3.PackageIndex`')">
+                  <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-entity-name">
+            <p>
+              <a name="PackageIndexPackage">
+                <a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-packageindexpackage.html">
+                  PackageIndexPackage
+                </a>
+              </a>
+            </p>
+          </td>
+          <td class="fsdocs-entity-xmldoc">
+            <div>
+              <div class="fsdocs-summary-contents">
+                <p class="fsdocs-summary">
+                  
+                </p>
+              </div>
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+                <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'T:Paket.NuGetV3.PackageIndexPackage\'/>')">
+                  <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                </div>
+                <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:T:Paket.NuGetV3.PackageIndexPackage`')">
+                  <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-entity-name">
+            <p>
+              <a name="PackageIndexPage">
+                <a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-packageindexpage.html">
+                  PackageIndexPage
+                </a>
+              </a>
+            </p>
+          </td>
+          <td class="fsdocs-entity-xmldoc">
+            <div>
+              <div class="fsdocs-summary-contents">
+                <p class="fsdocs-summary">
+                  
+                </p>
+              </div>
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+                <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'T:Paket.NuGetV3.PackageIndexPage\'/>')">
+                  <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                </div>
+                <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:T:Paket.NuGetV3.PackageIndexPage`')">
+                  <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-entity-name">
+            <p>
+              <a name="ResourceIndex">
+                <a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-resourceindex.html">
+                  ResourceIndex
+                </a>
+              </a>
+            </p>
+          </td>
+          <td class="fsdocs-entity-xmldoc">
+            <div>
+              <div class="fsdocs-summary-contents">
+                <p class="fsdocs-summary">
+                  
+                </p>
+              </div>
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+                <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'T:Paket.NuGetV3.ResourceIndex\'/>')">
+                  <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                </div>
+                <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:T:Paket.NuGetV3.ResourceIndex`')">
+                  <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div>
+    <h3>
+      Functions and values
+    </h3>
+    <table class="table outer-list fsdocs-member-list">
+      <thead>
+        <tr>
+          <td class="fsdocs-member-list-header">
+            Function or value
+          </td>
+          <td class="fsdocs-member-list-header">
+            Description
+            <fsdocs-details-toggle></fsdocs-details-toggle>
+          </td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="416" data-fsdocs-tip-unique="416">
+                <p>
+                  <a id="FindAutoCompleteVersionsForPackage">
+                    <a href="#FindAutoCompleteVersionsForPackage">
+                      <code><span>FindAutoCompleteVersionsForPackage&#32;<span><span>(<span>nugetURL,&#32;auth,&#32;package,&#32;includingPrereleases,&#32;maxResults</span>)</span></span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="416">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>FindAutoCompleteVersionsForPackage&#32;<span><span>(<span>nugetURL,&#32;auth,&#32;package,&#32;includingPrereleases,&#32;maxResults</span>)</span></span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        nugetURL
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        auth
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-netutils-authprovider.html">AuthProvider</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        package
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        includingPrereleases
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        maxResults
+                      </b>
+                      :
+                      <code>int</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<span><a href="https://fsprojects.github.io/Paket/reference/paket-netutils-safewebresult-1.html">SafeWebResult</a>&lt;<span>string&#32;array</span>&gt;</span>&gt;</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <details>
+              <summary>
+                <div class="fsdocs-summary">
+                  <div class="fsdocs-summary-contents">
+                    <p class="fsdocs-summary">
+                       Uses the NuGet v3 autocomplete service to retrieve all package versions for the given package.
+                    </p>
+                  </div>
+                  <div class="icon-button-row">
+                    <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                      <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                    </a>
+                    <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:Paket.NuGetV3.FindAutoCompleteVersionsForPackage\'/>')">
+                      <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                    </div>
+                    <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:Paket.NuGetV3.FindAutoCompleteVersionsForPackage`')">
+                      <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                    </div>
+                  </div>
+                </div>
+              </summary>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    nugetURL
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    auth
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-netutils-authprovider.html">AuthProvider</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    package
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    includingPrereleases
+                  </span>
+                  :
+                  <code>bool</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    maxResults
+                  </span>
+                  :
+                  <code>int</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<span><a href="https://fsprojects.github.io/Paket/reference/paket-netutils-safewebresult-1.html">SafeWebResult</a>&lt;<span>string&#32;array</span>&gt;</span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </details>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="417" data-fsdocs-tip-unique="417">
+                <p>
+                  <a id="FindPackages">
+                    <a href="#FindPackages">
+                      <code><span>FindPackages&#32;<span><span>(<span>auth,&#32;nugetURL,&#32;packageNamePrefix,&#32;maxResults</span>)</span></span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="417">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>FindPackages&#32;<span><span>(<span>auth,&#32;nugetURL,&#32;packageNamePrefix,&#32;maxResults</span>)</span></span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        auth
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-netutils-authprovider.html">AuthProvider</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        nugetURL
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        packageNamePrefix
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        maxResults
+                      </b>
+                      :
+                      <code>int</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-fsharpresult-2">Result</a>&lt;<span><span>string[]</span>,&#32;<a href="https://learn.microsoft.com/dotnet/api/system.runtime.exceptionservices.exceptiondispatchinfo">ExceptionDispatchInfo</a></span>&gt;</span>&gt;</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <details>
+              <summary>
+                <div class="fsdocs-summary">
+                  <div class="fsdocs-summary-contents">
+                    <p class="fsdocs-summary">
+                       Uses the NuGet v3 autocomplete service to retrieve all packages with the given prefix.
+                    </p>
+                  </div>
+                  <div class="icon-button-row">
+                    <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                      <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                    </a>
+                    <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:Paket.NuGetV3.FindPackages\'/>')">
+                      <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                    </div>
+                    <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:Paket.NuGetV3.FindPackages`')">
+                      <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                    </div>
+                  </div>
+                </div>
+              </summary>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    auth
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-netutils-authprovider.html">AuthProvider</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    nugetURL
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    packageNamePrefix
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    maxResults
+                  </span>
+                  :
+                  <code>int</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-fsharpresult-2">Result</a>&lt;<span><span>string[]</span>,&#32;<a href="https://learn.microsoft.com/dotnet/api/system.runtime.exceptionservices.exceptiondispatchinfo">ExceptionDispatchInfo</a></span>&gt;</span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </details>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="418" data-fsdocs-tip-unique="418">
+                <p>
+                  <a id="FindVersionsForPackage">
+                    <a href="#FindVersionsForPackage">
+                      <code><span>FindVersionsForPackage&#32;<span><span>(<span>nugetURL,&#32;auth,&#32;package</span>)</span></span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="418">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>FindVersionsForPackage&#32;<span><span>(<span>nugetURL,&#32;auth,&#32;package</span>)</span></span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        nugetURL
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        auth
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-netutils-authprovider.html">AuthProvider</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        package
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetcache-nugetrequestgetversions.html">NuGetRequestGetVersions</a></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <details>
+              <summary>
+                <div class="fsdocs-summary">
+                  <div class="fsdocs-summary-contents">
+                    <p class="fsdocs-summary">
+                       Uses the NuGet v3 service to retrieve all package versions for the given package.
+                    </p>
+                  </div>
+                  <div class="icon-button-row">
+                    <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                      <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                    </a>
+                    <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:Paket.NuGetV3.FindVersionsForPackage\'/>')">
+                      <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                    </div>
+                    <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:Paket.NuGetV3.FindVersionsForPackage`')">
+                      <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                    </div>
+                  </div>
+                </div>
+              </summary>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    nugetURL
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    auth
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-netutils-authprovider.html">AuthProvider</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    package
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetcache-nugetrequestgetversions.html">NuGetRequestGetVersions</a></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </details>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="419" data-fsdocs-tip-unique="419">
+                <p>
+                  <a id="GetPackageDetails">
+                    <a href="#GetPackageDetails">
+                      <code><span>GetPackageDetails&#32;<span>force&#32;source&#32;packageName&#32;version</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="419">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>GetPackageDetails&#32;<span>force&#32;source&#32;packageName&#32;version</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        force
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        source
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-packagesources-nugetv3source.html">NuGetV3Source</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        packageName
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        version
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-semverinfo.html">SemVerInfo</a></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<a href="https://fsprojects.github.io/Paket/reference/paket-nugetcache-odatasearchresult.html">ODataSearchResult</a>&gt;</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <details>
+              <summary>
+                <div class="fsdocs-summary">
+                  <div class="fsdocs-summary-contents">
+                    <p class="fsdocs-summary">
+                       Uses the NuGet v3 registration endpoint to retrieve package details .
+                    </p>
+                  </div>
+                  <div class="icon-button-row">
+                    <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                      <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                    </a>
+                    <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:Paket.NuGetV3.GetPackageDetails\'/>')">
+                      <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                    </div>
+                    <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:Paket.NuGetV3.GetPackageDetails`')">
+                      <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                    </div>
+                  </div>
+                </div>
+              </summary>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    force
+                  </span>
+                  :
+                  <code>bool</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    source
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-packagesources-nugetv3source.html">NuGetV3Source</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    packageName
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    version
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-semverinfo.html">SemVerInfo</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<a href="https://fsprojects.github.io/Paket/reference/paket-nugetcache-odatasearchresult.html">ODataSearchResult</a>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </details>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="420" data-fsdocs-tip-unique="420">
+                <p>
+                  <a id="calculateNuGet2Path">
+                    <a href="#calculateNuGet2Path">
+                      <code><span>calculateNuGet2Path&#32;<span>nugetUrl</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="420">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>calculateNuGet2Path&#32;<span>nugetUrl</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        nugetUrl
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span>string&#32;option</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <details>
+              <summary>
+                <div class="fsdocs-summary">
+                  <div class="fsdocs-summary-contents">
+                    <p class="fsdocs-summary">
+                       Calculates the NuGet v3 URL from a NuGet v2 URL.
+                    </p>
+                  </div>
+                  <div class="icon-button-row">
+                    <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                      <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                    </a>
+                    <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:Paket.NuGetV3.calculateNuGet2Path\'/>')">
+                      <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                    </div>
+                    <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:Paket.NuGetV3.calculateNuGet2Path`')">
+                      <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                    </div>
+                  </div>
+                </div>
+              </summary>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    nugetUrl
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span>string&#32;option</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </details>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="421" data-fsdocs-tip-unique="421">
+                <p>
+                  <a id="calculateNuGet3Path">
+                    <a href="#calculateNuGet3Path">
+                      <code><span>calculateNuGet3Path&#32;<span>nugetUrl</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="421">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>calculateNuGet3Path&#32;<span>nugetUrl</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        nugetUrl
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span>string&#32;option</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <details>
+              <summary>
+                <div class="fsdocs-summary">
+                  <div class="fsdocs-summary-contents">
+                    <p class="fsdocs-summary">
+                       Calculates the NuGet v3 URL from a NuGet v2 URL.
+                    </p>
+                  </div>
+                  <div class="icon-button-row">
+                    <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                      <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                    </a>
+                    <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:Paket.NuGetV3.calculateNuGet3Path\'/>')">
+                      <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                    </div>
+                    <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:Paket.NuGetV3.calculateNuGet3Path`')">
+                      <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                    </div>
+                  </div>
+                </div>
+              </summary>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    nugetUrl
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span>string&#32;option</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </details>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="422" data-fsdocs-tip-unique="422">
+                <p>
+                  <a id="catalogSemVer2ordered">
+                    <a href="#catalogSemVer2ordered">
+                      <code><span>catalogSemVer2ordered&#32;<span>catalog</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="422">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>catalogSemVer2ordered&#32;<span>catalog</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        catalog
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3packagecatalog.html">NugetV3PackageCatalog</a></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3packagecatalog.html">NugetV3PackageCatalog</a></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    catalog
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3packagecatalog.html">NugetV3PackageCatalog</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3packagecatalog.html">NugetV3PackageCatalog</a></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="423" data-fsdocs-tip-unique="423">
+                <p>
+                  <a id="extractSearchVersion">
+                    <a href="#extractSearchVersion">
+                      <code><span>extractSearchVersion&#32;<span>response</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="423">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>extractSearchVersion&#32;<span>response</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        response
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-jsonsearchdata.html">JSONSearchData</a></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    response
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-jsonsearchdata.html">JSONSearchData</a></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="424" data-fsdocs-tip-unique="424">
+                <p>
+                  <a id="getCatalogCursor">
+                    <a href="#getCatalogCursor">
+                      <code><span>getCatalogCursor&#32;<span>basePath&#32;serviceUrl</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="424">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>getCatalogCursor&#32;<span>basePath&#32;serviceUrl</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        basePath
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        serviceUrl
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3packagecatalog.html">NugetV3PackageCatalog</a></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    basePath
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    serviceUrl
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3packagecatalog.html">NugetV3PackageCatalog</a></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="425" data-fsdocs-tip-unique="425">
+                <p>
+                  <a id="getNuGetV3Resource">
+                    <a href="#getNuGetV3Resource">
+                      <code><span>getNuGetV3Resource&#32;<span>source&#32;resourceType</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="425">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>getNuGetV3Resource&#32;<span>source&#32;resourceType</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        source
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-packagesources-nugetv3source.html">NuGetV3Source</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        resourceType
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3resourcetype.html">NugetV3ResourceType</a></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;string&gt;</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    source
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-packagesources-nugetv3source.html">NuGetV3Source</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    resourceType
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3resourcetype.html">NugetV3ResourceType</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;string&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="426" data-fsdocs-tip-unique="426">
+                <p>
+                  <a id="getPackageDetails">
+                    <a href="#getPackageDetails">
+                      <code><span>getPackageDetails&#32;<span>source&#32;packageName&#32;version</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="426">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>getPackageDetails&#32;<span>source&#32;packageName&#32;version</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        source
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-packagesources-nugetv3source.html">NuGetV3Source</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        packageName
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        version
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-semverinfo.html">SemVerInfo</a></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<a href="https://fsprojects.github.io/Paket/reference/paket-nugetcache-odatasearchresult.html">ODataSearchResult</a>&gt;</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    source
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-packagesources-nugetv3source.html">NuGetV3Source</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    packageName
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    version
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-semverinfo.html">SemVerInfo</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<a href="https://fsprojects.github.io/Paket/reference/paket-nugetcache-odatasearchresult.html">ODataSearchResult</a>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="427" data-fsdocs-tip-unique="427">
+                <p>
+                  <a id="getPackageIndex">
+                    <a href="#getPackageIndex">
+                      <code><span>getPackageIndex&#32;<span>source&#32;packageName</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="427">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>getPackageIndex&#32;<span>source&#32;packageName</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        source
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-packagesources-nugetv3source.html">NuGetV3Source</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        packageName
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<span><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-packageindex.html">PackageIndex</a>&#32;option</span>&gt;</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    source
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-packagesources-nugetv3source.html">NuGetV3Source</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    packageName
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<span><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-packageindex.html">PackageIndex</a>&#32;option</span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="428" data-fsdocs-tip-unique="428">
+                <p>
+                  <a id="getPackageIndexPage">
+                    <a href="#getPackageIndexPage">
+                      <code><span>getPackageIndexPage&#32;<span>source&#32;page</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="428">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>getPackageIndexPage&#32;<span>source&#32;page</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        source
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-packagesources-nugetv3source.html">NuGetV3Source</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        page
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-packageindexpage.html">PackageIndexPage</a></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-packageindexpage.html">PackageIndexPage</a>&gt;</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    source
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-packagesources-nugetv3source.html">NuGetV3Source</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    page
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-packageindexpage.html">PackageIndexPage</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-packageindexpage.html">PackageIndexPage</a>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="429" data-fsdocs-tip-unique="429">
+                <p>
+                  <a id="getRelevantPage">
+                    <a href="#getRelevantPage">
+                      <code><span>getRelevantPage&#32;<span>source&#32;index&#32;version</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="429">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>getRelevantPage&#32;<span>source&#32;index&#32;version</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        source
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-packagesources-nugetv3source.html">NuGetV3Source</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        index
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-packageindex.html">PackageIndex</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        version
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-semverinfo.html">SemVerInfo</a></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<span><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-packageindexpackage.html">PackageIndexPackage</a>&#32;option</span>&gt;</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    source
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-packagesources-nugetv3source.html">NuGetV3Source</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    index
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-packageindex.html">PackageIndex</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    version
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-semverinfo.html">SemVerInfo</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<span><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-packageindexpackage.html">PackageIndexPackage</a>&#32;option</span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="430" data-fsdocs-tip-unique="430">
+                <p>
+                  <a id="setCatalogCursor">
+                    <a href="#setCatalogCursor">
+                      <code><span>setCatalogCursor&#32;<span>basePath&#32;catalog</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="430">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>setCatalogCursor&#32;<span>basePath&#32;catalog</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        basePath
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        catalog
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3packagecatalog.html">NugetV3PackageCatalog</a></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>bool</code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    basePath
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    catalog
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3packagecatalog.html">NugetV3PackageCatalog</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code>bool</code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="431" data-fsdocs-tip-unique="431">
+                <p>
+                  <a id="tryGetNuGetV3Resource">
+                    <a href="#tryGetNuGetV3Resource">
+                      <code><span>tryGetNuGetV3Resource&#32;<span>source&#32;resourceType</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="431">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>tryGetNuGetV3Resource&#32;<span>source&#32;resourceType</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        source
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-packagesources-nugetv3source.html">NuGetV3Source</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        resourceType
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3resourcetype.html">NugetV3ResourceType</a></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<span>string&#32;option</span>&gt;</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    source
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-packagesources-nugetv3source.html">NuGetV3Source</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    resourceType
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-nugetv3-nugetv3resourcetype.html">NugetV3ResourceType</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<span>string&#32;option</span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+</div>
+        
+    </div>
+</main>
+<aside id="fsdocs-page-menu">
+    <p id="on-this-page">On this page</p>
+    <div class="empty"></div>
+</aside>
+<dialog>
+    <input type="search" placeholder="Search docs" />
+    <div class="results">
+        <ul></ul>
+        <p class="empty">Type something to start searching.</p>
+    </div>
+</dialog>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-tips.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-theme-toggle.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-details-toggle.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-theme.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-search.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-copy-button.js"></script>
+
+</body>
+</html>

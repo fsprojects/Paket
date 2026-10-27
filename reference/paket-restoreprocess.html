@@ -1,0 +1,2276 @@
+<!DOCTYPE html>
+<html lang="en" data-root="https://fsprojects.github.io/Paket/">
+<head>
+    <meta charset="UTF-8">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Paket team" name="author">
+    <!-- Opengraph properties (https://ogp.me/) -->
+    <meta property="og:site_name" content="Paket">
+    <meta property="og:title" content="RestoreProcess (Paket)" />
+    <meta property="og:url" content="https://fsprojects.github.io/Paket/{{fsdocs-source-basename}}.html">
+    <meta property="og:type" content="website" />
+    <!-- Twitter cards (https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/summary-card-with-large-image) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="https://fsprojects.github.io/Paket/">
+    <meta name="twitter:title" content="RestoreProcess (Paket)">
+    
+    <title>RestoreProcess (Paket) | Paket</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="https://fsprojects.github.io/Paket/img/logo.png" rel="icon" sizes="32x32" type="image/png"/>
+    <script type="application/javascript" src="https://fsprojects.github.io/Paket/content/fsdocs-theme-set-dark.js"></script>
+    <script type="application/javascript" src="https://fsprojects.github.io/Paket/content/fsdocs-details-set-expanded.js"></script>
+    <link href="https://fsprojects.github.io/Paket/content/fsdocs-default.css" rel="stylesheet" type="text/css"/>
+    <link href="https://fsprojects.github.io/Paket/content/fsdocs-theme.css" rel="stylesheet" type="text/css"/>
+    
+    
+</head>
+<body class="api-docs">
+<header>
+    <div class="start">
+        <div id="menu-toggle">
+            <iconify-icon class="icon closed" height="22" icon="eva:menu-fill" width="22"></iconify-icon>
+            <iconify-icon class="icon open" height="22" icon="mi:close" width="22"></iconify-icon>
+            <input type="checkbox" name="mobile-menu" />
+            <ul class="menu">
+                <li class="nav-header">Paket</li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/index.html">Home page</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/get-started.html">Get started</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/learn-how-to-use-paket.html">Learn how to use paket</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/convert-from-nuget-tutorial.html">Convert from legacy NuGet</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-and-dotnet-cli.html">Paket with .NET SDK</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/faq.html">FAQ</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/release-notes.html">Release Notes</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/contact.html">Contact</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/testimonials.html">Testimonials</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/license.html">License</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/glossary.html">Glossary</a></li>
+                <li class="nav-header">Download Paket</li>
+                <li class="nav-item"><a class="nav-link" href="https://www.nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+                <li class="nav-header">GitHub</li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+                <li class="nav-header">Documentation</li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/dependencies-file.html">paket.dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/lock-file.html">paket.lock</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/references-files.html">paket.references</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/template-files.html">paket.template</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/local-file.html">paket.local</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-folder.html">.paket folder</a></li>
+                <li class="divider"></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/resolver.html">Package resolution algorithm</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/groups.html">Dependency Groups</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/caches.html">Additional Caches</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/nuget-dependencies.html">NuGet dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/git-dependencies.html">Git dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/github-dependencies.html">GitHub dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/http-dependencies.html">HTTP dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/analyzers.html">Analyzers</a></li>
+                <li class="divider"></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/installation.html">Installation</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference-from-repl.html">Using Paket from F# Interactive</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/fsi-integration.html">F# Interactive integration</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/editor-support.html">Editor support</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/shell-completion.html">Shell completion</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/credential-providers.html">Credential Providers</a></li>
+                <li class="divider"></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference/index.html">API Reference</a></li>
+                <li class="nav-header">Paket commands</li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-add.html">paket add</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-auto-restore.html">paket auto-restore</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-clear-cache.html">paket clear-cache</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-config.html">paket config</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-refs.html">paket find-refs</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-packages.html">paket find-packages</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-package-versions.html">paket find-package-versions</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-fix-nuspecs.html">paket fix-nuspecs</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-nuspec.html">paket generate-nuspec</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-git.html">paket git</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-github.html">paket github</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-info.html">paket info</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-init.html">paket init</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-install.html">paket install</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-outdated.html">paket outdated</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-pack.html">paket pack</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-push.html">paket push</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-remove.html">paket remove</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restore.html">paket restore</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-simplify.html">paket simplify</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-conditions.html">paket show-conditions</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-groups.html">paket show-groups</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-installed-packages.html">paket show-installed-packages</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-update.html">paket update</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-why.html">paket why</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restriction.html">paket restriction</a></li>
+            </ul>
+        </div>
+        <a href="https://fsprojects.github.io/Paket/">
+            <img alt="Logo" src="https://fsprojects.github.io/Paket/img/logo.png">
+            <strong>Paket</strong>
+        </a>
+    </div>
+    <div class="end">
+        <a href="https://github.com/fsprojects/Paket" target="_blank">
+            <iconify-icon icon="uil:github" width="26" height="26"></iconify-icon>
+        </a>
+        <iconify-icon id="search-btn" icon="carbon:search" class="search" width="24" height="24"></iconify-icon>
+        <fsdocs-theme-toggle></fsdocs-theme-toggle>
+    </div>
+</header>
+<aside id="fsdocs-main-menu">
+    <ul class="menu">
+        <li class="nav-header">Paket</li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/index.html">Home page</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/get-started.html">Get started</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/learn-how-to-use-paket.html">Learn how to use paket</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/convert-from-nuget-tutorial.html">Convert from legacy NuGet</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-and-dotnet-cli.html">Paket with .NET SDK</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/faq.html">FAQ</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/release-notes.html">Release Notes</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/contact.html">Contact</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/testimonials.html">Testimonials</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/license.html">License</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/glossary.html">Glossary</a></li>
+        <li class="nav-header">Download Paket</li>
+        <li class="nav-item"><a class="nav-link" href="https://www.nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+        <li class="nav-header">GitHub</li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+        <li class="nav-header">Documentation</li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/dependencies-file.html">paket.dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/lock-file.html">paket.lock</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/references-files.html">paket.references</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/template-files.html">paket.template</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/local-file.html">paket.local</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-folder.html">.paket folder</a></li>
+        <li class="divider"></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/resolver.html">Package resolution algorithm</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/groups.html">Dependency Groups</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/caches.html">Additional Caches</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/nuget-dependencies.html">NuGet dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/git-dependencies.html">Git dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/github-dependencies.html">GitHub dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/http-dependencies.html">HTTP dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/analyzers.html">Analyzers</a></li>
+        <li class="divider"></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/installation.html">Installation</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference-from-repl.html">Using Paket from F# Interactive</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/fsi-integration.html">F# Interactive integration</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/editor-support.html">Editor support</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/shell-completion.html">Shell completion</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/credential-providers.html">Credential Providers</a></li>
+        <li class="divider"></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference/index.html">API Reference</a></li>
+        <li class="nav-header">Paket commands</li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-add.html">paket add</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-auto-restore.html">paket auto-restore</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-clear-cache.html">paket clear-cache</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-config.html">paket config</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-refs.html">paket find-refs</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-packages.html">paket find-packages</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-package-versions.html">paket find-package-versions</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-fix-nuspecs.html">paket fix-nuspecs</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-nuspec.html">paket generate-nuspec</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-git.html">paket git</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-github.html">paket github</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-info.html">paket info</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-init.html">paket init</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-install.html">paket install</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-outdated.html">paket outdated</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-pack.html">paket pack</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-push.html">paket push</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-remove.html">paket remove</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restore.html">paket restore</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-simplify.html">paket simplify</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-conditions.html">paket show-conditions</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-groups.html">paket show-groups</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-installed-packages.html">paket show-installed-packages</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-update.html">paket update</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-why.html">paket why</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restriction.html">paket restriction</a></li>
+    </ul>
+</aside>
+<main>
+    <div id="content">
+        <div>
+  <h2>
+    RestoreProcess Module
+  </h2>
+  <dl class="fsdocs-metadata">
+    <dt>
+      Namespace: 
+      <a href="https://fsprojects.github.io/Paket/reference/paket.html">
+        Paket
+      </a>
+    </dt>
+    <dt>
+      Assembly: Paket.Core.dll
+    </dt>
+  </dl>
+  <div class="fsdocs-xmldoc">
+    <div>
+      <div class="fsdocs-summary-contents">
+        <p class="fsdocs-summary">
+           Contains methods for the restore process.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div>
+    <h3>
+      Types
+    </h3>
+    <table class="table outer-list fsdocs-entity-list">
+      <thead>
+        <tr>
+          <td>
+            Type
+          </td>
+          <td>
+            Description
+          </td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="fsdocs-entity-name">
+            <p>
+              <a name="RestoreProjectOptions">
+                <a href="https://fsprojects.github.io/Paket/reference/paket-restoreprocess-restoreprojectoptions.html">
+                  RestoreProjectOptions
+                </a>
+              </a>
+            </p>
+          </td>
+          <td class="fsdocs-entity-xmldoc">
+            <div>
+              <div class="fsdocs-summary-contents">
+                <p class="fsdocs-summary">
+                  
+                </p>
+              </div>
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+                <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'T:Paket.RestoreProcess.RestoreProjectOptions\'/>')">
+                  <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                </div>
+                <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:T:Paket.RestoreProcess.RestoreProjectOptions`')">
+                  <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div>
+    <h3>
+      Functions and values
+    </h3>
+    <table class="table outer-list fsdocs-member-list">
+      <thead>
+        <tr>
+          <td class="fsdocs-member-list-header">
+            Function or value
+          </td>
+          <td class="fsdocs-member-list-header">
+            Description
+            <fsdocs-details-toggle></fsdocs-details-toggle>
+          </td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="628" data-fsdocs-tip-unique="628">
+                <p>
+                  <a id="CopyToCaches">
+                    <a href="#CopyToCaches">
+                      <code><span>CopyToCaches&#32;<span>force&#32;caches&#32;fileName</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="628">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>CopyToCaches&#32;<span>force&#32;caches&#32;fileName</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        force
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        caches
+                      </b>
+                      :
+                      <code><span><a href="https://fsprojects.github.io/Paket/reference/paket-cache.html">Cache</a>&#32;seq</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        fileName
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    force
+                  </span>
+                  :
+                  <code>bool</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    caches
+                  </span>
+                  :
+                  <code><span><a href="https://fsprojects.github.io/Paket/reference/paket-cache.html">Cache</a>&#32;seq</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    fileName
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="629" data-fsdocs-tip-unique="629">
+                <p>
+                  <a id="CreateInstallModel">
+                    <a href="#CreateInstallModel">
+                      <code><span>CreateInstallModel&#32;<span><span>(<span>alternativeProjectRoot,&#32;root,&#32;groupName,&#32;sources,&#32;caches,&#32;force,&#32;package</span>)</span></span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="629">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>CreateInstallModel&#32;<span><span>(<span>alternativeProjectRoot,&#32;root,&#32;groupName,&#32;sources,&#32;caches,&#32;force,&#32;package</span>)</span></span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        alternativeProjectRoot
+                      </b>
+                      :
+                      <code><span>string&#32;option</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        root
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        groupName
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        sources
+                      </b>
+                      :
+                      <code><span><a href="https://fsprojects.github.io/Paket/reference/paket-packagesources-packagesource.html">PackageSource</a>&#32;list</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        caches
+                      </b>
+                      :
+                      <code><span><a href="https://fsprojects.github.io/Paket/reference/paket-cache.html">Cache</a>&#32;list</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        force
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        package
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-packageresolver-packageinfo.html">PackageInfo</a></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<span><span>(<span><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a>&#32;*&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></span>)</span>&#32;*&#32;<span>(<span><a href="https://fsprojects.github.io/Paket/reference/paket-packageresolver-packageinfo.html">PackageInfo</a>&#32;*&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-installmodel.html">InstallModel</a></span>)</span></span>&gt;</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    alternativeProjectRoot
+                  </span>
+                  :
+                  <code><span>string&#32;option</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    root
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    groupName
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    sources
+                  </span>
+                  :
+                  <code><span><a href="https://fsprojects.github.io/Paket/reference/paket-packagesources-packagesource.html">PackageSource</a>&#32;list</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    caches
+                  </span>
+                  :
+                  <code><span><a href="https://fsprojects.github.io/Paket/reference/paket-cache.html">Cache</a>&#32;list</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    force
+                  </span>
+                  :
+                  <code>bool</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    package
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-packageresolver-packageinfo.html">PackageInfo</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<span><span>(<span><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a>&#32;*&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></span>)</span>&#32;*&#32;<span>(<span><a href="https://fsprojects.github.io/Paket/reference/paket-packageresolver-packageinfo.html">PackageInfo</a>&#32;*&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-installmodel.html">InstallModel</a></span>)</span></span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="630" data-fsdocs-tip-unique="630">
+                <p>
+                  <a id="CreateScriptsForGroups">
+                    <a href="#CreateScriptsForGroups">
+                      <code><span>CreateScriptsForGroups&#32;<span>lockFile&#32;groups</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="630">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>CreateScriptsForGroups&#32;<span>lockFile&#32;groups</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        lockFile
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-lockfile.html">LockFile</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        groups
+                      </b>
+                      :
+                      <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-collections-fsharpmap-2">Map</a>&lt;<span><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a>,&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-lockfilegroup.html">LockFileGroup</a></span>&gt;</span></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    lockFile
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-lockfile.html">LockFile</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    groups
+                  </span>
+                  :
+                  <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-collections-fsharpmap-2">Map</a>&lt;<span><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a>,&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-lockfilegroup.html">LockFileGroup</a></span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="631" data-fsdocs-tip-unique="631">
+                <p>
+                  <a id="ExtractPackage">
+                    <a href="#ExtractPackage">
+                      <code><span>ExtractPackage&#32;<span><span>(<span>alternativeProjectRoot,&#32;root,&#32;groupName,&#32;sources,&#32;caches,&#32;force,&#32;package,&#32;localOverride</span>)</span></span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="631">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>ExtractPackage&#32;<span><span>(<span>alternativeProjectRoot,&#32;root,&#32;groupName,&#32;sources,&#32;caches,&#32;force,&#32;package,&#32;localOverride</span>)</span></span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        alternativeProjectRoot
+                      </b>
+                      :
+                      <code><span>string&#32;option</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        root
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        groupName
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        sources
+                      </b>
+                      :
+                      <code><span><a href="https://fsprojects.github.io/Paket/reference/paket-packagesources-packagesource.html">PackageSource</a>&#32;list</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        caches
+                      </b>
+                      :
+                      <code><span><a href="https://fsprojects.github.io/Paket/reference/paket-cache.html">Cache</a>&#32;list</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        force
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        package
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-packageresolver-packageinfo.html">PackageInfo</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        localOverride
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<span><a href="https://fsprojects.github.io/Paket/reference/paket-packageresolver-packageinfo.html">PackageInfo</a>&#32;*&#32;<span>Lazy&lt;<a href="https://fsprojects.github.io/Paket/reference/paket-nuget-nugetpackagecontent.html">NuGetPackageContent</a>&gt;</span></span>&gt;</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <details>
+              <summary>
+                <div class="fsdocs-summary">
+                  <div class="fsdocs-summary-contents">
+                    <p class="fsdocs-summary">
+                       Downloads and extracts a package.
+ returns - package, libs files, props files, targets files, analyzers files
+                    </p>
+                  </div>
+                  <div class="icon-button-row">
+                    <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                      <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                    </a>
+                    <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:Paket.RestoreProcess.ExtractPackage\'/>')">
+                      <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                    </div>
+                    <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:Paket.RestoreProcess.ExtractPackage`')">
+                      <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                    </div>
+                  </div>
+                </div>
+              </summary>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    alternativeProjectRoot
+                  </span>
+                  :
+                  <code><span>string&#32;option</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    root
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    groupName
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    sources
+                  </span>
+                  :
+                  <code><span><a href="https://fsprojects.github.io/Paket/reference/paket-packagesources-packagesource.html">PackageSource</a>&#32;list</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    caches
+                  </span>
+                  :
+                  <code><span><a href="https://fsprojects.github.io/Paket/reference/paket-cache.html">Cache</a>&#32;list</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    force
+                  </span>
+                  :
+                  <code>bool</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    package
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-packageresolver-packageinfo.html">PackageInfo</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    localOverride
+                  </span>
+                  :
+                  <code>bool</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpasync-1">Async</a>&lt;<span><a href="https://fsprojects.github.io/Paket/reference/paket-packageresolver-packageinfo.html">PackageInfo</a>&#32;*&#32;<span>Lazy&lt;<a href="https://fsprojects.github.io/Paket/reference/paket-nuget-nugetpackagecontent.html">NuGetPackageContent</a>&gt;</span></span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </details>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="632" data-fsdocs-tip-unique="632">
+                <p>
+                  <a id="FSharpCore">
+                    <a href="#FSharpCore">
+                      <code><span>FSharpCore&#32;<span></span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="632">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>FSharpCore&#32;<span></span></span></code>
+                  <br/>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="633" data-fsdocs-tip-unique="633">
+                <p>
+                  <a id="FindOrCreateReferencesFile">
+                    <a href="#FindOrCreateReferencesFile">
+                      <code><span>FindOrCreateReferencesFile&#32;<span>projectFile</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="633">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>FindOrCreateReferencesFile&#32;<span>projectFile</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        projectFile
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-projectfile.html">ProjectFile</a></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><a href="https://fsprojects.github.io/Paket/reference/paket-referencesfile.html">ReferencesFile</a></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    projectFile
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-projectfile.html">ProjectFile</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-referencesfile.html">ReferencesFile</a></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="634" data-fsdocs-tip-unique="634">
+                <p>
+                  <a id="FindPackagesNotExtractedYet">
+                    <a href="#FindPackagesNotExtractedYet">
+                      <code><span>FindPackagesNotExtractedYet&#32;<span>dependenciesFileName</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="634">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>FindPackagesNotExtractedYet&#32;<span>dependenciesFileName</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        dependenciesFileName
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span><span>(<span><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a>&#32;*&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></span>)</span>&#32;list</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <details>
+              <summary>
+                <div class="fsdocs-summary">
+                  <div class="fsdocs-summary-contents">
+                    <p class="fsdocs-summary">
+                       Finds packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
+                    </p>
+                  </div>
+                  <div class="icon-button-row">
+                    <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                      <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                    </a>
+                    <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:Paket.RestoreProcess.FindPackagesNotExtractedYet\'/>')">
+                      <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                    </div>
+                    <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:Paket.RestoreProcess.FindPackagesNotExtractedYet`')">
+                      <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                    </div>
+                  </div>
+                </div>
+              </summary>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    dependenciesFileName
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span><span>(<span><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a>&#32;*&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></span>)</span>&#32;list</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </details>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="635" data-fsdocs-tip-unique="635">
+                <p>
+                  <a id="ImplicitPackages">
+                    <a href="#ImplicitPackages">
+                      <code><span>ImplicitPackages&#32;<span></span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="635">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>ImplicitPackages&#32;<span></span></span></code>
+                  <br/>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-collections-fsharpset-1">Set</a>&lt;<a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a>&gt;</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-collections-fsharpset-1">Set</a>&lt;<a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="636" data-fsdocs-tip-unique="636">
+                <p>
+                  <a id="Restore">
+                    <a href="#Restore">
+                      <code><span>Restore&#32;<span><span>(<span>dependenciesFileName,&#32;projectFile,&#32;force,&#32;group,&#32;ignoreChecks,&#32;failOnChecks,&#32;targetFrameworks,&#32;outputPath,&#32;skipRestoreTargetsExtraction</span>)</span></span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="636">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>Restore&#32;<span><span>(<span>dependenciesFileName,&#32;projectFile,&#32;force,&#32;group,&#32;ignoreChecks,&#32;failOnChecks,&#32;targetFrameworks,&#32;outputPath,&#32;skipRestoreTargetsExtraction</span>)</span></span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        dependenciesFileName
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        projectFile
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-restoreprocess-restoreprojectoptions.html">RestoreProjectOptions</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        force
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        group
+                      </b>
+                      :
+                      <code><span><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a>&#32;option</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        ignoreChecks
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        failOnChecks
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        targetFrameworks
+                      </b>
+                      :
+                      <code><span>string&#32;option</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        outputPath
+                      </b>
+                      :
+                      <code><span>string&#32;option</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        skipRestoreTargetsExtraction
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    dependenciesFileName
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    projectFile
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-restoreprocess-restoreprojectoptions.html">RestoreProjectOptions</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    force
+                  </span>
+                  :
+                  <code>bool</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    group
+                  </span>
+                  :
+                  <code><span><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a>&#32;option</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    ignoreChecks
+                  </span>
+                  :
+                  <code>bool</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    failOnChecks
+                  </span>
+                  :
+                  <code>bool</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    targetFrameworks
+                  </span>
+                  :
+                  <code><span>string&#32;option</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    outputPath
+                  </span>
+                  :
+                  <code><span>string&#32;option</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    skipRestoreTargetsExtraction
+                  </span>
+                  :
+                  <code>bool</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="637" data-fsdocs-tip-unique="637">
+                <p>
+                  <a id="RestoreNewSdkProject">
+                    <a href="#RestoreNewSdkProject">
+                      <code><span>RestoreNewSdkProject&#32;<span>lockFile&#32;resolved&#32;groups&#32;projectFile&#32;targetFrameworks&#32;outputPath</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="637">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>RestoreNewSdkProject&#32;<span>lockFile&#32;resolved&#32;groups&#32;projectFile&#32;targetFrameworks&#32;outputPath</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        lockFile
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-lockfile.html">LockFile</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        resolved
+                      </b>
+                      :
+                      <code><span><a href="https://learn.microsoft.com/dotnet/api/system.lazy-1">Lazy</a>&lt;<span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-collections-fsharpmap-2">Map</a>&lt;<span><span>(<span><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a>&#32;*&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></span>)</span>,&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-packageresolver-packageinfo.html">PackageInfo</a></span>&gt;</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        groups
+                      </b>
+                      :
+                      <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-collections-fsharpmap-2">Map</a>&lt;<span><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a>,&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-lockfilegroup.html">LockFileGroup</a></span>&gt;</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        projectFile
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-projectfile.html">ProjectFile</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        targetFrameworks
+                      </b>
+                      :
+                      <code><span>string&#32;option</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        outputPath
+                      </b>
+                      :
+                      <code><span><a href="https://learn.microsoft.com/dotnet/api/system.io.directoryinfo">DirectoryInfo</a>&#32;option</span></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><a href="https://fsprojects.github.io/Paket/reference/paket-referencesfile.html">ReferencesFile</a></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    lockFile
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-lockfile.html">LockFile</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    resolved
+                  </span>
+                  :
+                  <code><span><a href="https://learn.microsoft.com/dotnet/api/system.lazy-1">Lazy</a>&lt;<span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-collections-fsharpmap-2">Map</a>&lt;<span><span>(<span><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a>&#32;*&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></span>)</span>,&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-packageresolver-packageinfo.html">PackageInfo</a></span>&gt;</span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    groups
+                  </span>
+                  :
+                  <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-collections-fsharpmap-2">Map</a>&lt;<span><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a>,&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-lockfilegroup.html">LockFileGroup</a></span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    projectFile
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-projectfile.html">ProjectFile</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    targetFrameworks
+                  </span>
+                  :
+                  <code><span>string&#32;option</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    outputPath
+                  </span>
+                  :
+                  <code><span><a href="https://learn.microsoft.com/dotnet/api/system.io.directoryinfo">DirectoryInfo</a>&#32;option</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-referencesfile.html">ReferencesFile</a></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="638" data-fsdocs-tip-unique="638">
+                <p>
+                  <a id="copiedElements">
+                    <a href="#copiedElements">
+                      <code><span>copiedElements&#32;<span></span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="638">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>copiedElements&#32;<span></span></span></code>
+                  <br/>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span>bool&#32;ref</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span>bool&#32;ref</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="639" data-fsdocs-tip-unique="639">
+                <p>
+                  <a id="createAlternativeNuGetConfig">
+                    <a href="#createAlternativeNuGetConfig">
+                      <code><span>createAlternativeNuGetConfig&#32;<span><span>(<span>projectFile,&#32;objDirectory</span>)</span></span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="639">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>createAlternativeNuGetConfig&#32;<span><span>(<span>projectFile,&#32;objDirectory</span>)</span></span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        projectFile
+                      </b>
+                      :
+                      <code><a href="https://learn.microsoft.com/dotnet/api/system.io.fileinfo">FileInfo</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        objDirectory
+                      </b>
+                      :
+                      <code><a href="https://learn.microsoft.com/dotnet/api/system.io.directoryinfo">DirectoryInfo</a></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    projectFile
+                  </span>
+                  :
+                  <code><a href="https://learn.microsoft.com/dotnet/api/system.io.fileinfo">FileInfo</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    objDirectory
+                  </span>
+                  :
+                  <code><a href="https://learn.microsoft.com/dotnet/api/system.io.directoryinfo">DirectoryInfo</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="640" data-fsdocs-tip-unique="640">
+                <p>
+                  <a id="createPaketCLIToolsFile">
+                    <a href="#createPaketCLIToolsFile">
+                      <code><span>createPaketCLIToolsFile&#32;<span>cliTools&#32;fileInfo</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="640">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>createPaketCLIToolsFile&#32;<span>cliTools&#32;fileInfo</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        cliTools
+                      </b>
+                      :
+                      <code><span><a href="https://fsprojects.github.io/Paket/reference/paket-packageresolver-resolvedpackage.html">ResolvedPackage</a>&#32;seq</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        fileInfo
+                      </b>
+                      :
+                      <code><a href="https://learn.microsoft.com/dotnet/api/system.io.fileinfo">FileInfo</a></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    cliTools
+                  </span>
+                  :
+                  <code><span><a href="https://fsprojects.github.io/Paket/reference/paket-packageresolver-resolvedpackage.html">ResolvedPackage</a>&#32;seq</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    fileInfo
+                  </span>
+                  :
+                  <code><a href="https://learn.microsoft.com/dotnet/api/system.io.fileinfo">FileInfo</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="641" data-fsdocs-tip-unique="641">
+                <p>
+                  <a id="createPaketPropsFile">
+                    <a href="#createPaketPropsFile">
+                      <code><span>createPaketPropsFile&#32;<span>lockFile&#32;cliTools&#32;referencesFile&#32;packages&#32;fileInfo</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="641">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>createPaketPropsFile&#32;<span>lockFile&#32;cliTools&#32;referencesFile&#32;packages&#32;fileInfo</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        lockFile
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-lockfile.html">LockFile</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        cliTools
+                      </b>
+                      :
+                      <code><span><a href="https://fsprojects.github.io/Paket/reference/paket-packageresolver-resolvedpackage.html">ResolvedPackage</a>&#32;seq</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        referencesFile
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-referencesfile.html">ReferencesFile</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        packages
+                      </b>
+                      :
+                      <code><span><span>(<span><span>(<span><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a>&#32;*&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></span>)</span>&#32;*&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-packageinstallsettings.html">PackageInstallSettings</a>&#32;*&#32;'a</span>)</span>&#32;seq</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        fileInfo
+                      </b>
+                      :
+                      <code><a href="https://learn.microsoft.com/dotnet/api/system.io.fileinfo">FileInfo</a></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span>bool&#32;*&#32;string</span></code>
+                  </span>
+                  <br/>
+                  Type parameters: 
+                  &#39;a
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    lockFile
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-lockfile.html">LockFile</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    cliTools
+                  </span>
+                  :
+                  <code><span><a href="https://fsprojects.github.io/Paket/reference/paket-packageresolver-resolvedpackage.html">ResolvedPackage</a>&#32;seq</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    referencesFile
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-referencesfile.html">ReferencesFile</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    packages
+                  </span>
+                  :
+                  <code><span><span>(<span><span>(<span><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a>&#32;*&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></span>)</span>&#32;*&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-packageinstallsettings.html">PackageInstallSettings</a>&#32;*&#32;'a</span>)</span>&#32;seq</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    fileInfo
+                  </span>
+                  :
+                  <code><a href="https://learn.microsoft.com/dotnet/api/system.io.fileinfo">FileInfo</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span>bool&#32;*&#32;string</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="642" data-fsdocs-tip-unique="642">
+                <p>
+                  <a id="createProjectReferencesFiles">
+                    <a href="#createProjectReferencesFiles">
+                      <code><span>createProjectReferencesFiles&#32;<span>lockFile&#32;projectFile&#32;referencesFile&#32;resolved&#32;groups&#32;targetFrameworks&#32;objDir</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="642">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>createProjectReferencesFiles&#32;<span>lockFile&#32;projectFile&#32;referencesFile&#32;resolved&#32;groups&#32;targetFrameworks&#32;objDir</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        lockFile
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-lockfile.html">LockFile</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        projectFile
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-projectfile.html">ProjectFile</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        referencesFile
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-referencesfile.html">ReferencesFile</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        resolved
+                      </b>
+                      :
+                      <code><span><a href="https://learn.microsoft.com/dotnet/api/system.lazy-1">Lazy</a>&lt;<span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-collections-fsharpmap-2">Map</a>&lt;<span><span>(<span><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a>&#32;*&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></span>)</span>,&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-packageresolver-packageinfo.html">PackageInfo</a></span>&gt;</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        groups
+                      </b>
+                      :
+                      <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-collections-fsharpmap-2">Map</a>&lt;<span><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a>,&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-lockfilegroup.html">LockFileGroup</a></span>&gt;</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        targetFrameworks
+                      </b>
+                      :
+                      <code><span>string&#32;option</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        objDir
+                      </b>
+                      :
+                      <code><a href="https://learn.microsoft.com/dotnet/api/system.io.directoryinfo">DirectoryInfo</a></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    lockFile
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-lockfile.html">LockFile</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    projectFile
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-projectfile.html">ProjectFile</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    referencesFile
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-referencesfile.html">ReferencesFile</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    resolved
+                  </span>
+                  :
+                  <code><span><a href="https://learn.microsoft.com/dotnet/api/system.lazy-1">Lazy</a>&lt;<span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-collections-fsharpmap-2">Map</a>&lt;<span><span>(<span><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a>&#32;*&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-domain-packagename.html">PackageName</a></span>)</span>,&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-packageresolver-packageinfo.html">PackageInfo</a></span>&gt;</span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    groups
+                  </span>
+                  :
+                  <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-collections-fsharpmap-2">Map</a>&lt;<span><a href="https://fsprojects.github.io/Paket/reference/paket-domain-groupname.html">GroupName</a>,&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-lockfilegroup.html">LockFileGroup</a></span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    targetFrameworks
+                  </span>
+                  :
+                  <code><span>string&#32;option</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    objDir
+                  </span>
+                  :
+                  <code><a href="https://learn.microsoft.com/dotnet/api/system.io.directoryinfo">DirectoryInfo</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="643" data-fsdocs-tip-unique="643">
+                <p>
+                  <a id="extractElement">
+                    <a href="#extractElement">
+                      <code><span>extractElement&#32;<span>root&#32;name</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="643">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>extractElement&#32;<span>root&#32;name</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        root
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        name
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span>bool&#32;*&#32;string</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    root
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    name
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span>bool&#32;*&#32;string</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="644" data-fsdocs-tip-unique="644">
+                <p>
+                  <a id="extractPaketTargets">
+                    <a href="#extractPaketTargets">
+                      <code><span>extractPaketTargets&#32;<span>root</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="644">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>extractPaketTargets&#32;<span>root</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        root
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>string</code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <details>
+              <summary>
+                <div class="fsdocs-summary">
+                  <div class="fsdocs-summary-contents">
+                    <p class="fsdocs-summary">
+                       Extracts the paket.targets that `paket auto-restore on` imports into the projects without the SDK
+                    </p>
+                  </div>
+                  <div class="icon-button-row">
+                    <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                      <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                    </a>
+                    <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:Paket.RestoreProcess.extractPaketTargets\'/>')">
+                      <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                    </div>
+                    <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:Paket.RestoreProcess.extractPaketTargets`')">
+                      <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                    </div>
+                  </div>
+                </div>
+              </summary>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    root
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </details>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="645" data-fsdocs-tip-unique="645">
+                <p>
+                  <a id="extractRestoreTargets">
+                    <a href="#extractRestoreTargets">
+                      <code><span>extractRestoreTargets&#32;<span>root</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="645">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>extractRestoreTargets&#32;<span>root</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        root
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>string</code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    root
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="646" data-fsdocs-tip-unique="646">
+                <p>
+                  <a id="findAllReferencesFiles">
+                    <a href="#findAllReferencesFiles">
+                      <code><span>findAllReferencesFiles&#32;<span>root</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="646">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>findAllReferencesFiles&#32;<span>root</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        root
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span><a href="https://learn.microsoft.com/dotnet/api/chessie.errorhandling.result-2">Result</a>&lt;<span><span><span>(<span><a href="https://fsprojects.github.io/Paket/reference/paket-projectfile.html">ProjectFile</a>&#32;*&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-referencesfile.html">ReferencesFile</a></span>)</span>&#32;list</span>,&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-domain-domainmessage.html">DomainMessage</a></span>&gt;</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    root
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span><a href="https://learn.microsoft.com/dotnet/api/chessie.errorhandling.result-2">Result</a>&lt;<span><span><span>(<span><a href="https://fsprojects.github.io/Paket/reference/paket-projectfile.html">ProjectFile</a>&#32;*&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-referencesfile.html">ReferencesFile</a></span>)</span>&#32;list</span>,&#32;<a href="https://fsprojects.github.io/Paket/reference/paket-domain-domainmessage.html">DomainMessage</a></span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="647" data-fsdocs-tip-unique="647">
+                <p>
+                  <a id="objDirectory">
+                    <a href="#objDirectory">
+                      <code><span>objDirectory&#32;<span><span>(<span>projectFileInfo,&#32;outputPath</span>)</span></span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="647">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>objDirectory&#32;<span><span>(<span>projectFileInfo,&#32;outputPath</span>)</span></span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        projectFileInfo
+                      </b>
+                      :
+                      <code><a href="https://learn.microsoft.com/dotnet/api/system.io.fileinfo">FileInfo</a></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        outputPath
+                      </b>
+                      :
+                      <code><span><a href="https://learn.microsoft.com/dotnet/api/system.io.directoryinfo">DirectoryInfo</a>&#32;option</span></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><a href="https://learn.microsoft.com/dotnet/api/system.io.directoryinfo">DirectoryInfo</a></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    projectFileInfo
+                  </span>
+                  :
+                  <code><a href="https://learn.microsoft.com/dotnet/api/system.io.fileinfo">FileInfo</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    outputPath
+                  </span>
+                  :
+                  <code><span><a href="https://learn.microsoft.com/dotnet/api/system.io.directoryinfo">DirectoryInfo</a>&#32;option</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><a href="https://learn.microsoft.com/dotnet/api/system.io.directoryinfo">DirectoryInfo</a></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+</div>
+        
+    </div>
+</main>
+<aside id="fsdocs-page-menu">
+    <p id="on-this-page">On this page</p>
+    <div class="empty"></div>
+</aside>
+<dialog>
+    <input type="search" placeholder="Search docs" />
+    <div class="results">
+        <ul></ul>
+        <p class="empty">Type something to start searching.</p>
+    </div>
+</dialog>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-tips.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-theme-toggle.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-details-toggle.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-theme.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-search.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-copy-button.js"></script>
+
+</body>
+</html>

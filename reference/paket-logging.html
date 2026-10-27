@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="en" data-root="https://fsprojects.github.io/Paket/">
+<head>
+    <meta charset="UTF-8">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Paket team" name="author">
+    <!-- Opengraph properties (https://ogp.me/) -->
+    <meta property="og:site_name" content="Paket">
+    <meta property="og:title" content="Logging (Paket)" />
+    <meta property="og:url" content="https://fsprojects.github.io/Paket/{{fsdocs-source-basename}}.html">
+    <meta property="og:type" content="website" />
+    <!-- Twitter cards (https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/summary-card-with-large-image) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="https://fsprojects.github.io/Paket/">
+    <meta name="twitter:title" content="Logging (Paket)">
+    
+    <title>Logging (Paket) | Paket</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="https://fsprojects.github.io/Paket/img/logo.png" rel="icon" sizes="32x32" type="image/png"/>
+    <script type="application/javascript" src="https://fsprojects.github.io/Paket/content/fsdocs-theme-set-dark.js"></script>
+    <script type="application/javascript" src="https://fsprojects.github.io/Paket/content/fsdocs-details-set-expanded.js"></script>
+    <link href="https://fsprojects.github.io/Paket/content/fsdocs-default.css" rel="stylesheet" type="text/css"/>
+    <link href="https://fsprojects.github.io/Paket/content/fsdocs-theme.css" rel="stylesheet" type="text/css"/>
+    
+    
+</head>
+<body class="api-docs">
+<header>
+    <div class="start">
+        <div id="menu-toggle">
+            <iconify-icon class="icon closed" height="22" icon="eva:menu-fill" width="22"></iconify-icon>
+            <iconify-icon class="icon open" height="22" icon="mi:close" width="22"></iconify-icon>
+            <input type="checkbox" name="mobile-menu" />
+            <ul class="menu">
+                <li class="nav-header">Paket</li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/index.html">Home page</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/get-started.html">Get started</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/learn-how-to-use-paket.html">Learn how to use paket</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/convert-from-nuget-tutorial.html">Convert from legacy NuGet</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-and-dotnet-cli.html">Paket with .NET SDK</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/faq.html">FAQ</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/release-notes.html">Release Notes</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/contact.html">Contact</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/testimonials.html">Testimonials</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/license.html">License</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/glossary.html">Glossary</a></li>
+                <li class="nav-header">Download Paket</li>
+                <li class="nav-item"><a class="nav-link" href="https://www.nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+                <li class="nav-header">GitHub</li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+                <li class="nav-header">Documentation</li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/dependencies-file.html">paket.dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/lock-file.html">paket.lock</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/references-files.html">paket.references</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/template-files.html">paket.template</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/local-file.html">paket.local</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-folder.html">.paket folder</a></li>
+                <li class="divider"></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/resolver.html">Package resolution algorithm</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/groups.html">Dependency Groups</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/caches.html">Additional Caches</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/nuget-dependencies.html">NuGet dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/git-dependencies.html">Git dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/github-dependencies.html">GitHub dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/http-dependencies.html">HTTP dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/analyzers.html">Analyzers</a></li>
+                <li class="divider"></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/installation.html">Installation</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference-from-repl.html">Using Paket from F# Interactive</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/fsi-integration.html">F# Interactive integration</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/editor-support.html">Editor support</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/shell-completion.html">Shell completion</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/credential-providers.html">Credential Providers</a></li>
+                <li class="divider"></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference/index.html">API Reference</a></li>
+                <li class="nav-header">Paket commands</li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-add.html">paket add</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-auto-restore.html">paket auto-restore</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-clear-cache.html">paket clear-cache</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-config.html">paket config</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-refs.html">paket find-refs</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-packages.html">paket find-packages</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-package-versions.html">paket find-package-versions</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-fix-nuspecs.html">paket fix-nuspecs</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-nuspec.html">paket generate-nuspec</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-git.html">paket git</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-github.html">paket github</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-info.html">paket info</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-init.html">paket init</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-install.html">paket install</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-outdated.html">paket outdated</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-pack.html">paket pack</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-push.html">paket push</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-remove.html">paket remove</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restore.html">paket restore</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-simplify.html">paket simplify</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-conditions.html">paket show-conditions</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-groups.html">paket show-groups</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-installed-packages.html">paket show-installed-packages</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-update.html">paket update</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-why.html">paket why</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restriction.html">paket restriction</a></li>
+            </ul>
+        </div>
+        <a href="https://fsprojects.github.io/Paket/">
+            <img alt="Logo" src="https://fsprojects.github.io/Paket/img/logo.png">
+            <strong>Paket</strong>
+        </a>
+    </div>
+    <div class="end">
+        <a href="https://github.com/fsprojects/Paket" target="_blank">
+            <iconify-icon icon="uil:github" width="26" height="26"></iconify-icon>
+        </a>
+        <iconify-icon id="search-btn" icon="carbon:search" class="search" width="24" height="24"></iconify-icon>
+        <fsdocs-theme-toggle></fsdocs-theme-toggle>
+    </div>
+</header>
+<aside id="fsdocs-main-menu">
+    <ul class="menu">
+        <li class="nav-header">Paket</li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/index.html">Home page</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/get-started.html">Get started</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/learn-how-to-use-paket.html">Learn how to use paket</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/convert-from-nuget-tutorial.html">Convert from legacy NuGet</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-and-dotnet-cli.html">Paket with .NET SDK</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/faq.html">FAQ</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/release-notes.html">Release Notes</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/contact.html">Contact</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/testimonials.html">Testimonials</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/license.html">License</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/glossary.html">Glossary</a></li>
+        <li class="nav-header">Download Paket</li>
+        <li class="nav-item"><a class="nav-link" href="https://www.nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+        <li class="nav-header">GitHub</li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+        <li class="nav-header">Documentation</li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/dependencies-file.html">paket.dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/lock-file.html">paket.lock</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/references-files.html">paket.references</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/template-files.html">paket.template</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/local-file.html">paket.local</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-folder.html">.paket folder</a></li>
+        <li class="divider"></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/resolver.html">Package resolution algorithm</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/groups.html">Dependency Groups</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/caches.html">Additional Caches</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/nuget-dependencies.html">NuGet dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/git-dependencies.html">Git dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/github-dependencies.html">GitHub dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/http-dependencies.html">HTTP dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/analyzers.html">Analyzers</a></li>
+        <li class="divider"></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/installation.html">Installation</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference-from-repl.html">Using Paket from F# Interactive</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/fsi-integration.html">F# Interactive integration</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/editor-support.html">Editor support</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/shell-completion.html">Shell completion</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/credential-providers.html">Credential Providers</a></li>
+        <li class="divider"></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference/index.html">API Reference</a></li>
+        <li class="nav-header">Paket commands</li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-add.html">paket add</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-auto-restore.html">paket auto-restore</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-clear-cache.html">paket clear-cache</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-config.html">paket config</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-refs.html">paket find-refs</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-packages.html">paket find-packages</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-package-versions.html">paket find-package-versions</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-fix-nuspecs.html">paket fix-nuspecs</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-nuspec.html">paket generate-nuspec</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-git.html">paket git</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-github.html">paket github</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-info.html">paket info</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-init.html">paket init</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-install.html">paket install</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-outdated.html">paket outdated</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-pack.html">paket pack</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-push.html">paket push</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-remove.html">paket remove</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restore.html">paket restore</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-simplify.html">paket simplify</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-conditions.html">paket show-conditions</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-groups.html">paket show-groups</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-installed-packages.html">paket show-installed-packages</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-update.html">paket update</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-why.html">paket why</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restriction.html">paket restriction</a></li>
+    </ul>
+</aside>
+<main>
+    <div id="content">
+        <div>
+  <h2>
+    Logging Module
+  </h2>
+  <dl class="fsdocs-metadata">
+    <dt>
+      Namespace: 
+      <a href="https://fsprojects.github.io/Paket/reference/paket.html">
+        Paket
+      </a>
+    </dt>
+    <dt>
+      Assembly: Paket.Core.dll
+    </dt>
+  </dl>
+  <div class="fsdocs-xmldoc">
+    <div>
+      <div class="fsdocs-summary-contents">
+        <p class="fsdocs-summary">
+          
+        </p>
+      </div>
+    </div>
+  </div>
+  <div>
+    <h3>
+      Types
+    </h3>
+    <table class="table outer-list fsdocs-entity-list">
+      <thead>
+        <tr>
+          <td>
+            Type
+          </td>
+          <td>
+            Description
+          </td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="fsdocs-entity-name">
+            <p>
+              <a name="Trace">
+                <a href="https://fsprojects.github.io/Paket/reference/paket-logging-trace.html">
+                  Trace
+                </a>
+              </a>
+            </p>
+          </td>
+          <td class="fsdocs-entity-xmldoc">
+            <div>
+              <div class="fsdocs-summary-contents">
+                <p class="fsdocs-summary">
+                  
+                </p>
+              </div>
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+                <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'T:Paket.Logging.Trace\'/>')">
+                  <iconify-icon icon="bi:filetype-xml" height="24" width="24"></iconify-icon>
+                </div>
+                <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:T:Paket.Logging.Trace`')">
+                  <iconify-icon icon="bi:filetype-md" height="24" width="24"></iconify-icon>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div>
+    <h3>
+      Functions and values
+    </h3>
+    <table class="table outer-list fsdocs-member-list">
+      <thead>
+        <tr>
+          <td class="fsdocs-member-list-header">
+            Function or value
+          </td>
+          <td class="fsdocs-member-list-header">
+            Description
+            <fsdocs-details-toggle></fsdocs-details-toggle>
+          </td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="272" data-fsdocs-tip-unique="272">
+                <p>
+                  <a id="event">
+                    <a href="#event">
+                      <code><span>event&#32;<span></span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="272">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>event&#32;<span></span></span></code>
+                  <br/>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpevent-1">Event</a>&lt;<a href="https://fsprojects.github.io/Paket/reference/paket-logging-trace.html">Trace</a>&gt;</span></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><span><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-control-fsharpevent-1">Event</a>&lt;<a href="https://fsprojects.github.io/Paket/reference/paket-logging-trace.html">Trace</a>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="273" data-fsdocs-tip-unique="273">
+                <p>
+                  <a id="getOmittedWarningCount">
+                    <a href="#getOmittedWarningCount">
+                      <code><span>getOmittedWarningCount&#32;<span>()</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="273">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>getOmittedWarningCount&#32;<span>()</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        ()
+                      </b>
+                      :
+                      <code>unit</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>int</code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    ()
+                  </span>
+                  :
+                  <code>unit</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code>int</code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="274" data-fsdocs-tip-unique="274">
+                <p>
+                  <a id="printError">
+                    <a href="#printError">
+                      <code><span>printError&#32;<span>arg1</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="274">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>printError&#32;<span>arg1</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        arg0
+                      </b>
+                      :
+                      <code>exn</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    arg0
+                  </span>
+                  :
+                  <code>exn</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="275" data-fsdocs-tip-unique="275">
+                <p>
+                  <a id="printErrorExt">
+                    <a href="#printErrorExt">
+                      <code><span>printErrorExt&#32;<span>printFirstStack&#32;printAggregatedStacks&#32;printInnerStacks&#32;arg4</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="275">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>printErrorExt&#32;<span>printFirstStack&#32;printAggregatedStacks&#32;printInnerStacks&#32;arg4</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        printFirstStack
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        printAggregatedStacks
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        printInnerStacks
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        arg3
+                      </b>
+                      :
+                      <code>exn</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    printFirstStack
+                  </span>
+                  :
+                  <code>bool</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    printAggregatedStacks
+                  </span>
+                  :
+                  <code>bool</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    printInnerStacks
+                  </span>
+                  :
+                  <code>bool</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    arg3
+                  </span>
+                  :
+                  <code>exn</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="276" data-fsdocs-tip-unique="276">
+                <p>
+                  <a id="setLogFile">
+                    <a href="#setLogFile">
+                      <code><span>setLogFile&#32;<span>arg1</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="276">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>setLogFile&#32;<span>arg1</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        arg0
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><a href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    arg0
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code><a href="https://learn.microsoft.com/dotnet/api/system.idisposable">IDisposable</a></code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="277" data-fsdocs-tip-unique="277">
+                <p>
+                  <a id="trace">
+                    <a href="#trace">
+                      <code><span>trace&#32;<span>arg1</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="277">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>trace&#32;<span>arg1</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        arg0
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    arg0
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="278" data-fsdocs-tip-unique="278">
+                <p>
+                  <a id="traceError">
+                    <a href="#traceError">
+                      <code><span>traceError&#32;<span>arg1</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="278">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>traceError&#32;<span>arg1</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        arg0
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    arg0
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="279" data-fsdocs-tip-unique="279">
+                <p>
+                  <a id="traceErrorIfNotBefore">
+                    <a href="#traceErrorIfNotBefore">
+                      <code><span>traceErrorIfNotBefore&#32;<span>arg1&#32;arg2</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="279">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>traceErrorIfNotBefore&#32;<span>arg1&#32;arg2</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        arg0
+                      </b>
+                      :
+                      <code>'a</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        arg1
+                      </b>
+                      :
+                      <code><span>StringFormat&lt;<span>'b,&#32;unit</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>'b</code>
+                  </span>
+                  <br/>
+                  Type parameters: 
+                  &#39;a, &#39;b
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    arg0
+                  </span>
+                  :
+                  <code>'a</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    arg1
+                  </span>
+                  :
+                  <code><span>StringFormat&lt;<span>'b,&#32;unit</span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code>'b</code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="280" data-fsdocs-tip-unique="280">
+                <p>
+                  <a id="traceErrorfn">
+                    <a href="#traceErrorfn">
+                      <code><span>traceErrorfn&#32;<span>arg1</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="280">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>traceErrorfn&#32;<span>arg1</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        arg0
+                      </b>
+                      :
+                      <code><span>StringFormat&lt;<span>'a,&#32;unit</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>'a</code>
+                  </span>
+                  <br/>
+                  Type parameters: 
+                  &#39;a
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    arg0
+                  </span>
+                  :
+                  <code><span>StringFormat&lt;<span>'a,&#32;unit</span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code>'a</code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="281" data-fsdocs-tip-unique="281">
+                <p>
+                  <a id="traceToConsole">
+                    <a href="#traceToConsole">
+                      <code><span>traceToConsole&#32;<span>arg1</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="281">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>traceToConsole&#32;<span>arg1</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        arg0
+                      </b>
+                      :
+                      <code><a href="https://fsprojects.github.io/Paket/reference/paket-logging-trace.html">Trace</a></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    arg0
+                  </span>
+                  :
+                  <code><a href="https://fsprojects.github.io/Paket/reference/paket-logging-trace.html">Trace</a></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="282" data-fsdocs-tip-unique="282">
+                <p>
+                  <a id="traceVerbose">
+                    <a href="#traceVerbose">
+                      <code><span>traceVerbose&#32;<span>arg1</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="282">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>traceVerbose&#32;<span>arg1</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        arg0
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    arg0
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="283" data-fsdocs-tip-unique="283">
+                <p>
+                  <a id="traceWarn">
+                    <a href="#traceWarn">
+                      <code><span>traceWarn&#32;<span>arg1</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="283">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>traceWarn&#32;<span>arg1</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        arg0
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    arg0
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="284" data-fsdocs-tip-unique="284">
+                <p>
+                  <a id="traceWarnIfNotBefore">
+                    <a href="#traceWarnIfNotBefore">
+                      <code><span>traceWarnIfNotBefore&#32;<span>arg1&#32;arg2</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="284">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>traceWarnIfNotBefore&#32;<span>arg1&#32;arg2</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        arg0
+                      </b>
+                      :
+                      <code>'a</code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        arg1
+                      </b>
+                      :
+                      <code><span>StringFormat&lt;<span>'b,&#32;unit</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>'b</code>
+                  </span>
+                  <br/>
+                  Type parameters: 
+                  &#39;a, &#39;b
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    arg0
+                  </span>
+                  :
+                  <code>'a</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    arg1
+                  </span>
+                  :
+                  <code><span>StringFormat&lt;<span>'b,&#32;unit</span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code>'b</code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="285" data-fsdocs-tip-unique="285">
+                <p>
+                  <a id="traceWarnfn">
+                    <a href="#traceWarnfn">
+                      <code><span>traceWarnfn&#32;<span>arg1</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="285">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>traceWarnfn&#32;<span>arg1</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        arg0
+                      </b>
+                      :
+                      <code><span>StringFormat&lt;<span>'a,&#32;unit</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>'a</code>
+                  </span>
+                  <br/>
+                  Type parameters: 
+                  &#39;a
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    arg0
+                  </span>
+                  :
+                  <code><span>StringFormat&lt;<span>'a,&#32;unit</span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code>'a</code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="286" data-fsdocs-tip-unique="286">
+                <p>
+                  <a id="tracef">
+                    <a href="#tracef">
+                      <code><span>tracef&#32;<span>arg1</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="286">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>tracef&#32;<span>arg1</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        arg0
+                      </b>
+                      :
+                      <code><span>StringFormat&lt;<span>'a,&#32;unit</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>'a</code>
+                  </span>
+                  <br/>
+                  Type parameters: 
+                  &#39;a
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    arg0
+                  </span>
+                  :
+                  <code><span>StringFormat&lt;<span>'a,&#32;unit</span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code>'a</code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="287" data-fsdocs-tip-unique="287">
+                <p>
+                  <a id="tracefn">
+                    <a href="#tracefn">
+                      <code><span>tracefn&#32;<span>arg1</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="287">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>tracefn&#32;<span>arg1</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        arg0
+                      </b>
+                      :
+                      <code><span>StringFormat&lt;<span>'a,&#32;unit</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>'a</code>
+                  </span>
+                  <br/>
+                  Type parameters: 
+                  &#39;a
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    arg0
+                  </span>
+                  :
+                  <code><span>StringFormat&lt;<span>'a,&#32;unit</span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code>'a</code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="288" data-fsdocs-tip-unique="288">
+                <p>
+                  <a id="tracen">
+                    <a href="#tracen">
+                      <code><span>tracen&#32;<span>arg1</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="288">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>tracen&#32;<span>arg1</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        arg0
+                      </b>
+                      :
+                      <code>string</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    arg0
+                  </span>
+                  :
+                  <code>string</code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="289" data-fsdocs-tip-unique="289">
+                <p>
+                  <a id="verbose">
+                    <a href="#verbose">
+                      <code><span>verbose&#32;<span></span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="289">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>verbose&#32;<span></span></span></code>
+                  <br/>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>bool</code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code>bool</code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="290" data-fsdocs-tip-unique="290">
+                <p>
+                  <a id="verboseWarnings">
+                    <a href="#verboseWarnings">
+                      <code><span>verboseWarnings&#32;<span></span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="290">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>verboseWarnings&#32;<span></span></span></code>
+                  <br/>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>bool</code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code>bool</code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code data-fsdocs-tip="291" data-fsdocs-tip-unique="291">
+                <p>
+                  <a id="verbosefn">
+                    <a href="#verbosefn">
+                      <code><span>verbosefn&#32;<span>arg1</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div popover="" class="fsdocs-tip" id="291">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>verbosefn&#32;<span>arg1</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        arg0
+                      </b>
+                      :
+                      <code><span>StringFormat&lt;<span>'a,&#32;unit</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>'a</code>
+                  </span>
+                  <br/>
+                  Type parameters: 
+                  &#39;a
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-member-xmldoc-column">
+              <div class="icon-button-row">
+                <a href="" class="fsdocs-source-link" title="Source on GitHub">
+                  <iconify-icon icon="ri:github-fill" height="24" width="24"></iconify-icon>
+                </a>
+              </div>
+              <dl class="fsdocs-params">
+                <dt class="fsdocs-param">
+                  <span class="fsdocs-param-name">
+                    arg0
+                  </span>
+                  :
+                  <code><span>StringFormat&lt;<span>'a,&#32;unit</span>&gt;</span></code>
+                </dt>
+                <dd class="fsdocs-param-docs"></dd>
+              </dl>
+              <dl class="fsdocs-returns">
+                <dt>
+                  <span class="fsdocs-return-name">
+                    Returns: 
+                  </span>
+                  <code>'a</code>
+                </dt>
+                <dd class="fsdocs-return-docs"></dd>
+              </dl>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+</div>
+        
+    </div>
+</main>
+<aside id="fsdocs-page-menu">
+    <p id="on-this-page">On this page</p>
+    <div class="empty"></div>
+</aside>
+<dialog>
+    <input type="search" placeholder="Search docs" />
+    <div class="results">
+        <ul></ul>
+        <p class="empty">Type something to start searching.</p>
+    </div>
+</dialog>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-tips.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-theme-toggle.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-details-toggle.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-theme.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-search.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-copy-button.js"></script>
+
+</body>
+</html>

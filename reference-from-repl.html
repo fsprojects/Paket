@@ -1,189 +1,256 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8"/>
+<html lang="en" data-root="https://fsprojects.github.io/Paket/">
+<head>
+    <meta charset="UTF-8">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Paket team" name="author">
+    <!-- Opengraph properties (https://ogp.me/) -->
+    <meta property="og:site_name" content="Paket">
+    <meta property="og:title" content="Using Paket from F# Interactive
+" />
+    <meta property="og:url" content="https://fsprojects.github.io/Paket/reference-from-repl.html">
+    <meta property="og:type" content="website" />
+    <!-- Twitter cards (https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/summary-card-with-large-image) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="https://fsprojects.github.io/Paket/">
+    <meta name="twitter:title" content="Using Paket from F# Interactive
+">
+    
     <title>Using Paket from F# Interactive
-</title>
-    <link rel="icon" type="image/png" href="./img/logo.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
-
-    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
-    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
-    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
-    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
-
-    <link type="text/css" rel="stylesheet" href="./content/style.css" />
-    <script type="text/javascript" src="./content/tips.js"></script>
-    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <style type="text/css">
-      table.pre td.lines {
-        vertical-align: top;
-      }
-      pre.fssnip code[lang=batchfile],
-      pre.fssnip code[lang=msh] {
-        display: inline-block;
-        white-space: pre-wrap;       /* CSS 3 */
-        white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-        white-space: -pre-wrap;      /* Opera 4-6 */
-        white-space: -o-pre-wrap;    /* Opera 7 */
-        word-wrap: break-word;       /* Internet Explorer 5.5+ */
-        word-break: keep-all;
-        padding-left: 2em;
-        text-indent: -2em;
-      }
-    </style>
-    <script type="text/javascript">
-      $(function() {
-        $("code[lang='batchfile'], code[lang='msh']").each(function() {
-          $(this).html($(this).html().replace(/ &lt;/g, "&nbsp;&lt;"))
-        })
-      })
-    </script>
-  </head>
-  <body>
-    <div class="container">
-      <div class="masthead">
-        <ul class="nav nav-pills pull-right">
-          <li><a href="http://github.com/fsprojects/Paket">github page</a></li>
-        </ul>
-        <h3 class="muted"><a href="./index.html">Paket</a></h3>
-      </div>
-      <hr />
-      <div class="row">
-        <div class="span9" id="main">
-          
-<h1><a name="Using-Paket-from-F-Interactive" class="anchor" href="#Using-Paket-from-F-Interactive">Using Paket from F# Interactive</a></h1>
+ | Paket</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="https://fsprojects.github.io/Paket/img/logo.png" rel="icon" sizes="32x32" type="image/png"/>
+    <script type="application/javascript" src="https://fsprojects.github.io/Paket/content/fsdocs-theme-set-dark.js"></script>
+    <script type="application/javascript" src="https://fsprojects.github.io/Paket/content/fsdocs-details-set-expanded.js"></script>
+    <link href="https://fsprojects.github.io/Paket/content/fsdocs-default.css" rel="stylesheet" type="text/css"/>
+    <link href="https://fsprojects.github.io/Paket/content/fsdocs-theme.css" rel="stylesheet" type="text/css"/>
+    
+    
+</head>
+<body class="content">
+<header>
+    <div class="start">
+        <div id="menu-toggle">
+            <iconify-icon class="icon closed" height="22" icon="eva:menu-fill" width="22"></iconify-icon>
+            <iconify-icon class="icon open" height="22" icon="mi:close" width="22"></iconify-icon>
+            <input type="checkbox" name="mobile-menu" />
+            <ul class="menu">
+                <li class="nav-header">Paket</li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/index.html">Home page</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/get-started.html">Get started</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/learn-how-to-use-paket.html">Learn how to use paket</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/convert-from-nuget-tutorial.html">Convert from legacy NuGet</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-and-dotnet-cli.html">Paket with .NET SDK</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/faq.html">FAQ</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/release-notes.html">Release Notes</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/contact.html">Contact</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/testimonials.html">Testimonials</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/license.html">License</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/glossary.html">Glossary</a></li>
+                <li class="nav-header">Download Paket</li>
+                <li class="nav-item"><a class="nav-link" href="https://www.nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+                <li class="nav-header">GitHub</li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+                <li class="nav-header">Documentation</li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/dependencies-file.html">paket.dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/lock-file.html">paket.lock</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/references-files.html">paket.references</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/template-files.html">paket.template</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/local-file.html">paket.local</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-folder.html">.paket folder</a></li>
+                <li class="divider"></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/resolver.html">Package resolution algorithm</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/groups.html">Dependency Groups</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/caches.html">Additional Caches</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/nuget-dependencies.html">NuGet dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/git-dependencies.html">Git dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/github-dependencies.html">GitHub dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/http-dependencies.html">HTTP dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/analyzers.html">Analyzers</a></li>
+                <li class="divider"></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/installation.html">Installation</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference-from-repl.html">Using Paket from F# Interactive</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/fsi-integration.html">F# Interactive integration</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/editor-support.html">Editor support</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/shell-completion.html">Shell completion</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/credential-providers.html">Credential Providers</a></li>
+                <li class="divider"></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference/index.html">API Reference</a></li>
+                <li class="nav-header">Paket commands</li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-add.html">paket add</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-auto-restore.html">paket auto-restore</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-clear-cache.html">paket clear-cache</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-config.html">paket config</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-refs.html">paket find-refs</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-packages.html">paket find-packages</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-package-versions.html">paket find-package-versions</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-fix-nuspecs.html">paket fix-nuspecs</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-nuspec.html">paket generate-nuspec</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-git.html">paket git</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-github.html">paket github</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-info.html">paket info</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-init.html">paket init</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-install.html">paket install</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-outdated.html">paket outdated</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-pack.html">paket pack</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-push.html">paket push</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-remove.html">paket remove</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restore.html">paket restore</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-simplify.html">paket simplify</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-conditions.html">paket show-conditions</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-groups.html">paket show-groups</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-installed-packages.html">paket show-installed-packages</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-update.html">paket update</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-why.html">paket why</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restriction.html">paket restriction</a></li>
+            </ul>
+        </div>
+        <a href="https://fsprojects.github.io/Paket/">
+            <img alt="Logo" src="https://fsprojects.github.io/Paket/img/logo.png">
+            <strong>Paket</strong>
+        </a>
+    </div>
+    <div class="end">
+        <a href="https://github.com/fsprojects/Paket" target="_blank">
+            <iconify-icon icon="uil:github" width="26" height="26"></iconify-icon>
+        </a>
+        <iconify-icon id="search-btn" icon="carbon:search" class="search" width="24" height="24"></iconify-icon>
+        <fsdocs-theme-toggle></fsdocs-theme-toggle>
+    </div>
+</header>
+<aside id="fsdocs-main-menu">
+    <ul class="menu">
+        <li class="nav-header">Paket</li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/index.html">Home page</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/get-started.html">Get started</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/learn-how-to-use-paket.html">Learn how to use paket</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/convert-from-nuget-tutorial.html">Convert from legacy NuGet</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-and-dotnet-cli.html">Paket with .NET SDK</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/faq.html">FAQ</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/release-notes.html">Release Notes</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/contact.html">Contact</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/testimonials.html">Testimonials</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/license.html">License</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/glossary.html">Glossary</a></li>
+        <li class="nav-header">Download Paket</li>
+        <li class="nav-item"><a class="nav-link" href="https://www.nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+        <li class="nav-header">GitHub</li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+        <li class="nav-header">Documentation</li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/dependencies-file.html">paket.dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/lock-file.html">paket.lock</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/references-files.html">paket.references</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/template-files.html">paket.template</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/local-file.html">paket.local</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-folder.html">.paket folder</a></li>
+        <li class="divider"></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/resolver.html">Package resolution algorithm</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/groups.html">Dependency Groups</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/caches.html">Additional Caches</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/nuget-dependencies.html">NuGet dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/git-dependencies.html">Git dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/github-dependencies.html">GitHub dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/http-dependencies.html">HTTP dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/analyzers.html">Analyzers</a></li>
+        <li class="divider"></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/installation.html">Installation</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference-from-repl.html">Using Paket from F# Interactive</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/fsi-integration.html">F# Interactive integration</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/editor-support.html">Editor support</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/shell-completion.html">Shell completion</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/credential-providers.html">Credential Providers</a></li>
+        <li class="divider"></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference/index.html">API Reference</a></li>
+        <li class="nav-header">Paket commands</li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-add.html">paket add</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-auto-restore.html">paket auto-restore</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-clear-cache.html">paket clear-cache</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-config.html">paket config</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-refs.html">paket find-refs</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-packages.html">paket find-packages</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-package-versions.html">paket find-package-versions</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-fix-nuspecs.html">paket fix-nuspecs</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-nuspec.html">paket generate-nuspec</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-git.html">paket git</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-github.html">paket github</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-info.html">paket info</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-init.html">paket init</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-install.html">paket install</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-outdated.html">paket outdated</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-pack.html">paket pack</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-push.html">paket push</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-remove.html">paket remove</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restore.html">paket restore</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-simplify.html">paket simplify</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-conditions.html">paket show-conditions</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-groups.html">paket show-groups</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-installed-packages.html">paket show-installed-packages</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-update.html">paket update</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-why.html">paket why</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restriction.html">paket restriction</a></li>
+    </ul>
+</aside>
+<main>
+    <div id="content">
+        <h1><a name="Using-Paket-from-F-Interactive" class="anchor" href="#Using-Paket-from-F-Interactive">Using Paket from F# Interactive</a></h1>
 <p>This page demonstrates how to use Paket from the F# Interactive.</p>
-<h2><a name="Download-latest-optional" class="anchor" href="#Download-latest-optional">Download latest <code>paket.exe</code> (optional)</a></h2>
-<p>As first step we need to download and reference the latest Paket executable.
-This boilerplate code allows F# scripts to work self-contained without an
-installed <code>paket.exe</code>. Alternativly you can just reference any paket.exe that
-you have on your system.</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
-<span class="l">11: </span>
-<span class="l">12: </span>
-<span class="l">13: </span>
-<span class="l">14: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">open</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="id">System</span>
-<span class="k">open</span> <span onmouseout="hideTip(event, 'fs1', 2)" onmouseover="showTip(event, 'fs1', 2)" class="id">System</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs2', 3)" onmouseover="showTip(event, 'fs2', 3)" class="id">IO</span>
+<h2><a name="Reference-Paket-Core" class="anchor" href="#Reference-Paket-Core">Reference Paket.Core</a></h2>
+<p>As first step we need to reference Paket.Core, the library the Paket .NET tool
+is built on. It targets net10.0, so the script needs the F# Interactive of the
+.NET 10 SDK or later (<code>dotnet fsi</code>).</p>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">open</span> <span data-fsdocs-tip="fs1" data-fsdocs-tip-unique="1" class="id">System</span>
+<span class="k">open</span> <span data-fsdocs-tip="fs1" data-fsdocs-tip-unique="2" class="id">System</span><span class="pn">.</span><span data-fsdocs-tip="fs2" data-fsdocs-tip-unique="3" class="id">IO</span>
 
-<span onmouseout="hideTip(event, 'fs3', 4)" onmouseover="showTip(event, 'fs3', 4)" class="rt">Environment</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs4', 5)" onmouseover="showTip(event, 'fs4', 5)" class="id">CurrentDirectory</span> <span class="k">&lt;-</span> <span class="k">__SOURCE_DIRECTORY__</span>
+<span data-fsdocs-tip="fs3" data-fsdocs-tip-unique="4" class="rt">Environment</span><span class="pn">.</span><span data-fsdocs-tip="fs4" data-fsdocs-tip-unique="5" class="id">CurrentDirectory</span> <span class="k">&lt;-</span> <span class="k">__SOURCE_DIRECTORY__</span>
 
-<span class="k">if</span> <span onmouseout="hideTip(event, 'fs5', 6)" onmouseover="showTip(event, 'fs5', 6)" class="fn">not</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs6', 7)" onmouseover="showTip(event, 'fs6', 7)" class="rt">File</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs7', 8)" onmouseover="showTip(event, 'fs7', 8)" class="id">Exists</span> <span class="s">&quot;paket.exe&quot;</span><span class="pn">)</span> <span class="k">then</span>
-    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs8', 9)" onmouseover="showTip(event, 'fs8', 9)" class="id">url</span> <span class="o">=</span> <span class="s">&quot;http://fsprojects.github.io/Paket/stable&quot;</span>
-    <span class="k">use</span> <span onmouseout="hideTip(event, 'fs9', 10)" onmouseover="showTip(event, 'fs9', 10)" class="id">wc</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fs10', 11)" onmouseover="showTip(event, 'fs10', 11)" class="d">Net</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs11', 12)" onmouseover="showTip(event, 'fs11', 12)" class="id">WebClient</span><span class="pn">(</span><span class="pn">)</span>
-    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs12', 13)" onmouseover="showTip(event, 'fs12', 13)" class="id">tmp</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs13', 14)" onmouseover="showTip(event, 'fs13', 14)" class="rt">Path</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs14', 15)" onmouseover="showTip(event, 'fs14', 15)" class="id">GetTempFileName</span><span class="pn">(</span><span class="pn">)</span>
-    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs15', 16)" onmouseover="showTip(event, 'fs15', 16)" class="id">stable</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs9', 17)" onmouseover="showTip(event, 'fs9', 17)" class="fn">wc</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs16', 18)" onmouseover="showTip(event, 'fs16', 18)" class="id">DownloadString</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs8', 19)" onmouseover="showTip(event, 'fs8', 19)" class="id">url</span><span class="pn">)</span>
-    <span onmouseout="hideTip(event, 'fs9', 20)" onmouseover="showTip(event, 'fs9', 20)" class="fn">wc</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs17', 21)" onmouseover="showTip(event, 'fs17', 21)" class="id">DownloadFile</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs15', 22)" onmouseover="showTip(event, 'fs15', 22)" class="id">stable</span><span class="pn">,</span> <span onmouseout="hideTip(event, 'fs12', 23)" onmouseover="showTip(event, 'fs12', 23)" class="id">tmp</span><span class="pn">)</span>
-    <span onmouseout="hideTip(event, 'fs6', 24)" onmouseover="showTip(event, 'fs6', 24)" class="rt">File</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs18', 25)" onmouseover="showTip(event, 'fs18', 25)" class="id">Move</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs12', 26)" onmouseover="showTip(event, 'fs12', 26)" class="id">tmp</span><span class="pn">,</span><span onmouseout="hideTip(event, 'fs13', 27)" onmouseover="showTip(event, 'fs13', 27)" class="rt">Path</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs19', 28)" onmouseover="showTip(event, 'fs19', 28)" class="id">GetFileName</span> <span onmouseout="hideTip(event, 'fs15', 29)" onmouseover="showTip(event, 'fs15', 29)" class="id">stable</span><span class="pn">)</span>
-
-<span class="pp">#r</span> <span class="s">&quot;paket.exe&quot;</span>
-</code></pre></td>
-</tr>
-</table>
+<span class="pp">#r</span> <span class="s">&quot;nuget: Paket.Core&quot;</span>
+</code></pre>
 <h2><a name="Configure-which-file-to-use" class="anchor" href="#Configure-which-file-to-use">Configure which <code>paket.dependencies</code> file to use</a></h2>
 <p>Now we need open the <code>Paket</code> namespace and to tell Paket which
 <a href="dependencies-file.html"><code>paket.dependencies</code></a> file to use.</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-<span class="l">5: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">open</span> <span class="id">Paket</span>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">open</span> <span data-fsdocs-tip="fs5" data-fsdocs-tip-unique="6" class="id">Paket</span>
 
 <span class="c">// Locate the paket.dependencies file.</span>
-<span class="k">let</span> <span onmouseout="hideTip(event, 'fs20', 30)" onmouseover="showTip(event, 'fs20', 30)" class="id">dependencies</span> <span class="o">=</span> <span class="id">Dependencies</span><span class="pn">.</span><span class="id">Locate</span><span class="pn">(</span><span class="k">__SOURCE_DIRECTORY__</span><span class="pn">)</span>
+<span class="k">let</span> <span data-fsdocs-tip="fs6" data-fsdocs-tip-unique="7" class="id">dependencies</span> <span class="o">=</span> <span data-fsdocs-tip="fs7" data-fsdocs-tip-unique="8" class="rt">Dependencies</span><span class="pn">.</span><span data-fsdocs-tip="fs8" data-fsdocs-tip-unique="9" class="id">Locate</span><span class="pn">(</span><span class="k">__SOURCE_DIRECTORY__</span><span class="pn">)</span>
 <span class="fsi">found: paket.dependencies</span>
-</code></pre></td>
-</tr>
-</table>
+</code></pre>
 <h2><a name="Adding-and-removing-NuGet-packages" class="anchor" href="#Adding-and-removing-NuGet-packages">Adding and removing NuGet packages</a></h2>
 <p>Paket allows to install and uninstall NuGet packages programmatically:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
-<span class="l">11: </span>
-<span class="l">12: </span>
-<span class="l">13: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Install a package.</span>
-<span onmouseout="hideTip(event, 'fs20', 31)" onmouseover="showTip(event, 'fs20', 31)" class="id">dependencies</span><span class="pn">.</span><span class="id">Add</span> <span class="s">&quot;FSharp.Data&quot;</span>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Install a package.</span>
+<span data-fsdocs-tip="fs6" data-fsdocs-tip-unique="10" class="id">dependencies</span><span class="pn">.</span><span data-fsdocs-tip="fs9" data-fsdocs-tip-unique="11" class="id">Add</span> <span class="s">&quot;FSharp.Data&quot;</span>
 
 <span class="c">// Check which version is installed.</span>
-<span onmouseout="hideTip(event, 'fs20', 32)" onmouseover="showTip(event, 'fs20', 32)" class="id">dependencies</span><span class="pn">.</span><span class="id">GetInstalledVersion</span> <span class="s">&quot;FSharp.Data&quot;</span>
+<span data-fsdocs-tip="fs6" data-fsdocs-tip-unique="12" class="id">dependencies</span><span class="pn">.</span><span data-fsdocs-tip="fs10" data-fsdocs-tip-unique="13" class="id">GetInstalledVersion</span> <span class="s">&quot;FSharp.Data&quot;</span>
 <span class="fsi">val it : string option = Some &quot;2.1.0&quot;</span>
 
 <span class="c">// Remove a package.</span>
-<span onmouseout="hideTip(event, 'fs20', 33)" onmouseover="showTip(event, 'fs20', 33)" class="id">dependencies</span><span class="pn">.</span><span class="id">Remove</span> <span class="s">&quot;FSharp.Data&quot;</span>
+<span data-fsdocs-tip="fs6" data-fsdocs-tip-unique="14" class="id">dependencies</span><span class="pn">.</span><span data-fsdocs-tip="fs11" data-fsdocs-tip-unique="15" class="id">Remove</span> <span class="s">&quot;FSharp.Data&quot;</span>
 
 <span class="c">// Check again which version is installed.</span>
-<span onmouseout="hideTip(event, 'fs20', 34)" onmouseover="showTip(event, 'fs20', 34)" class="id">dependencies</span><span class="pn">.</span><span class="id">GetInstalledVersion</span> <span class="s">&quot;FSharp.Data&quot;</span>
+<span data-fsdocs-tip="fs6" data-fsdocs-tip-unique="16" class="id">dependencies</span><span class="pn">.</span><span data-fsdocs-tip="fs10" data-fsdocs-tip-unique="17" class="id">GetInstalledVersion</span> <span class="s">&quot;FSharp.Data&quot;</span>
 <span class="fsi">val it : string option = None</span>
-</code></pre></td>
-</tr>
-</table>
+</code></pre>
 <h2><a name="Query-the-install-model" class="anchor" href="#Query-the-install-model">Query the install model</a></h2>
 <p>It's possible to do queries against the installed NuGet packages:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
-<span class="l">11: </span>
-<span class="l">12: </span>
-<span class="l">13: </span>
-<span class="l">14: </span>
-<span class="l">15: </span>
-<span class="l">16: </span>
-<span class="l">17: </span>
-<span class="l">18: </span>
-<span class="l">19: </span>
-<span class="l">20: </span>
-<span class="l">21: </span>
-<span class="l">22: </span>
-<span class="l">23: </span>
-<span class="l">24: </span>
-<span class="l">25: </span>
-<span class="l">26: </span>
-<span class="l">27: </span>
-<span class="l">28: </span>
-<span class="l">29: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Install some packages.</span>
-<span onmouseout="hideTip(event, 'fs20', 35)" onmouseover="showTip(event, 'fs20', 35)" class="id">dependencies</span><span class="pn">.</span><span class="id">Add</span> <span class="s">&quot;FSharp.Data&quot;</span>
-<span onmouseout="hideTip(event, 'fs20', 36)" onmouseover="showTip(event, 'fs20', 36)" class="id">dependencies</span><span class="pn">.</span><span class="id">Add</span> <span class="s">&quot;FSharp.Formatting&quot;</span>
-<span onmouseout="hideTip(event, 'fs20', 37)" onmouseover="showTip(event, 'fs20', 37)" class="id">dependencies</span><span class="pn">.</span><span class="id">Add</span> <span class="s">&quot;FsUnit&quot;</span>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// Install some packages.</span>
+<span data-fsdocs-tip="fs6" data-fsdocs-tip-unique="18" class="id">dependencies</span><span class="pn">.</span><span data-fsdocs-tip="fs9" data-fsdocs-tip-unique="19" class="id">Add</span> <span class="s">&quot;FSharp.Data&quot;</span>
+<span data-fsdocs-tip="fs6" data-fsdocs-tip-unique="20" class="id">dependencies</span><span class="pn">.</span><span data-fsdocs-tip="fs9" data-fsdocs-tip-unique="21" class="id">Add</span> <span class="s">&quot;FSharp.Formatting&quot;</span>
+<span data-fsdocs-tip="fs6" data-fsdocs-tip-unique="22" class="id">dependencies</span><span class="pn">.</span><span data-fsdocs-tip="fs9" data-fsdocs-tip-unique="23" class="id">Add</span> <span class="s">&quot;FsUnit&quot;</span>
 
 <span class="c">// List all installed packages.</span>
-<span onmouseout="hideTip(event, 'fs20', 38)" onmouseover="showTip(event, 'fs20', 38)" class="id">dependencies</span><span class="pn">.</span><span class="id">GetInstalledPackages</span><span class="pn">(</span><span class="pn">)</span>
+<span data-fsdocs-tip="fs6" data-fsdocs-tip-unique="24" class="id">dependencies</span><span class="pn">.</span><span data-fsdocs-tip="fs12" data-fsdocs-tip-unique="25" class="id">GetInstalledPackages</span><span class="pn">(</span><span class="pn">)</span>
 <span class="fsi">val it : (string * string * string) list =</span>
 <span class="fsi">  [(&quot;Main&quot;, &quot;FSharp.Compiler.Service&quot;, &quot;0.0.67&quot;); (&quot;Main&quot;, &quot;FSharp.Data&quot;, &quot;2.1.0&quot;);</span>
 <span class="fsi">   (&quot;Main&quot;, &quot;FSharp.Formatting&quot;, &quot;2.4.36&quot;); (&quot;Main&quot;, &quot;FsUnit&quot;, &quot;1.3.0.1&quot;);</span>
@@ -191,128 +258,132 @@ you have on your system.</p>
 <span class="fsi">   (&quot;Main&quot;, &quot;RazorEngine&quot;, &quot;3.3.0&quot;); (&quot;Main&quot;, &quot;Zlib.Portable&quot;, &quot;1.10.0&quot;)]</span>
 
 <span class="c">// List only the direct dependencies.</span>
-<span onmouseout="hideTip(event, 'fs20', 39)" onmouseover="showTip(event, 'fs20', 39)" class="id">dependencies</span><span class="pn">.</span><span class="id">GetDirectDependencies</span><span class="pn">(</span><span class="pn">)</span>
+<span data-fsdocs-tip="fs6" data-fsdocs-tip-unique="26" class="id">dependencies</span><span class="pn">.</span><span data-fsdocs-tip="fs13" data-fsdocs-tip-unique="27" class="id">GetDirectDependencies</span><span class="pn">(</span><span class="pn">)</span>
 <span class="fsi">val it : (string * string * string) list =</span>
 <span class="fsi">  [(&quot;Main&quot;, &quot;FSharp.Data&quot;, &quot;2.1.0&quot;); (&quot;Main&quot;, &quot;FSharp.Formatting&quot;, &quot;2.4.36&quot;);</span>
 <span class="fsi">   (&quot;Main&quot;, &quot;FsUnit&quot;, &quot;1.3.0.1&quot;)]</span>
 
 <span class="c">// List direct dependencies for the given package.</span>
-<span onmouseout="hideTip(event, 'fs20', 40)" onmouseover="showTip(event, 'fs20', 40)" class="id">dependencies</span><span class="pn">.</span><span class="id">GetDirectDependenciesForPackage</span><span class="pn">(</span><span class="s">&quot;Main&quot;</span><span class="pn">,</span> <span class="s">&quot;FSharp.Compiler.Service&quot;</span><span class="pn">)</span>
+<span data-fsdocs-tip="fs6" data-fsdocs-tip-unique="28" class="id">dependencies</span><span class="pn">.</span><span data-fsdocs-tip="fs14" data-fsdocs-tip-unique="29" class="id">GetDirectDependenciesForPackage</span><span class="pn">(</span><span data-fsdocs-tip="fs15" data-fsdocs-tip-unique="30" class="m">Domain</span><span class="pn">.</span><span data-fsdocs-tip="fs16" data-fsdocs-tip-unique="31" class="id">GroupName</span> <span class="s">&quot;Main&quot;</span><span class="pn">,</span> <span class="s">&quot;FSharp.Compiler.Service&quot;</span><span class="pn">)</span>
 <span class="fsi">val it : (string * string * string) list =</span>
 <span class="fsi">  ...</span>
 
 <span class="c">// List all usages of a package in Paket.</span>
-<span class="k">let</span> <span onmouseout="hideTip(event, 'fs21', 41)" onmouseover="showTip(event, 'fs21', 41)" class="id">paketDependencies</span> <span class="o">=</span> <span class="id">Dependencies</span><span class="pn">.</span><span class="id">Locate</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs1', 42)" onmouseover="showTip(event, 'fs1', 42)" class="id">System</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs2', 43)" onmouseover="showTip(event, 'fs2', 43)" class="id">IO</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs13', 44)" onmouseover="showTip(event, 'fs13', 44)" class="id">Path</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs22', 45)" onmouseover="showTip(event, 'fs22', 45)" class="id">Combine</span><span class="pn">(</span><span class="k">__SOURCE_DIRECTORY__</span><span class="pn">,</span><span class="s">&quot;..&quot;</span><span class="pn">)</span><span class="pn">)</span>
+<span class="k">let</span> <span data-fsdocs-tip="fs17" data-fsdocs-tip-unique="32" class="id">paketDependencies</span> <span class="o">=</span> <span data-fsdocs-tip="fs7" data-fsdocs-tip-unique="33" class="rt">Dependencies</span><span class="pn">.</span><span data-fsdocs-tip="fs8" data-fsdocs-tip-unique="34" class="id">Locate</span><span class="pn">(</span><span data-fsdocs-tip="fs1" data-fsdocs-tip-unique="35" class="id">System</span><span class="pn">.</span><span data-fsdocs-tip="fs2" data-fsdocs-tip-unique="36" class="id">IO</span><span class="pn">.</span><span data-fsdocs-tip="fs18" data-fsdocs-tip-unique="37" class="rt">Path</span><span class="pn">.</span><span data-fsdocs-tip="fs19" data-fsdocs-tip-unique="38" class="id">Combine</span><span class="pn">(</span><span class="k">__SOURCE_DIRECTORY__</span><span class="pn">,</span><span class="s">&quot;..&quot;</span><span class="pn">)</span><span class="pn">)</span>
 <span class="fsi">found: D:\code\Paket\paket.dependencies</span>
-<span onmouseout="hideTip(event, 'fs21', 46)" onmouseover="showTip(event, 'fs21', 46)" class="id">paketDependencies</span><span class="pn">.</span><span class="id">FindReferencesFor</span> <span class="s">&quot;UnionArgParser&quot;</span>
+<span data-fsdocs-tip="fs17" data-fsdocs-tip-unique="39" class="id">paketDependencies</span><span class="pn">.</span><span data-fsdocs-tip="fs20" data-fsdocs-tip-unique="40" class="id">FindReferencesFor</span> <span class="s">&quot;UnionArgParser&quot;</span>
 <span class="fsi">val it : string list = [&quot;D:\code\Paket\src\Paket\Paket.fsproj&quot;]</span>
-</code></pre></td>
-</tr>
-</table>
+</code></pre>
 
-<div class="tip" id="fs1">namespace System</div>
-<div class="tip" id="fs2">namespace System.IO</div>
-<div class="tip" id="fs3">type Environment =<br />&#160;&#160;static member CommandLine : string<br />&#160;&#160;static member CurrentDirectory : string with get, set<br />&#160;&#160;static member CurrentManagedThreadId : int<br />&#160;&#160;static member Exit : exitCode:int -&gt; unit<br />&#160;&#160;static member ExitCode : int with get, set<br />&#160;&#160;static member ExpandEnvironmentVariables : name:string -&gt; string<br />&#160;&#160;static member FailFast : message:string -&gt; unit + 1 overload<br />&#160;&#160;static member GetCommandLineArgs : unit -&gt; string[]<br />&#160;&#160;static member GetEnvironmentVariable : variable:string -&gt; string + 1 overload<br />&#160;&#160;static member GetEnvironmentVariables : unit -&gt; IDictionary + 1 overload<br />&#160;&#160;...<br />&#160;&#160;nested type SpecialFolder<br />&#160;&#160;nested type SpecialFolderOption</div>
-<div class="tip" id="fs4">property Environment.CurrentDirectory: string</div>
-<div class="tip" id="fs5">val not : value:bool -&gt; bool</div>
-<div class="tip" id="fs6">type File =<br />&#160;&#160;static member AppendAllLines : path:string * contents:IEnumerable&lt;string&gt; -&gt; unit + 1 overload<br />&#160;&#160;static member AppendAllText : path:string * contents:string -&gt; unit + 1 overload<br />&#160;&#160;static member AppendText : path:string -&gt; StreamWriter<br />&#160;&#160;static member Copy : sourceFileName:string * destFileName:string -&gt; unit + 1 overload<br />&#160;&#160;static member Create : path:string -&gt; FileStream + 3 overloads<br />&#160;&#160;static member CreateText : path:string -&gt; StreamWriter<br />&#160;&#160;static member Decrypt : path:string -&gt; unit<br />&#160;&#160;static member Delete : path:string -&gt; unit<br />&#160;&#160;static member Encrypt : path:string -&gt; unit<br />&#160;&#160;static member Exists : path:string -&gt; bool<br />&#160;&#160;...</div>
-<div class="tip" id="fs7">File.Exists(path: string) : bool</div>
-<div class="tip" id="fs8">val url : string</div>
-<div class="tip" id="fs9">val wc : Net.WebClient</div>
-<div class="tip" id="fs10">namespace System.Net</div>
-<div class="tip" id="fs11">Multiple items<br />type WebClient =<br />&#160;&#160;inherit Component<br />&#160;&#160;new : unit -&gt; WebClient<br />&#160;&#160;member AllowReadStreamBuffering : bool with get, set<br />&#160;&#160;member AllowWriteStreamBuffering : bool with get, set<br />&#160;&#160;member BaseAddress : string with get, set<br />&#160;&#160;member CachePolicy : RequestCachePolicy with get, set<br />&#160;&#160;member CancelAsync : unit -&gt; unit<br />&#160;&#160;member Credentials : ICredentials with get, set<br />&#160;&#160;member DownloadData : address:string -&gt; byte[] + 1 overload<br />&#160;&#160;member DownloadDataAsync : address:Uri -&gt; unit + 1 overload<br />&#160;&#160;member DownloadDataTaskAsync : address:string -&gt; Task&lt;byte[]&gt; + 1 overload<br />&#160;&#160;...<br /><br />--------------------<br />Net.WebClient() : Net.WebClient</div>
-<div class="tip" id="fs12">val tmp : string</div>
-<div class="tip" id="fs13">type Path =<br />&#160;&#160;static val DirectorySeparatorChar : char<br />&#160;&#160;static val AltDirectorySeparatorChar : char<br />&#160;&#160;static val VolumeSeparatorChar : char<br />&#160;&#160;static val InvalidPathChars : char[]<br />&#160;&#160;static val PathSeparator : char<br />&#160;&#160;static member ChangeExtension : path:string * extension:string -&gt; string<br />&#160;&#160;static member Combine : [&lt;ParamArray&gt;] paths:string[] -&gt; string + 3 overloads<br />&#160;&#160;static member GetDirectoryName : path:string -&gt; string<br />&#160;&#160;static member GetExtension : path:string -&gt; string<br />&#160;&#160;static member GetFileName : path:string -&gt; string<br />&#160;&#160;...</div>
-<div class="tip" id="fs14">Path.GetTempFileName() : string</div>
-<div class="tip" id="fs15">val stable : string</div>
-<div class="tip" id="fs16">Net.WebClient.DownloadString(address: Uri) : string<br />Net.WebClient.DownloadString(address: string) : string</div>
-<div class="tip" id="fs17">Net.WebClient.DownloadFile(address: Uri, fileName: string) : unit<br />Net.WebClient.DownloadFile(address: string, fileName: string) : unit</div>
-<div class="tip" id="fs18">File.Move(sourceFileName: string, destFileName: string) : unit</div>
-<div class="tip" id="fs19">Path.GetFileName(path: string) : string</div>
-<div class="tip" id="fs20">val dependencies : obj</div>
-<div class="tip" id="fs21">val paketDependencies : obj</div>
-<div class="tip" id="fs22">Path.Combine([&lt;ParamArray&gt;] paths: string []) : string<br />Path.Combine(path1: string, path2: string) : string<br />Path.Combine(path1: string, path2: string, path3: string) : string<br />Path.Combine(path1: string, path2: string, path3: string, path4: string) : string</div>
+        <div popover class="fsdocs-tip" id="fs1">namespace System</div>
+<div popover class="fsdocs-tip" id="fs2">namespace System.IO</div>
+<div popover class="fsdocs-tip" id="fs3">type Environment =
+  static member Exit: exitCode: int -&gt; unit
+  static member ExpandEnvironmentVariables: name: string -&gt; string
+  static member FailFast: message: string -&gt; unit + 1 overload
+  static member GetCommandLineArgs: unit -&gt; string array
+  static member GetEnvironmentVariable: variable: string -&gt; string + 1 overload
+  static member GetEnvironmentVariables: unit -&gt; IDictionary + 1 overload
+  static member GetFolderPath: folder: SpecialFolder -&gt; string + 1 overload
+  static member GetLogicalDrives: unit -&gt; string array
+  static member SetEnvironmentVariable: variable: string * value: string -&gt; unit + 1 overload
+  static member CommandLine: string
+  ...<br /><em>&lt;summary&gt;Provides information about, and means to manipulate, the current environment and platform. This class cannot be inherited.&lt;/summary&gt;</em></div>
+<div popover class="fsdocs-tip" id="fs4">property Environment.CurrentDirectory: string with get, set<br /><em>&lt;summary&gt;Gets or sets the fully qualified path of the current working directory.&lt;/summary&gt;<br />&lt;exception cref=&quot;T:System.ArgumentException&quot;&gt;Attempted to set to an empty string (&quot;&quot;).&lt;/exception&gt;<br />&lt;exception cref=&quot;T:System.ArgumentNullException&quot;&gt;Attempted to set to &lt;see langword=&quot;null&quot; /&gt;.&lt;/exception&gt;<br />&lt;exception cref=&quot;T:System.IO.IOException&quot;&gt;An I/O error occurred.&lt;/exception&gt;<br />&lt;exception cref=&quot;T:System.IO.DirectoryNotFoundException&quot;&gt;Attempted to set a local path that cannot be found.&lt;/exception&gt;<br />&lt;exception cref=&quot;T:System.Security.SecurityException&quot;&gt;The caller does not have the appropriate permission.&lt;/exception&gt;<br />&lt;returns&gt;The directory path.&lt;/returns&gt;</em></div>
+<div popover class="fsdocs-tip" id="fs5">namespace Paket</div>
+<div popover class="fsdocs-tip" id="fs6">val dependencies: Dependencies</div>
+<div popover class="fsdocs-tip" id="fs7">Multiple items<br />type Dependencies =
+  new: dependenciesFileName: string -&gt; Dependencies
+  member Add: groupName: string option * package: string -&gt; unit + 5 overloads
+  member AddCredentials: source: string * username: string * password: string * authType: string -&gt; unit + 1 overload
+  member AddGit: groupName: string option * repository: string -&gt; unit + 2 overloads
+  member AddGithub: groupName: string option * repository: string * file: string -&gt; unit + 2 overloads
+  member AddToProject: groupName: string option * package: string * version: string * force: bool * withBindingRedirects: bool * cleanBindingRedirects: bool * createNewBindingFiles: bool * projectName: string * installAfter: bool * semVerUpdateMode: SemVerUpdateMode * touchAffectedRefs: bool -&gt; unit + 2 overloads
+  member AddToken: source: string * token: string -&gt; unit
+  member DownloadLatestBootstrapper: unit -&gt; unit
+  member FindOutdated: strict: bool * force: bool * includePrereleases: bool * groupName: Option&lt;string&gt; -&gt; (string * string * SemVerInfo) list
+  member FindProjectsFor: group: string * package: string -&gt; ProjectFile list
+  ...<br /><em>&lt;summary&gt;
+ Paket API which is optimized for F# Interactive use.
+&lt;/summary&gt;</em><br /><br />--------------------<br />new: dependenciesFileName: string -&gt; Dependencies</div>
+<div popover class="fsdocs-tip" id="fs8">static member Dependencies.Locate: unit -&gt; Dependencies<br />static member Dependencies.Locate: path: string -&gt; Dependencies</div>
+<div popover class="fsdocs-tip" id="fs9">member Dependencies.Add: package: string -&gt; unit<br />member Dependencies.Add: groupName: string option * package: string -&gt; unit<br />member Dependencies.Add: groupName: string option * package: string * version: string -&gt; unit<br />member Dependencies.Add: groupName: string option * package: string * version: string * force: bool * withBindingRedirects: bool * cleanBindingRedirects: bool * createNewBindingFiles: bool * interactive: bool * installAfter: bool * semVerUpdateMode: SemVerUpdateMode * touchAffectedRefs: bool -&gt; unit<br />member Dependencies.Add: groupName: string option * package: string * version: string * force: bool * withBindingRedirects: bool * cleanBindingRedirects: bool * createNewBindingFiles: bool * interactive: bool * installAfter: bool * semVerUpdateMode: SemVerUpdateMode * touchAffectedRefs: bool * runResolver: bool -&gt; unit<br />member Dependencies.Add: groupName: string option * package: string * version: string * force: bool * withBindingRedirects: bool * cleanBindingRedirects: bool * createNewBindingFiles: bool * interactive: bool * installAfter: bool * semVerUpdateMode: SemVerUpdateMode * touchAffectedRefs: bool * runResolver: bool * packageKind: Requirements.PackageRequirementKind -&gt; unit</div>
+<div popover class="fsdocs-tip" id="fs10">member Dependencies.GetInstalledVersion: packageName: string -&gt; string option<br />member Dependencies.GetInstalledVersion: groupName: string option * packageName: string -&gt; string option</div>
+<div popover class="fsdocs-tip" id="fs11">member Dependencies.Remove: package: string -&gt; unit<br />member Dependencies.Remove: groupName: string option * package: string -&gt; unit<br />member Dependencies.Remove: groupName: string option * package: string * force: bool * interactive: bool * installAfter: bool -&gt; unit</div>
+<div popover class="fsdocs-tip" id="fs12">member Dependencies.GetInstalledPackages: unit -&gt; (string * string * string) list<br />member Dependencies.GetInstalledPackages: referencesFile: ReferencesFile -&gt; (string * string * string) list</div>
+<div popover class="fsdocs-tip" id="fs13">member Dependencies.GetDirectDependencies: unit -&gt; (string * string * string) list<br />member Dependencies.GetDirectDependencies: referencesFile: ReferencesFile -&gt; (string * string * string) list</div>
+<div popover class="fsdocs-tip" id="fs14">member Dependencies.GetDirectDependenciesForPackage: groupName: Domain.GroupName * packageName: string -&gt; (string * string * string) list</div>
+<div popover class="fsdocs-tip" id="fs15">module Domain
 
-        </div>
-        <div class="span3">
-          <img src="./img/logo.png" alt="F# Project" style="width:150px;margin:10px" />
-          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
-            <li class="nav-header">Paket</li>
-            <li><a href="./index.html">Home page</a></li>
-            <li><a href="./get-started.html">Get started</a></li>
-            <li><a href="./learn-how-to-use-paket.html">Learn how to use paket</a></li>
-            <li><a href="./convert-from-nuget-tutorial.html">Convert from legacy NuGet</a></li>
-            <li><a href="./paket-and-dotnet-cli.html">Paket with .NET SDK</a></li>
-            <li><a href="./faq.html">FAQ</a></li>
-            <li><a href="./release-notes.html">Release Notes</a></li>
-            <li><a href="./contact.html">Contact</a></li>
-            <li><a href="./testimonials.html">Testimonials</a></li>
-            <li><a href="./license.html">License</a></li>
-            <li><a href="./glossary.html">Glossary</a></li>
+from Paket</div>
+<div popover class="fsdocs-tip" id="fs16">Multiple items<br />val GroupName: name: string -&gt; Domain.GroupName<br /><em>&lt;summary&gt;
+ Function to convert a string into a group name
+&lt;/summary&gt;</em><br /><br />--------------------<br />union case Domain.GroupName.GroupName: name: string * compareString: string -&gt; Domain.GroupName<br /><br />--------------------<br />type GroupName =
+  | GroupName of name: string * compareString: string
+  interface IComparable
+  override Equals: that: obj -&gt; bool
+  override GetHashCode: unit -&gt; int
+  override ToString: unit -&gt; string
+  member CompareString: string
+  member Name: string<br /><em>&lt;summary&gt;
+ Represents a normalized group name
+&lt;/summary&gt;</em></div>
+<div popover class="fsdocs-tip" id="fs17">val paketDependencies: Dependencies</div>
+<div popover class="fsdocs-tip" id="fs18">type Path =
+  static member ChangeExtension: path: string * extension: string -&gt; string
+  static member Combine: path1: string * path2: string -&gt; string + 4 overloads
+  static member EndsInDirectorySeparator: path: ReadOnlySpan&lt;char&gt; -&gt; bool + 1 overload
+  static member Exists: path: string -&gt; bool
+  static member GetDirectoryName: path: ReadOnlySpan&lt;char&gt; -&gt; ReadOnlySpan&lt;char&gt; + 1 overload
+  static member GetExtension: path: ReadOnlySpan&lt;char&gt; -&gt; ReadOnlySpan&lt;char&gt; + 1 overload
+  static member GetFileName: path: ReadOnlySpan&lt;char&gt; -&gt; ReadOnlySpan&lt;char&gt; + 1 overload
+  static member GetFileNameWithoutExtension: path: ReadOnlySpan&lt;char&gt; -&gt; ReadOnlySpan&lt;char&gt; + 1 overload
+  static member GetFullPath: path: string -&gt; string + 1 overload
+  static member GetInvalidFileNameChars: unit -&gt; char array
+  ...<br /><em>&lt;summary&gt;Performs operations on &lt;see cref=&quot;T:System.String&quot; /&gt; instances that contain file or directory path information. These operations are performed in a cross-platform manner.&lt;/summary&gt;</em></div>
+<div popover class="fsdocs-tip" id="fs19">Path.Combine(paths: ReadOnlySpan&lt;string&gt;) : string<br />Path.Combine( paths: string array) : string<br />Path.Combine(path1: string, path2: string) : string<br />Path.Combine(path1: string, path2: string, path3: string) : string<br />Path.Combine(path1: string, path2: string, path3: string, path4: string) : string</div>
+<div popover class="fsdocs-tip" id="fs20">member Dependencies.FindReferencesFor: package: string -&gt; string list<br />member Dependencies.FindReferencesFor: group: string * package: string -&gt; string list</div>
 
-            <li class="nav-header">Download Paket</li>
-            <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
-            <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-
-            <li class="nav-header">GitHub</li>
-            <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
-
-            <li class="nav-header">Documentation</li>
-            <li><a href="./dependencies-file.html">paket.dependencies</a></li>
-            <li><a href="./lock-file.html">paket.lock</a></li>
-            <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>
-            <li><a href="./local-file.html">paket.local</a></li>
-            <li><a href="./paket-folder.html">.paket folder</a></li>
-            <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
-            <li class="divider"></li>
-            <li><a href="./resolver.html">Package resolution algorithm</a></li>
-            <li><a href="./groups.html">Dependency Groups</a></li>
-            <li><a href="./caches.html">Additional Caches</a></li>
-            <li><a href="./nuget-dependencies.html">NuGet dependencies</a></li>
-            <li><a href="./git-dependencies.html">Git dependencies</a></li>
-            <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
-            <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>
-            <li class="divider"></li>
-            <li><a href="./installation.html">Installation</a></li>
-            <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
-            <li><a href="./fsi-integration.html">F# Interactive integration</a></li>
-            <li><a href="./editor-support.html">Editor support</a></li>
-            <li><a href="./shell-completion.html">Shell completion</a></li>
-            <li><a href="./credential-providers.html">Credential Providers</a></li>
-            <li class="divider"></li>
-            <li><a href="./reference/index.html">API Reference</a></li>
-
-            <li class="nav-header">Paket commands</li>
-            <li><a href="./paket-add.html">paket add</a></li>
-            <li><a href="./paket-auto-restore.html">paket auto-restore</a></li>
-            <li><a href="./paket-clear-cache.html">paket clear-cache</a></li>
-            <li><a href="./paket-config.html">paket config</a></li>
-            <li><a href="./paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
-            <li><a href="./paket-find-refs.html">paket find-refs</a></li>
-            <li><a href="./paket-find-packages.html">paket find-packages</a></li>
-            <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
-            <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-info.html">paket info</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>
-            <li><a href="./paket-install.html">paket install</a></li>
-            <li><a href="./paket-outdated.html">paket outdated</a></li>
-            <li><a href="./paket-pack.html">paket pack</a></li>
-            <li><a href="./paket-push.html">paket push</a></li>
-            <li><a href="./paket-remove.html">paket remove</a></li>
-            <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>
-            <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
-            <li><a href="./paket-update.html">paket update</a></li>
-            <li><a href="./paket-why.html">paket why</a></li>
-            <li><a href="./paket-restriction.html">paket restriction</a></li>
-          </ul>
-        </div>
-      </div>
     </div>
-    <a href="http://github.com/fsprojects/Paket"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/></a>
-  </body>
+</main>
+<aside id="fsdocs-page-menu">
+    <p id="on-this-page">On this page</p>
+    <ul>
+  <li class="level-1">
+    <a href="#Using-Paket-from-F-Interactive">
+      Using Paket from F# Interactive
+    </a>
+  </li>
+  <li class="level-2">
+    <a href="#Reference-Paket-Core">
+      Reference Paket.Core
+    </a>
+  </li>
+  <li class="level-2">
+    <a href="#Adding-and-removing-NuGet-packages">
+      Adding and removing NuGet packages
+    </a>
+  </li>
+  <li class="level-2">
+    <a href="#Query-the-install-model">
+      Query the install model
+    </a>
+  </li>
+</ul>
+</aside>
+<dialog>
+    <input type="search" placeholder="Search docs" />
+    <div class="results">
+        <ul></ul>
+        <p class="empty">Type something to start searching.</p>
+    </div>
+</dialog>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-tips.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-theme-toggle.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-details-toggle.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-theme.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-search.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-copy-button.js"></script>
+
+</body>
 </html>

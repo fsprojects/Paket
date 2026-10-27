@@ -1,63 +1,210 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8"/>
+<html lang="en" data-root="https://fsprojects.github.io/Paket/">
+<head>
+    <meta charset="UTF-8">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Paket team" name="author">
+    <!-- Opengraph properties (https://ogp.me/) -->
+    <meta property="og:site_name" content="Paket">
+    <meta property="og:title" content="Paket shell completion for <a href="http://zsh.org/">zsh</a>
+" />
+    <meta property="og:url" content="https://fsprojects.github.io/Paket/shell-completion.zsh.html">
+    <meta property="og:type" content="website" />
+    <!-- Twitter cards (https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/summary-card-with-large-image) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="https://fsprojects.github.io/Paket/">
+    <meta name="twitter:title" content="Paket shell completion for <a href="http://zsh.org/">zsh</a>
+">
+    
     <title>Paket shell completion for <a href="http://zsh.org/">zsh</a>
-</title>
-    <link rel="icon" type="image/png" href="./img/logo.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
-
-    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
-    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
-    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
-    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
-
-    <link type="text/css" rel="stylesheet" href="./content/style.css" />
-    <script type="text/javascript" src="./content/tips.js"></script>
-    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <style type="text/css">
-      table.pre td.lines {
-        vertical-align: top;
-      }
-      pre.fssnip code[lang=batchfile],
-      pre.fssnip code[lang=msh] {
-        display: inline-block;
-        white-space: pre-wrap;       /* CSS 3 */
-        white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-        white-space: -pre-wrap;      /* Opera 4-6 */
-        white-space: -o-pre-wrap;    /* Opera 7 */
-        word-wrap: break-word;       /* Internet Explorer 5.5+ */
-        word-break: keep-all;
-        padding-left: 2em;
-        text-indent: -2em;
-      }
-    </style>
-    <script type="text/javascript">
-      $(function() {
-        $("code[lang='batchfile'], code[lang='msh']").each(function() {
-          $(this).html($(this).html().replace(/ &lt;/g, "&nbsp;&lt;"))
-        })
-      })
-    </script>
-  </head>
-  <body>
-    <div class="container">
-      <div class="masthead">
-        <ul class="nav nav-pills pull-right">
-          <li><a href="http://github.com/fsprojects/Paket">github page</a></li>
-        </ul>
-        <h3 class="muted"><a href="./index.html">Paket</a></h3>
-      </div>
-      <hr />
-      <div class="row">
-        <div class="span9" id="main">
-          
-<h1><a name="Paket-shell-completion-for-zsh" class="anchor" href="#Paket-shell-completion-for-zsh">Paket shell completion for <a href="http://zsh.org/">zsh</a></a></h1>
+ | Paket</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="https://fsprojects.github.io/Paket/img/logo.png" rel="icon" sizes="32x32" type="image/png"/>
+    <script type="application/javascript" src="https://fsprojects.github.io/Paket/content/fsdocs-theme-set-dark.js"></script>
+    <script type="application/javascript" src="https://fsprojects.github.io/Paket/content/fsdocs-details-set-expanded.js"></script>
+    <link href="https://fsprojects.github.io/Paket/content/fsdocs-default.css" rel="stylesheet" type="text/css"/>
+    <link href="https://fsprojects.github.io/Paket/content/fsdocs-theme.css" rel="stylesheet" type="text/css"/>
+    
+    
+</head>
+<body class="content">
+<header>
+    <div class="start">
+        <div id="menu-toggle">
+            <iconify-icon class="icon closed" height="22" icon="eva:menu-fill" width="22"></iconify-icon>
+            <iconify-icon class="icon open" height="22" icon="mi:close" width="22"></iconify-icon>
+            <input type="checkbox" name="mobile-menu" />
+            <ul class="menu">
+                <li class="nav-header">Paket</li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/index.html">Home page</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/get-started.html">Get started</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/learn-how-to-use-paket.html">Learn how to use paket</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/convert-from-nuget-tutorial.html">Convert from legacy NuGet</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-and-dotnet-cli.html">Paket with .NET SDK</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/faq.html">FAQ</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/release-notes.html">Release Notes</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/contact.html">Contact</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/testimonials.html">Testimonials</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/license.html">License</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/glossary.html">Glossary</a></li>
+                <li class="nav-header">Download Paket</li>
+                <li class="nav-item"><a class="nav-link" href="https://www.nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+                <li class="nav-header">GitHub</li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+                <li class="nav-header">Documentation</li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/dependencies-file.html">paket.dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/lock-file.html">paket.lock</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/references-files.html">paket.references</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/template-files.html">paket.template</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/local-file.html">paket.local</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-folder.html">.paket folder</a></li>
+                <li class="divider"></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/resolver.html">Package resolution algorithm</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/groups.html">Dependency Groups</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/caches.html">Additional Caches</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/nuget-dependencies.html">NuGet dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/git-dependencies.html">Git dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/github-dependencies.html">GitHub dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/http-dependencies.html">HTTP dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/analyzers.html">Analyzers</a></li>
+                <li class="divider"></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/installation.html">Installation</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference-from-repl.html">Using Paket from F# Interactive</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/fsi-integration.html">F# Interactive integration</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/editor-support.html">Editor support</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/shell-completion.html">Shell completion</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/credential-providers.html">Credential Providers</a></li>
+                <li class="divider"></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference/index.html">API Reference</a></li>
+                <li class="nav-header">Paket commands</li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-add.html">paket add</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-auto-restore.html">paket auto-restore</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-clear-cache.html">paket clear-cache</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-config.html">paket config</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-refs.html">paket find-refs</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-packages.html">paket find-packages</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-package-versions.html">paket find-package-versions</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-fix-nuspecs.html">paket fix-nuspecs</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-nuspec.html">paket generate-nuspec</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-git.html">paket git</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-github.html">paket github</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-info.html">paket info</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-init.html">paket init</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-install.html">paket install</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-outdated.html">paket outdated</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-pack.html">paket pack</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-push.html">paket push</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-remove.html">paket remove</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restore.html">paket restore</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-simplify.html">paket simplify</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-conditions.html">paket show-conditions</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-groups.html">paket show-groups</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-installed-packages.html">paket show-installed-packages</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-update.html">paket update</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-why.html">paket why</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restriction.html">paket restriction</a></li>
+            </ul>
+        </div>
+        <a href="https://fsprojects.github.io/Paket/">
+            <img alt="Logo" src="https://fsprojects.github.io/Paket/img/logo.png">
+            <strong>Paket</strong>
+        </a>
+    </div>
+    <div class="end">
+        <a href="https://github.com/fsprojects/Paket" target="_blank">
+            <iconify-icon icon="uil:github" width="26" height="26"></iconify-icon>
+        </a>
+        <iconify-icon id="search-btn" icon="carbon:search" class="search" width="24" height="24"></iconify-icon>
+        <fsdocs-theme-toggle></fsdocs-theme-toggle>
+    </div>
+</header>
+<aside id="fsdocs-main-menu">
+    <ul class="menu">
+        <li class="nav-header">Paket</li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/index.html">Home page</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/get-started.html">Get started</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/learn-how-to-use-paket.html">Learn how to use paket</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/convert-from-nuget-tutorial.html">Convert from legacy NuGet</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-and-dotnet-cli.html">Paket with .NET SDK</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/faq.html">FAQ</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/release-notes.html">Release Notes</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/contact.html">Contact</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/testimonials.html">Testimonials</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/license.html">License</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/glossary.html">Glossary</a></li>
+        <li class="nav-header">Download Paket</li>
+        <li class="nav-item"><a class="nav-link" href="https://www.nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+        <li class="nav-header">GitHub</li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+        <li class="nav-header">Documentation</li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/dependencies-file.html">paket.dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/lock-file.html">paket.lock</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/references-files.html">paket.references</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/template-files.html">paket.template</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/local-file.html">paket.local</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-folder.html">.paket folder</a></li>
+        <li class="divider"></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/resolver.html">Package resolution algorithm</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/groups.html">Dependency Groups</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/caches.html">Additional Caches</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/nuget-dependencies.html">NuGet dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/git-dependencies.html">Git dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/github-dependencies.html">GitHub dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/http-dependencies.html">HTTP dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/analyzers.html">Analyzers</a></li>
+        <li class="divider"></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/installation.html">Installation</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference-from-repl.html">Using Paket from F# Interactive</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/fsi-integration.html">F# Interactive integration</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/editor-support.html">Editor support</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/shell-completion.html">Shell completion</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/credential-providers.html">Credential Providers</a></li>
+        <li class="divider"></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/reference/index.html">API Reference</a></li>
+        <li class="nav-header">Paket commands</li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-add.html">paket add</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-auto-restore.html">paket auto-restore</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-clear-cache.html">paket clear-cache</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-config.html">paket config</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-refs.html">paket find-refs</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-packages.html">paket find-packages</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-find-package-versions.html">paket find-package-versions</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-fix-nuspecs.html">paket fix-nuspecs</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-generate-nuspec.html">paket generate-nuspec</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-git.html">paket git</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-github.html">paket github</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-info.html">paket info</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-init.html">paket init</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-install.html">paket install</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-outdated.html">paket outdated</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-pack.html">paket pack</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-push.html">paket push</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-remove.html">paket remove</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restore.html">paket restore</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-simplify.html">paket simplify</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-conditions.html">paket show-conditions</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-groups.html">paket show-groups</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-show-installed-packages.html">paket show-installed-packages</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-update.html">paket update</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-why.html">paket why</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://fsprojects.github.io/Paket/paket-restriction.html">paket restriction</a></li>
+    </ul>
+</aside>
+<main>
+    <div id="content">
+        <h1><a name="Paket-shell-completion-for-zsh" class="anchor" href="#Paket-shell-completion-for-zsh">Paket shell completion for <a href="http://zsh.org/">zsh</a></a></h1>
 <h2><a name="Installation" class="anchor" href="#Installation">Installation</a></h2>
 <h3><a name="Download" class="anchor" href="#Download">Download</a></h3>
 <ol>
@@ -70,20 +217,13 @@ function files.
 <li>Rename it to <code>_paket</code>.</li>
 <li>Add the directory to your zsh <code>fpath</code> before running <code>compinit</code>.</li>
 </ol>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">$ target="$HOME/.zsh-completions"
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">$ target="$HOME/.zsh-completions"
 $ mkdir "$target"
 $ curl --fail --location --proto-redir -all,https --output "$target/_paket" \
   https://raw.githubusercontent.com/fsprojects/Paket/master/completion/paket-completion.zsh
 </code></pre></td></tr></table>
 <p>In your <code>~/.zshrc</code>:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">fpath=($HOME/directory/where/_paket/resides $fpath)
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">fpath=($HOME/directory/where/_paket/resides $fpath)
 </code></pre></td></tr></table>
 <h3><a name="Updating-an-existing-installation" class="anchor" href="#Updating-an-existing-installation">Updating an existing installation</a></h3>
 <p>Just repeat the download from above.</p>
@@ -99,100 +239,57 @@ functions have been <code>autoload</code>ed by zsh).</p>
 to override the default download root URL which is
 <code>https://raw.githubusercontent.com/fsprojects/Paket/master/completion</code>.</p>
 <h3><a name="alias" class="anchor" href="#alias"><code>paket</code> alias</a></h3>
-<p>For easier consumption of Paket (without <code>paket.sh</code> or <code>paket.cmd</code>) it is
-advised to create an alias and always run Paket from the repository root.</p>
-<p>Also have a look at
-<a href="https://fsprojects.github.io/Paket/bootstrapper.html#Magic-mode">Paket's magic mode</a>.</p>
+<p>Paket is a .NET tool. When it is a
+<a href="https://fsprojects.github.io/Paket/installation.html#Local-tool">local tool</a> of
+the repository, it is advised to create an alias and always run Paket from the
+repository root.</p>
 <p>Somewhere in your <code>~/.zshrc</code>:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-<span class="l">5: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">if [[ "$OS" != Windows* ]]; then
-  alias paket='mono ./.paket/paket.exe'
-else
-  alias paket='./.paket/paket.exe'
-fi
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">alias paket='dotnet paket'
 </code></pre></td></tr></table>
 <p>Also ensure that zsh
 <a href="http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETEALIASES">completes aliases based on the expanded alias contents</a>.</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">unsetopt completealiases
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">unsetopt completealiases
 </code></pre></td></tr></table>
 <p>If you don't like alias completion, define that the <code>paket</code> alias should be
 completed using the <code>_paket</code> function defined in the <code>_paket</code> file.</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">setopt completealiases
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">setopt completealiases
 compdef _paket paket
 </code></pre></td></tr></table>
-<h3><a name="Mono" class="anchor" href="#Mono">Mono</a></h3>
-<p>If you use Mono (e.g. on Linux or macOS) and do not have Mono completion
-installed, you need to define that <code>mono</code> invokes other programs:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">compdef _precommand mono
-</code></pre></td></tr></table>
-<p>This is similar to <a href="http://man7.org/linux/man-pages/man1/nohup.1p.html"><code>nohup</code></a>
-invoking the "real" program that needs to be completed.
-<a href="https://unix.stackexchange.com/a/178054/72946">More details.</a></p>
-<p>For an exemplar <code>mono</code> completion, have a look at
-<a href="https://github.com/agross/dotfiles/tree/master/mono/functions/_mono">@agross dotfiles</a>.</p>
 <h2><a name="Configuration" class="anchor" href="#Configuration">Configuration</a></h2>
 <p>You can configure some aspects of Paket completion. Add these to your
 <code>~/.zshrc</code>.</p>
-<h3><a name="Define-where-to-look-for" class="anchor" href="#Define-where-to-look-for">Define where to look for <code>paket.exe</code></a></h3>
+<h3><a name="Define-where-to-look-for" class="anchor" href="#Define-where-to-look-for">Define where to look for <code>paket</code></a></h3>
 <p>Depending on what should be completed the Paket executable will be run by the
-completion script. The completion script searches for a local installation at
-<code>./.paket/paket.exe</code> first. Local installs will be prepended with <code>mono</code> unless
-you are running Windows. Global installations will be looked at last (i.e.
-<code>paket</code> in the <code>$PATH</code>). They are not prepended with <code>mono</code>.</p>
-<p>To override the list of possible locations for local installations of
-<code>paket.exe</code>, define the following <code>paket-executable</code> style. The list of values
+completion script. The completion script searches for Paket installed with
+<code>dotnet tool install paket --tool-path .paket</code> first, then for a local tool of
+<code>./.config/dotnet-tools.json</code> (run with <code>dotnet paket</code>), then for a global tool
+(i.e. <code>paket</code> in the <code>$PATH</code>).</p>
+<p>To override the list of possible locations for Paket installed with
+<code>--tool-path</code>, define the following <code>paket-executable</code> style. The list of values
 will be searched as defined.</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh"># This is the default.
-zstyle ':completion::complete:paket:*' paket-executable './.paket/paket.exe'
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh"># This is the default.
+zstyle ':completion::complete:paket:*' paket-executable './.paket/paket'
 # Useful for Paket developers: Prefer the locally built version in bin over the one in .paket.
-zstyle ':completion::complete:paket:*' paket-executable './bin/paket.exe' './.paket/paket.exe'
+zstyle ':completion::complete:paket:*' paket-executable './bin/net10.0/paket' './.paket/paket'
 </code></pre></td></tr></table>
 <h3><a name="Enable-infix-matching-for-package-IDs" class="anchor" href="#Enable-infix-matching-for-package-IDs">Enable infix matching for package IDs</a></h3>
 <p>By default <code>paket find-packages</code> will match infixes, which is not the default
 mode for Paket completion. I think it's unnatural to type</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket add FAK&lt;tab&gt;
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">paket add FAK&lt;tab&gt;
 </code></pre></td></tr></table>
 <p>which will be completed to</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">paket add Altairis.Fakturoid.Client
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">paket add Altairis.Fakturoid.Client
 </code></pre></td></tr></table>
 <p>if infix matching is enabled.</p>
 <p>If you want this behavior, enable infix matches:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">zstyle ':completion::complete:paket:*' infix-match yes
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">zstyle ':completion::complete:paket:*' infix-match yes
 zstyle ':completion::complete:paket:add:*' infix-match yes # Only for paket add.
 </code></pre></td></tr></table>
 <h3><a name="Disable-fallback-i-e-default-zsh-completion-for-Paket-commands-that-do-not-have-a-completion-function" class="anchor" href="#Disable-fallback-i-e-default-zsh-completion-for-Paket-commands-that-do-not-have-a-completion-function">Disable fallback (i.e. default zsh) completion for Paket commands that do not have a completion function</a></h3>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">zstyle ':completion::complete:paket:*' use-fallback no
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">zstyle ':completion::complete:paket:*' use-fallback no
 </code></pre></td></tr></table>
 <h3><a name="Disable-verbose-completion-of-main-commands" class="anchor" href="#Disable-verbose-completion-of-main-commands">Disable verbose completion of main commands</a></h3>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">zstyle ':completion::complete:paket:*' verbose no
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">zstyle ':completion::complete:paket:*' verbose no
 </code></pre></td></tr></table>
 <h3><a name="Define-the-zsh-completion-cache-policy-for-expensive-operations-that-generate-completions" class="anchor" href="#Define-the-zsh-completion-cache-policy-for-expensive-operations-that-generate-completions">Define the zsh completion cache policy for expensive operations that generate completions</a></h3>
 <p>Paket will e.g. issue HTTP requests when you complete a package ID or a
@@ -200,22 +297,15 @@ version number. These take time so we take advantage of the zsh
 completion cache and store such results.</p>
 <p>Enable the zsh completion cache globally, including completions for other
 commands that also leverage caching:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">zstyle ':completion:*' use-cache on
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">zstyle ':completion:*' use-cache on
 zstyle ':completion:*' cache-path instead/of/$HOME/.zcompcache # Optional.
 </code></pre></td></tr></table>
 <p>To disable the cache for specific Paket commands to always get fresh
 results when completing e.g. <code>paket add</code>:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">zstyle ':completion::complete:paket:add:*' use-cache off
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">zstyle ':completion::complete:paket:add:*' use-cache off
 </code></pre></td></tr></table>
 <p>The caches are stored under the <code>cache-path</code> as follows:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="text">&lt;cache-path&gt;/paket/&lt;expensive command&gt;/&lt;parameter&gt;
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="text">&lt;cache-path&gt;/paket/&lt;expensive command&gt;/&lt;parameter&gt;
 </code></pre></td></tr></table>
 <p>e.g. <code>&lt;cache-path&gt;/paket/find-packages/fak</code> if you completed <code>paket add FAK</code> or
 <code>paket add fak</code> before.</p>
@@ -223,23 +313,7 @@ results when completing e.g. <code>paket add</code>:</p>
 To remove cached results you can either delete the
 <code>&lt;cache-path&gt;/paket</code> directory or provide a custom cache policy to control
 cache expiration for all or specific Paket commands:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
-<span class="l">11: </span>
-<span class="l">12: </span>
-<span class="l">13: </span>
-<span class="l">14: </span>
-<span class="l">15: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">zstyle ':completion::complete:paket:*' cache-policy _default_cache_policy
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">zstyle ':completion::complete:paket:*' cache-policy _default_cache_policy
 zstyle ':completion::complete:paket:find-packages:*' cache-policy _strict_cache_policy
 
 _default_cache_policy () {
@@ -262,20 +336,10 @@ file's modification time is newer than the cache.
 (See <code>_paket_cache_policy_dependencies_file</code> and
 <code>_paket_cache_policy_lock_file</code>.)</p>
 <h3><a name="Disable-running-Paket-to-get-packages-versions-etc-as-completion-arguments" class="anchor" href="#Disable-running-Paket-to-get-packages-versions-etc-as-completion-arguments">Disable running Paket to get packages, versions etc. as completion arguments</a></h3>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">zstyle ':completion::complete:paket:*' disable-completion yes
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">zstyle ':completion::complete:paket:*' disable-completion yes
 </code></pre></td></tr></table>
 <p>Disable only a single means to get completion values:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-<span class="l">5: </span>
-<span class="l">6: </span>
-<span class="l">7: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh"># Used by e.g. paket add:
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh"># Used by e.g. paket add:
 zstyle ':completion::complete:paket:find-packages:' disable-completion yes
 zstyle ':completion::complete:paket:find-package-versions:' disable-completion yes
 zstyle ':completion::complete:paket:show-groups:' disable-completion yes
@@ -284,109 +348,84 @@ zstyle ':completion::complete:paket:show-groups:' disable-completion yes
 zstyle ':completion::complete:paket:show-installed-packages:' disable-completion yes
 </code></pre></td></tr></table>
 <h3><a name="Custom-feed-URLs-for-and-argument" class="anchor" href="#Custom-feed-URLs-for-and-argument">Custom feed URLs for <code>--source</code> and <code>paket push --url</code> argument</a></h3>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">zstyle ':completion::complete:paket:*' sources 'http://one.example.com/feed/v2'
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">zstyle ':completion::complete:paket:*' sources 'http://one.example.com/feed/v2'
 zstyle ':completion::complete:paket:*' sources \
   'http://one.example.com/feed/v2' \
   'http://second.example.com/feed/v2'
 </code></pre></td></tr></table>
 <p>Override list for a specific command:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">zstyle ':completion::complete:paket:find-package-versions:*' sources \
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">zstyle ':completion::complete:paket:find-package-versions:*' sources \
   'http://another.example.com/feed/v2'
 zstyle ':completion::complete:paket:push:*' sources \
   'https://myget.org/F/my-feed-name'
 </code></pre></td></tr></table>
 
-
-        </div>
-        <div class="span3">
-          <img src="./img/logo.png" alt="F# Project" style="width:150px;margin:10px" />
-          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
-            <li class="nav-header">Paket</li>
-            <li><a href="./index.html">Home page</a></li>
-            <li><a href="./get-started.html">Get started</a></li>
-            <li><a href="./learn-how-to-use-paket.html">Learn how to use paket</a></li>
-            <li><a href="./convert-from-nuget-tutorial.html">Convert from legacy NuGet</a></li>
-            <li><a href="./paket-and-dotnet-cli.html">Paket with .NET SDK</a></li>
-            <li><a href="./faq.html">FAQ</a></li>
-            <li><a href="./release-notes.html">Release Notes</a></li>
-            <li><a href="./contact.html">Contact</a></li>
-            <li><a href="./testimonials.html">Testimonials</a></li>
-            <li><a href="./license.html">License</a></li>
-            <li><a href="./glossary.html">Glossary</a></li>
-
-            <li class="nav-header">Download Paket</li>
-            <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
-            <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-
-            <li class="nav-header">GitHub</li>
-            <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
-
-            <li class="nav-header">Documentation</li>
-            <li><a href="./dependencies-file.html">paket.dependencies</a></li>
-            <li><a href="./lock-file.html">paket.lock</a></li>
-            <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>
-            <li><a href="./local-file.html">paket.local</a></li>
-            <li><a href="./paket-folder.html">.paket folder</a></li>
-            <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
-            <li class="divider"></li>
-            <li><a href="./resolver.html">Package resolution algorithm</a></li>
-            <li><a href="./groups.html">Dependency Groups</a></li>
-            <li><a href="./caches.html">Additional Caches</a></li>
-            <li><a href="./nuget-dependencies.html">NuGet dependencies</a></li>
-            <li><a href="./git-dependencies.html">Git dependencies</a></li>
-            <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
-            <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>
-            <li class="divider"></li>
-            <li><a href="./installation.html">Installation</a></li>
-            <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
-            <li><a href="./fsi-integration.html">F# Interactive integration</a></li>
-            <li><a href="./editor-support.html">Editor support</a></li>
-            <li><a href="./shell-completion.html">Shell completion</a></li>
-            <li><a href="./credential-providers.html">Credential Providers</a></li>
-            <li class="divider"></li>
-            <li><a href="./reference/index.html">API Reference</a></li>
-
-            <li class="nav-header">Paket commands</li>
-            <li><a href="./paket-add.html">paket add</a></li>
-            <li><a href="./paket-auto-restore.html">paket auto-restore</a></li>
-            <li><a href="./paket-clear-cache.html">paket clear-cache</a></li>
-            <li><a href="./paket-config.html">paket config</a></li>
-            <li><a href="./paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
-            <li><a href="./paket-find-refs.html">paket find-refs</a></li>
-            <li><a href="./paket-find-packages.html">paket find-packages</a></li>
-            <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
-            <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-info.html">paket info</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>
-            <li><a href="./paket-install.html">paket install</a></li>
-            <li><a href="./paket-outdated.html">paket outdated</a></li>
-            <li><a href="./paket-pack.html">paket pack</a></li>
-            <li><a href="./paket-push.html">paket push</a></li>
-            <li><a href="./paket-remove.html">paket remove</a></li>
-            <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>
-            <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
-            <li><a href="./paket-update.html">paket update</a></li>
-            <li><a href="./paket-why.html">paket why</a></li>
-            <li><a href="./paket-restriction.html">paket restriction</a></li>
-          </ul>
-        </div>
-      </div>
+        
     </div>
-    <a href="http://github.com/fsprojects/Paket"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/></a>
-  </body>
+</main>
+<aside id="fsdocs-page-menu">
+    <p id="on-this-page">On this page</p>
+    <ul>
+  <li class="level-2">
+    <a href="#Installation">
+      Installation
+    </a>
+  </li>
+  <li class="level-3">
+    <a href="#Download">
+      Download
+    </a>
+  </li>
+  <li class="level-3">
+    <a href="#Updating-an-existing-installation">
+      Updating an existing installation
+    </a>
+  </li>
+  <li class="level-2">
+    <a href="#Configuration">
+      Configuration
+    </a>
+  </li>
+  <li class="level-3">
+    <a href="#Enable-infix-matching-for-package-IDs">
+      Enable infix matching for package IDs
+    </a>
+  </li>
+  <li class="level-3">
+    <a href="#Disable-fallback-i-e-default-zsh-completion-for-Paket-commands-that-do-not-have-a-completion-function">
+      Disable fallback (i.e. default zsh) completion for Paket commands that do not have a completion function
+    </a>
+  </li>
+  <li class="level-3">
+    <a href="#Disable-verbose-completion-of-main-commands">
+      Disable verbose completion of main commands
+    </a>
+  </li>
+  <li class="level-3">
+    <a href="#Define-the-zsh-completion-cache-policy-for-expensive-operations-that-generate-completions">
+      Define the zsh completion cache policy for expensive operations that generate completions
+    </a>
+  </li>
+  <li class="level-3">
+    <a href="#Disable-running-Paket-to-get-packages-versions-etc-as-completion-arguments">
+      Disable running Paket to get packages, versions etc. as completion arguments
+    </a>
+  </li>
+</ul>
+</aside>
+<dialog>
+    <input type="search" placeholder="Search docs" />
+    <div class="results">
+        <ul></ul>
+        <p class="empty">Type something to start searching.</p>
+    </div>
+</dialog>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-tips.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-theme-toggle.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-details-toggle.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-theme.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-search.js"></script>
+<script type="module" src="https://fsprojects.github.io/Paket/content/fsdocs-copy-button.js"></script>
+
+</body>
 </html>
