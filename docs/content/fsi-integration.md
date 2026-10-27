@@ -26,7 +26,7 @@ Install the FSharp.DependencyManager.Paket.dll aside of your F# Interactive bina
 
 In general, the process will explicitly list the folders it is currently checking for extensions:
 
-```
+```text
 error FS3216: Package manager key 'paket' was not registered in [C:\Program Files\dotnet\sdk\5.0.100\FSharp; C:\Program Files\dotnet\sdk\5.0.100\FSharp\], []. Currently registered: nuget
 ```
 
@@ -53,13 +53,13 @@ Use the `--compilertool` flag when invoking F# Interactive or refer to the docum
 
 For example on windows:
 
-```
+```text
 --compilertool:"c:\users\username\.nuget\packages\fsharp.dependencymanager.paket\6.0.0-alpha055\lib\netstandard2.0"
 ```
 
 For example on unix:
 
-```
+```text
 --compilertool:"~/.nuget/packages/fsharp.dependencymanager.paket/6.0.0-alpha055/lib/netstandard2.0"
 ```
 

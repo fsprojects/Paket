@@ -1,5 +1,7 @@
 #### Unreleased
 
+* The warning about the FSharp.Core binding redirects of F# projects links to an existing section of the documentation
+
 #### 12.0.0-alpha003 - 2026-10-26
 
 * BREAKING: Paket.Core targets net10.0 instead of netstandard2.0: the projects and scripts that reference it must target net10.0 or later, as the `paket` .NET tool already needs the .NET 10 runtime. FSharp.DependencyManager.Paket stays on netstandard2.0 - https://github.com/fsprojects/Paket/issues/4317
@@ -19,7 +21,7 @@
 
 #### 12.0.0-alpha001 - 2026-10-11
 
-Paket 12 only ships as the `paket` .NET tool, which needs the .NET 10 runtime: `paket.exe`, `paket.bootstrapper.exe` and Mono are no longer supported. To upgrade, install Paket as a local tool (`dotnet new tool-manifest` if the repository has none, then `dotnet tool install paket`), delete `.paket/paket.exe` and `.paket/paket.bootstrapper.exe`, call `dotnet paket` instead of `.paket/paket.exe` in your build scripts, and run `dotnet paket auto-restore on` again if you use auto-restore. The steps are detailed in https://fsprojects.github.io/Paket/installation.html#Moving-from-paket-exe-and-the-bootstrapper. To keep `paket.exe` for now, remove the `version` line from paket.dependencies and run `.paket/paket.bootstrapper.exe --self`: you get the bootstrapper of Paket 11, which stays on the latest 11.x.
+Paket 12 only ships as the `paket` .NET tool, which needs the .NET 10 runtime: `paket.exe`, `paket.bootstrapper.exe` and Mono are no longer supported. To upgrade, install Paket as a local tool (`dotnet new tool-manifest` if the repository has none, then `dotnet tool install paket`), delete `.paket/paket.exe` and `.paket/paket.bootstrapper.exe`, call `dotnet paket` instead of `.paket/paket.exe` in your build scripts, and run `dotnet paket auto-restore on` again if you use auto-restore. The steps are detailed in <https://fsprojects.github.io/Paket/installation.html#Moving-from-paket-exe-and-the-bootstrapper>. To keep `paket.exe` for now, remove the `version` line from paket.dependencies and run `.paket/paket.bootstrapper.exe --self`: you get the bootstrapper of Paket 11, which stays on the latest 11.x.
 
 This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NET 9 to 11 (`net9.0-android`, `net10.0-ios`...), so the next `paket update` may rewrite some framework restrictions in paket.lock.
 
@@ -1080,7 +1082,7 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 * USABILITY: Better error message when references file parsing fails
 
 #### 5.5.0 - 2017-07-07
-* Support for dotnet cli tools with clitools keyword in paket.dependencies - https://fsprojects.github.io/Paket/nuget-dependencies.html#Special-case-dotnet-cli-tools
+* Support for dotnet cli tools with clitools keyword in paket.dependencies - https://fsprojects.github.io/Paket/nuget-dependencies.html#Special-case-CLI-tools
 * GNU-compatible command line - https://github.com/fsprojects/Paket/pull/2429
 * Add Tizen framework (v3 and v4) - https://github.com/fsprojects/Paket/pull/2492
 * USABILITY: find-package-versions now includes default source to match behavior of find-packages - https://github.com/fsprojects/Paket/pull/2493
@@ -1247,7 +1249,7 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 * Reorganized resolver - https://github.com/fsprojects/Paket/pull/2039
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
 * USABILITY: Collect multiple install errors before failing - https://github.com/fsprojects/Paket/pull/2177
-* Generate load scripts on install abidding to new paket.dependencies option - https://fsprojects.github.io/Paket/dependencies-file.html#Generate-load-scripts
+* Generate load scripts on install abidding to new paket.dependencies option - https://fsprojects.github.io/Paket/dependencies-file.html#Load-script-generation
 
 #### 3.37.0 - 2017-03-15
 * BUGFIX: auto-detect no longer causes Out of sync warning - https://github.com/fsprojects/Paket/issues/2096
@@ -1404,7 +1406,7 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 * BUGFIX: Async cache fix in multi-thread-environment for GitHub downloads - https://github.com/fsprojects/Paket/pull/1880
 
 #### 3.16.0 - 2016-08-24
-* Allow to use github access token from environment variable for github dependencies - http://fsprojects.github.io/Paket/github-dependencies.html#Using-a-GitHub-auth-key-from-environment-variable
+* Allow to use github access token from environment variable for github dependencies - http://fsprojects.github.io/Paket/github-dependencies.html#Using-a-GitHub-authentication-key-from-environment-variable
 * BUGFIX: Look for OutDir in .vcxproj - https://github.com/fsprojects/Paket/issues/1870
 * USABILITY: Skip invalid meta-data in cpp projects - https://github.com/fsprojects/Paket/issues/1870
 * USABILITY: Add better tracing during resolve - https://github.com/fsprojects/Paket/issues/1871
@@ -1514,7 +1516,7 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 
 #### 3.0.0 - 2016-06-15
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
-* Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
+* Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-Git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 * Allow to override package sources in paket.local - http://fsprojects.github.io/Paket/local-file.html http://theimowski.com/blog/2016/05-19-paket-workflow-for-testing-new-nuget-package-before-release/index.html
 * NEW COMMAND: "paket generate-include-scripts" creates package include scripts for F# Interactive - http://fsprojects.github.io/Paket/paket-generate-include-scripts.html
@@ -1627,7 +1629,7 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 * Fix resolver bug spotted by property based testing - https://github.com/fsprojects/Paket/issues/1524
 
 #### 2.54.0 - 2016-03-21
-* It's possible to influence the CopyToOutputDirectory property for content references in project files - http://fsprojects.github.io/Paket/nuget-dependencies.html#CopyToOutputDirectory-settings
+* It's possible to influence the CopyToOutputDirectory property for content references in project files - http://fsprojects.github.io/Paket/nuget-dependencies.html#Controlling-whether-content-files-should-be-copied-to-the-output-directory-during-build
 * BUGFIX: Fix regression where paket skipped packages with name ending in lib - https://github.com/fsprojects/Paket/issues/1531
 * USABILITY: Unknown package settings are now reported
 * USABILITY: Improve warning text on conflict - https://github.com/fsprojects/Paket/pull/1530
@@ -1694,7 +1696,7 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 * USABILITY: Show warning if a dependency is installed for wrong target framework - https://github.com/fsprojects/Paket/pull/1445
 
 #### 2.48.0 - 2016-01-28
-* New lowest_matching option that allows to use lowest matching version of direct dependencies - http://fsprojects.github.io/Paket/dependencies-file.html#Lowest-matching-option
+* New lowest_matching option that allows to use lowest matching version of direct dependencies - http://fsprojects.github.io/Paket/dependencies-file.html#Resolver-strategy-for-direct-dependencies
 * BUGFIX: Fix convert-from-nuget command - https://github.com/fsprojects/Paket/pull/1437
 * BUGFIX: paket pack with enabled include-referenced-projects flag doesn't throwh NRE - https://github.com/fsprojects/Paket/issues/1434
 * BUGFIX: Fixed pack package dependencies for dependent projects - https://github.com/fsprojects/Paket/issues/1429
@@ -1892,7 +1894,7 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 * USABILITY: Improved paket's conflict reporting during resolution time - https://github.com/fsprojects/Paket/pull/1168
 
 #### 2.17.0 - 2015-10-24
-* Global "oldest matching version" resolver strategy option - http://fsprojects.github.io/Paket/dependencies-file.html#Strategy-option
+* Global "oldest matching version" resolver strategy option - http://fsprojects.github.io/Paket/dependencies-file.html#Resolver-strategy-for-transitive-dependencies
 * Convert-from-nuget and simplify commands simplify framework restrictions if possible - https://github.com/fsprojects/Paket/pull/1159
 * BUGFIX: Queries every NuGet feed in parallel and combines the results - https://github.com/fsprojects/Paket/pull/1163
 * USABILITY: Give better error message when a file can't be found on a github repo - https://github.com/fsprojects/Paket/issues/1162
@@ -1948,11 +1950,11 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 * COSMETICS: Do not write unnecessary framework restrictions into paket.lock
 
 #### 2.7.0 - 2015-10-02
-* Support for private GitHub repos - http://fsprojects.github.io/Paket/github-dependencies.html#Referencing-a-private-github-repository
+* Support for private GitHub repos - http://fsprojects.github.io/Paket/github-dependencies.html#Referencing-a-private-GitHub-repository
 * BUGFIX: Find the mono binary on OSX 10.11 - https://github.com/fsprojects/Paket/pull/1103
 
 #### 2.6.0 - 2015-10-01
-* Allow "content:once" as a package setting - http://fsprojects.github.io/Paket/nuget-dependencies.html#No-content-option
+* Allow "content:once" as a package setting - http://fsprojects.github.io/Paket/nuget-dependencies.html#Controlling-whether-content-files-should-be-copied-to-the-project
 * BUGFIX: Don't add -prerelease to nuspec dependency nodes for project references - https://github.com/fsprojects/Paket/issues/1102
 * BUGFIX: Do not create prerelease identifiers for transitive dependencies - https://github.com/fsprojects/Paket/issues/1099
 * PERFORMANCE: Do not parse remote dependencies file twice - https://github.com/fsprojects/Paket/issues/1101
@@ -1983,7 +1985,7 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 
 #### 2.3.0 - 2015-09-21
 * Binding redirects from target platform only - https://github.com/fsprojects/Paket/pull/1070
-* Allow to enable redirects per package - http://fsprojects.github.io/Paket/nuget-dependencies.html#redirects-settings
+* Allow to enable redirects per package - http://fsprojects.github.io/Paket/nuget-dependencies.html#Controlling-assembly-binding-redirects
 * BUGFIX: Install command without a lockfile failed when using groups - https://github.com/fsprojects/Paket/issues/1067
 * BUGFIX: Only create packages.config entries for referenced packages - https://github.com/fsprojects/Paket/issues/1065
 * BUGFIX: Paket update added an app.config to every project - https://github.com/fsprojects/Paket/issues/1068
@@ -2376,7 +2378,7 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 
 #### 0.26.0 - 2015-01-31
 * Allow to opt-out of old frameworks in `paket.dependencies` - http://fsprojects.github.io/Paket/nuget-dependencies.html#Framework-restrictions
-* Allow `copy_local` settings in `paket.references` - http://fsprojects.github.io/Paket/references-files.html#copy_local-settings
+* Allow `copy_local` settings in `paket.references` - http://fsprojects.github.io/Paket/references-files.html#Overriding-settings-from
 * COSMETICS: `paket.lock` beautification for HTTP specs - https://github.com/fsprojects/Paket/pull/571
 
 #### 0.25.0 - 2015-01-25
@@ -2445,7 +2447,7 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 #### 0.20.0 - 2014-12-29
 * `paket install` performs a selective update based on the changes in the dependencies file - http://fsprojects.github.io/Paket/lock-file.html#Performing-updates
 * Paket.exe acquires a lock for all write processes - https://github.com/fsprojects/Paket/pull/469
-* New command to add credentials - http://fsprojects.github.io/Paket/paket-config.html#Add-credentials
+* New command to add credentials - http://fsprojects.github.io/Paket/paket-config.html#Adding-credentials
 * Smarter conditional NuGet dependencies - https://github.com/fsprojects/Paket/pull/462
 * If environment auth variables are empty a fallback to the config is used- https://github.com/fsprojects/Paket/pull/459
 * Better handling for multiple files from same GitHub repository - https://github.com/fsprojects/Paket/pull/451
@@ -2518,7 +2520,7 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 * New support for general HTTP dependencies - http://fsprojects.github.io/Paket/http-dependencies.html
 * New F# Interactive support - http://fsprojects.github.io/Paket/reference-from-repl.html
 * New `paket find-refs` command - http://fsprojects.github.io/Paket/paket-find-refs.html
-* Migration of NuGet source credentials during `paket convert-from-nuget` - http://fsprojects.github.io/Paket/paket-convert-from-nuget.html#Migrating-NuGet-source-credentials
+* Migration of NuGet source credentials during `paket convert-from-nuget` - http://fsprojects.github.io/Paket/convert-from-nuget-tutorial.html#Migrating-NuGet-source-credentials
 * Bootstrapper uses .NET 4.0 - https://github.com/fsprojects/Paket/pull/355
 * Adding --ignore-constraints to `paket outdated` - https://github.com/fsprojects/Paket/issues/308
 * PERFORMANCE: If `paket add` doesn't change the `paket.dependencies` file then the resolver process will be skipped
@@ -2544,7 +2546,7 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 
 #### 0.11.0 - 2014-10-29
 * Build a merged install model with all packages - https://github.com/fsprojects/Paket/issues/297
-* `paket update` command allows to set a version - http://fsprojects.github.io/Paket/paket-update.html#Updating-a-single-package
+* `paket update` command allows to set a version - http://fsprojects.github.io/Paket/paket-update.html#Updating-a-single-package-or-packages-matching-a-pattern
 * `paket.targets` is compatible with specific references files - https://github.com/fsprojects/Paket/issues/301
 * BUGFIX: Paket no longer leaves transitive dependencies in lockfile after remove command - https://github.com/fsprojects/Paket/pull/306
 * BUGFIX: Don't use "global override" for selective update process - https://github.com/fsprojects/Paket/issues/310
@@ -2571,7 +2573,7 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 * More portable profiles - https://github.com/fsprojects/Paket/issues/281
 * Added net11 to framework handling - https://github.com/fsprojects/Paket/pull/269
 * Create references for Win8 - https://github.com/fsprojects/Paket/issues/280
-* Detect VS automatic nuget restore and create paket restore - http://fsprojects.github.io/Paket/paket-convert-from-nuget.html#Automated-process
+* Detect VS automatic nuget restore and create paket restore - http://fsprojects.github.io/Paket/convert-from-nuget-tutorial.html#Command-steps
 * `paket convert-from-nuget` doesn't duplicate paket solution items - https://github.com/fsprojects/Paket/pull/286
 * BUGFIX: Paket removes old framework references if during install - https://github.com/fsprojects/Paket/issues/274
 * BUGFIX: Don't let the bootstrapper fail if we already have a paket.exe
@@ -2580,12 +2582,12 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 #### 0.8.0 - 2014-10-15
 * Smarter install in project files
 * Paket handles .NET 4.5.2 and .NET 4.5.3 projects - https://github.com/fsprojects/Paket/issues/260
-* New command: `paket update nuget <package id>` - http://fsprojects.github.io/Paket/paket-update.html#Updating-a-single-package
+* New command: `paket update nuget <package id>` - http://fsprojects.github.io/Paket/paket-update.html#Updating-a-single-package-or-packages-matching-a-pattern
 * BUGFIX: Do not expand auth when serializing dependencies file - https://github.com/fsprojects/Paket/pull/259
 * BUGFIX: Create catch all case for unknown portable frameworks
 
 #### 0.7.0 - 2014-10-14
-* Initial support for referencing full github projects - http://fsprojects.github.io/Paket/http-dependencies.html#Referencing-a-GitHub-repository
+* Initial support for referencing full github projects - http://fsprojects.github.io/Paket/github-dependencies.html#Referencing-a-GitHub-repository
 * Allow to use all branches in GitHub sources - https://github.com/fsprojects/Paket/pull/249
 * Initial support for frameworkAssemblies from nuspec - https://github.com/fsprojects/Paket/issues/241
 * Download github source files with correct encoding - https://github.com/fsprojects/Paket/pull/248
@@ -2611,7 +2613,7 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 * Supporting dot for references file - http://fsprojects.github.io/Paket/http-dependencies.html
 * Supporting pagination for long NuGet feeds - https://github.com/fsprojects/Paket/issues/223
 * Create a "use exactly this version" operator in order to override package conflicts - http://fsprojects.github.io/Paket/nuget-dependencies.html#Use-exactly-this-version-constraint
-* New `content none` mode in paket.dependencies - http://fsprojects.github.io/Paket/dependencies-file.html#No-content-option
+* New `content none` mode in paket.dependencies - http://fsprojects.github.io/Paket/dependencies-file.html#Controlling-whether-content-files-should-be-copied-to-the-project
 * Allow source files in content folder of NuGet packages
 * No -D needed for Linux installer - https://github.com/fsprojects/Paket/pull/210
 * Content files like `_._`, `*.transform` and `*.pp` are ignored - https://github.com/fsprojects/Paket/issues/207
@@ -2622,7 +2624,7 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 * Use credentials from nuget.config on paket convert-from-nuget - https://github.com/fsprojects/Paket/issues/198
 * Deploy fixed targets file - https://github.com/fsprojects/Paket/issues/172
 * New [--pre] and [--strict] modes for paket outdated - http://fsprojects.github.io/Paket/paket-outdated.html
-* New --no-auto-restore option for `convert-from-nuget` command - http://fsprojects.github.io/Paket/paket-convert-from-nuget.html#Automated-process
+* New --no-auto-restore option for `convert-from-nuget` command - http://fsprojects.github.io/Paket/convert-from-nuget-tutorial.html#Command-steps
 * Adding support for new portable profiles
 * paket.exe is now signed
 * Allow to reference .exe files from NuGet packages
@@ -2638,7 +2640,7 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 * COSMETICS: Throw better error message if we don't get any versions from NuGet source
 
 #### 0.4.0 - 2014-09-28
-* Resolve dependencies for github modules - http://fsprojects.github.io/Paket/http-dependencies.html#Remote-dependencies
+* Resolve dependencies for github modules - http://fsprojects.github.io/Paket/github-dependencies.html#Remote-dependencies
 * New [--interactive] mode for paket simplify - http://fsprojects.github.io/Paket/paket-simplify.html
 * Don't use version in path for github files.
 * Better error message when a package resolution conflict arises.
@@ -2647,7 +2649,7 @@ This release also recognizes .NET 11 and fixes the OS-specific frameworks of .NE
 * New command: paket add [--interactive] - http://fsprojects.github.io/Paket/paket-add.html
 * New command: paket simplify - http://fsprojects.github.io/Paket/paket-simplify.html
 * Better Visual Studio integration by using paket.targets file - http://fsprojects.github.io/Paket/paket-auto-restore.html
-* Support for NuGet prereleases - http://fsprojects.github.io/Paket/nuget-dependencies.html#PreReleases
+* Support for NuGet prereleases - http://fsprojects.github.io/Paket/nuget-dependencies.html#Prereleases
 * Support for private NuGet feeds - http://fsprojects.github.io/Paket/nuget-dependencies.html#NuGet-feeds
 * New NuGet package version constraints - http://fsprojects.github.io/Paket/nuget-dependencies.html#Further-version-constraints
 * Respect case sensitivity for package paths for Linux - https://github.com/fsprojects/Paket/pull/137

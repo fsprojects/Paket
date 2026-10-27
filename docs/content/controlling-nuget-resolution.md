@@ -23,7 +23,7 @@ graph.
 The resolution algorithm balances direct and
 [transitive dependencies](faq.html#transitive) such that you will get the
 *latest matching versions* of direct dependencies (defined using the
-[`nuget` statement](#dependencies)) and transitive dependencies (defined by your
+[`nuget` statement](nuget-dependencies.html#Dependencies)) and transitive dependencies (defined by your
 direct dependency's
 [nuspec](http://docs.nuget.org/docs/reference/nuspec-reference)). Paket checks
 compatibility by comparing available versions to the constraints of either
@@ -64,4 +64,4 @@ update regardless, giving the false impression that your app still works.
 
 To make your transition to Paket easier and to allow package authors to correct
 their version constraints you can have Paket behave like NuGet by using the
-[`!` prefix](nuget-dependencies.html#Paket-s-NuGet-style-dependency-resolution-for-transitive-dependencies).
+[`!` prefix](nuget-dependencies.html#Strategy-modifiers).

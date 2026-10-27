@@ -25,11 +25,14 @@ build.cmd QuickTest          # Run unit tests without full build
 build.cmd RunTests           # Run all unit tests
 build.cmd QuickIntegrationTests  # Run quick integration tests (scriptgen category)
 build.cmd RunIntegrationTestsNetCore # Run full integration tests
+build.cmd GenerateDocs       # Generate the site in docs/output with fsdocs
+build.cmd KeepRunning        # Preview the site with fsdocs watch
 
 # Skip specific stages: these are build parameters, so they take a value and
 # come after the target name (they can also be passed as environment variables)
 build.cmd BuildPackage SkipTests=true            # Skip all tests
 build.cmd BuildPackage SkipIntegrationTests=true # Skip integration tests only
+build.cmd BuildPackage SkipDocs=true             # Skip the documentation of local builds
 ```
 
 The build only needs the .NET SDK, on every OS: Paket is a .NET tool since 12.0, and neither Mono nor

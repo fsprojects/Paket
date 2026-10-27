@@ -37,7 +37,7 @@ If you reference a zip file it will be unzipped relative to the downloaded zip f
 
 The reference
 
-```
+```paket
 http file:///c:/projects/library.zip library/library.zip
 ```
 

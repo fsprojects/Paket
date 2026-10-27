@@ -1,0 +1,76 @@
+name: Documentation
+
+# Called by release.yml after a stable release, and runnable by hand to publish the site of a branch or a tag
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Version named in the gh-pages commit
+        type: string
+        required: true
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Publish the documentation
+    runs-on: ubuntu-latest
+    # a stuck build would hold the gh-pages group, and the publications waiting behind it, for 6 hours
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    # Every publication waits for its turn: by default, a newer one would cancel the one already waiting
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
+      queue: max
+    steps:
+      # Only the gh-pages checkout below keeps the token, not the build
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Install build SDK
+        run: |
+          curl --fail --silent --show-error --location https://dot.net/v1/dotnet-install.sh --output /tmp/dotnet-install.sh
+          bash /tmp/dotnet-install.sh --version 10.0.400 --install-dir "$HOME/.local/share/dotnetcore"
+      - name: Generate the documentation
+        env:
+          SkipTests: true
+        run: ./build.sh GenerateDocs < /dev/null
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+      # latest and stable are read by the bootstrappers older than 11.0: keep them as they are
+      - name: Push to gh-pages
+        working-directory: gh-pages
+        env:
+          VERSION: ${{ inputs.version }}
+          SHA: ${{ github.sha }}
+        run: |
+          # The site replaces the whole content of gh-pages: never publish one without its home page or its API reference
+          for page in index.html reference/index.html; do
+            if [ ! -s "../docs/output/$page" ]; then
+              echo "docs/output/$page is missing: the documentation is incomplete"
+              exit 1
+            fi
+          done
+          git rm -r -q -- . ':!latest' ':!stable'
+          cp -r ../docs/output/. .
+          touch .nojekyll
+          git add -A
+          if git diff --cached --quiet; then
+            echo "The documentation didn't change"
+            exit 0
+          fi
+          if [ -n "$VERSION" ]; then
+            message="Update generated documentation for version $VERSION"
+          else
+            message="Update generated documentation from $SHA"
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "$message"
+          git push

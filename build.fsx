@@ -5,6 +5,7 @@ System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
 #load ".paket/load/net10.0/BuildScript/Fake.Core.ReleaseNotes.fsx"
 #load ".paket/load/net10.0/BuildScript/Fake.IO.FileSystem.fsx"
 #load ".paket/load/net10.0/BuildScript/Fake.DotNet.Cli.fsx"
+#load ".paket/load/net10.0/BuildScript/Fake.Tools.Git.fsx"
 
 open System
 open System.Security.Cryptography
@@ -15,6 +16,7 @@ open Fake.DotNet
 open Fake.IO
 open Fake.IO.FileSystemOperators
 open Fake.IO.Globbing.Operators
+open Fake.Tools
 
 // This script is run with `dotnet fsi`, so there is no FAKE.exe runner to parse the
 // command line for us. The runner used to turn `build.sh <Target> key=value ...` into
@@ -44,8 +46,8 @@ Context.FakeExecutionContext.Create false "build.fsx" targetArgs
 // Information about the project are used
 //  - for version and project name in generated AssemblyInfo file
 //  - by the generated NuGet package
-//  - to run tests and to publish documentation on GitHub gh-pages
-//  - for documentation, you also need to edit info in "docs/tools/generate.fsx"
+//  - to run tests
+//  - for the documentation, the fsdocs parameters are in fsdocsArgs
 
 // The name of the project
 // (used by attributes in AssemblyInfo, name of a NuGet package and directory in 'src')
@@ -145,6 +147,8 @@ Target.create "Clean" (fun _ ->
 
 Target.create "CleanDocs" (fun _ ->
     Shell.cleanDirs ["docs/output"]
+    // fsdocs keeps the cracked projects there, whatever the --properties of the next run
+    Shell.deleteDir ".fsdocs"
 )
 
 // --------------------------------------------------------------------------------------
@@ -309,67 +313,29 @@ Target.create "NuGet" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Generate the documentation
 
-let disableDocs = false // https://github.com/fsprojects/FSharp.Formatting/issues/461
+let fsdocsArgs () =
+    [ "--input"; "docs/content"
+      "--projects"; "src/Paket.Core/Paket.Core.fsproj"
+      // the API reference reads the Paket.Core.dll of the Build target, and the site has no use for
+      // the llms.txt files and the Markdown copies of the pages
+      "--properties"; "Configuration=Release"; "FsDocsGenerateLlmsTxt=false"
+      "--sourcefolder"; __SOURCE_DIRECTORY__
+      // the source links of the API reference follow the lines of the built commit, or of master out of
+      // a git repository, e.g. in the source archive of a release
+      "--sourcerepo"; "https://github.com/fsprojects/Paket/tree/" + (try Git.Information.getCurrentSHA1 "" with _ -> "master")
+      "--parameters"
+      "root"; "https://fsprojects.github.io/Paket/"
+      "fsdocs-collection-name"; "Paket"
+      "fsdocs-logo-src"; "img/logo.png"
+      "fsdocs-favicon-src"; "img/logo.png"
+      "fsdocs-logo-link"; "https://fsprojects.github.io/Paket/"
+      "fsdocs-repository-link"; "https://github.com/fsprojects/Paket" ]
 
-// docs/tools/generate.fsx is still a FAKE 4 script bound to FSharp.Formatting 3, so it keeps
-// running through the FAKE 4 runner of the Build group. Windows-only, see the target graph.
-let fakePath = __SOURCE_DIRECTORY__ @@ "packages" @@ "build" @@ "FAKE" @@ "tools" @@ "FAKE.exe"
-
-/// Run generate.fsx through the FAKE 4 runner, printing its output live, and fail on a non-zero exit code
-let execute fail traceMsg failMessage fsiargs script workingDirectory =
-    Trace.trace traceMsg
-
-    let result =
-        CreateProcess.fromRawCommandLine fakePath (sprintf "--fsiargs %s -d:FAKE \"%s\"" fsiargs script)
-        |> CreateProcess.withWorkingDirectory workingDirectory
-        |> Proc.run
-
-    if result.ExitCode <> 0 then
-        if fail then
-            failwith failMessage
-        else
-            Trace.traceImportant failMessage
-    else
-        Trace.traceImportant "Succeeded"
-
-Target.create "GenerateReferenceDocs" (fun _ ->
-    if disableDocs then () else
-    let args = ["--define:RELEASE"; "--define:REFERENCE"]
-    let argLine = System.String.Join(" ", args)
-    execute
-      true
-      (sprintf "Building reference documentation, this could take some time, please wait...")
-      "generating reference documentation failed"
-      argLine "generate.fsx" "docs/tools"
-)
-
-
-
-
-let generateHelp' commands fail debug =
-    // remove FSharp.Compiler.Service.MSBuild.v12.dll
-    // otherwise FCS thinks  it should use msbuild, which leads to insanity
-    !! "packages/**/FSharp.Compiler.Service.MSBuild.*.dll"
-    |> File.deleteAll
-
-    let args =
-        [ if not debug then yield "--define:RELEASE"
-          if commands then yield "--define:COMMANDS"
-          yield "--define:HELP"]
-    let argLine = System.String.Join(" ", args)
-    execute
-      fail
-      (sprintf "Building documentation (%A), this could take some time, please wait..." commands)
-      "generating documentation failed"
-      argLine "generate.fsx" "docs/tools"
-
-    Shell.cleanDir "docs/output/commands"
-
-let generateHelp commands fail =
-    generateHelp' commands fail false
+let fsdocs command args =
+    let result = DotNet.exec dotnetCli "fsdocs" (Args.toWindowsCommandLine (command :: args))
+    if not result.OK then failwithf "fsdocs %s failed" command
 
 Target.create "GenerateHelp" (fun _ ->
-    if disableDocs then () else
     File.delete "docs/content/release-notes.md"
     Shell.copyFile "docs/content/" "RELEASE_NOTES.md"
     Shell.rename "docs/content/release-notes.md" "docs/content/RELEASE_NOTES.md"
@@ -378,35 +344,51 @@ Target.create "GenerateHelp" (fun _ ->
     Shell.copyFile "docs/content/" "LICENSE.txt"
     Shell.rename "docs/content/license.md" "docs/content/LICENSE.txt"
 
-    generateHelp true true
+    !! "completion/*.*.md"
+    |> Seq.iter (fun f ->
+        Shell.copyFile ("docs/content" </> (System.IO.Path.GetFileName f).Replace("README", "shell-completion")) f)
+
+    // the pages of commands removed since a previous run, the two others are written by hand
+    !! "docs/content/paket-*.md"
+    -- "docs/content/paket-folder.md"
+    -- "docs/content/paket-and-dotnet-cli.md"
+    |> File.deleteAll
+
+    let result = DotNet.exec dotnetCli "fsi" "docs/tools/generate-commands.fsx"
+    if not result.OK then failwith "generating the command pages failed"
 )
 
-Target.create "GenerateHelpDebug" (fun _ ->
-    if disableDocs then () else
-    File.delete "docs/content/release-notes.md"
-    Shell.copyFile "docs/content/" "RELEASE_NOTES.md"
-    Shell.rename "docs/content/release-notes.md" "docs/content/RELEASE_NOTES.md"
+Target.create "GenerateDocs" (fun _ ->
+    // --strict: without it, fsdocs skips a project or a page it fails to generate and still succeeds
+    fsdocs "build" ([ "--output"; "docs/output"; "--clean"; "--strict" ] @ fsdocsArgs ())
+    // fsdocs copies the other files of its input and of its default content: the files of the REPL
+    // sample of docs/content and these files of fsdocs don't belong on the site
+    [ "docs/output/paket.dependencies"
+      "docs/output/paket.lock"
+      "docs/output/NuGet.config"
+      "docs/output/content/img/github-pages-settings.png" ]
+    |> File.deleteAll
 
-    File.delete "docs/content/license.md"
-    Shell.copyFile "docs/content/" "LICENSE.txt"
-    Shell.rename "docs/content/license.md" "docs/content/LICENSE.txt"
-
-    generateHelp' true true true
+    // The paket highlighter of FSharp.Formatting matches a comment with //\s.*?(?:\r|\n|$), line break
+    // included, and drops that line break: put it back, but at the end of a code block. fsdocs joins the
+    // lines of a code block with Environment.NewLine, so on Windows the match stops at the \r and the \n
+    // is still there.
+    if Environment.NewLine = "\n" then
+        let paketBlock = System.Text.RegularExpressions.Regex("<code lang=\"paket\">.*?</code>", System.Text.RegularExpressions.RegexOptions.Singleline)
+        let paketComment = System.Text.RegularExpressions.Regex("(<span class=\"c\">//[^<]*</span>)(?!</code>)")
+        !! "docs/output/**/*.html"
+        |> Seq.iter (fun file ->
+            let html = System.IO.File.ReadAllText file
+            let fixedHtml = paketBlock.Replace(html, fun block -> paketComment.Replace(block.Value, "$1\n"))
+            if fixedHtml <> html then System.IO.File.WriteAllText(file, fixedHtml))
 )
 
 Target.create "KeepRunning" (fun _ ->
-    use watcher = !! "docs/content/**/*.*" |> ChangeWatcher.run (fun changes ->
-         generateHelp false false
-    )
-
-    Trace.traceImportant "Waiting for help edits. Press any key to stop."
-
-    System.Console.ReadKey() |> ignore
-
-    watcher.Dispose()
+    // in tmp/watch: watch serves the site on localhost and writes its links that way. Clean it, or the
+    // pages of the commands removed since the last preview stay
+    Shell.cleanDir "tmp/watch"
+    fsdocs "watch" (fsdocsArgs ())
 )
-
-Target.create "GenerateDocs" DoNothing
 Target.create "BuildPackage" DoNothing
 // --------------------------------------------------------------------------------------
 // Run all targets by default. Invoke 'build <Target>' to override
@@ -425,8 +407,7 @@ Target.create "All" DoNothing
   ==> "Build"
   ==> "Publish"
   =?> ("RunTests", unlessBuildParams [ "SkipTests"; "SkipUnitTests" ])
-  =?> ("GenerateReferenceDocs",BuildServer.isLocalBuild && Environment.isWindows && not (hasBuildParam "SkipDocs"))
-  =?> ("GenerateDocs",BuildServer.isLocalBuild && Environment.isWindows && not (hasBuildParam "SkipDocs"))
+  =?> ("GenerateDocs",BuildServer.isLocalBuild && not (hasBuildParam "SkipDocs"))
   ==> "All"
   |> ignore
 
@@ -438,14 +419,18 @@ Target.create "All" DoNothing
   |> ignore
 
 
-"CleanDocs"
+// generate-commands.fsx reads the paket.dll of the Publish output
+"Publish"
   ==> "GenerateHelp"
-  ==> "GenerateReferenceDocs"
+  |> ignore
+
+"GenerateHelp"
   ==> "GenerateDocs"
   |> ignore
 
+// a dependency of GenerateDocs only, so that KeepRunning leaves the generated site
 "CleanDocs"
-  ==> "GenerateHelpDebug"
+  ==> "GenerateDocs"
   |> ignore
 
 "GenerateHelp"

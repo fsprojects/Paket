@@ -191,10 +191,11 @@ docs/content/release-notes.md
 _NCrunch_Paket
 docs/content/paket-*.md
 !docs/content/paket-folder.md
+.fsdocs/
+tmp/watch/
 *.bak
 System.Management.Automation.dll
 .fake
-docs/tools/FSharp.Formatting.svclog
 TestResult.xml
 *.trx
 tests/Paket.Tests/NuGetConfig/PasswordConfig.xml

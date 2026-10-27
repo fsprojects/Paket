@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" data-root="{{root}}">
+<head>
+    <meta charset="UTF-8">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="{{fsdocs-authors}}" name="author">
+    <!-- Opengraph properties (https://ogp.me/) -->
+    <meta property="og:site_name" content="{{fsdocs-collection-name}}">
+    <meta property="og:title" content="{{fsdocs-page-title}}" />
+    <meta property="og:url" content="{{root}}{{fsdocs-source-basename}}.html">
+    <meta property="og:type" content="website" />
+    <!-- Twitter cards (https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/summary-card-with-large-image) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="{{root}}">
+    <meta name="twitter:title" content="{{fsdocs-page-title}}">
+    {{fsdocs-meta-tags}}
+    <title>{{fsdocs-page-title}} | {{fsdocs-collection-name}}</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="{{root}}{{fsdocs-favicon-src}}" rel="icon" sizes="32x32" type="image/png"/>
+    <script type="application/javascript" src="{{root}}content/fsdocs-theme-set-dark.js"></script>
+    <script type="application/javascript" src="{{root}}content/fsdocs-details-set-expanded.js"></script>
+    <link href="{{root}}content/fsdocs-default.css" rel="stylesheet" type="text/css"/>
+    <link href="{{root}}content/fsdocs-theme.css" rel="stylesheet" type="text/css"/>
+    {{fsdocs-head-extra}}
+    {{fsdocs-watch-script}}
+</head>
+<body class="{{fsdocs-body-class}}">
+<header>
+    <div class="start">
+        <div id="menu-toggle">
+            <iconify-icon class="icon closed" height="22" icon="eva:menu-fill" width="22"></iconify-icon>
+            <iconify-icon class="icon open" height="22" icon="mi:close" width="22"></iconify-icon>
+            <input type="checkbox" name="mobile-menu" />
+            <ul class="menu">
+                <li class="nav-header">Paket</li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}index.html">Home page</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}get-started.html">Get started</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}learn-how-to-use-paket.html">Learn how to use paket</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}convert-from-nuget-tutorial.html">Convert from legacy NuGet</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-and-dotnet-cli.html">Paket with .NET SDK</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}faq.html">FAQ</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}release-notes.html">Release Notes</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}contact.html">Contact</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}testimonials.html">Testimonials</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}license.html">License</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}glossary.html">Glossary</a></li>
+                <li class="nav-header">Download Paket</li>
+                <li class="nav-item"><a class="nav-link" href="https://www.nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+                <li class="nav-header">GitHub</li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
+                <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+                <li class="nav-header">Documentation</li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}dependencies-file.html">paket.dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}lock-file.html">paket.lock</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}references-files.html">paket.references</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}template-files.html">paket.template</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}local-file.html">paket.local</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-folder.html">.paket folder</a></li>
+                <li class="divider"></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}resolver.html">Package resolution algorithm</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}groups.html">Dependency Groups</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}caches.html">Additional Caches</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}nuget-dependencies.html">NuGet dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}git-dependencies.html">Git dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}github-dependencies.html">GitHub dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}http-dependencies.html">HTTP dependencies</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}analyzers.html">Analyzers</a></li>
+                <li class="divider"></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}installation.html">Installation</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}reference-from-repl.html">Using Paket from F# Interactive</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}fsi-integration.html">F# Interactive integration</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}editor-support.html">Editor support</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}shell-completion.html">Shell completion</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}credential-providers.html">Credential Providers</a></li>
+                <li class="divider"></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}reference/index.html">API Reference</a></li>
+                <li class="nav-header">Paket commands</li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-add.html">paket add</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-auto-restore.html">paket auto-restore</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-clear-cache.html">paket clear-cache</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-config.html">paket config</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-find-refs.html">paket find-refs</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-find-packages.html">paket find-packages</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-find-package-versions.html">paket find-package-versions</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-fix-nuspecs.html">paket fix-nuspecs</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-generate-nuspec.html">paket generate-nuspec</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-git.html">paket git</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-github.html">paket github</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-info.html">paket info</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-init.html">paket init</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-install.html">paket install</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-outdated.html">paket outdated</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-pack.html">paket pack</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-push.html">paket push</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-remove.html">paket remove</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-restore.html">paket restore</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-simplify.html">paket simplify</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-show-conditions.html">paket show-conditions</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-show-groups.html">paket show-groups</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-show-installed-packages.html">paket show-installed-packages</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-update.html">paket update</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-why.html">paket why</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{root}}paket-restriction.html">paket restriction</a></li>
+            </ul>
+        </div>
+        <a href="{{fsdocs-logo-link}}">
+            <img alt="{{fsdocs-logo-alt}}" src="{{root}}{{fsdocs-logo-src}}">
+            <strong>{{fsdocs-collection-name}}</strong>
+        </a>
+    </div>
+    <div class="end">
+        <a href="{{fsdocs-repository-link}}" target="_blank">
+            <iconify-icon icon="uil:github" width="26" height="26"></iconify-icon>
+        </a>
+        <iconify-icon id="search-btn" icon="carbon:search" class="search" width="24" height="24"></iconify-icon>
+        <fsdocs-theme-toggle></fsdocs-theme-toggle>
+    </div>
+</header>
+<aside id="fsdocs-main-menu">
+    <ul class="menu">
+        <li class="nav-header">Paket</li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}index.html">Home page</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}get-started.html">Get started</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}learn-how-to-use-paket.html">Learn how to use paket</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}convert-from-nuget-tutorial.html">Convert from legacy NuGet</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-and-dotnet-cli.html">Paket with .NET SDK</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}faq.html">FAQ</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}release-notes.html">Release Notes</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}contact.html">Contact</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}testimonials.html">Testimonials</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}license.html">License</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}glossary.html">Glossary</a></li>
+        <li class="nav-header">Download Paket</li>
+        <li class="nav-item"><a class="nav-link" href="https://www.nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+        <li class="nav-header">GitHub</li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
+        <li class="nav-item"><a class="nav-link" href="https://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+        <li class="nav-header">Documentation</li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}dependencies-file.html">paket.dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}lock-file.html">paket.lock</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}references-files.html">paket.references</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}template-files.html">paket.template</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}local-file.html">paket.local</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-folder.html">.paket folder</a></li>
+        <li class="divider"></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}resolver.html">Package resolution algorithm</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}groups.html">Dependency Groups</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}caches.html">Additional Caches</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}nuget-dependencies.html">NuGet dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}git-dependencies.html">Git dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}github-dependencies.html">GitHub dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}http-dependencies.html">HTTP dependencies</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}analyzers.html">Analyzers</a></li>
+        <li class="divider"></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}installation.html">Installation</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}reference-from-repl.html">Using Paket from F# Interactive</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}fsi-integration.html">F# Interactive integration</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}editor-support.html">Editor support</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}shell-completion.html">Shell completion</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}credential-providers.html">Credential Providers</a></li>
+        <li class="divider"></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}reference/index.html">API Reference</a></li>
+        <li class="nav-header">Paket commands</li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-add.html">paket add</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-auto-restore.html">paket auto-restore</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-clear-cache.html">paket clear-cache</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-config.html">paket config</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-find-refs.html">paket find-refs</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-find-packages.html">paket find-packages</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-find-package-versions.html">paket find-package-versions</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-fix-nuspecs.html">paket fix-nuspecs</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-generate-nuspec.html">paket generate-nuspec</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-git.html">paket git</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-github.html">paket github</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-info.html">paket info</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-init.html">paket init</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-install.html">paket install</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-outdated.html">paket outdated</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-pack.html">paket pack</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-push.html">paket push</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-remove.html">paket remove</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-restore.html">paket restore</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-simplify.html">paket simplify</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-show-conditions.html">paket show-conditions</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-show-groups.html">paket show-groups</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-show-installed-packages.html">paket show-installed-packages</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-update.html">paket update</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-why.html">paket why</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{root}}paket-restriction.html">paket restriction</a></li>
+    </ul>
+</aside>
+<main>
+    <div id="content">
+        {{fsdocs-content}}
+        {{fsdocs-tooltips}}
+    </div>
+</main>
+<aside id="fsdocs-page-menu">
+    <p id="on-this-page">On this page</p>
+    {{fsdocs-page-content-list}}
+</aside>
+<dialog>
+    <input type="search" placeholder="Search docs" />
+    <div class="results">
+        <ul></ul>
+        <p class="empty">Type something to start searching.</p>
+    </div>
+</dialog>
+<script type="module" src="{{root}}content/fsdocs-tips.js"></script>
+<script type="module" src="{{root}}content/fsdocs-theme-toggle.js"></script>
+<script type="module" src="{{root}}content/fsdocs-details-toggle.js"></script>
+<script type="module" src="{{root}}content/fsdocs-theme.js"></script>
+<script type="module" src="{{root}}content/fsdocs-search.js"></script>
+<script type="module" src="{{root}}content/fsdocs-copy-button.js"></script>
+{{fsdocs-body-extra}}
+</body>
+</html>
