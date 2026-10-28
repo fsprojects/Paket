@@ -447,6 +447,24 @@ let ``FindAllFiles should not descend into the folders that are links``() =
 
         files |> shouldEqual [| "root.sln" |])
 
+// Regression: a cyclic directory link (e.g. inside a Nix .devenv profile) must not be followed forever
+[<Test>]
+[<Timeout 60000>]
+let ``FindAllFiles should terminate on a link cycle behind a link``() =
+    TestHelpers.withTempDir (fun root ->
+        let outside = Path.Combine(root, "outside")
+        let repository = Path.Combine(root, "repository")
+        Directory.CreateDirectory(Path.Combine(outside, "sub")) |> ignore
+        Directory.CreateDirectory(repository) |> ignore
+        File.WriteAllText(Path.Combine(outside, "linked.sln"), "")
+        File.WriteAllText(Path.Combine(repository, "root.sln"), "")
+        TestHelpers.createDirectoryLinkOrIgnore (Path.Combine(repository, "linked")) outside
+        TestHelpers.createDirectoryLinkOrIgnore (Path.Combine(outside, "sub", "loop")) ".."
+
+        let files = FindAllFiles(repository, "*.sln") |> Array.map (fun fi -> fi.Name)
+
+        files |> shouldEqual [| "root.sln" |])
+
 [<Test>]
 let ``isDirectoryLink should tell a link given with a trailing separator``() =
     TestHelpers.withTempDir (fun root ->
