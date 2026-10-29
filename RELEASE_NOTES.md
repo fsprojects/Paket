@@ -1,4 +1,5 @@
 #### Unreleased
+* Fix `paket pack` producing inconsistent nupkg entry names for files with square brackets (`[`/`]`) across .NET runtimes - https://github.com/fsprojects/Paket/issues/3906
 
 * The warning about the FSharp.Core binding redirects of F# projects links to an existing section of the documentation
 
