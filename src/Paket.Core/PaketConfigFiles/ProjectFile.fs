@@ -2039,32 +2039,31 @@ type ProjectFile with
 
         let getCompileItem (projectFile, compileNode) =
             let projectFolder = projectFile.FileName |> Path.GetFullPath |> Path.GetDirectoryName
-            let sourceFile =
-                let file =
-                    match compileNode |> getAttribute "Include" with
-                    | Some file -> file
-                    | None ->
-                        match compileNode |> getAttribute "Update" with
-                        | Some file -> file
-                        | None -> failwithf "The Compile entry is in unknown format and doesn't contain a Update or Include attribute."
+            match compileNode |> getAttribute "Include" |> Option.orElseWith (fun () -> compileNode |> getAttribute "Update") with
+            | None ->
+                // Entries such as <Compile Remove="..." /> without an Include or Update attribute
+                // don't reference a source file, so they can't produce a compile item. Skip them
+                // instead of failing the whole pack/build (see GitHub issue #4222).
+                None
+            | Some file ->
+                let sourceFile =
+                    file
+                    |> normalizePath
+                    |> fun relPath -> Path.Combine(projectFolder, relPath)
 
-                file
-                |> normalizePath
-                |> fun relPath -> Path.Combine(projectFolder, relPath)
-
-            let destPath =
-                compileNode
-                |> getDescendants "Link"
-                |> function
-                    | [] -> createRelativePath (projectFolder + string Path.DirectorySeparatorChar) sourceFile
-                    | linkNode :: _ -> linkNode.InnerText
-                |> normalizePath
-                |> Path.GetDirectoryName
-            {
-                SourceFile = sourceFile
-                DestinationPath = destPath
-                BaseDir = projectFolder
-            }
+                let destPath =
+                    compileNode
+                    |> getDescendants "Link"
+                    |> function
+                        | [] -> createRelativePath (projectFolder + string Path.DirectorySeparatorChar) sourceFile
+                        | linkNode :: _ -> linkNode.InnerText
+                    |> normalizePath
+                    |> Path.GetDirectoryName
+                Some {
+                    SourceFile = sourceFile
+                    DestinationPath = destPath
+                    BaseDir = projectFolder
+                }
 
         let getRealItems compileItem =
             let sourceFolder = Path.GetDirectoryName(compileItem.SourceFile)
@@ -2080,7 +2079,7 @@ type ProjectFile with
         this.GetProjects includeReferencedProjects cache
         |> this.ProjectsWithoutTemplates
         |> Seq.collect getCompileRefs
-        |> Seq.map getCompileItem
+        |> Seq.choose getCompileItem
         |> Seq.collect getRealItems
 
 
