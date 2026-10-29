@@ -1,0 +1,20 @@
+NUGET
+  remote: https://www.nuget.org/api/v2
+    Castle.Core (3.3.3)
+    Castle.Windsor (3.4)
+      Castle.Core (>= 3.3 < 4.0)
+    Microsoft.AspNet.WebApi.Client (5.2.3)
+      Microsoft.Net.Http (>= 2.2.22) - restriction: && (< net45) (>= portable-net45+win8+wp8+wp81+wpa81)
+      Newtonsoft.Json (>= 6.0.4) - restriction: >= portable-net45+win8+wp8+wp81+wpa81
+    Microsoft.AspNet.WebApi.Core (5.0)
+      Microsoft.AspNet.WebApi.Client (>= 5.0)
+    Microsoft.AspNet.WebApi.SelfHost (5.0.1)
+      Microsoft.AspNet.WebApi.Core (>= 5.0 < 5.1)
+    Microsoft.Bcl (1.1.10) - restriction: && (< net45) (>= portable-net45+win8+wp8+wp81+wpa81)
+      Microsoft.Bcl.Build (>= 1.0.14)
+    Microsoft.Bcl.Build (1.0.21) - import_targets: false, restriction: && (< net45) (>= portable-net45+win8+wp8+wp81+wpa81)
+    Microsoft.Net.Http (2.2.29) - restriction: && (< net45) (>= portable-net45+win8+wp8+wp81+wpa81)
+      Microsoft.Bcl (>= 1.1.10)
+      Microsoft.Bcl.Build (>= 1.0.14)
+    Newtonsoft.Json (7.0.1) - restriction: >= portable-net45+win8+wp8+wp81+wpa81
+    NUnit (2.6.1)

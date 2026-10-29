@@ -321,18 +321,20 @@ let SmartInstall(dependenciesFile:DependenciesFile, updateMode, options : Update
     runDotNetRestore
 
 /// Update a single package command
-let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =
+let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, transitive, options : UpdaterOptions) =
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
-    if not (dependenciesFile.HasPackage(groupName, packageName)) then
-        failwithf "Package %O was not found in paket.dependencies in group %O.%s" packageName groupName (dependenciesFile.CheckIfPackageExistsInAnyGroup packageName)
-
     let dependenciesFile =
-        match newVersion with
-        | Some v -> dependenciesFile.UpdatePackageVersion(groupName,packageName, v)
-        | None ->
-            tracefn "Updating %O in %s group %O" packageName dependenciesFileName groupName
-            dependenciesFile
+        if dependenciesFile.HasPackage(groupName, packageName) then
+            match newVersion with
+            | Some v -> dependenciesFile.UpdatePackageVersion(groupName,packageName, v)
+            | None ->
+                tracefn "Updating %O in %s group %O" packageName dependenciesFileName groupName
+                dependenciesFile
+        elif transitive then
+            dependenciesFile.Add(groupName, packageName, defaultArg newVersion "", Requirements.InstallSettings.Default, Requirements.PackageRequirementKind.Package)
+        else
+            failwithf "Package %O was not found in paket.dependencies in group %O.%s" packageName groupName (dependenciesFile.CheckIfPackageExistsInAnyGroup packageName)
 
     let filter = PackageFilter.ofName packageName
 

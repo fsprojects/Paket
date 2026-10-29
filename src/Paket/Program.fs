@@ -488,6 +488,7 @@ let update (results : ParseResults<_>) =
         SemVerUpdateMode.NoRestriction
     let touchAffectedRefs = results.Contains UpdateArgs.Touch_Affected_Refs
     let filter = results.Contains UpdateArgs.Filter
+    let transitive = results.Contains UpdateArgs.Transitive
 
     let nuget =
         (results.TryGetResult UpdateArgs.NuGet,
@@ -504,7 +505,7 @@ let update (results : ParseResults<_>) =
         if filter then
             Dependencies.Locate().UpdateFilteredPackages(group, packageName, version, force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
         else
-            Dependencies.Locate().UpdatePackage(group, packageName, version, force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+            Dependencies.Locate().UpdatePackage(group, packageName, version, force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs, transitive)
     | _ ->
         match group with
         | Some groupName ->
