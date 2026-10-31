@@ -11,6 +11,15 @@ possible values:
 * `project`: Paket will look for a matching project file, and infer dependencies
   and metadata from the project
 
+`paket pack` looks for the template files in every folder but the `packages`
+and `paket-files` folders at the top, including the folders whose name starts
+with a dot and the links, so a cyclic link there can keep it from finishing.
+It does not look for projects in these folders, though (see
+[the `paket.references` files](references-files.html#Location)), so it does not
+pack their `project` templates properly: the package gets neither the
+assemblies nor the dependencies of the project, and `paket pack` fails when the
+folder holds more than one project. Keep such templates out of these folders.
+
 Matching project and template files must be in the same directory. If only one
 project is in the directory the template file can be called `paket.template`,
 otherwise the name of the template file must be the name of the project file
