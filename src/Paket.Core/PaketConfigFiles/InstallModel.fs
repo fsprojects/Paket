@@ -6,7 +6,6 @@ open Paket.Domain
 open Paket.Requirements
 open Logging
 open PlatformMatching
-open ProviderImplementation.AssemblyReader.Utils.SHA1
 open NuGet
 
 type UnparsedPackageFile = Paket.NuGet.UnparsedPackageFile

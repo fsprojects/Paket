@@ -7,7 +7,6 @@ open PackageResolver
 open Mono.Cecil
 open System.Collections.Generic
 open Logging
-open ProviderImplementation.AssemblyReader.Utils.SHA1
 open System
 
 // Needs an update so that all work is not done at once

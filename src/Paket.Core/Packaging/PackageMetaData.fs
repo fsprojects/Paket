@@ -16,6 +16,16 @@ let (|CompleteTemplate|IncompleteTemplate|) templateFile =
     | { Contents = (CompleteInfo(core, optional)) } -> CompleteTemplate(core, optional)
     | _ -> IncompleteTemplate
 
+/// The assembly attributes read by the active pattern below
+let private packageAttributes =
+    set [
+        "AssemblyCompanyAttribute"
+        "AssemblyDescriptionAttribute"
+        "AssemblyTitleAttribute"
+        "AssemblyVersionAttribute"
+        "AssemblyInformationalVersionAttribute"
+    ]
+
 let (|Title|Description|Version|InformationalVersion|Company|Ignore|) (attributeName:string,attributeValue:string) =
     try
         match attributeName with
@@ -66,14 +76,8 @@ let getDescription attributes =
 let readAssembly fileName =
     if verbose then
         traceVerbose (sprintf "Loading assembly metadata for %s" fileName)
-    let assemblyReader =
-        ProviderImplementation.AssemblyReader.ILModuleReaderAfterReadingAllBytes(
-            fileName,
-            ProviderImplementation.AssemblyReader.mkILGlobals ProviderImplementation.AssemblyReader.EcmaMscorlibScopeRef)
-
-    let versionFromAssembly = assemblyReader.ILModuleDef.ManifestOfAssembly.Version
-    let id = assemblyReader.ILModuleDef.ManifestOfAssembly.Name
-    assemblyReader,id,versionFromAssembly,fileName
+    let assembly = AssemblyMetadata.readWithAttributes packageAttributes fileName
+    assembly,assembly.Name,Some assembly.Version,fileName
 
 
 let readAssemblyFromProjFile buildConfig buildPlatform (projectFile : ProjectFile) =
@@ -83,19 +87,7 @@ let readAssemblyFromProjFile buildConfig buildPlatform (projectFile : ProjectFil
     FileInfo(Path.Combine(root, subFolder, assemblyName) |> normalizePath).FullName
     |> readAssembly
 
-let loadAssemblyAttributes (assemblyReader:ProviderImplementation.AssemblyReader.ILModuleReader) =
-    let getMetaData inp =
-        try
-            ProviderImplementation.AssemblyReader.decodeILCustomAttribData assemblyReader.ILGlobals inp
-        with
-        | _ -> []
-
-    [for inp in assemblyReader.ILModuleDef.ManifestOfAssembly.CustomAttrs.Elements do
-        match getMetaData inp with
-        | [] -> ()
-        | args ->
-            let all = args |> Seq.map (fun (_,arg) -> if isNull arg then "" else arg.ToString())
-            yield (inp.Method.EnclosingType.BasicQualifiedName, Seq.head all)]
+let loadAssemblyAttributes (assembly:AssemblyMetadata.AssemblyMetadata) = assembly.Attributes
 
 
 let (|Valid|Invalid|) md =
