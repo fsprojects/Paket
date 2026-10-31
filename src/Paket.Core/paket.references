@@ -6,5 +6,5 @@ System.Security.Cryptography.ProtectedData
 System.Net.Http.WinHttpHandler
 Nuget.Packaging
 DotNet.ReproducibleBuilds
+Fake.IO.FileSystem
 
-File:Globbing.fs Common\

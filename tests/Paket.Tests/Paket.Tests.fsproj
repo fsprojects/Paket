@@ -17,6 +17,7 @@
     <None Include="paket.references" />
     <Compile Include="TestHelpers.fs" />
     <Compile Include="UtilsSpecs.fs" />
+    <Compile Include="GlobbingSpecs.fs" />
     <Compile Include="AesSpecs.fs" />
     <Compile Include="Versioning\PackageSourceSpecs.fs" />
     <Compile Include="Versioning\PlatformMatchingSpecs.fs" />

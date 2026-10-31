@@ -11,6 +11,13 @@ NUGET
       FSharp.Core (>= 4.0.1.7-alpha) - restriction: || (== net10.0) (&& (== net461) (>= netstandard1.6)) (== netstandard2.0)
       NETStandard.Library (>= 1.6) - restriction: || (== net10.0) (&& (== net461) (>= netstandard1.6)) (== netstandard2.0)
     DotNet.ReproducibleBuilds (2.0.5) - copy_local: true
+    Fake.Core.Context (6.2) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
+      FSharp.Core (>= 8.0.400) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
+    Fake.Core.Environment (6.2) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
+      FSharp.Core (>= 8.0.400) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
+    Fake.Core.FakeVar (6.2) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
+      Fake.Core.Context (>= 6.2) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
+      FSharp.Core (>= 8.0.400) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
     Fake.Core.ReleaseNotes (6.2)
       Fake.Core.SemVer (>= 6.2) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
       Fake.Core.String (>= 6.2) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
@@ -18,6 +25,14 @@ NUGET
     Fake.Core.SemVer (6.2) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
       FSharp.Core (>= 8.0.400) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
     Fake.Core.String (6.2) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
+      FSharp.Core (>= 8.0.400) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
+    Fake.Core.Trace (6.2) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
+      Fake.Core.Environment (>= 6.2) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
+      Fake.Core.FakeVar (>= 6.2) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
+      FSharp.Core (>= 8.0.400) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
+    Fake.IO.FileSystem (6.2)
+      Fake.Core.String (>= 6.2) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
+      Fake.Core.Trace (>= 6.2) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
       FSharp.Core (>= 8.0.400) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
     FsCheck (2.16.6)
       FSharp.Core (>= 4.2.3)
@@ -356,8 +371,6 @@ NUGET
       System.Xml.XmlDocument (>= 4.3)
       System.Xml.XPath (>= 4.3)
 GITHUB
-  remote: fsharp/FAKE
-    src/app/FakeLib/Globbing/Globbing.fs (0341a2e614eb2a7f34607cec914eb0ed83ce9add)
   remote: forki/FsUnit
     FsUnit.fs (fa4eb37288d355eb855261be6c0b3945fba68432)
 GROUP BuildScript

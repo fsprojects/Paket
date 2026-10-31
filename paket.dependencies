@@ -36,8 +36,8 @@ nuget NUnit3TestAdapter ~> 3.13.0
 nuget Microsoft.NET.Test.Sdk ~> 16.2.0
 
 nuget Fake.Core.ReleaseNotes ~> 6.2
+nuget Fake.IO.FileSystem ~> 6.2
 
-github fsharp/FAKE:0341a2e614eb2a7f34607cec914eb0ed83ce9add src/app/FakeLib/Globbing/Globbing.fs
 github forki/FsUnit FsUnit.fs
 
 # The modules build.fsx is written against. They are loaded through the scripts that
