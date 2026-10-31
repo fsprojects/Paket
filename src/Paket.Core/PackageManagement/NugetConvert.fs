@@ -220,20 +220,13 @@ module NugetEnv =
                 Result.Succeed None
             |> lift (fun configFile -> (projectFile,configFile))
 
-        // a project reached through a link may be out of the repository, like the files FindAllFiles skips;
-        // read warns about the folders that are links, so only the project files that are links get a warning
-        let root = rootDirectory.FullName.TrimEnd(Path.DirectorySeparatorChar)
-        let rec isBelowLink (directory : DirectoryInfo) =
-            not (isNull directory)
-            && directory.FullName.TrimEnd(Path.DirectorySeparatorChar) <> root
-            && (isLink directory || isBelowLink directory.Parent)
-
+        // FindAllProjects does not descend into the folders that are links, which read warns about,
+        // so only the project files that are links are left to skip, with a warning
         let projectFiles =
             ProjectFile.FindAllProjects rootDirectory.FullName
             |> Array.filter (fun projectFile ->
                 let file = FileInfo projectFile.FileName
-                if isBelowLink file.Directory then false
-                elif isLink file then
+                if isLink file then
                     traceWarnfn $"%s{file.FullName} is a link: convert-from-nuget leaves it unchanged."
                     false
                 else true)
