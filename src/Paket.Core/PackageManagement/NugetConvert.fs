@@ -160,7 +160,7 @@ let private findLinkedFolders (rootDirectory : DirectoryInfo) =
     let rec linkedFolders (directory : DirectoryInfo) =
         seq {
             for subDirectory in directory.GetDirectories() do
-                if not (subDirectory.Name.StartsWith ".") then
+                if not (isDotDirectory subDirectory) then
                     if isLink subDirectory then yield subDirectory
                     else yield! linkedFolders subDirectory
         }

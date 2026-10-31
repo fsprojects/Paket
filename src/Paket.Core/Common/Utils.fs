@@ -364,12 +364,16 @@ let isLink (fileSystemInfo: FileSystemInfo) =
     && fileSystemInfo.Attributes.HasFlag(FileAttributes.ReparsePoint)
     && (try not (isNull fileSystemInfo.LinkTarget) with _ -> true)
 
-/// Whether a search for project related files should not descend into the directory: its name starts
-/// with a dot (e.g. .git, .vs, .localhistory, .devenv), so it is not expected to contain relevant files
-/// and can be large or contain unrelated backup/history data (see issue #3250), or it is a link,
-/// which may lead out of the folder, or back into it on a cycle
+/// Whether the name of the directory starts with a dot (e.g. .git, .vs, .localhistory, .devenv): it is not
+/// expected to contain relevant files and can be large or contain unrelated backup/history data (see issue #3250)
+let isDotDirectory (directory: DirectoryInfo) =
+    directory.Name.StartsWith '.'
+
+/// Whether FindAllFiles and SearchAllProjectRelatedFiles do not descend into the directory: it is a dot directory,
+/// or a link, which may lead out of the folder, or back into it on a cycle.
+/// SearchAllProjectRelatedFiles skips other directories too, such as packages and node_modules
 let isSkippedSearchDirectory (directory: DirectoryInfo) =
-    directory.Name.StartsWith "." || isLink directory
+    isDotDirectory directory || isLink directory
 
 /// Gets all files with the given pattern, skipping the directories for which isSkippedSearchDirectory holds
 let FindAllFiles(folder, pattern) : FileInfo [] =
