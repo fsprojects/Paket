@@ -3,7 +3,6 @@
 open System.Text.RegularExpressions
 open System.Xml.Linq
 open System.Xml.XPath
-open Fake
 open System
 open NUnit.Framework
 open FsUnit
@@ -17,7 +16,7 @@ let preparePackages workingDir =
     let packagesDir = workingDir @@ "Packages"
 
     [1..5]
-    |> List.filter (fun v -> fileExists (workingDir @@ "Packages" @@ $"PaketTest2394.PackageA.%d{v}.0.0.nupkg") |> not)
+    |> List.filter (fun v -> File.Exists (workingDir @@ "Packages" @@ $"PaketTest2394.PackageA.%d{v}.0.0.nupkg") |> not)
     |> List.map (fun v -> directDotnet false $"pack -o . -p:Version=%d{v}.0" packagesDir)
     |> ignore
 

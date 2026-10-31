@@ -1,7 +1,6 @@
 ﻿[<AutoOpen>]
 module Paket.IntegrationTests.TestHelpers
 
-open Fake
 open Paket
 open System
 open NUnit.Framework
@@ -9,7 +8,47 @@ open FsUnit
 open System
 open System.IO
 open System.IO.Compression
+open System.Diagnostics
 open Paket.Logging
+
+let (@@) path1 (path2:string) = Path.Combine(path1, path2.TrimStart [|'\\'; '/'|])
+let (</>) (path1:string) (path2:string) = Path.Combine(path1, path2)
+let FullName (path:string) = Path.GetFullPath path
+let checkFileExists fileName = if not (File.Exists fileName) then failwithf "File %s does not exist." fileName
+
+/// Copies the files of source, with their subfolders, into target
+let copyDir target source =
+    for file in Directory.GetFiles(source, "*", SearchOption.AllDirectories) do
+        let newFile = target @@ Path.GetRelativePath(source, file)
+        Directory.CreateDirectory(Path.GetDirectoryName newFile) |> ignore
+        File.Copy(file, newFile, true)
+
+/// Runs the process and returns its exit code; with silent, its output goes to errorF and messageF
+/// instead of the console. Fails when the process doesn't exit before the timeout.
+let execProcess (configure: ProcessStartInfo -> unit) (timeout: TimeSpan) silent errorF messageF =
+    use proc = new Process()
+    proc.StartInfo.UseShellExecute <- false
+    configure proc.StartInfo
+    if silent then
+        proc.StartInfo.RedirectStandardOutput <- true
+        proc.StartInfo.RedirectStandardError <- true
+        proc.ErrorDataReceived.Add(fun d -> if not (isNull d.Data) then errorF d.Data)
+        proc.OutputDataReceived.Add(fun d -> if not (isNull d.Data) then messageF d.Data)
+    try
+        proc.Start() |> ignore
+    with exn -> failwithf "Start of process %s failed. %s" proc.StartInfo.FileName exn.Message
+    if silent then
+        proc.BeginErrorReadLine()
+        proc.BeginOutputReadLine()
+    if not (proc.WaitForExit(int timeout.TotalMilliseconds)) then
+        try
+            proc.Kill()
+        with _ ->
+            traceErrorfn "Could not kill process %s %s after timeout." proc.StartInfo.FileName proc.StartInfo.Arguments
+        failwithf "Process %s %s timed out." proc.StartInfo.FileName proc.StartInfo.Arguments
+    // The overload without a timeout also waits for the end of the redirected streams
+    proc.WaitForExit()
+    proc.ExitCode
 
 let disableScenarioCleanup = false // change to true to debug a single test temporarily.
 
@@ -65,7 +104,7 @@ let prepare scenario =
     try
         let originalScenarioPath = originalScenarioPath scenario
         let scenarioPath = createScenarioDir scenario
-        CopyDir scenarioPath originalScenarioPath (fun _ -> true)
+        copyDir scenarioPath originalScenarioPath
 
         for ext in ["fsproj";"csproj";"vcxproj";"template";"json"] do
             for file in Directory.GetFiles(scenarioPath, (sprintf "*.%stemplate" ext), SearchOption.AllDirectories) do
@@ -82,12 +121,12 @@ let private copyRestoreTargets scenario =
     if (not (Directory.Exists tmpPaketFolder)) then
         Directory.CreateDirectory tmpPaketFolder |> ignore
 
-    FileHelper.CopyFile tmpPaketFolder targetsFile
+    File.Copy(targetsFile, tmpPaketFolder @@ Path.GetFileName targetsFile, true)
 
 let prepareSdk scenario =
     let paketExe = snd paketToolPath
 
-    setEnvironVar "PaketExePath" paketExe
+    Environment.SetEnvironmentVariable("PaketExePath", paketExe)
     let cleanup = prepare scenario
     copyRestoreTargets scenario
     cleanup
@@ -194,7 +233,7 @@ let directToolEx env isPaket toolInfo commands workingDir =
 
     #if INTERACTIVE
     let result =
-        ExecProcessWithLambdas (fun info ->
+        execProcess (fun info ->
           info.FileName <- processFilename
           info.WorkingDirectory <- workingDir
           info.Arguments <- processArgs)
@@ -208,7 +247,7 @@ let directToolEx env isPaket toolInfo commands workingDir =
     #else
     Environment.SetEnvironmentVariable("PAKET_DETAILED_ERRORS", "true")
     Environment.SetEnvironmentVariable("PAKET_DETAILED_WARNINGS", "true")
-    // ExecProcessWithLambdas ends with an unbounded WaitForExit(), which returns only once the
+    // execProcess ends with an unbounded WaitForExit(), which returns only once the
     // redirected streams reach EOF -- the timeout below does not cover it. With node reuse on,
     // `dotnet build/run/pack` leaves MSBuild worker nodes behind that inherit those handles, so
     // EOF never comes and the run hangs silently. Children inherit this variable.
@@ -228,7 +267,7 @@ let directToolEx env isPaket toolInfo commands workingDir =
 
     let result =
         try
-            ExecProcessWithLambdas (fun info ->
+            execProcess (fun info ->
               info.FileName <- processFilename
               for key, value in env do
                 info.EnvironmentVariables.[key] <- value
@@ -243,7 +282,7 @@ let directToolEx env isPaket toolInfo commands workingDir =
             if exn.Message.Contains "timed out" then
                 printfn "PROCESS TIMED OUT, OUTPUT WAS: "
             else
-                printfn "ExecProcessWithLambdas failed. Output was: "
+                printfn "execProcess failed. Output was: "
 
             for { IsError = isError; Message = msg } in msgs do
                 printfn "%s%s" (if isError then "ERR: " else "") msg

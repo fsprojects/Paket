@@ -1,6 +1,5 @@
 module Paket.IntegrationTests.FrameworkRestrictionsSpecs
 
-open Fake
 open Paket
 open System
 open NUnit.Framework
