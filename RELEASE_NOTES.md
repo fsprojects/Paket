@@ -1,5 +1,6 @@
 #### Unreleased
 
+* BREAKING: Paket no longer looks for projects and `paket.template` files in the folders whose name starts with a dot, like `.devenv`, nor in the folders that are links, as `paket convert-from-nuget` already did for the solutions and NuGet files: the projects there are left out of install, restore, update, remove and pack. Until now only `.git` and `.fable` were skipped. A cyclic link, as in a Nix `.devenv` profile, no longer makes the search run forever - https://github.com/fsprojects/Paket/pull/4421
 * The warning about the FSharp.Core binding redirects of F# projects links to an existing section of the documentation
 
 #### 12.0.0-alpha003 - 2026-10-26

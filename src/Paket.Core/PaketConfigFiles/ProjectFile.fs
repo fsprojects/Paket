@@ -1911,6 +1911,7 @@ type ProjectFile with
     member this.FindOrCreateReferencesFile() = ProjectFile.FindOrCreateReferencesFile (FileInfo this.FileName)
 
     // searches directory and all subdirectories for the search pattern, skipping known problematic directories
+    // and the ones for which isSkippedSearchDirectory holds
     static member SearchAllProjectRelatedFiles searchPattern folder : FileInfo [] =
         let paketPath = Path.Combine(folder,Constants.PaketFilesFolderName) |> normalizePath
 
@@ -1926,9 +1927,8 @@ type ProjectFile with
                         try
                             let path = normalizePath di.FullName
                             if di.Name = Constants.DefaultPackagesFolderName then false else
-                            if di.Name = ".git" then false else
-                            if di.Name = ".fable" then false else
                             if di.Name = "node_modules" then false else
+                            if isSkippedSearchDirectory di then false else
                             if topLevel && isLinux && di.FullName = "/sys" then false else
                             if topLevel && isLinux && di.FullName = "/usr" then false else
                             if topLevel && isLinux && di.FullName = "/proc" then false else
