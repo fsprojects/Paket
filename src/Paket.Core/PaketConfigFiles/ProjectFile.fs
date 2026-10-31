@@ -1910,8 +1910,10 @@ type ProjectFile with
 
     member this.FindOrCreateReferencesFile() = ProjectFile.FindOrCreateReferencesFile (FileInfo this.FileName)
 
-    // searches directory and all subdirectories for the search pattern, skipping known problematic directories
-    // and the ones for which isSkippedSearchDirectory holds
+    // searches directory and all subdirectories for the search pattern, skipping the ones for which
+    // isSkippedSearchDirectory holds, as FindAllFiles does, and also the packages and node_modules folders,
+    // the paket-files folder of the root, the folders with their own paket.dependencies,
+    // and the Linux system roots when searching from /
     static member SearchAllProjectRelatedFiles searchPattern folder : FileInfo [] =
         let paketPath = Path.Combine(folder,Constants.PaketFilesFolderName) |> normalizePath
 

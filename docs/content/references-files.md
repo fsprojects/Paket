@@ -22,6 +22,16 @@ differences:
 Paket looks for `paket.references` files underneath the directory where
 [`paket.dependencies`](dependencies-file.html) is located.
 
+Paket does not look into the folders whose name starts with a dot, like `.git`,
+`.vs` or `.devenv`, nor into the folders that are symbolic links or junctions,
+which may lead out of the repository or back into it on a cycle. The projects
+there are left out of the commands that look for projects, such as
+[`paket install`](paket-install.html), [`paket update`](paket-update.html),
+[`paket add`](paket-add.html), [`paket remove`](paket-remove.html),
+[`paket convert-from-nuget`](paket-convert-from-nuget.html) and a
+[`paket restore`](paket-restore.html) of the whole repository. See the
+[`paket.template` files](template-files.html) for `paket pack`.
+
 ## Layout
 
 The file whitelists any dependencies from the
