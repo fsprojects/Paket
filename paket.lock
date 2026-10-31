@@ -370,9 +370,6 @@ NUGET
       System.Xml.ReaderWriter (>= 4.3) - restriction: || (== net10.0) (&& (== net461) (< net46)) (== netstandard2.0)
       System.Xml.XmlDocument (>= 4.3)
       System.Xml.XPath (>= 4.3)
-GITHUB
-  remote: forki/FsUnit
-    FsUnit.fs (fa4eb37288d355eb855261be6c0b3945fba68432)
 GROUP BuildScript
 CONTENT: NONE
 RESTRICTION: == net10.0

@@ -38,8 +38,6 @@ nuget Microsoft.NET.Test.Sdk ~> 16.2.0
 nuget Fake.Core.ReleaseNotes ~> 6.2
 nuget Fake.IO.FileSystem ~> 6.2
 
-github forki/FsUnit FsUnit.fs
-
 # The modules build.fsx is written against. They are loaded through the scripts that
 # `paket generate-load-scripts` writes to .paket/load/net10.0/BuildScript/, so this group has to
 # resolve for the framework `dotnet fsi` runs on.
