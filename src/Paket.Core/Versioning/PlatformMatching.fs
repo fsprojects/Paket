@@ -134,14 +134,6 @@ let getPathPenalty =
             // No warnig -> should be reported later
             getPlatformPenalty(platform, TargetProfile.FindPortable false path.Platforms))
 
-[<Obsolete("Used in test code, use getPathPenalty instead.")>]
-let getFrameworkPathPenalty fr path =
-    match fr with
-    | [ h ] -> getPathPenalty (path, TargetProfile.SinglePlatform h)
-    | _ ->
-        // No warnig -> should be reported later
-        getPathPenalty (path, TargetProfile.FindPortable false fr)
-
 type PathPenalty = ParsedPlatformPath * int
 
 let comparePaths (p1 : PathPenalty) (p2 : PathPenalty) =

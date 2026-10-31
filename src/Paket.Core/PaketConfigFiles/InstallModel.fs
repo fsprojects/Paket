@@ -974,19 +974,6 @@ module InstallModel =
         |> applyFrameworkRestrictions frameworkRestrictions
         |> removeIfCompletelyEmpty
 
-    [<Obsolete "use createFromContent instead">]
-    let createFromLibs packageName packageVersion kind frameworkRestrictions (libs:UnparsedPackageFile seq) targetsFiles analyzerFiles packageLoadScriptFiles (nuspec:Nuspec) =
-        emptyModel packageName packageVersion kind
-        |> addLibReferences libs nuspec.References
-        |> addTargetsFiles "build" targetsFiles
-        |> addAnalyzerFiles analyzerFiles
-        |> addPackageLoadScriptFiles packageLoadScriptFiles
-        |> addFrameworkAssemblyReferences nuspec.FrameworkAssemblyReferences
-        |> filterIgnoreList
-        |> applyFrameworkRestrictions frameworkRestrictions
-        |> removeIfCompletelyEmpty
-        |> addLicense nuspec.LicenseUrl
-
 type InstallModel with
 
     static member EmptyModel (packageName, packageVersion, ?kind) =
@@ -1001,9 +988,6 @@ type InstallModel with
     member this.GetCompileReferences target = InstallModel.getCompileReferences target this
     member this.GetRuntimeAssemblies graph rid target = InstallModel.getRuntimeAssemblies graph rid target this
     member this.GetRuntimeLibraries graph rid target = InstallModel.getRuntimeLibraries graph rid target this
-
-    [<Obsolete("usually this should not be used, use GetLegacyReferences for the full .net and GetCompileReferences for dotnetcore")>]
-    member this.GetLibReferences frameworkIdentifier = InstallModel.getLegacyPlatformReferences frameworkIdentifier this
 
     member this.GetLibReferenceFiles frameworkIdentifier =
         InstallModel.getLegacyPlatformReferences frameworkIdentifier this
@@ -1074,7 +1058,3 @@ type InstallModel with
 
     static member CreateFromContent(packageName, packageVersion, kind, frameworkRestriction:FrameworkRestriction, content : NuGetPackageContent) =
         InstallModel.createFromContent packageName packageVersion kind frameworkRestriction content
-
-    [<Obsolete "use CreateFromContent instead">]
-    static member CreateFromLibs(packageName, packageVersion, kind, frameworkRestriction:FrameworkRestriction, libs : UnparsedPackageFile seq, targetsFiles, analyzerFiles, nuspec : Nuspec) =
-        InstallModel.createFromLibs packageName packageVersion kind frameworkRestriction libs targetsFiles analyzerFiles [] nuspec
