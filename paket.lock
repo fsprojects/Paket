@@ -362,13 +362,6 @@ GITHUB
     src/AssemblyReader.fs (dc5ac01a1ac288eceb1fd6f12a5d388236f4f8e5)
   remote: forki/FsUnit
     FsUnit.fs (fa4eb37288d355eb855261be6c0b3945fba68432)
-GROUP Build
-CONTENT: NONE
-RESTRICTION: >= net461
-NUGET
-  remote: https://api.nuget.org/v3/index.json
-    FAKE (4.64.17)
-
 GROUP BuildScript
 CONTENT: NONE
 RESTRICTION: == net10.0
