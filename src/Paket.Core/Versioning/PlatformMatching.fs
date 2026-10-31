@@ -72,8 +72,15 @@ let [<Literal>] Penalty_Netcore = 100
 let [<Literal>] Penalty_Portable = 1000
 let [<Literal>] Penalty_UnsupportedProfile = 10000
 let [<Literal>] Penalty_Fallback = 100000
-let rec getPlatformPenalty =
-    memoize (fun (targetPlatform:TargetProfile,packagePlatform:TargetProfile) ->
+let private platformPenalties = System.Collections.Concurrent.ConcurrentDictionary<TargetProfile * TargetProfile, int>()
+
+let rec getPlatformPenalty (targetPlatform:TargetProfile,packagePlatform:TargetProfile) : int =
+    let platforms = targetPlatform,packagePlatform
+    match platformPenalties.TryGetValue platforms with
+    | true, penalty -> penalty
+    | _ -> platformPenalties.GetOrAdd(platforms, fun platforms -> computePlatformPenalty platforms)
+
+and private computePlatformPenalty (targetPlatform:TargetProfile,packagePlatform:TargetProfile) : int =
         if packagePlatform = targetPlatform then
             0
         else
@@ -103,7 +110,7 @@ let rec getPlatformPenalty =
                 | TargetProfile.SinglePlatform (DotNetStandard _), TargetProfile.SinglePlatform(MonoAndroid _) -> Penalty_Netcore + penalty
                 | TargetProfile.SinglePlatform _, TargetProfile.PortableProfile _ -> Penalty_Portable + penalty
                 | TargetProfile.PortableProfile _, TargetProfile.SinglePlatform _ -> Penalty_Portable + penalty
-                | _ -> penalty)
+                | _ -> penalty
 
 let getFrameworkPenalty (fr1, fr2) =
     getPlatformPenalty (TargetProfile.SinglePlatform fr1, TargetProfile.SinglePlatform fr2)
