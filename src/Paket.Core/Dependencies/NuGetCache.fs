@@ -97,9 +97,9 @@ module NuGetConfig =
 """
         let sb = StringBuilder start
 
-        let i = ref 1
+        let mutable i = 1
         for source in sources do
-            sb.AppendLine(sprintf "    <add key=\"source%d\" value=\"%O\" />" !i source) |> ignore
+            sb.AppendLine(sprintf "    <add key=\"source%d\" value=\"%O\" />" i source) |> ignore
 
         sb.Append("""
     </packageSources>

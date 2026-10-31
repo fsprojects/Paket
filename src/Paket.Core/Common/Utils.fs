@@ -621,10 +621,10 @@ let parseKeyValuePairs (s:string) : Dictionary<string,string> =
                 let x = key,value
                 l.Add x |> ignore
 
-        let quoted = ref false
+        let mutable quoted = false
         let lastKey = Text.StringBuilder(50)
         let lastValue = Text.StringBuilder(50)
-        let isKey = ref true
+        let mutable isKey = true
         for pos in 0..s.Length - 1 do
             let x = s.[pos]
             let restHasKey() =
@@ -637,18 +637,18 @@ let parseKeyValuePairs (s:string) : Dictionary<string,string> =
                     s.Contains(":")
 
             if x = '"' then
-                quoted := not !quoted
-            elif x = ',' && not !quoted && restHasKey() then
+                quoted <- not quoted
+            elif x = ',' && not quoted && restHasKey() then
                 add (lastKey.ToString()) (lastValue.ToString())
                 lastKey.Clear() |> ignore
                 lastValue.Clear() |> ignore
-                isKey := true
-            elif x = ':' && not !quoted then
-                if not !isKey then
+                isKey <- true
+            elif x = ':' && not quoted then
+                if not isKey then
                     failwithf "invalid delimiter at position %d" pos
-                isKey := false
+                isKey <- false
             else
-                if !isKey then
+                if isKey then
                     lastKey.Append(x) |> ignore
                 else
                     lastValue.Append(x) |> ignore

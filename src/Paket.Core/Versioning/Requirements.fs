@@ -292,27 +292,27 @@ type FrameworkRestriction =
     static member FromOrList l = { OrFormulas = l; IsSimple = false; PrivateRepresentedFrameworks = ref None; PrivateRawFormula = ref None; PrivateStringRepresentation = ref None }
     static member internal WithOrListInternal orList l = { l with OrFormulas = orList; PrivateRawFormula = ref None; PrivateStringRepresentation = ref None }
     member internal x.RawFormular =
-        match !x.PrivateRawFormula with
+        match x.PrivateRawFormula.Value with
         | Some f -> f
         | None ->
             let raw = FrameworkRestrictionP.OrP (x.OrFormulas |> List.map (fun andList -> andList.RawFormular))
-            x.PrivateRawFormula := Some raw
+            x.PrivateRawFormula.Value <- Some raw
             raw
     override x.ToString() =
-        match !x.PrivateStringRepresentation with
+        match x.PrivateStringRepresentation.Value with
         | Some s -> s
         | None ->
             let str = x.RawFormular.ToString()
-            x.PrivateStringRepresentation := Some str
+            x.PrivateStringRepresentation.Value <- Some str
             str
     member x.IsSubsetOf (y:FrameworkRestriction) =
         x.RawFormular.IsSubsetOf y.RawFormular
     member x.RepresentedFrameworks =
-        match !x.PrivateRepresentedFrameworks with
+        match x.PrivateRepresentedFrameworks.Value with
         | Some s -> s
         | None ->
             let set = representedFrameworksCache.GetOrAdd(x.OrFormulas, fun _ -> x.RawFormular.RepresentedFrameworks)
-            x.PrivateRepresentedFrameworks := Some set
+            x.PrivateRepresentedFrameworks.Value <- Some set
             set
     member x.IsMatch tp =
         x.RawFormular.IsMatch tp

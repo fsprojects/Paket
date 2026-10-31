@@ -184,7 +184,7 @@ let findAllReferencesFiles root =
     |> Array.choose findRefFile
     |> collect
 
-let copiedElements = ref false
+let mutable private copiedElements = false
 
 type private MyAssemblyFinder () = class end
 
@@ -244,10 +244,10 @@ let extractRestoreTargets root =
     let path = Path.Combine(root,".paket","Paket.Restore.targets")
     if Environment.GetEnvironmentVariable "PAKET_SKIP_RESTORE_TARGETS" <> "true" then
         // allow to be more clever than paket
-        if !copiedElements then path
+        if copiedElements then path
         else
             let fileWritten, path = extractElement root "Paket.Restore.targets"
-            copiedElements := true
+            copiedElements <- true
             if fileWritten then
                 verbosefn "Extracted Paket.Restore.targets to: %s (Can be disabled with PAKET_SKIP_RESTORE_TARGETS=true)" path
             path

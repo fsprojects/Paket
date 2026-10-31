@@ -206,9 +206,9 @@ let CreateModel(alternativeProjectRoot, root, force, dependenciesFile:Dependenci
     |> Seq.toArray
 
 let inline private getOrAdd (key: 'key) (getValue: 'key -> 'value) (d: Dictionary<'key, 'value>) : 'value =
-    let value: 'value ref = ref Unchecked.defaultof<_>
-    if d.TryGetValue(key, value) then !value
-    else
+    match d.TryGetValue key with
+    | true, value -> value
+    | _ ->
         let value = getValue key
         d.[key] <- value
         value

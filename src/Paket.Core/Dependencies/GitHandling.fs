@@ -19,12 +19,12 @@ let extractUrlParts (gitConfig:string) =
             let rest = gitConfig.Substring(part.Length)
             let parts =
                 [ let current = Text.StringBuilder()
-                  let quoted = ref false
+                  let mutable quoted = false
                   for x in rest do
                     if x = '"' then
-                        quoted := not !quoted
+                        quoted <- not quoted
 
-                    if (x = ':' || x = ' ') && not !quoted then
+                    if (x = ':' || x = ' ') && not quoted then
                         yield current.ToString()
                         if x = ':' then
                             yield ":"
