@@ -26,8 +26,8 @@ let thirdOf3 (_,_,v) = v
 let rethrowf f inner fmt =
     ksprintf (fun msg -> raise (f(msg,inner))) fmt
 
-/// Adds quotes around the string
-/// [omit]
+/// <summary>Adds quotes around the string</summary>
+/// <exclude/>
 let quote (str:string) = "\"" + str.Replace("\"","\\\"") + "\""
 
 
@@ -217,7 +217,7 @@ let getFileEncoding path =
     // File.ReadAllLines reads a file without a BOM as UTF-8
     | _ -> UTF8Encoding false :> Encoding
 
-/// [omit]
+/// <exclude/>
 let createRelativePath root (path:string) =
     let path = Path.GetFullPath path
     let basePath =
@@ -290,7 +290,7 @@ let isMatchingPlatform (operatingSystemFilter : string option) =
     | Some filter when filter = "windows" -> isWindows
     | _ -> isMatchingOperatingSystem operatingSystemFilter
 
-/// [omit]
+/// <exclude/>
 let inline normalizeXml (doc:XmlDocument) =
     use stringWriter = new StringWriter()
     let settings = XmlWriterSettings (Indent=true)

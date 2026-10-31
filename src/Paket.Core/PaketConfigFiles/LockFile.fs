@@ -33,7 +33,7 @@ module LockFileSerializer =
         | true, x -> x
         | _ -> packageName
 
-    /// [omit]
+    /// <exclude/>
     let serializeOptionsAsLines options = [
         if options.Strict then yield "REFERENCES: STRICT"
         match options.Settings.GenerateLoadScripts with
@@ -93,7 +93,7 @@ module LockFileSerializer =
         | FrameworkRestriction.HasNoRestriction -> ()
         | list  -> yield "RESTRICTION: " + list.ToString() ]
 
-    /// [omit]
+    /// <exclude/>
     let serializePackages options (resolved : PackageResolution) =
         let sources =
             resolved

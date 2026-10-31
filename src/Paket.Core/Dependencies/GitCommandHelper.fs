@@ -38,10 +38,10 @@ let runGitCommand repositoryDir command =
 
     processResult.OK,processResult.Messages,ProcessHelper.toLines processResult.Errors
 
-/// [omit]
+/// <exclude/>
 let runGitCommandf fmt = Printf.ksprintf runGitCommand fmt
 
-/// [omit]
+/// <exclude/>
 let getGitResult repositoryDir command =
     let _,msg,_ = runGitCommand repositoryDir command
     msg
@@ -69,7 +69,7 @@ let gitCommand repositoryDir command =
         for m in msg do
             tracefn "%s" m
 
-/// [omit]
+/// <exclude/>
 let gitCommandf repositoryDir fmt = Printf.ksprintf (gitCommand repositoryDir) fmt
 
 /// Runs the git command and returns the results.

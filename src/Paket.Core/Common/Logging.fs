@@ -6,52 +6,52 @@ open System.Diagnostics
 open System.Collections.Concurrent
 open System.Threading
 
-/// [omit]
+/// <exclude/>
 let mutable verbose = false
 
-/// [omit]
+/// <exclude/>
 let mutable verboseWarnings = false
 
-/// [omit]
+/// <exclude/>
 type Trace = {
     Level: TraceLevel
     Text: string
     NewLine: bool }
 
-/// [omit]
+/// <exclude/>
 let event = Event<Trace>()
 
 
-/// [omit]
+/// <exclude/>
 let tracen s = event.Trigger { Level = TraceLevel.Info; Text = s; NewLine = true }
 
-/// [omit]
+/// <exclude/>
 let tracefn fmt = Printf.ksprintf tracen fmt
 
-/// [omit]
+/// <exclude/>
 let trace s = event.Trigger { Level = TraceLevel.Info; Text = s; NewLine = false }
 
-/// [omit]
+/// <exclude/>
 let tracef fmt = Printf.ksprintf trace fmt
 
-/// [omit]
+/// <exclude/>
 let traceVerbose s =
     if verbose then
         event.Trigger { Level = TraceLevel.Verbose; Text = s; NewLine = true }
 
-/// [omit]
+/// <exclude/>
 let verbosefn fmt = Printf.ksprintf traceVerbose fmt
 
-/// [omit]
+/// <exclude/>
 let traceError s = event.Trigger { Level = TraceLevel.Error; Text = s; NewLine = true }
 
-/// [omit]
+/// <exclude/>
 let traceWarn s = event.Trigger { Level = TraceLevel.Warning; Text = s; NewLine = true }
 
-/// [omit]
+/// <exclude/>
 let traceErrorfn fmt = Printf.ksprintf traceError fmt
 
-/// [omit]
+/// <exclude/>
 let traceWarnfn fmt = Printf.ksprintf traceWarn fmt
 
 let private omittedWarnings = ref 0
@@ -76,7 +76,7 @@ let traceErrorIfNotBefore key fmt = traceIfNotBefore traceError key fmt
 
 // Console Trace
 
-/// [omit]
+/// <exclude/>
 let traceColored color (s:string) =
     let curColor = Console.ForegroundColor
     if curColor <> color then Console.ForegroundColor <- color
@@ -89,10 +89,10 @@ let traceColored color (s:string) =
     textWriter.WriteLine s
     if curColor <> color then Console.ForegroundColor <- curColor
 
-/// [omit]
+/// <exclude/>
 let monitor = new Object()
 
-/// [omit]
+/// <exclude/>
 let traceToConsole (trace:Trace) =
     lock monitor
         (fun () ->
@@ -106,16 +106,16 @@ let traceToConsole (trace:Trace) =
 
 // Log File Trace
 
-/// [omit]
+/// <exclude/>
 let mutable logFile : string option = None
 
-/// [omit]
+/// <exclude/>
 let traceToFile (trace:Trace) =
     match logFile with
     | Some fileName -> try File.AppendAllLines(fileName,[trace.Text]) with | _ -> ()
     | _ -> ()
 
-/// [omit]
+/// <exclude/>
 let setLogFile fileName =
     let fi = FileInfo fileName
     logFile <- Some fi.FullName
@@ -126,14 +126,14 @@ let setLogFile fileName =
             fi.Directory.Create()
     event.Publish |> Observable.subscribe traceToFile
 
-/// [omit]
+/// <exclude/>
 [<RequireQualifiedAccess>]
 type private ExnType =
     | First
     | Aggregated
     | Inner
 
-/// [omit]
+/// <exclude/>
 let printErrorExt printFirstStack printAggregatedStacks printInnerStacks (exn:exn) =
     let defaultMessage = AggregateException().Message
     let rec printErrorHelper exnType useArrow indent (exn:exn) =
@@ -181,6 +181,6 @@ let printErrorExt printFirstStack printAggregatedStacks printInnerStacks (exn:ex
 
     printErrorHelper ExnType.First true 0 exn
 
-/// [omit]
+/// <exclude/>
 let printError (exn:exn) =
     printErrorExt verbose verbose false exn

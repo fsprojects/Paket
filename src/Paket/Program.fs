@@ -1,4 +1,4 @@
-/// [omit]
+/// <exclude/>
 module Paket.Program
 
 open System
