@@ -405,8 +405,6 @@ let createHttpClient (url, auth:Auth option) : HttpClient =
     client.DefaultRequestHeaders.Add("user-agent", sprintf "Paket (%s)" paketVersion)
     client
 
-#nowarn "40"
-
 open System.Diagnostics
 open System.Collections.Generic
 open System.Runtime.ExceptionServices

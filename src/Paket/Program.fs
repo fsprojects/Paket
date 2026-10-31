@@ -712,6 +712,8 @@ let fixNuspec _silent (results : ParseResults<_>) =
 
     Dependencies.FixNuspecs (refFile, nuspecList)
 
+#warnon "44"
+
 // separated out from showInstalledPackages to allow Paket.PowerShell to get the types
 let getInstalledPackages (results : ParseResults<_>) =
     let project =
