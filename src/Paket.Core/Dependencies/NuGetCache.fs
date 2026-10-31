@@ -86,32 +86,6 @@ type UnparsedPackageFile =
     member x.BasePath =
         x.FullPath.Substring(0, x.FullPath.Length - (x.PathWithinPackage.Length + 1))
 
-module NuGetConfig =
-
-    let writeNuGetConfig directory sources =
-        let start = """<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-    <packageSources>
-    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
-    <clear />
-"""
-        let sb = StringBuilder start
-
-        let mutable i = 1
-        for source in sources do
-            sb.AppendLine(sprintf "    <add key=\"source%d\" value=\"%O\" />" i source) |> ignore
-
-        sb.Append("""
-    </packageSources>
-</configuration>""") |> ignore
-        let text = sb.ToString()
-        let fileName = Path.Combine(directory,Constants.NuGetConfigFile)
-        if not (File.Exists fileName) then
-            File.WriteAllText(fileName,text)
-        else
-            if File.ReadAllText(fileName) <> text then
-                File.WriteAllText(fileName,text)
-
 type FrameworkRestrictionsCache = string
 
 type NuGetPackageCache =
