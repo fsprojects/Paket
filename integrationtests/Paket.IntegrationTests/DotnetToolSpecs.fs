@@ -2,7 +2,6 @@ module Paket.IntegrationTests.DotnetToolSpecs
 
 open System
 open System.IO
-open Fake
 open NUnit.Framework
 open FsUnit
 

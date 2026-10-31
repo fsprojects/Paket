@@ -104,7 +104,6 @@
     <Compile Include="Packaging\PackageProcess.fs" />
     <Compile Include="PublicAPI.fs" />
     <None Include="paket.template" />
-    <None Include="Prototypes\script-generation.fsx" />
   </ItemGroup>
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">

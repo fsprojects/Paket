@@ -1,6 +1,5 @@
 ﻿module Paket.IntegrationTests.PackSpecs
 
-open Fake
 open System
 open NUnit.Framework
 open FsUnit
@@ -34,9 +33,7 @@ let ``#1348 npm type folder names`` () =
     let desiredFolderName = "font-awesome@4.5.0"
 
     let extractedFolder =
-        Path.Combine(outPath,"jspm_packages", "npm")
-        |> directoryInfo
-        |> subDirectories
+        DirectoryInfo(Path.Combine(outPath,"jspm_packages", "npm")).GetDirectories()
         |> Array.head
 
     extractedFolder.Name |> shouldEqual desiredFolderName

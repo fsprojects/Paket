@@ -1,6 +1,5 @@
 ﻿module Paket.IntegrationTests.InitSpecs
 
-open Fake
 open System
 open NUnit.Framework
 open FsUnit

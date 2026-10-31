@@ -1,5 +1,6 @@
 #### Unreleased
 
+* BREAKING: `paket pack --release-notes-file` reads the file with Fake.Core.ReleaseNotes 6, in the formats described in https://fake.build/reference/fake-core-releasenotes.html: the package version is the first word of the latest header that is a whole SemVer version, so `## [1.2.3] - 2020-01-01` and `## v1.2.3 - 2020-01-01` give `2020-01-01`; pass `--version` for such headers. Prerelease versions like `1.2.3-beta.11.2` are no longer cut, and build metadata (`+sha.abc`) is kept - https://github.com/fsprojects/FAKE/pull/2686
 * BREAKING: Paket no longer looks for projects and `paket.template` files in the folders whose name starts with a dot, like `.devenv`, nor in the folders that are links, as `paket convert-from-nuget` already did for the solutions and NuGet files: the projects there are left out of install, restore, update, remove and pack. Until now only `.git` and `.fable` were skipped. A cyclic link, as in a Nix `.devenv` profile, no longer makes the search run forever - https://github.com/fsprojects/Paket/pull/4421
 * The warning about the FSharp.Core binding redirects of F# projects links to an existing section of the documentation
 
