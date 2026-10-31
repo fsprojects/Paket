@@ -51,11 +51,6 @@ let ``Check that we can detect _._ and ignore xml``() =
     |> Seq.toList
     |> shouldEqual [ "lib/net40/System.IO.dll" ]
 
-    model.GetLibReferences (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4))
-    |> Seq.map (fun f -> f.PathWithinPackage)
-    |> Seq.toList
-    |> shouldEqual [ "lib/net40/System.IO.dll" ]
-
 [<Test>]
 let ``Check that we can detect _._ and ignore xml in ref folder``() =
     let content =

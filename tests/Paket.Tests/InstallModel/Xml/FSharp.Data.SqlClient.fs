@@ -31,7 +31,7 @@ let expected = """
 let ``should generate Xml for FSharp.Data.SqlClient 1.4.4``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "FSharp.Data.SqlClient", SemVer.Parse "1.4.4", InstallModelKind.Package, FrameworkRestriction.NoRestriction,
+        createInstallModelFromLibs(PackageName "FSharp.Data.SqlClient", SemVer.Parse "1.4.4", InstallModelKind.Package, FrameworkRestriction.NoRestriction,
             [ @"..\FSharp.Data.SqlClient\lib\net40\FSharp.Data.SqlClient.dll"
               @"..\FSharp.Data.SqlClient\lib\net40\FSharp.Data.SqlClient.pdb"
               @"..\FSharp.Data.SqlClient\lib\net40\FSharp.Data.SqlClient.XML"
