@@ -210,7 +210,6 @@ let getFileEncoding path =
     use fs = new FileStream (path, FileMode.Open, FileAccess.Read)
     fs.Read (bom, 0, 4) |> ignore
     match bom with
-    | [| 0x2buy ; 0x2fuy ; 0x76uy ; _      |] -> Encoding.UTF7
     | [| 0xefuy ; 0xbbuy ; 0xbfuy ; _      |] -> Encoding.UTF8
     | [| 0xffuy ; 0xfeuy ; _      ; _      |] -> Encoding.Unicode //UTF-16LE
     | [| 0xfeuy ; 0xffuy ; _      ; _      |] -> Encoding.BigEndianUnicode //UTF-16BE
