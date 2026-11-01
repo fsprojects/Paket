@@ -26,6 +26,9 @@ on:
     name: repo-assist
   reaction: "eyes"
 
+# A fork that enables Actions would otherwise run it every day, and fail
+if: github.repository == 'fsprojects/Paket'
+
 concurrency:
   job-discriminator: ${{ github.event_name == 'schedule' && 'scheduled' || github.run_id }}
 
