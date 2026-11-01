@@ -25,6 +25,17 @@ let ``should parse lines correctly``() =
     refFile.RemoteFiles.Head.Link |> shouldEqual ReferencesFile.DefaultLink
 
 [<Test>]
+let ``should merge settings of repeated package lines``() =
+    let lines = toLines """
+Microsoft.Office.Interop.Outlook specific_version: false
+Microsoft.Office.Interop.Outlook embed_interop_types: true
+"""
+    let refFile = ReferencesFile.FromLines(lines).Groups.[Constants.MainDependencyGroup]
+    refFile.NugetPackages.Length |> shouldEqual 1
+    refFile.NugetPackages.Head.Settings.SpecificVersion |> shouldEqual (Some false)
+    refFile.NugetPackages.Head.Settings.EmbedInteropTypes |> shouldEqual (Some true)
+
+[<Test>]
 let ``should serialize itself correctly``() = 
     let refFile = 
         {FileName = ""; 
