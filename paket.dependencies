@@ -7,7 +7,8 @@ content: none
 framework: net10.0, netstandard2.0, net461
 
 nuget Newtonsoft.Json >= 10.0.3 redirects: force
-nuget Argu >= 5.1.0
+# Argu 6.1.2 to 6.2.2 carry regressions of fsprojects/Argu#127 in the parsing of subcommands
+nuget Argu >= 6.2.3
 nuget FSharp.Core >= 6.0.3
 nuget Chessie >= 0.6
 nuget Mono.Cecil ~> 0.11.1
