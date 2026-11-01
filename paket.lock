@@ -3,8 +3,8 @@ CONTENT: NONE
 RESTRICTION: || (== net10.0) (== net461) (== netstandard2.0)
 NUGET
   remote: https://api.nuget.org/v3/index.json
-    Argu (6.1.1)
-      FSharp.Core (>= 4.3.2) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
+    Argu (6.2.5)
+      FSharp.Core (>= 6.0) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
       System.Configuration.ConfigurationManager (>= 4.4) - restriction: || (== net10.0) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)
     Chessie (0.6)
       FSharp.Core  - restriction: || (&& (== net10.0) (< netstandard1.6)) (== net461) (&& (== netstandard2.0) (< netstandard1.6))
@@ -370,6 +370,7 @@ NUGET
       System.Xml.ReaderWriter (>= 4.3) - restriction: || (== net10.0) (&& (== net461) (< net46)) (== netstandard2.0)
       System.Xml.XmlDocument (>= 4.3)
       System.Xml.XPath (>= 4.3)
+
 GROUP BuildScript
 CONTENT: NONE
 RESTRICTION: == net10.0

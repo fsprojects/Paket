@@ -5,6 +5,7 @@
 * BREAKING: Paket no longer looks for projects and `paket.template` files in the folders whose name starts with a dot, like `.devenv`, nor in the folders that are links, as `paket convert-from-nuget` already did for the solutions and NuGet files: the projects there are left out of install, restore, update, remove and pack. Until now only `.git` and `.fable` were skipped. A cyclic link, as in a Nix `.devenv` profile, no longer makes the search run forever - https://github.com/fsprojects/Paket/pull/4421
 * BREAKING: The obsolete `InstallModel.CreateFromLibs` and `InstallModel.createFromLibs`, `InstallModel.GetLibReferences` and `PlatformMatching.getFrameworkPathPenalty` of Paket.Core are removed: use `InstallModel.CreateFromContent` and `createFromContent`, `GetLegacyReferences` or `GetCompileReferences`, and `PlatformMatching.getPathPenalty`. So is the `Fake.Globbing` module that Paket.Core carried from FAKE 4: use `Fake.IO.Globbing.Glob` of the Fake.IO.FileSystem package. So are `NuGetCache.NuGetConfig.writeNuGetConfig` and `Constants.NuGetConfigFile`, unused since the end of the project.json support
 * The warning about the FSharp.Core binding redirects of F# projects links to an existing section of the documentation
+* Update Argu from 6.1.1 to 6.2.5. The help of `paket update`, `paket find-packages` and `paket generate-nuspec` no longer shows their optional package ID, search text and `output` directory as required
 
 #### 12.0.0-alpha003 - 2026-10-26
 
