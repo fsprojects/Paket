@@ -92,7 +92,12 @@ type ReferencesFile =
                                 let e = parts.[0]
                                 let alias = all.Substring(e.Length).TrimStart()
                                 packages.[packages.Count-1] <- { p with Settings = { p.Settings with Aliases = Map.add e alias p.Settings.Aliases }}
-                            | _-> packages.Add(parsePackageInstallSettings line)
+                            | _->
+                                let parsed = parsePackageInstallSettings line
+                                // repeated lines for one package (e.g. one setting per line) are merged
+                                match packages.FindIndex(fun p -> p.Name = parsed.Name) with
+                                | -1 -> packages.Add parsed
+                                | i -> packages.[i] <- { parsed with Settings = packages.[i].Settings + parsed.Settings }
                         packages |> Seq.toList
 
                     let remoteFiles =
