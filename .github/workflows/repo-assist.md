@@ -1,4 +1,6 @@
 ---
+# Regenerate repo-assist.lock.yml with `gh aw compile --dir .github/workflows`: without --dir, gh-aw also
+# rewrites GH_AW_ACTION_FAILURE_ISSUE_EXPIRES_HOURS from 168 to 0 (see CLAUDE.md)
 description: |
   A friendly repository assistant that runs regularly (twice a day by default) to assist maintainers.
   Can also be triggered on-demand via '/repo-assist <instructions>' to perform specific tasks.
