@@ -14,6 +14,8 @@ concurrency:
 jobs:
   detect-release:
     name: Detect new release
+    # A fork that enables Actions and syncs master would otherwise build a release, and fail to publish it
+    if: github.repository == 'fsprojects/Paket'
     runs-on: ubuntu-26.04
     permissions:
       contents: read
