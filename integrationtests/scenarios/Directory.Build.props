@@ -1,0 +1,8 @@
+<Project>
+  <!-- MSBuild only includes the first Directory.Build.props, so we need to manually include the parent one -->
+  <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
+  <PropertyGroup>
+    <!-- The scenarios reproduce issues with old packages, some of which have known vulnerabilities -->
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+</Project>

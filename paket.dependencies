@@ -7,9 +7,8 @@ content: none
 framework: net10.0, netstandard2.0, net461
 
 nuget Newtonsoft.Json >= 10.0.3 redirects: force
-# Argu 6.1.5 enforces the ExactlyOnce of the main commands of subcommands, which Paket declares on
-# optional ones, e.g. the package id of paket update; 6.1.2 to 6.1.4 break the parsing of #127
-nuget Argu >= 5.1.0 < 6.1.2
+# Argu 6.1.2 to 6.2.2 carry regressions of fsprojects/Argu#127 in the parsing of subcommands
+nuget Argu >= 6.2.3
 nuget FSharp.Core >= 6.0.3
 nuget Chessie >= 0.6
 nuget Mono.Cecil ~> 0.11.1
