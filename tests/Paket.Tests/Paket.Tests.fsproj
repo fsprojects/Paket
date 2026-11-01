@@ -10,13 +10,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="FsiExtension.fs" />
-    <Compile Include="..\..\paket-files\forki\FsUnit\FsUnit.fs">
-      <Paket>True</Paket>
-      <Link>FsUnit.fs</Link>
-    </Compile>
+    <Compile Include="FsUnit.fs" />
     <None Include="paket.references" />
     <Compile Include="TestHelpers.fs" />
     <Compile Include="UtilsSpecs.fs" />
+    <Compile Include="GlobbingSpecs.fs" />
     <Compile Include="AesSpecs.fs" />
     <Compile Include="Versioning\PackageSourceSpecs.fs" />
     <Compile Include="Versioning\PlatformMatchingSpecs.fs" />
@@ -205,6 +203,7 @@
     <Compile Include="InstallModel\InstallNuGetContentsTests.fs" />
     <Compile Include="InstallModel\PaketPropsTests.fs" />
     <Compile Include="Packaging\PackageProcessSpecs.fs" />
+    <Compile Include="Packaging\AssemblyMetadataSpecs.fs" />
     <Compile Include="Packaging\NuspecWriterSpecs.fs" />
     <Compile Include="Packaging\TemplateFileParsing.fs" />
     <Compile Include="Packaging\RemotePushUrlSpecs.fs" />

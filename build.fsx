@@ -290,8 +290,7 @@ Target.create "RunIntegrationTestsNetCore" (fun _ ->
 
 Target.create "CalculateDownloadHash" (fun _ ->
     use stream = System.IO.File.OpenRead(paketFile)
-    use sha = new SHA256Managed()
-    let checksum = sha.ComputeHash(stream)
+    let checksum = SHA256.HashData(stream)
     let hash = BitConverter.ToString(checksum).Replace("-", String.Empty)
     File.writeString false (buildLegacyStubDir @@ "paket-sha256.txt") (sprintf "%s paket.exe" hash)
 )

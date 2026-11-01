@@ -26,8 +26,8 @@ let thirdOf3 (_,_,v) = v
 let rethrowf f inner fmt =
     ksprintf (fun msg -> raise (f(msg,inner))) fmt
 
-/// Adds quotes around the string
-/// [omit]
+/// <summary>Adds quotes around the string</summary>
+/// <exclude/>
 let quote (str:string) = "\"" + str.Replace("\"","\\\"") + "\""
 
 
@@ -210,7 +210,6 @@ let getFileEncoding path =
     use fs = new FileStream (path, FileMode.Open, FileAccess.Read)
     fs.Read (bom, 0, 4) |> ignore
     match bom with
-    | [| 0x2buy ; 0x2fuy ; 0x76uy ; _      |] -> Encoding.UTF7
     | [| 0xefuy ; 0xbbuy ; 0xbfuy ; _      |] -> Encoding.UTF8
     | [| 0xffuy ; 0xfeuy ; _      ; _      |] -> Encoding.Unicode //UTF-16LE
     | [| 0xfeuy ; 0xffuy ; _      ; _      |] -> Encoding.BigEndianUnicode //UTF-16BE
@@ -218,7 +217,7 @@ let getFileEncoding path =
     // File.ReadAllLines reads a file without a BOM as UTF-8
     | _ -> UTF8Encoding false :> Encoding
 
-/// [omit]
+/// <exclude/>
 let createRelativePath root (path:string) =
     let path = Path.GetFullPath path
     let basePath =
@@ -291,7 +290,7 @@ let isMatchingPlatform (operatingSystemFilter : string option) =
     | Some filter when filter = "windows" -> isWindows
     | _ -> isMatchingOperatingSystem operatingSystemFilter
 
-/// [omit]
+/// <exclude/>
 let inline normalizeXml (doc:XmlDocument) =
     use stringWriter = new StringWriter()
     let settings = XmlWriterSettings (Indent=true)
@@ -622,10 +621,10 @@ let parseKeyValuePairs (s:string) : Dictionary<string,string> =
                 let x = key,value
                 l.Add x |> ignore
 
-        let quoted = ref false
+        let mutable quoted = false
         let lastKey = Text.StringBuilder(50)
         let lastValue = Text.StringBuilder(50)
-        let isKey = ref true
+        let mutable isKey = true
         for pos in 0..s.Length - 1 do
             let x = s.[pos]
             let restHasKey() =
@@ -638,18 +637,18 @@ let parseKeyValuePairs (s:string) : Dictionary<string,string> =
                     s.Contains(":")
 
             if x = '"' then
-                quoted := not !quoted
-            elif x = ',' && not !quoted && restHasKey() then
+                quoted <- not quoted
+            elif x = ',' && not quoted && restHasKey() then
                 add (lastKey.ToString()) (lastValue.ToString())
                 lastKey.Clear() |> ignore
                 lastValue.Clear() |> ignore
-                isKey := true
-            elif x = ':' && not !quoted then
-                if not !isKey then
+                isKey <- true
+            elif x = ':' && not quoted then
+                if not isKey then
                     failwithf "invalid delimiter at position %d" pos
-                isKey := false
+                isKey <- false
             else
-                if !isKey then
+                if isKey then
                     lastKey.Append(x) |> ignore
                 else
                     lastValue.Append(x) |> ignore

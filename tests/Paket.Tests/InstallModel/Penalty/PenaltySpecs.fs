@@ -46,42 +46,44 @@ module ``Given a path`` =
     [<Test>]
     let ``it should return no penalty for a matching .NET framework``() =
         let path = forceExtractPlatforms "net45"
-        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V4_5 ] path |> shouldEqual 0
+        getPathPenalty (path, TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4_5)) |> shouldEqual 0
 
     [<Test>]
     let ``it should return no penalty for a matching portable profile``() =
         let path = forceExtractPlatforms "net40+sl4"
-        getFrameworkPathPenalty 
-            [ DotNetFramework FrameworkVersion.V4
-              Silverlight SilverlightVersion.V4 ] path
+        getPathPenalty
+            (path, TargetProfile.FindPortable false
+               [ DotNetFramework FrameworkVersion.V4
+                 Silverlight SilverlightVersion.V4 ])
         |> shouldEqual 0
 
     [<Test>]
     let ``it should return 1 for a compatible portable profile``() =
         let path = forceExtractPlatforms "net40+sl4"
-        getFrameworkPathPenalty 
-            [ DotNetFramework FrameworkVersion.V4
-              Silverlight SilverlightVersion.V5 ] path
+        getPathPenalty
+            (path, TargetProfile.FindPortable false
+               [ DotNetFramework FrameworkVersion.V4
+                 Silverlight SilverlightVersion.V5 ])
         |> shouldEqual Penalty_VersionJump
 
     [<Test>]
     let ``it should return the correct penalty for compatible .NET Frameworks``() =
         let path = forceExtractPlatforms "net20"
-        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V2 ] path |> shouldEqual 0
-        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V3 ] path |> shouldEqual Penalty_VersionJump
-        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V3_5 ] path |> shouldEqual (Penalty_VersionJump * 2)
-        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V4 ] path |> shouldEqual (Penalty_VersionJump * 3)
+        getPathPenalty (path, TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldEqual 0
+        getPathPenalty (path, TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V3)) |> shouldEqual Penalty_VersionJump
+        getPathPenalty (path, TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V3_5)) |> shouldEqual (Penalty_VersionJump * 2)
+        getPathPenalty (path, TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4)) |> shouldEqual (Penalty_VersionJump * 3)
 
 module ``Given an empty path`` =
     [<Test>]
     let ``it should be okay to use from .NET``() =
         let path = forceExtractPlatforms ""
-        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V4_5 ] path |> shouldBeSmallerThan MaxPenalty
+        getPathPenalty (path, TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4_5)) |> shouldBeSmallerThan MaxPenalty
 
     [<Test>]
     let ``it should be okay to use from a portable profile``() =
         let path = forceExtractPlatforms ""
-        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V4_5; Windows WindowsVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ] path |> shouldBeSmallerThan MaxPenalty
+        getPathPenalty (path, TargetProfile.FindPortable false [ DotNetFramework FrameworkVersion.V4_5; Windows WindowsVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]) |> shouldBeSmallerThan MaxPenalty
 
 module ``Given a list of paths`` =
     let paths =

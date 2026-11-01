@@ -5,8 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="FsiExtension.fs" />
-    <Compile Include="..\..\paket-files\forki\FsUnit\FsUnit.fs">
-      <Paket>True</Paket>
+    <Compile Include="..\..\tests\Paket.Tests\FsUnit.fs">
       <Link>FsUnit.fs</Link>
     </Compile>
     <Compile Include="TestHelper.fs" />

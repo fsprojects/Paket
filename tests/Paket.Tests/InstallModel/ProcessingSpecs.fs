@@ -820,7 +820,7 @@ let ``should filter .NET 4.0 dlls for System.Net.Http 2.2.8``() =
         |> Seq.ofList
 
     let model =
-        InstallModel.CreateFromLibs
+        Paket.TestHelpers.createInstallModelFromLibs
             (PackageName "System.Net.Http", SemVer.Parse "2.2.8", InstallModelKind.Package,
              FrameworkRestriction.NoRestriction,
              [ @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll"
@@ -855,7 +855,7 @@ let ``should filter .NET 4.5 dlls for System.Net.Http 2.2.8``() =
         |> Seq.ofList
 
     let model =
-        InstallModel.CreateFromLibs
+        Paket.TestHelpers.createInstallModelFromLibs
             (PackageName "System.Net.Http", SemVer.Parse "2.2.8", InstallModelKind.Package,
              FrameworkRestriction.NoRestriction,
              [ @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll"
@@ -889,7 +889,7 @@ let ``should filter .NET 4.5 dlls for System.Net.Http 2.2.8``() =
 [<Test>]
 let ``should filter properly when portables are available``() = 
     let model =
-        InstallModel.CreateFromLibs
+        Paket.TestHelpers.createInstallModelFromLibs
             (PackageName "Newtonsoft.Json", SemVer.Parse "8.0.3", InstallModelKind.Package,
              FrameworkRestriction.NoRestriction,
              [ @"..\Newtonsoft.Json\lib\net20\Newtonsoft.Json.dll"
@@ -914,7 +914,7 @@ let ``should filter properly when portables are available``() =
 [<Test>]
 let ``should keep net20 if nothing better is available``() = 
     let model =
-        InstallModel.CreateFromLibs
+        Paket.TestHelpers.createInstallModelFromLibs
             (PackageName "EPPlus", SemVer.Parse "4.0.5", InstallModelKind.Package,
              FrameworkRestriction.NoRestriction,
              [ @"..\EPPlus\lib\net20\EPPlus.dll" ] |> fromLegacyList @"..\EPPlus\", [], [], Nuspec.All)
@@ -935,7 +935,7 @@ let ``should keep net20 if nothing better is available``() =
 [<Test>]
 let ``prefer net20 over empty folder``() =
     let model =
-        InstallModel.CreateFromLibs
+        Paket.TestHelpers.createInstallModelFromLibs
             (PackageName "EPPlus", SemVer.Parse "4.0.5", InstallModelKind.Package,
              FrameworkRestriction.NoRestriction,
              [ @"..\EPPlus\lib\readme.txt"

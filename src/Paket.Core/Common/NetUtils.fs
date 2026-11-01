@@ -405,8 +405,6 @@ let createHttpClient (url, auth:Auth option) : HttpClient =
     client.DefaultRequestHeaders.Add("user-agent", sprintf "Paket (%s)" paketVersion)
     client
 
-#nowarn "40"
-
 open System.Diagnostics
 open System.Collections.Generic
 open System.Runtime.ExceptionServices
@@ -424,7 +422,7 @@ let private resolveAuth (auth: AuthProvider) doRequest =
                 return raise <| w.Wrap()
     }
 
-/// [omit]
+/// <exclude/>
 let downloadFromUrlWithTimeout (auth:AuthProvider, url : string) (timeout:TimeSpan option) (filePath: string) =
     let doRequest auth = async {
         let client = createHttpClient (url,auth)
@@ -444,12 +442,12 @@ let downloadFromUrlWithTimeout (auth:AuthProvider, url : string) (timeout:TimeSp
             raise (Exception(sprintf "Could not download from '%s'" url, exn))
     }
 
-/// [omit]
+/// <exclude/>
 let downloadFromUrl (auth:AuthProvider, url : string) (filePath: string) =
     downloadFromUrlWithTimeout (auth, url) None filePath
 
 
-/// [omit]
+/// <exclude/>
 let getFromUrl (auth:AuthProvider, url : string, contentType : string) =
     let uri = Uri url
     let doRequest auth = async {
@@ -572,7 +570,7 @@ let rec private _safeGetFromUrl (auth:Auth option, url : string, contentType : s
             return UnknownError (ExceptionDispatchInfo.Capture (exn(sprintf "Request to '%O' failed with unknown error (_safeGetFromUrl)" uri, inner)))
     }
 
-/// [omit]
+/// <exclude/>
 let safeGetFromUrl (auth:AuthProvider, url : string, contentType : string) = async {
     let! result = _safeGetFromUrl(auth.Retrieve false, url, contentType, 1, 10)
     match result with

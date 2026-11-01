@@ -539,11 +539,11 @@ module ProjectFile =
 
     let getFrameworkAssemblies (project:ProjectFile) = [
         for node in project.Document |> getDescendants "Reference" do
-            let hasHintPath = ref false
+            let mutable hasHintPath = false
             for child in node.ChildNodes do
                 if child.Name = "HintPath" then
-                    hasHintPath := true
-            if not !hasHintPath then
+                    hasHintPath <- true
+            if not hasHintPath then
                 yield node.Attributes.["Include"].InnerText.Split(',').[0]
     ]
 
@@ -842,25 +842,25 @@ module ProjectFile =
                             |> Seq.sortBy (fun r -> r.Path)
                             |> Seq.toList
 
-                        let assemblyTargets = ref libFolder.Targets
+                        let mutable assemblyTargets = libFolder.Targets
                         let duplicates = HashSet<_>()
                         for frameworkAssembly in frameworkReferences do
                             for t in libFolder.Targets do
                                 if not (usedFrameworkLibs.Add(t,frameworkAssembly.Name)) then
-                                    assemblyTargets := Set.remove t !assemblyTargets // List.filter ((<>) t) !assemblyTargets
+                                    assemblyTargets <- Set.remove t assemblyTargets // List.filter ((<>) t) assemblyTargets
                                     duplicates.Add frameworkAssembly.Name |> ignore
 
-                        if !assemblyTargets = libFolder.Targets then
+                        if assemblyTargets = libFolder.Targets then
                             [condition,createItemGroup libFolder.Targets frameworkReferences libraries,false]
                         else
                             let specialFrameworkAssemblies, rest =
                                 frameworkReferences
                                 |> List.partition (fun fr -> duplicates.Contains fr.Name)
 
-                            match PlatformMatching.getCondition referenceCondition !assemblyTargets with
+                            match PlatformMatching.getCondition referenceCondition assemblyTargets with
                             | "" -> [condition,createItemGroup libFolder.Targets rest libraries,false]
                             | lowerCondition ->
-                                [lowerCondition,createItemGroup !assemblyTargets specialFrameworkAssemblies [],true
+                                [lowerCondition,createItemGroup assemblyTargets specialFrameworkAssemblies [],true
                                  condition,createItemGroup libFolder.Targets rest libraries,false]
                         )
 
@@ -884,8 +884,8 @@ module ProjectFile =
                 let chooseNode = createNode "Choose" project
                 let chooseNode2 = createNode "Choose" project
 
-                let containsReferences = ref false
-                let containsReferences2 = ref false
+                let mutable containsReferences = false
+                let mutable containsReferences2 = false
 
                 let nodes =
                     conditions
@@ -902,9 +902,9 @@ module ProjectFile =
                         if not itemGroup.IsEmpty then
                             whenNode.AppendChild itemGroup |> ignore
                             if ownNode then
-                                containsReferences2 := true
+                                containsReferences2 <- true
                             else
-                                containsReferences := true
+                                containsReferences <- true
                         whenNode,ownNode)
 
                 for node,ownNode in nodes do
@@ -913,7 +913,7 @@ module ProjectFile =
                     else
                         chooseNode.AppendChild node |> ignore
 
-                match !containsReferences,!containsReferences2 with
+                match containsReferences,containsReferences2 with
                 | true,true -> [chooseNode2; chooseNode]
                 | true,false -> [chooseNode]
                 | false,true -> [chooseNode2]
@@ -928,7 +928,7 @@ module ProjectFile =
             |  _ ->
                 let propertyChooseNode = createNode "Choose" project
 
-                let containsProperties = ref false
+                let mutable containsProperties = false
                 let nodes =
                     frameworkSpecificTargetsFileConditions
                     |> List.map (fun (condition,(propertyNames,propertyGroup)) ->
@@ -938,13 +938,13 @@ module ProjectFile =
                             |> addAttribute "Condition" finalCondition
                         if not (Set.isEmpty propertyNames) then
                             whenNode.AppendChild(propertyGroup) |> ignore
-                            containsProperties := true
+                            containsProperties <- true
                         whenNode)
                 for node in nodes do
                     propertyChooseNode.AppendChild node |> ignore
 
                 (frameworkSpecificTargetsFileConditions |> List.map (fun (_,(propertyNames,_)) -> propertyNames)),
-                (if !containsProperties then propertyChooseNode else createNode "Choose" project)
+                (if containsProperties then propertyChooseNode else createNode "Choose" project)
 
 
         let frameworkSpecificPropsNodes =
@@ -1264,19 +1264,19 @@ module ProjectFile =
 
         for ctx in contexts do
             for chooseNode in ctx.ChooseNodes do
-                let i = ref (project.ProjectNode.ChildNodes.Count-1)
+                let mutable i = project.ProjectNode.ChildNodes.Count-1
                 while
-                  !i >= 0 &&
-                    (String.startsWithIgnoreCase "<import" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString())  &&
-                     String.containsIgnoreCase "label" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString())  &&
-                     String.containsIgnoreCase "paket" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString()) )  do
-                    decr i
+                  i >= 0 &&
+                    (String.startsWithIgnoreCase "<import" (project.ProjectNode.ChildNodes.[i].OuterXml.ToString())  &&
+                     String.containsIgnoreCase "label" (project.ProjectNode.ChildNodes.[i].OuterXml.ToString())  &&
+                     String.containsIgnoreCase "paket" (project.ProjectNode.ChildNodes.[i].OuterXml.ToString()) )  do
+                    i <- i - 1
 
-                if !i <= 0 then
+                if i <= 0 then
                     if chooseNode.ChildNodes.Count > 0 then
                         project.ProjectNode.AppendChild chooseNode |> ignore
                 else
-                    let node = project.ProjectNode.ChildNodes.[!i]
+                    let node = project.ProjectNode.ChildNodes.[i]
                     if chooseNode.ChildNodes.Count > 0 then
                         project.ProjectNode.InsertAfter(chooseNode,node) |> ignore
 

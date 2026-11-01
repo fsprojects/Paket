@@ -861,7 +861,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     return true
                 | _ ->
                 // discover the link on the fly
-                let downloadUrl = ref ""
+                let mutable downloadUrl = ""
                 let mutable didDownload = false
                 try
                     let sw = System.Diagnostics.Stopwatch.StartNew()
@@ -886,10 +886,10 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                                 printfn "Downloading with combined url. Source: %s DownloadLink: %s Combined: %s" sourceUrl nugetPackage.DownloadLink (uri.ToString())
                             uri
 
-                    downloadUrl := downloadUri.ToString()
+                    downloadUrl <- downloadUri.ToString()
 
                     if authenticated && verbose then
-                        tracefn "Downloading from %O to %s" !downloadUrl targetFileName
+                        tracefn "Downloading from %O to %s" downloadUrl targetFileName
 
                     ensureDir targetFileName
 
@@ -920,7 +920,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                     let requestTokenSource = System.Threading.CancellationTokenSource.CreateLinkedTokenSource cancellationToken
                     requestTokenSource.CancelAfter requestTimeout
 
-                    let client = NetUtils.createHttpClient(!downloadUrl, source.Auth.Retrieve (attempt <> 0))
+                    let client = NetUtils.createHttpClient(downloadUrl, source.Auth.Retrieve (attempt <> 0))
 
                     let lastSpeedMeasure = Stopwatch.StartNew()
                     let mutable readSinceLastMeasure = 0L
@@ -938,7 +938,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
 
                     let bufferSize = 1024 * 10
                     let buffer : byte [] = Array.zeroCreate bufferSize
-                    let bytesRead = ref -1
+                    let mutable bytesRead = -1
 
                     let tmpFile = Path.GetDirectoryName targetFileName + Path.GetRandomFileName() + ".paket_tmp"
                     try
@@ -948,7 +948,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                             let printProgress = not Console.IsOutputRedirected
 
                             let length = try Some httpResponseStream.Length with :? System.NotSupportedException -> None
-                            while !bytesRead <> 0 do
+                            while bytesRead <> 0 do
                                 if printProgress && lastSpeedMeasure.Elapsed > TimeSpan.FromSeconds(10.) then
                                     // report speed and progress
                                     let speed = int (float readSinceLastMeasure * 8. / float lastSpeedMeasure.ElapsedMilliseconds)
@@ -956,7 +956,7 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                                         match length with
                                         | Some l -> sprintf "%d" (int (pos * 100L / l))
                                         | None -> "Unknown"
-                                    tracefn "Still downloading from %O to %s (%d kbit/s, %s %%)" !downloadUrl tmpFile speed percent
+                                    tracefn "Still downloading from %O to %s (%d kbit/s, %s %%)" downloadUrl tmpFile speed percent
                                     readSinceLastMeasure <- 0L
                                     lastSpeedMeasure.Restart()
 
@@ -965,8 +965,8 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                                 streamReadWriteTokenSource.CancelAfter streamReadWriteTimeout
                                 // if there is no response for streamReadWriteTimeout milliseconds -> abort
                                 let! bytes = httpResponseStream.ReadAsync(buffer, 0, bufferSize, streamReadWriteTokenSource.Token) |> Async.AwaitTaskWithoutAggregate
-                                bytesRead := bytes
-                                do! fileStream.WriteAsync(buffer, 0, !bytesRead, streamReadWriteTokenSource.Token) |> Async.AwaitTaskWithoutAggregate
+                                bytesRead <- bytes
+                                do! fileStream.WriteAsync(buffer, 0, bytesRead, streamReadWriteTokenSource.Token) |> Async.AwaitTaskWithoutAggregate
                                 readSinceLastMeasure <- readSinceLastMeasure + int64 bytes
                                 pos <- pos + int64 bytes }
                         // close/dispose filestream such that we can move
@@ -1008,9 +1008,9 @@ let private downloadAndExtractPackage(alternativeProjectRoot, root, isLocalOverr
                       | _ -> false)
                         ->  traceWarnfn "Could not download %O %O.%s    %s.%sRetry." packageName version Environment.NewLine exn.Message Environment.NewLine
                             return! download false (attempt + 1)
-                | inner when String.IsNullOrWhiteSpace !downloadUrl ->
+                | inner when String.IsNullOrWhiteSpace downloadUrl ->
                     return rethrowf exn inner "Could not download %O %O." packageName version
-                | inner -> return rethrowf exn inner "Could not download %O %O from %s." packageName version !downloadUrl }
+                | inner -> return rethrowf exn inner "Could not download %O %O from %s." packageName version downloadUrl }
 
     async {
         configResolved.Path |> Option.iter SymlinkUtils.delete

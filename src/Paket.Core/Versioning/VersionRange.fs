@@ -115,23 +115,23 @@ type VersionRange =
         
         let other, pre1, pre2 = tuple   
              
-        let (>) v1 v2 = v1 > v2 && checkPre pre1 pre2
-        let (<) v1 v2 = v1 < v2 && checkPre pre1 pre2
+        let isAbove v1 v2 = v1 > v2 && checkPre pre1 pre2
+        let isBelow v1 v2 = v1 < v2 && checkPre pre1 pre2
         
         let isConflict this other =
             match this, other with
-            | Minimum v1, Specific v2 when v1 > v2 -> true
-            | Minimum v1, Maximum v2 when v1 > v2 -> true
-            | Minimum v1, LessThan v2 when v1 > v2 -> true
+            | Minimum v1, Specific v2 when isAbove v1 v2 -> true
+            | Minimum v1, Maximum v2 when isAbove v1 v2 -> true
+            | Minimum v1, LessThan v2 when isAbove v1 v2 -> true
             | Specific v1, Specific v2 when v1 <> v2 -> true
-            | Range(_, min1, max1, _), Specific v2 when min1 > v2 || max1 < v2 -> true
-            | Range(_, min1, max1, _), Range(_, min2, max2, _) when max1 < min2 || max2 < min1 -> true
-            | Range(_, _, max1, _), Minimum min2 when max1 < min2  -> true
-            | Range(_, _, max1, _), GreaterThan min2 when max1 < min2 -> true
-            | Range(_, min1, _, _), Maximum max2 when max2 < min1 -> true
-            | Range(_, min1, _, _), LessThan max2 when max2 < min1 -> true
-            | GreaterThan v1, Specific v2 when v1 > v2 -> true
-            | LessThan v1, Specific v2 when v1 < v2 -> true
+            | Range(_, min1, max1, _), Specific v2 when isAbove min1 v2 || isBelow max1 v2 -> true
+            | Range(_, min1, max1, _), Range(_, min2, max2, _) when isBelow max1 min2 || isBelow max2 min1 -> true
+            | Range(_, _, max1, _), Minimum min2 when isBelow max1 min2  -> true
+            | Range(_, _, max1, _), GreaterThan min2 when isBelow max1 min2 -> true
+            | Range(_, min1, _, _), Maximum max2 when isBelow max2 min1 -> true
+            | Range(_, min1, _, _), LessThan max2 when isBelow max2 min1 -> true
+            | GreaterThan v1, Specific v2 when isAbove v1 v2 -> true
+            | LessThan v1, Specific v2 when isBelow v1 v2 -> true
             | _ -> false
 
         isConflict this other || isConflict other this

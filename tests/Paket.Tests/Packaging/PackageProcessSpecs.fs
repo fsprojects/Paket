@@ -46,10 +46,10 @@ let ``Loading assembly metadata works``() =
       |> Option.map (fun line -> line.Split(' ').[1]) // format is #### <VERSION> - <DATE>, so taking second element of array is the version
         |> Option.defaultWith (fun _ -> failwithf "unable to parse current version from RELEASE_NOTES.md in the directory heirarchy of %s" workingDir.FullName)
 
-    let assemblyReader, id, versionFromAssembly, _fileName = PackageMetaData.readAssemblyFromProjFile config "" projFile
+    let assembly, id, versionFromAssembly, _fileName = PackageMetaData.readAssemblyFromProjFile config "" projFile
     id |> shouldEqual "Paket.Tests"
 
-    let attribs = PackageMetaData.loadAssemblyAttributes assemblyReader
+    let attribs = PackageMetaData.loadAssemblyAttributes assembly
     PackageMetaData.getVersion versionFromAssembly attribs |> shouldEqual <| Some(SemVer.Parse paketReleaseNotesVersion)
     let authors = PackageMetaData.getAuthors attribs
     authors.Value |> shouldEqual ["Two"; "Authors" ]

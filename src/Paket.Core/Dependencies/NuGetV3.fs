@@ -156,37 +156,37 @@ let getNuGetV3Resource (source : NuGetV3Source) (resourceType : NugetV3ResourceT
             return Unchecked.defaultof<string>
     }
 
-/// [omit]
+/// <exclude/>
 type JSONResource =
     { Type : string;
       ID: string }
 
-/// [omit]
+/// <exclude/>
 type JSONVersionData =
     { Data : string []
       Versions : string [] }
 
-/// [omit]
+/// <exclude/>
 type JSONSearchResultVersion = {
     [<JsonProperty("@id")>]
     Id: string
     Version: string
 }
 
-/// [omit]
+/// <exclude/>
 type JSONSearchResult = {
     Id: string
     Versions: JSONSearchResultVersion []
 }
 
-/// [omit]
+/// <exclude/>
 type JSONSearchData = { Data:  JSONSearchResult[] }
 
-/// [omit]
+/// <exclude/>
 type JSONRootData =
     { Resources : JSONResource [] }
 
-/// [omit]
+/// <exclude/>
 let private searchDict = new System.Collections.Concurrent.ConcurrentDictionary<_,System.Threading.Tasks.Task<_>>()
 
 
@@ -216,7 +216,7 @@ let calculateNuGet2Path(nugetUrl:string) =
     | _ -> None
 
 
-/// [omit]
+/// <exclude/>
 let getSearchAPI(auth,nugetUrl) =
     searchDict.GetOrAdd(nugetUrl, fun nugetUrl ->
         async {
@@ -320,7 +320,7 @@ let private setPageFileContent(pageFileName:String,responseData:String) =
     with
     | ex -> traceWarnfn "Cannot over/write %A: %A" pageFileName ex
 
-/// [omit]
+/// <exclude/>
 let private getCatalogPage auth (item:NugetV3CatalogIndexItem)(basePath:String) cancel =
     let pageDirectory = getCatalogPageDirectory(basePath,item.Id)
     let pageFileNameOnly =
@@ -493,11 +493,11 @@ let setCatalogCursor basePath catalog =
     nextFile.Replace(fileInfo.FullName,backFile,true).Exists
 
 
-/// [omit]
+/// <exclude/>
 let extractAutoCompleteVersions(response:string) =
     JsonConvert.DeserializeObject<JSONVersionData>(response).Data
 
-/// [omit]
+/// <exclude/>
 let extractVersions(response:string) =
     JsonConvert.DeserializeObject<JSONVersionData>(response).Versions
 
@@ -569,7 +569,7 @@ let internal findVersionsForPackage(v3Url, auth, packageName:Domain.PackageName)
 let FindVersionsForPackage(nugetURL, auth, package) =
     findVersionsForPackage(nugetURL, auth, package)
 
-/// [omit]
+/// <exclude/>
 let extractPackages(response:string) =
     JsonConvert.DeserializeObject<JSONVersionData>(response).Data
 
