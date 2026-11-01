@@ -13,7 +13,7 @@ on:
 jobs:
   publish:
     name: Publish the documentation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     # a stuck build would hold the gh-pages group, and the publications waiting behind it, for 6 hours
     timeout-minutes: 60
     permissions:

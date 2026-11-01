@@ -14,7 +14,7 @@ concurrency:
 jobs:
   detect-release:
     name: Detect new release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     outputs:
