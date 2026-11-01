@@ -14,7 +14,9 @@ concurrency:
 jobs:
   detect-release:
     name: Detect new release
-    runs-on: ubuntu-latest
+    # A fork that enables Actions and syncs master would otherwise build a release, and fail to publish it
+    if: github.repository == 'fsprojects/Paket'
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     outputs:
@@ -22,7 +24,7 @@ jobs:
       version: ${{ steps.release.outputs.version }}
       prerelease: ${{ steps.release.outputs.prerelease }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Compare release headings
@@ -76,12 +78,12 @@ jobs:
       contents: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Configure git autocrlf
         run: git config --global core.autocrlf input
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
       - name: Install integration test runtime
@@ -92,7 +94,7 @@ jobs:
           & $installScript -Channel 8.0 -Runtime dotnet -InstallDir (Join-Path $env:LOCALAPPDATA 'dotnetcore')
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.nuget/packages
@@ -142,7 +144,7 @@ jobs:
           }
       - name: Obtain NuGet key
         id: login
-        # NuGet/login v1.1.0
+        # NuGet/login v1.2.0
         uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841
         with:
           user: dsyme
