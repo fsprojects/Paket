@@ -29,6 +29,14 @@
       "status": "open",
       "updated_at": "2026-10-25",
       "note": "PR opened; Paket.Core builds after dotnet tool restore + paket restore --group Main"
+    },
+    {
+      "issue": 4329,
+      "pr": null,
+      "branch": "repo-assist/fix-issue-4329-merge-reference-lines",
+      "status": "open",
+      "updated_at": "2026-11-01",
+      "note": "PR opened; targeted tests pass. Build works with XDG_RUNTIME_DIR=/tmp/gh-aw/agent/run DOTNET_CLI_HOME set"
     }
   ],
   "checks": [],
