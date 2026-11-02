@@ -104,6 +104,21 @@ let ``should detect output path for netsdk with outputPath and appendTargetFrame
     outPath.ToLowerInvariant() |> shouldEqual (expected.ToLowerInvariant())
 
 [<Test>]
+let ``should detect output path for target framework without platform version``
+        ([<Values("TargetFramework", "TargetFrameworks")>] property) =
+    let projectFile =
+        sprintf """<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>TestPaket</AssemblyName>
+    <%s>net6.0-windows</%s>
+  </PropertyGroup>
+</Project>""" property property
+        |> fun text -> ProjectFile.LoadFromString("TestPaket.csproj", text)
+    let targetProfile = projectFile.GetTargetProfiles().Head
+    let outPath = projectFile.GetOutputDirectory "Release" "" (Some targetProfile)
+    outPath |> shouldEqual (System.IO.Path.Combine("bin", "Release", "net6.0-windows") |> normalizePath)
+
+[<Test>]
 let ``should detect framework profile for ProjectWithConditions file`` () =
     ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/ProjectWithConditions.fsprojtest").Value.GetTargetProfiles()
