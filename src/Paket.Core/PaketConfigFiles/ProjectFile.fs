@@ -1625,12 +1625,15 @@ module ProjectFile =
         let targetFramework =
             match targetProfile with
             | Some targetProfile ->
-                let targetProfile = targetProfile.ToString()
+                // compare parsed frameworks, as e.g. net6.0-windows is printed as net6.0-windows7.0
+                let isTargetProfile (fw:string) =
+                    fw = targetProfile.ToString() ||
+                    FrameworkDetection.internalExtract fw |> Option.map TargetProfile.SinglePlatform = Some targetProfile
                 match getTargetFramework project with
-                | Some x -> if x = targetProfile then x else ""
+                | Some x -> if isTargetProfile x then x else ""
                 | None ->
                     let parsedTargetFrameworks = getTargetFrameworksParsed project
-                    match List.tryFind ((=) targetProfile) parsedTargetFrameworks with
+                    match List.tryFind isTargetProfile parsedTargetFrameworks with
                     | Some x -> x
                     | None -> ""
             | None ->
