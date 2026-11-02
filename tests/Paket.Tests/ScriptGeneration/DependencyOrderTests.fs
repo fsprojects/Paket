@@ -33,6 +33,13 @@ let ``getDllOrder still orders dependencies first`` () =
     names (DependencyOrder.getDllOrder [ b; a ]) |> shouldEqual [ "A"; "B" ]
 
 [<Test>]
+let ``getDllOrder orders dependencies referenced with another version first`` () =
+    let json = makeAssembly "Newtonsoft.Json" [] false
+    let thoth = AssemblyDefinition.CreateAssembly(AssemblyNameDefinition("Thoth.Json.Net", System.Version(1, 0, 0, 0)), "Thoth.Json.Net", ModuleKind.Dll)
+    thoth.MainModule.AssemblyReferences.Add(AssemblyNameReference("Newtonsoft.Json", System.Version(0, 9, 0, 0)))
+    names (DependencyOrder.getDllOrder [ json; thoth ]) |> shouldEqual [ "Newtonsoft.Json"; "Thoth.Json.Net" ]
+
+[<Test>]
 let ``getDllOrder warns about the assembly it forces out of a cycle`` () =
     let a = makeAssembly "A" [] false
     let b = makeAssembly "B" [ a ] false
