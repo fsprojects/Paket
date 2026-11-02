@@ -14,6 +14,7 @@ let ``package file name split to id and version correctly``() =
         "package.1.2.3.nupkg", Some (PackageName "package", SemVer.Parse "1.2.3")
         "package.1.2.3-alpha2.nupkg", Some (PackageName "package", SemVer.Parse "1.2.3-alpha2")
         "package.name.with.dots.1.2.3-alpha2.nupkg", Some (PackageName "package.name.with.dots", SemVer.Parse "1.2.3-alpha2")
+        "Core.Inf.CrossCutting.2DBasic.5.5.3-alpha22191.nupkg", Some (PackageName "Core.Inf.CrossCutting.2DBasic", SemVer.Parse "5.5.3-alpha22191")
         "package.1.2.3.nupkg.back", None
         "package.name.without.version.nupkg", None
         "package.1.2.3.symbols.nupkg", Some (PackageName "package", SemVer.Parse "1.2.3")
@@ -34,6 +35,7 @@ let ``package file picked up correctly``() =
         "./NuGetLocal/case1", PackageName "package.name", SemVer.Parse "0.1.2", "package.name.0.1.2.nupkg"
 
         "./NuGetLocal/case2", PackageName "package.name", SemVer.Parse "1.2", "package.name.1.2.0.0.nupkg"
+        "./NuGetLocal/case2", PackageName "package.2d.name", SemVer.Parse "1.2", "package.2d.name.1.2.0.0.nupkg"
 
         "./NuGetLocal", PackageName "package.in.nested.folder", SemVer.Parse "1.0", "package.in.nested.folder.1.0.0.nupkg"
     ]
