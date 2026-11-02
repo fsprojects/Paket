@@ -309,16 +309,18 @@ let parsePackageInfoFromFileName (fileName:string) : (PackageName * SemVerInfo) 
             fileName.Substring(0, fileName.Length - ".symbols.nupkg".Length) + ".nupkg"
         else
             fileName
-    let regex = Regex ("^(?<name>.*?)\.(?<version>\d.*)\.nupkg$", RegexOptions.IgnoreCase)
-    match regex.Match fileName with
-    | matchResult when matchResult.Success && matchResult.Groups.Count = 3 ->
+    // Ids may contain parts starting with a digit (e.g. "Foo.2D.1.0.0"), so try each
+    // ".<digit>" split and take the first one whose remainder is a valid version.
+    if not (fileName.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase)) then None else
+    let baseName = fileName.Substring(0, fileName.Length - ".nupkg".Length)
+    Regex.Matches(baseName, @"\.(?=\d)")
+    |> Seq.tryPick (fun m ->
         try
-            let semVer = SemVer.Parse matchResult.Groups.["version"].Value
-            let packageName = PackageName matchResult.Groups.["name"].Value
+            let semVer = SemVer.Parse (baseName.Substring(m.Index + 1))
+            let packageName = PackageName (baseName.Substring(0, m.Index))
             Some (packageName, semVer)
         with
-        | _ -> None
-    | _ -> None
+        | _ -> None)
 
 let tryFindLocalPackage directory (packageName:PackageName) (version:SemVerInfo) =
     if not (Directory.Exists directory) then
