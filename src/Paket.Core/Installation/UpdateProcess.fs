@@ -332,7 +332,12 @@ let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, ne
                 tracefn "Updating %O in %s group %O" packageName dependenciesFileName groupName
                 dependenciesFile
         elif transitive then
-            dependenciesFile.Add(groupName, packageName, defaultArg newVersion "", Requirements.InstallSettings.Default, Requirements.PackageRequirementKind.Package)
+            let lockFile = LockFile.LoadFrom (dependenciesFile.FindLockFile()).FullName
+
+            if lockFile.HasPackage(groupName, packageName) then
+                dependenciesFile.Add(groupName, packageName, defaultArg newVersion "", Requirements.InstallSettings.Default, Requirements.PackageRequirementKind.Package)
+            else
+                failwithf "Package %O was not found in paket.lock in group %O.%s" packageName groupName (lockFile.CheckIfPackageExistsInAnyGroup packageName)
         else
             failwithf "Package %O was not found in paket.dependencies in group %O.%s" packageName groupName (dependenciesFile.CheckIfPackageExistsInAnyGroup packageName)
 
