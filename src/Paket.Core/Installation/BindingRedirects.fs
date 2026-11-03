@@ -18,8 +18,11 @@ type BindingRedirect =
 
 let private bindingNs = "urn:schemas-microsoft-com:asm.v1"
 
-let private ensureAssemblyBinding doc = 
-    doc |> ensurePathExists ("/configuration/runtime/assemblyBinding!" + bindingNs)
+let private ensureAssemblyBinding (doc:XDocument) =
+    // reuse an existing assemblyBinding even if it is not in the first runtime section
+    match doc.Root.Elements(XName.Get "runtime") |> Seq.collect (fun r -> r.Elements(XName.Get("assemblyBinding", bindingNs))) |> Seq.tryHead with
+    | Some assemblyBinding -> assemblyBinding :> XContainer
+    | None -> doc |> ensurePathExists ("/configuration/runtime/assemblyBinding!" + bindingNs)
 
 /// Updates the supplied MSBuild document with the supplied binding redirect.
 let internal setRedirect (doc:XDocument) bindingRedirect =
