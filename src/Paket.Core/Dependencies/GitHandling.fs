@@ -11,6 +11,16 @@ type GitLinkOrigin =
 | RemoteGitOrigin of string
 | LocalGitOrigin  of string
 
+/// The path of a local git repository from its file:// URL: "file:///tmp/x" is "/tmp/x",
+/// "file:///C:/x" the Windows path "C:/x", and "file:///tmp/a%20b" is "/tmp/a b"
+let internal localPathOfFileUrl (url: string) =
+    let path =
+        match url with
+        | String.RemovePrefix "file://" path -> Uri.UnescapeDataString path
+        | _ -> url
+    if path.Length >= 3 && path.[0] = '/' && Char.IsAsciiLetter path.[1] && path.[2] = ':' then path.Substring 1
+    else path
+
 let extractUrlParts (gitConfig:string) =
     let isOperator operator = VersionRange.BasicOperators |> List.exists ((=) operator)
     let url,commit,options =
@@ -112,8 +122,15 @@ let extractUrlParts (gitConfig:string) =
         | pos -> server.Substring(pos + 3).Replace(":","") |> removeInvalidChars
         |> fun s -> s.Replace("git@","").Replace(":","/").TrimStart('/')
 
-    let project = url.Substring(url.LastIndexOf('/')+1).Replace(".git","")
-    let project = if Directory.Exists project then Path.GetFileName project else project
+    let project =
+        match origin with
+        | LocalGitOrigin _ ->
+            // the folder name, from a Windows or a Unix path, even one that ends with a separator or doesn't exist
+            let path = (localPathOfFileUrl url).TrimEnd('/', '\\')
+            path.Substring(path.LastIndexOfAny [| '/'; '\\' |] + 1).Replace(".git","")
+        | RemoteGitOrigin _ ->
+            let project = url.Substring(url.LastIndexOf('/')+1).Replace(".git","")
+            if Directory.Exists project then Path.GetFileName project else project
 
     server,commit,project,origin,buildCommand,operatingSystemRestriction,packagePath
 
