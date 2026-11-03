@@ -297,3 +297,26 @@ let ``replaces paket's node if one already exists``() =
     dependency.ToString() 
     |> normalizeLineEndings
     |> shouldEqual (createBindingRedirectXml "neutral" "Assembly" "2.0.0" "PUBLIC_KEY" |> normalizeLineEndings)
+
+[<Test>]
+let ``uses existing assemblyBinding when it is not in the first runtime section``() =
+    let doc = sprintf """<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <runtime>
+        <gcAllowVeryLargeObjects enabled="true" />
+    </runtime>
+<runtime><assemblyBinding xmlns="%s">%s</assemblyBinding></runtime>
+</configuration>""" bindingNs (createBindingRedirectXml "neutral" "Assembly" "1.0.0" "PUBLIC_KEY")
+              |> fun doc -> XDocument.Parse(doc, LoadOptions.PreserveWhitespace)
+
+    // Act
+    setRedirect doc { defaultRedirect with Version = "2.0.0" } |> ignore
+    indentAssemblyBindings doc
+
+    // Assert
+    doc |> containsDescendents 2 "" "runtime"
+    doc |> containsSingleDescendentWithNs "assemblyBinding"
+    doc |> containsSingleDescendentWithNs "dependentAssembly"
+    let runtimes = doc.Root.Elements(XName.Get "runtime") |> List.ofSeq
+    runtimes.[0].Elements(xNameForNs "assemblyBinding") |> Seq.isEmpty |> shouldEqual true
+    runtimes.[1].Elements(xNameForNs "assemblyBinding") |> Seq.length |> shouldEqual 1
