@@ -64,7 +64,7 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
             | VersionRestriction.NoVersionRestriction ->
                 match Git.Handling.getHash path "master" with
                 | Some hash -> return hash
-                | None -> return failwithf "Could not find hash for master in '%s'" path
+                | None -> return failwithf "Could not find hash for master in '%s'. A local git repository without master needs a branch, as in 'git file:///path/to/repository main'." path
             | VersionRestriction.Concrete branch ->
                 match Git.Handling.getHash path branch with
                 | Some hash -> return hash
