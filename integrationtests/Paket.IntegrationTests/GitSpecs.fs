@@ -74,6 +74,11 @@ let private fileUrl (path: string) = "file:///" + path.Replace('\\', '/').TrimSt
 let private mirroredMain cache =
     git cache (sprintf "--git-dir=%s rev-parse refs/heads/main" (quote cache)) |> List.head
 
+/// Restores the lock file even when paket-files/paket.restore.cached says that it is restored already
+let private restoreAgain scenarioPath =
+    File.Delete(scenarioPath @@ Constants.PaketRestoreHashFilePath)
+    directPaketInPathEx "restore" scenarioPath |> ignore
+
 /// A project name of its own, so that ~/.paket/git/db has no git cache for the repository yet
 let private uniqueProject () = "repo-" + Guid.NewGuid().ToString "N"
 
@@ -128,6 +133,54 @@ let ``a git dependency is checked out from a git cache whose HEAD names no branc
 
             File.ReadAllText(scenarioPath @@ "paket-files" @@ "localfilesystem" @@ project @@ "file.txt")
             |> shouldEqual "content"
+        finally
+            deleteGitCache repoCacheFolder)
+
+[<Test>]
+let ``a git dependency whose checkout fails fails the install and leaves no clone`` () =
+    inGitScenario "git-checkout-failure" (fun scenarioPath ->
+        let project = uniqueProject ()
+        let repoCacheFolder = Constants.GitRepoCacheFolder @@ project
+        try
+            let repo = scenarioPath @@ project
+            createRepository repo |> ignore
+            // a file name too long for the file systems, so that the checkout fails
+            let blob = git repo "rev-parse HEAD:file.txt" |> List.head
+            git repo (sprintf "update-index --add --cacheinfo 100644,%s,%s" blob (String('a', 300))) |> ignore
+            git repo (asTestAuthor + " commit --no-verify -m commit") |> ignore
+            File.WriteAllText(scenarioPath @@ "paket.dependencies", sprintf "git %s main" (fileUrl repo))
+
+            let errors =
+                try
+                    directPaketInPathEx "install" scenarioPath |> ignore
+                    []
+                with ProcessFailedWithExitCode(_, _, msgs) -> List.ofSeq msgs.Errors
+
+            errors |> List.exists (fun error -> error.Contains "Checkout to") |> shouldEqual true
+            // no clone without checkout is left, which the next run would take for an up-to-date one
+            Directory.Exists(scenarioPath @@ "paket-files" @@ "localfilesystem" @@ project) |> shouldEqual false
+        finally
+            deleteGitCache repoCacheFolder)
+
+[<Test>]
+let ``a paket-files clone that a run left without checkout is cloned again`` () =
+    inGitScenario "git-clone-without-checkout" (fun scenarioPath ->
+        let project = uniqueProject ()
+        let repoCacheFolder = Constants.GitRepoCacheFolder @@ project
+        try
+            let repo = scenarioPath @@ project
+            createRepository repo |> ignore
+            File.WriteAllText(scenarioPath @@ "paket.dependencies", sprintf "git %s main" (fileUrl repo))
+            directPaketInPathEx "install" scenarioPath |> ignore
+
+            // as a run whose checkout failed left it, with the locked commit as HEAD but no file
+            let paketFiles = scenarioPath @@ "paket-files" @@ "localfilesystem" @@ project
+            deleteDir (DirectoryInfo paketFiles)
+            git scenarioPath (sprintf "clone --no-checkout %s %s" (quote (fileUrl repo)) (quote paketFiles)) |> ignore
+
+            restoreAgain scenarioPath
+
+            File.ReadAllText(paketFiles @@ "file.txt") |> shouldEqual "content"
         finally
             deleteGitCache repoCacheFolder)
 

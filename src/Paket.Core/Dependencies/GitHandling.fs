@@ -144,6 +144,14 @@ let getHash repoFolder commitish =
 let getCurrentHash repoFolder =
     getHash repoFolder "HEAD"
 
+/// The commit checked out in the paket-files clone at repoFolder: None when it has no checkout, as a clone
+/// that a run left without one, whose HEAD names a commit that none of its files are from
+let getCheckedOutCommit repoFolder =
+    let gitPath = Path.Combine(repoFolder, ".git")
+    // only the clone --no-checkout of a run, whose .git is a folder, has no index
+    let hasCheckout = File.Exists gitPath || File.Exists(Path.Combine(gitPath, "index"))
+    if hasCheckout then getCurrentHash repoFolder else None
+
 let getHashFromRemote url branch =
     let result =
         let hash = CommandHelper.runSimpleGitCommand "" (sprintf "ls-remote %s %s" url branch)
@@ -208,9 +216,10 @@ let checkoutTaggedCommit repoFolder =
     CommandHelper.gitCommand repoFolder ("checkout " + paketCheckoutTag)
 
 let checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl commit =
+    let mutable cloned = false
     try
         // only a checkout can hold changes that the checkout of the commit would lose
-        let hasCheckout = (getCurrentHash repoFolder).IsSome
+        let hasCheckout = (getCheckedOutCommit repoFolder).IsSome
         // checkout to local folder
         if Directory.Exists repoFolder then
             if verbose then
@@ -224,6 +233,7 @@ let checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl commit =
                 verbosefn "Cloning %s to %s" cacheCloneUrl repoFolder
             // the HEAD of the cache may name a branch that it doesn't have: the commit is checked out below
             CommandHelper.runSimpleGitCommand destination (sprintf "clone --no-checkout %s %s" (quote cacheCloneUrl) (quote repoFolder)) |> ignore
+            cloned <- true
             CommandHelper.runSimpleGitCommand repoFolder (sprintf "remote set-url origin %s" (quote cloneUrl)) |> ignore
 
         if hasCheckout then
@@ -235,4 +245,8 @@ let checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl commit =
         checkoutTaggedCommit repoFolder
 
     with
-    | exn -> failwithf "Checkout to %s failed.%sMessage: %s" repoFolder Environment.NewLine exn.Message
+    | exn ->
+        // the next run clones again, rather than finding a clone without checkout
+        if cloned then
+            try deleteDir (DirectoryInfo repoFolder) with _ -> ()
+        failwithf "Checkout to %s failed.%sMessage: %s" repoFolder Environment.NewLine exn.Message

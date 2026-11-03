@@ -312,7 +312,7 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
 
             let isInCorrectVersion =
                 if force then false else
-                match Git.Handling.getCurrentHash repoFolder with
+                match Git.Handling.getCheckedOutCommit repoFolder with
                 | Some hash ->
                     match gitRepo.Command, gitRepo.PackagePath with
                     | Some _, Some path when not (DirectoryInfo(repoFolder + path).Exists) ->
