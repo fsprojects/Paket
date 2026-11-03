@@ -91,6 +91,10 @@ let private uniqueProject () = "repo-" + Guid.NewGuid().ToString "N"
 let private deleteGitCache repoCacheFolder =
     try
         deleteDir (DirectoryInfo repoCacheFolder)
+        // and the folder of the owner, unless other git caches are in it
+        let ownerFolder = Path.GetDirectoryName repoCacheFolder
+        if Directory.Exists ownerFolder && Seq.isEmpty (Directory.EnumerateFileSystemEntries ownerFolder) then
+            Directory.Delete ownerFolder
     with exn ->
         printfn "Could not delete the git cache %s: %s" repoCacheFolder exn.Message
 
@@ -98,7 +102,7 @@ let private deleteGitCache repoCacheFolder =
 let ``#4461 restore of a git dependency from a cold git cache`` () =
     inGitScenario "i004461-git-cold-cache" (fun scenarioPath ->
         let project = uniqueProject ()
-        let repoCacheFolder = Constants.GitRepoCacheFolder @@ project
+        let repoCacheFolder = Constants.GitRepoCacheFolder @@ "localfilesystem" @@ project
         try
             let repo = scenarioPath @@ project
             createRepository repo |> ignore
@@ -126,7 +130,7 @@ let ``#4461 restore of a git dependency from a cold git cache`` () =
 let ``a git dependency is checked out from a git cache whose HEAD names no branch`` () =
     inGitScenario "git-cache-without-head-branch" (fun scenarioPath ->
         let project = uniqueProject ()
-        let repoCacheFolder = Constants.GitRepoCacheFolder @@ project
+        let repoCacheFolder = Constants.GitRepoCacheFolder @@ "localfilesystem" @@ project
         try
             let repo = scenarioPath @@ project
             createRepository repo |> ignore
@@ -146,7 +150,7 @@ let ``a git dependency is checked out from a git cache whose HEAD names no branc
 let ``a git dependency whose checkout fails fails the install and leaves no clone`` () =
     inGitScenario "git-checkout-failure" (fun scenarioPath ->
         let project = uniqueProject ()
-        let repoCacheFolder = Constants.GitRepoCacheFolder @@ project
+        let repoCacheFolder = Constants.GitRepoCacheFolder @@ "localfilesystem" @@ project
         try
             let repo = scenarioPath @@ project
             createRepository repo |> ignore
@@ -172,7 +176,7 @@ let ``a git dependency whose checkout fails fails the install and leaves no clon
 let ``a paket-files clone that a run left without checkout is cloned again`` () =
     inGitScenario "git-clone-without-checkout" (fun scenarioPath ->
         let project = uniqueProject ()
-        let repoCacheFolder = Constants.GitRepoCacheFolder @@ project
+        let repoCacheFolder = Constants.GitRepoCacheFolder @@ "localfilesystem" @@ project
         try
             let repo = scenarioPath @@ project
             createRepository repo |> ignore
@@ -194,7 +198,7 @@ let ``a paket-files clone that a run left without checkout is cloned again`` () 
 let ``a paket-files folder without clone leaves the repository of the project alone`` () =
     inGitScenario "git-paket-files-without-clone" (fun scenarioPath ->
         let project = uniqueProject ()
-        let repoCacheFolder = Constants.GitRepoCacheFolder @@ project
+        let repoCacheFolder = Constants.GitRepoCacheFolder @@ "localfilesystem" @@ project
         try
             let repo = scenarioPath @@ project
             createRepository repo |> ignore
@@ -223,7 +227,7 @@ let ``a paket-files folder without clone leaves the repository of the project al
 let ``a paket-files clone whose .git is a file keeps its changes`` () =
     inGitScenario "git-paket-files-git-file" (fun scenarioPath ->
         let project = uniqueProject ()
-        let repoCacheFolder = Constants.GitRepoCacheFolder @@ project
+        let repoCacheFolder = Constants.GitRepoCacheFolder @@ "localfilesystem" @@ project
         try
             let repo = scenarioPath @@ project
             createRepository repo |> ignore
@@ -253,10 +257,29 @@ let ``a paket-files clone whose .git is a file keeps its changes`` () =
             deleteGitCache repoCacheFolder)
 
 [<Test>]
+let ``repositories of the same name from two owners get a git cache each`` () =
+    inGitScenario "git-cache-owners" (fun scenarioPath ->
+        let project = uniqueProject ()
+        let owners = [ "owner-a"; "owner-b" ]
+        let repoCacheFolders = owners |> List.map (fun owner -> Constants.GitRepoCacheFolder @@ owner @@ project)
+        try
+            for owner, repoCacheFolder in List.zip owners repoCacheFolders do
+                let repo = scenarioPath @@ owner @@ project
+                let sha = createRepository repo
+                tag repo "1.0.0"
+                let range = ModuleResolver.VersionRestriction.VersionRequirement(VersionRequirement(VersionRange.AtLeast "1.0", PreReleaseStatus.No))
+                RemoteDownload.getSHA1OfBranch (ModuleResolver.GitLink (Git.Handling.RemoteGitOrigin (fileUrl repo))) owner project range None
+                |> Async.RunSynchronously
+                |> shouldEqual sha
+                mirroredMain repoCacheFolder |> shouldEqual sha
+        finally
+            repoCacheFolders |> List.iter deleteGitCache)
+
+[<Test>]
 let ``an annotated tag of a local git dependency is locked at its commit`` () =
     inGitScenario "git-annotated-tag" (fun scenarioPath ->
         let project = uniqueProject ()
-        let repoCacheFolder = Constants.GitRepoCacheFolder @@ project
+        let repoCacheFolder = Constants.GitRepoCacheFolder @@ "localfilesystem" @@ project
         try
             let repo = scenarioPath @@ project
             let sha = createRepository repo
@@ -329,7 +352,7 @@ let ``fetchCache repairs a broken git cache and leaves the repository of a paren
 let ``the version range of a git dependency is resolved with the tags of the git cache`` () =
     inGitScenario "git-cache-tags" (fun scenarioPath ->
         let project = uniqueProject ()
-        let repoCacheFolder = Constants.GitRepoCacheFolder @@ project
+        let repoCacheFolder = Constants.GitRepoCacheFolder @@ "localfilesystem" @@ project
         try
             let repo = scenarioPath @@ project
             createRepository repo |> ignore

@@ -22,6 +22,9 @@ let private auth key =
     | Some key ->
         AuthService.GetGlobalAuthenticationProvider key
 
+/// The git cache of a repository. The owner keeps apart the repositories of the same name
+let private gitCacheFolder owner project = Path.Combine(Constants.GitRepoCacheFolder, owner, project)
+
 // Gets the sha1 of a branch
 let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction) authKey =
     async {
@@ -86,7 +89,7 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
                 | VersionRestriction.NoVersionRestriction -> Git.Handling.getHashFromRemote url ""
                 | VersionRestriction.Concrete branch -> Git.Handling.getHashFromRemote url branch
                 | VersionRestriction.VersionRequirement vr ->
-                    let repoCacheFolder = Path.Combine(Constants.GitRepoCacheFolder,project)
+                    let repoCacheFolder = gitCacheFolder owner project
                     RunInLockedAccessMode(repoCacheFolder, (fun () -> Paket.Git.Handling.fetchCache repoCacheFolder url; false))
 
                     let tags = Git.CommandHelper.runFullGitCommand repoCacheFolder (Git.Handling.cacheGitCommand repoCacheFolder "tag")
@@ -209,7 +212,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         if not (Utils.isMatchingPlatform remoteFile.OperatingSystemRestriction) then () else
         let cloneUrl = cloneUrl.TrimEnd('/')
 
-        let repoCacheFolder = Path.Combine(Constants.GitRepoCacheFolder,remoteFile.Project)
+        let repoCacheFolder = gitCacheFolder remoteFile.Owner remoteFile.Project
         let repoFolder = Path.Combine(destination,remoteFile.Project)
         let cacheCloneUrl = "file:///" + repoCacheFolder
 
