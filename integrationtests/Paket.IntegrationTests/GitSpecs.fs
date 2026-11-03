@@ -18,10 +18,13 @@ let private inGitScenario scenario (test: string -> unit) =
           "GIT_DIR", null
           "GIT_WORK_TREE", null
           "GIT_INDEX_FILE", null
-          // git defaults to a branch that the repositories don't have, as "master" for a "main" repository
-          "GIT_CONFIG_COUNT", "1"
+          // git defaults to a branch that the repositories don't have, as "master" for a "main" repository,
+          // and allows a bare repository only when it is named
+          "GIT_CONFIG_COUNT", "2"
           "GIT_CONFIG_KEY_0", "init.defaultBranch"
-          "GIT_CONFIG_VALUE_0", "master" ]
+          "GIT_CONFIG_VALUE_0", "master"
+          "GIT_CONFIG_KEY_1", "safe.bareRepository"
+          "GIT_CONFIG_VALUE_1", "explicit" ]
     let saved = variables |> List.map (fun (name, _) -> name, Environment.GetEnvironmentVariable name)
     for name, value in variables do
         Environment.SetEnvironmentVariable(name, value)
@@ -61,6 +64,9 @@ let private commitFile repo (content: string) =
     git repo "add file.txt" |> ignore
     git repo (asTestAuthor + " commit --no-verify -m commit") |> ignore
     git repo "rev-parse HEAD" |> List.head
+
+let private tag repo name =
+    git repo (sprintf "%s tag %s" asTestAuthor name) |> ignore
 
 /// Creates a repository on the branch main with a commit of file.txt, and returns the sha of the commit
 let private createRepository repo =
@@ -202,3 +208,45 @@ let ``fetchCache sets up a git cache that holds only the lock file or has no ori
         git cacheWithoutOrigin "init --bare" |> ignore
         Git.Handling.fetchCache cacheWithoutOrigin (fileUrl repo)
         mirroredMain cacheWithoutOrigin |> shouldEqual sha)
+
+[<Test>]
+let ``fetchCache repairs a broken git cache and leaves the repository of a parent folder alone`` () =
+    inGitScenario "git-cache-in-repository" (fun scenarioPath ->
+        let repo = scenarioPath @@ "repo"
+        createRepository repo |> ignore
+        // as a dotfiles repository in the home folder
+        let home = scenarioPath @@ "home"
+        Directory.CreateDirectory home |> ignore
+        git home "init" |> ignore
+        git home "remote add origin https://example.com/dotfiles.git" |> ignore
+        let cache = home @@ "db" @@ "repo"
+        Git.Handling.fetchCache cache (fileUrl repo)
+
+        // the cache loses its HEAD and config, as after an interrupted run
+        File.Delete(cache @@ "HEAD")
+        File.Delete(cache @@ "config")
+        let sha = commitFile repo "updated"
+        Git.Handling.fetchCache cache (fileUrl repo)
+
+        git home "remote get-url origin" |> shouldEqual [ "https://example.com/dotfiles.git" ]
+        mirroredMain cache |> shouldEqual sha)
+
+[<Test>]
+let ``the version range of a git dependency is resolved with the tags of the git cache`` () =
+    inGitScenario "git-cache-tags" (fun scenarioPath ->
+        let project = uniqueProject ()
+        let repoCacheFolder = Constants.GitRepoCacheFolder @@ project
+        try
+            let repo = scenarioPath @@ project
+            createRepository repo |> ignore
+            tag repo "1.0.0"
+            let sha = commitFile repo "updated"
+            tag repo "2.0.0"
+            let range = ModuleResolver.VersionRestriction.VersionRequirement(VersionRequirement(VersionRange.AtLeast "1.0", PreReleaseStatus.No))
+
+            // a remote origin goes through the git cache, as a remote repository does
+            RemoteDownload.getSHA1OfBranch (ModuleResolver.GitLink (Git.Handling.RemoteGitOrigin (fileUrl repo))) "localfilesystem" project range None
+            |> Async.RunSynchronously
+            |> shouldEqual sha
+        finally
+            deleteGitCache repoCacheFolder)

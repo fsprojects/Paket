@@ -89,7 +89,7 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
                     let repoCacheFolder = Path.Combine(Constants.GitRepoCacheFolder,project)
                     RunInLockedAccessMode(repoCacheFolder, (fun () -> Paket.Git.Handling.fetchCache repoCacheFolder url; false))
 
-                    let tags = Git.CommandHelper.runFullGitCommand repoCacheFolder "tag"
+                    let tags = Git.CommandHelper.runFullGitCommand repoCacheFolder (Git.Handling.cacheGitCommand repoCacheFolder "tag")
                     let matchingVersions =
                         tags
                         |> Array.choose (fun s -> try Some(SemVer.Parse s) with | _ -> None)
@@ -99,7 +99,7 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
                     | [||] -> failwithf "No tags in %s match %O. Tags: %A" url vr tags
                     | _ ->
                         let tag = matchingVersions |> Array.max |> string
-                        match Git.Handling.getHash repoCacheFolder tag with
+                        match Git.Handling.getHashInCache repoCacheFolder tag with
                         | None -> failwithf "Could not resolve hash for tag %s in %s." tag url
                         | Some hash -> hash
 

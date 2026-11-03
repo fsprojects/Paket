@@ -5,6 +5,7 @@
 * A git dependency whose checkout failed, as for a file name too long for the file system, is cloned again at the next restore, instead of being taken for one with local changes or for an up-to-date one
 * A process that Paket starts and that exits right away, such as a git command, the `build:` command of a git dependency or a credential provider, no longer fails with "Start of process ... failed". For a local git repository, the error showed as "Could not find hash for ..."
 * Local git dependencies with a Windows path, like `git file:///C:/code/repo`, resolve again: since 11.0.0 and https://github.com/fsprojects/Paket/pull/4377, their path kept the `/` before the drive letter
+* A broken git cache in `~/.paket/git/db` is set up again instead of making git change the repository of a parent folder, such as a dotfiles repository in the home folder, and the git cache works with `safe.bareRepository=explicit`
 * The path of a local git repository can escape characters, like `git file:///home/me/my%20repo`, and its folder name is read from a Windows path that ends with `\` or doesn't exist yet. Such a path used to give an empty or a whole path as the name of the git cache and paket-files folders
 
 #### 12.0.0-alpha004 - 2026-11-01

@@ -152,6 +152,17 @@ let getCheckedOutCommit repoFolder =
     let hasCheckout = File.Exists gitPath || File.Exists(Path.Combine(gitPath, "index"))
     if hasCheckout then getCurrentHash repoFolder else None
 
+/// A git command on the git cache at repoCacheFolder. --git-dir names the repository: git then doesn't
+/// take the repository of a parent folder for a broken cache, and safe.bareRepository=explicit allows it
+let cacheGitCommand repoCacheFolder command =
+    $"--git-dir=%s{quote repoCacheFolder} %s{command}"
+
+let getHashInCache repoCacheFolder commitish =
+    try
+        Some (CommandHelper.runSimpleGitCommand repoCacheFolder (cacheGitCommand repoCacheFolder ("rev-parse --verify " + commitish)))
+    with
+    | _ -> None
+
 let getHashFromRemote url branch =
     let result =
         let hash = CommandHelper.runSimpleGitCommand "" (sprintf "ls-remote %s %s" url branch)
@@ -173,12 +184,12 @@ let fetchCache repoCacheFolder cloneUrl =
         // RunInLockedAccessMode has already created the folder for its lock file, and "clone --mirror"
         // refuses a folder that isn't empty: the mirror is set up in place
         Directory.CreateDirectory repoCacheFolder |> ignore
-        let git command = CommandHelper.runSimpleGitCommand repoCacheFolder command |> ignore
-        if not (Directory.Exists(Path.Combine(repoCacheFolder, "objects"))) then
-            git "init --bare"
+        let git command = CommandHelper.runSimpleGitCommand repoCacheFolder (cacheGitCommand repoCacheFolder command) |> ignore
+        // reinitializing keeps an existing cache as it is, and repairs one that lost its HEAD or config
+        git "init --bare"
 
         // a cache left without origin by a failed run is set up again
-        let hasOrigin = CommandHelper.runFullGitCommand repoCacheFolder "remote" |> Array.contains "origin"
+        let hasOrigin = CommandHelper.runFullGitCommand repoCacheFolder (cacheGitCommand repoCacheFolder "remote") |> Array.contains "origin"
         if not hasOrigin then
             tracefn "Cloning %s to %s" cloneUrl repoCacheFolder
             git ("remote add --mirror=fetch origin " + quote cloneUrl)
