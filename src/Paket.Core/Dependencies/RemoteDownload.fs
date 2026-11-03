@@ -214,7 +214,8 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
 
         let repoCacheFolder = gitCacheFolder remoteFile.Owner remoteFile.Project
         let repoFolder = Path.Combine(destination,remoteFile.Project)
-        let cacheCloneUrl = "file:///" + repoCacheFolder
+        // git decodes the escaped characters of a file URL, which a decoded project name may hold
+        let cacheCloneUrl = "file:///" + repoCacheFolder.Replace("%", "%25")
 
         RunInLockedAccessMode(repoCacheFolder, (fun () -> Paket.Git.Handling.fetchCache repoCacheFolder cloneUrl; false))
         Paket.Git.Handling.checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl remoteFile.Commit

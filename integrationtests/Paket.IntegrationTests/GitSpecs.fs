@@ -74,7 +74,7 @@ let private createRepository repo =
     git repo "init --initial-branch=main" |> ignore
     commitFile repo "content"
 
-let private fileUrl (path: string) = "file:///" + path.Replace('\\', '/').TrimStart '/'
+let private fileUrl (path: string) = "file:///" + path.Replace('\\', '/').TrimStart('/').Replace("%", "%25")
 
 /// The branch main of the git cache
 let private mirroredMain cache =
@@ -274,6 +274,24 @@ let ``repositories of the same name from two owners get a git cache each`` () =
                 mirroredMain repoCacheFolder |> shouldEqual sha
         finally
             repoCacheFolders |> List.iter deleteGitCache)
+
+[<Test>]
+let ``a local git repository whose folder name holds a % is checked out`` () =
+    inGitScenario "git-percent-in-name" (fun scenarioPath ->
+        // "%41" would be "A" in a URL
+        let project = uniqueProject () + "%41"
+        let repoCacheFolder = Constants.GitRepoCacheFolder @@ "localfilesystem" @@ project
+        try
+            let repo = scenarioPath @@ project
+            createRepository repo |> ignore
+            File.WriteAllText(scenarioPath @@ "paket.dependencies", sprintf "git %s main" (fileUrl repo))
+
+            directPaketInPathEx "install" scenarioPath |> ignore
+
+            File.ReadAllText(scenarioPath @@ "paket-files" @@ "localfilesystem" @@ project @@ "file.txt")
+            |> shouldEqual "content"
+        finally
+            deleteGitCache repoCacheFolder)
 
 [<Test>]
 let ``an annotated tag of a local git dependency is locked at its commit`` () =
