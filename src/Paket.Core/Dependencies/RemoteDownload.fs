@@ -318,7 +318,8 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
                     | Some _, Some path when not (DirectoryInfo(repoFolder + path).Exists) ->
                         false
                     | _ ->
-                        hash = gitRepo.Commit
+                        // a lock file may hold the tag object of an annotated tag
+                        hash = gitRepo.Commit || Git.Handling.getCommitInPaketFiles repoFolder gitRepo.Commit = Some hash
                 | None ->
                     // something is wrong with the repo
                     Utils.deleteDir (DirectoryInfo repoFolder)

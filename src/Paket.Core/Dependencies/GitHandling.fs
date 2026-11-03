@@ -134,10 +134,13 @@ let extractUrlParts (gitConfig:string) =
 
     server,commit,project,origin,buildCommand,operatingSystemRestriction,packagePath
 
+/// The rev-parse arguments for the commit of a commit-ish: an annotated tag names a tag object, not its commit
+let private commitOf commitish = $"rev-parse --verify %s{commitish}^{{commit}}"
+
 let getHash repoFolder commitish =
     try
         if System.IO.Directory.Exists repoFolder |> not then None else
-        Some (CommandHelper.runSimpleGitCommand repoFolder ("rev-parse --verify " + commitish))
+        Some (CommandHelper.runSimpleGitCommand repoFolder (commitOf commitish))
     with
     | _ -> None
 
@@ -167,6 +170,13 @@ let getCheckedOutCommit repoFolder =
     with
     | _ -> None
 
+/// The commit of a commit-ish in the paket-files clone at repoFolder, as a commit or a tag of a lock file
+let getCommitInPaketFiles repoFolder commitish =
+    try
+        Some (CommandHelper.runSimpleGitCommand repoFolder (paketFilesGitCommand repoFolder (commitOf commitish)))
+    with
+    | _ -> None
+
 /// A git command on the git cache at repoCacheFolder. --git-dir names the repository: git then doesn't
 /// take the repository of a parent folder for a broken cache, and safe.bareRepository=explicit allows it
 let cacheGitCommand repoCacheFolder command =
@@ -174,17 +184,21 @@ let cacheGitCommand repoCacheFolder command =
 
 let getHashInCache repoCacheFolder commitish =
     try
-        Some (CommandHelper.runSimpleGitCommand repoCacheFolder (cacheGitCommand repoCacheFolder ("rev-parse --verify " + commitish)))
+        Some (CommandHelper.runSimpleGitCommand repoCacheFolder (cacheGitCommand repoCacheFolder (commitOf commitish)))
     with
     | _ -> None
 
 let getHashFromRemote url branch =
     let result =
-        let hash = CommandHelper.runSimpleGitCommand "" (sprintf "ls-remote %s %s" url branch)
-        if String.IsNullOrWhiteSpace hash then
-            branch
-        else
-            hash
+        // an annotated tag also gives the line of its commit, "<commit>\trefs/tags/<tag>^{}", when asked for it
+        let patterns = if String.IsNullOrEmpty branch then "" else $"%s{branch} %s{branch}^{{}}"
+        let lines = CommandHelper.runFullGitCommand "" (sprintf "ls-remote %s %s" url patterns)
+        match lines |> Array.tryFind (fun line -> line.EndsWith("\trefs/tags/" + branch + "^{}")) with
+        | Some line -> line
+        | None ->
+            match Array.tryHead lines with
+            | Some hash when not (String.IsNullOrWhiteSpace hash) -> hash
+            | _ -> branch
     if result.Contains "\t" then
         result.Substring(0,result.IndexOf '\t')
     else

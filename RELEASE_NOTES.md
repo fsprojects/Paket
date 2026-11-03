@@ -8,6 +8,7 @@
 * A broken git cache in `~/.paket/git/db` is set up again instead of making git change the repository of a parent folder, such as a dotfiles repository in the home folder, and the git cache works with `safe.bareRepository=explicit`
 * The path of a local git repository can escape characters, like `git file:///home/me/my%20repo`, and its folder name is read from a Windows path that ends with `\` or doesn't exist yet. Such a path used to give an empty or a whole path as the name of the git cache and paket-files folders
 * A paket-files folder of a git dependency that isn't a clone, as one committed with the project, is cloned again. Paket used to run its git commands on the repository of the project instead, and could check the dependency out over the project
+* A git dependency on an annotated tag is locked at the commit of the tag, not at the tag object, which made each restore download it again. A lock file that holds the tag object still restores, and gets the commit at the next update
 
 #### 12.0.0-alpha004 - 2026-11-01
 

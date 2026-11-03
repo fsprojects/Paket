@@ -253,6 +253,38 @@ let ``a paket-files clone whose .git is a file keeps its changes`` () =
             deleteGitCache repoCacheFolder)
 
 [<Test>]
+let ``an annotated tag of a local git dependency is locked at its commit`` () =
+    inGitScenario "git-annotated-tag" (fun scenarioPath ->
+        let project = uniqueProject ()
+        let repoCacheFolder = Constants.GitRepoCacheFolder @@ project
+        try
+            let repo = scenarioPath @@ project
+            let sha = createRepository repo
+            tag repo "-a 1.0.0 -m release"
+            File.WriteAllText(scenarioPath @@ "paket.dependencies", sprintf "git %s >= 1.0" (fileUrl repo))
+
+            directPaketInPathEx "install" scenarioPath |> ignore
+
+            let lockFile = LockFile.LoadFrom(scenarioPath @@ "paket.lock")
+            lockFile.Groups.[Constants.MainDependencyGroup].RemoteFiles.Head.Commit |> shouldEqual sha
+
+            // the restores below fail if they download the dependency again
+            let tagObject = git repo "rev-parse 1.0.0" |> List.head
+            Directory.Move(repo, scenarioPath @@ "moved")
+            deleteDir (DirectoryInfo repoCacheFolder)
+            let checkedOutFile () = File.ReadAllText(scenarioPath @@ "paket-files" @@ "localfilesystem" @@ project @@ "file.txt")
+            restoreAgain scenarioPath
+            checkedOutFile () |> shouldEqual "content"
+
+            // as the lock file of an earlier version, which holds the tag object
+            let lockFilePath = scenarioPath @@ "paket.lock"
+            File.WriteAllText(lockFilePath, File.ReadAllText(lockFilePath).Replace(sha, tagObject))
+            restoreAgain scenarioPath
+            checkedOutFile () |> shouldEqual "content"
+        finally
+            deleteGitCache repoCacheFolder)
+
+[<Test>]
 let ``fetchCache sets up a git cache that holds only the lock file or has no origin`` () =
     inGitScenario "git-cache-setup" (fun scenarioPath ->
         let repo = scenarioPath @@ "repo"
@@ -303,12 +335,16 @@ let ``the version range of a git dependency is resolved with the tags of the git
             createRepository repo |> ignore
             tag repo "1.0.0"
             let sha = commitFile repo "updated"
-            tag repo "2.0.0"
+            // an annotated tag, whose name gives a tag object and not the commit
+            tag repo "-a 2.0.0 -m release"
             let range = ModuleResolver.VersionRestriction.VersionRequirement(VersionRequirement(VersionRange.AtLeast "1.0", PreReleaseStatus.No))
-
             // a remote origin goes through the git cache, as a remote repository does
-            RemoteDownload.getSHA1OfBranch (ModuleResolver.GitLink (Git.Handling.RemoteGitOrigin (fileUrl repo))) "localfilesystem" project range None
-            |> Async.RunSynchronously
-            |> shouldEqual sha
+            let getSha1 restriction =
+                RemoteDownload.getSHA1OfBranch (ModuleResolver.GitLink (Git.Handling.RemoteGitOrigin (fileUrl repo))) "localfilesystem" project restriction None
+                |> Async.RunSynchronously
+
+            getSha1 range |> shouldEqual sha
+            // a concrete tag goes through ls-remote
+            getSha1 (ModuleResolver.VersionRestriction.Concrete "2.0.0") |> shouldEqual sha
         finally
             deleteGitCache repoCacheFolder)
