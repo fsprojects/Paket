@@ -21,6 +21,10 @@ let internal localPathOfFileUrl (url: string) =
     if path.Length >= 3 && path.[0] = '/' && Char.IsAsciiLetter path.[1] && path.[2] = ':' then path.Substring 1
     else path
 
+/// The name of a repository without the ".git" that ends it, as "Paket.git" is "Paket" and "x.github.io" is kept
+let private withoutGitSuffix (name: string) =
+    if name.EndsWith ".git" then name.Substring(0, name.Length - ".git".Length) else name
+
 let extractUrlParts (gitConfig:string) =
     let isOperator operator = VersionRange.BasicOperators |> List.exists ((=) operator)
     let url,commit,options =
@@ -126,10 +130,19 @@ let extractUrlParts (gitConfig:string) =
         match origin with
         | LocalGitOrigin _ ->
             // the folder name, from a Windows or a Unix path, even one that ends with a separator or doesn't exist
-            let path = (localPathOfFileUrl url).TrimEnd('/', '\\')
-            path.Substring(path.LastIndexOfAny [| '/'; '\\' |] + 1).Replace(".git","")
+            let folderName (path: string) =
+                let path = path.TrimEnd('/', '\\')
+                path, path.Substring(path.LastIndexOfAny [| '/'; '\\' |] + 1)
+            let path, name = folderName (localPathOfFileUrl url)
+            // a repository given by its .git folder, as file:///home/me/repo/.git, is named after the folder of the .git
+            let name = if name = ".git" then snd (folderName (path.Substring(0, path.Length - name.Length))) else name
+            let name = name |> withoutGitSuffix
+            // the root of a file system, as file:///.git or file:///C:/, has no folder name for the paket-files and git cache folders
+            if name = "" || name.EndsWith ":" then
+                failwithf "The local git repository %s is the root of a file system, which has no folder name for its paket-files and git cache: move it into a folder." url
+            name
         | RemoteGitOrigin _ ->
-            let project = url.Substring(url.LastIndexOf('/')+1).Replace(".git","")
+            let project = url.Substring(url.LastIndexOf('/')+1) |> withoutGitSuffix
             if Directory.Exists project then Path.GetFileName project else project
 
     server,commit,project,origin,buildCommand,operatingSystemRestriction,packagePath
