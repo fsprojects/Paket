@@ -1,5 +1,7 @@
 #### Unreleased
 
+* Git dependencies restore again when the git cache doesn't have their repository yet, as on a fresh CI agent: since 11.0.0, Paket ran `git remote set-url` in the empty cache folder that its lock had created - https://github.com/fsprojects/Paket/issues/4461
+* The paket-files of a git dependency are checked out when the HEAD of its git cache names a branch that is gone, as after the repository renamed its default branch, instead of failing with "bad revision 'HEAD'"
 * A process that Paket starts and that exits right away, such as a git command, the `build:` command of a git dependency or a credential provider, no longer fails with "Start of process ... failed". For a local git repository, the error showed as "Could not find hash for ..."
 * Local git dependencies with a Windows path, like `git file:///C:/code/repo`, resolve again: since 11.0.0 and https://github.com/fsprojects/Paket/pull/4377, their path kept the `/` before the drive letter
 * The path of a local git repository can escape characters, like `git file:///home/me/my%20repo`, and its folder name is read from a Windows path that ends with `\` or doesn't exist yet. Such a path used to give an empty or a whole path as the name of the git cache and paket-files folders

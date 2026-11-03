@@ -162,17 +162,24 @@ let getHashFromRemote url branch =
 
 let fetchCache repoCacheFolder cloneUrl =
     try
-        if not (Directory.Exists repoCacheFolder) then
-            if not (Directory.Exists Constants.GitRepoCacheFolder) then
-                Directory.CreateDirectory Constants.GitRepoCacheFolder |> ignore
+        // RunInLockedAccessMode has already created the folder for its lock file, and "clone --mirror"
+        // refuses a folder that isn't empty: the mirror is set up in place
+        Directory.CreateDirectory repoCacheFolder |> ignore
+        let git command = CommandHelper.runSimpleGitCommand repoCacheFolder command |> ignore
+        if not (Directory.Exists(Path.Combine(repoCacheFolder, "objects"))) then
+            git "init --bare"
+
+        // a cache left without origin by a failed run is set up again
+        let hasOrigin = CommandHelper.runFullGitCommand repoCacheFolder "remote" |> Array.contains "origin"
+        if not hasOrigin then
             tracefn "Cloning %s to %s" cloneUrl repoCacheFolder
-            CommandHelper.runSimpleGitCommand Constants.GitRepoCacheFolder ("clone --mirror " + quote cloneUrl + " " + quote repoCacheFolder) |> ignore
+            git ("remote add --mirror=fetch origin " + quote cloneUrl)
         else
-            CommandHelper.runSimpleGitCommand repoCacheFolder ("remote set-url origin " + quote cloneUrl) |> ignore
+            git ("remote set-url origin " + quote cloneUrl)
             if verbose then
                 verbosefn "Fetching %s to %s" cloneUrl repoCacheFolder
 
-        CommandHelper.runSimpleGitCommand repoCacheFolder "remote update --prune" |> ignore
+        git "remote update --prune"
     with
     | exn -> failwithf "Fetching the git cache at %s failed.%sMessage: %s" repoCacheFolder Environment.NewLine exn.Message
 
@@ -192,15 +199,18 @@ let checkForCommitsMadeInDetachedHeadState repoFolder =
 
 let tagCommitForCheckout repoFolder commit =
     try
-        CommandHelper.runSimpleGitCommand repoFolder (sprintf "tag -f %s %s" paketCheckoutTag commit) |> ignore
+        CommandHelper.gitCommand repoFolder (sprintf "tag -f %s %s" paketCheckoutTag commit)
     with
     | exn -> failwithf "Updating the git cache at %s failed.%sMessage: %s" repoFolder Environment.NewLine exn.Message
 
+// git checkout reports its failures with "error:", which runSimpleGitCommand doesn't see: the exit code tells
 let checkoutTaggedCommit repoFolder =
-    CommandHelper.runSimpleGitCommand repoFolder ("checkout " + paketCheckoutTag) |> ignore
+    CommandHelper.gitCommand repoFolder ("checkout " + paketCheckoutTag)
 
 let checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl commit =
     try
+        // only a checkout can hold changes that the checkout of the commit would lose
+        let hasCheckout = (getCurrentHash repoFolder).IsSome
         // checkout to local folder
         if Directory.Exists repoFolder then
             if verbose then
@@ -212,11 +222,13 @@ let checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl commit =
                 Directory.CreateDirectory destination |> ignore
             if verbose then
                 verbosefn "Cloning %s to %s" cacheCloneUrl repoFolder
-            CommandHelper.runSimpleGitCommand destination (sprintf "clone %s %s" (quote cacheCloneUrl) (quote repoFolder)) |> ignore
+            // the HEAD of the cache may name a branch that it doesn't have: the commit is checked out below
+            CommandHelper.runSimpleGitCommand destination (sprintf "clone --no-checkout %s %s" (quote cacheCloneUrl) (quote repoFolder)) |> ignore
             CommandHelper.runSimpleGitCommand repoFolder (sprintf "remote set-url origin %s" (quote cloneUrl)) |> ignore
 
-        checkForUncommittedChanges repoFolder
-        checkForCommitsMadeInDetachedHeadState repoFolder
+        if hasCheckout then
+            checkForUncommittedChanges repoFolder
+            checkForCommitsMadeInDetachedHeadState repoFolder
 
         tracefn "Setting %s to %s" repoFolder commit
         tagCommitForCheckout repoFolder commit
