@@ -188,6 +188,30 @@ and deleteDir (dirInfo:DirectoryInfo) =
 
         dirInfo.Delete()
 
+/// Empties a directory like emptyDir, but keeps the given subdirectory and its content.
+let rec emptyDirExcept (keep:string) (dirInfo:DirectoryInfo) =
+    if dirInfo.Exists then
+        for fileInfo in dirInfo.GetFiles() do
+            fileInfo.Attributes <- FileAttributes.Normal
+            fileInfo.Delete()
+
+        for childInfo in dirInfo.GetDirectories() do
+            match Path.GetRelativePath(childInfo.FullName, keep) with
+            | "." -> ()
+            | relative when relative = ".." || relative.StartsWith(".." + string Path.DirectorySeparatorChar) || Path.IsPathRooted relative ->
+                try
+                    Directory.Delete(childInfo.FullName,true)
+                with
+                | _ -> deleteDir childInfo
+            | _ -> emptyDirExcept keep childInfo
+
+/// Gives the `<id>/<version>` folder of the NuGet packages folder that holds the given path, if any.
+let tryGetPackageFolder (packagesFolder:string) (path:string) =
+    let relative = Path.GetRelativePath(packagesFolder, path)
+    match relative.Split([| Path.DirectorySeparatorChar; Path.AltDirectorySeparatorChar |]) with
+    | segments when segments.Length < 2 || segments.[0] = ".." || Path.IsPathRooted relative -> None
+    | segments -> Some (Path.Combine(packagesFolder, segments.[0], segments.[1]))
+
 /// Cleans a directory by deleting it and recreating it.
 let CleanDir path =
     let di = DirectoryInfo path

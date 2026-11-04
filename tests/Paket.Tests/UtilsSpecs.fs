@@ -496,3 +496,34 @@ let ``isDirectoryLink should keep the separators of a root``() =
     if not isUnix then
         Assert.Ignore "A path made of separators is a root only on Unix"
     SymlinkUtils.isDirectoryLink "//" |> shouldEqual false
+
+[<Test>]
+let ``tryGetPackageFolder should give the package folder of a path in the packages folder``() =
+    let packages = Path.Combine(Path.GetTempPath(), "packages")
+    Path.Combine(packages, "paket", "12.0.0", "tools", "net10.0", "any")
+    |> tryGetPackageFolder packages
+    |> shouldEqual (Some (Path.Combine(packages, "paket", "12.0.0")))
+    Path.Combine(packages, "paket") |> tryGetPackageFolder packages |> shouldEqual None
+    packages |> tryGetPackageFolder packages |> shouldEqual None
+    Path.Combine(Path.GetTempPath(), "other", "paket", "12.0.0") |> tryGetPackageFolder packages |> shouldEqual None
+
+// Regression: https://github.com/fsprojects/Paket/issues/3879
+[<Test>]
+let ``emptyDirExcept should keep the given folder and empty the rest``() =
+    TestHelpers.withTempDir (fun root ->
+        let running = Path.Combine(root, "paket", "12.0.0")
+        let tool = Path.Combine(running, "tools", "net10.0", "any")
+        Directory.CreateDirectory(tool) |> ignore
+        Directory.CreateDirectory(Path.Combine(root, "paket", "11.0.0")) |> ignore
+        Directory.CreateDirectory(Path.Combine(root, "argu", "6.2.5")) |> ignore
+        File.WriteAllText(Path.Combine(tool, "Argu.dll"), "")
+        File.WriteAllText(Path.Combine(running, "paket.nuspec"), "")
+        File.WriteAllText(Path.Combine(root, "paket", "file.txt"), "")
+
+        emptyDirExcept running (DirectoryInfo root)
+
+        Directory.GetDirectories(root) |> shouldEqual [| Path.Combine(root, "paket") |]
+        Directory.GetDirectories(Path.Combine(root, "paket")) |> shouldEqual [| running |]
+        Directory.GetFiles(Path.Combine(root, "paket")) |> shouldBeEmpty
+        File.Exists(Path.Combine(tool, "Argu.dll")) |> shouldEqual true
+        File.Exists(Path.Combine(running, "paket.nuspec")) |> shouldEqual true)

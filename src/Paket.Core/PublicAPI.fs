@@ -38,7 +38,14 @@ type Dependencies(dependenciesFileName: string) =
                         false
                 )
 
-        emptyDir Constants.UserNuGetPackagesFolder
+        let packagesFolder = Constants.UserNuGetPackagesFolder
+        // the paket tool runs from the NuGet packages folder, and deleting its own package breaks it
+        match tryGetPackageFolder packagesFolder AppContext.BaseDirectory with
+        | Some running ->
+            tracefn "  - %s" packagesFolder
+            traceWarnfn "    Keeping %s, from which Paket is running" running
+            emptyDirExcept running (DirectoryInfo packagesFolder)
+        | None -> emptyDir packagesFolder
         emptyDir Constants.NuGetCacheFolder
         emptyDir Constants.GitRepoCacheFolder
 
