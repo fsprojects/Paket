@@ -491,6 +491,7 @@ let RunInLockedAccessMode(lockedFolder,lockedAction: unit -> bool) =
                 failwithf "Could not acquire lock to '%s'.%sThe process timed out." fileName Environment.NewLine
             | exn ->
                 if trials > 0 then
+                    Thread.Sleep 100
                     trials <- trials - 1
                     if verbose then
                         tracefn "Could not acquire lock to %s.%s%s%sTrials left: %d." fileName Environment.NewLine exn.Message Environment.NewLine trials

@@ -1,5 +1,7 @@
 #### Unreleased
 
+* Wait 100 ms between the trials to acquire the `paket.processlock` file when it is in use, so that concurrent restores no longer give up after about a second - https://github.com/fsprojects/Paket/issues/3760
+
 #### 12.0.0-alpha004 - 2026-11-01
 
 * BREAKING: `paket pack --release-notes-file` reads the file with Fake.Core.ReleaseNotes 6, in the formats described in https://fake.build/reference/fake-core-releasenotes.html: the package version is the first word of the latest header that is a whole SemVer version, so `## [1.2.3] - 2020-01-01` and `## v1.2.3 - 2020-01-01` give `2020-01-01`; pass `--version` for such headers. Prerelease versions like `1.2.3-beta.11.2` are no longer cut, and build metadata (`+sha.abc`) is kept - https://github.com/fsprojects/FAKE/pull/2686
