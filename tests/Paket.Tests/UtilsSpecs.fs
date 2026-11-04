@@ -496,3 +496,16 @@ let ``isDirectoryLink should keep the separators of a root``() =
     if not isUnix then
         Assert.Ignore "A path made of separators is a root only on Unix"
     SymlinkUtils.isDirectoryLink "//" |> shouldEqual false
+
+[<Test>]
+let ``RunInLockedAccessMode should wait between the trials to acquire a lock file in use``() =
+    TestHelpers.withTempDir (fun root ->
+        let lockedFolder = Path.Combine(root, "paket-files")
+        Directory.CreateDirectory lockedFolder |> ignore
+        let lockFile = new FileStream(Path.Combine(lockedFolder, Constants.AccessLockFileName), FileMode.Create, FileAccess.ReadWrite, FileShare.None)
+        use _ = new System.Threading.Timer((fun _ -> lockFile.Dispose()), null, 1000, Threading.Timeout.Infinite)
+
+        let mutable ran = false
+        RunInLockedAccessMode(lockedFolder, fun () -> ran <- true; false)
+
+        ran |> shouldEqual true)
