@@ -24,7 +24,7 @@
     },
     {
       "issue": 4461,
-      "pr": null,
+      "pr": 4463,
       "branch": "repo-assist/fix-issue-4461-cold-git-cache",
       "status": "open",
       "updated_at": "2026-10-25",
@@ -32,7 +32,7 @@
     },
     {
       "issue": 4329,
-      "pr": null,
+      "pr": 4469,
       "branch": "repo-assist/fix-issue-4329-merge-reference-lines",
       "status": "open",
       "updated_at": "2026-11-01",
