@@ -494,11 +494,12 @@ let rec ExtractPackageToUserFolder(source: PackageSource, downloadedNupkgPath:st
             
             if downloadedNupkgPath.IndexOf(installFolder.FullName, StringComparison.OrdinalIgnoreCase) <> -1 then 
                 // red alert: about to extract the nupkg into the directory it already exists in.
-                // in this case we need to move it to a temp dir because of how nuget's API wants to clear things out first
+                // in this case we need to copy it to a temp file because of how nuget's API wants to clear things out first.
+                // the name is unique as other instances may extract the same package concurrently
                 let parentDirOfNupkg = Path.GetDirectoryName downloadedNupkgPath |> DirectoryInfo
                 let parentOfParent = parentDirOfNupkg.Parent
-                let newNupkgPath = Path.Combine(parentOfParent.FullName, Path.GetFileName downloadedNupkgPath)
-                File.Move(downloadedNupkgPath, newNupkgPath)
+                let newNupkgPath = Path.Combine(parentOfParent.FullName, Path.GetRandomFileName() + ".paket_tmp")
+                File.Copy(downloadedNupkgPath, newNupkgPath)
                 do! extract newNupkgPath
                 if File.Exists(downloadedNupkgPath) then
                     File.Delete(newNupkgPath)
