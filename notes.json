@@ -36,7 +36,7 @@
       "branch": "repo-assist/fix-issue-4329-merge-reference-lines",
       "status": "open",
       "updated_at": "2026-11-01",
-      "note": "PR opened; targeted tests pass. Build works with XDG_RUNTIME_DIR=/tmp/gh-aw/agent/run DOTNET_CLI_HOME set"
+      "note": "Merged master 2026-11-06 (RELEASE_NOTES conflict); ReferencesFileSpecs 30 pass"
     }
   ],
   "checks": [],
