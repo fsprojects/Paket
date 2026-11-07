@@ -144,13 +144,28 @@ let getHash repoFolder commitish =
 let getCurrentHash repoFolder =
     getHash repoFolder "HEAD"
 
+/// A git command on the paket-files clone at repoFolder. --git-dir and --work-tree name it: git then doesn't
+/// take the repository of the project, which the paket-files are in, for a folder without clone
+let paketFilesGitCommand repoFolder command =
+    let gitDir = Path.Combine(repoFolder, ".git")
+    $"--git-dir=%s{quote gitDir} --work-tree=%s{quote repoFolder} %s{command}"
+
+/// Whether repoFolder holds a clone: its .git is a folder, or a file that names one, as for a submodule or a worktree
+let hasClone repoFolder =
+    let gitPath = Path.Combine(repoFolder, ".git")
+    Directory.Exists gitPath || File.Exists gitPath
+
 /// The commit checked out in the paket-files clone at repoFolder: None when it has no checkout, as a clone
 /// that a run left without one, whose HEAD names a commit that none of its files are from
 let getCheckedOutCommit repoFolder =
     let gitPath = Path.Combine(repoFolder, ".git")
     // only the clone --no-checkout of a run, whose .git is a folder, has no index
     let hasCheckout = File.Exists gitPath || File.Exists(Path.Combine(gitPath, "index"))
-    if hasCheckout then getCurrentHash repoFolder else None
+    if not hasCheckout then None else
+    try
+        Some (CommandHelper.runSimpleGitCommand repoFolder (paketFilesGitCommand repoFolder "rev-parse --verify HEAD"))
+    with
+    | _ -> None
 
 /// A git command on the git cache at repoCacheFolder. --git-dir names the repository: git then doesn't
 /// take the repository of a parent folder for a broken cache, and safe.bareRepository=explicit allows it
@@ -205,37 +220,40 @@ let fetchCache repoCacheFolder cloneUrl =
 let checkForUncommittedChanges repoFolder =
     try
         tracefn "Checking for uncommitted changes in %s" repoFolder
-        CommandHelper.gitCommand repoFolder "diff-index --quiet HEAD --" |> ignore
+        CommandHelper.gitCommand repoFolder (paketFilesGitCommand repoFolder "diff-index --quiet HEAD --")
     with
     | exn -> failwithf "It seems there are uncommitted changes in the repository. The changes must be committed/discarded first.%sMessage: %s" Environment.NewLine exn.Message
 
 let checkForCommitsMadeInDetachedHeadState repoFolder =
     try
         tracefn "Checking for commits made in detached HEAD state in %s" repoFolder
-        CommandHelper.gitCommand repoFolder "name-rev --no-undefined HEAD --" |> ignore
+        CommandHelper.gitCommand repoFolder (paketFilesGitCommand repoFolder "name-rev --no-undefined HEAD --")
     with
     | exn -> failwithf "It seems that some commits would become unreachable after checkout. Create branch for the commits or reset them first and try again.%sMessage: %s" Environment.NewLine exn.Message
 
 let tagCommitForCheckout repoFolder commit =
     try
-        CommandHelper.gitCommand repoFolder (sprintf "tag -f %s %s" paketCheckoutTag commit)
+        CommandHelper.gitCommand repoFolder (paketFilesGitCommand repoFolder (sprintf "tag -f %s %s" paketCheckoutTag commit))
     with
     | exn -> failwithf "Updating the git cache at %s failed.%sMessage: %s" repoFolder Environment.NewLine exn.Message
 
 // git checkout reports its failures with "error:", which runSimpleGitCommand doesn't see: the exit code tells
 let checkoutTaggedCommit repoFolder =
-    CommandHelper.gitCommand repoFolder ("checkout " + paketCheckoutTag)
+    CommandHelper.gitCommand repoFolder (paketFilesGitCommand repoFolder ("checkout " + paketCheckoutTag))
 
 let checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl commit =
     let mutable cloned = false
     try
         // only a checkout can hold changes that the checkout of the commit would lose
         let hasCheckout = (getCheckedOutCommit repoFolder).IsSome
+        // a folder without clone, as paket-files committed with the project, is cloned again
+        if Directory.Exists repoFolder && not (hasClone repoFolder) then
+            deleteDir (DirectoryInfo repoFolder)
         // checkout to local folder
         if Directory.Exists repoFolder then
             if verbose then
                 verbosefn "Fetching %s to %s" cacheCloneUrl repoFolder
-            CommandHelper.runSimpleGitCommand repoFolder (sprintf "fetch --tags --prune %s +refs/heads/*:refs/remotes/origin/*" (quote cacheCloneUrl)) |> ignore
+            CommandHelper.runSimpleGitCommand repoFolder (paketFilesGitCommand repoFolder (sprintf "fetch --tags --prune %s +refs/heads/*:refs/remotes/origin/*" (quote cacheCloneUrl))) |> ignore
         else
             let destination = DirectoryInfo(repoFolder).Parent.FullName
             if not (Directory.Exists destination) then
@@ -245,7 +263,7 @@ let checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl commit =
             // the HEAD of the cache may name a branch that it doesn't have: the commit is checked out below
             CommandHelper.runSimpleGitCommand destination (sprintf "clone --no-checkout %s %s" (quote cacheCloneUrl) (quote repoFolder)) |> ignore
             cloned <- true
-            CommandHelper.runSimpleGitCommand repoFolder (sprintf "remote set-url origin %s" (quote cloneUrl)) |> ignore
+            CommandHelper.runSimpleGitCommand repoFolder (paketFilesGitCommand repoFolder (sprintf "remote set-url origin %s" (quote cloneUrl))) |> ignore
 
         if hasCheckout then
             checkForUncommittedChanges repoFolder

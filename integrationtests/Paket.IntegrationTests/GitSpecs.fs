@@ -191,6 +191,68 @@ let ``a paket-files clone that a run left without checkout is cloned again`` () 
             deleteGitCache repoCacheFolder)
 
 [<Test>]
+let ``a paket-files folder without clone leaves the repository of the project alone`` () =
+    inGitScenario "git-paket-files-without-clone" (fun scenarioPath ->
+        let project = uniqueProject ()
+        let repoCacheFolder = Constants.GitRepoCacheFolder @@ project
+        try
+            let repo = scenarioPath @@ project
+            createRepository repo |> ignore
+            // a project in a repository, whose paket-files were committed without their clone
+            let app = scenarioPath @@ "app"
+            Directory.CreateDirectory app |> ignore
+            git app "init" |> ignore
+            File.WriteAllText(app @@ "paket.dependencies", sprintf "git %s main" (fileUrl repo))
+            let paketFiles = app @@ "paket-files" @@ "localfilesystem" @@ project
+            Directory.CreateDirectory paketFiles |> ignore
+            File.WriteAllText(paketFiles @@ "file.txt", "committed")
+            git app "add ." |> ignore
+            git app (asTestAuthor + " commit --no-verify -m project") |> ignore
+            let head = git app "rev-parse HEAD"
+
+            // with --force, the folder goes straight to the checkout
+            directPaketInPathEx "install --force" app |> ignore
+
+            git app "rev-parse HEAD" |> shouldEqual head
+            git app "tag" |> shouldEqual []
+            File.ReadAllText(paketFiles @@ "file.txt") |> shouldEqual "content"
+        finally
+            deleteGitCache repoCacheFolder)
+
+[<Test>]
+let ``a paket-files clone whose .git is a file keeps its changes`` () =
+    inGitScenario "git-paket-files-git-file" (fun scenarioPath ->
+        let project = uniqueProject ()
+        let repoCacheFolder = Constants.GitRepoCacheFolder @@ project
+        try
+            let repo = scenarioPath @@ project
+            createRepository repo |> ignore
+            File.WriteAllText(scenarioPath @@ "paket.dependencies", sprintf "git %s main" (fileUrl repo))
+            directPaketInPathEx "install" scenarioPath |> ignore
+
+            // as a submodule or a worktree, the clone has a .git file that names its repository
+            let paketFiles = scenarioPath @@ "paket-files" @@ "localfilesystem" @@ project
+            git paketFiles (sprintf "init --separate-git-dir %s" (quote (scenarioPath @@ "separate-git-dir"))) |> ignore
+            File.WriteAllText(paketFiles @@ "file.txt", "edited")
+
+            restoreAgain scenarioPath
+
+            File.Exists(paketFiles @@ ".git") |> shouldEqual true
+            File.ReadAllText(paketFiles @@ "file.txt") |> shouldEqual "edited"
+
+            // the checkout of a new commit stops at the changes, rather than cloning again over them
+            commitFile repo "updated" |> ignore
+            let errors =
+                try
+                    directPaketInPathEx "update" scenarioPath |> ignore
+                    []
+                with ProcessFailedWithExitCode(_, _, msgs) -> List.ofSeq msgs.Errors
+            errors |> List.exists (fun error -> error.Contains "uncommitted changes") |> shouldEqual true
+            File.ReadAllText(paketFiles @@ "file.txt") |> shouldEqual "edited"
+        finally
+            deleteGitCache repoCacheFolder)
+
+[<Test>]
 let ``fetchCache sets up a git cache that holds only the lock file or has no origin`` () =
     inGitScenario "git-cache-setup" (fun scenarioPath ->
         let repo = scenarioPath @@ "repo"
