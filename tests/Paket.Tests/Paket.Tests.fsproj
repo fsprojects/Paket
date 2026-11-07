@@ -203,6 +203,7 @@
     <Compile Include="InstallModel\BindingRedirect.fs" />
     <Compile Include="InstallModel\InstallNuGetContentsTests.fs" />
     <Compile Include="InstallModel\PaketPropsTests.fs" />
+    <Compile Include="InstallModel\RestoreTargetsSpecs.fs" />
     <Compile Include="Packaging\PackageProcessSpecs.fs" />
     <Compile Include="Packaging\AssemblyMetadataSpecs.fs" />
     <Compile Include="Packaging\NuspecWriterSpecs.fs" />

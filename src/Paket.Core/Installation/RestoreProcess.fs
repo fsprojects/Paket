@@ -201,7 +201,8 @@ let private saveToFile newContent (targetFile:FileInfo) =
                     ""
 
             let written =
-                if newContent <> oldContent then
+                // a checkout can change the line endings of a file that Paket wrote, like Paket.Restore.targets
+                if normalizeLineEndings newContent <> normalizeLineEndings oldContent then
                     if verbose then
                         tracefn " - %s created" targetFile.FullName
 
