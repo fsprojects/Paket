@@ -48,6 +48,12 @@ let ``the project of a repository keeps a .git that doesn't end its name``() =
     projectOf "git@github.com:fsprojects/Paket.git" |> shouldEqual "Paket"
 
 [<Test>]
+let ``the project of a repository ignores the case of its .git``() =
+    projectOf "file:///C:/code/Repo.GIT master" |> shouldEqual "Repo"
+    projectOf "file:///tmp/code/Repo/.GIT master" |> shouldEqual "Repo"
+    projectOf "https://github.com/me/Repo.Git" |> shouldEqual "Repo"
+
+[<Test>]
 let ``the project of a local repository with a Windows path is its folder name``() =
     projectOf @"file:///C:\code\Repo master" |> shouldEqual "Repo"
 
