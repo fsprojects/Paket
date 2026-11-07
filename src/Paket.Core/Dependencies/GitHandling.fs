@@ -276,11 +276,11 @@ let tagCommitForCheckout repoFolder commit =
 let checkoutTaggedCommit repoFolder =
     CommandHelper.gitCommand repoFolder (paketFilesGitCommand repoFolder ("checkout " + paketCheckoutTag))
 
-let checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl commit =
+/// Checks the commit out in the paket-files at repoFolder. hasCheckout tells whether they hold a checkout, as
+/// getCheckedOutCommit does: only a checkout can hold changes that the checkout of the commit would lose
+let checkoutToPaketFolder repoFolder hasCheckout cloneUrl cacheCloneUrl commit =
     let mutable cloned = false
     try
-        // only a checkout can hold changes that the checkout of the commit would lose
-        let hasCheckout = (getCheckedOutCommit repoFolder).IsSome
         // a folder without clone, as paket-files committed with the project, is cloned again
         if Directory.Exists repoFolder && not (hasClone repoFolder) then
             deleteDir (DirectoryInfo repoFolder)
