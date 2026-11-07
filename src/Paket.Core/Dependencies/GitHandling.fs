@@ -211,7 +211,10 @@ let getHashFromRemote url branch =
         // an annotated tag also gives the line of its commit, "<commit>\trefs/tags/<tag>^{}", when asked for it
         let patterns = if String.IsNullOrEmpty branch then "" else $"%s{branch} %s{branch}^{{}}"
         let lines = CommandHelper.runFullGitCommand "" (sprintf "ls-remote %s %s" url patterns)
-        match lines |> Array.tryFind (fun line -> line.EndsWith("\trefs/tags/" + branch + "^{}")) with
+        // the tag as git names it: "v1.0", "tags/v1.0" or "refs/tags/v1.0"
+        let peeledLines = [ branch; "refs/" + branch; "refs/tags/" + branch ] |> List.map (fun ref -> "\t" + ref + "^{}")
+        let isPeeled (line: string) = peeledLines |> List.exists (fun peeled -> line.EndsWith(peeled, StringComparison.Ordinal))
+        match lines |> Array.tryFind isPeeled with
         | Some line -> line
         | None ->
             match Array.tryHead lines with

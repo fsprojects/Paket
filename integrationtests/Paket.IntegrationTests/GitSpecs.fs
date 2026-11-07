@@ -387,5 +387,7 @@ let ``the version range of a git dependency is resolved with the tags of the git
             getSha1 range |> shouldEqual sha
             // a concrete tag goes through ls-remote
             getSha1 (ModuleResolver.VersionRestriction.Concrete "2.0.0") |> shouldEqual sha
+            getSha1 (ModuleResolver.VersionRestriction.Concrete "tags/2.0.0") |> shouldEqual sha
+            getSha1 (ModuleResolver.VersionRestriction.Concrete "refs/tags/2.0.0") |> shouldEqual sha
         finally
             deleteGitCache repoCacheFolder)
