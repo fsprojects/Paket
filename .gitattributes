@@ -7,6 +7,9 @@
 *.fs diff=csharp text=auto eol=lf
 *.fsi diff=csharp text=auto eol=lf
 *.fsx diff=csharp text=auto eol=lf
+
+# Embedded as is in Paket.Core: LF whatever the checkout, as on the Windows runner of the release
+src/Paket.Core/embedded/** text eol=lf
 *.sln text eol=crlf merge=union
 *.csproj merge=union
 *.vbproj merge=union
