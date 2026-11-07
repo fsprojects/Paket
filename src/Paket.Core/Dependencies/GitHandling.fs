@@ -235,18 +235,29 @@ let fetchCache repoCacheFolder cloneUrl =
         // refuses a folder that isn't empty: the mirror is set up in place
         Directory.CreateDirectory repoCacheFolder |> ignore
         let git command = CommandHelper.runSimpleGitCommand repoCacheFolder (cacheGitCommand repoCacheFolder command) |> ignore
-        // reinitializing keeps an existing cache as it is, and repairs one that lost its HEAD or config
-        git "init --bare"
+        // the URL of origin, which only a cache that is a repository has: --local leaves out the git config of the user
+        let originUrl =
+            match CommandHelper.runGitCommand repoCacheFolder (cacheGitCommand repoCacheFolder "config --local --get remote.origin.url") with
+            | true, msg, _ when msg.Count > 0 -> Some msg.[0]
+            | _ -> None
 
-        // a cache left without origin by a failed run is set up again
-        let hasOrigin = CommandHelper.runFullGitCommand repoCacheFolder (cacheGitCommand repoCacheFolder "remote") |> Array.contains "origin"
-        if not hasOrigin then
-            tracefn "Cloning %s to %s" cloneUrl repoCacheFolder
-            git ("remote add --mirror=fetch origin " + quote cloneUrl)
-        else
-            git ("remote set-url origin " + quote cloneUrl)
+        match originUrl with
+        | Some url ->
+            if url <> cloneUrl then
+                git ("remote set-url origin " + quote cloneUrl)
             if verbose then
                 verbosefn "Fetching %s to %s" cloneUrl repoCacheFolder
+        | None ->
+            tracefn "Cloning %s to %s" cloneUrl repoCacheFolder
+            // reinitializing keeps an existing cache as it is, and repairs one that lost its HEAD or config
+            git "init --bare"
+
+            // a cache left without origin by a failed run is set up again
+            let hasOrigin = CommandHelper.runFullGitCommand repoCacheFolder (cacheGitCommand repoCacheFolder "remote") |> Array.contains "origin"
+            if not hasOrigin then
+                git ("remote add --mirror=fetch origin " + quote cloneUrl)
+            else
+                git ("remote set-url origin " + quote cloneUrl)
 
         git "remote update --prune"
     with

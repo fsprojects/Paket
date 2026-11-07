@@ -342,7 +342,13 @@ let ``fetchCache sets up a git cache that holds only the lock file or has no ori
         Directory.CreateDirectory cacheWithoutOrigin |> ignore
         git cacheWithoutOrigin "init --bare" |> ignore
         Git.Handling.fetchCache cacheWithoutOrigin (fileUrl repo)
-        mirroredMain cacheWithoutOrigin |> shouldEqual sha)
+        mirroredMain cacheWithoutOrigin |> shouldEqual sha
+
+        // the cache of a repository that moved follows it
+        let moved = scenarioPath @@ "moved"
+        let movedSha = createRepository moved
+        Git.Handling.fetchCache cacheWithoutOrigin (fileUrl moved)
+        mirroredMain cacheWithoutOrigin |> shouldEqual movedSha)
 
 [<Test>]
 let ``fetchCache repairs a broken git cache and leaves the repository of a parent folder alone`` () =
