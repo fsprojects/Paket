@@ -14,6 +14,7 @@
 * The git cache of a repository is `~/.paket/git/db/<owner>/<project>`, so that remote repositories of the same name from two owners no longer share one, and swap its branches on each fetch. Local repositories of the same folder name still share one. Each repository is cloned again once, and `paket clear-cache` removes the old caches
 * `paket install` no longer rewrites the framework restrictions of unchanged packages in paket.lock when it saves it for another reason, such as a removed `github` file, in groups with a `framework:` line: these restrictions are written in a single, shorter form, without empty clauses like `(&& (== net10.0) (== net461))`. The restrictions of the dependencies are rewritten once at the next `paket install`, and those of the packages when their group is resolved again; they hold the same frameworks
 * The restore no longer rewrites `.paket/Paket.Restore.targets` when only its line endings differ from the ones of Paket, as after a checkout with other line endings, which showed it as changed in git after each restore. The same goes for `.paket/paket.targets` and the other files that the restore writes
+* When the restore updates `.paket/Paket.Restore.targets`, as for a new version of Paket, the file keeps its line endings instead of taking the ones of the machine that built Paket. The same goes for `.paket/paket.targets` and the other files that the restore writes
 
 #### 12.0.0-alpha004 - 2026-11-01
 

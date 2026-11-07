@@ -188,6 +188,16 @@ let mutable private copiedElements = false
 
 type private MyAssemblyFinder () = class end
 
+/// Gives the content the line endings of the file it replaces, to keep the ones of its checkout
+let private withLineEndingsOf (oldContent:string) (newContent:string) =
+    let lineEnding =
+        if oldContent.Contains "\r\n" then Some "\r\n"
+        elif oldContent.Contains "\n" then Some "\n"
+        else None
+    match lineEnding with
+    | Some lineEnding -> newContent.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", lineEnding)
+    | None -> newContent
+
 let private saveToFile newContent (targetFile:FileInfo) =
     let rec loop trials =
         try
@@ -208,7 +218,7 @@ let private saveToFile newContent (targetFile:FileInfo) =
 
                     if targetFile.Exists then
                         File.SetAttributes(targetFile.FullName,IO.FileAttributes.Normal)
-                    File.WriteAllText(targetFile.FullName,newContent)
+                    File.WriteAllText(targetFile.FullName,withLineEndingsOf oldContent newContent)
                     true
                 else
                     if verbose then

@@ -23,3 +23,17 @@ let ``the restore targets are kept when only their line endings differ``() =
 
         written |> shouldEqual false
         File.ReadAllText path |> shouldEqual checkedOut)
+
+[<TestCase("\r\n")>]
+[<TestCase("\n")>]
+let ``updated restore targets keep the line endings of the file they replace``(lineEnding: string) =
+    withTempDir (fun root ->
+        RestoreProcess.extractElement root "Paket.Restore.targets" |> ignore
+        let path = targetsFile root
+        let expected = File.ReadAllText(path).Replace("\r\n", "\n").Replace("\n", lineEnding)
+        File.WriteAllText(path, "<Project>" + lineEnding + "</Project>" + lineEnding)
+
+        let written, _ = RestoreProcess.extractElement root "Paket.Restore.targets"
+
+        written |> shouldEqual true
+        File.ReadAllText path |> shouldEqual expected)
