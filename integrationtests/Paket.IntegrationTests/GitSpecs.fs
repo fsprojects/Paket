@@ -8,9 +8,15 @@ open Paket
 open Paket.Utils
 
 /// Runs the test in a new scenario folder, with an environment that the git of the test, of paket and of
-/// Paket.Core called in process all get, and that keeps git inside the scenario folder
-let private inGitScenario scenario (test: string -> unit) =
+/// Paket.Core called in process all get, and that keeps git inside the scenario folder. The keys of config are
+/// set in the git config of that environment, which, as the git config of the user, isn't the one of a repository
+let private inGitScenarioWithConfig scenario (config: (string * string) list) (test: string -> unit) =
     let scenarioPath = createScenarioDir scenario
+    let config =
+        [ // git defaults to a branch that the repositories don't have, as "master" for a "main" repository,
+          // and allows a bare repository only when it is named
+          "init.defaultBranch", "master"
+          "safe.bareRepository", "explicit" ] @ config
     let variables =
         [ // git doesn't look for a repository above the scenario folder, as the Paket repository
           "GIT_CEILING_DIRECTORIES", scenarioPath
@@ -18,13 +24,8 @@ let private inGitScenario scenario (test: string -> unit) =
           "GIT_DIR", null
           "GIT_WORK_TREE", null
           "GIT_INDEX_FILE", null
-          // git defaults to a branch that the repositories don't have, as "master" for a "main" repository,
-          // and allows a bare repository only when it is named
-          "GIT_CONFIG_COUNT", "2"
-          "GIT_CONFIG_KEY_0", "init.defaultBranch"
-          "GIT_CONFIG_VALUE_0", "master"
-          "GIT_CONFIG_KEY_1", "safe.bareRepository"
-          "GIT_CONFIG_VALUE_1", "explicit" ]
+          "GIT_CONFIG_COUNT", string config.Length ]
+        @ (config |> List.mapi (fun i (key, value) -> [ sprintf "GIT_CONFIG_KEY_%d" i, key; sprintf "GIT_CONFIG_VALUE_%d" i, value ]) |> List.concat)
     let saved = variables |> List.map (fun (name, _) -> name, Environment.GetEnvironmentVariable name)
     for name, value in variables do
         Environment.SetEnvironmentVariable(name, value)
@@ -37,6 +38,8 @@ let private inGitScenario scenario (test: string -> unit) =
         try
             cleanup scenario
         with e -> eprintfn "Error in test cleanup: %O" e
+
+let private inGitScenario scenario test = inGitScenarioWithConfig scenario [] test
 
 /// Runs git in the folder and returns its standard output
 let private git folder command =
@@ -351,6 +354,21 @@ let ``fetchCache sets up a git cache that holds only the lock file or has no ori
         let movedSha = commitFile moved "moved"
         Git.Handling.fetchCache cacheWithoutOrigin (fileUrl moved)
         mirroredMain cacheWithoutOrigin |> shouldEqual movedSha)
+
+[<Test>]
+let ``fetchCache sets up a git cache when the git config of the user has a key of origin`` () =
+    // as remote.origin.prune in ~/.gitconfig, which makes git list an origin in each repository
+    inGitScenarioWithConfig "git-cache-user-origin" [ "remote.origin.prune", "true" ] (fun scenarioPath ->
+        let repo = scenarioPath @@ "repo"
+        let sha = createRepository repo
+        let cache = scenarioPath @@ "cache"
+
+        Git.Handling.fetchCache cache (fileUrl repo)
+        mirroredMain cache |> shouldEqual sha
+
+        let updatedSha = commitFile repo "updated"
+        Git.Handling.fetchCache cache (fileUrl repo)
+        mirroredMain cache |> shouldEqual updatedSha)
 
 [<Test>]
 let ``fetchCache repairs a broken git cache and leaves the repository of a parent folder alone`` () =
