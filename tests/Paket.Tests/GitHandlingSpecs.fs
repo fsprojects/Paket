@@ -68,5 +68,13 @@ let ``a local repository at the root of a file system has no project``() =
     (fun () -> projectOf @"file:///C:\.git master" |> ignore) |> shouldFail<exn>
 
 [<Test>]
+let ``a repository whose path ends with a dot segment has no project``() =
+    (fun () -> projectOf "file:///tmp/code/Repo/. master" |> ignore) |> shouldFail<exn>
+    (fun () -> projectOf "file:///tmp/code/Repo/.. master" |> ignore) |> shouldFail<exn>
+    (fun () -> projectOf @"file:///C:\code\Repo\. master" |> ignore) |> shouldFail<exn>
+    (fun () -> projectOf "file:///tmp/code/..git master" |> ignore) |> shouldFail<exn>
+    (fun () -> projectOf "https://example.com/me/..git" |> ignore) |> shouldFail<exn>
+
+[<Test>]
 let ``the project of a local repository with an escaped path is its decoded folder name``() =
     projectOf "file:///tmp/my%20repo" |> shouldEqual "my repo"

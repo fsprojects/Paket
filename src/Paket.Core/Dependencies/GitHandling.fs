@@ -145,6 +145,11 @@ let extractUrlParts (gitConfig:string) =
             let project = url.Substring(url.LastIndexOf('/')+1) |> withoutGitSuffix
             if Directory.Exists project then Path.GetFileName project else project
 
+    // a dot segment, as file:///home/me/repo/. or a repository named "..git", names a parent of the paket-files
+    // and git cache folders, which the restore would delete
+    if project = "." || project = ".." then
+        failwithf "The git repository %s ends with a dot segment, which names no folder for its paket-files and git cache: give its path without it." url
+
     server,commit,project,origin,buildCommand,operatingSystemRestriction,packagePath
 
 /// The rev-parse arguments for the commit of a commit-ish: an annotated tag names a tag object, not its commit
