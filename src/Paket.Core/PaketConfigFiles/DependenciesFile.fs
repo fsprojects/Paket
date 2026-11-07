@@ -86,6 +86,20 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 (0,Constants.MainDependencyGroup,0,textRepresentation.Count)
         firstLine,lastLine
 
+    /// Detects the indentation used for an existing group's contents so that packages
+    /// added to that group via `paket add` preserve the file's existing indentation style.
+    let groupIndentation groupName (textRepresentation:System.Collections.Generic.List<string>) =
+        if groupName = Constants.MainDependencyGroup then
+            ""
+        else
+            let firstGroupLine,lastGroupLine = findGroupBorders groupName textRepresentation
+            seq { firstGroupLine .. (min lastGroupLine (textRepresentation.Count - 1)) - 1 }
+            |> Seq.filter (fun i -> i >= 0 && i < textRepresentation.Count)
+            |> Seq.map (fun i -> textRepresentation.[i])
+            |> Seq.tryFind (fun line -> line.Trim() <> "" && not (line.TrimStart().StartsWith "group "))
+            |> Option.map (fun line -> line.Substring(0, line.Length - line.TrimStart().Length))
+            |> Option.defaultValue ""
+
     let tryFindPackageLine groupName (packageName:PackageName) =
         let name = packageName.CompareString
         let _,_,found =
@@ -512,7 +526,14 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
     member this.AddAdditionalPackage(groupName, packageName:PackageName,versionRequirement,resolverStrategy,settings,kind,?pinDown) =
         let pinDown = defaultArg pinDown false
 
-        let packageString = DependenciesFileSerializer.packageString kind packageName versionRequirement resolverStrategy settings
+        // Preserve the existing indentation of the target group (if any) so that newly
+        // added packages line up with the rest of the group's contents.
+        let indent =
+            let textList = new System.Collections.Generic.List<_>()
+            textList.AddRange textRepresentation
+            groupIndentation groupName textList
+
+        let packageString = indent + DependenciesFileSerializer.packageString kind packageName versionRequirement resolverStrategy settings
 
         // Try to find alphabetical matching position to insert the package
         let isPackageInLastSource =
