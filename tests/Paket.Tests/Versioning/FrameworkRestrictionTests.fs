@@ -343,4 +343,45 @@ let ``parseRestrictions returns correct result`` frameworkRestrictionString =
     let parsed, errors = Requirements.parseRestrictions frameworkRestrictionString
     parsed.ToString() |> shouldEqual frameworkRestrictionString
     errors |> Seq.toList |> shouldEqual []
+
+[<Test>]
+[<TestCase("&& (== net10.0) (== net461)", "false")>]
+[<TestCase("&& (== net10.0) (>= net462)", "false")>]
+[<TestCase("&& (== net10.0) (< net8.0)", "false")>]
+[<TestCase("&& (== net10.0) (>= netstandard2.0)", "== net10.0")>]
+[<TestCase("&& (== net461) (< net8.0)", "== net461")>]
+[<TestCase("|| (&& (== net10.0) (== net461)) (&& (== net10.0) (>= netstandard2.0)) (== netstandard2.0)", "|| (== net10.0) (== netstandard2.0)")>]
+[<TestCase("&& (== portable-net45+win8) (>= netstandard1.0)", "false")>]
+let ``Simplify evaluates the clauses with an exact framework on that framework`` restriction expected =
+    let restriction, parseProblems = Requirements.parseRestrictionsSimplified restriction
+    parseProblems |> Seq.toList |> shouldEqual []
+
+    let simplified = FrameworkRestriction.simplify restriction
+    simplified.ToString() |> shouldEqual expected
+    simplified.RepresentedFrameworks |> shouldEqual restriction.RepresentedFrameworks
+
+[<Test>]
+let ``Simplify leaves the clauses with an unknown exact framework to the other steps`` () =
+    // tizen4 supports netstandard1.6, but is not a known framework, so PlatformsSupporting doesn't list it
+    let restriction, parseProblems = Requirements.parseRestrictionsSimplified "&& (== tizen4) (>= netstandard1.6)"
+    parseProblems |> Seq.toList |> shouldEqual []
+
+    let simplified = FrameworkRestriction.simplify restriction
+    simplified.ToString() |> shouldEqual "== tizen4.0"
+
+[<Test>]
+let ``The restriction of a group applied twice is written as when applied once`` () =
+    // paket install copies the groups it does not resolve from the lock file, whose dependency restrictions
+    // already include the restriction of the group, and the lock file writer applies it again
+    let group = Requirements.parseRestrictions "|| (== net10.0) (== net461) (== netstandard2.0)" |> fst
+    let dependency = Requirements.parseRestrictions "|| (>= net462) (&& (< net8.0) (>= netstandard2.0))" |> fst
+
+    let once = FrameworkRestriction.And [ group; dependency ]
+    let twice = FrameworkRestriction.And [ group; once ]
+
+    // net10.0 neither supports net462 nor is below net8.0, and net461 neither supports net462 nor netstandard2.0,
+    // which Paket only takes from net471 on
+    once.ToString() |> shouldEqual "== netstandard2.0"
+    twice.ToString() |> shouldEqual (once.ToString())
+    once.RepresentedFrameworks |> shouldEqual (Set.intersect group.RepresentedFrameworks dependency.RepresentedFrameworks)
     
