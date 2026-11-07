@@ -505,6 +505,36 @@ module FrameworkRestriction =
                     if removeAndClause then None else Some { Literals = filteredList }), workDone
             if workDone then FrameworkRestriction.WithOrListInternal newOrList fr else fr
 
+        /// A clause with (== net461) represents at most net461, so its other literals are true or false on net461:
+        /// ((== net461) && (< net8.0)) is (== net461) and ((== net10.0) && (== net461)) is the empty set.
+        /// This gives the clauses with an exact framework a single form, e.g. when the restriction of a group
+        /// is applied to a restriction that already includes it.
+        let evaluateExactLiterals (fr:FrameworkRestriction) =
+            let holdsOn (tp:TargetProfile) (literal:FrameworkRestrictionLiteral) =
+                let isIn =
+                    match literal.LiteraL with
+                    | FrameworkRestrictionLiteralI.ExactlyL p -> p = tp
+                    | FrameworkRestrictionLiteralI.AtLeastL p -> p.PlatformsSupporting.Contains tp
+                isIn <> literal.IsNegated
+            let newOrList =
+                fr.OrFormulas
+                |> List.choose (fun andFormula ->
+                    let exact =
+                        andFormula.Literals
+                        |> List.tryPick (function
+                            | { LiteraL = FrameworkRestrictionLiteralI.ExactlyL tp; IsNegated = false } as literal
+                                // PlatformsSupporting and the negations only cover the known frameworks:
+                                // leave the others to the other steps
+                                when KnownTargetProfiles.AllProfiles.Contains tp -> Some (tp, literal)
+                            | _ -> None)
+                    match exact with
+                    | Some (tp, literal) ->
+                        if andFormula.Literals |> List.forall (holdsOn tp) then Some { Literals = [ literal ] }
+                        else None
+                    | None -> Some andFormula)
+            if newOrList <> fr.OrFormulas then FrameworkRestriction.WithOrListInternal newOrList fr
+            else fr
+
         let sortClauses (fr:FrameworkRestriction) =
             fr.OrFormulas
             |> List.map (fun andFormula -> { Literals = andFormula.Literals |> List.distinct |> List.sort })
@@ -516,6 +546,7 @@ module FrameworkRestriction =
         let optimize fr =
             fr
             |> removeUnsupportedFrameworks
+            |> evaluateExactLiterals
             |> removeNegatedLiteralsWhichOccurSinglePositive
             |> removeSubsetLiteralsInAndClause
             |> removeSubsetLiteralsInOrClause
