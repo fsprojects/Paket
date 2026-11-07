@@ -110,13 +110,9 @@ let findPath paths tool =
     | None -> tool
 
 /// <exclude/>
-let internal startedProcesses = HashSet()
-
-/// <exclude/>
 let start (proc : Process) =
     platformInfoAction proc.StartInfo
     proc.Start() |> ignore
-    startedProcesses.Add(proc.Id, proc.StartTime) |> ignore
 
 /// Runs the given process and returns the exit code.
 /// ## Parameters

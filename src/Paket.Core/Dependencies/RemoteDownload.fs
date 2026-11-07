@@ -22,6 +22,9 @@ let private auth key =
     | Some key ->
         AuthService.GetGlobalAuthenticationProvider key
 
+/// The git cache of a repository. The owner keeps apart the repositories of the same name
+let private gitCacheFolder owner project = Path.Combine(Constants.GitRepoCacheFolder, owner, project)
+
 // Gets the sha1 of a branch
 let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction) authKey =
     async {
@@ -56,14 +59,12 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
             | UnknownError err ->
                 return raise (new Exception(sprintf "Could not find hash for %s" url, err.SourceException))
         | ModuleResolver.Origin.GitLink (LocalGitOrigin path) ->
-            // Strip only the "file://" scheme prefix, keeping the leading slash of the
-            // absolute path intact (e.g. "file:///tmp/x" -> "/tmp/x", not "tmp/x").
-            let path = path.Replace(@"file://", "")
+            let path = Git.Handling.localPathOfFileUrl path
             match versionRestriction with
             | VersionRestriction.NoVersionRestriction ->
                 match Git.Handling.getHash path "master" with
                 | Some hash -> return hash
-                | None -> return failwithf "Could not find hash for master in '%s'" path
+                | None -> return failwithf "Could not find hash for master in '%s'. A local git repository without master needs a branch, as in 'git file:///path/to/repository main'." path
             | VersionRestriction.Concrete branch ->
                 match Git.Handling.getHash path branch with
                 | Some hash -> return hash
@@ -88,10 +89,10 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
                 | VersionRestriction.NoVersionRestriction -> Git.Handling.getHashFromRemote url ""
                 | VersionRestriction.Concrete branch -> Git.Handling.getHashFromRemote url branch
                 | VersionRestriction.VersionRequirement vr ->
-                    let repoCacheFolder = Path.Combine(Constants.GitRepoCacheFolder,project)
+                    let repoCacheFolder = gitCacheFolder owner project
                     RunInLockedAccessMode(repoCacheFolder, (fun () -> Paket.Git.Handling.fetchCache repoCacheFolder url; false))
 
-                    let tags = Git.CommandHelper.runFullGitCommand repoCacheFolder "tag"
+                    let tags = Git.CommandHelper.runFullGitCommand repoCacheFolder (Git.Handling.cacheGitCommand repoCacheFolder "tag")
                     let matchingVersions =
                         tags
                         |> Array.choose (fun s -> try Some(SemVer.Parse s) with | _ -> None)
@@ -101,7 +102,7 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
                     | [||] -> failwithf "No tags in %s match %O. Tags: %A" url vr tags
                     | _ ->
                         let tag = matchingVersions |> Array.max |> string
-                        match Git.Handling.getHash repoCacheFolder tag with
+                        match Git.Handling.getHashInCache repoCacheFolder tag with
                         | None -> failwithf "Could not resolve hash for tag %s in %s." tag url
                         | Some hash -> hash
 
@@ -199,6 +200,54 @@ let rec DirectoryCopy(sourceDirName, destDirName, copySubDirs) =
         for subdir in dirs do
             DirectoryCopy(subdir.FullName, Path.Combine(destDirName, subdir.Name), copySubDirs)
 
+/// Checks a git dependency out into its folder in destination and runs its build command. hasCheckout tells
+/// whether that folder holds a checkout, as Git.Handling.getCheckedOutCommit does
+let private downloadGitRepository(remoteFile:ResolvedSourceFile,cloneUrl:string,destination,hasCheckout) =
+    if not (Utils.isMatchingPlatform remoteFile.OperatingSystemRestriction) then () else
+    let cloneUrl = cloneUrl.TrimEnd('/')
+
+    let repoCacheFolder = gitCacheFolder remoteFile.Owner remoteFile.Project
+    let repoFolder = Path.Combine(destination,remoteFile.Project)
+    // git decodes the escaped characters of a file URL, which a decoded project name may hold
+    let cacheCloneUrl = "file:///" + repoCacheFolder.Replace("%", "%25")
+
+    RunInLockedAccessMode(repoCacheFolder, (fun () -> Paket.Git.Handling.fetchCache repoCacheFolder cloneUrl; false))
+    Paket.Git.Handling.checkoutToPaketFolder repoFolder hasCheckout cloneUrl cacheCloneUrl remoteFile.Commit
+
+    match remoteFile.Command with
+    | None -> ()
+    | Some command ->
+
+        let command,args =
+            match command.IndexOf ' ' with
+            | -1 -> command,""
+            | p -> command.Substring(0,p),command.Substring(p+1)
+
+        let command =
+            if Path.IsPathRooted command then command else
+            let p = Path.Combine(repoFolder,command)
+            if File.Exists p then p else command
+        let tCommand = if String.IsNullOrEmpty args then command else command + " " + args
+
+        try
+            tracefn "Running \"%s\"" tCommand
+            let processResult =
+                ProcessHelper.ExecProcessAndReturnMessages (fun info ->
+                    info.FileName <- command
+                    info.WorkingDirectory <- repoFolder
+                    info.Arguments <- args) gitTimeOut
+
+            let ok,msg,errors = processResult.OK,processResult.Messages,ProcessHelper.toLines processResult.Errors
+
+            let errorText = ProcessHelper.toLines msg + Environment.NewLine + errors
+            if not ok then failwith errorText
+            if ok && msg.Count = 0 then tracefn "Done." else
+            if verbose then
+                for m in msg do
+                    tracefn "%s" m
+        with
+        | exn -> failwithf "Could not run \"%s\".\r\nError: %s" tCommand exn.Message
+
 /// Retrieves RemoteFiles
 let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
     let targetFolder = FileInfo(destination).Directory
@@ -208,49 +257,8 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
     match remoteFile.Origin, remoteFile.Name with
     | Origin.GitLink (RemoteGitOrigin cloneUrl), _
     | Origin.GitLink (LocalGitOrigin cloneUrl), _ ->
-        if not (Utils.isMatchingPlatform remoteFile.OperatingSystemRestriction) then () else
-        let cloneUrl = cloneUrl.TrimEnd('/')
-
-        let repoCacheFolder = Path.Combine(Constants.GitRepoCacheFolder,remoteFile.Project)
-        let repoFolder = Path.Combine(destination,remoteFile.Project)
-        let cacheCloneUrl = "file:///" + repoCacheFolder
-
-        RunInLockedAccessMode(repoCacheFolder, (fun () -> Paket.Git.Handling.fetchCache repoCacheFolder cloneUrl; false))
-        Paket.Git.Handling.checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl remoteFile.Commit
-
-        match remoteFile.Command with
-        | None -> ()
-        | Some command ->
-
-            let command,args =
-                match command.IndexOf ' ' with
-                | -1 -> command,""
-                | p -> command.Substring(0,p),command.Substring(p+1)
-
-            let command =
-                if Path.IsPathRooted command then command else
-                let p = Path.Combine(repoFolder,command)
-                if File.Exists p then p else command
-            let tCommand = if String.IsNullOrEmpty args then command else command + " " + args
-
-            try
-                tracefn "Running \"%s\"" tCommand
-                let processResult =
-                    ProcessHelper.ExecProcessAndReturnMessages (fun info ->
-                        info.FileName <- command
-                        info.WorkingDirectory <- repoFolder
-                        info.Arguments <- args) gitTimeOut
-
-                let ok,msg,errors = processResult.OK,processResult.Messages,ProcessHelper.toLines processResult.Errors
-
-                let errorText = ProcessHelper.toLines msg + Environment.NewLine + errors
-                if not ok then failwith errorText
-                if ok && msg.Count = 0 then tracefn "Done." else
-                if verbose then
-                    for m in msg do
-                        tracefn "%s" m
-            with
-            | exn -> failwithf "Could not run \"%s\".\r\nError: %s" tCommand exn.Message
+        let hasCheckout = (Git.Handling.getCheckedOutCommit (Path.Combine(destination,remoteFile.Project))).IsSome
+        downloadGitRepository(remoteFile,cloneUrl,destination,hasCheckout)
     | Origin.GistLink, Constants.FullProjectSourceFileName ->
         let fi = FileInfo(destination)
         let projectPath = fi.Directory.FullName
@@ -312,15 +320,19 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
             let repoFolder = gitRepo.FilePath(rootPath,groupName)
             let destination = DirectoryInfo(repoFolder).Parent.FullName
 
+            // the checkout tells both whether the paket-files are up-to-date and whether they hold changes to keep
+            let checkedOutCommit = Git.Handling.getCheckedOutCommit repoFolder
             let isInCorrectVersion =
                 if force then false else
-                match Git.Handling.getCurrentHash repoFolder with
+                match checkedOutCommit with
                 | Some hash ->
                     match gitRepo.Command, gitRepo.PackagePath with
                     | Some _, Some path when not (DirectoryInfo(repoFolder + path).Exists) ->
                         false
                     | _ ->
-                        hash = gitRepo.Commit
+                        // a lock file may hold the tag object of an annotated tag, whose id only git tells from the
+                        // id of a commit: git runs only when HEAD isn't the commit of the lock file, as before a checkout
+                        hash = gitRepo.Commit || Git.Handling.getCommitInPaketFiles repoFolder gitRepo.Commit = Some hash
                 | None ->
                     // something is wrong with the repo
                     Utils.deleteDir (DirectoryInfo repoFolder)
@@ -330,7 +342,10 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
                 if verbose then
                     verbosefn "%s is already up-to-date." repoFolder
             else
-                do! downloadRemoteFiles(gitRepo,destination)
+                match gitRepo.Origin with
+                | GitLink (RemoteGitOrigin cloneUrl)
+                | GitLink (LocalGitOrigin cloneUrl) -> downloadGitRepository(gitRepo,cloneUrl,destination,checkedOutCommit.IsSome)
+                | _ -> do! downloadRemoteFiles(gitRepo,destination)
         })
     |> Async.Parallel
     |> Async.RunSynchronously
