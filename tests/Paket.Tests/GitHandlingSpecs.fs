@@ -82,5 +82,20 @@ let ``a repository whose path ends with a dot segment has no project``() =
     (fun () -> projectOf "https://example.com/me/..git" |> ignore) |> shouldFail<exn>
 
 [<Test>]
+let ``a remote repository that gives no folder name has no project``() =
+    (fun () -> projectOf "https://example.com/me/.git/.git" |> ignore) |> shouldFail<exn>
+
+let private ownerAndProjectOf gitConfig =
+    let server,_,project,_,_,_,_ = extractUrlParts gitConfig
+    server, project
+
+[<Test>]
+let ``a remote repository given by its .git folder is named after the folder of the .git``() =
+    ownerAndProjectOf "ssh://host/home/me/repo/.git" |> shouldEqual ("host/home/me", "repo")
+    ownerAndProjectOf "ssh://host/home/me/repo" |> shouldEqual ("host/home/me", "repo")
+    ownerAndProjectOf "https://example.com/me/repo/.GIT" |> shouldEqual ("example.com/me", "repo")
+    ownerAndProjectOf "git@example.com:me/repo/.git" |> shouldEqual ("example.com/me", "repo")
+
+[<Test>]
 let ``the project of a local repository with an escaped path is its decoded folder name``() =
     projectOf "file:///tmp/my%20repo" |> shouldEqual "my repo"

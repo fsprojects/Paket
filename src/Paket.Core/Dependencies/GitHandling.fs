@@ -111,14 +111,21 @@ let extractUrlParts (gitConfig:string) =
         | _ ->
             RemoteGitOrigin url
 
+    // a remote repository given by its .git folder, as ssh://host/home/me/repo/.git, is named after the folder of
+    // the .git, as a local one is
+    let nameUrl =
+        match origin with
+        | RemoteGitOrigin _ when String.endsWithIgnoreCase "/.git" url -> url.Substring(0, url.Length - "/.git".Length)
+        | _ -> url
+
     let server =
         match origin with
         | LocalGitOrigin _ ->
             "localfilesystem"
         | _ ->
-            match url.Replace(":","/").LastIndexOf('/') with
-            | -1 -> url
-            | pos -> url.Substring(0, pos)
+            match nameUrl.Replace(":","/").LastIndexOf('/') with
+            | -1 -> nameUrl
+            | pos -> nameUrl.Substring(0, pos)
 
     let server =
         match server.IndexOf("://") with
@@ -142,13 +149,13 @@ let extractUrlParts (gitConfig:string) =
                 failwithf "The local git repository %s is the root of a file system, which has no folder name for its paket-files and git cache: move it into a folder." url
             name
         | RemoteGitOrigin _ ->
-            let project = url.Substring(url.LastIndexOf('/')+1) |> withoutGitSuffix
+            let project = nameUrl.Substring(nameUrl.LastIndexOf('/')+1) |> withoutGitSuffix
             if Directory.Exists project then Path.GetFileName project else project
 
-    // a dot segment, as file:///home/me/repo/. or a repository named "..git", names a parent of the paket-files
-    // and git cache folders, which the restore would delete
-    if project = "." || project = ".." then
-        failwithf "The git repository %s ends with a dot segment, which names no folder for its paket-files and git cache: give its path without it." url
+    // no name, as https://host/me/.git/.git, or a dot segment, as file:///home/me/repo/. or a repository named
+    // "..git", names a parent of the paket-files and git cache folders, which the restore would delete
+    if project = "" || project = "." || project = ".." then
+        failwithf "The git repository %s gives the folder name \"%s\", which is no folder of its own for its paket-files and git cache: give the path of the repository folder." url project
 
     server,commit,project,origin,buildCommand,operatingSystemRestriction,packagePath
 
