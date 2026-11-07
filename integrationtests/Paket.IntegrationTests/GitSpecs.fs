@@ -344,9 +344,11 @@ let ``fetchCache sets up a git cache that holds only the lock file or has no ori
         Git.Handling.fetchCache cacheWithoutOrigin (fileUrl repo)
         mirroredMain cacheWithoutOrigin |> shouldEqual sha
 
-        // the cache of a repository that moved follows it
+        // the cache of a repository that moved follows it. The moved repository gets a commit that repo hasn't:
+        // two repositories created in the same second get the same commit
         let moved = scenarioPath @@ "moved"
-        let movedSha = createRepository moved
+        createRepository moved |> ignore
+        let movedSha = commitFile moved "moved"
         Git.Handling.fetchCache cacheWithoutOrigin (fileUrl moved)
         mirroredMain cacheWithoutOrigin |> shouldEqual movedSha)
 
