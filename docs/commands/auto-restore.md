@@ -3,7 +3,7 @@ When enabling auto-restore, Paket will
 - create a `.paket` directory in your root directory,
 - write `paket.targets` into the `.paket` directory,
 - add an `<Import>` statement for `paket.targets` to the projects that don't use
-  the .NET SDK.
+  the .NET SDK and have a [`paket.references` file](references-files.html).
 
 `paket.targets` runs `paket restore` before the build of those projects. It finds
 Paket installed with `--tool-path` in `.paket` or in the root directory, as a
