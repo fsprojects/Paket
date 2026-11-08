@@ -1,5 +1,7 @@
 #### Unreleased
 
+#### 12.0.0-alpha006 - 2026-11-08
+
 * fix: `paket pack --symbols` no longer fails on a project with Compile entries without an `Include` or `Update` attribute, such as `<Compile Remove="..." />` or a Compile item definition in an `ItemDefinitionGroup`, and leaves out of the symbols package the files that a Remove names without wildcards - https://github.com/fsprojects/Paket/issues/4222
 * fix: `paket update --no-install` no longer fails when a group has `generate_load_scripts: true` and the packages of the new paket.lock aren't all restored, as on a fresh checkout or for a package that the update adds: it leaves the load scripts to the next restore, which downloads the packages that they load - https://github.com/fsprojects/Paket/issues/2785
 * fix: `paket install` no longer warns about missing "redirects: force" for FSharp.Core in SDK projects that take their target framework from Directory.Build.props, by inheriting it or through a property such as `$(DefaultTargetFramework)`. Paket, which doesn't read Directory.Build.props, also stops taking such a property for net10 (.NET Framework 1.0): where it needs the framework of the project, as for `framework: auto-detect` or `paket pack`, it falls back to net40, like for a project without framework - https://github.com/fsprojects/Paket/issues/4485
