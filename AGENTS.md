@@ -36,7 +36,7 @@ The exact F# compile order is declared in each `.fsproj`. When adding or moving 
 
 - Every change to shipped behavior (bug fix, feature, performance improvement, change to a dependency of the published packages) adds one bullet to `#### Unreleased`. Maintainers move those bullets into a versioned section to trigger a release.
 - Internal changes get no entry: build scripts, CI and workflows, tests-only, docs-only, tooling, warning cleanups.
-- Format: `* <one-line summary> - <link>`. Link to the issue being fixed (`https://github.com/fsprojects/Paket/issues/<N>`), or to the pull request when there is no issue and its number is known; omit the link otherwise. Match the wording of the existing entries: imperative summary, no trailing period.
+- Format: `* <type>: <one-line summary> - <link>`. The type is `feat`, `fix`, `perf`, `refactor` (such as an API removal) or `deps` (an update of a dependency of the published packages), written `<type>(BREAKING)` for a breaking change, as in `* fix(BREAKING): ...`. Link to the issue being fixed (`https://github.com/fsprojects/Paket/issues/<N>`), or to the pull request when there is no issue and its number is known; omit the link otherwise. Match the wording of the existing entries: imperative summary, no trailing period.
 - To release, add or update the first versioned entry below `#### Unreleased` as `#### <version> - <YYYY-MM-DD>`. A change to that version or its section content triggers publication.
 
 ## Build and Test
