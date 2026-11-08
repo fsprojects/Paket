@@ -2034,38 +2034,25 @@ type ProjectFile with
             [this]
 
     member this.GetCompileItems (includeReferencedProjects : bool) cache =
-        let getCompileRefs projectFile =
-            projectFile.Document
-            |> getDescendants "Compile"
-            |> Seq.map (fun compileNode -> projectFile, compileNode)
+        let getCompileItem projectFolder compileNode file =
+            let sourceFile =
+                file
+                |> normalizePath
+                |> fun relPath -> Path.Combine(projectFolder, relPath)
 
-        let getCompileItem (projectFile, compileNode) =
-            let projectFolder = projectFile.FileName |> Path.GetFullPath |> Path.GetDirectoryName
-            match compileNode |> getAttribute "Include" |> Option.orElseWith (fun () -> compileNode |> getAttribute "Update") with
-            | None ->
-                // Entries such as <Compile Remove="..." /> without an Include or Update attribute
-                // don't reference a source file, so they can't produce a compile item. Skip them
-                // instead of failing the whole pack/build (see GitHub issue #4222).
-                None
-            | Some file ->
-                let sourceFile =
-                    file
-                    |> normalizePath
-                    |> fun relPath -> Path.Combine(projectFolder, relPath)
-
-                let destPath =
-                    compileNode
-                    |> getDescendants "Link"
-                    |> function
-                        | [] -> createRelativePath (projectFolder + string Path.DirectorySeparatorChar) sourceFile
-                        | linkNode :: _ -> linkNode.InnerText
-                    |> normalizePath
-                    |> Path.GetDirectoryName
-                Some {
-                    SourceFile = sourceFile
-                    DestinationPath = destPath
-                    BaseDir = projectFolder
-                }
+            let destPath =
+                compileNode
+                |> getDescendants "Link"
+                |> function
+                    | [] -> createRelativePath (projectFolder + string Path.DirectorySeparatorChar) sourceFile
+                    | linkNode :: _ -> linkNode.InnerText
+                |> normalizePath
+                |> Path.GetDirectoryName
+            {
+                SourceFile = sourceFile
+                DestinationPath = destPath
+                BaseDir = projectFolder
+            }
 
         let getRealItems compileItem =
             let sourceFolder = Path.GetDirectoryName(compileItem.SourceFile)
@@ -2078,11 +2065,36 @@ type ProjectFile with
                 BaseDir = compileItem.BaseDir
             })
 
+        let removeItems projectFolder (patterns : string) (items : CompileItem list) =
+            // As in MSBuild, a Remove matches the listed items, case-insensitively, rather than the disk. Unlike in MSBuild,
+            // its patterns with wildcards match none: in SDK projects they mostly target the default items, which Paket
+            // doesn't list
+            let removedFiles =
+                patterns.Split(';', StringSplitOptions.RemoveEmptyEntries ||| StringSplitOptions.TrimEntries)
+                |> Seq.map (fun file -> Path.Combine(projectFolder, normalizePath file) |> Path.GetFullPath)
+                |> fun files -> HashSet<string>(files, StringComparer.OrdinalIgnoreCase)
+            items |> List.filter (fun item -> not (removedFiles.Contains(Path.GetFullPath item.SourceFile)))
+
+        // The Compile entries apply in the order of the project file, as in MSBuild:
+        // a <Compile Remove="..." /> only leaves out the files that the entries before it added (GitHub issue #4222)
+        let getProjectItems (projectFile : ProjectFile) =
+            let projectFolder = projectFile.FileName |> Path.GetFullPath |> Path.GetDirectoryName
+            projectFile.Document
+            |> getDescendants "Compile"
+            |> List.fold (fun items compileNode ->
+                match compileNode |> getAttribute "Include" |> Option.orElseWith (fun () -> compileNode |> getAttribute "Update") with
+                | Some file -> getCompileItem projectFolder compileNode file |> getRealItems |> Seq.fold (fun stacked item -> item :: stacked) items
+                | None ->
+                    match compileNode |> getAttribute "Remove" with
+                    | Some patterns -> removeItems projectFolder patterns items
+                    // Entries without Include, Update or Remove, as in an ItemDefinitionGroup, add no file
+                    | None -> items) []
+            // The fold stacks the items in reverse order
+            |> List.rev
+
         this.GetProjects includeReferencedProjects cache
         |> this.ProjectsWithoutTemplates
-        |> Seq.collect getCompileRefs
-        |> Seq.choose getCompileItem
-        |> Seq.collect getRealItems
+        |> Seq.collect getProjectItems
 
 
     member self.GetTemplateMetadata () =

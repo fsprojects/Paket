@@ -185,6 +185,59 @@ let ``should not fail on Compile Remove entry without Include or Update attribut
     |> Seq.toList
     |> shouldEqual []
 
+/// The file names of the compile items, in their order, of an SDK project with these files and this content
+let private compileItemFileNames (files : string list) (projectContent : string) =
+    withTempDir (fun root ->
+        for file in files do
+            let path = System.IO.Path.Combine(root, file)
+            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName path) |> ignore
+            System.IO.File.WriteAllText(path, "")
+        let projectPath = System.IO.Path.Combine(root, "Project.csproj")
+        System.IO.File.WriteAllText(projectPath, sprintf "<Project Sdk=\"Microsoft.NET.Sdk\">%s\n</Project>" projectContent)
+        ProjectFile.LoadFromFile(projectPath).GetCompileItems false PackProcessCache.empty
+        |> Seq.map (fun item -> System.IO.Path.GetFileName item.SourceFile)
+        |> Seq.toList)
+
+[<Test>]
+let ``should leave out the files that a Compile Remove entry names after their Include`` () =
+    compileItemFileNames [ "A.cs"; "sub/B.cs"; "sub/Secret.cs" ] """
+  <ItemGroup>
+    <Compile Include="*.cs" />
+    <Compile Include="sub/*.cs" />
+    <Compile Remove="sub\secret.cs;Other.cs" />
+  </ItemGroup>"""
+    |> shouldEqual [ "A.cs"; "B.cs" ]
+
+[<Test>]
+let ``should keep the files of a Compile Remove entry before their Include`` () =
+    compileItemFileNames [ "A.cs" ] """
+  <ItemGroup>
+    <Compile Remove="A.cs" />
+    <Compile Include="A.cs" />
+  </ItemGroup>"""
+    |> shouldEqual [ "A.cs" ]
+
+[<Test>]
+let ``should not expand the wildcards of a Compile Remove entry, unlike MSBuild`` () =
+    compileItemFileNames [ "A.cs" ] """
+  <ItemGroup>
+    <Compile Include="A.cs" />
+    <Compile Remove="*.cs" />
+  </ItemGroup>"""
+    |> shouldEqual [ "A.cs" ]
+
+[<Test>]
+let ``should list the compile items in the order of the project file`` () =
+    compileItemFileNames [ "A.cs"; "B.cs"; "C.cs" ] """
+  <ItemGroup>
+    <Compile Include="C.cs" />
+    <Compile Include="A.cs" />
+    <Compile Include="B.cs" />
+    <Compile Remove="A.cs" />
+    <Compile Include="A.cs" />
+  </ItemGroup>"""
+    |> shouldEqual [ "C.cs"; "B.cs"; "A.cs" ]
+
 [<Test>]
 let ``should remove missing files that exist in the project`` () = 
     ensureDir ()
