@@ -63,6 +63,18 @@ let ``declares no target profile when the framework comes from Directory.Build.p
     p.GetTargetProfiles() |> shouldEqual [TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V4)]
 
 [<Test>]
+let ``declares no target profile when the framework is a property defined outside of the project file`` () =
+    let p = sdkProject "<TargetFramework>$(DefaultTargetFramework)</TargetFramework>"
+    p.GetDeclaredTargetProfiles() |> shouldEqual []
+    p.GetTargetProfiles() |> shouldEqual [TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V4)]
+
+[<Test>]
+let ``ignores an empty entry of TargetFrameworks`` () =
+    // the space after the last separator survives the split, and becomes "" once trimmed
+    let p = sdkProject "<TargetFrameworks>net8.0; </TargetFrameworks>"
+    p.GetDeclaredTargetProfiles() |> shouldEqual [TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V8)]
+
+[<Test>]
 let ``declares the target profile of the framework in the project file`` () =
     let p = sdkProject "<TargetFramework>net48</TargetFramework>"
     p.GetDeclaredTargetProfiles() |> shouldEqual [TargetProfile.SinglePlatform(DotNetFramework FrameworkVersion.V4_8)]

@@ -1118,6 +1118,9 @@ module ProjectFile =
                 | Some x -> [prefix() + (x.Replace("v",""))]
 
             frameworks
+            // a property defined outside of the project file, as in $(DefaultTargetFramework), expands
+            // to an empty string, which internalExtract would take for .NET Framework 1.0
+            |> List.filter (String.IsNullOrWhiteSpace >> not)
             |> List.choose (fun s -> FrameworkDetection.internalExtract s |> Option.map TargetProfile.SinglePlatform)
             |> List.filter (fun x -> match x with TargetProfile.SinglePlatform(Unsupported _) -> false | _ -> true)
 
