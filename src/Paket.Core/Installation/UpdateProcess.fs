@@ -297,7 +297,9 @@ let SmartInstall(dependenciesFile:DependenciesFile, updateMode, options : Update
         |> Seq.tryHead
         |> Option.isSome
 
-    if shouldGenerateScripts then
+    // --no-install doesn't download the packages that the scripts load. When the lock file changes,
+    // the restore cache no longer matches it, so the next restore downloads them and generates the scripts (#2785)
+    if shouldGenerateScripts && not options.NoInstall then
         let groupsToGenerate =
           if options.Common.GenerateLoadScripts then [] else
           dependenciesFile.Groups

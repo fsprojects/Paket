@@ -268,6 +268,22 @@ let ``#3238 restore regenerates load scripts when .paket/load folder is missing`
 
     nHibernate35Expectations |> assertExpectations scenario ExpectationType.ShouldContain
 
+[<Test; Category("scriptgen")>]
+let ``#2785 update --no-install leaves the load scripts to the restore`` () =
+    // generate_load_scripts: true, and nothing restored yet
+    let scenario = "issue-2939"
+    use __ = paket "update --no-install" scenario |> fst
+
+    let tempPath = scenarioTempPath scenario
+    Assert.IsTrue(File.Exists(Path.Combine(tempPath, "paket.lock")), "update should write paket.lock")
+    Assert.IsFalse(Directory.Exists(Path.Combine(tempPath, "packages", "Newtonsoft.Json")), "--no-install should not download the packages")
+    Assert.IsFalse((scriptRoot scenario).Exists, "--no-install should not generate the load scripts")
+
+    directPaket "restore" scenario |> ignore<string>
+
+    let newtonsoftScript = Path.Combine((scriptRoot scenario).FullName, "Newtonsoft.Json.fsx")
+    Assert.IsTrue(File.Exists newtonsoftScript, "restore should generate the load scripts")
+
 [<Test; Category("scriptgen dependencies")>]
 let ``issue 2156 netstandard`` () =
     let scenario = "issue-2156"
