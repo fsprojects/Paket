@@ -261,7 +261,7 @@ jobs:
 
 steps:
   - name: Install build SDK and integration test runtime
-    uses: actions/setup-dotnet@v6.0.0
+    uses: actions/setup-dotnet@v6.1.0
     env:
       DOTNET_INSTALL_DIR: ${{ runner.temp }}/dotnet
     with:
