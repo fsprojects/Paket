@@ -1099,7 +1099,10 @@ module ProjectFile =
             | true,  version -> adjustIfWeHaveSDK version
             | _         -> adjustIfWeHaveSDK 4.0
 
-    let getTargetProfiles (project:ProjectFile) =
+    /// The target profiles that the project file declares itself. Paket doesn't read the files that
+    /// it imports, so this is empty when the framework comes from one of them, as from
+    /// Directory.Build.props, or when the file declares no framework that Paket recognizes.
+    let getDeclaredTargetProfiles (project:ProjectFile) =
         let fallback () =
             let prefix() =
                 match getTargetFrameworkIdentifier project with
@@ -1114,9 +1117,12 @@ module ProjectFile =
 
                 | Some x -> [prefix() + (x.Replace("v",""))]
 
-            match frameworks |> List.choose (fun s -> FrameworkDetection.internalExtract s |> Option.map TargetProfile.SinglePlatform) |> List.filter (fun x -> match x with TargetProfile.SinglePlatform(Unsupported _) -> false | _ -> true)  with
-            | [] -> [TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4)]
-            | xs -> xs
+            frameworks
+            // a property defined outside of the project file, as in $(DefaultTargetFramework), expands
+            // to an empty string, which internalExtract would take for .NET Framework 1.0
+            |> List.filter (String.IsNullOrWhiteSpace >> not)
+            |> List.choose (fun s -> FrameworkDetection.internalExtract s |> Option.map TargetProfile.SinglePlatform)
+            |> List.filter (fun x -> match x with TargetProfile.SinglePlatform(Unsupported _) -> false | _ -> true)
 
 
         match getTargetFrameworkProfile project with
@@ -1135,6 +1141,13 @@ module ProjectFile =
                 traceWarnfn "Could not detect TargetFrameworkProfile '%s' in '%s' via 'FindPortableProfile', using fallback" profile project.FileName
                 fallback()
         | _ -> fallback()
+
+    /// The target profiles of the project: the ones that the project file declares, or net40 when
+    /// it declares none (see getDeclaredTargetProfiles).
+    let getTargetProfiles (project:ProjectFile) =
+        match getDeclaredTargetProfiles project with
+        | [] -> [TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4)]
+        | profiles -> profiles
 
     let updateReferences
             (completeModel: Map<GroupName*PackageName,_*InstallModel>)
@@ -1812,6 +1825,8 @@ type ProjectFile with
     member this.GetTargetFrameworkProfile () = ProjectFile.getTargetFrameworkProfile this
 
     member this.GetTargetProfiles() =  ProjectFile.getTargetProfiles this
+
+    member this.GetDeclaredTargetProfiles() =  ProjectFile.getDeclaredTargetProfiles this
 
     member this.AddImportForPaketTargets relativeTargetsPath = ProjectFile.addImportForPaketTargets relativeTargetsPath this
 
