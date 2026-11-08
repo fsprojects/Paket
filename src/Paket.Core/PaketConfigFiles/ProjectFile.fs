@@ -2034,22 +2034,8 @@ type ProjectFile with
             [this]
 
     member this.GetCompileItems (includeReferencedProjects : bool) cache =
-        let getCompileRefs projectFile =
-            projectFile.Document
-            |> getDescendants "Compile"
-            |> Seq.map (fun compileNode -> projectFile, compileNode)
-
-        let getCompileItem (projectFile, compileNode) =
-            let projectFolder = projectFile.FileName |> Path.GetFullPath |> Path.GetDirectoryName
+        let getCompileItem projectFolder compileNode file =
             let sourceFile =
-                let file =
-                    match compileNode |> getAttribute "Include" with
-                    | Some file -> file
-                    | None ->
-                        match compileNode |> getAttribute "Update" with
-                        | Some file -> file
-                        | None -> failwithf "The Compile entry is in unknown format and doesn't contain a Update or Include attribute."
-
                 file
                 |> normalizePath
                 |> fun relPath -> Path.Combine(projectFolder, relPath)
@@ -2079,11 +2065,36 @@ type ProjectFile with
                 BaseDir = compileItem.BaseDir
             })
 
+        let removeItems projectFolder (patterns : string) (items : CompileItem list) =
+            // As in MSBuild, a Remove matches the listed items, case-insensitively, rather than the disk. Unlike in MSBuild,
+            // its patterns with wildcards match none: in SDK projects they mostly target the default items, which Paket
+            // doesn't list
+            let removedFiles =
+                patterns.Split(';', StringSplitOptions.RemoveEmptyEntries ||| StringSplitOptions.TrimEntries)
+                |> Seq.map (fun file -> Path.Combine(projectFolder, normalizePath file) |> Path.GetFullPath)
+                |> fun files -> HashSet<string>(files, StringComparer.OrdinalIgnoreCase)
+            items |> List.filter (fun item -> not (removedFiles.Contains(Path.GetFullPath item.SourceFile)))
+
+        // The Compile entries apply in the order of the project file, as in MSBuild:
+        // a <Compile Remove="..." /> only leaves out the files that the entries before it added (GitHub issue #4222)
+        let getProjectItems (projectFile : ProjectFile) =
+            let projectFolder = projectFile.FileName |> Path.GetFullPath |> Path.GetDirectoryName
+            projectFile.Document
+            |> getDescendants "Compile"
+            |> List.fold (fun items compileNode ->
+                match compileNode |> getAttribute "Include" |> Option.orElseWith (fun () -> compileNode |> getAttribute "Update") with
+                | Some file -> getCompileItem projectFolder compileNode file |> getRealItems |> Seq.fold (fun stacked item -> item :: stacked) items
+                | None ->
+                    match compileNode |> getAttribute "Remove" with
+                    | Some patterns -> removeItems projectFolder patterns items
+                    // Entries without Include, Update or Remove, as in an ItemDefinitionGroup, add no file
+                    | None -> items) []
+            // The fold stacks the items in reverse order
+            |> List.rev
+
         this.GetProjects includeReferencedProjects cache
         |> this.ProjectsWithoutTemplates
-        |> Seq.collect getCompileRefs
-        |> Seq.map getCompileItem
-        |> Seq.collect getRealItems
+        |> Seq.collect getProjectItems
 
 
     member self.GetTemplateMetadata () =

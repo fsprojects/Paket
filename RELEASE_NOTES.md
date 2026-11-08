@@ -1,5 +1,7 @@
 #### Unreleased
 
+* `paket pack --symbols` no longer fails on a project with Compile entries without an `Include` or `Update` attribute, such as `<Compile Remove="..." />` or a Compile item definition in an `ItemDefinitionGroup`, and leaves out of the symbols package the files that a Remove names without wildcards - https://github.com/fsprojects/Paket/issues/4222
+
 #### 12.0.0-alpha005 - 2026-11-07
 
 * Git dependencies restore again when the git cache doesn't have their repository yet, as on a fresh CI agent: since 11.0.0, Paket ran `git remote set-url` in the empty cache folder that its lock had created - https://github.com/fsprojects/Paket/issues/4461
