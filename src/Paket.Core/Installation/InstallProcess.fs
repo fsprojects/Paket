@@ -391,6 +391,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
     let touchedProjects = System.Collections.Generic.HashSet<_>()
     tracefn "Created dependency graph (%d packages in total)" packagesToInstall.Count
     let root = Path.GetDirectoryName lockFile.FileName
+    RestoreProcess.refreshPaketTargets root
     let model = CreateModel(options.AlternativeProjectRoot, root, options.Force, dependenciesFile, lockFile, packagesToInstall, updatedGroups) |> Map.ofArray
     let lookup = lockFile.GetDependencyLookupTable()
     let projectCache = Dictionary<string, ProjectFile option>();

@@ -84,3 +84,52 @@ let ``paket.targets of auto-restore restores with paket on the PATH like a globa
         |> Seq.map (fun msg -> msg.Message)
         |> String.concat Environment.NewLine
     output |> shouldContainText $"Paket version %s{version}"
+
+/// Stands for the paket.targets of Paket 11, which runs paket.exe through mono outside Windows and
+/// falls back to the bootstrapper
+let olderPaketTargets = """<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+
+/// Turns auto-restore on and restores, so that the restore cache is up to date as after a move to
+/// Paket 12 with an unchanged paket.lock, then puts an older paket.targets back, runs the command
+/// with the environment and gives its output and the paket.targets it leaves
+let runWithOlderPaketTargets env command =
+    use __ = paket "auto-restore on" legacyScenario |> fst
+    let scenarioPath = scenarioTempPath legacyScenario
+    directPaket "restore" legacyScenario |> ignore
+    let paketTargets = scenarioPath @@ ".paket" @@ "paket.targets"
+    File.WriteAllText(paketTargets, olderPaketTargets)
+
+    let output =
+        directPaketInPathExWithEnv command scenarioPath env
+        |> Seq.map (fun msg -> msg.Message)
+        |> String.concat Environment.NewLine
+    output, File.ReadAllText paketTargets
+
+let paketTargetsAfter command = runWithOlderPaketTargets [] command |> snd
+
+[<Test>]
+let ``restore refreshes the paket.targets of auto-restore``() =
+    let output, paketTargets = runWithOlderPaketTargets [] "restore"
+    // the restore stops early, after the refresh
+    output |> shouldContainText "The last full restore is still up to date"
+    paketTargets |> shouldEqual (File.ReadAllText embeddedPaketTargets)
+
+[<Test>]
+let ``restore leaves the paket.targets of auto-restore alone with PAKET_SKIP_RESTORE_TARGETS``() =
+    runWithOlderPaketTargets [ "PAKET_SKIP_RESTORE_TARGETS", "true" ] "restore"
+    |> snd
+    |> shouldEqual olderPaketTargets
+
+[<Test>]
+let ``install without SDK projects refreshes the paket.targets of auto-restore``() =
+    paketTargetsAfter "install" |> shouldEqual (File.ReadAllText embeddedPaketTargets)
+
+[<Test>]
+let ``restore of a references file leaves the paket.targets of auto-restore alone``() =
+    // the restore that paket.targets runs during a build
+    paketTargetsAfter "restore --references-file legacy/paket.references" |> shouldEqual olderPaketTargets
+
+[<Test>]
+let ``restore doesn't write paket.targets without auto-restore``() =
+    use __ = paket "restore" legacyScenario |> fst
+    File.Exists(scenarioTempPath legacyScenario @@ ".paket" @@ "paket.targets") |> shouldEqual false

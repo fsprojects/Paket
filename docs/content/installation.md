@@ -75,8 +75,9 @@ To move to the .NET tool:
    it.
 1. In your build scripts, run `dotnet tool restore` before Paket, and replace `.paket/paket.exe`
    with `dotnet paket` (without `mono` in front of it).
-1. If you use `paket auto-restore`, run `dotnet paket auto-restore on` again to update
-   `.paket/paket.targets`.
+1. If you use `paket auto-restore`, run `dotnet paket restore` once to update
+   `.paket/paket.targets` (or `dotnet paket auto-restore on` if `PAKET_SKIP_RESTORE_TARGETS` is
+   `true`), and commit it.
 
 To keep `paket.exe` for now, move to the bootstrapper of Paket 11, which stays on the latest 11.x:
 

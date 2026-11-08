@@ -1,5 +1,7 @@
 #### Unreleased
 
+* `paket install`, `paket restore`, and `update`, `add` and `remove` when they install rewrite an existing `.paket/paket.targets` with the one of the running Paket, unless `PAKET_SKIP_RESTORE_TARGETS` is `true`, so that a repository that turned auto-restore on with Paket 11 no longer keeps the one that runs `paket.exe` through mono outside Windows and falls back to the bootstrapper. A restore with `--project`, `--references-file` or `--only-referenced`, like the one `paket.targets` runs during a build, leaves it as it is.
+
 #### 12.0.0-alpha006 - 2026-11-08
 
 * fix: `paket pack --symbols` no longer fails on a project with Compile entries without an `Include` or `Update` attribute, such as `<Compile Remove="..." />` or a Compile item definition in an `ItemDefinitionGroup`, and leaves out of the symbols package the files that a Remove names without wildcards - https://github.com/fsprojects/Paket/issues/4222
