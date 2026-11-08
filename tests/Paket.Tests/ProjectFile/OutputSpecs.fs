@@ -227,6 +227,14 @@ let ``should not expand the wildcards of a Compile Remove entry, unlike MSBuild`
     |> shouldEqual [ "A.cs" ]
 
 [<Test>]
+let ``should list the file of a Compile Update entry`` () =
+    compileItemFileNames [ "A.cs" ] """
+  <ItemGroup>
+    <Compile Update="A.cs" />
+  </ItemGroup>"""
+    |> shouldEqual [ "A.cs" ]
+
+[<Test>]
 let ``should list the compile items in the order of the project file`` () =
     compileItemFileNames [ "A.cs"; "B.cs"; "C.cs" ] """
   <ItemGroup>
@@ -237,6 +245,19 @@ let ``should list the compile items in the order of the project file`` () =
     <Compile Include="A.cs" />
   </ItemGroup>"""
     |> shouldEqual [ "C.cs"; "B.cs"; "A.cs" ]
+
+[<Test>]
+let ``should skip the Compile entries without Include, Update or Remove attribute`` () =
+    compileItemFileNames [ "A.cs" ] """
+  <ItemDefinitionGroup>
+    <Compile>
+      <Generated>false</Generated>
+    </Compile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Compile Include="A.cs" />
+  </ItemGroup>"""
+    |> shouldEqual [ "A.cs" ]
 
 [<Test>]
 let ``should remove missing files that exist in the project`` () = 
