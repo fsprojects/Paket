@@ -1,0 +1,4 @@
+source https://api.nuget.org/v3/index.json
+storage: none
+
+nuget FSharp.Core 9.0.303

@@ -343,6 +343,8 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
 /// DotNetFramework V5+ but is not .NET Framework) - .NET Core/.NET 5+ and
 /// netstandard-only projects use assembly unification via deps.json instead, so the
 /// warning would be noise there.
+/// The profiles are the ones that the project file declares: without any, as when the
+/// framework comes from Directory.Build.props, Paket can't tell and doesn't warn.
 let shouldWarnAboutFSharpCoreRedirects (targetProfiles: TargetProfile list) (createBindingRedirects: BindingRedirectsSettings option) =
     let targetsDotNetFramework =
         targetProfiles
@@ -519,7 +521,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     traceWarnfn "F# project %s does not reference FSharp.Core." project.FileName
                 | Some kv ->
                     let _, settings = kv.Value
-                    if shouldWarnAboutFSharpCoreRedirects (project.GetTargetProfiles()) settings.CreateBindingRedirects then
+                    if shouldWarnAboutFSharpCoreRedirects (project.GetDeclaredTargetProfiles()) settings.CreateBindingRedirects then
                         traceWarnfn "F# project %s references FSharp.Core without specifying \"redirects: force\" in paket.dependencies. This can lead to \"Could not load file or assembly 'FSharp.Core'\" errors at runtime. See https://fsprojects.github.io/Paket/dependencies-file.html#Controlling-assembly-binding-redirects for details." project.FileName
 
         // if any errors have been found during the installation process thus far, fail and print all errors collected

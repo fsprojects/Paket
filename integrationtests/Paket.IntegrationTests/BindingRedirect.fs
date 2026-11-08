@@ -223,3 +223,18 @@ let ``#1783 generates binding redirect when assembly with different version of m
     let config = File.ReadAllText(configPath) |> normalizeLineEndings
     
     config |> shouldContainText ``Newtonsoft.Json``
+
+[<Test>]
+let ``#4485 does not warn about FSharp.Core redirects when the framework comes from Directory.Build.props``() =
+    let scenario = "i004485-fsharp-core-warning-inherited-framework"
+    let cleanup, output = paket "install" scenario
+    use __ = cleanup
+    let warnsAbout (project: string) =
+        output.Split('\n')
+        |> Array.exists (fun line -> line.Contains "without specifying \"redirects: force\"" && line.Contains project)
+
+    // the project that declares net48 itself is warned, so that the checks below can't pass
+    // because the text of the warning changed
+    Assert.IsTrue(warnsAbout "Framework.fsproj", output)
+    Assert.IsFalse(warnsAbout "Inherited.fsproj", output)
+    Assert.IsFalse(warnsAbout "Property.fsproj", output)

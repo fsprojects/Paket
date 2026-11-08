@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <DefaultTargetFramework>net10.0</DefaultTargetFramework>
+    <TargetFramework>$(DefaultTargetFramework)</TargetFramework>
+  </PropertyGroup>
+</Project>
