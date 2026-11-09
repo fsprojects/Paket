@@ -426,3 +426,21 @@ NUGET
 """
     let lockFile = LockFile.Parse("Test",toLines expected)
     lockFile.ToString() |> normalizeLineEndings |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should write the dependency restrictions of a group with a framework restriction once and for all``() =
+    // the dependency restrictions of a lock file already include the restriction of their group,
+    // which the lock file writer applies again
+    let template = """RESTRICTION: || (== net10.0) (== net461) (== netstandard2.0)
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    System.Collections.Immutable (10.0.14)
+      System.Memory (>= 4.6.3) - restriction: {restriction}
+    System.Memory (4.6.3)
+"""
+    let lockFileText (restriction:string) = template.Replace("{restriction}", restriction)
+    let read = lockFileText "|| (&& (== net10.0) (>= net462)) (&& (== net10.0) (< net8.0)) (&& (== net461) (>= net462)) (&& (== net461) (>= netstandard2.0)) (== netstandard2.0)"
+
+    let written = LockFile.Parse("Test", toLines read).ToString() |> normalizeLineEndings
+    written |> shouldEqual (normalizeLineEndings (lockFileText "== netstandard2.0"))
+    LockFile.Parse("Test", toLines written).ToString() |> normalizeLineEndings |> shouldEqual written

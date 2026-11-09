@@ -1,4 +1,4 @@
-/// [omit]
+/// <exclude/>
 module Paket.Program
 
 open System
@@ -712,6 +712,8 @@ let fixNuspec _silent (results : ParseResults<_>) =
 
     Dependencies.FixNuspecs (refFile, nuspecList)
 
+#warnon "44"
+
 // separated out from showInstalledPackages to allow Paket.PowerShell to get the types
 let getInstalledPackages (results : ParseResults<_>) =
     let project =
@@ -972,7 +974,9 @@ let main() =
                                                     errorHandler = new PaketExiter(),
                                                     checkStructure = false)
 
-        let results = parser.ParseCommandLine(raiseOnUsage = true)
+        // A mandatory argument can also be given with its hidden _Legacy syntax, so Argu can't check
+        // it: the commands do, as require and GetResult report the missing argument
+        let results = parser.ParseCommandLine(ignoreMissing = true, raiseOnUsage = true)
         let silent = results.Contains Silent
         tracePaketVersion silent
 

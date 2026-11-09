@@ -427,16 +427,16 @@ let rec parseFindPackagesByIDODataEntryDetails (url,nugetSource:NuGetSource,pack
                      let newUrl = Uri.UnescapeDataString data
                      if newUrl <> url then Some newUrl else None
                  | _ -> None)
-        let result = ref None
+        let mutable result = None
 
         for link in linksToFollow do
-            if !result = None then
+            if result = None then
                 let! r = parseFindPackagesByIDODataEntryDetails (link,nugetSource,packageName,version)
                 match r with
                 | EmptyResult -> ()
-                | r -> result := Some r
+                | r -> result <- Some r
 
-        match !result with
+        match result with
         | Some r -> return r
         | _ -> return EmptyResult
 

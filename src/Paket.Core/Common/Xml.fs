@@ -5,24 +5,24 @@ open System.Xml.Linq
 open System
 open System.Xml
 
-/// [omit]
+/// <exclude/>
 let inline addAttribute name value (node:XmlElement) =
     node.SetAttribute(name, value) |> ignore
     node
 
-/// [omit]
+/// <exclude/>
 let inline addChild child (node:XmlElement) =
     node.AppendChild(child) |> ignore
     node
 
-/// [omit]
+/// <exclude/>
 let inline hasAttribute name (node:XmlNode) =
     if isNull node || isNull node.Attributes then false else
     node.Attributes
     |> Seq.cast<XmlAttribute>
     |> Seq.exists (fun a -> a.Name = name)
 
-/// [omit]
+/// <exclude/>
 let inline getAttribute name (node:XmlNode) =
     if isNull node || isNull node.Attributes then None else
     node.Attributes
@@ -30,32 +30,32 @@ let inline getAttribute name (node:XmlNode) =
     |> Seq.tryFind (fun a -> a.Name = name && (isNull a.Value |> not))
     |> Option.map (fun a -> a.Value)
 
-/// [omit]
+/// <exclude/>
 let inline withAttributeValue attributeName valueText node =
     getAttribute attributeName node = Some valueText
 
 
-/// [omit]
+/// <exclude/>
 let inline withAttributeValueEndsWith attributeName (valueText: string) node =
     match getAttribute attributeName node with
     | Some text when text.EndsWith valueText -> true
     | _ -> false
 
 
-/// [omit]
+/// <exclude/>
 let inline optGetAttribute name node = node |> Option.bind (getAttribute name)
 
-/// [omit]
+/// <exclude/>
 let inline getNode name (node:XmlNode) =
     let xpath = sprintf "*[local-name() = '%s']" name
     match node.SelectSingleNode(xpath) with
     | null -> None
     | n -> Some(n)
 
-/// [omit]
+/// <exclude/>
 let inline optGetNode name node = node |> Option.bind (getNode name)
 
-/// [omit]
+/// <exclude/>
 let inline getNodes name (node:XmlNode) =
     let xpath = sprintf "*[local-name() = '%s']" name
     match node.SelectNodes(xpath) with
@@ -65,7 +65,7 @@ let inline getNodes name (node:XmlNode) =
         |> Seq.cast<XmlNode>
         |> Seq.toList
 
-/// [omit]
+/// <exclude/>
 let inline getDescendants name (node:XmlNode) =
     let xpath = sprintf ".//*[local-name() = '%s']" name
     match node.SelectNodes(xpath) with
@@ -75,7 +75,7 @@ let inline getDescendants name (node:XmlNode) =
         |> Seq.cast<XmlNode>
         |> Seq.toList
 
-/// [omit]
+/// <exclude/>
 let inline getChildNodes (node:XmlNode) = System.Linq.Enumerable.Cast<XmlNode>(node)
 
 

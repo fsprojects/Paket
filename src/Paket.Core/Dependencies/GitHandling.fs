@@ -11,6 +11,20 @@ type GitLinkOrigin =
 | RemoteGitOrigin of string
 | LocalGitOrigin  of string
 
+/// The path of a local git repository from its file:// URL: "file:///tmp/x" is "/tmp/x",
+/// "file:///C:/x" the Windows path "C:/x", and "file:///tmp/a%20b" is "/tmp/a b"
+let internal localPathOfFileUrl (url: string) =
+    let path =
+        match url with
+        | String.RemovePrefix "file://" path -> Uri.UnescapeDataString path
+        | _ -> url
+    if path.Length >= 3 && path.[0] = '/' && Char.IsAsciiLetter path.[1] && path.[2] = ':' then path.Substring 1
+    else path
+
+/// The name of a repository without the ".git" that ends it, in any case, as "Paket.git" is "Paket" and "x.github.io" is kept
+let private withoutGitSuffix (name: string) =
+    if String.endsWithIgnoreCase ".git" name then name.Substring(0, name.Length - ".git".Length) else name
+
 let extractUrlParts (gitConfig:string) =
     let isOperator operator = VersionRange.BasicOperators |> List.exists ((=) operator)
     let url,commit,options =
@@ -19,12 +33,12 @@ let extractUrlParts (gitConfig:string) =
             let rest = gitConfig.Substring(part.Length)
             let parts =
                 [ let current = Text.StringBuilder()
-                  let quoted = ref false
+                  let mutable quoted = false
                   for x in rest do
                     if x = '"' then
-                        quoted := not !quoted
+                        quoted <- not quoted
 
-                    if (x = ':' || x = ' ') && not !quoted then
+                    if (x = ':' || x = ' ') && not quoted then
                         yield current.ToString()
                         if x = ':' then
                             yield ":"
@@ -97,14 +111,21 @@ let extractUrlParts (gitConfig:string) =
         | _ ->
             RemoteGitOrigin url
 
+    // a remote repository given by its .git folder, as ssh://host/home/me/repo/.git, is named after the folder of
+    // the .git, as a local one is
+    let nameUrl =
+        match origin with
+        | RemoteGitOrigin _ when String.endsWithIgnoreCase "/.git" url -> url.Substring(0, url.Length - "/.git".Length)
+        | _ -> url
+
     let server =
         match origin with
         | LocalGitOrigin _ ->
             "localfilesystem"
         | _ ->
-            match url.Replace(":","/").LastIndexOf('/') with
-            | -1 -> url
-            | pos -> url.Substring(0, pos)
+            match nameUrl.Replace(":","/").LastIndexOf('/') with
+            | -1 -> nameUrl
+            | pos -> nameUrl.Substring(0, pos)
 
     let server =
         match server.IndexOf("://") with
@@ -112,28 +133,100 @@ let extractUrlParts (gitConfig:string) =
         | pos -> server.Substring(pos + 3).Replace(":","") |> removeInvalidChars
         |> fun s -> s.Replace("git@","").Replace(":","/").TrimStart('/')
 
-    let project = url.Substring(url.LastIndexOf('/')+1).Replace(".git","")
-    let project = if Directory.Exists project then Path.GetFileName project else project
+    let project =
+        match origin with
+        | LocalGitOrigin _ ->
+            // the folder name, from a Windows or a Unix path, even one that ends with a separator or doesn't exist
+            let folderName (path: string) =
+                let path = path.TrimEnd('/', '\\')
+                path, path.Substring(path.LastIndexOfAny [| '/'; '\\' |] + 1)
+            let path, name = folderName (localPathOfFileUrl url)
+            // a repository given by its .git folder, as file:///home/me/repo/.git, is named after the folder of the .git
+            let name = if String.equalsIgnoreCase name ".git" then snd (folderName (path.Substring(0, path.Length - name.Length))) else name
+            let name = name |> withoutGitSuffix
+            // the root of a file system, as file:///.git or file:///C:/, has no folder name for the paket-files and git cache folders
+            if name = "" || name.EndsWith ':' then
+                failwithf "The local git repository %s is the root of a file system, which has no folder name for its paket-files and git cache: move it into a folder." url
+            name
+        | RemoteGitOrigin _ ->
+            let project = nameUrl.Substring(nameUrl.LastIndexOf('/')+1) |> withoutGitSuffix
+            if Directory.Exists project then Path.GetFileName project else project
+
+    // no name, as https://host/me/.git/.git, or a dot segment, as file:///home/me/repo/. or a repository named
+    // "..git", names a parent of the paket-files and git cache folders, which the restore would delete
+    if project = "" || project = "." || project = ".." then
+        failwithf "The git repository %s gives the folder name \"%s\", which is no folder of its own for its paket-files and git cache: give the path of the repository folder." url project
 
     server,commit,project,origin,buildCommand,operatingSystemRestriction,packagePath
+
+/// The rev-parse arguments for the commit of a commit-ish: an annotated tag names a tag object, not its commit
+let private commitOf commitish = $"rev-parse --verify %s{commitish}^{{commit}}"
 
 let getHash repoFolder commitish =
     try
         if System.IO.Directory.Exists repoFolder |> not then None else
-        Some (CommandHelper.runSimpleGitCommand repoFolder ("rev-parse --verify " + commitish))
+        Some (CommandHelper.runSimpleGitCommand repoFolder (commitOf commitish))
     with
     | _ -> None
 
 let getCurrentHash repoFolder =
     getHash repoFolder "HEAD"
 
+/// A git command on the paket-files clone at repoFolder. --git-dir and --work-tree name it: git then doesn't
+/// take the repository of the project, which the paket-files are in, for a folder without clone
+let paketFilesGitCommand repoFolder command =
+    let gitDir = Path.Combine(repoFolder, ".git")
+    $"--git-dir=%s{quote gitDir} --work-tree=%s{quote repoFolder} %s{command}"
+
+/// Whether repoFolder holds a clone: its .git is a folder, or a file that names one, as for a submodule or a worktree
+let hasClone repoFolder =
+    let gitPath = Path.Combine(repoFolder, ".git")
+    Directory.Exists gitPath || File.Exists gitPath
+
+/// The commit checked out in the paket-files clone at repoFolder: None when it has no checkout, as a clone
+/// that a run left without one, whose HEAD names a commit that none of its files are from
+let getCheckedOutCommit repoFolder =
+    let gitPath = Path.Combine(repoFolder, ".git")
+    // only the clone --no-checkout of a run, whose .git is a folder, has no index
+    let hasCheckout = File.Exists gitPath || File.Exists(Path.Combine(gitPath, "index"))
+    if not hasCheckout then None else
+    try
+        Some (CommandHelper.runSimpleGitCommand repoFolder (paketFilesGitCommand repoFolder "rev-parse --verify HEAD"))
+    with
+    | _ -> None
+
+/// The commit of a commit-ish in the paket-files clone at repoFolder, as a commit or a tag of a lock file
+let getCommitInPaketFiles repoFolder commitish =
+    try
+        Some (CommandHelper.runSimpleGitCommand repoFolder (paketFilesGitCommand repoFolder (commitOf commitish)))
+    with
+    | _ -> None
+
+/// A git command on the git cache at repoCacheFolder. --git-dir names the repository: git then doesn't
+/// take the repository of a parent folder for a broken cache, and safe.bareRepository=explicit allows it
+let cacheGitCommand repoCacheFolder command =
+    $"--git-dir=%s{quote repoCacheFolder} %s{command}"
+
+let getHashInCache repoCacheFolder commitish =
+    try
+        Some (CommandHelper.runSimpleGitCommand repoCacheFolder (cacheGitCommand repoCacheFolder (commitOf commitish)))
+    with
+    | _ -> None
+
 let getHashFromRemote url branch =
     let result =
-        let hash = CommandHelper.runSimpleGitCommand "" (sprintf "ls-remote %s %s" url branch)
-        if String.IsNullOrWhiteSpace hash then
-            branch
-        else
-            hash
+        // an annotated tag also gives the line of its commit, "<commit>\trefs/tags/<tag>^{}", when asked for it
+        let patterns = if String.IsNullOrEmpty branch then "" else $"%s{branch} %s{branch}^{{}}"
+        let lines = CommandHelper.runFullGitCommand "" (sprintf "ls-remote %s %s" url patterns)
+        // the tag as git names it: "v1.0", "tags/v1.0" or "refs/tags/v1.0"
+        let peeledLines = [ branch; "refs/" + branch; "refs/tags/" + branch ] |> List.map (fun ref -> "\t" + ref + "^{}")
+        let isPeeled (line: string) = peeledLines |> List.exists (fun peeled -> line.EndsWith(peeled, StringComparison.Ordinal))
+        match lines |> Array.tryFind isPeeled with
+        | Some line -> line
+        | None ->
+            match Array.tryHead lines with
+            | Some hash when not (String.IsNullOrWhiteSpace hash) -> hash
+            | _ -> branch
     if result.Contains "\t" then
         result.Substring(0,result.IndexOf '\t')
     else
@@ -145,65 +238,96 @@ let getHashFromRemote url branch =
 
 let fetchCache repoCacheFolder cloneUrl =
     try
-        if not (Directory.Exists repoCacheFolder) then
-            if not (Directory.Exists Constants.GitRepoCacheFolder) then
-                Directory.CreateDirectory Constants.GitRepoCacheFolder |> ignore
-            tracefn "Cloning %s to %s" cloneUrl repoCacheFolder
-            CommandHelper.runSimpleGitCommand Constants.GitRepoCacheFolder ("clone --mirror " + quote cloneUrl + " " + quote repoCacheFolder) |> ignore
-        else
-            CommandHelper.runSimpleGitCommand repoCacheFolder ("remote set-url origin " + quote cloneUrl) |> ignore
+        // RunInLockedAccessMode has already created the folder for its lock file, and "clone --mirror"
+        // refuses a folder that isn't empty: the mirror is set up in place
+        Directory.CreateDirectory repoCacheFolder |> ignore
+        let git command = CommandHelper.runSimpleGitCommand repoCacheFolder (cacheGitCommand repoCacheFolder command) |> ignore
+        // the URL of origin in the cache, which only a cache that is a repository has. --local leaves out the git
+        // config of the user, where a key such as remote.origin.prune makes git list an origin that the cache hasn't
+        let originUrl () =
+            match CommandHelper.runGitCommand repoCacheFolder (cacheGitCommand repoCacheFolder "config --local --get remote.origin.url") with
+            | true, msg, _ when msg.Count > 0 -> Some msg.[0]
+            | _ -> None
+
+        match originUrl () with
+        | Some url ->
+            if url <> cloneUrl then
+                git ("remote set-url origin " + quote cloneUrl)
             if verbose then
                 verbosefn "Fetching %s to %s" cloneUrl repoCacheFolder
+        | None ->
+            tracefn "Cloning %s to %s" cloneUrl repoCacheFolder
+            // reinitializing keeps an existing cache as it is, and repairs one that lost its HEAD or config
+            git "init --bare"
 
-        CommandHelper.runSimpleGitCommand repoCacheFolder "remote update --prune" |> ignore
+            // a cache left without origin by a failed run is set up again, and one that lost its HEAD keeps its origin
+            match originUrl () with
+            | None -> git ("remote add --mirror=fetch origin " + quote cloneUrl)
+            | Some _ -> git ("remote set-url origin " + quote cloneUrl)
+
+        git "remote update --prune"
     with
     | exn -> failwithf "Fetching the git cache at %s failed.%sMessage: %s" repoCacheFolder Environment.NewLine exn.Message
 
 let checkForUncommittedChanges repoFolder =
     try
         tracefn "Checking for uncommitted changes in %s" repoFolder
-        CommandHelper.gitCommand repoFolder "diff-index --quiet HEAD --" |> ignore
+        CommandHelper.gitCommand repoFolder (paketFilesGitCommand repoFolder "diff-index --quiet HEAD --")
     with
     | exn -> failwithf "It seems there are uncommitted changes in the repository. The changes must be committed/discarded first.%sMessage: %s" Environment.NewLine exn.Message
 
 let checkForCommitsMadeInDetachedHeadState repoFolder =
     try
         tracefn "Checking for commits made in detached HEAD state in %s" repoFolder
-        CommandHelper.gitCommand repoFolder "name-rev --no-undefined HEAD --" |> ignore
+        CommandHelper.gitCommand repoFolder (paketFilesGitCommand repoFolder "name-rev --no-undefined HEAD --")
     with
     | exn -> failwithf "It seems that some commits would become unreachable after checkout. Create branch for the commits or reset them first and try again.%sMessage: %s" Environment.NewLine exn.Message
 
 let tagCommitForCheckout repoFolder commit =
     try
-        CommandHelper.runSimpleGitCommand repoFolder (sprintf "tag -f %s %s" paketCheckoutTag commit) |> ignore
+        CommandHelper.gitCommand repoFolder (paketFilesGitCommand repoFolder (sprintf "tag -f %s %s" paketCheckoutTag commit))
     with
     | exn -> failwithf "Updating the git cache at %s failed.%sMessage: %s" repoFolder Environment.NewLine exn.Message
 
+// git checkout reports its failures with "error:", which runSimpleGitCommand doesn't see: the exit code tells
 let checkoutTaggedCommit repoFolder =
-    CommandHelper.runSimpleGitCommand repoFolder ("checkout " + paketCheckoutTag) |> ignore
+    CommandHelper.gitCommand repoFolder (paketFilesGitCommand repoFolder ("checkout " + paketCheckoutTag))
 
-let checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl commit =
+/// Checks the commit out in the paket-files at repoFolder. hasCheckout tells whether they hold a checkout, as
+/// getCheckedOutCommit does: only a checkout can hold changes that the checkout of the commit would lose
+let checkoutToPaketFolder repoFolder hasCheckout cloneUrl cacheCloneUrl commit =
+    let mutable cloned = false
     try
+        // a folder without clone, as paket-files committed with the project, is cloned again
+        if Directory.Exists repoFolder && not (hasClone repoFolder) then
+            deleteDir (DirectoryInfo repoFolder)
         // checkout to local folder
         if Directory.Exists repoFolder then
             if verbose then
                 verbosefn "Fetching %s to %s" cacheCloneUrl repoFolder
-            CommandHelper.runSimpleGitCommand repoFolder (sprintf "fetch --tags --prune %s +refs/heads/*:refs/remotes/origin/*" (quote cacheCloneUrl)) |> ignore
+            CommandHelper.runSimpleGitCommand repoFolder (paketFilesGitCommand repoFolder (sprintf "fetch --tags --prune %s +refs/heads/*:refs/remotes/origin/*" (quote cacheCloneUrl))) |> ignore
         else
             let destination = DirectoryInfo(repoFolder).Parent.FullName
             if not (Directory.Exists destination) then
                 Directory.CreateDirectory destination |> ignore
             if verbose then
                 verbosefn "Cloning %s to %s" cacheCloneUrl repoFolder
-            CommandHelper.runSimpleGitCommand destination (sprintf "clone %s %s" (quote cacheCloneUrl) (quote repoFolder)) |> ignore
-            CommandHelper.runSimpleGitCommand repoFolder (sprintf "remote set-url origin %s" (quote cloneUrl)) |> ignore
+            // the HEAD of the cache may name a branch that it doesn't have: the commit is checked out below
+            CommandHelper.runSimpleGitCommand destination (sprintf "clone --no-checkout %s %s" (quote cacheCloneUrl) (quote repoFolder)) |> ignore
+            cloned <- true
+            CommandHelper.runSimpleGitCommand repoFolder (paketFilesGitCommand repoFolder (sprintf "remote set-url origin %s" (quote cloneUrl))) |> ignore
 
-        checkForUncommittedChanges repoFolder
-        checkForCommitsMadeInDetachedHeadState repoFolder
+        if hasCheckout then
+            checkForUncommittedChanges repoFolder
+            checkForCommitsMadeInDetachedHeadState repoFolder
 
         tracefn "Setting %s to %s" repoFolder commit
         tagCommitForCheckout repoFolder commit
         checkoutTaggedCommit repoFolder
 
     with
-    | exn -> failwithf "Checkout to %s failed.%sMessage: %s" repoFolder Environment.NewLine exn.Message
+    | exn ->
+        // the next run clones again, rather than finding a clone without checkout
+        if cloned then
+            try deleteDir (DirectoryInfo repoFolder) with _ -> ()
+        failwithf "Checkout to %s failed.%sMessage: %s" repoFolder Environment.NewLine exn.Message

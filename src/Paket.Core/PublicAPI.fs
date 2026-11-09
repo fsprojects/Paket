@@ -643,7 +643,7 @@ type Dependencies(dependenciesFileName: string) =
             | LocalNuGet(s,_) ->
                 async {
                     return
-                        Fake.Globbing.search s (sprintf "**/*%s*" searchTerm)
+                        Globbing.search s (sprintf "**/*%s*" searchTerm)
                         |> List.distinctBy (fun s ->
                             let parts = FileInfo(s).Name.Split('.')
                             let nameParts = parts |> Seq.takeWhile (fun x -> x <> "nupkg" && System.Int32.TryParse x |> fst |> not)

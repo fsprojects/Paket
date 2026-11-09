@@ -329,8 +329,8 @@ with
             | Interactive -> "confirm deletion of every transitive dependency"
 
 type UpdateArgs =
-    | [<ExactlyOnce;MainCommand>] NuGet of package_id:string
-    | [<Hidden;ExactlyOnce;CustomCommandLine("nuget")>] NuGet_Legacy of package_id:string
+    | [<Unique;MainCommand>] NuGet of package_id:string
+    | [<Hidden;Unique;CustomCommandLine("nuget")>] NuGet_Legacy of package_id:string
 
     | [<Unique;AltCommandLine("-V")>] Version of version_constraint:string
     | [<Hidden;Unique;CustomCommandLine("version")>] Version_Legacy of version_constraint:string
@@ -377,8 +377,8 @@ with
             | Filter -> "treat the NuGet package ID as a regex to filter packages"
 
 type FindPackagesArgs =
-    | [<ExactlyOnce;MainCommand>] Search of package_ID:string
-    | [<Hidden;ExactlyOnce;CustomCommandLine("searchtext")>] Search_Legacy of package_ID:string
+    | [<Unique;MainCommand>] Search of package_ID:string
+    | [<Hidden;Unique;CustomCommandLine("searchtext")>] Search_Legacy of package_ID:string
 
     | [<Unique>] Source of source_URL:string
     | [<Hidden;Unique;CustomCommandLine("source")>] Source_Legacy of source_URL:string
@@ -425,7 +425,7 @@ with
 type GenerateNuspecArgs =
     | [<ExactlyOnce;CustomCommandLine "project">] Project of project:string
     | [<ExactlyOnce;CustomCommandLine "dependencies">] DependenciesFile of dependenciesPath:string
-    | [<ExactlyOnce;CustomCommandLine "output">] Output of output:string
+    | [<Unique;CustomCommandLine "output">] Output of output:string
     interface IArgParserTemplate with
         member this.Usage =
             match this with

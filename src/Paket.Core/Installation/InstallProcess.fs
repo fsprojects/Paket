@@ -12,7 +12,6 @@ open Paket.Requirements
 open Paket.Xml
 open System.Collections.Generic
 open System
-open ProviderImplementation.AssemblyReader
 
 let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*InstallSettings>) packagesConfigFileName =
     let packagesInConfigFile = PackagesConfigFile.Read packagesConfigFileName
@@ -206,9 +205,9 @@ let CreateModel(alternativeProjectRoot, root, force, dependenciesFile:Dependenci
     |> Seq.toArray
 
 let inline private getOrAdd (key: 'key) (getValue: 'key -> 'value) (d: Dictionary<'key, 'value>) : 'value =
-    let value: 'value ref = ref Unchecked.defaultof<_>
-    if d.TryGetValue(key, value) then !value
-    else
+    match d.TryGetValue key with
+    | true, value -> value
+    | _ ->
         let value = getValue key
         d.[key] <- value
         value
@@ -294,11 +293,8 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
                 librariesForPackage
                 |> Seq.choose(fun (library,redirects,profile) ->
                     try
-                        let assemblyReader =
-                            ILModuleReaderAfterReadingAllBytes(library.Path, mkILGlobals EcmaMscorlibScopeRef)
-                        let assembly = assemblyReader.ILModuleDef.ManifestOfAssembly
-                        let assemblyName = assembly.GetName()
-                        Some (assembly, BindingRedirects.getPublicKeyToken assemblyName, assemblyReader.ILAssemblyRefs, redirects, profile)
+                        let assembly = AssemblyMetadata.read library.Path
+                        Some (assembly, assembly.PublicKeyToken, assembly.References, redirects, profile)
                     with _ -> None)
                 |> Seq.sortBy(fun (assembly,_,_,_,_) -> assembly.Version)
                 |> Seq.toList
@@ -328,11 +324,11 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
             || referencesDifferentProfiles assembly.Name assembly.Version profile
             || assemblies
             |> Seq.collect (fun (_,_,refs,_,_) -> refs)
-            |> Seq.filter (fun a -> assembly.Name = a.Name)
-            |> Seq.exists (fun a -> assembly.Version > a.Version))
+            |> Seq.filter (fun a -> assembly.Name = a.RefName)
+            |> Seq.exists (fun a -> assembly.Version > a.RefVersion))
         |> Seq.map(fun (assembly, token,_,_,_) ->
             { BindingRedirect.AssemblyName = assembly.Name
-              Version = Option.fold (fun _ x -> x.ToString()) "0.0.0.0" assembly.Version
+              Version = assembly.Version.ToString()
               PublicKeyToken = token
               Culture = None })
         |> Seq.sort
@@ -347,6 +343,8 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
 /// DotNetFramework V5+ but is not .NET Framework) - .NET Core/.NET 5+ and
 /// netstandard-only projects use assembly unification via deps.json instead, so the
 /// warning would be noise there.
+/// The profiles are the ones that the project file declares: without any, as when the
+/// framework comes from Directory.Build.props, Paket can't tell and doesn't warn.
 let shouldWarnAboutFSharpCoreRedirects (targetProfiles: TargetProfile list) (createBindingRedirects: BindingRedirectsSettings option) =
     let targetsDotNetFramework =
         targetProfiles
@@ -523,7 +521,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     traceWarnfn "F# project %s does not reference FSharp.Core." project.FileName
                 | Some kv ->
                     let _, settings = kv.Value
-                    if shouldWarnAboutFSharpCoreRedirects (project.GetTargetProfiles()) settings.CreateBindingRedirects then
+                    if shouldWarnAboutFSharpCoreRedirects (project.GetDeclaredTargetProfiles()) settings.CreateBindingRedirects then
                         traceWarnfn "F# project %s references FSharp.Core without specifying \"redirects: force\" in paket.dependencies. This can lead to \"Could not load file or assembly 'FSharp.Core'\" errors at runtime. See https://fsprojects.github.io/Paket/dependencies-file.html#Controlling-assembly-binding-redirects for details." project.FileName
 
         // if any errors have been found during the installation process thus far, fail and print all errors collected

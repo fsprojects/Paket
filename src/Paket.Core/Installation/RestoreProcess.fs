@@ -184,9 +184,19 @@ let findAllReferencesFiles root =
     |> Array.choose findRefFile
     |> collect
 
-let copiedElements = ref false
+let mutable private copiedElements = false
 
 type private MyAssemblyFinder () = class end
+
+/// Gives the content the line endings of the file it replaces, to keep the ones of its checkout
+let private withLineEndingsOf (oldContent:string) (newContent:string) =
+    let lineEnding =
+        if oldContent.Contains "\r\n" then Some "\r\n"
+        elif oldContent.Contains "\n" then Some "\n"
+        else None
+    match lineEnding with
+    | Some lineEnding -> newContent.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", lineEnding)
+    | None -> newContent
 
 let private saveToFile newContent (targetFile:FileInfo) =
     let rec loop trials =
@@ -201,13 +211,14 @@ let private saveToFile newContent (targetFile:FileInfo) =
                     ""
 
             let written =
-                if newContent <> oldContent then
+                // a checkout can change the line endings of a file that Paket wrote, like Paket.Restore.targets
+                if normalizeLineEndings newContent <> normalizeLineEndings oldContent then
                     if verbose then
                         tracefn " - %s created" targetFile.FullName
 
                     if targetFile.Exists then
                         File.SetAttributes(targetFile.FullName,IO.FileAttributes.Normal)
-                    File.WriteAllText(targetFile.FullName,newContent)
+                    File.WriteAllText(targetFile.FullName,withLineEndingsOf oldContent newContent)
                     true
                 else
                     if verbose then
@@ -244,10 +255,10 @@ let extractRestoreTargets root =
     let path = Path.Combine(root,".paket","Paket.Restore.targets")
     if Environment.GetEnvironmentVariable "PAKET_SKIP_RESTORE_TARGETS" <> "true" then
         // allow to be more clever than paket
-        if !copiedElements then path
+        if copiedElements then path
         else
             let fileWritten, path = extractElement root "Paket.Restore.targets"
-            copiedElements := true
+            copiedElements <- true
             if fileWritten then
                 verbosefn "Extracted Paket.Restore.targets to: %s (Can be disabled with PAKET_SKIP_RESTORE_TARGETS=true)" path
             path

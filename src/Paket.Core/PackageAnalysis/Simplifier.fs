@@ -74,20 +74,20 @@ let simplify interactive environment = trial {
 
     for kv in lockFile.Groups do
         let groupName = kv.Key
-        let! dependenciesFile = simplifyDependenciesFile(!dependenciesFileRef, groupName, flatLookup, interactive)
-        dependenciesFileRef := dependenciesFile
+        let! dependenciesFile = simplifyDependenciesFile(dependenciesFileRef.Value, groupName, flatLookup, interactive)
+        dependenciesFileRef.Value <- dependenciesFile
 
         let! referencesFiles' =
-            !referencesFilesRef
+            referencesFilesRef.Value
             |> List.map (fun refFile -> simplifyReferencesFile(refFile, groupName, flatLookup, interactive))
             |> collect
 
-        referencesFilesRef := referencesFiles'
+        referencesFilesRef.Value <- referencesFiles'
 
-    let projects = List.zip projectFiles (!referencesFilesRef)
-    projectsRef := Some projects
+    let projects = List.zip projectFiles referencesFilesRef.Value
+    projectsRef.Value <- Some projects
 
-    return beforeAndAfter environment (!dependenciesFileRef) (!projectsRef).Value
+    return beforeAndAfter environment dependenciesFileRef.Value projectsRef.Value.Value
 }
 
 let updateEnvironment (before,after) =

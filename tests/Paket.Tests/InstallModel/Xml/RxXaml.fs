@@ -14,7 +14,7 @@ let actualPath = System.IO.Path.Combine(__SOURCE_DIRECTORY__,__SOURCE_FILE__ + "
 let ``should generate Xml for Rx-XAML 2.2.4 with correct framework assembly references``() =
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Rx-XAML", SemVer.Parse "2.2.4", InstallModelKind.Package, FrameworkRestriction.NoRestriction,
+        createInstallModelFromLibs(PackageName "Rx-XAML", SemVer.Parse "2.2.4", InstallModelKind.Package, FrameworkRestriction.NoRestriction,
             [ @"..\Rx-XAML\lib\net40\System.Reactive.Windows.Threading.dll"
               @"..\Rx-XAML\lib\net45\System.Reactive.Windows.Threading.dll"
               @"..\Rx-XAML\lib\portable-win81+wpa81\System.Reactive.Windows.Threading.dll"

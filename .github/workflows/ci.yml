@@ -13,7 +13,7 @@ on:
 jobs:
   linux:
     name: Linux (.NET)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -25,12 +25,12 @@ jobs:
           - name: flaky
             skip_env: PAKET_TESTSUITE_FLAKYTESTS=true
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.nuget/packages
@@ -52,21 +52,21 @@ jobs:
           ./build.sh BuildPackage < /dev/null
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: TestResults-linux-${{ matrix.name }}
           path: tests_result/**/*.trx
 
   docs:
     name: Documentation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.nuget/packages
@@ -83,7 +83,7 @@ jobs:
           SkipTests: true
         run: ./build.sh GenerateDocs < /dev/null
       - name: Upload the documentation
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docs
           path: docs/output
@@ -92,12 +92,12 @@ jobs:
     name: Windows (.NET)
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Configure git autocrlf
         run: git config --global core.autocrlf input
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
       - name: Install integration test runtime
@@ -108,7 +108,7 @@ jobs:
           & $installScript -Channel 8.0 -Runtime dotnet -InstallDir (Join-Path $env:LOCALAPPDATA 'dotnetcore')
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.nuget/packages
@@ -121,13 +121,13 @@ jobs:
         run: .\build.cmd BuildPackage < NUL
       - name: Upload build artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bin
           path: bin
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: TestResults
           path: tests_result/**/*.trx

@@ -5,8 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="FsiExtension.fs" />
-    <Compile Include="..\..\paket-files\forki\FsUnit\FsUnit.fs">
-      <Paket>True</Paket>
+    <Compile Include="..\..\tests\Paket.Tests\FsUnit.fs">
       <Link>FsUnit.fs</Link>
     </Compile>
     <Compile Include="TestHelper.fs" />
@@ -21,6 +20,7 @@
     <Compile Include="PackSpecs.fs" />
     <Compile Include="InstallSpecs.fs" />
     <Compile Include="RestoreSpecs.fs" />
+    <Compile Include="GitSpecs.fs" />
     <Compile Include="DotnetToolSpecs.fs" />
     <Compile Include="FrameworkRestrictionsSpecs.fs" />
     <Compile Include="HttpSpecs.fs" />

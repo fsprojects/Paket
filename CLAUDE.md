@@ -112,3 +112,13 @@ Each scenario in `integrationtests/scenarios/` typically has:
 ## Release Process
 
 The build script reads `RELEASE_NOTES.md` for version info. Releases publish the NuGet packages, with the `paket` .NET tool, and the `paket.exe` stub of `bin/legacy-stub/` as a GitHub release asset, along with `paket.targets` for the auto-restore of Paket 11 and earlier.
+
+## Repo Assist
+
+`.github/workflows/repo-assist.md` is the source of the gh-aw workflow; `repo-assist.lock.yml` is generated from it and must not be edited by hand. After changing the source, regenerate the lock with:
+
+```bash
+gh aw compile --dir .github/workflows
+```
+
+Without `--dir`, gh-aw also runs its maintenance-workflow step: as the repository has no `aw.json` opting into issue expiration, it rewrites `GH_AW_ACTION_FAILURE_ISSUE_EXPIRES_HOURS` from `168` to `0` in the lock.

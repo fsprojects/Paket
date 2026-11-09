@@ -1,6 +1,6 @@
 namespace Paket
 
-/// [omit]
+/// <exclude/>
 module DependenciesFileSerializer =
     open Requirements
     open System
@@ -439,11 +439,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         | None -> list.Add(restrictionString)
         | Some group ->
             let firstGroupLine,_ = findGroupBorders groupName list
-            let pos = ref firstGroupLine
-            while list.Count > !pos && list.[!pos].TrimStart().StartsWith "source" do
-                pos := !pos + 1
+            let mutable pos = firstGroupLine
+            while list.Count > pos && list.[pos].TrimStart().StartsWith "source" do
+                pos <- pos + 1
 
-            list.Insert(!pos,restrictionString)
+            list.Insert(pos,restrictionString)
 
         DependenciesFile(
             list
@@ -463,11 +463,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         | None -> list.Add(strategyString)
         | Some group ->
             let firstGroupLine,_ = findGroupBorders groupName list
-            let pos = ref firstGroupLine
-            while list.Count > !pos && list.[!pos].TrimStart().StartsWith "source" do
-                pos := !pos + 1
+            let mutable pos = firstGroupLine
+            while list.Count > pos && list.[pos].TrimStart().StartsWith "source" do
+                pos <- pos + 1
 
-            list.Insert(!pos,strategyString)
+            list.Insert(pos,strategyString)
 
         DependenciesFile(
             list
@@ -487,11 +487,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         | None -> list.Add(strategyString)
         | Some _ ->
             let firstGroupLine,_ = findGroupBorders groupName list
-            let pos = ref firstGroupLine
-            while list.Count > !pos && list.[!pos].TrimStart().StartsWith "source" do
-                pos := !pos + 1
+            let mutable pos = firstGroupLine
+            while list.Count > pos && list.[pos].TrimStart().StartsWith "source" do
+                pos <- pos + 1
 
-            list.Insert(!pos,strategyString)
+            list.Insert(pos,strategyString)
 
         DependenciesFile(
             list
@@ -585,20 +585,20 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     match tryFindPackageLine groupName p.Name with
                     | None -> list.Add packageString
                     | Some found ->
-                        let pos = ref (found + 1)
-                        let skipped = ref false
-                        while !pos < textRepresentation.Length - 1 &&
-                                (String.IsNullOrWhiteSpace textRepresentation.[!pos] ||
-                                 String.startsWithIgnoreCase "source" textRepresentation.[!pos] ||
-                                 String.startsWithIgnoreCase "cache" textRepresentation.[!pos]) do
-                            if (String.startsWithIgnoreCase "source" textRepresentation.[!pos]) ||
-                               (String.startsWithIgnoreCase "cache" textRepresentation.[!pos])
+                        let mutable pos = found + 1
+                        let mutable skipped = false
+                        while pos < textRepresentation.Length - 1 &&
+                                (String.IsNullOrWhiteSpace textRepresentation.[pos] ||
+                                 String.startsWithIgnoreCase "source" textRepresentation.[pos] ||
+                                 String.startsWithIgnoreCase "cache" textRepresentation.[pos]) do
+                            if (String.startsWithIgnoreCase "source" textRepresentation.[pos]) ||
+                               (String.startsWithIgnoreCase "cache" textRepresentation.[pos])
                             then
-                                skipped := true
-                            pos := !pos + 1
+                                skipped <- true
+                            pos <- pos + 1
 
-                        if !skipped then
-                            list.Insert(!pos,packageString)
+                        if skipped then
+                            list.Insert(pos,packageString)
                         else
                             list.Insert(found + 1,packageString)
 

@@ -6,8 +6,8 @@ open System
 open System.Collections.Generic
 
 
-/// Searches the given directories for all occurrences of the given file name
-/// [omit]
+/// <summary>Searches the given directories for all occurrences of the given file name</summary>
+/// <exclude/>
 let tryFindFile dirs file =
     let files =
         dirs
@@ -36,8 +36,8 @@ let tryFindFile dirs file =
     if not (Seq.isEmpty files) then Some(Seq.head files)
     else None
 
-/// Searches the given directories for the given file, failing if not found.
-/// [omit]
+/// <summary>Searches the given directories for the given file, failing if not found.</summary>
+/// <exclude/>
 let findFile dirs file =
     match tryFindFile dirs file with
     | Some found -> found
@@ -95,28 +95,24 @@ let platformInfoAction (psi : ProcessStartInfo) =
 
 
 
-/// Tries to find the tool in the given paths, separated by ;. If no path has the right tool we are trying the PATH system variable.
-/// [omit]
+/// <summary>Tries to find the tool in the given paths, separated by ;. If no path has the right tool we are trying the PATH system variable.</summary>
+/// <exclude/>
 let tryFindPath (paths : string) tool =
     match tryFindFile (paths.Split([| ';' |], StringSplitOptions.RemoveEmptyEntries)) tool with
     | Some path -> Some path
     | None -> tryFindFileOnPath tool
 
-/// Tries to find the tool in the given paths, separated by ;. If no path has the right tool we are trying the PATH system variable.
-/// [omit]
+/// <summary>Tries to find the tool in the given paths, separated by ;. If no path has the right tool we are trying the PATH system variable.</summary>
+/// <exclude/>
 let findPath paths tool =
     match tryFindPath paths tool with
     | Some file -> file
     | None -> tool
 
-/// [omit]
-let internal startedProcesses = HashSet()
-
-/// [omit]
+/// <exclude/>
 let start (proc : Process) =
     platformInfoAction proc.StartInfo
     proc.Start() |> ignore
-    startedProcesses.Add(proc.Id, proc.StartTime) |> ignore
 
 /// Runs the given process and returns the exit code.
 /// ## Parameters

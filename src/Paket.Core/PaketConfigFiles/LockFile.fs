@@ -33,7 +33,7 @@ module LockFileSerializer =
         | true, x -> x
         | _ -> packageName
 
-    /// [omit]
+    /// <exclude/>
     let serializeOptionsAsLines options = [
         if options.Strict then yield "REFERENCES: STRICT"
         match options.Settings.GenerateLoadScripts with
@@ -93,7 +93,7 @@ module LockFileSerializer =
         | FrameworkRestriction.HasNoRestriction -> ()
         | list  -> yield "RESTRICTION: " + list.ToString() ]
 
-    /// [omit]
+    /// <exclude/>
     let serializePackages options (resolved : PackageResolution) =
         let sources =
             resolved
@@ -108,13 +108,13 @@ module LockFileSerializer =
             |> Seq.groupBy (fun (a,b,_) -> a)
 
         let all =
-            let hasReported = ref false
+            let mutable hasReported = false
             [ yield! serializeOptionsAsLines options
 
               for source, packages in sources do
-                  if not !hasReported then
+                  if not hasReported then
                     yield "NUGET"
-                    hasReported := true
+                    hasReported <- true
 
                   yield "  remote: " + String.quoted source
 
@@ -887,8 +887,8 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
 
     member this.GetOrderedPackageHull(groupName,referencesFile:ReferencesFile,targetProfileOpt) =
         let usedPackageKeys = HashSet<_>()
-        let toVisit = ref Set.empty
-        let cliTools = ref Set.empty
+        let mutable toVisit = Set.empty
+        let mutable cliTools = Set.empty
         let resolution =
             match this.Groups |> Map.tryFind groupName with
             | Some group -> group.Resolution
@@ -905,7 +905,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
 
                 match package.Kind with
                 | ResolvedPackageKind.DotnetCliTool ->
-                    cliTools := Set.add package !cliTools
+                    cliTools <- Set.add package cliTools
                 | ResolvedPackageKind.Package ->
                     let restore =
                         match targetProfileOpt with
@@ -924,14 +924,14 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
 
                     let deps = this.GetDirectDependenciesOfSafe(groupName,p.Name,referencesFile.FileName)
 
-                    toVisit := Set.add (k,p,deps) !toVisit
+                    toVisit <- Set.add (k,p,deps) toVisit
         | None -> ()
 
         let visited = Dictionary<_,_>()
 
-        while !toVisit <> Set.empty do
-            let current = Set.minElement !toVisit
-            toVisit := Set.remove current !toVisit
+        while toVisit <> Set.empty do
+            let current = Set.minElement toVisit
+            toVisit <- Set.remove current toVisit
 
             let visitKey,p,deps = current
             if visited.ContainsKey(visitKey) then ()
@@ -942,7 +942,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
             for dep in deps do
                 let deps = this.GetDirectDependenciesOfSafe(groupName,dep,referencesFile.FileName)
                 let packagageSettings = { p with Settings = { p.Settings with Aliases = Map.empty }}
-                toVisit := Set.add ((groupName,dep),packagageSettings,deps) !toVisit
+                toVisit <- Set.add ((groupName,dep),packagageSettings,deps) toVisit
 
         let emitted = HashSet<_>()
         [while visited.Count > 0 do
@@ -966,7 +966,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                 let settings,dependencies = current.Value
                 let deps = Set.ofSeq dependencies
                 yield (current.Key,settings,deps)
-        ], !cliTools
+        ], cliTools
 
     member this.GetOrderedPackageHull(groupName,referencesFile:ReferencesFile) =
         this.GetOrderedPackageHull(groupName,referencesFile,None)

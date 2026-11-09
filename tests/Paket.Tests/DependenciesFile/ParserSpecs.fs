@@ -1686,7 +1686,7 @@ let ``async cache should work``() =
          Console.WriteLine "Simulated downloading..."
          do! Async.Sleep 400
          Console.WriteLine "Simulated downloading Done."
-         x := !x + 1 // Side effect!
+         x.Value <- x.Value + 1 // Side effect!
          return "" }
      let memFunc = memoizeAsync <| someSlowFunc
      async {
@@ -1706,7 +1706,7 @@ let ``async cache should work``() =
          do! [|1 .. 30|] |> Seq.map(fun _ -> (memFunc "a")) 
              |> Async.Parallel |> Async.Ignore
      } |> Async.RunSynchronously
-     !x |> shouldEqual 1
+     x.Value |> shouldEqual 1
 
 let autodetectconfig = """
 framework: auto-detect

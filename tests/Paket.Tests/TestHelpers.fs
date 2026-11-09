@@ -141,6 +141,18 @@ let normalizeXml(text:string) =
 
 let toPath elems = System.IO.Path.Combine(elems |> Seq.toArray)
 
+/// Builds an install model from the given files, keeping their paths as they are
+let createInstallModelFromLibs (packageName, packageVersion, kind, frameworkRestriction, libs : NuGet.UnparsedPackageFile seq, targetsFiles, analyzerFiles, nuspec : Nuspec) =
+    InstallModel.emptyModel packageName packageVersion kind
+    |> InstallModel.addLibReferences libs nuspec.References
+    |> InstallModel.addTargetsFiles "build" targetsFiles
+    |> InstallModel.addAnalyzerFiles analyzerFiles
+    |> InstallModel.addFrameworkAssemblyReferences nuspec.FrameworkAssemblyReferences
+    |> InstallModel.filterIgnoreList
+    |> InstallModel.applyFrameworkRestrictions frameworkRestriction
+    |> InstallModel.removeIfCompletelyEmpty
+    |> InstallModel.addLicense nuspec.LicenseUrl
+
 let ensureDir () = System.Environment.CurrentDirectory <-  NUnit.Framework.TestContext.CurrentContext.TestDirectory
 
 let printSqs sqs = sqs |> Seq.iter (printfn "%A")

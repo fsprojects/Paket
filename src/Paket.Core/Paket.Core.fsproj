@@ -22,14 +22,6 @@
     <EmbeddedResource Include="embedded\paket.targets">
       <LogicalName>paket.targets</LogicalName>
     </EmbeddedResource>
-    <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.SDK\src\AssemblyReader.fs">
-      <Paket>True</Paket>
-      <Link>Common/AssemblyReader.fs</Link>
-    </Compile>
-    <Compile Include="..\..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
-      <Paket>True</Paket>
-      <Link>Common/Globbing.fs</Link>
-    </Compile>
     <Compile Include="Common\Async.fs" />
     <Compile Include="Common\Logging.fsi" />
     <Compile Include="Common\Logging.fs" />
@@ -37,6 +29,7 @@
     <Compile Include="Common\Constants.fs" />
     <Compile Include="Common\Profile.fs" />
     <Compile Include="Common\Utils.fs" />
+    <Compile Include="Common\Globbing.fs" />
     <Compile Include="Common\Encryption.fs" />
     <Compile Include="Common\Xml.fs" />
     <Compile Include="Common\ProcessHelper.fs" />
@@ -82,6 +75,7 @@
     <Compile Include="PaketConfigFiles\DependencyCache.fs" />
     <Compile Include="Installation\ProcessOptions.fs" />
     <Compile Include="Installation\BindingRedirects.fs" />
+    <Compile Include="Installation\AssemblyMetadata.fs" />
     <Compile Include="Installation\DependencyChangeDetection.fs" />
     <Compile Include="Installation\ScriptGeneration.fs" />
     <Compile Include="Installation\GarbageCollection.fs" />

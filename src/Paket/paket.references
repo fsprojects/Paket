@@ -10,3 +10,4 @@ System.Net.Http.WinHttpHandler
 Nuget.Packaging
 DotNet.ReproducibleBuilds
 Fake.Core.ReleaseNotes
+Fake.IO.FileSystem

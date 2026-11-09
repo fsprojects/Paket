@@ -539,11 +539,11 @@ module ProjectFile =
 
     let getFrameworkAssemblies (project:ProjectFile) = [
         for node in project.Document |> getDescendants "Reference" do
-            let hasHintPath = ref false
+            let mutable hasHintPath = false
             for child in node.ChildNodes do
                 if child.Name = "HintPath" then
-                    hasHintPath := true
-            if not !hasHintPath then
+                    hasHintPath <- true
+            if not hasHintPath then
                 yield node.Attributes.["Include"].InnerText.Split(',').[0]
     ]
 
@@ -842,25 +842,25 @@ module ProjectFile =
                             |> Seq.sortBy (fun r -> r.Path)
                             |> Seq.toList
 
-                        let assemblyTargets = ref libFolder.Targets
+                        let mutable assemblyTargets = libFolder.Targets
                         let duplicates = HashSet<_>()
                         for frameworkAssembly in frameworkReferences do
                             for t in libFolder.Targets do
                                 if not (usedFrameworkLibs.Add(t,frameworkAssembly.Name)) then
-                                    assemblyTargets := Set.remove t !assemblyTargets // List.filter ((<>) t) !assemblyTargets
+                                    assemblyTargets <- Set.remove t assemblyTargets // List.filter ((<>) t) assemblyTargets
                                     duplicates.Add frameworkAssembly.Name |> ignore
 
-                        if !assemblyTargets = libFolder.Targets then
+                        if assemblyTargets = libFolder.Targets then
                             [condition,createItemGroup libFolder.Targets frameworkReferences libraries,false]
                         else
                             let specialFrameworkAssemblies, rest =
                                 frameworkReferences
                                 |> List.partition (fun fr -> duplicates.Contains fr.Name)
 
-                            match PlatformMatching.getCondition referenceCondition !assemblyTargets with
+                            match PlatformMatching.getCondition referenceCondition assemblyTargets with
                             | "" -> [condition,createItemGroup libFolder.Targets rest libraries,false]
                             | lowerCondition ->
-                                [lowerCondition,createItemGroup !assemblyTargets specialFrameworkAssemblies [],true
+                                [lowerCondition,createItemGroup assemblyTargets specialFrameworkAssemblies [],true
                                  condition,createItemGroup libFolder.Targets rest libraries,false]
                         )
 
@@ -884,8 +884,8 @@ module ProjectFile =
                 let chooseNode = createNode "Choose" project
                 let chooseNode2 = createNode "Choose" project
 
-                let containsReferences = ref false
-                let containsReferences2 = ref false
+                let mutable containsReferences = false
+                let mutable containsReferences2 = false
 
                 let nodes =
                     conditions
@@ -902,9 +902,9 @@ module ProjectFile =
                         if not itemGroup.IsEmpty then
                             whenNode.AppendChild itemGroup |> ignore
                             if ownNode then
-                                containsReferences2 := true
+                                containsReferences2 <- true
                             else
-                                containsReferences := true
+                                containsReferences <- true
                         whenNode,ownNode)
 
                 for node,ownNode in nodes do
@@ -913,7 +913,7 @@ module ProjectFile =
                     else
                         chooseNode.AppendChild node |> ignore
 
-                match !containsReferences,!containsReferences2 with
+                match containsReferences,containsReferences2 with
                 | true,true -> [chooseNode2; chooseNode]
                 | true,false -> [chooseNode]
                 | false,true -> [chooseNode2]
@@ -928,7 +928,7 @@ module ProjectFile =
             |  _ ->
                 let propertyChooseNode = createNode "Choose" project
 
-                let containsProperties = ref false
+                let mutable containsProperties = false
                 let nodes =
                     frameworkSpecificTargetsFileConditions
                     |> List.map (fun (condition,(propertyNames,propertyGroup)) ->
@@ -938,13 +938,13 @@ module ProjectFile =
                             |> addAttribute "Condition" finalCondition
                         if not (Set.isEmpty propertyNames) then
                             whenNode.AppendChild(propertyGroup) |> ignore
-                            containsProperties := true
+                            containsProperties <- true
                         whenNode)
                 for node in nodes do
                     propertyChooseNode.AppendChild node |> ignore
 
                 (frameworkSpecificTargetsFileConditions |> List.map (fun (_,(propertyNames,_)) -> propertyNames)),
-                (if !containsProperties then propertyChooseNode else createNode "Choose" project)
+                (if containsProperties then propertyChooseNode else createNode "Choose" project)
 
 
         let frameworkSpecificPropsNodes =
@@ -1099,7 +1099,10 @@ module ProjectFile =
             | true,  version -> adjustIfWeHaveSDK version
             | _         -> adjustIfWeHaveSDK 4.0
 
-    let getTargetProfiles (project:ProjectFile) =
+    /// The target profiles that the project file declares itself. Paket doesn't read the files that
+    /// it imports, so this is empty when the framework comes from one of them, as from
+    /// Directory.Build.props, or when the file declares no framework that Paket recognizes.
+    let getDeclaredTargetProfiles (project:ProjectFile) =
         let fallback () =
             let prefix() =
                 match getTargetFrameworkIdentifier project with
@@ -1114,9 +1117,12 @@ module ProjectFile =
 
                 | Some x -> [prefix() + (x.Replace("v",""))]
 
-            match frameworks |> List.choose (fun s -> FrameworkDetection.internalExtract s |> Option.map TargetProfile.SinglePlatform) |> List.filter (fun x -> match x with TargetProfile.SinglePlatform(Unsupported _) -> false | _ -> true)  with
-            | [] -> [TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4)]
-            | xs -> xs
+            frameworks
+            // a property defined outside of the project file, as in $(DefaultTargetFramework), expands
+            // to an empty string, which internalExtract would take for .NET Framework 1.0
+            |> List.filter (String.IsNullOrWhiteSpace >> not)
+            |> List.choose (fun s -> FrameworkDetection.internalExtract s |> Option.map TargetProfile.SinglePlatform)
+            |> List.filter (fun x -> match x with TargetProfile.SinglePlatform(Unsupported _) -> false | _ -> true)
 
 
         match getTargetFrameworkProfile project with
@@ -1135,6 +1141,13 @@ module ProjectFile =
                 traceWarnfn "Could not detect TargetFrameworkProfile '%s' in '%s' via 'FindPortableProfile', using fallback" profile project.FileName
                 fallback()
         | _ -> fallback()
+
+    /// The target profiles of the project: the ones that the project file declares, or net40 when
+    /// it declares none (see getDeclaredTargetProfiles).
+    let getTargetProfiles (project:ProjectFile) =
+        match getDeclaredTargetProfiles project with
+        | [] -> [TargetProfile.SinglePlatform (DotNetFramework FrameworkVersion.V4)]
+        | profiles -> profiles
 
     let updateReferences
             (completeModel: Map<GroupName*PackageName,_*InstallModel>)
@@ -1264,19 +1277,19 @@ module ProjectFile =
 
         for ctx in contexts do
             for chooseNode in ctx.ChooseNodes do
-                let i = ref (project.ProjectNode.ChildNodes.Count-1)
+                let mutable i = project.ProjectNode.ChildNodes.Count-1
                 while
-                  !i >= 0 &&
-                    (String.startsWithIgnoreCase "<import" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString())  &&
-                     String.containsIgnoreCase "label" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString())  &&
-                     String.containsIgnoreCase "paket" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString()) )  do
-                    decr i
+                  i >= 0 &&
+                    (String.startsWithIgnoreCase "<import" (project.ProjectNode.ChildNodes.[i].OuterXml.ToString())  &&
+                     String.containsIgnoreCase "label" (project.ProjectNode.ChildNodes.[i].OuterXml.ToString())  &&
+                     String.containsIgnoreCase "paket" (project.ProjectNode.ChildNodes.[i].OuterXml.ToString()) )  do
+                    i <- i - 1
 
-                if !i <= 0 then
+                if i <= 0 then
                     if chooseNode.ChildNodes.Count > 0 then
                         project.ProjectNode.AppendChild chooseNode |> ignore
                 else
-                    let node = project.ProjectNode.ChildNodes.[!i]
+                    let node = project.ProjectNode.ChildNodes.[i]
                     if chooseNode.ChildNodes.Count > 0 then
                         project.ProjectNode.InsertAfter(chooseNode,node) |> ignore
 
@@ -1813,6 +1826,8 @@ type ProjectFile with
 
     member this.GetTargetProfiles() =  ProjectFile.getTargetProfiles this
 
+    member this.GetDeclaredTargetProfiles() =  ProjectFile.getDeclaredTargetProfiles this
+
     member this.AddImportForPaketTargets relativeTargetsPath = ProjectFile.addImportForPaketTargets relativeTargetsPath this
 
     member this.RemoveImportForPaketTargets() =  ProjectFile.removeImportForPaketTargets this
@@ -2034,22 +2049,8 @@ type ProjectFile with
             [this]
 
     member this.GetCompileItems (includeReferencedProjects : bool) cache =
-        let getCompileRefs projectFile =
-            projectFile.Document
-            |> getDescendants "Compile"
-            |> Seq.map (fun compileNode -> projectFile, compileNode)
-
-        let getCompileItem (projectFile, compileNode) =
-            let projectFolder = projectFile.FileName |> Path.GetFullPath |> Path.GetDirectoryName
+        let getCompileItem projectFolder compileNode file =
             let sourceFile =
-                let file =
-                    match compileNode |> getAttribute "Include" with
-                    | Some file -> file
-                    | None ->
-                        match compileNode |> getAttribute "Update" with
-                        | Some file -> file
-                        | None -> failwithf "The Compile entry is in unknown format and doesn't contain a Update or Include attribute."
-
                 file
                 |> normalizePath
                 |> fun relPath -> Path.Combine(projectFolder, relPath)
@@ -2079,11 +2080,36 @@ type ProjectFile with
                 BaseDir = compileItem.BaseDir
             })
 
+        let removeItems projectFolder (patterns : string) (items : CompileItem list) =
+            // As in MSBuild, a Remove matches the listed items, case-insensitively, rather than the disk. Unlike in MSBuild,
+            // its patterns with wildcards match none: in SDK projects they mostly target the default items, which Paket
+            // doesn't list
+            let removedFiles =
+                patterns.Split(';', StringSplitOptions.RemoveEmptyEntries ||| StringSplitOptions.TrimEntries)
+                |> Seq.map (fun file -> Path.Combine(projectFolder, normalizePath file) |> Path.GetFullPath)
+                |> fun files -> HashSet<string>(files, StringComparer.OrdinalIgnoreCase)
+            items |> List.filter (fun item -> not (removedFiles.Contains(Path.GetFullPath item.SourceFile)))
+
+        // The Compile entries apply in the order of the project file, as in MSBuild:
+        // a <Compile Remove="..." /> only leaves out the files that the entries before it added (GitHub issue #4222)
+        let getProjectItems (projectFile : ProjectFile) =
+            let projectFolder = projectFile.FileName |> Path.GetFullPath |> Path.GetDirectoryName
+            projectFile.Document
+            |> getDescendants "Compile"
+            |> List.fold (fun items compileNode ->
+                match compileNode |> getAttribute "Include" |> Option.orElseWith (fun () -> compileNode |> getAttribute "Update") with
+                | Some file -> getCompileItem projectFolder compileNode file |> getRealItems |> Seq.fold (fun stacked item -> item :: stacked) items
+                | None ->
+                    match compileNode |> getAttribute "Remove" with
+                    | Some patterns -> removeItems projectFolder patterns items
+                    // Entries without Include, Update or Remove, as in an ItemDefinitionGroup, add no file
+                    | None -> items) []
+            // The fold stacks the items in reverse order
+            |> List.rev
+
         this.GetProjects includeReferencedProjects cache
         |> this.ProjectsWithoutTemplates
-        |> Seq.collect getCompileRefs
-        |> Seq.map getCompileItem
-        |> Seq.collect getRealItems
+        |> Seq.collect getProjectItems
 
 
     member self.GetTemplateMetadata () =

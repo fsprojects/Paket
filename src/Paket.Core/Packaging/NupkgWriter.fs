@@ -295,7 +295,7 @@ module internal NupkgWriter =
 
         let exclusions =
             optional.FilesExcluded
-            |> List.map (fun e -> Path.Combine(workingDir,e) |> fixRelativePath |> Fake.Globbing.isMatch)
+            |> List.map (fun e -> Path.Combine(workingDir,e) |> fixRelativePath |> Globbing.isMatch)
 
         let isExcluded p =
             let path = DirectoryInfo(p).FullName

@@ -7,7 +7,7 @@ open Paket.ModuleResolver
 open Paket.PackageSources
 
 
-/// [omit]
+/// <exclude/>
 type InstallOptions =
     { Strict : bool
       Redirects : BindingRedirectsSettings option

@@ -641,7 +641,7 @@ module internal TemplateFile =
         let root = (FileInfo parsed.FileName).Directory.FullName
         let getFiles files =
             [ for source, target in files do
-                match Fake.Globbing.search root source with
+                match Globbing.searchTemplateFiles root source with
                 | [] ->
                     if source.Contains "*" || source.Contains "?" then
                         traceWarnfn "The file pattern \"%s\" in %s did not match any files." source parsed.FileName
