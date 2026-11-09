@@ -1,5 +1,7 @@
 #### Unreleased
 
+* Repeated lines for one package in paket.references are merged, so `specific_version` and `embed_interop_types` can be set on separate lines - https://github.com/fsprojects/Paket/issues/4329
+
 #### 12.0.0-alpha006 - 2026-11-08
 
 * fix: `paket pack --symbols` no longer fails on a project with Compile entries without an `Include` or `Update` attribute, such as `<Compile Remove="..." />` or a Compile item definition in an `ItemDefinitionGroup`, and leaves out of the symbols package the files that a Remove names without wildcards - https://github.com/fsprojects/Paket/issues/4222
