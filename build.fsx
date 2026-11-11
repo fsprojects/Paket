@@ -154,9 +154,14 @@ Target.create "CleanDocs" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build library & test project
 
+/// The text of a property value that MSBuild passes on as written: it would decode the %XX sequences,
+/// as in a `my%20repo` path, and expand $(...) and @(...), as in a `$(DefaultTargetFramework)`
+let escapeForMSBuild (text: string) =
+    text.Replace("%", "%25").Replace("$", "%24").Replace("@", "%40")
+
 let releaseNotesProp releaseNotesLines =
     let xn name = XName.Get(name)
-    let text = releaseNotesLines |> String.concat System.Environment.NewLine
+    let text = releaseNotesLines |> String.concat System.Environment.NewLine |> escapeForMSBuild
     let doc =
         XDocument(
             [ XComment("This document was automatically generated.") :> obj
