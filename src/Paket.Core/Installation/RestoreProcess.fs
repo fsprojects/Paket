@@ -270,6 +270,15 @@ let extractRestoreTargets root =
 let extractPaketTargets root =
     extractElement root Constants.TargetsFileName |> snd
 
+/// Rewrites the paket.targets of `paket auto-restore on`, where it is turned on, so that it follows the running Paket
+let refreshPaketTargets root =
+    if Environment.GetEnvironmentVariable "PAKET_SKIP_RESTORE_TARGETS" <> "true"
+       && File.Exists(Path.Combine(root, ".paket", Constants.TargetsFileName)) then
+        // only written when its content differs
+        let fileWritten, path = extractElement root Constants.TargetsFileName
+        if fileWritten then
+            verbosefn $"Extracted %s{Constants.TargetsFileName} to: %s{path} (Can be disabled with PAKET_SKIP_RESTORE_TARGETS=true)"
+
 let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package) =
     async {
         let! package, content = ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package, false)
@@ -774,7 +783,14 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
             (projectFile = AllProjects || projectFile = NoProjects) && 
             group = None
 
+    // Not for the restore of one project, which paket.targets runs during a build: an older
+    // paket.targets that runs this Paket already works, and one that runs the bootstrapper fails
+    // before, so rewriting the imported file there would only race with the other projects of a /m build.
+    // The full restore that Paket.Restore.targets runs during the build of a solution that mixes both
+    // kinds of projects can still rewrite it, as it does Paket.Restore.targets: only when it differs,
+    // that is once after Paket changes.
     if not skipRestoreTargetsExtraction && (projectFile = AllProjects || projectFile = NoProjects) then
+        refreshPaketTargets root
         extractRestoreTargets root |> ignore
 
     let readCache () =
