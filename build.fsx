@@ -88,20 +88,29 @@ let paketFile = buildLegacyStubDir @@ "paket.exe"
 System.Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
 
 // Read additional information from the release notes document
-let releaseNotesData =
-    let lines = System.IO.File.ReadAllLines "RELEASE_NOTES.md"
-    let firstRelease =
-        lines
-        |> Array.tryFindIndex (fun line ->
-            line.StartsWith("#### ", StringComparison.Ordinal)
-            && line.Length > 5
-            && Char.IsDigit line.[5])
-        |> Option.defaultWith (fun () -> failwith "RELEASE_NOTES.md has no released version heading")
+let private releaseNotesLines = System.IO.File.ReadAllLines "RELEASE_NOTES.md"
 
-    lines.[firstRelease..]
+let private firstRelease =
+    releaseNotesLines
+    |> Array.tryFindIndex (fun line ->
+        line.StartsWith("#### ", StringComparison.Ordinal)
+        && line.Length > 5
+        && Char.IsDigit line.[5])
+    |> Option.defaultWith (fun () -> failwith "RELEASE_NOTES.md has no released version heading")
+
+let releaseNotesData =
+    releaseNotesLines.[firstRelease..]
     |> ReleaseNotes.parseAll
 
 let release = List.head releaseNotesData
+
+/// The section of the release as it is written, for nuget.org, which shows the release notes as plain
+/// text: release.Notes drops the bullets of the items and the blank lines between the paragraphs
+let releaseNotesText =
+    releaseNotesLines.[firstRelease + 1 ..]
+    |> Array.takeWhile (fun line -> not (line.StartsWith("#### ", StringComparison.Ordinal)))
+    |> String.concat Environment.NewLine
+    |> fun text -> text.Trim()
 
 let DoNothing = ignore
 
@@ -159,9 +168,9 @@ Target.create "CleanDocs" (fun _ ->
 let escapeForMSBuild (text: string) =
     text.Replace("%", "%25").Replace("$", "%24").Replace("@", "%40")
 
-let releaseNotesProp releaseNotesLines =
+let releaseNotesProp releaseNotes =
     let xn name = XName.Get(name)
-    let text = releaseNotesLines |> String.concat System.Environment.NewLine |> escapeForMSBuild
+    let text = escapeForMSBuild releaseNotes
     let doc =
         XDocument(
             [ XComment("This document was automatically generated.") :> obj
@@ -176,7 +185,7 @@ let releaseNotesProp releaseNotesLines =
     doc.Save(path)
     path
 
-let releaseNotesPath = releaseNotesProp release.Notes
+let releaseNotesPath = releaseNotesProp releaseNotesText
 
 let packageProps = [
     sprintf "/p:Version=%s" release.NugetVersion
