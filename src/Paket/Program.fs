@@ -240,9 +240,6 @@ let config (results : ParseResults<_>) =
       Dependencies(".").AddToken(source, token)
     | _ -> ()
 
-let validateAutoRestore (results : ParseResults<_>) =
-    results.GetAllResults().Length = 1
-
 let autoRestore (results : ParseResults<_>) =
     match results.GetResult Flags with
     | On -> Dependencies.Locate().TurnOnAutoRestore()
@@ -636,7 +633,7 @@ let handleCommand silent command =
     | ConvertFromNuget r -> processCommand silent convert r
     | FindRefs r -> processCommand silent findRefs r
     | Init r -> processCommand silent init r
-    | AutoRestore r -> processWithValidation silent validateAutoRestore autoRestore r
+    | AutoRestore r -> processCommand silent autoRestore r
     | Install r -> processCommand silent install r
     | Outdated r -> processCommand silent outdated r
     | Remove r -> processCommand silent remove r
@@ -713,9 +710,7 @@ let main() =
                                                     errorHandler = new PaketExiter(),
                                                     checkStructure = false)
 
-        // A mandatory argument can also be given with its hidden _Legacy syntax, so Argu can't check
-        // it: the commands do, as require and GetResult report the missing argument
-        let results = parser.ParseCommandLine(ignoreMissing = true, raiseOnUsage = true)
+        let results = parser.ParseCommandLine(raiseOnUsage = true)
         let silent = results.Contains Silent
         tracePaketVersion silent
 
