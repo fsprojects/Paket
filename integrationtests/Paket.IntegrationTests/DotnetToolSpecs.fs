@@ -2,6 +2,7 @@ module Paket.IntegrationTests.DotnetToolSpecs
 
 open System
 open System.IO
+open System.IO.Compression
 open NUnit.Framework
 open FsUnit
 
@@ -84,6 +85,82 @@ let ``paket.targets of auto-restore restores with paket on the PATH like a globa
         |> Seq.map (fun msg -> msg.Message)
         |> String.concat Environment.NewLine
     output |> shouldContainText $"Paket version %s{version}"
+
+/// Packs a package without files into a feed of the scenario, and adds a group with the lines, after
+/// its source, that extract it into the packages folder, next to the "storage: none" of the scenario,
+/// which doesn't use it. Gives the packages folder.
+let addPackagesFolderGroupWith scenarioPath groupLines =
+    let feed = scenarioPath @@ "package-feed"
+    Directory.CreateDirectory feed |> ignore
+    do
+        use zip = ZipFile.Open(feed @@ "Paket.IntegrationTests.Empty.1.0.0.nupkg", ZipArchiveMode.Create)
+        use writer = new StreamWriter(zip.CreateEntry("Paket.IntegrationTests.Empty.nuspec").Open())
+        writer.Write """<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Paket.IntegrationTests.Empty</id>
+    <version>1.0.0</version>
+    <authors>Paket</authors>
+    <description>A package without files</description>
+  </metadata>
+</package>
+"""
+    File.AppendAllText(scenarioPath @@ "paket.dependencies", $"\ngroup Legacy\nsource %s{feed}\n%s{groupLines}")
+    scenarioPath @@ "packages"
+
+let addPackagesFolderGroup scenarioPath =
+    addPackagesFolderGroupWith scenarioPath "nuget Paket.IntegrationTests.Empty\n"
+
+/// Runs paket in the scenario with addPackagesFolderGroup, with a NuGet packages folder of its own,
+/// and gives its output
+let paketWithPackagesFolderGroup command =
+    let scenarioPath = scenarioTempPath legacyScenario
+    directPaketInPathExWithEnv command scenarioPath [ "NUGET_PACKAGES", scenarioPath @@ "nuget-packages" ]
+    |> Seq.map (fun msg -> msg.Message)
+    |> String.concat Environment.NewLine
+
+[<Test>]
+let ``paket restore doesn't skip on the cache after the restore of a project for another paket.lock``() =
+    use __ = paket "restore" legacyScenario |> fst
+    let lockFile = scenarioTempPath legacyScenario @@ "paket.lock"
+    let restoredLock = File.ReadAllBytes lockFile
+    File.AppendAllText(lockFile, Environment.NewLine)
+    directPaket "restore --references-file legacy/paket.references" legacyScenario |> ignore
+    // projectsRestoredHash is cleared too: Paket.Restore.targets only checks that one, so the build
+    // of SDK projects runs a full restore
+    File.ReadAllText(scenarioTempPath legacyScenario @@ "paket-files" @@ "paket.restore.cached")
+    |> shouldContainText "\"projectsRestoredHash\": \"\""
+
+    File.WriteAllBytes(lockFile, restoredLock)
+    directPaket "restore" legacyScenario |> shouldContainText "Starting full restore process"
+
+[<Test>]
+let ``paket restore doesn't skip on the cache when the packages folder is missing``() =
+    use __ = prepare legacyScenario
+    let packagesFolder = addPackagesFolderGroup (scenarioTempPath legacyScenario)
+    paketWithPackagesFolderGroup "install" |> ignore
+    paketWithPackagesFolderGroup "restore" |> shouldContainText "The last full restore is still up to date"
+
+    Directory.Delete(packagesFolder, true)
+    paketWithPackagesFolderGroup "restore" |> shouldContainText "Starting full restore process"
+    Directory.Exists packagesFolder |> shouldEqual true
+
+[<Test>]
+let ``paket restore --force marks the cache stale until it succeeds``() =
+    use __ = prepare legacyScenario
+    let scenarioPath = scenarioTempPath legacyScenario
+    addPackagesFolderGroup scenarioPath |> ignore
+    paketWithPackagesFolderGroup "install" |> ignore
+    let cacheFile = scenarioPath @@ "paket-files" @@ "paket.restore.cached"
+    File.Delete cacheFile
+    paketWithPackagesFolderGroup "restore --force" |> ignore
+    paketWithPackagesFolderGroup "restore" |> shouldContainText "The last full restore is still up to date"
+
+    // it empties the folders of the packages before it gets them again, here from nowhere
+    Directory.Delete(scenarioPath @@ "package-feed", true)
+    let failure = Assert.Throws<ProcessFailedWithExitCode>(fun () -> paketWithPackagesFolderGroup "restore --force" |> ignore)
+    failure.ToString() |> shouldContainText "Paket.IntegrationTests.Empty"
+    File.ReadAllText cacheFile |> shouldContainText "\"packagesDownloadedHash\": \"\""
 
 /// Stands for the paket.targets of Paket 11, which runs paket.exe through mono outside Windows and
 /// falls back to the bootstrapper

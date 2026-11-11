@@ -777,8 +777,9 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
     // fixup project specific changes (like an additional target framework or a changed references file)
 
     // Check if caching makes sense (even if we only can cache parts of it)
-    let canCacheRestore = 
-        not (hasLocalFile || force) && 
+    // (a forced one extracts all the packages again, and never exits early)
+    let canCacheRestore =
+        not hasLocalFile &&
             targetFrameworks = None && 
             (projectFile = AllProjects || projectFile = NoProjects) && 
             group = None
@@ -792,6 +793,17 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
     if not skipRestoreTargetsExtraction && (projectFile = AllProjects || projectFile = NoProjects) then
         refreshPaketTargets root
         extractRestoreTargets root |> ignore
+
+    // The cache doesn't know that the packages folder was deleted, which only the packages with
+    // "storage: none" don't use
+    let packagesFolderMissing () =
+        not (Directory.Exists(Path.Combine(root, Constants.DefaultPackagesFolderName)))
+        && lockFile.Value.GetGroupedResolution()
+           |> Map.exists (fun _ resolved ->
+               match defaultArg resolved.Settings.StorageConfig PackagesFolderGroupConfig.Default with
+               | PackagesFolderGroupConfig.DefaultPackagesFolder
+               | PackagesFolderGroupConfig.SymbolicLink -> true
+               | _ -> false)
 
     let readCache () =
         if not canCacheRestore then
@@ -808,8 +820,26 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
             // Even if the hash-based cache says we're up to date, don't skip the restore if the
             // ".paket/load" folder is missing but is required by a group's `generate_load_scripts`
             // setting - otherwise deleting that folder and re-running restore would be a silent no-op.
-            let canEarlyExit = isUpToDate && not (loadScriptsMissing root lockFile.Value.Groups)
+            let canEarlyExit = isUpToDate && not force && not (loadScriptsMissing root lockFile.Value.Groups) && not (packagesFolderMissing ())
             Some updatedCache, cache, lockFileHash, canEarlyExit
+
+    // A restore can extract the packages of another paket.lock, the ones that paket.local overrides,
+    // or only some packages into a deleted packages folder, empty the folders of the packages with
+    // --force, and then fail before it writes the cache, or never write it, like the restore of one
+    // project that paket.targets runs during a build. Mark the cache stale before, so that neither the
+    // next restore nor the targets skip while the packages folder can hold other packages: all of it,
+    // so that the build of SDK projects runs a full restore too, but only the downloaded packages with
+    // paket.local, for which no restore writes the cache, or the SDK projects would restore on every
+    // build. Rewritten rather than deleted, as the targets of other projects of a parallel build can be
+    // reading it.
+    let markRestoreCacheStale () =
+        let cache = readRestoreCache lockFileName
+        let staleCache =
+            if hasLocalFile then { cache with PackagesDownloadedHash = Hash "" }
+            elif not force && cache.IsPackagesDownloadUpToDate (getLockFileHash lockFileName.FullName) && not (packagesFolderMissing ()) then cache
+            else RestoreCache.Empty
+        if staleCache <> cache then
+            writeRestoreCache (Path.Combine(root, Constants.PaketRestoreHashFilePath)) staleCache
 
     let _,_,_, canEarlyExit = readCache()
     
@@ -947,7 +977,9 @@ let Restore(dependenciesFileName,projectFile:RestoreProjectOptions,force,group,i
                     if verbose then
                         verbosefn "Checking if restore hash is up-to-date"
 
-                    if not (cache.IsPackagesDownloadUpToDate lockFileHash) then
+                    // always taken by the restores that can't write the cache, which read it as empty
+                    if force || not (cache.IsPackagesDownloadUpToDate lockFileHash) || packagesFolderMissing () then
+                        markRestoreCacheStale ()
                         tracefn "Starting %srestore process." (if canCacheRestore then "full " else "")
                         for task in tasks do
                             task
