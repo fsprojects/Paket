@@ -4,19 +4,19 @@ open Paket
 open NUnit.Framework
 open FsUnit
 
-#nowarn "0044" //  Warning FS0044 This construct is deprecated. Use PlatformMatching.extractPlatforms instead
+let private extract path = (PlatformMatching.forceExtractPlatforms path).Platforms
 
 [<Test>]
 let ``should understand basic framework versions net20, net40, net45 ...``() = 
-    FrameworkDetection.Extract("net20").Value |> shouldEqual (DotNetFramework(FrameworkVersion.V2))
-    FrameworkDetection.Extract("net40").Value |> shouldEqual (DotNetFramework(FrameworkVersion.V4))
-    FrameworkDetection.Extract("net45").Value |> shouldEqual (DotNetFramework(FrameworkVersion.V4_5))
+    extract "net20" |> shouldEqual [ DotNetFramework(FrameworkVersion.V2) ]
+    extract "net40" |> shouldEqual [ DotNetFramework(FrameworkVersion.V4) ]
+    extract "net45" |> shouldEqual [ DotNetFramework(FrameworkVersion.V4_5) ]
 
 [<Test>]
 let ``should understand basic silverlight``() = 
-    FrameworkDetection.Extract("sl").Value |> shouldEqual (Silverlight SilverlightVersion.V3)
-    FrameworkDetection.Extract("sl3").Value |> shouldEqual (Silverlight SilverlightVersion.V3)
-    FrameworkDetection.Extract("sl4").Value |> shouldEqual (Silverlight SilverlightVersion.V4)
+    extract "sl" |> shouldEqual [ Silverlight SilverlightVersion.V3 ]
+    extract "sl3" |> shouldEqual [ Silverlight SilverlightVersion.V3 ]
+    extract "sl4" |> shouldEqual [ Silverlight SilverlightVersion.V4 ]
 
 [<Test>]
 let ``should serialize basic framework versions net20, net40, net45 ...``() = 
@@ -30,7 +30,7 @@ let ``should serialize silverlight framework identifier correctly``() =
 
 [<Test>]
 let ``should understand xamarinios``() =
-    FrameworkDetection.Extract("xamarinios10").Value |> shouldEqual XamariniOS
+    extract "xamarinios10" |> shouldEqual [ XamariniOS ]
 
 [<Test>]
 let ``should serialize xamarinios``() =
@@ -46,7 +46,7 @@ let ``should serialize xamarinwtchos``() =
 
 [<Test>]
 let ``should understand xamarinmac``() =
-    FrameworkDetection.Extract("xamarinmac20").Value |> shouldEqual XamarinMac
+    extract "xamarinmac20" |> shouldEqual [ XamarinMac ]
 
 [<Test>]
 let ``should serialize xamarinmac``() =
@@ -54,5 +54,5 @@ let ``should serialize xamarinmac``() =
 
 [<Test>]
 let ``should understand net8.0-windows10.0.22621.0`` () =
-    FrameworkDetection.Extract("net8.0-windows10.0.22621.0").Value
-    |> shouldEqual (DotNet8Windows Net8WindowsVersion.V10_0_22621_0)
+    extract "net8.0-windows10.0.22621.0"
+    |> shouldEqual [ DotNet8Windows Net8WindowsVersion.V10_0_22621_0 ]

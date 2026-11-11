@@ -417,18 +417,10 @@ type Dependencies(dependenciesFileName: string) =
                 this.Restore(force, group, Array.toList referencesFiles, touchAffectedRefs, ignoreChecks,  failOnFailedChecks, targetFramework, outputPath)
 
     /// Lists outdated packages.
-    [<Obsolete("Use ShowOutdated with the force parameter set to true to get the old behavior")>]
-    member this.ShowOutdated(strict: bool, includePrereleases: bool, groupName: string Option): unit =
-        this.ShowOutdated(strict, true, includePrereleases, groupName)
-
     member this.ShowOutdated(strict: bool, force: bool, includePrereleases: bool, groupName: string Option): unit =
         FindOutdated.ShowOutdated strict force includePrereleases groupName |> this.Process
 
     /// Finds all outdated packages.
-    [<Obsolete("Use FindOutdated with the force parameter set to true to get the old behavior")>]
-    member this.FindOutdated(strict: bool, includePrereleases: bool, groupName: string Option): (string * string * SemVerInfo) list =
-        this.FindOutdated(strict, true, includePrereleases, groupName)
-
     member this.FindOutdated(strict: bool, force: bool, includePrereleases: bool, groupName: string Option): (string * string * SemVerInfo) list =
         FindOutdated.FindOutdated strict force includePrereleases groupName
         |> this.Process
@@ -788,48 +780,6 @@ type Dependencies(dependenciesFileName: string) =
 
 
     /// Fix the transitive references in a list of generated .nuspec files
-    [<Obsolete "Use a real references file instead. Note that this overload doesn't take a 'real' references file.">]
-    static member FixNuspecs (referencesFile:string, nuspecFileList:string list) =
-
-        for nuspecFile in nuspecFileList do
-            if not (File.Exists nuspecFile) then
-                failwithf "Specified file '%s' does not exist." nuspecFile
-
-        for nuspecFile in nuspecFileList do
-            let nuspecText = File.ReadAllText nuspecFile
-
-            let doc =
-                try let doc = Xml.XmlDocument() in doc.LoadXml nuspecText
-                    doc
-                with exn -> raise (Exception(sprintf "Could not parse nuspec file '%s'." nuspecFile, exn))
-
-            if not (File.Exists referencesFile) then
-                failwithf "Specified references-file '%s' does not exist." referencesFile
-
-            let referencesText = File.ReadAllLines referencesFile
-            let transitiveReferences =
-                referencesText |> Array.map (fun l -> l.Split [|','|])
-                |> Array.choose (fun x -> if x.[2] = "Transitive" then Some x.[0] else None)
-                |> Set.ofArray
-
-            let rec traverse (parent:XmlNode) =
-                let nodesToRemove = ResizeArray()
-                for node in parent.ChildNodes do
-                    if node.Name = "dependency" then
-                        let packageName =
-                            match node.Attributes.["id"] with null -> "" | x -> x.InnerText
-
-                        if transitiveReferences.Contains packageName then
-                            nodesToRemove.Add node |> ignore
-
-                if nodesToRemove.Count = 0 then
-                    for node in parent.ChildNodes do traverse node
-                else
-                    for node in nodesToRemove do parent.RemoveChild node |> ignore
-            traverse doc
-            use fileStream = File.Open (nuspecFile, FileMode.Create)
-            doc.Save fileStream
-
     static member FixNuspecs (projectFile: ProjectFile, referencesFile:ReferencesFile, nuspecFileList:string list) =
         Dependencies.FixNuspecs (projectFile, referencesFile, nuspecFileList, [])
 

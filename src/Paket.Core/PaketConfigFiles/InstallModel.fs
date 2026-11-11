@@ -979,10 +979,6 @@ type InstallModel with
         let kind = kind |> Option.defaultValue InstallModelKind.Package
         InstallModel.emptyModel packageName packageVersion kind
 
-    [<Obsolete("usually this should not be used")>]
-    member this.GetReferenceFolders() = this.CompileLibFolders
-
-
     member this.GetLegacyReferences target = InstallModel.getLegacyReferences target this
     member this.GetCompileReferences target = InstallModel.getCompileReferences target this
     member this.GetRuntimeAssemblies graph rid target = InstallModel.getRuntimeAssemblies graph rid target this

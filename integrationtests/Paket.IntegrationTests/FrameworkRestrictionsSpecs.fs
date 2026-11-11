@@ -21,7 +21,7 @@ let ``#140 windsor should resolve framework dependent dependencies``() =
 [<Flaky>] // failure on assert
 let ``#1190 paket add nuget should handle transitive dependencies``() =
     if Paket.Utils.isWindows then Assert.Ignore "PATH TOO LONG on Windows..."
-    use __ = paket "add nuget xunit version 2.1.0" "i001190-transitive-dependencies-with-restr" |> fst
+    use __ = paket "add xunit --version 2.1.0" "i001190-transitive-dependencies-with-restr" |> fst
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-dependencies-with-restr","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "xunit.abstractions"].Settings.FrameworkRestrictions
     |> getExplicitRestriction
@@ -33,7 +33,7 @@ let ``#1190 paket add nuget should handle transitive dependencies``() =
     
 [<Test>]
 let ``#1190 paket add nuget should handle transitive dependencies with restrictions``() = 
-    use __ = paket "add nuget xunit version 2.1.0" "i001190-transitive-deps" |> fst
+    use __ = paket "add xunit --version 2.1.0" "i001190-transitive-deps" |> fst
     
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-deps","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "xunit.abstractions"].Settings.FrameworkRestrictions

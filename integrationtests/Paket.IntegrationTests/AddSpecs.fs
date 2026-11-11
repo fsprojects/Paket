@@ -34,7 +34,7 @@ let ``#321 paket add nuget is the default``() =
 [<Test>]
 let ``#310 paket add nuget should not resolve inconsistent dependency graph``() = 
     try
-        use __ = paket "add nuget Castle.Windsor version 3.3.0" "i000310-add-should-not-create-invalid-resolution" |> fst
+        use __ = paket "add Castle.Windsor --version 3.3.0" "i000310-add-should-not-create-invalid-resolution" |> fst
         failwith "resolver error expected"
     with
     | exn when exn.Message.Contains("There was a version conflict during package resolution") -> ()

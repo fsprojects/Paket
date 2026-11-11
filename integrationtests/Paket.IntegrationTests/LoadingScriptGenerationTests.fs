@@ -5,8 +5,6 @@ open NUnit.Framework
 open Paket.IntegrationTests.TestHelpers
 open Paket
 
-#nowarn "0044" //  Warning FS0044 This construct is deprecated. Use PlatformMatching.extractPlatforms instead
-
 let makeScenarioPath scenario    = Path.Combine("loading-scripts", scenario)
 let paket command scenario       = paket command (makeScenarioPath scenario)
 let directPaket command scenario = directPaket command (makeScenarioPath scenario)
@@ -14,7 +12,7 @@ let scenarioTempPath scenario    = scenarioTempPath (makeScenarioPath scenario)
 let scriptRoot scenario = DirectoryInfo(Path.Combine(scenarioTempPath scenario, ".paket", "load"))
 
 let getLoadScriptDefaultFolder scenario = DirectoryInfo((scriptRoot scenario).FullName)
-let getLoadScriptFolder framework scenario = DirectoryInfo(Path.Combine((getLoadScriptDefaultFolder scenario).FullName, framework |> FrameworkDetection.Extract |> Option.get |> string))
+let getLoadScriptFolder framework scenario = DirectoryInfo(Path.Combine((getLoadScriptDefaultFolder scenario).FullName, (PlatformMatching.forceExtractPlatforms framework).Platforms |> List.exactlyOne |> string))
 
 let getGeneratedScriptFiles framework scenario =
     let frameworkDir = getLoadScriptFolder framework scenario
@@ -70,7 +68,7 @@ let ``simple dependencies generates expected scripts``() =
     let framework = "net4"
     use __ = paket "install" scenario |> fst
 
-    directPaket (sprintf "generate-load-scripts framework %s" framework) scenario |> ignore
+    directPaket (sprintf "generate-load-scripts --framework %s" framework) scenario |> ignore
   
     let files = getGeneratedScriptFiles framework scenario
     
@@ -98,7 +96,7 @@ let ``fslab generates expected load of package loader script``() =
     let framework = "net4"
     use __ = paket "install" scenario |> fst
 
-    directPaket (sprintf "generate-load-scripts framework %s" framework) scenario |> ignore
+    directPaket (sprintf "generate-load-scripts --framework %s" framework) scenario |> ignore
   
     let files = getGeneratedScriptFiles framework scenario
 
@@ -146,7 +144,7 @@ let ``fails on wrong framework given`` () =
     use __ = paket "install" scenario |> fst
 
     let failure = Assert.Throws<ProcessFailedWithExitCode> (fun () ->
-        let result = directPaket "generate-load-scripts framework foo framework bar framework net45" scenario
+        let result = directPaket "generate-load-scripts --framework foo --framework bar --framework net45" scenario
         printf "%s" result
     )
     let message = failure.ToString()
@@ -163,14 +161,14 @@ let ``fails on wrong scripttype given`` () =
     use __ = paket "install" scenario |> fst
 
     let failure = Assert.Throws<ProcessFailedWithExitCode> (fun () ->
-        let result = directPaket (sprintf "generate-load-scripts type foo type bar framework net45") scenario
+        let result = directPaket (sprintf "generate-load-scripts --type foo --type bar --framework net45") scenario
         printf "%s" result
     )
     let message = failure.ToString()
     printfn "%s" message
 
     // This is handled at the parser level.
-    Assert.IsTrue(message.Contains "parameter 'type' must be followed by <csx|fsx>, but was 'foo'")
+    Assert.IsTrue(message.Contains "parameter '--type' must be followed by <csx|fsx>, but was 'foo'")
 
 
 [<Test; Category("scriptgen")>]
@@ -178,7 +176,7 @@ let ``issue 1676 casing`` () =
     let scenario = "issue-1676"
     use __ = paket "install" scenario |> fst
 
-    directPaket "generate-load-scripts framework net46" scenario |> ignore<string>
+    directPaket "generate-load-scripts --framework net46" scenario |> ignore<string>
 
     let expectations = [
         "entityframework.csx", [
@@ -203,7 +201,7 @@ let ``mscorlib excluded from f# script`` () =
     let scenario = "mscorlib"
     use __ = paket "install" scenario |> fst
 
-    directPaket "generate-load-scripts framework net46" scenario |> ignore<string>
+    directPaket "generate-load-scripts --framework net46" scenario |> ignore<string>
 
     let scriptRootDir = scriptRoot scenario
     let hasFilesWithMsCorlib =
@@ -227,7 +225,7 @@ let ``fsharp.core excluded from f# script`` () =
     let scenario = "fsharpcore"
     use __ = paket "install" scenario |> fst
 
-    directPaket "generate-load-scripts framework net46" scenario |> ignore<string>
+    directPaket "generate-load-scripts --framework net46" scenario |> ignore<string>
 
     let scriptRootDir = scriptRoot scenario
     let hasFilesWithFsharpCore =

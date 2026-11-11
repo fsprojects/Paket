@@ -330,7 +330,7 @@ In a project file, the following dependencies will be added:
 * Any Paket dependency with the range specified in the
   [`paket.dependencies` file](dependencies-file.html).
 * Any Paket dependency with the range specified in the
-  [`paket.lock` file](lock-file.html) (if `lock-dependencies` parameter is used
+  [`paket.lock` file](lock-file.html) (if the `--lock-dependencies` parameter is used
   in [`paket pack`](paket-pack.html)).
 * Any project reference with a matching `paket.template` file with a minimum
   version requirement of the version currently being packaged.

@@ -16,7 +16,7 @@ let getDependencies(x:Paket.NuGet.NuGetPackageCache) = x.GetDependencies()
 let ``#1234 empty assembly name``() =
     let outPath = Path.Combine(scenarioTempPath "i001234-missing-assemblyname","out")
     try
-        use __ = paket ("pack output \"" + outPath + "\"") "i001234-missing-assemblyname" |> fst
+        use __ = paket ("pack \"" + outPath + "\"") "i001234-missing-assemblyname" |> fst
         failwith "Expected an exeption"
     with
     | exn when exn.Message.Contains("PaketBug.dll") -> ()
@@ -27,7 +27,7 @@ let ``#1348 npm type folder names`` () =
     let outPath = Path.Combine(rootPath,"out")
     let package = Path.Combine(outPath, "Paket.Integrations.Npm.1.0.0.nupkg")
 
-    use __ = paket ("pack output \"" + outPath + "\"") "i001348-packaging-npm-type-folders" |> fst
+    use __ = paket ("pack \"" + outPath + "\"") "i001348-packaging-npm-type-folders" |> fst
     ZipFile.ExtractToDirectory(package, outPath)
 
     let desiredFolderName = "font-awesome@4.5.0"
@@ -41,14 +41,14 @@ let ``#1348 npm type folder names`` () =
 [<Test>]
 let ``#1375 pack specific dependency``() =
     let outPath = Path.Combine(scenarioTempPath "i001375-pack-specific","out")
-    use __ = paket ("pack output \"" + outPath + "\"") "i001375-pack-specific" |> fst
+    use __ = paket ("pack \"" + outPath + "\"") "i001375-pack-specific" |> fst
     ignore __
     //File.Delete(Path.Combine(scenarioTempPath "i001375-pack-specific","PaketBug","paket.template"))
 
 [<Test>]
 let ``#1375 pack with projectUrl commandline``() =
     let outPath = Path.Combine(scenarioTempPath "i001375-pack-specific","out")
-    use __ = paket ("pack output \"" + outPath + "\" project-url \"http://localhost\"") "i001375-pack-specific" |> fst
+    use __ = paket ("pack \"" + outPath + "\" --project-url \"http://localhost\"") "i001375-pack-specific" |> fst
     ignore __
     //File.Delete(Path.Combine(scenarioTempPath "i001375-pack-specific","PaketBug","paket.template"))
 
@@ -56,7 +56,7 @@ let ``#1375 pack with projectUrl commandline``() =
 let ``#1376 fail template``() =
     let outPath = Path.Combine(scenarioTempPath "i001376-pack-template","out")
     let templatePath = Path.Combine(scenarioTempPath "i001376-pack-template","PaketBug", "paket.template")
-    use __ = paket ("pack output \"" + outPath + "\" templatefile " + templatePath) "i001376-pack-template" |> fst
+    use __ = paket ("pack \"" + outPath + "\" --template " + templatePath) "i001376-pack-template" |> fst
     let fileInfo = FileInfo(Path.Combine(outPath, "PaketBug.1.0.0.0.nupkg"))
     let (expectedFileSize: int64) = int64(1542)
     fileInfo.Length |> shouldBeGreaterThan expectedFileSize
@@ -67,7 +67,7 @@ let ``#1376 fail template``() =
 let ``#1376 template with plus``() =
     let outPath = Path.Combine(scenarioTempPath "i001376-pack-template-plus","out")
     let templatePath = Path.Combine(scenarioTempPath "i001376-pack-template-plus","PaketBug", "paket.template")
-    use __ = paket ("pack output \"" + outPath + "\" templatefile " + templatePath) "i001376-pack-template-plus" |> fst
+    use __ = paket ("pack \"" + outPath + "\" --template " + templatePath) "i001376-pack-template-plus" |> fst
     let fileInfo = FileInfo(Path.Combine(outPath, "PaketBug.1.0.0.0.nupkg"))
     let (expectedFileSize: int64) = int64(1542)
     fileInfo.Length |> shouldBeGreaterThan expectedFileSize
@@ -85,7 +85,7 @@ let ``#1376 template with plus``() =
 let ``#1429 pack deps from template``() =
     let outPath = Path.Combine(scenarioTempPath "i001429-pack-deps","out")
     let templatePath = Path.Combine(scenarioTempPath "i001429-pack-deps","PaketBug", "paket.template")
-    use __ = paket ("pack output \"" + outPath + "\" templatefile " + templatePath) "i001429-pack-deps" |> fst
+    use __ = paket ("pack \"" + outPath + "\" --template " + templatePath) "i001429-pack-deps" |> fst
 
     let details =
         NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
@@ -102,7 +102,7 @@ let ``#1429 pack deps from template``() =
 let ``#1429 pack deps``() =
     let outPath = Path.Combine(scenarioTempPath "i001429-pack-deps","out")
     let templatePath = Path.Combine(scenarioTempPath "i001429-pack-deps","PaketBug", "paket.template")
-    use __ = paket ("pack output \"" + outPath + "\"") "i001429-pack-deps" |> fst
+    use __ = paket ("pack \"" + outPath + "\"") "i001429-pack-deps" |> fst
 
     let details =
         NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
@@ -119,7 +119,7 @@ let ``#1429 pack deps``() =
 let ``#1429 pack deps using minimum-from-lock-file``() =
     let outPath = Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","out")
     let templatePath = Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","PaketBug", "paket.template")
-    use __ = paket ("pack minimum-from-lock-file output \"" + outPath + "\"") "i001429-pack-deps-minimum-from-lock" |> fst
+    use __ = paket ("pack --minimum-from-lock-file \"" + outPath + "\"") "i001429-pack-deps-minimum-from-lock" |> fst
 
     let details =
         NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
@@ -136,7 +136,7 @@ let ``#1429 pack deps using minimum-from-lock-file``() =
 let ``#1429 pack deps without minimum-from-lock-file uses dependencies file range``() =
     let outPath = Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","out")
     let templatePath = Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","PaketBug", "paket.template")
-    use __ = paket ("pack output \"" + outPath + "\"") "i001429-pack-deps-minimum-from-lock" |> fst
+    use __ = paket ("pack \"" + outPath + "\"") "i001429-pack-deps-minimum-from-lock" |> fst
 
     let details =
         NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
@@ -153,7 +153,7 @@ let ``#1429 pack deps without minimum-from-lock-file uses dependencies file rang
 let ``#1429 pack deps without minimum-from-lock-file uses specifc dependencies file range``() =
     let outPath = Path.Combine(scenarioTempPath "i001429-pack-deps-specific","out")
     let templatePath = Path.Combine(scenarioTempPath "i001429-pack-deps-specific","PaketBug", "paket.template")
-    use __ = paket ("pack output \"" + outPath + "\"") "i001429-pack-deps-specific" |> fst
+    use __ = paket ("pack \"" + outPath + "\"") "i001429-pack-deps-specific" |> fst
 
     let details =
         NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
@@ -170,7 +170,7 @@ let ``#1429 pack deps without minimum-from-lock-file uses specifc dependencies f
 let ``#1429 pack deps with minimum-from-lock-file uses specifc dependencies file range``() =
     let outPath = Path.Combine(scenarioTempPath "i001429-pack-deps-specific","out")
     let templatePath = Path.Combine(scenarioTempPath "i001429-pack-deps-specific","PaketBug", "paket.template")
-    use __ = paket ("pack minimum-from-lock-file  output \"" + outPath + "\"") "i001429-pack-deps-specific" |> fst
+    use __ = paket ("pack --minimum-from-lock-file \"" + outPath + "\"") "i001429-pack-deps-specific" |> fst
 
     let details =
         NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
@@ -188,7 +188,7 @@ let ``#1473 works in same folder``() =
     let scenario = "i001473-blocking"
 
     use __ = prepare scenario
-    directPaket "pack templatefile paket.template output o" scenario |> ignore
+    directPaket "pack o --template paket.template" scenario |> ignore
     directPaket "update" scenario|> ignore
 
 [<Test>]
@@ -197,7 +197,7 @@ let ``#1472 globs correctly``() =
 
     let outPath = Path.Combine(scenarioTempPath scenario,"out")
     let templatePath = Path.Combine(scenarioTempPath scenario,"src", "A.Source", "paket.template")
-    use __ = paket ("pack version 1.0.0 output \"" + outPath + "\" -v") scenario |> fst
+    use __ = paket ("pack --version 1.0.0 \"" + outPath + "\" -v") scenario |> fst
 
     let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
 
@@ -213,7 +213,7 @@ let ``#1472 allows to put stuff in root of package``() =
 
     let outPath = Path.Combine(scenarioTempPath scenario,"out")
     let templatePath = Path.Combine(scenarioTempPath scenario,"src", "A.Source", "paket.template")
-    use __ = paket ("pack version 1.0.0 output \"" + outPath + "\" -v") scenario |> fst
+    use __ = paket ("pack --version 1.0.0 \"" + outPath + "\" -v") scenario |> fst
 
     let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
 
@@ -230,7 +230,7 @@ let ``#1472 allows to put stuff in relative folder``() =
 
     let outPath = Path.Combine(scenarioTempPath scenario,"out")
     let templatePath = Path.Combine(scenarioTempPath scenario,"src", "A.Source", "paket.template")
-    use __ = paket ("pack version 1.0.0 output \"" + outPath + "\" -v") scenario |> fst
+    use __ = paket ("pack --version 1.0.0 \"" + outPath + "\" -v") scenario |> fst
 
     let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
 
@@ -245,7 +245,7 @@ let ``#1472 allows to put stuff in relative folder``() =
 let ``#1483 pack deps with locked version from group``() =
     let outPath = Path.Combine(scenarioTempPath "i001483-group-lock","out")
     let templatePath = Path.Combine(scenarioTempPath "i001483-group-lock","pack", "paket.template")
-    use __ = paket ("pack output \"" + outPath + "\"") "i001483-group-lock" |> fst
+    use __ = paket ("pack \"" + outPath + "\"") "i001483-group-lock" |> fst
     ignore __
     //File.Delete(templatePath)
 
@@ -255,7 +255,7 @@ let ``#1506 allows to pack files without ending``() =
 
     let outPath = Path.Combine(scenarioTempPath scenario,"out")
     let templatePath = Path.Combine(scenarioTempPath scenario, "paket.template")
-    use __ = paket ("pack output \"" + outPath + "\" -v") scenario |> fst
+    use __ = paket ("pack \"" + outPath + "\" -v") scenario |> fst
 
     let package = Path.Combine(outPath, "Foo.1.0.0.nupkg")
 
@@ -273,7 +273,7 @@ let ``#1514 invalid pack should give proper warning``() =
     let templatePath = Path.Combine(scenarioTempPath scenario, "paket.template")
 
     try
-        use __ = paket ("pack buildconfig \"Debug\" buildplatform \"AnyCPU\" output \"" + outPath + "\" -v") scenario |> fst
+        use __ = paket ("pack --build-config \"Debug\" --build-platform \"AnyCPU\" \"" + outPath + "\" -v") scenario |> fst
         failwith ""
     with
     | exn when exn.Message.Contains "No package with id 'PaketDemo.MyLibrary'" -> ()
@@ -287,7 +287,7 @@ let ``#1538 symbols src folder structure`` () =
     let outPath = Path.Combine(rootPath, "out")
     let package = Path.Combine(outPath, "PackWithSource.1.0.0.0.symbols.nupkg")
 
-    use __ = paket ("pack output \"" + outPath + "\" symbols") scenario |> fst
+    use __ = paket ("pack \"" + outPath + "\" --symbols") scenario |> fst
     ZipFile.ExtractToDirectory(package, outPath)
 
     Path.Combine(outPath, "lib", "net452", "PackWithSource.pdb") |> checkFileExists
@@ -309,8 +309,8 @@ let ``#1504 unpacking should override``() =
     let scenario = "i001504-override"
 
     use __ = prepare scenario
-    directPaket "pack templatefile paket.B.template version 1.0.0 output bin" scenario |> ignore
-    directPaket "pack templatefile paket.A.template version 1.0.0 output bin" scenario |> ignore
+    directPaket "pack bin --template paket.B.template --version 1.0.0" scenario |> ignore
+    directPaket "pack bin --template paket.A.template --version 1.0.0" scenario |> ignore
     directPaket "update" scenario|> ignore
 
 [<Test>]
@@ -318,7 +318,7 @@ let ``#1586 pack dependent projects``() =
     let scenario = "i001586-pack-referenced"
 
     use __ = prepare scenario
-    directPaket "pack output . include-referenced-projects minimum-from-lock-file -v" scenario |> ignore
+    directPaket "pack . --include-referenced-projects --minimum-from-lock-file -v" scenario |> ignore
 
 [<Test>]
 let ``#1594 allows to pack directly``() =
@@ -326,7 +326,7 @@ let ``#1594 allows to pack directly``() =
 
     let outPath = Path.Combine(scenarioTempPath scenario,"bin")
     let templatePath = Path.Combine(scenarioTempPath scenario, "paket.template")
-    use __ = paket "pack output bin version 1.0.0 templatefile paket.template" scenario |> fst
+    use __ = paket "pack bin --version 1.0.0 --template paket.template" scenario |> fst
 
     let package = Path.Combine(outPath, "ClassLibrary1.1.0.0.nupkg")
 
@@ -341,7 +341,7 @@ let ``#1596 pack works for reflected definition assemblies``() =
 
     let outPath = Path.Combine(scenarioTempPath scenario,"bin")
     let templatePath = Path.Combine(scenarioTempPath scenario, "paket.template")
-    let cleanup, r = paket "pack output bin version 1.0.0 templatefile paket.template" scenario
+    let cleanup, r = paket "pack bin --version 1.0.0 --template paket.template" scenario
     use __ = cleanup
     printfn "paket.pack said: %A" r
     let package = Path.Combine(outPath, "Project2.1.0.0.nupkg")
@@ -358,7 +358,7 @@ let ``#1816 pack localized happy path`` () =
     let outPath = Path.Combine(rootPath, "out")
     let package = Path.Combine(outPath, "LocalizedLib.1.0.0.0.nupkg")
 
-    use __ = paket ("pack -v output \"" + outPath + "\"") scenario |> fst
+    use __ = paket ("pack -v \"" + outPath + "\"") scenario |> fst
     ZipFile.ExtractToDirectory(package, outPath)
 
     Path.Combine(outPath, "lib", "net45", "LocalizedLib.dll") |> checkFileExists
@@ -374,7 +374,7 @@ let ``#1816 pack localized when satellite dll is missing`` () =
     let outPath = Path.Combine(rootPath, "out")
     let package = Path.Combine(outPath, "LocalizedLib.1.0.0.0.nupkg")
 
-    let cleanup, result = paket ("pack -v output \"" + outPath + "\"") scenario
+    let cleanup, result = paket ("pack -v \"" + outPath + "\"") scenario
     use __ = cleanup
     let expectedMessage = "Did not find satellite assembly for (sv) try building and running pack again."
     StringAssert.Contains(expectedMessage, result)
@@ -392,7 +392,7 @@ let ``#3275 netstandard pack localized happy path`` () =
     let outPath = Path.Combine(rootPath, "out")
     let package = Path.Combine(outPath, "LibForTest.1.0.0.nupkg")
 
-    use __ = paket ("pack -v output \"" + outPath + "\"") scenario |> fst
+    use __ = paket ("pack -v \"" + outPath + "\"") scenario |> fst
     ZipFile.ExtractToDirectory(package, outPath)
 
     Path.Combine(outPath, "lib", "netstandard2.0", "LibForTest.dll") |> checkFileExists
@@ -932,7 +932,7 @@ let ``#3707 allows repositoryUrl``() =
 
     let outPath = Path.Combine(scenarioTempPath scenario,"out")
     let templatePath = Path.Combine(scenarioTempPath scenario,"src", "A.Source", "paket.template")
-    use __ = paket ("pack version 1.0.0 output \"" + outPath + "\" -v") scenario |> fst
+    use __ = paket ("pack --version 1.0.0 \"" + outPath + "\" -v") scenario |> fst
 
     let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
 
@@ -973,7 +973,7 @@ let ``allow repositoryBranch``() =
     let scenario = "i003707-repositoryBranch"
 
     let outPath = Path.Combine(scenarioTempPath scenario,"out")
-    use __ = paket ("pack version 1.0.0 output \"" + outPath + "\" -v") scenario |> fst
+    use __ = paket ("pack --version 1.0.0 \"" + outPath + "\" -v") scenario |> fst
 
     let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
 
@@ -991,7 +991,7 @@ let ``allow repositoryCommit``() =
     let scenario = "i003707-repositoryCommit"
 
     let outPath = Path.Combine(scenarioTempPath scenario,"out")
-    use __ = paket ("pack version 1.0.0 output \"" + outPath + "\" -v") scenario |> fst
+    use __ = paket ("pack --version 1.0.0 \"" + outPath + "\" -v") scenario |> fst
 
     let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
 
@@ -1009,7 +1009,7 @@ let ``allow repositoryFull``() =
     let scenario = "i003707-repositoryFull"
 
     let outPath = Path.Combine(scenarioTempPath scenario,"out")
-    use __ = paket ("pack version 1.0.0 output \"" + outPath + "\" -v") scenario |> fst
+    use __ = paket ("pack --version 1.0.0 \"" + outPath + "\" -v") scenario |> fst
 
     let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
 

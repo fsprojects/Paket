@@ -303,61 +303,6 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
                     traceWarnfn "Could not download license for %O %O from %s.%s    %O" packageName version licenseUrl Environment.NewLine exn
     }
 
-let private getFilesMatching targetFolder searchPattern subFolderName filesDescriptionForVerbose =
-    let files =
-        let dir = DirectoryInfo(targetFolder)
-        let dirFullPath = Path.GetFullPath targetFolder
-        let path = Path.Combine(dir.FullName.ToLower(), subFolderName)
-        if dir.Exists then
-            dir.GetDirectories()
-            |> Array.filter (fun fi -> String.equalsIgnoreCase fi.FullName path)
-            |> Array.collect (fun dir -> dir.GetFiles(searchPattern, SearchOption.AllDirectories))
-            |> Array.map (fun file ->
-                let fullPath = Path.GetFullPath file.FullName
-                { UnparsedPackageFile.FullPath = fullPath
-                  UnparsedPackageFile.PathWithinPackage = fullPath.Substring(dirFullPath.Length + 1).Replace("\\", "/") })
-        else
-            [||]
-
-    if Logging.verbose then
-        if Array.isEmpty files then
-            verbosefn "No %s found in %s matching %s" filesDescriptionForVerbose targetFolder searchPattern
-        else
-            let s = String.Join(Environment.NewLine + "  - ",files |> Array.map (fun l -> l.FullPath))
-            verbosefn "%s found in %s matching %s:%s  - %s" filesDescriptionForVerbose targetFolder searchPattern Environment.NewLine s
-
-    files
-
-let private getFiles targetFolder subFolderName filesDescriptionForVerbose =
-    getFilesMatching targetFolder "*.*" subFolderName filesDescriptionForVerbose
-
-/// Finds all libraries in a nuget package.
-[<Obsolete "Use GetContent instead">]
-let GetLibFiles targetFolder =
-    let libs = getFiles targetFolder "lib" "libraries"
-    let refs = getFiles targetFolder "ref" "libraries"
-    let runtimeLibs = getFiles targetFolder "runtimes" "libraries"
-    refs
-    |> Array.append libs
-    |> Array.append runtimeLibs
-    |> Array.filter (fun p ->
-        let ext = System.IO.Path.GetExtension p.FullPath
-
-        ".dll".Equals(ext, StringComparison.OrdinalIgnoreCase))
-
-/// Finds all targets files in a nuget package.
-[<Obsolete "Use GetContent instead">]
-let GetTargetsFiles(targetFolder, pkg : PackageName) =
-    let packageId = pkg.CompareString
-    getFiles targetFolder "build" ".targets files"
-    |> Array.filter (fun p ->
-        let name = System.IO.Path.GetFileName p.FullPath
-        name.Equals(packageId + ".targets", StringComparison.OrdinalIgnoreCase) || name.Equals(packageId + ".props", StringComparison.OrdinalIgnoreCase))
-
-/// Finds all analyzer files in a nuget package.
-[<Obsolete "Use GetContent instead">]
-let GetAnalyzerFiles targetFolder = getFilesMatching targetFolder "*.dll" "analyzers" "analyzer dlls"
-
 let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
     NuGetV3.findVersionsForPackage(nugetV3Url, auth, package)
 
