@@ -6,10 +6,11 @@ When enabling auto-restore, Paket will
   the .NET SDK and have a [`paket.references` file](references-files.html).
 
 `paket.targets` runs `paket restore` before the build of those projects. It finds
-Paket installed with `--tool-path` in `.paket` or in the root directory, as a
-local tool, or on the `PATH` like a global tool. The projects that use the .NET
-SDK restore through `Paket.Restore.targets` instead, which
-[`paket install`](paket-install.html) adds to them.
+Paket as a local tool when the tool manifest declares it, then installed with
+`--tool-path` in the root directory or in `.paket`, or on the `PATH` like a
+global tool, as [`Paket.Restore.targets`](installation.html#Global-tool) does.
+The projects that use the .NET SDK restore through `Paket.Restore.targets`
+instead, which [`paket install`](paket-install.html) adds to them.
 
 With MSBuild 15.8 or later, `paket.targets` skips that restore when
 `paket-files/paket.restore.cached` says that the last full restore was of the
