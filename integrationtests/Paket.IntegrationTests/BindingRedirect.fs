@@ -9,7 +9,7 @@ open Paket
 
 [<Test>]
 let ``install should redirect required assemblies only``() = 
-    use __ = paket "install --redirects --createnewbindingfiles" "i001187-binding-redirect" |> fst
+    use __ = paket "install --redirects --create-new-binding-files" "i001187-binding-redirect" |> fst
 
     let path = Path.Combine(scenarioTempPath "i001187-binding-redirect")
     let config1Path = Path.Combine(path, "Project1", "app.config")
@@ -89,7 +89,7 @@ let ``#2408 should report wrong app.config parsing``() =
     
 [<Test>]
 let ``#1218 install should replace paket's binding redirects with required only``() = 
-    use __ = paket "install --redirects --createnewbindingfiles" "i001218-binding-redirect" |> fst
+    use __ = paket "install --redirects --create-new-binding-files" "i001218-binding-redirect" |> fst
 
     let path = Path.Combine(scenarioTempPath "i001218-binding-redirect")
     let config1Path = Path.Combine(path, "Project1", "app.config")
@@ -166,7 +166,7 @@ let ``#1218 install should replace paket's binding redirects with required only`
 
 [<Test>]
 let ``#1270 redirects from references``() = 
-    use __ = paket "install --createnewbindingfiles" "i001270-force-redirects" |> fst
+    use __ = paket "install --create-new-binding-files" "i001270-force-redirects" |> fst
     let path = Path.Combine(scenarioTempPath "i001270-force-redirects")
     let configPath = Path.Combine(path, "MyClassLibrary", "MyClassLibrary2", "app.config")
 

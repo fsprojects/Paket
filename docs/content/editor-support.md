@@ -57,7 +57,8 @@
 
 * [Project site](http://ionide.io)
 * [Repository](https://github.com/ionide/ionide-vscode-paket)
-* Status: Released
+* Status: Released. Its commands that add, remove or update a package, and that update a group,
+  pass the command line syntax that Paket 12 removed, so they fail with Paket 12
 * Installation: Available via
   [Visual Studio Marketplace](https://marketplace.visualstudio.com/items/Ionide.Ionide-Paket)
 * Features:

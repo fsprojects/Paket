@@ -21,7 +21,7 @@ open Paket.Requirements
 
 [<Test>]
 let ``#1178 update specific package``() =
-    use __ = paket "update nuget NUnit" "i001178-update-with-regex" |> fst
+    use __ = paket "update NUnit" "i001178-update-with-regex" |> fst
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001178-update-with-regex","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Windsor"].Version
     |> shouldEqual (SemVer.Parse "2.5.1")
@@ -39,7 +39,7 @@ let ``#1469 update package in main group``() =
 
 [<Test>]
 let ``#1178 update with Mircosoft.* filter``() =
-    use __ = paket "update nuget Microsoft.* --filter" "i001178-update-with-regex" |> fst
+    use __ = paket "update Microsoft.* --filter" "i001178-update-with-regex" |> fst
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001178-update-with-regex","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Windsor"].Version
     |> shouldEqual (SemVer.Parse "2.5.1")
@@ -50,7 +50,7 @@ let ``#1178 update with Mircosoft.* filter``() =
 
 [<Test>]
 let ``#1178 update with [MN].* --filter``() =
-    use __ = paket "update nuget [MN].* --filter" "i001178-update-with-regex" |> fst
+    use __ = paket "update [MN].* --filter" "i001178-update-with-regex" |> fst
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001178-update-with-regex","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Windsor"].Version
     |> shouldEqual (SemVer.Parse "2.5.1")
@@ -62,14 +62,14 @@ let ``#1178 update with [MN].* --filter``() =
 [<Test>]
 let ``#1178 update with [MN].* and without filter should fail``() =
     try
-        use __ = paket "update nuget [MN].*" "i001178-update-with-regex" |> fst
+        use __ = paket "update [MN].*" "i001178-update-with-regex" |> fst
         failwithf "Paket command expected to fail"
     with
     | exn when exn.Message.Contains "Package [MN].* was not found in paket.dependencies in group Main" -> ()
 
 [<Test>]
 let ``#1178 update with NUn.* filter to specific version``() =
-    use __ = paket "update nuget NUn.* --filter version 2.6.2" "i001178-update-with-regex" |> fst
+    use __ = paket "update NUn.* --filter --version 2.6.2" "i001178-update-with-regex" |> fst
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001178-update-with-regex","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Windsor"].Version
     |> shouldEqual (SemVer.Parse "2.5.1")
@@ -110,12 +110,12 @@ let ``#1432 update doesn't throw Stackoverflow``() =
     let scenario = "i001432-stackoverflow"
 
     use __ = prepare scenario
-    directPaket "pack templatefile paket.A.template version 1.0.0-prerelease output bin" scenario |> ignore
-    directPaket "pack templatefile paket.A.template version 1.0.0 output bin" scenario |> ignore
-    directPaket "pack templatefile paket.A.template version 1.1.0-prerelease output bin" scenario |> ignore
-    directPaket "pack templatefile paket.B.template version 1.0.0 output bin" scenario |> ignore
-    directPaket "pack templatefile paket.C.template version 1.0.0-prerelease output bin" scenario |> ignore
-    directPaket "pack templatefile paket.D.template version 1.0.0-prerelease output bin" scenario  |> ignore
+    directPaket "pack bin --template paket.A.template --version 1.0.0-prerelease" scenario |> ignore
+    directPaket "pack bin --template paket.A.template --version 1.0.0" scenario |> ignore
+    directPaket "pack bin --template paket.A.template --version 1.1.0-prerelease" scenario |> ignore
+    directPaket "pack bin --template paket.B.template --version 1.0.0" scenario |> ignore
+    directPaket "pack bin --template paket.C.template --version 1.0.0-prerelease" scenario |> ignore
+    directPaket "pack bin --template paket.D.template --version 1.0.0-prerelease" scenario  |> ignore
     directPaket "update" scenario|> ignore
 
 [<Test>]
@@ -123,7 +123,7 @@ let ``#1579 update allows unpinned``() =
     let scenario = "i001579-unlisted"
 
     use __ = prepare scenario
-    directPaket "pack templatefile paket.A.template version 1.0.0-prerelease output bin" scenario |> ignore
+    directPaket "pack bin --template paket.A.template --version 1.0.0-prerelease" scenario |> ignore
     directPaket "update" scenario|> ignore
 
 [<Test>]
@@ -164,6 +164,6 @@ let ``#2572 should tell about late resolver issue``() =
 let scenario = "i001579-unlisted"
 
 prepare scenario
-directPaket "pack templatefile paket.A.template version 1.0.0-prerelease output bin" scenario
+directPaket "pack bin --template paket.A.template --version 1.0.0-prerelease" scenario
 directPaket "update" scenario
 #endif

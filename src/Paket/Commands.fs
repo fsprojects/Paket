@@ -6,20 +6,10 @@ open Argu
 
 type AddArgs =
     | [<ExactlyOnce;MainCommand>] NuGet of package_ID:string
-    | [<Hidden;ExactlyOnce;CustomCommandLine("nuget")>] NuGet_Legacy of package_ID:string
-
     | [<Unique;AltCommandLine("-V")>] Version of version_constraint:string
-    | [<Hidden;Unique;CustomCommandLine("version")>] Version_Legacy of version_constraint:string
-
     | [<Unique;AltCommandLine("-p")>] Project of path:string
-    | [<Hidden;Unique;CustomCommandLine("project")>] Project_Legacy of path:string
-
     | [<Unique;AltCommandLine("-g")>] Group of name:string
-    | [<Hidden;Unique;CustomCommandLine("group")>] Group_Legacy of name:string
-
     | [<Unique>] Create_New_Binding_Files
-    | [<Hidden;Unique;CustomCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files_Legacy
-
     | [<Unique;AltCommandLine("-f")>] Force
     | [<Unique;AltCommandLine("-i")>] Interactive
     | [<Unique>] Redirects
@@ -36,20 +26,10 @@ with
         member this.Usage =
             match this with
             | NuGet _ -> "NuGet package ID"
-            | NuGet_Legacy _ -> "[obsolete]"
-
             | Group _ -> "add the dependency to a group (default: Main group)"
-            | Group_Legacy _ -> "[obsolete]"
-
             | Version _ -> "dependency version constraint"
-            | Version_Legacy _ -> "[obsolete]"
-
             | Project _ -> "add the dependency to a single project only"
-            | Project_Legacy _ -> "[obsolete]"
-
             | Create_New_Binding_Files -> "create binding redirect files if needed"
-            | Create_New_Binding_Files_Legacy -> "[obsolete]"
-
             | Force -> "force download and reinstallation of all dependencies"
             | Interactive -> "ask for every project whether to add the dependency"
             | Redirects -> "create binding redirects"
@@ -127,9 +107,7 @@ type ConvertFromNugetArgs =
     | [<Unique;AltCommandLine("-f")>] Force
     | [<Unique>] No_Install
     | [<Unique>] No_Auto_Restore
-
     | [<Unique>] Migrate_Credentials of mode:string
-    | [<Hidden;Unique;CustomCommandLine("--creds-migrations")>] Migrate_Credentials_Legacy of mode:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -137,25 +115,17 @@ with
             | Force -> "force the conversion even if paket.dependencies or paket.references files are present"
             | No_Install -> "do not modify projects"
             | No_Auto_Restore -> "do not enable automatic package restore"
-
             | Migrate_Credentials _ -> "specify mode for NuGet source credential migration: encrypt|plaintext|selective (default: encrypt)"
-            | Migrate_Credentials_Legacy _ -> "[obsolete]"
 
 type FindRefsArgs =
     | [<ExactlyOnce;MainCommand>] NuGets of package_ID:string list
-    | [<Hidden;ExactlyOnce;CustomCommandLine("nuget")>] NuGets_Legacy of package_ID:string list
-
     | [<Unique;AltCommandLine("-g")>] Group of name:string
-    | [<Hidden;Unique;CustomCommandLine("group")>] Group_Legacy of name:string
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | NuGets _ -> "list of NuGet package IDs"
-            | NuGets_Legacy _ -> "[obsolete]"
-
             | Group _ -> "specify dependency group (default: Main group)"
-            | Group_Legacy _ -> "[obsolete]"
 
 type InitArgs =
     | [<Hidden;NoCommandLine>] NoArgs
@@ -178,10 +148,7 @@ type LanguageFlags = Csx | Fsx
 type InstallArgs =
     | [<Unique;AltCommandLine("-f")>] Force
     | [<Unique>] Redirects
-
     | [<Unique>] Create_New_Binding_Files
-    | [<Hidden;Unique;CustomCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files_Legacy
-
     | [<Unique>] Clean_Redirects
     | [<Unique>] Keep_Major
     | [<Unique>] Keep_Minor
@@ -189,23 +156,16 @@ type InstallArgs =
     | [<Unique;CustomCommandLine("--only-referenced")>] Install_Only_Referenced
     | [<Unique>] Touch_Affected_Refs
     | [<Hidden;Unique;CustomCommandLine("project-root")>] Project_Root of path:string
-
     | [<Unique>] Generate_Load_Scripts
     | Load_Script_Framework of framework:string
-    | [<Hidden;CustomCommandLine("load-script-framework")>] Load_Script_Framework_Legacy of framework:string
-
     | Load_Script_Type of LanguageFlags
-    | [<Hidden;CustomCommandLine("load-script-type")>] Load_Script_Type_Legacy of LanguageFlags
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | Force -> "force download and reinstallation of all dependencies"
             | Redirects -> "create binding redirects"
-
             | Create_New_Binding_Files -> "create binding redirect files if needed"
-            | Create_New_Binding_Files_Legacy -> "[obsolete]"
-
             | Clean_Redirects -> "remove binding redirects that were not created by Paket"
             | Install_Only_Referenced -> "only install dependencies listed in paket.references files, instead of all packages in paket.dependencies"
             | Keep_Major -> "only allow updates that preserve the major version"
@@ -213,21 +173,14 @@ with
             | Keep_Patch -> "only allow updates that preserve the patch version"
             | Touch_Affected_Refs -> "touch project files referencing affected dependencies to help incremental build tools detecting the change"
             | Project_Root _ -> "alternative project root (only used for tooling)"
-
             | Generate_Load_Scripts -> "generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS"
             | Load_Script_Framework _ -> "framework identifier to generate scripts for, such as net45 or netstandard1.6; may be repeated"
-            | Load_Script_Framework_Legacy _ -> "[obsolete]"
-
             | Load_Script_Type _ -> "language to generate scripts for; may be repeated; may be repeated"
-            | Load_Script_Type_Legacy _ -> "[obsolete]"
 
 type OutdatedArgs =
     | [<Unique;AltCommandLine("-f")>] Force
     | [<Unique>] Ignore_Constraints
-
     | [<Unique;AltCommandLine("-g")>] Group of name:string
-    | [<Hidden;Unique;CustomCommandLine("group")>] Group_Legacy of name:string
-
     | [<Unique;AltCommandLine("--pre")>] Include_Prereleases
 with
     interface IArgParserTemplate with
@@ -235,22 +188,13 @@ with
             match this with
             | Force -> "force download and reinstallation of all dependencies"
             | Ignore_Constraints -> "ignore version constraints in the paket.dependencies file"
-
             | Group _ -> "specify dependency group (default: all groups)"
-            | Group_Legacy _ -> "[obsolete]"
-
             | Include_Prereleases -> "consider prerelease versions as updates"
 
 type RemoveArgs =
     | [<ExactlyOnce;MainCommand>] NuGet of package_ID:string
-    | [<Hidden;ExactlyOnce;CustomCommandLine("nuget")>] NuGet_Legacy of package_ID:string
-
     | [<Unique;AltCommandLine("-p")>] Project of path:string
-    | [<Hidden;Unique;CustomCommandLine("project")>] Project_Legacy of path:string
-
     | [<Unique;AltCommandLine("-g")>] Group of name:string
-    | [<Hidden;Unique;CustomCommandLine("group")>] Group_Legacy of name:string
-
     | [<Unique;AltCommandLine("-f")>] Force
     | [<Unique;AltCommandLine("-i")>] Interactive
     | [<Unique>] No_Install
@@ -259,14 +203,8 @@ with
         member this.Usage =
             match this with
             | NuGet _ -> "NuGet package ID"
-            | NuGet_Legacy _ -> "[obsolete]"
-
             | Group _ -> "remove the dependency from a group (default: Main group)"
-            | Group_Legacy _ -> "[obsolete]"
-
             | Project _ -> "remove the dependency from a single project only"
-            | Project_Legacy _ -> "[obsolete]"
-
             | Force -> "force download and reinstallation of all dependencies"
             | Interactive -> "ask for every project whether to remove the dependency"
             | No_Install -> "do not modify projects"
@@ -285,16 +223,9 @@ type RestoreArgs =
     | [<Unique>] Touch_Affected_Refs
     | [<Unique>] Ignore_Checks
     | [<Unique>] Fail_On_Checks
-
     | [<Unique;AltCommandLine("-g")>] Group of name:string
-    | [<Hidden;Unique;CustomCommandLine("group")>] Group_Legacy of name:string
-
     | [<Unique;AltCommandLine("-p")>] Project of path:string
-    | [<Hidden;Unique;CustomCommandLine("project")>] Project_Legacy of path:string
-
     | References_File of path:string
-    | [<Hidden;CustomCommandLine("--references-files")>] References_File_Legacy of path:string list
-
     | [<Unique>] Target_Framework of framework:string
     | [<Unique>] Output_Path of path:string
 with
@@ -302,21 +233,13 @@ with
         member this.Usage =
             match this with
             | Force -> "force download and reinstallation of all dependencies"
-
             | Group _ -> "restore dependencies of a single group"
-            | Group_Legacy _ -> "[obsolete]"
-
             | Install_Only_Referenced -> "only restore packages that are referenced by paket.references files"
             | Touch_Affected_Refs -> "touch project files referencing affected dependencies to help incremental build tools detecting the change"
             | Ignore_Checks -> "do not check if paket.dependencies and paket.lock are in sync"
             | Fail_On_Checks -> "abort if any checks fail"
-
             | Project _ -> "restore dependencies of a single project"
-            | Project_Legacy _ -> "[obsolete]"
-
             | References_File _ -> "restore packages from a paket.references file; may be repeated"
-            | References_File_Legacy _ -> "[obsolete]"
-
             | Target_Framework _ -> "restore only for the specified target framework"
             | Output_Path _ -> "Output path directory of MSBuild. When used in combination with the new dotnet cli based sdk, paket will write supporting files (nuget.config, paket.resolved) there"
 
@@ -330,17 +253,9 @@ with
 
 type UpdateArgs =
     | [<Unique;MainCommand>] NuGet of package_id:string
-    | [<Hidden;Unique;CustomCommandLine("nuget")>] NuGet_Legacy of package_id:string
-
     | [<Unique;AltCommandLine("-V")>] Version of version_constraint:string
-    | [<Hidden;Unique;CustomCommandLine("version")>] Version_Legacy of version_constraint:string
-
     | [<Unique;AltCommandLine("-g")>] Group of name:string
-    | [<Hidden;Unique;CustomCommandLine("group")>] Group_Legacy of name:string
-
     | [<Unique>] Create_New_Binding_Files
-    | [<Hidden;Unique;CustomCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files_Legacy
-
     | [<Unique;AltCommandLine("-f")>] Force
     | [<Unique>] Redirects
     | [<Unique>] Clean_Redirects
@@ -355,17 +270,9 @@ with
         member this.Usage =
             match this with
             | NuGet _ -> "NuGet package ID"
-            | NuGet_Legacy _ -> "[obsolete]"
-
             | Group _ -> "specify dependency group to update (default: all groups)"
-            | Group_Legacy _ -> "[obsolete]"
-
             | Version _ -> "dependency version constraint"
-            | Version_Legacy _ -> "[obsolete]"
-
             | Create_New_Binding_Files -> "create binding redirect files if needed"
-            | Create_New_Binding_Files_Legacy -> "[obsolete]"
-
             | Force -> "force download and reinstallation of all dependencies"
             | Redirects -> "create binding redirects"
             | Clean_Redirects -> "remove binding redirects that were not created by Paket"
@@ -378,25 +285,15 @@ with
 
 type FindPackagesArgs =
     | [<Unique;MainCommand>] Search of package_ID:string
-    | [<Hidden;Unique;CustomCommandLine("searchtext")>] Search_Legacy of package_ID:string
-
     | [<Unique>] Source of source_URL:string
-    | [<Hidden;Unique;CustomCommandLine("source")>] Source_Legacy of source_URL:string
-
     | [<Unique;CustomCommandLine("--max")>] Max_Results of int
-    | [<Hidden;Unique;CustomCommandLine("max")>] Max_Results_Legacy of int
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | Search _ -> "search for NuGet package ID"
-            | Search_Legacy _ -> "[obsolete]"
-
             | Source _ -> "specify source URL"
-            | Source_Legacy _ -> "[obsolete]"
-
             | Max_Results _ -> "limit maximum number of results"
-            | Max_Results_Legacy _ -> "[obsolete]"
 
 type FixNuspecsArgs =
     | [<ExactlyOnce;CustomCommandLine("files")>] Files of nuspecPaths:string list
@@ -423,17 +320,13 @@ type GenerateNuspecArgs =
 
 type ShowInstalledPackagesArgs =
     | [<Unique;AltCommandLine("-a")>] All
-
     | [<Unique;AltCommandLine("-p")>] Project of path:string
-    | [<Hidden;Unique;CustomCommandLine("project")>] Project_Legacy of path:string
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | All -> "include transitive dependencies"
-
             | Project _ -> "specify project to show dependencies for"
-            | Project_Legacy _ -> "[obsolete]"
 
 type ShowGroupsArgs =
     | [<Hidden;NoCommandLine>] NoArgs
@@ -449,25 +342,15 @@ with
 
 type FindPackageVersionsArgs =
     | [<ExactlyOnce;MainCommand>] NuGet of package_ID:string
-    | [<Hidden;ExactlyOnce;CustomCommandLine("nuget", "name")>] NuGet_Legacy of package_ID:string
-
     | [<Unique>] Source of source_URL:string
-    | [<Hidden;Unique;CustomCommandLine("source")>] Source_Legacy of source_URL:string
-
     | [<Unique;CustomCommandLine("--max")>] Max_Results of int
-    | [<Hidden;Unique;CustomCommandLine("max")>] Max_Results_Legacy of int
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | NuGet _ -> "NuGet package ID"
-            | NuGet_Legacy _ -> "[obsolete]"
-
             | Source _ -> "specify source URL"
-            | Source_Legacy _ -> "[obsolete]"
-
             | Max_Results _ -> "limit maximum number of results"
-            | Max_Results_Legacy _ -> "[obsolete]"
 
 type InfoArgs =
     | [<Unique>] Paket_Dependencies_Dir
@@ -486,172 +369,80 @@ type InterprojectReferencesConstraintArgs =
 
 type PackArgs =
     | [<ExactlyOnce;MainCommand>] Output of path:string
-    | [<Hidden;ExactlyOnce;CustomCommandLine("output")>] Output_Legacy of path:string
-
     | [<Unique>] Build_Config of configuration:string
-    | [<Hidden;Unique;CustomCommandLine("buildconfig")>] Build_Config_Legacy of configuration:string
-
     | [<Unique>] Build_Platform of platform:string
-    | [<Hidden;Unique;CustomCommandLine("buildplatform")>] Build_Platform_Legacy of platform:string
-
     | [<Unique>] Version of version:string
-    | [<Hidden;Unique;CustomCommandLine("version")>] Version_Legacy of version:string
-
     | [<Unique;CustomCommandLine("--template")>] Template_File of path:string
-    | [<Hidden;Unique;CustomCommandLine("templatefile")>] Template_File_Legacy of path:string
-
     | [<CustomCommandLine("--exclude")>] Exclude_Template of package_ID:string
-    | [<Hidden;CustomCommandLine("exclude")>] Exclude_Template_Legacy of package_ID:string
-
     |  Specific_Version of package_ID:string * version:string
-    | [<Hidden;CustomCommandLine("specific-version")>] Specific_Version_Legacy of package_ID:string * version:string
-
     | [<Unique>] Release_Notes of text:string
-    | [<Hidden;Unique;CustomCommandLine("releaseNotes")>] Release_Notes_Legacy of text:string
-
     | [<Unique>] Lock_Dependencies
-    | [<Hidden;Unique;CustomCommandLine("lock-dependencies")>] Lock_Dependencies_Legacy
-
     | [<Unique;CustomCommandLine("--minimum-from-lock-file")>] Lock_Dependencies_To_Minimum
-    | [<Hidden;Unique;CustomCommandLine("minimum-from-lock-file")>] Lock_Dependencies_To_Minimum_Legacy
-
     | [<Unique>] Pin_Project_References
-    | [<Hidden;Unique;CustomCommandLine("pin-project-references")>] Pin_Project_References_Legacy
-
     | [<Unique>] Interproject_References of InterprojectReferencesConstraintArgs
-
     | [<Unique>] Symbols
-    | [<Hidden;Unique;CustomCommandLine("symbols")>] Symbols_Legacy
-
     | [<Unique>] Include_Referenced_Projects
-    | [<Hidden;Unique;CustomCommandLine("include-referenced-projects")>] Include_Referenced_Projects_Legacy
-
     | [<Unique>] Project_Url of URL:string
-    | [<Hidden;Unique;CustomCommandLine("project-url")>] Project_Url_Legacy of URL:string
-
     | [<Unique>] Release_Notes_File of path:string
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | Output _ -> "output directory for .nupkg files"
-            | Output_Legacy _ -> "[obsolete]"
-
             | Build_Config _ -> "build configuration that should be packaged (default: Release)"
-            | Build_Config_Legacy _ -> "[obsolete]"
-
             | Build_Platform _ -> "build platform that should be packaged (default: check all known platform targets)"
-            | Build_Platform_Legacy _ -> "[obsolete]"
-
             | Version _ -> "version of the package"
-            | Version_Legacy _ -> "[obsolete]"
-
             | Template_File _ -> "pack a single paket.template file"
-            | Template_File_Legacy _ -> "[obsolete]"
-
             | Exclude_Template _ -> "exclude paket.template file by package ID; may be repeated"
-            | Exclude_Template_Legacy _ -> "[obsolete]"
-
             | Specific_Version _ -> "version number to use for package ID; may be repeated"
-            | Specific_Version_Legacy _ -> "[obsolete]"
-
             | Release_Notes _ -> "release notes"
-            | Release_Notes_Legacy _ -> "[obsolete]"
-
             | Lock_Dependencies -> "use version constraints from paket.lock instead of paket.dependencies"
-            | Lock_Dependencies_Legacy -> "[obsolete]"
-
             | Lock_Dependencies_To_Minimum -> "use version constraints from paket.lock instead of paket.dependencies and add them as a minimum version; --lock-dependencies overrides this option"
-            | Lock_Dependencies_To_Minimum_Legacy -> "[obsolete]"
-
             | Pin_Project_References -> "pin dependencies generated from project references to exact versions (=) instead of using minimum versions (>=); with --lock-dependencies project references will be pinned even if this option is not specified"
-            | Pin_Project_References_Legacy -> "[obsolete]"
-
             | Interproject_References _ -> "set constraints for referenced project versions"
-
             | Symbols -> "create symbol and source packages in addition to library and content packages"
-            | Symbols_Legacy -> "[obsolete]"
-
             | Include_Referenced_Projects -> "include symbols and source from referenced projects"
-            | Include_Referenced_Projects_Legacy -> "[obsolete]"
-
             | Project_Url _ -> "homepage URL for the package"
-            | Project_Url_Legacy _ -> "[obsolete]"
-
             | Release_Notes_File _ -> "path to release notes file"
 
 type PushArgs =
     | [<ExactlyOnce;MainCommand>] Package of path:string
-    | [<Hidden;ExactlyOnce;CustomCommandLine("file")>] Package_Legacy of path:string
-
     | [<Unique>] Url of url:string
-    | [<Hidden;Unique;CustomCommandLine("url")>] Url_Legacy of url:string
-
     | [<Unique>] Api_Key of key:string
-    | [<Hidden;Unique;CustomCommandLine("apikey")>] Api_Key_Legacy of key:string
-
     | [<Unique>] Endpoint of path:string
-    | [<Hidden;Unique;CustomCommandLine("endpoint")>] Endpoint_Legacy of path:string
-
     | [<Unique;CustomCommandLine("--ignoreConflicts")>] Ignore_Conflicts
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | Package _ -> "path to the .nupkg file"
-            | Package_Legacy _ -> "[obsolete]"
-
             | Url _ -> "URL of the NuGet feed"
-            | Url_Legacy _ -> "[obsolete]"
-
             | Api_Key _ -> "API key for the URL (default: value of the NUGET_KEY environment variable)"
-            | Api_Key_Legacy _ -> "[obsolete]"
-
             | Endpoint _ -> "API endpoint to push to (default: /api/v2/package)"
-            | Endpoint_Legacy _ -> "[obsolete]"
-
             | Ignore_Conflicts -> "Ignore any HTTP409 (Conflict) errors and treat as success"
 
 type GenerateLoadScriptsArgs =
     | [<AltCommandLine("-g")>] Group of name:string
-    | [<Hidden;CustomCommandLine("groups")>] Group_Legacy of name:string list
-
     | [<AltCommandLine("-f")>] Framework of framework:string
-    | [<Hidden;CustomCommandLine("framework")>] Framework_Legacy of framework:string
-
     | [<AltCommandLine("-t")>] Type of LanguageFlags
-    | [<Hidden;CustomCommandLine("type")>] Type_Legacy of LanguageFlags
 with
   interface IArgParserTemplate with
       member this.Usage =
         match this with
         | Group _ -> "groups to generate scripts for (default: all groups); may be repeated"
-        | Group_Legacy _ -> "[obsolete]"
-
         | Framework _ -> "framework identifier to generate scripts for, such as net45 or netstandard1.6; may be repeated"
-        | Framework_Legacy _ -> "[obsolete]"
-
         | Type _ -> "language to generate scripts for; may be repeated"
-        | Type_Legacy _ -> "[obsolete]"
 
 type WhyArgs =
     | [<ExactlyOnce;MainCommand>] NuGet of package_ID:string
-    | [<Hidden;ExactlyOnce;CustomCommandLine("nuget")>] NuGet_Legacy of package_ID:string
-
     | [<Unique;AltCommandLine("-g")>] Group of name:string
-    | [<Hidden;Unique;CustomCommandLine("group")>] Group_Legacy of name:string
-
     | [<Unique>] Details
 with
   interface IArgParserTemplate with
       member this.Usage =
         match this with
         | NuGet _ -> "NuGet package ID"
-        | NuGet_Legacy _ -> "[obsolete]"
-
         | Group _ -> "specify dependency group (default: Main group)"
-        | Group_Legacy _ -> "[obsolete]"
-
         | Details -> "display detailed information with all paths, versions and framework restrictions"
 
 type RestrictionArgs =
