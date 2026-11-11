@@ -41,6 +41,15 @@ module Logic =
         //|> Seq.concat
         //|> Seq.map fst
 
+    /// What the content of a tool manifest says of paket: the version it declares, if any, and
+    /// whether it is "isRoot", which dotnet doesn't look above
+    let paketOfToolManifest (content: string) =
+        let options = System.Text.RegularExpressions.RegexOptions.IgnoreCase
+        let paketVersion =
+            System.Text.RegularExpressions.Regex.Match(content, "\"paket\"\\s*:\\s*\\{[^}]*?\"version\"\\s*:\\s*\"([^\"]+)\"", options)
+        let isRoot = System.Text.RegularExpressions.Regex.IsMatch(content, "\"isRoot\"\\s*:\\s*true", options)
+        (if paketVersion.Success then Some paketVersion.Groups.[1].Value else None), isRoot
+
 namespace ReferenceLoading
 module internal PaketHandler =
 
@@ -101,6 +110,15 @@ module internal PaketHandler =
         |> Seq.map (fun dir -> Path.Combine(dir.FullName, toolPathExecutable))
         |> Seq.tryFind File.Exists
 
+    /// Whether paket installed with --tool-path is the global tool of ~/.paket, which the walk up from
+    /// a script in the home folder finds too
+    let isGlobalToolPath (paketExe: string) =
+        not (String.IsNullOrEmpty userProfile)
+        && String.Equals(
+            Path.GetDirectoryName paketExe,
+            Path.GetFullPath(Path.Combine(userProfile, PM_DIR)),
+            StringComparison.OrdinalIgnoreCase)
+
     let nugetPackagesFolder =
         match Environment.GetEnvironmentVariable "NUGET_PACKAGES" with
         | null | "" -> Path.Combine(userProfile, ".nuget", "packages")
@@ -114,20 +132,17 @@ module internal PaketHandler =
         |> Seq.map (fun frameworkFolder -> Path.Combine(frameworkFolder.FullName, "any", "paket.dll"))
         |> Seq.tryFind File.Exists
 
-    /// The first tool manifest up from the directory that has paket, with the version of paket
+    /// The first tool manifest up from the directory that has paket, with the version of paket.
+    /// As dotnet, it doesn't look above an "isRoot" manifest.
     let findLocalTool (baseDir: DirectoryInfo) =
-        let paketVersion =
-            System.Text.RegularExpressions.Regex(
-                "\"paket\"\\s*:\\s*\\{[^}]*?\"version\"\\s*:\\s*\"([^\"]+)\"",
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase)
         getDirectoryAndAllParentDirectories baseDir
         |> Seq.collect (fun dir ->
             [ Path.Combine(dir.FullName, ".config", "dotnet-tools.json")
               Path.Combine(dir.FullName, "dotnet-tools.json") ])
         |> Seq.filter File.Exists
-        |> Seq.tryPick (fun manifest ->
-            let m = paketVersion.Match(File.ReadAllText manifest)
-            if m.Success then Some(manifest, m.Groups.[1].Value) else None)
+        |> Seq.map (fun manifest -> manifest, Internals.Logic.paketOfToolManifest (File.ReadAllText manifest))
+        |> Seq.tryFind (fun (_, (version, isRoot)) -> Option.isSome version || isRoot)
+        |> Option.bind (fun (manifest, (version, _)) -> version |> Option.map (fun version -> manifest, version))
 
     /// Runs a framework-dependent paket.dll with the dotnet that runs the script
     let dotnetCommand (paketDll: string) =
@@ -232,12 +247,26 @@ module internal PaketHandler =
             (loadScript,additionalIncludeFolders())
         else 
             let toolPath, toolArguments =
+                let localTool = findLocalTool (DirectoryInfo scriptDir)
                 // we try to resolve paket installed with --tool-path any place up in the folder structure from current script
-                match findPaketExe prioritizedSearchPaths (DirectoryInfo scriptDir) with
+                let toolPathExe =
+                    match findPaketExe prioritizedSearchPaths (DirectoryInfo scriptDir), localTool with
+                    // a global tool comes after the local tool, without a warning
+                    | Some paketExe, Some _ when isGlobalToolPath paketExe -> None
+                    // as in the targets, the local tool runs instead: it can be an older Paket, such as the paket.exe or bootstrapper of Paket 11
+                    | Some paketExe, Some (manifest, _) ->
+                        Console.ForegroundColor <- ConsoleColor.Yellow
+                        Console.Write ":paket>"
+                        Console.ResetColor()
+                        Console.WriteLine $" Ignoring %s{paketExe}: '%s{manifest}' declares paket, which runs instead. Delete it if it is an older Paket, such as the paket.exe or bootstrapper of Paket 11."
+                        None
+                    | paketExe, _ -> paketExe
+
+                match toolPathExe with
                 | Some paketExe -> paketExe, ""
                 | None ->
 
-                match findLocalTool (DirectoryInfo scriptDir) with
+                match localTool with
                 | Some (manifest, version) ->
                     match tryFindToolDll (DirectoryInfo(Path.Combine(nugetPackagesFolder, "paket", version.ToLowerInvariant()))) with
                     | Some paketDll -> dotnetCommand paketDll
