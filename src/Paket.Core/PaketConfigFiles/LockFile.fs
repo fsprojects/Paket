@@ -659,6 +659,11 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
         | Some g -> g
         | None -> failwithf "Group %O was not found in %s." groupName fileName
 
+    member __.HasPackage (groupName, name) =
+        groups
+        |> Map.tryFind groupName
+        |> Option.exists _.Resolution.ContainsKey(name)
+
     member this.CheckIfPackageExistsInAnyGroup (packageName:PackageName) =
         match groups |> Seq.tryFind (fun g -> g.Value.Resolution.ContainsKey packageName) with
         | Some group -> sprintf "%sHowever, %O was found in group %O." Environment.NewLine packageName group.Value.Name
