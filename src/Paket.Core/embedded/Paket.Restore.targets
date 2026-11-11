@@ -49,11 +49,12 @@
 		</PropertyGroup>
 
 		<!-- Test if paket is installed with tool-path in the standard locations. If so, it runs, unless the tool manifest declares paket. -->
+		<!-- Only a file counts: Exists() also takes a folder, such as a project folder named Paket on a case-insensitive file system. -->
 		<PropertyGroup Condition=" '$(PaketExePath)' == '' ">
 			<_PaketToolPathExeName Condition=" '$(OS)' != 'Windows_NT' ">paket</_PaketToolPathExeName>
 			<_PaketToolPathExeName Condition=" '$(OS)' == 'Windows_NT' ">paket.exe</_PaketToolPathExeName>
-			<_PaketToolPathExe Condition=" Exists('$(PaketRootPath)$(_PaketToolPathExeName)') ">$(PaketRootPath)$(_PaketToolPathExeName)</_PaketToolPathExe>
-			<_PaketToolPathExe Condition=" '$(_PaketToolPathExe)' == '' AND Exists('$(PaketToolsPath)$(_PaketToolPathExeName)') ">$(PaketToolsPath)$(_PaketToolPathExeName)</_PaketToolPathExe>
+			<_PaketToolPathExe Condition=" $([System.IO.File]::Exists('$(_PaketFullRootPath)$(_PaketToolPathExeName)')) ">$(_PaketFullRootPath)$(_PaketToolPathExeName)</_PaketToolPathExe>
+			<_PaketToolPathExe Condition=" '$(_PaketToolPathExe)' == '' AND $([System.IO.File]::Exists('$(PaketToolsPath)$(_PaketToolPathExeName)')) ">$(PaketToolsPath)$(_PaketToolPathExeName)</_PaketToolPathExe>
 			<PaketExePath Condition=" '$(_PaketToolPathExe)' != '' AND !$(_ConfigContainsPaket) ">$(_PaketToolPathExe)</PaketExePath>
 		</PropertyGroup>
 		<Warning Condition=" '$(PaketExePath)' == '' AND '$(_PaketToolPathExe)' != '' " Code="PAKET0001" Text="Ignoring $(_PaketToolPathExe): the tool manifest declares paket, which runs instead. Delete it if it is an older Paket, such as the paket.exe or bootstrapper of Paket 11, or add PAKET0001 to NoWarn." />

@@ -10,6 +10,7 @@
 * fix(BREAKING): When the tool manifest declares paket, `Paket.Restore.targets` and `paket.targets` run the local tool instead of a Paket installed with `--tool-path` in `.paket` or the root, which can be an older Paket left by the move to the .NET tool, such as the `paket.exe` or bootstrapper of Paket 11. They skip it with the warning `PAKET0001`, on every OS, which `NoWarn` can turn off. To keep running it, set `PaketExePath` to its full path
 * fix(BREAKING): When a `.config/dotnet-tools.json` or `dotnet-tools.json` up from the script declares paket, `#r "paket:"` in F# scripts runs that local tool instead of a Paket installed with `--tool-path` up from the script, which can be an older Paket such as the `paket.exe` or bootstrapper of Paket 11, and shows a warning. When the local tool isn't restored, it asks to run `dotnet tool restore` instead of running that Paket. As dotnet, it no longer looks for a manifest above an `isRoot` one
 * fix: `Paket.Restore.targets` and `paket.targets` read the closest `.config/dotnet-tools.json` and the closest `dotnet-tools.json` from the root up, instead of only the `.config/dotnet-tools.json` of the root, to know whether paket is a local tool, and only the paket tool counts, not another tool with a `paket` command
+* fix: `Paket.Restore.targets` and `paket.targets` no longer take a folder named `paket` in the root or in `.paket`, such as a project folder named `Paket` on a case-insensitive file system, for a Paket installed with `--tool-path`
 
 #### 12.0.0-alpha006 - 2026-11-08
 
