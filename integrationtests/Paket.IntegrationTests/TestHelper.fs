@@ -199,6 +199,11 @@ let prepareSdkForTool scenario =
 
     let env = [
         "NUGET_PACKAGES", scenarioPath @@ "nuget-packages"
+        // dotnet keeps the folder where it first restored each version of a local tool in a cache of
+        // the user, ~/.dotnet/toolResolverCache, and doesn't update it for another NUGET_PACKAGES: a
+        // local tool installed in another scenario would run the one of the first scenario, or fail
+        // once it is cleaned up
+        "DOTNET_CLI_HOME", scenarioPath @@ "dotnet-home"
         // prepareSdk sets it for the whole test process
         "PaketExePath", ""
         // The Linux CI sets it, and it makes the restore ask for Microsoft.WindowsDesktop.App.Ref,
