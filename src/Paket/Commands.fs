@@ -398,27 +398,15 @@ with
             | Max_Results _ -> "limit maximum number of results"
             | Max_Results_Legacy _ -> "[obsolete]"
 
-type FixNuspecArgs =
-    | [<ExactlyOnce;CustomCommandLine("file")>] File of text:string
-    | [<ExactlyOnce;CustomCommandLine("references-file")>] ReferencesFile of text:string
-with
-    interface IArgParserTemplate with
-        member this.Usage =
-            match this with
-            | File _ -> ".nuspec file to fix transitive dependencies within"
-            | ReferencesFile _ -> "paket.references to use"
-
 type FixNuspecsArgs =
     | [<ExactlyOnce;CustomCommandLine("files")>] Files of nuspecPaths:string list
-    | [<CustomCommandLine("references-file")>] ReferencesFile of referencePath:string
-    | [<CustomCommandLine("project-file")>] ProjectFile of referencePath:string
+    | [<ExactlyOnce;CustomCommandLine("project-file")>] ProjectFile of projectPath:string
     | [<Unique>] Conditions of conditions:string list
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | Files _ -> ".nuspec files to fix transitive dependencies within"
-            | ReferencesFile _ -> "paket.references to use"
             | ProjectFile _ -> "the project file to use"
             | Conditions _ -> "group conditions to filter by"
 
@@ -700,7 +688,6 @@ type Command =
     | [<CustomCommandLine("update")>]                   Update of ParseResults<UpdateArgs>
     | [<CustomCommandLine("find-packages")>]            FindPackages of ParseResults<FindPackagesArgs>
     | [<CustomCommandLine("find-package-versions")>]    FindPackageVersions of ParseResults<FindPackageVersionsArgs>
-    | [<Hidden;CustomCommandLine("fix-nuspec")>]        FixNuspec of ParseResults<FixNuspecArgs>
     | [<CustomCommandLine("fix-nuspecs")>]              FixNuspecs of ParseResults<FixNuspecsArgs>
     | [<CustomCommandLine("generate-nuspec")>]          GenerateNuspec of ParseResults<GenerateNuspecArgs>
     | [<CustomCommandLine("show-installed-packages")>]  ShowInstalledPackages of ParseResults<ShowInstalledPackagesArgs>
@@ -734,7 +721,6 @@ with
             | Update _ -> "update dependencies to their latest version"
             | FindPackages _ -> "search for NuGet packages"
             | FindPackageVersions _ -> "search for dependency versions"
-            | FixNuspec _ -> "[obsolete]"
             | FixNuspecs _ -> "patch a list of .nuspec files to correct transitive dependencies"
             | GenerateNuspec _ -> "generate a default nuspec for a project including its direct dependencies"
             | ShowInstalledPackages _ -> "show installed top-level packages"

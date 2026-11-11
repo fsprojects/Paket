@@ -671,8 +671,6 @@ let findPackages silent (results : ParseResults<_>) =
 
     | Some searchText -> searchAndPrint searchText
 
-#nowarn "44" // because FixNuspecs is deprecated and we have warnaserror
-
 open Paket.Requirements
 
 let fixNuspecs silent (results : ParseResults<_>) =
@@ -686,33 +684,9 @@ let fixNuspecs silent (results : ParseResults<_>) =
         |> List.collect (fun s -> s.Split([|';'|], StringSplitOptions.RemoveEmptyEntries) |> Array.toList)
         |> List.map (fun s -> s.Trim())
 
-    match results.TryGetResult FixNuspecsArgs.ProjectFile with
-    | Some projectFile ->
-        let projectFile = Paket.ProjectFile.LoadFromFile(projectFile)
-        let refFile = RestoreProcess.FindOrCreateReferencesFile projectFile
-        Dependencies.FixNuspecs (projectFile, refFile, nuspecFiles, conditions)
-    | None ->
-        match results.TryGetResult FixNuspecsArgs.ReferencesFile with
-        | Some referenceFile ->
-            traceWarnfn "using the references-file argument is obsolete, please use project-file instead"
-
-            Dependencies.FixNuspecs (referenceFile, nuspecFiles)
-        | None -> failwithf "%s" (results.Parser.PrintUsage())
-
-
-
-// For backwards compatibility
-let fixNuspec _silent (results : ParseResults<_>) =
-    let fileString = results.GetResult FixNuspecArgs.File
-    let refFile = results.GetResult FixNuspecArgs.ReferencesFile
-    let nuspecList =
-        fileString.Split([|';'|], StringSplitOptions.RemoveEmptyEntries)
-        |> Array.map (fun s -> s.Trim())
-        |> List.ofArray
-
-    Dependencies.FixNuspecs (refFile, nuspecList)
-
-#warnon "44"
+    let projectFile = Paket.ProjectFile.LoadFromFile(results.GetResult FixNuspecsArgs.ProjectFile)
+    let refFile = RestoreProcess.FindOrCreateReferencesFile projectFile
+    Dependencies.FixNuspecs (projectFile, refFile, nuspecFiles, conditions)
 
 // separated out from showInstalledPackages to allow Paket.PowerShell to get the types
 let getInstalledPackages (results : ParseResults<_>) =
@@ -900,9 +874,6 @@ let handleCommand silent command =
     | Update r -> processCommand silent update r
     | FindPackages r -> processCommand silent (findPackages silent) r
     | FindPackageVersions r -> processCommand silent findPackageVersions r
-    | FixNuspec r ->
-        warnObsolete (ReplaceArgument("fix-nuspecs", "fix-nuspec"))
-        processCommand silent (fixNuspec silent) r
     | FixNuspecs r -> processCommand silent (fixNuspecs silent) r
     | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
     | ShowGroups r -> processCommand silent showGroups r
