@@ -219,6 +219,14 @@ template file
 and metadata from the project
 </li>
 </ul>
+<p><code>paket pack</code> looks for the template files in every folder but the <code>packages</code>
+and <code>paket-files</code> folders at the top, including the folders whose name starts
+with a dot and the links, so a cyclic link there can keep it from finishing.
+It does not look for projects in these folders, though (see
+<a href="references-files.html#Location">the <code>paket.references</code> files</a>), so it does not
+pack their <code>project</code> templates properly: the package gets neither the
+assemblies nor the dependencies of the project, and <code>paket pack</code> fails when the
+folder holds more than one project. Keep such templates out of these folders.</p>
 <p>Matching project and template files must be in the same directory. If only one
 project is in the directory the template file can be called <code>paket.template</code>,
 otherwise the name of the template file must be the name of the project file
@@ -500,7 +508,7 @@ Any Paket dependency with the range specified in the
 </li>
 <li>
 Any Paket dependency with the range specified in the
-<a href="lock-file.html"><code>paket.lock</code> file</a> (if <code>lock-dependencies</code> parameter is used
+<a href="lock-file.html"><code>paket.lock</code> file</a> (if the <code>--lock-dependencies</code> parameter is used
 in <a href="paket-pack.html"><code>paket pack</code></a>).
 </li>
 <li>

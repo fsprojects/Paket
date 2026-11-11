@@ -234,8 +234,13 @@ dotnet tool install paket
 <p>You can also install Paket into a folder of the repository, and run it from there:</p>
 <table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">dotnet tool install paket --tool-path .paket
 </code></pre></td></tr></table>
-<p><code>Paket.Restore.targets</code> and <code>paket.targets</code> find Paket when it is installed with <code>--tool-path</code> in
-<code>.paket</code> or in the root of the repository, as a local tool, or on the <code>PATH</code>, in that order.</p>
+<p><code>Paket.Restore.targets</code> and <code>paket.targets</code> find Paket as a local tool, when the closest
+<code>.config/dotnet-tools.json</code> or <code>dotnet-tools.json</code> up from the root declares paket, then installed
+with <code>--tool-path</code> in the root of the repository or in <code>.paket</code>, as a local tool of another
+manifest, or on the <code>PATH</code>, in that order. When the manifest declares paket, a Paket installed with
+<code>--tool-path</code> is skipped with the warning <code>PAKET0001</code>: it can be an older Paket, such as the
+<code>paket.exe</code> of Paket 11. Delete it, or add <code>PAKET0001</code> to <code>NoWarn</code>. To run it anyway, set the
+<code>PaketExePath</code> property to its full path: the targets then run it without looking any further.</p>
 <h2><a name="Solutions-without-the-NET-SDK" class="anchor" href="#Solutions-without-the-NET-SDK">Solutions without the .NET SDK</a></h2>
 <p>The projects that use the .NET SDK restore their packages through <code>Paket.Restore.targets</code>, which
 <code>paket install</code> adds to them. For the other projects, such as the projects of a .NET Framework
@@ -262,8 +267,9 @@ In your build scripts, run <code>dotnet tool restore</code> before Paket, and re
 with <code>dotnet paket</code> (without <code>mono</code> in front of it).
 </li>
 <li>
-If you use <code>paket auto-restore</code>, run <code>dotnet paket auto-restore on</code> again to update
-<code>.paket/paket.targets</code>.
+If you use <code>paket auto-restore</code>, run <code>dotnet paket restore</code> once to update
+<code>.paket/paket.targets</code> (or <code>dotnet paket auto-restore on</code> if <code>PAKET_SKIP_RESTORE_TARGETS</code> is
+<code>true</code>), and commit it.
 </li>
 </ol>
 <p>To keep <code>paket.exe</code> for now, move to the bootstrapper of Paket 11, which stays on the latest 11.x:</p>

@@ -227,14 +227,40 @@ OPTIONS:
 <li>write <code>paket.targets</code> into the <code>.paket</code> directory,</li>
 <li>
 add an <code>&lt;Import&gt;</code> statement for <code>paket.targets</code> to the projects that don't use
-the .NET SDK.
+the .NET SDK and have a <a href="references-files.html"><code>paket.references</code> file</a>.
 </li>
 </ul>
 <p><code>paket.targets</code> runs <code>paket restore</code> before the build of those projects. It finds
-Paket installed with <code>--tool-path</code> in <code>.paket</code> or in the root directory, as a
-local tool, or on the <code>PATH</code> like a global tool. The projects that use the .NET
-SDK restore through <code>Paket.Restore.targets</code> instead, which
-<a href="paket-install.html"><code>paket install</code></a> adds to them.</p>
+Paket as a local tool when the tool manifest declares it, then installed with
+<code>--tool-path</code> in the root directory or in <code>.paket</code>, or on the <code>PATH</code> like a
+global tool, as <a href="installation.html#Global-tool"><code>Paket.Restore.targets</code></a> does.
+The projects that use the .NET SDK restore through <code>Paket.Restore.targets</code>
+instead, which <a href="paket-install.html"><code>paket install</code></a> adds to them.</p>
+<p>With MSBuild 15.8 or later, <code>paket.targets</code> skips that restore when
+<code>paket-files/paket.restore.cached</code> says that the last full restore was of the
+current <code>paket.lock</code>. <code>paket install</code> writes that file, as do <code>update</code>, <code>add</code> and
+<code>remove</code> when they install, and <code>paket restore</code> without <code>--group</code>,
+<code>--target-framework</code>, <code>--project</code>, <code>--references-file</code>, <code>--only-referenced</code> or a
+<a href="local-file.html"><code>paket.local</code> file</a>.</p>
+<p><code>paket.targets</code> still restores while <code>paket.local</code> exists, and when the
+<code>packages</code> folder is missing, unless <code>paket.lock</code> has <code>storage: none</code> for all its
+groups, the main one included, and packages. Once it has restored a project for another <code>paket.lock</code>, as
+after a pull or a switch of branch, or for a missing <code>packages</code> folder, the
+builds restore until the next full restore, as they do once <code>paket.local</code> is
+gone. In a solution that also has projects with the .NET SDK, their build runs
+that full restore. In a solution without them, run <code>paket restore</code> after
+<code>paket.lock</code> changes, or once you delete the <code>packages</code> folder or <code>paket.local</code>,
+so that the builds skip the restore again.</p>
+<p><code>paket install</code>, <code>paket restore</code> without <code>--project</code>, <code>--references-file</code> or
+<code>--only-referenced</code>, and <code>update</code>, <code>add</code> and <code>remove</code> when they install (not with
+<code>--no-install</code>, nor <code>add --no-resolve</code>) rewrite an existing <code>.paket/paket.targets</code>,
+so that it matches the running Paket, unless <code>PAKET_SKIP_RESTORE_TARGETS</code> is
+<code>true</code>. The restore of one project, which <code>paket.targets</code> runs during a build,
+doesn't. In a solution that also has projects with the .NET SDK, the full restore
+that <code>Paket.Restore.targets</code> runs during the build, when <code>paket.restore.cached</code>
+doesn't say that the projects were last restored for the current <code>paket.lock</code>,
+rewrites it as it rewrites
+<code>Paket.Restore.targets</code>.</p>
 <p>When disabling auto-restore, Paket will</p>
 <ul>
 <li>remove <code>paket.targets</code> from the <code>.paket</code> directory,</li>

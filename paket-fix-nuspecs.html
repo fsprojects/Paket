@@ -206,16 +206,14 @@
     <div id="content">
         <h1><a name="paket-fix-nuspecs" class="anchor" href="#paket-fix-nuspecs">paket fix-nuspecs</a></h1>
 <p>Patch a list of .nuspec files to correct transitive dependencies.</p>
-<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">paket fix-nuspecs [--help] files [&lt;nuspecPaths&gt;...] [references-file &lt;referencePath&gt;]
-                  [project-file &lt;referencePath&gt;] [--conditions [&lt;conditions&gt;...]]
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="sh">paket fix-nuspecs [--help] files [&lt;nuspecPaths&gt;...] project-file &lt;projectPath&gt;
+                  [--conditions [&lt;conditions&gt;...]]
 
 OPTIONS:
 
     files [&lt;nuspecPaths&gt;...]
                           .nuspec files to fix transitive dependencies within
-    references-file &lt;referencePath&gt;
-                          paket.references to use
-    project-file &lt;referencePath&gt;
+    project-file &lt;projectPath&gt;
                           the project file to use
     --conditions [&lt;conditions&gt;...]
                           group conditions to filter by

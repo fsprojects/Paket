@@ -211,12 +211,14 @@
 <p>The extension runs the Paket .NET tool. It looks for, in order:</p>
 <ul>
 <li>
-Paket installed with <code>dotnet tool install paket --tool-path</code>, in the folder
-hierarchy containing the script, directly or in a <code>.paket</code> folder,
+the local tool of the first <code>.config/dotnet-tools.json</code> or <code>dotnet-tools.json</code>
+up from the script that has Paket, without looking above an <code>isRoot</code> one (run
+<code>dotnet tool restore</code> first),
 </li>
 <li>
-the local tool of the first <code>.config/dotnet-tools.json</code> up from the script
-that has Paket (run <code>dotnet tool restore</code> first),
+Paket installed with <code>dotnet tool install paket --tool-path</code>, in the folder
+hierarchy containing the script, directly or in a <code>.paket</code> folder; it is
+skipped with a warning when such a manifest declares Paket,
 </li>
 <li>a global tool, in <code>~/.dotnet/tools</code> or <code>~/.paket</code>,</li>
 <li>
