@@ -32,25 +32,32 @@
 	</PropertyGroup>
 
 	<!-- Resolve how paket should be called -->
-	<!-- Current priority is: tool installed with tool-path (1: repo root, 2: .paket folder) => 3: local tool => 4: global path variable -->
+	<!-- Current priority is: local tool, when the tool manifest declares paket => tool installed with tool-path (1: repo root, 2: .paket folder) => 3: local tool found by running 'dotnet paket' => 4: global path variable -->
+	<!-- A paket installed with tool-path is skipped, with the warning PAKET0001, when the tool manifest declares paket: it can be an older Paket, such as the paket.exe or bootstrapper of Paket 11. -->
 	<Target Name="SetPaketCommand" >
-		<!-- Test if paket is installed with tool-path in the standard locations. If so, that takes priority. -->
-		<PropertyGroup Condition=" '$(OS)' != 'Windows_NT' ">
-			<PaketExePath Condition=" '$(PaketExePath)' == '' AND Exists('$(PaketRootPath)paket') ">$(PaketRootPath)paket</PaketExePath>
-			<PaketExePath Condition=" '$(PaketExePath)' == '' AND Exists('$(PaketToolsPath)paket') ">$(PaketToolsPath)paket</PaketExePath>
-		</PropertyGroup>
-		<PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
-			<PaketExePath Condition=" '$(PaketExePath)' == '' AND Exists('$(PaketRootPath)paket.exe') ">$(PaketRootPath)paket.exe</PaketExePath>
-			<PaketExePath Condition=" '$(PaketExePath)' == '' AND Exists('$(PaketToolsPath)paket.exe') ">$(PaketToolsPath)paket.exe</PaketExePath>
-		</PropertyGroup>
-
-		<!-- If paket hasn't be found in standard locations, test for CLI tool usage. -->
-		<!-- First test: Is CLI configured to be used in "dotnet-tools.json"? - can result in a false negative; only a positive outcome is reliable. -->
-		<PropertyGroup Condition=" '$(PaketExePath)' == '' ">
-			<_DotnetToolsJson Condition="Exists('$(PaketRootPath)/.config/dotnet-tools.json')">$([System.IO.File]::ReadAllText("$(PaketRootPath)/.config/dotnet-tools.json"))</_DotnetToolsJson>
-			<_ConfigContainsPaket Condition=" '$(_DotnetToolsJson)' != ''">$(_DotnetToolsJson.Contains('"paket"'))</_ConfigContainsPaket>
+		<!-- Is CLI configured to be used in the closest "dotnet-tools.json" or ".config/dotnet-tools.json" from the root up? - can result in a false negative, which the 'dotnet paket' test below can make up for. -->
+		<!-- Only the "paket" tool counts, as in #r "paket:". Unlike dotnet and #r "paket:", only the closest manifest of each name is read, and an "isRoot" one doesn't stop the lookup: MSBuild can't loop. -->
+		<!-- So the outcome is a false positive when dotnet stops at an "isRoot" manifest without paket before it gets to the closest one of the other name, in the same folder or above, which declares paket. -->
+		<PropertyGroup>
+			<_PaketFullRootPath>$([System.IO.Path]::GetFullPath('$(PaketRootPath)'))</_PaketFullRootPath>
+			<_DotnetToolsJsonDir>$([MSBuild]::GetDirectoryNameOfFileAbove('$(_PaketFullRootPath)', '.config/dotnet-tools.json'))</_DotnetToolsJsonDir>
+			<_DotnetToolsJson Condition=" '$(_DotnetToolsJsonDir)' != '' ">$([System.IO.File]::ReadAllText("$(_DotnetToolsJsonDir)/.config/dotnet-tools.json"))</_DotnetToolsJson>
+			<_RootDotnetToolsJsonDir>$([MSBuild]::GetDirectoryNameOfFileAbove('$(_PaketFullRootPath)', 'dotnet-tools.json'))</_RootDotnetToolsJsonDir>
+			<_DotnetToolsJson Condition=" '$(_RootDotnetToolsJsonDir)' != '' ">$(_DotnetToolsJson)$([System.IO.File]::ReadAllText("$(_RootDotnetToolsJsonDir)/dotnet-tools.json"))</_DotnetToolsJson>
+			<_ConfigContainsPaket Condition=" '$(_DotnetToolsJson)' != ''">$([System.Text.RegularExpressions.Regex]::IsMatch(`$(_DotnetToolsJson)`, `(?i)"paket"\s*:\s*\{`))</_ConfigContainsPaket>
 			<_ConfigContainsPaket Condition=" '$(_ConfigContainsPaket)' == ''">false</_ConfigContainsPaket>
 		</PropertyGroup>
+
+		<!-- Test if paket is installed with tool-path in the standard locations. If so, it runs, unless the tool manifest declares paket. -->
+		<!-- Only a file counts: Exists() also takes a folder, such as a project folder named Paket on a case-insensitive file system. -->
+		<PropertyGroup Condition=" '$(PaketExePath)' == '' ">
+			<_PaketToolPathExeName Condition=" '$(OS)' != 'Windows_NT' ">paket</_PaketToolPathExeName>
+			<_PaketToolPathExeName Condition=" '$(OS)' == 'Windows_NT' ">paket.exe</_PaketToolPathExeName>
+			<_PaketToolPathExe Condition=" $([System.IO.File]::Exists('$(_PaketFullRootPath)$(_PaketToolPathExeName)')) ">$(_PaketFullRootPath)$(_PaketToolPathExeName)</_PaketToolPathExe>
+			<_PaketToolPathExe Condition=" '$(_PaketToolPathExe)' == '' AND $([System.IO.File]::Exists('$(PaketToolsPath)$(_PaketToolPathExeName)')) ">$(PaketToolsPath)$(_PaketToolPathExeName)</_PaketToolPathExe>
+			<PaketExePath Condition=" '$(_PaketToolPathExe)' != '' AND !$(_ConfigContainsPaket) ">$(_PaketToolPathExe)</PaketExePath>
+		</PropertyGroup>
+		<Warning Condition=" '$(PaketExePath)' == '' AND '$(_PaketToolPathExe)' != '' " Code="PAKET0001" Text="Ignoring $(_PaketToolPathExe): the tool manifest declares paket, which runs instead. Delete it if it is an older Paket, such as the paket.exe or bootstrapper of Paket 11, or add PAKET0001 to NoWarn." />
 
 		<!-- Second test: Call 'dotnet paket' and see if it returns without an error. Mute all the output. Only run if previous test failed and the test has not been disabled. -->
 		<!-- WARNING: This method can lead to processes hanging forever, and should be used as little as possible. See https://github.com/fsprojects/Paket/issues/3705 for details. -->

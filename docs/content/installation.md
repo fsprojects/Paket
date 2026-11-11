@@ -44,8 +44,13 @@ You can also install Paket into a folder of the repository, and run it from ther
 dotnet tool install paket --tool-path .paket
 ```
 
-`Paket.Restore.targets` and `paket.targets` find Paket when it is installed with `--tool-path` in
-`.paket` or in the root of the repository, as a local tool, or on the `PATH`, in that order.
+`Paket.Restore.targets` and `paket.targets` find Paket as a local tool, when the closest
+`.config/dotnet-tools.json` or `dotnet-tools.json` up from the root declares paket, then installed
+with `--tool-path` in the root of the repository or in `.paket`, as a local tool of another
+manifest, or on the `PATH`, in that order. When the manifest declares paket, a Paket installed with
+`--tool-path` is skipped with the warning `PAKET0001`: it can be an older Paket, such as the
+`paket.exe` of Paket 11. Delete it, or add `PAKET0001` to `NoWarn`. To run it anyway, set the
+`PaketExePath` property to its full path: the targets then run it without looking any further.
 
 ## Solutions without the .NET SDK
 

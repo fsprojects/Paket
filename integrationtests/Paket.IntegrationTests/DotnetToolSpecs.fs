@@ -11,20 +11,28 @@ open FsUnit
 
 let scenario = "dotnet-tool-locator"
 
+/// Restores the project of the scenario and gives the output
+let restoreOutput env =
+    directDotnetEx env false "restore" (scenarioTempPath scenario @@ "project")
+    |> Seq.map (fun msg -> msg.Message)
+    |> String.concat Environment.NewLine
+
 /// Restores the project of the scenario and checks that the installed tool did the Paket restore
 let restoreShouldUseTool version env =
-    let scenarioPath = scenarioTempPath scenario
-    let output =
-        directDotnetEx env false "restore" (scenarioPath @@ "project")
-        |> Seq.map (fun msg -> msg.Message)
-        |> String.concat Environment.NewLine
-    output |> shouldContainText $"Paket version %s{version}"
-    File.Exists(scenarioPath @@ "paket-files" @@ "paket.restore.cached") |> shouldEqual true
+    restoreOutput env |> shouldContainText $"Paket version %s{version}"
+    File.Exists(scenarioTempPath scenario @@ "paket-files" @@ "paket.restore.cached") |> shouldEqual true
 
 /// Installs the packed tool into the scenario, at the location the arguments give
 let installTool scenario env location =
     directDotnetEx env false $"tool install paket %s{location} --version %s{paketToolPackageVersion} --configfile nuget.config" (scenarioTempPath scenario)
     |> ignore
+
+/// Puts a file that isn't Paket where `dotnet tool install paket --tool-path` would write it, as
+/// the paket.exe of Paket 11 left in .paket: the restore fails if it runs
+let leaveOlderPaketIn folder =
+    let executable = if OperatingSystem.IsWindows() then "paket.exe" else "paket"
+    Directory.CreateDirectory folder |> ignore
+    File.WriteAllText(folder @@ executable, "not a paket")
 
 [<Test>]
 let ``restore finds paket as a local tool of the manifest``() =
@@ -35,12 +43,65 @@ let ``restore finds paket as a local tool of the manifest``() =
     restoreShouldUseTool version env
 
 [<Test>]
+let ``restore finds paket as a local tool of a dotnet-tools.json manifest``() =
+    let cleanup, version, env = prepareSdkForTool scenario
+    use __ = cleanup
+    installTool scenario env "--local"
+    let scenarioPath = scenarioTempPath scenario
+    File.Move(scenarioPath @@ ".config" @@ "dotnet-tools.json", scenarioPath @@ "dotnet-tools.json")
+    // the closest .config/dotnet-tools.json, without paket: otherwise the one of the Paket repository,
+    // which has paket, would be found above the scenario
+    File.WriteAllText(scenarioPath @@ ".config" @@ "dotnet-tools.json", """{ "version": 1, "isRoot": false, "tools": {} }""")
+
+    // without the `dotnet paket --version` test, only the manifest tells that paket is a local tool
+    restoreShouldUseTool version (("PaketDisableCliTest", "true") :: env)
+
+[<Test>]
 let ``restore finds paket installed with --tool-path .paket``() =
     let cleanup, version, env = prepareSdkForTool scenario
     use __ = cleanup
     installTool scenario env "--tool-path .paket"
 
     restoreShouldUseTool version env
+
+[<Test>]
+let ``restore runs a paket installed with --tool-path when the manifest only has a paket command of another tool``() =
+    let cleanup, version, env = prepareSdkForTool scenario
+    use __ = cleanup
+    installTool scenario env "--tool-path .paket"
+    File.WriteAllText(
+        scenarioTempPath scenario @@ ".config" @@ "dotnet-tools.json",
+        """{ "version": 1, "isRoot": true, "tools": { "paket-wrapper": { "version": "1.0.0", "commands": [ "paket" ] } } }""")
+
+    let output = restoreOutput env
+    output |> shouldContainText $"Paket version %s{version}"
+    output |> shouldNotContainText "PAKET0001"
+
+[<Test>]
+let ``restore runs the local tool of the manifest instead of a paket installed with --tool-path``() =
+    let cleanup, version, env = prepareSdkForTool scenario
+    use __ = cleanup
+    installTool scenario env "--local"
+    leaveOlderPaketIn (scenarioTempPath scenario @@ ".paket")
+
+    let output = restoreOutput env
+    output |> shouldContainText $"Paket version %s{version}"
+    output |> shouldContainText "warning PAKET0001"
+
+[<Test>]
+let ``restore runs the PaketExePath it is given, without PAKET0001``() =
+    let cleanup, version, env = prepareSdkForTool scenario
+    use __ = cleanup
+    // a local tool that isn't restored: the restore only succeeds if the PaketExePath given runs
+    File.WriteAllText(
+        scenarioTempPath scenario @@ ".config" @@ "dotnet-tools.json",
+        $"""{{ "version": 1, "isRoot": true, "tools": {{ "paket": {{ "version": "%s{paketToolPackageVersion}", "commands": [ "paket" ] }} }} }}""")
+    leaveOlderPaketIn (scenarioTempPath scenario @@ ".paket")
+
+    let env = ("PaketExePath", snd paketToolPath) :: List.filter (fun (name, _) -> name <> "PaketExePath") env
+    let output = restoreOutput env
+    output |> shouldContainText $"Paket version %s{version}"
+    output |> shouldNotContainText "PAKET0001"
 
 [<Test>]
 let ``restore finds paket on the PATH like a global tool``() =
@@ -70,6 +131,12 @@ let ``auto-restore on writes paket.targets and imports it into projects without 
     File.Exists(scenarioPath @@ ".paket" @@ "paket.targets") |> shouldEqual false
     File.ReadAllText(scenarioPath @@ "legacy" @@ "legacy.csproj").Contains "paket.targets" |> shouldEqual false
 
+/// Runs the RestorePackages target of paket.targets, as before a build, and gives its output
+let runPaketTargetsRestore env =
+    directDotnetEx env false "msbuild legacy.csproj /t:RestorePackages" (scenarioTempPath legacyScenario @@ "legacy")
+    |> Seq.map (fun msg -> msg.Message)
+    |> String.concat Environment.NewLine
+
 /// Turns auto-restore on and installs the paket under test on the PATH like a global tool. Gives a
 /// function that runs the RestorePackages target of paket.targets, as before a build, and gives its
 /// output
@@ -80,10 +147,7 @@ let paketTargetsRestore env =
     installTool legacyScenario env $"--tool-path \"%s{toolPath}\""
 
     let path = toolPath + string Path.PathSeparator + Environment.GetEnvironmentVariable "PATH"
-    fun () ->
-        directDotnetEx (("PATH", path) :: env) false "msbuild legacy.csproj /t:RestorePackages" (scenarioPath @@ "legacy")
-        |> Seq.map (fun msg -> msg.Message)
-        |> String.concat Environment.NewLine
+    fun () -> runPaketTargetsRestore (("PATH", path) :: env)
 
 [<Test>]
 let ``paket.targets of auto-restore restores with paket on the PATH like a global tool``() =
@@ -92,6 +156,18 @@ let ``paket.targets of auto-restore restores with paket on the PATH like a globa
     let restorePackages = paketTargetsRestore env
 
     restorePackages () |> shouldContainText $"Paket version %s{version}"
+
+[<Test>]
+let ``paket.targets of auto-restore runs the local tool of the manifest instead of a paket installed with --tool-path``() =
+    let cleanup, version, env = prepareSdkForTool legacyScenario
+    use __ = cleanup
+    directPaket "auto-restore on" legacyScenario |> ignore
+    installTool legacyScenario env "--local"
+    leaveOlderPaketIn (scenarioTempPath legacyScenario @@ ".paket")
+
+    let output = runPaketTargetsRestore env
+    output |> shouldContainText $"Paket version %s{version}"
+    output |> shouldContainText "warning PAKET0001"
 
 [<Test>]
 let ``paket.targets of auto-restore skips the restore once paket.lock is restored``() =

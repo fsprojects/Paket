@@ -8,10 +8,12 @@ FSharp.DependencyManager.Paket implements this extension mechanism to hook same 
 
 The extension runs the Paket .NET tool. It looks for, in order:
 
+* the local tool of the first `.config/dotnet-tools.json` or `dotnet-tools.json`
+  up from the script that has Paket, without looking above an `isRoot` one (run
+  `dotnet tool restore` first),
 * Paket installed with `dotnet tool install paket --tool-path`, in the folder
-  hierarchy containing the script, directly or in a `.paket` folder,
-* the local tool of the first `.config/dotnet-tools.json` up from the script
-  that has Paket (run `dotnet tool restore` first),
+  hierarchy containing the script, directly or in a `.paket` folder; it is
+  skipped with a warning when such a manifest declares Paket,
 * a global tool, in `~/.dotnet/tools` or `~/.paket`,
 * the most recent Paket .NET tool restored in the NuGet packages folder
   (`~/.nuget/packages/paket`).

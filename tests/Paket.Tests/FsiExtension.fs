@@ -60,3 +60,23 @@ module FsiExtension =
             |> Seq.toArray
         Assert.AreEqual([| "12.0.0"; "12.0.0-rc1"; "12.0.0-alpha001"; "11.0.0" |], actual)
 
+    [<Test>]
+    let ``a tool manifest gives the version of paket`` () =
+        let manifest = """{ "version": 1, "isRoot": true, "tools": { "paket": { "version": "12.0.0", "commands": [ "paket" ] } } }"""
+        Assert.AreEqual((Some "12.0.0", true), ReferenceLoading.Internals.Logic.paketOfToolManifest manifest)
+
+    [<Test>]
+    let ``a command named paket of another tool isn't paket`` () =
+        let manifest = """{ "version": 1, "tools": { "paket-wrapper": { "version": "1.0.0", "commands": [ "paket" ] } } }"""
+        Assert.AreEqual((None, false), ReferenceLoading.Internals.Logic.paketOfToolManifest manifest)
+
+    [<Test>]
+    let ``a root tool manifest without paket stops the lookup`` () =
+        let manifest = """{ "version": 1, "isRoot": true, "tools": { "fantomas": { "version": "7.0.0", "commands": [ "fantomas" ] } } }"""
+        Assert.AreEqual((None, true), ReferenceLoading.Internals.Logic.paketOfToolManifest manifest)
+
+    [<Test>]
+    let ``a tool manifest that isn't the root lets the lookup go up`` () =
+        let manifest = """{ "version": 1, "isRoot": false, "tools": {} }"""
+        Assert.AreEqual((None, false), ReferenceLoading.Internals.Logic.paketOfToolManifest manifest)
+
