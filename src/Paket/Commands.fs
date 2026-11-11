@@ -695,7 +695,6 @@ type Command =
     | [<CustomCommandLine("show-conditions")>]          ShowConditions of ParseResults<ShowConditionsArgs>
     | [<CustomCommandLine("pack")>]                     Pack of ParseResults<PackArgs>
     | [<CustomCommandLine("push")>]                     Push of ParseResults<PushArgs>
-    | [<Hidden;CustomCommandLine("generate-include-scripts")>] GenerateIncludeScripts of ParseResults<GenerateLoadScriptsArgs>
     | [<CustomCommandLine("generate-load-scripts")>]    GenerateLoadScripts of ParseResults<GenerateLoadScriptsArgs>
     | [<CustomCommandLine("why")>]                      Why of ParseResults<WhyArgs>
     | [<CustomCommandLine("restriction")>]              Restriction of ParseResults<RestrictionArgs>
@@ -728,7 +727,6 @@ with
             | ShowConditions _ -> "show conditions defined on groups"
             | Pack _ -> "create NuGet packages from paket.template files"
             | Push _ -> "push a NuGet package"
-            | GenerateIncludeScripts _ -> "[obsolete]"
             | GenerateLoadScripts _ -> "generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS"
             | Why _ -> "determine why a dependency is required"
             | Restriction _ -> "resolve a framework restriction and show details"

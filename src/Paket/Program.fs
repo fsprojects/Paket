@@ -880,9 +880,6 @@ let handleCommand silent command =
     | ShowConditions r -> processCommand silent showConditions r
     | Pack r -> processCommand silent pack r
     | Push r -> processCommand silent (push paketVersion) r
-    | GenerateIncludeScripts r ->
-        warnObsolete (ReplaceArgument("generate-load-scripts", "generate-include-scripts"))
-        processCommand silent generateLoadScripts r
     | GenerateLoadScripts r -> processCommand silent generateLoadScripts r
     | GenerateNuspec r -> processCommand silent generateNuspec r
     | Why r -> processCommand silent why r
