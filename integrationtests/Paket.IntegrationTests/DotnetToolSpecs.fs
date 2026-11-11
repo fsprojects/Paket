@@ -43,12 +43,39 @@ let ``restore finds paket as a local tool of the manifest``() =
     restoreShouldUseTool version env
 
 [<Test>]
+let ``restore finds paket as a local tool of a dotnet-tools.json manifest``() =
+    let cleanup, version, env = prepareSdkForTool scenario
+    use __ = cleanup
+    installTool scenario env "--local"
+    let scenarioPath = scenarioTempPath scenario
+    File.Move(scenarioPath @@ ".config" @@ "dotnet-tools.json", scenarioPath @@ "dotnet-tools.json")
+    // the closest .config/dotnet-tools.json, without paket: otherwise the one of the Paket repository,
+    // which has paket, would be found above the scenario
+    File.WriteAllText(scenarioPath @@ ".config" @@ "dotnet-tools.json", """{ "version": 1, "isRoot": false, "tools": {} }""")
+
+    // without the `dotnet paket --version` test, only the manifest tells that paket is a local tool
+    restoreShouldUseTool version (("PaketDisableCliTest", "true") :: env)
+
+[<Test>]
 let ``restore finds paket installed with --tool-path .paket``() =
     let cleanup, version, env = prepareSdkForTool scenario
     use __ = cleanup
     installTool scenario env "--tool-path .paket"
 
     restoreShouldUseTool version env
+
+[<Test>]
+let ``restore runs a paket installed with --tool-path when the manifest only has a paket command of another tool``() =
+    let cleanup, version, env = prepareSdkForTool scenario
+    use __ = cleanup
+    installTool scenario env "--tool-path .paket"
+    File.WriteAllText(
+        scenarioTempPath scenario @@ ".config" @@ "dotnet-tools.json",
+        """{ "version": 1, "isRoot": true, "tools": { "paket-wrapper": { "version": "1.0.0", "commands": [ "paket" ] } } }""")
+
+    let output = restoreOutput env
+    output |> shouldContainText $"Paket version %s{version}"
+    output |> shouldNotContainText "PAKET0001"
 
 [<Test>]
 let ``restore runs the local tool of the manifest instead of a paket installed with --tool-path``() =

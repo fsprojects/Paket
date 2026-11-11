@@ -35,10 +35,16 @@
 	<!-- Current priority is: local tool, when the tool manifest declares paket => tool installed with tool-path (1: repo root, 2: .paket folder) => 3: local tool found by running 'dotnet paket' => 4: global path variable -->
 	<!-- A paket installed with tool-path is skipped, with the warning PAKET0001, when the tool manifest declares paket: it can be an older Paket, such as the paket.exe or bootstrapper of Paket 11. -->
 	<Target Name="SetPaketCommand" >
-		<!-- Is CLI configured to be used in "dotnet-tools.json"? - can result in a false negative; only a positive outcome is reliable. -->
+		<!-- Is CLI configured to be used in the closest "dotnet-tools.json" or ".config/dotnet-tools.json" from the root up? - can result in a false negative, which the 'dotnet paket' test below can make up for. -->
+		<!-- Only the "paket" tool counts, as in #r "paket:". Unlike dotnet and #r "paket:", only the closest manifest of each name is read, and an "isRoot" one doesn't stop the lookup: MSBuild can't loop. -->
+		<!-- So the outcome is a false positive when dotnet stops at an "isRoot" manifest without paket before it gets to the closest one of the other name, in the same folder or above, which declares paket. -->
 		<PropertyGroup>
-			<_DotnetToolsJson Condition="Exists('$(PaketRootPath)/.config/dotnet-tools.json')">$([System.IO.File]::ReadAllText("$(PaketRootPath)/.config/dotnet-tools.json"))</_DotnetToolsJson>
-			<_ConfigContainsPaket Condition=" '$(_DotnetToolsJson)' != ''">$(_DotnetToolsJson.Contains('"paket"'))</_ConfigContainsPaket>
+			<_PaketFullRootPath>$([System.IO.Path]::GetFullPath('$(PaketRootPath)'))</_PaketFullRootPath>
+			<_DotnetToolsJsonDir>$([MSBuild]::GetDirectoryNameOfFileAbove('$(_PaketFullRootPath)', '.config/dotnet-tools.json'))</_DotnetToolsJsonDir>
+			<_DotnetToolsJson Condition=" '$(_DotnetToolsJsonDir)' != '' ">$([System.IO.File]::ReadAllText("$(_DotnetToolsJsonDir)/.config/dotnet-tools.json"))</_DotnetToolsJson>
+			<_RootDotnetToolsJsonDir>$([MSBuild]::GetDirectoryNameOfFileAbove('$(_PaketFullRootPath)', 'dotnet-tools.json'))</_RootDotnetToolsJsonDir>
+			<_DotnetToolsJson Condition=" '$(_RootDotnetToolsJsonDir)' != '' ">$(_DotnetToolsJson)$([System.IO.File]::ReadAllText("$(_RootDotnetToolsJsonDir)/dotnet-tools.json"))</_DotnetToolsJson>
+			<_ConfigContainsPaket Condition=" '$(_DotnetToolsJson)' != ''">$([System.Text.RegularExpressions.Regex]::IsMatch(`$(_DotnetToolsJson)`, `(?i)"paket"\s*:\s*\{`))</_ConfigContainsPaket>
 			<_ConfigContainsPaket Condition=" '$(_ConfigContainsPaket)' == ''">false</_ConfigContainsPaket>
 		</PropertyGroup>
 
