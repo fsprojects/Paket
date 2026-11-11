@@ -48,4 +48,15 @@ module FsiExtension =
             |> Seq.toArray
         Assert.AreEqual(expected, actual)
 
+    [<Test>]
+    let ``.nuget resolution logic takes a release before its prereleases`` () =
+        let actual =
+            [| "12.0.0-alpha001"; "12.0.0"; "12.0.0-rc1"; "11.0.0" |]
+            |> Array.map (fun d -> d, d)
+            |> ReferenceLoading.Internals.Logic.paketVersionSortForNugetCacheFolder
+            |> Seq.map snd
+            |> Seq.concat
+            |> Seq.map fst
+            |> Seq.toArray
+        Assert.AreEqual([| "12.0.0"; "12.0.0-rc1"; "12.0.0-alpha001"; "11.0.0" |], actual)
 
