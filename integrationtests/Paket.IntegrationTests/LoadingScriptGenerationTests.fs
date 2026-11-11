@@ -5,8 +5,6 @@ open NUnit.Framework
 open Paket.IntegrationTests.TestHelpers
 open Paket
 
-#nowarn "0044" //  Warning FS0044 This construct is deprecated. Use PlatformMatching.extractPlatforms instead
-
 let makeScenarioPath scenario    = Path.Combine("loading-scripts", scenario)
 let paket command scenario       = paket command (makeScenarioPath scenario)
 let directPaket command scenario = directPaket command (makeScenarioPath scenario)
@@ -14,7 +12,7 @@ let scenarioTempPath scenario    = scenarioTempPath (makeScenarioPath scenario)
 let scriptRoot scenario = DirectoryInfo(Path.Combine(scenarioTempPath scenario, ".paket", "load"))
 
 let getLoadScriptDefaultFolder scenario = DirectoryInfo((scriptRoot scenario).FullName)
-let getLoadScriptFolder framework scenario = DirectoryInfo(Path.Combine((getLoadScriptDefaultFolder scenario).FullName, framework |> FrameworkDetection.Extract |> Option.get |> string))
+let getLoadScriptFolder framework scenario = DirectoryInfo(Path.Combine((getLoadScriptDefaultFolder scenario).FullName, (PlatformMatching.forceExtractPlatforms framework).Platforms |> List.exactlyOne |> string))
 
 let getGeneratedScriptFiles framework scenario =
     let frameworkDir = getLoadScriptFolder framework scenario

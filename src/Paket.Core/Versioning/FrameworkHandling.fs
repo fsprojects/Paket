@@ -1373,10 +1373,6 @@ module FrameworkDetection =
                 | _ -> None
             result)
 
-    /// parse a string to construct a Netframework, NetCore, NetStandard, or other dotnet identifier
-    [<Obsolete "Use PlatformMatching.extractPlatforms instead">]
-    let Extract path = internalExtract path
-
     let DetectFromPath(path : string) : FrameworkIdentifier option =
         let path = path.Replace("\\", "/").ToLower()
         let fi = new FileInfo(path)
