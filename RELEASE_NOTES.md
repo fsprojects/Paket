@@ -1,6 +1,8 @@
 #### Unreleased
 
 * `paket install`, `paket restore`, and `update`, `add` and `remove` when they install rewrite an existing `.paket/paket.targets` with the one of the running Paket, unless `PAKET_SKIP_RESTORE_TARGETS` is `true`, so that a repository that turned auto-restore on with Paket 11 no longer keeps the one that runs `paket.exe` through mono outside Windows and falls back to the bootstrapper. A restore with `--project`, `--references-file` or `--only-referenced`, like the one `paket.targets` runs during a build, leaves it as it is.
+* fix: With MSBuild 15.8 or later, `paket.targets` skips the restore when `paket-files/paket.restore.cached` says that the last full restore, as by `paket install` or `paket restore` of all the groups and projects, was of the current `paket.lock`, instead of restoring on every build of a project without the SDK. It still restores while `paket.local` exists, when the `packages` folder is missing unless `paket.lock` has `storage: none` for all its groups, the main one included, and packages, and after it restored a project for another `paket.lock`, for a missing `packages` folder or with `paket.local`, until the next full restore
+* fix: `paket restore` no longer skips as up to date when the `packages` folder is missing, or when a restore since the last full one may have changed it: a restore of some projects or groups for another `paket.lock`, one with `paket.local` or `--force`, or a full one for another `paket.lock` that failed. A full `paket restore --force` now writes `paket-files/paket.restore.cached`
 
 #### 12.0.0-alpha006 - 2026-11-08
 

@@ -4,6 +4,7 @@
   <PropertyGroup>
     <!-- Enable the restore command to run before builds -->
     <RestorePackages Condition=" '$(RestorePackages)' == '' ">true</RestorePackages>
+    <MSBuildSupportsHashing>false</MSBuildSupportsHashing>
     <PaketToolsPath>$(MSBuildThisFileDirectory)</PaketToolsPath>
     <PaketRootPath>$(MSBuildThisFileDirectory)..\</PaketRootPath>
     <PaketLockFilePath>$(PaketRootPath)paket.lock</PaketLockFilePath>
@@ -11,6 +12,11 @@
 
     <!-- Disable test for CLI tool completely - overrideable via properties in projects or via environment variables -->
     <PaketDisableCliTest Condition=" '$(PaketDisableCliTest)' == '' ">False</PaketDisableCliTest>
+  </PropertyGroup>
+
+  <!-- MSBuild 14 (VS 2015) has no MSBuildVersion, and comparing its empty value as a version fails (MSB4086): compare it only from MSBuild 15 -->
+  <PropertyGroup Condition=" '$(MSBuildVersion)' != '' ">
+    <MSBuildSupportsHashing Condition=" '$(MSBuildVersion)' &gt; '15.8.0' ">true</MSBuildSupportsHashing>
   </PropertyGroup>
 
   <!-- Resolve how paket should be called -->
@@ -92,20 +98,51 @@
     <BuildDependsOn Condition="$(RestorePackages) == 'true'">RestorePackages; $(BuildDependsOn);</BuildDependsOn>
   </PropertyGroup>
 
+  <!-- Official workaround for https://docs.microsoft.com/en-us/visualstudio/msbuild/getfilehash-task?view=vs-2019 -->
+  <UsingTask TaskName="Microsoft.Build.Tasks.GetFileHash" AssemblyName="Microsoft.Build.Tasks.Core, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" Condition=" '$(MSBuildSupportsHashing)' == 'true' And '$(MSBuildVersion)' &lt; '16.0.360' " />
   <Target Name="RestorePackages" DependsOnTargets="SetPaketCommand">
 
     <PropertyGroup>
       <!-- Commands -->
       <RestoreCommand>$(PaketCommand) restore --references-file "$(PaketReferences)"</RestoreCommand>
       <PaketRestoreRequired>true</PaketRestoreRequired>
+      <!-- before the cache is read: the restore of another project of a parallel build marks the cache stale before it creates the folder -->
+      <_PaketPackagesFolderExists>false</_PaketPackagesFolderExists>
+      <_PaketPackagesFolderExists Condition=" Exists('$(PaketRootPath)packages') ">true</_PaketPackagesFolderExists>
+      <CacheFilesExist>false</CacheFilesExist>
+      <CacheFilesExist Condition=" Exists('$(PaketRestoreCacheFile)') And Exists('$(PaketLockFilePath)') ">true</CacheFilesExist>
     </PropertyGroup>
 
-    <PropertyGroup Condition="Exists('$(PaketRestoreCacheFile)') ">
-      <PaketRestoreCachedHash>$([System.IO.File]::ReadAllText('$(PaketRestoreCacheFile)'))</PaketRestoreCachedHash>
-      <PaketRestoreLockFileHash>$([System.IO.File]::ReadAllText('$(PaketLockFilePath)'))</PaketRestoreLockFileHash>
-      <PaketRestoreRequired>true</PaketRestoreRequired>
-      <PaketRestoreRequired Condition=" '$(PaketRestoreLockFileHash)' == '$(PaketRestoreCachedHash)' ">false</PaketRestoreRequired>
-      <PaketRestoreRequired Condition=" '$(PaketRestoreLockFileHash)' == '' ">true</PaketRestoreRequired>
+    <!-- Skip the restore when the last full restore was of this paket.lock: paket.restore.cached holds the hashes of its content -->
+    <GetFileHash Condition=" '$(MSBuildSupportsHashing)' == 'true' And '$(CacheFilesExist)' == 'true' " Files="$(PaketLockFilePath)" Algorithm="SHA256" HashEncoding="hex" >
+      <Output TaskParameter="Hash" PropertyName="PaketRestoreLockFileHash" />
+    </GetFileHash>
+    <!-- Read the hashes of the cache, which is json, but a very simple key value object, as Paket.Restore.targets does -->
+    <PropertyGroup Condition=" '$(MSBuildSupportsHashing)' == 'true' And '$(CacheFilesExist)' == 'true' ">
+      <PaketRestoreCachedContents>$([System.IO.File]::ReadAllText('$(PaketRestoreCacheFile)'))</PaketRestoreCachedContents>
+    </PropertyGroup>
+    <ItemGroup Condition=" '$(MSBuildSupportsHashing)' == 'true' And '$(CacheFilesExist)' == 'true' ">
+      <PaketRestoreCachedSplitObject Include="$([System.Text.RegularExpressions.Regex]::Split(`$(PaketRestoreCachedContents)`, `{|}|,`))"></PaketRestoreCachedSplitObject>
+      <PaketRestoreCachedKeyValue Include="@(PaketRestoreCachedSplitObject)"
+        Condition=" $([System.Text.RegularExpressions.Regex]::Split(`%(Identity)`, `&quot;: &quot;`).Length) &gt; 1 ">
+        <Key>$([System.Text.RegularExpressions.Regex]::Split(`%(Identity)`, `": "`)[0].Replace(`"`, ``).Replace(` `, ``))</Key>
+        <Value>$([System.Text.RegularExpressions.Regex]::Split(`%(Identity)`, `": "`)[1].Replace(`"`, ``).Replace(` `, ``))</Value>
+      </PaketRestoreCachedKeyValue>
+    </ItemGroup>
+    <PropertyGroup Condition=" '$(MSBuildSupportsHashing)' == 'true' And '$(CacheFilesExist)' == 'true' ">
+      <PackagesDownloadedHash Condition=" '%(PaketRestoreCachedKeyValue.Key)' == 'packagesDownloadedHash' ">%(PaketRestoreCachedKeyValue.Value)</PackagesDownloadedHash>
+      <ProjectsRestoredHash Condition=" '%(PaketRestoreCachedKeyValue.Key)' == 'projectsRestoredHash' ">%(PaketRestoreCachedKeyValue.Value)</ProjectsRestoredHash>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(MSBuildSupportsHashing)' == 'true' And '$(CacheFilesExist)' == 'true' ">
+      <!-- both hashes, as paket restore checks: a restore that can change the packages folder, like the one of this target, clears packagesDownloadedHash first -->
+      <PaketRestoreRequired Condition=" '$(PaketRestoreLockFileHash)' != '' And '$(PaketRestoreLockFileHash)' == '$(ProjectsRestoredHash)' And '$(PaketRestoreLockFileHash)' == '$(PackagesDownloadedHash)' ">false</PaketRestoreRequired>
+      <!-- a restore with paket.local doesn't write the cache, which can still be the one of a restore without it -->
+      <PaketRestoreRequired Condition=" Exists('$(PaketRootPath)paket.local') ">true</PaketRestoreRequired>
+      <!-- the cache doesn't know that the packages folder was deleted, which a group without "STORAGE: NONE" uses, as does a package of its own "storage: packages" or "storage: symlink": the restore then marks the cache stale, for the other projects -->
+      <!-- a group without NuGet packages, or whose packages all have "storage: none", only makes it restore on every build -->
+      <_PaketLockFileContents Condition=" '$(_PaketPackagesFolderExists)' != 'true' ">$([System.IO.File]::ReadAllText('$(PaketLockFilePath)'))</_PaketLockFileContents>
+      <PaketRestoreRequired Condition=" '$(_PaketPackagesFolderExists)' != 'true' And $([System.Text.RegularExpressions.Regex]::Matches(`$(_PaketLockFileContents)`, `(?m)^STORAGE: NONE`).Count) != $([MSBuild]::Add($([System.Text.RegularExpressions.Regex]::Matches(`$(_PaketLockFileContents)`, `(?m)^GROUP `).Count), 1)) ">true</PaketRestoreRequired>
+      <PaketRestoreRequired Condition=" '$(_PaketPackagesFolderExists)' != 'true' And $([System.Text.RegularExpressions.Regex]::IsMatch(`$(_PaketLockFileContents)`, `storage: (packages|symlink)`)) ">true</PaketRestoreRequired>
     </PropertyGroup>
 
     <Exec Command="$(RestoreCommand)"
