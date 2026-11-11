@@ -34,7 +34,8 @@ module Logic =
             let struo =
                 versions
                 |> Seq.map(fun (something, (version, rest) ) -> something, rest)
-                |> Seq.sortByDescending snd
+                // a release comes before its prereleases
+                |> Seq.sortByDescending (fun (_, rest) -> List.isEmpty rest, rest)
             number, struo)
         |> Seq.sortByDescending fst
         //|> Seq.concat
