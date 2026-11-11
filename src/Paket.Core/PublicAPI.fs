@@ -417,18 +417,10 @@ type Dependencies(dependenciesFileName: string) =
                 this.Restore(force, group, Array.toList referencesFiles, touchAffectedRefs, ignoreChecks,  failOnFailedChecks, targetFramework, outputPath)
 
     /// Lists outdated packages.
-    [<Obsolete("Use ShowOutdated with the force parameter set to true to get the old behavior")>]
-    member this.ShowOutdated(strict: bool, includePrereleases: bool, groupName: string Option): unit =
-        this.ShowOutdated(strict, true, includePrereleases, groupName)
-
     member this.ShowOutdated(strict: bool, force: bool, includePrereleases: bool, groupName: string Option): unit =
         FindOutdated.ShowOutdated strict force includePrereleases groupName |> this.Process
 
     /// Finds all outdated packages.
-    [<Obsolete("Use FindOutdated with the force parameter set to true to get the old behavior")>]
-    member this.FindOutdated(strict: bool, includePrereleases: bool, groupName: string Option): (string * string * SemVerInfo) list =
-        this.FindOutdated(strict, true, includePrereleases, groupName)
-
     member this.FindOutdated(strict: bool, force: bool, includePrereleases: bool, groupName: string Option): (string * string * SemVerInfo) list =
         FindOutdated.FindOutdated strict force includePrereleases groupName
         |> this.Process
