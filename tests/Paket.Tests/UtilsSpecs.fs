@@ -417,6 +417,16 @@ let ``containsIgnoreCase handles shorter strings correct``() =
     let actual = Paket.Utils.String.containsIgnoreCase "long_long" "short"
     Assert.False(actual)
 
+#if TESTSUITE_RUNS_ON_DOTNETCORE
+[<Test>]
+let ``GetFolderPath raises helpful error when HOME and USERPROFILE are unset``() =
+    use v1 = new DisposableEnvVar("HOME")
+    use v2 = new DisposableEnvVar("USERPROFILE")
+    use v3 = new DisposableEnvVar("APPDATA")
+    let ex = Assert.Throws<Exception>(fun () -> Constants.Environment.GetFolderPath Constants.Environment.SpecialFolder.ApplicationData |> ignore)
+    ex.Message |> shouldContainText "environment variable"
+#endif
+
 [<Test>]
 let ``FindAllFiles should not descend into dot folders``() =
     TestHelpers.withTempDir (fun root ->
