@@ -1,5 +1,7 @@
 #### Unreleased
 
+* fix: The bash completion completes `paket` too, not only `paket.exe`: a global tool, a Paket installed with `--tool-path` or the `paket` alias of `dotnet paket`. It falls back to file names, as in `paket pack out<TAB>`. Remove the `complete -F _paket paket` that the README advised for the alias: it replaces the one of the script, without that fallback
+
 #### 12.0.0 - 2026-11-11
 
 Paket 12 only ships as the `paket` .NET tool, which needs the .NET 10 runtime: `paket.exe`, `paket.bootstrapper.exe` and Mono are no longer supported. To upgrade, install Paket as a local tool (<https://fsprojects.github.io/Paket/installation.html#Moving-from-paket-exe-and-the-bootstrapper>). To keep `paket.exe` for now, remove the `version` line from paket.dependencies and run `.paket/paket.bootstrapper.exe --self`: you get the bootstrapper of Paket 11, which stays on the latest 11.x.

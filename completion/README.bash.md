@@ -63,7 +63,8 @@ Somewhere in your `~/.bashrc`:
 
 ```sh
 alias paket='dotnet paket'
-
-# Complete the paket alias using the _paket function.
-complete -F _paket paket
 ```
+
+The completion script completes the alias as it completes `paket`. Don't add a
+`complete -F _paket paket` of your own: it would replace the one of the script,
+which falls back to file names.
