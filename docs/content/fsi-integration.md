@@ -18,6 +18,22 @@ The extension runs the Paket .NET tool. It looks for, in order:
 * the most recent Paket .NET tool restored in the NuGet packages folder
   (`~/.nuget/packages/paket`).
 
+The local tool and the one restored in the NuGet packages folder are each a
+`paket.dll`, which runs with the `dotnet` that runs the script, or else the first
+one found in `DOTNET_ROOT`, the `PATH` and the default install folders:
+`C:\Program Files\dotnet` (and then `C:\Program Files (x86)\dotnet` for a 32-bit
+app) and `%LocalAppData%\Microsoft\dotnet` on Windows, `/usr/local/share/dotnet`,
+`/usr/share/dotnet`, `/usr/lib/dotnet` and `/usr/lib64/dotnet` on macOS and Linux,
+and `~/.dotnet`. When no `dotnet` is found, set `DOTNET_ROOT` to the folder of
+`dotnet` in the environment of the IDE or app that runs F# Interactive, or add that
+folder to its `PATH`.
+
+A Paket installed with `--tool-path` or as a global tool is an executable that finds
+.NET by itself, as any .NET app does: through `DOTNET_ROOT` or the location where
+the .NET installer put it, but not through the `PATH`, so an install by the
+dotnet-install scripts, in `~/.dotnet` or `%LocalAppData%\Microsoft\dotnet`, needs
+`DOTNET_ROOT` in the environment of the IDE or app that runs F# Interactive.
+
 ## Install the extension
 
 You have two choices to deploy the assembly:

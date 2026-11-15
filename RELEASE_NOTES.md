@@ -6,6 +6,7 @@
 * fix: The zsh completion runs the local tool of the closest `.config/dotnet-tools.json` or `dotnet-tools.json` from the current folder up that declares paket, without looking above an `isRoot` one, as dotnet does; else, or when that tool isn't restored, a global tool. It used to read only `./.config/dotnet-tools.json`, where any `"paket"` counted
 * fix: The zsh completion applies the styles set for one command, such as `zstyle ':completion::complete:paket:add:*' infix-match yes` or `zstyle ':completion::complete:paket:find-packages:' disable-completion yes`, to `paket` and not only to `paket.exe`
 * fix: The zsh completion completes the installed packages for `paket why` and `paket find-refs`, and after `--group`: it passed the group to `paket show-installed-packages`, which takes none
+* fix: `#r "paket:"` in F# scripts runs the local tool, and the Paket .NET tool restored in the NuGet packages folder, with the dotnet that runs the script, or else the first one found in `DOTNET_ROOT`, the `PATH` and the default install folders. It used to run `dotnet` from the `PATH` unless `DOTNET_HOST_PATH` was set, which failed in an IDE or an app that hosts F# Interactive without dotnet on its `PATH`. When it finds no dotnet, it asks to set `DOTNET_ROOT` or to add dotnet to the `PATH`, instead of failing to start `dotnet`
 
 #### 12.0.0 - 2026-11-11
 

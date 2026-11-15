@@ -50,6 +50,84 @@ module Logic =
         let isRoot = System.Text.RegularExpressions.Regex.IsMatch(content, "\"isRoot\"\\s*:\\s*true", options)
         (if paketVersion.Success then Some paketVersion.Groups.[1].Value else None), isRoot
 
+    /// Where to look for dotnet, in order: the host that runs the script (DOTNET_HOST_PATH, the
+    /// running process when it is dotnet, the root of the running runtime), then DOTNET_ROOT, the
+    /// PATH and the default install folders. A relative path, which would depend on the current
+    /// folder, or on the current drive on Windows, is left out.
+    let dotnetCandidates
+        (isWindows: bool)
+        (getEnvironmentVariable: string -> string)
+        (processPath: string option)
+        (runtimeDirectory: string option)
+        (programFiles: string)
+        (userProfile: string)
+        =
+        let dotnetExe = if isWindows then "dotnet.exe" else "dotnet"
+        // file names are compared without case on Windows only
+        let nameComparison = if isWindows then System.StringComparison.OrdinalIgnoreCase else System.StringComparison.Ordinal
+        let inFolder (folders: string list) =
+            if List.exists System.String.IsNullOrEmpty folders
+            then None
+            else
+                // on .NET Framework, Path.Combine throws on invalid characters, such as quotes
+                try
+                    Some(System.IO.Path.Combine(Array.ofList (folders @ [ dotnetExe ])))
+                with _ -> None
+        let isFullyQualified (path: string) =
+            if isWindows then
+                // a drive or a UNC path, and not \folder or C:folder, which depend on the current drive or on
+                // its current folder
+                path.StartsWith(@"\\", System.StringComparison.Ordinal)
+                || path.StartsWith("//", System.StringComparison.Ordinal)
+                || (path.Length >= 3 && System.Char.IsLetter path.[0] && path.[1] = ':' && (path.[2] = '\\' || path.[2] = '/'))
+            else
+                System.IO.Path.IsPathRooted path
+        [
+            match getEnvironmentVariable "DOTNET_HOST_PATH" with
+            | null | "" -> ()
+            | path -> yield Some path
+            // `dotnet fsi`
+            match processPath with
+            | Some exe when System.String.Equals(System.IO.Path.GetFileName exe, dotnetExe, nameComparison) -> yield Some exe
+            | _ -> ()
+            // the root of the runtime that runs the script, <root>/shared/Microsoft.NETCore.App/<version>/,
+            // and not the folder of the .NET Framework or of a self-contained app
+            match runtimeDirectory with
+            | None -> ()
+            | Some runtimeDirectory ->
+                yield
+                    try
+                        let app = System.IO.DirectoryInfo(runtimeDirectory).Parent
+                        let shared = if isNull app then null else app.Parent
+                        if not (isNull shared)
+                           && not (isNull shared.Parent)
+                           && System.String.Equals(app.Name, "Microsoft.NETCore.App", nameComparison)
+                           && System.String.Equals(shared.Name, "shared", nameComparison)
+                        then inFolder [ shared.Parent.FullName ]
+                        else None
+                    with _ -> None
+            yield inFolder [ getEnvironmentVariable "DOTNET_ROOT" ]
+            match getEnvironmentVariable "PATH" with
+            | null -> ()
+            | path -> yield! path.Split(System.IO.Path.PathSeparator) |> Seq.map (fun folder -> inFolder [ folder.Trim '"' ])
+            if isWindows then
+                // the Program Files of a 32-bit process is Program Files (x86)
+                yield inFolder [ getEnvironmentVariable "ProgramW6432"; "dotnet" ]
+                yield inFolder [ programFiles; "dotnet" ]
+                // the default of dotnet-install.ps1
+                yield inFolder [ getEnvironmentVariable "LOCALAPPDATA"; "Microsoft"; "dotnet" ]
+            else
+                yield inFolder [ "/usr/local/share/dotnet" ]
+                yield inFolder [ "/usr/share/dotnet" ]
+                yield inFolder [ "/usr/lib/dotnet" ]
+                yield inFolder [ "/usr/lib64/dotnet" ]
+            // the default of dotnet-install.sh
+            yield inFolder [ userProfile; ".dotnet" ]
+        ]
+        |> List.choose id
+        |> List.filter isFullyQualified
+        |> List.distinct
+
 namespace ReferenceLoading
 module internal PaketHandler =
 
@@ -144,13 +222,32 @@ module internal PaketHandler =
         |> Seq.tryFind (fun (_, (version, isRoot)) -> Option.isSome version || isRoot)
         |> Option.bind (fun (manifest, (version, _)) -> version |> Option.map (fun version -> manifest, version))
 
-    /// Runs a framework-dependent paket.dll with the dotnet that runs the script
+    /// The dotnet to run a framework-dependent paket.dll: the first of dotnetCandidates that exists
+    let findDotnet () =
+        let processPath =
+            try
+                use current = System.Diagnostics.Process.GetCurrentProcess()
+                use mainModule = current.MainModule
+                Option.ofObj mainModule.FileName
+            with _ -> None
+        let runtimeDirectory =
+            try Some(System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()) with _ -> None
+        Internals.Logic.dotnetCandidates
+            isWindows
+            Environment.GetEnvironmentVariable
+            processPath
+            runtimeDirectory
+            (Environment.GetFolderPath Environment.SpecialFolder.ProgramFiles)
+            userProfile
+        |> List.tryFind File.Exists
+
+    /// The dotnet of findDotnet and the arguments that run a framework-dependent paket.dll; fails
+    /// when there is no dotnet
     let dotnetCommand (paketDll: string) =
-        let dotnet =
-            match Environment.GetEnvironmentVariable "DOTNET_HOST_PATH" with
-            | null | "" -> "dotnet"
-            | path -> path
-        dotnet, sprintf "\"%s\" " paketDll
+        match findDotnet () with
+        | Some dotnet -> dotnet, $"\"%s{paketDll}\" "
+        | None ->
+            failwith $"No dotnet was found to run '%s{paketDll}'. Please set DOTNET_ROOT to the folder of dotnet in the environment of the IDE or app that runs F# Interactive, or add that folder to its PATH."
 
     /// Resolves absolute load script location: something like
     /// baseDir/.paket/load/scriptName
@@ -167,7 +264,7 @@ module internal PaketHandler =
 
     
     /// Resolve packages loaded into scripts using `paket:` in `#r` directives such as `#r @"paket: nuget AmazingNugetPackage"`. 
-    /// <remarks>This function will throw if the resolution is not successful or the tool wasn't found</remarks>
+    /// <remarks>This function will throw if the resolution is not successful, or if the tool or a dotnet to run it wasn't found</remarks>
     /// <param name="fileType">A string given to paket command to select the output language. Can be `fsx` or `csx`</param>
     /// <param name="targetFramework">A string given to paket command to fix the framework.</param>
     /// <param name="prioritizedSearchPaths">List of directories which are checked first to resolve paket installed with --tool-path.</param>
@@ -351,7 +448,7 @@ module internal PaketHandler =
                 (loadScript,additionalIncludeFolders())
 
     /// Resolve packages loaded into scripts using `paket:` in `#r` directives such as `#r @"paket: nuget AmazingNugetPackage"`. 
-    /// <remarks>This function will throw if the resolution is not successful or the tool wasn't found</remarks>
+    /// <remarks>This function will throw if the resolution is not successful, or if the tool or a dotnet to run it wasn't found</remarks>
     /// <param name="targetFramework">A string given to paket command to fix the framework.</param>
     /// <param name="scriptDir"The folder containing the script</param>
     /// <param name="scriptName">filename for the script (not necessarily existing if interactive evaluation)</param>
