@@ -6,7 +6,7 @@ _paket()
   local previous="${COMP_WORDS[COMP_CWORD-1]}"
 
   local -a line=(${COMP_WORDS[@]})
-  # Remove paket.exe
+  # Remove paket
   unset line[0]
 
   local -a commands=(
@@ -52,12 +52,14 @@ _paket()
 
   case "${line[@]}" in
     (--log-file*)
-      # Complete file name.
-      COMPREPLY=( $(compgen -f "$current") )
-      return 0
+      # Leave the file name to the default completion, which completes folders.
+      return 1
       ;;
 
     (add*)
+      # Leave the project file after --project to the default completion.
+      [[ "$previous" == --project || "$previous" == -p ]] && return 1
+
       opts+=(
         --clean-redirects
         --create-new-binding-files
@@ -125,4 +127,4 @@ paket-completion-update()
   printf 'Paket completion was updated. Please restart your shell.\n'
 }
 
-complete -F _paket paket.exe
+complete -o bashdefault -o default -F _paket paket paket.exe

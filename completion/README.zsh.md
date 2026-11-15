@@ -53,21 +53,19 @@ Somewhere in your `~/.zshrc`:
 
 ```sh
 alias paket='dotnet paket'
-```
-
-Also ensure that zsh
-[completes aliases based on the expanded alias contents](http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETEALIASES).
-
-```sh
-unsetopt completealiases
-```
-
-If you don't like alias completion, define that the `paket` alias should be
-completed using the `_paket` function defined in the `_paket` file.
-
-```sh
 setopt completealiases
-compdef _paket paket
+```
+
+With
+[`completealiases`](http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETEALIASES),
+zsh completes the alias as a command of its own, which the `_paket` function
+completes as `paket`. Otherwise zsh completes the arguments of `dotnet`. The
+option applies to all aliases: one that relies on the completion of its
+command, such as `alias g=git`, then needs `compdef g=git` after `compinit`.
+Instead of the alias and the option, a function gets the completion of `paket`:
+
+```sh
+paket() { dotnet paket "$@" }
 ```
 
 ## Configuration
@@ -78,20 +76,33 @@ You can configure some aspects of Paket completion. Add these to your
 ### Define where to look for `paket`
 
 Depending on what should be completed the Paket executable will be run by the
-completion script. The completion script searches for Paket installed with
-`dotnet tool install paket --tool-path .paket` first, then for a local tool of
-`./.config/dotnet-tools.json` (run with `dotnet paket`), then for a global tool
-(i.e. `paket` in the `$PATH`).
+completion script. The completion script runs a local tool when a tool
+manifest declares Paket, else a global tool (i.e. `paket` in the `$PATH`). As
+dotnet, it reads the closest `.config/dotnet-tools.json` or `dotnet-tools.json`
+from the current directory up that declares Paket, and doesn't look above an
+`"isRoot"` one.
 
-To override the list of possible locations for Paket installed with
-`--tool-path`, define the following `paket-executable` style. The list of values
-will be searched as defined.
+Completing in a repository shouldn't run one of its files. So the script runs
+the `paket.dll` of the local tool restored in `$NUGET_PACKAGES` or
+`~/.nuget/packages`, with `dotnet`, instead of `dotnet paket`, which reads the
+`global.json` of the repository: its `sdk.paths` can point dotnet at an SDK of
+the repository. It reads no `NuGet.config`, so that the repository can't
+choose the `paket.dll`: if yours sets `globalPackagesFolder`, export
+`NUGET_PACKAGES` with that folder. When the local tool isn't restored there, it
+runs the global tool.
+
+For the same reason, it doesn't run a Paket of the current directory, such as
+one installed with `dotnet tool install paket --tool-path .paket`, unless the
+following `paket-executable` style lists it. The list of values will be
+searched as defined, before the local tool and the global tool. A relative path
+runs that file in every directory you complete in, the repositories you don't
+trust included.
 
 ```sh
-# This is the default.
-zstyle ':completion::complete:paket:*' paket-executable './.paket/paket'
-# Useful for Paket developers: Prefer the locally built version in bin over the one in .paket.
-zstyle ':completion::complete:paket:*' paket-executable './bin/net10.0/paket' './.paket/paket'
+# Run Paket installed with --tool-path .paket or --tool-path . first.
+zstyle ':completion::complete:paket:*' paket-executable './.paket/paket' './paket'
+# Or, useful for Paket developers: Prefer the locally built version in bin over the local tool.
+zstyle ':completion::complete:paket:*' paket-executable './bin/net10.0/paket'
 ```
 
 ### Enable infix matching for package IDs
@@ -206,6 +217,32 @@ zstyle ':completion::complete:paket:show-groups:' disable-completion yes
 
 # Used by e.g. paket why:
 zstyle ':completion::complete:paket:show-installed-packages:' disable-completion yes
+```
+
+### Sources of the package IDs and versions
+
+To complete package IDs and versions, the completion script runs
+`paket find-packages` and `paket find-package-versions` against
+`https://www.nuget.org/api/v2`, and not against the sources of
+`paket.dependencies`: their credentials can name environment variables, whose
+values Paket sends to those sources, so that a repository would get them on a
+key press. To query other sources, list them. Paket doesn't send them the
+credentials stored with `paket config add-credentials`, and through `--source`,
+`paket find-package-versions` only reads NuGet v2 feeds: a v3 URL, ending with
+`index.json`, gives no versions.
+
+Unlike the `sources` style below, which only lists the URLs offered after
+`--source` and `--url`, this style sets the feeds that are queried. Here
+`find-packages` and `find-package-versions` name the queries, whatever command
+you complete, as for `disable-completion`.
+
+```sh
+zstyle ':completion::complete:paket:*' package-sources \
+  'https://www.nuget.org/api/v2' \
+  'https://example.com/feed/v2'
+# Only for the versions.
+zstyle ':completion::complete:paket:find-package-versions:' package-sources \
+  'https://example.com/feed/v2'
 ```
 
 ### Custom feed URLs for `--source` and `paket push --url` argument

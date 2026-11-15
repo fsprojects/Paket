@@ -1,4 +1,4 @@
-#compdef paket=paket.exe paket.exe
+#compdef paket paket.exe
 
 # Zsh completion script for Paket (https://github.com/fsprojects/Paket/).
 #
@@ -49,17 +49,18 @@
 # Somewhere in your ~/.zshrc:
 #
 #   alias paket='dotnet paket'
+#   setopt completealiases
 #
-# Also ensure that zsh completes aliases based on the expanded alias contents.
+# With completealiases, zsh completes the alias as a command of its own, which
+# the _paket function completes as paket. Otherwise zsh completes the arguments
+# of dotnet. The option applies to all aliases: one that relies on the
+# completion of its command, such as `alias g=git`, then needs `compdef g=git`
+# after compinit.
 # http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETEALIASES
 #
-#   unsetopt completealiases
+# Instead of the alias and the option, a function gets the completion of paket:
 #
-# If you don't like alias completion, define that the paket alias should be
-# completed using the _paket function defined in this file.
-#
-#   setopt completealiases
-#   compdef _paket paket
+#   paket() { dotnet paket "$@" }
 #
 #
 # CONFIGURATION
@@ -70,19 +71,32 @@
 # Define where to look for paket
 #
 #   Depending on what should be completed the Paket executable will be run by
-#   the completion script. The completion script searches for paket installed
-#   with `dotnet tool install paket --tool-path .paket` first, then for a local
-#   tool of ./.config/dotnet-tools.json (run with `dotnet paket`), then for a
-#   global tool (i.e. paket in the $PATH).
+#   the completion script. The completion script runs a local tool when a tool
+#   manifest declares paket, else a global tool (i.e. paket in the $PATH). As
+#   dotnet, it reads the closest .config/dotnet-tools.json or dotnet-tools.json
+#   from the current directory up that declares paket, and doesn't look above
+#   an "isRoot" one.
 #
-#   To override the list of possible locations for paket installed with
-#   --tool-path, define the following `paket-executable` style. The list of
-#   values will be searched as defined.
+#   Completing in a repository shouldn't run one of its files. So the script
+#   runs the paket.dll of the local tool restored in $NUGET_PACKAGES or
+#   ~/.nuget/packages, with dotnet, instead of `dotnet paket`, which reads the
+#   global.json of the repository: its sdk.paths can point dotnet at an SDK of
+#   the repository. It reads no NuGet.config, so that the repository can't
+#   choose the paket.dll: if yours sets globalPackagesFolder, export
+#   NUGET_PACKAGES with that folder. When the local tool isn't restored there,
+#   it runs the global tool.
 #
-#     # This is the default.
-#     zstyle ':completion::complete:paket:*' paket-executable './.paket/paket'
-#     # Useful for Paket developers: Prefer the locally built version in bin over the one in .paket.
-#     zstyle ':completion::complete:paket:*' paket-executable './bin/net10.0/paket' './.paket/paket'
+#   For the same reason, it doesn't run a paket of the current directory, such
+#   as one installed with `dotnet tool install paket --tool-path .paket`,
+#   unless the following `paket-executable` style lists it. The list of values
+#   will be searched as defined, before the local tool and the global tool. A
+#   relative path runs that file in every directory you complete in, the
+#   repositories you don't trust included.
+#
+#     # Run paket installed with --tool-path .paket or --tool-path . first.
+#     zstyle ':completion::complete:paket:*' paket-executable './.paket/paket' './paket'
+#     # Or, useful for Paket developers: Prefer the locally built version in bin over the local tool.
+#     zstyle ':completion::complete:paket:*' paket-executable './bin/net10.0/paket'
 #
 #
 # Enable infix matching for package IDs
@@ -186,6 +200,31 @@
 #     zstyle ':completion::complete:paket:show-installed-packages:' disable-completion yes
 #
 #
+# Sources of the package IDs and versions
+#
+#   To complete package IDs and versions, the completion script runs
+#   paket find-packages and paket find-package-versions against
+#   https://www.nuget.org/api/v2, and not against the sources of
+#   paket.dependencies: their credentials can name environment variables, whose
+#   values Paket sends to those sources, so that a repository would get them on
+#   a key press. To query other sources, list them. Paket doesn't send them the
+#   credentials stored with `paket config add-credentials`, and through --source,
+#   paket find-package-versions only reads NuGet v2 feeds: a v3 URL, ending
+#   with index.json, gives no versions.
+#
+#   Unlike the `sources` style below, which only lists the URLs offered after
+#   --source and --url, this style sets the feeds that are queried. Here
+#   find-packages and find-package-versions name the queries, whatever command
+#   you complete, as for disable-completion.
+#
+#     zstyle ':completion::complete:paket:*' package-sources \
+#            'https://www.nuget.org/api/v2' \
+#            'https://example.com/feed/v2'
+#     # Only for the versions.
+#     zstyle ':completion::complete:paket:find-package-versions:' package-sources \
+#            'https://example.com/feed/v2'
+#
+#
 # Custom feed URLs for --source and paket push --url argument
 #
 #   Define additional sources that will be completed for all Paket commands:
@@ -206,8 +245,8 @@ _paket() {
   local curcontext=$curcontext context state state_descr line ret=1
   typeset -A opt_args
 
-  # Strip .exe extension.
-  curcontext="${curcontext%.*}:"
+  # Complete paket.exe in the context of paket: strip .exe from the command.
+  curcontext="${curcontext/%.exe:/:}"
 
   # Set up default cache policy.
   local -A default_policies
@@ -552,7 +591,7 @@ _paket-find-refs() {
     (package-id)
       local group=${(v)opt_args[(i)--group|-g]:-Main}
 
-      _paket_installed_packages $group --all \
+      _paket_installed_packages "$group" --all \
       && ret=0
       ;;
   esac
@@ -834,7 +873,7 @@ _paket-remove() {
     (package-id)
       local group=${(v)opt_args[(i)--group|-g]}
 
-      _paket_installed_packages $group \
+      _paket_installed_packages "$group" \
       && ret=0
       ;;
   esac
@@ -951,7 +990,7 @@ _paket-update() {
     (package-id)
       local group=${(v)opt_args[(i)--group|-g]}
 
-      _paket_installed_packages $group \
+      _paket_installed_packages "$group" \
       && ret=0
       ;;
 
@@ -984,7 +1023,7 @@ _paket-why() {
     (package-id)
       local group=${(v)opt_args[(i)--group|-g]:-Main}
 
-      _paket_installed_packages $group --all \
+      _paket_installed_packages "$group" --all \
       && ret=0
       ;;
   esac
@@ -1097,15 +1136,12 @@ _paket_packages() {
   local cache_id="${service%.*}/$cmd/${(L)package_id:-_}"
 
   if ! _retrieve_cache $cache_id; then
-    # We need to replace CR, in case we're running on Windows (//$'\r'/).
     local -a output
-    output=(
-      ${(f)"$(_call_program $cmd \
-              "$(_paket_executable) $cmd --silent --max 100 '$package_id' 2> /dev/null")"//$'\r'/}
-      )
-    _paket_command_successful $? || return 1
+    integer cacheable
+    _paket_query_package_sources $cmd "$package_id" || return 1
 
-    _store_cache $cache_id output
+    # Don't keep a list that a source didn't answer, nor an empty one.
+    (( cacheable && $#output )) && _store_cache $cache_id output
   fi
 
   local infix_match
@@ -1140,15 +1176,12 @@ _paket_package_versions() {
   local cache_id="${service%.*}/$cmd/${(L)package_id:-_}"
 
   if ! _retrieve_cache $cache_id; then
-    # We need to replace CR, in case we're running on Windows (//$'\r'/).
     local -a output
-    output=(
-      ${(f)"$(_call_program $cmd \
-              "$(_paket_executable) $cmd --silent --max 100 '$package_id' 2> /dev/null")"//$'\r'/}
-      )
-    _paket_command_successful $? || return 1
+    integer cacheable
+    _paket_query_package_sources $cmd "$package_id" || return 1
 
-    _store_cache $cache_id output
+    # Don't keep a list that a source didn't answer, nor an empty one.
+    (( cacheable && $#output )) && _store_cache $cache_id output
   fi
 
   # If the there is a constraint, also complete fake values,
@@ -1208,8 +1241,10 @@ _paket_groups() {
 
 (( $+functions[_paket_installed_packages] )) ||
 _paket_installed_packages() {
-  local group="$1"
-  local args=$*
+  # show-installed-packages lists the packages of all the groups, and takes no
+  # group: the group, as on the command line, only filters its output.
+  local group=${(Q)1}
+  local -a args=("${@[2,-1]}")
   local cmd=show-installed-packages
 
   local what='NuGet package ID'
@@ -1222,7 +1257,7 @@ _paket_installed_packages() {
 
   # Modify context for cache retrieval only.
   local curcontext="$curcontext:$cmd"
-  local cache_id="${service%.*}/$cmd/${PWD//\//-}"
+  local cache_id="${service%.*}/$cmd${args:+-${(j:-:)${args#--}}}/${PWD//\//-}"
   if ! _retrieve_cache $cache_id; then
     local -a output
     output=(
@@ -1234,8 +1269,10 @@ _paket_installed_packages() {
     _store_cache $cache_id output
   fi
 
-  # Filter packages by optional group name followed by space.
-  [[ -n "$group" ]] && output=(${(M)output:#$group *})
+  # Filter packages by optional group name followed by space, ignoring the
+  # case as Paket does.
+  setopt localoptions extended_glob
+  [[ -n "$group" ]] && output=(${(M)output:#(#i)$group *})
 
   # Take the second word (the package ID).
   # Format: <group> <package ID> - <version>
@@ -1366,6 +1403,52 @@ _paket_version_constraint() {
   fi
 }
 
+(( $+functions[_paket_query_package_sources] )) ||
+_paket_query_package_sources() {
+  # Runs paket find-packages or find-package-versions ($1) for $2 against the
+  # sources of the package-sources style, nuget.org by default, and sets the
+  # output array of the caller, and its cacheable integer to 1 when every
+  # source answered. Not against the sources of paket.dependencies:
+  # their credentials can name environment variables, whose values paket sends
+  # to those sources, so that a repository would get them on a key press.
+  # $2 is the word as on the command line: unquote it, then quote it for the
+  # evaluation of _call_program, always as one argument, even empty, so that
+  # paket doesn't wait for a search text on its input.
+  local cmd=${1?Need type} package_id=$2
+  local key=":completion:${curcontext%:*:*}:$cmd:"
+
+  local -a sources
+  zstyle -a "$key" package-sources sources || sources=(https://www.nuget.org/api/v2)
+
+  local executable source
+  local -a lines
+  executable=$(_paket_executable)
+  integer exit_status=1 succeeded=0
+  output=()
+  cacheable=1
+  for source in $sources; do
+    # We need to replace CR, in case we're running on Windows (//$'\r'/).
+    lines=(
+      ${(f)"$(_call_program $cmd \
+              "$executable $cmd --silent --max 100 --source ${(qq)source} ${(qq)${(Q)package_id}} 2> /dev/null")"//$'\r'/}
+      )
+    exit_status=$?
+    (( exit_status == 0 )) && succeeded=1
+    # find-packages exits with 0 when the source doesn't answer.
+    (( exit_status == 0 )) && [[ -z ${(M)lines:#Ignoring error*} ]] || cacheable=0
+    output+=($lines)
+  done
+
+  if (( ! succeeded )); then
+    _paket_command_successful $exit_status
+    return 1
+  fi
+
+  # Package IDs and versions have no space: leave out the warnings that paket
+  # prints even with --silent, such as "Ignoring error when requesting ...".
+  output=(${(u)output:#* *})
+}
+
 (( $+functions[_paket_should_run] )) ||
 _paket_should_run() {
   local key=":completion:${curcontext%:*:*}:${1?Need type}:"
@@ -1389,22 +1472,75 @@ _paket_command_successful () {
 
 (( $+functions[_paket_executable] )) ||
 _paket_executable() {
+  # The captures of =~ in $match, whatever the options of the user. Unlike
+  # emulate -R, this keeps xtrace for _complete_debug.
+  emulate -L zsh
+  setopt no_bash_rematch no_rematch_pcre
   local -a locations
-  if ! zstyle -a ":completion:$curcontext:" paket-executable locations; then
-    locations=(./.paket/$service)
+  local location
+
+  # The command is evaluated by _call_program: (q) quotes the paths, which can
+  # have spaces, quotes or $.
+  #
+  # Locations the user configured come first.
+  if zstyle -a ":completion:$curcontext:" paket-executable locations; then
+    for location in $locations; do
+      [[ -f "$location" ]] && printf '%s' "${(q)location}" && return
+    done
   fi
 
-  local location
-  for location in $locations; do
-    [[ -f "$location" ]] && printf '"%s"' "$location" && return
+  # A local tool, when the tool manifest declares paket. As dotnet, the
+  # manifest is the closest one from here up that declares paket, and the
+  # lookup stops at an "isRoot" one. Only the "paket" tool counts.
+  #
+  # Completing in a repository shouldn't run one of its files. So, unlike
+  # Paket.Restore.targets, it doesn't run paket installed with --tool-path in
+  # the current directory or in ./.paket unless the paket-executable style
+  # lists it. And, as #r "paket:", it runs the paket.dll of the local tool
+  # restored in $NUGET_PACKAGES or ~/.nuget/packages instead of dotnet paket:
+  # dotnet then doesn't read the global.json of the repository, whose sdk.paths
+  # can point dotnet at an SDK of the repository. It reads no NuGet.config,
+  # whose globalPackagesFolder would let the repository choose the dll.
+  local dir=${PWD:A} parent manifest content version prerelease MATCH MBEGIN MEND
+  local -a match mbegin mend dlls numbers
+  integer i
+  while true; do
+    for manifest in "${dir%/}/.config/dotnet-tools.json" "${dir%/}/dotnet-tools.json"; do
+      [[ -f "$manifest" ]] || continue
+      # dotnet fails on a manifest it can't read, without looking above it.
+      [[ -r "$manifest" ]] || break 2
+      content=${(L)"$(<"$manifest")"}
+      if [[ $content =~ '"paket"[[:space:]]*:[[:space:]]*\{' ]]; then
+        if [[ $content =~ '"paket"[[:space:]]*:[[:space:]]*\{[^}]*"version"[[:space:]]*:[[:space:]]*"([^"]*)"' ]] &&
+           [[ ${match[1]%%+*} =~ '^[[:space:]]*([0-9]+(\.[0-9]+){0,3})(-[0-9a-z.-]+)?[[:space:]]*$' ]]; then
+          # The packages folder has a folder per version, normalized as NuGet
+          # does: without build metadata, with three numbers, or four when the
+          # last isn't 0, without leading zeros. No "/" may lead out of it.
+          numbers=(${(s:.:)match[1]})
+          prerelease=$match[3]
+          for (( i = 1; i <= $#numbers; i++ )); do
+            numbers[i]=$(( 10#$numbers[i] ))
+          done
+          while (( $#numbers < 3 )); do
+            numbers+=(0)
+          done
+          (( $#numbers == 4 && numbers[4] == 0 )) && numbers[4]=()
+          version=${(j:.:)numbers}$prerelease
+          dlls=("${NUGET_PACKAGES:-$HOME/.nuget/packages}"/paket/$version/tools/*/any/paket.dll(N))
+          (( $#dlls )) && printf 'dotnet %s' "${(q)dlls[1]}" && return
+        fi
+        # Not restored: the global tool can still complete.
+        break 2
+      fi
+      [[ $content =~ '"isroot"[[:space:]]*:[[:space:]]*true' ]] && break 2
+    done
+    parent=${dir:h}
+    [[ $parent == $dir ]] && break
+    dir=$parent
   done
 
-  if [[ -f .config/dotnet-tools.json ]] && grep -q '"paket"' .config/dotnet-tools.json; then
-    printf 'dotnet paket' && return
-  fi
-
   if (($+commands[paket])); then
-    printf '"%s"' "$commands[paket]" && return
+    printf '%s' "${(q)commands[paket]}" && return
   fi
 
   return 1
