@@ -590,7 +590,7 @@ _paket-find-refs() {
     (package-id)
       local group=${(v)opt_args[(i)--group|-g]:-Main}
 
-      _paket_installed_packages $group --all \
+      _paket_installed_packages "$group" --all \
       && ret=0
       ;;
   esac
@@ -872,7 +872,7 @@ _paket-remove() {
     (package-id)
       local group=${(v)opt_args[(i)--group|-g]}
 
-      _paket_installed_packages $group \
+      _paket_installed_packages "$group" \
       && ret=0
       ;;
   esac
@@ -989,7 +989,7 @@ _paket-update() {
     (package-id)
       local group=${(v)opt_args[(i)--group|-g]}
 
-      _paket_installed_packages $group \
+      _paket_installed_packages "$group" \
       && ret=0
       ;;
 
@@ -1022,7 +1022,7 @@ _paket-why() {
     (package-id)
       local group=${(v)opt_args[(i)--group|-g]:-Main}
 
-      _paket_installed_packages $group --all \
+      _paket_installed_packages "$group" --all \
       && ret=0
       ;;
   esac
@@ -1240,8 +1240,10 @@ _paket_groups() {
 
 (( $+functions[_paket_installed_packages] )) ||
 _paket_installed_packages() {
-  local group="$1"
-  local args=$*
+  # show-installed-packages lists the packages of all the groups, and takes no
+  # group: the group, as on the command line, only filters its output.
+  local group=${(Q)1}
+  local -a args=("${@[2,-1]}")
   local cmd=show-installed-packages
 
   local what='NuGet package ID'
@@ -1254,7 +1256,7 @@ _paket_installed_packages() {
 
   # Modify context for cache retrieval only.
   local curcontext="$curcontext:$cmd"
-  local cache_id="${service%.*}/$cmd/${PWD//\//-}"
+  local cache_id="${service%.*}/$cmd${args:+-${(j:-:)${args#--}}}/${PWD//\//-}"
   if ! _retrieve_cache $cache_id; then
     local -a output
     output=(
@@ -1266,8 +1268,10 @@ _paket_installed_packages() {
     _store_cache $cache_id output
   fi
 
-  # Filter packages by optional group name followed by space.
-  [[ -n "$group" ]] && output=(${(M)output:#$group *})
+  # Filter packages by optional group name followed by space, ignoring the
+  # case as Paket does.
+  setopt localoptions extended_glob
+  [[ -n "$group" ]] && output=(${(M)output:#(#i)$group *})
 
   # Take the second word (the package ID).
   # Format: <group> <package ID> - <version>
