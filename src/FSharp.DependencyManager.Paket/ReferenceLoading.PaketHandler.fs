@@ -341,6 +341,11 @@ module internal PaketHandler =
         |> Seq.filter File.Exists
         |> Internals.Logic.pickDotnet runsPaket
 
+    /// A program as a command line shows it, in quotes when its path has a space, as
+    /// C:\Program Files\dotnet\dotnet.exe
+    let quoteProgram (path: string) =
+        if path.Contains " " then "\"" + path + "\"" else path
+
     /// The dotnet of findDotnet and the arguments that run a framework-dependent paket.dll; fails
     /// when there is no dotnet
     let dotnetCommand (paketDll: string) =
@@ -508,7 +513,7 @@ module internal PaketHandler =
             Console.ForegroundColor <- ConsoleColor.Green
             Console.Write ":paket>"
             Console.ResetColor()
-            Console.WriteLine(sprintf " using %s" ((toolPath + " " + toolArguments).TrimEnd()))
+            Console.WriteLine(sprintf " using %s" ((quoteProgram toolPath + " " + toolArguments).TrimEnd()))
         
             try File.Delete(loadScript) with _ -> ()
             File.WriteAllLines(workingDirSpecFile.FullName, packageManagerTextLines)
@@ -542,8 +547,8 @@ module internal PaketHandler =
             
             if p.ExitCode <> 0 then
                 let msg = String.Join(Environment.NewLine, errors)
-                failwithf "Package resolution using '%s' failed, see directory '%s'.%s%s"
-                    toolPath workingDir Environment.NewLine msg
+                failwithf "Package resolution using '%s %s' failed, see directory '%s'.%s%s"
+                    (quoteProgram startInfo.FileName) startInfo.Arguments workingDir Environment.NewLine msg
             else
                 (loadScript,additionalIncludeFolders())
 
