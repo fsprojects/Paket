@@ -1409,10 +1409,13 @@ _paket_executable() {
   local -a locations
   local location
 
+  # The command is evaluated by _call_program: (q) quotes the paths, which can
+  # have spaces, quotes or $.
+  #
   # Locations the user configured come first.
   if zstyle -a ":completion:$curcontext:" paket-executable locations; then
     for location in $locations; do
-      [[ -f "$location" ]] && printf '"%s"' "$location" && return
+      [[ -f "$location" ]] && printf '%s' "${(q)location}" && return
     done
   fi
 
@@ -1454,7 +1457,7 @@ _paket_executable() {
           (( $#numbers == 4 && numbers[4] == 0 )) && numbers[4]=()
           version=${(j:.:)numbers}$prerelease
           dlls=("${NUGET_PACKAGES:-$HOME/.nuget/packages}"/paket/$version/tools/*/any/paket.dll(N))
-          (( $#dlls )) && printf 'dotnet "%s"' "$dlls[1]" && return
+          (( $#dlls )) && printf 'dotnet %s' "${(q)dlls[1]}" && return
         fi
         # Not restored: the global tool can still complete.
         break 2
@@ -1467,7 +1470,7 @@ _paket_executable() {
   done
 
   if (($+commands[paket])); then
-    printf '"%s"' "$commands[paket]" && return
+    printf '%s' "${(q)commands[paket]}" && return
   fi
 
   return 1
