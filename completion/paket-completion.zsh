@@ -49,17 +49,18 @@
 # Somewhere in your ~/.zshrc:
 #
 #   alias paket='dotnet paket'
+#   setopt completealiases
 #
-# Also ensure that zsh completes aliases based on the expanded alias contents.
+# With completealiases, zsh completes the alias as a command of its own, which
+# the _paket function completes as paket. Otherwise zsh completes the arguments
+# of dotnet. The option applies to all aliases: one that relies on the
+# completion of its command, such as `alias g=git`, then needs `compdef g=git`
+# after compinit.
 # http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETEALIASES
 #
-#   unsetopt completealiases
+# Instead of the alias and the option, a function gets the completion of paket:
 #
-# If you don't like alias completion, define that the paket alias should be
-# completed using the _paket function defined in this file.
-#
-#   setopt completealiases
-#   compdef _paket paket
+#   paket() { dotnet paket "$@" }
 #
 #
 # CONFIGURATION
