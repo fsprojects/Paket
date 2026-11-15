@@ -70,19 +70,28 @@
 # Define where to look for paket
 #
 #   Depending on what should be completed the Paket executable will be run by
-#   the completion script. The completion script searches for paket installed
-#   with `dotnet tool install paket --tool-path .paket` first, then for a local
-#   tool of ./.config/dotnet-tools.json (run with `dotnet paket`), then for a
-#   global tool (i.e. paket in the $PATH).
+#   the completion script. The completion script searches for paket in the
+#   order of the restore during the builds: first for a local tool (run with
+#   `dotnet paket`) when a tool manifest declares paket, then for paket
+#   installed with `dotnet tool install paket --tool-path .` or
+#   `--tool-path .paket`, then for a global tool (i.e. paket in the $PATH).
+#   The local tool comes first because a paket installed with --tool-path can
+#   be an older one.
 #
-#   To override the list of possible locations for paket installed with
-#   --tool-path, define the following `paket-executable` style. The list of
-#   values will be searched as defined.
+#   As dotnet, it reads the closest .config/dotnet-tools.json or
+#   dotnet-tools.json from the current directory up that declares paket, and
+#   doesn't look above an "isRoot" one. It looks for paket installed with
+#   --tool-path only in the current directory and its .paket folder, not in the
+#   directories above.
 #
-#     # This is the default.
+#   To look for paket in other locations first, define the following
+#   `paket-executable` style. The list of values will be searched as defined,
+#   before the locations above.
+#
+#     # Look in .paket first, even when a tool manifest declares paket.
 #     zstyle ':completion::complete:paket:*' paket-executable './.paket/paket'
-#     # Useful for Paket developers: Prefer the locally built version in bin over the one in .paket.
-#     zstyle ':completion::complete:paket:*' paket-executable './bin/net10.0/paket' './.paket/paket'
+#     # Or, useful for Paket developers: Prefer the locally built version in bin over the local tool.
+#     zstyle ':completion::complete:paket:*' paket-executable './bin/net10.0/paket'
 #
 #
 # Enable infix matching for package IDs
@@ -1390,18 +1399,43 @@ _paket_command_successful () {
 (( $+functions[_paket_executable] )) ||
 _paket_executable() {
   local -a locations
-  if ! zstyle -a ":completion:$curcontext:" paket-executable locations; then
-    locations=(./.paket/$service)
+  local location
+
+  # Locations the user configured come first.
+  if zstyle -a ":completion:$curcontext:" paket-executable locations; then
+    for location in $locations; do
+      [[ -f "$location" ]] && printf '"%s"' "$location" && return
+    done
   fi
 
-  local location
-  for location in $locations; do
-    [[ -f "$location" ]] && printf '"%s"' "$location" && return
+  # As in Paket.Restore.targets: a local tool, when the tool manifest declares
+  # paket, before paket installed with --tool-path, which can be an older Paket.
+  # As dotnet, the manifest is the closest one from here up that declares paket,
+  # and the lookup stops at an "isRoot" one. Only the "paket" tool counts.
+  local dir=${PWD:A} parent manifest content MATCH MBEGIN MEND
+  local -a match mbegin mend
+  while true; do
+    for manifest in "${dir%/}/.config/dotnet-tools.json" "${dir%/}/dotnet-tools.json"; do
+      [[ -f "$manifest" ]] || continue
+      # dotnet fails on a manifest it can't read, without looking above it.
+      [[ -r "$manifest" ]] || break 2
+      content=${(L)"$(<"$manifest")"}
+      if [[ $content =~ '"paket"[[:space:]]*:[[:space:]]*\{' ]]; then
+        printf 'dotnet paket' && return
+      fi
+      [[ $content =~ '"isroot"[[:space:]]*:[[:space:]]*true' ]] && break 2
+    done
+    parent=${dir:h}
+    [[ $parent == $dir ]] && break
+    dir=$parent
   done
 
-  if [[ -f .config/dotnet-tools.json ]] && grep -q '"paket"' .config/dotnet-tools.json; then
-    printf 'dotnet paket' && return
-  fi
+  # Then paket installed with --tool-path in the current directory or in
+  # ./.paket, in the order in which the targets look in the root of the
+  # repository.
+  for location in ./paket ./.paket/paket; do
+    [[ -f "$location" ]] && printf '"%s"' "$location" && return
+  done
 
   if (($+commands[paket])); then
     printf '"%s"' "$commands[paket]" && return

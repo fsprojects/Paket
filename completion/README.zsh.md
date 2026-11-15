@@ -78,20 +78,28 @@ You can configure some aspects of Paket completion. Add these to your
 ### Define where to look for `paket`
 
 Depending on what should be completed the Paket executable will be run by the
-completion script. The completion script searches for Paket installed with
-`dotnet tool install paket --tool-path .paket` first, then for a local tool of
-`./.config/dotnet-tools.json` (run with `dotnet paket`), then for a global tool
-(i.e. `paket` in the `$PATH`).
+completion script. The completion script searches for Paket in the order of
+the restore during the builds: first for a local tool (run with `dotnet paket`)
+when a tool manifest declares Paket, then for Paket installed with
+`dotnet tool install paket --tool-path .` or `--tool-path .paket`, then for a
+global tool (i.e. `paket` in the `$PATH`). The local tool comes first because a
+Paket installed with `--tool-path` can be an older one.
 
-To override the list of possible locations for Paket installed with
-`--tool-path`, define the following `paket-executable` style. The list of values
-will be searched as defined.
+As dotnet, it reads the closest `.config/dotnet-tools.json` or
+`dotnet-tools.json` from the current directory up that declares Paket, and
+doesn't look above an `"isRoot"` one. It looks for Paket installed with
+`--tool-path` only in the current directory and its `.paket` folder, not in the
+directories above.
+
+To look for Paket in other locations first, define the following
+`paket-executable` style. The list of values will be searched as defined,
+before the locations above.
 
 ```sh
-# This is the default.
+# Look in .paket first, even when a tool manifest declares Paket.
 zstyle ':completion::complete:paket:*' paket-executable './.paket/paket'
-# Useful for Paket developers: Prefer the locally built version in bin over the one in .paket.
-zstyle ':completion::complete:paket:*' paket-executable './bin/net10.0/paket' './.paket/paket'
+# Or, useful for Paket developers: Prefer the locally built version in bin over the local tool.
+zstyle ':completion::complete:paket:*' paket-executable './bin/net10.0/paket'
 ```
 
 ### Enable infix matching for package IDs
