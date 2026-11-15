@@ -221,6 +221,32 @@ zstyle ':completion::complete:paket:show-groups:' disable-completion yes
 zstyle ':completion::complete:paket:show-installed-packages:' disable-completion yes
 ```
 
+### Sources of the package IDs and versions
+
+To complete package IDs and versions, the completion script runs
+`paket find-packages` and `paket find-package-versions` against
+`https://www.nuget.org/api/v2`, and not against the sources of
+`paket.dependencies`: their credentials can name environment variables, whose
+values Paket sends to those sources, so that a repository would get them on a
+key press. To query other sources, list them. Paket doesn't send them the
+credentials stored with `paket config add-credentials`, and through `--source`,
+`paket find-package-versions` only reads NuGet v2 feeds: a v3 URL, ending with
+`index.json`, gives no versions.
+
+Unlike the `sources` style below, which only lists the URLs offered after
+`--source` and `--url`, this style sets the feeds that are queried. Here
+`find-packages` and `find-package-versions` name the queries, whatever command
+you complete, as for `disable-completion`.
+
+```sh
+zstyle ':completion::complete:paket:*' package-sources \
+  'https://www.nuget.org/api/v2' \
+  'https://example.com/feed/v2'
+# Only for the versions.
+zstyle ':completion::complete:paket:find-package-versions:' package-sources \
+  'https://example.com/feed/v2'
+```
+
 ### Custom feed URLs for `--source` and `paket push --url` argument
 
 ```sh

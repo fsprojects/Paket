@@ -199,6 +199,31 @@
 #     zstyle ':completion::complete:paket:show-installed-packages:' disable-completion yes
 #
 #
+# Sources of the package IDs and versions
+#
+#   To complete package IDs and versions, the completion script runs
+#   paket find-packages and paket find-package-versions against
+#   https://www.nuget.org/api/v2, and not against the sources of
+#   paket.dependencies: their credentials can name environment variables, whose
+#   values Paket sends to those sources, so that a repository would get them on
+#   a key press. To query other sources, list them. Paket doesn't send them the
+#   credentials stored with `paket config add-credentials`, and through --source,
+#   paket find-package-versions only reads NuGet v2 feeds: a v3 URL, ending
+#   with index.json, gives no versions.
+#
+#   Unlike the `sources` style below, which only lists the URLs offered after
+#   --source and --url, this style sets the feeds that are queried. Here
+#   find-packages and find-package-versions name the queries, whatever command
+#   you complete, as for disable-completion.
+#
+#     zstyle ':completion::complete:paket:*' package-sources \
+#            'https://www.nuget.org/api/v2' \
+#            'https://example.com/feed/v2'
+#     # Only for the versions.
+#     zstyle ':completion::complete:paket:find-package-versions:' package-sources \
+#            'https://example.com/feed/v2'
+#
+#
 # Custom feed URLs for --source and paket push --url argument
 #
 #   Define additional sources that will be completed for all Paket commands:
@@ -1110,15 +1135,12 @@ _paket_packages() {
   local cache_id="${service%.*}/$cmd/${(L)package_id:-_}"
 
   if ! _retrieve_cache $cache_id; then
-    # We need to replace CR, in case we're running on Windows (//$'\r'/).
     local -a output
-    output=(
-      ${(f)"$(_call_program $cmd \
-              "$(_paket_executable) $cmd --silent --max 100 '$package_id' 2> /dev/null")"//$'\r'/}
-      )
-    _paket_command_successful $? || return 1
+    integer cacheable
+    _paket_query_package_sources $cmd "$package_id" || return 1
 
-    _store_cache $cache_id output
+    # Don't keep a list that a source didn't answer, nor an empty one.
+    (( cacheable && $#output )) && _store_cache $cache_id output
   fi
 
   local infix_match
@@ -1153,15 +1175,12 @@ _paket_package_versions() {
   local cache_id="${service%.*}/$cmd/${(L)package_id:-_}"
 
   if ! _retrieve_cache $cache_id; then
-    # We need to replace CR, in case we're running on Windows (//$'\r'/).
     local -a output
-    output=(
-      ${(f)"$(_call_program $cmd \
-              "$(_paket_executable) $cmd --silent --max 100 '$package_id' 2> /dev/null")"//$'\r'/}
-      )
-    _paket_command_successful $? || return 1
+    integer cacheable
+    _paket_query_package_sources $cmd "$package_id" || return 1
 
-    _store_cache $cache_id output
+    # Don't keep a list that a source didn't answer, nor an empty one.
+    (( cacheable && $#output )) && _store_cache $cache_id output
   fi
 
   # If the there is a constraint, also complete fake values,
@@ -1377,6 +1396,52 @@ _paket_version_constraint() {
       "package-version::_paket_package_versions" \
     && ret=0
   fi
+}
+
+(( $+functions[_paket_query_package_sources] )) ||
+_paket_query_package_sources() {
+  # Runs paket find-packages or find-package-versions ($1) for $2 against the
+  # sources of the package-sources style, nuget.org by default, and sets the
+  # output array of the caller, and its cacheable integer to 1 when every
+  # source answered. Not against the sources of paket.dependencies:
+  # their credentials can name environment variables, whose values paket sends
+  # to those sources, so that a repository would get them on a key press.
+  # $2 is the word as on the command line: unquote it, then quote it for the
+  # evaluation of _call_program, always as one argument, even empty, so that
+  # paket doesn't wait for a search text on its input.
+  local cmd=${1?Need type} package_id=$2
+  local key=":completion:${curcontext%:*:*}:$cmd:"
+
+  local -a sources
+  zstyle -a "$key" package-sources sources || sources=(https://www.nuget.org/api/v2)
+
+  local executable source
+  local -a lines
+  executable=$(_paket_executable)
+  integer exit_status=1 succeeded=0
+  output=()
+  cacheable=1
+  for source in $sources; do
+    # We need to replace CR, in case we're running on Windows (//$'\r'/).
+    lines=(
+      ${(f)"$(_call_program $cmd \
+              "$executable $cmd --silent --max 100 --source ${(qq)source} ${(qq)${(Q)package_id}} 2> /dev/null")"//$'\r'/}
+      )
+    exit_status=$?
+    (( exit_status == 0 )) && succeeded=1
+    # find-packages exits with 0 when the source doesn't answer.
+    (( exit_status == 0 )) && [[ -z ${(M)lines:#Ignoring error*} ]] || cacheable=0
+    output+=($lines)
+  done
+
+  if (( ! succeeded )); then
+    _paket_command_successful $exit_status
+    return 1
+  fi
+
+  # Package IDs and versions have no space: leave out the warnings that paket
+  # prints even with --silent, such as "Ignoring error when requesting ...".
+  output=(${(u)output:#* *})
 }
 
 (( $+functions[_paket_should_run] )) ||
