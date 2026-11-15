@@ -70,26 +70,30 @@
 # Define where to look for paket
 #
 #   Depending on what should be completed the Paket executable will be run by
-#   the completion script. The completion script searches for paket in the
-#   order of the restore during the builds: first for a local tool (run with
-#   `dotnet paket`) when a tool manifest declares paket, then for paket
-#   installed with `dotnet tool install paket --tool-path .` or
-#   `--tool-path .paket`, then for a global tool (i.e. paket in the $PATH).
-#   The local tool comes first because a paket installed with --tool-path can
-#   be an older one.
+#   the completion script. The completion script runs a local tool when a tool
+#   manifest declares paket, else a global tool (i.e. paket in the $PATH). As
+#   dotnet, it reads the closest .config/dotnet-tools.json or dotnet-tools.json
+#   from the current directory up that declares paket, and doesn't look above
+#   an "isRoot" one.
 #
-#   As dotnet, it reads the closest .config/dotnet-tools.json or
-#   dotnet-tools.json from the current directory up that declares paket, and
-#   doesn't look above an "isRoot" one. It looks for paket installed with
-#   --tool-path only in the current directory and its .paket folder, not in the
-#   directories above.
+#   Completing in a repository shouldn't run one of its files. So the script
+#   runs the paket.dll of the local tool restored in $NUGET_PACKAGES or
+#   ~/.nuget/packages, with dotnet, instead of `dotnet paket`, which reads the
+#   global.json of the repository: its sdk.paths can point dotnet at an SDK of
+#   the repository. It reads no NuGet.config, so that the repository can't
+#   choose the paket.dll: if yours sets globalPackagesFolder, export
+#   NUGET_PACKAGES with that folder. When the local tool isn't restored there,
+#   it runs the global tool.
 #
-#   To look for paket in other locations first, define the following
-#   `paket-executable` style. The list of values will be searched as defined,
-#   before the locations above.
+#   For the same reason, it doesn't run a paket of the current directory, such
+#   as one installed with `dotnet tool install paket --tool-path .paket`,
+#   unless the following `paket-executable` style lists it. The list of values
+#   will be searched as defined, before the local tool and the global tool. A
+#   relative path runs that file in every directory you complete in, the
+#   repositories you don't trust included.
 #
-#     # Look in .paket first, even when a tool manifest declares paket.
-#     zstyle ':completion::complete:paket:*' paket-executable './.paket/paket'
+#     # Run paket installed with --tool-path .paket or --tool-path . first.
+#     zstyle ':completion::complete:paket:*' paket-executable './.paket/paket' './paket'
 #     # Or, useful for Paket developers: Prefer the locally built version in bin over the local tool.
 #     zstyle ':completion::complete:paket:*' paket-executable './bin/net10.0/paket'
 #
@@ -1398,6 +1402,10 @@ _paket_command_successful () {
 
 (( $+functions[_paket_executable] )) ||
 _paket_executable() {
+  # The captures of =~ in $match, whatever the options of the user. Unlike
+  # emulate -R, this keeps xtrace for _complete_debug.
+  emulate -L zsh
+  setopt no_bash_rematch no_rematch_pcre
   local -a locations
   local location
 
@@ -1408,12 +1416,21 @@ _paket_executable() {
     done
   fi
 
-  # As in Paket.Restore.targets: a local tool, when the tool manifest declares
-  # paket, before paket installed with --tool-path, which can be an older Paket.
-  # As dotnet, the manifest is the closest one from here up that declares paket,
-  # and the lookup stops at an "isRoot" one. Only the "paket" tool counts.
-  local dir=${PWD:A} parent manifest content MATCH MBEGIN MEND
-  local -a match mbegin mend
+  # A local tool, when the tool manifest declares paket. As dotnet, the
+  # manifest is the closest one from here up that declares paket, and the
+  # lookup stops at an "isRoot" one. Only the "paket" tool counts.
+  #
+  # Completing in a repository shouldn't run one of its files. So, unlike
+  # Paket.Restore.targets, it doesn't run paket installed with --tool-path in
+  # the current directory or in ./.paket unless the paket-executable style
+  # lists it. And, as #r "paket:", it runs the paket.dll of the local tool
+  # restored in $NUGET_PACKAGES or ~/.nuget/packages instead of dotnet paket:
+  # dotnet then doesn't read the global.json of the repository, whose sdk.paths
+  # can point dotnet at an SDK of the repository. It reads no NuGet.config,
+  # whose globalPackagesFolder would let the repository choose the dll.
+  local dir=${PWD:A} parent manifest content version prerelease MATCH MBEGIN MEND
+  local -a match mbegin mend dlls numbers
+  integer i
   while true; do
     for manifest in "${dir%/}/.config/dotnet-tools.json" "${dir%/}/dotnet-tools.json"; do
       [[ -f "$manifest" ]] || continue
@@ -1421,20 +1438,32 @@ _paket_executable() {
       [[ -r "$manifest" ]] || break 2
       content=${(L)"$(<"$manifest")"}
       if [[ $content =~ '"paket"[[:space:]]*:[[:space:]]*\{' ]]; then
-        printf 'dotnet paket' && return
+        if [[ $content =~ '"paket"[[:space:]]*:[[:space:]]*\{[^}]*"version"[[:space:]]*:[[:space:]]*"([^"]*)"' ]] &&
+           [[ ${match[1]%%+*} =~ '^[[:space:]]*([0-9]+(\.[0-9]+){0,3})(-[0-9a-z.-]+)?[[:space:]]*$' ]]; then
+          # The packages folder has a folder per version, normalized as NuGet
+          # does: without build metadata, with three numbers, or four when the
+          # last isn't 0, without leading zeros. No "/" may lead out of it.
+          numbers=(${(s:.:)match[1]})
+          prerelease=$match[3]
+          for (( i = 1; i <= $#numbers; i++ )); do
+            numbers[i]=$(( 10#$numbers[i] ))
+          done
+          while (( $#numbers < 3 )); do
+            numbers+=(0)
+          done
+          (( $#numbers == 4 && numbers[4] == 0 )) && numbers[4]=()
+          version=${(j:.:)numbers}$prerelease
+          dlls=("${NUGET_PACKAGES:-$HOME/.nuget/packages}"/paket/$version/tools/*/any/paket.dll(N))
+          (( $#dlls )) && printf 'dotnet "%s"' "$dlls[1]" && return
+        fi
+        # Not restored: the global tool can still complete.
+        break 2
       fi
       [[ $content =~ '"isroot"[[:space:]]*:[[:space:]]*true' ]] && break 2
     done
     parent=${dir:h}
     [[ $parent == $dir ]] && break
     dir=$parent
-  done
-
-  # Then paket installed with --tool-path in the current directory or in
-  # ./.paket, in the order in which the targets look in the root of the
-  # repository.
-  for location in ./paket ./.paket/paket; do
-    [[ -f "$location" ]] && printf '"%s"' "$location" && return
   done
 
   if (($+commands[paket])); then

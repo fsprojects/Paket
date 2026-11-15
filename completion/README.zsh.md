@@ -78,26 +78,31 @@ You can configure some aspects of Paket completion. Add these to your
 ### Define where to look for `paket`
 
 Depending on what should be completed the Paket executable will be run by the
-completion script. The completion script searches for Paket in the order of
-the restore during the builds: first for a local tool (run with `dotnet paket`)
-when a tool manifest declares Paket, then for Paket installed with
-`dotnet tool install paket --tool-path .` or `--tool-path .paket`, then for a
-global tool (i.e. `paket` in the `$PATH`). The local tool comes first because a
-Paket installed with `--tool-path` can be an older one.
+completion script. The completion script runs a local tool when a tool
+manifest declares Paket, else a global tool (i.e. `paket` in the `$PATH`). As
+dotnet, it reads the closest `.config/dotnet-tools.json` or `dotnet-tools.json`
+from the current directory up that declares Paket, and doesn't look above an
+`"isRoot"` one.
 
-As dotnet, it reads the closest `.config/dotnet-tools.json` or
-`dotnet-tools.json` from the current directory up that declares Paket, and
-doesn't look above an `"isRoot"` one. It looks for Paket installed with
-`--tool-path` only in the current directory and its `.paket` folder, not in the
-directories above.
+Completing in a repository shouldn't run one of its files. So the script runs
+the `paket.dll` of the local tool restored in `$NUGET_PACKAGES` or
+`~/.nuget/packages`, with `dotnet`, instead of `dotnet paket`, which reads the
+`global.json` of the repository: its `sdk.paths` can point dotnet at an SDK of
+the repository. It reads no `NuGet.config`, so that the repository can't
+choose the `paket.dll`: if yours sets `globalPackagesFolder`, export
+`NUGET_PACKAGES` with that folder. When the local tool isn't restored there, it
+runs the global tool.
 
-To look for Paket in other locations first, define the following
-`paket-executable` style. The list of values will be searched as defined,
-before the locations above.
+For the same reason, it doesn't run a Paket of the current directory, such as
+one installed with `dotnet tool install paket --tool-path .paket`, unless the
+following `paket-executable` style lists it. The list of values will be
+searched as defined, before the local tool and the global tool. A relative path
+runs that file in every directory you complete in, the repositories you don't
+trust included.
 
 ```sh
-# Look in .paket first, even when a tool manifest declares Paket.
-zstyle ':completion::complete:paket:*' paket-executable './.paket/paket'
+# Run Paket installed with --tool-path .paket or --tool-path . first.
+zstyle ':completion::complete:paket:*' paket-executable './.paket/paket' './paket'
 # Or, useful for Paket developers: Prefer the locally built version in bin over the local tool.
 zstyle ':completion::complete:paket:*' paket-executable './bin/net10.0/paket'
 ```
