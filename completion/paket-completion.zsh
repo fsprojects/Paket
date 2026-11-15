@@ -1,4 +1,4 @@
-#compdef paket=paket.exe paket.exe
+#compdef paket paket.exe
 
 # Zsh completion script for Paket (https://github.com/fsprojects/Paket/).
 #
@@ -206,8 +206,8 @@ _paket() {
   local curcontext=$curcontext context state state_descr line ret=1
   typeset -A opt_args
 
-  # Strip .exe extension.
-  curcontext="${curcontext%.*}:"
+  # Complete paket.exe in the context of paket: strip .exe from the command.
+  curcontext="${curcontext/%.exe:/:}"
 
   # Set up default cache policy.
   local -A default_policies

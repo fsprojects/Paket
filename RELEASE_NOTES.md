@@ -1,6 +1,7 @@
 #### Unreleased
 
 * fix: The bash completion completes `paket` too, not only `paket.exe`: a global tool, a Paket installed with `--tool-path` or the `paket` alias of `dotnet paket`. It falls back to file names, as in `paket pack out<TAB>`. Remove the `complete -F _paket paket` that the README advised for the alias: it replaces the one of the script, without that fallback
+* fix: The zsh completion applies the styles set for one command, such as `zstyle ':completion::complete:paket:add:*' infix-match yes` or `zstyle ':completion::complete:paket:find-packages:' disable-completion yes`, to `paket` and not only to `paket.exe`
 
 #### 12.0.0 - 2026-11-11
 
