@@ -213,3 +213,105 @@ module FsiExtension =
                 None
                 None
         Assert.AreEqual(inRoot [ "quoted"; "dotnet" ] :: defaultFolders, actual)
+
+    let paketRuntimeConfig = """{
+  "runtimeOptions": {
+    "tfm": "net10.0",
+    "framework": {
+      "name": "Microsoft.NETCore.App",
+      "version": "10.0.0"
+    },
+    "rollForwardOnNoCandidateFx": 2
+  }
+}"""
+
+    /// The Microsoft.NETCore.App that paketRuntimeConfig asks for
+    let paketApp : ReferenceLoading.Internals.Logic.NetCoreApp =
+        { Major = 10; Minor = 0; Patch = 0; RollsForwardToLaterMajor = true }
+
+    [<Test>]
+    let ``a runtimeconfig.json gives the Microsoft.NETCore.App of the app`` () =
+        Assert.AreEqual(Some paketApp, ReferenceLoading.Internals.Logic.netCoreAppOfRuntimeConfig paketRuntimeConfig)
+
+    [<Test>]
+    let ``an app rolls forward to a later major version only when its runtimeconfig.json says so`` () =
+        let rollForwardOf (rollForward: string) =
+            ReferenceLoading.Internals.Logic.netCoreAppOfRuntimeConfig (paketRuntimeConfig.Replace("\"rollForwardOnNoCandidateFx\": 2", rollForward))
+            |> Option.map (fun app -> app.RollsForwardToLaterMajor)
+        Assert.AreEqual(Some true, rollForwardOf "\"rollForwardOnNoCandidateFx\": 2")
+        Assert.AreEqual(Some false, rollForwardOf "\"rollForwardOnNoCandidateFx\": 1")
+        Assert.AreEqual(Some false, rollForwardOf "\"tfm2\": \"none\"")
+        Assert.AreEqual(Some true, rollForwardOf "\"rollForward\": \"Major\"")
+        Assert.AreEqual(Some true, rollForwardOf "\"rollForward\": \"LatestMajor\"")
+        Assert.AreEqual(Some false, rollForwardOf "\"rollForward\": \"LatestMinor\"")
+
+    [<Test>]
+    let ``DOTNET_ROLL_FORWARD comes before the roll forward of the runtimeconfig.json`` () =
+        let rollForwardWith (variable: string) app =
+            (ReferenceLoading.Internals.Logic.withRollForwardVariable variable app).RollsForwardToLaterMajor
+        let app = { paketApp with RollsForwardToLaterMajor = false }
+        Assert.IsFalse(rollForwardWith null app)
+        Assert.IsFalse(rollForwardWith "" app)
+        Assert.IsTrue(rollForwardWith "latestMajor" app)
+        Assert.IsFalse(rollForwardWith "Minor" paketApp)
+
+    [<Test>]
+    let ``a runtimeconfig.json without Microsoft.NETCore.App asks for none`` () =
+        Assert.AreEqual(None, ReferenceLoading.Internals.Logic.netCoreAppOfRuntimeConfig """{ "runtimeOptions": { "tfm": "net10.0" } }""")
+
+    [<Test>]
+    let ``a dotnet runs the app with a runtime of its major version, or of a later one when it rolls forward`` () =
+        let app : ReferenceLoading.Internals.Logic.NetCoreApp = { Major = 10; Minor = 1; Patch = 2; RollsForwardToLaterMajor = false }
+        let runsApp = ReferenceLoading.Internals.Logic.runsApp
+        Assert.IsTrue(runsApp app [ "9.0.11"; "10.2.0" ])
+        Assert.IsTrue(runsApp app [ "10.1.2" ])
+        Assert.IsFalse(runsApp app [ "9.0.11"; "10.0.3"; "10.1.1"; "11.0.0" ])
+        Assert.IsTrue(runsApp { app with RollsForwardToLaterMajor = true } [ "11.0.0" ])
+        Assert.IsFalse(runsApp app [ "not-a-version"; "10.2" ])
+
+    [<Test>]
+    let ``a prerelease runtime runs the app only when it is above the version asked for`` () =
+        let runsApp = ReferenceLoading.Internals.Logic.runsApp
+        Assert.IsFalse(runsApp paketApp [ "10.0.0-rc.2.25502.107" ])
+        Assert.IsTrue(runsApp paketApp [ "10.1.0-preview.1.26101.1" ])
+        Assert.IsTrue(runsApp paketApp [ "11.0.0-preview.1.26101.1" ])
+        Assert.IsFalse(runsApp { paketApp with RollsForwardToLaterMajor = false } [ "11.0.0-preview.1.26101.1" ])
+
+    [<Test>]
+    let ``the dotnet picked is the first that runs the app, or else the first unknown, or else the first`` () =
+        let pick runs = ReferenceLoading.Internals.Logic.pickDotnet (fun dotnet -> Map.find dotnet runs)
+        let runs = Map [ "old", Some false; "link", None; "new", Some true ]
+        Assert.AreEqual(Some "new", pick runs [ "old"; "link"; "new" ])
+        Assert.AreEqual(Some "link", pick runs [ "old"; "link" ])
+        Assert.AreEqual(Some "old", pick runs [ "old" ])
+        Assert.AreEqual(None, pick runs [])
+
+    [<Test>]
+    let ``the dotnet picked is the first that runs the app, without looking at the next ones`` () =
+        let rated = System.Collections.Generic.List<string>()
+        let runsTheApp dotnet =
+            rated.Add dotnet
+            Some(dotnet = "new")
+        let picked = ReferenceLoading.Internals.Logic.pickDotnet runsTheApp [ "old"; "new"; "offline" ]
+        Assert.AreEqual(Some "new", picked)
+        Assert.AreEqual([ "old"; "new" ], List.ofSeq rated)
+
+    /// A dotnet installed in a new temp folder, with runtimes that have their deps.json or not
+    let dotnetInstall (runtimes: (string * bool) list) =
+        let folder = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "dotnet-lookup-" + string (System.Guid.NewGuid()))
+        for runtime, withDepsJson in runtimes do
+            let runtimeFolder = System.IO.Path.Combine(folder, "shared", "Microsoft.NETCore.App", runtime)
+            System.IO.Directory.CreateDirectory runtimeFolder |> ignore
+            if withDepsJson then
+                System.IO.File.WriteAllText(System.IO.Path.Combine(runtimeFolder, "Microsoft.NETCore.App.deps.json"), "{}")
+        folder
+
+    [<Test>]
+    let ``the runtimes of a dotnet are the versions of its shared Microsoft.NETCore.App that have their deps.json`` () =
+        let folder = dotnetInstall [ "9.0.11", true; "10.0.2", false ]
+        try
+            let runtimesOfDotnet = ReferenceLoading.Internals.Logic.runtimesOfDotnet
+            Assert.AreEqual(Some [ "9.0.11" ], runtimesOfDotnet (System.IO.Path.Combine(folder, "dotnet")))
+            Assert.AreEqual(None, runtimesOfDotnet (System.IO.Path.Combine(folder, "shared", "dotnet")))
+        finally
+            System.IO.Directory.Delete(folder, true)

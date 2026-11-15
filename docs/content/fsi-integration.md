@@ -19,12 +19,18 @@ The extension runs the Paket .NET tool. It looks for, in order:
   (`~/.nuget/packages/paket`).
 
 The local tool and the one restored in the NuGet packages folder are each a
-`paket.dll`, which runs with the `dotnet` that runs the script, or else the first
-one found in `DOTNET_ROOT`, the `PATH` and the default install folders:
-`C:\Program Files\dotnet` (and then `C:\Program Files (x86)\dotnet` for a 32-bit
-app) and `%LocalAppData%\Microsoft\dotnet` on Windows, `/usr/local/share/dotnet`,
+`paket.dll`, which runs with the first `dotnet` that has a .NET runtime the tool
+runs on, looking at the one that runs the script, then in `DOTNET_ROOT`, the `PATH`
+and the default install folders: `C:\Program Files\dotnet` (and then
+`C:\Program Files (x86)\dotnet` for a 32-bit app) and
+`%LocalAppData%\Microsoft\dotnet` on Windows, `/usr/local/share/dotnet`,
 `/usr/share/dotnet`, `/usr/lib/dotnet` and `/usr/lib64/dotnet` on macOS and Linux,
-and `~/.dotnet`. When no `dotnet` is found, set `DOTNET_ROOT` to the folder of
+and `~/.dotnet`. Paket 12 runs on .NET 10, or on a later version with a `dotnet`
+that has no .NET 10. A `dotnet` whose runtimes aren't known, such as the link
+`/usr/bin/dotnet`, comes after the ones known to have that runtime, and one without
+it is only taken when no other one may have it: its error then names the runtime
+that is missing, which you can install, or set `DOTNET_ROOT` to the folder of a
+`dotnet` that has it. When no `dotnet` is found, set `DOTNET_ROOT` to the folder of
 `dotnet` in the environment of the IDE or app that runs F# Interactive, or add that
 folder to its `PATH`.
 
