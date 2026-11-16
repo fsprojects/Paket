@@ -25,12 +25,17 @@ dependencies fixed:
 ```sh
 paket update <package id>
 paket update <package id> --filter
+paket update <package id> --transitive
 ```
 
 The `--filter` parameter makes Paket interpret the `<package id>` as a regular
 expression pattern to match against, rather than a single package. Paket
 enforces a "total" match (i.e. an implicit `^` and `$` at beginning and end of
 `<package id>` as added).
+
+The `--transitive` parameter allows Paket to update a transitive dependency, ie.
+a dependency that is present in the `paket.lock` file but not in the
+`paket.dependencies` file.
 
 ## Updating a single group
 
