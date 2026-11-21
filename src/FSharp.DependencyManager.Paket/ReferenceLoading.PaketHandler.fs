@@ -438,7 +438,8 @@ module internal PaketHandler =
         |> Seq.tryFind (fun (_, _, (version, isRoot)) -> Option.isSome version || isRoot)
         |> Option.bind (fun (folder, manifest, (version, _)) -> version |> Option.map (fun version -> manifest, version, folder))
 
-    /// The dotnetCandidates that exist
+    /// The dotnetCandidates that exist, each one checked for existence once, when an enumeration
+    /// first reaches it
     let existingDotnets () =
         let processPath =
             try
@@ -456,11 +457,12 @@ module internal PaketHandler =
             (Environment.GetFolderPath Environment.SpecialFolder.ProgramFiles)
             userProfile
         |> Seq.filter File.Exists
+        |> Seq.cache
 
-    /// The dotnet to run a framework-dependent paket.dll: of the dotnetCandidates that exist, the one
+    /// The dotnet to run a framework-dependent paket.dll: of the dotnets of existingDotnets, the one
     /// that pickDotnet picks for the Microsoft.NETCore.App that its runtimeconfig.json asks for, with
     /// the DOTNET_ROLL_FORWARD of the environment
-    let findDotnet (paketDll: string) =
+    let findDotnet (dotnets: string seq) (paketDll: string) =
         let netCoreApp =
             try
                 Path.ChangeExtension(paketDll, ".runtimeconfig.json")
@@ -476,8 +478,15 @@ module internal PaketHandler =
                     Internals.Logic.runtimesOfDotnet dotnet
                     |> Option.map (Internals.Logic.runsApp netCoreApp)
                 with _ -> None
-        existingDotnets ()
+        dotnets
         |> Internals.Logic.pickDotnet runsPaket
+
+    /// The dotnet to run `dotnet nuget`: of the dotnets of existingDotnets, the one that pickDotnet picks
+    /// with hasSdk
+    let findSdkDotnet (dotnets: string seq) =
+        dotnets
+        // an sdk folder that can't be listed is unknown
+        |> Internals.Logic.pickDotnet (fun dotnet -> try Internals.Logic.hasSdk dotnet with _ -> None)
 
     /// Kills a process with its child processes, as the one of NuGet that `dotnet nuget` starts, on the
     /// .NET Core 3.0 and later that has Process.Kill(bool); else the process only
@@ -489,16 +498,14 @@ module internal PaketHandler =
         with _ -> ()
 
     /// The NuGet packages folder of a folder, as `dotnet nuget locals global-packages --list` gives it
-    /// there from the nuget.config files, run with the dotnet that pickDotnet picks with hasSdk.
-    /// NUGET_PACKAGES, which NuGet takes first, is taken without running dotnet, and only when it is a
-    /// full path, as NuGet requires. None otherwise, or when dotnet doesn't tell it: there is none, or
-    /// the command fails or takes more than 30 seconds.
-    let nugetPackagesFolder (folder: string) =
+    /// there from the nuget.config files, run with sdkDotnet, the dotnet of findSdkDotnet, which is only
+    /// looked for when needed. NUGET_PACKAGES, which NuGet takes first, is taken without running dotnet,
+    /// and only when it is a full path, as NuGet requires. None otherwise, or when dotnet doesn't tell it:
+    /// there is no dotnet, the command fails or takes more than 30 seconds, or its output has no full path.
+    let nugetPackagesFolder (sdkDotnet: Lazy<string option>) (folder: string) =
         match Environment.GetEnvironmentVariable "NUGET_PACKAGES" with
         | null | "" ->
-            existingDotnets ()
-            // an sdk folder that can't be listed is unknown
-            |> Internals.Logic.pickDotnet (fun dotnet -> try Internals.Logic.hasSdk dotnet with _ -> None)
+            sdkDotnet.Value
             |> Option.bind (fun dotnet ->
                 try
                     let newStartInfo () =
@@ -544,8 +551,8 @@ module internal PaketHandler =
     /// The folders of the Paket .NET tool in the NuGet packages folders of a folder: the one of
     /// nugetPackagesFolder, then the one of ~/.nuget/packages, for a tool restored from another folder
     /// or when nugetPackagesFolder gives none
-    let paketFoldersOfNuGetPackages (folder: string) =
-        Internals.Logic.paketFolders isWindows (nugetPackagesFolder folder) userProfile
+    let paketFoldersOfNuGetPackages (sdkDotnet: Lazy<string option>) (folder: string) =
+        Internals.Logic.paketFolders isWindows (nugetPackagesFolder sdkDotnet folder) userProfile
 
     /// The paket.dll of a version of the local tool that `dotnet tool run` runs: the one that
     /// `dotnet tool restore` recorded in the toolResolverCache of the dotnet home folder, DOTNET_CLI_HOME
@@ -571,8 +578,8 @@ module internal PaketHandler =
 
     /// The dotnet of findDotnet and the arguments that run a framework-dependent paket.dll; fails
     /// when there is no dotnet
-    let dotnetCommand (paketDll: string) =
-        match findDotnet paketDll with
+    let dotnetCommand (dotnets: string seq) (paketDll: string) =
+        match findDotnet dotnets paketDll with
         | Some dotnet -> dotnet, $"\"%s{paketDll}\" "
         | None ->
             failwith $"No dotnet was found to run '%s{paketDll}'. Please set DOTNET_ROOT to the folder of dotnet in the environment of the IDE or app that runs F# Interactive, or add that folder to its PATH."
@@ -678,6 +685,10 @@ module internal PaketHandler =
                 Console.ResetColor()
                 Console.WriteLine(" " + message)
             let warn = writeLine ConsoleColor.Yellow
+            // looked for once, when needed: the dotnets, both for the one that runs a paket.dll and for the one
+            // with an SDK that `dotnet nuget locals` needs
+            let dotnets = lazy (existingDotnets ())
+            let sdkDotnet = lazy (findSdkDotnet dotnets.Value)
             // the manifest that declares paket, with the paket.dll of its local tool or else the message that
             // it isn't restored
             let localTool =
@@ -690,7 +701,7 @@ module internal PaketHandler =
                     // else where `dotnet tool restore` restores it when run in the folder of the manifest, or
                     // where it was restored with another dotnet home folder
                     let versionFolders =
-                        paketFoldersOfNuGetPackages manifestFolder
+                        paketFoldersOfNuGetPackages sdkDotnet manifestFolder
                         |> List.map (fun paketFolder -> Path.Combine(paketFolder, version.ToLowerInvariant()))
                     // a folder that can't be read doesn't stop the lookup in the next one
                     match versionFolders |> List.tryPick (fun folder -> try tryFindToolDll (DirectoryInfo folder) with _ -> None) with
@@ -715,7 +726,7 @@ module internal PaketHandler =
 
             let globalTools = Internals.Logic.globalToolPaths toolPathExecutable userProfile
 
-            let paketFolders = lazy (paketFoldersOfNuGetPackages scriptDir)
+            let paketFolders = lazy (paketFoldersOfNuGetPackages sdkDotnet scriptDir)
             // the newest Paket .NET tool restored in the NuGet packages folders
             let restoredTool () =
                 paketFolders.Value
@@ -734,7 +745,7 @@ module internal PaketHandler =
                 match Internals.Logic.choosePaket warn localTool toolPathExe isGlobalToolPath (fun () -> globalTools |> List.tryFind File.Exists) restoredTool with
                 | Some (Internals.Logic.PaketExe paketExe) -> paketExe, ""
                 | Some (Internals.Logic.PaketDll paketDll) ->
-                    try dotnetCommand paketDll
+                    try dotnetCommand dotnets.Value paketDll
                     with e when Option.isSome notRestoredLocalTool -> failwith (withLocalToolHint e.Message)
                 | None ->
                     // restoredTool ran, which looked for paketFolders
