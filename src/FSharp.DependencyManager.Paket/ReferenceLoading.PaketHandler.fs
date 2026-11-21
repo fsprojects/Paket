@@ -594,6 +594,12 @@ module internal PaketHandler =
         then 
             (loadScript,additionalIncludeFolders())
         else 
+            // a line after the :paket> prefix, with only the prefix in that color
+            let writeLine (color: ConsoleColor) (message: string) =
+                Console.ForegroundColor <- color
+                Console.Write ":paket>"
+                Console.ResetColor()
+                Console.WriteLine(" " + message)
             let toolPath, toolArguments =
                 let localTool = findLocalTool (DirectoryInfo scriptDir)
                 // we try to resolve paket installed with --tool-path any place up in the folder structure from current script
@@ -603,10 +609,7 @@ module internal PaketHandler =
                     | Some paketExe, Some _ when isGlobalToolPath paketExe -> None
                     // as in the targets, the local tool runs instead: it can be an older Paket, such as the paket.exe or bootstrapper of Paket 11
                     | Some paketExe, Some (manifest, _, _) ->
-                        Console.ForegroundColor <- ConsoleColor.Yellow
-                        Console.Write ":paket>"
-                        Console.ResetColor()
-                        Console.WriteLine $" Ignoring %s{paketExe}: '%s{manifest}' declares paket, which runs instead. Delete it if it is an older Paket, such as the paket.exe or bootstrapper of Paket 11."
+                        writeLine ConsoleColor.Yellow $"Ignoring %s{paketExe}: '%s{manifest}' declares paket, which runs instead. Delete it if it is an older Paket, such as the paket.exe or bootstrapper of Paket 11."
                         None
                     | paketExe, _ -> paketExe
 
@@ -670,10 +673,7 @@ module internal PaketHandler =
                     failwithf "Paket was not found in '%s' or a parent directory, as a local tool, or in those locations:\n\n%s\n\nPlease install the Paket .NET tool: dotnet tool install paket"
                         scriptDir foldersTried
 
-            Console.ForegroundColor <- ConsoleColor.Green
-            Console.Write ":paket>"
-            Console.ResetColor()
-            Console.WriteLine(sprintf " using %s" ((quoteProgram toolPath + " " + toolArguments).TrimEnd()))
+            writeLine ConsoleColor.Green (sprintf "using %s" ((quoteProgram toolPath + " " + toolArguments).TrimEnd()))
         
             try File.Delete(loadScript) with _ -> ()
             File.WriteAllLines(workingDirSpecFile.FullName, packageManagerTextLines)
@@ -694,10 +694,7 @@ module internal PaketHandler =
             p.ErrorDataReceived.Add(fun d -> if not (isNull d.Data) then errors.Add d.Data)
             p.OutputDataReceived.Add(fun d -> 
                 if not (isNull d.Data) then
-                    Console.ForegroundColor <- ConsoleColor.Green
-                    Console.Write ":paket>"
-                    Console.ResetColor()
-                    Console.WriteLine (" " + d.Data)
+                    writeLine ConsoleColor.Green d.Data
                     log.Add d.Data
             )
             p.Start() |> ignore
