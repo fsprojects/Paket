@@ -702,8 +702,13 @@ module internal PaketHandler =
                             | folders -> " in " + (folders |> List.map (fun folder -> $"'%s{folder}'") |> String.concat " or ")
                         Error $"Paket %s{version}, the local tool of '%s{manifest}', is not restored%s{notRestoredIn}. Please run 'dotnet tool restore' in '%s{manifestFolder}'.")
 
-            // the message that the local tool isn't restored, when the manifest declares paket
+            // the message that the local tool isn't restored, which the errors of a paket that runs in its place
+            // repeat: it may be another version, which only a warning told
             let notRestoredLocalTool = match localTool with Some (_, Error notRestored) -> Some notRestored | _ -> None
+            let withLocalToolHint (message: string) =
+                match notRestoredLocalTool with
+                | Some notRestored -> message + Environment.NewLine + notRestored
+                | None -> message
 
             // we try to resolve paket installed with --tool-path any place up in the folder structure from current script
             let toolPathExe = findPaketExe prioritizedSearchPaths (DirectoryInfo scriptDir)
@@ -728,7 +733,9 @@ module internal PaketHandler =
                 // the warnings come before dotnetCommand, which can fail
                 match Internals.Logic.choosePaket warn localTool toolPathExe isGlobalToolPath (fun () -> globalTools |> List.tryFind File.Exists) restoredTool with
                 | Some (Internals.Logic.PaketExe paketExe) -> paketExe, ""
-                | Some (Internals.Logic.PaketDll paketDll) -> dotnetCommand paketDll
+                | Some (Internals.Logic.PaketDll paketDll) ->
+                    try dotnetCommand paketDll
+                    with e when Option.isSome notRestoredLocalTool -> failwith (withLocalToolHint e.Message)
                 | None ->
                     // restoredTool ran, which looked for paketFolders
                     failwith (Internals.Logic.paketNotFound notRestoredLocalTool scriptDir [ yield! globalTools; yield! paketFolders.Value ])
@@ -757,15 +764,20 @@ module internal PaketHandler =
                     writeLine ConsoleColor.Green d.Data
                     log.Add d.Data
             )
-            p.Start() |> ignore
+            // as a global tool that isn't executable
+            try p.Start() |> ignore
+            // its message only, as with dotnetCommand: an inner exception would come after the restore message
+            with e when Option.isSome notRestoredLocalTool -> failwith (withLocalToolHint e.Message)
             p.BeginErrorReadLine()
             p.BeginOutputReadLine()
             p.WaitForExit()
             
             if p.ExitCode <> 0 then
                 let msg = String.Join(Environment.NewLine, errors)
-                failwithf "Package resolution using '%s %s' failed, see directory '%s'.%s%s"
+                sprintf "Package resolution using '%s %s' failed, see directory '%s'.%s%s"
                     (quoteProgram startInfo.FileName) startInfo.Arguments workingDir Environment.NewLine msg
+                |> withLocalToolHint
+                |> failwith
             else
                 (loadScript,additionalIncludeFolders())
 

@@ -22,6 +22,8 @@ When the local tool isn't restored, a Paket installed with `--tool-path` is stil
 skipped: `#r "paket:"` warns and runs a global tool instead, or else the most recent
 Paket .NET tool restored, either of which may be a version other than the one in the
 manifest. When it finds neither, it fails and asks to run `dotnet tool restore`.
+When the Paket that runs instead fails, the error of `#r "paket:"` ends by repeating
+that the local tool isn't restored.
 
 The local tool is the `paket.dll` that `dotnet tool restore` recorded for its
 version in `~/.dotnet/toolResolverCache`, or under `DOTNET_CLI_HOME` when it is set,
