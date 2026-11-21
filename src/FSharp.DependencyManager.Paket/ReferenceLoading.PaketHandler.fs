@@ -222,6 +222,26 @@ module Logic =
         elif System.IO.Directory.Exists(System.IO.Path.Combine(folder, "shared")) then Some false
         else None
 
+    /// The paket.dll files that `dotnet tool restore` recorded for a version of paket, in the content
+    /// of the .dotnet/toolResolverCache/1/paket file of the dotnet home folder, which `dotnet tool run`
+    /// reads: the PathToExecutable of the paket command of that version that dotnet runs, for any
+    /// target framework. It reads the JSON that the SDK writes, an array of objects without nested ones.
+    let paketDllsOfToolResolverCache (version: string) (content: string) =
+        let jsonString = "\"((?:[^\"\\\\]|\\\\.)*)\""
+        let value (name: string) (row: string) =
+            let m = System.Text.RegularExpressions.Regex.Match(row, "\"" + name + "\"\\s*:\\s*" + jsonString)
+            if m.Success then Some(System.Text.RegularExpressions.Regex.Unescape m.Groups.[1].Value) else None
+        System.Text.RegularExpressions.Regex.Matches(content, "\\{(?:[^{}\"]|" + jsonString + ")*\\}")
+        |> Seq.cast<System.Text.RegularExpressions.Match>
+        |> Seq.map (fun row -> row.Value)
+        |> Seq.filter (fun row ->
+            value "Name" row = Some "paket"
+            // and not an executable, as a tool package for a runtime can have
+            && value "Runner" row = Some "dotnet"
+            && value "Version" row |> Option.exists (fun recorded -> System.String.Equals(recorded, version, System.StringComparison.OrdinalIgnoreCase)))
+        |> Seq.choose (value "PathToExecutable")
+        |> List.ofSeq
+
     /// The folders of the Paket .NET tool in a NuGet packages folder and in the one of the user
     /// profile, ~/.nuget/packages, in that order and once each, without case on Windows. A folder
     /// with characters that .NET Framework refuses in a path is left out.
@@ -450,6 +470,23 @@ module internal PaketHandler =
     let paketFoldersOfNuGetPackages (folder: string) =
         Internals.Logic.paketFolders isWindows (nugetPackagesFolder folder) userProfile
 
+    /// The paket.dll of a version of the local tool that `dotnet tool run` runs: the one that
+    /// `dotnet tool restore` recorded in the toolResolverCache of the dotnet home folder, DOTNET_CLI_HOME
+    /// or else the user profile, if it exists
+    let paketDllOfToolResolverCache (version: string) =
+        let dotnetHome =
+            match Environment.GetEnvironmentVariable "DOTNET_CLI_HOME" with
+            | null | "" -> userProfile
+            | dotnetHome -> dotnetHome
+        try
+            if String.IsNullOrEmpty dotnetHome then None else
+            let cache = Path.Combine(dotnetHome, ".dotnet", "toolResolverCache", "1", "paket")
+            if not (File.Exists cache) then None else
+            File.ReadAllText cache
+            |> Internals.Logic.paketDllsOfToolResolverCache version
+            |> List.tryFind File.Exists
+        with _ -> None
+
     /// A program as a command line shows it, in quotes when its path has a space, as
     /// C:\Program Files\dotnet\dotnet.exe
     let quoteProgram (path: string) =
@@ -579,7 +616,11 @@ module internal PaketHandler =
 
                 match localTool with
                 | Some (manifest, version, manifestFolder) ->
-                    // first where `dotnet tool restore` restores it when run in the folder of the manifest
+                    match paketDllOfToolResolverCache version with
+                    | Some paketDll -> dotnetCommand paketDll
+                    | None ->
+                    // else where `dotnet tool restore` restores it when run in the folder of the manifest, or
+                    // where it was restored with another dotnet home folder
                     let versionFolders =
                         paketFoldersOfNuGetPackages manifestFolder
                         |> List.map (fun paketFolder -> Path.Combine(paketFolder, version.ToLowerInvariant()))

@@ -357,6 +357,24 @@ module FsiExtension =
         Assert.AreEqual(None, globalPackages ("global-packages: " + inRoot [ "J\uFFFDr\uFFFDme"; "packages" ] + "\n"))
 
     [<Test>]
+    let ``the toolResolverCache gives the paket.dll that dotnet tool restore recorded for a version`` () =
+        // as the SDK writes it, with \u escapes for some characters
+        let cache = """[{"Version":"12.0.0","TargetFramework":"net10.0","RuntimeIdentifier":"any","Name":"paket","Runner":"dotnet","PathToExecutable":"C:\\Users\\J\u00E9r\u00F4me\\.nuget\\packages\\paket\\12.0.0\\tools\\net10.0\\any\\paket.dll"},{"Version":"12.0.0","TargetFramework":"net11.0","RuntimeIdentifier":"any","Name":"paket","Runner":"dotnet","PathToExecutable":"/a {b}/paket/12.0.0/tools/net10.0/any/paket.dll"},{"Version":"12.1.0","TargetFramework":"net10.0","RuntimeIdentifier":"any","Name":"paket","Runner":"dotnet","PathToExecutable":"/other/paket.dll"}]"""
+        let paketDlls = ReferenceLoading.Internals.Logic.paketDllsOfToolResolverCache
+        Assert.AreEqual(
+            [ @"C:\Users\Jérôme\.nuget\packages\paket\12.0.0\tools\net10.0\any\paket.dll"
+              "/a {b}/paket/12.0.0/tools/net10.0/any/paket.dll" ],
+            paketDlls "12.0.0" cache)
+        Assert.AreEqual([ "/other/paket.dll" ], paketDlls "12.1.0" cache)
+        Assert.AreEqual(List.empty<string>, paketDlls "12.2.0" cache)
+        Assert.AreEqual(List.empty<string>, paketDlls "12.0.0" "")
+
+    [<Test>]
+    let ``the toolResolverCache gives only the paket command that dotnet runs`` () =
+        let cache = """[{"Version":"1.0.0","TargetFramework":"net10.0","RuntimeIdentifier":"any","Name":"paket-wrapper","Runner":"dotnet","PathToExecutable":"/wrapper/paket.dll"},{"Version":"1.0.0","TargetFramework":"net10.0","RuntimeIdentifier":"linux-x64","Name":"paket","Runner":"executable","PathToExecutable":"/native/paket"}]"""
+        Assert.AreEqual(List.empty<string>, ReferenceLoading.Internals.Logic.paketDllsOfToolResolverCache "1.0.0" cache)
+
+    [<Test>]
     let ``the Paket .NET tool is looked for in the NuGet packages folder, then in the one of the user profile, once each`` () =
         let paketFolders = ReferenceLoading.Internals.Logic.paketFolders
         let home = inRoot [ "home" ]

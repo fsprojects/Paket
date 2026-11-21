@@ -18,9 +18,12 @@ The extension runs the Paket .NET tool. It looks for, in order:
 * a global tool, in `~/.dotnet/tools` or `~/.paket`,
 * the most recent Paket .NET tool restored in the NuGet packages folder.
 
-The local tool is looked for in the NuGet packages folder, and then in
-`~/.nuget/packages`. The most recent Paket .NET tool is the most recent one of these
-two folders.
+The local tool is the `paket.dll` that `dotnet tool restore` recorded for its
+version in `~/.dotnet/toolResolverCache`, or under `DOTNET_CLI_HOME` when it is set,
+which is the one that `dotnet tool run` runs. When none is recorded, or that
+`paket.dll` is gone, the local tool is looked for in the NuGet packages folder, and
+then in `~/.nuget/packages`. The most recent Paket .NET tool is the most recent one
+of these two folders.
 
 The NuGet packages folder is `NUGET_PACKAGES` when it is set, without running
 `dotnet`; a relative path, which NuGet refuses, is left out. When it isn't set,
