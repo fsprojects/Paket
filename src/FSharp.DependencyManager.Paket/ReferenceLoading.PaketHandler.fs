@@ -271,6 +271,15 @@ module Logic =
         // 10 1909, where the SDK doesn't switch its output to UTF-8
         |> Option.filter (fun folder -> folder.IndexOf '\uFFFD' < 0 && System.IO.Path.IsPathRooted folder)
 
+    /// Where a global tool of paket is, in ~/.dotnet/tools and then ~/.paket. None without a user profile,
+    /// and not relative to the current folder when HOME is empty. A path with characters that .NET Framework
+    /// refuses in a path, such as quotes, is left out.
+    let globalToolPaths (executable: string) (userProfile: string) =
+        if System.String.IsNullOrEmpty userProfile then [] else
+        [ [| userProfile; ".dotnet"; "tools"; executable |]
+          [| userProfile; ".paket"; executable |] ]
+        |> List.choose (fun parts -> try Some(System.IO.Path.Combine parts) with _ -> None)
+
 namespace ReferenceLoading
 module internal PaketHandler =
 
@@ -638,12 +647,7 @@ module internal PaketHandler =
                         failwith $"Paket %s{version}, the local tool of '%s{manifest}', is not restored%s{notRestoredIn}. Please run 'dotnet tool restore' in '%s{manifestFolder}'."
                 | None ->
 
-                  let globalTools =
-                    [
-                      Path.Combine(userProfile, ".dotnet", "tools")
-                      Path.Combine(userProfile, PM_DIR)
-                    ]
-                    |> List.map (fun dir -> Path.Combine(dir, toolPathExecutable))
+                  let globalTools = Internals.Logic.globalToolPaths toolPathExecutable userProfile
 
                   match globalTools |> List.tryFind File.Exists with
                   | Some paketExe -> paketExe, ""
@@ -666,11 +670,14 @@ module internal PaketHandler =
                   match restoredTool with
                   | Some paketDll -> dotnetCommand paketDll
                   | None ->
+                    // none without a user profile, NUGET_PACKAGES or a dotnet that tells the NuGet packages folder
                     let foldersTried =
-                      [ yield! globalTools; yield! paketFolders ]
-                      |> List.map (fun f -> sprintf " - %s" f)
-                      |> String.concat Environment.NewLine
-                    failwithf "Paket was not found in '%s' or a parent directory, as a local tool, or in those locations:\n\n%s\n\nPlease install the Paket .NET tool: dotnet tool install paket"
+                      match [ yield! globalTools; yield! paketFolders ] with
+                      | [] -> "."
+                      | folders ->
+                          ", or in those locations:\n\n"
+                          + (folders |> List.map (fun f -> sprintf " - %s" f) |> String.concat Environment.NewLine)
+                    failwithf "Paket was not found in '%s' or a parent directory, as a local tool%s\n\nPlease install the Paket .NET tool: dotnet tool install paket"
                         scriptDir foldersTried
 
             writeLine ConsoleColor.Green (sprintf "using %s" ((quoteProgram toolPath + " " + toolArguments).TrimEnd()))

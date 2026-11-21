@@ -394,3 +394,13 @@ module FsiExtension =
         let upperCase = inRoot [ "HOME"; ".nuget"; "packages" ]
         Assert.AreEqual(1, List.length (paketFolders true (Some upperCase) (inRoot [ "home" ])))
         Assert.AreEqual(2, List.length (paketFolders false (Some upperCase) (inRoot [ "home" ])))
+
+    [<Test>]
+    let ``a global tool is looked for in ~/.dotnet/tools and then ~/.paket, and not without a user profile`` () =
+        let globalToolPaths = ReferenceLoading.Internals.Logic.globalToolPaths
+        Assert.AreEqual(
+            [ inRoot [ "home"; ".dotnet"; "tools"; "paket" ]; inRoot [ "home"; ".paket"; "paket" ] ],
+            globalToolPaths "paket" (inRoot [ "home" ]))
+        Assert.AreEqual(List.empty<string>, globalToolPaths "paket" null)
+        // not in the current folder
+        Assert.AreEqual(List.empty<string>, globalToolPaths "paket" "")
